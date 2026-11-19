@@ -4,59 +4,51 @@ namespace MyMorningNews.Server.Routes
     using System.Threading.Tasks;
     using MyMorningNews.Core;
     using MyMorningNews.Core.Responses;
-    using MyMorningNews.Core.Serialization;
     using WatsonWebserver;
     using WatsonWebserver.Core;
-    using WatsonWebserver.Core.OpenApi;
 
     /// <summary>
-    /// Anonymous health route.
+    /// Anonymous health route. Reports Unhealthy (503) when the database is unreachable.
     /// </summary>
-    public class HealthRoutes
+    public class HealthRoutes : RouteBase
     {
-        #region Private-Members
-
-        private readonly DateTime _StartedUtc = DateTime.UtcNow;
-
-        #endregion
-
-        #region Public-Methods
-
         /// <summary>
-        /// Register routes.
+        /// Instantiate.
         /// </summary>
-        /// <param name="server">Watson server.</param>
-        /// <exception cref="ArgumentNullException">server is null.</exception>
-        public void Register(Webserver server)
+        /// <param name="server">Server context.</param>
+        public HealthRoutes(ServerContext server) : base(server)
         {
-            ArgumentNullException.ThrowIfNull(server);
-            server.Routes.PreAuthentication.Static.Add(
-                HttpMethod.GET,
-                Constants.HealthPath,
-                GetHealthAsync,
-                null,
-                openApiMetadata: OpenApiRouteMetadata.Create("Server health", "Health"));
         }
 
-        #endregion
-
-        #region Private-Methods
+        /// <inheritdoc />
+        public override void Register(Webserver webserver)
+        {
+            ArgumentNullException.ThrowIfNull(webserver);
+            webserver.Routes.PreAuthentication.Static.Add(HttpMethod.GET, Constants.HealthPath, GetHealthAsync, null, openApiMetadata: Doc("Server health", "Health"));
+        }
 
         private async Task GetHealthAsync(HttpContextBase ctx)
         {
             HealthResponse response = new HealthResponse
             {
-                Status = "Healthy",
                 Version = Constants.ProductVersion,
-                StartedUtc = _StartedUtc,
-                UptimeSeconds = (long)(DateTime.UtcNow - _StartedUtc).TotalSeconds
+                StartedUtc = Server.Lifetime.StartedUtc,
+                UptimeSeconds = (long)(DateTime.UtcNow - Server.Lifetime.StartedUtc).TotalSeconds
             };
 
-            ctx.Response.StatusCode = 200;
-            ctx.Response.ContentType = "application/json";
-            await ctx.Response.Send(Serializer.Serialize(response), ctx.Token).ConfigureAwait(false);
-        }
+            try
+            {
+                await Server.Database.ExecuteQueryAsync("SELECT 1", false, ctx.Token).ConfigureAwait(false);
+                response.Components["database"] = "Healthy";
+            }
+            catch (Exception ex) when (!(ex is OperationCanceledException))
+            {
+                response.Components["database"] = "Unhealthy";
+                response.Status = "Unhealthy";
+            }
 
-        #endregion
+            response.Components["requestHistory"] = Server.Settings.RequestHistory.Enabled ? "Enabled" : "Disabled";
+            await SendJsonAsync(ctx, response.Status == "Healthy" ? 200 : 503, response).ConfigureAwait(false);
+        }
     }
 }

@@ -1,0 +1,103 @@
+namespace MyMorningNews.Core.Enums
+{
+    /// <summary>
+    /// Security event type.
+    /// </summary>
+    public enum AuditEventTypeEnum
+    {
+        /// <summary>
+        /// Authentication succeeded.
+        /// </summary>
+        AuthSuccess,
+
+        /// <summary>
+        /// Authentication failed.
+        /// </summary>
+        AuthFailure,
+
+        /// <summary>
+        /// Session token issued.
+        /// </summary>
+        SessionIssued,
+
+        /// <summary>
+        /// Session token refreshed.
+        /// </summary>
+        SessionRefreshed,
+
+        /// <summary>
+        /// Session token revoked.
+        /// </summary>
+        SessionRevoked,
+
+        /// <summary>
+        /// Credential created.
+        /// </summary>
+        CredentialCreated,
+
+        /// <summary>
+        /// Credential used.
+        /// </summary>
+        CredentialUsed,
+
+        /// <summary>
+        /// Credential revoked or deleted.
+        /// </summary>
+        CredentialRevoked,
+
+        /// <summary>
+        /// Authorization denied.
+        /// </summary>
+        AuthorizationDenied,
+
+        /// <summary>
+        /// Authorization skipped by an administrative bypass.
+        /// </summary>
+        AuthorizationBypass,
+
+        /// <summary>
+        /// Role created, updated, or deleted.
+        /// </summary>
+        RoleChanged,
+
+        /// <summary>
+        /// Permission or role mapping changed.
+        /// </summary>
+        PermissionChanged,
+
+        /// <summary>
+        /// Role assignment changed.
+        /// </summary>
+        AssignmentChanged,
+
+        /// <summary>
+        /// User created, updated, or deleted.
+        /// </summary>
+        UserChanged,
+
+        /// <summary>
+        /// Tenant created, updated, or deleted.
+        /// </summary>
+        TenantChanged,
+
+        /// <summary>
+        /// Server settings changed.
+        /// </summary>
+        SettingsChanged,
+
+        /// <summary>
+        /// Server restart requested.
+        /// </summary>
+        RestartRequested,
+
+        /// <summary>
+        /// A stored vault credential was revealed.
+        /// </summary>
+        CredentialRevealed,
+
+        /// <summary>
+        /// A vault credential was created, rotated, or deleted.
+        /// </summary>
+        VaultCredentialChanged
+    }
+}

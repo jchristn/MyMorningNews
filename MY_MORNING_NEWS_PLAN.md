@@ -514,17 +514,20 @@ The auth tables follow `AUTHENTICATION.md` column for column: `tenants`, `users`
 | `prompttemplates` / `prompttemplateversions` | `key` (unique per tenant and topic scope), `topicid` (nullable override), `name`, `currentversion`; versions hold `version`, `content`, `changenote` |
 | `mediaassets` | `briefingid`, `kind` (BriefingAudio, PodcastEpisode), `status` (Queued, Scripting, Synthesizing, Ready, Failed), `filepath`, `contenttype`, `bytes`, `durationseconds`, `voiceprofileid`, `scriptmarkdown`, `errormessage` |
 | `mediachapters` | `mediaassetid`, `briefingsectionid`, `title`, `startseconds`, `endseconds` |
-| `voiceprofiles` | `name`, `provider`, `endpoint`, `voice`, `secondaryvoice` (two-host format), `speed`, `format`, `apikeyencrypted` |
+| `voiceprofiles` | `name`, `provider`, `endpoint`, `voice`, `secondaryvoice` (two-host format), `speed`, `format`, `credentialid` (vault reference) |
 | `feedtokens` | `userid`, `editionid` (nullable), `tokenhash`, `lastusedutc`, `revokedutc` |
 
 **Models, prompts in use, search providers**
 
 | Table | Columns |
 |-------|---------|
-| `modelendpoints` | `name`, `provider` (Anthropic, OpenAi, OpenAiCompatible, Ollama, Gemini, XAi, OllamaCloud, AzureOpenAi, VoyageAi, Tei), `endpoint`, `apikeyencrypted`, `apikeylast4`, `model`, `embeddingmodel`, `embeddingdimensions` (detected), `supportstools`, `supportschat`, `supportsembeddings`, `temperature` (nullable, omitted for Anthropic), `maxtokens`, `reasoningeffort`, `contextlength`, `timeoutms`, `inputcostpermtok`, `outputcostpermtok`, `lastvalidatedutc`, `lastvalidationresult` |
+| `modelendpoints` | `name`, `provider` (Anthropic, OpenAi, OpenAiCompatible, Ollama, Gemini, XAi, OllamaCloud, AzureOpenAi, VoyageAi, Tei), `endpoint`, `credentialid` (vault reference, section 15.1), `model`, `embeddingmodel`, `embeddingdimensions` (detected), `supportstools`, `supportschat`, `supportsembeddings`, `temperature` (nullable, omitted for Anthropic), `maxtokens`, `reasoningeffort`, `contextlength`, `timeoutms`, `inputcostpermtok`, `outputcostpermtok`, `lastvalidatedutc`, `lastvalidationresult` |
 | `modelassignments` | `task` (section 11.2), `topicid` (nullable means tenant default), `modelendpointid`, `modeloverride` |
 | `llmcalls` | `runid`, `refinementsessionid`, `briefingid`, `task`, `modelendpointid`, `model`, `prompttemplateversionid`, `inputtokens`, `outputtokens`, `durationms`, `success`, `statuscode`, `errormessage`, `structuredoutputrepairs`, `estimatedcostusd`, `prompttext`, `responsetext` |
-| `searchproviders` | `name`, `kind` (Searxng, Tavily, YouCom, HostedModelWebSearch, Rss, HackerNews, Arxiv), `endpoint`, `apikeyencrypted`, `enabled`, `isdefault`, `ratelimitperminute` |
+| `searchproviders` | `name`, `kind` (Searxng, Tavily, YouCom, HostedModelWebSearch, Rss, HackerNews, Arxiv), `endpoint`, `credentialid` (vault reference), `enabled`, `isdefault`, `ratelimitperminute` |
+| `vaultcredentials` | `name`, `kind` (ApiKey, BearerToken, BasicAuth, CustomHeader, ConnectionString), `provider` (Anthropic, OpenAi, Gemini, XAi, OllamaCloud, Tavily, YouCom, Mailgun, ElevenLabs, Mcp, Custom), `headername` (for CustomHeader), `username` (BasicAuth), `secretencrypted`, `secretlast4`, `description`, `lastusedutc`, `lastrevealedutc`, `expiresutc` |
+| `mcpservers` | `name`, `transport` (StreamableHttp, Sse), `url`, `credentialid` (vault reference, nullable), `extraheaderscredentialid` (nullable), `enabled`, `toolallowlist` (`TEXT[]`, empty means all), `lastdiscoveredutc`, `lastdiscoveryresult` |
+| `mcpservertools` | `mcpserverid`, `name`, `description`, `inputschemajson` (unmanaged: the server-provided JSON Schema, stored verbatim), `enabled` |
 
 **Email**
 
@@ -705,6 +708,26 @@ There is no cross-provider web search library in `~/Code`, so search is pluggabl
 **Fetch.** `IFetchService` uses CrawlSharp `WebCrawler` in single-page mode (`FollowLinks = false`, `IncludeSitemap = false`, robots respected, per-domain delay, timeout, size cap). The optional headless mode is off by default because Playwright adds hundreds of megabytes to the image. HTML is converted to Markdown with DocConverter and then trimmed of navigation boilerplate. Canonical URLs are normalized (scheme, host case, tracking parameters stripped, trailing slash) and hashed (SHA-256) for dedupe.
 
 ---
+
+### 15.1 Credential vault, MCP servers, and open models
+
+Open models (Ollama and other OpenAI-compatible servers) can call tools, but they have no built-in web search. Model-hosted search exists only on OpenAI, Azure OpenAI, and xAI endpoints. With an open model, research quality depends on a search service such as Tavily (or You.com, or the bundled SearXNG) and, optionally, on MCP servers that expose more tools. The README says this plainly in its model setup section.
+
+**Vault.** Every secret the tenant stores (model API keys, Tavily and You.com keys, Mailgun keys, ElevenLabs keys, MCP server tokens and headers) lives in one tenant-scoped `vaultcredentials` table. Values are encrypted with AES-256-GCM using the `credential-secret` key purpose. Model endpoints, search providers, voice profiles, MCP servers, and tenant email settings reference a vault entry by `credentialid` instead of holding keys inline, so a key can be rotated once and every consumer picks it up.
+
+**Reveal API.** `POST /v1.0/api/vault/credentials/{id}/reveal` returns the plaintext for a stored credential so you can copy it elsewhere or check what is configured.
+- **Access.** It requires `Admin` on `Credential` (tenant administrators pass) or ownership by the caller. It is rate-limited to 10 reveals per minute per user.
+- **Audit.** Every reveal writes a `CredentialRevealed` audit record (who, which credential, source IP) and updates `lastrevealedutc`.
+- **Response.** The plaintext is never cached. The response carries `Cache-Control: no-store`, and request-history capture redacts the response body for this route.
+- **Dashboard.** The reveal button opens a confirm modal, shows the value in a monospace field with copy, and hides it again after 30 seconds.
+
+All other reads return only `secretlast4`.
+
+**MCP servers.** The tenant registers remote MCP servers (Streamable HTTP or SSE URL, plus a vault credential for the `Authorization` header or a custom header). `POST /v1.0/api/mcp-servers/{id}/discover` connects with the Voltaic MCP client, lists tools, and stores them in `mcpservertools`, where each tool can be enabled or disabled. An optional allowlist narrows the tools a topic may use. stdio servers are not supported from the container, because the server cannot launch processes on your machine. They can be bridged through any stdio-to-HTTP proxy.
+
+**Agentic search mode.** When the role's model supports tools (`supportstools`), the `Search` and `Extract` stages can run as a bounded tool loop instead of the fixed query plan. The model gets `web_search` (backed by the topic's search providers), `fetch_url` (backed by `IFetchService`), and the enabled MCP tools. The loop is capped by `Pipeline.MaxToolCallsPerRun` (default 20) and logged call by call in `llmcalls` and a `runtoolcalls` table (tool, arguments summary, duration, outcome). Models without tool support use the fixed query plan.
+
+**Dashboard.** Configuration gains **Credentials** (`/dashboard/credentials-vault`: create, edit, rotate, reveal, delete, and where-used) and **MCP Servers** (`/dashboard/mcp-servers`: create, test, discover tools, toggle tools). Every form that needs a key (model endpoint, search provider, voice, email) offers a credential picker with "create new" inline.
 
 ## 16. The Research Pipeline
 
@@ -1008,6 +1031,8 @@ List endpoints share one contract: `pageNumber`, `pageSize`, `sortBy`, `sortDire
 | Templates | `/v1.0/api/briefing-templates` (CRUD and versions), `POST .../validate`, `POST .../preview`, `POST .../import`, `GET .../{id}/export` |
 | Media | `GET /v1.0/api/media/{id}` (Range), `POST /v1.0/api/briefings/{id}/audio` (regenerate), `/v1.0/api/voices` (CRUD and test) |
 | Search providers | `/v1.0/api/search-providers` (CRUD), `POST .../{id}/test` |
+| Vault | `/v1.0/api/vault/credentials` (CRUD, never returns plaintext), `POST .../{id}/reveal` (audited), `POST .../{id}/rotate`, `GET .../{id}/usage` |
+| MCP servers | `/v1.0/api/mcp-servers` (CRUD), `POST .../{id}/test`, `POST .../{id}/discover`, `PUT .../{id}/tools/{toolId}` |
 | Email | `GET /v1.0/api/email/messages`, `GET .../{id}`, `POST .../{id}/resend`, `DELETE`, `POST /v1.0/api/email/test`, `POST /v1.0/api/email/preview`, `GET/PUT /v1.0/api/email/preferences` |
 | Feeds | `/v1.0/api/feed-tokens` (CRUD); public `GET /v1.0/public/feeds/{token}/podcast.xml`, `GET /v1.0/public/feeds/{token}/media/{id}` |
 | Public feedback | `GET/POST /v1.0/public/feedback/{token}`, `GET/POST /v1.0/public/unsubscribe/{token}`, `GET /v1.0/public/assets/{name}` |
@@ -1098,6 +1123,8 @@ Written here before any code, as `DASHBOARD_STYLE_AND_USABILITY.md` requires. Al
 | Configuration | `/models` | Model endpoints and assignments | ModelEndpoint | model-endpoints, assignments | | Test, List models, Duplicate | "Add your first model" |
 | Configuration | `/prompts` and `/prompts/:key` | Edit prompts | Prompt | prompts | key, scope | editor, versions, diff, rollback, reset, Prompt lab | |
 | Configuration | `/search-providers` | Search providers | SearchProvider | search-providers | | Test query | |
+| Configuration | `/credentials-vault` | Store and reveal API keys and tokens | Credential | vault/credentials | kind, provider, last used | + Add, Edit, Rotate, Reveal (confirm, audited, auto-hide), Where used, Delete | "No stored credentials" with add CTA |
+| Configuration | `/mcp-servers` | Register MCP servers and their tools | ModelEndpoint | mcp-servers | enabled, transport | + Add, Test, Discover tools, toggle tools, Delete | "No MCP servers" |
 | Configuration | `/voices` | TTS voices | Voice | voices | | Test (plays sample) | |
 | Configuration | `/email` | Email outbox and preview | EmailMessage | email | status, template, recipient, topic, date | View, Resend, Delete, bulk delete, Send test | "No email sent yet" |
 | Observability | `/requests` (alias `/request-history`) | Request History | Admin | request-history | per frontend doc | per frontend doc | three distinct empty states |
@@ -1280,16 +1307,18 @@ Notes: ESLint is pinned to 9.x because `eslint-plugin-react` does not yet suppor
 
 ### Phase 1: Backend foundation
 
-- [ ] Settings classes, loader, validation, env overrides, and settings file in `docker/server/`.
-- [ ] `Bootstrapper`, `MyMorningNewsServer`, Preflight, PostRouting, exception handler, serializer, OpenAPI.
-- [ ] Database layer: `DatabaseSettings`, `DatabaseTypeEnum`, `DatabaseDriverBase`, `DatabaseDriverFactory`, `SchemaMigration`, Postgresql driver, migrations v1 (auth, audit, request history), seeding.
-- [ ] Auth: tokens, schemes, `AuthenticationService`, `AuthorizationService`, `OperationScopeMap`, effective permissions, audit, rate limiting.
-- [ ] Routes: Health, Token, Tenant, User, Credential, Role, Permission, Assignment, Audit, RequestHistory, Settings (read, write, restart), ServerInfo.
-- [ ] Request history capture, summary, prune.
-- [ ] Radiant telemetry plus Prometheus, Tempo, Loki, and Grafana in compose, with Overview and HTTP dashboards.
-- [ ] Suites: Identifiers, Settings, Migrations, Seeding, Tokens, Authentication, Authorization, TenantIsolation, Audit, RequestHistory, Tenants, Users, Credentials, Roles, Routes.
+- [x] Settings classes, loader, validation, env overrides, and settings file in `docker/server/`.
+- [x] `Bootstrapper`, `MyMorningNewsServer`, Preflight, PostRouting, exception handler, serializer, OpenAPI.
+- [x] Database layer: `DatabaseSettings`, `DatabaseTypeEnum`, `DatabaseDriverBase`, `DatabaseDriverFactory`, `SchemaMigration`, Postgresql driver, migrations v1 (auth, audit, request history), seeding.
+- [x] Auth: tokens, schemes, `AuthenticationService`, `AuthorizationService`, `OperationScopeMap`, effective permissions, audit, rate limiting.
+- [x] Routes: Health, Token, Tenant, User, Credential, Role, Permission, Assignment, Audit, RequestHistory, Settings (read, write, restart), ServerInfo.
+- [x] Request history capture, summary, prune.
+- [x] Radiant telemetry plus Prometheus, Tempo, Loki, and Grafana in compose, with Overview and HTTP dashboards.
+- [x] Suites: Identifiers, Settings, Migrations, Seeding, Tokens, Authentication, Authorization, TenantIsolation, Audit, RequestHistory, Tenants, Users, Credentials, Roles, Routes.
 
 Exit: sign in with the default credentials through Postman and curl, every admin route works, telemetry is visible in Grafana, and the suites are green in CI.
+
+Notes: 62 Touchstone cases pass on net8.0 and net10.0 (plus the xUnit fact and theory hosts). Entities are generated by `src/Tools/codegen` (models, filters, `I*Methods`, PostgreSQL implementations and queries), with hand-written domain methods added afterward (generator never overwrites existing files). Watson runs `PostRouting` after the response is sent, so CORS and `X-Request-Id` headers are set in `PreRouting`. Radiant serves the Prometheus scrape on `server:9464` inside the compose network (it cannot bind wildcards). Prometheus, Tempo, and Loki images get a static curl binary for cURL healthchecks. `REST_API.md` and the Postman collection are written in Phase 12 from the OpenAPI document plus hand-written examples; until then `/openapi.json` and the dashboard API Explorer are the reference.
 
 ### Phase 2: Dashboard foundation
 
@@ -1304,7 +1333,8 @@ Exit: every Phase 1 capability can be operated from the dashboard in both themes
 
 ### Phase 3: Models and prompts
 
-- [ ] Model endpoints (CRUD, encryption, validate, list models, test), assignments, `ModelGateway`, structured-output strategy, `llmcalls`.
+- [ ] Credential vault (CRUD, rotate, audited reveal API, where-used) and the dashboard Credentials page with reveal. Model endpoints reference vault credentials.
+- [ ] Model endpoints (CRUD, validate, list models, test, tool-support probe), assignments, `ModelGateway`, structured-output strategy, `llmcalls`.
 - [ ] Prompt templates with defaults for every key in section 12, renderer, validation, versions, rollback, reset, topic overrides, Prompt lab.
 - [ ] `StubModelServer`.
 - [ ] Dashboard: Models, Prompts (editor, diff, lab), Usage page shell.
@@ -1324,7 +1354,8 @@ Exit: "I want to learn about AI developer tools" produces dimensions, at least t
 ### Phase 5: Schedules, search, and fetch
 
 - [ ] `ScheduleCalculator`, schedules and schedule times, the preview endpoint, `SchedulerWorker`, `RunWorker` queue.
-- [ ] Search providers (SearXNG container with curl, Tavily or You.com, hosted model search, RSS, Hacker News, arXiv), `FetchService` with CrawlSharp and DocConverter, canonicalization.
+- [ ] MCP server registry (Voltaic client, discovery, tool toggles) and the agentic search mode for tool-capable models (`web_search`, `fetch_url`, MCP tools; capped and logged).
+- [ ] Search providers (SearXNG container with curl, Tavily or You.com via Mux.Search with vault credentials, hosted model search, RSS, Hacker News, arXiv), `FetchService` with CrawlSharp and DocConverter, canonicalization.
 - [ ] Dashboard: `ScheduleEditor` with next-runs preview, Search Providers page, topic Schedule and Sources tabs.
 - [ ] Suites: ScheduleCalculator, Scheduler, Search, Fetch.
 
@@ -1446,3 +1477,4 @@ No open questions remain.
 |------|-------|--------|-------|
 | 2026-11-19 | Plan | Done | Plan written, all questions answered, repository initialized with `origin`. |
 | 2026-11-19 | 0 | Done | Solution (Core, Server, McpServer placeholder, Test.Shared, Test.Automated, Test.Xunit3), minimal Watson host with health, OpenAPI, CORS. Dashboard scaffold (React 19, Vite 8, ESLint 9, Vitest). Icons from glyph.png. Compose stack (postgres, server, dashboard) healthy. CI workflows. README, DOCKERHUB_README, CLAUDE.md. |
+| 2026-11-19 | 1 | Done | Settings with live and restart-required metadata, PostgreSQL driver and migrations, AAA (tokens, sessions, credentials, admin key, RBAC with built-in roles, effective permissions, audit), request history with gap-filled summaries, control-plane routes, telemetry (Radiant, Prometheus, Tempo, Loki, Grafana with Overview and HTTP dashboards). 62 tests passing. Plan amended with the credential vault, reveal API, and MCP server registry (section 15.1). |

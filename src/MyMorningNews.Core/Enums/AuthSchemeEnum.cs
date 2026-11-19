@@ -1,0 +1,48 @@
+namespace MyMorningNews.Core.Enums
+{
+    /// <summary>
+    /// Authentication scheme.
+    /// </summary>
+    public enum AuthSchemeEnum
+    {
+        /// <summary>
+        /// Authorization: Bearer session token.
+        /// </summary>
+        BearerToken,
+
+        /// <summary>
+        /// x-token session token header.
+        /// </summary>
+        XToken,
+
+        /// <summary>
+        /// x-email, x-password, x-tenant-guid login headers.
+        /// </summary>
+        PasswordHeaders,
+
+        /// <summary>
+        /// x-access-key and x-secret-key headers.
+        /// </summary>
+        AccessKeySecret,
+
+        /// <summary>
+        /// Signed request with x-access-key and x-signature.
+        /// </summary>
+        AccessKeySignature,
+
+        /// <summary>
+        /// x-api-key system administration key.
+        /// </summary>
+        AdminApiKey,
+
+        /// <summary>
+        /// Tokenized email feedback link.
+        /// </summary>
+        EmailActionToken,
+
+        /// <summary>
+        /// Tokenized podcast feed URL.
+        /// </summary>
+        FeedToken
+    }
+}

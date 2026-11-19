@@ -18,7 +18,13 @@ namespace Test.Shared
             {
                 return new List<TestSuiteDescriptor>
                 {
-                    HealthSuite.Create()
+                    SecuritySuite.Create(),
+                    SettingsSuite.Create(),
+                    DatabaseSuite.Create(),
+                    AuthenticationSuite.Create(),
+                    AuthorizationSuite.Create(),
+                    ResourceSuite.Create(),
+                    ObservabilitySuite.Create()
                 };
             }
         }

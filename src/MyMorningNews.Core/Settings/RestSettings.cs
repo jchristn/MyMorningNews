@@ -13,6 +13,7 @@ namespace MyMorningNews.Core.Settings
         /// Hostname or address to bind. Default 127.0.0.1. Use 0.0.0.0 inside containers.
         /// </summary>
         /// <exception cref="ArgumentNullException">Value is null or empty.</exception>
+        [Setting(Description = "Hostname or address to bind.", RestartRequired = true, EnvironmentVariable = "REST_HOSTNAME")]
         public string Hostname
         {
             get
@@ -29,6 +30,7 @@ namespace MyMorningNews.Core.Settings
         /// <summary>
         /// TCP port. Default 8000. Minimum 1, maximum 65535.
         /// </summary>
+        [Setting(Description = "TCP port.", RestartRequired = true, EnvironmentVariable = "REST_PORT", Minimum = 1, Maximum = 65535)]
         public int Port
         {
             get
@@ -44,12 +46,14 @@ namespace MyMorningNews.Core.Settings
         /// <summary>
         /// Whether TLS is enabled. Default false.
         /// </summary>
+        [Setting(Description = "Enable TLS.", RestartRequired = true)]
         public bool Ssl { get; set; } = false;
 
         /// <summary>
         /// Value of the Access-Control-Allow-Origin response header. Default "*".
         /// </summary>
         /// <exception cref="ArgumentNullException">Value is null or empty.</exception>
+        [Setting(Description = "Access-Control-Allow-Origin value.")]
         public string CorsAllowedOrigins
         {
             get

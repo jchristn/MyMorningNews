@@ -1,0 +1,102 @@
+namespace MyMorningNews.Core.Security
+{
+    using System;
+    using System.Collections.Generic;
+    using MyMorningNews.Core.Enums;
+
+    /// <summary>
+    /// Single source of truth mapping each request type to the permission it requires. Adding a request type without
+    /// a mapping fails at startup (see <see cref="Validate"/>).
+    /// </summary>
+    public static class OperationScopeMap
+    {
+        #region Private-Members
+
+        private static readonly Dictionary<RequestTypeEnum, RequiredPermission> _Map = new Dictionary<RequestTypeEnum, RequiredPermission>
+        {
+            { RequestTypeEnum.Unknown, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
+            { RequestTypeEnum.HealthRead, new RequiredPermission(ResourceTypeEnum.All, OperationTypeEnum.Read, anonymous: true) },
+            { RequestTypeEnum.TokenCreate, new RequiredPermission(ResourceTypeEnum.Session, OperationTypeEnum.Create, anonymous: true) },
+            { RequestTypeEnum.TokenRead, new RequiredPermission(ResourceTypeEnum.Session, OperationTypeEnum.Read, anyAuthenticated: true) },
+            { RequestTypeEnum.TokenRefresh, new RequiredPermission(ResourceTypeEnum.Session, OperationTypeEnum.Update, anyAuthenticated: true) },
+            { RequestTypeEnum.TokenDelete, new RequiredPermission(ResourceTypeEnum.Session, OperationTypeEnum.Delete, anyAuthenticated: true) },
+            { RequestTypeEnum.TenantRead, new RequiredPermission(ResourceTypeEnum.Tenant, OperationTypeEnum.Read) },
+            { RequestTypeEnum.TenantWrite, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
+            { RequestTypeEnum.TenantDelete, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
+            { RequestTypeEnum.UserRead, new RequiredPermission(ResourceTypeEnum.User, OperationTypeEnum.Read) },
+            { RequestTypeEnum.UserWrite, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
+            { RequestTypeEnum.UserDelete, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
+            { RequestTypeEnum.UserSelfRead, new RequiredPermission(ResourceTypeEnum.User, OperationTypeEnum.Read, anyAuthenticated: true) },
+            { RequestTypeEnum.UserSelfWrite, new RequiredPermission(ResourceTypeEnum.User, OperationTypeEnum.Update, anyAuthenticated: true) },
+            { RequestTypeEnum.CredentialRead, new RequiredPermission(ResourceTypeEnum.Credential, OperationTypeEnum.Read) },
+            { RequestTypeEnum.CredentialWrite, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
+            { RequestTypeEnum.CredentialDelete, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
+            { RequestTypeEnum.RoleRead, new RequiredPermission(ResourceTypeEnum.Role, OperationTypeEnum.Read) },
+            { RequestTypeEnum.RoleWrite, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
+            { RequestTypeEnum.RoleDelete, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
+            { RequestTypeEnum.PermissionRead, new RequiredPermission(ResourceTypeEnum.Permission, OperationTypeEnum.Read) },
+            { RequestTypeEnum.PermissionWrite, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
+            { RequestTypeEnum.PermissionDelete, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
+            { RequestTypeEnum.AssignmentRead, new RequiredPermission(ResourceTypeEnum.Assignment, OperationTypeEnum.Read) },
+            { RequestTypeEnum.AssignmentWrite, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
+            { RequestTypeEnum.AssignmentDelete, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
+            { RequestTypeEnum.EffectivePermissionRead, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
+            { RequestTypeEnum.AuditRead, new RequiredPermission(ResourceTypeEnum.Audit, OperationTypeEnum.Read) },
+            { RequestTypeEnum.AuditDelete, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
+            { RequestTypeEnum.RequestHistoryRead, new RequiredPermission(ResourceTypeEnum.RequestHistory, OperationTypeEnum.Read) },
+            { RequestTypeEnum.RequestHistoryDelete, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
+            { RequestTypeEnum.SettingsRead, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
+            { RequestTypeEnum.SettingsWrite, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
+            { RequestTypeEnum.ServerRestart, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
+            { RequestTypeEnum.ServerInfoRead, new RequiredPermission(ResourceTypeEnum.All, OperationTypeEnum.Read, anyAuthenticated: true) },
+        };
+
+        #endregion
+
+        #region Public-Methods
+
+        /// <summary>
+        /// Required permission for a request type.
+        /// </summary>
+        /// <param name="requestType">Request type.</param>
+        /// <returns>Required permission.</returns>
+        /// <exception cref="KeyNotFoundException">The request type has no mapping.</exception>
+        public static RequiredPermission Get(RequestTypeEnum requestType)
+        {
+            if (_Map.TryGetValue(requestType, out RequiredPermission? required)) return required;
+            throw new KeyNotFoundException("Request type " + requestType + " has no permission mapping in OperationScopeMap.");
+        }
+
+        /// <summary>
+        /// Register or replace a mapping. Used by feature modules added in later phases.
+        /// </summary>
+        /// <param name="requestType">Request type.</param>
+        /// <param name="required">Required permission.</param>
+        /// <exception cref="ArgumentNullException">required is null.</exception>
+        public static void Register(RequestTypeEnum requestType, RequiredPermission required)
+        {
+            ArgumentNullException.ThrowIfNull(required);
+            lock (_Map)
+            {
+                _Map[requestType] = required;
+            }
+        }
+
+        /// <summary>
+        /// Verify every request type has a mapping.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">At least one request type is unmapped.</exception>
+        public static void Validate()
+        {
+            List<string> missing = new List<string>();
+            foreach (RequestTypeEnum value in Enum.GetValues<RequestTypeEnum>())
+            {
+                if (!_Map.ContainsKey(value)) missing.Add(value.ToString());
+            }
+
+            if (missing.Count > 0) throw new InvalidOperationException("Request types without permission mappings: " + String.Join(", ", missing));
+        }
+
+        #endregion
+    }
+}

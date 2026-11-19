@@ -30,8 +30,15 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      tempo:
+        condition: service_healthy
+      loki:
+        condition: service_healthy
     environment:
       MYMORNINGNEWS_SETTINGS_FILE: /app/config/mymorningnews.json
+      MYMORNINGNEWS_TELEMETRY_OTLP_ENDPOINT: http://tempo:4317
+      MYMORNINGNEWS_TELEMETRY_LOKI_ENDPOINT: http://loki:3100
+      MYMORNINGNEWS_TELEMETRY_PROMETHEUS_HOSTNAME: server
       MYMORNINGNEWS_DB_SERVER: postgres
       MYMORNINGNEWS_DB_PORT: "5432"
       MYMORNINGNEWS_DB_DATABASE: mymorningnews
@@ -68,5 +75,99 @@ services:
       timeout: 5s
       retries: 2
 
+  prometheus:
+    build:
+      context: ./prometheus
+    image: mymorningnews/prometheus:local
+    container_name: mymorningnews-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+    ports:
+      - "127.0.0.1:12111:9090"
+    volumes:
+      - ./prometheus/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
+      - prometheus:/prometheus
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9090/-/healthy"]
+      interval: 5s
+      timeout: 5s
+      retries: 2
+
+  tempo:
+    build:
+      context: ./tempo
+    image: mymorningnews/tempo:local
+    container_name: mymorningnews-tempo
+    restart: unless-stopped
+    user: "0"
+    command: ['-config.file=/etc/tempo/tempo.yaml']
+    ports:
+      - "127.0.0.1:12112:3200"
+      - "127.0.0.1:12113:4317"
+      - "127.0.0.1:12114:4318"
+    volumes:
+      - ./tempo/tempo.yaml:/etc/tempo/tempo.yaml:ro
+      - tempo:/var/tempo
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:3200/ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 2
+      start_period: 20s
+
+  loki:
+    build:
+      context: ./loki
+    image: mymorningnews/loki:local
+    container_name: mymorningnews-loki
+    restart: unless-stopped
+    command: ['-config.file=/etc/loki/loki.yaml']
+    ports:
+      - "127.0.0.1:12115:3100"
+    volumes:
+      - ./loki/loki.yaml:/etc/loki/loki.yaml:ro
+      - loki:/loki
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:3100/ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 2
+      start_period: 20s
+
+  grafana:
+    image: grafana/grafana-oss:13.0.2
+    container_name: mymorningnews-grafana
+    restart: unless-stopped
+    depends_on:
+      prometheus:
+        condition: service_healthy
+      tempo:
+        condition: service_healthy
+      loki:
+        condition: service_healthy
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+    ports:
+      - "127.0.0.1:12110:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana:/var/lib/grafana
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:3000/api/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 2
+      start_period: 20s
+
 volumes:
   pgdata:
+  prometheus:
+  tempo:
+  loki:
+  grafana:

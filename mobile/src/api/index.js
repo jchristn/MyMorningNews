@@ -12,8 +12,24 @@ export {
   isNetworkError,
   isSessionExpired,
   fieldErrors,
+  isModelError,
+  isConflict,
 } from './errors';
 export { routes } from './routes';
 export { authApi } from './auth';
 export { accountApi, serverApi, devicesApi } from './account';
-export { topicsApi, refinementApi, briefingsApi, editionsApi, findingsApi, predictionsApi, suggestionsApi, requestsApi, feedbackApi, insightsApi } from './research';
+export {
+  topicsApi,
+  refinementApi,
+  requestsApi,
+  schedulesApi,
+  runsApi,
+  findingsApi,
+  sourcesApi,
+  predictionsApi,
+  suggestionsApi,
+  briefingsApi,
+  editionsApi,
+  feedbackApi,
+  insightsApi,
+} from './research';

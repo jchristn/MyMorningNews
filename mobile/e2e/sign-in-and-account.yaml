@@ -55,8 +55,9 @@ env:
 - assertVisible: "Latest briefing"
 - takeScreenshot: 02-today
 - tapOn: "Briefings.*"
-- assertVisible: "Briefings will be available after a later server update."
-- takeScreenshot: 03-briefings-not-available
+- assertVisible:
+    id: "briefings-screen"
+- takeScreenshot: 03-briefings
 - tapOn: "Listen.*"
 - takeScreenshot: 04-listen
 - tapOn: "Topics.*"

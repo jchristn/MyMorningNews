@@ -1,3 +1,3 @@
-import { NewTopicScreen } from '@/screens/topics/TopicsScreens';
+import { WizardScreen } from '@/screens/topics/WizardScreen';
 
-export default NewTopicScreen;
+export default WizardScreen;

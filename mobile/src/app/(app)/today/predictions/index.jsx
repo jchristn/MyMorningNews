@@ -1,3 +1,3 @@
-import { PredictionsScreen } from '@/screens/today/TodayScreens';
+import { PredictionsScreen } from '@/screens/research/PredictionScreens';
 
 export default PredictionsScreen;

@@ -1,3 +1,3 @@
-import { SuggestionsScreen } from '@/screens/today/TodayScreens';
+import { SuggestionsScreen } from '@/screens/research/SuggestionsScreen';
 
 export default SuggestionsScreen;

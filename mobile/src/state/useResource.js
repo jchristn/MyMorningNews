@@ -3,7 +3,9 @@ import { isItemNotFound, isNotAvailable } from '@/api/errors';
 
 /**
  * Load data for a screen. Status is `loading`, `ready`, `error`, `notAvailable` (the route does not exist on this
- * server yet), or `notFound` (the route exists but the item does not). `reload()` refetches and sets `refreshing` while the old data stays visible.
+ * server yet), or `notFound` (the route exists but the item does not). `reload()` refetches and sets `refreshing` while
+ * the old data stays visible; `poll()` refetches without the refresh indicator (status polling); `setData(next)`
+ * replaces the data after an action returned the new state (a value or an updater function).
  *
  * @param {() => Promise<any>} loader Called on mount and whenever `deps` change.
  * @param {any[]} deps
@@ -16,15 +18,16 @@ export function useResource(loader, deps) {
   const load = useCallback(loader, deps);
 
   const run = useCallback(
-    async (refreshing) => {
+    async (mode) => {
       const mine = ++generation.current;
-      setState((s) => (refreshing ? { ...s, refreshing: true } : { status: 'loading', data: null, error: null, refreshing: false }));
+      if (mode === 'refresh') setState((s) => ({ ...s, refreshing: true }));
+      else if (!mode) setState({ status: 'loading', data: null, error: null, refreshing: false });
       try {
         const data = await load();
         if (alive.current && mine === generation.current) setState({ status: 'ready', data, error: null, refreshing: false });
       } catch (error) {
         if (!alive.current || mine !== generation.current) return;
-        setState((s) => ({ status: isNotAvailable(error) ? 'notAvailable' : isItemNotFound(error) ? 'notFound' : 'error', data: refreshing ? s.data : null, error, refreshing: false }));
+        setState((s) => ({ status: isNotAvailable(error) ? 'notAvailable' : isItemNotFound(error) ? 'notFound' : 'error', data: mode ? s.data : null, error, refreshing: false }));
       }
     },
     [load],
@@ -32,12 +35,17 @@ export function useResource(loader, deps) {
 
   useEffect(() => {
     alive.current = true;
-    void run(false);
+    void run(null);
     return () => {
       alive.current = false;
     };
   }, [run]);
 
-  const reload = useCallback(() => run(true), [run]);
-  return { ...state, reload };
+  const reload = useCallback(() => run('refresh'), [run]);
+  const poll = useCallback(() => run('silent'), [run]);
+  const setData = useCallback((next) => {
+    generation.current += 1;
+    setState((s) => ({ ...s, status: 'ready', error: null, data: typeof next === 'function' ? next(s.data) : next }));
+  }, []);
+  return { ...state, reload, poll, setData };
 }

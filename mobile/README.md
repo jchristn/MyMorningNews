@@ -38,7 +38,8 @@ emulators, and free personal-team signing are in [docs/MOBILE_DEVICE_TESTING.md]
 | Profile and usage | `GET/PUT /v1.0/api/me`, `PUT /v1.0/api/me/password`, `GET /v1.0/api/usage/me` (cost, calls, tokens, by task or model, drawn with react-native-svg). |
 | Push | `POST /v1.0/api/devices` with the Expo push token, platform, name, and locale (contract C); `GET` lists devices, `DELETE /devices/{id}` removes one (also on sign-out), `POST /devices/{id}/test` sends a test. The permission prompt appears only from Account > Notifications. Taps route by `{ kind, briefingId \| topicId \| predictionId }`. Android channels: `briefings`, `predictions`, `account`. |
 | Links | `mymorningnews://briefings/{id}` and `https://app.mymorningnews.ai/briefings/{id}` (also `/dashboard/...`, topics, predictions, findings, suggestions, insights, account) map to screens in `src/lib/deepLinks.js`, applied by `src/app/+native-intent.js`. iOS associated domain `applinks:app.mymorningnews.ai`; Android `autoVerify` intent filters. |
-| Planned routes | Topics, refinement sessions, briefings, editions, findings, predictions, suggestions, feedback, analytics, media, briefing progress, sign-up, password reset, account delete and export: called as plan section 24 describes, and degrade until their phase lands. |
+| Research (Phases 4 to 7) | Topics with dimensions and constraints, the refinement wizard, one-time requests, schedules (with `POST /v1.0/api/schedules/preview`), runs with stages, queries, and results, findings with evidence, sources, predictions with reviews, suggestions, briefings (read, pin, regenerate, download `.md` and `.html`), and editions (edit, topics, compose, preview): `src/api/research.js`. Model-backed steps (wizard generation, request planning) answer `502 ModelError` without a model key; screens say so and offer the manual path (`ActionError` in `src/components/states.jsx`). |
+| Planned routes | Feedback, analytics, learned preferences, media, briefing progress, sign-up, password reset, account delete and export: called as plan section 24 describes, and degrade until their phase lands. |
 
 ## Audio player
 
@@ -69,8 +70,19 @@ empty module in release bundles (`metro.config.js`), so it never ships.
 ## Layout
 
 Phones use five tabs (Today, Listen, Topics, Insights, Account), each a stack. Tablets and windows 768 points and
-wider show split views (the briefing, finding, prediction, and topic lists beside their detail, and the Account menu
-beside the chosen section) and keep the mini player as a persistent bar above the tabs. Light and dark themes follow
+wider show split views (the briefing, finding, prediction, request, topic, and edition lists beside their detail, and
+the Account menu beside the chosen section) and keep the mini player as a persistent bar above the tabs.
+
+- **Today:** the latest ready edition briefing, Compose now with status polling, recent topic run briefings, one-time
+  requests (list, new, detail with questions, confirm, cancel, make recurring), and links to briefings, findings,
+  predictions, and suggestions.
+- **Briefing reader:** Markdown parsed by `src/lib/markdown.js` into native Text and View elements (no WebView and no
+  HTML, so briefing content cannot run anything; links open only for http, https, and mailto), section navigation,
+  citation numbers that jump to the Sources section, the findings and predictions it cites, pin, and share or save the
+  `.md` and `.html` files through the share sheet (`src/lib/briefingFiles.js`).
+- **Topics:** the list, the compact wizard (Describe, Dimensions, Questions, Brief, Review; `src/lib/wizard.js`), and the
+  workspace with Overview, Findings, Runs, Sources, and Schedule tabs; run detail with stages, totals, and a
+  hand-rolled SVG stage chart; editions with settings, topics in order, schedule, Compose now, and Preview. Light and dark themes follow
 the system unless chosen under Account > Appearance; the tokens mirror the dashboard's palette (`src/theme/palette.js`).
 
 Accessibility: every control has a label, text scales with Dynamic Type and the Android font size (up to 2x), touch
@@ -118,6 +130,11 @@ app calls arrives with its plan phase; see `parity.json` for the route list. Gap
 | `/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json` on `app.mymorningnews.ai` | Universal links (section 33.3) need the Apple team id and the Android signing certificate fingerprint. |
 | A distinct error code for unknown routes (for example `RouteNotFound`) | The app tells "not on this server yet" from "this item does not exist" by whether a 404 carries a `requestId` (the server's default handler omits it). An explicit code would make that robust. |
 | `minimumAppVersion` enforcement | The value arrives in client config; the app does not block old versions yet. |
+| Titles on briefing items (`items[].title`, or a `GET /v1.0/api/suggestions/{id}`) | The reader links to the findings, predictions, and suggestions a briefing cites, but items carry only type and ID, so the app reads each finding and prediction (up to 20) for its title, and suggestions have no read route. |
+| A "mine" filter on editions, briefings, and topics for administrators | Administrators list every user's editions; Today keeps the signed-in user's own by `userId` on the client. |
+| The request ID on a failed `POST /v1.0/api/requests` | Planning failures (502 ModelError) still save the request, but the error does not name it; the app finds it by listing the newest request with the same text. |
+| `editionName` and `topicName` on briefing list items, and a schedule summary on topics | Lists show the date and kind only; the dashboard columns (edition, schedule) need an extra read per row. |
+| One field name for briefing audio | Briefings carry `mediaAssetId`; the player reads `mediaId` (see the audio rows above). Phase 8 should settle the name. |
 
 ## Builds, updates, and stores
 
@@ -173,7 +190,7 @@ mobile/
     |-- charts/               hand-rolled react-native-svg bar chart and its layout math
     |-- components/           UI primitives, states, split view, lock gate, Markdown, feedback bar, player UI
     |-- i18n/                 locales, ICU catalogs (mobile.*), pseudo-locales, runtime
-    |-- lib/                  deep links, formatters
+    |-- lib/                  deep links, formatters, Markdown parser, schedules, wizard steps, enums, briefing files
     |-- player/               state machine, PlayerService (expo-audio), progress, downloads, test tone
     |-- push/                 registration, channels, notification taps
     |-- screens/              screens per tab (route files under app/ re-export them)

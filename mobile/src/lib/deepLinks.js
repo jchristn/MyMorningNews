@@ -76,9 +76,15 @@ export function mapDeepLink(input) {
       return '/today/suggestions';
     case 'topics':
       if (second === 'new') return '/topics/new';
+      if (second && third === 'refine') return '/topics/new?topicId=' + enc(second);
       return second ? '/topics/' + enc(second) : '/topics';
     case 'editions':
-      return '/topics/editions';
+      return second ? '/topics/editions/' + enc(second) : '/topics/editions';
+    case 'runs':
+      return second ? '/topics/runs/' + enc(second) : '/topics';
+    case 'one-time':
+      if (second === 'new') return '/today/new-request';
+      return second ? '/today/requests/' + enc(second) : '/today/requests';
     case 'listen':
     case 'podcast':
       return '/listen';

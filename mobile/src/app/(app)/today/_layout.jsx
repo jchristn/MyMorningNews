@@ -15,6 +15,9 @@ export default function TodayLayout() {
         'predictions/index': t('mobile.predictions.title'),
         'predictions/[predictionId]': t('mobile.predictions.detail'),
         'suggestions/index': t('mobile.suggestions.title'),
+        'requests/index': t('mobile.requests.title'),
+        'requests/[requestId]': t('mobile.requests.detail'),
+        'new-request': t('mobile.requests.new'),
       }}
     />
   );

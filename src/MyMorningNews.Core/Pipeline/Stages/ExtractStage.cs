@@ -98,7 +98,7 @@ namespace MyMorningNews.Core.Pipeline.Stages
             MyMorningNewsTelemetry.Add(MyMorningNewsTelemetry.EvidenceQuotes, verified, "outcome", "verified");
             MyMorningNewsTelemetry.Add(MyMorningNewsTelemetry.EvidenceQuotes, quotes - verified, "outcome", "unverified");
             if (ctx.Sources.Count > 0 && failures == ctx.Sources.Count) throw new InvalidOperationException("Extraction failed for every source: " + lastError);
-            string? note = quotes > verified ? (quotes - verified) + " of " + quotes + " quotes could not be verified and were dropped." : null;
+            string? note = quotes > verified ? (quotes - verified) + " of " + quotes + " quotes could not be verified and were dropped." : (quotes > 0 ? "All " + quotes + " quotes verified." : null);
             return StageOutcome.Of(ctx.Sources.Count, ctx.Candidates.Count, note);
         }
     }

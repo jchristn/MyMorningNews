@@ -166,6 +166,16 @@ namespace MyMorningNews.Core.Settings
             set { _Email = value ?? throw new ArgumentNullException(nameof(Email)); }
         }
 
+        /// <summary>
+        /// Learning from feedback.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Value is null.</exception>
+        public LearningSettings Learning
+        {
+            get { return _Learning; }
+            set { _Learning = value ?? throw new ArgumentNullException(nameof(Learning)); }
+        }
+
         #endregion
 
         #region Private-Members
@@ -185,6 +195,7 @@ namespace MyMorningNews.Core.Settings
         private SearchSettings _Search = new SearchSettings();
         private TtsSettings _Tts = new TtsSettings();
         private EmailSettings _Email = new EmailSettings();
+        private LearningSettings _Learning = new LearningSettings();
 
         #endregion
     }

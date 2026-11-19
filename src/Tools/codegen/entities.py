@@ -1054,6 +1054,55 @@ ENTITIES = [
             f('IsCurrent', 'bool', doc='The newest rating for this user and item.', default=True, filter=True),
         ],
     },
+
+    # ------------------------------------------------------------------ Phase 10: learning
+    {
+        'name': 'LearnedPreference', 'table': 'learnedpreferences', 'prefix': 'lrn_',
+        'doc': 'A preference the research agent follows: written by the reader or distilled from feedback and approved.',
+        'fields': [
+            f('UserId', doc='Owner.', required=True, length=64, filter=True),
+            f('TopicId', doc='Topic, or null for all of the owner topics.', nullable=True, length=64, filter=True),
+            f('Kind', 'enum:PreferenceKindEnum', doc='Kind.', default='Prefer', filter=True),
+            f('Statement', 'text', doc='The preference, as an instruction.', required=True, search=True),
+            f('Status', 'enum:PreferenceStatusEnum', doc='Status.', default='Proposed', filter=True),
+            f('Origin', 'enum:PreferenceOriginEnum', doc='Distilled from feedback or written by the reader.', default='User', filter=True),
+            f('SupportCount', 'int', doc='Feedback items that support it.', default=0),
+            f('Confidence', 'double', doc='Confidence (0 to 1).', default=0.5, clamp=(0.0, 1.0)),
+            f('LastEvidenceUtc', 'datetime', doc='Newest supporting feedback.', nullable=True),
+            f('DecidedUtc', 'datetime', doc='When it was accepted, rejected, or disabled.', nullable=True),
+        ],
+    },
+    {
+        'name': 'LearnedPreferenceFeedback', 'table': 'learnedpreferencefeedback', 'prefix': 'lpf_',
+        'doc': 'A feedback item that supports a learned preference.',
+        'uniques': [['learnedpreferenceid', 'feedbackid']],
+        'fields': [
+            f('LearnedPreferenceId', doc='Preference.', required=True, length=64, filter=True),
+            f('FeedbackId', doc='Feedback.', required=True, length=64, filter=True),
+        ],
+    },
+    {
+        'name': 'FeedbackReasonTag', 'table': 'feedbackreasontags', 'prefix': 'frt_',
+        'doc': 'A reusable theme tagged onto a feedback reason (for example "too basic").',
+        'uniques': [['feedbackid', 'tag']],
+        'fields': [
+            f('FeedbackId', doc='Feedback.', required=True, length=64, filter=True),
+            f('TopicId', doc='Topic.', nullable=True, length=64, filter=True),
+            f('Tag', doc='Tag (lowercase, 2 to 4 words).', required=True, length=64, filter=True),
+        ],
+    },
+    {
+        'name': 'LearningCheckpoint', 'table': 'learningcheckpoints', 'prefix': 'lcp_',
+        'doc': 'Where the learning worker last stopped for a user and topic.',
+        'uniques': [['tenantid', 'userid', 'topicid']],
+        'fields': [
+            f('UserId', doc='User.', required=True, length=64, filter=True),
+            f('TopicId', doc='Topic.', required=True, length=64, filter=True),
+            f('LastFeedbackUtc', 'datetime', doc='Newest feedback considered.', nullable=True),
+            f('LastRunUtc', 'datetime', doc='Last learning pass.', nullable=True),
+            f('Proposed', 'int', doc='Preferences proposed in total.', default=0),
+        ],
+    },
 ]
 
 # Prefixes for identifiers that are not codegen entities.
@@ -1097,6 +1146,10 @@ ENUMS = [
     ('AccuracyRatingEnum', 'Accuracy rating.', [('Accurate', 'Came true.'), ('PartiallyAccurate', 'Partly came true.'), ('Inaccurate', 'Did not come true.'), ('TooEarly', 'Too early to tell.')]),
     ('UsefulnessRatingEnum', 'Usefulness rating.', [('Useful', 'Useful.'), ('NotUseful', 'Not useful.')]),
     ('FeedbackChannelEnum', 'Where feedback came from.', [('Dashboard', 'Web app.'), ('Email', 'Email link.'), ('Mobile', 'Mobile app.'), ('Api', 'API or SDK.')]),
+    ('PreferenceKindEnum', 'Kind of learned preference.', [('Prefer', 'Prefer this kind of item.'), ('Avoid', 'Avoid this kind of item.'), ('PreferSource', 'Prefer this source.'),
+        ('AvoidSource', 'Avoid this source.'), ('StyleNote', 'How to write for the reader.')]),
+    ('PreferenceStatusEnum', 'Learned preference status.', [('Proposed', 'Waiting for the reader.'), ('Active', 'In use.'), ('Rejected', 'Dismissed.'), ('Disabled', 'Turned off.')]),
+    ('PreferenceOriginEnum', 'Where a preference came from.', [('Distilled', 'Distilled from feedback.'), ('User', 'Written by the reader.')]),
     ('DedupeVerdictEnum', 'Duplicate judgment.', [('Duplicate', 'Same thing.'), ('Update', 'Adds a material fact to an earlier finding.'), ('Different', 'Different.')]),
     ('IntervalTypeEnum', 'Schedule interval type.', [('EveryNMinutes', 'Every n minutes.'), ('EveryNHours', 'Every n hours.'), ('EveryNDays', 'Every n days at times of day.'),
         ('EveryNWeeks', 'Every n weeks on days of week at times of day.'), ('DaysOfWeek', 'On days of week at times of day.'), ('DaysOfMonth', 'On days of month at times of day.'),
@@ -1246,6 +1299,8 @@ ENUMS = [
         ('FeedTokenRead', 'List my podcast feed tokens.'), ('FeedTokenWrite', 'Create or revoke podcast feed tokens.'),
         ('EmailRead', 'Read the email outbox.'), ('EmailWrite', 'Resend, delete, or test email.'),
         ('FeedbackRead', 'Read feedback.'), ('FeedbackWrite', 'Give feedback.'),
+        ('PreferenceRead', 'Read learned preferences.'), ('PreferenceWrite', 'Write, accept, reject, or disable learned preferences.'),
+        ('AnalyticsRead', 'Read relevance, accuracy, feedback, and suggestion analytics.'),
         ('ResearchRequestRead', 'Read one-time requests.'), ('ResearchRequestWrite', 'Create, confirm, or convert one-time requests.'), ('ResearchRequestDelete', 'Delete one-time requests.'),
     ]),
 ]

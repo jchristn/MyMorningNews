@@ -43,6 +43,7 @@ namespace MyMorningNews.Core.Pipeline.Stages
             List<Finding> scored = new List<Finding>();
             object sync = new object();
             int fallbacks = 0;
+            FeedbackProfile profile = await FeedbackProfile.LoadAsync(services, ctx, token).ConfigureAwait(false);
 
             using (SemaphoreSlim gate = new SemaphoreSlim(Math.Max(1, p.MaxConcurrentModelCalls)))
             {
@@ -76,9 +77,9 @@ namespace MyMorningNews.Core.Pipeline.Stages
                         }
 
                         string url = c.Source.CanonicalUrl;
-                        double feedback = 50;
+                        double feedback = await profile.ScoreAsync(services, ctx, c, token).ConfigureAwait(false);
                         double novelty = Ranker.Novelty(c.MaxSimilarity, ctx.Topic.NoveltyPreference);
-                        double source = Ranker.Source(null, 0, preferred.Any(d => UrlCanonicalizer.IsInDomain(url, d)), blocked.Any(d => UrlCanonicalizer.IsInDomain(url, d)));
+                        double source = profile.SourceScore(c.Source.Domain, preferred.Any(d => UrlCanonicalizer.IsInDomain(url, d)), blocked.Any(d => UrlCanonicalizer.IsInDomain(url, d)));
                         double recency = Ranker.Recency(c.Source.PublishedUtc, ctx.NowUtc, p.RecencyHalfLifeHours);
                         double composite = Ranker.Composite(llm, feedback, novelty, source, recency,
                             ctx.Topic.WeightLlm ?? p.WeightLlm, ctx.Topic.WeightFeedback ?? p.WeightFeedback, ctx.Topic.WeightNovelty ?? p.WeightNovelty,

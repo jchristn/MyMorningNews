@@ -141,6 +141,16 @@ namespace MyMorningNews.Server
         public MyMorningNews.Core.Feedback.FeedbackService Feedback { get; set; } = null!;
 
         /// <summary>
+        /// Learning from feedback.
+        /// </summary>
+        public MyMorningNews.Core.Feedback.LearningService Learning { get; set; } = null!;
+
+        /// <summary>
+        /// Relevance, accuracy, feedback, and quality analytics.
+        /// </summary>
+        public MyMorningNews.Core.Analytics.AnalyticsService Analytics { get; set; } = null!;
+
+        /// <summary>
         /// Instantiate.
         /// </summary>
         /// <param name="settingsService">Settings service.</param>

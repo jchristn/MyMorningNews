@@ -195,6 +195,9 @@ namespace MyMorningNews.Server.Routes
                 case FeedbackTargetTypeEnum.Suggestion:
                     Suggestion? s = await Server.Database.Suggestions.ReadAsync(t.TenantId, t.TargetId, ctx.Token).ConfigureAwait(false);
                     return new ItemText { Title = s?.Title ?? "Suggestion", Summary = s?.Description, OpenUrl = app + "suggestions?id=" + t.TargetId };
+                case FeedbackTargetTypeEnum.LearnedPreference:
+                    LearnedPreference? lp = await Server.Database.LearnedPreferences.ReadAsync(t.TenantId, t.TargetId, ctx.Token).ConfigureAwait(false);
+                    return new ItemText { Title = lp?.Statement ?? "Learned preference", Summary = "Apply it and future runs will follow it, or dismiss it.", OpenUrl = app + "insights/preferences?id=" + t.TargetId };
                 default:
                     return new ItemText { Title = "Your feedback", OpenUrl = app + "today" };
             }

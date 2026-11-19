@@ -327,6 +327,26 @@ namespace MyMorningNews.Core.Database
         public IFeedbackMethods Feedback { get; protected set; } = null!;
 
         /// <summary>
+        /// Learned preferences.
+        /// </summary>
+        public ILearnedPreferenceMethods LearnedPreferences { get; protected set; } = null!;
+
+        /// <summary>
+        /// Feedback behind learned preferences.
+        /// </summary>
+        public ILearnedPreferenceFeedbackMethods LearnedPreferenceFeedback { get; protected set; } = null!;
+
+        /// <summary>
+        /// Feedback reason tags.
+        /// </summary>
+        public IFeedbackReasonTagMethods FeedbackReasonTags { get; protected set; } = null!;
+
+        /// <summary>
+        /// Learning checkpoints.
+        /// </summary>
+        public ILearningCheckpointMethods LearningCheckpoints { get; protected set; } = null!;
+
+        /// <summary>
         /// Embedding vectors (pgvector).
         /// </summary>
         public IEmbeddingMethods Embeddings { get; protected set; } = null!;

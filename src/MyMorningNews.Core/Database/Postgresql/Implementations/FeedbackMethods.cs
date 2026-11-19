@@ -180,6 +180,23 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             return rows.OrderByDescending(id => id, StringComparer.Ordinal).FirstOrDefault();
         }
 
+        /// <inheritdoc />
+        public async Task<List<LearningCandidate>> LearningCandidatesAsync(int minimum, int limit, CancellationToken token = default)
+        {
+            string sql = "SELECT f.tenantid, f.userid, f.topicid, COUNT(*), MAX(f.createdutc) FROM feedback f " +
+                "LEFT JOIN learningcheckpoints c ON c.tenantid = f.tenantid AND c.userid = f.userid AND c.topicid = f.topicid " +
+                "WHERE f.topicid IS NOT NULL AND (c.lastfeedbackutc IS NULL OR f.createdutc > c.lastfeedbackutc) " +
+                "GROUP BY f.tenantid, f.userid, f.topicid HAVING COUNT(*) >= $1 ORDER BY MAX(f.createdutc) LIMIT $2";
+            return await QueryAsync(sql, r => new LearningCandidate
+            {
+                TenantId = r.GetString(0),
+                UserId = r.GetString(1),
+                TopicId = r.GetString(2),
+                NewFeedback = (int)r.GetInt64(3),
+                NewestUtc = DateTime.SpecifyKind(r.GetDateTime(4), DateTimeKind.Utc)
+            }, token, Math.Max(1, minimum), Math.Clamp(limit, 1, 500)).ConfigureAwait(false);
+        }
+
         /// <summary>
         /// Map a data reader row (columns in <see cref="FeedbackQueries.Columns"/> order) to a model.
         /// </summary>

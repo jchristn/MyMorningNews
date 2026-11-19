@@ -71,6 +71,11 @@ namespace MyMorningNews.Core.Pipeline
         /// </summary>
         public Email.EmailService? Email { get; set; } = null;
 
+        /// <summary>
+        /// Learning service for feedback exemplars and active preferences in prompts; null leaves them empty.
+        /// </summary>
+        public MyMorningNews.Core.Feedback.LearningService? Learning { get; set; } = null;
+
         #endregion
 
         #region Constructors-and-Factories

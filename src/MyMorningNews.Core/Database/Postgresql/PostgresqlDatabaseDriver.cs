@@ -112,6 +112,10 @@ namespace MyMorningNews.Core.Database.Postgresql
             EmailActionTokens = new EmailActionTokenMethods(this);
             EmailSuppressions = new EmailSuppressionMethods(this);
             Feedback = new FeedbackMethods(this);
+            LearnedPreferences = new LearnedPreferenceMethods(this);
+            LearnedPreferenceFeedback = new LearnedPreferenceFeedbackMethods(this);
+            FeedbackReasonTags = new FeedbackReasonTagMethods(this);
+            LearningCheckpoints = new LearningCheckpointMethods(this);
             Embeddings = new EmbeddingMethods(this);
         }
 

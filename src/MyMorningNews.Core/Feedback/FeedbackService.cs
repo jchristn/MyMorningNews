@@ -46,7 +46,7 @@ namespace MyMorningNews.Core.Feedback
             ApplyAction(input);
             string? reason = String.IsNullOrWhiteSpace(input.Reason) ? null : input.Reason.Trim();
             if (reason != null && reason.Length > MaxReasonLength) reason = reason.Substring(0, MaxReasonLength);
-            bool snoozeOrDone = input.Action == "snooze" || input.Action == "done";
+            bool snoozeOrDone = input.Action == "snooze" || input.Action == "done" || input.Action == "apply" || input.Action == "dismiss";
             if (!input.Relevance.HasValue && !input.Accuracy.HasValue && !input.Usefulness.HasValue && reason == null && !snoozeOrDone)
                 throw new ArgumentException("Choose a rating or write a reason.", nameof(input));
 
@@ -89,11 +89,16 @@ namespace MyMorningNews.Core.Feedback
                 case "not-useful": input.Usefulness = UsefulnessRatingEnum.NotUseful; break;
                 case "done": input.Usefulness = UsefulnessRatingEnum.Useful; break;
                 case "snooze": break;
+                case "apply": break;
+                case "dismiss": break;
                 default: throw new ArgumentException("Unknown action '" + input.Action + "'.", nameof(input));
             }
 
+            bool decision = input.Action == "apply" || input.Action == "dismiss";
+            if (decision != (input.TargetType == FeedbackTargetTypeEnum.LearnedPreference)) throw new ArgumentException("Apply and dismiss are for learned preference proposals.", nameof(input));
             bool fits = input.TargetType switch
             {
+                FeedbackTargetTypeEnum.LearnedPreference => !input.Accuracy.HasValue && !input.Usefulness.HasValue,
                 FeedbackTargetTypeEnum.Prediction => !input.Usefulness.HasValue,
                 FeedbackTargetTypeEnum.Suggestion => !input.Accuracy.HasValue && !input.Relevance.HasValue,
                 _ => !input.Accuracy.HasValue && !input.Usefulness.HasValue && input.Action != "snooze" && input.Action != "done"
@@ -126,6 +131,10 @@ namespace MyMorningNews.Core.Feedback
                     Briefing owner = await _Database.Briefings.ReadAsync(input.TenantId, sec.BriefingId, token).ConfigureAwait(false) ?? throw NotFound();
                     if (owner.UserId != input.UserId) throw NotFound();
                     return owner.TopicId;
+                case FeedbackTargetTypeEnum.LearnedPreference:
+                    LearnedPreference lp = await _Database.LearnedPreferences.ReadAsync(input.TenantId, input.TargetId, token).ConfigureAwait(false) ?? throw NotFound();
+                    if (lp.UserId != input.UserId) throw NotFound();
+                    return lp.TopicId;
                 case FeedbackTargetTypeEnum.SourceItem:
                     if (await _Database.SourceItems.ReadAsync(input.TenantId, input.TargetId, token).ConfigureAwait(false) == null) throw NotFound();
                     return null;
@@ -147,6 +156,14 @@ namespace MyMorningNews.Core.Feedback
                 p.ResolvedBy = "User";
                 p.ResolutionNote = String.IsNullOrWhiteSpace(input.Reason) ? "Graded from " + input.Channel.ToString().ToLowerInvariant() + "." : input.Reason.Trim();
                 await _Database.Predictions.UpdateAsync(p, token).ConfigureAwait(false);
+            }
+
+            if (input.TargetType == FeedbackTargetTypeEnum.LearnedPreference && (input.Action == "apply" || input.Action == "dismiss"))
+            {
+                LearnedPreference lp = (await _Database.LearnedPreferences.ReadAsync(input.TenantId, input.TargetId, token).ConfigureAwait(false))!;
+                lp.Status = input.Action == "apply" ? PreferenceStatusEnum.Active : PreferenceStatusEnum.Rejected;
+                lp.DecidedUtc = DateTime.UtcNow;
+                await _Database.LearnedPreferences.UpdateAsync(lp, token).ConfigureAwait(false);
             }
 
             if (input.TargetType == FeedbackTargetTypeEnum.Suggestion && (input.Action == "done" || input.Action == "snooze"))

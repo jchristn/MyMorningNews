@@ -40,6 +40,15 @@ namespace MyMorningNews.Core.Pipeline.Stages
             int partial = all.Count(p => p.Status == PredictionStatusEnum.PartiallyAccurate);
             int inaccurate = all.Count(p => p.Status == PredictionStatusEnum.Inaccurate);
             string record = accurate + partial + inaccurate == 0 ? "No resolved predictions yet." : accurate + " accurate, " + partial + " partially accurate, " + inaccurate + " inaccurate.";
+            List<Prediction> confident = all.Where(p => p.Confidence >= 0.8 && (p.Status == PredictionStatusEnum.Accurate || p.Status == PredictionStatusEnum.PartiallyAccurate || p.Status == PredictionStatusEnum.Inaccurate)).ToList();
+            if (confident.Count >= 3)
+            {
+                double hit = confident.Sum(p => p.Status == PredictionStatusEnum.Accurate ? 1.0 : p.Status == PredictionStatusEnum.PartiallyAccurate ? 0.5 : 0.0) / confident.Count;
+                if (hit < 0.7) record += " Overconfident above 0.8: only " + Math.Round(hit * 100) + "% of those came true, so lower confidence unless the evidence is strong.";
+            }
+
+            List<double> briers = all.Where(p => p.BrierScore.HasValue).Select(p => p.BrierScore!.Value).ToList();
+            if (briers.Count > 0) record += " Mean Brier score " + briers.Average().ToString("0.00", CultureInfo.InvariantCulture) + " (lower is better).";
 
             StructuredCallResult<PredictionResult> result = await services.CallAsync<PredictionResult>(ctx, "research.predict", new Dictionary<string, object?>
             {

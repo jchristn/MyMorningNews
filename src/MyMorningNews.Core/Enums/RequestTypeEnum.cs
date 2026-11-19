@@ -453,6 +453,21 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// Give feedback.
         /// </summary>
-        FeedbackWrite
+        FeedbackWrite,
+
+        /// <summary>
+        /// Read learned preferences.
+        /// </summary>
+        PreferenceRead,
+
+        /// <summary>
+        /// Write, accept, reject, or disable learned preferences.
+        /// </summary>
+        PreferenceWrite,
+
+        /// <summary>
+        /// Read relevance, accuracy, feedback, and suggestion analytics.
+        /// </summary>
+        AnalyticsRead
     }
 }

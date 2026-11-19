@@ -99,5 +99,14 @@ namespace MyMorningNews.Core.Database.Interfaces
         /// <param name="token">Cancellation token.</param>
         /// <returns>ID of the rating that was current, or null.</returns>
         Task<string?> SupersedeAsync(string tenantId, string userId, string targetType, string targetId, CancellationToken token = default);
+
+        /// <summary>
+        /// Users and topics with at least a number of feedback items newer than their learning checkpoint.
+        /// </summary>
+        /// <param name="minimum">Feedback items needed (1 or more).</param>
+        /// <param name="limit">Most results (1 to 500).</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Candidates across tenants.</returns>
+        Task<List<LearningCandidate>> LearningCandidatesAsync(int minimum, int limit, CancellationToken token = default);
     }
 }

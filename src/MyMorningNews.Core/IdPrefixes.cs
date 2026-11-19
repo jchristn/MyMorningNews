@@ -291,6 +291,26 @@ namespace MyMorningNews.Core
         public const string Feedback = "fbk_";
 
         /// <summary>
+        /// Prefix for LearnedPreference identifiers.
+        /// </summary>
+        public const string LearnedPreference = "lrn_";
+
+        /// <summary>
+        /// Prefix for LearnedPreferenceFeedback identifiers.
+        /// </summary>
+        public const string LearnedPreferenceFeedback = "lpf_";
+
+        /// <summary>
+        /// Prefix for FeedbackReasonTag identifiers.
+        /// </summary>
+        public const string FeedbackReasonTag = "frt_";
+
+        /// <summary>
+        /// Prefix for LearningCheckpoint identifiers.
+        /// </summary>
+        public const string LearningCheckpoint = "lcp_";
+
+        /// <summary>
         /// Prefix for request history entries.
         /// </summary>
         public const string RequestHistory = "req_";

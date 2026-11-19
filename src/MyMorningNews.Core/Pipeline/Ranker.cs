@@ -39,6 +39,39 @@ namespace MyMorningNews.Core.Pipeline
         }
 
         /// <summary>
+        /// Feedback score: 50 shifted by the similarity-weighted rating of the nearest findings the reader rated.
+        /// </summary>
+        /// <param name="affinity">Similarity-weighted rating average, -1 (disliked) to 1 (liked).</param>
+        /// <param name="weight">How much evidence backs it, 0 (none) to 1 (enough neighbors).</param>
+        /// <returns>0 to 100; 50 when nothing similar was rated.</returns>
+        public static double Feedback(double affinity, double weight)
+        {
+            double a = Math.Clamp(affinity, -1, 1);
+            double w = Math.Clamp(weight, 0, 1);
+            return Math.Round(Math.Clamp(50 + 50 * a * w, 0, 100), 2);
+        }
+
+        /// <summary>
+        /// Rating value of a relevance rating for affinity: Relevant 1, Somewhat 0.3, Not relevant -1.
+        /// </summary>
+        /// <param name="rating">Rating.</param>
+        /// <returns>Value.</returns>
+        public static double RatingValue(Enums.RelevanceRatingEnum rating)
+        {
+            return rating == Enums.RelevanceRatingEnum.Relevant ? 1.0 : rating == Enums.RelevanceRatingEnum.SomewhatRelevant ? 0.3 : -1.0;
+        }
+
+        /// <summary>
+        /// Rating value as a 0 to 100 reputation: Relevant 100, Somewhat 60, Not relevant 0.
+        /// </summary>
+        /// <param name="rating">Rating.</param>
+        /// <returns>Reputation points.</returns>
+        public static double ReputationPoints(Enums.RelevanceRatingEnum rating)
+        {
+            return rating == Enums.RelevanceRatingEnum.Relevant ? 100 : rating == Enums.RelevanceRatingEnum.SomewhatRelevant ? 60 : 0;
+        }
+
+        /// <summary>
         /// Source reputation: the reader's average rating for the domain (0 to 100) pulled toward a prior of 50 with a
         /// prior weight of 5, plus 20 for preferred domains. Blocked domains score 0.
         /// </summary>

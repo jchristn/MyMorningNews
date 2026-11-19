@@ -551,6 +551,42 @@ namespace MyMorningNews.Core.Helpers
         }
 
         /// <summary>
+        /// Generate a LearnedPreference identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateLearnedPreferenceId()
+        {
+            return Generate(IdPrefixes.LearnedPreference);
+        }
+
+        /// <summary>
+        /// Generate a LearnedPreferenceFeedback identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateLearnedPreferenceFeedbackId()
+        {
+            return Generate(IdPrefixes.LearnedPreferenceFeedback);
+        }
+
+        /// <summary>
+        /// Generate a FeedbackReasonTag identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateFeedbackReasonTagId()
+        {
+            return Generate(IdPrefixes.FeedbackReasonTag);
+        }
+
+        /// <summary>
+        /// Generate a LearningCheckpoint identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateLearningCheckpointId()
+        {
+            return Generate(IdPrefixes.LearningCheckpoint);
+        }
+
+        /// <summary>
         /// Generate a RequestHistory identifier.
         /// </summary>
         /// <returns>Identifier.</returns>

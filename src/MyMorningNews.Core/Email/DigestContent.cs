@@ -43,5 +43,10 @@ namespace MyMorningNews.Core.Email
         /// New suggestions from this run.
         /// </summary>
         public List<Suggestion> Suggestions { get; set; } = new List<Suggestion>();
+
+        /// <summary>
+        /// Learned preference proposals waiting for the reader.
+        /// </summary>
+        public List<LearnedPreference> Proposals { get; set; } = new List<LearnedPreference>();
     }
 }

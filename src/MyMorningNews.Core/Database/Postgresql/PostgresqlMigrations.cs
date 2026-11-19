@@ -164,6 +164,15 @@ namespace MyMorningNews.Core.Database.Postgresql
                 {
                     "CREATE INDEX IF NOT EXISTS ix_emailmessages_queue ON emailmessages (status, nextattemptutc)",
                     "CREATE INDEX IF NOT EXISTS ix_feedback_target ON feedback (tenantid, targettype, targetid, iscurrent)"
+                })),
+            new SchemaMigration(11, "Learned preferences, reason tags, and learning checkpoints", Concat(
+                LearnedPreferenceQueries.Schema,
+                LearnedPreferenceFeedbackQueries.Schema,
+                FeedbackReasonTagQueries.Schema,
+                LearningCheckpointQueries.Schema,
+                new List<string>
+                {
+                    "CREATE INDEX IF NOT EXISTS ix_feedback_topic_created ON feedback (tenantid, topicid, createdutc)"
                 }))
         };
 

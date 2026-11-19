@@ -363,6 +363,8 @@ namespace MyMorningNews.Core.Email
                 if (s != null) c.Sources[f.Id] = s;
             }
 
+            c.Proposals = (await _Database.LearnedPreferences.EnumerateAsync(new LearnedPreferenceFilter { TenantId = run.TenantId, UserId = topic.UserId, Status = PreferenceStatusEnum.Proposed, PageSize = 20 }, token).ConfigureAwait(false)).Items
+                .Where(p => p.TopicId == null || p.TopicId == topic.Id).OrderByDescending(p => p.Confidence).Take(3).ToList();
             c.Lead = await LeadAsync(run, topic, c, token).ConfigureAwait(false);
             return c;
         }
@@ -440,6 +442,14 @@ namespace MyMorningNews.Core.Email
                 b.Item(s.Priority + " priority · " + s.Effort, s.Title, app + "/dashboard/suggestions?id=" + s.Id, new[] { s.Description ?? String.Empty }, Array.Empty<EmailLink>(), actions);
             }
 
+            if (c.Proposals.Count > 0) b.Section("What we learned from your feedback");
+            foreach (LearnedPreference p in c.Proposals)
+            {
+                List<EmailLink> actions = await ActionsAsync(m, userId, FeedbackTargetTypeEnum.LearnedPreference, p.Id, topic.Id, EmailActions.Preference, issueTokens, token).ConfigureAwait(false);
+                b.Item(MyMorningNews.Core.Feedback.LearningService.Label(p.Kind) + " · from " + p.SupportCount + " ratings", p.Statement, app + "/dashboard/insights/preferences?id=" + p.Id,
+                    new[] { "Apply it and future runs will follow it. Dismiss it and we will not suggest it again." }, Array.Empty<EmailLink>(), actions);
+            }
+
             List<EmailLink> footer = new List<EmailLink>
             {
                 new EmailLink("Full run", app + "/dashboard/runs?id=" + run.Id),
@@ -493,7 +503,7 @@ namespace MyMorningNews.Core.Email
 
         private async Task<List<EmailLink>> ActionsAsync(EmailMessage m, string userId, FeedbackTargetTypeEnum type, string targetId, string? topicId, IReadOnlyList<string> actions, bool issue, CancellationToken token)
         {
-            bool withWhy = !ReferenceEquals(actions, EmailActions.PredictionNew);
+            bool withWhy = !ReferenceEquals(actions, EmailActions.PredictionNew) && !ReferenceEquals(actions, EmailActions.Preference);
             string secret = issue ? (await Tokens.IssueAsync(m, userId, ActionTokenKindEnum.Feedback, type, targetId, topicId, actions, token).ConfigureAwait(false)).Secret : "preview";
             string page = _Settings.Rest.PublicBaseUrl + "/v1.0/public/feedback/" + secret;
             List<EmailLink> links = actions.Select(a => new EmailLink(EmailActions.Label(a), page + "?a=" + a)).ToList();

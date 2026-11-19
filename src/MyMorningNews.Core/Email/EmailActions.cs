@@ -29,6 +29,11 @@ namespace MyMorningNews.Core.Email
         public static readonly IReadOnlyList<string> Suggestion = new List<string> { "useful", "not-useful", "done", "snooze" };
 
         /// <summary>
+        /// Actions on a learned preference proposal.
+        /// </summary>
+        public static readonly IReadOnlyList<string> Preference = new List<string> { "apply", "dismiss" };
+
+        /// <summary>
         /// Unsubscribe action.
         /// </summary>
         public const string Unsubscribe = "unsubscribe";
@@ -46,7 +51,9 @@ namespace MyMorningNews.Core.Email
             { "not-useful", "Not useful" },
             { "done", "Done" },
             { "snooze", "Snooze a week" },
-            { "unsubscribe", "Unsubscribe" }
+            { "unsubscribe", "Unsubscribe" },
+            { "apply", "Apply" },
+            { "dismiss", "Dismiss" }
         };
 
         /// <summary>

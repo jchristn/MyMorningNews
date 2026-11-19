@@ -59,8 +59,8 @@ namespace MyMorningNews.Core.Pipeline.Stages
                 { "topic.dimensions", dims },
                 { "topic.constraints", constraints },
                 { "topic.trackedQuestions", tracked },
-                { "preferences.active", new List<string>() },
-                { "feedback.examples", new List<string>() },
+                { "preferences.active", services.Learning == null ? new List<string>() : await services.Learning.ActivePreferencesAsync(tenant, ctx.Topic.UserId, ctx.Topic.Id, token).ConfigureAwait(false) },
+                { "feedback.examples", services.Learning == null ? new List<string>() : await services.Learning.ExemplarsAsync(tenant, ctx.Topic.UserId, ctx.Topic.Id, token).ConfigureAwait(false) },
                 { "history.recent", ctx.RecentSummaries },
                 { "date.today", ctx.NowUtc.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) },
                 { "since", ctx.SinceUtc.HasValue ? ctx.SinceUtc.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : null }

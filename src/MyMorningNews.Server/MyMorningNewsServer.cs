@@ -178,7 +178,10 @@ namespace MyMorningNews.Server
             _Context.Audio = _Audio;
             _Context.Email = email;
             _Context.Feedback = new MyMorningNews.Core.Feedback.FeedbackService(_Database);
-            PipelineServices pipelineServices = new PipelineServices(_Database, _Models, prompts, _Search!, _Fetch!, settings, _Logging) { Briefings = briefings, Email = email };
+            MyMorningNews.Core.Feedback.LearningService learning = new MyMorningNews.Core.Feedback.LearningService(_Database, _Models, prompts, settings, _Logging);
+            _Context.Learning = learning;
+            _Context.Analytics = new MyMorningNews.Core.Analytics.AnalyticsService(_Database, settings);
+            PipelineServices pipelineServices = new PipelineServices(_Database, _Models, prompts, _Search!, _Fetch!, settings, _Logging) { Briefings = briefings, Email = email, Learning = learning };
             _Context.RunExecutor = new ResearchPipeline(pipelineServices);
 
             _Capture = new RequestHistoryCaptureService(_Database, settings.RequestHistory, _Logging);
@@ -217,6 +220,8 @@ namespace MyMorningNews.Server
                 _Workers.Add(Task.Run(() => mediaWorker.RunAsync(Lifetime.Token)));
                 EmailDeliveryWorker emailWorker = new EmailDeliveryWorker(_Context);
                 _Workers.Add(Task.Run(() => emailWorker.RunAsync(Lifetime.Token)));
+                LearningWorker learningWorker = new LearningWorker(_Context);
+                _Workers.Add(Task.Run(() => learningWorker.RunAsync(Lifetime.Token)));
                 if (settings.Scheduler.Enabled)
                 {
                     SchedulerWorker scheduler = new SchedulerWorker(_Context);
@@ -316,6 +321,7 @@ namespace MyMorningNews.Server
                 new MediaRoutes(context),
                 new EmailRoutes(context),
                 new FeedbackRoutes(context),
+                new LearningRoutes(context),
                 new PromptRoutes(context)
             };
         }

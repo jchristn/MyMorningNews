@@ -437,6 +437,18 @@ namespace Test.Shared.Helpers
             }
 
             if (body.Contains("Answer Duplicate, Update, or Different", StringComparison.Ordinal)) return "{\"verdict\":\"Update\",\"reason\":\"Adds a date.\"}";
+            if (body.Contains("You label the reasons readers give", StringComparison.Ordinal))
+            {
+                List<string> ids = System.Text.RegularExpressions.Regex.Matches(body, "\\[(fbk_[A-Za-z0-9_]+)\\]").Select(m => m.Groups[1].Value).Distinct().ToList();
+                return "{\"items\":[" + String.Join(",", ids.Select((id, i) => "{\"feedbackId\":\"" + id + "\",\"tags\":[\"" + (i % 2 == 0 ? "too basic" : "great detail") + "\"]}")) + "]}";
+            }
+
+            if (body.Contains("into short preference statements", StringComparison.Ordinal))
+            {
+                List<string> ids = System.Text.RegularExpressions.Regex.Matches(body, "\\[(fbk_[A-Za-z0-9_]+)\\]").Select(m => m.Groups[1].Value).Distinct().Take(3).ToList();
+                return "{\"preferences\":[" + (ids.Count < 3 ? String.Empty : "{\"kind\":\"Avoid\",\"statement\":\"Avoid basic explainers about how heat pumps work\",\"confidence\":0.8,\"feedbackIds\":[" + String.Join(",", ids.Select(id => "\"" + id + "\"")) + "]},"
+                    + "{\"kind\":\"Prefer\",\"statement\":\"Prefer weak claim with little support\",\"confidence\":0.4,\"feedbackIds\":[\"fbk_missing\"]}") + "]}";
+            }
             return "{\"answer\":\"ready\"}";
         }
 

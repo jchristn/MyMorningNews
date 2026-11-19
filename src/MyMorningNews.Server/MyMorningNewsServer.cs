@@ -144,6 +144,7 @@ namespace MyMorningNews.Server
                 openApi.Info.Title = Constants.ProductName;
                 openApi.Info.Version = Constants.ProductVersion;
                 openApi.Info.Description = "REST API for My Morning News. Authenticate with POST /v1.0/token, then send Authorization: Bearer <token>.";
+                openApi.Schemas = OpenApiSchemaFactory.Components;
             });
 
             _Webserver.Routes.Preflight = pipeline.PreflightAsync;

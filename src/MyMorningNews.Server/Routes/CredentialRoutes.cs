@@ -30,10 +30,10 @@ namespace MyMorningNews.Server.Routes
         public override void Register(Webserver webserver)
         {
             ArgumentNullException.ThrowIfNull(webserver);
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantId}/credentials", ListAsync, null, openApiMetadata: Doc("List credentials", "Credentials"));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/tenants/{tenantId}/credentials", CreateAsync, null, openApiMetadata: Doc("Create a credential (secret returned once)", "Credentials"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantId}/credentials", ListAsync, null, openApiMetadata: Paged(Doc("List credentials", "Credentials").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("active", typeof(bool)))));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/tenants/{tenantId}/credentials", CreateAsync, null, openApiMetadata: Doc("Create a credential (secret returned once)", "Credentials").WithRequestBody(Body<CredentialCreateRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantId}/credentials/{credentialId}", ReadAsync, null, openApiMetadata: Doc("Read a credential", "Credentials"));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantId}/credentials/{credentialId}", UpdateAsync, null, openApiMetadata: Doc("Update a credential", "Credentials"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantId}/credentials/{credentialId}", UpdateAsync, null, openApiMetadata: Doc("Update a credential", "Credentials").WithRequestBody(Body<CredentialUpdateRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/tenants/{tenantId}/credentials/{credentialId}", DeleteAsync, null, openApiMetadata: Doc("Delete a credential", "Credentials"));
         }
 

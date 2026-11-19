@@ -193,6 +193,18 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 clauses.Add("statuscode = $" + args.Count);
             }
 
+            if (filter.MinStatusCode.HasValue)
+            {
+                args.Add(filter.MinStatusCode.Value);
+                clauses.Add("statuscode >= $" + args.Count);
+            }
+
+            if (filter.MaxStatusCode.HasValue)
+            {
+                args.Add(filter.MaxStatusCode.Value);
+                clauses.Add("statuscode <= $" + args.Count);
+            }
+
             if (!String.IsNullOrWhiteSpace(filter.PathContains))
             {
                 args.Add("%" + EscapeLike(filter.PathContains.Trim()) + "%");

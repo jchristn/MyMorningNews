@@ -22,6 +22,8 @@ namespace MyMorningNews.Server.Services
     {
         #region Private-Members
 
+        private const string OpenApiDocumentPath = "/openapi.json";
+
         private readonly ServerContext _Server;
         private readonly RequestHistoryCaptureService _Capture;
         private readonly string _Header = "[RequestPipeline] ";
@@ -188,7 +190,9 @@ namespace MyMorningNews.Server.Services
 
         private void AddCorsHeaders(HttpContextBase ctx)
         {
-            ctx.Response.Headers.Set("Access-Control-Allow-Origin", _Server.Settings.Rest.CorsAllowedOrigins);
+            // Watson's OpenAPI document handler adds its own Access-Control-Allow-Origin; setting it here too would send two values.
+            if (!String.Equals(ctx.Request.Url.RawWithoutQuery, OpenApiDocumentPath, StringComparison.Ordinal))
+                ctx.Response.Headers.Set("Access-Control-Allow-Origin", _Server.Settings.Rest.CorsAllowedOrigins);
             ctx.Response.Headers.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
             ctx.Response.Headers.Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Api-Key, X-Token, X-Email, X-Password, X-Tenant-Guid, X-Access-Key, X-Secret-Key, X-Request, Accept-Language");
             ctx.Response.Headers.Set("Access-Control-Expose-Headers", "X-Request-Id");

@@ -27,8 +27,8 @@ namespace MyMorningNews.Server.Routes
         public override void Register(Webserver webserver)
         {
             ArgumentNullException.ThrowIfNull(webserver);
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/audit", ListAsync, null, openApiMetadata: Doc("List audit records", "Audit"));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.DELETE, "/v1.0/api/audit", DeleteManyAsync, null, openApiMetadata: Doc("Delete audit records older than a cutoff", "Audit", "Requires toUtc."));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/audit", ListAsync, null, openApiMetadata: Paged(Doc("List audit records", "Audit").WithParameter(QueryParam("tenantId", typeof(string))).WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("principalId", typeof(string))).WithParameter(QueryParam("authorizationResult", typeof(string))).WithParameter(QueryParam("eventType", typeof(AuditEventTypeEnum)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.DELETE, "/v1.0/api/audit", DeleteManyAsync, null, openApiMetadata: Doc("Delete audit records older than a cutoff", "Audit", "Requires toUtc.").WithParameter(QueryParam("tenantId", typeof(string))).WithParameter(QueryParam("toUtc", typeof(DateTime))));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/audit/{id}", ReadAsync, null, openApiMetadata: Doc("Read an audit record", "Audit"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/api/audit/{id}", DeleteAsync, null, openApiMetadata: Doc("Delete an audit record", "Audit"));
         }

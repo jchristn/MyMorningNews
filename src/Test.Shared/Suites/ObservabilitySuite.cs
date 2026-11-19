@@ -57,6 +57,27 @@ namespace Test.Shared.Suites
                 JsonElement paths = doc.RootElement.GetProperty("paths");
                 foreach (string p in new[] { "/v1.0/token", "/v1.0/tenants", "/v1.0/api/request-history", "/v1.0/api/request-history/summary", "/v1.0/api/settings", "/v1.0/api/audit", "/v1.0/api/health" })
                     Assert.True(paths.TryGetProperty(p, out JsonElement _), "openapi documents " + p);
+
+                JsonElement create = paths.GetProperty("/v1.0/api/vault/credentials").GetProperty("post");
+                string schemaRef = create.GetProperty("requestBody").GetProperty("content").GetProperty("application/json").GetProperty("schema").GetProperty("$ref").GetString() ?? String.Empty;
+                string component = schemaRef.Substring(schemaRef.LastIndexOf('/') + 1);
+                JsonElement schemas = doc.RootElement.GetProperty("components").GetProperty("schemas");
+                Assert.True(schemas.GetProperty(component).GetProperty("properties").TryGetProperty("secret", out JsonElement _), "request body schema resolves with camelCase properties");
+                List<string> listParams = paths.GetProperty("/v1.0/api/audit").GetProperty("get").GetProperty("parameters").EnumerateArray().Select(e => e.GetProperty("name").GetString() ?? String.Empty).ToList();
+                Assert.True(listParams.Contains("pageSize") && listParams.Contains("sortDirection") && listParams.Contains("eventType"), "list routes document paging and filters: " + String.Join(",", listParams));
+                List<string> historyParams = paths.GetProperty("/v1.0/api/request-history").GetProperty("get").GetProperty("parameters").EnumerateArray().Select(e => e.GetProperty("name").GetString() ?? String.Empty).ToList();
+                Assert.True(historyParams.Contains("statusClass") && historyParams.Contains("minStatusCode"), "status range documented");
+            }
+
+            using (HttpClient http = new HttpClient())
+            using (HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get, anon.BaseUrl + "/openapi.json"))
+            {
+                req.Headers.TryAddWithoutValidation("Origin", "http://127.0.0.1:12101");
+                using (HttpResponseMessage resp = await http.SendAsync(req, token).ConfigureAwait(false))
+                {
+                    List<string> origins = resp.Headers.TryGetValues("Access-Control-Allow-Origin", out IEnumerable<string>? values) ? values.ToList() : new List<string>();
+                    Assert.True(origins.Count == 1 && origins[0] == "*", "exactly one allow-origin value: " + String.Join(" | ", origins));
+                }
             }
         }
 
@@ -122,6 +143,11 @@ namespace Test.Shared.Suites
             Assert.Equal(12, s.Buckets.Count, "12 five-minute buckets");
             Assert.Equal(s.TotalCount, s.Buckets.Sum(b => b.SuccessCount + b.FailureCount), "totals match buckets");
             (await admin.GetAsync("/v1.0/api/request-history/summary", token).ConfigureAwait(false)).Expect(400, "missing range");
+            await admin.GetAsync("/v1.0/api/tenants-does-not-exist", token).ConfigureAwait(false);
+            EnumerationResult<RequestHistoryEntry> failures = (await admin.GetAsync("/v1.0/api/request-history?statusClass=4xx&pageSize=100", token).ConfigureAwait(false)).Expect(200, "4xx").Json<EnumerationResult<RequestHistoryEntry>>();
+            Assert.True(failures.Items.Count > 0 && failures.Items.All(e => e.StatusCode >= 400 && e.StatusCode <= 499), "status class filter");
+            EnumerationResult<RequestHistoryEntry> ok = (await admin.GetAsync("/v1.0/api/request-history?maxStatusCode=299&pageSize=100", token).ConfigureAwait(false)).Expect(200, "2xx").Json<EnumerationResult<RequestHistoryEntry>>();
+            Assert.True(ok.Items.All(e => e.StatusCode <= 299), "max status filter");
         }
 
         private static async Task HistoryScopedAsync(CancellationToken token)

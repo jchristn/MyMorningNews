@@ -33,14 +33,14 @@ namespace MyMorningNews.Server.Routes
         {
             ArgumentNullException.ThrowIfNull(webserver);
             string b = "/v1.0/api/prompts";
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, b, ListAsync, null, openApiMetadata: Doc("List prompt templates", "Prompts"));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b + "/lab", LabAsync, null, openApiMetadata: Doc("Run a prompt in the prompt lab", "Prompts"));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b + "/overrides", CreateOverrideAsync, null, openApiMetadata: Doc("Create a topic override of a prompt", "Prompts"));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, b, ListAsync, null, openApiMetadata: Paged(Doc("List prompt templates", "Prompts").WithParameter(QueryParam("key", typeof(string))).WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("isCustomized", typeof(bool))).WithParameter(QueryParam("tenantOnly", typeof(bool))).WithParameter(QueryParam("role", typeof(ModelTaskEnum)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b + "/lab", LabAsync, null, openApiMetadata: Doc("Run a prompt in the prompt lab", "Prompts").WithRequestBody(Body<PromptLabRequest>()));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b + "/overrides", CreateOverrideAsync, null, openApiMetadata: Doc("Create a topic override of a prompt", "Prompts").WithRequestBody(Body<PromptOverrideRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read a prompt template with its content", "Prompts"));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, b + "/{id}", SaveAsync, null, openApiMetadata: Doc("Save a new version", "Prompts"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, b + "/{id}", SaveAsync, null, openApiMetadata: Doc("Save a new version", "Prompts").WithRequestBody(Body<PromptTemplateSaveRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, b + "/{id}", DeleteAsync, null, openApiMetadata: Doc("Delete a topic override", "Prompts"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}/versions", VersionsAsync, null, openApiMetadata: Doc("Version history", "Prompts"));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/rollback", RollbackAsync, null, openApiMetadata: Doc("Restore an earlier version (query: version)", "Prompts"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/rollback", RollbackAsync, null, openApiMetadata: Doc("Restore an earlier version (query: version)", "Prompts").WithParameter(QueryParam("version", typeof(int))));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/reset", ResetAsync, null, openApiMetadata: Doc("Restore the shipped default", "Prompts"));
         }
 

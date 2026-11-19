@@ -31,10 +31,10 @@ namespace MyMorningNews.Server.Routes
         public override void Register(Webserver webserver)
         {
             ArgumentNullException.ThrowIfNull(webserver);
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/tenants", ListAsync, null, openApiMetadata: Doc("List tenants", "Tenants"));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/tenants", CreateAsync, null, openApiMetadata: Doc("Create a tenant", "Tenants"));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/tenants", ListAsync, null, openApiMetadata: Paged(Doc("List tenants", "Tenants").WithParameter(QueryParam("active", typeof(bool)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/tenants", CreateAsync, null, openApiMetadata: Doc("Create a tenant", "Tenants").WithRequestBody(Body<TenantUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantId}", ReadAsync, null, openApiMetadata: Doc("Read a tenant", "Tenants"));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantId}", UpdateAsync, null, openApiMetadata: Doc("Update a tenant", "Tenants"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantId}", UpdateAsync, null, openApiMetadata: Doc("Update a tenant", "Tenants").WithRequestBody(Body<TenantUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/tenants/{tenantId}", DeleteAsync, null, openApiMetadata: Doc("Delete a tenant and all of its data", "Tenants"));
         }
 

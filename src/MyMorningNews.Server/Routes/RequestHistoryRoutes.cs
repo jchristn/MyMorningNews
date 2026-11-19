@@ -29,10 +29,10 @@ namespace MyMorningNews.Server.Routes
         public override void Register(Webserver webserver)
         {
             ArgumentNullException.ThrowIfNull(webserver);
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/request-history", ListAsync, null, openApiMetadata: Doc("List captured requests", "Request History"));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/request-history", ListAsync, null, openApiMetadata: Paged(Doc("List captured requests", "Request History").WithParameter(QueryParam("tenantId", typeof(string))).WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("method", typeof(string))).WithParameter(QueryParam("statusCode", typeof(int))).WithParameter(QueryParam("minStatusCode", typeof(int))).WithParameter(QueryParam("maxStatusCode", typeof(int))).WithParameter(QueryParam("statusClass", typeof(string))).WithParameter(QueryParam("pathContains", typeof(string))).WithParameter(QueryParam("bucketMinutes", typeof(int)))));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/request-history/summary", SummaryAsync, null,
                 openApiMetadata: Doc("Time-bucketed request counts", "Request History", "Requires fromUtc, toUtc, and bucketMinutes."));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.DELETE, "/v1.0/api/request-history", DeleteManyAsync, null, openApiMetadata: Doc("Delete requests matching a filter", "Request History"));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.DELETE, "/v1.0/api/request-history", DeleteManyAsync, null, openApiMetadata: Paged(Doc("Delete requests matching a filter", "Request History").WithParameter(QueryParam("tenantId", typeof(string))).WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("method", typeof(string))).WithParameter(QueryParam("statusCode", typeof(int))).WithParameter(QueryParam("minStatusCode", typeof(int))).WithParameter(QueryParam("maxStatusCode", typeof(int))).WithParameter(QueryParam("statusClass", typeof(string))).WithParameter(QueryParam("pathContains", typeof(string))).WithParameter(QueryParam("bucketMinutes", typeof(int)))));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/request-history/{id}", ReadAsync, null, openApiMetadata: Doc("Read a captured request with headers and bodies", "Request History"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/api/request-history/{id}", DeleteAsync, null, openApiMetadata: Doc("Delete a captured request", "Request History"));
         }
@@ -46,6 +46,8 @@ namespace MyMorningNews.Server.Routes
                 UserId = rc.IsAdmin ? Query(ctx, "userId") : null,
                 Method = Query(ctx, "method"),
                 StatusCode = QueryInt(ctx, "statusCode"),
+                MinStatusCode = QueryInt(ctx, "minStatusCode") ?? ClassMinimum(Query(ctx, "statusClass")),
+                MaxStatusCode = QueryInt(ctx, "maxStatusCode") ?? ClassMaximum(Query(ctx, "statusClass")),
                 PathContains = Query(ctx, "pathContains")
             };
             ApplyPaging(ctx, filter);
@@ -114,6 +116,19 @@ namespace MyMorningNews.Server.Routes
             if (!await AuthorizeAsync(ctx, RequestTypeEnum.RequestHistoryDelete).ConfigureAwait(false)) return;
             int deleted = await Server.Database.RequestHistory.DeleteManyAsync(BuildFilter(ctx), ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 200, new DeleteManyResponse { DeletedCount = deleted }).ConfigureAwait(false);
+        }
+
+        private static int? ClassMinimum(string? statusClass)
+        {
+            if (String.IsNullOrWhiteSpace(statusClass) || statusClass.Length != 3 || !Char.IsDigit(statusClass[0])) return null;
+            if (!statusClass.EndsWith("xx", StringComparison.OrdinalIgnoreCase)) return null;
+            return (statusClass[0] - '0') * 100;
+        }
+
+        private static int? ClassMaximum(string? statusClass)
+        {
+            int? min = ClassMinimum(statusClass);
+            return min.HasValue ? min.Value + 99 : null;
         }
     }
 }

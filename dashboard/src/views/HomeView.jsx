@@ -42,8 +42,8 @@ export default function HomeView() {
         : Promise.resolve(),
       isTenantAdmin
         ? apiClient
-            .getRequestHistory({ pageSize: 100, sortBy: 'createdUtc', sortDirection: 'Descending' })
-            .then((r) => setFailures(r.items.filter((i) => i.statusCode >= 400).slice(0, 6)))
+            .getRequestHistory({ minStatusCode: 400, pageSize: 6, sortBy: 'createdUtc', sortDirection: 'Descending' })
+            .then((r) => setFailures(r.items))
             .catch((e) => (nextErrors.failures = e))
         : Promise.resolve()
     ]);

@@ -29,7 +29,7 @@ namespace MyMorningNews.Server.Routes
         {
             ArgumentNullException.ThrowIfNull(webserver);
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/settings", ReadAsync, null, openApiMetadata: Doc("Read server settings (secrets masked)", "Settings"));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.PUT, "/v1.0/api/settings", UpdateAsync, null, openApiMetadata: Doc("Update server settings", "Settings"));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.PUT, "/v1.0/api/settings", UpdateAsync, null, openApiMetadata: Doc("Update server settings", "Settings").WithRequestBody(Body<ServerSettings>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/settings/restart", RestartAsync, null, openApiMetadata: Doc("Restart the server", "Settings"));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/server-info", InfoAsync, null, openApiMetadata: Doc("Server information and bundled tool links", "Settings"));
         }

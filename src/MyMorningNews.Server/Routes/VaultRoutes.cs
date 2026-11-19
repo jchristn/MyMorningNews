@@ -39,10 +39,10 @@ namespace MyMorningNews.Server.Routes
         {
             ArgumentNullException.ThrowIfNull(webserver);
             string b = "/v1.0/api/vault/credentials";
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, b, ListAsync, null, openApiMetadata: Doc("List vault credentials (no secrets)", "Vault"));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b, CreateAsync, null, openApiMetadata: Doc("Store a credential", "Vault"));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, b, ListAsync, null, openApiMetadata: Paged(Doc("List vault credentials (no secrets)", "Vault").WithParameter(QueryParam("active", typeof(bool))).WithParameter(QueryParam("kind", typeof(VaultCredentialKindEnum))).WithParameter(QueryParam("provider", typeof(VaultProviderEnum)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b, CreateAsync, null, openApiMetadata: Doc("Store a credential", "Vault").WithRequestBody(Body<VaultCredentialUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read a credential (no secret)", "Vault"));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, b + "/{id}", UpdateAsync, null, openApiMetadata: Doc("Update or rotate a credential", "Vault"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, b + "/{id}", UpdateAsync, null, openApiMetadata: Doc("Update or rotate a credential", "Vault").WithRequestBody(Body<VaultCredentialUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, b + "/{id}", DeleteAsync, null, openApiMetadata: Doc("Delete a credential", "Vault"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/reveal", RevealAsync, null, openApiMetadata: Doc("Reveal a stored secret (audited)", "Vault"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}/usage", UsageAsync, null, openApiMetadata: Doc("Records that use a credential", "Vault"));

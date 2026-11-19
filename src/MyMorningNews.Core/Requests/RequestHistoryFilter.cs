@@ -25,6 +25,16 @@ namespace MyMorningNews.Core.Requests
         public int? StatusCode { get; set; } = null;
 
         /// <summary>
+        /// Minimum status code, inclusive (for example 400 for all failures). Null for no lower bound.
+        /// </summary>
+        public int? MinStatusCode { get; set; } = null;
+
+        /// <summary>
+        /// Maximum status code, inclusive (for example 499 for client errors). Null for no upper bound.
+        /// </summary>
+        public int? MaxStatusCode { get; set; } = null;
+
+        /// <summary>
         /// Path substring filter.
         /// </summary>
         public string? PathContains { get; set; } = null;

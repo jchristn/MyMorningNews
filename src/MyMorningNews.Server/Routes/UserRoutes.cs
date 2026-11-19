@@ -36,14 +36,14 @@ namespace MyMorningNews.Server.Routes
         public override void Register(Webserver webserver)
         {
             ArgumentNullException.ThrowIfNull(webserver);
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantId}/users", ListAsync, null, openApiMetadata: Doc("List users", "Users"));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/tenants/{tenantId}/users", CreateAsync, null, openApiMetadata: Doc("Create a user", "Users"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantId}/users", ListAsync, null, openApiMetadata: Paged(Doc("List users", "Users").WithParameter(QueryParam("active", typeof(bool))).WithParameter(QueryParam("isAdmin", typeof(bool))).WithParameter(QueryParam("isTenantAdmin", typeof(bool)))));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/tenants/{tenantId}/users", CreateAsync, null, openApiMetadata: Doc("Create a user", "Users").WithRequestBody(Body<UserCreateRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantId}/users/{userId}", ReadAsync, null, openApiMetadata: Doc("Read a user", "Users"));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantId}/users/{userId}", UpdateAsync, null, openApiMetadata: Doc("Update a user", "Users"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantId}/users/{userId}", UpdateAsync, null, openApiMetadata: Doc("Update a user", "Users").WithRequestBody(Body<UserUpdateRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/tenants/{tenantId}/users/{userId}", DeleteAsync, null, openApiMetadata: Doc("Delete a user and their credentials", "Users"));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/me", MeAsync, null, openApiMetadata: Doc("Read my profile", "Profile"));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.PUT, "/v1.0/api/me", UpdateMeAsync, null, openApiMetadata: Doc("Update my profile", "Profile"));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.PUT, "/v1.0/api/me/password", ChangePasswordAsync, null, openApiMetadata: Doc("Change my password", "Profile"));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.PUT, "/v1.0/api/me", UpdateMeAsync, null, openApiMetadata: Doc("Update my profile", "Profile").WithRequestBody(Body<SelfUpdateRequest>()));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.PUT, "/v1.0/api/me/password", ChangePasswordAsync, null, openApiMetadata: Doc("Change my password", "Profile").WithRequestBody(Body<PasswordChangeRequest>()));
         }
 
         private async Task ListAsync(HttpContextBase ctx)

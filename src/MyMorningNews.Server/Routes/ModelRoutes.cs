@@ -30,18 +30,18 @@ namespace MyMorningNews.Server.Routes
         {
             ArgumentNullException.ThrowIfNull(webserver);
             string e = "/v1.0/api/model-endpoints";
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, e, ListAsync, null, openApiMetadata: Doc("List model endpoints", "Models"));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, e, CreateAsync, null, openApiMetadata: Doc("Create a model endpoint", "Models"));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, e, ListAsync, null, openApiMetadata: Paged(Doc("List model endpoints", "Models").WithParameter(QueryParam("active", typeof(bool))).WithParameter(QueryParam("supportsChat", typeof(bool))).WithParameter(QueryParam("supportsEmbeddings", typeof(bool))).WithParameter(QueryParam("provider", typeof(ModelProviderEnum)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, e, CreateAsync, null, openApiMetadata: Doc("Create a model endpoint", "Models").WithRequestBody(Body<ModelEndpointUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, e + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read a model endpoint", "Models"));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, e + "/{id}", UpdateAsync, null, openApiMetadata: Doc("Update a model endpoint", "Models"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, e + "/{id}", UpdateAsync, null, openApiMetadata: Doc("Update a model endpoint", "Models").WithRequestBody(Body<ModelEndpointUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, e + "/{id}", DeleteAsync, null, openApiMetadata: Doc("Delete a model endpoint", "Models"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, e + "/{id}/validate", ValidateAsync, null, openApiMetadata: Doc("Validate connectivity, tool support, and embeddings", "Models"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, e + "/{id}/models", ModelsAsync, null, openApiMetadata: Doc("List models offered by an endpoint", "Models"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, e + "/{id}/test", TestAsync, null, openApiMetadata: Doc("Send a sample prompt", "Models"));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/model-assignments", ListAssignmentsAsync, null, openApiMetadata: Doc("List task role assignments", "Models"));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.PUT, "/v1.0/api/model-assignments", UpsertAssignmentAsync, null, openApiMetadata: Doc("Assign a task role to an endpoint", "Models"));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/model-assignments", ListAssignmentsAsync, null, openApiMetadata: Paged(Doc("List task role assignments", "Models").WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("task", typeof(ModelTaskEnum)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.PUT, "/v1.0/api/model-assignments", UpsertAssignmentAsync, null, openApiMetadata: Doc("Assign a task role to an endpoint", "Models").WithRequestBody(Body<ModelAssignmentUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/api/model-assignments/{id}", DeleteAssignmentAsync, null, openApiMetadata: Doc("Remove a topic assignment override", "Models"));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/llm-calls", ListCallsAsync, null, openApiMetadata: Doc("List model calls", "Models"));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/llm-calls", ListCallsAsync, null, openApiMetadata: Paged(Doc("List model calls", "Models").WithParameter(QueryParam("runId", typeof(string))).WithParameter(QueryParam("refinementSessionId", typeof(string))).WithParameter(QueryParam("briefingId", typeof(string))).WithParameter(QueryParam("modelEndpointId", typeof(string))).WithParameter(QueryParam("model", typeof(string))).WithParameter(QueryParam("promptKey", typeof(string))).WithParameter(QueryParam("success", typeof(bool))).WithParameter(QueryParam("isDryRun", typeof(bool))).WithParameter(QueryParam("task", typeof(ModelTaskEnum)))));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/llm-calls/{id}", ReadCallAsync, null, openApiMetadata: Doc("Read a model call with payloads", "Models"));
         }
 

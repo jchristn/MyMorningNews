@@ -31,6 +31,8 @@ cd docker && docker compose up -d --build
 
 - Postgres is the only database. Keep `DatabaseDriverBase`, `DatabaseDriverFactory`, `DatabaseTypeEnum` (only `Postgresql`), and `Database/Postgresql/{Implementations,Queries}`.
 - Watson 7 routes are registered only through `server.Routes.{PreAuthentication,PostAuthentication}.{Static,Parameter}.Add(...)` in per-feature registrar classes. Never use `server.Get(...)`, `ApiRequest`, or tuple returns.
+- Every route's OpenAPI metadata is complete: `Doc(...)` plus `.WithRequestBody(Body<T>())` for bodies and `.WithParameter(QueryParam(name, typeof(T)))` for each query value; list routes wrap the metadata in `Paged(...)`.
+- Every model call goes through `ModelGateway`, which records full accounting in `llmcalls` (attribution, token types, time to first token, tool calls, cost) and prepends `Pipeline.ScopeGuardrail`. Every default prompt keeps the scope rule (plan sections 11.5 and 11.6).
 - Route prefixes: `/v1.0/token` (sessions), `/v1.0/tenants/...` (control plane), `/v1.0/api/...` (everything else), `/v1.0/public/...` (tokenized email and feed pages).
 - IDs are PrettyId K-sortable with prefixes from `Constants.IdPrefixes`, generated only by `Helpers/IdGenerator`. The seeded tenant ID is the literal `default`.
 - Column names are lowercase with no separators (`tenantid`, `createdutc`). No catch-all JSON columns.

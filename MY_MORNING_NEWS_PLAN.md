@@ -1356,12 +1356,14 @@ Notes: 62 Touchstone cases pass on net8.0 and net10.0 (plus the xUnit fact and t
 
 ### Phase 2: Dashboard foundation
 
-- [ ] Tokens (light and dark), `ThemeContext`, `AuthContext`, `AppContext`, `ApiClient` with query builders and `ApiError`, `useApi`.
-- [ ] i18n runtime, the 12 locales (initially English plus pseudo-locales; the rest filled in Phase 12), `LanguageSelector`, `verify-i18n.mjs`.
-- [ ] Shell: sidebar, topbar, command palette, notifications, route metadata, login with brand assets.
-- [ ] Shared components (section 25.5) and the chart primitives (`TimeChart`, `HorizontalBarChart`, `HeatmapChart`, `StatusStrip`, `ChartCard`).
-- [ ] Pages: Home (system panels), Request History plus the Request Details modal, API Explorer, Settings (with restart), Server Info, Health, Audit, Tenants, Users, Credentials, Roles and Assignments, Profile.
-- [ ] Vitest coverage for these. First Playwright captures.
+- [x] Tokens (light and dark), `ThemeContext`, `AuthContext`, `AppContext`, `ApiClient` with query builders and `ApiError`, `useApi`.
+- [x] i18n runtime, the 12 locales (English plus `qps-ploc` and `qps-rtl`; the other 11 catalogs fall back to English until Phase 12), `LanguageSelector`, `verify-i18n.mjs` (missing, unused, ICU validity, placeholder parity, hard-coded JSX text, em-dashes), pseudo-locale smoke test in CI.
+- [x] Shell: sidebar, topbar, command palette, notifications, route metadata, login with brand assets.
+- [x] Shared components (section 25.5) and the chart primitives (`TimeChart`, `HorizontalBarChart`, `HeatmapChart`, `StatusStrip`, `ChartCard`).
+- [x] Pages: Home (system panels), Request History plus the Request Details modal, API Explorer, Settings (with restart), Server Info, Health, Audit, Tenants, Users, Credentials, Roles and Assignments, Profile.
+- [x] Vitest coverage for these (49 tests). First Playwright captures (login and 13 pages at 1280 and 390 px, both themes, pseudo-locales).
+- [x] Backend gaps found by the dashboard, fixed: duplicate `Access-Control-Allow-Origin` on `/openapi.json`; OpenAPI request bodies (component schemas generated from request types) and query parameters (paging, sorting, filters) on every route; request history `minStatusCode`, `maxStatusCode`, and `statusClass` filters.
+- [ ] Deferred to Phase 12: settings field descriptions are English (`fields[].description`); add a stable `descriptionKey` or localize from `Accept-Language`. Audit principal column shows the principal ID rather than an email (resolve in the audit list response). At 480 px and below the topbar hides the language picker (available on Profile).
 
 Exit: every Phase 1 capability can be operated from the dashboard in both themes at three widths.
 
@@ -1515,3 +1517,4 @@ No open questions remain.
 | 2026-11-19 | 0 | Done | Solution (Core, Server, McpServer placeholder, Test.Shared, Test.Automated, Test.Xunit3), minimal Watson host with health, OpenAPI, CORS. Dashboard scaffold (React 19, Vite 8, ESLint 9, Vitest). Icons from glyph.png. Compose stack (postgres, server, dashboard) healthy. CI workflows. README, DOCKERHUB_README, CLAUDE.md. |
 | 2026-11-19 | 1 | Done | Settings with live and restart-required metadata, PostgreSQL driver and migrations, AAA (tokens, sessions, credentials, admin key, RBAC with built-in roles, effective permissions, audit), request history with gap-filled summaries, control-plane routes, telemetry (Radiant, Prometheus, Tempo, Loki, Grafana with Overview and HTTP dashboards). 62 tests passing. Plan amended with the credential vault, reveal API, and MCP server registry (section 15.1). |
 | 2026-11-19 | 3 | Backend done | Credential vault with audited no-store reveal, model endpoints, role assignments, `ModelGateway` (tool-based structured output with `tool_choice` auto, repair turns, JSON fallback, retry and backoff, refusals), prompts with versioning, rollback, reset, overrides, and lab. Per-tenant defaults (Anthropic `claude-opus-5-5`, Ollama `all-minilm`, 11 assignments, 19 prompts). Added on request: full model call accounting (section 11.5: streaming time to first token, token types, tool calls, user attribution, split cost, usage analytics APIs restricted to admins and auditors, Grafana Models and cost dashboard) and the scope guardrail (11.6). Migrations 2 and 3. 83 tests passing on net8 and net10, 84 on Xunit3. Dashboard pages for Phase 3 follow the Phase 2 shell. |
+| 2026-11-19 | 2 | Done | Dashboard foundation: tokens and themes, contexts, API client, ICU i18n with pseudo-locales and a verifier, shell, shared components, hand-rolled SVG chart primitives, and every Phase 1 page. 49 Vitest tests, lint and build clean, Playwright captures at two widths in both themes. Backend fixes from the dashboard: single CORS origin on the OpenAPI document, request bodies and query parameters in OpenAPI, request history status range filters. |

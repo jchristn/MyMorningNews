@@ -12,6 +12,7 @@ namespace MyMorningNews.Server.Routes
     using MyMorningNews.Core.Security;
     using MyMorningNews.Core.Serialization;
     using MyMorningNews.Core.Telemetry;
+    using MyMorningNews.Server.Services;
     using WatsonWebserver;
     using WatsonWebserver.Core;
     using WatsonWebserver.Core.OpenApi;
@@ -81,6 +82,41 @@ namespace MyMorningNews.Server.Routes
         {
             OpenApiRouteMetadata metadata = OpenApiRouteMetadata.Create(summary, tag);
             if (!String.IsNullOrEmpty(description)) metadata.Description = description;
+            return metadata;
+        }
+
+        /// <summary>
+        /// OpenAPI JSON request body for a type.
+        /// </summary>
+        /// <typeparam name="T">Body type.</typeparam>
+        /// <returns>Request body metadata.</returns>
+        protected static OpenApiRequestBodyMetadata Body<T>()
+        {
+            return OpenApiRequestBodyMetadata.Json(OpenApiSchemaFactory.For(typeof(T)), null, true);
+        }
+
+        /// <summary>
+        /// OpenAPI query parameter.
+        /// </summary>
+        /// <param name="name">Parameter name.</param>
+        /// <param name="type">Value type (string, int, bool, DateTime, or an enum).</param>
+        /// <returns>Parameter metadata.</returns>
+        protected static OpenApiParameterMetadata QueryParam(string name, Type type)
+        {
+            return OpenApiParameterMetadata.Query(name, null, false, OpenApiSchemaFactory.For(type));
+        }
+
+        /// <summary>
+        /// Add the standard paging, sorting, search, and date range query parameters.
+        /// </summary>
+        /// <param name="metadata">Route metadata.</param>
+        /// <returns>The same metadata.</returns>
+        protected static OpenApiRouteMetadata Paged(OpenApiRouteMetadata metadata)
+        {
+            ArgumentNullException.ThrowIfNull(metadata);
+            metadata.WithParameter(QueryParam("pageNumber", typeof(int))).WithParameter(QueryParam("pageSize", typeof(int)))
+                .WithParameter(QueryParam("sortBy", typeof(string))).WithParameter(QueryParam("sortDirection", typeof(SortDirectionEnum)))
+                .WithParameter(QueryParam("search", typeof(string))).WithParameter(QueryParam("fromUtc", typeof(DateTime))).WithParameter(QueryParam("toUtc", typeof(DateTime)));
             return metadata;
         }
 

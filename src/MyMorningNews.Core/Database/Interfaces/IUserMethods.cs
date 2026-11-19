@@ -1,5 +1,6 @@
 namespace MyMorningNews.Core.Database.Interfaces
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
@@ -87,5 +88,14 @@ namespace MyMorningNews.Core.Database.Interfaces
         /// <param name="token">Cancellation token.</param>
         /// <returns>Count.</returns>
         Task<long> CountAsync(UserFilter filter, CancellationToken token = default);
+
+        /// <summary>
+        /// Active users with this email in any active tenant (case-insensitive), for tenant-less sign-in.
+        /// </summary>
+        /// <param name="email">Email address.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Matching users, at most 50.</returns>
+        /// <exception cref="ArgumentNullException">email is null or empty.</exception>
+        Task<List<User>> ReadAllByEmailAsync(string email, CancellationToken token = default);
     }
 }

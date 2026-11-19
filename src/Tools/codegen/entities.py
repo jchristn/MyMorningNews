@@ -28,6 +28,7 @@ ENTITIES = [
         'default_sort': 'CreatedUtc',
     },
     {
+        # HAND-EDITED after generation (ReadAllByEmailAsync): do not --force.
         'name': 'User', 'table': 'users', 'prefix': 'usr_',
         'doc': 'Interactive user within a tenant.',
         'fields': [
@@ -301,12 +302,46 @@ ENTITIES = [
         'uniques': [['prompttemplateid', 'version']],
         'default_sort': 'Version',
     },
+    # ------------------------------------------------------------------ Mobile (plan section 35.5)
+    {
+        # HAND-EDITED after generation (ReadByHashAsync, RevokeFamilyAsync, ReadFamilySessionsAsync, RevokeBySessionAsync): do not --force.
+        'name': 'RefreshToken', 'table': 'refreshtokens', 'prefix': 'rft_',
+        'doc': 'Rotating refresh token for mobile clients. Only a SHA-256 hash of the secret is stored. Tokens issued from one sign-in share a family; reusing a rotated token revokes the family.',
+        'fields': [
+            f('UserId', doc='User.', required=True, length=64, filter=True, fk=('users', 'CASCADE')),
+            f('SessionId', doc='Session issued alongside this token.', nullable=True, length=64, filter=True),
+            f('FamilyId', doc='Family shared by every rotation of one sign-in.', required=True, length=64, filter=True, index=True),
+            f('TokenHash', doc='SHA-256 hash of the token secret (hex).', required=True, length=128, unique=True),
+            f('Client', doc='Client kind, for example mobile.', default='mobile', length=32),
+            f('SourceIp', doc='Source IP at issuance.', nullable=True, length=64),
+            f('UserAgent', 'text', doc='User agent at issuance.', nullable=True),
+            f('ExpiresUtc', 'datetime', doc='UTC expiration time.', sort=True),
+            f('UsedUtc', 'datetime', doc='UTC time the token was rotated (single use).', nullable=True),
+            f('RevokedUtc', 'datetime', doc='UTC time the token was revoked.', nullable=True),
+            f('RevocationReason', doc='Reason for revocation.', nullable=True, length=256),
+        ],
+    },
+    {
+        'name': 'Device', 'table': 'devices', 'prefix': 'dev_',
+        'doc': 'A mobile device registered for push notifications.',
+        'fields': [
+            f('UserId', doc='Owning user.', required=True, length=64, filter=True, fk=('users', 'CASCADE')),
+            f('ExpoPushToken', doc='Expo push token.', required=True, length=256, filter=True),
+            f('Platform', doc='Platform: ios or android.', required=True, length=16, filter=True),
+            f('Name', doc='Device name shown to the user.', nullable=True, length=128),
+            f('Locale', doc='Device locale for notification text.', nullable=True, length=32),
+            f('LastSeenUtc', 'datetime', doc='UTC time the device last registered or received a push.', nullable=True, sort=True),
+            f('LastError', 'text', doc='Last push delivery error, when any.', nullable=True),
+        ],
+        'uniques': [['userid', 'expopushtoken']],
+    },
 ]
 
 # Prefixes for identifiers that are not codegen entities.
 EXTRA_PREFIXES = [
     ('RequestHistory', 'req_', 'Prefix for request history entries.'),
     ('Request', 'rqi_', 'Prefix for per-request trace identifiers.'),
+    ('RefreshTokenFamily', 'rff_', 'Prefix for refresh token family identifiers.'),
 ]
 
 ENUMS = [
@@ -415,5 +450,7 @@ ENUMS = [
         ('PromptExecute', 'Run a prompt in the prompt lab.'),
         ('LlmCallRead', 'Read model call logs.'),
         ('UsageRead', 'Read model usage and cost analytics.'),
+        ('DeviceRead', 'List my push devices.'),
+        ('DeviceWrite', 'Register, test, or remove my push devices.'),
     ]),
 ]

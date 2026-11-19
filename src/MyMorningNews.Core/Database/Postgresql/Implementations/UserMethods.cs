@@ -170,6 +170,20 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             return counts.FirstOrDefault();
         }
 
+        /// <inheritdoc />
+        public async Task<List<User>> ReadAllByEmailAsync(string email, CancellationToken token = default)
+        {
+            if (String.IsNullOrWhiteSpace(email)) throw new ArgumentNullException(nameof(email));
+            string sql = "SELECT " + PrefixColumns("u") + " FROM users u JOIN tenants t ON t.id = u.tenantid " +
+                "WHERE LOWER(u.email) = LOWER($1) AND u.active = TRUE AND t.active = TRUE ORDER BY t.createdutc LIMIT 50";
+            return await QueryAsync(sql, Map, token, email.Trim()).ConfigureAwait(false);
+        }
+
+        private static string PrefixColumns(string alias)
+        {
+            return String.Join(", ", UserQueries.Columns.Split(',').Select(c => alias + "." + c.Trim()));
+        }
+
         /// <summary>
         /// Map a data reader row (columns in <see cref="UserQueries.Columns"/> order) to a model.
         /// </summary>

@@ -1,0 +1,19 @@
+# Factory demo profile: the base stack plus a one-shot seeder that adds demo data on top of the first-boot seed.
+#   docker compose -f compose.yaml -f factory/compose.factory.yaml up -d --build
+# The seeder is best-effort and idempotent: routes that a phase has not built yet are skipped, never fatal.
+services:
+  factory-seed:
+    image: curlimages/curl:8.11.1
+    container_name: mymorningnews-factory-seed
+    depends_on:
+      server:
+        condition: service_healthy
+    environment:
+      MYMORNINGNEWS_REST_BASE: http://server:8000
+      MYMORNINGNEWS_ADMIN_EMAIL: admin@mymorningnews
+      MYMORNINGNEWS_ADMIN_PASSWORD: password
+      MYMORNINGNEWS_ADMIN_TENANT: default
+    volumes:
+      - ./factory/seed:/seed:ro
+    entrypoint: ["/bin/sh", "/seed/seed.sh"]
+    restart: "no"

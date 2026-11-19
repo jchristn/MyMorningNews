@@ -121,6 +121,16 @@ namespace MyMorningNews.Core.Database
         /// </summary>
         public IUsageAnalyticsMethods UsageAnalytics { get; protected set; } = null!;
 
+        /// <summary>
+        /// Mobile refresh tokens.
+        /// </summary>
+        public IRefreshTokenMethods RefreshTokens { get; protected set; } = null!;
+
+        /// <summary>
+        /// Push notification devices.
+        /// </summary>
+        public IDeviceMethods Devices { get; protected set; } = null!;
+
         #endregion
 
         #region Constructors-and-Factories

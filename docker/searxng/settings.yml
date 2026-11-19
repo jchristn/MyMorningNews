@@ -1,0 +1,27 @@
+# SearXNG settings for My Morning News. Only the differences from SearXNG's defaults are listed.
+# The server calls http://searxng:8080/search?format=json inside the compose network. The host port
+# (127.0.0.1:12103) is for trying queries in a browser.
+use_default_settings: true
+
+general:
+  instance_name: "My Morning News search"
+  enable_metrics: false
+
+server:
+  # Overridden by the SEARXNG_SECRET environment variable in compose.yaml. Change it for shared deployments.
+  secret_key: "mymorningnews-change-this-searxng-secret"
+  bind_address: "0.0.0.0"
+  port: 8080
+  limiter: false
+  image_proxy: false
+  public_instance: false
+
+search:
+  safe_search: 0
+  autocomplete: ""
+  formats:
+    - html
+    - json
+
+ui:
+  static_use_hash: true

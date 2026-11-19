@@ -69,7 +69,14 @@ namespace MyMorningNews.Core.Database.Postgresql
                 "CREATE INDEX IF NOT EXISTS ix_llmcalls_tenantid_userid_createdutc ON llmcalls (tenantid, userid, createdutc)",
                 "CREATE INDEX IF NOT EXISTS ix_llmcalls_tenantid_topicid ON llmcalls (tenantid, topicid)",
                 "CREATE INDEX IF NOT EXISTS ix_llmcalls_createdutc ON llmcalls (createdutc)"
-            })
+            }),
+            new SchemaMigration(4, "Mobile refresh tokens and push devices", Concat(
+                RefreshTokenQueries.Schema,
+                DeviceQueries.Schema,
+                new List<string>
+                {
+                    "CREATE INDEX IF NOT EXISTS ix_users_email_lower ON users (LOWER(email))"
+                }))
         };
 
         private static List<string> Concat(params IReadOnlyList<string>[] parts)

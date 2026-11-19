@@ -28,6 +28,8 @@ namespace MyMorningNews.Core.Security
             { RequestTypeEnum.UserDelete, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
             { RequestTypeEnum.UserSelfRead, new RequiredPermission(ResourceTypeEnum.User, OperationTypeEnum.Read, anyAuthenticated: true) },
             { RequestTypeEnum.UserSelfWrite, new RequiredPermission(ResourceTypeEnum.User, OperationTypeEnum.Update, anyAuthenticated: true) },
+            { RequestTypeEnum.DeviceRead, new RequiredPermission(ResourceTypeEnum.User, OperationTypeEnum.Read, anyAuthenticated: true) },
+            { RequestTypeEnum.DeviceWrite, new RequiredPermission(ResourceTypeEnum.User, OperationTypeEnum.Update, anyAuthenticated: true) },
             { RequestTypeEnum.CredentialRead, new RequiredPermission(ResourceTypeEnum.Credential, OperationTypeEnum.Read) },
             { RequestTypeEnum.CredentialWrite, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
             { RequestTypeEnum.CredentialDelete, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },

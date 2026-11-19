@@ -1,0 +1,32 @@
+# Caddy for the hosted service: automatic HTTPS, API and dashboard on one origin.
+{
+	email {$MYMORNINGNEWS_ACME_EMAIL}
+	admin 127.0.0.1:2019
+}
+
+{$MYMORNINGNEWS_APP_DOMAIN} {
+	encode zstd gzip
+
+	# API, OpenAPI, Swagger, public email and feed pages.
+	@api path /v1.0/* /openapi.json /swagger*
+	handle @api {
+		reverse_proxy server:8000
+	}
+
+	# Universal link files for the mobile app (served by the server; plan section 33.3).
+	handle /.well-known/* {
+		reverse_proxy server:8000
+	}
+
+	# Everything else is the dashboard.
+	handle {
+		reverse_proxy dashboard:80
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+}

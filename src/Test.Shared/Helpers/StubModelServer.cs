@@ -36,6 +36,11 @@ namespace Test.Shared.Helpers
         /// </summary>
         public ConcurrentQueue<string> Requests { get; } = new ConcurrentQueue<string>();
 
+        /// <summary>
+        /// Expo push request bodies received at /push/send. Tokens containing "dead" get a DeviceNotRegistered ticket.
+        /// </summary>
+        public ConcurrentQueue<string> PushRequests { get; } = new ConcurrentQueue<string>();
+
         #endregion
 
         #region Private-Members
@@ -148,6 +153,26 @@ namespace Test.Shared.Helpers
                 }
 
                 string path = ctx.Request.Url?.AbsolutePath ?? String.Empty;
+                if (path.EndsWith("/push/send", StringComparison.Ordinal))
+                {
+                    PushRequests.Enqueue(body);
+                    StringBuilder tickets = new StringBuilder();
+                    using (JsonDocument push = JsonDocument.Parse(String.IsNullOrWhiteSpace(body) ? "[]" : body))
+                    {
+                        foreach (JsonElement message in push.RootElement.EnumerateArray())
+                        {
+                            if (tickets.Length > 0) tickets.Append(',');
+                            string to = message.TryGetProperty("to", out JsonElement t0) ? t0.GetString() ?? String.Empty : String.Empty;
+                            tickets.Append(to.Contains("dead", StringComparison.Ordinal)
+                                ? "{\"status\":\"error\",\"message\":\"not registered\",\"details\":{\"error\":\"DeviceNotRegistered\"}}"
+                                : "{\"status\":\"ok\",\"id\":\"" + Guid.NewGuid().ToString("N") + "\"}");
+                        }
+                    }
+
+                    await WriteAsync(ctx, 200, "{\"data\":[" + tickets + "]}").ConfigureAwait(false);
+                    return;
+                }
+
                 if (path.EndsWith("/models", StringComparison.Ordinal))
                 {
                     await WriteAsync(ctx, 200, "{\"object\":\"list\",\"data\":[{\"id\":\"stub-chat\",\"object\":\"model\"},{\"id\":\"stub-embed-8\",\"object\":\"model\"}]}").ConfigureAwait(false);

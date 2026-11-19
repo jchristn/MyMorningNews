@@ -248,6 +248,16 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// Read model usage and cost analytics.
         /// </summary>
-        UsageRead
+        UsageRead,
+
+        /// <summary>
+        /// List my push devices.
+        /// </summary>
+        DeviceRead,
+
+        /// <summary>
+        /// Register, test, or remove my push devices.
+        /// </summary>
+        DeviceWrite
     }
 }

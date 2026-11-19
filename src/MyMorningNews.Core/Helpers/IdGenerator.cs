@@ -182,6 +182,24 @@ namespace MyMorningNews.Core.Helpers
         }
 
         /// <summary>
+        /// Generate a RefreshToken identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateRefreshTokenId()
+        {
+            return Generate(IdPrefixes.RefreshToken);
+        }
+
+        /// <summary>
+        /// Generate a Device identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateDeviceId()
+        {
+            return Generate(IdPrefixes.Device);
+        }
+
+        /// <summary>
         /// Generate a RequestHistory identifier.
         /// </summary>
         /// <returns>Identifier.</returns>
@@ -197,6 +215,15 @@ namespace MyMorningNews.Core.Helpers
         public static string GenerateRequestId()
         {
             return Generate(IdPrefixes.Request);
+        }
+
+        /// <summary>
+        /// Generate a RefreshTokenFamily identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateRefreshTokenFamilyId()
+        {
+            return Generate(IdPrefixes.RefreshTokenFamily);
         }
 
         #endregion

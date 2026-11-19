@@ -298,7 +298,16 @@ Compose rules applied:
 - `docker/update.bat` and `docker/update.sh`: `docker compose pull`, `docker compose down`, `docker compose up -d`, `docker ps -a`. Named volumes are preserved.
 - `docker/factory/reset.bat` and `reset.sh`: destructive factory reset (down with `-v`, re-seed from `docker/factory/seed/`).
 
-Startup from a clean checkout is `cd docker && docker compose up -d --build`, then open `http://127.0.0.1:12101` and sign in with the default credentials.
+Startup from a clean checkout is `cd docker && docker compose up -d --build`, then open `http://127.0.0.1:12101` and sign in with the default credentials (`admin@mymorningnews` / `password`, tenant `default`).
+
+**What `docker/` contains** (modelled on NotDory, RecallDB, Armada, and MuxCloud):
+
+- `compose.yaml`: the default stack (postgres, server, dashboard, searxng, prometheus, tempo, loki, grafana) plus profiles `tts` (Kokoro, large image; default once Phase 8 lands), `mcp` (Phase 11), and `ollama` (Linux hosts).
+- `.env.example`: every variable compose substitutes (Anthropic key, signing key, admin key, SearXNG secret, `MYMORNINGNEWS_STORAGE_*` for local or S3 storage, Expo push token), with the default credentials noted.
+- `server/` (Dockerfile, `mymorningnews.json` with explicit `storage` and `push` sections), `searxng/` (Dockerfile with static curl, `settings.yml` with JSON output), `tts/`, `ollama/`, `mcp/` (Dockerfiles with curl), `prometheus/`, `tempo/`, `loki/`, and `grafana/` (provisioning and dashboards).
+- `factory/`: `mymorningnews.json` (factory settings), `reset.sh` and `reset.bat` (confirmation, `--demo`, `--keep-ollama`, `--yes`), `compose.factory.yaml` (one-shot seeder), and `seed/` (`seed.sh`, `demo-user.json` for `demo@mymorningnews` / `password`, and `topics/*.json`, extended by each phase with demo topics, editions, requests, briefings, and feedback).
+- `hosted/`: the hosted overlay (Caddy on 80 and 443, `Caddyfile`, hosted `mymorningnews.json`, README; section 33.3).
+- `update.sh` and `update.bat`.
 
 ---
 
@@ -344,7 +353,8 @@ The settings file is `mymorningnews.json`. Environment variables use the `MYMORN
 | `Search` | `SearxngUrl` (`http://searxng:8080`), `DefaultProviders` | live |
 | `Fetch` | `UserAgent` (`MyMorningNews/0.1`), `RespectRobots` (true), `TimeoutMs` (20000), `PerDomainDelayMs` (1500), `MaxBytes` (2 MB), `UseHeadlessBrowser` (false) | live |
 | `Tts` | `Provider` (`OpenAiCompatibleSpeech`), `Endpoint` (`http://tts:8880/v1`), `DefaultVoice`, `Format` (`mp3`) | live |
-| `Media` | `Directory` (`/data/media`), `RetentionDays` (365) | restart (directory) |
+| `Storage` | `Provider` (`Local` or `S3`), `LocalDirectory` (`/data/media`), `S3Bucket`, `S3Region` (`us-west-2`), `S3Endpoint` (empty for AWS; set for MinIO, R2, and other S3-compatible services), `S3AccessKey` and `S3SecretKey` (secret; empty uses the default AWS credential chain), `S3Prefix` (`mymorningnews/`), `S3ForcePathStyle` (false), `PresignedUrlMinutes` (60), `ArtifactRetentionDays` (365, maximum 365). Every value is in the server JSON file and has a `MYMORNINGNEWS_STORAGE_*` environment variable (section 22.1). | restart (provider and S3), live (retention) |
+| `Push` | `Enabled` (true), `ExpoPushUrl`, `ExpoAccessToken` (secret, optional), `TimeoutMs` (10000) (section 35.5) | live |
 | `Email` | section 23.6 | live |
 | `Templates` | `ImportDirectory` (null) | live |
 | `Diagnostics` | `CaptureLlmPayloads` (true), `LlmPayloadRetentionDays` (14) | live |
@@ -646,7 +656,7 @@ Every model call uses a named, versioned prompt template that you can edit.
 
 **Keys (defaults in `Core/Defaults/Prompts/*.md`):**
 
-- Refinement: `refinement.dimensions`, `refinement.questions`, `refinement.followup`, `refinement.synthesize`, `refinement.sources`
+- Refinement: `refinement.dimensions`, `refinement.questions`, `refinement.followup`, `refinement.synthesize`, `refinement.sources`, `refinement.quick` (one-time requests, section 13.1)
 - Research run: `research.queries`, `research.extract`, `research.score`, `research.dedupe-judge` (borderline similarity only), `research.synthesize`, `research.predict`, `research.review-predictions`, `research.suggest`
 - Briefing and audio: `briefing.compose`, `briefing.section`, `podcast.script`
 - Feedback: `feedback.tag-reasons`, `feedback.distill-preferences`
@@ -697,6 +707,18 @@ The wizard is modeled on Pneuma's `SubjectWizard` (step rail, server-persisted d
 **Persistence.** Every step writes to `refinementsessions`, `refinementmessages`, `refinementquestions`, and `refinementquestionoptions` as you go, so closing the browser loses nothing and the session resumes. Generation streams progress over SSE (`GET /v1.0/api/refinement-sessions/{id}/events`, consumed through `fetch` streaming so the bearer header is sent). Failures show the error with "retry" and "retry with another model", following Pneuma's `WizardFailurePanel`.
 
 **Refine again.** Any existing topic can reopen the wizard. The new session starts from the current context plus a feedback digest, and the model leads with questions grounded in your history, for example: "You marked 9 of the last 12 funding stories as not relevant. Should I exclude funding news entirely?" Changes are applied as a diff you review, and the topic keeps a context change history (each apply records a `topics.lastrefinedutc` change and an audit entry).
+
+### 13.1 One-time requests
+
+Not everything is a recurring topic. "Build me a podcast on the history of the shipping container", "Write me a report on heat pump rebates in California", or "Email me a summary of this week's AI chip announcements" are one-time requests, run once now or once at a chosen time.
+
+- **Entry points.** A "New request" box on Home, in the web app at `/requests/new`, in the mobile app's Today tab, and through the API (`POST /v1.0/api/requests`), the SDKs, and the MCP server.
+- **Deliverables.** One or more of: Report (Markdown plus rendered HTML), Podcast (audio episode, also published to the user's private feed if they choose), and Email (the report or a summary sent to chosen recipients). Length, depth, voice, and tone are options with defaults.
+- **Quick refinement.** The request runs a short version of the wizard: `refinement.quick` turns the text into a brief with dimensions and includes and excludes, and asks at most three clarifying questions (skippable with "Just do it"). The user can open the full wizard instead.
+- **Timing.** "Run now" or "Run once at" a date and time in the user's time zone. Internally this is a schedule with interval type `Once` (section 14.1) attached to a request, so the scheduler, pipeline, ranking, evidence, and delivery are the same code paths as recurring topics. Nothing repeats unless the user chooses "Make this a recurring topic" afterward, which converts the request into a topic with its context and history.
+- **Storage.** `requests` (owner, text, brief, deliverables, options, status, scheduled time, run, briefing, artifacts, converted topic). Outputs follow the artifact retention rules (section 22.1: kept up to 365 days, pinnable).
+- **Where results appear.** A "Requests" list in the web app and the mobile app (status, deliverables, open, listen, download, re-run, delete, make recurring), the email (if chosen), and a push notification when it is ready.
+- **Costs.** One-time requests count toward the same usage accounting and caps (sections 11.5 and 33.2), and the request form shows an estimated cost before it runs on the hosted service.
 
 ---
 
@@ -932,11 +954,21 @@ There is no text-to-speech in `~/Code` (Polyvox is speech-to-text), so TTS is pl
 3. Each segment is synthesized, with bounded parallelism and retries.
 4. Segments are concatenated and loudness-normalized with `ffmpeg` (installed in the server image).
 5. Chapters are recorded per briefing section.
-6. The MP3 is stored on the `media` volume and the `mediaassets` row is updated.
+6. The MP3 and chapters are stored through `IArtifactStore` (local volume or S3, section 22.1) and the `mediaassets` row is updated.
 
 **Playback.** The dashboard player follows Auralytic's `CallReviewView` pattern: an authenticated fetch to a blob URL, native controls, chapter list, and the current section highlighted in the Markdown. Audio routes support HTTP `Range` requests.
 
 **Podcast feed.** Per user and per edition, the user can create a private feed URL (`/v1.0/public/feeds/{token}/podcast.xml`, RSS 2.0 with iTunes tags, artwork from `assets/glyph.png`). Podcast apps can subscribe to it. Enclosure URLs carry the same token. Feed tokens are hashed at rest, revocable, and audited.
+
+### 22.1 Artifact storage and retention
+
+Every generated artifact goes through one `IArtifactStore` (`PutAsync`, `OpenReadAsync` with byte ranges, `DeleteAsync`, `GetDownloadUrlAsync`): briefing Markdown, the rendered HTML report, audio and podcast episodes (MP3 plus chapters JSON), one-time request outputs (section 13.1), and account exports.
+
+- **Providers.** `LocalArtifactStore` writes under `Storage.LocalDirectory` (the `media` Docker volume). `S3ArtifactStore` (AWSSDK.S3) writes to `Storage.S3Bucket` under `Storage.S3Prefix`, works with AWS and S3-compatible endpoints, and serves downloads either through the server (range requests for audio seeking) or as presigned URLs valid for `Storage.PresignedUrlMinutes`. The provider is chosen in the server JSON file (`storage` section) or with `MYMORNINGNEWS_STORAGE_*` environment variables; secrets are masked by the settings API and never written back when they come from the environment.
+- **Keys.** `{tenantId}/{yyyy}/{MM}/{artifactId}.{ext}`. The `artifacts` table records kind (BriefingMarkdown, BriefingHtml, Audio, Chapters, Export), owner, topic, briefing or request, content type, bytes, SHA-256, storage provider, key, created, expires, and pinned.
+- **Retention: up to 365 days.** Every artifact is kept for `Storage.ArtifactRetentionDays` (default and maximum 365). `RetentionWorker` deletes expired artifacts from the store and marks their rows deleted. Briefing metadata, findings, evidence, and feedback stay, so history and analytics keep working, and the reader shows "The report file has expired" with a regenerate action while the run data exists. Users can pin a briefing or one-time output to keep it past the window, up to a per-tenant cap (entitlement `artifacts.pinned.max`, default 50).
+- **Reports.** Each briefing and one-time report is stored twice: the Markdown source and a rendered, self-contained HTML document (HtmlPageBuilder layout with inline styles, the same look as the email), so it can be opened, downloaded, or shared without the dashboard.
+- **Tests** run both stores (local directory and an S3 stub) through the same suite: put, ranged read, presign, delete, retention expiry, and pinning.
 
 ---
 
@@ -1142,6 +1174,7 @@ Written here before any code, as `DASHBOARD_STYLE_AND_USABILITY.md` requires. Al
 |-------|-------|----------|-------|---------|-----------------|--------------------|------------------------|
 | Start | `/home` | See what happened and what needs me | all | analytics/overview, runs, predictions due, health | recent runs table | Run now, open briefing, grade predictions | first-run CTA to create a topic; per-panel retry |
 | Start | `/today` | Read the latest briefing and listen | all | briefings latest | none | feedback per item, audio, download | "No briefing yet" with Compose now |
+| Research | `/requests` and `/requests/new` | One-time reports, podcasts, and email summaries (section 13.1) | Topic | requests | status, deliverable, date | New request, Run now or once at, Open, Listen, Download, Re-run, Make recurring, Delete | "Ask for anything once" CTA |
 | Research | `/topics` | Manage topics | Topic | topics | status, owner, schedule, last run, precision | + Add (wizard), View, Edit, Duplicate, Pause, Run now, Delete, View JSON, bulk pause and delete | "Tell me what you care about" CTA |
 | Research | `/topics/new` and `/topics/:id/refine` | Refinement wizard | Topic Write | refinement-sessions | none | step rail, regenerate, lock, preview run | model failure panel |
 | Research | `/topics/:id` | Topic workspace (tabs: Overview, Context, Schedule, Sources, Runs, Findings, Predictions, Suggestions, Feedback, Preferences, Analytics, Delivery, Prompts, Models) | Topic Read | many | per tab | per tab | per tab |
@@ -1393,6 +1426,8 @@ Exit: you can register Ollama and an API model, assign roles, edit a prompt, and
 
 ### Phase 4: Topics and the refinement wizard
 
+- [ ] One-time requests (section 13.1): `requests` table and API, `refinement.quick` prompt, "Run now" and "Run once at", deliverable options, conversion to a recurring topic; web `/requests` pages and the mobile Requests screens.
+
 - [ ] Topic, dimension, constraint, and recipient models, routes, and cascades.
 - [ ] Refinement sessions, all wizard steps with SSE generation, resume, apply, and refine again.
 - [ ] Dashboard: Topics table, wizard (step rail, guidance, regenerate, lock, failure panel), Topic workspace Overview and Context tabs.
@@ -1419,6 +1454,8 @@ Exit: a topic scheduled for every 5 minutes enqueues runs on time across a conta
 Exit: a real run against SearXNG and Ollama produces ranked, evidence-backed findings, predictions, and suggestions, with every stage visible and replayable.
 
 ### Phase 7: Briefings, templates, and editions
+
+- [ ] `IArtifactStore` with `LocalArtifactStore` and `S3ArtifactStore` (AWSSDK.S3, S3-compatible endpoints, presigned URLs), the `artifacts` table, rendered HTML reports, 365-day retention with pinning in `RetentionWorker`, and a storage suite against both stores (section 22.1).
 
 - [ ] Template format, validator, directives, versioning, import and export, default templates.
 - [ ] `BriefingComposer`, editions, the edition schedule, fresh-research lead, single-run briefings, HTML export.
@@ -1514,14 +1551,29 @@ Depends on Phases 8 (audio), 10 (feedback and analytics), and 14 (sign-up and ca
 
 - [ ] Spike: `expo-audio` background playback, lock-screen metadata and controls, and Android foreground service on SDK 58. Decide between it and `react-native-track-player`.
 - [ ] Dashboard refactor: host-agnostic `src/shared/` (API client with injected storage, base URL, and `onUnauthorized`; i18n catalog; formatters and chart math), plus `lint:shared`.
-- [ ] Backend: devices, `PushWorker` and the Push delivery channel, mobile refresh tokens, HTTP range requests on media, briefing progress (section 35.5). Suites: Devices, Push, MediaRanges, Progress.
+- [x] Backend contracts built early (2026-11-19): rotating mobile refresh tokens with reuse detection, tenant-less sign-in, devices with idempotent registration and test push, `PushService` with Expo ticket handling and pruning of unregistered devices, `Push` settings, public client config. Migration 4. Mobile suite (6 cases).
+- [ ] Backend, remaining: `PushWorker` and the Push delivery channel per edition, HTTP range requests on media, briefing progress (section 35.5). Suites: MediaRanges, Progress.
 - [ ] App: auth (sign-in, sign-up, tenant-less sign-in, secure storage, biometric lock, change server), Today, Listen (player, downloads, synced progress), Topics (wizard, workspace, editions), feedback everywhere, Insights charts with react-native-svg, Account (delivery, notifications, usage meter, export, delete), deep and universal links, offline queue (section 35.3).
 - [ ] Phone tabs and tablet split views, accessibility, RTL, 12 locales plus pseudo-locales.
 - [ ] `parity.json` with `parity:check`, `npm run verify`, `.github/workflows/mobile.yml`, `docs/MOBILE_DEVICE_TESTING.md`.
-- [ ] EAS profiles, signed `expo-updates`, `mobile/APP_STORE_SUBMISSION.md`, a screenshot set, and store badges on the website.
+- [ ] EAS profiles, signed `expo-updates`, a screenshot set (after the interface review), and store badges on the website.
+- [ ] `APP_STORE_SUBMISSION.md` at the repository root: every metadata field and data point the App Store and Google Play require, as a form (store, console field name, limits, proposed value, and an `Owner:` line for anything only the owner can supply or confirm). See section 35.7.
+- [ ] **Owner: fill out `APP_STORE_SUBMISSION.md`.** Ask the owner to supply and confirm every `Owner:` field (account IDs, reviewer demo account, contact phone, pricing and availability, tax and banking, approval of all proposed text) before the first TestFlight and Play internal builds.
 - [ ] Owner actions: Apple and Google developer accounts, APNs key, FCM credentials, EAS project, TestFlight and Play internal testing, then public listings.
 
 Exit: on an iPhone, an iPad, an Android phone, and an Android tablet, a new user signs up, builds a topic, receives a push when the briefing is ready, reads it, listens with the screen locked, gives feedback, and deletes the account.
+
+### Phase 17: Final README and documentation revisit
+
+The last step of the plan. The README was written while the product was being built, so it still says what the product "will" do, marks services "planned", and points at later phases. This phase rewrites it to describe what exists.
+
+- [ ] Rewrite `README.md` from the shipped product, not the plan: replace every "will", "planned", "coming", "arrives in Phase N", and the alpha status note with present-tense descriptions of what works, and remove anything that did not ship (or list it under a short "Not yet" heading).
+- [ ] Verify every claim, command, port, URL, default credential, and screenshot against a clean checkout and the hosted service, the same way Phase 12's exit criterion is checked.
+- [ ] Add the approved screenshots in collapsible `<details>` sections (section 34.1), and sections for the hosted service, the website, the mobile apps (store links), SDKs, the MCP server, and benchmarks results.
+- [ ] Bring `DOCKERHUB_README.md`, `REST_API.md`, `MCP_API.md`, `docs/`, `mobile/README.md`, `sdk/README.md`, and the mymorningnews.ai website in line with the README, so no document contradicts another.
+- [ ] Run the humanizer pass and the Signs of AI writing review on every rewritten document. No em-dashes.
+
+Exit: someone who has never seen the project can read the README, understand what My Morning News does today, and reach a first briefing (self-hosted or hosted) without consulting the plan.
 
 ---
 
@@ -1587,6 +1639,8 @@ No open questions remain.
 | 2026-11-19 | 2 | Done | Dashboard foundation: tokens and themes, contexts, API client, ICU i18n with pseudo-locales and a verifier, shell, shared components, hand-rolled SVG chart primitives, and every Phase 1 page. 49 Vitest tests, lint and build clean, Playwright captures at two widths in both themes. Backend fixes from the dashboard: single CORS origin on the OpenAPI document, request bodies and query parameters in OpenAPI, request history status range filters. |
 | 2026-11-19 | Plan | Amended | Added the hosted service with public sign-up, caps, and entitlements (section 33), the mymorningnews.ai website (section 34, Phase 15), screenshots for the website and README in collapsible sections after a joint interface review (section 34.1), and the iOS and Android phone and tablet app with full end-user parity (section 35, Phase 16). Decisions Q11 to Q15. Phases 14 to 16 added. |
 | 2026-11-19 | 15 | Started | Website built and pushed to `jchristn/mymorningnews.ai`: home page, privacy, terms, support, delete-account, and 404 pages, light and dark themes, responsive, no third-party scripts. Sign-up and log-in point at `app.mymorningnews.ai` (live with Phase 14). GitHub Pages and DNS are owner actions. No product screenshots until the joint interface review. |
+| 2026-11-19 | Plan | Amended | Added Phase 17, a final README and documentation revisit that replaces the in-progress wording ("will", "planned", "arrives in Phase N") with a description of the shipped product. |
+| 2026-11-19 | Plan, 16 | Amended, started | One-time requests (section 13.1: reports, podcasts, and email summaries run once now or at a set time). Artifact storage through `IArtifactStore` with local or S3 providers configured in the server JSON file or `MYMORNINGNEWS_STORAGE_*` variables, and 365-day retention with pinning (section 22.1; `Storage` and `Push` settings added now). `docker/` populated: `.env.example`, SearXNG (default), TTS, MCP, and Ollama profiles, factory demo overlay with seeder and demo user, improved reset scripts, hosted Caddy overlay. Mobile backend contracts built (refresh tokens, tenant-less sign-in, devices and push, client config; migration 4). `APP_STORE_SUBMISSION.md` and `OWNER_ACTIONS.md` added to the plan (section 35.7) with an owner fill-out task. Default credentials confirmed as `admin@mymorningnews` / `password`. |
 
 ---
 
@@ -1712,3 +1766,18 @@ Everything a member can do on the web, the app can do. Operator and administrato
 - **Version.** The store version is `0.1.0` with incrementing build numbers, matching the product's `0.1.0-alpha` (stores do not accept the `-alpha` suffix). No version number changes without approval.
 - **`mobile/APP_STORE_SUBMISSION.md`**, modelled on BjjWithJoel's: app information, age rating, Apple privacy label and Google data safety answers (account email, usage data, no tracking, no ads), account deletion (in app and on the website), a reviewer demo account on the hosted service, a screenshot plan (6.9-inch and 6.5-inch iPhone, 13-inch iPad, Android phone and 10-inch tablet, both themes), and review notes. No in-app purchases while the service is free (decision Q11). When billing arrives, digital plans bought in the app go through in-app purchase per Guideline 3.1.1, sharing the entitlements model.
 - **Owner actions before the first store build:** an Apple Developer account and App Store Connect app, a Google Play Console app, an APNs key, an FCM V1 service account, the EAS project, and store listing copy review.
+
+### 35.7 APP_STORE_SUBMISSION.md and owner actions
+
+`APP_STORE_SUBMISSION.md` at the repository root is the single source for store metadata. It covers, for the Apple App Store and Google Play:
+
+- **App record:** name, subtitle or short description, full description, promotional text, keywords, categories, bundle ID and package (`ai.mymorningnews.app`), SKU, primary language, and localizations.
+- **People and URLs:** copyright (`2026 Lattice AI LLC`), developer and seller name, support URL, marketing URL, privacy policy URL, account deletion URL, and support email (`hello@latticetech.ai`).
+- **Ratings and declarations:** age rating questionnaires (Apple and IARC), target audience, ads (none), news app declaration, content rights, and export compliance (standard HTTPS only).
+- **Privacy:** the Apple privacy label and the Google Play data safety form, item by item.
+- **Review:** a reviewer demo account, notes, a contact name, email, and phone.
+- **Assets:** app icon, screenshots and previews per device class (6.9-inch and 6.5-inch iPhone, 13-inch iPad, Android phone and 10-inch tablet, both themes; captured only after the owner's interface review), and the feature graphic.
+- **Distribution:** pricing (free), availability countries, release method (manual or phased), TestFlight and internal testing groups, and tax and banking status.
+- **Build and submit steps** (EAS).
+
+Each field shows the store, the field name as the console shows it, the length limit or format, our proposed value, and an `Owner:` checkbox where the owner must supply or confirm it. **A Phase 16 task asks the owner to fill it out before the first store builds.** Everything else the owner must do (accounts, credentials, DNS, decisions) is collected in `OWNER_ACTIONS.md` at the repository root, grouped by the phase it unblocks.

@@ -28,6 +28,10 @@ All notable changes to this project are documented here. The project follows [Se
 - Model gateway: streaming calls, tool-based structured output with `tool_choice` auto and repair turns, JSON fallback for models without tools, retry with backoff, typed refusals, embeddings with model and dimensions.
 - Model call accounting: every call records attributed user and topic, input, cached, cache-write, output, reasoning, and total tokens, time to first token, streaming duration, chunks, tokens per second, tool calls, attempts, and split input and output cost.
 - Usage analytics API: cost and token reports grouped by user, model, task, provider, topic, prompt, or day, gap-filled time series, the caller's own usage, and platform-wide reports by tenant for global administrators. Grafana "Models and cost" dashboard.
+- Mobile backend: rotating refresh tokens for the mobile app with reuse detection, sign-in without a tenant ID (one matching tenant signs in, several return a list), push devices with test notifications through Expo, and a public client configuration route.
+- Settings for artifact storage (local or S3, configurable in the server JSON file or with `MYMORNINGNEWS_STORAGE_*` variables, 365-day retention) and push notifications.
+- Docker: SearXNG web search in the default stack; TTS, MCP, and Ollama profiles; `.env.example`; a factory demo overlay with a seeder and demo user; reset scripts with `--demo`, `--keep-ollama`, and `--yes`; and a hosted overlay with Caddy for HTTPS.
+- `OWNER_ACTIONS.md` with everything the owner needs to do, grouped by phase.
 - Scope guardrail on every model call and in every default prompt, so models stay on research and briefing tasks and treat fetched content as data.
 - Prompt templates: 19 defaults, renderer with list expansion, save-time variable validation, versions, rollback, reset, topic overrides, and a prompt lab.
 - New tenants are seeded with an Anthropic `claude-opus-5-5` endpoint, an Ollama `all-minilm` embedding endpoint, assignments for every task, and the default prompts.

@@ -1,11 +1,13 @@
 namespace MyMorningNews.Core.Services
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using MyMorningNews.Core.Database;
     using MyMorningNews.Core.Enums;
+    using MyMorningNews.Core.Helpers;
     using MyMorningNews.Core.Models;
     using MyMorningNews.Core.Requests;
     using MyMorningNews.Core.Responses;
@@ -115,11 +117,18 @@ namespace MyMorningNews.Core.Services
             string? accessKey = Clean(request.GetHeader("x-access-key"));
             string? secretKey = Clean(request.GetHeader("x-secret-key"));
             string? tenantId = Clean(request.GetHeader("x-tenant-guid"));
+            bool mobileClient = String.Equals(Clean(request.GetHeader("x-client")), "mobile", StringComparison.OrdinalIgnoreCase);
 
-            if (String.IsNullOrEmpty(tenantId)) return LoginResult.Fail(400, AuthenticationOutcomeEnum.Invalid, "x-tenant-guid is required.");
             bool userLogin = email != null && password != null;
             bool credentialLogin = accessKey != null && secretKey != null;
             if (userLogin == credentialLogin) return LoginResult.Fail(400, AuthenticationOutcomeEnum.Invalid, "Supply either x-email and x-password, or x-access-key and x-secret-key.");
+            if (String.IsNullOrEmpty(tenantId))
+            {
+                if (credentialLogin) return LoginResult.Fail(400, AuthenticationOutcomeEnum.Invalid, "x-tenant-guid is required with an access key.");
+                LoginResult resolved = await ResolveTenantAsync(email!, password!, request.SourceIp, token).ConfigureAwait(false);
+                if (!resolved.Success || resolved.Tenant == null) return resolved;
+                tenantId = resolved.Tenant.Id;
+            }
 
             string limiterKey = (request.SourceIp ?? "unknown") + "|" + tenantId + "|" + (email ?? accessKey);
             _RateLimiter.LimitPerMinute = _Settings.LoginRateLimitPerMinute;
@@ -166,6 +175,7 @@ namespace MyMorningNews.Core.Services
             {
                 user.LastLoginUtc = DateTime.UtcNow;
                 await _Database.Users.UpdateAsync(user, token).ConfigureAwait(false);
+                if (mobileClient) await IssueRefreshTokenAsync(result, IdGenerator.GenerateRefreshTokenFamilyId(), request.SourceIp, request.UserAgent, token).ConfigureAwait(false);
             }
 
             await _Audit.RecordAsync(new AuditRecord
@@ -209,6 +219,72 @@ namespace MyMorningNews.Core.Services
         }
 
         /// <summary>
+        /// Exchange a mobile refresh token for a new session and a rotated refresh token. Reusing a token that was already
+        /// rotated revokes its whole family and the sessions issued from it.
+        /// </summary>
+        /// <param name="refreshToken">Refresh token secret.</param>
+        /// <param name="sourceIp">Source IP.</param>
+        /// <param name="userAgent">User agent.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Login result with a new token and refresh token, or a 401 failure.</returns>
+        public async Task<LoginResult> RefreshWithTokenAsync(string? refreshToken, string? sourceIp, string? userAgent, CancellationToken token = default)
+        {
+            if (!_Settings.AllowRefresh) return LoginResult.Fail(400, AuthenticationOutcomeEnum.Invalid, "Session refresh is disabled.");
+            string? secret = Clean(refreshToken);
+            if (secret == null) return LoginResult.Fail(400, AuthenticationOutcomeEnum.Invalid, "refreshToken is required.");
+            RefreshToken? stored = await _Database.RefreshTokens.ReadByHashAsync(SecretHasher.Sha256Hex(secret), token).ConfigureAwait(false);
+            if (stored == null) return LoginResult.Fail(401, AuthenticationOutcomeEnum.Invalid, "Invalid refresh token.");
+
+            if (stored.UsedUtc.HasValue || stored.RevokedUtc.HasValue)
+            {
+                if (stored.UsedUtc.HasValue) await RevokeFamilyAsync(stored, "Refresh token reuse detected.", token).ConfigureAwait(false);
+                await AuditFailureAsync(stored.TenantId, stored.UserId, sourceIp, stored.UsedUtc.HasValue ? "Refresh token reuse detected; family revoked." : "Revoked refresh token.", token).ConfigureAwait(false);
+                return LoginResult.Fail(401, AuthenticationOutcomeEnum.Invalid, "Invalid refresh token.");
+            }
+
+            if (stored.ExpiresUtc < DateTime.UtcNow) return LoginResult.Fail(401, AuthenticationOutcomeEnum.Inactive, "The refresh token has expired. Sign in again.");
+            Tenant? tenant = await _Database.Tenants.ReadAsync(stored.TenantId, token).ConfigureAwait(false);
+            User? user = await _Database.Users.ReadAsync(stored.TenantId, stored.UserId, token).ConfigureAwait(false);
+            if (tenant == null || !tenant.Active || user == null || !user.Active)
+            {
+                await _Database.RefreshTokens.RevokeFamilyAsync(stored.FamilyId, "Account inactive.", token).ConfigureAwait(false);
+                return LoginResult.Fail(401, AuthenticationOutcomeEnum.Inactive, "The account is inactive.");
+            }
+
+            stored.UsedUtc = DateTime.UtcNow;
+            await _Database.RefreshTokens.UpdateAsync(stored, token).ConfigureAwait(false);
+            LoginResult result = await IssueSessionAsync(tenant, user, null, AuthSchemeEnum.BearerToken, sourceIp, userAgent, token).ConfigureAwait(false);
+            await IssueRefreshTokenAsync(result, stored.FamilyId, sourceIp, userAgent, token).ConfigureAwait(false);
+            if (!String.IsNullOrEmpty(stored.SessionId))
+            {
+                AuthSession? old = await _Database.AuthSessions.ReadAsync(stored.TenantId, stored.SessionId, token).ConfigureAwait(false);
+                if (old != null && !old.RevokedUtc.HasValue)
+                {
+                    old.RevokedUtc = DateTime.UtcNow;
+                    old.RevocationReason = "Refreshed.";
+                    old.Active = false;
+                    await _Database.AuthSessions.UpdateAsync(old, token).ConfigureAwait(false);
+                }
+            }
+
+            await _Audit.RecordAsync(new AuditRecord
+            {
+                TenantId = tenant.Id,
+                EventType = AuditEventTypeEnum.SessionRefreshed,
+                PrincipalType = PrincipalTypeEnum.User.ToString(),
+                PrincipalId = user.Id,
+                UserId = user.Id,
+                SessionId = result.Session?.Id,
+                SourceIp = sourceIp,
+                AuthScheme = "RefreshToken",
+                AuthenticationResult = AuthenticationOutcomeEnum.Success.ToString(),
+                StatusCode = 200,
+                Description = "Session refreshed with a mobile refresh token."
+            }, token).ConfigureAwait(false);
+            return result;
+        }
+
+        /// <summary>
         /// Revoke a session.
         /// </summary>
         /// <param name="tenantId">Tenant.</param>
@@ -226,6 +302,7 @@ namespace MyMorningNews.Core.Services
             session.RevocationReason = reason;
             session.Active = false;
             await _Database.AuthSessions.UpdateAsync(session, token).ConfigureAwait(false);
+            await _Database.RefreshTokens.RevokeBySessionAsync(sessionId, reason, token).ConfigureAwait(false);
             return true;
         }
 
@@ -272,6 +349,74 @@ namespace MyMorningNews.Core.Services
             if (users.Items.Count == 0)
                 users = await _Database.Users.EnumerateAsync(new UserFilter { TenantId = tenantId, Email = email.Trim(), PageSize = 2 }, token).ConfigureAwait(false);
             return users.Items.FirstOrDefault();
+        }
+
+        private async Task<LoginResult> ResolveTenantAsync(string email, string password, string? sourceIp, CancellationToken token)
+        {
+            string limiterKey = (sourceIp ?? "unknown") + "|*|" + email;
+            _RateLimiter.LimitPerMinute = _Settings.LoginRateLimitPerMinute;
+            if (!_RateLimiter.TryAcquire(limiterKey)) return LoginResult.Fail(429, AuthenticationOutcomeEnum.Invalid, "Too many login attempts. Try again in a minute.");
+            List<User> candidates = await _Database.Users.ReadAllByEmailAsync(email, token).ConfigureAwait(false);
+            List<string> tenantIds = candidates.Where(u => SecretHasher.VerifyPassword(password, u.PasswordSha256)).Select(u => u.TenantId).Distinct(StringComparer.Ordinal).ToList();
+            if (tenantIds.Count == 0)
+            {
+                await AuditFailureAsync(null, email, sourceIp, "Invalid email or password (no tenant given).", token).ConfigureAwait(false);
+                return LoginResult.Fail(401, AuthenticationOutcomeEnum.Invalid, "Invalid credentials.");
+            }
+
+            if (tenantIds.Count > 1)
+            {
+                List<Tenant> tenants = new List<Tenant>();
+                foreach (string id in tenantIds)
+                {
+                    Tenant? t = await _Database.Tenants.ReadAsync(id, token).ConfigureAwait(false);
+                    if (t != null && t.Active) tenants.Add(t);
+                }
+
+                LoginResult choose = LoginResult.Fail(409, AuthenticationOutcomeEnum.Invalid, "Choose a tenant and sign in again with x-tenant-guid.");
+                choose.TenantChoices = tenants;
+                return choose;
+            }
+
+            _RateLimiter.Reset(limiterKey);
+            Tenant? only = await _Database.Tenants.ReadAsync(tenantIds[0], token).ConfigureAwait(false);
+            if (only == null || !only.Active) return LoginResult.Fail(401, AuthenticationOutcomeEnum.Invalid, "Invalid credentials.");
+            return new LoginResult { Success = true, StatusCode = 200, Outcome = AuthenticationOutcomeEnum.Success, Tenant = only };
+        }
+
+        private async Task IssueRefreshTokenAsync(LoginResult result, string familyId, string? sourceIp, string? userAgent, CancellationToken token)
+        {
+            if (result.User == null || result.Tenant == null) return;
+            string secret = SecretGenerator.Token(32);
+            DateTime expires = DateTime.UtcNow.AddDays(_Settings.RefreshTokenLifetimeDays);
+            await _Database.RefreshTokens.CreateAsync(new RefreshToken
+            {
+                TenantId = result.Tenant.Id,
+                UserId = result.User.Id,
+                SessionId = result.Session?.Id,
+                FamilyId = familyId,
+                TokenHash = SecretHasher.Sha256Hex(secret),
+                Client = "mobile",
+                SourceIp = sourceIp,
+                UserAgent = userAgent,
+                ExpiresUtc = expires
+            }, token).ConfigureAwait(false);
+            result.RefreshToken = secret;
+            result.RefreshExpiresUtc = expires;
+        }
+
+        private async Task RevokeFamilyAsync(RefreshToken stored, string reason, CancellationToken token)
+        {
+            await _Database.RefreshTokens.RevokeFamilyAsync(stored.FamilyId, reason, token).ConfigureAwait(false);
+            foreach (string sessionId in await _Database.RefreshTokens.ReadFamilySessionsAsync(stored.FamilyId, token).ConfigureAwait(false))
+            {
+                AuthSession? session = await _Database.AuthSessions.ReadAsync(stored.TenantId, sessionId, token).ConfigureAwait(false);
+                if (session == null || session.RevokedUtc.HasValue) continue;
+                session.RevokedUtc = DateTime.UtcNow;
+                session.RevocationReason = reason;
+                session.Active = false;
+                await _Database.AuthSessions.UpdateAsync(session, token).ConfigureAwait(false);
+            }
         }
 
         private async Task<Credential?> FindCredentialAsync(string tenantId, string accessKey, CancellationToken token)

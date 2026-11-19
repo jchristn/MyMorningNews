@@ -26,7 +26,7 @@ namespace Test.Shared.Suites
             {
                 Cases.Case(S, "DefaultAdminLogin", "The default administrator can sign in", DefaultLoginAsync, "smoke"),
                 Cases.Case(S, "BadPasswordRejected", "Wrong passwords and unknown tenants get 401", BadPasswordAsync),
-                Cases.Case(S, "TenantRequired", "Login without x-tenant-guid gets 400", TenantRequiredAsync),
+                Cases.Case(S, "TenantRequired", "Access-key login without x-tenant-guid gets 400; password login resolves the tenant", TenantRequiredAsync),
                 Cases.Case(S, "NoCredentials401", "Protected routes require authentication", NoCredentialsAsync, "smoke"),
                 Cases.Case(S, "TokenDetails", "Token details describe the principal", DetailsAsync),
                 Cases.Case(S, "LogoutRevokes", "Logout revokes the session", LogoutAsync),
@@ -64,9 +64,14 @@ namespace Test.Shared.Suites
         private static async Task TenantRequiredAsync(CancellationToken token)
         {
             TestApiClient anon = await SharedTestServer.AnonymousClientAsync(token).ConfigureAwait(false);
-            anon.Headers["x-email"] = SharedTestServer.AdminEmail;
-            anon.Headers["x-password"] = SharedTestServer.AdminPassword;
-            (await anon.PostAsync("/v1.0/token", null, token).ConfigureAwait(false)).Expect(400, "missing tenant");
+            anon.Headers["x-access-key"] = "ak-does-not-matter";
+            anon.Headers["x-secret-key"] = "sk-does-not-matter";
+            (await anon.PostAsync("/v1.0/token", null, token).ConfigureAwait(false)).Expect(400, "access key needs a tenant");
+            TestApiClient user = await SharedTestServer.AnonymousClientAsync(token).ConfigureAwait(false);
+            user.Headers["x-email"] = SharedTestServer.AdminEmail;
+            user.Headers["x-password"] = SharedTestServer.AdminPassword;
+            TokenResponse resolved = (await user.PostAsync("/v1.0/token", null, token).ConfigureAwait(false)).Expect(200, "tenant resolved").Json<TokenResponse>();
+            Assert.Equal("default", resolved.TenantId, "default tenant");
         }
 
         private static async Task NoCredentialsAsync(CancellationToken token)

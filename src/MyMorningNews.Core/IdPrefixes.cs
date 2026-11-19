@@ -86,6 +86,16 @@ namespace MyMorningNews.Core
         public const string PromptTemplateVersion = "pmv_";
 
         /// <summary>
+        /// Prefix for RefreshToken identifiers.
+        /// </summary>
+        public const string RefreshToken = "rft_";
+
+        /// <summary>
+        /// Prefix for Device identifiers.
+        /// </summary>
+        public const string Device = "dev_";
+
+        /// <summary>
         /// Prefix for request history entries.
         /// </summary>
         public const string RequestHistory = "req_";
@@ -94,5 +104,10 @@ namespace MyMorningNews.Core
         /// Prefix for per-request trace identifiers.
         /// </summary>
         public const string Request = "rqi_";
+
+        /// <summary>
+        /// Prefix for refresh token family identifiers.
+        /// </summary>
+        public const string RefreshTokenFamily = "rff_";
     }
 }

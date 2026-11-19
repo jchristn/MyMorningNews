@@ -106,6 +106,26 @@ namespace MyMorningNews.Core.Settings
             set { _Models = value ?? throw new ArgumentNullException(nameof(Models)); }
         }
 
+        /// <summary>
+        /// Mobile push notifications.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Value is null.</exception>
+        public PushSettings Push
+        {
+            get { return _Push; }
+            set { _Push = value ?? throw new ArgumentNullException(nameof(Push)); }
+        }
+
+        /// <summary>
+        /// Artifact storage (local or S3) and retention.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Value is null.</exception>
+        public StorageSettings Storage
+        {
+            get { return _Storage; }
+            set { _Storage = value ?? throw new ArgumentNullException(nameof(Storage)); }
+        }
+
         #endregion
 
         #region Private-Members
@@ -119,6 +139,8 @@ namespace MyMorningNews.Core.Settings
         private PipelineSettings _Pipeline = new PipelineSettings();
         private DiagnosticsSettings _Diagnostics = new DiagnosticsSettings();
         private ModelSettings _Models = new ModelSettings();
+        private PushSettings _Push = new PushSettings();
+        private StorageSettings _Storage = new StorageSettings();
 
         #endregion
     }

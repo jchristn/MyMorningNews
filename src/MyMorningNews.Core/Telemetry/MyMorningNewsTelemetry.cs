@@ -101,6 +101,11 @@ namespace MyMorningNews.Core.Telemetry
         public static readonly Counter<long> LlmToolCalls = Meter.CreateCounter<long>("mymorningnews.llm.tool_calls", "{call}", "Tool calls returned by models.");
 
         /// <summary>
+        /// Push notifications by outcome.
+        /// </summary>
+        public static readonly Counter<long> PushMessages = Meter.CreateCounter<long>("mymorningnews.push.messages", "{message}", "Push notifications by outcome.");
+
+        /// <summary>
         /// Estimated model cost in USD by task and provider.
         /// </summary>
         public static readonly Counter<double> LlmCostUsd = Meter.CreateCounter<double>("mymorningnews.llm.cost_usd", "{USD}", "Estimated model cost.");

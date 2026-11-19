@@ -34,6 +34,8 @@ services:
         condition: service_healthy
       loki:
         condition: service_healthy
+      searxng:
+        condition: service_healthy
     environment:
       MYMORNINGNEWS_SETTINGS_FILE: /app/config/mymorningnews.json
       MYMORNINGNEWS_TELEMETRY_OTLP_ENDPOINT: http://tempo:4317
@@ -41,6 +43,20 @@ services:
       MYMORNINGNEWS_TELEMETRY_PROMETHEUS_HOSTNAME: server
       MYMORNINGNEWS_ANTHROPIC_API_KEY: ${MYMORNINGNEWS_ANTHROPIC_API_KEY:-}
       MYMORNINGNEWS_AUTH_SIGNING_KEY: ${MYMORNINGNEWS_AUTH_SIGNING_KEY:-mymorningnews-change-this-signing-key}
+      MYMORNINGNEWS_AUTH_ADMIN_API_KEY: ${MYMORNINGNEWS_AUTH_ADMIN_API_KEY:-mymorningnewsadmin}
+      MYMORNINGNEWS_OLLAMA_ENDPOINT: ${MYMORNINGNEWS_OLLAMA_ENDPOINT:-http://host.docker.internal:11434}
+      MYMORNINGNEWS_SEARXNG_URL: http://searxng:8080
+      MYMORNINGNEWS_TTS_URL: http://tts:8880/v1
+      MYMORNINGNEWS_STORAGE_PROVIDER: ${MYMORNINGNEWS_STORAGE_PROVIDER:-Local}
+      MYMORNINGNEWS_STORAGE_LOCAL_DIRECTORY: /data/media
+      MYMORNINGNEWS_STORAGE_S3_BUCKET: ${MYMORNINGNEWS_STORAGE_S3_BUCKET:-}
+      MYMORNINGNEWS_STORAGE_S3_REGION: ${MYMORNINGNEWS_STORAGE_S3_REGION:-us-west-2}
+      MYMORNINGNEWS_STORAGE_S3_ENDPOINT: ${MYMORNINGNEWS_STORAGE_S3_ENDPOINT:-}
+      MYMORNINGNEWS_STORAGE_S3_ACCESS_KEY: ${MYMORNINGNEWS_STORAGE_S3_ACCESS_KEY:-}
+      MYMORNINGNEWS_STORAGE_S3_SECRET_KEY: ${MYMORNINGNEWS_STORAGE_S3_SECRET_KEY:-}
+      MYMORNINGNEWS_STORAGE_S3_PREFIX: ${MYMORNINGNEWS_STORAGE_S3_PREFIX:-mymorningnews/}
+      MYMORNINGNEWS_STORAGE_ARTIFACT_RETENTION_DAYS: ${MYMORNINGNEWS_STORAGE_ARTIFACT_RETENTION_DAYS:-365}
+      MYMORNINGNEWS_PUSH_EXPO_ACCESS_TOKEN: ${MYMORNINGNEWS_PUSH_EXPO_ACCESS_TOKEN:-}
       MYMORNINGNEWS_DB_SERVER: postgres
       MYMORNINGNEWS_DB_PORT: "5432"
       MYMORNINGNEWS_DB_DATABASE: mymorningnews
@@ -52,6 +68,7 @@ services:
       - "127.0.0.1:12100:8000"
     volumes:
       - ./server/mymorningnews.json:/app/config/mymorningnews.json
+      - media:/data/media
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/v1.0/api/health"]
       interval: 5s
@@ -76,6 +93,84 @@ services:
       interval: 5s
       timeout: 5s
       retries: 2
+
+  searxng:
+    build:
+      context: ./searxng
+    image: mymorningnews/searxng:local
+    container_name: mymorningnews-searxng
+    restart: unless-stopped
+    environment:
+      SEARXNG_SECRET: ${MYMORNINGNEWS_SEARXNG_SECRET:-mymorningnews-change-this-searxng-secret}
+      SEARXNG_BASE_URL: http://127.0.0.1:12103/
+    ports:
+      - "127.0.0.1:12103:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8080/healthz"]
+      interval: 5s
+      timeout: 5s
+      retries: 2
+      start_period: 20s
+
+  tts:
+    # Kokoro text-to-speech. Large image (several GB); started with --profile tts until Phase 8 wires audio.
+    profiles: ["tts"]
+    build:
+      context: ./tts
+    image: mymorningnews/tts:local
+    container_name: mymorningnews-tts
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:12104:8880"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8880/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 2
+      start_period: 120s
+
+  mcp:
+    # MCP server (Phase 11). Started with --profile mcp.
+    profiles: ["mcp"]
+    build:
+      context: ..
+      dockerfile: docker/mcp/Dockerfile
+    image: mymorningnews/mcp:local
+    container_name: mymorningnews-mcp
+    restart: unless-stopped
+    depends_on:
+      server:
+        condition: service_healthy
+    environment:
+      MYMORNINGNEWS_MCP_SERVER_URL: http://server:8000
+    ports:
+      - "127.0.0.1:12105:8100"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8100/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 2
+      start_period: 20s
+
+  ollama:
+    # Linux hosts only (--profile ollama). On macOS run Ollama natively; the server uses host.docker.internal:11434.
+    # Point MYMORNINGNEWS_OLLAMA_ENDPOINT at http://ollama:11434 when using this profile.
+    profiles: ["ollama"]
+    build:
+      context: ./ollama
+    image: mymorningnews/ollama:local
+    container_name: mymorningnews-ollama
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:12120:11434"
+    volumes:
+      - ollama:/root/.ollama
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:11434/api/tags"]
+      interval: 5s
+      timeout: 5s
+      retries: 2
+      start_period: 20s
 
   prometheus:
     build:
@@ -169,6 +264,8 @@ services:
 
 volumes:
   pgdata:
+  media:
+  ollama:
   prometheus:
   tempo:
   loki:

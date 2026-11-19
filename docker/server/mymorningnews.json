@@ -5,5 +5,24 @@
     "port": 8000,
     "ssl": false,
     "corsAllowedOrigins": "*"
+  },
+  "storage": {
+    "provider": "Local",
+    "localDirectory": "/data/media",
+    "s3Bucket": "",
+    "s3Region": "us-west-2",
+    "s3Endpoint": "",
+    "s3AccessKey": "",
+    "s3SecretKey": "",
+    "s3Prefix": "mymorningnews/",
+    "s3ForcePathStyle": false,
+    "presignedUrlMinutes": 60,
+    "artifactRetentionDays": 365
+  },
+  "push": {
+    "enabled": true,
+    "expoPushUrl": "https://exp.host/--/api/v2/push/send",
+    "expoAccessToken": "",
+    "timeoutMs": 10000
   }
 }

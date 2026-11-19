@@ -71,6 +71,8 @@ namespace MyMorningNews.Core.Database.Postgresql
             PromptTemplates = new PromptTemplateMethods(this);
             PromptTemplateVersions = new PromptTemplateVersionMethods(this);
             UsageAnalytics = new UsageAnalyticsMethods(this);
+            RefreshTokens = new RefreshTokenMethods(this);
+            Devices = new DeviceMethods(this);
         }
 
         #endregion

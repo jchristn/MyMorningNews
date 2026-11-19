@@ -1,0 +1,8 @@
+{
+  "email": "demo@mymorningnews",
+  "password": "password",
+  "firstName": "Demo",
+  "lastName": "Reader",
+  "isTenantAdmin": false,
+  "timeZone": "America/Los_Angeles"
+}

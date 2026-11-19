@@ -82,6 +82,7 @@ namespace MyMorningNews.Server
         private ModelGateway? _Models = null;
         private readonly List<Task> _Workers = new List<Task>();
         private int _DatabaseConnectAttempts = 30;
+        private PushService? _Push = null;
         private bool _Disposed = false;
 
         #endregion
@@ -130,7 +131,8 @@ namespace MyMorningNews.Server
             _Models = new ModelGateway(_Database, vault, settings, _Logging);
             TenantDefaultsService tenantDefaults = new TenantDefaultsService(_Database, prompts, vault, settings.Models, _Logging);
             await tenantDefaults.EnsureAllAsync(token).ConfigureAwait(false);
-            _Context = new ServerContext(_Settings, _Database, _Logging, authentication, authorization, audit, Lifetime, vault, prompts, _Models, tenantDefaults);
+            _Push = new PushService(_Database, settings, _Logging);
+            _Context = new ServerContext(_Settings, _Database, _Logging, authentication, authorization, audit, Lifetime, vault, prompts, _Models, tenantDefaults, _Push);
 
             _Capture = new RequestHistoryCaptureService(_Database, settings.RequestHistory, _Logging);
             RequestPipeline pipeline = new RequestPipeline(_Context, _Capture);
@@ -206,6 +208,7 @@ namespace MyMorningNews.Server
                 Stop();
                 _Webserver?.Dispose();
                 _Capture?.Dispose();
+                _Push?.Dispose();
                 _Models?.Dispose();
                 _Database?.Dispose();
             }
@@ -233,6 +236,8 @@ namespace MyMorningNews.Server
                 new VaultRoutes(context),
                 new ModelRoutes(context),
                 new UsageRoutes(context),
+                new DeviceRoutes(context),
+                new ClientConfigRoutes(context),
                 new PromptRoutes(context)
             };
         }

@@ -75,6 +75,11 @@ namespace MyMorningNews.Server
         public TenantDefaultsService TenantDefaults { get; }
 
         /// <summary>
+        /// Mobile push notifications.
+        /// </summary>
+        public PushService Push { get; }
+
+        /// <summary>
         /// Instantiate.
         /// </summary>
         /// <param name="settingsService">Settings service.</param>
@@ -88,6 +93,7 @@ namespace MyMorningNews.Server
         /// <param name="prompts">Prompts.</param>
         /// <param name="models">Model gateway.</param>
         /// <param name="tenantDefaults">Tenant defaults.</param>
+        /// <param name="push">Push notifications.</param>
         /// <exception cref="ArgumentNullException">An argument is null.</exception>
         public ServerContext(
             SettingsService settingsService,
@@ -100,7 +106,8 @@ namespace MyMorningNews.Server
             VaultService vault,
             PromptService prompts,
             ModelGateway models,
-            TenantDefaultsService tenantDefaults)
+            TenantDefaultsService tenantDefaults,
+            PushService push)
         {
             ArgumentNullException.ThrowIfNull(settingsService);
             ArgumentNullException.ThrowIfNull(database);
@@ -118,6 +125,7 @@ namespace MyMorningNews.Server
             Lifetime = lifetime;
             Vault = vault ?? throw new ArgumentNullException(nameof(vault));
             Prompts = prompts ?? throw new ArgumentNullException(nameof(prompts));
+            Push = push ?? throw new ArgumentNullException(nameof(push));
             Models = models ?? throw new ArgumentNullException(nameof(models));
             TenantDefaults = tenantDefaults ?? throw new ArgumentNullException(nameof(tenantDefaults));
         }

@@ -1,0 +1,37 @@
+# Hosted service overlay (plan section 33.3): adds Caddy for TLS on 80 and 443 in front of the dashboard and API on
+# one origin (https://app.mymorningnews.ai). Every other port stays on 127.0.0.1.
+#   docker compose -f compose.yaml -f hosted/compose.yaml up -d --build
+# Before using it: set DNS for app.mymorningnews.ai to this host, copy .env.example to .env, and set real secrets.
+services:
+  server:
+    volumes:
+      - ./hosted/mymorningnews.json:/app/config/mymorningnews.json
+
+  caddy:
+    image: caddy:2.11.8-alpine
+    container_name: mymorningnews-caddy
+    restart: unless-stopped
+    depends_on:
+      server:
+        condition: service_healthy
+      dashboard:
+        condition: service_healthy
+    environment:
+      MYMORNINGNEWS_APP_DOMAIN: ${MYMORNINGNEWS_APP_DOMAIN:-app.mymorningnews.ai}
+      MYMORNINGNEWS_ACME_EMAIL: ${MYMORNINGNEWS_ACME_EMAIL:-hello@latticetech.ai}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./hosted/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:2019/config/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  caddy-data:
+  caddy-config:

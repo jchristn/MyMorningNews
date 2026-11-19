@@ -48,5 +48,15 @@ namespace MyMorningNews.Core.Responses
         /// User profile, for user sessions.
         /// </summary>
         public UserResponse? User { get; set; } = null;
+
+        /// <summary>
+        /// Rotating refresh token (mobile clients only, sent with x-client: mobile). Store it securely; each use returns a new one.
+        /// </summary>
+        public string? RefreshToken { get; set; } = null;
+
+        /// <summary>
+        /// Refresh token expiration (UTC), when a refresh token was issued.
+        /// </summary>
+        public DateTime? RefreshExpiresUtc { get; set; } = null;
     }
 }

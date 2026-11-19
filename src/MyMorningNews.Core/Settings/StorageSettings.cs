@@ -91,11 +91,22 @@ namespace MyMorningNews.Core.Settings
             set { _ArtifactRetentionDays = Math.Clamp(value, 1, 365); }
         }
 
+        /// <summary>
+        /// Most briefings a tenant can pin past the retention window. Default 50, minimum 0, maximum 10000.
+        /// The hosted service overrides this per plan with the artifacts.pinned.max entitlement.
+        /// </summary>
+        public int MaxPinnedArtifacts
+        {
+            get { return _MaxPinnedArtifacts; }
+            set { _MaxPinnedArtifacts = Math.Clamp(value, 0, 10000); }
+        }
+
         #endregion
 
         #region Private-Members
 
         private string _LocalDirectory = "./media";
+        private int _MaxPinnedArtifacts = 50;
         private int _PresignedUrlMinutes = 60;
         private int _ArtifactRetentionDays = 365;
 

@@ -211,6 +211,46 @@ namespace MyMorningNews.Core
         public const string Suggestion = "sug_";
 
         /// <summary>
+        /// Prefix for Artifact identifiers.
+        /// </summary>
+        public const string Artifact = "art_";
+
+        /// <summary>
+        /// Prefix for BriefingTemplate identifiers.
+        /// </summary>
+        public const string BriefingTemplate = "btp_";
+
+        /// <summary>
+        /// Prefix for BriefingTemplateVersion identifiers.
+        /// </summary>
+        public const string BriefingTemplateVersion = "btv_";
+
+        /// <summary>
+        /// Prefix for Edition identifiers.
+        /// </summary>
+        public const string Edition = "edn_";
+
+        /// <summary>
+        /// Prefix for EditionTopic identifiers.
+        /// </summary>
+        public const string EditionTopic = "edt_";
+
+        /// <summary>
+        /// Prefix for Briefing identifiers.
+        /// </summary>
+        public const string Briefing = "brf_";
+
+        /// <summary>
+        /// Prefix for BriefingSection identifiers.
+        /// </summary>
+        public const string BriefingSection = "bsc_";
+
+        /// <summary>
+        /// Prefix for BriefingItem identifiers.
+        /// </summary>
+        public const string BriefingItem = "bit_";
+
+        /// <summary>
         /// Prefix for request history entries.
         /// </summary>
         public const string RequestHistory = "req_";

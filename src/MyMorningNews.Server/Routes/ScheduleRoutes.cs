@@ -146,9 +146,21 @@ namespace MyMorningNews.Server.Routes
 
         private async Task<string?> OwnerUserAsync(string tenantId, ScheduleOwnerTypeEnum ownerType, string ownerId, HttpContextBase ctx)
         {
+            if (ownerType == ScheduleOwnerTypeEnum.Edition)
+            {
+                Edition? edition = await Server.Database.Editions.ReadAsync(tenantId, ownerId, ctx.Token).ConfigureAwait(false);
+                if (edition == null || !IsOwnerOrAdmin(ctx, edition.UserId))
+                {
+                    await SendNotFoundAsync(ctx, "Edition").ConfigureAwait(false);
+                    return null;
+                }
+
+                return edition.UserId;
+            }
+
             if (ownerType != ScheduleOwnerTypeEnum.Topic)
             {
-                await SendErrorAsync(ctx, 400, "ValidationFailed", "Only topic schedules are supported on this server version; edition schedules arrive with editions.").ConfigureAwait(false);
+                await SendErrorAsync(ctx, 400, "ValidationFailed", "Schedules belong to a topic or an edition; one-time requests schedule themselves.").ConfigureAwait(false);
                 return null;
             }
 

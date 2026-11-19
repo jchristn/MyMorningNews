@@ -49,6 +49,11 @@ namespace MyMorningNews.Core.Scheduling
         #region Constructors-and-Factories
 
         /// <summary>
+        /// Handler for edition schedules; null leaves edition schedules unfired.
+        /// </summary>
+        public IEditionTrigger? EditionTrigger { get; set; } = null;
+
+        /// <summary>
         /// Instantiate.
         /// </summary>
         /// <param name="database">Database.</param>
@@ -202,6 +207,13 @@ namespace MyMorningNews.Core.Scheduling
 
         private async Task<bool> FireAsync(Schedule schedule, DateTime nowUtc, CancellationToken token)
         {
+            if (schedule.OwnerType == ScheduleOwnerTypeEnum.Edition && EditionTrigger != null)
+            {
+                bool queued = await EditionTrigger.FireEditionAsync(schedule, nowUtc, token).ConfigureAwait(false);
+                MyMorningNewsTelemetry.Increment(MyMorningNewsTelemetry.SchedulerClaims, "outcome", queued ? "edition_queued" : "edition_skipped");
+                return queued;
+            }
+
             if (schedule.OwnerType != ScheduleOwnerTypeEnum.Topic)
             {
                 MyMorningNewsTelemetry.Increment(MyMorningNewsTelemetry.SchedulerClaims, "outcome", "unsupported_owner");
@@ -250,6 +262,23 @@ namespace MyMorningNews.Core.Scheduling
                 CompletedUtc = nowUtc,
                 SkippedReason = reason
             }, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Queue fresh research for an edition topic unless the topic already has an active run or is not active.
+        /// </summary>
+        /// <param name="topic">Topic.</param>
+        /// <param name="userId">Edition owner.</param>
+        /// <param name="scheduleId">Edition schedule.</param>
+        /// <param name="nowUtc">Now.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The queued run, or null when skipped.</returns>
+        public async Task<Run?> EnqueueEditionResearchAsync(Topic topic, string userId, string? scheduleId, DateTime nowUtc, CancellationToken token = default)
+        {
+            ArgumentNullException.ThrowIfNull(topic);
+            if (topic.Status != TopicStatusEnum.Active) return null;
+            if (await _Database.Runs.HasActiveRunAsync(topic.TenantId, topic.Id, token).ConfigureAwait(false)) return null;
+            return await EnqueueAsync(topic.TenantId, topic.Id, userId, RunTriggerEnum.Edition, scheduleId, null, false, nowUtc, token).ConfigureAwait(false);
         }
 
         private async Task<Run> EnqueueAsync(string tenantId, string topicId, string userId, RunTriggerEnum trigger, string? scheduleId, string? requestId, bool dryRun, DateTime nowUtc, CancellationToken token)

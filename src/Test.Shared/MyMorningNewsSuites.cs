@@ -30,7 +30,9 @@ namespace Test.Shared
                     TopicSuite.Create(),
                     ScheduleSuite.Create(),
                     SearchSuite.Create(),
-                    PipelineSuite.Create()
+                    PipelineSuite.Create(),
+                    StorageSuite.Create(),
+                    BriefingSuite.Create()
                 };
             }
         }

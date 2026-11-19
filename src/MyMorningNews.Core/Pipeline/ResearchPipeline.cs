@@ -61,7 +61,8 @@ namespace MyMorningNews.Core.Pipeline
                 new SynthesizeStage(),
                 new ReviewPredictionsStage(),
                 new PredictStage(),
-                new SuggestStage()
+                new SuggestStage(),
+                new ComposeBriefingStage()
             };
         }
 
@@ -142,7 +143,7 @@ namespace MyMorningNews.Core.Pipeline
             string summary = ctx.Summary ?? (ctx.Findings.Count + " new findings.");
             if (failed.Count > 0) summary += "\n\nSome optional steps did not finish: " + String.Join(", ", failed) + ".";
             if (ctx.Notes.Count > 0) summary += "\n\n" + String.Join(" ", ctx.Notes);
-            return new RunResult { Summary = summary, PartiallySucceeded = partial, Delivered = false };
+            return new RunResult { Summary = summary, PartiallySucceeded = partial, BriefingId = ctx.BriefingId, Delivered = false };
         }
 
         #endregion

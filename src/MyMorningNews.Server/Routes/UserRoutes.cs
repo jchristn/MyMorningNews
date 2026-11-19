@@ -101,6 +101,7 @@ namespace MyMorningNews.Server.Routes
                 Active = req.Active
             };
             user = await Server.Database.Users.CreateAsync(user, ctx.Token).ConfigureAwait(false);
+            await Server.Briefings.EnsureDefaultEditionAsync(user.TenantId, user.Id, ctx.Token).ConfigureAwait(false);
             await ChangedAsync(ctx, "User " + user.Id + " created.", 201).ConfigureAwait(false);
             await SendJsonAsync(ctx, 201, UserResponse.FromModel(user)).ConfigureAwait(false);
         }

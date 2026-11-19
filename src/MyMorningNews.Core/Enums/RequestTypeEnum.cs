@@ -363,6 +363,46 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// Delete one-time requests.
         /// </summary>
-        ResearchRequestDelete
+        ResearchRequestDelete,
+
+        /// <summary>
+        /// Read briefings and download reports.
+        /// </summary>
+        BriefingRead,
+
+        /// <summary>
+        /// Compose, pin, regenerate, or delete briefings.
+        /// </summary>
+        BriefingWrite,
+
+        /// <summary>
+        /// Read editions.
+        /// </summary>
+        EditionRead,
+
+        /// <summary>
+        /// Create, update, or delete editions.
+        /// </summary>
+        EditionWrite,
+
+        /// <summary>
+        /// Read briefing templates.
+        /// </summary>
+        TemplateRead,
+
+        /// <summary>
+        /// Create, version, or delete briefing templates.
+        /// </summary>
+        TemplateWrite,
+
+        /// <summary>
+        /// Read stored files.
+        /// </summary>
+        ArtifactRead,
+
+        /// <summary>
+        /// Pin or delete stored files.
+        /// </summary>
+        ArtifactWrite
     }
 }

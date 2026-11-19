@@ -131,6 +131,20 @@ namespace MyMorningNews.Core.Database.Postgresql
                     "CREATE INDEX IF NOT EXISTS ix_embeddings_topic ON embeddings (tenantid, topicid, ownertype, model, dimensions, createdutc)",
                     "CREATE INDEX IF NOT EXISTS ix_findings_topic_created ON findings (tenantid, topicid, createdutc)",
                     "CREATE INDEX IF NOT EXISTS ix_searchresults_topic_hash ON searchresults (tenantid, topicid, canonicalurlhash)"
+                })),
+            new SchemaMigration(8, "Briefings, templates, editions, and stored artifacts", Concat(
+                ArtifactQueries.Schema,
+                BriefingTemplateQueries.Schema,
+                BriefingTemplateVersionQueries.Schema,
+                EditionQueries.Schema,
+                EditionTopicQueries.Schema,
+                BriefingQueries.Schema,
+                BriefingSectionQueries.Schema,
+                BriefingItemQueries.Schema,
+                new List<string>
+                {
+                    "CREATE INDEX IF NOT EXISTS ix_artifacts_expiry ON artifacts (pinned, deletedutc, expiresutc)",
+                    "CREATE INDEX IF NOT EXISTS ix_briefings_queue ON briefings (status, composeafterutc)"
                 }))
         };
 

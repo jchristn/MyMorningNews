@@ -67,7 +67,14 @@ namespace Test.Shared.Suites
             return Task.CompletedTask;
         }
 
-        private static async Task<PipelineFixture> FixtureAsync(string brief, string searchPath, CancellationToken token)
+        /// <summary>
+        /// A tenant with a tenant administrator, the stub research model for every task, a stub search provider, and an active topic.
+        /// </summary>
+        /// <param name="brief">Topic brief.</param>
+        /// <param name="searchPath">Stub search path (/pipeline or /pipeline2).</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Fixture.</returns>
+        internal static async Task<PipelineFixture> FixtureAsync(string brief, string searchPath, CancellationToken token)
         {
             MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
             server.Context.SettingsService.Current.Search.PerDomainDelayMs = 0;
@@ -91,7 +98,13 @@ namespace Test.Shared.Suites
             return new PipelineFixture { Server = server, User = ta, Topic = topic, Provider = sp };
         }
 
-        private static async Task<Run> RunAsync(PipelineFixture f, CancellationToken token)
+        /// <summary>
+        /// Run the fixture topic now and execute the queue until the run finishes.
+        /// </summary>
+        /// <param name="f">Fixture.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Finished run.</returns>
+        internal static async Task<Run> RunAsync(PipelineFixture f, CancellationToken token)
         {
             Run queued = (await f.User.Client.PostAsync("/v1.0/api/topics/" + f.Topic.Id + "/run", null, token).ConfigureAwait(false)).Expect(202, "run now").Json<Run>();
             for (int i = 0; i < 20; i++)
@@ -115,7 +128,7 @@ namespace Test.Shared.Suites
             Run run = await RunAsync(f, token).ConfigureAwait(false);
             Assert.True(run.Status == RunStatusEnum.Completed, "completed: " + run.Status + " " + run.ErrorMessage + " " + run.Summary);
             List<RunStage> stages = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages", token).ConfigureAwait(false)).Expect(200, "stages").Json<List<RunStage>>();
-            Assert.True(stages.Count == 13 && stages.All(s => s.Status == StageStatusEnum.Succeeded), "all stages succeeded: " + String.Join(", ", stages.Select(s => s.Stage + "=" + s.Status + (s.ErrorMessage == null ? String.Empty : "(" + s.ErrorMessage + ")"))));
+            Assert.True(stages.Count == 14 && stages.All(s => s.Status == StageStatusEnum.Succeeded), "all stages succeeded: " + String.Join(", ", stages.Select(s => s.Stage + "=" + s.Status + (s.ErrorMessage == null ? String.Empty : "(" + s.ErrorMessage + ")"))));
             Assert.True(stages.Single(s => s.Stage == "Extract").ErrorMessage!.Contains("could not be verified", StringComparison.Ordinal), "unverified quotes noted");
 
             List<SearchResult> results = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/results", token).ConfigureAwait(false)).Json<List<SearchResult>>();
@@ -214,14 +227,29 @@ namespace Test.Shared.Suites
             Assert.True(kept.Items.Count > 0, "model call records kept for cost accounting");
         }
 
-        private class PipelineFixture
+        /// <summary>
+        /// Pipeline fixture.
+        /// </summary>
+        internal class PipelineFixture
         {
+            /// <summary>
+            /// Server.
+            /// </summary>
             public MyMorningNewsServer Server { get; set; } = null!;
 
+            /// <summary>
+            /// Tenant administrator who owns the topic.
+            /// </summary>
             public TestUser User { get; set; } = null!;
 
+            /// <summary>
+            /// Topic.
+            /// </summary>
             public Topic Topic { get; set; } = new Topic();
 
+            /// <summary>
+            /// Search provider.
+            /// </summary>
             public SearchProvider Provider { get; set; } = new SearchProvider();
         }
     }

@@ -107,7 +107,16 @@ namespace MyMorningNews.Server.Workers
                 int pruned = await _Server.Database.RequestHistory.PruneAsync(cutoff, token).ConfigureAwait(false);
                 int sessions = await _Server.Database.AuthSessions.DeleteExpiredAsync(DateTime.UtcNow.AddDays(-ExpiredSessionRetentionDays), token).ConfigureAwait(false);
                 int payloads = await _Server.Database.LlmCalls.ClearPayloadsAsync(DateTime.UtcNow.AddDays(-_Server.Settings.Diagnostics.LlmPayloadRetentionDays), token).ConfigureAwait(false);
-                if (pruned > 0 || sessions > 0 || payloads > 0) _Server.Logging.Info("[RetentionWorker] pruned " + pruned + " requests, " + sessions + " expired sessions, and " + payloads + " model call payloads");
+                int artifacts = 0;
+                int batch;
+                do
+                {
+                    batch = await _Server.Artifacts.ExpireAsync(DateTime.UtcNow, 500, token).ConfigureAwait(false);
+                    artifacts += batch;
+                }
+                while (batch >= 500 && !token.IsCancellationRequested);
+                if (pruned > 0 || sessions > 0 || payloads > 0 || artifacts > 0)
+                    _Server.Logging.Info("[RetentionWorker] pruned " + pruned + " requests, " + sessions + " expired sessions, " + payloads + " model call payloads, and " + artifacts + " expired files");
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested)
             {

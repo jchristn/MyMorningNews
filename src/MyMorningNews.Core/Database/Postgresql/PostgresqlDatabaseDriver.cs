@@ -96,6 +96,14 @@ namespace MyMorningNews.Core.Database.Postgresql
             Predictions = new PredictionMethods(this);
             PredictionReviews = new PredictionReviewMethods(this);
             Suggestions = new SuggestionMethods(this);
+            Artifacts = new ArtifactMethods(this);
+            BriefingTemplates = new BriefingTemplateMethods(this);
+            BriefingTemplateVersions = new BriefingTemplateVersionMethods(this);
+            Editions = new EditionMethods(this);
+            EditionTopics = new EditionTopicMethods(this);
+            Briefings = new BriefingMethods(this);
+            BriefingSections = new BriefingSectionMethods(this);
+            BriefingItems = new BriefingItemMethods(this);
             Embeddings = new EmbeddingMethods(this);
         }
 

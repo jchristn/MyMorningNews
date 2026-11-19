@@ -247,6 +247,46 @@ namespace MyMorningNews.Core.Database
         public ISuggestionMethods Suggestions { get; protected set; } = null!;
 
         /// <summary>
+        /// Stored files.
+        /// </summary>
+        public IArtifactMethods Artifacts { get; protected set; } = null!;
+
+        /// <summary>
+        /// Briefing templates.
+        /// </summary>
+        public IBriefingTemplateMethods BriefingTemplates { get; protected set; } = null!;
+
+        /// <summary>
+        /// Briefing template versions.
+        /// </summary>
+        public IBriefingTemplateVersionMethods BriefingTemplateVersions { get; protected set; } = null!;
+
+        /// <summary>
+        /// Editions.
+        /// </summary>
+        public IEditionMethods Editions { get; protected set; } = null!;
+
+        /// <summary>
+        /// Edition topics.
+        /// </summary>
+        public IEditionTopicMethods EditionTopics { get; protected set; } = null!;
+
+        /// <summary>
+        /// Briefings.
+        /// </summary>
+        public IBriefingMethods Briefings { get; protected set; } = null!;
+
+        /// <summary>
+        /// Briefing sections.
+        /// </summary>
+        public IBriefingSectionMethods BriefingSections { get; protected set; } = null!;
+
+        /// <summary>
+        /// Briefing items.
+        /// </summary>
+        public IBriefingItemMethods BriefingItems { get; protected set; } = null!;
+
+        /// <summary>
         /// Embedding vectors (pgvector).
         /// </summary>
         public IEmbeddingMethods Embeddings { get; protected set; } = null!;

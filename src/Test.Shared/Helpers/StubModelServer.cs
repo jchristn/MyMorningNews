@@ -265,7 +265,13 @@ namespace Test.Shared.Helpers
                     }
 
                     string args = model == "stub-refine" ? RefineArgs(body) : model == "stub-research" ? ResearchArgs(body) : "{\"answer\":\"" + answer + "\"}";
-                    string text = jsonMode ? "Here you go:\n```json\n" + args + "\n```" : "ready";
+                    if (model == "stub-research" && body.Contains("You write one section of a personal briefing", StringComparison.Ordinal) && body.Contains("FAILSECTION", StringComparison.Ordinal))
+                    {
+                        await WriteAsync(ctx, 400, "{\"error\":{\"message\":\"section model rejected the request\"}}").ConfigureAwait(false);
+                        return;
+                    }
+
+                    string text = jsonMode ? "Here you go:\n```json\n" + args + "\n```" : model == "stub-research" ? ResearchText(body) : "ready";
                     string usage = "{\"prompt_tokens\":12,\"completion_tokens\":3,\"total_tokens\":15,\"prompt_tokens_details\":{\"cached_tokens\":4},\"completion_tokens_details\":{\"reasoning_tokens\":1}}";
 
                     if (stream)
@@ -337,6 +343,19 @@ namespace Test.Shared.Helpers
                 foreach (char c in text) h = h * 31 + c;
                 return h;
             }
+        }
+
+        private static string ResearchText(string body)
+        {
+            if (body.Contains("You write one section of a personal briefing", StringComparison.Ordinal))
+            {
+                System.Text.RegularExpressions.Match m = System.Text.RegularExpressions.Regex.Match(body, "Section: (.+?)\\\\n");
+                string heading = m.Success ? m.Groups[1].Value : "Section";
+                return "## " + heading + "\n\nWritten " + heading + " section citing [1].";
+            }
+
+            if (body.Contains("You write the opening of a personal briefing", StringComparison.Ordinal)) return "Rebates moved today.";
+            return "ready";
         }
 
         private static string ResearchArgs(string body)

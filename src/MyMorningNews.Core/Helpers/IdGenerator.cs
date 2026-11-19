@@ -407,6 +407,78 @@ namespace MyMorningNews.Core.Helpers
         }
 
         /// <summary>
+        /// Generate a Artifact identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateArtifactId()
+        {
+            return Generate(IdPrefixes.Artifact);
+        }
+
+        /// <summary>
+        /// Generate a BriefingTemplate identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateBriefingTemplateId()
+        {
+            return Generate(IdPrefixes.BriefingTemplate);
+        }
+
+        /// <summary>
+        /// Generate a BriefingTemplateVersion identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateBriefingTemplateVersionId()
+        {
+            return Generate(IdPrefixes.BriefingTemplateVersion);
+        }
+
+        /// <summary>
+        /// Generate a Edition identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateEditionId()
+        {
+            return Generate(IdPrefixes.Edition);
+        }
+
+        /// <summary>
+        /// Generate a EditionTopic identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateEditionTopicId()
+        {
+            return Generate(IdPrefixes.EditionTopic);
+        }
+
+        /// <summary>
+        /// Generate a Briefing identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateBriefingId()
+        {
+            return Generate(IdPrefixes.Briefing);
+        }
+
+        /// <summary>
+        /// Generate a BriefingSection identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateBriefingSectionId()
+        {
+            return Generate(IdPrefixes.BriefingSection);
+        }
+
+        /// <summary>
+        /// Generate a BriefingItem identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateBriefingItemId()
+        {
+            return Generate(IdPrefixes.BriefingItem);
+        }
+
+        /// <summary>
         /// Generate a RequestHistory identifier.
         /// </summary>
         /// <returns>Identifier.</returns>

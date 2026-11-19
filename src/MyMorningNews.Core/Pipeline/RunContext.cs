@@ -110,5 +110,10 @@ namespace MyMorningNews.Core.Pipeline
         /// Stage notes (fallbacks used), for the run summary.
         /// </summary>
         public List<string> Notes { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Briefing composed for the run, or null.
+        /// </summary>
+        public string? BriefingId { get; set; } = null;
     }
 }

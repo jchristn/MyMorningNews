@@ -6,6 +6,7 @@ namespace MyMorningNews.Core.Pipeline
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using MyMorningNews.Core.Briefings;
     using MyMorningNews.Core.Database;
     using MyMorningNews.Core.Fetch;
     using MyMorningNews.Core.Models;
@@ -59,6 +60,11 @@ namespace MyMorningNews.Core.Pipeline
         /// Logging.
         /// </summary>
         public LoggingModule Logging { get; }
+
+        /// <summary>
+        /// Briefing service for run briefings; null skips the ComposeBriefing stage.
+        /// </summary>
+        public BriefingService? Briefings { get; set; } = null;
 
         #endregion
 

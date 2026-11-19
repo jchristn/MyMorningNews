@@ -36,6 +36,11 @@ namespace MyMorningNews.Core.Services
         /// </summary>
         public Search.SearchService? Search { get; set; } = null;
 
+        /// <summary>
+        /// Briefing service for default templates and the Morning News edition; null skips them.
+        /// </summary>
+        public Briefings.BriefingService? Briefings { get; set; } = null;
+
         #endregion
 
         #region Private-Members
@@ -114,6 +119,13 @@ namespace MyMorningNews.Core.Services
             {
                 int providers = await Search.EnsureDefaultsAsync(tenantId, token).ConfigureAwait(false);
                 if (providers > 0) _Logging.Info(_Header + "seeded " + providers + " search providers for tenant " + tenantId);
+            }
+
+            if (Briefings != null)
+            {
+                int templates = await Briefings.Templates.EnsureDefaultsAsync(tenantId, token).ConfigureAwait(false);
+                if (templates > 0) _Logging.Info(_Header + "seeded or updated " + templates + " briefing templates for tenant " + tenantId);
+                await Briefings.BackfillDefaultEditionsAsync(tenantId, token).ConfigureAwait(false);
             }
 
             long endpoints = await _Database.ModelEndpoints.CountAsync(new ModelEndpointFilter { TenantId = tenantId }, token).ConfigureAwait(false);

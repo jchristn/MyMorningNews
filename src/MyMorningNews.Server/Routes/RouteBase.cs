@@ -141,6 +141,91 @@ namespace MyMorningNews.Server.Routes
         }
 
         /// <summary>
+        /// Stream a stored file, honoring a single HTTP Range (bytes=a-b, bytes=a-, bytes=-n) with 206 and Content-Range.
+        /// </summary>
+        /// <param name="ctx">HTTP context.</param>
+        /// <param name="artifacts">Artifact service.</param>
+        /// <param name="artifact">Artifact.</param>
+        /// <param name="attachment">Send Content-Disposition attachment.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="MyMorningNews.Core.Exceptions.ArtifactExpiredException">The content is gone (410).</exception>
+        protected static async Task SendArtifactAsync(HttpContextBase ctx, MyMorningNews.Core.Storage.ArtifactService artifacts, MyMorningNews.Core.Models.Artifact artifact, bool attachment)
+        {
+            long total = artifact.Bytes;
+            long? offset = null;
+            long? length = null;
+            string? range = ctx.Request.RetrieveHeaderValue("Range");
+            if (!String.IsNullOrWhiteSpace(range))
+            {
+                if (!TryParseRange(range, total, out long start, out long end))
+                {
+                    ctx.Response.Headers.Add("Content-Range", "bytes */" + total);
+                    await SendErrorAsync(ctx, 416, "RangeNotSatisfiable", "The requested range is outside the file.").ConfigureAwait(false);
+                    return;
+                }
+
+                offset = start;
+                length = end - start + 1;
+            }
+
+            using (MyMorningNews.Core.Storage.ArtifactReadResult r = await artifacts.OpenAsync(artifact, offset, length, ctx.Token).ConfigureAwait(false))
+            {
+                ctx.Response.ContentType = artifact.ContentType;
+                ctx.Response.Headers.Add("Accept-Ranges", "bytes");
+                ctx.Response.Headers.Add("Cache-Control", "private, max-age=300");
+                ctx.Response.Headers.Add("ETag", "\"" + artifact.Sha256 + "\"");
+                ctx.Response.Headers.Add("Content-Disposition", (attachment ? "attachment" : "inline") + "; filename=\"" + artifact.FileName.Replace("\"", String.Empty) + "\"");
+                if (offset.HasValue)
+                {
+                    ctx.Response.StatusCode = 206;
+                    ctx.Response.Headers.Add("Content-Range", "bytes " + r.Offset + "-" + (r.Offset + r.Length - 1) + "/" + r.TotalBytes);
+                }
+                else
+                {
+                    ctx.Response.StatusCode = 200;
+                }
+
+                await ctx.Response.Send(r.Length, r.Stream, ctx.Token).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Parse a single byte range against a total size.
+        /// </summary>
+        /// <param name="header">Range header value.</param>
+        /// <param name="total">Total bytes.</param>
+        /// <param name="start">First byte.</param>
+        /// <param name="end">Last byte (inclusive).</param>
+        /// <returns>True when satisfiable.</returns>
+        protected static bool TryParseRange(string header, long total, out long start, out long end)
+        {
+            start = 0;
+            end = total - 1;
+            string h = header.Trim();
+            if (!h.StartsWith("bytes=", StringComparison.OrdinalIgnoreCase) || total <= 0) return false;
+            string spec = h.Substring(6).Split(',')[0].Trim();
+            int dash = spec.IndexOf('-');
+            if (dash < 0) return false;
+            string a = spec.Substring(0, dash).Trim();
+            string b = spec.Substring(dash + 1).Trim();
+            if (a.Length == 0)
+            {
+                if (!long.TryParse(b, out long suffix) || suffix <= 0) return false;
+                start = Math.Max(0, total - suffix);
+                return true;
+            }
+
+            if (!long.TryParse(a, out start) || start >= total || start < 0) return false;
+            if (b.Length > 0)
+            {
+                if (!long.TryParse(b, out end) || end < start) return false;
+                end = Math.Min(end, total - 1);
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Send an error response.
         /// </summary>
         /// <param name="ctx">HTTP context.</param>

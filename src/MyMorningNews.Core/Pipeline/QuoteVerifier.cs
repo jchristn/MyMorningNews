@@ -70,7 +70,7 @@ namespace MyMorningNews.Core.Pipeline
                 {
                     case '‘': case '’': case '‚': case '′': c = '\''; break;
                     case '“': case '”': case '„': case '″': c = '"'; break;
-                    case '–': case '—': case '−': c = '-'; break;
+                    case '\u2013': case '\u2014': case '\u2212': c = '-'; break;
                     case ' ': c = ' '; break;
                     case '*': case '_': continue;
                 }

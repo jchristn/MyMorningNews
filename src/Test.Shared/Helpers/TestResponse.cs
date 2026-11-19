@@ -1,6 +1,7 @@
 namespace Test.Shared.Helpers
 {
     using System;
+    using System.Collections.Generic;
     using MyMorningNews.Core.Serialization;
 
     /// <summary>
@@ -17,6 +18,11 @@ namespace Test.Shared.Helpers
         /// Body text.
         /// </summary>
         public string Body { get; set; } = String.Empty;
+
+        /// <summary>
+        /// Response and content headers (case-insensitive names; multiple values joined with commas).
+        /// </summary>
+        public Dictionary<string, string> Headers { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Deserialize the body.

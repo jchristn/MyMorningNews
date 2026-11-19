@@ -129,12 +129,27 @@ namespace Test.Shared.Helpers
         /// <param name="body">Body object, serialized as JSON; a string is sent verbatim.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Response.</returns>
-        public async Task<TestResponse> SendAsync(HttpMethod method, string path, object? body, CancellationToken token)
+        public Task<TestResponse> SendAsync(HttpMethod method, string path, object? body, CancellationToken token)
+        {
+            return SendAsync(method, path, body, null, token);
+        }
+
+        /// <summary>
+        /// Send a request with extra headers for this request only.
+        /// </summary>
+        /// <param name="method">Method.</param>
+        /// <param name="path">Path and query.</param>
+        /// <param name="body">Body object, serialized as JSON; a string is sent verbatim.</param>
+        /// <param name="headers">Extra headers, or null.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Response.</returns>
+        public async Task<TestResponse> SendAsync(HttpMethod method, string path, object? body, Dictionary<string, string>? headers, CancellationToken token)
         {
             using (HttpRequestMessage req = new HttpRequestMessage(method, BaseUrl + path))
             {
                 if (Token != null) req.Headers.TryAddWithoutValidation("Authorization", "Bearer " + Token);
                 foreach (KeyValuePair<string, string> h in Headers) req.Headers.TryAddWithoutValidation(h.Key, h.Value);
+                if (headers != null) foreach (KeyValuePair<string, string> h in headers) req.Headers.TryAddWithoutValidation(h.Key, h.Value);
                 if (body != null)
                 {
                     string json = body as string ?? Serializer.Serialize(body);
@@ -143,7 +158,10 @@ namespace Test.Shared.Helpers
 
                 using (HttpResponseMessage resp = await _Http.SendAsync(req, token).ConfigureAwait(false))
                 {
-                    return new TestResponse { StatusCode = (int)resp.StatusCode, Body = await resp.Content.ReadAsStringAsync(token).ConfigureAwait(false) };
+                    TestResponse result = new TestResponse { StatusCode = (int)resp.StatusCode, Body = await resp.Content.ReadAsStringAsync(token).ConfigureAwait(false) };
+                    foreach (KeyValuePair<string, IEnumerable<string>> h in resp.Headers) result.Headers[h.Key] = String.Join(",", h.Value);
+                    foreach (KeyValuePair<string, IEnumerable<string>> h in resp.Content.Headers) result.Headers[h.Key] = String.Join(",", h.Value);
+                    return result;
                 }
             }
         }

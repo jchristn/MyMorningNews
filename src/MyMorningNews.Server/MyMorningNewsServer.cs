@@ -5,6 +5,7 @@ namespace MyMorningNews.Server
     using System.Threading;
     using System.Threading.Tasks;
     using MyMorningNews.Core;
+    using MyMorningNews.Core.Briefings;
     using MyMorningNews.Core.Database;
     using MyMorningNews.Core.Database.Postgresql;
     using MyMorningNews.Core.Fetch;
@@ -16,6 +17,7 @@ namespace MyMorningNews.Server
     using MyMorningNews.Core.Serialization;
     using MyMorningNews.Core.Services;
     using MyMorningNews.Core.Settings;
+    using MyMorningNews.Core.Storage;
     using MyMorningNews.Server.Routes;
     using MyMorningNews.Server.Services;
     using MyMorningNews.Server.Workers;
@@ -74,6 +76,11 @@ namespace MyMorningNews.Server
         /// </summary>
         public bool StartWorkers { get; set; } = true;
 
+        /// <summary>
+        /// S3-compatible store to use instead of one built from settings (tests). Null builds from settings.
+        /// </summary>
+        public IArtifactStore? ArtifactStoreOverride { get; set; } = null;
+
         #endregion
 
         #region Private-Members
@@ -92,6 +99,7 @@ namespace MyMorningNews.Server
         private RefinementService? _Refinement = null;
         private SearchService? _Search = null;
         private FetchService? _Fetch = null;
+        private ArtifactService? _Artifacts = null;
         private bool _Disposed = false;
 
         #endregion
@@ -142,13 +150,22 @@ namespace MyMorningNews.Server
             _Search = new SearchService(_Database, vault, settings, _Logging);
             _Fetch = new FetchService(settings, _Logging);
             tenantDefaults.Search = _Search;
-            await tenantDefaults.EnsureAllAsync(token).ConfigureAwait(false);
             _Push = new PushService(_Database, settings, _Logging);
             _Refinement = new RefinementService(_Database, prompts, _Models, _Logging);
             ResearchRequestService researchRequests = new ResearchRequestService(_Database, _Refinement);
             SchedulingService scheduling = new SchedulingService(_Database, settings, _Logging);
             _Context = new ServerContext(_Settings, _Database, _Logging, authentication, authorization, audit, Lifetime, vault, prompts, _Models, tenantDefaults, _Push, _Refinement, researchRequests, scheduling, _Search!, _Fetch!);
-            _Context.RunExecutor = new ResearchPipeline(new PipelineServices(_Database, _Models, prompts, _Search!, _Fetch!, settings, _Logging));
+            _Artifacts = new ArtifactService(_Database, settings, _Logging, ArtifactStoreOverride);
+            BriefingTemplateService templates = new BriefingTemplateService(_Database);
+            BriefingComposer composer = new BriefingComposer(_Database, _Models, prompts, _Artifacts, settings, _Logging);
+            BriefingService briefings = new BriefingService(_Database, composer, templates, scheduling, _Artifacts, settings, _Logging);
+            scheduling.EditionTrigger = briefings;
+            tenantDefaults.Briefings = briefings;
+            await tenantDefaults.EnsureAllAsync(token).ConfigureAwait(false);
+            _Context.Artifacts = _Artifacts;
+            _Context.Briefings = briefings;
+            PipelineServices pipelineServices = new PipelineServices(_Database, _Models, prompts, _Search!, _Fetch!, settings, _Logging) { Briefings = briefings };
+            _Context.RunExecutor = new ResearchPipeline(pipelineServices);
 
             _Capture = new RequestHistoryCaptureService(_Database, settings.RequestHistory, _Logging);
             RequestPipeline pipeline = new RequestPipeline(_Context, _Capture);
@@ -180,6 +197,8 @@ namespace MyMorningNews.Server
             {
                 RetentionWorker retention = new RetentionWorker(_Context);
                 _Workers.Add(Task.Run(() => retention.RunAsync(Lifetime.Token)));
+                BriefingWorker briefingWorker = new BriefingWorker(_Context);
+                _Workers.Add(Task.Run(() => briefingWorker.RunAsync(Lifetime.Token)));
                 if (settings.Scheduler.Enabled)
                 {
                     SchedulerWorker scheduler = new SchedulerWorker(_Context);
@@ -235,6 +254,7 @@ namespace MyMorningNews.Server
                 _Refinement?.Dispose();
                 _Search?.Dispose();
                 _Fetch?.Dispose();
+                _Artifacts?.Dispose();
                 _Models?.Dispose();
                 _Database?.Dispose();
             }
@@ -271,6 +291,9 @@ namespace MyMorningNews.Server
                 new RunRoutes(context),
                 new SearchRoutes(context),
                 new ResearchRoutes(context),
+                new BriefingRoutes(context),
+                new EditionRoutes(context),
+                new TemplateRoutes(context),
                 new PromptRoutes(context)
             };
         }

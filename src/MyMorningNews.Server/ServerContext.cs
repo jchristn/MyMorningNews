@@ -1,6 +1,7 @@
 namespace MyMorningNews.Server
 {
     using System;
+    using MyMorningNews.Core.Briefings;
     using MyMorningNews.Core.Database;
     using MyMorningNews.Core.Fetch;
     using MyMorningNews.Core.Pipeline;
@@ -8,6 +9,7 @@ namespace MyMorningNews.Server
     using MyMorningNews.Core.Search;
     using MyMorningNews.Core.Services;
     using MyMorningNews.Core.Settings;
+    using MyMorningNews.Core.Storage;
     using SyslogLogging;
 
     /// <summary>
@@ -112,6 +114,16 @@ namespace MyMorningNews.Server
         /// Executor used by the run worker. Replaceable (tests and later phases install the research pipeline).
         /// </summary>
         public IRunExecutor RunExecutor { get; set; } = new PendingPipelineExecutor();
+
+        /// <summary>
+        /// Stored files (briefing Markdown and HTML, audio, exports).
+        /// </summary>
+        public ArtifactService Artifacts { get; set; } = null!;
+
+        /// <summary>
+        /// Briefings, editions, and composition.
+        /// </summary>
+        public BriefingService Briefings { get; set; } = null!;
 
         /// <summary>
         /// Instantiate.

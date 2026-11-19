@@ -156,6 +156,21 @@ namespace MyMorningNews.Core.Telemetry
         public static readonly Histogram<double> RunStageDuration = Meter.CreateHistogram<double>("mymorningnews.run.stage.duration", "s", "Run stage duration.");
 
         /// <summary>
+        /// Artifacts stored by kind.
+        /// </summary>
+        public static readonly Counter<long> Artifacts = Meter.CreateCounter<long>("mymorningnews.artifacts", "{artifact}", "Artifacts stored by kind.");
+
+        /// <summary>
+        /// Artifacts deleted by retention.
+        /// </summary>
+        public static readonly Counter<long> ArtifactsExpired = Meter.CreateCounter<long>("mymorningnews.artifacts.expired", "{artifact}", "Artifacts deleted by retention.");
+
+        /// <summary>
+        /// Briefings composed by kind and outcome.
+        /// </summary>
+        public static readonly Counter<long> Briefings = Meter.CreateCounter<long>("mymorningnews.briefings", "{briefing}", "Briefings composed by kind and outcome.");
+
+        /// <summary>
         /// Push notifications by outcome.
         /// </summary>
         public static readonly Counter<long> PushMessages = Meter.CreateCounter<long>("mymorningnews.push.messages", "{message}", "Push notifications by outcome.");

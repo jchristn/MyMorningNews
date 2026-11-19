@@ -3,8 +3,10 @@ namespace MyMorningNews.Server.Services
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Linq;
     using System.Text.Json;
     using System.Threading.Tasks;
+    using MyMorningNews.Core.Briefings;
     using MyMorningNews.Core.Enums;
     using MyMorningNews.Core.Exceptions;
     using MyMorningNews.Core.Responses;
@@ -160,8 +162,14 @@ namespace MyMorningNews.Server.Services
             int status;
             string error;
             string message;
+            Dictionary<string, string>? details = null;
             switch (ex)
             {
+                case TemplateInvalidException tie:
+                    status = 400; error = "TemplateInvalid"; message = tie.Message;
+                    details = new Dictionary<string, string>(StringComparer.Ordinal);
+                    foreach (TemplateProblem p in tie.Problems.Where(p => !p.IsWarning).Take(50)) details["line " + p.Line + (details.ContainsKey("line " + p.Line) ? " (" + details.Count + ")" : String.Empty)] = p.Message;
+                    break;
                 case JsonException:
                     status = 400; error = "BadRequest"; message = "The request body is not valid JSON."; break;
                 case ArgumentException ae:
@@ -170,6 +178,10 @@ namespace MyMorningNews.Server.Services
                     status = 404; error = "NotFound"; message = String.IsNullOrWhiteSpace(knf.Message) || knf.Message.StartsWith("The given key", StringComparison.Ordinal) ? "The requested resource was not found." : knf.Message; break;
                 case ConflictException ce:
                     status = 409; error = "Conflict"; message = ce.Message; break;
+                case ArtifactExpiredException aee:
+                    status = 410; error = "ArtifactExpired"; message = aee.Message; break;
+                case QuotaExceededException qee:
+                    status = 429; error = "QuotaExceeded"; message = qee.Message; break;
                 case ModelRefusalException mre:
                     status = 422; error = "ModelRefused"; message = mre.Message; break;
                 case StructuredOutputException soe:
@@ -190,7 +202,7 @@ namespace MyMorningNews.Server.Services
             if (ctx.Response.ResponseSent) return;
             ctx.Response.StatusCode = status;
             ctx.Response.ContentType = "application/json";
-            await ctx.Response.Send(Serializer.Serialize(new ErrorResponse { Error = error, Message = message, RequestId = rc?.RequestId }), ctx.Token).ConfigureAwait(false);
+            await ctx.Response.Send(Serializer.Serialize(new ErrorResponse { Error = error, Message = message, RequestId = rc?.RequestId, Details = details }), ctx.Token).ConfigureAwait(false);
         }
 
         #endregion

@@ -73,7 +73,7 @@ namespace MyMorningNews.Server.Routes
                 TenantId = tenantId,
                 OwnerType = QueryEnum<ScheduleOwnerTypeEnum>(ctx, "ownerType"),
                 OwnerId = Query(ctx, "ownerId"),
-                UserId = rc.IsAdmin || rc.IsTenantAdmin ? Query(ctx, "userId") : rc.UserId
+                UserId = ListScope(ctx)
             };
             ApplyPaging(ctx, filter);
             await SendJsonAsync(ctx, 200, await Server.Database.Schedules.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);

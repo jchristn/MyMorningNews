@@ -61,7 +61,7 @@ namespace MyMorningNews.Server.Routes
             BriefingFilter filter = new BriefingFilter
             {
                 TenantId = tenantId,
-                UserId = OwnerScope(ctx),
+                UserId = ListScope(ctx),
                 Kind = QueryEnum<BriefingKindEnum>(ctx, "kind"),
                 EditionId = Query(ctx, "editionId"),
                 TopicId = Query(ctx, "topicId"),
@@ -92,6 +92,9 @@ namespace MyMorningNews.Server.Routes
                 new[] { br.MarkdownArtifactId, br.HtmlArtifactId }.Any(id => id == null || detail.Files.FirstOrDefault(f => f.Id == id)?.DeletedUtc != null || detail.Files.All(f => f.Id != id));
             if (br.EditionId != null) detail.EditionName = (await Server.Database.Editions.ReadAsync(br.TenantId, br.EditionId, ctx.Token).ConfigureAwait(false))?.Name;
             if (br.TopicId != null) detail.TopicName = (await Server.Database.Topics.ReadAsync(br.TenantId, br.TopicId, ctx.Token).ConfigureAwait(false))?.Name;
+            detail.Audio = (await Server.Database.MediaAssets.EnumerateAsync(new MediaAssetFilter { TenantId = br.TenantId, BriefingId = br.Id, PageSize = 20 }, ctx.Token).ConfigureAwait(false)).Items
+                .OrderByDescending(m => m.CreatedUtc).FirstOrDefault();
+            if (detail.Audio != null) detail.Audio.ScriptMarkdown = null;
             foreach (BriefingItem item in detail.Items)
             {
                 if (detail.ItemTitles.ContainsKey(item.ItemId)) continue;
@@ -162,7 +165,7 @@ namespace MyMorningNews.Server.Routes
             ArtifactFilter filter = new ArtifactFilter
             {
                 TenantId = tenantId,
-                UserId = OwnerScope(ctx),
+                UserId = ListScope(ctx),
                 BriefingId = Query(ctx, "briefingId"),
                 Kind = QueryEnum<ArtifactKindEnum>(ctx, "kind"),
                 Pinned = QueryBool(ctx, "pinned")
@@ -227,12 +230,6 @@ namespace MyMorningNews.Server.Routes
             }
 
             return art;
-        }
-
-        private static string? OwnerScope(HttpContextBase ctx)
-        {
-            RequestContext rc = Context(ctx);
-            return rc.IsAdmin || rc.IsTenantAdmin ? Query(ctx, "userId") : rc.UserId;
         }
     }
 }

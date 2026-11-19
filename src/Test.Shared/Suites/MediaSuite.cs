@@ -140,7 +140,10 @@ namespace Test.Shared.Suites
 
             MediaAsset again = (await f.User.Client.PostAsync("/v1.0/api/briefings/" + b.Id + "/audio", null, token).ConfigureAwait(false)).Expect(202, "remake").Json<MediaAsset>();
             Assert.True(again.Id != m.Id && again.Status == MediaStatusEnum.Queued, "new episode queued");
-            (await f.User.Client.PostAsync("/v1.0/api/briefings/" + b.Id + "/audio", null, token).ConfigureAwait(false)).Expect(409, "one at a time");
+            TestResponse busy = (await f.User.Client.PostAsync("/v1.0/api/briefings/" + b.Id + "/audio", null, token).ConfigureAwait(false)).Expect(409, "one at a time");
+            Assert.True(busy.Body.Contains("AudioInProgress", StringComparison.Ordinal) && busy.Body.Contains(again.Id, StringComparison.Ordinal), "distinct code naming the episode: " + busy.Body);
+            BriefingDetailResponse withAudio = (await f.User.Client.GetAsync("/v1.0/api/briefings/" + b.Id, token).ConfigureAwait(false)).Json<BriefingDetailResponse>();
+            Assert.True(withAudio.Audio != null && withAudio.Audio.Id == again.Id && withAudio.Audio.Status == MediaStatusEnum.Queued && withAudio.Audio.ScriptMarkdown == null, "briefing detail carries the newest audio status");
             await EpisodeForAsync(f, b, token).ConfigureAwait(false);
             (await f.User.Client.DeleteAsync("/v1.0/api/media/" + m.Id, token).ConfigureAwait(false)).Expect(204, "delete episode");
             (await f.User.Client.GetAsync(d.AudioPath!, token).ConfigureAwait(false)).Expect(404, "its audio file is gone");
@@ -234,8 +237,13 @@ namespace Test.Shared.Suites
             Assert.True(!(await anon.GetAsync("/v1.0/public/feeds/" + theirs.Secret + "/podcast.xml", token).ConfigureAwait(false)).Body.Contains(m.Id, StringComparison.Ordinal), "another user's feed lacks my episode");
 
             (await f.User.Client.DeleteAsync("/v1.0/api/feed-tokens/" + created.Token.Id, token).ConfigureAwait(false)).Expect(204, "revoke");
+            Assert.True((await f.User.Client.GetAsync("/v1.0/api/feed-tokens", token).ConfigureAwait(false)).Json<List<FeedToken>>().Single().RevokedUtc.HasValue, "revoked token listed");
             (await anon.GetAsync(path + "/podcast.xml", token).ConfigureAwait(false)).Expect(404, "revoked feed");
             (await anon.GetAsync(episodePath, token).ConfigureAwait(false)).Expect(404, "revoked episode");
+            (await f.User.Client.DeleteAsync("/v1.0/api/feed-tokens/" + created.Token.Id + "?purge=true", token).ConfigureAwait(false)).Expect(204, "purge revoked token");
+            Assert.Equal(0, (await f.User.Client.GetAsync("/v1.0/api/feed-tokens", token).ConfigureAwait(false)).Json<List<FeedToken>>().Count, "purged");
+            ClientConfigResponse cfg = (await anon.GetAsync("/v1.0/api/client-config", token).ConfigureAwait(false)).Expect(200, "client config").Json<ClientConfigResponse>();
+            Assert.True(cfg.AudioEnabled && cfg.EmailEnabled, "client config reports audio and email");
 
             TestResponse glyph = (await anon.GetAsync("/v1.0/public/assets/glyph.png", token).ConfigureAwait(false)).Expect(200, "artwork");
             Assert.True(glyph.Headers["Content-Type"] == "image/png", "png");

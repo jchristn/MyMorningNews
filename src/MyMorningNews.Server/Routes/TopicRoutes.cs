@@ -64,10 +64,7 @@ namespace MyMorningNews.Server.Routes
             if (!await AuthorizeAsync(ctx, RequestTypeEnum.TopicRead).ConfigureAwait(false)) return;
             string? tenantId = await RequireTenantAsync(ctx).ConfigureAwait(false);
             if (tenantId == null) return;
-            RequestContext rc = Context(ctx);
-            string? userId = Query(ctx, "userId");
-            if (!rc.IsAdmin && !rc.IsTenantAdmin) userId = rc.UserId;
-            TopicFilter filter = new TopicFilter { TenantId = tenantId, UserId = userId, Status = QueryEnum<TopicStatusEnum>(ctx, "status"), IsOneTime = QueryBool(ctx, "isOneTime") };
+            TopicFilter filter = new TopicFilter { TenantId = tenantId, UserId = ListScope(ctx), Status = QueryEnum<TopicStatusEnum>(ctx, "status"), IsOneTime = QueryBool(ctx, "isOneTime") };
             ApplyPaging(ctx, filter);
             await SendJsonAsync(ctx, 200, await Server.Database.Topics.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }

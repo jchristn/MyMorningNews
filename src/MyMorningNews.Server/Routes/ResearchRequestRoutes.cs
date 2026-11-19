@@ -68,7 +68,7 @@ namespace MyMorningNews.Server.Routes
             ResearchRequestFilter filter = new ResearchRequestFilter
             {
                 TenantId = tenantId,
-                UserId = rc.IsAdmin || rc.IsTenantAdmin ? Query(ctx, "userId") : rc.UserId,
+                UserId = ListScope(ctx),
                 Status = QueryEnum<ResearchRequestStatusEnum>(ctx, "status")
             };
             ApplyPaging(ctx, filter);

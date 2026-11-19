@@ -48,5 +48,11 @@ namespace MyMorningNews.Core.Responses
         /// Display titles of the items by item ID (finding title, prediction statement, or suggestion title).
         /// </summary>
         public Dictionary<string, string> ItemTitles { get; set; } = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        /// <summary>
+        /// The newest audio episode for the briefing in any status (queued, making, ready, or failed), or null when none.
+        /// Script text is left out.
+        /// </summary>
+        public MediaAsset? Audio { get; set; } = null;
     }
 }

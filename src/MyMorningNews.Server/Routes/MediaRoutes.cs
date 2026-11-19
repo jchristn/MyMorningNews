@@ -54,7 +54,7 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/feed-tokens", ListTokensAsync, null, openApiMetadata: Doc("List my podcast feed tokens", "Podcast feeds"));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/feed-tokens", CreateTokenAsync, null, openApiMetadata: Doc("Create a private podcast feed", "Podcast feeds",
                 "Returns the secret and feed URL once; only a hash is stored.").WithRequestBody(Body<FeedTokenCreateRequest>()));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/api/feed-tokens/{id}", RevokeTokenAsync, null, openApiMetadata: Doc("Revoke a podcast feed token", "Podcast feeds"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/api/feed-tokens/{id}", RevokeTokenAsync, null, openApiMetadata: Doc("Revoke a podcast feed token", "Podcast feeds", "Revokes an active token; with purge=true, deletes an already revoked one.").WithParameter(QueryParam("purge", typeof(bool))));
 
             webserver.Routes.PreAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/public/feeds/{token}/podcast.xml", FeedAsync, null, openApiMetadata: Doc("Private podcast feed (RSS 2.0 with iTunes tags)", "Public"));
             webserver.Routes.PreAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/public/feeds/{token}/episodes/{file}", EpisodeAsync, null, openApiMetadata: Doc("Podcast episode audio (Range supported)", "Public"));
@@ -71,7 +71,7 @@ namespace MyMorningNews.Server.Routes
             MediaAssetFilter filter = new MediaAssetFilter
             {
                 TenantId = tenantId,
-                UserId = rc.IsAdmin || rc.IsTenantAdmin ? Query(ctx, "userId") : rc.UserId,
+                UserId = ListScope(ctx),
                 BriefingId = Query(ctx, "briefingId"),
                 EditionId = Query(ctx, "editionId"),
                 Status = QueryEnum<MediaStatusEnum>(ctx, "status"),
@@ -112,7 +112,16 @@ namespace MyMorningNews.Server.Routes
             Briefing? b = await Server.Database.Briefings.ReadAsync(tenantId, Param(ctx, "id") ?? String.Empty, ctx.Token).ConfigureAwait(false);
             if (b == null || !IsOwnerOrAdmin(ctx, b.UserId)) { await SendNotFoundAsync(ctx, "Briefing").ConfigureAwait(false); return; }
             AudioGenerateRequest req = (await ReadOptionalBodyAsync<AudioGenerateRequest>(ctx).ConfigureAwait(false)) ?? new AudioGenerateRequest();
-            if (!Server.Settings.Tts.Enabled) { await SendErrorAsync(ctx, 409, "Conflict", "Audio is turned off on this server (tts.enabled).").ConfigureAwait(false); return; }
+            if (!Server.Settings.Tts.Enabled) { await SendErrorAsync(ctx, 409, "AudioDisabled", "Audio is turned off on this server (tts.enabled).").ConfigureAwait(false); return; }
+            if (b.Status != BriefingStatusEnum.Ready) { await SendErrorAsync(ctx, 409, "BriefingNotReady", "Audio is made from a ready briefing.").ConfigureAwait(false); return; }
+            MediaAsset? busy = (await Server.Database.MediaAssets.EnumerateAsync(new MediaAssetFilter { TenantId = b.TenantId, BriefingId = b.Id, PageSize = 20 }, ctx.Token).ConfigureAwait(false)).Items
+                .FirstOrDefault(x => x.Status == MediaStatusEnum.Queued || x.Status == MediaStatusEnum.Scripting || x.Status == MediaStatusEnum.Synthesizing);
+            if (busy != null)
+            {
+                await SendErrorAsync(ctx, 409, "AudioInProgress", "Audio for this briefing is already being made.", new Dictionary<string, string> { { "mediaId", busy.Id }, { "status", busy.Status.ToString() } }).ConfigureAwait(false);
+                return;
+            }
+
             MediaAsset? m = await Server.Audio.QueueForBriefingAsync(b, b.Kind == BriefingKindEnum.OneTime ? MediaKindEnum.PodcastEpisode : MediaKindEnum.BriefingAudio, req.VoiceProfileId, true, ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 202, m).ConfigureAwait(false);
         }
@@ -231,6 +240,13 @@ namespace MyMorningNews.Server.Routes
             if (tenantId == null) return;
             FeedToken? t = await Server.Database.FeedTokens.ReadAsync(tenantId, Param(ctx, "id") ?? String.Empty, ctx.Token).ConfigureAwait(false);
             if (t == null || !IsOwnerOrAdmin(ctx, t.UserId)) { await SendNotFoundAsync(ctx, "Feed token").ConfigureAwait(false); return; }
+            if (t.RevokedUtc.HasValue && QueryBool(ctx, "purge") == true)
+            {
+                await Server.Database.FeedTokens.DeleteAsync(t.TenantId, t.Id, ctx.Token).ConfigureAwait(false);
+                await SendJsonAsync(ctx, 204, null).ConfigureAwait(false);
+                return;
+            }
+
             if (!t.RevokedUtc.HasValue)
             {
                 t.RevokedUtc = DateTime.UtcNow;

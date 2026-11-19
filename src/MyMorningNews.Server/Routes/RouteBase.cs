@@ -479,6 +479,19 @@ namespace MyMorningNews.Server.Routes
         }
 
         /// <summary>
+        /// The owner filter for list routes: members see their own items; administrators see everyone's, or one user's
+        /// with userId=..., or their own with mine=true.
+        /// </summary>
+        /// <param name="ctx">HTTP context.</param>
+        /// <returns>User ID to filter on, or null for every user.</returns>
+        protected static string? ListScope(HttpContextBase ctx)
+        {
+            RequestContext rc = Context(ctx);
+            if (!(rc.IsAdmin || rc.IsTenantAdmin)) return rc.UserId;
+            return QueryBool(ctx, "mine") == true ? rc.UserId : Query(ctx, "userId");
+        }
+
+        /// <summary>
         /// Whether the caller may act on a resource owned by a user: the owner, a tenant administrator, or a global administrator.
         /// </summary>
         /// <param name="ctx">HTTP context.</param>

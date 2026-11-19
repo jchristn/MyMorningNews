@@ -29,6 +29,16 @@ namespace MyMorningNews.Core.Responses
         public bool PushEnabled { get; set; } = false;
 
         /// <summary>
+        /// Whether the server makes audio (tts.enabled).
+        /// </summary>
+        public bool AudioEnabled { get; set; } = false;
+
+        /// <summary>
+        /// Whether the server sends email (email.enabled and a provider other than Disabled).
+        /// </summary>
+        public bool EmailEnabled { get; set; } = false;
+
+        /// <summary>
         /// Oldest mobile app version this server supports.
         /// </summary>
         public string MinimumAppVersion { get; set; } = "0.1.0";

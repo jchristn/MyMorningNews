@@ -46,7 +46,7 @@ namespace MyMorningNews.Server.Routes
                 TopicId = Query(ctx, "topicId"),
                 Status = QueryEnum<RunStatusEnum>(ctx, "status"),
                 Trigger = QueryEnum<RunTriggerEnum>(ctx, "trigger"),
-                UserId = rc.IsAdmin || rc.IsTenantAdmin ? Query(ctx, "userId") : rc.UserId
+                UserId = ListScope(ctx)
             };
             ApplyPaging(ctx, filter);
             await SendJsonAsync(ctx, 200, await Server.Database.Runs.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);

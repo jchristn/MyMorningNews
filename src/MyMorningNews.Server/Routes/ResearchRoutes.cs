@@ -65,7 +65,7 @@ namespace MyMorningNews.Server.Routes
             FindingFilter filter = new FindingFilter
             {
                 TenantId = tenantId,
-                UserId = OwnerScope(ctx),
+                UserId = ListScope(ctx),
                 TopicId = Query(ctx, "topicId"),
                 RunId = Query(ctx, "runId"),
                 Tier = QueryEnum<FindingTierEnum>(ctx, "tier"),
@@ -131,7 +131,7 @@ namespace MyMorningNews.Server.Routes
             if (!await AuthorizeAsync(ctx, RequestTypeEnum.PredictionRead).ConfigureAwait(false)) return;
             string? tenantId = await RequireTenantAsync(ctx).ConfigureAwait(false);
             if (tenantId == null) return;
-            PredictionFilter filter = new PredictionFilter { TenantId = tenantId, UserId = OwnerScope(ctx), TopicId = Query(ctx, "topicId"), Status = QueryEnum<PredictionStatusEnum>(ctx, "status"), IsDryRun = QueryBool(ctx, "includeDryRun") == true ? null : false };
+            PredictionFilter filter = new PredictionFilter { TenantId = tenantId, UserId = ListScope(ctx), TopicId = Query(ctx, "topicId"), Status = QueryEnum<PredictionStatusEnum>(ctx, "status"), IsDryRun = QueryBool(ctx, "includeDryRun") == true ? null : false };
             ApplyPaging(ctx, filter);
             await SendJsonAsync(ctx, 200, await Server.Database.Predictions.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }
@@ -195,7 +195,7 @@ namespace MyMorningNews.Server.Routes
             if (!await AuthorizeAsync(ctx, RequestTypeEnum.SuggestionRead).ConfigureAwait(false)) return;
             string? tenantId = await RequireTenantAsync(ctx).ConfigureAwait(false);
             if (tenantId == null) return;
-            SuggestionFilter filter = new SuggestionFilter { TenantId = tenantId, UserId = OwnerScope(ctx), TopicId = Query(ctx, "topicId"), Status = QueryEnum<SuggestionStatusEnum>(ctx, "status"), Priority = QueryEnum<SuggestionPriorityEnum>(ctx, "priority"), IsDryRun = QueryBool(ctx, "includeDryRun") == true ? null : false };
+            SuggestionFilter filter = new SuggestionFilter { TenantId = tenantId, UserId = ListScope(ctx), TopicId = Query(ctx, "topicId"), Status = QueryEnum<SuggestionStatusEnum>(ctx, "status"), Priority = QueryEnum<SuggestionPriorityEnum>(ctx, "priority"), IsDryRun = QueryBool(ctx, "includeDryRun") == true ? null : false };
             ApplyPaging(ctx, filter);
             await SendJsonAsync(ctx, 200, await Server.Database.Suggestions.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }
@@ -238,7 +238,7 @@ namespace MyMorningNews.Server.Routes
             if (tenantId == null) return;
             EnumerationFilter paging = new EnumerationFilter();
             ApplyPaging(ctx, paging);
-            EnumerationResult<SourceItem> page = await Server.Database.SourceItems.ListForTopicsAsync(tenantId, OwnerScope(ctx), Query(ctx, "topicId"), Query(ctx, "runId"), Query(ctx, "search"), paging.PageNumber, paging.PageSize, ctx.Token).ConfigureAwait(false);
+            EnumerationResult<SourceItem> page = await Server.Database.SourceItems.ListForTopicsAsync(tenantId, ListScope(ctx), Query(ctx, "topicId"), Query(ctx, "runId"), Query(ctx, "search"), paging.PageNumber, paging.PageSize, ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 200, page).ConfigureAwait(false);
         }
 
@@ -252,11 +252,6 @@ namespace MyMorningNews.Server.Routes
             await SendJsonAsync(ctx, 200, s).ConfigureAwait(false);
         }
 
-        private static string? OwnerScope(HttpContextBase ctx)
-        {
-            RequestContext rc = Context(ctx);
-            return rc.IsAdmin || rc.IsTenantAdmin ? Query(ctx, "userId") : rc.UserId;
-        }
 
         private async Task<Run?> OwnedRunAsync(HttpContextBase ctx)
         {

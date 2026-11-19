@@ -4,6 +4,7 @@ namespace MyMorningNews.Server.Routes
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using MyMorningNews.Core;
+    using MyMorningNews.Core.Enums;
     using MyMorningNews.Core.Responses;
     using WatsonWebserver;
     using WatsonWebserver.Core;
@@ -37,6 +38,8 @@ namespace MyMorningNews.Server.Routes
                 ServerVersion = Constants.ProductVersion,
                 SignupEnabled = false,
                 PushEnabled = Server.SettingsService.Current.Push.Enabled,
+                AudioEnabled = Server.SettingsService.Current.Tts.Enabled,
+                EmailEnabled = Server.SettingsService.Current.Email.Enabled && Server.SettingsService.Current.Email.Provider != EmailProviderEnum.Disabled,
                 MinimumAppVersion = "0.1.0",
                 Links = new Dictionary<string, string>
                 {

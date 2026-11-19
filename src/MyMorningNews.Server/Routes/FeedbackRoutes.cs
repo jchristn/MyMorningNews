@@ -84,7 +84,7 @@ namespace MyMorningNews.Server.Routes
             FeedbackFilter filter = new FeedbackFilter
             {
                 TenantId = tenantId,
-                UserId = rc.IsAdmin || rc.IsTenantAdmin ? Query(ctx, "userId") : rc.UserId,
+                UserId = ListScope(ctx),
                 TargetType = QueryEnum<FeedbackTargetTypeEnum>(ctx, "targetType"),
                 TargetId = Query(ctx, "targetId"),
                 TopicId = Query(ctx, "topicId"),

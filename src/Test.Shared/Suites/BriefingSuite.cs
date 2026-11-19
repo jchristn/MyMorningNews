@@ -130,6 +130,8 @@ namespace Test.Shared.Suites
             TestUser other = await TestFixtures.CreateUserAsync(await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false), f.Topic.TenantId, false, token).ConfigureAwait(false);
             (await other.Client.GetAsync("/v1.0/api/briefings/" + listed.Id, token).ConfigureAwait(false)).Expect(404, "another member cannot read it");
             Assert.Equal(0, (await other.Client.GetAsync("/v1.0/api/briefings", token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().Items.Count, "another member lists none");
+            TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
+            Assert.True((await admin.GetAsync("/v1.0/api/briefings?mine=true&pageSize=500", token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().Items.All(x => x.Id != listed.Id), "mine=true limits an administrator to their own");
         }
 
         private static async Task TemplatesApiAsync(CancellationToken token)

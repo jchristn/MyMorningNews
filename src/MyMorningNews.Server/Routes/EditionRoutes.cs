@@ -50,7 +50,7 @@ namespace MyMorningNews.Server.Routes
             string? tenantId = await RequireTenantAsync(ctx).ConfigureAwait(false);
             if (tenantId == null) return;
             RequestContext rc = Context(ctx);
-            EditionFilter filter = new EditionFilter { TenantId = tenantId, UserId = rc.IsAdmin || rc.IsTenantAdmin ? Query(ctx, "userId") : rc.UserId };
+            EditionFilter filter = new EditionFilter { TenantId = tenantId, UserId = ListScope(ctx) };
             ApplyPaging(ctx, filter);
             await SendJsonAsync(ctx, 200, await Server.Database.Editions.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }

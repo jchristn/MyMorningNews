@@ -71,7 +71,7 @@ namespace MyMorningNews.Server.Routes
             RefinementSessionFilter filter = new RefinementSessionFilter
             {
                 TenantId = tenantId,
-                UserId = rc.IsAdmin || rc.IsTenantAdmin ? Query(ctx, "userId") : rc.UserId,
+                UserId = ListScope(ctx),
                 TopicId = Query(ctx, "topicId"),
                 Status = QueryEnum<RefinementStatusEnum>(ctx, "status")
             };

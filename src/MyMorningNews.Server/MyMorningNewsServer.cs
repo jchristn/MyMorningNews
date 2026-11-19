@@ -83,6 +83,7 @@ namespace MyMorningNews.Server
         private readonly List<Task> _Workers = new List<Task>();
         private int _DatabaseConnectAttempts = 30;
         private PushService? _Push = null;
+        private RefinementService? _Refinement = null;
         private bool _Disposed = false;
 
         #endregion
@@ -132,7 +133,9 @@ namespace MyMorningNews.Server
             TenantDefaultsService tenantDefaults = new TenantDefaultsService(_Database, prompts, vault, settings.Models, _Logging);
             await tenantDefaults.EnsureAllAsync(token).ConfigureAwait(false);
             _Push = new PushService(_Database, settings, _Logging);
-            _Context = new ServerContext(_Settings, _Database, _Logging, authentication, authorization, audit, Lifetime, vault, prompts, _Models, tenantDefaults, _Push);
+            _Refinement = new RefinementService(_Database, prompts, _Models, _Logging);
+            ResearchRequestService researchRequests = new ResearchRequestService(_Database, _Refinement);
+            _Context = new ServerContext(_Settings, _Database, _Logging, authentication, authorization, audit, Lifetime, vault, prompts, _Models, tenantDefaults, _Push, _Refinement, researchRequests);
 
             _Capture = new RequestHistoryCaptureService(_Database, settings.RequestHistory, _Logging);
             RequestPipeline pipeline = new RequestPipeline(_Context, _Capture);
@@ -209,6 +212,7 @@ namespace MyMorningNews.Server
                 _Webserver?.Dispose();
                 _Capture?.Dispose();
                 _Push?.Dispose();
+                _Refinement?.Dispose();
                 _Models?.Dispose();
                 _Database?.Dispose();
             }
@@ -238,6 +242,9 @@ namespace MyMorningNews.Server
                 new UsageRoutes(context),
                 new DeviceRoutes(context),
                 new ClientConfigRoutes(context),
+                new TopicRoutes(context),
+                new RefinementRoutes(context),
+                new ResearchRequestRoutes(context),
                 new PromptRoutes(context)
             };
         }

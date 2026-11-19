@@ -716,7 +716,7 @@ Not everything is a recurring topic. "Build me a podcast on the history of the s
 - **Deliverables.** One or more of: Report (Markdown plus rendered HTML), Podcast (audio episode, also published to the user's private feed if they choose), and Email (the report or a summary sent to chosen recipients). Length, depth, voice, and tone are options with defaults.
 - **Quick refinement.** The request runs a short version of the wizard: `refinement.quick` turns the text into a brief with dimensions and includes and excludes, and asks at most three clarifying questions (skippable with "Just do it"). The user can open the full wizard instead.
 - **Timing.** "Run now" or "Run once at" a date and time in the user's time zone. Internally this is a schedule with interval type `Once` (section 14.1) attached to a request, so the scheduler, pipeline, ranking, evidence, and delivery are the same code paths as recurring topics. Nothing repeats unless the user chooses "Make this a recurring topic" afterward, which converts the request into a topic with its context and history.
-- **Storage.** `requests` (owner, text, brief, deliverables, options, status, scheduled time, run, briefing, artifacts, converted topic). Outputs follow the artifact retention rules (section 22.1: kept up to 365 days, pinnable).
+- **Storage.** `researchrequests` (`rrq_`: owner, text, title, deliverables, length, status, run time, recipients, publish to feed, run, briefing, converted topic), with a one-time topic (`istonetime`) holding the brief, dimensions, and constraints, and a refinement session holding the clarifying questions. Outputs follow the artifact retention rules (section 22.1: kept up to 365 days, pinnable).
 - **Where results appear.** A "Requests" list in the web app and the mobile app (status, deliverables, open, listen, download, re-run, delete, make recurring), the email (if chosen), and a push notification when it is ready.
 - **Costs.** One-time requests count toward the same usage accounting and caps (sections 11.5 and 33.2), and the request form shows an estimated cost before it runs on the hosted service.
 
@@ -1426,12 +1426,13 @@ Exit: you can register Ollama and an API model, assign roles, edit a prompt, and
 
 ### Phase 4: Topics and the refinement wizard
 
-- [ ] One-time requests (section 13.1): `requests` table and API, `refinement.quick` prompt, "Run now" and "Run once at", deliverable options, conversion to a recurring topic; web `/requests` pages and the mobile Requests screens.
+- [x] One-time requests (section 13.1), backend: `researchrequests` table (`rrq_`) and `/v1.0/api/requests` (create with planning, answer, replan, confirm now or at a time, cancel, convert to recurring, delete), `refinement.quick` prompt (seeded into existing tenants automatically), deliverables Report, Podcast, and Email.
+- [ ] One-time requests, clients: web `/requests` pages and the mobile Requests screens. The run itself is picked up by Phase 5 and 6.
 
-- [ ] Topic, dimension, constraint, and recipient models, routes, and cascades.
-- [ ] Refinement sessions, all wizard steps with SSE generation, resume, apply, and refine again.
+- [x] Topic, dimension, constraint, and recipient models, routes, and cascades (owner or tenant administrator access, unique slugs, duplicate, pause, resume, archive).
+- [x] Refinement sessions, all wizard steps (dimensions with lock and regenerate, question rounds with follow-up, context, sources with live checks, accept, apply), resume, abandon, refine again, out-of-scope detection, and failures stored for the failure panel. The topic exists in Draft from the start, so all state is relational. Steps return the full state synchronously; SSE progress streaming moves to Phase 6 with run streaming.
 - [ ] Dashboard: Topics table, wizard (step rail, guidance, regenerate, lock, failure panel), Topic workspace Overview and Context tabs.
-- [ ] Suites: Topics, Refinement.
+- [x] Suites: Topics suite (10 cases) covering topics, ownership, duplicate, the full wizard, resume, out of scope, model failure, abandon, and one-time requests.
 
 Exit: "I want to learn about AI developer tools" produces dimensions, at least two rounds of questions, and a reviewable context, persisted and resumable.
 
@@ -1641,6 +1642,7 @@ No open questions remain.
 | 2026-11-19 | 15 | Started | Website built and pushed to `jchristn/mymorningnews.ai`: home page, privacy, terms, support, delete-account, and 404 pages, light and dark themes, responsive, no third-party scripts. Sign-up and log-in point at `app.mymorningnews.ai` (live with Phase 14). GitHub Pages and DNS are owner actions. No product screenshots until the joint interface review. |
 | 2026-11-19 | Plan | Amended | Added Phase 17, a final README and documentation revisit that replaces the in-progress wording ("will", "planned", "arrives in Phase N") with a description of the shipped product. |
 | 2026-11-19 | Plan, 16 | Amended, started | One-time requests (section 13.1: reports, podcasts, and email summaries run once now or at a set time). Artifact storage through `IArtifactStore` with local or S3 providers configured in the server JSON file or `MYMORNINGNEWS_STORAGE_*` variables, and 365-day retention with pinning (section 22.1; `Storage` and `Push` settings added now). `docker/` populated: `.env.example`, SearXNG (default), TTS, MCP, and Ollama profiles, factory demo overlay with seeder and demo user, improved reset scripts, hosted Caddy overlay. Mobile backend contracts built (refresh tokens, tenant-less sign-in, devices and push, client config; migration 4). `APP_STORE_SUBMISSION.md` and `OWNER_ACTIONS.md` added to the plan (section 35.7) with an owner fill-out task. Default credentials confirmed as `admin@mymorningnews` / `password`. |
+| 2026-11-19 | 4 | Backend done | Topics with dimensions, constraints, and recipients; the refinement wizard (all steps, resume, refine again, out-of-scope detection, live source checks); one-time requests with planning, clarifying questions, confirm now or later, and conversion to recurring topics. Migration 5. `ConflictException` (409) and typed model errors (502, 422). Topics suite (10 cases); 99 tests pass on net8 and net10, 100 on Xunit3. Dashboard and mobile screens for Phase 4 follow. |
 
 ---
 

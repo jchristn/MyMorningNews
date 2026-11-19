@@ -131,6 +131,51 @@ namespace MyMorningNews.Core.Database
         /// </summary>
         public IDeviceMethods Devices { get; protected set; } = null!;
 
+        /// <summary>
+        /// Topics.
+        /// </summary>
+        public ITopicMethods Topics { get; protected set; } = null!;
+
+        /// <summary>
+        /// Topic dimensions.
+        /// </summary>
+        public ITopicDimensionMethods TopicDimensions { get; protected set; } = null!;
+
+        /// <summary>
+        /// Topic constraints.
+        /// </summary>
+        public ITopicConstraintMethods TopicConstraints { get; protected set; } = null!;
+
+        /// <summary>
+        /// Topic email recipients.
+        /// </summary>
+        public ITopicRecipientMethods TopicRecipients { get; protected set; } = null!;
+
+        /// <summary>
+        /// Refinement sessions.
+        /// </summary>
+        public IRefinementSessionMethods RefinementSessions { get; protected set; } = null!;
+
+        /// <summary>
+        /// Refinement transcript messages.
+        /// </summary>
+        public IRefinementMessageMethods RefinementMessages { get; protected set; } = null!;
+
+        /// <summary>
+        /// Refinement questions.
+        /// </summary>
+        public IRefinementQuestionMethods RefinementQuestions { get; protected set; } = null!;
+
+        /// <summary>
+        /// Refinement question options.
+        /// </summary>
+        public IRefinementQuestionOptionMethods RefinementQuestionOptions { get; protected set; } = null!;
+
+        /// <summary>
+        /// One-time research requests.
+        /// </summary>
+        public IResearchRequestMethods ResearchRequests { get; protected set; } = null!;
+
         #endregion
 
         #region Constructors-and-Factories

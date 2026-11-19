@@ -96,6 +96,51 @@ namespace MyMorningNews.Core
         public const string Device = "dev_";
 
         /// <summary>
+        /// Prefix for Topic identifiers.
+        /// </summary>
+        public const string Topic = "top_";
+
+        /// <summary>
+        /// Prefix for TopicDimension identifiers.
+        /// </summary>
+        public const string TopicDimension = "dim_";
+
+        /// <summary>
+        /// Prefix for TopicConstraint identifiers.
+        /// </summary>
+        public const string TopicConstraint = "tcn_";
+
+        /// <summary>
+        /// Prefix for TopicRecipient identifiers.
+        /// </summary>
+        public const string TopicRecipient = "trc_";
+
+        /// <summary>
+        /// Prefix for RefinementSession identifiers.
+        /// </summary>
+        public const string RefinementSession = "rfs_";
+
+        /// <summary>
+        /// Prefix for RefinementMessage identifiers.
+        /// </summary>
+        public const string RefinementMessage = "rfm_";
+
+        /// <summary>
+        /// Prefix for RefinementQuestion identifiers.
+        /// </summary>
+        public const string RefinementQuestion = "rfq_";
+
+        /// <summary>
+        /// Prefix for RefinementQuestionOption identifiers.
+        /// </summary>
+        public const string RefinementQuestionOption = "rfo_";
+
+        /// <summary>
+        /// Prefix for ResearchRequest identifiers.
+        /// </summary>
+        public const string ResearchRequest = "rrq_";
+
+        /// <summary>
         /// Prefix for request history entries.
         /// </summary>
         public const string RequestHistory = "req_";

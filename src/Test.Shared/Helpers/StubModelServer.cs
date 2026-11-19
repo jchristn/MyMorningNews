@@ -17,7 +17,8 @@ namespace Test.Shared.Helpers
     /// stub-repair (an empty answer until the request carries a repair turn, then a valid one),
     /// stub-429 (the first sighting of each distinct request body returns 429; the identical retry succeeds),
     /// stub-error (always 400), stub-refusal (finish_reason refusal),
-    /// stub-embed-N (embeddings of N dimensions).
+    /// stub-embed-N (embeddings of N dimensions), stub-refine (shaped answers for every refinement prompt, detected from the prompt text).
+    /// GET requests other than /models return an RSS document (200), or 404 when the path contains "missing" (for source checks).
     /// Requests whose system prompt contains "JSON Schema" receive the JSON answer as fenced text. Streaming requests receive SSE chunks
     /// (text or tool-call argument deltas split in two) and a final chunk with usage including cached and reasoning tokens.
     /// Thread safety: safe for concurrent requests.
@@ -173,6 +174,13 @@ namespace Test.Shared.Helpers
                     return;
                 }
 
+                if (String.Equals(ctx.Request.HttpMethod, "GET", StringComparison.OrdinalIgnoreCase) && !path.EndsWith("/models", StringComparison.Ordinal))
+                {
+                    if (path.Contains("missing", StringComparison.Ordinal)) await WriteAsync(ctx, 404, "{\"error\":\"not found\"}").ConfigureAwait(false);
+                    else await WriteRawAsync(ctx, 200, "application/rss+xml", "<?xml version=\"1.0\"?><rss version=\"2.0\"><channel><title>stub</title></channel></rss>").ConfigureAwait(false);
+                    return;
+                }
+
                 if (path.EndsWith("/models", StringComparison.Ordinal))
                 {
                     await WriteAsync(ctx, 200, "{\"object\":\"list\",\"data\":[{\"id\":\"stub-chat\",\"object\":\"model\"},{\"id\":\"stub-embed-8\",\"object\":\"model\"}]}").ConfigureAwait(false);
@@ -222,8 +230,8 @@ namespace Test.Shared.Helpers
                     string answer = model == "stub-repair" && !repairTurn ? "" : "ready";
                     bool toolTurn = tools && model != "stub-refusal";
                     string finish = model == "stub-refusal" ? "refusal" : toolTurn ? "tool_calls" : "stop";
-                    string text = jsonMode ? "Here you go:\n```json\n{\"answer\":\"" + answer + "\"}\n```" : "ready";
-                    string args = "{\"answer\":\"" + answer + "\"}";
+                    string args = model == "stub-refine" ? RefineArgs(body) : "{\"answer\":\"" + answer + "\"}";
+                    string text = jsonMode ? "Here you go:\n```json\n" + args + "\n```" : "ready";
                     string usage = "{\"prompt_tokens\":12,\"completion_tokens\":3,\"total_tokens\":15,\"prompt_tokens_details\":{\"cached_tokens\":4},\"completion_tokens_details\":{\"reasoning_tokens\":1}}";
 
                     if (stream)
@@ -284,6 +292,61 @@ namespace Test.Shared.Helpers
 
             byte[] done = Encoding.UTF8.GetBytes("data: [DONE]\n\n");
             await ctx.Response.OutputStream.WriteAsync(done).ConfigureAwait(false);
+            ctx.Response.Close();
+        }
+
+        private string RefineArgs(string body)
+        {
+            string self = BaseUrl;
+            if (body.Contains("python web scraper", StringComparison.OrdinalIgnoreCase) || body.Contains("write code for", StringComparison.OrdinalIgnoreCase))
+                return "{\"dimensions\":[],\"outOfScopeReason\":\"My Morning News tracks topics and researches subjects; it does not write code.\",\"title\":\"\",\"brief\":\"\",\"seedQueries\":[],\"questions\":[]}";
+            if (body.Contains("Plan the deliverable", StringComparison.Ordinal))
+                return "{\"title\":\"The shipping container revolution\",\"brief\":\"Cover the invention, standardization, and economic impact of the shipping container.\"," +
+                    "\"dimensions\":[{\"name\":\"Invention\",\"description\":\"Malcom McLean and the first container ships.\",\"rationale\":\"Origin story.\",\"weight\":\"High\",\"includeTerms\":[\"McLean\"],\"excludeTerms\":[]}," +
+                    "{\"name\":\"Standards\",\"description\":\"ISO container sizes.\",\"rationale\":\"Why it scaled.\",\"weight\":\"Normal\",\"includeTerms\":[\"ISO 668\"],\"excludeTerms\":[]}]," +
+                    "\"includeKeywords\":[\"intermodal\"],\"excludeKeywords\":[\"container gardening\"],\"seedQueries\":[\"history of the shipping container\",\"Malcom McLean Ideal X\"]," +
+                    "\"questions\":" + (body.Contains("Q: ", StringComparison.Ordinal) ? "[]" : "[{\"question\":\"Which angle matters most?\",\"rationale\":\"Sets the focus.\",\"kind\":\"SingleChoice\",\"options\":[\"Economics\",\"Technology\",\"People\"],\"dimension\":null}]") + ",\"outOfScopeReason\":null}";
+            if (body.Contains("Propose 6 to 12 dimensions", StringComparison.Ordinal))
+            {
+                StringBuilder dims = new StringBuilder();
+                string[] names = { "Coding assistants", "Agent frameworks", "Pricing and plans", "Model releases", "IDE integrations", "Security and compliance", "Open source projects", "Developer surveys" };
+                for (int i = 0; i < names.Length; i++)
+                {
+                    if (i > 0) dims.Append(',');
+                    dims.Append("{\"name\":\"" + names[i] + "\",\"description\":\"About " + names[i].ToLowerInvariant() + ".\",\"rationale\":\"Shapes tool choices.\",\"weight\":\"" + (i < 2 ? "High" : "Normal") + "\",\"includeTerms\":[\"" + names[i].Split(' ')[0].ToLowerInvariant() + "\"],\"excludeTerms\":[\"rumor\"]}");
+                }
+
+                return "{\"dimensions\":[" + dims + "],\"outOfScopeReason\":null}";
+            }
+
+            if (body.Contains("Ask 5 to 8 questions", StringComparison.Ordinal) || body.Contains("follow-up questions", StringComparison.Ordinal))
+            {
+                bool followup = body.Contains("follow-up questions", StringComparison.Ordinal);
+                return "{\"sufficientContext\":" + (followup ? "true" : "false") + ",\"questions\":[" +
+                    "{\"question\":\"" + (followup ? "Which vendors should we watch most closely?" : "What is your role?") + "\",\"rationale\":\"Sets depth.\",\"kind\":\"SingleChoice\",\"options\":[\"Engineer\",\"Manager\",\"Investor\"],\"dimension\":\"Coding assistants\"}," +
+                    "{\"question\":\"Which areas matter?\",\"rationale\":\"Focus.\",\"kind\":\"MultiChoice\",\"options\":[\"Pricing\",\"Security\",\"Releases\"],\"dimension\":null}," +
+                    "{\"question\":\"Anything to avoid?\",\"rationale\":\"Excludes noise.\",\"kind\":\"FreeText\",\"options\":[],\"dimension\":null}," +
+                    "{\"question\":\"How technical should it be?\",\"rationale\":\"Depth.\",\"kind\":\"Scale\",\"options\":[],\"dimension\":null}," +
+                    "{\"question\":\"Include funding news?\",\"rationale\":\"Scope.\",\"kind\":\"YesNo\",\"options\":[],\"dimension\":null}]}";
+            }
+
+            if (body.Contains("Produce: a Markdown brief", StringComparison.Ordinal))
+                return "{\"name\":\"AI developer tools\",\"brief\":\"Track releases and pricing of AI coding tools.\\n\\n- Focus on assistants and agents.\",\"includeKeywords\":[\"copilot\",\"agent\"],\"excludeKeywords\":[\"rumor\"]," +
+                    "\"includeEntities\":[\"GitHub\"],\"excludeEntities\":[],\"preferredDomains\":[\"https://www.Example.com/blog\"],\"blockedDomains\":[\"spam.test\"],\"trackedQuestions\":[\"When will agents be free?\"]," +
+                    "\"audienceLevel\":\"Expert\",\"horizon\":\"Months\",\"noveltyPreference\":140,\"seedQueries\":[\"ai coding assistant release\",\"agent framework pricing\"]}";
+            if (body.Contains("Suggest up to 12 feed URLs", StringComparison.Ordinal))
+                return "{\"feeds\":[{\"url\":\"" + self + "/feed.xml\",\"reason\":\"Official feed.\",\"dimension\":\"Model releases\"},{\"url\":\"" + self + "/missing.xml\",\"reason\":\"Gone.\",\"dimension\":null},{\"url\":\"not a url\",\"reason\":\"x\",\"dimension\":null}]," +
+                    "\"seedUrls\":[{\"url\":\"" + self + "/changelog\",\"reason\":\"Changelog.\",\"dimension\":null}]}";
+            return "{\"answer\":\"ready\"}";
+        }
+
+        private static async Task WriteRawAsync(HttpListenerContext ctx, int status, string contentType, string content)
+        {
+            byte[] data = Encoding.UTF8.GetBytes(content);
+            ctx.Response.StatusCode = status;
+            ctx.Response.ContentType = contentType;
+            ctx.Response.ContentLength64 = data.Length;
+            await ctx.Response.OutputStream.WriteAsync(data).ConfigureAwait(false);
             ctx.Response.Close();
         }
 

@@ -258,6 +258,46 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// Register, test, or remove my push devices.
         /// </summary>
-        DeviceWrite
+        DeviceWrite,
+
+        /// <summary>
+        /// Read topics.
+        /// </summary>
+        TopicRead,
+
+        /// <summary>
+        /// Create or update topics and their dimensions, constraints, and recipients.
+        /// </summary>
+        TopicWrite,
+
+        /// <summary>
+        /// Delete topics.
+        /// </summary>
+        TopicDelete,
+
+        /// <summary>
+        /// Read refinement sessions.
+        /// </summary>
+        RefinementRead,
+
+        /// <summary>
+        /// Run the refinement wizard.
+        /// </summary>
+        RefinementWrite,
+
+        /// <summary>
+        /// Read one-time requests.
+        /// </summary>
+        ResearchRequestRead,
+
+        /// <summary>
+        /// Create, confirm, or convert one-time requests.
+        /// </summary>
+        ResearchRequestWrite,
+
+        /// <summary>
+        /// Delete one-time requests.
+        /// </summary>
+        ResearchRequestDelete
     }
 }

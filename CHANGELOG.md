@@ -31,6 +31,9 @@ All notable changes to this project are documented here. The project follows [Se
 - Mobile backend: rotating refresh tokens for the mobile app with reuse detection, sign-in without a tenant ID (one matching tenant signs in, several return a list), push devices with test notifications through Expo, and a public client configuration route.
 - Settings for artifact storage (local or S3, configurable in the server JSON file or with `MYMORNINGNEWS_STORAGE_*` variables, 365-day retention) and push notifications.
 - Docker: SearXNG web search in the default stack; TTS, MCP, and Ollama profiles; `.env.example`; a factory demo overlay with a seeder and demo user; reset scripts with `--demo`, `--keep-ollama`, and `--yes`; and a hosted overlay with Caddy for HTTPS.
+- Topics with dimensions, constraints, and email recipients, private to their owner (tenant administrators see all).
+- Topic refinement wizard: proposes dimensions (locked items survive regeneration), asks clarifying questions in rounds, drafts the research brief and constraints, suggests feeds and seed pages checked with a live fetch, and applies the topic. Sessions resume, and any topic can be refined again. Requests that are tasks rather than topics are declined with a reason.
+- One-time requests: "build me a podcast on X" is planned into a brief with at most three clarifying questions, confirmed to run once now or at a set time, and can become a recurring topic.
 - `OWNER_ACTIONS.md` with everything the owner needs to do, grouped by phase.
 - Scope guardrail on every model call and in every default prompt, so models stay on research and briefing tasks and treat fetched content as data.
 - Prompt templates: 19 defaults, renderer with list expansion, save-time variable validation, versions, rollback, reset, topic overrides, and a prompt lab.

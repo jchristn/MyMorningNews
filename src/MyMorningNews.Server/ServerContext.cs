@@ -80,6 +80,16 @@ namespace MyMorningNews.Server
         public PushService Push { get; }
 
         /// <summary>
+        /// Topic refinement wizard.
+        /// </summary>
+        public RefinementService Refinement { get; }
+
+        /// <summary>
+        /// One-time requests.
+        /// </summary>
+        public ResearchRequestService ResearchRequests { get; }
+
+        /// <summary>
         /// Instantiate.
         /// </summary>
         /// <param name="settingsService">Settings service.</param>
@@ -94,6 +104,8 @@ namespace MyMorningNews.Server
         /// <param name="models">Model gateway.</param>
         /// <param name="tenantDefaults">Tenant defaults.</param>
         /// <param name="push">Push notifications.</param>
+        /// <param name="refinement">Refinement wizard.</param>
+        /// <param name="researchRequests">One-time requests.</param>
         /// <exception cref="ArgumentNullException">An argument is null.</exception>
         public ServerContext(
             SettingsService settingsService,
@@ -107,7 +119,9 @@ namespace MyMorningNews.Server
             PromptService prompts,
             ModelGateway models,
             TenantDefaultsService tenantDefaults,
-            PushService push)
+            PushService push,
+            RefinementService refinement,
+            ResearchRequestService researchRequests)
         {
             ArgumentNullException.ThrowIfNull(settingsService);
             ArgumentNullException.ThrowIfNull(database);
@@ -126,6 +140,8 @@ namespace MyMorningNews.Server
             Vault = vault ?? throw new ArgumentNullException(nameof(vault));
             Prompts = prompts ?? throw new ArgumentNullException(nameof(prompts));
             Push = push ?? throw new ArgumentNullException(nameof(push));
+            Refinement = refinement ?? throw new ArgumentNullException(nameof(refinement));
+            ResearchRequests = researchRequests ?? throw new ArgumentNullException(nameof(researchRequests));
             Models = models ?? throw new ArgumentNullException(nameof(models));
             TenantDefaults = tenantDefaults ?? throw new ArgumentNullException(nameof(tenantDefaults));
         }

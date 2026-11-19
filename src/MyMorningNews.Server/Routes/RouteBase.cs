@@ -380,6 +380,18 @@ namespace MyMorningNews.Server.Routes
         }
 
         /// <summary>
+        /// Whether the caller may act on a resource owned by a user: the owner, a tenant administrator, or a global administrator.
+        /// </summary>
+        /// <param name="ctx">HTTP context.</param>
+        /// <param name="ownerUserId">Owning user.</param>
+        /// <returns>True when allowed.</returns>
+        protected static bool IsOwnerOrAdmin(HttpContextBase ctx, string? ownerUserId)
+        {
+            RequestContext rc = Context(ctx);
+            return rc.IsAdmin || rc.IsTenantAdmin || (!String.IsNullOrEmpty(ownerUserId) && String.Equals(ownerUserId, rc.UserId, StringComparison.Ordinal));
+        }
+
+        /// <summary>
         /// Whether the request mutates state.
         /// </summary>
         /// <param name="ctx">HTTP context.</param>

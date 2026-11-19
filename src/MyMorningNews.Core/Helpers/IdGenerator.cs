@@ -200,6 +200,87 @@ namespace MyMorningNews.Core.Helpers
         }
 
         /// <summary>
+        /// Generate a Topic identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateTopicId()
+        {
+            return Generate(IdPrefixes.Topic);
+        }
+
+        /// <summary>
+        /// Generate a TopicDimension identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateTopicDimensionId()
+        {
+            return Generate(IdPrefixes.TopicDimension);
+        }
+
+        /// <summary>
+        /// Generate a TopicConstraint identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateTopicConstraintId()
+        {
+            return Generate(IdPrefixes.TopicConstraint);
+        }
+
+        /// <summary>
+        /// Generate a TopicRecipient identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateTopicRecipientId()
+        {
+            return Generate(IdPrefixes.TopicRecipient);
+        }
+
+        /// <summary>
+        /// Generate a RefinementSession identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateRefinementSessionId()
+        {
+            return Generate(IdPrefixes.RefinementSession);
+        }
+
+        /// <summary>
+        /// Generate a RefinementMessage identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateRefinementMessageId()
+        {
+            return Generate(IdPrefixes.RefinementMessage);
+        }
+
+        /// <summary>
+        /// Generate a RefinementQuestion identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateRefinementQuestionId()
+        {
+            return Generate(IdPrefixes.RefinementQuestion);
+        }
+
+        /// <summary>
+        /// Generate a RefinementQuestionOption identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateRefinementQuestionOptionId()
+        {
+            return Generate(IdPrefixes.RefinementQuestionOption);
+        }
+
+        /// <summary>
+        /// Generate a ResearchRequest identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateResearchRequestId()
+        {
+            return Generate(IdPrefixes.ResearchRequest);
+        }
+
+        /// <summary>
         /// Generate a RequestHistory identifier.
         /// </summary>
         /// <returns>Identifier.</returns>

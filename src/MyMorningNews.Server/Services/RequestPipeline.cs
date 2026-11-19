@@ -6,6 +6,7 @@ namespace MyMorningNews.Server.Services
     using System.Text.Json;
     using System.Threading.Tasks;
     using MyMorningNews.Core.Enums;
+    using MyMorningNews.Core.Exceptions;
     using MyMorningNews.Core.Responses;
     using MyMorningNews.Core.Security;
     using MyMorningNews.Core.Serialization;
@@ -165,8 +166,16 @@ namespace MyMorningNews.Server.Services
                     status = 400; error = "BadRequest"; message = "The request body is not valid JSON."; break;
                 case ArgumentException ae:
                     status = 400; error = "ValidationFailed"; message = ae.Message; break;
-                case KeyNotFoundException:
-                    status = 404; error = "NotFound"; message = "The requested resource was not found."; break;
+                case KeyNotFoundException knf:
+                    status = 404; error = "NotFound"; message = String.IsNullOrWhiteSpace(knf.Message) || knf.Message.StartsWith("The given key", StringComparison.Ordinal) ? "The requested resource was not found." : knf.Message; break;
+                case ConflictException ce:
+                    status = 409; error = "Conflict"; message = ce.Message; break;
+                case ModelRefusalException mre:
+                    status = 422; error = "ModelRefused"; message = mre.Message; break;
+                case StructuredOutputException soe:
+                    status = 502; error = "ModelOutputInvalid"; message = soe.Message; break;
+                case ModelCallException mce:
+                    status = 502; error = "ModelError"; message = mce.Message; break;
                 case PostgresException pe when pe.SqlState == PostgresErrorCodes.UniqueViolation:
                     status = 409; error = "Conflict"; message = "A record with the same unique value already exists."; break;
                 case PostgresException pe when pe.SqlState == PostgresErrorCodes.ForeignKeyViolation:

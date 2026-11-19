@@ -76,6 +76,21 @@ namespace MyMorningNews.Core.Database.Postgresql
                 new List<string>
                 {
                     "CREATE INDEX IF NOT EXISTS ix_users_email_lower ON users (LOWER(email))"
+                })),
+            new SchemaMigration(5, "Topics, refinement wizard, and one-time requests", Concat(
+                TopicQueries.Schema,
+                TopicDimensionQueries.Schema,
+                TopicConstraintQueries.Schema,
+                TopicRecipientQueries.Schema,
+                RefinementSessionQueries.Schema,
+                RefinementMessageQueries.Schema,
+                RefinementQuestionQueries.Schema,
+                RefinementQuestionOptionQueries.Schema,
+                ResearchRequestQueries.Schema,
+                new List<string>
+                {
+                    "CREATE INDEX IF NOT EXISTS ix_topics_tenantid_userid_status ON topics (tenantid, userid, status)",
+                    "CREATE INDEX IF NOT EXISTS ix_researchrequests_due ON researchrequests (status, runatutc)"
                 }))
         };
 

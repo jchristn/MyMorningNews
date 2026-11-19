@@ -1,0 +1,52 @@
+namespace MyMorningNews.Core.Requests
+{
+    using System;
+    using System.Collections.Generic;
+    using MyMorningNews.Core.Enums;
+
+    /// <summary>
+    /// Create or update a topic dimension. Null fields are left unchanged on update.
+    /// </summary>
+    public class DimensionUpsertRequest
+    {
+        /// <summary>
+        /// Name.
+        /// </summary>
+        public string? Name { get; set; } = null;
+
+        /// <summary>
+        /// Description.
+        /// </summary>
+        public string? Description { get; set; } = null;
+
+        /// <summary>
+        /// Why it matters.
+        /// </summary>
+        public string? Rationale { get; set; } = null;
+
+        /// <summary>
+        /// Weight.
+        /// </summary>
+        public DimensionWeightEnum? Weight { get; set; } = null;
+
+        /// <summary>
+        /// Include terms.
+        /// </summary>
+        public List<string>? IncludeTerms { get; set; } = null;
+
+        /// <summary>
+        /// Exclude terms.
+        /// </summary>
+        public List<string>? ExcludeTerms { get; set; } = null;
+
+        /// <summary>
+        /// Locked (kept on regeneration).
+        /// </summary>
+        public bool? IsLocked { get; set; } = null;
+
+        /// <summary>
+        /// Display order.
+        /// </summary>
+        public int? SortOrder { get; set; } = null;
+    }
+}

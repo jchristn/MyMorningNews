@@ -73,6 +73,15 @@ namespace MyMorningNews.Core.Database.Postgresql
             UsageAnalytics = new UsageAnalyticsMethods(this);
             RefreshTokens = new RefreshTokenMethods(this);
             Devices = new DeviceMethods(this);
+            Topics = new TopicMethods(this);
+            TopicDimensions = new TopicDimensionMethods(this);
+            TopicConstraints = new TopicConstraintMethods(this);
+            TopicRecipients = new TopicRecipientMethods(this);
+            RefinementSessions = new RefinementSessionMethods(this);
+            RefinementMessages = new RefinementMessageMethods(this);
+            RefinementQuestions = new RefinementQuestionMethods(this);
+            RefinementQuestionOptions = new RefinementQuestionOptionMethods(this);
+            ResearchRequests = new ResearchRequestMethods(this);
         }
 
         #endregion

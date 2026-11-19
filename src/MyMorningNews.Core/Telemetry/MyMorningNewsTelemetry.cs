@@ -101,6 +101,26 @@ namespace MyMorningNews.Core.Telemetry
         public static readonly Counter<long> LlmToolCalls = Meter.CreateCounter<long>("mymorningnews.llm.tool_calls", "{call}", "Tool calls returned by models.");
 
         /// <summary>
+        /// Runs by trigger and outcome.
+        /// </summary>
+        public static readonly Counter<long> Runs = Meter.CreateCounter<long>("mymorningnews.runs", "{run}", "Research runs by trigger and outcome.");
+
+        /// <summary>
+        /// Run duration by trigger.
+        /// </summary>
+        public static readonly Histogram<double> RunDuration = Meter.CreateHistogram<double>("mymorningnews.run.duration", "s", "Run duration.");
+
+        /// <summary>
+        /// Time runs wait in the queue.
+        /// </summary>
+        public static readonly Histogram<double> RunQueueWait = Meter.CreateHistogram<double>("mymorningnews.run.queue_wait", "s", "Time a run waits in the queue.");
+
+        /// <summary>
+        /// Schedule firings by outcome (enqueued, skipped, missed).
+        /// </summary>
+        public static readonly Counter<long> SchedulerClaims = Meter.CreateCounter<long>("mymorningnews.scheduler.claims", "{claim}", "Schedule firings by outcome.");
+
+        /// <summary>
         /// Push notifications by outcome.
         /// </summary>
         public static readonly Counter<long> PushMessages = Meter.CreateCounter<long>("mymorningnews.push.messages", "{message}", "Push notifications by outcome.");

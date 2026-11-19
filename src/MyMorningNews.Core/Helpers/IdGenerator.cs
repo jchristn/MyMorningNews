@@ -281,6 +281,42 @@ namespace MyMorningNews.Core.Helpers
         }
 
         /// <summary>
+        /// Generate a Schedule identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateScheduleId()
+        {
+            return Generate(IdPrefixes.Schedule);
+        }
+
+        /// <summary>
+        /// Generate a Run identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateRunId()
+        {
+            return Generate(IdPrefixes.Run);
+        }
+
+        /// <summary>
+        /// Generate a SearchProvider identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateSearchProviderId()
+        {
+            return Generate(IdPrefixes.SearchProvider);
+        }
+
+        /// <summary>
+        /// Generate a TopicSearchProvider identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateTopicSearchProviderId()
+        {
+            return Generate(IdPrefixes.TopicSearchProvider);
+        }
+
+        /// <summary>
         /// Generate a RequestHistory identifier.
         /// </summary>
         /// <returns>Identifier.</returns>

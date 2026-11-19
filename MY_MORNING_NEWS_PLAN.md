@@ -716,7 +716,7 @@ Not everything is a recurring topic. "Build me a podcast on the history of the s
 - **Deliverables.** One or more of: Report (Markdown plus rendered HTML), Podcast (audio episode, also published to the user's private feed if they choose), and Email (the report or a summary sent to chosen recipients). Length, depth, voice, and tone are options with defaults.
 - **Quick refinement.** The request runs a short version of the wizard: `refinement.quick` turns the text into a brief with dimensions and includes and excludes, and asks at most three clarifying questions (skippable with "Just do it"). The user can open the full wizard instead.
 - **Timing.** "Run now" or "Run once at" a date and time in the user's time zone. Internally this is a schedule with interval type `Once` (section 14.1) attached to a request, so the scheduler, pipeline, ranking, evidence, and delivery are the same code paths as recurring topics. Nothing repeats unless the user chooses "Make this a recurring topic" afterward, which converts the request into a topic with its context and history.
-- **Storage.** `researchrequests` (`rrq_`: owner, text, title, deliverables, length, status, run time, recipients, publish to feed, run, briefing, converted topic), with a one-time topic (`istonetime`) holding the brief, dimensions, and constraints, and a refinement session holding the clarifying questions. Outputs follow the artifact retention rules (section 22.1: kept up to 365 days, pinnable).
+- **Storage.** `researchrequests` (`rrq_`: owner, text, title, deliverables, length, status, run time, recipients, publish to feed, run, briefing, converted topic), with a one-time topic (`isonetime`) holding the brief, dimensions, and constraints, and a refinement session holding the clarifying questions. Outputs follow the artifact retention rules (section 22.1: kept up to 365 days, pinnable).
 - **Where results appear.** A "Requests" list in the web app and the mobile app (status, deliverables, open, listen, download, re-run, delete, make recurring), the email (if chosen), and a push notification when it is ready.
 - **Costs.** One-time requests count toward the same usage accounting and caps (sections 11.5 and 33.2), and the request form shows an estimated cost before it runs on the hosted service.
 
@@ -1438,11 +1438,12 @@ Exit: "I want to learn about AI developer tools" produces dimensions, at least t
 
 ### Phase 5: Schedules, search, and fetch
 
-- [ ] `ScheduleCalculator`, schedules and schedule times, the preview endpoint, `SchedulerWorker`, `RunWorker` queue.
+- [x] `ScheduleCalculator` (every interval type, time zones, nonexistent and ambiguous local times), schedules API with preview, `SchedulerWorker` and `RunWorker` with `FOR UPDATE SKIP LOCKED` claims, one active run per topic, missed-run policies, run now, dry run, cancel, run timeout, concurrency limit, due one-time requests queued as runs, `IRunExecutor` (placeholder until Phase 6). Exit check passed in Docker: a due five-minute schedule fired after a server restart. Migration 6.
 - [ ] MCP server registry (Voltaic client, discovery, tool toggles) and the agentic search mode for tool-capable models (`web_search`, `fetch_url`, MCP tools; capped and logged).
 - [ ] Search providers (SearXNG container with curl, Tavily or You.com via Mux.Search with vault credentials, hosted model search, RSS, Hacker News, arXiv), `FetchService` with CrawlSharp and DocConverter, canonicalization.
 - [ ] Dashboard: `ScheduleEditor` with next-runs preview, Search Providers page, topic Schedule and Sources tabs.
-- [ ] Suites: ScheduleCalculator, Scheduler, Search, Fetch.
+- [x] Schedules suite (8 cases: intervals, daylight saving, validation, API, scheduler tick, execution, run API, due requests).
+- [ ] Suites: Search, Fetch.
 
 Exit: a topic scheduled for every 5 minutes enqueues runs on time across a container restart, and DST cases pass.
 
@@ -1643,6 +1644,7 @@ No open questions remain.
 | 2026-11-19 | Plan | Amended | Added Phase 17, a final README and documentation revisit that replaces the in-progress wording ("will", "planned", "arrives in Phase N") with a description of the shipped product. |
 | 2026-11-19 | Plan, 16 | Amended, started | One-time requests (section 13.1: reports, podcasts, and email summaries run once now or at a set time). Artifact storage through `IArtifactStore` with local or S3 providers configured in the server JSON file or `MYMORNINGNEWS_STORAGE_*` variables, and 365-day retention with pinning (section 22.1; `Storage` and `Push` settings added now). `docker/` populated: `.env.example`, SearXNG (default), TTS, MCP, and Ollama profiles, factory demo overlay with seeder and demo user, improved reset scripts, hosted Caddy overlay. Mobile backend contracts built (refresh tokens, tenant-less sign-in, devices and push, client config; migration 4). `APP_STORE_SUBMISSION.md` and `OWNER_ACTIONS.md` added to the plan (section 35.7) with an owner fill-out task. Default credentials confirmed as `admin@mymorningnews` / `password`. |
 | 2026-11-19 | 4 | Backend done | Topics with dimensions, constraints, and recipients; the refinement wizard (all steps, resume, refine again, out-of-scope detection, live source checks); one-time requests with planning, clarifying questions, confirm now or later, and conversion to recurring topics. Migration 5. `ConflictException` (409) and typed model errors (502, 422). Topics suite (10 cases); 99 tests pass on net8 and net10, 100 on Xunit3. Dashboard and mobile screens for Phase 4 follow. |
+| 2026-11-19 | 5 | Scheduling done | Schedule calculator with daylight-saving handling, schedules API and preview, scheduler and run workers with skip-locked claims, missed-run policies, run now, dry run, cancel, timeouts, concurrency limit, and due one-time requests. Verified across a Docker restart. Search providers, fetch, and the MCP registry are next. 107 tests pass on net8 and net10, 108 on Xunit3. |
 
 ---
 

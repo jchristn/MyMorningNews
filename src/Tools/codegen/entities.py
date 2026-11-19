@@ -471,6 +471,7 @@ ENTITIES = [
         'default_sort': 'SortOrder',
     },
     {
+        # HAND-EDITED after generation (ClaimDueAsync): do not --force.
         'name': 'ResearchRequest', 'table': 'researchrequests', 'prefix': 'rrq_',
         'doc': 'A one-time request ("build me a podcast on X"): researched once, now or at a set time, and delivered as a report, podcast, or email.',
         'fields': [
@@ -494,6 +495,83 @@ ENTITIES = [
             f('CompletedUtc', 'datetime', doc='UTC completion time.', nullable=True),
         ],
     },
+    # ------------------------------------------------------------------ Phase 5: schedules, runs, search providers
+    {
+        # HAND-EDITED after generation (ClaimDueAsync): do not --force.
+        'name': 'Schedule', 'table': 'schedules', 'prefix': 'sch_',
+        'doc': 'When research runs for a topic, an edition composes, or a one-time request runs. Times are computed in the schedule time zone.',
+        'fields': [
+            f('OwnerType', 'enum:ScheduleOwnerTypeEnum', doc='Owner kind.', default='Topic', filter=True),
+            f('OwnerId', doc='Owning topic, edition, or request.', required=True, length=64, filter=True),
+            f('UserId', doc='User the schedule belongs to.', required=True, length=64, filter=True),
+            f('Name', doc='Optional label.', nullable=True, length=200),
+            f('IntervalType', 'enum:IntervalTypeEnum', doc='Interval type.', default='DaysOfWeek'),
+            f('IntervalValue', 'int', doc='Interval size (minutes, hours, days, or weeks).', default=1),
+            f('MinuteOffset', 'int', doc='Minute past the hour for EveryNHours.', default=0, clamp=(0, 59)),
+            f('DaysOfWeekMask', 'int', doc='Bit mask of days of week (Sunday = 1, Monday = 2, ... Saturday = 64).', default=62),
+            f('DaysOfMonth', 'ints', doc='Days of month (1 to 31, -1 for the last day).'),
+            f('TimesOfDay', 'strings', doc='Local times of day as HH:mm.'),
+            f('CronExpression', doc='Cron expression (Cronos syntax) for the Cron type.', nullable=True, length=200),
+            f('TimeZone', doc='IANA time zone.', default='UTC', length=64),
+            f('StartUtc', 'datetime', doc='Not before this time.', nullable=True),
+            f('EndUtc', 'datetime', doc='Not after this time.', nullable=True),
+            f('RunOnceUtc', 'datetime', doc='Run time for the Once type.', nullable=True),
+            f('Enabled', 'bool', doc='Enabled.', default=True, filter=True),
+            f('MissedRunPolicy', 'enum:MissedRunPolicyEnum', doc='What to do with runs missed while the server was down.', default='RunOnceOnRecovery'),
+            f('NextRunUtc', 'datetime', doc='Next due time (UTC); null when nothing is due.', nullable=True, sort=True, index=True),
+            f('LastRunUtc', 'datetime', doc='Last time the schedule fired.', nullable=True),
+            f('LockedUntilUtc', 'datetime', doc='Claim lock held by a scheduler instance.', nullable=True),
+        ],
+    },
+    {
+        # HAND-EDITED after generation (ClaimQueuedAsync, CountRunningAsync, HasActiveRunAsync, FailAbandonedAsync): do not --force.
+        'name': 'Run', 'table': 'runs', 'prefix': 'run_',
+        'doc': 'A research run for a topic or one-time request, from queued to finished.',
+        'fields': [
+            f('TopicId', doc='Topic.', required=True, length=64, filter=True),
+            f('UserId', doc='User the run is attributed to.', required=True, length=64, filter=True),
+            f('ScheduleId', doc='Schedule that triggered it, when any.', nullable=True, length=64, filter=True),
+            f('ResearchRequestId', doc='One-time request, when any.', nullable=True, length=64, filter=True),
+            f('Trigger', 'enum:RunTriggerEnum', doc='What started the run.', default='Schedule', filter=True),
+            f('Status', 'enum:RunStatusEnum', doc='Status.', default='Queued', filter=True, sort=True),
+            f('IsDryRun', 'bool', doc='Dry run: no email and not counted in history.', default=False, filter=True),
+            f('CancelRequested', 'bool', doc='Cancellation requested.', default=False),
+            f('QueuedUtc', 'datetime', doc='UTC time queued.', sort=True),
+            f('StartedUtc', 'datetime', doc='UTC time started.', nullable=True),
+            f('CompletedUtc', 'datetime', doc='UTC time finished.', nullable=True, sort=True),
+            f('LockedUntilUtc', 'datetime', doc='Claim lock held by a run worker.', nullable=True),
+            f('WorkerId', doc='Worker that claimed the run.', nullable=True, length=128),
+            f('SkippedReason', 'text', doc='Why a due run was skipped.', nullable=True),
+            f('ErrorMessage', 'text', doc='Failure reason.', nullable=True),
+            f('Summary', 'text', doc='Short outcome summary.', nullable=True),
+        ],
+    },
+    {
+        'name': 'SearchProvider', 'table': 'searchproviders', 'prefix': 'spv_',
+        'doc': 'A web search source: SearXNG, Tavily, You.com, RSS, Hacker News, or arXiv.',
+        'fields': [
+            f('Name', doc='Name.', required=True, length=128, search=True, sort=True),
+            f('Kind', 'enum:SearchProviderKindEnum', doc='Kind.', default='Searxng', filter=True),
+            f('Endpoint', doc='Base URL (SearXNG, or an override for hosted APIs).', nullable=True, length=512),
+            f('CredentialId', doc='Vault credential holding the API key.', nullable=True, length=64, filter=True),
+            f('IsDefault', 'bool', doc='Used for topics that do not choose providers.', default=False, filter=True),
+            f('MaxResults', 'int', doc='Maximum results per query.', default=10, clamp=(1, 50)),
+            f('TimeoutMs', 'int', doc='Request timeout in milliseconds.', default=15000, clamp=(1000, 120000)),
+            f('LastTestedUtc', 'datetime', doc='UTC time of the last test.', nullable=True),
+            f('LastTestOk', 'bool', doc='Whether the last test succeeded.', nullable=True),
+        ],
+    },
+    {
+        'name': 'TopicSearchProvider', 'table': 'topicsearchproviders', 'prefix': 'tsp_',
+        'doc': 'A search provider enabled for a topic.',
+        'fields': [
+            f('TopicId', doc='Topic.', required=True, length=64, filter=True, fk=('topics', 'CASCADE')),
+            f('SearchProviderId', doc='Search provider.', required=True, length=64, filter=True, fk=('searchproviders', 'CASCADE')),
+            f('Enabled', 'bool', doc='Enabled.', default=True),
+            f('MaxResults', 'int', doc='Override of results per query.', nullable=True),
+        ],
+        'uniques': [['topicid', 'searchproviderid']],
+    },
 ]
 
 # Prefixes for identifiers that are not codegen entities.
@@ -504,6 +582,15 @@ EXTRA_PREFIXES = [
 ]
 
 ENUMS = [
+    ('IntervalTypeEnum', 'Schedule interval type.', [('EveryNMinutes', 'Every n minutes.'), ('EveryNHours', 'Every n hours.'), ('EveryNDays', 'Every n days at times of day.'),
+        ('EveryNWeeks', 'Every n weeks on days of week at times of day.'), ('DaysOfWeek', 'On days of week at times of day.'), ('DaysOfMonth', 'On days of month at times of day.'),
+        ('Once', 'Once at a time.'), ('Cron', 'Cron expression.'), ('Manual', 'Only when run manually.')]),
+    ('ScheduleOwnerTypeEnum', 'What a schedule belongs to.', [('Topic', 'Topic research.'), ('Edition', 'Edition composition.'), ('Request', 'One-time request.')]),
+    ('MissedRunPolicyEnum', 'Handling of runs missed while the server was down.', [('Skip', 'Skip missed runs.'), ('RunOnceOnRecovery', 'Run once on recovery.')]),
+    ('RunStatusEnum', 'Run status.', [('Queued', 'Waiting for a worker.'), ('Running', 'Running.'), ('Completed', 'Finished.'), ('Failed', 'Failed.'), ('Cancelled', 'Cancelled.'), ('Skipped', 'Skipped.')]),
+    ('RunTriggerEnum', 'What started a run.', [('Schedule', 'A schedule.'), ('Manual', 'Run now.'), ('Request', 'A one-time request.'), ('Edition', 'Fresh research before an edition.'), ('Preview', 'Wizard preview.')]),
+    ('SearchProviderKindEnum', 'Search provider kind.', [('Searxng', 'SearXNG metasearch.'), ('Tavily', 'Tavily API.'), ('YouCom', 'You.com API.'), ('Rss', 'RSS and Atom feeds from topic constraints.'),
+        ('HackerNews', 'Hacker News (Algolia).'), ('Arxiv', 'arXiv API.'), ('HostedModelWebSearch', 'Model-hosted web search.')]),
     ('AudienceLevelEnum', 'Reader expertise.', [('Beginner', 'New to the subject.'), ('Practitioner', 'Works with it.'), ('Expert', 'Deep expertise.')]),
     ('HorizonEnum', 'Time horizon of interest.', [('Days', 'Days.'), ('Weeks', 'Weeks.'), ('Months', 'Months.'), ('Years', 'Years.')]),
     ('TopicStatusEnum', 'Topic lifecycle.', [('Draft', 'Being refined.'), ('Active', 'Researched on schedule.'), ('Paused', 'Schedules paused.'), ('Archived', 'Kept for history only.')]),
@@ -627,6 +714,8 @@ ENUMS = [
         ('UsageRead', 'Read model usage and cost analytics.'),
         ('DeviceRead', 'List my push devices.'),
         ('DeviceWrite', 'Register, test, or remove my push devices.'),
+        ('ScheduleRead', 'Read schedules.'), ('ScheduleWrite', 'Create, update, or delete schedules.'), ('RunRead', 'Read runs.'), ('RunExecute', 'Start or cancel runs.'),
+        ('SearchProviderRead', 'Read search providers.'), ('SearchProviderWrite', 'Manage search providers.'),
         ('TopicRead', 'Read topics.'), ('TopicWrite', 'Create or update topics and their dimensions, constraints, and recipients.'), ('TopicDelete', 'Delete topics.'),
         ('RefinementRead', 'Read refinement sessions.'), ('RefinementWrite', 'Run the refinement wizard.'),
         ('ResearchRequestRead', 'Read one-time requests.'), ('ResearchRequestWrite', 'Create, confirm, or convert one-time requests.'), ('ResearchRequestDelete', 'Delete one-time requests.'),

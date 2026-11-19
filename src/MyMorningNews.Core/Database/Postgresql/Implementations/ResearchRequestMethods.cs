@@ -187,6 +187,14 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             return counts.FirstOrDefault();
         }
 
+        /// <inheritdoc />
+        public async Task<List<ResearchRequest>> ClaimDueAsync(DateTime nowUtc, int limit, CancellationToken token = default)
+        {
+            string sql = "UPDATE researchrequests SET status = 'Running', lastupdateutc = $1 WHERE id IN (SELECT id FROM researchrequests WHERE status = 'Scheduled' AND runatutc IS NOT NULL AND runatutc <= $1 " +
+                "ORDER BY runatutc FOR UPDATE SKIP LOCKED LIMIT $2) RETURNING " + ResearchRequestQueries.Columns;
+            return await QueryAsync(sql, Map, token, DateTime.SpecifyKind(nowUtc, DateTimeKind.Utc), Math.Clamp(limit, 1, 1000)).ConfigureAwait(false);
+        }
+
         /// <summary>
         /// Map a data reader row (columns in <see cref="ResearchRequestQueries.Columns"/> order) to a model.
         /// </summary>

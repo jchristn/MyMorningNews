@@ -7,6 +7,7 @@ namespace MyMorningNews.Server
     using MyMorningNews.Core;
     using MyMorningNews.Core.Database;
     using MyMorningNews.Core.Database.Postgresql;
+    using MyMorningNews.Core.Scheduling;
     using MyMorningNews.Core.Security;
     using MyMorningNews.Core.Services;
     using MyMorningNews.Core.Settings;
@@ -135,7 +136,8 @@ namespace MyMorningNews.Server
             _Push = new PushService(_Database, settings, _Logging);
             _Refinement = new RefinementService(_Database, prompts, _Models, _Logging);
             ResearchRequestService researchRequests = new ResearchRequestService(_Database, _Refinement);
-            _Context = new ServerContext(_Settings, _Database, _Logging, authentication, authorization, audit, Lifetime, vault, prompts, _Models, tenantDefaults, _Push, _Refinement, researchRequests);
+            SchedulingService scheduling = new SchedulingService(_Database, settings, _Logging);
+            _Context = new ServerContext(_Settings, _Database, _Logging, authentication, authorization, audit, Lifetime, vault, prompts, _Models, tenantDefaults, _Push, _Refinement, researchRequests, scheduling);
 
             _Capture = new RequestHistoryCaptureService(_Database, settings.RequestHistory, _Logging);
             RequestPipeline pipeline = new RequestPipeline(_Context, _Capture);
@@ -167,6 +169,13 @@ namespace MyMorningNews.Server
             {
                 RetentionWorker retention = new RetentionWorker(_Context);
                 _Workers.Add(Task.Run(() => retention.RunAsync(Lifetime.Token)));
+                if (settings.Scheduler.Enabled)
+                {
+                    SchedulerWorker scheduler = new SchedulerWorker(_Context);
+                    RunWorker runs = new RunWorker(_Context);
+                    _Workers.Add(Task.Run(() => scheduler.RunAsync(Lifetime.Token)));
+                    _Workers.Add(Task.Run(() => runs.RunAsync(Lifetime.Token)));
+                }
             }
         }
 
@@ -245,6 +254,8 @@ namespace MyMorningNews.Server
                 new TopicRoutes(context),
                 new RefinementRoutes(context),
                 new ResearchRequestRoutes(context),
+                new ScheduleRoutes(context),
+                new RunRoutes(context),
                 new PromptRoutes(context)
             };
         }

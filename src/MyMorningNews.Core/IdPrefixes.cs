@@ -141,6 +141,26 @@ namespace MyMorningNews.Core
         public const string ResearchRequest = "rrq_";
 
         /// <summary>
+        /// Prefix for Schedule identifiers.
+        /// </summary>
+        public const string Schedule = "sch_";
+
+        /// <summary>
+        /// Prefix for Run identifiers.
+        /// </summary>
+        public const string Run = "run_";
+
+        /// <summary>
+        /// Prefix for SearchProvider identifiers.
+        /// </summary>
+        public const string SearchProvider = "spv_";
+
+        /// <summary>
+        /// Prefix for TopicSearchProvider identifiers.
+        /// </summary>
+        public const string TopicSearchProvider = "tsp_";
+
+        /// <summary>
         /// Prefix for request history entries.
         /// </summary>
         public const string RequestHistory = "req_";

@@ -34,6 +34,7 @@ All notable changes to this project are documented here. The project follows [Se
 - Topics with dimensions, constraints, and email recipients, private to their owner (tenant administrators see all).
 - Topic refinement wizard: proposes dimensions (locked items survive regeneration), asks clarifying questions in rounds, drafts the research brief and constraints, suggests feeds and seed pages checked with a live fetch, and applies the topic. Sessions resume, and any topic can be refined again. Requests that are tasks rather than topics are declined with a reason.
 - One-time requests: "build me a podcast on X" is planned into a brief with at most three clarifying questions, confirmed to run once now or at a set time, and can become a recurring topic.
+- Schedules: every n minutes, hours, days, or weeks; days of the week or month; once; cron; or manual, each in its own time zone with daylight-saving handled, plus a preview of the next runs. A scheduler and run workers queue and execute runs (one active run per topic, missed-run policies, run now, dry run, cancel, time limit, concurrency limit), and confirmed one-time requests run when due.
 - `OWNER_ACTIONS.md` with everything the owner needs to do, grouped by phase.
 - Scope guardrail on every model call and in every default prompt, so models stay on research and briefing tasks and treat fetched content as data.
 - Prompt templates: 19 defaults, renderer with list expansion, save-time variable validation, versions, rollback, reset, topic overrides, and a prompt lab.

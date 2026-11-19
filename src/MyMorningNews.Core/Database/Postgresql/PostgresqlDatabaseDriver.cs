@@ -82,6 +82,10 @@ namespace MyMorningNews.Core.Database.Postgresql
             RefinementQuestions = new RefinementQuestionMethods(this);
             RefinementQuestionOptions = new RefinementQuestionOptionMethods(this);
             ResearchRequests = new ResearchRequestMethods(this);
+            Schedules = new ScheduleMethods(this);
+            Runs = new RunMethods(this);
+            SearchProviders = new SearchProviderMethods(this);
+            TopicSearchProviders = new TopicSearchProviderMethods(this);
         }
 
         #endregion

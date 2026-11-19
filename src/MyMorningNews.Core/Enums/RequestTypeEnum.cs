@@ -261,6 +261,36 @@ namespace MyMorningNews.Core.Enums
         DeviceWrite,
 
         /// <summary>
+        /// Read schedules.
+        /// </summary>
+        ScheduleRead,
+
+        /// <summary>
+        /// Create, update, or delete schedules.
+        /// </summary>
+        ScheduleWrite,
+
+        /// <summary>
+        /// Read runs.
+        /// </summary>
+        RunRead,
+
+        /// <summary>
+        /// Start or cancel runs.
+        /// </summary>
+        RunExecute,
+
+        /// <summary>
+        /// Read search providers.
+        /// </summary>
+        SearchProviderRead,
+
+        /// <summary>
+        /// Manage search providers.
+        /// </summary>
+        SearchProviderWrite,
+
+        /// <summary>
         /// Read topics.
         /// </summary>
         TopicRead,

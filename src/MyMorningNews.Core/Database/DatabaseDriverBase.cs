@@ -176,6 +176,26 @@ namespace MyMorningNews.Core.Database
         /// </summary>
         public IResearchRequestMethods ResearchRequests { get; protected set; } = null!;
 
+        /// <summary>
+        /// Schedules.
+        /// </summary>
+        public IScheduleMethods Schedules { get; protected set; } = null!;
+
+        /// <summary>
+        /// Research runs.
+        /// </summary>
+        public IRunMethods Runs { get; protected set; } = null!;
+
+        /// <summary>
+        /// Search providers.
+        /// </summary>
+        public ISearchProviderMethods SearchProviders { get; protected set; } = null!;
+
+        /// <summary>
+        /// Search providers enabled per topic.
+        /// </summary>
+        public ITopicSearchProviderMethods TopicSearchProviders { get; protected set; } = null!;
+
         #endregion
 
         #region Constructors-and-Factories

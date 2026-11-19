@@ -91,6 +91,17 @@ namespace MyMorningNews.Core.Database.Postgresql
                 {
                     "CREATE INDEX IF NOT EXISTS ix_topics_tenantid_userid_status ON topics (tenantid, userid, status)",
                     "CREATE INDEX IF NOT EXISTS ix_researchrequests_due ON researchrequests (status, runatutc)"
+                })),
+            new SchemaMigration(6, "Schedules, runs, and search providers", Concat(
+                ScheduleQueries.Schema,
+                RunQueries.Schema,
+                SearchProviderQueries.Schema,
+                TopicSearchProviderQueries.Schema,
+                new List<string>
+                {
+                    "CREATE INDEX IF NOT EXISTS ix_schedules_due ON schedules (enabled, nextrunutc)",
+                    "CREATE INDEX IF NOT EXISTS ix_runs_queue ON runs (status, queuedutc)",
+                    "CREATE INDEX IF NOT EXISTS ix_runs_topic_status ON runs (tenantid, topicid, status)"
                 }))
         };
 

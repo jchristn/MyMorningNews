@@ -27,7 +27,8 @@ namespace Test.Shared
                     ObservabilitySuite.Create(),
                     ModelSuite.Create(),
                     MobileSuite.Create(),
-                    TopicSuite.Create()
+                    TopicSuite.Create(),
+                    ScheduleSuite.Create()
                 };
             }
         }

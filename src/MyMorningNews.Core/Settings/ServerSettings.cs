@@ -126,6 +126,16 @@ namespace MyMorningNews.Core.Settings
             set { _Storage = value ?? throw new ArgumentNullException(nameof(Storage)); }
         }
 
+        /// <summary>
+        /// Scheduler and run workers.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Value is null.</exception>
+        public SchedulerSettings Scheduler
+        {
+            get { return _Scheduler; }
+            set { _Scheduler = value ?? throw new ArgumentNullException(nameof(Scheduler)); }
+        }
+
         #endregion
 
         #region Private-Members
@@ -141,6 +151,7 @@ namespace MyMorningNews.Core.Settings
         private ModelSettings _Models = new ModelSettings();
         private PushSettings _Push = new PushSettings();
         private StorageSettings _Storage = new StorageSettings();
+        private SchedulerSettings _Scheduler = new SchedulerSettings();
 
         #endregion
     }

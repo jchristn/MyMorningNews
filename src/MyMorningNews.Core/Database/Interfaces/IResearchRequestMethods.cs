@@ -1,5 +1,6 @@
 namespace MyMorningNews.Core.Database.Interfaces
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
@@ -87,5 +88,14 @@ namespace MyMorningNews.Core.Database.Interfaces
         /// <param name="token">Cancellation token.</param>
         /// <returns>Count.</returns>
         Task<long> CountAsync(ResearchRequestFilter filter, CancellationToken token = default);
+
+        /// <summary>
+        /// Claim Scheduled requests whose run time has come, marking them Running, with FOR UPDATE SKIP LOCKED.
+        /// </summary>
+        /// <param name="nowUtc">Current time (UTC).</param>
+        /// <param name="limit">Maximum rows.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Claimed requests.</returns>
+        Task<List<ResearchRequest>> ClaimDueAsync(DateTime nowUtc, int limit, CancellationToken token = default);
     }
 }

@@ -54,10 +54,10 @@ export const NAV_GROUPS = [
       { path: 'topics', key: 'topics', icon: Lightbulb, access: 'all' },
       { path: 'one-time', key: 'oneTimeRequests', icon: Send, access: 'all' },
       { path: 'runs', key: 'runs', icon: CirclePlay, access: 'all' },
-      { path: 'findings', key: 'findings', icon: ListChecks, access: 'all', phase: 6 },
+      { path: 'findings', key: 'findings', icon: ListChecks, access: 'all' },
       { path: 'sources', key: 'sources', icon: Globe, access: 'all', phase: 6 },
-      { path: 'predictions', key: 'predictions', icon: TrendingUp, access: 'all', phase: 6 },
-      { path: 'suggestions', key: 'suggestions', icon: Compass, access: 'all', phase: 6 }
+      { path: 'predictions', key: 'predictions', icon: TrendingUp, access: 'all' },
+      { path: 'suggestions', key: 'suggestions', icon: Compass, access: 'all' }
     ]
   },
   {

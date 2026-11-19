@@ -16,7 +16,10 @@ import MarkdownView from '../../components/MarkdownView.jsx';
 import PageHeader from '../../components/PageHeader.jsx';
 import { describeSchedule } from '../../components/ScheduleEditor.jsx';
 import StatusBadge from '../../components/StatusBadge.jsx';
+import FindingsTable from '../findings/FindingsTable.jsx';
+import PredictionsTable from '../predictions/PredictionsTable.jsx';
 import RunsTable from '../runs/RunsTable.jsx';
+import SuggestionsTable from '../suggestions/SuggestionsTable.jsx';
 import ConstraintEditor from './ConstraintEditor.jsx';
 import DeliverySettings from './DeliverySettings.jsx';
 import DimensionList from './DimensionList.jsx';
@@ -31,9 +34,9 @@ export const WORKSPACE_TABS = [
   { id: 'schedule' },
   { id: 'sources' },
   { id: 'runs' },
-  { id: 'findings', phase: 6 },
-  { id: 'predictions', phase: 6 },
-  { id: 'suggestions', phase: 6 },
+  { id: 'findings' },
+  { id: 'predictions' },
+  { id: 'suggestions' },
   { id: 'feedback', phase: 10 },
   { id: 'preferences', phase: 10 },
   { id: 'analytics', phase: 10 },
@@ -238,6 +241,12 @@ export default function TopicWorkspace() {
             }
           />
         ) : null}
+
+        {tab === 'findings' ? <FindingsTable topicId={topic.id} tableKey="topic-findings" /> : null}
+
+        {tab === 'predictions' ? <PredictionsTable topicId={topic.id} tableKey="topic-predictions" /> : null}
+
+        {tab === 'suggestions' ? <SuggestionsTable topicId={topic.id} tableKey="topic-suggestions" /> : null}
 
         {tab === 'delivery' ? <DeliverySettings topic={topic} recipients={detail.recipients || []} onTopicUpdated={setTopic} onRecipientsChanged={(recipients) => setDetail((x) => ({ ...x, recipients }))} /> : null}
 

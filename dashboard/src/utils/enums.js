@@ -43,8 +43,8 @@ export const VAULT_PROVIDER_FOR = {
 export const TOPIC_STATUSES = ['Draft', 'Active', 'Paused', 'Archived'];
 export const TOPIC_STATUS_TONES = { Draft: 'info', Active: 'success', Paused: 'warning', Archived: 'neutral' };
 
-export const RUN_STATUSES = ['Queued', 'Running', 'Completed', 'Failed', 'Cancelled', 'Skipped'];
-export const RUN_STATUS_TONES = { Queued: 'info', Running: 'accent', Completed: 'success', Failed: 'danger', Cancelled: 'neutral', Skipped: 'warning' };
+export const RUN_STATUSES = ['Queued', 'Running', 'Completed', 'PartiallySucceeded', 'Failed', 'Cancelled', 'Skipped'];
+export const RUN_STATUS_TONES = { Queued: 'info', Running: 'accent', Completed: 'success', PartiallySucceeded: 'warning', Failed: 'danger', Cancelled: 'neutral', Skipped: 'warning' };
 export const ACTIVE_RUN_STATUSES = ['Queued', 'Running'];
 export const RUN_TRIGGERS = ['Schedule', 'Manual', 'Request', 'Edition', 'Preview'];
 
@@ -65,3 +65,48 @@ export const REFINEMENT_GOALS = ['work', 'investing', 'curiosity', 'hiring', 'bu
 
 export const INTERVAL_TYPES = ['DaysOfWeek', 'EveryNDays', 'EveryNWeeks', 'DaysOfMonth', 'EveryNHours', 'EveryNMinutes', 'Once', 'Cron', 'Manual'];
 export const MISSED_RUN_POLICIES = ['Skip', 'RunOnceOnRecovery'];
+
+// Research results (Phase 6).
+export const FINDING_TIERS = ['MustRead', 'WorthALook', 'Fyi', 'BelowThreshold'];
+export const FINDING_TIER_TONES = { MustRead: 'accent', WorthALook: 'success', Fyi: 'info', BelowThreshold: 'neutral' };
+export const FINDING_CATEGORIES = ['News', 'Release', 'Research', 'Opinion', 'Tutorial', 'Data', 'Other'];
+export const EVIDENCE_ROLE_TONES = { Supports: 'success', Contradicts: 'danger', Context: 'neutral' };
+
+// Composite relevance components in display order, with the chart color for each.
+export const SCORE_COMPONENTS = [
+  { key: 'llm', field: 'llmScore', color: 'var(--chart-series-1)' },
+  { key: 'feedback', field: 'feedbackScore', color: 'var(--chart-series-2)' },
+  { key: 'novelty', field: 'noveltyScore', color: 'var(--chart-series-5)' },
+  { key: 'source', field: 'sourceScore', color: 'var(--chart-series-6)' },
+  { key: 'recency', field: 'recencyScore', color: 'var(--chart-series-3)' }
+];
+
+export const PREDICTION_STATUSES = ['Open', 'ProposedResolved', 'Accurate', 'PartiallyAccurate', 'Inaccurate', 'Unresolvable', 'Withdrawn'];
+export const PREDICTION_STATUS_TONES = { Open: 'info', ProposedResolved: 'accent', Accurate: 'success', PartiallyAccurate: 'warning', Inaccurate: 'danger', Unresolvable: 'neutral', Withdrawn: 'neutral' };
+// Statuses a person can resolve a prediction to. Open and ProposedResolved are set by the pipeline.
+export const PREDICTION_RESOLUTIONS = ['Accurate', 'PartiallyAccurate', 'Inaccurate', 'Unresolvable', 'Withdrawn'];
+// The observed outcome a graded status counts as, for Brier scores and calibration. Others are not graded.
+export const PREDICTION_OUTCOMES = { Accurate: 1, PartiallyAccurate: 0.5, Inaccurate: 0 };
+
+export const SUGGESTION_STATUSES = ['New', 'Accepted', 'Snoozed', 'Dismissed', 'Done'];
+export const SUGGESTION_STATUS_TONES = { New: 'info', Accepted: 'accent', Snoozed: 'warning', Dismissed: 'neutral', Done: 'success' };
+export const SUGGESTION_PRIORITIES = ['High', 'Medium', 'Low'];
+export const SUGGESTION_PRIORITY_TONES = { High: 'danger', Medium: 'warning', Low: 'neutral' };
+export const SUGGESTION_EFFORTS = ['Minutes', 'Hours', 'Days'];
+
+export const STAGE_STATUSES = ['Pending', 'Running', 'Succeeded', 'Failed', 'Skipped'];
+export const STAGE_STATUS_TONES = { Pending: 'neutral', Running: 'accent', Succeeded: 'success', Failed: 'danger', Skipped: 'warning' };
+export const STAGE_STATUS_COLORS = { Pending: 'var(--color-border-strong)', Running: 'var(--color-accent)', Succeeded: 'var(--color-success)', Failed: 'var(--color-danger)', Skipped: 'var(--color-warning)' };
+export const RUN_STAGES = ['AssembleContext', 'PlanQueries', 'Search', 'Filter', 'Fetch', 'Extract', 'Embed', 'Dedupe', 'Score', 'Synthesize', 'ReviewPredictions', 'Predict', 'Suggest'];
+
+export const SEARCH_DISPOSITIONS = ['Pending', 'Fetched', 'SkippedSeen', 'SkippedBlocked', 'SkippedRobots', 'SkippedLimit', 'SkippedDuplicate', 'FetchFailed'];
+export const SEARCH_DISPOSITION_TONES = {
+  Pending: 'neutral',
+  Fetched: 'success',
+  SkippedSeen: 'info',
+  SkippedBlocked: 'warning',
+  SkippedRobots: 'warning',
+  SkippedLimit: 'neutral',
+  SkippedDuplicate: 'info',
+  FetchFailed: 'danger'
+};

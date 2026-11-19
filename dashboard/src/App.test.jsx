@@ -81,7 +81,7 @@ describe('routing guards', () => {
   });
 
   it('shows the phase placeholder for routes that arrive later', async () => {
-    renderApp('/dashboard/findings', fakeClient(), { signedIn: true });
+    renderApp('/dashboard/sources', fakeClient(), { signedIn: true });
     expect(await screen.findByText('Arrives in Phase 6')).toBeInTheDocument();
   });
 

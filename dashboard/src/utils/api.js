@@ -539,6 +539,49 @@ export class ApiClient {
     return this._request('POST', '/v1.0/api/topics/' + enc(id) + '/run', { query: dryRun ? { dryRun: true } : undefined });
   }
 
+  // Run drill-down: stages in order, the queries the run sent, and the results with their dispositions.
+  listRunStages(id) {
+    return this._request('GET', '/v1.0/api/runs/' + enc(id) + '/stages');
+  }
+  listRunQueries(id) {
+    return this._request('GET', '/v1.0/api/runs/' + enc(id) + '/queries');
+  }
+  listRunResults(id, disposition) {
+    return this._request('GET', '/v1.0/api/runs/' + enc(id) + '/results', { query: { disposition } });
+  }
+
+  // Findings with evidence, sources, predictions with reviews, and suggestions (Phase 6)
+  listFindings(query) {
+    return this._request('GET', '/v1.0/api/findings', { query });
+  }
+  getFinding(id) {
+    return this._request('GET', '/v1.0/api/findings/' + enc(id));
+  }
+  getSource(id) {
+    return this._request('GET', '/v1.0/api/sources/' + enc(id));
+  }
+  listPredictions(query) {
+    return this._request('GET', '/v1.0/api/predictions', { query });
+  }
+  getPrediction(id) {
+    return this._request('GET', '/v1.0/api/predictions/' + enc(id));
+  }
+  resolvePrediction(id, status, note) {
+    return this._request('POST', '/v1.0/api/predictions/' + enc(id) + '/resolve', { body: { status, note: note || null } });
+  }
+  acceptPredictionReview(id) {
+    return this._request('POST', '/v1.0/api/prediction-reviews/' + enc(id) + '/accept');
+  }
+  rejectPredictionReview(id) {
+    return this._request('POST', '/v1.0/api/prediction-reviews/' + enc(id) + '/reject');
+  }
+  listSuggestions(query) {
+    return this._request('GET', '/v1.0/api/suggestions', { query });
+  }
+  setSuggestionStatus(id, status, snoozedUntilUtc) {
+    return this._request('PUT', '/v1.0/api/suggestions/' + enc(id) + '/status', { body: { status, snoozedUntilUtc: status === 'Snoozed' ? snoozedUntilUtc || null : null } });
+  }
+
   // API Explorer: returns the raw Response so the explorer can show status, headers, timing, and streams.
   async executeExplorer({ method, path, query, headers, body, signal }) {
     const url = this.baseUrl + path + buildQuery(query);

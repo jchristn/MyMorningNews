@@ -206,7 +206,7 @@
       "summary": "Forecasts and how they turned out"
     },
     "suggestions": {
-      "summary": "Ideas for new topics"
+      "summary": "Things worth digging into, from your runs"
     },
     "briefings": {
       "summary": "Briefings built from your findings"
@@ -972,6 +972,7 @@
       "Queued": "Queued",
       "Running": "Running",
       "Completed": "Completed",
+      "PartiallySucceeded": "Partially succeeded",
       "Failed": "Failed",
       "Cancelled": "Cancelled",
       "Skipped": "Skipped"
@@ -1001,6 +1002,84 @@
       "Short": "Short",
       "Standard": "Standard",
       "Long": "Long"
+    },
+    "findingTier": {
+      "MustRead": "Must read",
+      "WorthALook": "Worth a look",
+      "Fyi": "FYI",
+      "BelowThreshold": "Below threshold"
+    },
+    "findingCategory": {
+      "News": "News",
+      "Release": "Release",
+      "Research": "Research",
+      "Opinion": "Opinion",
+      "Tutorial": "Tutorial",
+      "Data": "Data",
+      "Other": "Other"
+    },
+    "evidenceRole": {
+      "Supports": "Supports",
+      "Contradicts": "Contradicts",
+      "Context": "Context"
+    },
+    "predictionStatus": {
+      "Open": "Open",
+      "ProposedResolved": "Resolution proposed",
+      "Accurate": "Accurate",
+      "PartiallyAccurate": "Partially accurate",
+      "Inaccurate": "Inaccurate",
+      "Unresolvable": "Unresolvable",
+      "Withdrawn": "Withdrawn"
+    },
+    "suggestionStatus": {
+      "New": "New",
+      "Accepted": "Accepted",
+      "Snoozed": "Snoozed",
+      "Dismissed": "Dismissed",
+      "Done": "Done"
+    },
+    "suggestionPriority": {
+      "High": "High",
+      "Medium": "Medium",
+      "Low": "Low"
+    },
+    "suggestionEffort": {
+      "Minutes": "minutes",
+      "Hours": "hours",
+      "Days": "days"
+    },
+    "stageStatus": {
+      "Pending": "Pending",
+      "Running": "Running",
+      "Succeeded": "Succeeded",
+      "Failed": "Failed",
+      "Skipped": "Skipped"
+    },
+    "runStage": {
+      "AssembleContext": "Assemble context",
+      "PlanQueries": "Plan queries",
+      "Search": "Search",
+      "Filter": "Filter",
+      "Fetch": "Fetch",
+      "Extract": "Extract",
+      "Embed": "Embed",
+      "Dedupe": "Dedupe",
+      "Score": "Score",
+      "Synthesize": "Synthesize",
+      "ReviewPredictions": "Review predictions",
+      "Predict": "Predict",
+      "Suggest": "Suggest"
+    },
+    "searchDisposition": {
+      "Pending": "Pending",
+      "Fetched": "Fetched",
+      "SkippedSeen": "Seen before",
+      "SkippedBlocked": "Blocked domain",
+      "SkippedRobots": "Blocked by robots.txt",
+      "SkippedLimit": "Over the fetch limit",
+      "SkippedDuplicate": "Duplicate",
+      "FetchFailed": "Fetch failed"
     }
   },
   "vault": {
@@ -1969,7 +2048,18 @@
       "cancelRequested": "Cancel requested",
       "schedule": "Schedule",
       "request": "One-time request",
-      "worker": "Worker"
+      "worker": "Worker",
+      "partial": "Partially succeeded: a non-critical stage failed. The other stages completed and their results are kept.",
+      "partialWithStages": "Partially succeeded: {stages} failed. The other stages completed and their results are kept.",
+      "viewFindings": "View findings ({count})",
+      "tabsLabel": "Run sections",
+      "tabs": {
+        "stages": "Stages",
+        "queries": "Queries",
+        "results": "Results",
+        "details": "Details"
+      },
+      "contextHash": "Context snapshot"
     },
     "cancelRequested": "Cancelling...",
     "cancel": "Cancel run",
@@ -1983,7 +2073,11 @@
       "trigger": "Trigger",
       "duration": "Duration",
       "summary": "Summary",
-      "id": "ID"
+      "id": "ID",
+      "findings": "New findings",
+      "findingsTitle": "{duplicates} duplicates skipped",
+      "sources": "Sources",
+      "cost": "Cost"
     },
     "cancelled": "Cancellation requested",
     "openTopic": "Open topic",
@@ -1992,7 +2086,56 @@
       "message": "Runs appear when a schedule fires, a one-time request starts, or you press Run now.",
       "topicMessage": "Press Run now or Dry run, or add a schedule."
     },
-    "pipelineNotice": "The research pipeline arrives in Phase 6. Until then runs complete with a summary saying the stages are not installed yet."
+    "totals": {
+      "sources": "Sources read",
+      "newFindings": "New findings",
+      "duplicates": "Duplicates",
+      "tokens": "Tokens",
+      "tokenSplit": "{input} in, {output} out",
+      "cost": "Estimated cost"
+    },
+    "stages": {
+      "empty": "No stages recorded for this run.",
+      "aria": "Stage timeline with {count} stages",
+      "stage": "Stage",
+      "status": "Status",
+      "duration": "Duration",
+      "items": "Items",
+      "inOut": "{in} in, {out} out",
+      "in": "In",
+      "out": "Out"
+    },
+    "queries": {
+      "empty": "This run sent no search queries.",
+      "query": "Query",
+      "provider": "Provider",
+      "results": "Results",
+      "succeeded": "Succeeded",
+      "failed": "Failed"
+    },
+    "results": {
+      "disposition": "Disposition",
+      "filterDisposition": "Filter results by disposition",
+      "dispositionCount": "{disposition}: {count}",
+      "noMatches": "No results with this disposition.",
+      "empty": "This run has no search results.",
+      "rank": "Rank",
+      "result": "Result",
+      "viewSource": "View source"
+    },
+    "source": {
+      "title": "Source",
+      "domain": "Domain",
+      "httpStatus": "HTTP status",
+      "contentType": "Content type",
+      "size": "Size",
+      "published": "Published",
+      "fetched": "Fetched",
+      "timesSeen": "Times seen",
+      "text": "Extracted text",
+      "truncated": "Showing the first {shown} of {total} characters.",
+      "noText": "No text was extracted from this source."
+    }
   },
   "oneTime": {
     "form": {
@@ -2079,5 +2222,182 @@
     },
     "newTitle": "New request",
     "newSummary": "One-time reports, podcasts, and email summaries"
+  },
+  "findings": {
+    "backToList": "Back to findings",
+    "openPage": "Open full page",
+    "duplicate": "Duplicate",
+    "update": "Update",
+    "scoreAria": "Relevance score {score}",
+    "searchPlaceholder": "Search titles and summaries",
+    "minScore": "Minimum",
+    "runFilter": "Run {id}",
+    "clearRun": "Show findings from every run",
+    "includeDuplicates": "Include duplicates",
+    "includeDryRuns": "Include dry runs",
+    "components": {
+      "llm": "Model judgment",
+      "feedback": "Feedback",
+      "novelty": "Novelty",
+      "source": "Source",
+      "recency": "Recency",
+      "composite": "Composite"
+    },
+    "columns": {
+      "title": "Finding",
+      "tier": "Tier",
+      "score": "Score",
+      "category": "Category",
+      "topic": "Topic",
+      "published": "Published",
+      "found": "Found",
+      "id": "ID"
+    },
+    "detail": {
+      "title": "Finding",
+      "whyItMatters": "Why it matters",
+      "scoreBreakdown": "Score breakdown",
+      "scoreChartAria": "Score breakdown with a composite of {score}",
+      "scoreHelp": "Each component runs from 0 to 100. The composite is their weighted average under the topic ranking weights.",
+      "rationale": "Rationale",
+      "noRationale": "The model gave no rationale for this score.",
+      "evidence": "Evidence ({count})",
+      "dimension": "Dimension",
+      "noDimension": "Not tied to a dimension.",
+      "run": "Run",
+      "confidence": "Confidence",
+      "rank": "Rank",
+      "duplicateOf": "Duplicate of",
+      "updateOf": "Update of"
+    },
+    "evidence": {
+      "unknownSource": "Unknown source",
+      "verified": "Verified quote",
+      "unverified": "Not verified",
+      "emptyTitle": "No evidence",
+      "emptyMessage": "No verified quotes back this finding."
+    },
+    "empty": {
+      "title": "No findings yet",
+      "message": "Findings appear after a run reads and ranks sources. Run a topic to get some.",
+      "topicMessage": "Run this topic to find and rank sources."
+    }
+  },
+  "predictions": {
+    "overdue": "Past horizon",
+    "brierHelp": "Lower is better: 0 is perfect and 0.25 is a coin flip.",
+    "columns": {
+      "statement": "Prediction",
+      "status": "Status",
+      "confidence": "Confidence",
+      "horizon": "Horizon",
+      "brier": "Brier score",
+      "topic": "Topic",
+      "created": "Created",
+      "id": "ID"
+    },
+    "actions": {
+      "resolve": "Resolve",
+      "reresolve": "Resolve again"
+    },
+    "resolvedBy": {
+      "User": "You",
+      "Agent": "Agent",
+      "AgentConfirmed": "Agent, confirmed by you"
+    },
+    "detail": {
+      "title": "Prediction",
+      "resolved": "Resolved",
+      "resolvedBy": "Resolved by",
+      "note": "Resolution note"
+    },
+    "reviews": {
+      "title": "Reviews ({count})",
+      "empty": "No reviews yet. Later runs check open predictions against new findings and propose a resolution here.",
+      "proposes": "Proposes",
+      "confidence": "{confidence} confident",
+      "finding": "Finding {id}",
+      "accept": "Accept",
+      "reject": "Reject",
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "acceptedToast": "Resolution accepted",
+      "rejectedToast": "Resolution rejected"
+    },
+    "resolve": {
+      "title": "Resolve prediction",
+      "submit": "Resolve",
+      "outcome": "Outcome",
+      "outcomeHelp": "Accurate, partially accurate, and inaccurate count toward accuracy and the Brier score.",
+      "note": "Note",
+      "notePlaceholder": "What happened, with a link if you have one",
+      "notGraded": "This outcome is not graded, so it gets no Brier score.",
+      "brierPreview": "At {confidence} confidence this outcome scores a Brier of {brier}.",
+      "done": "Prediction resolved"
+    },
+    "kpis": {
+      "open": "Open",
+      "graded": "Graded",
+      "ofTotal": "of {total} predictions",
+      "accuracy": "Observed accuracy",
+      "accuracyHelp": "Partially accurate counts as half.",
+      "brier": "Mean Brier score"
+    },
+    "calibration": {
+      "title": "Calibration",
+      "subtitle": "Stated confidence against how often predictions came true",
+      "aria": "Calibration of {count} graded predictions",
+      "xAxis": "Stated confidence",
+      "count": "Predictions",
+      "meanConfidence": "Mean confidence",
+      "observed": "Observed accuracy",
+      "perfect": "Perfect calibration",
+      "bucket": "{from} to {to} confidence",
+      "empty": "Grade some predictions to see calibration."
+    },
+    "empty": {
+      "title": "No predictions yet",
+      "message": "Runs make predictions about where a topic is heading. They show up here to track and grade."
+    }
+  },
+  "suggestions": {
+    "priority": "{priority} priority",
+    "effort": "Takes {effort}",
+    "until": "until",
+    "changed": "Marked {status}",
+    "columns": {
+      "title": "Suggestion",
+      "status": "Status",
+      "priorityEffort": "Priority and effort",
+      "topic": "Topic",
+      "created": "Created",
+      "id": "ID"
+    },
+    "actions": {
+      "accept": "Accept",
+      "snooze": "Snooze",
+      "dismiss": "Dismiss",
+      "complete": "Complete"
+    },
+    "detail": {
+      "title": "Suggestion",
+      "rationale": "Why",
+      "statusChanged": "Status changed",
+      "findings": "Related findings"
+    },
+    "snooze": {
+      "title": "Snooze suggestion",
+      "quick": "Quick picks",
+      "tomorrow": "Tomorrow morning",
+      "nextWeek": "In a week",
+      "nextMonth": "In a month",
+      "until": "Snooze until",
+      "future": "Pick a time in the future.",
+      "help": "It comes back to your list at this time."
+    },
+    "empty": {
+      "title": "No suggestions yet",
+      "message": "Runs suggest things worth digging into. They show up here to accept, snooze, dismiss, or complete."
+    }
   }
 }

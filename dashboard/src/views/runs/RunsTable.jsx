@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Braces, CircleStop, Eye, Lightbulb } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext.jsx';
@@ -16,7 +16,7 @@ import DateCell from '../../components/DateCell.jsx';
 import JsonViewerModal from '../../components/JsonViewerModal.jsx';
 import StatusBadge from '../../components/StatusBadge.jsx';
 import RunDetailDrawer from './RunDetailDrawer.jsx';
-import { isActiveRun, runDurationMs } from './runParts.js';
+import { findingsLink, isActiveRun, runDurationMs } from './runParts.js';
 
 // Runs with status, trigger, timing, summary, and error. Pass topicId to scope to one topic. The table refreshes
 // every five seconds while any run on the page is queued or running.
@@ -106,6 +106,27 @@ export default function RunsTable({ topicId = null, tableKey = 'runs', toolbar =
         const ms = runDurationMs(r);
         return ms === null ? <span className="muted">-</span> : f.duration(ms);
       }
+    },
+    {
+      key: 'newFindingCount',
+      header: t('runs.columns.findings'),
+      align: 'right',
+      render: (r) =>
+        r.newFindingCount > 0 ? (
+          <Link to={findingsLink(r)} title={t('runs.columns.findingsTitle', { duplicates: f.number(r.duplicateCount || 0) })}>
+            {f.number(r.newFindingCount)}
+          </Link>
+        ) : (
+          <span className="muted">{f.number(r.newFindingCount || 0)}</span>
+        )
+    },
+    { key: 'sourceCount', header: t('runs.columns.sources'), align: 'right', defaultHidden: true, render: (r) => f.number(r.sourceCount || 0) },
+    {
+      key: 'estimatedCostUsd',
+      header: t('runs.columns.cost'),
+      align: 'right',
+      defaultHidden: true,
+      render: (r) => (r.estimatedCostUsd === null || r.estimatedCostUsd === undefined ? <span className="muted">-</span> : f.usd(r.estimatedCostUsd))
     },
     {
       key: 'summary',

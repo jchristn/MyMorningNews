@@ -379,7 +379,7 @@ namespace MyMorningNews.Core.Briefings
         }
 
         /// <summary>
-        /// Delete a briefing with its sections, items, and stored files.
+        /// Delete a briefing with its sections, items, audio episodes, and stored files.
         /// </summary>
         /// <param name="briefing">Briefing.</param>
         /// <param name="token">Cancellation token.</param>
@@ -391,6 +391,13 @@ namespace MyMorningNews.Core.Briefings
             {
                 await _Artifacts.DeleteContentAsync(a, token).ConfigureAwait(false);
                 await _Database.Artifacts.DeleteAsync(a.TenantId, a.Id, token).ConfigureAwait(false);
+            }
+
+            foreach (MediaAsset m in (await _Database.MediaAssets.EnumerateAsync(new MediaAssetFilter { TenantId = briefing.TenantId, BriefingId = briefing.Id, PageSize = 100 }, token).ConfigureAwait(false)).Items)
+            {
+                foreach (MediaChapter c in (await _Database.MediaChapters.EnumerateAsync(new MediaChapterFilter { TenantId = m.TenantId, MediaAssetId = m.Id, PageSize = 500 }, token).ConfigureAwait(false)).Items)
+                    await _Database.MediaChapters.DeleteAsync(c.TenantId, c.Id, token).ConfigureAwait(false);
+                await _Database.MediaAssets.DeleteAsync(m.TenantId, m.Id, token).ConfigureAwait(false);
             }
 
             foreach (BriefingItem i in (await _Database.BriefingItems.EnumerateAsync(new BriefingItemFilter { TenantId = briefing.TenantId, BriefingId = briefing.Id, PageSize = 1000 }, token).ConfigureAwait(false)).Items)

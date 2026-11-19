@@ -211,6 +211,8 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 "DELETE FROM briefingitems WHERE tenantid = $1 AND briefingid IN (SELECT id FROM briefings WHERE tenantid = $1 AND topicid = $2)",
                 "DELETE FROM briefingsections WHERE tenantid = $1 AND briefingid IN (SELECT id FROM briefings WHERE tenantid = $1 AND topicid = $2)",
                 "DELETE FROM artifacts WHERE tenantid = $1 AND (topicid = $2 OR briefingid IN (SELECT id FROM briefings WHERE tenantid = $1 AND topicid = $2))",
+                "DELETE FROM mediachapters WHERE tenantid = $1 AND mediaassetid IN (SELECT id FROM mediaassets WHERE tenantid = $1 AND briefingid IN (SELECT id FROM briefings WHERE tenantid = $1 AND topicid = $2))",
+                "DELETE FROM mediaassets WHERE tenantid = $1 AND briefingid IN (SELECT id FROM briefings WHERE tenantid = $1 AND topicid = $2)",
                 "DELETE FROM briefings WHERE tenantid = $1 AND topicid = $2",
                 "DELETE FROM findingevidence WHERE tenantid = $1 AND findingid IN (SELECT id FROM findings WHERE tenantid = $1 AND topicid = $2)",
                 "DELETE FROM evidence WHERE tenantid = $1 AND runid IN (SELECT id FROM runs WHERE tenantid = $1 AND topicid = $2)",

@@ -146,6 +146,8 @@ namespace Test.Shared.Suites
             Assert.True(withAudio.Audio != null && withAudio.Audio.Id == again.Id && withAudio.Audio.Status == MediaStatusEnum.Queued && withAudio.Audio.ScriptMarkdown == null, "briefing detail carries the newest audio status");
             await EpisodeForAsync(f, b, token).ConfigureAwait(false);
             (await f.User.Client.DeleteAsync("/v1.0/api/media/" + m.Id, token).ConfigureAwait(false)).Expect(204, "delete episode");
+            (await f.User.Client.DeleteAsync("/v1.0/api/briefings/" + b.Id, token).ConfigureAwait(false)).Expect(204, "delete the briefing");
+            Assert.Equal(0, (await f.User.Client.GetAsync("/v1.0/api/media?briefingId=" + b.Id, token).ConfigureAwait(false)).Json<EnumerationResult<MediaAsset>>().Items.Count, "its episodes go with it");
             (await f.User.Client.GetAsync(d.AudioPath!, token).ConfigureAwait(false)).Expect(404, "its audio file is gone");
 
             Run run = (await f.User.Client.GetAsync("/v1.0/api/runs?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Run>>().Items.First();

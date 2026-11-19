@@ -1,0 +1,63 @@
+# Build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+.vs/
+.idea/
+.vscode/
+artifacts/
+out/
+
+# .NET
+project.lock.json
+*.nupkg
+*.snupkg
+
+# Node / dashboard
+node_modules/
+dist/
+.vite/
+*.local
+npm-debug.log*
+playwright-report/
+test-results/
+
+# Test / coverage
+TestResults/
+coverage/
+*.trx
+results*.json
+report*.html
+
+# Runtime data
+logs/
+docker/logs/
+docker/data/
+docker/media/
+docker/email/
+*.log
+
+# Secrets
+.env
+.env.*
+*.pfx
+*.key
+
+# Benchmarks and user testing
+benchmarks/.run/
+benchmarks/data/
+benchmarks/results/*
+!benchmarks/results/.gitkeep
+user-testing/evidence/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Agent tooling
+.claude/settings.local.json
+.claude/worktrees/
+.okf/

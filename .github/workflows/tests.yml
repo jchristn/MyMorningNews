@@ -1,0 +1,91 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: Full suite (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.1-pg17
+        env:
+          POSTGRES_PASSWORD: Test_Passw0rd
+          POSTGRES_DB: mymorningnews_test
+        ports:
+          - 127.0.0.1:5432:5432
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1 -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      MYMORNINGNEWS_TEST_PROVIDER: postgresql
+      MYMORNINGNEWS_TEST_DB: Host=127.0.0.1;Port=5432;Username=postgres;Password=Test_Passw0rd
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - name: Restore
+        run: dotnet restore src/MyMorningNews.sln
+      - name: Build
+        run: dotnet build src/MyMorningNews.sln --no-restore
+      - name: Test.Automated (net8.0)
+        run: dotnet run --project src/Test.Automated -f net8.0 --no-build -- --provider postgresql --results results-net8.0.json
+      - name: Test.Automated (net10.0)
+        run: dotnet run --project src/Test.Automated -f net10.0 --no-build -- --provider postgresql --results results-net10.0.json
+      - name: Test.Xunit3
+        run: dotnet test src/Test.Xunit3 --no-build
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}
+          path: results-*.json
+
+  providers:
+    name: Provider matrix (${{ matrix.provider }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        provider: [postgresql]
+    services:
+      postgres:
+        image: ${{ matrix.provider == 'postgresql' && 'pgvector/pgvector:0.8.1-pg17' || '' }}
+        env:
+          POSTGRES_PASSWORD: Test_Passw0rd
+          POSTGRES_DB: mymorningnews_test
+        ports:
+          - 127.0.0.1:5432:5432
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1 -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      MYMORNINGNEWS_TEST_DB: Host=127.0.0.1;Port=5432;Username=postgres;Password=Test_Passw0rd
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - name: Run provider suite
+        run: dotnet run --project src/Test.Automated -f net10.0 -- --provider ${{ matrix.provider }} --results results-provider-${{ matrix.provider }}.json
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-provider-${{ matrix.provider }}
+          path: results-provider-*.json

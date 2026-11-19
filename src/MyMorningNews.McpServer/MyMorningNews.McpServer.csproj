@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <RootNamespace>MyMorningNews.McpServer</RootNamespace>
+    <Description>My Morning News MCP server.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SyslogLogging" Version="2.4.2" />
+    <PackageReference Include="Voltaic" Version="2.4.1" />
+  </ItemGroup>
+
+</Project>

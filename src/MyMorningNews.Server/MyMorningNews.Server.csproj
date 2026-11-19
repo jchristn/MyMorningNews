@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <RootNamespace>MyMorningNews.Server</RootNamespace>
+    <AssemblyName>MyMorningNews.Server</AssemblyName>
+    <Description>My Morning News REST server.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Radiant" Version="0.1.4" />
+    <PackageReference Include="Watson" Version="7.3.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MyMorningNews.Core\MyMorningNews.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\assets\logo.png" Link="assets\logo.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\assets\glyph.png" Link="assets\glyph.png" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

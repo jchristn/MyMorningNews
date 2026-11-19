@@ -1,0 +1,9 @@
+{
+  "createdUtc": "2026-11-19T00:00:00.000Z",
+  "rest": {
+    "hostname": "0.0.0.0",
+    "port": 8000,
+    "ssl": false,
+    "corsAllowedOrigins": "*"
+  }
+}

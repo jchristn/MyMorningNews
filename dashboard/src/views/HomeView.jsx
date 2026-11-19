@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Activity, Building2, CircleAlert, Gauge, History, Lightbulb, Users } from 'lucide-react';
+import { Activity, Building2, CircleAlert, Gauge, History, Lightbulb, Send, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext.jsx';
 import useFormat from '../hooks/useFormat.js';
@@ -13,6 +13,7 @@ import ErrorState from '../components/ErrorState.jsx';
 import KpiTile from '../components/KpiTile.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import StatusBadge, { methodTone, statusTone } from '../components/StatusBadge.jsx';
+import RequestForm from './requests/RequestForm.jsx';
 
 // Command center: what happened, what needs attention, and where to go next.
 export default function HomeView() {
@@ -24,6 +25,7 @@ export default function HomeView() {
   const [health, setHealth] = useState(null);
   const [info, setInfo] = useState(null);
   const [counts, setCounts] = useState({});
+  const [topicCount, setTopicCount] = useState(null);
   const [failures, setFailures] = useState(null);
   const [summary, setSummary] = useState(null);
   const [errors, setErrors] = useState({});
@@ -35,6 +37,10 @@ export default function HomeView() {
     await Promise.all([
       apiClient.healthCheck().then(setHealth).catch((e) => (nextErrors.health = e)),
       apiClient.getServerInfo().then(setInfo).catch((e) => (nextErrors.info = e)),
+      apiClient
+        .listTopics({ isOneTime: false, pageSize: 1 })
+        .then((r) => setTopicCount(r && typeof r.totalCount === 'number' ? r.totalCount : 0))
+        .catch(() => setTopicCount(null)),
       isTenantAdmin
         ? Promise.all([apiClient.listUsers(tenantId, { pageSize: 1 }), apiClient.listTenants({ pageSize: 1 })])
             .then(([u, ten]) => setCounts({ users: u.totalCount, tenants: ten.totalCount }))
@@ -95,8 +101,16 @@ export default function HomeView() {
             <KpiTile icon={Building2} label={t('home.kpi.tenants')} value={counts.tenants !== undefined ? f.number(counts.tenants) : '...'} onClick={() => navigate('/dashboard/admin/tenants')} />
           </>
         ) : null}
-        <KpiTile icon={Lightbulb} label={t('home.kpi.topics')} value={t('home.kpi.comingSoon')} detail={t('nav.phase', { phase: 4 })} onClick={() => navigate('/dashboard/topics')} />
+        <KpiTile icon={Lightbulb} label={t('home.kpi.topics')} value={topicCount === null ? '...' : f.number(topicCount)} detail={t('home.kpi.recurring')} onClick={() => navigate('/dashboard/topics')} />
       </div>
+
+      <section className="panel home-request" data-testid="home-request">
+        <h2>
+          <Send size={16} aria-hidden="true" /> {t('home.request.title')}
+        </h2>
+        <p className="muted small">{t('home.request.summary')}</p>
+        <RequestForm compact />
+      </section>
 
       {isTenantAdmin ? (
         <RequestActivityChart
@@ -112,10 +126,9 @@ export default function HomeView() {
           <h2>{t('home.next.title')}</h2>
           <ul className="cta-list">
             <li>
-              <button type="button" className="link-button" onClick={() => navigate('/dashboard/topics')}>
-                {t('home.next.topic')}
+              <button type="button" className="link-button" onClick={() => navigate(topicCount ? '/dashboard/topics' : '/dashboard/topics/new')}>
+                {topicCount ? t('home.next.topics') : t('home.next.topic')}
               </button>
-              <span className="muted small">{t('nav.phase', { phase: 4 })}</span>
             </li>
             <li>
               <button type="button" className="link-button" onClick={() => navigate('/dashboard/models')}>

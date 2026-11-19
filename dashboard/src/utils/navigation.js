@@ -25,6 +25,7 @@ import {
   Newspaper,
   Plug,
   Search,
+  Send,
   Settings,
   Shield,
   ShieldCheck,
@@ -50,8 +51,9 @@ export const NAV_GROUPS = [
   {
     key: 'research',
     items: [
-      { path: 'topics', key: 'topics', icon: Lightbulb, access: 'all', phase: 4 },
-      { path: 'runs', key: 'runs', icon: CirclePlay, access: 'all', phase: 6 },
+      { path: 'topics', key: 'topics', icon: Lightbulb, access: 'all' },
+      { path: 'one-time', key: 'oneTimeRequests', icon: Send, access: 'all' },
+      { path: 'runs', key: 'runs', icon: CirclePlay, access: 'all' },
       { path: 'findings', key: 'findings', icon: ListChecks, access: 'all', phase: 6 },
       { path: 'sources', key: 'sources', icon: Globe, access: 'all', phase: 6 },
       { path: 'predictions', key: 'predictions', icon: TrendingUp, access: 'all', phase: 6 },

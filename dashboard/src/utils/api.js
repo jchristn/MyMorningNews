@@ -378,6 +378,167 @@ export class ApiClient {
     return this._request('GET', '/v1.0/api/usage/me', { query });
   }
 
+  // Topics with their dimensions, constraints, and email recipients
+  listTopics(query) {
+    return this._request('GET', '/v1.0/api/topics', { query });
+  }
+  getTopic(id) {
+    return this._request('GET', '/v1.0/api/topics/' + enc(id));
+  }
+  createTopic(body) {
+    return this._request('POST', '/v1.0/api/topics', { body });
+  }
+  updateTopic(id, body) {
+    return this._request('PUT', '/v1.0/api/topics/' + enc(id), { body });
+  }
+  deleteTopic(id) {
+    return this._request('DELETE', '/v1.0/api/topics/' + enc(id));
+  }
+  pauseTopic(id) {
+    return this._request('POST', '/v1.0/api/topics/' + enc(id) + '/pause');
+  }
+  resumeTopic(id) {
+    return this._request('POST', '/v1.0/api/topics/' + enc(id) + '/resume');
+  }
+  archiveTopic(id) {
+    return this._request('POST', '/v1.0/api/topics/' + enc(id) + '/archive');
+  }
+  duplicateTopic(id) {
+    return this._request('POST', '/v1.0/api/topics/' + enc(id) + '/duplicate');
+  }
+  refineTopic(id) {
+    return this._request('POST', '/v1.0/api/topics/' + enc(id) + '/refine');
+  }
+  listTopicDimensions(topicId) {
+    return this._request('GET', '/v1.0/api/topics/' + enc(topicId) + '/dimensions');
+  }
+  createTopicDimension(topicId, body) {
+    return this._request('POST', '/v1.0/api/topics/' + enc(topicId) + '/dimensions', { body });
+  }
+  updateTopicDimension(topicId, dimensionId, body) {
+    return this._request('PUT', '/v1.0/api/topics/' + enc(topicId) + '/dimensions/' + enc(dimensionId), { body });
+  }
+  deleteTopicDimension(topicId, dimensionId) {
+    return this._request('DELETE', '/v1.0/api/topics/' + enc(topicId) + '/dimensions/' + enc(dimensionId));
+  }
+  listTopicConstraints(topicId, kind) {
+    return this._request('GET', '/v1.0/api/topics/' + enc(topicId) + '/constraints', { query: { kind } });
+  }
+  createTopicConstraint(topicId, body) {
+    return this._request('POST', '/v1.0/api/topics/' + enc(topicId) + '/constraints', { body });
+  }
+  updateTopicConstraint(topicId, constraintId, body) {
+    return this._request('PUT', '/v1.0/api/topics/' + enc(topicId) + '/constraints/' + enc(constraintId), { body });
+  }
+  deleteTopicConstraint(topicId, constraintId) {
+    return this._request('DELETE', '/v1.0/api/topics/' + enc(topicId) + '/constraints/' + enc(constraintId));
+  }
+  listTopicRecipients(topicId) {
+    return this._request('GET', '/v1.0/api/topics/' + enc(topicId) + '/recipients');
+  }
+  addTopicRecipient(topicId, body) {
+    return this._request('POST', '/v1.0/api/topics/' + enc(topicId) + '/recipients', { body });
+  }
+  deleteTopicRecipient(topicId, recipientId) {
+    return this._request('DELETE', '/v1.0/api/topics/' + enc(topicId) + '/recipients/' + enc(recipientId));
+  }
+
+  // Refinement wizard. Generation steps call a model and can take tens of seconds; pass a signal to stop waiting.
+  startRefinement(body, signal) {
+    return this._request('POST', '/v1.0/api/refinement-sessions', { body, signal });
+  }
+  listRefinementSessions(query) {
+    return this._request('GET', '/v1.0/api/refinement-sessions', { query });
+  }
+  getRefinementSession(id) {
+    return this._request('GET', '/v1.0/api/refinement-sessions/' + enc(id));
+  }
+  proposeDimensions(id, guidance, signal) {
+    return this._request('POST', '/v1.0/api/refinement-sessions/' + enc(id) + '/dimensions', { body: guidance ? { guidance } : {}, signal });
+  }
+  askQuestions(id, guidance, signal) {
+    return this._request('POST', '/v1.0/api/refinement-sessions/' + enc(id) + '/questions', { body: guidance ? { guidance } : {}, signal });
+  }
+  answerQuestion(id, questionId, body) {
+    return this._request('PUT', '/v1.0/api/refinement-sessions/' + enc(id) + '/questions/' + enc(questionId), { body });
+  }
+  draftContext(id, signal) {
+    return this._request('POST', '/v1.0/api/refinement-sessions/' + enc(id) + '/context', { signal });
+  }
+  suggestSources(id, signal) {
+    return this._request('POST', '/v1.0/api/refinement-sessions/' + enc(id) + '/sources', { signal });
+  }
+  acceptSources(id, body) {
+    return this._request('POST', '/v1.0/api/refinement-sessions/' + enc(id) + '/sources/accept', { body });
+  }
+  completeRefinement(id) {
+    return this._request('POST', '/v1.0/api/refinement-sessions/' + enc(id) + '/complete');
+  }
+  abandonRefinement(id) {
+    return this._request('POST', '/v1.0/api/refinement-sessions/' + enc(id) + '/abandon');
+  }
+
+  // One-time requests
+  createResearchRequest(body, signal) {
+    return this._request('POST', '/v1.0/api/requests', { body, signal });
+  }
+  listResearchRequests(query) {
+    return this._request('GET', '/v1.0/api/requests', { query });
+  }
+  getResearchRequest(id) {
+    return this._request('GET', '/v1.0/api/requests/' + enc(id));
+  }
+  answerResearchQuestion(id, questionId, body) {
+    return this._request('PUT', '/v1.0/api/requests/' + enc(id) + '/questions/' + enc(questionId), { body });
+  }
+  replanResearchRequest(id, signal) {
+    return this._request('POST', '/v1.0/api/requests/' + enc(id) + '/replan', { signal });
+  }
+  confirmResearchRequest(id, runAtUtc) {
+    return this._request('POST', '/v1.0/api/requests/' + enc(id) + '/confirm', { body: runAtUtc ? { runAtUtc } : {} });
+  }
+  cancelResearchRequest(id) {
+    return this._request('POST', '/v1.0/api/requests/' + enc(id) + '/cancel');
+  }
+  convertResearchRequest(id) {
+    return this._request('POST', '/v1.0/api/requests/' + enc(id) + '/convert');
+  }
+  deleteResearchRequest(id) {
+    return this._request('DELETE', '/v1.0/api/requests/' + enc(id));
+  }
+
+  // Schedules and runs
+  previewSchedule(body, signal) {
+    return this._request('POST', '/v1.0/api/schedules/preview', { body, signal });
+  }
+  listSchedules(query) {
+    return this._request('GET', '/v1.0/api/schedules', { query });
+  }
+  getSchedule(id) {
+    return this._request('GET', '/v1.0/api/schedules/' + enc(id));
+  }
+  createSchedule(body) {
+    return this._request('POST', '/v1.0/api/schedules', { body });
+  }
+  updateSchedule(id, body) {
+    return this._request('PUT', '/v1.0/api/schedules/' + enc(id), { body });
+  }
+  deleteSchedule(id) {
+    return this._request('DELETE', '/v1.0/api/schedules/' + enc(id));
+  }
+  listRuns(query) {
+    return this._request('GET', '/v1.0/api/runs', { query });
+  }
+  getRun(id) {
+    return this._request('GET', '/v1.0/api/runs/' + enc(id));
+  }
+  cancelRun(id) {
+    return this._request('POST', '/v1.0/api/runs/' + enc(id) + '/cancel');
+  }
+  runTopic(id, { dryRun = false } = {}) {
+    return this._request('POST', '/v1.0/api/topics/' + enc(id) + '/run', { query: dryRun ? { dryRun: true } : undefined });
+  }
+
   // API Explorer: returns the raw Response so the explorer can show status, headers, timing, and streams.
   async executeExplorer({ method, path, query, headers, body, signal }) {
     const url = this.baseUrl + path + buildQuery(query);

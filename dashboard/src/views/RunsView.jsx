@@ -10,7 +10,6 @@ export default function RunsView() {
   return (
     <div className="page">
       <PageHeader title={t('nav.items.runs')} summary={t('routes.runs.summary')} />
-      <div className="notice notice-info">{t('runs.pipelineNotice')}</div>
       <section className="panel">
         <RunsTable initialRunId={params.get('run')} onRunClosed={() => params.get('run') && setParams({}, { replace: true })} />
       </section>

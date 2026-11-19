@@ -151,7 +151,7 @@ describe('Topic workspace', () => {
     expect(screen.getByRole('tab', { name: /Findings/ })).toBeInTheDocument();
   });
 
-  it('edits context, shows placeholders for later tabs, and lists the topic runs', async () => {
+  it('edits context, shows the research tabs and placeholders for later tabs, and lists the topic runs', async () => {
     const client = renderRoute('/dashboard/topics/top_1?tab=context', {
       getTopic: vi.fn(async () => detail),
       listSchedules: vi.fn(async () => page([])),
@@ -164,7 +164,14 @@ describe('Topic workspace', () => {
     await waitFor(() => expect(client.createTopicConstraint).toHaveBeenCalledWith('top_1', { kind: 'ExcludeKeyword', value: 'webinar' }));
     expect(await within(group).findByText('webinar')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('tab', { name: /Predictions/ }));
-    expect(screen.getByText('Arrives in Phase 6')).toBeInTheDocument();
+    await waitFor(() => expect(client.listPredictions).toHaveBeenCalledWith(expect.objectContaining({ topicId: 'top_1' })));
+    expect(await screen.findByText('No predictions yet')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('tab', { name: /Findings/ }));
+    await waitFor(() => expect(client.listFindings).toHaveBeenCalledWith(expect.objectContaining({ topicId: 'top_1', sortBy: 'relevanceScore' })));
+    await userEvent.click(screen.getByRole('tab', { name: /Suggestions/ }));
+    await waitFor(() => expect(client.listSuggestions).toHaveBeenCalledWith(expect.objectContaining({ topicId: 'top_1' })));
+    await userEvent.click(screen.getByRole('tab', { name: /Feedback/ }));
+    expect(screen.getByText('Arrives in Phase 10')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('tab', { name: 'Runs' }));
     expect(await screen.findByText(/stages are not installed/)).toBeInTheDocument();
     expect(client.listRuns).toHaveBeenCalledWith(expect.objectContaining({ topicId: 'top_1' }));

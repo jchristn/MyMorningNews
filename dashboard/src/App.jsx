@@ -14,6 +14,9 @@ import { ALL_ROUTES } from './utils/navigation.js';
 const VIEWS = {
   home: lazy(() => import('./views/HomeView.jsx')),
   requests: lazy(() => import('./views/RequestHistoryView.jsx')),
+  topics: lazy(() => import('./views/TopicsView.jsx')),
+  oneTimeRequests: lazy(() => import('./views/ResearchRequestsView.jsx')),
+  runs: lazy(() => import('./views/RunsView.jsx')),
   explorer: lazy(() => import('./views/ApiExplorerView.jsx')),
   health: lazy(() => import('./views/HealthView.jsx')),
   audit: lazy(() => import('./views/AuditView.jsx')),

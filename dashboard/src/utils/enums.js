@@ -38,3 +38,30 @@ export const VAULT_PROVIDER_FOR = {
   OllamaCloud: 'OllamaCloud',
   Ollama: 'Custom'
 };
+
+// Topics, refinement, requests, schedules, and runs (Phases 4 and 5).
+export const TOPIC_STATUSES = ['Draft', 'Active', 'Paused', 'Archived'];
+export const TOPIC_STATUS_TONES = { Draft: 'info', Active: 'success', Paused: 'warning', Archived: 'neutral' };
+
+export const RUN_STATUSES = ['Queued', 'Running', 'Completed', 'Failed', 'Cancelled', 'Skipped'];
+export const RUN_STATUS_TONES = { Queued: 'info', Running: 'accent', Completed: 'success', Failed: 'danger', Cancelled: 'neutral', Skipped: 'warning' };
+export const ACTIVE_RUN_STATUSES = ['Queued', 'Running'];
+export const RUN_TRIGGERS = ['Schedule', 'Manual', 'Request', 'Edition', 'Preview'];
+
+export const REQUEST_STATUSES = ['Clarifying', 'Scheduled', 'Running', 'Completed', 'Failed', 'Cancelled', 'Declined'];
+export const REQUEST_STATUS_TONES = { Clarifying: 'info', Scheduled: 'accent', Running: 'accent', Completed: 'success', Failed: 'danger', Cancelled: 'neutral', Declined: 'warning' };
+export const DELIVERABLES = ['Report', 'Podcast', 'Email'];
+export const DELIVERABLE_LENGTHS = ['Short', 'Standard', 'Long'];
+
+export const DIMENSION_WEIGHTS = ['High', 'Normal', 'Low', 'Exclude'];
+export const DIMENSION_WEIGHT_TONES = { High: 'accent', Normal: 'info', Low: 'neutral', Exclude: 'danger' };
+export const CONSTRAINT_KINDS = ['IncludeKeyword', 'ExcludeKeyword', 'IncludeEntity', 'ExcludeEntity', 'PreferredDomain', 'BlockedDomain', 'TrackedQuestion', 'FeedUrl', 'SeedUrl'];
+export const SOURCE_CONSTRAINT_KINDS = ['FeedUrl', 'SeedUrl'];
+export const CONTEXT_CONSTRAINT_KINDS = CONSTRAINT_KINDS.filter((k) => !SOURCE_CONSTRAINT_KINDS.includes(k));
+export const QUESTION_KINDS = ['SingleChoice', 'MultiChoice', 'Scale', 'YesNo', 'FreeText'];
+export const AUDIENCE_LEVELS = ['Beginner', 'Practitioner', 'Expert'];
+export const HORIZONS = ['Days', 'Weeks', 'Months', 'Years'];
+export const REFINEMENT_GOALS = ['work', 'investing', 'curiosity', 'hiring', 'building'];
+
+export const INTERVAL_TYPES = ['DaysOfWeek', 'EveryNDays', 'EveryNWeeks', 'DaysOfMonth', 'EveryNHours', 'EveryNMinutes', 'Once', 'Cron', 'Manual'];
+export const MISSED_RUN_POLICIES = ['Skip', 'RunOnceOnRecovery'];

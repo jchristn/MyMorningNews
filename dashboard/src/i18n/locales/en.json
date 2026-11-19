@@ -179,7 +179,8 @@
       "settings": "Settings",
       "serverInfo": "Server info",
       "profile": "Profile",
-      "adminUsage": "Platform usage"
+      "adminUsage": "Platform usage",
+      "oneTimeRequests": "One-time requests"
     }
   },
   "routes": {
@@ -193,7 +194,7 @@
       "summary": "Subjects you want researched"
     },
     "runs": {
-      "summary": "Research runs and their progress"
+      "summary": "Research runs: queued, running, and finished"
     },
     "findings": {
       "summary": "What research has found"
@@ -287,6 +288,9 @@
     },
     "adminUsage": {
       "summary": "Platform cost by tenant, the input to pricing decisions"
+    },
+    "oneTimeRequests": {
+      "summary": "One-time reports, podcasts, and email summaries"
     }
   },
   "placeholder": {
@@ -353,7 +357,6 @@
     },
     "kpi": {
       "average": "Average duration",
-      "comingSoon": "Not yet",
       "failureRate": "Failure rate",
       "failures": "{count} failed",
       "health": "Health",
@@ -362,20 +365,26 @@
       "tenants": "Tenants",
       "topics": "Topics",
       "uptime": "Up {value}",
-      "users": "Users"
+      "users": "Users",
+      "recurring": "Recurring topics"
     },
     "next": {
       "explorer": "Try the API in the explorer",
       "models": "Add a model endpoint (Phase 3)",
       "password": "Change the default password",
       "title": "Next steps",
-      "topic": "Create your first topic (Phase 4)"
+      "topic": "Create your first topic",
+      "topics": "Review your topics"
     },
     "services": {
       "credentials": "Credentials",
       "none": "No external services are configured.",
       "summary": "Tools that run alongside the server",
       "title": "External services"
+    },
+    "request": {
+      "title": "New request",
+      "summary": "Ask for a one-time report, podcast, or email summary."
     }
   },
   "requests": {
@@ -902,6 +911,96 @@
       "ElevenLabs": "ElevenLabs",
       "Mcp": "MCP server",
       "Custom": "Custom"
+    },
+    "intervalType": {
+      "EveryNMinutes": "Every N minutes",
+      "EveryNHours": "Every N hours",
+      "EveryNDays": "Every N days",
+      "EveryNWeeks": "Every N weeks",
+      "DaysOfWeek": "On days of the week",
+      "DaysOfMonth": "On days of the month",
+      "Once": "Once",
+      "Cron": "Cron (advanced)",
+      "Manual": "Manual only"
+    },
+    "missedRunPolicy": {
+      "Skip": "Skip it",
+      "RunOnceOnRecovery": "Run once on recovery"
+    },
+    "questionKind": {
+      "SingleChoice": "Pick one",
+      "MultiChoice": "Pick any",
+      "Scale": "Scale 1 to 5",
+      "YesNo": "Yes or no",
+      "FreeText": "Free text"
+    },
+    "dimensionWeight": {
+      "High": "High",
+      "Normal": "Normal",
+      "Low": "Low",
+      "Exclude": "Exclude"
+    },
+    "constraintKind": {
+      "IncludeKeyword": "Include keywords",
+      "ExcludeKeyword": "Exclude keywords",
+      "IncludeEntity": "Always include",
+      "ExcludeEntity": "Always ignore",
+      "PreferredDomain": "Preferred domains",
+      "BlockedDomain": "Blocked domains",
+      "TrackedQuestion": "Tracked questions",
+      "FeedUrl": "Feeds",
+      "SeedUrl": "Seed pages"
+    },
+    "topicStatus": {
+      "Draft": "Draft",
+      "Active": "Active",
+      "Paused": "Paused",
+      "Archived": "Archived"
+    },
+    "audienceLevel": {
+      "Beginner": "Beginner",
+      "Practitioner": "Practitioner",
+      "Expert": "Expert"
+    },
+    "horizon": {
+      "Days": "Days",
+      "Weeks": "Weeks",
+      "Months": "Months",
+      "Years": "Years"
+    },
+    "runStatus": {
+      "Queued": "Queued",
+      "Running": "Running",
+      "Completed": "Completed",
+      "Failed": "Failed",
+      "Cancelled": "Cancelled",
+      "Skipped": "Skipped"
+    },
+    "runTrigger": {
+      "Schedule": "Schedule",
+      "Manual": "Run now",
+      "Request": "One-time request",
+      "Edition": "Edition",
+      "Preview": "Preview"
+    },
+    "requestStatus": {
+      "Clarifying": "Waiting for you",
+      "Scheduled": "Scheduled",
+      "Running": "Running",
+      "Completed": "Completed",
+      "Failed": "Failed",
+      "Cancelled": "Cancelled",
+      "Declined": "Declined"
+    },
+    "deliverable": {
+      "Report": "Report",
+      "Podcast": "Podcast",
+      "Email": "Email"
+    },
+    "deliverableLength": {
+      "Short": "Short",
+      "Standard": "Standard",
+      "Long": "Long"
     }
   },
   "vault": {
@@ -1451,5 +1550,534 @@
       "costByModel": "Platform cost by model",
       "breakdownHelp": "Every tenant with token types, cost share, and timing. Export CSV downloads this table."
     }
+  },
+  "markdown": {
+    "mode": "Editor mode",
+    "write": "Write",
+    "preview": "Preview",
+    "empty": "Nothing to preview yet."
+  },
+  "schedule": {
+    "fields": {
+      "intervalType": "Repeats",
+      "every": "Every",
+      "everyHelp": "{min} to {max}",
+      "minuteOffset": "At minute",
+      "minuteOffsetHelp": "Minutes past the hour, 0 to 59",
+      "timeZone": "Time zone",
+      "timeZoneHelp": "Times are computed in this zone, including daylight saving changes",
+      "runOnce": "Run at",
+      "localTimeHelp": "Local time in {zone}",
+      "cron": "Cron expression",
+      "cronHelp": "Five fields: minute, hour, day of month, month, day of week",
+      "daysOfWeek": "Days of the week",
+      "daysOfMonth": "Days of the month",
+      "timesOfDay": "Times of day",
+      "timeN": "Time {n}",
+      "start": "Starts",
+      "end": "Ends",
+      "optionalLocal": "Optional, local time in {zone}",
+      "missedRunPolicy": "If a run is missed",
+      "enabled": "Enabled"
+    },
+    "units": {
+      "minutes": "minutes",
+      "hours": "hours",
+      "days": "days",
+      "weeks": "weeks"
+    },
+    "presets": {
+      "weekdays": "Weekdays",
+      "weekends": "Weekends",
+      "everyDay": "Every day"
+    },
+    "lastDay": "Last day",
+    "removeTime": "Remove this time",
+    "addTime": "Add a time",
+    "enabledOn": "On",
+    "enabledOff": "Off",
+    "missedHelp": {
+      "Skip": "Runs missed while the server was down are skipped.",
+      "RunOnceOnRecovery": "One catch-up run happens when the server comes back."
+    },
+    "preview": {
+      "title": "Next 5 runs",
+      "checking": "Checking...",
+      "manual": "This topic runs only when you press Run now.",
+      "none": "No upcoming runs. Check the start and end dates."
+    },
+    "summary": {
+      "EveryNMinutes": "Every {count, plural, one {minute} other {# minutes}}",
+      "EveryNHours": "Every {count, plural, one {hour} other {# hours}} at :{minute}",
+      "EveryNDays": "Every {count, plural, one {day} other {# days}} at {times}",
+      "EveryNWeeks": "Every {count, plural, one {week} other {# weeks}} on {days} at {times}",
+      "DaysOfWeek": "{days} at {times}",
+      "DaysOfMonth": "On day {days} at {times}",
+      "Once": "Once at {when}",
+      "Cron": "Cron {expression}",
+      "Manual": "Only when you run it"
+    },
+    "saved": "Schedule saved",
+    "create": "Create schedule",
+    "save": "Save schedule",
+    "emptyTitle": "No schedule yet",
+    "emptyMessage": "Add a schedule to research this topic automatically, or run it by hand.",
+    "add": "Add schedule",
+    "nextRun": "Next run",
+    "noNextRun": "Not scheduled",
+    "lastRun": "Last run",
+    "enableFor": "Enable {name}",
+    "edit": "Edit schedule",
+    "delete": "Delete schedule",
+    "deleteTitle": "Delete schedule",
+    "deleteMessage": "Delete the schedule \"{name}\"? Runs already queued are not affected."
+  },
+  "questions": {
+    "pickOne": "Pick at least one option, write an answer, or skip the question.",
+    "somethingElse": "Something else (optional)",
+    "scaleLow": "Not at all",
+    "scaleHigh": "Very much",
+    "save": "Save answer",
+    "why": "Why I am asking: {reason}",
+    "answered": "Answered",
+    "skipped": "Skipped",
+    "skip": "Skip",
+    "skippedHint": "Skipped. Answer it to bring it back."
+  },
+  "dimensions": {
+    "emptyTitle": "No dimensions yet",
+    "emptyMessage": "Dimensions are the angles research covers. Propose some or add your own.",
+    "locked": "Locked",
+    "yours": "Yours",
+    "suggested": "Suggested",
+    "why": "Why it might matter: {reason}",
+    "include": "Include",
+    "exclude": "Exclude",
+    "weightFor": "Weight for {name}",
+    "unlock": "Unlock {name}",
+    "lock": "Lock {name}",
+    "unlockHint": "Unlock so regeneration can replace it",
+    "lockHint": "Lock to keep it when you regenerate",
+    "edit": "Edit {name}",
+    "delete": "Delete {name}",
+    "add": "Add a dimension",
+    "addTitle": "Add a dimension",
+    "editTitle": "Edit dimension",
+    "editHint": "Edited dimensions become yours and are kept when you regenerate.",
+    "fields": {
+      "name": "Name",
+      "description": "Description",
+      "rationale": "Why it matters to you",
+      "weight": "Weight",
+      "includeTerms": "Include terms",
+      "excludeTerms": "Exclude terms",
+      "termsHelp": "Separate terms with commas"
+    },
+    "deleteTitle": "Delete dimension",
+    "deleteMessage": "Delete the dimension \"{name}\"?"
+  },
+  "constraints": {
+    "count": "{count, plural, one {# item} other {# items}}",
+    "help": {
+      "IncludeKeyword": "Words that make a result more relevant.",
+      "ExcludeKeyword": "Words that rule a result out.",
+      "IncludeEntity": "Companies, products, or people to always include.",
+      "ExcludeEntity": "Companies, products, or people to always ignore.",
+      "PreferredDomain": "Sites to favor, for example example.com.",
+      "BlockedDomain": "Sites never to use.",
+      "TrackedQuestion": "Open questions to follow over time.",
+      "FeedUrl": "RSS or Atom feeds read on every run.",
+      "SeedUrl": "Pages checked on every run."
+    },
+    "value": "Value",
+    "note": "Note",
+    "unlock": "Unlock {value}",
+    "lock": "Lock {value}",
+    "edit": "Edit {value}",
+    "delete": "Delete {value}",
+    "addTo": "Add to {kind}",
+    "placeholder": {
+      "IncludeKeyword": "Add a keyword",
+      "ExcludeKeyword": "Add a keyword to exclude",
+      "IncludeEntity": "Add a company or product",
+      "ExcludeEntity": "Add a company or product to ignore",
+      "PreferredDomain": "Add a domain",
+      "BlockedDomain": "Add a domain to block",
+      "TrackedQuestion": "Add a question to track",
+      "FeedUrl": "Add a feed URL (https://...)",
+      "SeedUrl": "Add a page URL (https://...)"
+    }
+  },
+  "delivery": {
+    "saved": "Delivery options saved",
+    "emailOnRun": "Email after every run",
+    "emailOnRunHelp": "A summary with detail and feedback links",
+    "emailWhenEmpty": "Email when nothing is found",
+    "emailWhenEmptyHelp": "Otherwise empty runs send no email",
+    "maxFindings": "Findings per email",
+    "maxFindingsHelp": "1 to 50",
+    "saveOptions": "Save delivery options",
+    "recipients": "Recipients",
+    "recipientsHelp": "Everyone here gets the email after each run. Recipients default to you.",
+    "noRecipients": "No recipients yet.",
+    "you": "you",
+    "removeRecipient": "Remove {email}",
+    "addRecipient": "Recipient email address",
+    "emailPlaceholder": "name@example.com",
+    "addMe": "Add me"
+  },
+  "topics": {
+    "actions": {
+      "dryRunQueued": "Dry run queued for {name}",
+      "runQueued": "Run queued for {name}",
+      "continueRefining": "Continue refining",
+      "refine": "Refine again",
+      "runNow": "Run now",
+      "dryRun": "Dry run",
+      "pause": "Pause",
+      "paused": "Paused {name}",
+      "resume": "Resume",
+      "resumed": "Resumed {name}",
+      "archive": "Archive",
+      "archived": "Archived {name}",
+      "duplicated": "Duplicated {name} as a draft"
+    },
+    "delete": {
+      "title": "Delete topic",
+      "message": "Delete \"{name}\" with its dimensions, constraints, schedules, and runs? This cannot be undone.",
+      "done": "Deleted {name}"
+    },
+    "bulk": {
+      "paused": "{count, plural, one {Paused # topic} other {Paused # topics}}",
+      "pause": "Pause",
+      "delete": "Delete",
+      "deleteTitle": "Delete topics",
+      "deleteMessage": "{count, plural, one {Delete # topic and everything under it?} other {Delete # topics and everything under them?}} This cannot be undone.",
+      "deleted": "{count, plural, one {Deleted # topic} other {Deleted # topics}}"
+    },
+    "columns": {
+      "name": "Name",
+      "status": "Status",
+      "oneTime": "Kind",
+      "lastRun": "Last run",
+      "lastRefined": "Last refined",
+      "created": "Created",
+      "audience": "Audience",
+      "id": "ID"
+    },
+    "searchPlaceholder": "Search topics",
+    "oneTime": "One-time",
+    "recurring": "Recurring",
+    "new": "New topic",
+    "empty": {
+      "title": "No topics yet",
+      "message": "Describe what you want to stay on top of, and the wizard turns it into a research plan.",
+      "action": "Tell me what you care about"
+    },
+    "backToList": "All topics",
+    "draftNoRun": "Finish refining before running, or start a dry run",
+    "draftNotice": "This topic is a draft. Finish refining it to start scheduled research.",
+    "workspace": {
+      "tabsLabel": "Topic sections",
+      "tabs": {
+        "overview": "Overview",
+        "context": "Context",
+        "schedule": "Schedule",
+        "sources": "Sources",
+        "runs": "Runs",
+        "findings": "Findings",
+        "predictions": "Predictions",
+        "suggestions": "Suggestions",
+        "feedback": "Feedback",
+        "preferences": "Preferences",
+        "analytics": "Analytics",
+        "delivery": "Delivery",
+        "prompts": "Prompts",
+        "models": "Models"
+      },
+      "dimensionCount": "Dimensions",
+      "noBrief": "No brief yet. Refine the topic to draft one.",
+      "dimensions": "Dimensions",
+      "brief": "Brief and audience",
+      "sourcesHelp": "Feeds and seed pages are read on every run, alongside web search.",
+      "searchProvidersLater": "Choosing search providers per topic arrives with the search providers page."
+    }
+  },
+  "wizard": {
+    "railLabel": "Wizard steps",
+    "steps": {
+      "Describe": "Describe",
+      "Dimensions": "Dimensions",
+      "Questions": "Questions",
+      "Context": "Context",
+      "Sources": "Sources",
+      "Delivery": "Delivery",
+      "Review": "Review"
+    },
+    "stepHelp": {
+      "Describe": "Say what you want to stay on top of and why.",
+      "Dimensions": "The angles research covers. Keep, weigh, edit, lock, or add your own.",
+      "Questions": "Answer what you like and skip the rest. Each answer sharpens the research.",
+      "Context": "The brief and constraints research follows. Locked items survive a redraft.",
+      "Sources": "Feeds and pages read on every run, each checked with a live fetch.",
+      "Delivery": "When research runs and who gets the email.",
+      "Review": "Everything captured. Preview a dry run, then apply."
+    },
+    "generating": {
+      "dimensions": "Proposing dimensions...",
+      "questions": "Writing questions...",
+      "context": "Drafting the brief and constraints...",
+      "sources": "Finding sources and checking each one...",
+      "request": "Planning your request...",
+      "replan": "Planning again with your answers...",
+      "patience": "{seconds}s so far. Large models can take a minute."
+    },
+    "stopWaiting": "Stop waiting",
+    "failure": {
+      "title": "The model could not finish this step",
+      "refusedTitle": "The model declined this step",
+      "hint": "Retry, or switch the model used for refinement.",
+      "changeModel": "Change the Refinement model"
+    },
+    "guidance": {
+      "label": "Guidance for the next try",
+      "placeholder": "For example: more about local models, less about enterprise procurement"
+    },
+    "regenerate": "Regenerate",
+    "describe": {
+      "existing": "This session started from the description below.",
+      "seedText": "What do you want to stay on top of?",
+      "seedHelp": "A sentence or a paragraph. You can refine everything afterward.",
+      "seedPlaceholder": "I want to learn about AI developer tools",
+      "goal": "Why",
+      "depth": "Depth",
+      "horizon": "Horizon",
+      "horizonHelp": "Optional, for example \"the next six months\"",
+      "known": "What you already know",
+      "started": "Started",
+      "optional": "Optional",
+      "notSaying": "Not saying",
+      "goals": {
+        "work": "Work decisions",
+        "investing": "Investing",
+        "curiosity": "Curiosity",
+        "hiring": "Hiring",
+        "building": "Building something"
+      },
+      "model": "Model",
+      "modelHelp": "Defaults to the Refinement assignment",
+      "defaultModel": "Refinement assignment (default)",
+      "starting": "Starting...",
+      "start": "Start and propose dimensions",
+      "resumeTitle": "Pick up where you left off"
+    },
+    "outOfScope": {
+      "title": "This is outside what My Morning News researches",
+      "rephrase": "Rephrase"
+    },
+    "dimensions": {
+      "noneTitle": "No dimensions yet",
+      "noneMessage": "Propose dimensions from your description, or add your own below.",
+      "propose": "Propose dimensions",
+      "intro": "{count, plural, one {# dimension} other {# dimensions}}, {kept} kept as yours or locked. Set a weight of Exclude to leave one out.",
+      "regenerateHelp": "Regenerating replaces suggested dimensions and keeps locked ones and yours."
+    },
+    "questions": {
+      "sufficient": "That should be enough context. You can move on to the brief.",
+      "noneTitle": "No questions yet",
+      "noneMessage": "The model asks a few questions informed by the dimensions you kept.",
+      "ask": "Ask me questions",
+      "progress": "{done} of {total} answered or skipped",
+      "round": "Round {round}",
+      "moreLabel": "Anything to steer the next round?",
+      "askMore": "Ask me more",
+      "moreHelp": "{left, plural, one {# more round available} other {# more rounds available}}",
+      "maxed": "{max} rounds is the limit. Move on to the brief."
+    },
+    "context": {
+      "name": "Topic name",
+      "audience": "Audience level",
+      "horizon": "Horizon",
+      "novelty": "Novelty preference: {value}",
+      "noveltyHelp": "Higher favors new developments over background",
+      "brief": "Brief",
+      "briefHelp": "Markdown. Research follows this brief.",
+      "seedQueries": "Seed queries",
+      "seedQueriesHelp": "One search query per line",
+      "saved": "Context saved",
+      "save": "Save context",
+      "savedState": "Saved",
+      "noneTitle": "No brief yet",
+      "noneMessage": "Draft the brief, constraints, and seed queries from your dimensions and answers.",
+      "draft": "Draft the context",
+      "intro": "Edit anything. Locked constraints and your own survive a redraft.",
+      "redraft": "Redraft",
+      "constraints": "Constraints"
+    },
+    "sources": {
+      "intro": "Suggested feeds and seed pages are fetched live. Green ones responded.",
+      "again": "Suggest again",
+      "suggest": "Suggest sources",
+      "noneSuggested": "The model did not suggest any sources. Add your own below.",
+      "allAccepted": "Every suggestion is already on the topic.",
+      "select": "Select {url}",
+      "unreachable": "Unreachable",
+      "accept": "{count, plural, =0 {Accept} one {Accept # source} other {Accept # sources}}",
+      "noneTitle": "No sources yet",
+      "noneMessage": "Suggest sources, add your own, or skip this step.",
+      "accepted": "On this topic"
+    },
+    "delivery": {
+      "schedule": "Research schedule",
+      "scheduleHelp": "The schedule is saved when you continue.",
+      "email": "Email"
+    },
+    "review": {
+      "novelty": "Novelty preference",
+      "noSchedule": "No schedule (run by hand)",
+      "applied": "This topic is applied and researching.",
+      "openTopic": "Open the topic",
+      "dimensions": "{count, plural, one {# dimension} other {# dimensions}}",
+      "constraintCount": "{kind}: {count}",
+      "preview": "Preview run",
+      "previewHelp": "A dry run sends no email and is not counted in history.",
+      "apply": "Apply topic",
+      "appliedToast": "{name} is ready",
+      "previewQueued": "Dry run queued. Follow it on the topic Runs tab."
+    },
+    "newTitle": "New topic",
+    "refineTitle": "Refine {name}",
+    "refineTitleShort": "Refine topic",
+    "saveExit": "Save and exit",
+    "abandon": "Abandon",
+    "refineSummary": "Reopen the wizard starting from the current context",
+    "refineStart": "Start a new refinement session for \"{name}\". Its dimensions and constraints carry over, and nothing changes until you apply.",
+    "refineStartButton": "Start refining",
+    "backToTopic": "Back to the topic",
+    "summary": "Every step is saved as you go, so you can leave and resume.",
+    "back": "Back",
+    "nextTo": "Next: {step}",
+    "abandonTitle": "Abandon this session",
+    "abandonDraft": "Abandon the wizard? The draft topic and everything in it are deleted.",
+    "abandonExisting": "Abandon this refinement session? The topic keeps the changes you saved along the way.",
+    "abandoned": "Session abandoned"
+  },
+  "runs": {
+    "detail": {
+      "title": "Run",
+      "summary": "Summary",
+      "cancelRequested": "Cancel requested",
+      "schedule": "Schedule",
+      "request": "One-time request",
+      "worker": "Worker"
+    },
+    "cancelRequested": "Cancelling...",
+    "cancel": "Cancel run",
+    "dryRun": "Dry run",
+    "columns": {
+      "topic": "Topic",
+      "queued": "Queued",
+      "started": "Started",
+      "completed": "Completed",
+      "status": "Status",
+      "trigger": "Trigger",
+      "duration": "Duration",
+      "summary": "Summary",
+      "id": "ID"
+    },
+    "cancelled": "Cancellation requested",
+    "openTopic": "Open topic",
+    "empty": {
+      "title": "No runs yet",
+      "message": "Runs appear when a schedule fires, a one-time request starts, or you press Run now.",
+      "topicMessage": "Press Run now or Dry run, or add a schedule."
+    },
+    "pipelineNotice": "The research pipeline arrives in Phase 6. Until then runs complete with a summary saying the stages are not installed yet."
+  },
+  "oneTime": {
+    "form": {
+      "failedHint": "If planning failed, the request was still saved and you can plan it again from the list.",
+      "openList": "Open requests",
+      "text": "What do you want?",
+      "textHelp": "For example: build me a podcast on the history of the shipping container.",
+      "placeholder": "Write me a report on heat pump rebates in California",
+      "deliverables": "Deliverables",
+      "length": "Length",
+      "timing": "When",
+      "runNow": "Run now",
+      "runAt": "Run once at",
+      "when": "Date and time",
+      "recipients": "Email recipients",
+      "recipientsHelp": "Comma separated. Defaults to you ({email}).",
+      "publishToFeed": "Publish to my feed",
+      "publishToFeedHelp": "Also add the podcast to your private feed",
+      "justDoIt": "Just do it",
+      "justDoItHelp": "Skip clarifying questions and confirm the plan right away",
+      "submitNow": "Plan and run",
+      "submit": "Plan it",
+      "moreOptions": "More options"
+    },
+    "actions": {
+      "confirmed": "Request confirmed",
+      "cancelled": "Request cancelled",
+      "open": "Open",
+      "confirm": "Confirm",
+      "cancel": "Cancel request",
+      "convert": "Make recurring",
+      "openTopic": "Open topic"
+    },
+    "convert": {
+      "title": "Make this a recurring topic",
+      "message": "Turn \"{title}\" into a recurring topic with its brief and dimensions? You can schedule it next.",
+      "done": "Recurring topic created"
+    },
+    "delete": {
+      "title": "Delete request",
+      "message": "Delete \"{title}\" and its plan?",
+      "done": "Request deleted"
+    },
+    "columns": {
+      "title": "Request",
+      "status": "Status",
+      "deliverables": "Deliverables",
+      "length": "Length",
+      "runAt": "Runs at",
+      "created": "Created",
+      "id": "ID"
+    },
+    "searchPlaceholder": "Search requests",
+    "whenConfirmed": "When confirmed",
+    "new": "New request",
+    "empty": {
+      "title": "No one-time requests yet",
+      "message": "A report, a podcast, or an email summary, run once now or at a time you pick.",
+      "action": "Ask for anything once"
+    },
+    "backToList": "All requests",
+    "declined": {
+      "title": "This request is outside what My Morning News researches",
+      "rephrase": "Rephrase"
+    },
+    "detail": {
+      "request": "Request",
+      "estimatedCost": "Estimated cost",
+      "confirmed": "Confirmed",
+      "completed": "Completed",
+      "run": "Run",
+      "openRun": "Open the run",
+      "confirmTitle": "Confirm and run",
+      "confirmAt": "Confirm for that time",
+      "confirmNow": "Confirm and run now",
+      "needsPlan": "Plan the request again before confirming.",
+      "plan": "Plan",
+      "noPlanDeclined": "No plan for a declined request.",
+      "noPlan": "No plan yet.",
+      "dimensions": "What it will cover",
+      "questions": "Clarifying questions",
+      "questionsHelp": "{answered} of {total} answered. Plan again to use your answers, or confirm as is.",
+      "replan": "Plan again with my answers"
+    },
+    "newTitle": "New request",
+    "newSummary": "One-time reports, podcasts, and email summaries"
   }
 }

@@ -81,8 +81,8 @@ describe('routing guards', () => {
   });
 
   it('shows the phase placeholder for routes that arrive later', async () => {
-    renderApp('/dashboard/topics', fakeClient(), { signedIn: true });
-    expect(await screen.findByText('Arrives in Phase 4')).toBeInTheDocument();
+    renderApp('/dashboard/findings', fakeClient(), { signedIn: true });
+    expect(await screen.findByText('Arrives in Phase 6')).toBeInTheDocument();
   });
 
   it('blocks members from admin-only pages', async () => {

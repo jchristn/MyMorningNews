@@ -6,6 +6,7 @@ import './index.css';
 import './styles/layout.css';
 import './styles/components.css';
 import './styles/views.css';
+import './styles/features.css';
 
 // Load the active locale before the first render so there is no flash of the fallback language.
 initI18n().then(() => {

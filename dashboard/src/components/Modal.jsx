@@ -8,8 +8,9 @@ const FOCUSABLE = 'a[href], button:not([disabled]), textarea:not([disabled]), in
 let openCount = 0;
 
 // Modal dialog: portaled, closes on Escape and backdrop click (unless dismissible is false), traps focus, locks body
-// scroll. The header and footer stay visible while the body scrolls.
-export default function Modal({ open, title, subtitle, onClose, size = 'medium', children, footer = null, dismissible = true, headerExtra = null }) {
+// scroll. The header and footer stay visible while the body scrolls. drawer docks the dialog to the inline end as a
+// full-height panel for detail views.
+export default function Modal({ open, title, subtitle, onClose, size = 'medium', children, footer = null, dismissible = true, headerExtra = null, drawer = false }) {
   const { t } = useTranslation();
   const dialogRef = useRef(null);
   const previous = useRef(null);
@@ -53,8 +54,8 @@ export default function Modal({ open, title, subtitle, onClose, size = 'medium',
   }
 
   return createPortal(
-    <div className="modal-backdrop" onMouseDown={(e) => dismissible && e.target === e.currentTarget && onClose()}>
-      <div className={'modal modal-' + size} role="dialog" aria-modal="true" aria-label={title} ref={dialogRef} tabIndex={-1} onKeyDown={onKeyDown}>
+    <div className={drawer ? 'modal-backdrop drawer-backdrop' : 'modal-backdrop'} onMouseDown={(e) => dismissible && e.target === e.currentTarget && onClose()}>
+      <div className={drawer ? 'modal modal-drawer' : 'modal modal-' + size} role="dialog" aria-modal="true" aria-label={title} ref={dialogRef} tabIndex={-1} onKeyDown={onKeyDown}>
         <div className="modal-header">
           <div className="modal-title">
             <h2>{title}</h2>
@@ -84,5 +85,6 @@ Modal.propTypes = {
   children: PropTypes.node,
   footer: PropTypes.node,
   dismissible: PropTypes.bool,
-  headerExtra: PropTypes.node
+  headerExtra: PropTypes.node,
+  drawer: PropTypes.bool
 };

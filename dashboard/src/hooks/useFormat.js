@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useLocale } from '../i18n/index.js';
 import {
   formatBytes,
+  formatCompact,
   formatDate,
   formatDateTime,
   formatDuration,
@@ -10,7 +11,8 @@ import {
   formatPercent,
   formatRelativeTime,
   formatSeconds,
-  formatTime
+  formatTime,
+  formatUsd
 } from '../i18n/formatters.js';
 
 // Formatters bound to the active locale.
@@ -28,7 +30,9 @@ export default function useFormat() {
       duration: (ms) => formatDuration(ms, locale),
       seconds: (s) => formatSeconds(s, locale),
       bytes: (b) => formatBytes(b, locale),
-      list: (items, type) => formatList(items, locale, type)
+      list: (items, type) => formatList(items, locale, type),
+      usd: (v) => formatUsd(v, locale),
+      compact: (v) => formatCompact(v, locale)
     }),
     [locale]
   );

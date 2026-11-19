@@ -4,13 +4,17 @@ import { useTranslation } from 'react-i18next';
 import { RANGE_IDS } from './ranges.js';
 
 // Card around a chart: title, optional totals, range control (hour, day, week, month), and manual refresh.
-export default function ChartCard({ title, rangeId, onRangeChange, onRefresh, loading = false, totals = null, children, ranges = RANGE_IDS }) {
+export default function ChartCard({ title, subtitle = null, rangeId, onRangeChange, onRefresh, loading = false, totals = null, controls = null, children, ranges = RANGE_IDS, className = '' }) {
   const { t } = useTranslation();
   return (
-    <section className="panel chart-card">
+    <section className={'panel chart-card' + (className ? ' ' + className : '')}>
       <div className="chart-card-header">
-        <h2>{title}</h2>
+        <div>
+          <h2>{title}</h2>
+          {subtitle ? <p className="muted small">{subtitle}</p> : null}
+        </div>
         <div className="chart-card-controls">
+          {controls}
           {onRangeChange ? (
             <div className="segmented" role="group" aria-label={t('charts.range')}>
               {ranges.map((id) => (
@@ -41,5 +45,8 @@ ChartCard.propTypes = {
   loading: PropTypes.bool,
   totals: PropTypes.node,
   children: PropTypes.node,
-  ranges: PropTypes.arrayOf(PropTypes.string)
+  ranges: PropTypes.arrayOf(PropTypes.string),
+  subtitle: PropTypes.string,
+  controls: PropTypes.node,
+  className: PropTypes.string
 };

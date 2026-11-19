@@ -95,3 +95,17 @@ export function formatBytes(bytes, locale) {
 export function formatList(items, locale, type = 'conjunction') {
   return formatterFor('list', locale, { style: 'long', type }).format((items || []).map(String));
 }
+
+// US dollars. Model costs are often fractions of a cent, so small values keep up to four decimals.
+export function formatUsd(value, locale) {
+  if (value === null || value === undefined || value === '' || Number.isNaN(Number(value))) return '';
+  const n = Number(value);
+  const small = n !== 0 && Math.abs(n) < 1;
+  return formatNumber(n, locale, { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: small ? 4 : 2 });
+}
+
+// Large counts (tokens) in compact form: 12.3K, 4.5M.
+export function formatCompact(value, locale) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return '';
+  return formatNumber(value, locale, { notation: 'compact', maximumFractionDigits: 1 });
+}

@@ -23,7 +23,12 @@ const VIEWS = {
   roles: lazy(() => import('./views/RolesView.jsx')),
   settings: lazy(() => import('./views/SettingsView.jsx')),
   serverInfo: lazy(() => import('./views/ServerInfoView.jsx')),
-  profile: lazy(() => import('./views/ProfileView.jsx'))
+  profile: lazy(() => import('./views/ProfileView.jsx')),
+  vault: lazy(() => import('./views/VaultView.jsx')),
+  models: lazy(() => import('./views/ModelsView.jsx')),
+  prompts: lazy(() => import('./views/PromptsView.jsx')),
+  usage: lazy(() => import('./views/UsageView.jsx')),
+  adminUsage: lazy(() => import('./views/AdminUsageView.jsx'))
 };
 
 function RouteElement({ route }) {

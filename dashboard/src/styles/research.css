@@ -355,7 +355,7 @@ ol.chip-list {
 
 .dimension-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
   gap: 12px;
 }
 
@@ -433,6 +433,10 @@ ol.chip-list {
   background: var(--color-danger-soft);
 }
 
+.dimension-footer .segmented {
+  flex-wrap: wrap;
+}
+
 .dimension-footer {
   display: flex;
   justify-content: space-between;
@@ -445,7 +449,7 @@ ol.chip-list {
 /* Constraints */
 .constraint-groups {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
   gap: 12px;
 }
 
@@ -838,7 +842,7 @@ ol.chip-list {
 
 @media (max-width: 900px) {
   .wizard-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .step-rail ol {

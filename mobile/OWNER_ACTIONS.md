@@ -57,8 +57,9 @@ or tokens into this repository; they go into the consoles, EAS, or the password 
 
 ## Before public release
 
-14. **Decide whether the first public release waits for content.** The Today, Topics, and Insights tabs show "This
-    arrives in a later server update" until plan Phases 4 to 10 land. Apple Guideline 4.2 (minimum functionality)
+14. **Decide whether the first public release waits for content.** Today and Topics now work against Phases 4 to 7
+    (briefings, topics, the wizard, requests, runs, findings, predictions, suggestions, editions); Insights, feedback,
+    and audio still show "This arrives in a later server update" until Phases 8 and 10 land. Apple Guideline 4.2 (minimum functionality)
     and Google's equivalent will likely reject a build where most tabs are placeholders. Recommendation: TestFlight
     and Play internal testing now, public submission after Phases 7, 8, and 14 (briefings, audio, account deletion).
 15. **Account deletion route.** In-app deletion (`POST /v1.0/api/account/delete`, contract E) is required by both
@@ -77,3 +78,18 @@ or tokens into this repository; they go into the consoles, EAS, or the password 
     these needs your explicit approval.
 20. **Store badges on the website.** After the apps are live, add the App Store and Google Play badges to
     `mymorningnews.ai` (plan section 34).
+
+## Research screens (Phases 4 to 7)
+
+21. **Add a model key on the server you test against.** Without one, the wizard's generation steps and one-time request
+    planning answer `502 ModelError`; the app says so and offers the manual path (add dimensions, skip questions, write
+    the brief), but the full experience needs a key in the vault selected on the Refinement endpoint.
+22. **Review the new screens on devices** as part of item 17: Today with Compose now, the briefing reader (sections,
+    citations, share .md and .html), the topic workspace tabs, the wizard, run detail, one-time requests, predictions,
+    suggestions, and editions, on an iPhone, an iPad (split views), an Android phone, and an Android tablet. The
+    automated checks cover phone layouts in Jest and one iOS simulator pass; tablets and Android were not run.
+23. **Decide what stays web-only for members.** The app leaves these to the web dashboard: feed and seed-page
+    suggestions and the preview run in the wizard, the delivery step (recipients, template, model overrides), creating,
+    duplicating, and deleting editions, choosing edition templates and voices, deleting and duplicating topics, cron,
+    monthly, and every-N-weeks schedule editing, and retry from stage. Confirm, or ask for any of them in the app.
+

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocalSearchParams } from 'expo-router';
-import { PredictionDetail } from '@/screens/today/TodayScreens';
+import { PredictionDetail } from '@/screens/research/PredictionScreens';
 
 export default function PredictionRoute() {
   const { predictionId } = useLocalSearchParams();

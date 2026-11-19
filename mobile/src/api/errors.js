@@ -81,3 +81,17 @@ export function isSessionExpired(error) {
 export function fieldErrors(error) {
   return error instanceof ApiError && error.details && typeof error.details === 'object' ? error.details : {};
 }
+
+/**
+ * True when a model-backed step failed because no model is set up or the provider failed (502 ModelError, or a 502 or
+ * 503 from a generation route). Screens offer "Try again" and a way to continue by hand instead of a dead end.
+ */
+export function isModelError(error) {
+  if (!(error instanceof ApiError)) return false;
+  return error.code === 'ModelError' || error.status === 502 || error.status === 503;
+}
+
+/** True for a 409 Conflict (a state the action does not allow, for example applying a topic without a brief). */
+export function isConflict(error) {
+  return error instanceof ApiError && error.status === 409;
+}

@@ -10,7 +10,7 @@ import { NotificationsSection, pushStatusKey } from '@/screens/account/Notificat
 import { passwordProblem } from '@/screens/account/PasswordSection';
 import { BriefingsScreen } from '@/screens/today/TodayScreens';
 import { barLayout, topRows } from '@/charts/barLayout';
-import { markdownBlocks } from '@/components/Markdown';
+import { parseBlocks, plainText } from '@/lib/markdown';
 import { ApiError, NetworkError } from '@/api/errors';
 import { AuthProvider } from '@/state/AuthContext';
 import { PrefsProvider, usePrefs } from '@/state/PrefsContext';
@@ -203,11 +203,11 @@ describe('helpers', () => {
   });
 
   it('splits briefing Markdown into readable blocks', () => {
-    expect(markdownBlocks('# Top of the news\n\nA **big** [story](http://x).\n- one\n> quote')).toEqual([
-      { type: 'heading', level: 1, text: 'Top of the news' },
-      { type: 'paragraph', text: 'A big story.' },
-      { type: 'bullet', text: 'one' },
-      { type: 'quote', text: 'quote' },
-    ]);
+    const blocks = parseBlocks('# Top of the news\n\nA **big** [story](http://x.example).\n- one\n> quote');
+    expect(blocks.map((b) => b.type)).toEqual(['heading', 'paragraph', 'list', 'quote']);
+    expect(blocks[0]).toMatchObject({ level: 1, text: 'Top of the news' });
+    expect(plainText(blocks[1].children)).toBe('A big story.');
+    expect(plainText(blocks[2].items[0].children)).toBe('one');
+    expect(plainText(blocks[3].children)).toBe('quote');
   });
 });

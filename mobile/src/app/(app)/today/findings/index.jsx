@@ -1,3 +1,3 @@
-import { FindingsScreen } from '@/screens/today/TodayScreens';
+import { FindingsScreen } from '@/screens/research/FindingScreens';
 
 export default FindingsScreen;

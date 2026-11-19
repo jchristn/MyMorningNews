@@ -59,190 +59,233 @@
     {
       "route": "/today",
       "group": "Start",
-      "status": "planned",
-      "phase": "Phase 7",
+      "status": "implemented",
       "screen": "app/(app)/today/index.jsx",
       "api": [
-        "GET /v1.0/api/briefings"
-      ]
+        "GET /v1.0/api/editions",
+        "GET /v1.0/api/briefings",
+        "POST /v1.0/api/editions/{id}/compose",
+        "GET /v1.0/api/briefings/{id}"
+      ],
+      "notes": "The latest ready edition briefing, Compose now with status polling until the briefing is ready, recent topic run briefings, and the one-time request entry point. Per-item feedback arrives with Phase 10 and audio with Phase 8."
     },
     {
       "route": "/one-time",
       "group": "Research",
-      "status": "planned",
-      "phase": "Phase 4",
-      "screen": "app/(app)/today/requests.jsx",
+      "status": "implemented",
+      "screen": "app/(app)/today/requests/index.jsx",
       "api": [
         "GET /v1.0/api/requests",
+        "GET /v1.0/api/requests/{id}",
+        "PUT /v1.0/api/requests/{id}/questions/{questionId}",
+        "POST /v1.0/api/requests/{id}/replan",
         "POST /v1.0/api/requests/{id}/confirm",
         "POST /v1.0/api/requests/{id}/cancel",
         "POST /v1.0/api/requests/{id}/convert",
         "DELETE /v1.0/api/requests/{id}"
       ],
-      "notes": "One-time reports, podcasts, and email summaries (plan section 13.1). Backend exists; screens follow the web pages."
+      "notes": "List with status and deliverables; detail (today/requests/[requestId].jsx) with the plan, clarifying questions, plan again, confirm now or at a time, cancel, make recurring, open the report, and delete. Polls while scheduled or running. Tablets show the detail beside the list."
     },
     {
       "route": "/one-time/new",
       "group": "Research",
-      "status": "planned",
-      "phase": "Phase 4",
+      "status": "implemented",
       "screen": "app/(app)/today/new-request.jsx",
       "api": [
         "POST /v1.0/api/requests",
-        "PUT /v1.0/api/requests/{id}/questions/{questionId}",
-        "POST /v1.0/api/requests/{id}/replan"
+        "POST /v1.0/api/requests/{id}/confirm"
       ],
-      "notes": "New request from the Today tab: text, deliverables, run now or once at, then at most three clarifying questions."
+      "notes": "Text, deliverables, length, run now or once at (device time zone), recipients, podcast feed, and Just do it. A 502 ModelError keeps the saved request and offers to open it."
     },
     {
       "route": "/topics",
       "group": "Research",
-      "status": "planned",
-      "phase": "Phase 4",
+      "status": "implemented",
       "screen": "app/(app)/topics/index.jsx",
       "api": [
         "GET /v1.0/api/topics"
       ],
-      "notes": "The server routes landed with Phase 4 (2026-11-19) and the list works against them; topic creation through the wizard chat is the remaining mobile work."
+      "notes": "Recurring topics with status and last run; tablets show the workspace beside the list. Duplicate, delete, and bulk actions stay on the web."
     },
     {
       "route": "/topics/new",
       "group": "Research",
-      "status": "planned",
-      "phase": "Phase 4",
+      "status": "implemented",
       "screen": "app/(app)/topics/new.jsx",
       "api": [
-        "POST /v1.0/api/refinement-sessions"
+        "POST /v1.0/api/refinement-sessions",
+        "POST /v1.0/api/refinement-sessions/{id}/dimensions",
+        "POST /v1.0/api/refinement-sessions/{id}/questions",
+        "PUT /v1.0/api/refinement-sessions/{id}/questions/{questionId}",
+        "POST /v1.0/api/refinement-sessions/{id}/context",
+        "POST /v1.0/api/refinement-sessions/{id}/complete",
+        "POST /v1.0/api/refinement-sessions/{id}/abandon",
+        "POST /v1.0/api/topics/{id}/dimensions",
+        "PUT /v1.0/api/topics/{id}",
+        "POST /v1.0/api/topics/{id}/constraints"
       ],
-      "notes": "Starts a session with { seedText }; the question rounds, dimensions, context, and sources steps are the remaining mobile work."
+      "notes": "Compact wizard: Describe, Dimensions (weights, lock, add, remove, regenerate with guidance), Questions (every kind, skip, ask more), Brief (edit, draft, constraints), Review (create or abandon). Each model step degrades to a manual path on 502 ModelError. Feed and seed-page suggestions and the preview run stay on the web; schedules are set in the workspace."
     },
     {
       "route": "/topics/:id/refine",
       "group": "Research",
-      "status": "planned",
-      "phase": "Phase 4",
+      "status": "implemented",
       "screen": "app/(app)/topics/new.jsx",
-      "notes": "The wizard as a chat; the same screen resumes a session."
+      "api": [
+        "GET /v1.0/api/refinement-sessions",
+        "GET /v1.0/api/refinement-sessions/{id}",
+        "POST /v1.0/api/topics/{id}/refine"
+      ],
+      "notes": "The same screen resumes a session (?session=) or finds the topic's active session (?topicId=) and offers Refine again."
     },
     {
       "route": "/topics/:id",
       "group": "Research",
-      "status": "planned",
-      "phase": "Phase 4",
+      "status": "implemented",
       "screen": "app/(app)/topics/[topicId].jsx",
       "api": [
         "GET /v1.0/api/topics/{id}",
-        "POST /v1.0/api/topics/{id}/run"
+        "POST /v1.0/api/topics/{id}/run",
+        "POST /v1.0/api/topics/{id}/pause",
+        "POST /v1.0/api/topics/{id}/resume",
+        "GET /v1.0/api/schedules",
+        "POST /v1.0/api/schedules",
+        "PUT /v1.0/api/schedules/{id}",
+        "DELETE /v1.0/api/schedules/{id}",
+        "POST /v1.0/api/schedules/preview"
       ],
-      "notes": "Workspace sections fill in from Phase 4 (overview, context) to Phase 10 (analytics, preferences)."
+      "notes": "Workspace tabs on mobile: Overview (Run now, dry run, pause or resume, refine, brief, dimensions, constraints), Findings, Runs, Sources, and Schedule (weekly, every N days or hours, once, manual, with next-run preview). Feedback, preferences, analytics, and per-topic prompts and models join with Phase 10 or stay on the web."
     },
     {
       "route": "/runs",
       "group": "Research",
-      "status": "planned",
-      "phase": "Phase 6",
+      "status": "implemented",
       "screen": "app/(app)/topics/[topicId].jsx",
-      "notes": "Runs live in the topic workspace on mobile."
+      "api": [
+        "GET /v1.0/api/runs"
+      ],
+      "notes": "Runs live in the topic workspace Runs tab on mobile, refreshing while a run is queued or running."
     },
     {
       "route": "/runs/:id",
       "group": "Research",
-      "status": "planned",
-      "phase": "Phase 6",
-      "screen": "app/(app)/topics/[topicId].jsx"
+      "status": "implemented",
+      "screen": "app/(app)/topics/runs/[runId].jsx",
+      "api": [
+        "GET /v1.0/api/runs/{id}",
+        "GET /v1.0/api/runs/{id}/stages",
+        "GET /v1.0/api/runs/{id}/queries",
+        "GET /v1.0/api/runs/{id}/results",
+        "POST /v1.0/api/runs/{id}/cancel"
+      ],
+      "notes": "Status, totals (duration, findings, duplicates, sources, queries, tokens, cost), the stage list with a hand-rolled SVG duration chart, result dispositions, queries, and the run's findings. Polls while active and offers Cancel. Retry from stage stays on the web."
     },
     {
       "route": "/findings",
       "group": "Research",
-      "status": "planned",
-      "phase": "Phase 6",
+      "status": "implemented",
       "screen": "app/(app)/today/findings/index.jsx",
       "api": [
         "GET /v1.0/api/findings"
-      ]
+      ],
+      "notes": "Ranked across topics with tier and minimum score filters; also per topic in the workspace."
     },
     {
       "route": "/findings/:id",
       "group": "Research",
-      "status": "planned",
-      "phase": "Phase 6",
+      "status": "implemented",
       "screen": "app/(app)/today/findings/[findingId].jsx",
       "api": [
         "GET /v1.0/api/findings/{id}",
         "POST /v1.0/api/feedback"
-      ]
+      ],
+      "notes": "Tier, score, why it matters, the score breakdown (SVG bars), and the verified evidence quotes with their sources. The feedback bar posts once Phase 10 adds the route."
     },
     {
       "route": "/sources",
       "group": "Research",
-      "status": "planned",
-      "phase": "Phase 6",
+      "status": "implemented",
       "screen": "app/(app)/topics/[topicId].jsx",
-      "notes": "Sources live in the topic workspace on mobile."
+      "api": [
+        "GET /v1.0/api/sources"
+      ],
+      "notes": "Sources live in the topic workspace Sources tab on mobile (title, domain, date, times seen; tap to open). Rating and blocking domains arrive with Phase 10 feedback."
     },
     {
       "route": "/predictions",
       "group": "Research",
-      "status": "planned",
-      "phase": "Phase 6",
+      "status": "implemented",
       "screen": "app/(app)/today/predictions/index.jsx",
       "api": [
         "GET /v1.0/api/predictions"
-      ]
+      ],
+      "notes": "Due to grade (horizon passed or a proposed resolution), open, proposed, resolved, and all."
     },
     {
       "route": "/predictions/:id",
       "group": "Research",
-      "status": "planned",
-      "phase": "Phase 6",
+      "status": "implemented",
       "screen": "app/(app)/today/predictions/[predictionId].jsx",
       "api": [
         "GET /v1.0/api/predictions/{id}",
-        "POST /v1.0/api/predictions/{id}/resolve"
-      ]
+        "POST /v1.0/api/predictions/{id}/resolve",
+        "POST /v1.0/api/prediction-reviews/{id}/accept",
+        "POST /v1.0/api/prediction-reviews/{id}/reject"
+      ],
+      "notes": "Statement, confidence, horizon, rationale, the pipeline's proposed resolutions with Accept and Reject, and grading with a note."
     },
     {
       "route": "/suggestions",
       "group": "Research",
-      "status": "planned",
-      "phase": "Phase 6",
+      "status": "implemented",
       "screen": "app/(app)/today/suggestions/index.jsx",
       "api": [
-        "GET /v1.0/api/suggestions"
-      ]
+        "GET /v1.0/api/suggestions",
+        "PUT /v1.0/api/suggestions/{id}/status"
+      ],
+      "notes": "By status, with Accept, Done, Snooze (1 day, 1 week, 1 month), Dismiss, and Reopen inline."
     },
     {
       "route": "/briefings",
       "group": "Briefings",
-      "status": "planned",
-      "phase": "Phase 7",
+      "status": "implemented",
       "screen": "app/(app)/today/briefings/index.jsx",
       "api": [
         "GET /v1.0/api/briefings"
-      ]
+      ],
+      "notes": "Every briefing, newest first, filtered by editions, topic runs, one-time, or pinned. Tablets show the reader beside the list."
     },
     {
       "route": "/briefings/:id",
       "group": "Briefings",
-      "status": "planned",
-      "phase": "Phase 8",
+      "status": "implemented",
       "screen": "app/(app)/today/briefings/[briefingId].jsx",
       "api": [
         "GET /v1.0/api/briefings/{id}",
+        "GET /v1.0/api/briefings/{id}/download",
+        "PUT /v1.0/api/briefings/{id}/pin",
+        "POST /v1.0/api/briefings/{id}/regenerate",
         "GET /v1.0/api/media/{id}",
         "PUT /v1.0/api/briefings/{id}/progress"
       ],
-      "notes": "Reader in Phase 7; audio, downloads, and synced progress in Phase 8 and 16. The player itself is built and verified with the bundled test tone."
+      "notes": "The reader renders Markdown with native components (no WebView or HTML), with section navigation, citation numbers that jump to Sources, links to the findings and predictions it cites, pin, share or save the .md and .html files, and regenerate expired files. Polls while composing. Audio and synced progress light up with Phase 8 and 16 (the player is built and verified with the bundled test tone)."
     },
     {
       "route": "/editions",
       "group": "Briefings",
-      "status": "planned",
-      "phase": "Phase 7",
-      "screen": "app/(app)/topics/editions.jsx",
+      "status": "implemented",
+      "screen": "app/(app)/topics/editions/index.jsx",
       "api": [
-        "GET /v1.0/api/editions"
-      ]
+        "GET /v1.0/api/editions",
+        "GET /v1.0/api/editions/{id}",
+        "PUT /v1.0/api/editions/{id}",
+        "PUT /v1.0/api/editions/{id}/topics",
+        "POST /v1.0/api/editions/{id}/compose",
+        "POST /v1.0/api/editions/{id}/preview",
+        "GET /v1.0/api/schedules",
+        "PUT /v1.0/api/schedules/{id}"
+      ],
+      "notes": "List and edit (topics/editions/[editionId].jsx): settings, topics in order (none means all active topics), schedule, Compose now with polling, and Preview. Creating and duplicating editions and choosing templates and voices stay on the web."
     },
     {
       "route": "/templates",

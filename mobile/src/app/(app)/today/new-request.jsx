@@ -1,3 +1,3 @@
-import { NewRequestScreen } from '@/screens/today/TodayScreens';
+import { NewRequestScreen } from '@/screens/requests/RequestScreens';
 
 export default NewRequestScreen;

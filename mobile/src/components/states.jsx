@@ -2,10 +2,10 @@ import React from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTranslation } from 'react-i18next';
-import { isNetworkError, isSessionExpired } from '@/api/errors';
+import { isModelError, isNetworkError, isSessionExpired } from '@/api/errors';
 import { useTheme } from '@/theme/ThemeContext';
 import { spacing } from '@/theme/palette';
-import { Button, T } from './ui';
+import { Banner, Button, T } from './ui';
 
 function Centered({ children, testID }) {
   return (
@@ -85,6 +85,27 @@ export function ErrorState({ error, onRetry }) {
       </T>
       {onRetry ? <Button title={t('mobile.common.retry')} kind="secondary" onPress={onRetry} /> : null}
     </Centered>
+  );
+}
+
+/**
+ * An action that failed, inline. A model-backed step that failed because no model is set up (502 ModelError) says so
+ * and points at the manual path (`manualHint`) instead of reading as a crash; other errors show their message.
+ */
+export function ActionError({ error, onRetry, manualHint, testID = 'action-error' }) {
+  const { t } = useTranslation();
+  if (!error) return null;
+  const model = isModelError(error);
+  const offline = isNetworkError(error);
+  return (
+    <Banner kind={model ? 'warning' : 'danger'} title={model ? t('mobile.states.modelTitle') : offline ? t('mobile.states.offlineTitle') : t('mobile.states.errorTitle')} testID={testID}>
+      <View style={{ gap: spacing.sm }}>
+        <T variant="small">{offline ? t('mobile.states.offlineBody') : model ? t('mobile.states.modelBody') : error.message || t('mobile.states.errorBody')}</T>
+        {model && error.message ? <T variant="small">{error.message}</T> : null}
+        {model && manualHint ? <T variant="small">{manualHint}</T> : null}
+        {onRetry ? <Button title={t('mobile.common.retry')} kind="secondary" onPress={onRetry} testID={testID + '-retry'} /> : null}
+      </View>
+    </Banner>
   );
 }
 

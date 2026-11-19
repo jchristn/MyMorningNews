@@ -9,8 +9,11 @@ export default function TopicsLayout() {
       titles={{
         index: t('mobile.tabs.topics'),
         new: t('mobile.topics.new'),
-        editions: t('mobile.editions.title'),
         '[topicId]': t('mobile.topics.workspace'),
+        'editions/index': t('mobile.editions.title'),
+        'editions/[editionId]': t('mobile.editions.detail'),
+        'runs/[runId]': t('mobile.runs.detail'),
+        'findings/[findingId]': t('mobile.findings.detail'),
       }}
     />
   );

@@ -34,13 +34,19 @@ export function T({ children, variant = 'body', style, numberOfLines, selectable
   );
 }
 
-/** Scrollable screen body with standard padding, centered in a readable column on wide screens. */
-export function Screen({ children, scroll = true, refreshControl, contentStyle, testID }) {
+/**
+ * Scrollable screen body with standard padding, centered in a readable column on wide screens. `scrollRef` receives
+ * the ScrollView (the briefing reader scrolls to sections and sources with it).
+ */
+export function Screen({ children, scroll = true, refreshControl, contentStyle, testID, scrollRef, onScroll }) {
   const p = useTheme();
   if (!scroll) return <View testID={testID} style={[{ flex: 1, backgroundColor: p.bg }, contentStyle]}>{children}</View>;
   return (
     <ScrollView
+      ref={scrollRef}
       testID={testID}
+      onScroll={onScroll}
+      scrollEventThrottle={onScroll ? 64 : undefined}
       style={{ flex: 1, backgroundColor: p.bg }}
       contentContainerStyle={[{ padding: spacing.lg, gap: spacing.md, paddingBottom: spacing.xxl, width: '100%', maxWidth: CONTENT_MAX_WIDTH, alignSelf: 'center' }, contentStyle]}
       keyboardShouldPersistTaps="handled"

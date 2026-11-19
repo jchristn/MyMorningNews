@@ -13,6 +13,10 @@ import { ALL_ROUTES } from './utils/navigation.js';
 
 const VIEWS = {
   home: lazy(() => import('./views/HomeView.jsx')),
+  today: lazy(() => import('./views/TodayView.jsx')),
+  briefings: lazy(() => import('./views/BriefingsView.jsx')),
+  editions: lazy(() => import('./views/EditionsView.jsx')),
+  templates: lazy(() => import('./views/TemplatesView.jsx')),
   requests: lazy(() => import('./views/RequestHistoryView.jsx')),
   topics: lazy(() => import('./views/TopicsView.jsx')),
   oneTimeRequests: lazy(() => import('./views/ResearchRequestsView.jsx')),

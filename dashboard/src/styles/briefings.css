@@ -1,0 +1,337 @@
+/* Briefings, editions, and templates (Phase 7). Tokens only. */
+
+/* Slots for features that arrive in later phases (audio player, inline feedback). */
+.upcoming-slot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  background: var(--color-surface-alt);
+  font-size: var(--font-size-sm);
+}
+
+.upcoming-slot.compact {
+  display: inline-flex;
+  padding: 3px 8px;
+  margin-top: 8px;
+  font-size: var(--font-size-xs);
+  gap: 6px;
+}
+
+/* Reader layout: a sticky outline beside the article. */
+.briefing-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.briefing-aside {
+  position: sticky;
+  top: calc(var(--header-height) + 12px);
+  min-width: 0;
+}
+
+.briefing-outline ol {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-inline-start: 2px solid var(--color-border);
+}
+
+.briefing-outline a {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 10px;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  margin-inline-start: -2px;
+  border-inline-start: 2px solid transparent;
+}
+
+.briefing-outline a:hover,
+.briefing-outline a:focus-visible {
+  color: var(--color-text);
+  border-inline-start-color: var(--color-primary);
+}
+
+.briefing-body {
+  min-width: 0;
+}
+
+.briefing-article {
+  max-width: 78ch;
+  line-height: var(--line-height-body);
+}
+
+.briefing-article .briefing-title {
+  font-size: var(--font-size-xl);
+  margin: 0 0 10px;
+}
+
+.briefing-opening {
+  font-size: var(--font-size-lg);
+  margin-bottom: 18px;
+}
+
+.briefing-section {
+  padding-top: 6px;
+  margin-bottom: 22px;
+  scroll-margin-top: calc(var(--header-height) + 12px);
+  border-radius: var(--radius-sm);
+}
+
+.briefing-section > h2 {
+  font-size: var(--font-size-lg);
+  margin: 0 0 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.briefing-section h3 {
+  font-size: var(--font-size-base);
+}
+
+.briefing-sources {
+  padding-inline-start: 24px;
+  margin: 0;
+}
+
+.briefing-sources li {
+  margin-bottom: 4px;
+  scroll-margin-top: calc(var(--header-height) + 12px);
+  border-radius: var(--radius-sm);
+}
+
+.markdown-view.inline,
+.markdown-view.inline > p {
+  display: inline;
+  margin: 0;
+}
+
+.citation-link {
+  font-size: 0.82em;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.citation-link:hover,
+.citation-link:focus-visible {
+  text-decoration: underline;
+}
+
+.anchor-flash {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
+  background: var(--color-primary-soft);
+  transition: background 0.4s ease;
+}
+
+.briefing-items,
+.briefing-files {
+  list-style: none;
+  margin: 6px 0 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.briefing-items li,
+.briefing-files li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.briefing-files li > .date-cell {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.expired-notice,
+.compose-progress {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.compose-progress {
+  justify-content: flex-start;
+}
+
+.today-briefing {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.today-briefing .section-title {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pin-toggle.active {
+  color: var(--color-accent);
+}
+
+/* Edition topic picker */
+.ordered-picker {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ordered-picker li {
+  display: grid;
+  grid-template-columns: 2em minmax(0, 1fr) auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.ordered-index {
+  text-align: end;
+}
+
+.edition-topics .segmented {
+  align-self: flex-start;
+}
+
+/* Template validation and outline */
+.template-problems {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.template-problems-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+}
+
+.template-problems-summary.has-errors {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.template-problems-summary.has-warnings {
+  background: var(--color-warning-soft);
+  color: var(--color-text);
+}
+
+.template-problems-summary.is-valid {
+  background: var(--color-success-soft);
+  color: var(--color-text);
+}
+
+.template-problem-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.template-problem-list li {
+  display: grid;
+  grid-template-columns: 5.5em 5.5em minmax(0, 1fr);
+  gap: 8px;
+  align-items: baseline;
+  padding: 6px 8px;
+  border-inline-start: 3px solid var(--color-danger);
+  background: var(--color-surface-alt);
+  border-radius: var(--radius-sm);
+}
+
+.template-problem-list li.warning {
+  border-inline-start-color: var(--color-warning);
+}
+
+.template-problem-list .problem-kind {
+  color: var(--color-text-muted);
+}
+
+.template-problem-list .problem-message {
+  overflow-wrap: anywhere;
+}
+
+.template-sections {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.template-sections li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.template-section-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.template-instruction {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.template-preview {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  max-height: 640px;
+  overflow: auto;
+}
+
+@media (max-width: 900px) {
+  .briefing-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .briefing-aside {
+    position: static;
+  }
+
+  .template-problem-list li {
+    grid-template-columns: 5em minmax(0, 1fr);
+  }
+
+  .template-problem-list .problem-kind {
+    display: none;
+  }
+}

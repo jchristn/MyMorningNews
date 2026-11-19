@@ -188,7 +188,7 @@
       "summary": "Your workspace at a glance"
     },
     "today": {
-      "summary": "Today's briefing and highlights"
+      "summary": "The latest edition of your briefing, and what research produced recently"
     },
     "topics": {
       "summary": "Subjects you want researched"
@@ -209,13 +209,13 @@
       "summary": "Things worth digging into, from your runs"
     },
     "briefings": {
-      "summary": "Briefings built from your findings"
+      "summary": "Every briefing: editions, run briefings, and one-time reports"
     },
     "editions": {
-      "summary": "Published briefing editions"
+      "summary": "Briefings on a schedule, each with its own topics, template, and delivery"
     },
     "templates": {
-      "summary": "Layouts for briefings"
+      "summary": "Markdown layouts that tell the composer what each briefing contains"
     },
     "relevance": {
       "summary": "How relevant findings have been"
@@ -1080,6 +1080,33 @@
       "SkippedLimit": "Over the fetch limit",
       "SkippedDuplicate": "Duplicate",
       "FetchFailed": "Fetch failed"
+    },
+    "briefingKind": {
+      "Edition": "Edition",
+      "Run": "Run briefing",
+      "OneTime": "One-time report"
+    },
+    "briefingStatus": {
+      "Queued": "Queued",
+      "Composing": "Composing",
+      "Ready": "Ready",
+      "Failed": "Failed"
+    },
+    "briefingItemType": {
+      "Finding": "Finding",
+      "Prediction": "Prediction",
+      "Suggestion": "Suggestion"
+    },
+    "lookbackMode": {
+      "SinceLastEdition": "Since the last edition",
+      "FixedHours": "Fixed window"
+    },
+    "artifactKind": {
+      "BriefingMarkdown": "Markdown",
+      "BriefingHtml": "HTML report",
+      "Audio": "Audio",
+      "Chapters": "Chapters",
+      "Export": "Export"
     }
   },
   "vault": {
@@ -2398,6 +2425,328 @@
     "empty": {
       "title": "No suggestions yet",
       "message": "Runs suggest things worth digging into. They show up here to accept, snooze, dismiss, or complete."
+    }
+  },
+  "briefings": {
+    "untitled": "Untitled briefing",
+    "dryRun": "Dry run",
+    "searchPlaceholder": "Title",
+    "includeDryRun": "Include dry runs",
+    "columns": {
+      "title": "Briefing",
+      "kind": "Kind",
+      "status": "Status",
+      "edition": "Edition",
+      "topic": "Topic",
+      "items": "Items",
+      "pinned": "Pinned",
+      "created": "Composed",
+      "id": "ID"
+    },
+    "actions": {
+      "open": "Open"
+    },
+    "download": {
+      "md": "Download .md",
+      "html": "Download .html"
+    },
+    "pin": {
+      "pin": "Pin",
+      "unpin": "Unpin",
+      "pinNamed": "Pin {title}",
+      "unpinNamed": "Unpin {title}",
+      "pinned": "Pinned. Its files are kept past the retention window.",
+      "unpinned": "Unpinned. Its files follow the retention window again.",
+      "cap": "You have reached the pin limit for this workspace. Unpin another briefing first.",
+      "badge": "Pinned"
+    },
+    "expired": {
+      "notice": "The report file has expired. Regenerate it to download it again.",
+      "title": "The report file has expired.",
+      "message": "Report files are kept for up to 365 days. The briefing and its findings are still here, so the files can be regenerated.",
+      "regenerate": "Regenerate",
+      "regenerated": "Regenerated the report files"
+    },
+    "files": {
+      "expired": "File expired",
+      "pinned": "Pinned",
+      "expires": "Kept until {date}",
+      "download": "Download {name}"
+    },
+    "progress": {
+      "Queued": "Queued. It will be composed shortly.",
+      "Composing": "Composing now.",
+      "researching": "Waiting for fresh research, until {time} at the latest."
+    },
+    "reader": {
+      "back": "All briefings",
+      "citation": "Source {number}",
+      "outline": "Outline",
+      "noItems": "This briefing did not use any findings, predictions, or suggestions.",
+      "otherItems": "Other",
+      "open": {
+        "Finding": "Open finding",
+        "Prediction": "Open prediction",
+        "Suggestion": "Open suggestions"
+      },
+      "noFiles": "No stored files.",
+      "openRun": "Open the run",
+      "stats": "{minutes} min read, {words} words, {items} items",
+      "failed": "Composition failed.",
+      "noContent": "This briefing has no content.",
+      "items": "In this briefing ({count})",
+      "files": "Files",
+      "period": "Covers",
+      "readMinutes": "{minutes} min read"
+    },
+    "slots": {
+      "audioTitle": "Audio player",
+      "audioMessage": "Listening to briefings arrives in Phase 8.",
+      "feedbackTitle": "Feedback",
+      "feedbackMessage": "Rating this section arrives in Phase 10."
+    },
+    "delete": {
+      "title": "Delete briefing",
+      "message": "Delete \"{title}\" and its stored files? The findings, predictions, and suggestions it used stay.",
+      "done": "Briefing deleted"
+    },
+    "empty": {
+      "title": "No briefings yet",
+      "message": "Compose an edition, run a topic, or ask a one-time question to get one."
+    }
+  },
+  "today": {
+    "seeAll": "See all",
+    "composeNow": "Compose now",
+    "composeQueued": "Briefing queued",
+    "composeReady": "Your briefing is ready",
+    "composeFailed": "The briefing failed: {message}",
+    "composeConflict": "A briefing for this edition is already on the way.",
+    "edition": "Edition",
+    "follow": "Follow progress",
+    "noEditions": "You have no editions yet.",
+    "createEdition": "Create one",
+    "empty": {
+      "title": "No briefing yet",
+      "message": "Compose your edition now, or wait for its schedule."
+    },
+    "openReader": "Open in reader",
+    "runs": "Recent run briefings",
+    "oneTime": "One-time reports",
+    "noRuns": "No run briefings yet.",
+    "noOneTime": "No one-time reports yet."
+  },
+  "editions": {
+    "add": "New edition",
+    "back": "All editions",
+    "newTitle": "New edition",
+    "newSummary": "A briefing on its own schedule, across the topics you choose.",
+    "created": "Edition created",
+    "saved": "Edition saved",
+    "deleted": "Edition deleted",
+    "composeQueued": "Briefing queued",
+    "enabledOn": "Enabled",
+    "enabledOff": "Disabled",
+    "preview": "Preview",
+    "previewing": "Composing preview...",
+    "previewTitle": "Preview: {name}",
+    "previewSubtitle": "Composed from the latest data. Nothing is saved or sent.",
+    "previewFallbacks": "{count, plural, one {# section was} other {# sections were}} written as a plain list because no model answered.",
+    "previewEmpty": "The preview is empty.",
+    "discard": "Discard changes",
+    "create": "Create edition",
+    "save": "Save edition",
+    "schedulesHelp": "When this edition composes. With fresh research on, research starts ahead of each scheduled time.",
+    "schedulesEmpty": "Add a schedule to compose this edition automatically, or compose it by hand.",
+    "deleteTitle": "Delete edition",
+    "deleteMessage": "Delete the edition \"{name}\" and its schedules? Its briefings stay.",
+    "viewBriefings": "View briefings",
+    "lookbackHours": "Last {hours} hours",
+    "sections": {
+      "settings": "Settings",
+      "topics": "Topics",
+      "schedules": "Schedules",
+      "briefings": "Briefings"
+    },
+    "columns": {
+      "name": "Edition",
+      "enabled": "Status",
+      "delivery": "Delivery",
+      "lookback": "Look-back",
+      "lastComposed": "Last composed",
+      "created": "Created",
+      "id": "ID"
+    },
+    "badges": {
+      "email": "Email",
+      "audio": "Audio",
+      "fresh": "Fresh research ({minutes} min)"
+    },
+    "empty": {
+      "title": "No editions",
+      "message": "Create an edition to get a briefing on a schedule."
+    },
+    "form": {
+      "name": "Name",
+      "nameRequired": "Name is required.",
+      "description": "Description",
+      "template": "Template",
+      "templateDefault": "Uses {name}, the default template.",
+      "defaultName": "the default",
+      "useDefault": "Default template",
+      "sharedOption": "{name} (shared)",
+      "enabled": "Enabled",
+      "enabledHelp": "Composes on its schedules. Compose now works either way.",
+      "email": "Email",
+      "emailHelp": "Email the briefing when it is ready.",
+      "audio": "Audio",
+      "audioHelp": "Produce an audio version of each briefing.",
+      "fresh": "Fresh research first",
+      "freshHelp": "Run each topic's research before composing.",
+      "lead": "Research lead time (minutes)",
+      "leadHelp": "How long to wait for research, from {min} to {max} minutes.",
+      "lookbackMode": "Look-back",
+      "lookbackModeHelp": {
+        "SinceLastEdition": "Everything since the last edition composed.",
+        "FixedHours": "A fixed window that ends when the edition composes."
+      },
+      "lookbackHours": "Look-back window (hours)",
+      "lookbackHoursHelp": "From {min} to {max} hours. Since the last edition never looks further back than this."
+    },
+    "topics": {
+      "mode": "Topics",
+      "modes": {
+        "all": "All active topics",
+        "chosen": "Choose topics"
+      },
+      "allHelp": "Covers every active recurring topic, including topics you add later.",
+      "covered": "Topics covered",
+      "noneActive": "You have no active recurring topics yet.",
+      "chosenHelp": "Only these topics, in this order.",
+      "noneChosen": "No topics chosen yet.",
+      "chosen": "Chosen topics",
+      "chooseOne": "Choose at least one topic, or cover all active topics.",
+      "moveUp": "Move {name} up",
+      "moveDown": "Move {name} down",
+      "remove": "Remove {name}",
+      "addLabel": "Topic to add",
+      "pick": "Choose a topic",
+      "add": "Add",
+      "save": "Save topics",
+      "saved": "Topics saved"
+    }
+  },
+  "templates": {
+    "add": "New template",
+    "back": "All templates",
+    "open": "Open editor",
+    "empty": "No templates",
+    "searchPlaceholder": "Name or description",
+    "saved": "Saved a new version",
+    "created": "Template created",
+    "deleted": "Template deleted",
+    "export": "Export .md",
+    "copy": "Make a copy",
+    "copyName": "{name} (copy)",
+    "reset": "Reset to default",
+    "resetTitle": "Reset template",
+    "resetMessage": "Replace the content with the shipped default as a new version? Earlier versions stay in the history.",
+    "resetDone": "Reset to the default",
+    "deleteTitle": "Delete template",
+    "deleteMessage": "Delete the template \"{name}\" and its versions? Editions that use it fall back to the default template.",
+    "readOnly": "Only tenant administrators can change shared templates. Make a copy to edit your own.",
+    "scope": {
+      "shared": "Shared",
+      "mine": "Mine"
+    },
+    "badges": {
+      "editionDefault": "Edition default",
+      "builtIn": "Built in"
+    },
+    "columns": {
+      "name": "Template",
+      "scope": "Scope",
+      "origin": "Origin",
+      "version": "Version",
+      "updated": "Updated"
+    },
+    "import": {
+      "button": "Import .md",
+      "file": "Template file",
+      "tooLarge": "That file is too large to be a template."
+    },
+    "editor": {
+      "title": "Template",
+      "panels": "Template tools",
+      "valid": "Valid",
+      "errors": "{count, plural, one {# error} other {# errors}}",
+      "rejected": "The server rejected this version.",
+      "format": "Markdown with front matter (name, description, tone, length, audience, citations, audio). Each level-two heading is a section. An mmn:section comment under it picks the data (source, tier, status, group, limit, order, topic, dimension), and the text under the heading tells the composer what to write."
+    },
+    "panels": {
+      "problems": "Problems",
+      "problemsCount": "Problems ({count})",
+      "outline": "Outline",
+      "preview": "Preview",
+      "versions": "Versions"
+    },
+    "problems": {
+      "none": "No problems found.",
+      "errors": "{count, plural, one {# error} other {# errors}}",
+      "warnings": "{count, plural, one {# warning} other {# warnings}}",
+      "checking": "Checking...",
+      "jump": "Go to line {line}",
+      "line": "Line {line}",
+      "general": "General",
+      "warning": "Warning",
+      "error": "Error"
+    },
+    "outline": {
+      "pending": "Validating...",
+      "name": "Name",
+      "title": "Title",
+      "audio": "Audio",
+      "audioOn": "On: {format}, about {minutes} minutes",
+      "audioOff": "Off",
+      "intro": "Intro",
+      "noSections": "No sections yet. Add a level-two heading.",
+      "jump": "Go to {heading} on line {line}",
+      "source": "source={source}"
+    },
+    "preview": {
+      "help": "Composes the chosen edition from the latest data with the edition's saved template. Nothing is saved or sent.",
+      "noEditions": "Create an edition to preview a template.",
+      "edition": "Edition to preview",
+      "otherTemplate": "{name} uses a different template, so this preview does not show this one.",
+      "unsaved": "Save your changes to see them in the preview."
+    },
+    "versions": {
+      "none": "No versions yet.",
+      "rollbackMessage": "Restore version {version} as a new version? The current content stays in the history."
+    },
+    "create": {
+      "titles": {
+        "new": "New template",
+        "import": "Import a template",
+        "copy": "Make a copy"
+      },
+      "confirm": {
+        "new": "Create",
+        "import": "Import",
+        "copy": "Create copy"
+      },
+      "contentHelp": {
+        "import": "Imports {lines} lines of Markdown.",
+        "copy": "Copies the {lines} lines in the editor, including unsaved changes."
+      },
+      "defaultName": "My briefing",
+      "name": "Name",
+      "nameHelp": "Leave empty to use the name in the front matter.",
+      "startFrom": "Start from",
+      "starter": "A small starter template",
+      "copyOf": "A copy of {name}",
+      "shared": "Share with everyone in this workspace",
+      "invalid": "The template has problems."
     }
   }
 }

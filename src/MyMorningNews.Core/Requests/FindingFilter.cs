@@ -29,6 +29,16 @@ namespace MyMorningNews.Core.Requests
         public string? DimensionId { get; set; } = null;
 
         /// <summary>
+        /// Only findings with a relevance score at or above this value (0 to 100), or null.
+        /// </summary>
+        public double? MinRelevanceScore { get; set; } = null;
+
+        /// <summary>
+        /// Leave out findings in this tier (for example BelowThreshold), or null.
+        /// </summary>
+        public FindingTierEnum? ExcludeTier { get; set; } = null;
+
+        /// <summary>
         /// Match SourceItemId exactly when set.
         /// </summary>
         public string? SourceItemId { get; set; } = null;

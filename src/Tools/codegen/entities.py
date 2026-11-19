@@ -635,6 +635,7 @@ ENTITIES = [
         ],
     },
     {
+        # HAND-EDITED after generation: do not --force.
         'name': 'SourceItem', 'table': 'sourceitems', 'prefix': 'src_',
         'doc': 'A fetched document, shared across runs in a tenant and reused while its content is unchanged.',
         'fields': [
@@ -669,6 +670,7 @@ ENTITIES = [
         ],
     },
     {
+        # HAND-EDITED after generation: do not --force.
         'name': 'Finding', 'table': 'findings', 'prefix': 'fnd_',
         'doc': 'A ranked research finding backed by verified evidence.',
         'fields': [
@@ -711,6 +713,7 @@ ENTITIES = [
         'default_sort': 'SortOrder',
     },
     {
+        # HAND-EDITED after generation: do not --force.
         'name': 'Prediction', 'table': 'predictions', 'prefix': 'prd_',
         'doc': 'A falsifiable prediction with a confidence and a horizon, graded later.',
         'fields': [
@@ -744,6 +747,7 @@ ENTITIES = [
         ],
     },
     {
+        # HAND-EDITED after generation: do not --force.
         'name': 'Suggestion', 'table': 'suggestions', 'prefix': 'sug_',
         'doc': 'Something worth digging into, linked to findings.',
         'fields': [

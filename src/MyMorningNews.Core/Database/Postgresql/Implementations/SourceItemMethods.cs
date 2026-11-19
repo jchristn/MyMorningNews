@@ -175,6 +175,45 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             return counts.FirstOrDefault();
         }
 
+        /// <inheritdoc />
+        public async Task<EnumerationResult<SourceItem>> ListForTopicsAsync(string tenantId, string? userId, string? topicId, string? runId, string? search, int pageNumber, int pageSize, CancellationToken token = default)
+        {
+            if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            List<object?> args = new List<object?> { tenantId };
+            List<string> inner = new List<string> { "r.tenantid = $1", "r.sourceitemid IS NOT NULL" };
+            if (!String.IsNullOrWhiteSpace(userId))
+            {
+                args.Add(userId);
+                inner.Add("r.topicid IN (SELECT id FROM topics WHERE tenantid = $1 AND userid = $" + args.Count + ")");
+            }
+            if (!String.IsNullOrWhiteSpace(topicId))
+            {
+                args.Add(topicId);
+                inner.Add("r.topicid = $" + args.Count);
+            }
+            if (!String.IsNullOrWhiteSpace(runId))
+            {
+                args.Add(runId);
+                inner.Add("r.runid = $" + args.Count);
+            }
+            string where = "s.tenantid = $1 AND s.id IN (SELECT r.sourceitemid FROM searchresults r WHERE " + String.Join(" AND ", inner) + ")";
+            if (!String.IsNullOrWhiteSpace(search))
+            {
+                args.Add("%" + EscapeLike(search.Trim()) + "%");
+                where += " AND (s.title ILIKE $" + args.Count + " OR s.domain ILIKE $" + args.Count + " OR s.canonicalurl ILIKE $" + args.Count + ")";
+            }
+            List<long> total = await QueryAsync("SELECT COUNT(*) FROM sourceitems s WHERE " + where, r => r.GetInt64(0), token, args.ToArray()).ConfigureAwait(false);
+            int size = Math.Clamp(pageSize, 1, 1000);
+            int page = Math.Max(1, pageNumber);
+            args.Add(size);
+            args.Add((page - 1) * size);
+            string cols = String.Join(", ", SourceItemQueries.Columns.Split(',').Select(c => "s." + c.Trim()));
+            List<SourceItem> items = await QueryAsync("SELECT " + cols + " FROM sourceitems s WHERE " + where + " ORDER BY s.createdutc DESC, s.id DESC LIMIT $" + (args.Count - 1) + " OFFSET $" + args.Count, Map, token, args.ToArray()).ConfigureAwait(false);
+            foreach (SourceItem i in items) i.ContentText = null;
+            long count = total.FirstOrDefault();
+            return new EnumerationResult<SourceItem> { Items = items, PageNumber = page, PageSize = size, TotalCount = count, TotalPages = Math.Max(1, (int)Math.Ceiling(count / (double)size)) };
+        }
+
         /// <summary>
         /// Map a data reader row (columns in <see cref="SourceItemQueries.Columns"/> order) to a model.
         /// </summary>

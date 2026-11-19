@@ -84,13 +84,13 @@ namespace MyMorningNews.Core.Pipeline.Stages
             };
             item.CanonicalUrl = fetched.CanonicalUrl ?? r.Url;
             item.Domain = UrlCanonicalizer.Domain(fetched.FinalUrl ?? r.Url);
-            item.Title = !String.IsNullOrWhiteSpace(fetched.Title) ? fetched.Title : r.Title;
+            item.Title = Clean(!String.IsNullOrWhiteSpace(fetched.Title) ? fetched.Title : r.Title);
             item.PublishedUtc = r.PublishedUtc ?? item.PublishedUtc;
             item.FetchedUtc = DateTime.UtcNow;
             item.HttpStatus = fetched.StatusCode;
             item.ContentType = fetched.ContentType != null && fetched.ContentType.Length > 128 ? fetched.ContentType.Substring(0, 128) : fetched.ContentType;
             item.ContentHash = fetched.ContentHash;
-            item.ContentText = fetched.Text;
+            item.ContentText = Clean(fetched.Text);
             item.ContentBytes = fetched.Bytes;
             item.TimesSeen++;
             item = existing == null ? await services.Database.SourceItems.CreateAsync(item, token).ConfigureAwait(false) : await services.Database.SourceItems.UpdateAsync(item, token).ConfigureAwait(false);
@@ -103,6 +103,19 @@ namespace MyMorningNews.Core.Pipeline.Stages
             r.Disposition = d;
             r.SourceItemId = sourceId;
             await services.Database.SearchResults.UpdateAsync(r, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Remove NUL and other control characters (except tab, newline, and carriage return) that Postgres text columns reject.
+        /// </summary>
+        /// <param name="text">Text.</param>
+        /// <returns>Clean text, or null.</returns>
+        public static string? Clean(string? text)
+        {
+            if (text == null) return null;
+            System.Text.StringBuilder sb = new System.Text.StringBuilder(text.Length);
+            foreach (char c in text) if (c >= ' ' || c == '\t' || c == '\n' || c == '\r') sb.Append(c);
+            return sb.ToString();
         }
     }
 }

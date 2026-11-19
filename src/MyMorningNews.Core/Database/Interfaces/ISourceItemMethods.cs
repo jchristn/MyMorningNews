@@ -87,5 +87,19 @@ namespace MyMorningNews.Core.Database.Interfaces
         /// <param name="token">Cancellation token.</param>
         /// <returns>Count.</returns>
         Task<long> CountAsync(SourceItemFilter filter, CancellationToken token = default);
+
+        /// <summary>
+        /// Sources fetched for a user's topics (through search results), newest first.
+        /// </summary>
+        /// <param name="tenantId">Tenant.</param>
+        /// <param name="userId">Topic owner, or null for every topic in the tenant.</param>
+        /// <param name="topicId">Topic, or null.</param>
+        /// <param name="runId">Run, or null.</param>
+        /// <param name="search">Text in the title, domain, or URL, or null.</param>
+        /// <param name="pageNumber">Page (1-based).</param>
+        /// <param name="pageSize">Page size (1 to 1000).</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Page of sources; content text is left out.</returns>
+        Task<EnumerationResult<SourceItem>> ListForTopicsAsync(string tenantId, string? userId, string? topicId, string? runId, string? search, int pageNumber, int pageSize, CancellationToken token = default);
     }
 }

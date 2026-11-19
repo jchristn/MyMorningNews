@@ -198,7 +198,11 @@ namespace Test.Shared.Suites
             PipelineFixture f = await FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
             Run run = await RunAsync(f, token).ConfigureAwait(false);
             EnumerationResult<Finding> high = (await f.User.Client.GetAsync("/v1.0/api/findings?topicId=" + f.Topic.Id + "&minScore=70", token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>();
-            Assert.True(high.Items.All(x => x.RelevanceScore >= 70) && high.Items.Count >= 1, "min score filter");
+            Assert.True(high.Items.All(x => x.RelevanceScore >= 70) && high.Items.Count >= 1 && high.TotalCount == high.Items.Count, "min score filtered in the query, total matches");
+            EnumerationResult<SourceItem> sources = (await f.User.Client.GetAsync("/v1.0/api/sources?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Expect(200, "sources").Json<EnumerationResult<SourceItem>>();
+            Assert.True(sources.TotalCount == 2 && sources.Items.All(x => x.ContentText == null && x.CanonicalUrl.Contains("/news/", StringComparison.Ordinal)), "sources listed without content");
+            Assert.Equal(1L, (await f.User.Client.GetAsync("/v1.0/api/sources?topicId=" + f.Topic.Id + "&search=b.html", token).ConfigureAwait(false)).Json<EnumerationResult<SourceItem>>().TotalCount, "source search");
+            Assert.Equal("a\tb\nc", MyMorningNews.Core.Pipeline.Stages.FetchStage.Clean("a\u0000\tb\nc\u0007"), "NUL and control characters removed");
             List<SearchQuery> queries = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/queries", token).ConfigureAwait(false)).Expect(200, "queries").Json<List<SearchQuery>>();
             Assert.True(queries.Count == 2 && queries.All(q => q.Succeeded && q.Provider == "Searxng"), "queries recorded");
             EnumerationResult<Suggestion> sugs = (await f.User.Client.GetAsync("/v1.0/api/suggestions?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Suggestion>>();
@@ -215,6 +219,7 @@ namespace Test.Shared.Suites
             TestUser other = await TestFixtures.CreateUserAsync(await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false), f.Topic.TenantId, false, token).ConfigureAwait(false);
             EnumerationResult<Finding> theirs = (await other.Client.GetAsync("/v1.0/api/findings", token).ConfigureAwait(false)).Expect(200, "member list").Json<EnumerationResult<Finding>>();
             Assert.Equal(0, theirs.Items.Count, "another member sees none");
+            Assert.Equal(0L, (await other.Client.GetAsync("/v1.0/api/sources", token).ConfigureAwait(false)).Json<EnumerationResult<SourceItem>>().TotalCount, "another member sees no sources");
             (await other.Client.GetAsync("/v1.0/api/findings/" + high.Items[0].Id, token).ConfigureAwait(false)).Expect(404, "finding private");
             (await other.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages", token).ConfigureAwait(false)).Expect(404, "run private");
 
@@ -223,6 +228,9 @@ namespace Test.Shared.Suites
             Assert.True(await f.Server.Context.Database.Schedules.ReadAsync(f.Topic.TenantId, sched.Id, token).ConfigureAwait(false) == null, "schedule deleted with the topic");
             Assert.True(await f.Server.Context.Database.Runs.ReadAsync(f.Topic.TenantId, run.Id, token).ConfigureAwait(false) == null, "runs deleted with the topic");
             Assert.True(await f.Server.Context.Database.Findings.ReadAsync(f.Topic.TenantId, high.Items[0].Id, token).ConfigureAwait(false) == null, "findings deleted with the topic");
+            Assert.Equal(0L, await f.Server.Context.Database.Briefings.CountAsync(new MyMorningNews.Core.Requests.BriefingFilter { TenantId = f.Topic.TenantId, TopicId = f.Topic.Id }, token).ConfigureAwait(false), "briefings deleted with the topic");
+            Assert.Equal(0L, await f.Server.Context.Database.SearchResults.CountAsync(new SearchResultFilter { TenantId = f.Topic.TenantId, RunId = run.Id }, token).ConfigureAwait(false), "search results deleted with the topic");
+            Assert.Equal(0L, await f.Server.Context.Database.RunStages.CountAsync(new RunStageFilter { TenantId = f.Topic.TenantId, RunId = run.Id }, token).ConfigureAwait(false), "run stages deleted with the topic");
             EnumerationResult<LlmCall> kept = (await f.User.Client.GetAsync("/v1.0/api/llm-calls?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<LlmCall>>();
             Assert.True(kept.Items.Count > 0, "model call records kept for cost accounting");
         }

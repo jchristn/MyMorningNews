@@ -381,6 +381,29 @@ namespace MyMorningNews.Core.Briefings
         }
 
         /// <summary>
+        /// Delete the stored file content of every artifact that belongs to a topic or its briefings (before the topic is deleted).
+        /// </summary>
+        /// <param name="tenantId">Tenant.</param>
+        /// <param name="topicId">Topic.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Files removed.</returns>
+        public async Task<int> DeleteTopicFilesAsync(string tenantId, string topicId, CancellationToken token = default)
+        {
+            HashSet<string> seen = new HashSet<string>(StringComparer.Ordinal);
+            List<Artifact> files = (await _Database.Artifacts.EnumerateAsync(new ArtifactFilter { TenantId = tenantId, TopicId = topicId, PageSize = 1000 }, token).ConfigureAwait(false)).Items;
+            foreach (Briefing b in (await _Database.Briefings.EnumerateAsync(new BriefingFilter { TenantId = tenantId, TopicId = topicId, PageSize = 1000 }, token).ConfigureAwait(false)).Items)
+                files.AddRange((await _Database.Artifacts.EnumerateAsync(new ArtifactFilter { TenantId = tenantId, BriefingId = b.Id, PageSize = 100 }, token).ConfigureAwait(false)).Items);
+            int removed = 0;
+            foreach (Artifact a in files.Where(f => seen.Add(f.Id)))
+            {
+                await _Artifacts.DeleteContentAsync(a, token).ConfigureAwait(false);
+                removed++;
+            }
+
+            return removed;
+        }
+
+        /// <summary>
         /// Store fresh Markdown and HTML files for a briefing whose files expired, from its saved Markdown.
         /// </summary>
         /// <param name="briefing">Ready briefing.</param>

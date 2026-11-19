@@ -125,6 +125,7 @@ namespace MyMorningNews.Server.Routes
             if (!await AuthorizeAsync(ctx, RequestTypeEnum.TopicDelete).ConfigureAwait(false)) return;
             Topic? topic = await OwnedTopicAsync(ctx).ConfigureAwait(false);
             if (topic == null) return;
+            await Server.Briefings.DeleteTopicFilesAsync(topic.TenantId, topic.Id, ctx.Token).ConfigureAwait(false);
             await Server.Database.Topics.DeleteCascadeAsync(topic.TenantId, topic.Id, ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 204, null).ConfigureAwait(false);
         }

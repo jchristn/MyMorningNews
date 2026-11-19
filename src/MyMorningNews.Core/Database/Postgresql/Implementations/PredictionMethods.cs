@@ -28,7 +28,10 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
         {
             { "horizonUtc", "horizonutc" },
             { "createdUtc", "createdutc" },
-            { "lastUpdateUtc", "lastupdateutc" }
+            { "lastUpdateUtc", "lastupdateutc" },
+            { "confidence", "confidence" },
+            { "status", "status" },
+            { "brierScore", "brierscore" }
         };
 
         #endregion

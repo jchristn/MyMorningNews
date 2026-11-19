@@ -207,6 +207,16 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             string[] statements =
             {
                 "DELETE FROM schedules WHERE tenantid = $1 AND ownertype = 'Topic' AND ownerid = $2",
+                "DELETE FROM editiontopics WHERE tenantid = $1 AND topicid = $2",
+                "DELETE FROM briefingitems WHERE tenantid = $1 AND briefingid IN (SELECT id FROM briefings WHERE tenantid = $1 AND topicid = $2)",
+                "DELETE FROM briefingsections WHERE tenantid = $1 AND briefingid IN (SELECT id FROM briefings WHERE tenantid = $1 AND topicid = $2)",
+                "DELETE FROM artifacts WHERE tenantid = $1 AND (topicid = $2 OR briefingid IN (SELECT id FROM briefings WHERE tenantid = $1 AND topicid = $2))",
+                "DELETE FROM briefings WHERE tenantid = $1 AND topicid = $2",
+                "DELETE FROM findingevidence WHERE tenantid = $1 AND findingid IN (SELECT id FROM findings WHERE tenantid = $1 AND topicid = $2)",
+                "DELETE FROM evidence WHERE tenantid = $1 AND runid IN (SELECT id FROM runs WHERE tenantid = $1 AND topicid = $2)",
+                "DELETE FROM runstages WHERE tenantid = $1 AND runid IN (SELECT id FROM runs WHERE tenantid = $1 AND topicid = $2)",
+                "DELETE FROM searchresults WHERE tenantid = $1 AND topicid = $2",
+                "DELETE FROM searchqueries WHERE tenantid = $1 AND topicid = $2",
                 "DELETE FROM embeddings WHERE tenantid = $1 AND topicid = $2",
                 "DELETE FROM findings WHERE tenantid = $1 AND topicid = $2",
                 "DELETE FROM predictions WHERE tenantid = $1 AND topicid = $2",

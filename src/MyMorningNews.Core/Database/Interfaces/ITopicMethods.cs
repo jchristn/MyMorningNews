@@ -92,6 +92,7 @@ namespace MyMorningNews.Core.Database.Interfaces
         /// Delete a topic and everything that belongs to it: schedules, runs (with their stages, queries, and results),
         /// findings, predictions, suggestions, one-time requests, and embeddings. Dimensions, constraints, recipients,
         /// refinement sessions, and provider choices go with the topic row. Model call records are kept for cost accounting.
+        /// Stored file rows are removed; callers delete file content from the store first (BriefingService.DeleteTopicFilesAsync).
         /// </summary>
         /// <param name="tenantId">Tenant.</param>
         /// <param name="topicId">Topic.</param>

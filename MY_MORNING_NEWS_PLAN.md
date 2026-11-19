@@ -1454,20 +1454,21 @@ Exit: a topic scheduled for every 5 minutes enqueues runs on time across a conta
 ### Phase 6: Research pipeline, ranking, and evidence
 
 - [x] Stages 1 to 13 of section 16 (AssembleContext, PlanQueries with seed-query fallback, Search, Filter, Fetch with source reuse, Extract with verbatim quote verification, Embed, Dedupe with pgvector and dedupe-judge or word similarity fallback, Score with composite ranking and tiers, Synthesize, ReviewPredictions, Predict, Suggest), critical and non-critical failure handling (PartiallySucceeded), cancellation between stages, dry runs, per-run token and cost totals. Embeddings carry model and dimensions. Migration 7.
-- [ ] Run SSE progress stream and retry from a stage; ComposeRunBriefing (Phase 7) and Notify (Phase 9); MCP registry and agentic search mode (moved from Phase 5); prediction evidence links.
-- [ ] Dashboard: Runs (live stage timeline, queries, results, LLM calls), Findings (score breakdown, evidence drawer), Sources, Predictions, Suggestions, plus charts 2 to 5, 21 to 24.
-- [ ] Suites: Pipeline, Evidence, Dedupe, Ranking, Predictions, Suggestions.
+- [ ] Run SSE progress stream and retry from a stage; Notify (Phase 9); MCP registry and agentic search mode (moved from Phase 5); prediction evidence links. (ComposeBriefing shipped in Phase 7 as stage 14.)
+- [x] Dashboard: Runs drill-down (stage timeline, queries, results with dispositions, totals), Findings (score breakdown, evidence drawer), Predictions (reviews, resolve, calibration chart), Suggestions (accept, snooze, dismiss, complete), topic workspace tabs.
+- [ ] Dashboard: Sources page (the list endpoint now exists), live stage timeline over SSE, LLM calls per run, remaining charts 2 to 5 and 21 to 24.
+- [x] Suites: Pipeline (quote verification, ranking, full run, second-run dedupe, failures, research API), which covers evidence, dedupe, ranking, predictions, and suggestions.
 
 Exit: a real run against SearXNG and Ollama produces ranked, evidence-backed findings, predictions, and suggestions, with every stage visible and replayable.
 
 ### Phase 7: Briefings, templates, and editions
 
-- [ ] `IArtifactStore` with `LocalArtifactStore` and `S3ArtifactStore` (AWSSDK.S3, S3-compatible endpoints, presigned URLs), the `artifacts` table, rendered HTML reports, 365-day retention with pinning in `RetentionWorker`, and a storage suite against both stores (section 22.1).
+- [x] `IArtifactStore` with `LocalArtifactStore` and `S3ArtifactStore` (AWSSDK.S3, S3-compatible endpoints, presigned URLs), the `artifacts` table, rendered HTML reports, 365-day retention with pinning in `RetentionWorker`, and a storage suite against both stores (section 22.1).
 
-- [ ] Template format, validator, directives, versioning, import and export, default templates.
-- [ ] `BriefingComposer`, editions, the edition schedule, fresh-research lead, single-run briefings, HTML export.
+- [x] Template format, validator, directives, versioning, import and export, default templates (Morning News, Run Briefing, One-time Report).
+- [x] `BriefingComposer`, editions, the edition schedule, fresh-research lead, single-run briefings, one-time reports, HTML export. Sections whose model call fails are written as plain lists, so a briefing always arrives. An edition with no listed topics covers all active recurring topics. Morning News (daily 06:30 local) is seeded for every user.
 - [ ] Dashboard: Today, Briefings reader with inline feedback, Editions, Templates editor with live preview.
-- [ ] Suites: Briefings, Templates.
+- [x] Suites: Briefings (template format, safe Markdown, run briefing, templates API, edition compose with fallback, fresh research, edition schedule, pin and regenerate), Storage (local and S3 stores, retention, HTTP ranges).
 
 Exit: "Morning News" composes on schedule from the template you wrote, with citations that resolve.
 
@@ -1657,6 +1658,7 @@ No open questions remain.
 | 2026-11-19 | 5 | Done | Search providers (SearXNG, Tavily, You.com, RSS, Hacker News, arXiv) with per-topic choice and seeded defaults, fetch service with robots, per-domain delay, main-content extraction, and Markdown conversion, URL canonicalization. MCP registry and agentic search move to Phase 6. 116 tests pass on net8 and net10, 117 on Xunit3. |
 | 2026-11-19 | 16 | Foundation done | Mobile app merged: Expo SDK 58, React Native 0.88, JavaScript; sign-in with refresh tokens, tenant picker, biometric lock, account screens, `expo-audio` player (background and lock-screen verified by logs), push, deep links, tablet split views, 12 locales plus pseudo-locales, parity manifest, `npm run verify`, EAS and signed update scripts, `APP_STORE_SUBMISSION.md` with 57 owner fields. Ran on iPhone and iPad simulators and an Android emulator. `OWNER_ACTIONS.md` updated. |
 | 2026-11-19 | 6 | Core done | Research pipeline with 13 stages, quote verification, composite ranking, pgvector de-duplication with fallbacks, predictions with reviews and Brier scores, suggestions, research APIs (findings with evidence, run stages, queries, results, predictions, suggestions, sources). Verified end to end against stub search and model servers, and against live SearXNG and real pages in Docker (stops at extraction without an Anthropic key, as expected). 122 tests pass on net8 and net10, 123 on Xunit3. |
+| 2026-11-19 | 7 | Core done | Artifact storage (local and S3 with presigned URLs, 365-day retention, pinning with a cap, ranged downloads), briefing templates (parser and validator with line numbers, versions, rollback, reset, export), BriefingComposer with citations and a plain fallback, editions with fresh research, schedules, previews, seeded Morning News, run briefings and one-time reports. Migration 8. Merged the Phase 6 dashboard pages and fixed the gaps it found (NUL bytes in fetched pages, findings filters in the query, sources list, dry-run toggles, sort keys, full topic cascade). 134 tests pass on net8 and net10, 135 on Xunit3; verified in Docker. Dashboard pages for Phase 7 are next. |
 
 ---
 

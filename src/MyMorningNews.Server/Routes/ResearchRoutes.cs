@@ -31,24 +31,28 @@ namespace MyMorningNews.Server.Routes
         {
             ArgumentNullException.ThrowIfNull(webserver);
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/findings", ListFindingsAsync, null, openApiMetadata: Paged(Doc("List findings", "Findings",
-                "Defaults: no duplicates, no dry runs, below-threshold included only when tier is given.").WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("runId", typeof(string)))
+                "Defaults: no duplicates, no dry runs, and no below-threshold findings unless tier=BelowThreshold, includeBelowThreshold=true, or includeDuplicates=true (duplicates are below threshold).").WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("runId", typeof(string)))
                 .WithParameter(QueryParam("tier", typeof(FindingTierEnum))).WithParameter(QueryParam("category", typeof(FindingCategoryEnum))).WithParameter(QueryParam("includeDuplicates", typeof(bool)))
-                .WithParameter(QueryParam("includeDryRun", typeof(bool))).WithParameter(QueryParam("minScore", typeof(int)))));
+                .WithParameter(QueryParam("includeDryRun", typeof(bool))).WithParameter(QueryParam("minScore", typeof(int))).WithParameter(QueryParam("dimensionId", typeof(string)))
+                .WithParameter(QueryParam("includeBelowThreshold", typeof(bool)))));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/findings/{id}", ReadFindingAsync, null, openApiMetadata: Doc("Read a finding with its evidence", "Findings"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}/stages", StagesAsync, null, openApiMetadata: Doc("A run's stages", "Runs"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}/queries", QueriesAsync, null, openApiMetadata: Doc("A run's search queries", "Runs"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}/results", ResultsAsync, null, openApiMetadata: Doc("A run's search results with dispositions", "Runs")
                 .WithParameter(QueryParam("disposition", typeof(SearchResultDispositionEnum))));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/predictions", ListPredictionsAsync, null, openApiMetadata: Paged(Doc("List predictions", "Predictions")
-                .WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("status", typeof(PredictionStatusEnum)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/predictions", ListPredictionsAsync, null, openApiMetadata: Paged(Doc("List predictions", "Predictions", "Sort by horizonUtc, createdUtc, confidence, status, or brierScore.")
+                .WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("status", typeof(PredictionStatusEnum))).WithParameter(QueryParam("includeDryRun", typeof(bool)))));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/predictions/{id}", ReadPredictionAsync, null, openApiMetadata: Doc("Read a prediction with its reviews", "Predictions"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/api/predictions/{id}/resolve", ResolveAsync, null, openApiMetadata: Doc("Resolve a prediction", "Predictions").WithRequestBody(Body<PredictionResolveRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/api/prediction-reviews/{id}/accept", AcceptReviewAsync, null, openApiMetadata: Doc("Accept a proposed resolution", "Predictions"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/api/prediction-reviews/{id}/reject", RejectReviewAsync, null, openApiMetadata: Doc("Reject a proposed resolution", "Predictions"));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/suggestions", ListSuggestionsAsync, null, openApiMetadata: Paged(Doc("List suggestions", "Suggestions")
-                .WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("status", typeof(SuggestionStatusEnum)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/suggestions", ListSuggestionsAsync, null, openApiMetadata: Paged(Doc("List suggestions", "Suggestions", "Sort by createdUtc, priority, status, or title.")
+                .WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("status", typeof(SuggestionStatusEnum))).WithParameter(QueryParam("priority", typeof(SuggestionPriorityEnum)))
+                .WithParameter(QueryParam("includeDryRun", typeof(bool)))));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/api/suggestions/{id}/status", SuggestionStatusAsync, null, openApiMetadata: Doc("Accept, snooze, dismiss, or complete a suggestion", "Suggestions")
                 .WithRequestBody(Body<SuggestionStatusRequest>()));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/sources", ListSourcesAsync, null, openApiMetadata: Paged(Doc("List fetched sources for my topics", "Sources",
+                "Newest first; content text is left out (read one source for it).").WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("runId", typeof(string)))));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/sources/{id}", ReadSourceAsync, null, openApiMetadata: Doc("Read a fetched source", "Sources"));
         }
 
@@ -66,13 +70,14 @@ namespace MyMorningNews.Server.Routes
                 Tier = QueryEnum<FindingTierEnum>(ctx, "tier"),
                 Category = QueryEnum<FindingCategoryEnum>(ctx, "category"),
                 IsDuplicate = QueryBool(ctx, "includeDuplicates") == true ? null : false,
-                IsDryRun = QueryBool(ctx, "includeDryRun") == true ? null : false
+                IsDryRun = QueryBool(ctx, "includeDryRun") == true ? null : false,
+                DimensionId = Query(ctx, "dimensionId"),
+                MinRelevanceScore = QueryInt(ctx, "minScore")
             };
+            if (!filter.Tier.HasValue && QueryBool(ctx, "includeBelowThreshold") != true && QueryBool(ctx, "includeDuplicates") != true) filter.ExcludeTier = FindingTierEnum.BelowThreshold;
             ApplyPaging(ctx, filter);
             if (String.IsNullOrEmpty(filter.SortBy)) filter.SortBy = "RelevanceScore";
             EnumerationResult<Finding> page = await Server.Database.Findings.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false);
-            int? min = QueryInt(ctx, "minScore");
-            if (min.HasValue) page.Items = page.Items.Where(f => f.RelevanceScore >= min.Value).ToList();
             await SendJsonAsync(ctx, 200, page).ConfigureAwait(false);
         }
 
@@ -125,7 +130,7 @@ namespace MyMorningNews.Server.Routes
             if (!await AuthorizeAsync(ctx, RequestTypeEnum.PredictionRead).ConfigureAwait(false)) return;
             string? tenantId = await RequireTenantAsync(ctx).ConfigureAwait(false);
             if (tenantId == null) return;
-            PredictionFilter filter = new PredictionFilter { TenantId = tenantId, UserId = OwnerScope(ctx), TopicId = Query(ctx, "topicId"), Status = QueryEnum<PredictionStatusEnum>(ctx, "status"), IsDryRun = false };
+            PredictionFilter filter = new PredictionFilter { TenantId = tenantId, UserId = OwnerScope(ctx), TopicId = Query(ctx, "topicId"), Status = QueryEnum<PredictionStatusEnum>(ctx, "status"), IsDryRun = QueryBool(ctx, "includeDryRun") == true ? null : false };
             ApplyPaging(ctx, filter);
             await SendJsonAsync(ctx, 200, await Server.Database.Predictions.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }
@@ -189,7 +194,7 @@ namespace MyMorningNews.Server.Routes
             if (!await AuthorizeAsync(ctx, RequestTypeEnum.SuggestionRead).ConfigureAwait(false)) return;
             string? tenantId = await RequireTenantAsync(ctx).ConfigureAwait(false);
             if (tenantId == null) return;
-            SuggestionFilter filter = new SuggestionFilter { TenantId = tenantId, UserId = OwnerScope(ctx), TopicId = Query(ctx, "topicId"), Status = QueryEnum<SuggestionStatusEnum>(ctx, "status"), IsDryRun = false };
+            SuggestionFilter filter = new SuggestionFilter { TenantId = tenantId, UserId = OwnerScope(ctx), TopicId = Query(ctx, "topicId"), Status = QueryEnum<SuggestionStatusEnum>(ctx, "status"), Priority = QueryEnum<SuggestionPriorityEnum>(ctx, "priority"), IsDryRun = QueryBool(ctx, "includeDryRun") == true ? null : false };
             ApplyPaging(ctx, filter);
             await SendJsonAsync(ctx, 200, await Server.Database.Suggestions.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }
@@ -213,6 +218,17 @@ namespace MyMorningNews.Server.Routes
             s.SnoozedUntilUtc = req.Status == SuggestionStatusEnum.Snoozed ? DateTime.SpecifyKind(req.SnoozedUntilUtc!.Value.ToUniversalTime(), DateTimeKind.Utc) : null;
             s.StatusChangedUtc = DateTime.UtcNow;
             await SendJsonAsync(ctx, 200, await Server.Database.Suggestions.UpdateAsync(s, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async Task ListSourcesAsync(HttpContextBase ctx)
+        {
+            if (!await AuthorizeAsync(ctx, RequestTypeEnum.SourceRead).ConfigureAwait(false)) return;
+            string? tenantId = await RequireTenantAsync(ctx).ConfigureAwait(false);
+            if (tenantId == null) return;
+            EnumerationFilter paging = new EnumerationFilter();
+            ApplyPaging(ctx, paging);
+            EnumerationResult<SourceItem> page = await Server.Database.SourceItems.ListForTopicsAsync(tenantId, OwnerScope(ctx), Query(ctx, "topicId"), Query(ctx, "runId"), Query(ctx, "search"), paging.PageNumber, paging.PageSize, ctx.Token).ConfigureAwait(false);
+            await SendJsonAsync(ctx, 200, page).ConfigureAwait(false);
         }
 
         private async Task ReadSourceAsync(HttpContextBase ctx)

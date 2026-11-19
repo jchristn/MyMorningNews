@@ -283,6 +283,16 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 args.Add(filter.Category.Value.ToString());
                 clauses.Add("category = $" + args.Count);
             }
+            if (filter.MinRelevanceScore.HasValue)
+            {
+                args.Add(filter.MinRelevanceScore.Value);
+                clauses.Add("relevancescore >= $" + args.Count);
+            }
+            if (filter.ExcludeTier.HasValue)
+            {
+                args.Add(filter.ExcludeTier.Value.ToString());
+                clauses.Add("tier <> $" + args.Count);
+            }
             if (filter.Tier.HasValue)
             {
                 args.Add(filter.Tier.Value.ToString());

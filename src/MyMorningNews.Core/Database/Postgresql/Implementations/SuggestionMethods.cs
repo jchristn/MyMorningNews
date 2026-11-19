@@ -27,7 +27,10 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
         private static readonly Dictionary<string, string> _SortColumns = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "createdUtc", "createdutc" },
-            { "lastUpdateUtc", "lastupdateutc" }
+            { "lastUpdateUtc", "lastupdateutc" },
+            { "priority", "CASE priority WHEN 'High' THEN 2 WHEN 'Medium' THEN 1 ELSE 0 END" },
+            { "status", "status" },
+            { "title", "title" }
         };
 
         #endregion

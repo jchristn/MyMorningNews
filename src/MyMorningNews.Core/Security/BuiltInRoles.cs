@@ -64,11 +64,21 @@ namespace MyMorningNews.Core.Security
         };
 
         /// <summary>
+        /// Cost and model call accounting types (tenant-wide, across users). Read by tenant administrators and auditors only;
+        /// members see their own usage through /v1.0/api/usage/me.
+        /// </summary>
+        public static readonly IReadOnlyList<ResourceTypeEnum> AccountingTypes = new List<ResourceTypeEnum>
+        {
+            ResourceTypeEnum.Usage, ResourceTypeEnum.LlmCall
+        };
+
+        /// <summary>
         /// Tenant configuration resource types members may read.
         /// </summary>
         public static readonly IReadOnlyList<ResourceTypeEnum> ConfigurationTypes = new List<ResourceTypeEnum>
         {
-            ResourceTypeEnum.ModelEndpoint, ResourceTypeEnum.SearchProvider, ResourceTypeEnum.Voice, ResourceTypeEnum.Tenant
+            ResourceTypeEnum.ModelEndpoint, ResourceTypeEnum.SearchProvider, ResourceTypeEnum.Voice, ResourceTypeEnum.Tenant,
+            ResourceTypeEnum.VaultCredential, ResourceTypeEnum.McpServer
         };
 
         /// <summary>
@@ -114,9 +124,9 @@ namespace MyMorningNews.Core.Security
                     Permit(security.Concat(new[] { ResourceTypeEnum.Admin }).ToArray(), OperationTypeEnum.Admin),
                     Permit(security.Concat(new[] { ResourceTypeEnum.RequestHistory }).ToArray(), OperationTypeEnum.Read)
                 }),
-                new BuiltInRoleDefinition(Auditor, "Read-only access to security records.", ResourceScopeEnum.Tenant, true, new List<BuiltInPermissionDefinition>
+                new BuiltInRoleDefinition(Auditor, "Read-only access to security records and cost accounting.", ResourceScopeEnum.Tenant, true, new List<BuiltInPermissionDefinition>
                 {
-                    Permit(security.Concat(new[] { ResourceTypeEnum.RequestHistory }).ToArray(), OperationTypeEnum.Read)
+                    Permit(security.Concat(new[] { ResourceTypeEnum.RequestHistory }).Concat(AccountingTypes).ToArray(), OperationTypeEnum.Read)
                 }),
                 new BuiltInRoleDefinition(TopicAdmin, "All permissions on one assigned topic and its children.", ResourceScopeEnum.Resource, true, new List<BuiltInPermissionDefinition>
                 {

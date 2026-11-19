@@ -49,6 +49,20 @@ namespace MyMorningNews.Core.Security
             { RequestTypeEnum.SettingsWrite, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
             { RequestTypeEnum.ServerRestart, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
             { RequestTypeEnum.ServerInfoRead, new RequiredPermission(ResourceTypeEnum.All, OperationTypeEnum.Read, anyAuthenticated: true) },
+            { RequestTypeEnum.VaultRead, new RequiredPermission(ResourceTypeEnum.VaultCredential, OperationTypeEnum.Read) },
+            { RequestTypeEnum.VaultWrite, new RequiredPermission(ResourceTypeEnum.VaultCredential, OperationTypeEnum.Admin) },
+            { RequestTypeEnum.VaultDelete, new RequiredPermission(ResourceTypeEnum.VaultCredential, OperationTypeEnum.Admin) },
+            { RequestTypeEnum.VaultReveal, new RequiredPermission(ResourceTypeEnum.VaultCredential, OperationTypeEnum.Admin) },
+            { RequestTypeEnum.ModelRead, new RequiredPermission(ResourceTypeEnum.ModelEndpoint, OperationTypeEnum.Read) },
+            { RequestTypeEnum.ModelWrite, new RequiredPermission(ResourceTypeEnum.ModelEndpoint, OperationTypeEnum.Update) },
+            { RequestTypeEnum.ModelDelete, new RequiredPermission(ResourceTypeEnum.ModelEndpoint, OperationTypeEnum.Delete) },
+            { RequestTypeEnum.ModelExecute, new RequiredPermission(ResourceTypeEnum.ModelEndpoint, OperationTypeEnum.Execute) },
+            { RequestTypeEnum.PromptRead, new RequiredPermission(ResourceTypeEnum.Prompt, OperationTypeEnum.Read) },
+            { RequestTypeEnum.PromptWrite, new RequiredPermission(ResourceTypeEnum.Prompt, OperationTypeEnum.Update) },
+            { RequestTypeEnum.PromptDelete, new RequiredPermission(ResourceTypeEnum.Prompt, OperationTypeEnum.Delete) },
+            { RequestTypeEnum.PromptExecute, new RequiredPermission(ResourceTypeEnum.Prompt, OperationTypeEnum.Execute) },
+            { RequestTypeEnum.LlmCallRead, new RequiredPermission(ResourceTypeEnum.LlmCall, OperationTypeEnum.Read) },
+            { RequestTypeEnum.UsageRead, new RequiredPermission(ResourceTypeEnum.Usage, OperationTypeEnum.Read) },
         };
 
         #endregion

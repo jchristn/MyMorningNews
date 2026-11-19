@@ -76,6 +76,36 @@ namespace MyMorningNews.Core.Settings
             set { _Telemetry = value ?? throw new ArgumentNullException(nameof(Telemetry)); }
         }
 
+        /// <summary>
+        /// Pipeline and model gateway settings.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Value is null.</exception>
+        public PipelineSettings Pipeline
+        {
+            get { return _Pipeline; }
+            set { _Pipeline = value ?? throw new ArgumentNullException(nameof(Pipeline)); }
+        }
+
+        /// <summary>
+        /// Diagnostics settings.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Value is null.</exception>
+        public DiagnosticsSettings Diagnostics
+        {
+            get { return _Diagnostics; }
+            set { _Diagnostics = value ?? throw new ArgumentNullException(nameof(Diagnostics)); }
+        }
+
+        /// <summary>
+        /// Model seeding defaults.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Value is null.</exception>
+        public ModelSettings Models
+        {
+            get { return _Models; }
+            set { _Models = value ?? throw new ArgumentNullException(nameof(Models)); }
+        }
+
         #endregion
 
         #region Private-Members
@@ -86,6 +116,9 @@ namespace MyMorningNews.Core.Settings
         private AuthSettings _Auth = new AuthSettings();
         private RequestHistorySettings _RequestHistory = new RequestHistorySettings();
         private TelemetrySettings _Telemetry = new TelemetrySettings();
+        private PipelineSettings _Pipeline = new PipelineSettings();
+        private DiagnosticsSettings _Diagnostics = new DiagnosticsSettings();
+        private ModelSettings _Models = new ModelSettings();
 
         #endregion
     }

@@ -1,0 +1,359 @@
+{
+  "uid": "mmn-models",
+  "title": "My Morning News: Models and cost",
+  "tags": [
+    "mymorningnews"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Cost (24h, USD)",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(mymorningnews_llm_cost_usd_total{job=\"mymorningnews-server\"}[24h]))"
+        }
+      ],
+      "id": 1
+    },
+    {
+      "type": "stat",
+      "title": "Model calls (24h)",
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(mymorningnews_llm_calls_total{job=\"mymorningnews-server\"}[24h]))"
+        }
+      ],
+      "id": 2
+    },
+    {
+      "type": "stat",
+      "title": "Tokens (24h)",
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(mymorningnews_llm_tokens_total{job=\"mymorningnews-server\",type=~\"input|output\"}[24h]))"
+        }
+      ],
+      "id": 3
+    },
+    {
+      "type": "stat",
+      "title": "Time to first token p95",
+      "gridPos": {
+        "x": 18,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(mymorningnews_llm_time_to_first_token_seconds_bucket{job=\"mymorningnews-server\"}[1h])))"
+        }
+      ],
+      "id": 4
+    },
+    {
+      "type": "timeseries",
+      "title": "Cost rate by task (USD per hour)",
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (task) (rate(mymorningnews_llm_cost_usd_total{job=\"mymorningnews-server\"}[15m])) * 3600",
+          "legendFormat": "{{task}}"
+        }
+      ],
+      "id": 5
+    },
+    {
+      "type": "timeseries",
+      "title": "Cost rate by provider (USD per hour)",
+      "gridPos": {
+        "x": 12,
+        "y": 4,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (provider) (rate(mymorningnews_llm_cost_usd_total{job=\"mymorningnews-server\"}[15m])) * 3600",
+          "legendFormat": "{{provider}}"
+        }
+      ],
+      "id": 6
+    },
+    {
+      "type": "timeseries",
+      "title": "Tokens by type",
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (type) (rate(mymorningnews_llm_tokens_total{job=\"mymorningnews-server\"}[5m]))",
+          "legendFormat": "{{type}}"
+        }
+      ],
+      "id": 7
+    },
+    {
+      "type": "timeseries",
+      "title": "Calls by outcome",
+      "gridPos": {
+        "x": 12,
+        "y": 12,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (outcome) (rate(mymorningnews_llm_calls_total{job=\"mymorningnews-server\"}[5m]))",
+          "legendFormat": "{{outcome}}"
+        }
+      ],
+      "id": 8
+    },
+    {
+      "type": "timeseries",
+      "title": "Time to first token p50, p95 by task",
+      "gridPos": {
+        "x": 0,
+        "y": 20,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.50, sum by (le, task) (rate(mymorningnews_llm_time_to_first_token_seconds_bucket{job=\"mymorningnews-server\"}[15m])))",
+          "legendFormat": "p50 {{task}}"
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum by (le, task) (rate(mymorningnews_llm_time_to_first_token_seconds_bucket{job=\"mymorningnews-server\"}[15m])))",
+          "legendFormat": "p95 {{task}}"
+        }
+      ],
+      "id": 9
+    },
+    {
+      "type": "timeseries",
+      "title": "Call duration p95 by task",
+      "gridPos": {
+        "x": 12,
+        "y": 20,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le, task) (rate(mymorningnews_llm_call_duration_seconds_bucket{job=\"mymorningnews-server\"}[15m])))",
+          "legendFormat": "{{task}}"
+        }
+      ],
+      "id": 10
+    },
+    {
+      "type": "timeseries",
+      "title": "Tool calls and structured repairs",
+      "gridPos": {
+        "x": 0,
+        "y": 28,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (task) (rate(mymorningnews_llm_tool_calls_total{job=\"mymorningnews-server\"}[15m]))",
+          "legendFormat": "tools {{task}}"
+        },
+        {
+          "refId": "B",
+          "expr": "sum by (task) (rate(mymorningnews_llm_structured_repairs_total{job=\"mymorningnews-server\"}[15m]))",
+          "legendFormat": "repairs {{task}}"
+        }
+      ],
+      "id": 11
+    },
+    {
+      "type": "timeseries",
+      "title": "Cache hit ratio (cached input over input)",
+      "gridPos": {
+        "x": 12,
+        "y": 28,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(mymorningnews_llm_tokens_total{job=\"mymorningnews-server\",type=\"cached_input\"}[1h])) / clamp_min(sum(rate(mymorningnews_llm_tokens_total{job=\"mymorningnews-server\",type=\"input\"}[1h])), 1e-9)",
+          "legendFormat": "cached share"
+        }
+      ],
+      "id": 12
+    }
+  ]
+}

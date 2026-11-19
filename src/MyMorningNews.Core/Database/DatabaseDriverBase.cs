@@ -86,6 +86,41 @@ namespace MyMorningNews.Core.Database
         /// </summary>
         public IRequestHistoryMethods RequestHistory { get; protected set; } = null!;
 
+        /// <summary>
+        /// Vault credential methods.
+        /// </summary>
+        public IVaultCredentialMethods VaultCredentials { get; protected set; } = null!;
+
+        /// <summary>
+        /// Model endpoint methods.
+        /// </summary>
+        public IModelEndpointMethods ModelEndpoints { get; protected set; } = null!;
+
+        /// <summary>
+        /// Model assignment methods.
+        /// </summary>
+        public IModelAssignmentMethods ModelAssignments { get; protected set; } = null!;
+
+        /// <summary>
+        /// Model call log methods.
+        /// </summary>
+        public ILlmCallMethods LlmCalls { get; protected set; } = null!;
+
+        /// <summary>
+        /// Prompt template methods.
+        /// </summary>
+        public IPromptTemplateMethods PromptTemplates { get; protected set; } = null!;
+
+        /// <summary>
+        /// Prompt template version methods.
+        /// </summary>
+        public IPromptTemplateVersionMethods PromptTemplateVersions { get; protected set; } = null!;
+
+        /// <summary>
+        /// Model usage and cost analytics.
+        /// </summary>
+        public IUsageAnalyticsMethods UsageAnalytics { get; protected set; } = null!;
+
         #endregion
 
         #region Constructors-and-Factories

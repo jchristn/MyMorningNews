@@ -55,6 +55,26 @@ namespace MyMorningNews.Server
         public ServerLifetime Lifetime { get; }
 
         /// <summary>
+        /// Credential vault.
+        /// </summary>
+        public VaultService Vault { get; }
+
+        /// <summary>
+        /// Prompt templates.
+        /// </summary>
+        public PromptService Prompts { get; }
+
+        /// <summary>
+        /// Model gateway.
+        /// </summary>
+        public ModelGateway Models { get; }
+
+        /// <summary>
+        /// Per-tenant defaults.
+        /// </summary>
+        public TenantDefaultsService TenantDefaults { get; }
+
+        /// <summary>
         /// Instantiate.
         /// </summary>
         /// <param name="settingsService">Settings service.</param>
@@ -64,6 +84,10 @@ namespace MyMorningNews.Server
         /// <param name="authorization">Authorization.</param>
         /// <param name="audit">Audit.</param>
         /// <param name="lifetime">Lifetime.</param>
+        /// <param name="vault">Vault.</param>
+        /// <param name="prompts">Prompts.</param>
+        /// <param name="models">Model gateway.</param>
+        /// <param name="tenantDefaults">Tenant defaults.</param>
         /// <exception cref="ArgumentNullException">An argument is null.</exception>
         public ServerContext(
             SettingsService settingsService,
@@ -72,7 +96,11 @@ namespace MyMorningNews.Server
             AuthenticationService authentication,
             AuthorizationService authorization,
             AuditService audit,
-            ServerLifetime lifetime)
+            ServerLifetime lifetime,
+            VaultService vault,
+            PromptService prompts,
+            ModelGateway models,
+            TenantDefaultsService tenantDefaults)
         {
             ArgumentNullException.ThrowIfNull(settingsService);
             ArgumentNullException.ThrowIfNull(database);
@@ -88,6 +116,10 @@ namespace MyMorningNews.Server
             Authorization = authorization;
             Audit = audit;
             Lifetime = lifetime;
+            Vault = vault ?? throw new ArgumentNullException(nameof(vault));
+            Prompts = prompts ?? throw new ArgumentNullException(nameof(prompts));
+            Models = models ?? throw new ArgumentNullException(nameof(models));
+            TenantDefaults = tenantDefaults ?? throw new ArgumentNullException(nameof(tenantDefaults));
         }
     }
 }

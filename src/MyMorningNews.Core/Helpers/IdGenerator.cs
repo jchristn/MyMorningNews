@@ -128,6 +128,60 @@ namespace MyMorningNews.Core.Helpers
         }
 
         /// <summary>
+        /// Generate a VaultCredential identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateVaultCredentialId()
+        {
+            return Generate(IdPrefixes.VaultCredential);
+        }
+
+        /// <summary>
+        /// Generate a ModelEndpoint identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateModelEndpointId()
+        {
+            return Generate(IdPrefixes.ModelEndpoint);
+        }
+
+        /// <summary>
+        /// Generate a ModelAssignment identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateModelAssignmentId()
+        {
+            return Generate(IdPrefixes.ModelAssignment);
+        }
+
+        /// <summary>
+        /// Generate a LlmCall identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateLlmCallId()
+        {
+            return Generate(IdPrefixes.LlmCall);
+        }
+
+        /// <summary>
+        /// Generate a PromptTemplate identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GeneratePromptTemplateId()
+        {
+            return Generate(IdPrefixes.PromptTemplate);
+        }
+
+        /// <summary>
+        /// Generate a PromptTemplateVersion identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GeneratePromptTemplateVersionId()
+        {
+            return Generate(IdPrefixes.PromptTemplateVersion);
+        }
+
+        /// <summary>
         /// Generate a RequestHistory identifier.
         /// </summary>
         /// <returns>Identifier.</returns>

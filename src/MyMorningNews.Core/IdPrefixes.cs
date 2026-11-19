@@ -56,6 +56,36 @@ namespace MyMorningNews.Core
         public const string AuditRecord = "aud_";
 
         /// <summary>
+        /// Prefix for VaultCredential identifiers.
+        /// </summary>
+        public const string VaultCredential = "vlt_";
+
+        /// <summary>
+        /// Prefix for ModelEndpoint identifiers.
+        /// </summary>
+        public const string ModelEndpoint = "mdl_";
+
+        /// <summary>
+        /// Prefix for ModelAssignment identifiers.
+        /// </summary>
+        public const string ModelAssignment = "mda_";
+
+        /// <summary>
+        /// Prefix for LlmCall identifiers.
+        /// </summary>
+        public const string LlmCall = "llm_";
+
+        /// <summary>
+        /// Prefix for PromptTemplate identifiers.
+        /// </summary>
+        public const string PromptTemplate = "pmt_";
+
+        /// <summary>
+        /// Prefix for PromptTemplateVersion identifiers.
+        /// </summary>
+        public const string PromptTemplateVersion = "pmv_";
+
+        /// <summary>
         /// Prefix for request history entries.
         /// </summary>
         public const string RequestHistory = "req_";

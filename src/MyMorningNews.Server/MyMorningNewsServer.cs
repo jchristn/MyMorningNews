@@ -79,6 +79,7 @@ namespace MyMorningNews.Server
         private Webserver? _Webserver = null;
         private DatabaseDriverBase? _Database = null;
         private RequestHistoryCaptureService? _Capture = null;
+        private ModelGateway? _Models = null;
         private readonly List<Task> _Workers = new List<Task>();
         private int _DatabaseConnectAttempts = 30;
         private bool _Disposed = false;
@@ -124,7 +125,12 @@ namespace MyMorningNews.Server
             AuditService audit = new AuditService(_Database, _Logging);
             AuthenticationService authentication = new AuthenticationService(_Database, settings.Auth, audit);
             AuthorizationService authorization = new AuthorizationService(_Database);
-            _Context = new ServerContext(_Settings, _Database, _Logging, authentication, authorization, audit, Lifetime);
+            VaultService vault = new VaultService(_Database, settings.Auth.SigningKey);
+            PromptService prompts = new PromptService(_Database);
+            _Models = new ModelGateway(_Database, vault, settings, _Logging);
+            TenantDefaultsService tenantDefaults = new TenantDefaultsService(_Database, prompts, vault, settings.Models, _Logging);
+            await tenantDefaults.EnsureAllAsync(token).ConfigureAwait(false);
+            _Context = new ServerContext(_Settings, _Database, _Logging, authentication, authorization, audit, Lifetime, vault, prompts, _Models, tenantDefaults);
 
             _Capture = new RequestHistoryCaptureService(_Database, settings.RequestHistory, _Logging);
             RequestPipeline pipeline = new RequestPipeline(_Context, _Capture);
@@ -199,6 +205,7 @@ namespace MyMorningNews.Server
                 Stop();
                 _Webserver?.Dispose();
                 _Capture?.Dispose();
+                _Models?.Dispose();
                 _Database?.Dispose();
             }
 
@@ -221,7 +228,11 @@ namespace MyMorningNews.Server
                 new RbacRoutes(context),
                 new AuditRoutes(context),
                 new RequestHistoryRoutes(context),
-                new SettingsRoutes(context)
+                new SettingsRoutes(context),
+                new VaultRoutes(context),
+                new ModelRoutes(context),
+                new UsageRoutes(context),
+                new PromptRoutes(context)
             };
         }
 

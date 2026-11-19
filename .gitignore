@@ -61,3 +61,7 @@ Thumbs.db
 .claude/settings.local.json
 .claude/worktrees/
 .okf/
+
+# Python
+__pycache__/
+*.pyc

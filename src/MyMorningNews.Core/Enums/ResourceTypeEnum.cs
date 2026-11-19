@@ -168,6 +168,26 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// Analytics.
         /// </summary>
-        Analytics
+        Analytics,
+
+        /// <summary>
+        /// Model usage and cost accounting across users.
+        /// </summary>
+        Usage,
+
+        /// <summary>
+        /// Vault credential.
+        /// </summary>
+        VaultCredential,
+
+        /// <summary>
+        /// MCP server.
+        /// </summary>
+        McpServer,
+
+        /// <summary>
+        /// Model call log.
+        /// </summary>
+        LlmCall
     }
 }

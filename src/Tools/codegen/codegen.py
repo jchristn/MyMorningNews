@@ -41,7 +41,7 @@ def write(path, text, always=False, entity=None):
         return
     if os.path.exists(path) and not always and entity not in FORCE:
         return
-    if '—' in text:
+    if '\u2014' in text:
         raise SystemExit('em-dash in generated text for ' + path)
     written.append(os.path.relpath(path, SRC))
     if DRY:

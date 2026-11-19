@@ -7,7 +7,7 @@ namespace MyMorningNews.Server.Workers
     using MyMorningNews.Core.Telemetry;
 
     /// <summary>
-    /// Hourly maintenance: prunes request history past its retention window and expired sessions.
+    /// Hourly maintenance: prunes request history past its retention window, expired sessions, and old model call payloads.
     /// Thread safety: runs on its own task.
     /// </summary>
     public class RetentionWorker
@@ -106,7 +106,8 @@ namespace MyMorningNews.Server.Workers
                 DateTime cutoff = DateTime.UtcNow.AddDays(-_Server.Settings.RequestHistory.RetentionDays);
                 int pruned = await _Server.Database.RequestHistory.PruneAsync(cutoff, token).ConfigureAwait(false);
                 int sessions = await _Server.Database.AuthSessions.DeleteExpiredAsync(DateTime.UtcNow.AddDays(-ExpiredSessionRetentionDays), token).ConfigureAwait(false);
-                if (pruned > 0 || sessions > 0) _Server.Logging.Info("[RetentionWorker] pruned " + pruned + " requests and " + sessions + " expired sessions");
+                int payloads = await _Server.Database.LlmCalls.ClearPayloadsAsync(DateTime.UtcNow.AddDays(-_Server.Settings.Diagnostics.LlmPayloadRetentionDays), token).ConfigureAwait(false);
+                if (pruned > 0 || sessions > 0 || payloads > 0) _Server.Logging.Info("[RetentionWorker] pruned " + pruned + " requests, " + sessions + " expired sessions, and " + payloads + " model call payloads");
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested)
             {

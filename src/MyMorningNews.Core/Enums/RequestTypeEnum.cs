@@ -178,6 +178,76 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// Read server information.
         /// </summary>
-        ServerInfoRead
+        ServerInfoRead,
+
+        /// <summary>
+        /// Read vault credential metadata.
+        /// </summary>
+        VaultRead,
+
+        /// <summary>
+        /// Create, update, or rotate vault credentials.
+        /// </summary>
+        VaultWrite,
+
+        /// <summary>
+        /// Delete vault credentials.
+        /// </summary>
+        VaultDelete,
+
+        /// <summary>
+        /// Reveal a vault secret.
+        /// </summary>
+        VaultReveal,
+
+        /// <summary>
+        /// Read model endpoints and assignments.
+        /// </summary>
+        ModelRead,
+
+        /// <summary>
+        /// Create or update model endpoints and assignments.
+        /// </summary>
+        ModelWrite,
+
+        /// <summary>
+        /// Delete model endpoints.
+        /// </summary>
+        ModelDelete,
+
+        /// <summary>
+        /// Validate, list, or test models.
+        /// </summary>
+        ModelExecute,
+
+        /// <summary>
+        /// Read prompt templates.
+        /// </summary>
+        PromptRead,
+
+        /// <summary>
+        /// Create, update, roll back, or reset prompt templates.
+        /// </summary>
+        PromptWrite,
+
+        /// <summary>
+        /// Delete prompt overrides.
+        /// </summary>
+        PromptDelete,
+
+        /// <summary>
+        /// Run a prompt in the prompt lab.
+        /// </summary>
+        PromptExecute,
+
+        /// <summary>
+        /// Read model call logs.
+        /// </summary>
+        LlmCallRead,
+
+        /// <summary>
+        /// Read model usage and cost analytics.
+        /// </summary>
+        UsageRead
     }
 }

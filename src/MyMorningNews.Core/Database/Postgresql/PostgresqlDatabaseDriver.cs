@@ -64,6 +64,13 @@ namespace MyMorningNews.Core.Database.Postgresql
             CredentialScopeAssignments = new CredentialScopeAssignmentMethods(this);
             AuditRecords = new AuditRecordMethods(this);
             RequestHistory = new RequestHistoryMethods(this);
+            VaultCredentials = new VaultCredentialMethods(this);
+            ModelEndpoints = new ModelEndpointMethods(this);
+            ModelAssignments = new ModelAssignmentMethods(this);
+            LlmCalls = new LlmCallMethods(this);
+            PromptTemplates = new PromptTemplateMethods(this);
+            PromptTemplateVersions = new PromptTemplateVersionMethods(this);
+            UsageAnalytics = new UsageAnalyticsMethods(this);
         }
 
         #endregion

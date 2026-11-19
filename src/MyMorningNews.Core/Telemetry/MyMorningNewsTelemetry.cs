@@ -70,6 +70,41 @@ namespace MyMorningNews.Core.Telemetry
         /// </summary>
         public static readonly Histogram<double> WorkerDuration = Meter.CreateHistogram<double>("mymorningnews.worker.duration", "s", "Background worker iteration duration.");
 
+        /// <summary>
+        /// Model calls by task, provider, and outcome.
+        /// </summary>
+        public static readonly Counter<long> LlmCalls = Meter.CreateCounter<long>("mymorningnews.llm.calls", "{call}", "Model calls by task, provider, and outcome.");
+
+        /// <summary>
+        /// Model call duration by task and provider.
+        /// </summary>
+        public static readonly Histogram<double> LlmCallDuration = Meter.CreateHistogram<double>("mymorningnews.llm.call.duration", "s", "Model call duration.");
+
+        /// <summary>
+        /// Model tokens by task, provider, and direction (input or output).
+        /// </summary>
+        public static readonly Counter<long> LlmTokens = Meter.CreateCounter<long>("mymorningnews.llm.tokens", "{token}", "Model tokens.");
+
+        /// <summary>
+        /// Structured output repair turns by task and provider.
+        /// </summary>
+        public static readonly Counter<long> LlmStructuredRepairs = Meter.CreateCounter<long>("mymorningnews.llm.structured_repairs", "{repair}", "Structured output repair turns.");
+
+        /// <summary>
+        /// Time to first streamed token by task and provider.
+        /// </summary>
+        public static readonly Histogram<double> LlmTimeToFirstToken = Meter.CreateHistogram<double>("mymorningnews.llm.time_to_first_token", "s", "Time to first streamed token.");
+
+        /// <summary>
+        /// Tool calls returned by models, by task and provider.
+        /// </summary>
+        public static readonly Counter<long> LlmToolCalls = Meter.CreateCounter<long>("mymorningnews.llm.tool_calls", "{call}", "Tool calls returned by models.");
+
+        /// <summary>
+        /// Estimated model cost in USD by task and provider.
+        /// </summary>
+        public static readonly Counter<double> LlmCostUsd = Meter.CreateCounter<double>("mymorningnews.llm.cost_usd", "{USD}", "Estimated model cost.");
+
         #endregion
 
         #region Public-Methods
@@ -103,6 +138,42 @@ namespace MyMorningNews.Core.Telemetry
             try
             {
                 histogram.Record(value, ToTags(labels));
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        /// <summary>
+        /// Add a value to a counter with labels, swallowing instrumentation failures.
+        /// </summary>
+        /// <param name="counter">Counter.</param>
+        /// <param name="value">Value.</param>
+        /// <param name="labels">Label pairs as name, value, name, value.</param>
+        public static void Add(Counter<long> counter, long value, params string[] labels)
+        {
+            if (counter == null) return;
+            try
+            {
+                counter.Add(value, ToTags(labels));
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        /// <summary>
+        /// Add a value to a floating-point counter with labels, swallowing instrumentation failures.
+        /// </summary>
+        /// <param name="counter">Counter.</param>
+        /// <param name="value">Value.</param>
+        /// <param name="labels">Label pairs as name, value, name, value.</param>
+        public static void AddDouble(Counter<double> counter, double value, params string[] labels)
+        {
+            if (counter == null) return;
+            try
+            {
+                counter.Add(value, ToTags(labels));
             }
             catch (Exception)
             {

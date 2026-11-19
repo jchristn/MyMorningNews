@@ -82,6 +82,7 @@ namespace MyMorningNews.Server.Routes
 
             Tenant tenant = new Tenant { Name = req.Name.Trim(), Description = req.Description, Region = req.Region, TimeZone = req.TimeZone ?? "UTC", Active = req.Active ?? true };
             tenant = await Server.Database.Tenants.CreateAsync(tenant, ctx.Token).ConfigureAwait(false);
+            await Server.TenantDefaults.EnsureAsync(tenant.Id, ctx.Token).ConfigureAwait(false);
             await Server.Audit.RecordAsync(AuditEventTypeEnum.TenantChanged, Context(ctx), 201, "Tenant " + tenant.Id + " created.", ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 201, tenant).ConfigureAwait(false);
         }

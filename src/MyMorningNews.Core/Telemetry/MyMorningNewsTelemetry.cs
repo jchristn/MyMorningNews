@@ -121,6 +121,26 @@ namespace MyMorningNews.Core.Telemetry
         public static readonly Counter<long> SchedulerClaims = Meter.CreateCounter<long>("mymorningnews.scheduler.claims", "{claim}", "Schedule firings by outcome.");
 
         /// <summary>
+        /// Search requests by provider and outcome.
+        /// </summary>
+        public static readonly Counter<long> SearchRequests = Meter.CreateCounter<long>("mymorningnews.search.requests", "{request}", "Search requests by provider and outcome.");
+
+        /// <summary>
+        /// Search duration by provider.
+        /// </summary>
+        public static readonly Histogram<double> SearchDuration = Meter.CreateHistogram<double>("mymorningnews.search.duration", "s", "Search duration.");
+
+        /// <summary>
+        /// Page fetches by outcome.
+        /// </summary>
+        public static readonly Counter<long> FetchRequests = Meter.CreateCounter<long>("mymorningnews.fetch.requests", "{request}", "Page fetches by outcome.");
+
+        /// <summary>
+        /// Page fetch duration.
+        /// </summary>
+        public static readonly Histogram<double> FetchDuration = Meter.CreateHistogram<double>("mymorningnews.fetch.duration", "s", "Page fetch duration.");
+
+        /// <summary>
         /// Push notifications by outcome.
         /// </summary>
         public static readonly Counter<long> PushMessages = Meter.CreateCounter<long>("mymorningnews.push.messages", "{message}", "Push notifications by outcome.");

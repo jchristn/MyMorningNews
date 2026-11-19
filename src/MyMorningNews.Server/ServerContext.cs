@@ -2,8 +2,10 @@ namespace MyMorningNews.Server
 {
     using System;
     using MyMorningNews.Core.Database;
+    using MyMorningNews.Core.Fetch;
     using MyMorningNews.Core.Pipeline;
     using MyMorningNews.Core.Scheduling;
+    using MyMorningNews.Core.Search;
     using MyMorningNews.Core.Services;
     using MyMorningNews.Core.Settings;
     using SyslogLogging;
@@ -97,6 +99,16 @@ namespace MyMorningNews.Server
         public SchedulingService Scheduling { get; }
 
         /// <summary>
+        /// Web search across providers.
+        /// </summary>
+        public SearchService Search { get; }
+
+        /// <summary>
+        /// Page fetching.
+        /// </summary>
+        public FetchService Fetch { get; }
+
+        /// <summary>
         /// Executor used by the run worker. Replaceable (tests and later phases install the research pipeline).
         /// </summary>
         public IRunExecutor RunExecutor { get; set; } = new PendingPipelineExecutor();
@@ -119,6 +131,8 @@ namespace MyMorningNews.Server
         /// <param name="refinement">Refinement wizard.</param>
         /// <param name="researchRequests">One-time requests.</param>
         /// <param name="scheduling">Scheduling and runs.</param>
+        /// <param name="search">Search.</param>
+        /// <param name="fetch">Fetch.</param>
         /// <exception cref="ArgumentNullException">An argument is null.</exception>
         public ServerContext(
             SettingsService settingsService,
@@ -135,7 +149,9 @@ namespace MyMorningNews.Server
             PushService push,
             RefinementService refinement,
             ResearchRequestService researchRequests,
-            SchedulingService scheduling)
+            SchedulingService scheduling,
+            SearchService search,
+            FetchService fetch)
         {
             ArgumentNullException.ThrowIfNull(settingsService);
             ArgumentNullException.ThrowIfNull(database);
@@ -157,6 +173,8 @@ namespace MyMorningNews.Server
             Refinement = refinement ?? throw new ArgumentNullException(nameof(refinement));
             ResearchRequests = researchRequests ?? throw new ArgumentNullException(nameof(researchRequests));
             Scheduling = scheduling ?? throw new ArgumentNullException(nameof(scheduling));
+            Search = search ?? throw new ArgumentNullException(nameof(search));
+            Fetch = fetch ?? throw new ArgumentNullException(nameof(fetch));
             Models = models ?? throw new ArgumentNullException(nameof(models));
             TenantDefaults = tenantDefaults ?? throw new ArgumentNullException(nameof(tenantDefaults));
         }

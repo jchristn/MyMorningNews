@@ -136,6 +136,16 @@ namespace MyMorningNews.Core.Settings
             set { _Scheduler = value ?? throw new ArgumentNullException(nameof(Scheduler)); }
         }
 
+        /// <summary>
+        /// Search and fetch.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Value is null.</exception>
+        public SearchSettings Search
+        {
+            get { return _Search; }
+            set { _Search = value ?? throw new ArgumentNullException(nameof(Search)); }
+        }
+
         #endregion
 
         #region Private-Members
@@ -152,6 +162,7 @@ namespace MyMorningNews.Core.Settings
         private PushSettings _Push = new PushSettings();
         private StorageSettings _Storage = new StorageSettings();
         private SchedulerSettings _Scheduler = new SchedulerSettings();
+        private SearchSettings _Search = new SearchSettings();
 
         #endregion
     }

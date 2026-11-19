@@ -29,6 +29,15 @@ namespace MyMorningNews.Core.Services
 
         #endregion
 
+        #region Public-Members
+
+        /// <summary>
+        /// Search service used to seed default search providers. Null skips search provider seeding.
+        /// </summary>
+        public Search.SearchService? Search { get; set; } = null;
+
+        #endregion
+
         #region Private-Members
 
         private static readonly HashSet<ModelTaskEnum> _HighEffort = new HashSet<ModelTaskEnum>
@@ -101,6 +110,11 @@ namespace MyMorningNews.Core.Services
         {
             int prompts = await _Prompts.EnsureDefaultsAsync(tenantId, token).ConfigureAwait(false);
             if (prompts > 0) _Logging.Info(_Header + "seeded or updated " + prompts + " prompts for tenant " + tenantId);
+            if (Search != null)
+            {
+                int providers = await Search.EnsureDefaultsAsync(tenantId, token).ConfigureAwait(false);
+                if (providers > 0) _Logging.Info(_Header + "seeded " + providers + " search providers for tenant " + tenantId);
+            }
 
             long endpoints = await _Database.ModelEndpoints.CountAsync(new ModelEndpointFilter { TenantId = tenantId }, token).ConfigureAwait(false);
             if (endpoints > 0) return;

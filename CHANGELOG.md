@@ -37,6 +37,7 @@ All notable changes to this project are documented here. The project follows [Se
 - Schedules: every n minutes, hours, days, or weeks; days of the week or month; once; cron; or manual, each in its own time zone with daylight-saving handled, plus a preview of the next runs. A scheduler and run workers queue and execute runs (one active run per topic, missed-run policies, run now, dry run, cancel, time limit, concurrency limit), and confirmed one-time requests run when due.
 - Dashboard pages for stored credentials (with audited reveal), models (endpoints, assignments, call log), prompts (editor, version diff, lab), usage and cost insights, and platform usage for administrators.
 - Prompts a tenant never customized now follow updated defaults; the prompt lab reports cost; the call log filters by user and topic.
+- Web search through SearXNG (bundled, no key), Tavily, You.com, RSS and Atom feeds, Hacker News, and arXiv, with per-topic provider choices and a test action. Page fetching respects robots.txt, spaces requests per domain, extracts the main content, and converts HTML and PDF to Markdown.
 - `OWNER_ACTIONS.md` with everything the owner needs to do, grouped by phase.
 - Scope guardrail on every model call and in every default prompt, so models stay on research and briefing tasks and treat fetched content as data.
 - Prompt templates: 19 defaults, renderer with list expansion, save-time variable validation, versions, rollback, reset, topic overrides, and a prompt lab.

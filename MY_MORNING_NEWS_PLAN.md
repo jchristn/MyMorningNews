@@ -1442,11 +1442,12 @@ Exit: "I want to learn about AI developer tools" produces dimensions, at least t
 ### Phase 5: Schedules, search, and fetch
 
 - [x] `ScheduleCalculator` (every interval type, time zones, nonexistent and ambiguous local times), schedules API with preview, `SchedulerWorker` and `RunWorker` with `FOR UPDATE SKIP LOCKED` claims, one active run per topic, missed-run policies, run now, dry run, cancel, run timeout, concurrency limit, due one-time requests queued as runs, `IRunExecutor` (placeholder until Phase 6). Exit check passed in Docker: a due five-minute schedule fired after a server restart. Migration 6.
-- [ ] MCP server registry (Voltaic client, discovery, tool toggles) and the agentic search mode for tool-capable models (`web_search`, `fetch_url`, MCP tools; capped and logged).
-- [ ] Search providers (SearXNG container with curl, Tavily or You.com via Mux.Search with vault credentials, hosted model search, RSS, Hacker News, arXiv), `FetchService` with CrawlSharp and DocConverter, canonicalization.
+- [ ] MCP server registry (Voltaic client, discovery, tool toggles) and the agentic search mode for tool-capable models (`web_search`, `fetch_url`, MCP tools; capped and logged). Moved to Phase 6, where the pipeline stages it plugs into exist.
+- [x] Search providers: SearXNG (bundled, default), Tavily and You.com through Mux.Search with vault keys, RSS and Atom from topic feeds, Hacker News (Algolia), arXiv; per-topic provider choice with tenant defaults seeded; provider test API; failures reported per provider. Hosted model web search is configured on model endpoints (Phase 6).
+- [x] `FetchService`: robots.txt checked first (cached per origin, longest-match allow and disallow), per-domain delay, CrawlSharp single-page download, HTML and PDF to Markdown with DocConverter after main-content extraction, size, type, block, and HTTP dispositions; `UrlCanonicalizer` (tracking parameters, ordering, ports, fragments, www-insensitive hash). Verified live: SearXNG results and real page fetches.
 - [ ] Dashboard: `ScheduleEditor` with next-runs preview, Search Providers page, topic Schedule and Sources tabs.
 - [x] Schedules suite (8 cases: intervals, daylight saving, validation, API, scheduler tick, execution, run API, due requests).
-- [ ] Suites: Search, Fetch.
+- [x] Search suite (8 cases: canonicalization, feed parsing, defaults, SearXNG, keyless sources, keyed sources, topic providers, fetch).
 
 Exit: a topic scheduled for every 5 minutes enqueues runs on time across a container restart, and DST cases pass.
 
@@ -1649,6 +1650,7 @@ No open questions remain.
 | 2026-11-19 | 4 | Backend done | Topics with dimensions, constraints, and recipients; the refinement wizard (all steps, resume, refine again, out-of-scope detection, live source checks); one-time requests with planning, clarifying questions, confirm now or later, and conversion to recurring topics. Migration 5. `ConflictException` (409) and typed model errors (502, 422). Topics suite (10 cases); 99 tests pass on net8 and net10, 100 on Xunit3. Dashboard and mobile screens for Phase 4 follow. |
 | 2026-11-19 | 5 | Scheduling done | Schedule calculator with daylight-saving handling, schedules API and preview, scheduler and run workers with skip-locked claims, missed-run policies, run now, dry run, cancel, timeouts, concurrency limit, and due one-time requests. Verified across a Docker restart. Search providers, fetch, and the MCP registry are next. 107 tests pass on net8 and net10, 108 on Xunit3. |
 | 2026-11-19 | 3 | Done | Phase 3 dashboard pages merged (stored credentials with reveal, models, prompts with diff and lab, usage insights, admin usage). Backend fixes: uncustomized tenant prompts follow updated defaults, lab returns cost, call log filters by user and topic. 108 backend tests, 98 dashboard tests. |
+| 2026-11-19 | 5 | Done | Search providers (SearXNG, Tavily, You.com, RSS, Hacker News, arXiv) with per-topic choice and seeded defaults, fetch service with robots, per-domain delay, main-content extraction, and Markdown conversion, URL canonicalization. MCP registry and agentic search move to Phase 6. 116 tests pass on net8 and net10, 117 on Xunit3. |
 
 ---
 

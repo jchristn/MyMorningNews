@@ -131,7 +131,7 @@ namespace MyMorningNews.Server.Routes
             {
                 VaultCredential created = await Server.Vault.CreateAsync(tenantId, Context(ctx).UserId, new VaultCredentialUpsertRequest
                 {
-                    Name = e.Name + " key " + DateTime.UtcNow.ToString("yyyyMMddHHmmss"),
+                    Name = e.Name + " key " + DateTime.UtcNow.ToString("yyyyMMdd") + "-" + Guid.NewGuid().ToString("N").Substring(0, 6),
                     Kind = VaultCredentialKindEnum.ApiKey,
                     Provider = ProviderFor(e.Provider),
                     Secret = req.ApiKey

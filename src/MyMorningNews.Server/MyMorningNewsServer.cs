@@ -7,7 +7,9 @@ namespace MyMorningNews.Server
     using MyMorningNews.Core;
     using MyMorningNews.Core.Database;
     using MyMorningNews.Core.Database.Postgresql;
+    using MyMorningNews.Core.Fetch;
     using MyMorningNews.Core.Scheduling;
+    using MyMorningNews.Core.Search;
     using MyMorningNews.Core.Security;
     using MyMorningNews.Core.Services;
     using MyMorningNews.Core.Settings;
@@ -85,6 +87,8 @@ namespace MyMorningNews.Server
         private int _DatabaseConnectAttempts = 30;
         private PushService? _Push = null;
         private RefinementService? _Refinement = null;
+        private SearchService? _Search = null;
+        private FetchService? _Fetch = null;
         private bool _Disposed = false;
 
         #endregion
@@ -132,12 +136,15 @@ namespace MyMorningNews.Server
             PromptService prompts = new PromptService(_Database);
             _Models = new ModelGateway(_Database, vault, settings, _Logging);
             TenantDefaultsService tenantDefaults = new TenantDefaultsService(_Database, prompts, vault, settings.Models, _Logging);
+            _Search = new SearchService(_Database, vault, settings, _Logging);
+            _Fetch = new FetchService(settings, _Logging);
+            tenantDefaults.Search = _Search;
             await tenantDefaults.EnsureAllAsync(token).ConfigureAwait(false);
             _Push = new PushService(_Database, settings, _Logging);
             _Refinement = new RefinementService(_Database, prompts, _Models, _Logging);
             ResearchRequestService researchRequests = new ResearchRequestService(_Database, _Refinement);
             SchedulingService scheduling = new SchedulingService(_Database, settings, _Logging);
-            _Context = new ServerContext(_Settings, _Database, _Logging, authentication, authorization, audit, Lifetime, vault, prompts, _Models, tenantDefaults, _Push, _Refinement, researchRequests, scheduling);
+            _Context = new ServerContext(_Settings, _Database, _Logging, authentication, authorization, audit, Lifetime, vault, prompts, _Models, tenantDefaults, _Push, _Refinement, researchRequests, scheduling, _Search!, _Fetch!);
 
             _Capture = new RequestHistoryCaptureService(_Database, settings.RequestHistory, _Logging);
             RequestPipeline pipeline = new RequestPipeline(_Context, _Capture);
@@ -222,6 +229,8 @@ namespace MyMorningNews.Server
                 _Capture?.Dispose();
                 _Push?.Dispose();
                 _Refinement?.Dispose();
+                _Search?.Dispose();
+                _Fetch?.Dispose();
                 _Models?.Dispose();
                 _Database?.Dispose();
             }
@@ -256,6 +265,7 @@ namespace MyMorningNews.Server
                 new ResearchRequestRoutes(context),
                 new ScheduleRoutes(context),
                 new RunRoutes(context),
+                new SearchRoutes(context),
                 new PromptRoutes(context)
             };
         }

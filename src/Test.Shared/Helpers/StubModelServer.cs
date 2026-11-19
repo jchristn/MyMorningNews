@@ -174,10 +174,24 @@ namespace Test.Shared.Helpers
                     return;
                 }
 
+                if (path.EndsWith("/tavily/search", StringComparison.Ordinal))
+                {
+                    string auth = ctx.Request.Headers["Authorization"] ?? String.Empty;
+                    if (!auth.Contains("tvly-test", StringComparison.Ordinal)) { await WriteAsync(ctx, 401, "{\"detail\":\"bad key\"}").ConfigureAwait(false); return; }
+                    await WriteAsync(ctx, 200, "{\"query\":\"q\",\"results\":[{\"title\":\"Tavily one\",\"url\":\"https://news.example.com/a?utm_source=x\",\"content\":\"First.\",\"score\":0.9,\"published_date\":\"2026-11-18\"}," +
+                        "{\"title\":\"Tavily two\",\"url\":\"https://blocked.test/b\",\"content\":\"Second.\",\"score\":0.5}]}").ConfigureAwait(false);
+                    return;
+                }
+
+                if (path.EndsWith("/you/search", StringComparison.Ordinal))
+                {
+                    await WriteAsync(ctx, 200, "{\"results\":{\"web\":[{\"title\":\"You one\",\"url\":\"https://you.example.com/1\",\"description\":\"From You.\",\"snippets\":[\"s\"]}],\"news\":[]},\"metadata\":{\"query\":\"q\"}}").ConfigureAwait(false);
+                    return;
+                }
+
                 if (String.Equals(ctx.Request.HttpMethod, "GET", StringComparison.OrdinalIgnoreCase) && !path.EndsWith("/models", StringComparison.Ordinal))
                 {
-                    if (path.Contains("missing", StringComparison.Ordinal)) await WriteAsync(ctx, 404, "{\"error\":\"not found\"}").ConfigureAwait(false);
-                    else await WriteRawAsync(ctx, 200, "application/rss+xml", "<?xml version=\"1.0\"?><rss version=\"2.0\"><channel><title>stub</title></channel></rss>").ConfigureAwait(false);
+                    await WriteGetAsync(ctx, path).ConfigureAwait(false);
                     return;
                 }
 
@@ -338,6 +352,48 @@ namespace Test.Shared.Helpers
                 return "{\"feeds\":[{\"url\":\"" + self + "/feed.xml\",\"reason\":\"Official feed.\",\"dimension\":\"Model releases\"},{\"url\":\"" + self + "/missing.xml\",\"reason\":\"Gone.\",\"dimension\":null},{\"url\":\"not a url\",\"reason\":\"x\",\"dimension\":null}]," +
                     "\"seedUrls\":[{\"url\":\"" + self + "/changelog\",\"reason\":\"Changelog.\",\"dimension\":null}]}";
             return "{\"answer\":\"ready\"}";
+        }
+
+        private static async Task WriteGetAsync(HttpListenerContext ctx, string path)
+        {
+            if (path.EndsWith("/robots.txt", StringComparison.Ordinal)) { await WriteRawAsync(ctx, 200, "text/plain", "User-agent: *\nDisallow: /v1/private\nAllow: /v1/private/open\n").ConfigureAwait(false); return; }
+            if (path.Contains("missing", StringComparison.Ordinal)) { await WriteAsync(ctx, 404, "{\"error\":\"not found\"}").ConfigureAwait(false); return; }
+            if (path.EndsWith("/search", StringComparison.Ordinal))
+            {
+                await WriteAsync(ctx, 200, "{\"query\":\"q\",\"results\":[" +
+                    "{\"url\":\"https://www.example.com/story?utm_source=feed&id=7\",\"title\":\"Story one\",\"content\":\"Snippet one.\",\"publishedDate\":\"2026-11-18T10:00:00\",\"score\":2.5}," +
+                    "{\"url\":\"https://example.com/story?id=7&fbclid=abc\",\"title\":\"Story one again\",\"content\":\"Duplicate.\"}," +
+                    "{\"url\":\"https://sub.blocked.test/x\",\"title\":\"Blocked\",\"content\":\"No.\"}," +
+                    "{\"url\":\"https://other.example.org/two\",\"title\":\"Story two\",\"content\":\"Snippet two.\"}]}").ConfigureAwait(false);
+                return;
+            }
+
+            if (path.Contains("/hn/search_by_date", StringComparison.Ordinal))
+            {
+                await WriteAsync(ctx, 200, "{\"hits\":[{\"objectID\":\"101\",\"title\":\"Show HN: agents\",\"url\":\"https://agents.example.com\",\"points\":120,\"created_at\":\"2026-11-18T09:00:00.000Z\"}," +
+                    "{\"objectID\":\"102\",\"title\":\"Ask HN: tools?\",\"url\":null,\"points\":40,\"created_at\":\"2026-11-17T09:00:00.000Z\"}]}").ConfigureAwait(false);
+                return;
+            }
+
+            if (path.Contains("/arxiv/query", StringComparison.Ordinal))
+            {
+                await WriteRawAsync(ctx, 200, "application/atom+xml", "<?xml version=\"1.0\"?><feed xmlns=\"http://www.w3.org/2005/Atom\"><entry><id>http://arxiv.org/abs/2611.00001v1</id><title>Agentic Coding Benchmarks</title>" +
+                    "<summary>We study agents.</summary><published>2026-11-17T00:00:00Z</published><link href=\"http://arxiv.org/abs/2611.00001v1\" rel=\"alternate\" type=\"text/html\"/><link href=\"http://arxiv.org/pdf/2611.00001v1\" rel=\"related\"/></entry></feed>").ConfigureAwait(false);
+                return;
+            }
+
+            if (path.EndsWith(".html", StringComparison.Ordinal) || path.Contains("/private/", StringComparison.Ordinal))
+            {
+                await WriteRawAsync(ctx, 200, "text/html; charset=utf-8", "<!doctype html><html><head><title>Heat pump rebates expand</title></head><body><nav>Menu</nav><article><h1>Heat pump rebates expand</h1>" +
+                    "<p>The state announced <strong>new rebates</strong> for heat pumps on Tuesday.</p><p>Applications open in January.</p></article></body></html>").ConfigureAwait(false);
+                return;
+            }
+
+            if (path.EndsWith(".bin", StringComparison.Ordinal)) { await WriteRawAsync(ctx, 200, "application/octet-stream", "binary").ConfigureAwait(false); return; }
+            await WriteRawAsync(ctx, 200, "application/rss+xml", "<?xml version=\"1.0\"?><rss version=\"2.0\"><channel><title>stub</title>" +
+                "<item><title>Heat pump rebates expand in California</title><link>https://energy.example.com/rebates</link><description>&lt;p&gt;New &lt;b&gt;rebates&lt;/b&gt; announced.&lt;/p&gt;</description><pubDate>Wed, 18 Nov 2026 08:00:00 GMT</pubDate></item>" +
+                "<item><title>Unrelated gardening tips</title><link>https://garden.example.com/tips</link><description>Tomatoes.</description><pubDate>Tue, 17 Nov 2026 08:00:00 GMT</pubDate></item>" +
+                "</channel></rss>").ConfigureAwait(false);
         }
 
         private static async Task WriteRawAsync(HttpListenerContext ctx, int status, string contentType, string content)

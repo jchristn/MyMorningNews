@@ -28,7 +28,8 @@ namespace Test.Shared
                     ModelSuite.Create(),
                     MobileSuite.Create(),
                     TopicSuite.Create(),
-                    ScheduleSuite.Create()
+                    ScheduleSuite.Create(),
+                    SearchSuite.Create()
                 };
             }
         }

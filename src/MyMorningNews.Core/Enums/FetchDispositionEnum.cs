@@ -1,0 +1,43 @@
+namespace MyMorningNews.Core.Enums
+{
+    /// <summary>
+    /// What happened when a page was fetched.
+    /// </summary>
+    public enum FetchDispositionEnum
+    {
+        /// <summary>
+        /// Fetched and converted to text.
+        /// </summary>
+        Fetched,
+
+        /// <summary>
+        /// robots.txt disallows the page.
+        /// </summary>
+        RobotsDenied,
+
+        /// <summary>
+        /// The domain is blocked for the topic or tenant.
+        /// </summary>
+        Blocked,
+
+        /// <summary>
+        /// Larger than the configured limit.
+        /// </summary>
+        TooLarge,
+
+        /// <summary>
+        /// A content type that is not converted (images, archives, and similar).
+        /// </summary>
+        Unsupported,
+
+        /// <summary>
+        /// The server returned an error status.
+        /// </summary>
+        HttpError,
+
+        /// <summary>
+        /// Timed out or could not connect.
+        /// </summary>
+        Failed
+    }
+}

@@ -317,6 +317,96 @@ namespace MyMorningNews.Core.Helpers
         }
 
         /// <summary>
+        /// Generate a RunStage identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateRunStageId()
+        {
+            return Generate(IdPrefixes.RunStage);
+        }
+
+        /// <summary>
+        /// Generate a SearchQuery identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateSearchQueryId()
+        {
+            return Generate(IdPrefixes.SearchQuery);
+        }
+
+        /// <summary>
+        /// Generate a SearchResult identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateSearchResultId()
+        {
+            return Generate(IdPrefixes.SearchResult);
+        }
+
+        /// <summary>
+        /// Generate a SourceItem identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateSourceItemId()
+        {
+            return Generate(IdPrefixes.SourceItem);
+        }
+
+        /// <summary>
+        /// Generate a Evidence identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateEvidenceId()
+        {
+            return Generate(IdPrefixes.Evidence);
+        }
+
+        /// <summary>
+        /// Generate a Finding identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateFindingId()
+        {
+            return Generate(IdPrefixes.Finding);
+        }
+
+        /// <summary>
+        /// Generate a FindingEvidence identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateFindingEvidenceId()
+        {
+            return Generate(IdPrefixes.FindingEvidence);
+        }
+
+        /// <summary>
+        /// Generate a Prediction identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GeneratePredictionId()
+        {
+            return Generate(IdPrefixes.Prediction);
+        }
+
+        /// <summary>
+        /// Generate a PredictionReview identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GeneratePredictionReviewId()
+        {
+            return Generate(IdPrefixes.PredictionReview);
+        }
+
+        /// <summary>
+        /// Generate a Suggestion identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateSuggestionId()
+        {
+            return Generate(IdPrefixes.Suggestion);
+        }
+
+        /// <summary>
         /// Generate a RequestHistory identifier.
         /// </summary>
         /// <returns>Identifier.</returns>
@@ -341,6 +431,15 @@ namespace MyMorningNews.Core.Helpers
         public static string GenerateRefreshTokenFamilyId()
         {
             return Generate(IdPrefixes.RefreshTokenFamily);
+        }
+
+        /// <summary>
+        /// Generate a Embedding identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateEmbeddingId()
+        {
+            return Generate(IdPrefixes.Embedding);
         }
 
         #endregion

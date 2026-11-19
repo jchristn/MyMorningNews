@@ -141,6 +141,21 @@ namespace MyMorningNews.Core.Telemetry
         public static readonly Histogram<double> FetchDuration = Meter.CreateHistogram<double>("mymorningnews.fetch.duration", "s", "Page fetch duration.");
 
         /// <summary>
+        /// Extracted quotes by verification outcome.
+        /// </summary>
+        public static readonly Counter<long> EvidenceQuotes = Meter.CreateCounter<long>("mymorningnews.evidence.quotes", "{quote}", "Extracted quotes by verification outcome.");
+
+        /// <summary>
+        /// Findings saved by tier.
+        /// </summary>
+        public static readonly Counter<long> Findings = Meter.CreateCounter<long>("mymorningnews.findings", "{finding}", "Findings saved by tier.");
+
+        /// <summary>
+        /// Run stage duration by stage.
+        /// </summary>
+        public static readonly Histogram<double> RunStageDuration = Meter.CreateHistogram<double>("mymorningnews.run.stage.duration", "s", "Run stage duration.");
+
+        /// <summary>
         /// Push notifications by outcome.
         /// </summary>
         public static readonly Counter<long> PushMessages = Meter.CreateCounter<long>("mymorningnews.push.messages", "{message}", "Push notifications by outcome.");

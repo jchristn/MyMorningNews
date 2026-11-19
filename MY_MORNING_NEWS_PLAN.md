@@ -1453,7 +1453,8 @@ Exit: a topic scheduled for every 5 minutes enqueues runs on time across a conta
 
 ### Phase 6: Research pipeline, ranking, and evidence
 
-- [ ] All stages in section 16, embeddings (pgvector), dedupe, composite ranking, tiers, evidence verification, run SSE, cancel, retry from stage, dry run.
+- [x] Stages 1 to 13 of section 16 (AssembleContext, PlanQueries with seed-query fallback, Search, Filter, Fetch with source reuse, Extract with verbatim quote verification, Embed, Dedupe with pgvector and dedupe-judge or word similarity fallback, Score with composite ranking and tiers, Synthesize, ReviewPredictions, Predict, Suggest), critical and non-critical failure handling (PartiallySucceeded), cancellation between stages, dry runs, per-run token and cost totals. Embeddings carry model and dimensions. Migration 7.
+- [ ] Run SSE progress stream and retry from a stage; ComposeRunBriefing (Phase 7) and Notify (Phase 9); MCP registry and agentic search mode (moved from Phase 5); prediction evidence links.
 - [ ] Dashboard: Runs (live stage timeline, queries, results, LLM calls), Findings (score breakdown, evidence drawer), Sources, Predictions, Suggestions, plus charts 2 to 5, 21 to 24.
 - [ ] Suites: Pipeline, Evidence, Dedupe, Ranking, Predictions, Suggestions.
 
@@ -1655,6 +1656,7 @@ No open questions remain.
 | 2026-11-19 | 3 | Done | Phase 3 dashboard pages merged (stored credentials with reveal, models, prompts with diff and lab, usage insights, admin usage). Backend fixes: uncustomized tenant prompts follow updated defaults, lab returns cost, call log filters by user and topic. 108 backend tests, 98 dashboard tests. |
 | 2026-11-19 | 5 | Done | Search providers (SearXNG, Tavily, You.com, RSS, Hacker News, arXiv) with per-topic choice and seeded defaults, fetch service with robots, per-domain delay, main-content extraction, and Markdown conversion, URL canonicalization. MCP registry and agentic search move to Phase 6. 116 tests pass on net8 and net10, 117 on Xunit3. |
 | 2026-11-19 | 16 | Foundation done | Mobile app merged: Expo SDK 58, React Native 0.88, JavaScript; sign-in with refresh tokens, tenant picker, biometric lock, account screens, `expo-audio` player (background and lock-screen verified by logs), push, deep links, tablet split views, 12 locales plus pseudo-locales, parity manifest, `npm run verify`, EAS and signed update scripts, `APP_STORE_SUBMISSION.md` with 57 owner fields. Ran on iPhone and iPad simulators and an Android emulator. `OWNER_ACTIONS.md` updated. |
+| 2026-11-19 | 6 | Core done | Research pipeline with 13 stages, quote verification, composite ranking, pgvector de-duplication with fallbacks, predictions with reviews and Brier scores, suggestions, research APIs (findings with evidence, run stages, queries, results, predictions, suggestions, sources). Verified end to end against stub search and model servers, and against live SearXNG and real pages in Docker (stops at extraction without an Anthropic key, as expected). 122 tests pass on net8 and net10, 123 on Xunit3. |
 
 ---
 

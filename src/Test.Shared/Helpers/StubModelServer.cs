@@ -17,7 +17,7 @@ namespace Test.Shared.Helpers
     /// stub-repair (an empty answer until the request carries a repair turn, then a valid one),
     /// stub-429 (the first sighting of each distinct request body returns 429; the identical retry succeeds),
     /// stub-error (always 400), stub-refusal (finish_reason refusal),
-    /// stub-embed-N (embeddings of N dimensions), stub-refine (shaped answers for every refinement prompt, detected from the prompt text).
+    /// stub-embed-N (embeddings of N dimensions, derived from each text), stub-research (shaped answers for every research prompt), stub-refine (shaped answers for every refinement prompt, detected from the prompt text).
     /// GET requests other than /models return an RSS document (200), or 404 when the path contains "missing" (for source checks).
     /// Requests whose system prompt contains "JSON Schema" receive the JSON answer as fenced text. Streaming requests receive SSE chunks
     /// (text or tool-call argument deltas split in two) and a final chunk with usage including cached and reasoning tokens.
@@ -189,6 +189,16 @@ namespace Test.Shared.Helpers
                     return;
                 }
 
+                if (String.Equals(ctx.Request.HttpMethod, "GET", StringComparison.OrdinalIgnoreCase) && path.Contains("/pipeline", StringComparison.Ordinal) && path.EndsWith("/search", StringComparison.Ordinal))
+                {
+                    string root = BaseUrl;
+                    string[] urls = path.Contains("/pipeline2/", StringComparison.Ordinal)
+                        ? new[] { root + "/news/d.html" }
+                        : new[] { root + "/news/a.html?utm_source=x", root + "/news/a.html", root + "/news/b.html", "https://blocked.test/x" };
+                    await WriteAsync(ctx, 200, "{\"results\":[" + String.Join(",", urls.Select((u, i) => "{\"url\":\"" + u + "\",\"title\":\"Result " + i + "\",\"content\":\"Snippet.\",\"publishedDate\":\"" + DateTime.UtcNow.AddHours(-6).ToString("o") + "\"}")) + "]}").ConfigureAwait(false);
+                    return;
+                }
+
                 if (String.Equals(ctx.Request.HttpMethod, "GET", StringComparison.OrdinalIgnoreCase) && !path.EndsWith("/models", StringComparison.Ordinal))
                 {
                     await WriteGetAsync(ctx, path).ConfigureAwait(false);
@@ -211,13 +221,17 @@ namespace Test.Shared.Helpers
                     if (path.EndsWith("/embeddings", StringComparison.Ordinal))
                     {
                         int dims = model.StartsWith("stub-embed-", StringComparison.Ordinal) && Int32.TryParse(model.Substring(11), out int d) ? d : 8;
-                        int n = root.TryGetProperty("input", out JsonElement input) && input.ValueKind == JsonValueKind.Array ? input.GetArrayLength() : 1;
+                        List<string> texts = new List<string>();
+                        if (root.TryGetProperty("input", out JsonElement input) && input.ValueKind == JsonValueKind.Array) foreach (JsonElement e in input.EnumerateArray()) texts.Add(e.GetString() ?? String.Empty);
+                        else texts.Add(root.TryGetProperty("input", out JsonElement single) ? single.GetString() ?? String.Empty : String.Empty);
+                        int n = texts.Count;
                         StringBuilder data = new StringBuilder();
                         for (int i = 0; i < n; i++)
                         {
                             if (i > 0) data.Append(',');
+                            Random rng = new Random(StableHash(texts[i]));
                             data.Append("{\"object\":\"embedding\",\"index\":").Append(i).Append(",\"embedding\":[")
-                                .Append(String.Join(",", Enumerable.Range(0, dims).Select(j => ((i + 1) * 0.01 + j * 0.001).ToString("0.000", System.Globalization.CultureInfo.InvariantCulture))))
+                                .Append(String.Join(",", Enumerable.Range(0, dims).Select(j => (rng.NextDouble() * 2 - 1).ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture))))
                                 .Append("]}");
                         }
 
@@ -244,7 +258,13 @@ namespace Test.Shared.Helpers
                     string answer = model == "stub-repair" && !repairTurn ? "" : "ready";
                     bool toolTurn = tools && model != "stub-refusal";
                     string finish = model == "stub-refusal" ? "refusal" : toolTurn ? "tool_calls" : "stop";
-                    string args = model == "stub-refine" ? RefineArgs(body) : "{\"answer\":\"" + answer + "\"}";
+                    if (model == "stub-research" && body.Contains("Make 0 to 5 new predictions", StringComparison.Ordinal) && body.Contains("FAILPREDICT", StringComparison.Ordinal))
+                    {
+                        await WriteAsync(ctx, 400, "{\"error\":{\"message\":\"prediction model rejected the request\"}}").ConfigureAwait(false);
+                        return;
+                    }
+
+                    string args = model == "stub-refine" ? RefineArgs(body) : model == "stub-research" ? ResearchArgs(body) : "{\"answer\":\"" + answer + "\"}";
                     string text = jsonMode ? "Here you go:\n```json\n" + args + "\n```" : "ready";
                     string usage = "{\"prompt_tokens\":12,\"completion_tokens\":3,\"total_tokens\":15,\"prompt_tokens_details\":{\"cached_tokens\":4},\"completion_tokens_details\":{\"reasoning_tokens\":1}}";
 
@@ -307,6 +327,48 @@ namespace Test.Shared.Helpers
             byte[] done = Encoding.UTF8.GetBytes("data: [DONE]\n\n");
             await ctx.Response.OutputStream.WriteAsync(done).ConfigureAwait(false);
             ctx.Response.Close();
+        }
+
+        private static int StableHash(string text)
+        {
+            unchecked
+            {
+                int h = 23;
+                foreach (char c in text) h = h * 31 + c;
+                return h;
+            }
+        }
+
+        private static string ResearchArgs(string body)
+        {
+            if (body.Contains("Plan at most", StringComparison.Ordinal))
+                return "{\"queries\":[{\"query\":\"heat pump rebates\",\"dimension\":\"Rebates\",\"rationale\":\"Core.\"},{\"query\":\"heat pump standards\",\"dimension\":null,\"rationale\":\"Rules.\"}]}";
+            if (body.Contains("Return up to 5 findings", StringComparison.Ordinal))
+            {
+                if (body.Contains("efficiency standard", StringComparison.Ordinal))
+                    return "{\"findings\":[{\"title\":\"Efficiency standards tighten in 2027\",\"summary\":\"The federal standard rises. Makers have two years.\",\"whyItMatters\":\"Affects which units qualify.\",\"dimension\":null,\"category\":\"News\"," +
+                        "\"quotes\":[\"The federal efficiency standard for heat pumps rises in 2027\"]}]}";
+                return "{\"findings\":[{\"title\":\"Heat pump rebates expand\",\"summary\":\"The state announced new rebates. Applications open in January.\",\"whyItMatters\":\"You can save money.\",\"dimension\":\"Rebates\",\"category\":\"News\"," +
+                    "\"quotes\":[\"The state announced new rebates for heat pumps on Tuesday.\",\"This quote does not appear anywhere in the source text.\"]}," +
+                    "{\"title\":\"Unsupported claim\",\"summary\":\"No quote backs this.\",\"whyItMatters\":\"None.\",\"dimension\":null,\"category\":\"Other\",\"quotes\":[\"Completely invented sentence that is not present.\"]}]}";
+            }
+
+            if (body.Contains("Give a relevance score from 0 to 100", StringComparison.Ordinal))
+                return body.Contains("Efficiency standards", StringComparison.Ordinal) ? "{\"score\":64,\"confidence\":0.7,\"rationale\":\"Related to the brief.\"}" : "{\"score\":92,\"confidence\":0.9,\"rationale\":\"Directly matches the brief.\"}";
+            if (body.Contains("Write a summary of 3 to 6 sentences", StringComparison.Ordinal))
+                return "{\"summary\":\"Rebates expanded and standards tightened.\",\"themes\":[{\"name\":\"Incentives\",\"description\":\"Money for upgrades.\",\"findings\":[\"Heat pump rebates expand\"]}]}";
+            if (body.Contains("Make 0 to 5 new predictions", StringComparison.Ordinal))
+                return "{\"predictions\":[{\"statement\":\"California will open heat pump rebate applications by January 2027.\",\"rationale\":\"Announced.\",\"confidence\":0.7,\"horizon\":\"2027-02-01\",\"findings\":[\"Heat pump rebates expand\"]}]}";
+            if (body.Contains("Give up to 5 suggestions", StringComparison.Ordinal))
+                return "{\"suggestions\":[{\"title\":\"Check rebate eligibility\",\"description\":\"Read the rules.\",\"rationale\":\"Deadlines matter.\",\"priority\":\"High\",\"effort\":\"Minutes\",\"findings\":[\"Heat pump rebates expand\"]}]}";
+            if (body.Contains("For each prediction you can judge", StringComparison.Ordinal))
+            {
+                System.Text.RegularExpressions.Match m = System.Text.RegularExpressions.Regex.Match(body, "\\[(prd_[A-Za-z0-9_]+)\\]");
+                return "{\"reviews\":[" + (m.Success ? "{\"predictionId\":\"" + m.Groups[1].Value + "\",\"status\":\"Accurate\",\"rationale\":\"The rebates were announced.\",\"confidence\":0.9,\"findings\":[\"Heat pump rebates expand\"]}" : String.Empty) + "]}";
+            }
+
+            if (body.Contains("Answer Duplicate, Update, or Different", StringComparison.Ordinal)) return "{\"verdict\":\"Update\",\"reason\":\"Adds a date.\"}";
+            return "{\"answer\":\"ready\"}";
         }
 
         private string RefineArgs(string body)
@@ -379,6 +441,13 @@ namespace Test.Shared.Helpers
             {
                 await WriteRawAsync(ctx, 200, "application/atom+xml", "<?xml version=\"1.0\"?><feed xmlns=\"http://www.w3.org/2005/Atom\"><entry><id>http://arxiv.org/abs/2611.00001v1</id><title>Agentic Coding Benchmarks</title>" +
                     "<summary>We study agents.</summary><published>2026-11-17T00:00:00Z</published><link href=\"http://arxiv.org/abs/2611.00001v1\" rel=\"alternate\" type=\"text/html\"/><link href=\"http://arxiv.org/pdf/2611.00001v1\" rel=\"related\"/></entry></feed>").ConfigureAwait(false);
+                return;
+            }
+
+            if (path.EndsWith("/b.html", StringComparison.Ordinal))
+            {
+                await WriteRawAsync(ctx, 200, "text/html; charset=utf-8", "<!doctype html><html><head><title>Efficiency standards tighten</title></head><body><main><h1>Efficiency standards tighten</h1>" +
+                    "<p>The federal efficiency standard for heat pumps rises in 2027, according to the energy department.</p><p>Manufacturers have two years to comply with the new rules.</p></main></body></html>").ConfigureAwait(false);
                 return;
             }
 

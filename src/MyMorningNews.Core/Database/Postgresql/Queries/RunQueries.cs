@@ -15,7 +15,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Column list in model order.
         /// </summary>
-        public const string Columns = "id, tenantid, topicid, userid, scheduleid, researchrequestid, trigger, status, isdryrun, cancelrequested, queuedutc, startedutc, completedutc, lockeduntilutc, workerid, skippedreason, errormessage, summary, active, createdutc, lastupdateutc";
+        public const string Columns = "id, tenantid, topicid, userid, scheduleid, researchrequestid, trigger, status, isdryrun, cancelrequested, queuedutc, startedutc, completedutc, lockeduntilutc, workerid, skippedreason, errormessage, summary, durationms, newfindingcount, duplicatecount, sourcecount, inputtokens, outputtokens, estimatedcostusd, contextsnapshothash, active, createdutc, lastupdateutc";
 
         /// <summary>
         /// Schema statements: table and indexes. Idempotent.
@@ -41,6 +41,14 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
     skippedreason TEXT,
     errormessage TEXT,
     summary TEXT,
+    durationms DOUBLE PRECISION NOT NULL,
+    newfindingcount INTEGER NOT NULL,
+    duplicatecount INTEGER NOT NULL,
+    sourcecount INTEGER NOT NULL,
+    inputtokens INTEGER NOT NULL,
+    outputtokens INTEGER NOT NULL,
+    estimatedcostusd NUMERIC(18,6),
+    contextsnapshothash VARCHAR(64),
     active BOOLEAN NOT NULL,
     createdutc TIMESTAMPTZ NOT NULL,
     lastupdateutc TIMESTAMPTZ NOT NULL
@@ -52,12 +60,12 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Insert statement with positional parameters in column order.
         /// </summary>
-        public const string Insert = "INSERT INTO runs (" + Columns + ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)";
+        public const string Insert = "INSERT INTO runs (" + Columns + ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29)";
 
         /// <summary>
         /// Update statement. $1 is id, $2 is tenantid, then the mutable columns in model order.
         /// </summary>
-        public const string Update = "UPDATE runs SET topicid = $3, userid = $4, scheduleid = $5, researchrequestid = $6, trigger = $7, status = $8, isdryrun = $9, cancelrequested = $10, queuedutc = $11, startedutc = $12, completedutc = $13, lockeduntilutc = $14, workerid = $15, skippedreason = $16, errormessage = $17, summary = $18, active = $19, lastupdateutc = $20 WHERE id = $1 AND tenantid = $2";
+        public const string Update = "UPDATE runs SET topicid = $3, userid = $4, scheduleid = $5, researchrequestid = $6, trigger = $7, status = $8, isdryrun = $9, cancelrequested = $10, queuedutc = $11, startedutc = $12, completedutc = $13, lockeduntilutc = $14, workerid = $15, skippedreason = $16, errormessage = $17, summary = $18, durationms = $19, newfindingcount = $20, duplicatecount = $21, sourcecount = $22, inputtokens = $23, outputtokens = $24, estimatedcostusd = $25, contextsnapshothash = $26, active = $27, lastupdateutc = $28 WHERE id = $1 AND tenantid = $2";
 
         /// <summary>
         /// Select by identifier within a tenant.

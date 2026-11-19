@@ -21,6 +21,11 @@ namespace MyMorningNews.Core.Enums
         Completed,
 
         /// <summary>
+        /// Finished with non-critical stage failures.
+        /// </summary>
+        PartiallySucceeded,
+
+        /// <summary>
         /// Failed.
         /// </summary>
         Failed,

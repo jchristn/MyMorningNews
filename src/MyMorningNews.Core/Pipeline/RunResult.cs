@@ -19,5 +19,10 @@ namespace MyMorningNews.Core.Pipeline
         /// Whether the run produced a deliverable (a briefing, report, or audio). One-time requests complete only when true.
         /// </summary>
         public bool Delivered { get; set; } = false;
+
+        /// <summary>
+        /// Whether a non-critical stage failed (the run finishes as PartiallySucceeded).
+        /// </summary>
+        public bool PartiallySucceeded { get; set; } = false;
     }
 }

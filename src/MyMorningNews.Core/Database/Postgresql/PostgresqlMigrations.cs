@@ -102,6 +102,35 @@ namespace MyMorningNews.Core.Database.Postgresql
                     "CREATE INDEX IF NOT EXISTS ix_schedules_due ON schedules (enabled, nextrunutc)",
                     "CREATE INDEX IF NOT EXISTS ix_runs_queue ON runs (status, queuedutc)",
                     "CREATE INDEX IF NOT EXISTS ix_runs_topic_status ON runs (tenantid, topicid, status)"
+                })),
+            new SchemaMigration(7, "Research pipeline: stages, queries, results, sources, evidence, findings, embeddings, predictions, suggestions", Concat(
+                RunStageQueries.Schema,
+                SearchQueryQueries.Schema,
+                SearchResultQueries.Schema,
+                SourceItemQueries.Schema,
+                EvidenceQueries.Schema,
+                FindingQueries.Schema,
+                FindingEvidenceQueries.Schema,
+                PredictionQueries.Schema,
+                PredictionReviewQueries.Schema,
+                SuggestionQueries.Schema,
+                new List<string>
+                {
+                    "ALTER TABLE runs ADD COLUMN IF NOT EXISTS durationms DOUBLE PRECISION NOT NULL DEFAULT 0",
+                    "ALTER TABLE runs ADD COLUMN IF NOT EXISTS newfindingcount INTEGER NOT NULL DEFAULT 0",
+                    "ALTER TABLE runs ADD COLUMN IF NOT EXISTS duplicatecount INTEGER NOT NULL DEFAULT 0",
+                    "ALTER TABLE runs ADD COLUMN IF NOT EXISTS sourcecount INTEGER NOT NULL DEFAULT 0",
+                    "ALTER TABLE runs ADD COLUMN IF NOT EXISTS inputtokens INTEGER NOT NULL DEFAULT 0",
+                    "ALTER TABLE runs ADD COLUMN IF NOT EXISTS outputtokens INTEGER NOT NULL DEFAULT 0",
+                    "ALTER TABLE runs ADD COLUMN IF NOT EXISTS estimatedcostusd NUMERIC(18,6) NULL",
+                    "ALTER TABLE runs ADD COLUMN IF NOT EXISTS contextsnapshothash VARCHAR(64) NULL",
+                    "CREATE EXTENSION IF NOT EXISTS vector",
+                    "CREATE TABLE IF NOT EXISTS embeddings (id VARCHAR(64) PRIMARY KEY, tenantid VARCHAR(64) NOT NULL, ownertype VARCHAR(32) NOT NULL, ownerid VARCHAR(64) NOT NULL, topicid VARCHAR(64) NULL, " +
+                        "modelendpointid VARCHAR(64) NULL, model VARCHAR(256) NOT NULL, dimensions INTEGER NOT NULL, vector vector NOT NULL, contenthash VARCHAR(64) NULL, createdutc TIMESTAMPTZ NOT NULL)",
+                    "CREATE UNIQUE INDEX IF NOT EXISTS ux_embeddings_owner_model ON embeddings (tenantid, ownertype, ownerid, model)",
+                    "CREATE INDEX IF NOT EXISTS ix_embeddings_topic ON embeddings (tenantid, topicid, ownertype, model, dimensions, createdutc)",
+                    "CREATE INDEX IF NOT EXISTS ix_findings_topic_created ON findings (tenantid, topicid, createdutc)",
+                    "CREATE INDEX IF NOT EXISTS ix_searchresults_topic_hash ON searchresults (tenantid, topicid, canonicalurlhash)"
                 }))
         };
 

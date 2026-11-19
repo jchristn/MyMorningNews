@@ -179,11 +179,15 @@ namespace Test.Shared.Suites
                 Assert.Equal(FetchDispositionEnum.Blocked, (await fetch.FetchAsync("https://news.blocked.test/a", new[] { "blocked.test" }, token).ConfigureAwait(false)).Disposition, "blocked domain");
                 Assert.Equal(FetchDispositionEnum.Unsupported, (await fetch.FetchAsync("mailto:x@example.com", null, token).ConfigureAwait(false)).Disposition, "not a web URL");
 
-                server.Context.SettingsService.Current.Search.PerDomainDelayMs = 400;
-                await fetch.FetchAsync(b + "/a.html", null, token).ConfigureAwait(false);
-                Stopwatch sw = Stopwatch.StartNew();
-                await fetch.FetchAsync(b + "/b.html", null, token).ConfigureAwait(false);
-                Assert.True(sw.ElapsedMilliseconds >= 300, "per-domain delay respected (" + sw.ElapsedMilliseconds + " ms)");
+                MyMorningNews.Core.Settings.ServerSettings own = new MyMorningNews.Core.Settings.ServerSettings();
+                own.Search.PerDomainDelayMs = 400;
+                using (FetchService spaced = new FetchService(own, server.Context.Logging))
+                {
+                    await spaced.FetchAsync(b + "/a.html", null, token).ConfigureAwait(false);
+                    Stopwatch sw = Stopwatch.StartNew();
+                    await spaced.FetchAsync(b + "/b.html", null, token).ConfigureAwait(false);
+                    Assert.True(sw.ElapsedMilliseconds >= 300, "per-domain delay respected (" + sw.ElapsedMilliseconds + " ms)");
+                }
             }
             finally
             {

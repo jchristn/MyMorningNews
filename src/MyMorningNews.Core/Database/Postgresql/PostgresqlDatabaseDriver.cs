@@ -86,6 +86,17 @@ namespace MyMorningNews.Core.Database.Postgresql
             Runs = new RunMethods(this);
             SearchProviders = new SearchProviderMethods(this);
             TopicSearchProviders = new TopicSearchProviderMethods(this);
+            RunStages = new RunStageMethods(this);
+            SearchQueries = new SearchQueryMethods(this);
+            SearchResults = new SearchResultMethods(this);
+            SourceItems = new SourceItemMethods(this);
+            Evidence = new EvidenceMethods(this);
+            Findings = new FindingMethods(this);
+            FindingEvidence = new FindingEvidenceMethods(this);
+            Predictions = new PredictionMethods(this);
+            PredictionReviews = new PredictionReviewMethods(this);
+            Suggestions = new SuggestionMethods(this);
+            Embeddings = new EmbeddingMethods(this);
         }
 
         #endregion

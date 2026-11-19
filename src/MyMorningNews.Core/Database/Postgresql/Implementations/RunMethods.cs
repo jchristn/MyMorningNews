@@ -76,6 +76,14 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.SkippedReason,
                 obj.ErrorMessage,
                 obj.Summary,
+                obj.DurationMs,
+                obj.NewFindingCount,
+                obj.DuplicateCount,
+                obj.SourceCount,
+                obj.InputTokens,
+                obj.OutputTokens,
+                obj.EstimatedCostUsd,
+                obj.ContextSnapshotHash,
                 obj.Active,
                 DateTime.SpecifyKind(obj.CreatedUtc, DateTimeKind.Utc),
                 DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
@@ -123,6 +131,14 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.SkippedReason,
                 obj.ErrorMessage,
                 obj.Summary,
+                obj.DurationMs,
+                obj.NewFindingCount,
+                obj.DuplicateCount,
+                obj.SourceCount,
+                obj.InputTokens,
+                obj.OutputTokens,
+                obj.EstimatedCostUsd,
+                obj.ContextSnapshotHash,
                 obj.Active,
                 DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
             if (affected < 1) throw new KeyNotFoundException("Run " + obj.Id + " was not found.");
@@ -239,9 +255,17 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             obj.SkippedReason = (reader.IsDBNull(15) ? null : reader.GetString(15));
             obj.ErrorMessage = (reader.IsDBNull(16) ? null : reader.GetString(16));
             obj.Summary = (reader.IsDBNull(17) ? null : reader.GetString(17));
-            obj.Active = reader.GetBoolean(18);
-            obj.CreatedUtc = DateTime.SpecifyKind(reader.GetDateTime(19), DateTimeKind.Utc);
-            obj.LastUpdateUtc = DateTime.SpecifyKind(reader.GetDateTime(20), DateTimeKind.Utc);
+            obj.DurationMs = reader.GetDouble(18);
+            obj.NewFindingCount = reader.GetInt32(19);
+            obj.DuplicateCount = reader.GetInt32(20);
+            obj.SourceCount = reader.GetInt32(21);
+            obj.InputTokens = reader.GetInt32(22);
+            obj.OutputTokens = reader.GetInt32(23);
+            obj.EstimatedCostUsd = (reader.IsDBNull(24) ? (decimal?)null : reader.GetDecimal(24));
+            obj.ContextSnapshotHash = (reader.IsDBNull(25) ? null : reader.GetString(25));
+            obj.Active = reader.GetBoolean(26);
+            obj.CreatedUtc = DateTime.SpecifyKind(reader.GetDateTime(27), DateTimeKind.Utc);
+            obj.LastUpdateUtc = DateTime.SpecifyKind(reader.GetDateTime(28), DateTimeKind.Utc);
             return obj;
         }
 

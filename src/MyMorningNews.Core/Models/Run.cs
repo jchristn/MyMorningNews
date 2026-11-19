@@ -150,6 +150,46 @@ namespace MyMorningNews.Core.Models
         public string? Summary { get; set; } = null;
 
         /// <summary>
+        /// Execution time in milliseconds.
+        /// </summary>
+        public double DurationMs { get; set; } = 0;
+
+        /// <summary>
+        /// New findings.
+        /// </summary>
+        public int NewFindingCount { get; set; } = 0;
+
+        /// <summary>
+        /// Duplicate findings.
+        /// </summary>
+        public int DuplicateCount { get; set; } = 0;
+
+        /// <summary>
+        /// Sources read.
+        /// </summary>
+        public int SourceCount { get; set; } = 0;
+
+        /// <summary>
+        /// Model input tokens.
+        /// </summary>
+        public int InputTokens { get; set; } = 0;
+
+        /// <summary>
+        /// Model output tokens.
+        /// </summary>
+        public int OutputTokens { get; set; } = 0;
+
+        /// <summary>
+        /// Estimated model cost. May be null.
+        /// </summary>
+        public decimal? EstimatedCostUsd { get; set; } = null;
+
+        /// <summary>
+        /// Hash of the assembled context. May be null.
+        /// </summary>
+        public string? ContextSnapshotHash { get; set; } = null;
+
+        /// <summary>
         /// Whether the record is active.
         /// </summary>
         public bool Active { get; set; } = true;

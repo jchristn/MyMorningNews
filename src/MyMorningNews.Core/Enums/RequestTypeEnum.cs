@@ -261,6 +261,41 @@ namespace MyMorningNews.Core.Enums
         DeviceWrite,
 
         /// <summary>
+        /// Read findings and evidence.
+        /// </summary>
+        FindingRead,
+
+        /// <summary>
+        /// Pin, hide, or rate findings.
+        /// </summary>
+        FindingWrite,
+
+        /// <summary>
+        /// Read predictions.
+        /// </summary>
+        PredictionRead,
+
+        /// <summary>
+        /// Resolve predictions and accept reviews.
+        /// </summary>
+        PredictionWrite,
+
+        /// <summary>
+        /// Read suggestions.
+        /// </summary>
+        SuggestionRead,
+
+        /// <summary>
+        /// Change suggestion status.
+        /// </summary>
+        SuggestionWrite,
+
+        /// <summary>
+        /// Read fetched sources.
+        /// </summary>
+        SourceRead,
+
+        /// <summary>
         /// Read schedules.
         /// </summary>
         ScheduleRead,

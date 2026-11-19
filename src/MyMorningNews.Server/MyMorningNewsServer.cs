@@ -8,6 +8,7 @@ namespace MyMorningNews.Server
     using MyMorningNews.Core.Database;
     using MyMorningNews.Core.Database.Postgresql;
     using MyMorningNews.Core.Fetch;
+    using MyMorningNews.Core.Pipeline;
     using MyMorningNews.Core.Responses;
     using MyMorningNews.Core.Scheduling;
     using MyMorningNews.Core.Search;
@@ -147,6 +148,7 @@ namespace MyMorningNews.Server
             ResearchRequestService researchRequests = new ResearchRequestService(_Database, _Refinement);
             SchedulingService scheduling = new SchedulingService(_Database, settings, _Logging);
             _Context = new ServerContext(_Settings, _Database, _Logging, authentication, authorization, audit, Lifetime, vault, prompts, _Models, tenantDefaults, _Push, _Refinement, researchRequests, scheduling, _Search!, _Fetch!);
+            _Context.RunExecutor = new ResearchPipeline(new PipelineServices(_Database, _Models, prompts, _Search!, _Fetch!, settings, _Logging));
 
             _Capture = new RequestHistoryCaptureService(_Database, settings.RequestHistory, _Logging);
             RequestPipeline pipeline = new RequestPipeline(_Context, _Capture);
@@ -268,6 +270,7 @@ namespace MyMorningNews.Server
                 new ScheduleRoutes(context),
                 new RunRoutes(context),
                 new SearchRoutes(context),
+                new ResearchRoutes(context),
                 new PromptRoutes(context)
             };
         }

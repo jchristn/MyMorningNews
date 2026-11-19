@@ -29,7 +29,8 @@ namespace Test.Shared
                     MobileSuite.Create(),
                     TopicSuite.Create(),
                     ScheduleSuite.Create(),
-                    SearchSuite.Create()
+                    SearchSuite.Create(),
+                    PipelineSuite.Create()
                 };
             }
         }

@@ -196,6 +196,61 @@ namespace MyMorningNews.Core.Database
         /// </summary>
         public ITopicSearchProviderMethods TopicSearchProviders { get; protected set; } = null!;
 
+        /// <summary>
+        /// Run stages.
+        /// </summary>
+        public IRunStageMethods RunStages { get; protected set; } = null!;
+
+        /// <summary>
+        /// Search queries per run.
+        /// </summary>
+        public ISearchQueryMethods SearchQueries { get; protected set; } = null!;
+
+        /// <summary>
+        /// Search results per run.
+        /// </summary>
+        public ISearchResultMethods SearchResults { get; protected set; } = null!;
+
+        /// <summary>
+        /// Fetched sources.
+        /// </summary>
+        public ISourceItemMethods SourceItems { get; protected set; } = null!;
+
+        /// <summary>
+        /// Verified quotes.
+        /// </summary>
+        public IEvidenceMethods Evidence { get; protected set; } = null!;
+
+        /// <summary>
+        /// Findings.
+        /// </summary>
+        public IFindingMethods Findings { get; protected set; } = null!;
+
+        /// <summary>
+        /// Finding to evidence links.
+        /// </summary>
+        public IFindingEvidenceMethods FindingEvidence { get; protected set; } = null!;
+
+        /// <summary>
+        /// Predictions.
+        /// </summary>
+        public IPredictionMethods Predictions { get; protected set; } = null!;
+
+        /// <summary>
+        /// Prediction reviews.
+        /// </summary>
+        public IPredictionReviewMethods PredictionReviews { get; protected set; } = null!;
+
+        /// <summary>
+        /// Suggestions.
+        /// </summary>
+        public ISuggestionMethods Suggestions { get; protected set; } = null!;
+
+        /// <summary>
+        /// Embedding vectors (pgvector).
+        /// </summary>
+        public IEmbeddingMethods Embeddings { get; protected set; } = null!;
+
         #endregion
 
         #region Constructors-and-Factories

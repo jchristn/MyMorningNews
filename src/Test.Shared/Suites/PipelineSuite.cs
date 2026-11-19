@@ -1,0 +1,220 @@
+namespace Test.Shared.Suites
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using MyMorningNews.Core.Enums;
+    using MyMorningNews.Core.Models;
+    using MyMorningNews.Core.Pipeline;
+    using MyMorningNews.Core.Requests;
+    using MyMorningNews.Core.Responses;
+    using MyMorningNews.Server;
+    using Test.Shared.Helpers;
+    using Touchstone.Core;
+
+    /// <summary>
+    /// The research pipeline end to end against the stub model and web server, plus the ranking and evidence helpers.
+    /// </summary>
+    public static class PipelineSuite
+    {
+        private const string S = "Pipeline";
+
+        /// <summary>
+        /// Build the suite.
+        /// </summary>
+        /// <returns>Suite.</returns>
+        public static TestSuiteDescriptor Create()
+        {
+            return new TestSuiteDescriptor(S, "Research pipeline", new[]
+            {
+                Cases.Case(S, "QuoteVerifier", "Quotes are verified verbatim with offsets, ignoring case, spacing, and typography", QuoteAsync, "fast"),
+                Cases.Case(S, "Ranker", "Recency, novelty, source, composite, and tiers follow the plan", RankerAsync, "fast"),
+                Cases.Case(S, "FullRun", "A run searches, filters, fetches, extracts verified findings, scores, synthesizes, predicts, suggests, and reviews", FullRunAsync),
+                Cases.Case(S, "SecondRunDedupe", "A later run skips seen pages and marks a repeated finding as a duplicate", SecondRunAsync),
+                Cases.Case(S, "Failures", "A critical failure fails the run; an optional failure leaves it partially succeeded", FailuresAsync),
+                Cases.Case(S, "ResearchApi", "Findings, evidence, predictions, suggestions, and run details are served and private", ApiAsync)
+            });
+        }
+
+        private static Task QuoteAsync(CancellationToken token)
+        {
+            string source = "Intro.\n\nThe state  announced “new rebates” for heat pumps on Tuesday.\n\nApplications open in **January**.";
+            VerifiedQuote v = QuoteVerifier.Verify(source, "the state announced \"new rebates\" for heat pumps on tuesday.");
+            Assert.True(v.Found && source.Substring(v.Start, v.End - v.Start) == v.Text && v.Text.StartsWith("The state", StringComparison.Ordinal) && v.Context.Contains("rebates", StringComparison.Ordinal), "found with offsets: " + v.Text);
+            Assert.True(QuoteVerifier.Verify(source, "Applications open in January").Found, "markdown emphasis ignored");
+            Assert.True(!QuoteVerifier.Verify(source, "The state announced new tax credits").Found, "different text not found");
+            Assert.True(!QuoteVerifier.Verify(source, "Tuesday").Found, "too short to count");
+            Assert.Equal(QuoteVerifier.Hash("New  Rebates for heat pumps"), QuoteVerifier.Hash("new rebates for heat pumps"), "hash normalized");
+            return Task.CompletedTask;
+        }
+
+        private static Task RankerAsync(CancellationToken token)
+        {
+            DateTime now = new DateTime(2026, 11, 19, 12, 0, 0, DateTimeKind.Utc);
+            Assert.Equal(100.0, Ranker.Recency(now, now, 72), "now is 100");
+            Assert.Equal(50.0, Ranker.Recency(now.AddHours(-72), now, 72), "one half-life is 50");
+            Assert.Equal(50.0, Ranker.Recency(null, now, 72), "unknown is neutral");
+            Assert.Equal(10.0, Ranker.Novelty(0.9, 100), "novelty counts fully at preference 100");
+            Assert.Equal(50.0, Ranker.Novelty(0.9, 0), "novelty ignored at preference 0");
+            Assert.Equal(70.0, Ranker.Source(null, 0, true, false), "preferred domain bonus");
+            Assert.Equal(0.0, Ranker.Source(90, 10, true, true), "blocked is zero");
+            Assert.Equal(76.67, Ranker.Source(90, 10, false, false), "bayesian average toward 50");
+            Assert.Equal(80.0, Ranker.Composite(80, 80, 80, 80, 80, 0.45, 0.2, 0.15, 0.1, 0.1), "uniform components");
+            Assert.Equal(90.0, Ranker.Composite(90, 0, 0, 0, 0, 1, 0, 0, 0, 0), "single weight");
+            Assert.True(Ranker.Tier(85, 40) == FindingTierEnum.MustRead && Ranker.Tier(65, 40) == FindingTierEnum.WorthALook && Ranker.Tier(45, 40) == FindingTierEnum.Fyi && Ranker.Tier(45, 50) == FindingTierEnum.BelowThreshold, "tiers");
+            return Task.CompletedTask;
+        }
+
+        private static async Task<PipelineFixture> FixtureAsync(string brief, string searchPath, CancellationToken token)
+        {
+            MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+            server.Context.SettingsService.Current.Search.PerDomainDelayMs = 0;
+            TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
+            Tenant t = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
+            TestUser ta = await TestFixtures.CreateUserAsync(admin, t.Id, true, token).ConfigureAwait(false);
+            ModelEndpoint e = (await ta.Client.PostAsync("/v1.0/api/model-endpoints", new
+            {
+                name = "stub research", provider = "OpenAiCompatible", endpoint = StubModelServer.Shared.BaseUrl, model = "stub-research", supportsChat = true,
+                supportsEmbeddings = true, embeddingModel = "stub-embed-8", inputCostPerMTok = 1.0, outputCostPerMTok = 2.0
+            }, token).ConfigureAwait(false)).Expect(201, "endpoint").Json<ModelEndpoint>();
+            foreach (ModelTaskEnum task in Enum.GetValues<ModelTaskEnum>())
+                (await ta.Client.PutAsync("/v1.0/api/model-assignments", new { task = task.ToString(), modelEndpointId = e.Id }, token).ConfigureAwait(false)).Expect(200, "assign " + task);
+            SearchProvider sp = (await ta.Client.PostAsync("/v1.0/api/search-providers", new { name = "pipeline searx", kind = "Searxng", endpoint = StubModelServer.Shared.BaseUrl + searchPath }, token).ConfigureAwait(false))
+                .Expect(201, "provider").Json<SearchProvider>();
+            Topic topic = (await ta.Client.PostAsync("/v1.0/api/topics", new { name = "Heat pumps " + Guid.NewGuid().ToString("N").Substring(0, 6), brief = brief, status = "Active", noveltyPreference = 50 }, token).ConfigureAwait(false))
+                .Expect(201, "topic").Json<Topic>();
+            await ta.Client.PostAsync("/v1.0/api/topics/" + topic.Id + "/dimensions", new { name = "Rebates", weight = "High" }, token).ConfigureAwait(false);
+            await ta.Client.PostAsync("/v1.0/api/topics/" + topic.Id + "/constraints", new { kind = "BlockedDomain", value = "blocked.test" }, token).ConfigureAwait(false);
+            (await ta.Client.PutAsync("/v1.0/api/topics/" + topic.Id + "/search-providers", new[] { new { searchProviderId = sp.Id, enabled = true } }, token).ConfigureAwait(false)).Expect(200, "providers");
+            return new PipelineFixture { Server = server, User = ta, Topic = topic, Provider = sp };
+        }
+
+        private static async Task<Run> RunAsync(PipelineFixture f, CancellationToken token)
+        {
+            Run queued = (await f.User.Client.PostAsync("/v1.0/api/topics/" + f.Topic.Id + "/run", null, token).ConfigureAwait(false)).Expect(202, "run now").Json<Run>();
+            for (int i = 0; i < 20; i++)
+            {
+                await f.Server.Context.Scheduling.ExecuteQueuedAsync(f.Server.Context.RunExecutor, "test", token).ConfigureAwait(false);
+                Run current = (await f.Server.Context.Database.Runs.ReadAsync(queued.TenantId, queued.Id, token).ConfigureAwait(false))!;
+                if (current.Status != RunStatusEnum.Queued && current.Status != RunStatusEnum.Running) return current;
+            }
+
+            throw new InvalidOperationException("The run did not finish.");
+        }
+
+        private static async Task FullRunAsync(CancellationToken token)
+        {
+            PipelineFixture f = await FixtureAsync("Track residential heat pump rebates and the rules that govern them.", "/pipeline", token).ConfigureAwait(false);
+            Prediction open = await f.Server.Context.Database.Predictions.CreateAsync(new Prediction
+            {
+                TenantId = f.Topic.TenantId, RunId = "run_seed", TopicId = f.Topic.Id, UserId = f.Topic.UserId, Statement = "The state will announce new heat pump rebates this year.", Confidence = 0.8, HorizonUtc = DateTime.UtcNow.AddDays(30)
+            }, token).ConfigureAwait(false);
+
+            Run run = await RunAsync(f, token).ConfigureAwait(false);
+            Assert.True(run.Status == RunStatusEnum.Completed, "completed: " + run.Status + " " + run.ErrorMessage + " " + run.Summary);
+            List<RunStage> stages = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages", token).ConfigureAwait(false)).Expect(200, "stages").Json<List<RunStage>>();
+            Assert.True(stages.Count == 13 && stages.All(s => s.Status == StageStatusEnum.Succeeded), "all stages succeeded: " + String.Join(", ", stages.Select(s => s.Stage + "=" + s.Status + (s.ErrorMessage == null ? String.Empty : "(" + s.ErrorMessage + ")"))));
+            Assert.True(stages.Single(s => s.Stage == "Extract").ErrorMessage!.Contains("could not be verified", StringComparison.Ordinal), "unverified quotes noted");
+
+            List<SearchResult> results = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/results", token).ConfigureAwait(false)).Json<List<SearchResult>>();
+            Assert.True(results.Count(r => r.Disposition == SearchResultDispositionEnum.Fetched) == 2 && results.Count(r => r.Disposition == SearchResultDispositionEnum.SkippedDuplicate) == 2 && !results.Any(r => r.Url.Contains("blocked.test", StringComparison.Ordinal)),
+                "blocked domains excluded at search; repeats across queries skipped: " + String.Join(", ", results.Select(r => r.Disposition)));
+
+            EnumerationResult<Finding> findings = (await f.User.Client.GetAsync("/v1.0/api/findings?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>();
+            Assert.True(findings.Items.Count == 2, "two verified findings, unsupported claim discarded (" + findings.Items.Count + ")");
+            Finding top = findings.Items[0];
+            Assert.True(top.Title == "Heat pump rebates expand" && top.Rank == 1 && top.LlmScore == 92 && top.Tier != FindingTierEnum.BelowThreshold && top.DimensionId != null && top.RecencyScore > 90, "top finding ranked and scored");
+            Assert.True(findings.Items[1].RelevanceScore < top.RelevanceScore, "ordered by relevance");
+            Assert.True(run.NewFindingCount == 2 && run.SourceCount == 2 && run.InputTokens > 0 && run.EstimatedCostUsd > 0 && run.ContextSnapshotHash != null, "run totals");
+            Assert.True(run.Summary!.StartsWith("Rebates expanded", StringComparison.Ordinal) && run.Summary.Contains("Incentives", StringComparison.Ordinal), "synthesized summary");
+
+            FindingDetailResponse detail = (await f.User.Client.GetAsync("/v1.0/api/findings/" + top.Id, token).ConfigureAwait(false)).Expect(200, "detail").Json<FindingDetailResponse>();
+            Assert.True(detail.Evidence.Count == 1 && detail.Evidence[0].Evidence.Verified && detail.Evidence[0].Evidence.Quote.StartsWith("The state announced", StringComparison.Ordinal) && detail.Evidence[0].SourceUrl!.EndsWith("/news/a.html", StringComparison.Ordinal),
+                "verified evidence with source");
+
+            EnumerationResult<Prediction> preds = (await f.User.Client.GetAsync("/v1.0/api/predictions?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Prediction>>();
+            Assert.True(preds.Items.Any(p => p.Statement.StartsWith("California will open", StringComparison.Ordinal) && p.Status == PredictionStatusEnum.Open && p.HorizonUtc.Year == 2027), "new prediction");
+            PredictionDetailResponse reviewed = (await f.User.Client.GetAsync("/v1.0/api/predictions/" + open.Id, token).ConfigureAwait(false)).Json<PredictionDetailResponse>();
+            Assert.True(reviewed.Prediction.Status == PredictionStatusEnum.ProposedResolved && reviewed.Reviews.Count == 1 && reviewed.Reviews[0].ProposedStatus == PredictionStatusEnum.Accurate && reviewed.Reviews[0].FindingIds.Contains(top.Id), "review proposed with evidence");
+            Prediction accepted = (await f.User.Client.PostAsync("/v1.0/api/prediction-reviews/" + reviewed.Reviews[0].Id + "/accept", null, token).ConfigureAwait(false)).Expect(200, "accept").Json<Prediction>();
+            Assert.True(accepted.Status == PredictionStatusEnum.Accurate && accepted.ResolvedBy == "AgentConfirmed" && Math.Abs(accepted.BrierScore!.Value - 0.04) < 0.0001, "accepted with Brier score");
+
+            EnumerationResult<Suggestion> sugs = (await f.User.Client.GetAsync("/v1.0/api/suggestions?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Suggestion>>();
+            Assert.True(sugs.Items.Count == 1 && sugs.Items[0].Priority == SuggestionPriorityEnum.High && sugs.Items[0].FindingIds.Contains(top.Id), "suggestion linked");
+            EnumerationResult<LlmCall> calls = (await f.User.Client.GetAsync("/v1.0/api/llm-calls?pageSize=100", token).ConfigureAwait(false)).Json<EnumerationResult<LlmCall>>();
+            Assert.True(calls.Items.Where(c => c.RunId == run.Id).Select(c => c.PromptKey).Distinct().Count() >= 7, "calls attributed to the run");
+        }
+
+        private static async Task SecondRunAsync(CancellationToken token)
+        {
+            PipelineFixture f = await FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
+            Run first = await RunAsync(f, token).ConfigureAwait(false);
+            Assert.True(first.Status == RunStatusEnum.Completed, "first run: " + first.ErrorMessage);
+            Run second = await RunAsync(f, token).ConfigureAwait(false);
+            Assert.True(second.Status == RunStatusEnum.Completed && second.NewFindingCount == 0 && second.Summary!.StartsWith("Nothing new", StringComparison.Ordinal), "seen pages skipped: " + second.Summary);
+            List<SearchResult> results = (await f.User.Client.GetAsync("/v1.0/api/runs/" + second.Id + "/results", token).ConfigureAwait(false)).Json<List<SearchResult>>();
+            Assert.True(results.Count(r => r.Disposition == SearchResultDispositionEnum.SkippedSeen) == 2, "skipped as seen");
+
+            (await f.User.Client.PutAsync("/v1.0/api/search-providers/" + f.Provider.Id, new { endpoint = StubModelServer.Shared.BaseUrl + "/pipeline2" }, token).ConfigureAwait(false)).Expect(200, "switch provider");
+            Run third = await RunAsync(f, token).ConfigureAwait(false);
+            Assert.True(third.Status == RunStatusEnum.Completed && third.DuplicateCount == 1 && third.NewFindingCount == 0, "same story on a new page is a duplicate (dup " + third.DuplicateCount + ", new " + third.NewFindingCount + ")");
+            EnumerationResult<Finding> withDup = (await f.User.Client.GetAsync("/v1.0/api/findings?runId=" + third.Id + "&includeDuplicates=true", token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>();
+            Assert.True(withDup.Items.Count == 1 && withDup.Items[0].IsDuplicate && withDup.Items[0].DuplicateOfFindingId != null, "duplicate saved and linked");
+        }
+
+        private static async Task FailuresAsync(CancellationToken token)
+        {
+            PipelineFixture dead = await FixtureAsync("Track heat pumps.", "/pipeline", token).ConfigureAwait(false);
+            (await dead.User.Client.PutAsync("/v1.0/api/search-providers/" + dead.Provider.Id, new { endpoint = "http://127.0.0.1:1" }, token).ConfigureAwait(false)).Expect(200, "break provider");
+            Run failed = await RunAsync(dead, token).ConfigureAwait(false);
+            Assert.True(failed.Status == RunStatusEnum.Failed && failed.ErrorMessage!.Contains("Search failed", StringComparison.Ordinal), "critical failure: " + failed.ErrorMessage);
+            List<RunStage> stages = (await dead.User.Client.GetAsync("/v1.0/api/runs/" + failed.Id + "/stages", token).ConfigureAwait(false)).Json<List<RunStage>>();
+            Assert.True(stages.Last().Stage == "Search" && stages.Last().Status == StageStatusEnum.Failed, "stopped at search");
+
+            PipelineFixture partial = await FixtureAsync("Track heat pump rebates. FAILPREDICT", "/pipeline", token).ConfigureAwait(false);
+            Run run = await RunAsync(partial, token).ConfigureAwait(false);
+            Assert.True(run.Status == RunStatusEnum.PartiallySucceeded && run.NewFindingCount == 2 && run.Summary!.Contains("Predict", StringComparison.Ordinal), "optional failure: " + run.Status + " " + run.Summary);
+            List<RunStage> ps = (await partial.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages", token).ConfigureAwait(false)).Json<List<RunStage>>();
+            Assert.True(ps.Single(s => s.Stage == "Predict").Status == StageStatusEnum.Failed && ps.Single(s => s.Stage == "Suggest").Status == StageStatusEnum.Succeeded, "later stages still ran");
+        }
+
+        private static async Task ApiAsync(CancellationToken token)
+        {
+            PipelineFixture f = await FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
+            Run run = await RunAsync(f, token).ConfigureAwait(false);
+            EnumerationResult<Finding> high = (await f.User.Client.GetAsync("/v1.0/api/findings?topicId=" + f.Topic.Id + "&minScore=70", token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>();
+            Assert.True(high.Items.All(x => x.RelevanceScore >= 70) && high.Items.Count >= 1, "min score filter");
+            List<SearchQuery> queries = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/queries", token).ConfigureAwait(false)).Expect(200, "queries").Json<List<SearchQuery>>();
+            Assert.True(queries.Count == 2 && queries.All(q => q.Succeeded && q.Provider == "Searxng"), "queries recorded");
+            EnumerationResult<Suggestion> sugs = (await f.User.Client.GetAsync("/v1.0/api/suggestions?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Suggestion>>();
+            (await f.User.Client.PutAsync("/v1.0/api/suggestions/" + sugs.Items[0].Id + "/status", new { status = "Snoozed" }, token).ConfigureAwait(false)).Expect(400, "snooze needs a time");
+            Suggestion snoozed = (await f.User.Client.PutAsync("/v1.0/api/suggestions/" + sugs.Items[0].Id + "/status", new { status = "Snoozed", snoozedUntilUtc = DateTime.UtcNow.AddDays(3) }, token).ConfigureAwait(false))
+                .Expect(200, "snooze").Json<Suggestion>();
+            Assert.True(snoozed.Status == SuggestionStatusEnum.Snoozed && snoozed.SnoozedUntilUtc.HasValue && snoozed.StatusChangedUtc.HasValue, "snoozed");
+            EnumerationResult<Prediction> preds = (await f.User.Client.GetAsync("/v1.0/api/predictions?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Prediction>>();
+            (await f.User.Client.PostAsync("/v1.0/api/predictions/" + preds.Items[0].Id + "/resolve", new { status = "Open" }, token).ConfigureAwait(false)).Expect(400, "open is not a resolution");
+            Prediction resolved = (await f.User.Client.PostAsync("/v1.0/api/predictions/" + preds.Items[0].Id + "/resolve", new { status = "Inaccurate", note = "Did not happen." }, token).ConfigureAwait(false))
+                .Expect(200, "resolve").Json<Prediction>();
+            Assert.True(resolved.Status == PredictionStatusEnum.Inaccurate && resolved.ResolvedBy == "User" && Math.Abs(resolved.BrierScore!.Value - 0.49) < 0.0001, "resolved with Brier score");
+
+            TestUser other = await TestFixtures.CreateUserAsync(await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false), f.Topic.TenantId, false, token).ConfigureAwait(false);
+            EnumerationResult<Finding> theirs = (await other.Client.GetAsync("/v1.0/api/findings", token).ConfigureAwait(false)).Expect(200, "member list").Json<EnumerationResult<Finding>>();
+            Assert.Equal(0, theirs.Items.Count, "another member sees none");
+            (await other.Client.GetAsync("/v1.0/api/findings/" + high.Items[0].Id, token).ConfigureAwait(false)).Expect(404, "finding private");
+            (await other.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages", token).ConfigureAwait(false)).Expect(404, "run private");
+        }
+
+        private class PipelineFixture
+        {
+            public MyMorningNewsServer Server { get; set; } = null!;
+
+            public TestUser User { get; set; } = null!;
+
+            public Topic Topic { get; set; } = new Topic();
+
+            public SearchProvider Provider { get; set; } = new SearchProvider();
+        }
+    }
+}

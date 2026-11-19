@@ -300,7 +300,8 @@ namespace MyMorningNews.Core.Scheduling
             }
 
             DateTime done = DateTime.UtcNow;
-            run.Status = outcome == "completed" ? RunStatusEnum.Completed : outcome == "cancelled" ? RunStatusEnum.Cancelled : RunStatusEnum.Failed;
+            run.Status = outcome == "completed" ? (result != null && result.PartiallySucceeded ? RunStatusEnum.PartiallySucceeded : RunStatusEnum.Completed)
+                : outcome == "cancelled" ? RunStatusEnum.Cancelled : RunStatusEnum.Failed;
             run.CompletedUtc = done;
             run.LockedUntilUtc = null;
             run.Summary = result?.Summary;
@@ -322,7 +323,7 @@ namespace MyMorningNews.Core.Scheduling
                 ResearchRequest? request = await _Database.ResearchRequests.ReadAsync(run.TenantId, run.ResearchRequestId, CancellationToken.None).ConfigureAwait(false);
                 if (request != null)
                 {
-                    bool delivered = run.Status == RunStatusEnum.Completed && result != null && result.Delivered;
+                    bool delivered = (run.Status == RunStatusEnum.Completed || run.Status == RunStatusEnum.PartiallySucceeded) && result != null && result.Delivered;
                     request.Status = delivered ? ResearchRequestStatusEnum.Completed : run.Status == RunStatusEnum.Cancelled ? ResearchRequestStatusEnum.Cancelled : ResearchRequestStatusEnum.Failed;
                     request.BriefingId = result?.BriefingId;
                     request.CompletedUtc = done;

@@ -161,6 +161,56 @@ namespace MyMorningNews.Core
         public const string TopicSearchProvider = "tsp_";
 
         /// <summary>
+        /// Prefix for RunStage identifiers.
+        /// </summary>
+        public const string RunStage = "rst_";
+
+        /// <summary>
+        /// Prefix for SearchQuery identifiers.
+        /// </summary>
+        public const string SearchQuery = "qry_";
+
+        /// <summary>
+        /// Prefix for SearchResult identifiers.
+        /// </summary>
+        public const string SearchResult = "srh_";
+
+        /// <summary>
+        /// Prefix for SourceItem identifiers.
+        /// </summary>
+        public const string SourceItem = "src_";
+
+        /// <summary>
+        /// Prefix for Evidence identifiers.
+        /// </summary>
+        public const string Evidence = "evd_";
+
+        /// <summary>
+        /// Prefix for Finding identifiers.
+        /// </summary>
+        public const string Finding = "fnd_";
+
+        /// <summary>
+        /// Prefix for FindingEvidence identifiers.
+        /// </summary>
+        public const string FindingEvidence = "fev_";
+
+        /// <summary>
+        /// Prefix for Prediction identifiers.
+        /// </summary>
+        public const string Prediction = "prd_";
+
+        /// <summary>
+        /// Prefix for PredictionReview identifiers.
+        /// </summary>
+        public const string PredictionReview = "prv_";
+
+        /// <summary>
+        /// Prefix for Suggestion identifiers.
+        /// </summary>
+        public const string Suggestion = "sug_";
+
+        /// <summary>
         /// Prefix for request history entries.
         /// </summary>
         public const string RequestHistory = "req_";
@@ -174,5 +224,10 @@ namespace MyMorningNews.Core
         /// Prefix for refresh token family identifiers.
         /// </summary>
         public const string RefreshTokenFamily = "rff_";
+
+        /// <summary>
+        /// Prefix for embedding vectors.
+        /// </summary>
+        public const string Embedding = "emb_";
     }
 }

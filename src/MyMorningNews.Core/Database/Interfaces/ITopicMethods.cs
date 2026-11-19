@@ -87,5 +87,16 @@ namespace MyMorningNews.Core.Database.Interfaces
         /// <param name="token">Cancellation token.</param>
         /// <returns>Count.</returns>
         Task<long> CountAsync(TopicFilter filter, CancellationToken token = default);
+
+        /// <summary>
+        /// Delete a topic and everything that belongs to it: schedules, runs (with their stages, queries, and results),
+        /// findings, predictions, suggestions, one-time requests, and embeddings. Dimensions, constraints, recipients,
+        /// refinement sessions, and provider choices go with the topic row. Model call records are kept for cost accounting.
+        /// </summary>
+        /// <param name="tenantId">Tenant.</param>
+        /// <param name="topicId">Topic.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>True when the topic existed.</returns>
+        Task<bool> DeleteCascadeAsync(string tenantId, string topicId, CancellationToken token = default);
     }
 }

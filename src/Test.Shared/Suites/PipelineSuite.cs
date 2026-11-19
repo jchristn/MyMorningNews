@@ -34,7 +34,7 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "FullRun", "A run searches, filters, fetches, extracts verified findings, scores, synthesizes, predicts, suggests, and reviews", FullRunAsync),
                 Cases.Case(S, "SecondRunDedupe", "A later run skips seen pages and marks a repeated finding as a duplicate", SecondRunAsync),
                 Cases.Case(S, "Failures", "A critical failure fails the run; an optional failure leaves it partially succeeded", FailuresAsync),
-                Cases.Case(S, "ResearchApi", "Findings, evidence, predictions, suggestions, and run details are served and private", ApiAsync)
+                Cases.Case(S, "ResearchApi", "Findings, evidence, predictions, suggestions, and run details are served, private, and deleted with their topic", ApiAsync)
             });
         }
 
@@ -204,6 +204,14 @@ namespace Test.Shared.Suites
             Assert.Equal(0, theirs.Items.Count, "another member sees none");
             (await other.Client.GetAsync("/v1.0/api/findings/" + high.Items[0].Id, token).ConfigureAwait(false)).Expect(404, "finding private");
             (await other.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages", token).ConfigureAwait(false)).Expect(404, "run private");
+
+            Schedule sched = (await f.User.Client.PostAsync("/v1.0/api/schedules", new { ownerId = f.Topic.Id, intervalType = "EveryNMinutes", intervalValue = 30 }, token).ConfigureAwait(false)).Expect(201, "schedule").Json<Schedule>();
+            (await f.User.Client.DeleteAsync("/v1.0/api/topics/" + f.Topic.Id, token).ConfigureAwait(false)).Expect(204, "delete topic");
+            Assert.True(await f.Server.Context.Database.Schedules.ReadAsync(f.Topic.TenantId, sched.Id, token).ConfigureAwait(false) == null, "schedule deleted with the topic");
+            Assert.True(await f.Server.Context.Database.Runs.ReadAsync(f.Topic.TenantId, run.Id, token).ConfigureAwait(false) == null, "runs deleted with the topic");
+            Assert.True(await f.Server.Context.Database.Findings.ReadAsync(f.Topic.TenantId, high.Items[0].Id, token).ConfigureAwait(false) == null, "findings deleted with the topic");
+            EnumerationResult<LlmCall> kept = (await f.User.Client.GetAsync("/v1.0/api/llm-calls?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<LlmCall>>();
+            Assert.True(kept.Items.Count > 0, "model call records kept for cost accounting");
         }
 
         private class PipelineFixture

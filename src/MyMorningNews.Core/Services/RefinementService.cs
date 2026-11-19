@@ -488,7 +488,7 @@ namespace MyMorningNews.Core.Services
             Topic? topic = await _Database.Topics.ReadAsync(tenantId, session.TopicId, token).ConfigureAwait(false);
             if (topic != null && topic.Status == TopicStatusEnum.Draft && !topic.IsOneTime)
             {
-                await _Database.Topics.DeleteAsync(tenantId, topic.Id, token).ConfigureAwait(false);
+                await _Database.Topics.DeleteCascadeAsync(tenantId, topic.Id, token).ConfigureAwait(false);
                 return true;
             }
 

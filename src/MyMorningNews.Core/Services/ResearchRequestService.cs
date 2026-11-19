@@ -228,7 +228,7 @@ namespace MyMorningNews.Core.Services
             if (rr == null) return false;
             await _Database.ResearchRequests.DeleteAsync(tenantId, rr.Id, token).ConfigureAwait(false);
             if (!String.IsNullOrEmpty(rr.TopicId) && String.IsNullOrEmpty(rr.ConvertedTopicId))
-                await _Database.Topics.DeleteAsync(tenantId, rr.TopicId, token).ConfigureAwait(false);
+                await _Database.Topics.DeleteCascadeAsync(tenantId, rr.TopicId, token).ConfigureAwait(false);
             return true;
         }
 

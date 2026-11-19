@@ -337,6 +337,7 @@ ENTITIES = [
     },
     # ------------------------------------------------------------------ Phase 4: topics, refinement, one-time requests
     {
+        # HAND-EDITED after generation (DeleteCascadeAsync): do not --force.
         'name': 'Topic', 'table': 'topics', 'prefix': 'top_',
         'doc': 'A research topic: what a reader wants to follow, with its brief, dimensions, constraints, and delivery options.',
         'fields': [

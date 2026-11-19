@@ -199,6 +199,25 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             return counts.FirstOrDefault();
         }
 
+        /// <inheritdoc />
+        public async Task<bool> DeleteCascadeAsync(string tenantId, string topicId, CancellationToken token = default)
+        {
+            if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrWhiteSpace(topicId)) throw new ArgumentNullException(nameof(topicId));
+            string[] statements =
+            {
+                "DELETE FROM schedules WHERE tenantid = $1 AND ownertype = 'Topic' AND ownerid = $2",
+                "DELETE FROM embeddings WHERE tenantid = $1 AND topicid = $2",
+                "DELETE FROM findings WHERE tenantid = $1 AND topicid = $2",
+                "DELETE FROM predictions WHERE tenantid = $1 AND topicid = $2",
+                "DELETE FROM suggestions WHERE tenantid = $1 AND topicid = $2",
+                "DELETE FROM runs WHERE tenantid = $1 AND topicid = $2",
+                "DELETE FROM researchrequests WHERE tenantid = $1 AND topicid = $2"
+            };
+            foreach (string sql in statements) await ExecuteAsync(sql, token, tenantId, topicId).ConfigureAwait(false);
+            return await ExecuteAsync("DELETE FROM topics WHERE tenantid = $1 AND id = $2", token, tenantId, topicId).ConfigureAwait(false) > 0;
+        }
+
         /// <summary>
         /// Map a data reader row (columns in <see cref="TopicQueries.Columns"/> order) to a model.
         /// </summary>

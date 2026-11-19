@@ -1,0 +1,259 @@
+/* Page-specific layout. */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+  align-items: flex-end;
+  margin-bottom: 14px;
+}
+
+.filter-bar > label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+}
+
+.filter-bar > label.grow {
+  flex: 1 1 220px;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-inline-start: auto;
+}
+
+.cta-list,
+.event-list,
+.url-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cta-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.event-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.url-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.service-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  min-width: 0;
+}
+
+.service-url {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.service-url code,
+.service-url a {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.secret-display {
+  display: grid;
+  grid-template-columns: minmax(120px, auto) minmax(0, 1fr);
+  gap: 10px 14px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.secret-display code {
+  overflow-wrap: anywhere;
+}
+
+.settings-group .form-grid {
+  margin-top: 6px;
+}
+
+.restart-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.danger-zone {
+  border-color: var(--color-danger-soft);
+}
+
+/* API Explorer */
+.explorer {
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.explorer-ops {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  max-height: calc(100vh - 140px);
+}
+
+.explorer-op-list {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 120px;
+}
+
+.explorer-group-label {
+  font-size: var(--font-size-xs);
+  font-weight: 650;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 10px 4px 4px;
+}
+
+.explorer-op {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border: 0;
+  background: none;
+  padding: 5px 6px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: start;
+  min-width: 0;
+}
+
+.explorer-op .badge {
+  min-width: 56px;
+  justify-content: center;
+}
+
+.explorer-op:hover {
+  background: var(--color-surface-alt);
+}
+
+.explorer-op.active {
+  background: var(--color-primary-soft);
+}
+
+.explorer-main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.explorer-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--font-size-lg);
+}
+
+.resolved-url {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 10px;
+  background: var(--color-surface-alt);
+  border-radius: var(--radius-md);
+  margin: 8px 0;
+}
+
+.resolved-url code {
+  overflow-wrap: anywhere;
+}
+
+.rows-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rows-editor-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) auto;
+  gap: 6px;
+}
+
+.rows-editor > .button {
+  align-self: flex-start;
+}
+
+.editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  justify-content: space-between;
+}
+
+.response-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.explorer-history summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+}
+
+.explorer-history-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 6px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+@media (max-width: 1000px) {
+  .explorer {
+    grid-template-columns: 1fr;
+  }
+
+  .explorer-ops {
+    position: static;
+    max-height: 360px;
+  }
+}

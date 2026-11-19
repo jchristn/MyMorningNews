@@ -43,5 +43,10 @@ namespace MyMorningNews.Core.Responses
         /// Topic name.
         /// </summary>
         public string? TopicName { get; set; } = null;
+
+        /// <summary>
+        /// Display titles of the items by item ID (finding title, prediction statement, or suggestion title).
+        /// </summary>
+        public Dictionary<string, string> ItemTitles { get; set; } = new Dictionary<string, string>(StringComparer.Ordinal);
     }
 }

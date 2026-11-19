@@ -200,11 +200,14 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
         }
 
         /// <inheritdoc />
-        public async Task<List<Run>> ClaimQueuedAsync(DateTime nowUtc, DateTime lockedUntilUtc, int limit, string workerId, CancellationToken token = default)
+        public async Task<List<Run>> ClaimQueuedAsync(DateTime nowUtc, DateTime lockedUntilUtc, int limit, string workerId, IReadOnlyCollection<string>? tenantIds = null, CancellationToken token = default)
         {
+            bool scoped = tenantIds != null;
             string sql = "UPDATE runs SET status = 'Running', startedutc = $1, lockeduntilutc = $2, workerid = $4, lastupdateutc = $1 WHERE id IN (SELECT id FROM runs WHERE status = 'Queued' " +
-                "ORDER BY queuedutc FOR UPDATE SKIP LOCKED LIMIT $3) RETURNING " + RunQueries.Columns;
-            return await QueryAsync(sql, Map, token, DateTime.SpecifyKind(nowUtc, DateTimeKind.Utc), DateTime.SpecifyKind(lockedUntilUtc, DateTimeKind.Utc), Math.Clamp(limit, 1, 100), workerId ?? String.Empty).ConfigureAwait(false);
+                (scoped ? "AND tenantid = ANY($5) " : String.Empty) + "ORDER BY queuedutc FOR UPDATE SKIP LOCKED LIMIT $3) RETURNING " + RunQueries.Columns;
+            List<object?> args = new List<object?> { DateTime.SpecifyKind(nowUtc, DateTimeKind.Utc), DateTime.SpecifyKind(lockedUntilUtc, DateTimeKind.Utc), Math.Clamp(limit, 1, 100), workerId ?? String.Empty };
+            if (scoped) args.Add(tenantIds!.ToArray());
+            return await QueryAsync(sql, Map, token, args.ToArray()).ConfigureAwait(false);
         }
 
         /// <inheritdoc />

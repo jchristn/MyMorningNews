@@ -34,5 +34,15 @@ namespace MyMorningNews.Core.Responses
         /// Tenant template everyone can use.
         /// </summary>
         public bool Shared { get; set; } = false;
+
+        /// <summary>
+        /// Title line with variables.
+        /// </summary>
+        public string Title { get; set; } = String.Empty;
+
+        /// <summary>
+        /// Audio options from the front matter.
+        /// </summary>
+        public TemplateAudioOptions Audio { get; set; } = new TemplateAudioOptions();
     }
 }

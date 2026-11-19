@@ -114,8 +114,12 @@ namespace Test.Shared.Suites
             Assert.True(d.Items.Any(i => i.ItemType == BriefingItemTypeEnum.Prediction) && d.Items.Any(i => i.ItemType == BriefingItemTypeEnum.Suggestion), "prediction and suggestion items");
             Assert.True(d.Files.Count == 2 && !d.FilesExpired && d.Files.All(a => a.ExpiresUtc > DateTime.UtcNow.AddDays(364)), "two files kept 365 days");
             Assert.True(d.TopicName == f.Topic.Name && d.Briefing.WordCount > 10 && d.Briefing.ReadMinutes >= 1, "topic name and counts");
+            Assert.True(d.Items.All(i => d.ItemTitles.ContainsKey(i.ItemId)) && d.ItemTitles.Values.Contains("Heat pump rebates expand"), "item titles");
+            BriefingItem sug = d.Items.First(i => i.ItemType == BriefingItemTypeEnum.Suggestion);
+            Assert.Equal("Check rebate eligibility", (await f.User.Client.GetAsync("/v1.0/api/suggestions/" + sug.ItemId, token).ConfigureAwait(false)).Expect(200, "read suggestion").Json<Suggestion>().Title, "suggestion by id");
 
             TestResponse mdFile = (await f.User.Client.GetAsync("/v1.0/api/briefings/" + listed.Id + "/download?format=md", token).ConfigureAwait(false)).Expect(200, "markdown download");
+            Assert.True(mdFile.Headers.GetValueOrDefault("Access-Control-Expose-Headers", String.Empty).Contains("Content-Disposition", StringComparison.Ordinal), "file name readable by the browser");
             Assert.True(mdFile.Body == md && mdFile.Headers["Content-Type"].StartsWith("text/markdown", StringComparison.Ordinal) && mdFile.Headers["Content-Disposition"].Contains(".md", StringComparison.Ordinal), "markdown file");
             TestResponse html = (await f.User.Client.GetAsync("/v1.0/api/briefings/" + listed.Id + "/download?format=html", token).ConfigureAwait(false)).Expect(200, "html download");
             Assert.True(html.Body.Contains("<h2>Sources</h2>", StringComparison.Ordinal) && html.Body.Contains("min read", StringComparison.Ordinal) && html.Body.Contains("© 2026 Lattice AI LLC", StringComparison.Ordinal), "html report");
@@ -159,6 +163,10 @@ namespace Test.Shared.Suites
             TestResponse export = (await member.Client.GetAsync("/v1.0/api/briefing-templates/" + created.Template.Id + "/export", token).ConfigureAwait(false)).Expect(200, "export");
             Assert.True(export.Body == mine && export.Headers["Content-Disposition"].Contains("my-brief.md", StringComparison.Ordinal), "export file");
             (await ta.Client.GetAsync("/v1.0/api/briefing-templates/" + created.Template.Id, token).ConfigureAwait(false)).Expect(200, "tenant admin can read it");
+            Assert.Equal(1, (await member.Client.GetAsync("/v1.0/api/briefing-templates?scope=mine", token).ConfigureAwait(false)).Json<EnumerationResult<BriefingTemplate>>().Items.Count, "scope mine");
+            Assert.Equal(3, (await member.Client.GetAsync("/v1.0/api/briefing-templates?scope=shared", token).ConfigureAwait(false)).Json<EnumerationResult<BriefingTemplate>>().Items.Count, "scope shared");
+            Assert.Equal(1, (await member.Client.GetAsync("/v1.0/api/briefing-templates?search=one-time", token).ConfigureAwait(false)).Json<EnumerationResult<BriefingTemplate>>().Items.Count, "search");
+            Assert.True(created.Title == "{{topic.name}}" && saved.Audio != null, "detail carries title and audio");
 
             (await member.Client.PutAsync("/v1.0/api/briefing-templates/" + morning.Id, new { content = mine }, token).ConfigureAwait(false)).Expect(403, "members cannot change shared templates");
             (await member.Client.PostAsync("/v1.0/api/briefing-templates", new { content = mine.Replace("My Brief", "Shared One"), shared = true }, token).ConfigureAwait(false)).Expect(403, "members cannot create shared templates");
@@ -202,7 +210,8 @@ namespace Test.Shared.Suites
             Edition after = (await f.User.Client.GetAsync("/v1.0/api/editions/" + e.Edition.Id, token).ConfigureAwait(false)).Json<EditionResponse>().Edition;
             Assert.True(after.LastComposedUtc.HasValue, "last composed recorded");
             (await f.User.Client.PostAsync("/v1.0/api/editions/" + e.Edition.Id + "/compose", null, token).ConfigureAwait(false)).Expect(202, "compose again after the first finished");
-            (await f.User.Client.PostAsync("/v1.0/api/editions/" + e.Edition.Id + "/compose", null, token).ConfigureAwait(false)).Expect(409, "one at a time");
+            TestResponse busy = (await f.User.Client.PostAsync("/v1.0/api/editions/" + e.Edition.Id + "/compose", null, token).ConfigureAwait(false)).Expect(409, "one at a time");
+            Assert.True(busy.Body.Contains("\"briefingId\":\"brf_", StringComparison.Ordinal), "409 names the briefing on the way: " + busy.Body);
             await f.Server.Context.Briefings.ProcessQueuedAsync(DateTime.UtcNow, token).ConfigureAwait(false);
 
             string failing = "---\nname: Fallback Test\n---\n# {{edition.name}}\n\n## Highlights\n<!-- mmn:section source=findings tier=Fyi limit=5 -->\nFAILSECTION please.\n\n## Sources\n<!-- mmn:section source=citations -->\n";
@@ -216,6 +225,10 @@ namespace Test.Shared.Suites
             Assert.True(preview.Markdown!.StartsWith("# Weekday Heat for ", StringComparison.Ordinal) && !preview.Markdown.Contains("## By topic", StringComparison.Ordinal) && preview.Markdown.Contains("## Dig into next", StringComparison.Ordinal),
                 "preview: findings only since the last edition, open suggestions still listed: " + preview.Markdown);
             (await f.User.Client.GetAsync("/v1.0/api/briefings/" + preview.Id, token).ConfigureAwait(false)).Expect(404, "preview not saved");
+            Briefing custom = (await f.User.Client.PostAsync("/v1.0/api/editions/" + e.Edition.Id + "/preview", new { templateContent = "# Draft {{edition.name}}\n\n## Next steps\n<!-- mmn:section source=suggestions -->\n" }, token).ConfigureAwait(false))
+                .Expect(200, "preview unsaved template").Json<Briefing>();
+            Assert.True(custom.Markdown!.StartsWith("# Draft Weekday Heat", StringComparison.Ordinal) && custom.Markdown.Contains("## Next steps", StringComparison.Ordinal), "unsaved template previewed: " + custom.Markdown);
+            (await f.User.Client.PostAsync("/v1.0/api/editions/" + e.Edition.Id + "/preview", new { templateContent = "## A\n<!-- mmn:section limit=0 -->" }, token).ConfigureAwait(false)).Expect(400, "invalid unsaved template");
             long afterCount = (await f.User.Client.GetAsync("/v1.0/api/briefings?editionId=" + e.Edition.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().TotalCount;
             Assert.Equal(before, afterCount, "preview saved nothing");
             (await f.User.Client.DeleteAsync("/v1.0/api/editions/" + e2.Edition.Id, token).ConfigureAwait(false)).Expect(204, "delete edition");

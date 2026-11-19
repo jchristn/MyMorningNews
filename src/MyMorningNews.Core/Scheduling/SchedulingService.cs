@@ -188,7 +188,20 @@ namespace MyMorningNews.Core.Scheduling
         /// <param name="workerId">Worker identity.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Runs executed.</returns>
-        public async Task<int> ExecuteQueuedAsync(IRunExecutor executor, string workerId, CancellationToken token = default)
+        public Task<int> ExecuteQueuedAsync(IRunExecutor executor, string workerId, CancellationToken token = default)
+        {
+            return ExecuteQueuedAsync(executor, workerId, null, token);
+        }
+
+        /// <summary>
+        /// Claim queued runs of some tenants (or any tenant) up to the free concurrency and execute them.
+        /// </summary>
+        /// <param name="executor">Executor.</param>
+        /// <param name="workerId">Worker identity.</param>
+        /// <param name="tenantIds">Only these tenants, or null for any tenant.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Runs executed.</returns>
+        public async Task<int> ExecuteQueuedAsync(IRunExecutor executor, string workerId, IReadOnlyCollection<string>? tenantIds, CancellationToken token = default)
         {
             ArgumentNullException.ThrowIfNull(executor);
             DateTime now = DateTime.UtcNow;
@@ -196,7 +209,7 @@ namespace MyMorningNews.Core.Scheduling
             long running = await _Database.Runs.CountRunningAsync(token).ConfigureAwait(false);
             int free = (int)Math.Max(0, _Settings.Pipeline.MaxConcurrentRuns - running);
             if (free == 0) return 0;
-            List<Run> runs = await _Database.Runs.ClaimQueuedAsync(now, now.AddMinutes(_Settings.Pipeline.RunTimeoutMinutes + 5), free, workerId, token).ConfigureAwait(false);
+            List<Run> runs = await _Database.Runs.ClaimQueuedAsync(now, now.AddMinutes(_Settings.Pipeline.RunTimeoutMinutes + 5), free, workerId, tenantIds, token).ConfigureAwait(false);
             await Task.WhenAll(runs.Select(r => ExecuteAsync(r, executor, token))).ConfigureAwait(false);
             return runs.Count;
         }

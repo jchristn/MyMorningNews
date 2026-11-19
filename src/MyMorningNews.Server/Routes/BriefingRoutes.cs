@@ -92,6 +92,14 @@ namespace MyMorningNews.Server.Routes
                 new[] { br.MarkdownArtifactId, br.HtmlArtifactId }.Any(id => id == null || detail.Files.FirstOrDefault(f => f.Id == id)?.DeletedUtc != null || detail.Files.All(f => f.Id != id));
             if (br.EditionId != null) detail.EditionName = (await Server.Database.Editions.ReadAsync(br.TenantId, br.EditionId, ctx.Token).ConfigureAwait(false))?.Name;
             if (br.TopicId != null) detail.TopicName = (await Server.Database.Topics.ReadAsync(br.TenantId, br.TopicId, ctx.Token).ConfigureAwait(false))?.Name;
+            foreach (BriefingItem item in detail.Items)
+            {
+                if (detail.ItemTitles.ContainsKey(item.ItemId)) continue;
+                string? title = item.ItemType == BriefingItemTypeEnum.Finding ? (await Server.Database.Findings.ReadAsync(br.TenantId, item.ItemId, ctx.Token).ConfigureAwait(false))?.Title
+                    : item.ItemType == BriefingItemTypeEnum.Prediction ? (await Server.Database.Predictions.ReadAsync(br.TenantId, item.ItemId, ctx.Token).ConfigureAwait(false))?.Statement
+                    : (await Server.Database.Suggestions.ReadAsync(br.TenantId, item.ItemId, ctx.Token).ConfigureAwait(false))?.Title;
+                if (title != null) detail.ItemTitles[item.ItemId] = title;
+            }
             await SendJsonAsync(ctx, 200, detail).ConfigureAwait(false);
         }
 

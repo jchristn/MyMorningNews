@@ -33,7 +33,8 @@ namespace MyMorningNews.Server.Routes
         {
             ArgumentNullException.ThrowIfNull(webserver);
             const string b = "/v1.0/api/briefing-templates";
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, b, ListAsync, null, openApiMetadata: Paged(Doc("List briefing templates I can use", "Templates", "Shared tenant templates plus my own.")));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, b, ListAsync, null, openApiMetadata: Paged(Doc("List briefing templates I can use", "Templates", "Shared tenant templates plus my own.")
+                .WithParameter(QueryParam("scope", typeof(string))).WithParameter(QueryParam("search", typeof(string)))));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b, CreateAsync, null, openApiMetadata: Doc("Create (import) a template from Markdown", "Templates").WithRequestBody(Body<TemplateCreateRequest>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b + "/validate", ValidateAsync, null, openApiMetadata: Doc("Validate template Markdown without saving", "Templates")
                 .WithRequestBody(Body<TemplateValidateRequest>()));
@@ -57,6 +58,12 @@ namespace MyMorningNews.Server.Routes
             List<BriefingTemplate> all = (await Server.Database.BriefingTemplates.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false)).Items
                 .Where(t => t.UserId == null || t.UserId == rc.UserId || ((rc.IsAdmin || rc.IsTenantAdmin) && Query(ctx, "userId") == t.UserId))
                 .OrderBy(t => t.UserId == null ? 0 : 1).ThenBy(t => t.Name, StringComparer.OrdinalIgnoreCase).ToList();
+            string scope = (Query(ctx, "scope") ?? "all").Trim().ToLowerInvariant();
+            if (scope == "shared") all = all.Where(t => t.UserId == null).ToList();
+            else if (scope == "mine") all = all.Where(t => t.UserId != null).ToList();
+            string? search = Query(ctx, "search");
+            if (!String.IsNullOrWhiteSpace(search))
+                all = all.Where(t => t.Name.Contains(search.Trim(), StringComparison.OrdinalIgnoreCase) || (t.Description ?? String.Empty).Contains(search.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
             EnumerationFilter paging = new EnumerationFilter();
             ApplyPaging(ctx, paging);
             List<BriefingTemplate> page = all.Skip((paging.PageNumber - 1) * paging.PageSize).Take(paging.PageSize).ToList();
@@ -170,7 +177,7 @@ namespace MyMorningNews.Server.Routes
         {
             BriefingTemplateVersion? v = await Server.Briefings.Templates.CurrentVersionAsync(t, ctx.Token).ConfigureAwait(false);
             BriefingTemplateDefinition def = TemplateParser.Parse(v?.Content);
-            return new TemplateDetailResponse { Template = t, Content = v?.Content ?? String.Empty, Problems = def.Problems, Sections = def.Sections, Shared = t.UserId == null };
+            return new TemplateDetailResponse { Template = t, Content = v?.Content ?? String.Empty, Problems = def.Problems, Sections = def.Sections, Shared = t.UserId == null, Title = def.Title, Audio = def.Audio };
         }
 
         private async Task<BriefingTemplate?> VisibleAsync(HttpContextBase ctx, RequestTypeEnum type, bool write)

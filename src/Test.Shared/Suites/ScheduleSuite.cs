@@ -22,6 +22,8 @@ namespace Test.Shared.Suites
     {
         private const string S = "Schedules";
 
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, bool> _Tenants = new System.Collections.Concurrent.ConcurrentDictionary<string, bool>(StringComparer.Ordinal);
+
         private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, bool> _Topics = new System.Collections.Concurrent.ConcurrentDictionary<string, bool>(StringComparer.Ordinal);
 
         /// <summary>
@@ -151,6 +153,7 @@ namespace Test.Shared.Suites
             Topic topic = (await u.Client.PostAsync("/v1.0/api/topics", new { name = "Sched " + Guid.NewGuid().ToString("N").Substring(0, 6), brief = "Brief.", status = "Active" }, token).ConfigureAwait(false))
                 .Expect(201, "topic").Json<Topic>();
             _Topics[topic.Id] = true;
+            _Tenants[t.Id] = true;
             return new TopicFixture { User = u, Topic = topic };
         }
 
@@ -256,7 +259,7 @@ namespace Test.Shared.Suites
         {
             IRunExecutor routed = Routed(server, executor);
             for (int i = 0; i < 20; i++)
-                if (await server.Context.Scheduling.ExecuteQueuedAsync(routed, "test", token).ConfigureAwait(false) == 0) break;
+                if (await server.Context.Scheduling.ExecuteQueuedAsync(routed, "test", _Tenants.Keys.ToList(), token).ConfigureAwait(false) == 0) break;
         }
 
         private static IRunExecutor Routed(MyMorningNewsServer server, IRunExecutor executor)
@@ -303,7 +306,7 @@ namespace Test.Shared.Suites
                 IRunExecutor routed = Routed(server, ok);
                 for (int i = 0; i < 400; i++)
                 {
-                    int executed = await server.Context.Scheduling.ExecuteQueuedAsync(routed, "test", token).ConfigureAwait(false);
+                    int executed = await server.Context.Scheduling.ExecuteQueuedAsync(routed, "test", _Tenants.Keys.ToList(), token).ConfigureAwait(false);
                     Assert.True(executed <= 1, "never more than one run at a time (" + executed + ")");
                     if ((await ReadRunAsync(server, ra, token).ConfigureAwait(false)).Status == RunStatusEnum.Completed && (await ReadRunAsync(server, rb, token).ConfigureAwait(false)).Status == RunStatusEnum.Completed) break;
                     if (executed == 0) await Task.Delay(25, token).ConfigureAwait(false);
@@ -369,6 +372,7 @@ namespace Test.Shared.Suites
                 .Expect(201, "request").Json<ResearchRequestResponse>();
             await ta.Client.PostAsync("/v1.0/api/requests/" + r.Request.Id + "/confirm", null, token).ConfigureAwait(false);
             if (r.Request.TopicId != null) _Topics[r.Request.TopicId] = true;
+            _Tenants[t.Id] = true;
             await server.Context.Scheduling.TickAsync(DateTime.UtcNow.AddSeconds(1), token).ConfigureAwait(false);
             ResearchRequest running = (await server.Context.Database.ResearchRequests.ReadAsync(t.Id, r.Request.Id, token).ConfigureAwait(false))!;
             Assert.True(running.Status == ResearchRequestStatusEnum.Running && running.RunId != null, "request claimed and queued");

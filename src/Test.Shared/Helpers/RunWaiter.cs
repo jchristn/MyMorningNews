@@ -30,7 +30,7 @@ namespace Test.Shared.Helpers
             Stopwatch sw = Stopwatch.StartNew();
             while (sw.Elapsed < TimeSpan.FromSeconds(timeoutSeconds))
             {
-                int claimed = await server.Context.Scheduling.ExecuteQueuedAsync(TestRuns.Executor(server), "test", token).ConfigureAwait(false);
+                int claimed = await server.Context.Scheduling.ExecuteQueuedAsync(TestRuns.Executor(server), "test", new[] { run.TenantId }, token).ConfigureAwait(false);
                 Run current = (await server.Context.Database.Runs.ReadAsync(run.TenantId, run.Id, token).ConfigureAwait(false))!;
                 if (current.Status != RunStatusEnum.Queued && current.Status != RunStatusEnum.Running) return current;
                 if (claimed == 0) await Task.Delay(50, token).ConfigureAwait(false);

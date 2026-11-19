@@ -49,6 +49,7 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/suggestions", ListSuggestionsAsync, null, openApiMetadata: Paged(Doc("List suggestions", "Suggestions", "Sort by createdUtc, priority, status, or title.")
                 .WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("status", typeof(SuggestionStatusEnum))).WithParameter(QueryParam("priority", typeof(SuggestionPriorityEnum)))
                 .WithParameter(QueryParam("includeDryRun", typeof(bool)))));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/suggestions/{id}", ReadSuggestionAsync, null, openApiMetadata: Doc("Read a suggestion", "Suggestions"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/api/suggestions/{id}/status", SuggestionStatusAsync, null, openApiMetadata: Doc("Accept, snooze, dismiss, or complete a suggestion", "Suggestions")
                 .WithRequestBody(Body<SuggestionStatusRequest>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/sources", ListSourcesAsync, null, openApiMetadata: Paged(Doc("List fetched sources for my topics", "Sources",
@@ -197,6 +198,16 @@ namespace MyMorningNews.Server.Routes
             SuggestionFilter filter = new SuggestionFilter { TenantId = tenantId, UserId = OwnerScope(ctx), TopicId = Query(ctx, "topicId"), Status = QueryEnum<SuggestionStatusEnum>(ctx, "status"), Priority = QueryEnum<SuggestionPriorityEnum>(ctx, "priority"), IsDryRun = QueryBool(ctx, "includeDryRun") == true ? null : false };
             ApplyPaging(ctx, filter);
             await SendJsonAsync(ctx, 200, await Server.Database.Suggestions.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async Task ReadSuggestionAsync(HttpContextBase ctx)
+        {
+            if (!await AuthorizeAsync(ctx, RequestTypeEnum.SuggestionRead).ConfigureAwait(false)) return;
+            string? tenantId = await RequireTenantAsync(ctx).ConfigureAwait(false);
+            if (tenantId == null) return;
+            Suggestion? s = await Server.Database.Suggestions.ReadAsync(tenantId, Param(ctx, "id") ?? String.Empty, ctx.Token).ConfigureAwait(false);
+            if (s == null || !IsOwnerOrAdmin(ctx, s.UserId)) { await SendNotFoundAsync(ctx, "Suggestion").ConfigureAwait(false); return; }
+            await SendJsonAsync(ctx, 200, s).ConfigureAwait(false);
         }
 
         private async Task SuggestionStatusAsync(HttpContextBase ctx)

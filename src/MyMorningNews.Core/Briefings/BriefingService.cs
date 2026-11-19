@@ -231,15 +231,19 @@ namespace MyMorningNews.Core.Briefings
         /// Compose an edition now without saving (preview). Uses the latest data; model calls are marked as dry runs.
         /// </summary>
         /// <param name="edition">Edition.</param>
+        /// <param name="templateContent">Unsaved template Markdown to preview instead of the edition template, or null.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Unsaved briefing with Markdown.</returns>
-        public async Task<Briefing> PreviewEditionAsync(Edition edition, CancellationToken token = default)
+        /// <exception cref="TemplateInvalidException">templateContent has errors.</exception>
+        public async Task<Briefing> PreviewEditionAsync(Edition edition, string? templateContent, CancellationToken token = default)
         {
             ArgumentNullException.ThrowIfNull(edition);
             DateTime now = DateTime.UtcNow;
             Briefing b = new Briefing { TenantId = edition.TenantId, UserId = edition.UserId, Kind = BriefingKindEnum.Edition, EditionId = edition.Id, Title = edition.Name, IsDryRun = true };
             ComposeScope scope = await EditionScopeAsync(edition, await EditionTopicsAsync(edition, token).ConfigureAwait(false), now, token).ConfigureAwait(false);
             scope.Save = false;
+            if (!String.IsNullOrWhiteSpace(templateContent))
+                scope.Template = new ResolvedTemplate { Template = scope.Template.Template, Version = new BriefingTemplateVersion { Content = templateContent }, Definition = BriefingTemplateService.Validate(templateContent) };
             return await Composer.ComposeAsync(b, scope, token).ConfigureAwait(false);
         }
 

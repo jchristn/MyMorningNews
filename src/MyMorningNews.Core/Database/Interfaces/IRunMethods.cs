@@ -96,9 +96,10 @@ namespace MyMorningNews.Core.Database.Interfaces
         /// <param name="lockedUntilUtc">Lock expiry (UTC), renewed while the run executes.</param>
         /// <param name="limit">Maximum rows.</param>
         /// <param name="workerId">Claiming worker.</param>
+        /// <param name="tenantIds">Only claim runs of these tenants, or null for any tenant.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Claimed runs.</returns>
-        Task<List<Run>> ClaimQueuedAsync(DateTime nowUtc, DateTime lockedUntilUtc, int limit, string workerId, CancellationToken token = default);
+        Task<List<Run>> ClaimQueuedAsync(DateTime nowUtc, DateTime lockedUntilUtc, int limit, string workerId, IReadOnlyCollection<string>? tenantIds = null, CancellationToken token = default);
 
         /// <summary>
         /// Number of runs currently Running across all tenants.

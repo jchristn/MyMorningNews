@@ -215,8 +215,8 @@ namespace MyMorningNews.Server.Services
             if (!String.Equals(ctx.Request.Url.RawWithoutQuery, OpenApiDocumentPath, StringComparison.Ordinal))
                 ctx.Response.Headers.Set("Access-Control-Allow-Origin", _Server.Settings.Rest.CorsAllowedOrigins);
             ctx.Response.Headers.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
-            ctx.Response.Headers.Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Api-Key, X-Token, X-Email, X-Password, X-Tenant-Guid, X-Access-Key, X-Secret-Key, X-Request, Accept-Language");
-            ctx.Response.Headers.Set("Access-Control-Expose-Headers", "X-Request-Id");
+            ctx.Response.Headers.Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Api-Key, X-Token, X-Email, X-Password, X-Tenant-Guid, X-Access-Key, X-Secret-Key, X-Request, Accept-Language, Range");
+            ctx.Response.Headers.Set("Access-Control-Expose-Headers", "X-Request-Id, Content-Disposition, Content-Range, Accept-Ranges, Content-Length, ETag");
         }
 
         private static string? Trim(string? value, int max)

@@ -40,7 +40,8 @@ namespace MyMorningNews.Server.Routes
                 "An empty list means all of the owner's active recurring topics.").WithRequestBody(Body<EditionTopicsRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/compose", ComposeAsync, null, openApiMetadata: Doc("Compose an edition now", "Editions",
                 "Queues the briefing (and fresh research when enabled) and returns 202 with the queued briefing."));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/preview", PreviewAsync, null, openApiMetadata: Doc("Preview an edition from the latest data without saving", "Editions"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/preview", PreviewAsync, null, openApiMetadata: Doc("Preview an edition from the latest data without saving", "Editions",
+                "Optional body {templateContent} previews unsaved template Markdown (400 TemplateInvalid when it has errors).").WithRequestBody(Body<EditionPreviewRequest>()));
         }
 
         private async Task ListAsync(HttpContextBase ctx)
@@ -113,6 +114,14 @@ namespace MyMorningNews.Server.Routes
         {
             Edition? e = await OwnedAsync(ctx, RequestTypeEnum.BriefingWrite).ConfigureAwait(false);
             if (e == null) return;
+            Briefing? active = (await Server.Database.Briefings.EnumerateAsync(new BriefingFilter { TenantId = e.TenantId, EditionId = e.Id, PageSize = 20 }, ctx.Token).ConfigureAwait(false)).Items
+                .FirstOrDefault(x => x.Status == BriefingStatusEnum.Queued || x.Status == BriefingStatusEnum.Composing);
+            if (active != null)
+            {
+                await SendErrorAsync(ctx, 409, "Conflict", "This edition already has a briefing on the way.", new Dictionary<string, string> { { "briefingId", active.Id }, { "status", active.Status.ToString() } }).ConfigureAwait(false);
+                return;
+            }
+
             Briefing queued = await Server.Briefings.QueueEditionAsync(e, null, DateTime.UtcNow, ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 202, queued).ConfigureAwait(false);
         }
@@ -121,7 +130,8 @@ namespace MyMorningNews.Server.Routes
         {
             Edition? e = await OwnedAsync(ctx, RequestTypeEnum.BriefingRead).ConfigureAwait(false);
             if (e == null) return;
-            Briefing preview = await Server.Briefings.PreviewEditionAsync(e, ctx.Token).ConfigureAwait(false);
+            EditionPreviewRequest req = (await ReadOptionalBodyAsync<EditionPreviewRequest>(ctx).ConfigureAwait(false)) ?? new EditionPreviewRequest();
+            Briefing preview = await Server.Briefings.PreviewEditionAsync(e, req.TemplateContent, ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 200, preview).ConfigureAwait(false);
         }
 

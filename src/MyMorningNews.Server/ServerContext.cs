@@ -131,6 +131,16 @@ namespace MyMorningNews.Server
         public MyMorningNews.Core.Audio.AudioService Audio { get; set; } = null!;
 
         /// <summary>
+        /// Email outbox and delivery.
+        /// </summary>
+        public MyMorningNews.Core.Email.EmailService Email { get; set; } = null!;
+
+        /// <summary>
+        /// Reader feedback.
+        /// </summary>
+        public MyMorningNews.Core.Feedback.FeedbackService Feedback { get; set; } = null!;
+
+        /// <summary>
         /// Instantiate.
         /// </summary>
         /// <param name="settingsService">Settings service.</param>

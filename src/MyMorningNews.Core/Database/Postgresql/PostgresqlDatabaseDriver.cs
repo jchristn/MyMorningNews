@@ -108,6 +108,10 @@ namespace MyMorningNews.Core.Database.Postgresql
             MediaAssets = new MediaAssetMethods(this);
             MediaChapters = new MediaChapterMethods(this);
             FeedTokens = new FeedTokenMethods(this);
+            EmailMessages = new EmailMessageMethods(this);
+            EmailActionTokens = new EmailActionTokenMethods(this);
+            EmailSuppressions = new EmailSuppressionMethods(this);
+            Feedback = new FeedbackMethods(this);
             Embeddings = new EmbeddingMethods(this);
         }
 

@@ -121,7 +121,7 @@ namespace Test.Shared.Suites
             Run run = await RunAsync(f, token).ConfigureAwait(false);
             Assert.True(run.Status == RunStatusEnum.Completed, "completed: " + run.Status + " " + run.ErrorMessage + " " + run.Summary);
             List<RunStage> stages = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages", token).ConfigureAwait(false)).Expect(200, "stages").Json<List<RunStage>>();
-            Assert.True(stages.Count == 14 && stages.All(s => s.Status == StageStatusEnum.Succeeded), "all stages succeeded: " + String.Join(", ", stages.Select(s => s.Stage + "=" + s.Status + (s.ErrorMessage == null ? String.Empty : "(" + s.ErrorMessage + ")"))));
+            Assert.True(stages.Count == 15 && stages.All(s => s.Status == StageStatusEnum.Succeeded), "all stages succeeded: " + String.Join(", ", stages.Select(s => s.Stage + "=" + s.Status + (s.ErrorMessage == null ? String.Empty : "(" + s.ErrorMessage + ")"))));
             Assert.True(stages.Single(s => s.Stage == "Extract").ErrorMessage!.Contains("could not be verified", StringComparison.Ordinal), "unverified quotes noted");
 
             List<SearchResult> results = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/results", token).ConfigureAwait(false)).Json<List<SearchResult>>();

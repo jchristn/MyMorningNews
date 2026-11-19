@@ -154,6 +154,16 @@ namespace MyMorningNews.Core.Database.Postgresql
                 new List<string>
                 {
                     "CREATE INDEX IF NOT EXISTS ix_mediaassets_queue ON mediaassets (status, createdutc)"
+                })),
+            new SchemaMigration(10, "Email outbox, action tokens, suppressions, and feedback", Concat(
+                EmailMessageQueries.Schema,
+                EmailActionTokenQueries.Schema,
+                EmailSuppressionQueries.Schema,
+                FeedbackQueries.Schema,
+                new List<string>
+                {
+                    "CREATE INDEX IF NOT EXISTS ix_emailmessages_queue ON emailmessages (status, nextattemptutc)",
+                    "CREATE INDEX IF NOT EXISTS ix_feedback_target ON feedback (tenantid, targettype, targetid, iscurrent)"
                 }))
         };
 

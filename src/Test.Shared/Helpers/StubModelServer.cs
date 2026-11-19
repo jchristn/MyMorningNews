@@ -47,6 +47,11 @@ namespace Test.Shared.Helpers
         /// </summary>
         public ConcurrentQueue<string> SpeechRequests { get; } = new ConcurrentQueue<string>();
 
+        /// <summary>
+        /// Bodies of Mailgun send requests received (form encoded).
+        /// </summary>
+        public ConcurrentQueue<string> MailgunRequests { get; } = new ConcurrentQueue<string>();
+
         #endregion
 
         #region Private-Members
@@ -159,6 +164,14 @@ namespace Test.Shared.Helpers
                 }
 
                 string path = ctx.Request.Url?.AbsolutePath ?? String.Empty;
+                if (path.Contains("/mailgun/", StringComparison.Ordinal) && path.EndsWith("/messages", StringComparison.Ordinal))
+                {
+                    MailgunRequests.Enqueue(body);
+                    if (path.Contains("fail", StringComparison.Ordinal)) await WriteAsync(ctx, 500, "{\"message\":\"temporary failure\"}").ConfigureAwait(false);
+                    else await WriteAsync(ctx, 200, "{\"id\":\"<stub." + Guid.NewGuid().ToString("N") + "@mg.example.test>\",\"message\":\"Queued. Thank you.\"}").ConfigureAwait(false);
+                    return;
+                }
+
                 if (path.EndsWith("/audio/speech", StringComparison.Ordinal))
                 {
                     SpeechRequests.Enqueue(body);

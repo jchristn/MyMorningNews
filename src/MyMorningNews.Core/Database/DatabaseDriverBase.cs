@@ -307,6 +307,26 @@ namespace MyMorningNews.Core.Database
         public IFeedTokenMethods FeedTokens { get; protected set; } = null!;
 
         /// <summary>
+        /// Email outbox.
+        /// </summary>
+        public IEmailMessageMethods EmailMessages { get; protected set; } = null!;
+
+        /// <summary>
+        /// Email link tokens.
+        /// </summary>
+        public IEmailActionTokenMethods EmailActionTokens { get; protected set; } = null!;
+
+        /// <summary>
+        /// Email suppressions.
+        /// </summary>
+        public IEmailSuppressionMethods EmailSuppressions { get; protected set; } = null!;
+
+        /// <summary>
+        /// Reader feedback.
+        /// </summary>
+        public IFeedbackMethods Feedback { get; protected set; } = null!;
+
+        /// <summary>
         /// Embedding vectors (pgvector).
         /// </summary>
         public IEmbeddingMethods Embeddings { get; protected set; } = null!;

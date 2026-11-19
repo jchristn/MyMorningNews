@@ -44,6 +44,11 @@ namespace MyMorningNews.Core.Briefings
         /// </summary>
         public Audio.AudioService? Audio { get; set; } = null;
 
+        /// <summary>
+        /// Email service; when set, ready edition briefings with email on and one-time reports with the Email deliverable are emailed.
+        /// </summary>
+        public Email.EmailService? Email { get; set; } = null;
+
         #endregion
 
         #region Private-Members
@@ -138,6 +143,8 @@ namespace MyMorningNews.Core.Briefings
                 ? request.Deliverables.Any(d => String.Equals(d, "Podcast", StringComparison.OrdinalIgnoreCase))
                 : template.Definition.Audio.Enabled;
             if (wantsAudio) await QueueAudioAsync(composed, request != null ? MediaKindEnum.PodcastEpisode : MediaKindEnum.BriefingAudio, null, token).ConfigureAwait(false);
+            if (Email != null && request != null && composed.Status == BriefingStatusEnum.Ready && request.Deliverables.Any(d => String.Equals(d, "Email", StringComparison.OrdinalIgnoreCase)))
+                await Email.QueueBriefingAsync(composed, request.EmailRecipients, token).ConfigureAwait(false);
             return composed;
         }
 
@@ -444,6 +451,7 @@ namespace MyMorningNews.Core.Briefings
                 edition.LastComposedUtc = composed.ComposedUtc ?? nowUtc;
                 await _Database.Editions.UpdateAsync(edition, token).ConfigureAwait(false);
                 if (edition.AudioEnabled) await QueueAudioAsync(composed, MediaKindEnum.BriefingAudio, edition.VoiceProfileId, token).ConfigureAwait(false);
+                if (edition.EmailEnabled && Email != null) await Email.QueueBriefingAsync(composed, null, token).ConfigureAwait(false);
             }
         }
 

@@ -515,6 +515,42 @@ namespace MyMorningNews.Core.Helpers
         }
 
         /// <summary>
+        /// Generate a EmailMessage identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateEmailMessageId()
+        {
+            return Generate(IdPrefixes.EmailMessage);
+        }
+
+        /// <summary>
+        /// Generate a EmailActionToken identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateEmailActionTokenId()
+        {
+            return Generate(IdPrefixes.EmailActionToken);
+        }
+
+        /// <summary>
+        /// Generate a EmailSuppression identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateEmailSuppressionId()
+        {
+            return Generate(IdPrefixes.EmailSuppression);
+        }
+
+        /// <summary>
+        /// Generate a Feedback identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateFeedbackId()
+        {
+            return Generate(IdPrefixes.Feedback);
+        }
+
+        /// <summary>
         /// Generate a RequestHistory identifier.
         /// </summary>
         /// <returns>Identifier.</returns>

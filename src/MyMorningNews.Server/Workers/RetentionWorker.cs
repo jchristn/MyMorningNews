@@ -107,6 +107,8 @@ namespace MyMorningNews.Server.Workers
                 int pruned = await _Server.Database.RequestHistory.PruneAsync(cutoff, token).ConfigureAwait(false);
                 int sessions = await _Server.Database.AuthSessions.DeleteExpiredAsync(DateTime.UtcNow.AddDays(-ExpiredSessionRetentionDays), token).ConfigureAwait(false);
                 int payloads = await _Server.Database.LlmCalls.ClearPayloadsAsync(DateTime.UtcNow.AddDays(-_Server.Settings.Diagnostics.LlmPayloadRetentionDays), token).ConfigureAwait(false);
+                int emails = await _Server.Database.EmailMessages.PruneAsync(DateTime.UtcNow.AddDays(-_Server.Settings.Email.MessageRetentionDays), token).ConfigureAwait(false);
+                if (emails > 0) _Server.Logging.Info("[RetentionWorker] pruned " + emails + " emails");
                 int artifacts = 0;
                 int batch;
                 do

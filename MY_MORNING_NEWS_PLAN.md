@@ -1482,12 +1482,12 @@ Exit: a briefing produces a playable MP3 with chapters, and a podcast app can su
 
 ### Phase 9: Email delivery
 
-- [ ] Provider abstraction (Mailgun, File, Disabled), factory, outbox, delivery worker with backoff, idempotency.
-- [ ] Layout and templates on HtmlPageBuilder (run digest, briefing published, run failed, test), `EmailComposer` blocks, `EmailMarkdown`.
-- [ ] Action tokens, public feedback and unsubscribe landing pages, preferences.
-- [ ] Pipeline `Notify` stage and edition email.
+- [x] Provider abstraction (Mailgun through SendWithMailgun, File, Disabled), factory read on every pass, outbox, delivery worker with exponential backoff, idempotency per run or briefing and recipient, retention pruning.
+- [x] Layout and templates on HtmlPageBuilder (run digest, briefing published, test; run failed is defined and waits for the opt-in setting), `EmailBuilder` blocks (header, paragraph, Markdown, section, item card with source chips and feedback row, footer) with a matching text rendering, safe Markdown shared with briefings.
+- [x] Action tokens (hashed, expiring, bound to one item and its actions, invalid once the user or tenant is inactive), public feedback and unsubscribe landing pages (no JavaScript, rate limited, uniform for bad links, a GET never records unless `Email.RecordFeedbackOnClick`), suppressions and preferences, the feedback table with history (grading a prediction resolves it; Done and Snooze act on suggestions).
+- [x] Pipeline `Notify` stage (stage 15) and edition and one-time briefing email.
 - [ ] Dashboard: Email outbox and preview, Settings Email section with Send test, topic Delivery tab, Profile email preferences, charts 33 and 34.
-- [ ] Suites: Email, EmailActionTokens.
+- [x] Suites: Email (builder, run digest, feedback links, unsubscribe, Mailgun delivery and retries, API, briefing email).
 
 Exit: every run sends a digest (File provider by default, Mailgun when configured). Each finding, prediction, and suggestion has working detail and feedback links, and feedback submitted from the email shows up in the dashboard with its reason.
 
@@ -1660,6 +1660,7 @@ No open questions remain.
 | 2026-11-19 | 6 | Core done | Research pipeline with 13 stages, quote verification, composite ranking, pgvector de-duplication with fallbacks, predictions with reviews and Brier scores, suggestions, research APIs (findings with evidence, run stages, queries, results, predictions, suggestions, sources). Verified end to end against stub search and model servers, and against live SearXNG and real pages in Docker (stops at extraction without an Anthropic key, as expected). 122 tests pass on net8 and net10, 123 on Xunit3. |
 | 2026-11-19 | 7 | Core done | Artifact storage (local and S3 with presigned URLs, 365-day retention, pinning with a cap, ranged downloads), briefing templates (parser and validator with line numbers, versions, rollback, reset, export), BriefingComposer with citations and a plain fallback, editions with fresh research, schedules, previews, seeded Morning News, run briefings and one-time reports. Migration 8. Merged the Phase 6 dashboard pages and fixed the gaps it found (NUL bytes in fetched pages, findings filters in the query, sources list, dry-run toggles, sort keys, full topic cascade). 134 tests pass on net8 and net10, 135 on Xunit3; verified in Docker. Dashboard pages for Phase 7 are next. |
 | 2026-11-19 | 8 | Core done | Audio: voices, episodes with chapters, private podcast feeds, ffmpeg encoding, retries; TTS joins the default Docker stack. Test infrastructure: runs are routed to the executor of the test that owns their topic, so parallel suites no longer steal each other's runs; nested helper classes and a test tuple moved out to follow the code style. 141 tests pass on net8 and net10, 142 on Xunit3 (four runs in a row). |
+| 2026-11-19 | 9 | Core done | Email after every run and briefing with detail and feedback links, File provider by default and Mailgun when configured, feedback with reasons from email, dashboard, mobile, and API, suppressions and preferences. Merged the Phase 7 dashboard pages and the Phase 4 to 7 mobile screens (parity 22 implemented, 11 planned). Run claims take an optional tenant filter, so parallel test suites drain only their own runs. 148 tests pass on net8 and net10, 149 on Xunit3 (five runs in a row). Link base URLs are Rest.PublicBaseUrl and Rest.AppBaseUrl (one setting each, shared with feeds). |
 
 ---
 

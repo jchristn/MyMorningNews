@@ -156,6 +156,16 @@ namespace MyMorningNews.Core.Settings
             set { _Tts = value ?? throw new ArgumentNullException(nameof(Tts)); }
         }
 
+        /// <summary>
+        /// Email delivery.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Value is null.</exception>
+        public EmailSettings Email
+        {
+            get { return _Email; }
+            set { _Email = value ?? throw new ArgumentNullException(nameof(Email)); }
+        }
+
         #endregion
 
         #region Private-Members
@@ -174,6 +184,7 @@ namespace MyMorningNews.Core.Settings
         private SchedulerSettings _Scheduler = new SchedulerSettings();
         private SearchSettings _Search = new SearchSettings();
         private TtsSettings _Tts = new TtsSettings();
+        private EmailSettings _Email = new EmailSettings();
 
         #endregion
     }

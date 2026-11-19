@@ -100,12 +100,15 @@ namespace Test.Shared.Suites
 
         private static async Task<MediaAsset> EpisodeForAsync(PipelineFixture f, Briefing b, CancellationToken token)
         {
-            for (int i = 0; i < 5; i++)
+            // Other suites queue audio too and the queue is shared, so wait on this briefing's episode rather than counting passes.
+            System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
+            while (sw.Elapsed < TimeSpan.FromSeconds(60))
             {
-                await f.Server.Context.Audio.ProcessQueuedAsync(DateTime.UtcNow, token).ConfigureAwait(false);
+                int done = await f.Server.Context.Audio.ProcessQueuedAsync(DateTime.UtcNow, token).ConfigureAwait(false);
                 EnumerationResult<MediaAsset> list = (await f.User.Client.GetAsync("/v1.0/api/media?briefingId=" + b.Id, token).ConfigureAwait(false)).Json<EnumerationResult<MediaAsset>>();
                 MediaAsset? m = list.Items.OrderByDescending(x => x.CreatedUtc).FirstOrDefault();
                 if (m != null && (m.Status == MediaStatusEnum.Ready || m.Status == MediaStatusEnum.Failed)) return m;
+                if (done == 0) await Task.Delay(50, token).ConfigureAwait(false);
             }
 
             throw new InvalidOperationException("No finished episode for briefing " + b.Id);

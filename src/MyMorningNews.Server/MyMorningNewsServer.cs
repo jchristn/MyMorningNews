@@ -168,13 +168,17 @@ namespace MyMorningNews.Server
             scheduling.EditionTrigger = briefings;
             _Audio = new MyMorningNews.Core.Audio.AudioService(_Database, _Models, prompts, _Artifacts, vault, settings, _Logging, TtsOverride);
             briefings.Audio = _Audio;
+            MyMorningNews.Core.Email.EmailService email = new MyMorningNews.Core.Email.EmailService(_Database, _Models, prompts, settings, _Logging);
+            briefings.Email = email;
             tenantDefaults.Audio = _Audio;
             tenantDefaults.Briefings = briefings;
             await tenantDefaults.EnsureAllAsync(token).ConfigureAwait(false);
             _Context.Artifacts = _Artifacts;
             _Context.Briefings = briefings;
             _Context.Audio = _Audio;
-            PipelineServices pipelineServices = new PipelineServices(_Database, _Models, prompts, _Search!, _Fetch!, settings, _Logging) { Briefings = briefings };
+            _Context.Email = email;
+            _Context.Feedback = new MyMorningNews.Core.Feedback.FeedbackService(_Database);
+            PipelineServices pipelineServices = new PipelineServices(_Database, _Models, prompts, _Search!, _Fetch!, settings, _Logging) { Briefings = briefings, Email = email };
             _Context.RunExecutor = new ResearchPipeline(pipelineServices);
 
             _Capture = new RequestHistoryCaptureService(_Database, settings.RequestHistory, _Logging);
@@ -211,6 +215,8 @@ namespace MyMorningNews.Server
                 _Workers.Add(Task.Run(() => briefingWorker.RunAsync(Lifetime.Token)));
                 MediaWorker mediaWorker = new MediaWorker(_Context);
                 _Workers.Add(Task.Run(() => mediaWorker.RunAsync(Lifetime.Token)));
+                EmailDeliveryWorker emailWorker = new EmailDeliveryWorker(_Context);
+                _Workers.Add(Task.Run(() => emailWorker.RunAsync(Lifetime.Token)));
                 if (settings.Scheduler.Enabled)
                 {
                     SchedulerWorker scheduler = new SchedulerWorker(_Context);
@@ -308,6 +314,8 @@ namespace MyMorningNews.Server
                 new EditionRoutes(context),
                 new TemplateRoutes(context),
                 new MediaRoutes(context),
+                new EmailRoutes(context),
+                new FeedbackRoutes(context),
                 new PromptRoutes(context)
             };
         }

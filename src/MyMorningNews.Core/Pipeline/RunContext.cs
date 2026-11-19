@@ -115,5 +115,10 @@ namespace MyMorningNews.Core.Pipeline
         /// Briefing composed for the run, or null.
         /// </summary>
         public string? BriefingId { get; set; } = null;
+
+        /// <summary>
+        /// Whether a digest email was queued.
+        /// </summary>
+        public bool Delivered { get; set; } = false;
     }
 }

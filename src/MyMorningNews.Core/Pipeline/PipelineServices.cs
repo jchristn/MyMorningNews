@@ -66,6 +66,11 @@ namespace MyMorningNews.Core.Pipeline
         /// </summary>
         public BriefingService? Briefings { get; set; } = null;
 
+        /// <summary>
+        /// Email service for run digests; null skips the Notify stage.
+        /// </summary>
+        public Email.EmailService? Email { get; set; } = null;
+
         #endregion
 
         #region Constructors-and-Factories

@@ -80,6 +80,7 @@ namespace Test.Shared.Helpers
                 settings.Auth.LoginRateLimitPerMinute = 1000;
                 settings.Telemetry.Enabled = false;
                 settings.Tts.Endpoint = StubModelServer.Shared.BaseUrl;
+                settings.Email.FileDirectory = Path.Combine(Path.GetTempPath(), "mmn-test-email-" + Guid.NewGuid().ToString("N"));
                 settings.Storage.LocalDirectory = Path.Combine(Path.GetTempPath(), "mmn-test-media-" + Guid.NewGuid().ToString("N"));
                 string file = Path.Combine(Path.GetTempPath(), "mmn-test-" + Guid.NewGuid().ToString("N") + ".json");
                 SettingsService service = SettingsService.FromSettings(settings, file);

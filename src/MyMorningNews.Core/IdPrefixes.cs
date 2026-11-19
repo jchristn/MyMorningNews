@@ -271,6 +271,26 @@ namespace MyMorningNews.Core
         public const string FeedToken = "fdt_";
 
         /// <summary>
+        /// Prefix for EmailMessage identifiers.
+        /// </summary>
+        public const string EmailMessage = "eml_";
+
+        /// <summary>
+        /// Prefix for EmailActionToken identifiers.
+        /// </summary>
+        public const string EmailActionToken = "eat_";
+
+        /// <summary>
+        /// Prefix for EmailSuppression identifiers.
+        /// </summary>
+        public const string EmailSuppression = "esp_";
+
+        /// <summary>
+        /// Prefix for Feedback identifiers.
+        /// </summary>
+        public const string Feedback = "fbk_";
+
+        /// <summary>
         /// Prefix for request history entries.
         /// </summary>
         public const string RequestHistory = "req_";

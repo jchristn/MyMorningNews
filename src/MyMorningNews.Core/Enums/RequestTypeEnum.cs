@@ -433,6 +433,26 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// Create or revoke podcast feed tokens.
         /// </summary>
-        FeedTokenWrite
+        FeedTokenWrite,
+
+        /// <summary>
+        /// Read the email outbox.
+        /// </summary>
+        EmailRead,
+
+        /// <summary>
+        /// Resend, delete, or test email.
+        /// </summary>
+        EmailWrite,
+
+        /// <summary>
+        /// Read feedback.
+        /// </summary>
+        FeedbackRead,
+
+        /// <summary>
+        /// Give feedback.
+        /// </summary>
+        FeedbackWrite
     }
 }

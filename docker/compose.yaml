@@ -52,6 +52,12 @@ services:
       MYMORNINGNEWS_APP_BASE_URL: ${MYMORNINGNEWS_APP_BASE_URL:-http://127.0.0.1:12101}
       MYMORNINGNEWS_STORAGE_PROVIDER: ${MYMORNINGNEWS_STORAGE_PROVIDER:-Local}
       MYMORNINGNEWS_STORAGE_LOCAL_DIRECTORY: /data/media
+      MYMORNINGNEWS_EMAIL_FILE_DIRECTORY: /data/email
+      MYMORNINGNEWS_EMAIL_PROVIDER: ${MYMORNINGNEWS_EMAIL_PROVIDER:-File}
+      MYMORNINGNEWS_EMAIL_FROM_ADDRESS: ${MYMORNINGNEWS_EMAIL_FROM_ADDRESS:-briefings@example.test}
+      MYMORNINGNEWS_MAILGUN_DOMAIN: ${MYMORNINGNEWS_MAILGUN_DOMAIN:-}
+      MYMORNINGNEWS_MAILGUN_API_KEY: ${MYMORNINGNEWS_MAILGUN_API_KEY:-}
+      MYMORNINGNEWS_MAILGUN_BASE_URL: ${MYMORNINGNEWS_MAILGUN_BASE_URL:-https://api.mailgun.net/v3/}
       MYMORNINGNEWS_STORAGE_S3_BUCKET: ${MYMORNINGNEWS_STORAGE_S3_BUCKET:-}
       MYMORNINGNEWS_STORAGE_S3_REGION: ${MYMORNINGNEWS_STORAGE_S3_REGION:-us-west-2}
       MYMORNINGNEWS_STORAGE_S3_ENDPOINT: ${MYMORNINGNEWS_STORAGE_S3_ENDPOINT:-}
@@ -72,6 +78,7 @@ services:
     volumes:
       - ./server/mymorningnews.json:/app/config/mymorningnews.json
       - media:/data/media
+      - emailout:/data/email
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/v1.0/api/health"]
       interval: 5s
@@ -268,6 +275,7 @@ services:
 volumes:
   pgdata:
   media:
+  emailout:
   ollama:
   prometheus:
   tempo:

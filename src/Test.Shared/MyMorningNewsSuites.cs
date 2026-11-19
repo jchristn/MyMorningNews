@@ -33,7 +33,8 @@ namespace Test.Shared
                     PipelineSuite.Create(),
                     StorageSuite.Create(),
                     BriefingSuite.Create(),
-                    MediaSuite.Create()
+                    MediaSuite.Create(),
+                    EmailSuite.Create()
                 };
             }
         }

@@ -176,6 +176,21 @@ namespace MyMorningNews.Core.Telemetry
         public static readonly Counter<long> MediaEpisodes = Meter.CreateCounter<long>("mymorningnews.media.episodes", "{episode}", "Audio episodes by outcome and format.");
 
         /// <summary>
+        /// Feedback submissions by target type and channel.
+        /// </summary>
+        public static readonly Counter<long> FeedbackSubmissions = Meter.CreateCounter<long>("mymorningnews.feedback.submissions", "{feedback}", "Feedback submissions by target type and channel.");
+
+        /// <summary>
+        /// Emails by template, provider, and outcome.
+        /// </summary>
+        public static readonly Counter<long> EmailMessages = Meter.CreateCounter<long>("mymorningnews.email.messages", "{email}", "Emails by template, provider, and outcome.");
+
+        /// <summary>
+        /// Email feedback link views and submissions by target type and action.
+        /// </summary>
+        public static readonly Counter<long> EmailFeedbackClicks = Meter.CreateCounter<long>("mymorningnews.email.feedback.clicks", "{click}", "Email feedback link views and submissions.");
+
+        /// <summary>
         /// Push notifications by outcome.
         /// </summary>
         public static readonly Counter<long> PushMessages = Meter.CreateCounter<long>("mymorningnews.push.messages", "{message}", "Push notifications by outcome.");

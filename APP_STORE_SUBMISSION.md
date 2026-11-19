@@ -1,0 +1,435 @@
+# App Store and Google Play submission form
+
+Every field and data point needed to submit the My Morning News app (`mobile/`) to the Apple App Store and Google
+Play, written as a form. For each field: the store, the field name as the console shows it, the limit or format,
+our proposed value, and an `[ ] Owner:` line wherever only the owner can supply or confirm the value. Proposed
+values are drafts: **every proposed text needs the owner's approval** before submission (item 0.6).
+
+Related: `mobile/OWNER_ACTIONS.md` (ordered owner tasks), `mobile/README.md` (builds and environment variables),
+plan sections 33.1 (sign-in, account deletion) and 35 (mobile app).
+
+Rules for this file: no passwords, keys, or tokens here (they go into the consoles or EAS). Values the app reads
+from code are marked with where they live, so a change is made in one place.
+
+**Legend.** Store: **A** Apple App Store Connect, **G** Google Play Console, **A+G** both.
+
+---
+
+## 0. Gates before the first public submission
+
+| # | Gate | Status |
+|---|------|--------|
+| 0.1 | **Minimum functionality (Apple 4.2, Google "Minimum functionality").** Today, Topics, and Insights show "This arrives in a later server update" until plan Phases 4 to 10 land. Use TestFlight and Play internal testing now; submit for public release after briefings (Phase 7), audio (Phase 8), and account deletion (Phase 14). | `[ ] Owner: confirm the release timing` |
+| 0.2 | **In-app account deletion (Apple 5.1.1(v), Google account deletion policy).** Account > Delete account calls `POST /v1.0/api/account/delete` (contract E, Phase 14). Until it exists the screen links to the web page, which is not enough for Apple review. | Blocked on Phase 14 |
+| 0.3 | **Hosted service live** at `https://app.mymorningnews.ai`, with the reviewer demo account (section 9). | `[ ] Owner: confirm` |
+| 0.4 | **Legal pages reviewed and live**: privacy, terms, support, account deletion (section 1). | `[ ] Owner: confirm` |
+| 0.5 | **Interface review done**, then screenshots captured (section 8). No screenshots before the review. | `[ ] Owner: confirm` |
+| 0.6 | **Every proposed text and answer in this file approved.** | `[ ] Owner: approve` |
+| 0.7 | **`npm run parity:strict` passes** (nothing planned remains for the routes the release claims). | Run before submitting |
+
+---
+
+## 1. App identity and URLs
+
+| Store | Field | Format and limits | Proposed value | Owner |
+|---|---|---|---|---|
+| A+G | App name | 30 characters max on both | `My Morning News` (15). From `mobile/app.config.js` `name`. | `[ ] Owner: approve; check the name is free on both stores early` |
+| A | Subtitle | 30 characters | `Your research, briefed daily` (28) | `[ ] Owner: approve` |
+| A | Bundle ID | Reverse DNS, immutable after the first build | `ai.mymorningnews.app` (`MYMORNINGNEWS_MOBILE_BUNDLE_ID` overrides) | Register in the Apple Developer portal |
+| G | Package name | Immutable after the first upload | `ai.mymorningnews.app` | |
+| A | SKU | Internal, unique in the account | `mymorningnews-ios` | `[ ] Owner: confirm` |
+| A | Primary language | | English (U.S.) | |
+| G | Default language | | English (United States), en-US | |
+| A | Apple ID (app record) | Numeric, issued by App Store Connect | | `[ ] Owner: _______________ (goes into eas.json submit ascAppId)` |
+| A | Team ID | 10 characters | | `[ ] Owner: _______________ (eas.json appleTeamId, universal link file)` |
+| A | Apple ID email used to submit | | | `[ ] Owner: _______________ (eas.json appleId)` |
+| G | Developer account | Organization account | Lattice AI LLC | `[ ] Owner: confirm account ID _______________` |
+| A+G | D-U-N-S number | Organization enrollment | On file for Lattice AI LLC | `[ ] Owner: confirm` |
+| A+G | Version | Numbers only on the stores | `0.1.0` (`app.config.js` `version`); release label `0.1.0-alpha` in `extra.releaseVersion` | No change without owner approval |
+| A | Build number | String | `1` (`ios.buildNumber`) | |
+| G | Version code | Integer | `1` (`android.versionCode`) | |
+| A | Copyright | Year and holder | `2026 Lattice AI LLC` | `[ ] Owner: approve` |
+| A+G | Support URL | Public page with contact details | `https://mymorningnews.ai/support.html` | |
+| A | Marketing URL | Optional | `https://mymorningnews.ai` | |
+| A+G | Privacy policy URL | Required | `https://mymorningnews.ai/privacy.html` | |
+| A | User privacy choices URL | Optional | `https://mymorningnews.ai/privacy.html` | |
+| A+G | Terms of use | Apple: standard EULA or a custom one; link in the description | `https://mymorningnews.ai/terms.html` (keep Apple's standard EULA and link our terms in the description) | `[ ] Owner: confirm standard EULA` |
+| G | Account deletion URL | Required; must work without the app and name the app and developer | `https://mymorningnews.ai/delete-account.html` | `[ ] Owner: confirm the page names "My Morning News" and "Lattice AI LLC"` |
+| A+G | Contact email | Shown to users on Google Play; App Review contact on Apple | `hello@latticetech.ai` | |
+| G | Contact phone | Optional | | `[ ] Owner: _______________ or leave empty` |
+| G | Website | | `https://mymorningnews.ai` | |
+| G | Developer address | Public for organizations | | `[ ] Owner: _______________` |
+| A | App Review contact | First name, last name, phone, email | Email `hello@latticetech.ai` | `[ ] Owner: name _______________ phone _______________` |
+
+---
+
+## 2. Store copy
+
+All text in this section is proposed. No em-dashes, no claims the app does not support today, nothing about prices.
+
+### 2.1 Apple promotional text (170 characters, editable without a new build)
+
+> My Morning News researches the topics you care about on your schedule and briefs you with ranked findings, sources for every claim, and audio you can play anywhere.
+
+(164 characters) `[ ] Owner: approve`
+
+### 2.2 Google short description (80 characters)
+
+> Tell it what you care about. Get a ranked, sourced briefing to read or hear.
+
+(76 characters) `[ ] Owner: approve`
+
+### 2.3 Full description (Apple 4000, Google 4000 characters)
+
+> My Morning News is a research assistant for the things you want to stay on top of. Tell it what you care about,
+> answer a few questions, and it researches the web on your schedule. Each run ranks what it found by how relevant
+> it is to you, backs every claim with a quote and a link, and delivers a briefing you can read or listen to.
+>
+> In the app:
+> - Today: your latest briefing, the findings behind it, and predictions that are due to grade.
+> - Listen: every briefing as audio, with chapters, speed from 0.75x to 2x, a sleep timer, downloads for offline
+>   listening, and controls on the lock screen.
+> - Topics: the things you follow, and when each one runs.
+> - Insights: whether the ranking is finding what matters to you, and what your research costs.
+> - Feedback everywhere: mark anything relevant or not, and say why. The next run learns from it.
+>
+> Your account works on the web, by email, and in your podcast app too. Use the hosted service, or connect the app
+> to a My Morning News server you run yourself.
+>
+> Free while in alpha, with a usage cap. Sign in with email and password. Terms of use:
+> https://mymorningnews.ai/terms.html. Privacy policy: https://mymorningnews.ai/privacy.html.
+
+`[ ] Owner: approve. Re-check each bullet against what the release build does (section 0.1); remove any line whose feature has not shipped.`
+
+### 2.4 Apple keywords (100 characters, comma separated, no spaces needed)
+
+`news,briefing,research,podcast,daily,digest,summary,topics,curated,morning,audio,ai,predictions` (95)
+`[ ] Owner: approve`
+
+### 2.5 What's new (Apple 4000; Google release notes 500 per language)
+
+First release: not shown on Apple for version 1. Google internal testing notes:
+> First test build of My Morning News for iPhone, iPad, and Android.
+
+`[ ] Owner: approve`
+
+### 2.6 Categories and tags
+
+| Store | Field | Proposed value | Owner |
+|---|---|---|---|
+| A | Primary category | News | `[ ] Owner: approve` |
+| A | Secondary category | Productivity | `[ ] Owner: approve` |
+| G | App category | News & Magazines | `[ ] Owner: approve` |
+| G | Tags (up to 5) | News, Productivity, Podcasts, Research, Personalization (pick from Play's list) | `[ ] Owner: choose` |
+
+---
+
+## 3. Pricing, availability, and distribution
+
+| Store | Field | Proposed value | Owner |
+|---|---|---|---|
+| A+G | Price | Free. No in-app purchases while the service is free (plan decision Q11). When billing arrives, digital plans bought in the app go through in-app purchase (Apple 3.1.1). | `[ ] Owner: confirm` |
+| A+G | Countries and regions | | `[ ] Owner: list _______________ (suggest: United States first, then all where the service is offered)` |
+| A | Pre-order | No | |
+| A | Distribution | Public on the App Store | `[ ] Owner: confirm` |
+| A | iPhone and iPad apps on Apple silicon Macs | Off until tested | `[ ] Owner: decide` |
+| A | Apple Vision Pro availability | Off until tested | `[ ] Owner: decide` |
+| A | Phased release for automatic updates | On (7 days) | `[ ] Owner: confirm` |
+| A | Version release | Manual release after approval | `[ ] Owner: confirm` |
+| G | Countries | Same list as Apple | `[ ] Owner: confirm` |
+| G | Contains ads | No | |
+| A+G | Paid Applications Agreement, tax, banking | Not needed while free; needed before any in-app purchase | `[ ] Owner: status _______________` |
+| A | Content rights: "Does your app contain, show, or access third-party content?" | Yes. Briefings quote short excerpts from public web pages with a link to each source, as summaries for the user's own research. | `[ ] Owner: confirm and confirm you have the rights or a fair use basis` |
+
+---
+
+## 4. Export compliance (Apple)
+
+| Question | Answer |
+|---|---|
+| Does your app use encryption? | Only exempt encryption: HTTPS (TLS) through the operating system, and the Keychain or Keystore for tokens. |
+| `ITSAppUsesNonExemptEncryption` | `false`, set by `ios.config.usesNonExemptEncryption: false` in `app.config.js`, so App Store Connect does not ask on each build. |
+| Proprietary or non-standard encryption | None |
+| French encryption declaration | Not needed |
+
+`[ ] Owner: confirm`
+
+---
+
+## 5. Age rating
+
+The app shows research briefings about whatever topics the user chooses, drawn from public news and web sources.
+There is no user-to-user content, no chat between people, no ads, no gambling, and no purchases.
+
+### 5.1 Apple (questionnaire with tiers 4+, 9+, 13+, 16+, 18+)
+
+| Question | Proposed answer | Why |
+|---|---|---|
+| Cartoon or fantasy violence | None | |
+| Realistic violence | Infrequent/Mild | News about conflict or crime can appear in briefings |
+| Prolonged graphic or sadistic realistic violence | None | |
+| Profanity or crude humor | Infrequent/Mild | Quoted source text is not filtered |
+| Mature or suggestive themes | Infrequent/Mild | News topics |
+| Horror or fear themes | None | |
+| Medical or treatment information | Infrequent/Mild | Health news can appear; the app gives no medical advice |
+| Alcohol, tobacco, or drug use or references | Infrequent/Mild | News topics |
+| Sexual content or nudity | None | |
+| Graphic sexual content and nudity | None | |
+| Simulated gambling | None | |
+| Contests | None | |
+| Gambling (real money) | No | |
+| Unrestricted web access | No | Source links open one page in the in-app browser; the app is not a general browser |
+| User-generated content | No | Topics and feedback are private to the account |
+| Messaging and chat | No | |
+| Advertising | No | |
+| Parental controls or age assurance | No | |
+| Made for Kids | No | |
+| Expected result | 13+ | |
+
+`[ ] Owner: approve every answer; if App Store Connect proposes a lower tier, decide whether to keep it`
+
+### 5.2 Google Play (IARC questionnaire, category "Reference, News, or Educational")
+
+| Area | Proposed answer |
+|---|---|
+| Violence | References to real-world violence in news content, not graphic |
+| Sexuality | No |
+| Language | Occasional mild language in quoted sources |
+| Controlled substances | References in news content |
+| Gambling | No |
+| Users can interact or exchange content | No |
+| Shares personal information with other users | No |
+| Shares current location with others | No |
+| Digital purchases | No |
+| Unrestricted internet | No |
+
+`[ ] Owner: approve`
+
+### 5.3 Google Play target audience and declarations
+
+| Declaration | Proposed answer | Owner |
+|---|---|---|
+| Target age group | 13 and over (18 and over if the terms require adults) | `[ ] Owner: choose to match the terms of service` |
+| Appeals to children | No | |
+| Ads | No ads | |
+| News app | Yes: it aggregates and summarizes news for the user. Play's news requirements: sources are named and linked on every item, and the developer contact is on the support page. | `[ ] Owner: decide (declaring No while presenting news can trigger enforcement)` |
+| Government app | No | |
+| Financial features | None | |
+| Health apps | None | |
+| App access | Sign-in required; credentials in section 9 | |
+| Advertising ID | Not used. Confirm after the first Play build that the merged manifest has no `com.google.android.gms.permission.AD_ID`; if a library adds it, remove it with `android.blockedPermissions`. | Check on first build |
+| Foreground service permissions (Android 14 and later) | Declare `FOREGROUND_SERVICE_MEDIA_PLAYBACK`: "Plays briefing audio in the background with media controls while the user listens with the screen off or in another app." Play asks for a short video of the feature. | `[ ] Owner: record the video (play an episode, lock the phone, use the media notification)` |
+| Notification permission | Asked only from Account > Notifications; no declaration needed | |
+| Photo, video, location, contacts, calendar, microphone | Not used (the audio plugin's record permission is blocked in `app.config.js`) | |
+
+---
+
+## 6. Apple App Privacy (nutrition label)
+
+**Tracking: No.** No advertising or analytics SDK, no data shared with data brokers, no App Tracking Transparency
+prompt. For each type below: **Linked to the user: Yes. Used for tracking: No. Purpose: App Functionality** (and
+Product Personalization where noted).
+
+| Apple data type | Collected | What it is in this app |
+|---|---|---|
+| Contact Info > Email Address | Yes | Account email: sign-in, verification, password reset, briefing emails |
+| Contact Info > Name | Yes (optional) | First and last name on the profile |
+| Contact Info > Phone, Physical Address, Other | No | |
+| User Content > Other User Content | Yes | Topic descriptions, refinement answers, feedback and the reasons given (also Product Personalization: ranking learns from it) |
+| User Content > Audio, Photos or Videos, Emails or Text Messages, Gameplay, Customer Support | No | |
+| Identifiers > User ID | Yes | Account and tenant IDs |
+| Identifiers > Device ID | Yes | Expo push token for this device, with the device name and platform, only after the user turns notifications on |
+| Usage Data > Product Interaction | Yes | Listening progress, feedback, model usage per account (cost reporting), request history for security (also Product Personalization) |
+| Usage Data > Advertising Data, Other Usage Data | No | |
+| Diagnostics | No | No crash reporting SDK; change if one is added |
+| Location, Health and Fitness, Financial Info, Contacts, Browsing History, Search History, Sensitive Info, Purchases, Other Data | No | |
+
+Notes: time zone and language preferences are settings, not location. Topic text and fetched source text are sent
+to the AI model provider the server uses (Anthropic by default) to do the research; that provider processes it on the
+operator's behalf and does not use it for its own purposes.
+
+`[ ] Owner: approve; re-check when crash reporting, purchases, or new data types are added`
+
+Privacy manifest: Expo SDK 58 merges the required-reason API declarations of its modules into `PrivacyInfo.xcprivacy`
+at build time. After the first EAS production build, check the generated manifest and add `ios.privacyManifests` to
+`app.config.js` if App Store Connect reports a missing reason.
+
+---
+
+## 7. Google Play Data safety
+
+| Question | Proposed answer |
+|---|---|
+| Does your app collect or share any of the required user data types? | Yes |
+| Is all user data collected by your app encrypted in transit? | Yes (the hosted service is HTTPS only; self-hosted servers on plain HTTP are the user's own choice and the app warns about them) |
+| Do you provide a way for users to request that their data be deleted? | Yes: in the app (Account > Delete account) and on the web (`https://mymorningnews.ai/delete-account.html`) |
+| Data shared with third parties | None. Expo and Firebase (push delivery), Apple, Google, and the AI model provider act as service providers, which Google does not count as sharing. |
+
+| Category > type | Collected | Required or optional | Purposes |
+|---|---|---|---|
+| Personal info > Email address | Yes | Required | App functionality, Account management, Developer communications |
+| Personal info > Name | Yes | Optional | App functionality, Account management |
+| Personal info > User IDs | Yes | Required | App functionality, Account management |
+| Personal info > Address, Phone, Race, Political or religious beliefs, Sexual orientation, Other | No | | |
+| App activity > App interactions | Yes | Required | App functionality, Personalization, Fraud prevention and security (request history) |
+| App activity > Other user-generated content | Yes | Required | App functionality, Personalization (topics, feedback reasons) |
+| App activity > In-app search history, Installed apps, Other actions | No | | |
+| Device or other IDs | Yes | Optional (only with notifications on) | App functionality (push token) |
+| App info and performance > Crash logs, Diagnostics | No | | |
+| Location, Financial info, Health and fitness, Messages, Photos and videos, Audio, Files and docs, Calendar, Contacts, Web browsing | No | | |
+
+`[ ] Owner: approve`
+
+---
+
+## 8. Screenshots and previews
+
+**Captured only after the owner's interface review (plan section 34.1).** Use a release build against the hosted
+service with the demo account and clearly fictional data, light theme first (dark as an optional second set), clean
+status bars (iOS: `xcrun simctl status_bar booted override --time 9:41 --batteryState charged --batteryLevel 100
+--cellularBars 4`; Android: system UI demo mode). Never commit screenshots before approval; QA captures stay in the
+git-ignored `mobile/qa/`. Approved images go to `assets/screenshots/mobile/<device>/<name>-<theme>.png`.
+
+| Store | Device class | Required size (portrait) | Simulator or emulator | Count | Owner |
+|---|---|---|---|---|---|
+| A | iPhone 6.9-inch (required for iPhone) | 1320 x 2868 (or 1290 x 2796) | iPhone 18 Pro Max | 3 to 10 | `[ ] Owner: approve set` |
+| A | iPhone 6.5-inch (only if App Store Connect asks) | 1284 x 2778 or 1242 x 2688 | iPhone 11 Pro Max class | 3 to 10 | |
+| A | iPad 13-inch (required: the app supports iPad) | 2064 x 2752 (or 2048 x 2732) | iPad Pro 13-inch (M5) | 3 to 10 | `[ ] Owner: approve set` |
+| A | App preview video (optional) | 15 to 30 seconds, H.264 or ProRes, per device class (for example 886 x 1920 on 6.9-inch) | Same devices | 0 to 3 | `[ ] Owner: decide` |
+| G | Phone | 9:16, each side 320 to 3840 px; at least 1080 px for promotion | Pixel 9 class emulator | 2 to 8 (4 recommended) | `[ ] Owner: approve set` |
+| G | 7-inch tablet | Each side 320 to 3840 px | Tablet emulator in a 7-inch profile | up to 8 | |
+| G | 10-inch tablet | Each side 1080 to 7680 px | Pixel Tablet emulator | up to 8 (4 recommended) | `[ ] Owner: approve set` |
+| G | Feature graphic | 1024 x 500, JPEG or 24-bit PNG without alpha | Designed from `assets/logo.png` | 1 | `[ ] Owner: approve` |
+| G | App icon | 512 x 512, 32-bit PNG, up to 1 MB | From `mobile/assets/images/icon.png` (generated from `assets/glyph.png`) | 1 | `[ ] Owner: approve` |
+| G | Promo video | YouTube URL, optional | | 0 or 1 | `[ ] Owner: decide` |
+
+Screens, in order (the first three show in search results):
+
+| # | Screen | Notes |
+|---|---|---|
+| 1 | Today with the latest briefing | Hero |
+| 2 | Briefing reader with sources | iPad: briefings list beside the reader |
+| 3 | Player with chapters and speed | Also the lock screen with the media controls |
+| 4 | Topics and the refinement wizard | After Phase 4 |
+| 5 | Insights: relevance and usage charts | |
+| 6 | Account with notifications and delete account | Shows account deletion to reviewers |
+
+---
+
+## 9. Review notes and demo account
+
+Create the demo account on the hosted service before submitting: a verified user with at least one topic, a few
+briefings with audio, findings, and predictions. Put the credentials only into App Store Connect (App Review
+Information > Sign-in required) and Play Console (App content > App access).
+
+`[ ] Owner: demo email _______________ (password entered only in the consoles)`
+
+Notes template (App Store Connect "Notes" and Play Console "App access" instructions):
+
+```text
+My Morning News is a research assistant. Users describe topics they want to follow; the service researches them
+on a schedule and delivers ranked briefings with sources, readable in the app and playable as audio.
+
+Sign in with the demo account below. The app connects to https://app.mymorningnews.ai by default; leave the server
+unchanged. Email: [demo email]  Password: [entered in this form only]
+
+Where to look:
+- Today: the latest briefing; tap it to read, tap Listen to play the audio.
+- Listen: the player. Audio continues with the screen locked, with play, pause, back 15 seconds, and forward 30
+  seconds on the lock screen (background audio is the reason for the audio background mode).
+- Account > Notifications: notifications are optional and the permission is asked only there.
+- Account > Delete account: deletes the account (type DELETE to confirm). It can also be requested on the web at
+  https://mymorningnews.ai/delete-account.html.
+
+Sign-in uses email and password only, with no third-party or social login, so Sign in with Apple is not required
+(Guideline 4.8). The app has no ads, no tracking, and no purchases. "Change server" on the sign-in screen is for
+people who run their own open-source My Morning News server; reviewers do not need it.
+Contact: hello@latticetech.ai
+```
+
+`[ ] Owner: approve`
+
+Before each submission: sign in with the demo account on a release build against production and make sure it has
+fresh briefings with audio.
+
+### 9.1 Sign-in and Guideline 4.8
+
+- Email and password only (plus "Change server" for self-hosted installs). No Google, Facebook, or other third-party
+  login, so Sign in with Apple is not required. If a third-party login is ever added, Sign in with Apple is added
+  with it (plan section 35.3).
+- Sign-up in the app (`POST /v1.0/public/signup`) arrives with Phase 14; until then the screen says it is not
+  available.
+
+### 9.2 Account deletion
+
+| Requirement | Where |
+|---|---|
+| In-app path (Apple 5.1.1(v), Google) | Account > Delete account. The user types `DELETE`; the app calls `POST /v1.0/api/account/delete`, then signs out. |
+| Web path (Google requirement) | `https://mymorningnews.ai/delete-account.html` |
+| What happens | Every session is signed out; the personal tenant is purged after a 7-day grace period (`Hosting.DeletionGraceDays`); a confirmation email is sent; signing in during the grace period cancels it (plan section 33.1). |
+| Partial deletion (Google) | Users can remove devices (Account > Notifications), downloads (Listen > Downloads), and topics; data export is Account > Export data. |
+
+---
+
+## 10. Build and submit
+
+Run everything from `mobile/`. One-time setup is in `mobile/OWNER_ACTIONS.md` (EAS project, APNs key, Firebase,
+Play service account, update signing certificate).
+
+### 10.1 Environment (EAS environments development, preview, production)
+
+```bash
+npx eas-cli@latest env:create --environment production --name MYMORNINGNEWS_MOBILE_EAS_PROJECT_ID --value <project id> --visibility plaintext
+npx eas-cli@latest env:create --environment production --name GOOGLE_SERVICES_JSON --type file --value ./google-services.json --visibility secret
+# Repeat for preview and development. Credentials (distribution certificate, provisioning profile, APNs key,
+# Android upload keystore, FCM V1 key, Play service account) live in `npx eas-cli@latest credentials`.
+```
+
+### 10.2 Checks before a store build
+
+```bash
+npm ci
+npm run verify          # lint, i18n, parity, audit, Jest, expo export
+npm run parity:strict   # nothing planned for the routes this release claims
+```
+
+### 10.3 Build
+
+```bash
+npx eas-cli@latest build --profile preview --platform all      # TestFlight and Play internal testing
+npx eas-cli@latest build --profile production --platform all   # store builds
+```
+
+`appVersionSource` is `local`: the version (`0.1.0`), build number, and version code come from `app.config.js` and
+are raised only with the owner's approval.
+
+### 10.4 Submit
+
+```bash
+npx eas-cli@latest submit --platform ios --profile preview --latest       # TestFlight
+npx eas-cli@latest submit --platform android --profile preview --latest   # Play internal testing (draft)
+npx eas-cli@latest submit --platform ios --profile production --latest
+npx eas-cli@latest submit --platform android --profile production --latest
+```
+
+The first Android upload must be done by hand in Play Console (Testing > Internal testing > Create release) before
+`eas submit` can upload. Fill the `REPLACE_WITH_...` values in `eas.json` first.
+
+### 10.5 TestFlight and internal testing checklist
+
+- [ ] Sign in against the hosted service, change server to a self-hosted one and back, sign out.
+- [ ] Today, briefing reader, Listen; audio with the screen locked; lock-screen and notification controls (play,
+      pause, back 15, forward 30); speed; chapters; sleep timer; downloads offline.
+- [ ] Notifications: turn on, receive the test notification, tap it and land on the right screen; Android channels
+      (briefings, predictions, account) appear in system settings.
+- [ ] Universal link from a briefing email opens the app.
+- [ ] Account: profile, password, usage, language (including Arabic for right to left), appearance, app lock, about,
+      export, delete.
+- [ ] iPad and Android tablet: split views and the persistent mini player, both orientations.
+- [ ] VoiceOver and TalkBack labels; largest text size.
+
+### 10.6 Over-the-air updates after release
+
+JavaScript-only fixes ship with `npm run publish-update -- --channel production --message "..." --publish`, signed
+with the update key (`mobile/updates/README.md`). Native changes (new modules, permissions, config plugins) always
+need a new build and review.

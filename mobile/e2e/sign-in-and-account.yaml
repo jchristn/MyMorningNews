@@ -1,0 +1,75 @@
+# Smoke flow (Maestro) against a local server: change server, sign in without a tenant (contract B), walk the
+# tabs and the Account sections, switch the theme, and sign out. Screenshots land in the working directory; run it
+# from the git-ignored mobile/qa/ folder:
+#   cd mobile/qa && maestro test -e SERVER=http://127.0.0.1:12100 ../e2e/sign-in-and-account.yaml
+# Android emulator: SERVER=http://10.0.2.2:12100. Default local sign-in: admin@mymorningnews / password.
+appId: ai.mymorningnews.app
+env:
+  SERVER: http://127.0.0.1:12100
+  EMAIL: admin@mymorningnews
+  PASSWORD: password
+---
+- launchApp:
+    clearState: true
+- tapOn: "Change server"
+- tapOn:
+    id: "server-url"
+- eraseText: 80
+- inputText: ${SERVER}
+- pressKey: Enter
+# Each server keeps its own session in the Keychain, so a previous run may already be signed in here.
+- runFlow:
+    when:
+      visible:
+        id: "sign-in-email"
+    commands:
+      - assertVisible: "Plain HTTP"
+      - tapOn:
+          id: "sign-in-email"
+      - eraseText: 60
+      - inputText: ${EMAIL}
+      - tapOn:
+          id: "sign-in-password"
+      - inputText: ${PASSWORD}
+      - pressKey: Enter
+      # iOS offers to save the password; decline so the flow can continue.
+      - tapOn:
+          text: "Not Now"
+          optional: true
+- assertVisible: "Latest briefing"
+- takeScreenshot: 02-today
+- tapOn: "Briefings.*"
+- assertVisible: "Briefings will be available after a later server update."
+- takeScreenshot: 03-briefings-not-available
+- tapOn: "Listen.*"
+- takeScreenshot: 04-listen
+- tapOn: "Topics.*"
+- takeScreenshot: 05-topics
+- tapOn: "Insights.*"
+- tapOn: "Your usage.*"
+- assertVisible: "Model calls"
+- takeScreenshot: 06-insights-usage
+- tapOn: "Account.*"
+- takeScreenshot: 07-account
+- tapOn: "Profile.*"
+- assertVisible: "admin@mymorningnews"
+- takeScreenshot: 08-profile
+- tapOn: "Back"
+- tapOn: "Notifications.*"
+- takeScreenshot: 09-notifications
+- tapOn: "Back"
+- tapOn: "About.*"
+- assertVisible: "(c) 2026 Lattice AI LLC"
+- takeScreenshot: 10-about
+- tapOn: "Back"
+- tapOn: "Appearance.*"
+- tapOn: "Dark"
+- takeScreenshot: 11-dark
+- tapOn: "Match the device"
+- tapOn: "Back"
+- scrollUntilVisible:
+    element:
+      id: "sign-out"
+- tapOn:
+    id: "sign-out"
+- assertVisible: "Change server"

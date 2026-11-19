@@ -1,0 +1,28 @@
+# Switch to the right-to-left pseudo-locale, restart, check the mirrored layout, and switch back. Assumes a signed-in
+# app. Run from mobile/qa/: maestro test ../e2e/rtl-pseudo-locale.yaml
+appId: ai.mymorningnews.app
+---
+- launchApp
+- tapOn: ".*Account.*"
+- tapOn: ".*Language.*"
+- scrollUntilVisible:
+    element: "Pseudo RTL"
+    centerElement: true
+- tapOn: "Pseudo RTL"
+- scrollUntilVisible:
+    element: ".*Restart now.*"
+    direction: UP
+- tapOn: ".*Restart now.*"
+- extendedWaitUntil:
+    visible: ".*Today.*"
+    timeout: 20000
+- takeScreenshot: 30-rtl-today
+- tapOn: ".*Account.*"
+- takeScreenshot: 31-rtl-account
+- tapOn: ".*Language.*"
+- tapOn: "English"
+- tapOn: ".*Restart now.*"
+- extendedWaitUntil:
+    visible: "Today"
+    timeout: 20000
+- takeScreenshot: 32-ltr-again

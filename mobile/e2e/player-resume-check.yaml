@@ -1,0 +1,11 @@
+# Run right after player-test-tone.yaml (which leaves the app in the background with the tone playing): bring the
+# app back without restarting it and check that playback continued while it was in the background.
+appId: ai.mymorningnews.app
+---
+- launchApp:
+    stopApp: false
+# The mini player's toggle reads "Pause" only while audio is playing.
+- assertVisible:
+    id: "mini-toggle"
+    label: "Pause"
+- takeScreenshot: 22-after-background

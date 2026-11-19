@@ -1,0 +1,17 @@
+{
+  "comment": "Reviewed npm advisories that do not reach the shipped app. Each entry: the advisory, the package, where it is used, and why the app is not affected. scripts/check-audit.js fails on any advisory not listed here and reports entries that are no longer needed. Remove an entry as soon as a fixed version can be installed. Same review as MuxCloud.Mobile.",
+  "advisories": [
+    {
+      "id": "GHSA-g3hv-75wg-m249",
+      "package": "minimatch",
+      "severity": "moderate",
+      "reason": "Denial of service via globparts amplification. Build and test tooling only (Jest, @expo/fingerprint, glob) matching this project's own patterns, never user input; not in the app bundle. The fixed major is not accepted by the dependent tools' version ranges."
+    },
+    {
+      "id": "GHSA-3g3m-2fjr-6pw4",
+      "package": "glob",
+      "severity": "moderate",
+      "reason": "AbortSignal cancellation bypass. Build and test tooling only (Jest core and coverage) walking this project's own folders; the app never passes an AbortSignal to glob and glob is not in the app bundle."
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+# Player spike flow (Maestro, development builds only): sign in, open Listen > Developer player, play the bundled
+# test tone, skip, change speed, jump chapters, set the sleep timer, then send the app to the background so the
+# lock screen and notification controls can be checked. Run from mobile/qa/:
+#   maestro test -e SERVER=http://127.0.0.1:12100 ../e2e/player-test-tone.yaml
+appId: ai.mymorningnews.app
+env:
+  SERVER: http://127.0.0.1:12100
+  EMAIL: admin@mymorningnews
+  PASSWORD: password
+---
+- launchApp
+- runFlow:
+    when:
+      visible: "Change server"
+    commands:
+      - tapOn: "Change server"
+      - tapOn:
+          id: "server-url"
+      - eraseText: 80
+      - inputText: ${SERVER}
+      - pressKey: Enter
+- runFlow:
+    when:
+      visible:
+        id: "sign-in-email"
+    commands:
+      - tapOn:
+          id: "sign-in-email"
+      - eraseText: 60
+      - inputText: ${EMAIL}
+      - tapOn:
+          id: "sign-in-password"
+      - inputText: ${PASSWORD}
+      - pressKey: Enter
+      # iOS offers to save the password; decline so the flow can continue.
+      - tapOn:
+          text: "Not Now"
+          optional: true
+- tapOn: "Listen.*"
+- tapOn:
+    id: "open-dev-player"
+- tapOn:
+    id: "dev-load-tone"
+- assertVisible:
+    id: "player-panel"
+- extendedWaitUntil:
+    visible: "Player status: playing"
+    timeout: 10000
+- tapOn:
+    id: "player-skip-forward"
+- tapOn: "Next chapter"
+- scrollUntilVisible:
+    element: "1.5 times speed"
+- tapOn: "1.5 times speed"
+- scrollUntilVisible:
+    element: "Stop in 15 minutes"
+- tapOn: "Stop in 15 minutes"
+- assertVisible: "Stops in.*"
+- takeScreenshot: 20-dev-player
+- pressKey: Home

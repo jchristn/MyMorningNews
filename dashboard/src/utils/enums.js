@@ -121,3 +121,12 @@ export const SEARCH_DISPOSITION_TONES = {
   SkippedDuplicate: 'info',
   FetchFailed: 'danger'
 };
+
+// Audio and podcasts (Phase 8).
+export const MEDIA_STATUSES = ['Queued', 'Scripting', 'Synthesizing', 'Ready', 'Failed'];
+export const MEDIA_STATUS_TONES = { Queued: 'info', Scripting: 'accent', Synthesizing: 'accent', Ready: 'success', Failed: 'danger' };
+export const ACTIVE_MEDIA_STATUSES = ['Queued', 'Scripting', 'Synthesizing'];
+export const MEDIA_KINDS = ['BriefingAudio', 'PodcastEpisode'];
+export const TTS_PROVIDERS = ['OpenAiCompatibleSpeech', 'Disabled'];
+// Bounds the server clamps a voice speed to.
+export const VOICE_SPEED_BOUNDS = { min: 0.5, max: 2, step: 0.05 };

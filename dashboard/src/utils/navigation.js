@@ -11,6 +11,7 @@ import {
   Cpu,
   FileText,
   Globe,
+  Headphones,
   Heart,
   History,
   House,
@@ -64,6 +65,7 @@ export const NAV_GROUPS = [
     key: 'briefings',
     items: [
       { path: 'briefings', key: 'briefings', icon: BookOpen, access: 'all' },
+      { path: 'listen', key: 'listen', icon: Headphones, access: 'all' },
       { path: 'editions', key: 'editions', icon: CalendarClock, access: 'all' },
       { path: 'templates', key: 'templates', icon: FileText, access: 'all' }
     ]
@@ -86,7 +88,7 @@ export const NAV_GROUPS = [
       { path: 'credentials-vault', key: 'vault', icon: KeyRound, access: 'all' },
       { path: 'search-providers', key: 'searchProviders', icon: Search, access: 'all', phase: 5 },
       { path: 'mcp-servers', key: 'mcpServers', icon: Plug, access: 'tenantAdmin', phase: 5 },
-      { path: 'voices', key: 'voices', icon: Mic, access: 'all', phase: 8 },
+      { path: 'voices', key: 'voices', icon: Mic, access: 'all' },
       { path: 'email', key: 'email', icon: Mail, access: 'all', phase: 9 }
     ]
   },

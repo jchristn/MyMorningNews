@@ -10,6 +10,7 @@ import './styles/features.css';
 import './styles/research.css';
 import './styles/results.css';
 import './styles/briefings.css';
+import './styles/media.css';
 
 // Load the active locale before the first render so there is no flash of the fallback language.
 initI18n().then(() => {

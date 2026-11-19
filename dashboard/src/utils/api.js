@@ -106,9 +106,13 @@ export class ApiClient {
 
   // A file download: resolves to { blob, filename, contentType, status }. Error bodies are parsed as JSON when they
   // can be, so a 410 ArtifactExpired carries its stable code.
-  async _requestBlob(method, path, { query, headers, signal } = {}) {
+  async _requestBlob(method, path, { query, headers, body, signal } = {}) {
     const url = this.baseUrl + path + buildQuery(query);
     const init = { method, headers: this._headers({ Accept: '*/*', ...(headers || {}) }), signal };
+    if (body !== undefined && body !== null) {
+      init.headers['Content-Type'] = 'application/json';
+      init.body = typeof body === 'string' ? body : JSON.stringify(body);
+    }
     let response;
     try {
       response = await this.fetchImpl(url, init);
@@ -659,6 +663,54 @@ export class ApiClient {
   }
   getArtifactDownloadUrl(id) {
     return this._request('GET', '/v1.0/api/artifacts/' + enc(id) + '/download-url');
+  }
+
+  // Audio and podcasts (Phase 8). The media detail returns { media, chapters, audioPath, chaptersPath }; the audio
+  // itself streams from the artifact content route (getArtifactContent), which honors Range.
+  listMedia(query) {
+    return this._request('GET', '/v1.0/api/media', { query });
+  }
+  getMedia(id, signal) {
+    return this._request('GET', '/v1.0/api/media/' + enc(id), { signal });
+  }
+  deleteMedia(id) {
+    return this._request('DELETE', '/v1.0/api/media/' + enc(id));
+  }
+  // Resolves to the queued episode (202). 409 when audio is already being made or audio is off on the server.
+  generateBriefingAudio(briefingId, voiceProfileId = null) {
+    return this._request('POST', '/v1.0/api/briefings/' + enc(briefingId) + '/audio', { body: voiceProfileId ? { voiceProfileId } : {} });
+  }
+
+  // Voice profiles. Members can read and test; only tenant administrators can write.
+  listVoices(query) {
+    return this._request('GET', '/v1.0/api/voices', { query });
+  }
+  getVoice(id) {
+    return this._request('GET', '/v1.0/api/voices/' + enc(id));
+  }
+  createVoice(body) {
+    return this._request('POST', '/v1.0/api/voices', { body });
+  }
+  updateVoice(id, body) {
+    return this._request('PUT', '/v1.0/api/voices/' + enc(id), { body });
+  }
+  deleteVoice(id) {
+    return this._request('DELETE', '/v1.0/api/voices/' + enc(id));
+  }
+  // Speaks a sample: resolves to { blob, contentType } with audio/wav. 502 TtsError when the speech endpoint fails.
+  testVoice(id, text, signal) {
+    return this._requestBlob('POST', '/v1.0/api/voices/' + enc(id) + '/test', { body: { text: text || '' }, signal });
+  }
+
+  // Private podcast feed tokens. Create returns { token, secret, feedUrl } once; only a hash is stored.
+  listFeedTokens() {
+    return this._request('GET', '/v1.0/api/feed-tokens');
+  }
+  createFeedToken({ name, editionId } = {}) {
+    return this._request('POST', '/v1.0/api/feed-tokens', { body: { name: name || '', editionId: editionId || null } });
+  }
+  revokeFeedToken(id) {
+    return this._request('DELETE', '/v1.0/api/feed-tokens/' + enc(id));
   }
 
   // Editions. The detail returns { edition, topics, schedules, coveredTopicIds }. An empty topic list covers every

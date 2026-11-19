@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Download, FileCode, FileText, Headphones, MessageSquare, Pin, PinOff, RefreshCw, Trash2 } from 'lucide-react';
+import { ArrowLeft, Download, FileCode, FileText, MessageSquare, Pin, PinOff, Play, RefreshCw, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -18,6 +18,7 @@ import ErrorState from '../../components/ErrorState.jsx';
 import LoadingState from '../../components/LoadingState.jsx';
 import PageHeader from '../../components/PageHeader.jsx';
 import StatusBadge from '../../components/StatusBadge.jsx';
+import BriefingAudio from './BriefingAudio.jsx';
 import BriefingMarkdown, { scrollToAnchor } from './BriefingMarkdown.jsx';
 import useBriefingActions, { BriefingKindBadge, BriefingStatusBadge } from './briefingParts.jsx';
 
@@ -38,34 +39,51 @@ export function UpcomingSlot({ slot, icon: Icon, title, message, compact = false
 
 UpcomingSlot.propTypes = { slot: PropTypes.string.isRequired, icon: PropTypes.elementType.isRequired, title: PropTypes.string.isRequired, message: PropTypes.string, compact: PropTypes.bool };
 
-// The outline: one entry per section, with how many findings, predictions, and suggestions it carries.
-function Outline({ chunks, counts }) {
+// The outline: one entry per section, with how many findings, predictions, and suggestions it carries. While audio
+// plays, the section being read is highlighted; sections with a chapter offer Listen from here.
+function Outline({ chunks, counts, speakingSectionId = null, chapterSections = null, onListen = null }) {
   const { t } = useTranslation();
   if (chunks.length === 0) return null;
   return (
     <nav className="briefing-outline" aria-label={t('briefings.reader.outline')}>
       <span className="field-label">{t('briefings.reader.outline')}</span>
       <ol>
-        {chunks.map((c) => (
-          <li key={c.key}>
-            <a
-              href={'#' + sectionAnchor(c.key)}
-              onClick={(e) => {
-                e.preventDefault();
-                scrollToAnchor(sectionAnchor(c.key));
-              }}
-            >
-              <span className="truncate">{c.heading}</span>
-              {c.section && counts.get(c.section.id) ? <span className="muted small">{counts.get(c.section.id)}</span> : null}
-            </a>
-          </li>
-        ))}
+        {chunks.map((c) => {
+          const speaking = Boolean(c.section && speakingSectionId && c.section.id === speakingSectionId);
+          const listenable = Boolean(c.section && chapterSections && chapterSections.has(c.section.id) && onListen);
+          return (
+            <li key={c.key} className={speaking ? 'speaking' : undefined}>
+              <a
+                href={'#' + sectionAnchor(c.key)}
+                aria-current={speaking ? 'true' : undefined}
+                onClick={(e) => {
+                  e.preventDefault();
+                  scrollToAnchor(sectionAnchor(c.key));
+                }}
+              >
+                <span className="truncate">{c.heading}</span>
+                {c.section && counts.get(c.section.id) ? <span className="muted small">{counts.get(c.section.id)}</span> : null}
+              </a>
+              {listenable ? (
+                <button type="button" className="icon-button outline-listen" onClick={() => onListen(c.section.id)} aria-label={t('audio.listenFrom', { section: c.heading })} title={t('audio.listenFrom', { section: c.heading })}>
+                  <Play size={12} aria-hidden="true" />
+                </button>
+              ) : null}
+            </li>
+          );
+        })}
       </ol>
     </nav>
   );
 }
 
-Outline.propTypes = { chunks: PropTypes.array.isRequired, counts: PropTypes.instanceOf(Map).isRequired };
+Outline.propTypes = {
+  chunks: PropTypes.array.isRequired,
+  counts: PropTypes.instanceOf(Map).isRequired,
+  speakingSectionId: PropTypes.string,
+  chapterSections: PropTypes.instanceOf(Set),
+  onListen: PropTypes.func
+};
 
 // Findings, predictions, and suggestions the briefing used, grouped by section, with links to each.
 function ItemList({ items, sections }) {
@@ -173,6 +191,10 @@ export default function BriefingReader({ briefingId }) {
   const [loadError, setLoadError] = useState(null);
   const [busy, setBusy] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [speakingSectionId, setSpeakingSectionId] = useState(null);
+  const [chapterSections, setChapterSections] = useState(() => new Set());
+  const playerRef = useRef(null);
+  const onChaptersChange = useCallback((chapters) => setChapterSections(new Set(chapters.map((c) => c.briefingSectionId).filter(Boolean))), []);
 
   const load = useCallback(async () => {
     try {
@@ -343,17 +365,26 @@ export default function BriefingReader({ briefingId }) {
         </div>
       ) : null}
 
-      <UpcomingSlot slot="audio-player" icon={Headphones} title={t('briefings.slots.audioTitle')} message={t('briefings.slots.audioMessage')} />
+      <BriefingAudio briefing={briefing} onSectionChange={setSpeakingSectionId} onChaptersChange={onChaptersChange} apiRef={playerRef} />
 
       <div className="briefing-layout">
         <aside className="briefing-aside">
-          <Outline chunks={chunks} counts={counts} />
+          <Outline
+            chunks={chunks}
+            counts={counts}
+            speakingSectionId={speakingSectionId}
+            chapterSections={chapterSections}
+            onListen={(sectionId) => {
+              if (playerRef.current) playerRef.current.seekToSection(sectionId);
+            }}
+          />
         </aside>
         <section className="panel briefing-body">
           {briefing.markdown ? (
             <BriefingMarkdown
               markdown={briefing.markdown}
               sections={sections}
+              currentSectionId={speakingSectionId}
               sectionExtra={(chunk) =>
                 chunk.section && chunk.section.source !== 'citations' ? <UpcomingSlot slot="section-feedback" compact icon={MessageSquare} title={t('briefings.slots.feedbackTitle')} message={t('briefings.slots.feedbackMessage')} /> : null
               }

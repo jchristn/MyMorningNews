@@ -50,8 +50,9 @@ function isSources(chunk) {
 
 // A composed briefing, rendered sanitized: the opening, then each section under an anchor the outline links to.
 // Numbered citations link to the Sources list, whose entries carry their own anchors. sectionExtra(chunk) renders
-// extra content under a section (the inline feedback slot). showTitle renders the level-one title.
-export default function BriefingMarkdown({ markdown, sections = [], showTitle = false, sectionExtra = null }) {
+// extra content under a section (the inline feedback slot). showTitle renders the level-one title. currentSectionId
+// highlights the section the audio player is reading.
+export default function BriefingMarkdown({ markdown, sections = [], showTitle = false, sectionExtra = null, currentSectionId = null }) {
   const parsed = useMemo(() => splitBriefingMarkdown(markdown), [markdown]);
   const chunks = useMemo(() => matchSections(parsed.chunks, sections), [parsed, sections]);
   return (
@@ -60,8 +61,17 @@ export default function BriefingMarkdown({ markdown, sections = [], showTitle = 
       {parsed.preamble ? <MarkdownView source={linkCitations(parsed.preamble)} components={COMPONENTS} className="briefing-opening" /> : null}
       {chunks.map((chunk) => {
         const sources = isSources(chunk) ? parseSourceList(chunk.body) : [];
+        const speaking = Boolean(currentSectionId && chunk.section && chunk.section.id === currentSectionId);
         return (
-          <section key={chunk.key} id={sectionAnchor(chunk.key)} className="briefing-section" aria-label={chunk.heading} tabIndex={-1}>
+          <section
+            key={chunk.key}
+            id={sectionAnchor(chunk.key)}
+            className={'briefing-section' + (speaking ? ' speaking' : '')}
+            aria-label={chunk.heading}
+            aria-current={speaking ? 'true' : undefined}
+            data-speaking={speaking ? 'true' : undefined}
+            tabIndex={-1}
+          >
             <h2>{chunk.heading}</h2>
             {sources.length > 0 ? (
               <ol className="briefing-sources markdown-view">
@@ -86,5 +96,6 @@ BriefingMarkdown.propTypes = {
   markdown: PropTypes.string,
   sections: PropTypes.array,
   showTitle: PropTypes.bool,
-  sectionExtra: PropTypes.func
+  sectionExtra: PropTypes.func,
+  currentSectionId: PropTypes.string
 };

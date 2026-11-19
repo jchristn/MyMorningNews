@@ -1419,7 +1419,10 @@ Exit: every Phase 1 capability can be operated from the dashboard in both themes
 - [x] Scope guardrail (section 11.6) in the gateway and in every default prompt.
 - [x] Prompt templates with defaults for every key in section 12, renderer, validation, versions, rollback, reset, topic overrides, Prompt lab API.
 - [x] `StubModelServer` (OpenAI-compatible, streaming and non-streaming, scripted failure modes).
-- [ ] Dashboard: Credentials (with reveal), Models, Prompts (editor, diff, lab), Usage page shell. Built on the Phase 2 shell.
+- [x] Dashboard: Stored credentials (reveal with confirmation, audit notice, 30-second auto-hide), Models (endpoints with provider-specific forms, assignments, call log drawer), Prompts (editor, version diff, rollback, reset, overrides, lab), Insights Usage (cost over time, cost by user, model, task, topic, token mix, time to first token, CSV), and Admin Usage (cost by tenant). 98 dashboard tests.
+- [x] Backend fixes from the dashboard review: uncustomized tenant prompts now follow updated defaults (the scope rule reached existing tenants), the prompt lab returns cost and token types, and the call log filters by user and topic.
+- [ ] Usage API follow-ups (Phase 10): `groupBy` on the time series with per-bucket rows; cache-write, reasoning, tool-call, and p95 time-to-first-token fields per bucket; key the Model grouping by endpoint as well as name.
+- [ ] API follow-ups (Phase 12): clearing optional fields to null on model endpoint and vault credential updates; reveal for the credential's creator in addition to administrators.
 - [x] Suites: one Models suite (21 cases) covering vault, endpoints, gateway, accounting, guardrail, usage, and prompts.
 
 Exit: you can register Ollama and an API model, assign roles, edit a prompt, and run it in the lab against both.
@@ -1645,6 +1648,7 @@ No open questions remain.
 | 2026-11-19 | Plan, 16 | Amended, started | One-time requests (section 13.1: reports, podcasts, and email summaries run once now or at a set time). Artifact storage through `IArtifactStore` with local or S3 providers configured in the server JSON file or `MYMORNINGNEWS_STORAGE_*` variables, and 365-day retention with pinning (section 22.1; `Storage` and `Push` settings added now). `docker/` populated: `.env.example`, SearXNG (default), TTS, MCP, and Ollama profiles, factory demo overlay with seeder and demo user, improved reset scripts, hosted Caddy overlay. Mobile backend contracts built (refresh tokens, tenant-less sign-in, devices and push, client config; migration 4). `APP_STORE_SUBMISSION.md` and `OWNER_ACTIONS.md` added to the plan (section 35.7) with an owner fill-out task. Default credentials confirmed as `admin@mymorningnews` / `password`. |
 | 2026-11-19 | 4 | Backend done | Topics with dimensions, constraints, and recipients; the refinement wizard (all steps, resume, refine again, out-of-scope detection, live source checks); one-time requests with planning, clarifying questions, confirm now or later, and conversion to recurring topics. Migration 5. `ConflictException` (409) and typed model errors (502, 422). Topics suite (10 cases); 99 tests pass on net8 and net10, 100 on Xunit3. Dashboard and mobile screens for Phase 4 follow. |
 | 2026-11-19 | 5 | Scheduling done | Schedule calculator with daylight-saving handling, schedules API and preview, scheduler and run workers with skip-locked claims, missed-run policies, run now, dry run, cancel, timeouts, concurrency limit, and due one-time requests. Verified across a Docker restart. Search providers, fetch, and the MCP registry are next. 107 tests pass on net8 and net10, 108 on Xunit3. |
+| 2026-11-19 | 3 | Done | Phase 3 dashboard pages merged (stored credentials with reveal, models, prompts with diff and lab, usage insights, admin usage). Backend fixes: uncustomized tenant prompts follow updated defaults, lab returns cost, call log filters by user and topic. 108 backend tests, 98 dashboard tests. |
 
 ---
 

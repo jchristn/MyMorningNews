@@ -50,6 +50,7 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "Prompts.Defaults", "Every default prompt parses and declares its variables", PromptDefaultsAsync, "fast"),
                 Cases.Case(S, "Prompts.Versioning", "Prompts save versions, roll back, and reset", VersioningAsync),
                 Cases.Case(S, "Prompts.OverrideAndLab", "Topic overrides resolve first and the lab runs drafts", OverrideAndLabAsync),
+                Cases.Case(S, "Prompts.DefaultUpgrade", "Uncustomized tenant prompts move to new defaults; customized prompts are kept", DefaultUpgradeAsync),
                 Cases.Case(S, "Accounting.Streaming", "Streamed calls record time to first token, chunks, token types, tool calls, attribution, and split cost", StreamingAccountingAsync),
                 Cases.Case(S, "Accounting.Guardrail", "Every model call carries the scope guardrail ahead of the prompt", GuardrailAsync),
                 Cases.Case(S, "Usage.Reports", "Usage reports rank users by cost, time series are gap-filled, and access is restricted", UsageReportsAsync)
@@ -386,6 +387,9 @@ namespace Test.Shared.Suites
             }, token).ConfigureAwait(false)).Expect(200, "lab").Json<PromptLabResponse>();
             Assert.True(lab.Success && lab.Text == "ready" && lab.RenderedUser.Contains("AI developer tools", StringComparison.Ordinal) && lab.RenderedUser.Contains("(none)", StringComparison.Ordinal), "lab rendered and ran: " + lab.Error);
             LlmCall call = (await ta.Client.GetAsync("/v1.0/api/llm-calls/" + lab.LlmCallId, token).ConfigureAwait(false)).Expect(200, "lab call").Json<LlmCall>();
+            Assert.True(lab.EstimatedCostUsd.HasValue && lab.EstimatedCostUsd.Value > 0 && lab.CachedInputTokens == 4 && lab.ReasoningTokens == 1, "lab returns cost and token types");
+            EnumerationResult<LlmCall> byTopic = (await ta.Client.GetAsync("/v1.0/api/llm-calls?userId=" + ta.User.Id + "&topicId=nope", token).ConfigureAwait(false)).Json<EnumerationResult<LlmCall>>();
+            Assert.Equal(0, byTopic.Items.Count, "call log filters by user and topic");
             Assert.True(call.IsDryRun && call.PromptKey == "email.run-summary", "lab call logged as dry run");
             (await ta.Client.DeleteAsync("/v1.0/api/prompts/" + over.Template.Id, token).ConfigureAwait(false)).Expect(204, "delete override");
         }
@@ -475,6 +479,31 @@ namespace Test.Shared.Suites
             (await ta.Client.GetAsync("/v1.0/api/usage/report?allTenants=true", token).ConfigureAwait(false)).Expect(403, "platform-wide needs global admin");
             UsageReport platform = (await admin.GetAsync("/v1.0/api/usage/report?allTenants=true&groupBy=Tenant", token).ConfigureAwait(false)).Expect(200, "platform").Json<UsageReport>();
             Assert.True(platform.Rows.Any(r => r.Key == t.Id && r.Calls == 5 && r.Label == t.Name), "per-tenant row");
+        }
+
+        private static async Task DefaultUpgradeAsync(CancellationToken token)
+        {
+            TestUser ta = await TenantAdminAsync(token).ConfigureAwait(false);
+            MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+            PromptTemplate stale = (await ta.Client.GetAsync("/v1.0/api/prompts?key=research.extract", token).ConfigureAwait(false)).Json<EnumerationResult<PromptTemplate>>().Items.Single();
+            PromptTemplate custom = (await ta.Client.GetAsync("/v1.0/api/prompts?key=research.score", token).ConfigureAwait(false)).Json<EnumerationResult<PromptTemplate>>().Items.Single();
+            string defaultExtract = DefaultPromptCatalog.Get("research.extract")!.Content;
+            string oldText = defaultExtract.Replace(" coding assistant", " assistant for coding", StringComparison.Ordinal);
+            await server.Context.Prompts.SaveAsync(stale, oldText, "simulate an older default", null, token).ConfigureAwait(false);
+            stale = (await server.Context.Database.PromptTemplates.ReadAsync(stale.TenantId, stale.Id, token).ConfigureAwait(false))!;
+            stale.IsCustomized = false;
+            await server.Context.Database.PromptTemplates.UpdateAsync(stale, token).ConfigureAwait(false);
+            PromptTemplateResponse customDescribed = (await ta.Client.GetAsync("/v1.0/api/prompts/" + custom.Id, token).ConfigureAwait(false)).Json<PromptTemplateResponse>();
+            string customText = customDescribed.Content.Replace("You rank research findings", "You strictly rank research findings", StringComparison.Ordinal);
+            (await ta.Client.PutAsync("/v1.0/api/prompts/" + custom.Id, new { content = customText }, token).ConfigureAwait(false)).Expect(200, "customize");
+
+            int changed = await server.Context.Prompts.EnsureDefaultsAsync(stale.TenantId, token).ConfigureAwait(false);
+            Assert.Equal(1, changed, "one prompt upgraded");
+            PromptTemplateResponse upgraded = (await ta.Client.GetAsync("/v1.0/api/prompts/" + stale.Id, token).ConfigureAwait(false)).Json<PromptTemplateResponse>();
+            Assert.True(upgraded.Content == defaultExtract && !upgraded.Template.IsCustomized, "uncustomized prompt follows the default");
+            PromptTemplateResponse kept = (await ta.Client.GetAsync("/v1.0/api/prompts/" + custom.Id, token).ConfigureAwait(false)).Json<PromptTemplateResponse>();
+            Assert.True(kept.Content == customText && kept.Template.IsCustomized, "customized prompt kept");
+            Assert.Equal(0, await server.Context.Prompts.EnsureDefaultsAsync(stale.TenantId, token).ConfigureAwait(false), "idempotent");
         }
     }
 }

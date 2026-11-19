@@ -246,6 +246,10 @@ namespace MyMorningNews.Server.Routes
                 response.OutputTokens = result.OutputTokens;
                 response.DurationMs = result.DurationMs;
                 response.LlmCallId = result.LlmCallId;
+                response.CachedInputTokens = result.CachedInputTokens;
+                response.ReasoningTokens = result.ReasoningTokens;
+                response.TimeToFirstTokenMs = result.TimeToFirstTokenMs;
+                response.EstimatedCostUsd = result.EstimatedCostUsd;
             }
             catch (ModelCallException ex)
             {

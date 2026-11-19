@@ -715,6 +715,7 @@ namespace MyMorningNews.Core.Services
                 }
 
                 decimal? cost = inputCost.HasValue || outputCost.HasValue ? (inputCost ?? 0) + (outputCost ?? 0) : null;
+                state.EstimatedCostUsd = cost;
                 if (cost.HasValue) MyMorningNewsTelemetry.AddDouble(MyMorningNewsTelemetry.LlmCostUsd, (double)cost.Value, "task", state.Request.Task.ToString(), "provider", e.Provider.ToString());
                 bool capture = _Settings.Diagnostics.CaptureLlmPayloads;
                 int max = _Settings.Diagnostics.MaxPayloadCharacters;

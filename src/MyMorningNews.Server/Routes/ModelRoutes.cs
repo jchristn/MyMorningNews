@@ -41,7 +41,7 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/model-assignments", ListAssignmentsAsync, null, openApiMetadata: Paged(Doc("List task role assignments", "Models").WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("task", typeof(ModelTaskEnum)))));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.PUT, "/v1.0/api/model-assignments", UpsertAssignmentAsync, null, openApiMetadata: Doc("Assign a task role to an endpoint", "Models").WithRequestBody(Body<ModelAssignmentUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/api/model-assignments/{id}", DeleteAssignmentAsync, null, openApiMetadata: Doc("Remove a topic assignment override", "Models"));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/llm-calls", ListCallsAsync, null, openApiMetadata: Paged(Doc("List model calls", "Models").WithParameter(QueryParam("runId", typeof(string))).WithParameter(QueryParam("refinementSessionId", typeof(string))).WithParameter(QueryParam("briefingId", typeof(string))).WithParameter(QueryParam("modelEndpointId", typeof(string))).WithParameter(QueryParam("model", typeof(string))).WithParameter(QueryParam("promptKey", typeof(string))).WithParameter(QueryParam("success", typeof(bool))).WithParameter(QueryParam("isDryRun", typeof(bool))).WithParameter(QueryParam("task", typeof(ModelTaskEnum)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/llm-calls", ListCallsAsync, null, openApiMetadata: Paged(Doc("List model calls", "Models").WithParameter(QueryParam("runId", typeof(string))).WithParameter(QueryParam("refinementSessionId", typeof(string))).WithParameter(QueryParam("briefingId", typeof(string))).WithParameter(QueryParam("modelEndpointId", typeof(string))).WithParameter(QueryParam("model", typeof(string))).WithParameter(QueryParam("promptKey", typeof(string))).WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("success", typeof(bool))).WithParameter(QueryParam("isDryRun", typeof(bool))).WithParameter(QueryParam("task", typeof(ModelTaskEnum)))));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/llm-calls/{id}", ReadCallAsync, null, openApiMetadata: Doc("Read a model call with payloads", "Models"));
         }
 
@@ -334,6 +334,8 @@ namespace MyMorningNews.Server.Routes
                 ModelEndpointId = Query(ctx, "modelEndpointId"),
                 Model = Query(ctx, "model"),
                 PromptKey = Query(ctx, "promptKey"),
+                UserId = Query(ctx, "userId"),
+                TopicId = Query(ctx, "topicId"),
                 Success = QueryBool(ctx, "success"),
                 IsDryRun = QueryBool(ctx, "isDryRun")
             };

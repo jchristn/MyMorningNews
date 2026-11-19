@@ -46,5 +46,25 @@ namespace MyMorningNews.Core.Services
         /// Logged call identifier.
         /// </summary>
         public string? LlmCallId { get; set; } = null;
+
+        /// <summary>
+        /// Cached input tokens.
+        /// </summary>
+        public int CachedInputTokens { get; set; } = 0;
+
+        /// <summary>
+        /// Reasoning tokens.
+        /// </summary>
+        public int ReasoningTokens { get; set; } = 0;
+
+        /// <summary>
+        /// Time to first token in milliseconds, when streamed.
+        /// </summary>
+        public double? TimeToFirstTokenMs { get; set; } = null;
+
+        /// <summary>
+        /// Estimated cost in USD, when the endpoint has prices.
+        /// </summary>
+        public decimal? EstimatedCostUsd { get; set; } = null;
     }
 }

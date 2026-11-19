@@ -100,7 +100,7 @@ namespace MyMorningNews.Core.Services
         public async Task EnsureAsync(string tenantId, CancellationToken token = default)
         {
             int prompts = await _Prompts.EnsureDefaultsAsync(tenantId, token).ConfigureAwait(false);
-            if (prompts > 0) _Logging.Info(_Header + "seeded " + prompts + " prompts for tenant " + tenantId);
+            if (prompts > 0) _Logging.Info(_Header + "seeded or updated " + prompts + " prompts for tenant " + tenantId);
 
             long endpoints = await _Database.ModelEndpoints.CountAsync(new ModelEndpointFilter { TenantId = tenantId }, token).ConfigureAwait(false);
             if (endpoints > 0) return;

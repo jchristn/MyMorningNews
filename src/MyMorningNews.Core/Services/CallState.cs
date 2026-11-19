@@ -94,6 +94,11 @@ namespace MyMorningNews.Core.Services
         public List<string> ToolNames { get; set; } = new List<string>();
 
         /// <summary>
+        /// Estimated cost in USD, set when the call is logged.
+        /// </summary>
+        public decimal? EstimatedCostUsd { get; set; } = null;
+
+        /// <summary>
         /// Repair turns used.
         /// </summary>
         public int Repairs { get; set; } = 0;
@@ -130,6 +135,10 @@ namespace MyMorningNews.Core.Services
             result.DurationMs = Math.Round(DurationMs, 2);
             result.Repairs = Repairs;
             result.LlmCallId = LlmCallId;
+            result.CachedInputTokens = CachedInputTokens;
+            result.ReasoningTokens = ReasoningTokens;
+            result.TimeToFirstTokenMs = TimeToFirstTokenMs;
+            result.EstimatedCostUsd = EstimatedCostUsd;
             return result;
         }
     }

@@ -42,22 +42,35 @@ namespace MyMorningNews.Core.Services
         #region Public-Methods
 
         /// <summary>
-        /// Create tenant copies of any default prompts the tenant lacks.
+        /// Create tenant copies of any default prompts the tenant lacks, and update prompts the tenant never customized to the
+        /// current shipped default (as a new version). Customized prompts are never changed.
         /// </summary>
         /// <param name="tenantId">Tenant.</param>
         /// <param name="token">Cancellation token.</param>
-        /// <returns>Number of prompts created.</returns>
+        /// <returns>Number of prompts created or updated.</returns>
         public async Task<int> EnsureDefaultsAsync(string tenantId, CancellationToken token = default)
         {
-            int created = 0;
+            int changed = 0;
             foreach (PromptDefinition def in DefaultPromptCatalog.All().Values)
             {
-                if (await FindAsync(tenantId, def.Key, null, token).ConfigureAwait(false) != null) continue;
-                await CreateAsync(tenantId, def.Key, null, def.Content, null, token).ConfigureAwait(false);
-                created++;
+                PromptTemplate? existing = await FindAsync(tenantId, def.Key, null, token).ConfigureAwait(false);
+                if (existing == null)
+                {
+                    await CreateAsync(tenantId, def.Key, null, def.Content, null, token).ConfigureAwait(false);
+                    changed++;
+                    continue;
+                }
+
+                // Prompts the tenant never customized follow the shipped default, so improvements (such as the scope
+                // rule) reach existing tenants. Customized prompts are left alone; "reset to default" picks up the new text.
+                if (existing.IsCustomized) continue;
+                PromptTemplateResponse current = await DescribeAsync(existing, token).ConfigureAwait(false);
+                if (String.Equals(current.Content, def.Content, StringComparison.Ordinal)) continue;
+                await SaveAsync(existing, def.Content, "Updated to the current default.", null, token).ConfigureAwait(false);
+                changed++;
             }
 
-            return created;
+            return changed;
         }
 
         /// <summary>

@@ -1552,6 +1552,7 @@ Decided on 2026-11-19 (hosted service, website, and mobile):
 | Q13 | Hosted and self-hosted | Both, from one codebase. Self-hosting with Docker stays first class. Hosting is a settings profile plus a compose overlay (section 33). The website links to GitHub for self-hosting. |
 | Q14 | Website repository | `~/Websites/mymorningnews.ai`, remote `https://github.com/jchristn/mymorningnews.ai` (authorized 2026-11-19). Enabling GitHub Pages and DNS for `mymorningnews.ai` are owner actions. |
 | Q15 | App URL | `https://app.mymorningnews.ai` for the hosted dashboard and API (same origin through the reverse proxy). |
+| Q16 | Copyright holder | Every property carries "(c) 2026 Lattice AI LLC": `LICENSE.md`, assembly metadata, the dashboard sign-in page, email footers (section 23), the mobile app's About screen and store listings (section 35), and the website footer and legal pages (Lattice AI LLC is the operator). |
 
 No open questions remain.
 

@@ -253,6 +253,7 @@
     }
   },
   "login": {
+    "copyright": "\u00a9 2026 Lattice AI LLC",
     "defaults": "First run? Sign in with {email} and password {password} in tenant {tenant}, then change the password.",
     "email": "Email",
     "password": "Password",

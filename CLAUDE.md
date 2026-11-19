@@ -67,6 +67,10 @@ cd docker && docker compose up -d --build
 
 Do not capture product screenshots for the README or the website until the owner has reviewed the interfaces (plan section 34.1). README screenshots go in collapsible `<details>` sections.
 
+## Ownership
+
+Every property (this repository, the dashboard, emails, the mobile app, and the mymorningnews.ai website) carries the notice "(c) 2026 Lattice AI LLC" (rendered as © where the format allows). `LICENSE.md` and `Directory.Build.props` name Lattice AI LLC as the copyright holder.
+
 ## Writing
 
 Never use em-dashes anywhere: code, comments, docs, Postman, commit messages. Rewrite the sentence instead.

@@ -337,7 +337,8 @@
   gap: 12px;
 }
 
-.login-defaults {
+.login-defaults,
+.login-copyright {
   text-align: center;
 }
 

@@ -81,6 +81,7 @@ export default function Login() {
             <LogIn size={16} aria-hidden="true" /> {busy ? t('login.signingIn') : t('login.signIn')}
           </button>
           <p className="login-defaults muted small">{t('login.defaults', { email: 'admin@mymorningnews', password: 'password', tenant: 'default' })}</p>
+          <p className="login-copyright muted small">{t('login.copyright')}</p>
         </form>
       </section>
     </div>

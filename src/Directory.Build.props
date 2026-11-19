@@ -2,7 +2,8 @@
   <PropertyGroup>
     <Version>0.1.0-alpha</Version>
     <Authors>Joel Christner</Authors>
-    <Copyright>(c) 2026 Joel Christner</Copyright>
+    <Company>Lattice AI LLC</Company>
+    <Copyright>(c) 2026 Lattice AI LLC</Copyright>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <LangVersion>latest</LangVersion>

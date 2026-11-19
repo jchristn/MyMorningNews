@@ -22,6 +22,8 @@ namespace Test.Shared.Suites
     {
         private const string S = "Schedules";
 
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, bool> _Topics = new System.Collections.Concurrent.ConcurrentDictionary<string, bool>(StringComparer.Ordinal);
+
         /// <summary>
         /// Build the suite.
         /// </summary>
@@ -141,19 +143,22 @@ namespace Test.Shared.Suites
             return Task.CompletedTask;
         }
 
-        private static async Task<(TestUser User, Topic Topic)> ActiveTopicAsync(CancellationToken token)
+        private static async Task<TopicFixture> ActiveTopicAsync(CancellationToken token)
         {
             TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
             Tenant t = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
             TestUser u = await TestFixtures.CreateUserAsync(admin, t.Id, false, token).ConfigureAwait(false);
             Topic topic = (await u.Client.PostAsync("/v1.0/api/topics", new { name = "Sched " + Guid.NewGuid().ToString("N").Substring(0, 6), brief = "Brief.", status = "Active" }, token).ConfigureAwait(false))
                 .Expect(201, "topic").Json<Topic>();
-            return (u, topic);
+            _Topics[topic.Id] = true;
+            return new TopicFixture { User = u, Topic = topic };
         }
 
         private static async Task ApiAsync(CancellationToken token)
         {
-            (TestUser u, Topic topic) = await ActiveTopicAsync(token).ConfigureAwait(false);
+            TopicFixture fx1 = await ActiveTopicAsync(token).ConfigureAwait(false);
+            TestUser u = fx1.User;
+            Topic topic = fx1.Topic;
             SchedulePreviewResponse invalid = (await u.Client.PostAsync("/v1.0/api/schedules/preview", new { intervalType = "DaysOfWeek", daysOfWeekMask = 0, timeZone = "Nowhere/City" }, token).ConfigureAwait(false))
                 .Expect(200, "preview invalid").Json<SchedulePreviewResponse>();
             Assert.True(!invalid.Valid && invalid.Errors.Count >= 2 && invalid.NextRunsUtc.Count == 0, "invalid preview");
@@ -193,7 +198,9 @@ namespace Test.Shared.Suites
         private static async Task TickAsync(CancellationToken token)
         {
             MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
-            (TestUser u, Topic topic) = await ActiveTopicAsync(token).ConfigureAwait(false);
+            TopicFixture fx2 = await ActiveTopicAsync(token).ConfigureAwait(false);
+            TestUser u = fx2.User;
+            Topic topic = fx2.Topic;
             DateTime now = DateTime.UtcNow;
             Schedule s = await DueScheduleAsync(server, u, topic, now.AddMinutes(-1), MissedRunPolicyEnum.RunOnceOnRecovery, token).ConfigureAwait(false);
             await server.Context.Scheduling.TickAsync(now, token).ConfigureAwait(false);
@@ -210,33 +217,29 @@ namespace Test.Shared.Suites
             runs = await RunsAsync(server, topic, token).ConfigureAwait(false);
             Assert.True(runs.Count == 2 && runs.Count(r => r.Status == RunStatusEnum.Skipped && r.SkippedReason!.Contains("still active", StringComparison.Ordinal)) == 1, "overlap skipped");
 
-            (TestUser u2, Topic paused) = await ActiveTopicAsync(token).ConfigureAwait(false);
+            TopicFixture fx3 = await ActiveTopicAsync(token).ConfigureAwait(false);
+            TestUser u2 = fx3.User;
+            Topic paused = fx3.Topic;
             await DueScheduleAsync(server, u2, paused, now.AddMinutes(-1), MissedRunPolicyEnum.RunOnceOnRecovery, token).ConfigureAwait(false);
             await u2.Client.PostAsync("/v1.0/api/topics/" + paused.Id + "/pause", null, token).ConfigureAwait(false);
             await server.Context.Scheduling.TickAsync(now, token).ConfigureAwait(false);
             Assert.Equal(0, (await RunsAsync(server, paused, token).ConfigureAwait(false)).Count, "paused topic does not run");
 
-            (TestUser u3, Topic skipTopic) = await ActiveTopicAsync(token).ConfigureAwait(false);
+            TopicFixture fx4 = await ActiveTopicAsync(token).ConfigureAwait(false);
+            TestUser u3 = fx4.User;
+            Topic skipTopic = fx4.Topic;
             await DueScheduleAsync(server, u3, skipTopic, now.AddHours(-2), MissedRunPolicyEnum.Skip, token).ConfigureAwait(false);
             await server.Context.Scheduling.TickAsync(now, token).ConfigureAwait(false);
             List<Run> skipRuns = await RunsAsync(server, skipTopic, token).ConfigureAwait(false);
             Assert.True(skipRuns.Count == 1 && skipRuns[0].Status == RunStatusEnum.Skipped && skipRuns[0].SkippedReason!.StartsWith("Missed", StringComparison.Ordinal), "missed run skipped by policy");
 
-            (TestUser u4, Topic recover) = await ActiveTopicAsync(token).ConfigureAwait(false);
+            TopicFixture fx5 = await ActiveTopicAsync(token).ConfigureAwait(false);
+            TestUser u4 = fx5.User;
+            Topic recover = fx5.Topic;
             await DueScheduleAsync(server, u4, recover, now.AddHours(-2), MissedRunPolicyEnum.RunOnceOnRecovery, token).ConfigureAwait(false);
             await server.Context.Scheduling.TickAsync(now, token).ConfigureAwait(false);
             List<Run> recovered = await RunsAsync(server, recover, token).ConfigureAwait(false);
             Assert.True(recovered.Count == 1 && recovered[0].Status == RunStatusEnum.Queued, "missed run recovered once");
-        }
-
-        private class TestExecutor : IRunExecutor
-        {
-            public Func<Run, CancellationToken, Task<RunResult>> Body { get; set; } = (r, t) => Task.FromResult(new RunResult { Summary = "ok", Delivered = true });
-
-            public Task<RunResult> ExecuteAsync(Run run, CancellationToken token)
-            {
-                return Body(run, token);
-            }
         }
 
         private static async Task<Run> QueueAsync(TestUser u, Topic topic, CancellationToken token)
@@ -251,17 +254,26 @@ namespace Test.Shared.Suites
 
         private static async Task DrainAsync(MyMorningNewsServer server, IRunExecutor executor, CancellationToken token)
         {
+            IRunExecutor routed = Routed(server, executor);
             for (int i = 0; i < 20; i++)
-                if (await server.Context.Scheduling.ExecuteQueuedAsync(executor, "test", token).ConfigureAwait(false) == 0) break;
+                if (await server.Context.Scheduling.ExecuteQueuedAsync(routed, "test", token).ConfigureAwait(false) == 0) break;
+        }
+
+        private static IRunExecutor Routed(MyMorningNewsServer server, IRunExecutor executor)
+        {
+            foreach (string topicId in _Topics.Keys) TestRuns.Route(topicId, executor);
+            return TestRuns.Executor(server);
         }
 
         private static async Task ExecuteAsync(CancellationToken token)
         {
             MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
-            TestExecutor ok = new TestExecutor();
+            StubRunExecutor ok = new StubRunExecutor();
             await DrainAsync(server, ok, token).ConfigureAwait(false);
 
-            (TestUser u, Topic topic) = await ActiveTopicAsync(token).ConfigureAwait(false);
+            TopicFixture fx6 = await ActiveTopicAsync(token).ConfigureAwait(false);
+            TestUser u = fx6.User;
+            Topic topic = fx6.Topic;
             Run run = await QueueAsync(u, topic, token).ConfigureAwait(false);
             await DrainAsync(server, ok, token).ConfigureAwait(false);
             Run done = await ReadRunAsync(server, run, token).ConfigureAwait(false);
@@ -270,7 +282,7 @@ namespace Test.Shared.Suites
             Assert.True(t.LastRunUtc.HasValue, "topic last run recorded");
 
             Run failing = await QueueAsync(u, topic, token).ConfigureAwait(false);
-            await DrainAsync(server, new TestExecutor { Body = (r, tk) => throw new InvalidOperationException("search provider exploded") }, token).ConfigureAwait(false);
+            await DrainAsync(server, new StubRunExecutor { Body = (r, tk) => throw new InvalidOperationException("search provider exploded") }, token).ConfigureAwait(false);
             Run failed = await ReadRunAsync(server, failing, token).ConfigureAwait(false);
             Assert.True(failed.Status == RunStatusEnum.Failed && failed.ErrorMessage == "search provider exploded", "failure recorded");
 
@@ -278,24 +290,37 @@ namespace Test.Shared.Suites
             server.Context.SettingsService.Current.Pipeline.MaxConcurrentRuns = 1;
             try
             {
-                (TestUser ua, Topic ta) = await ActiveTopicAsync(token).ConfigureAwait(false);
-                (TestUser ub, Topic tb) = await ActiveTopicAsync(token).ConfigureAwait(false);
+                TopicFixture fx7 = await ActiveTopicAsync(token).ConfigureAwait(false);
+                TestUser ua = fx7.User;
+                Topic ta = fx7.Topic;
+                TopicFixture fx8 = await ActiveTopicAsync(token).ConfigureAwait(false);
+                TestUser ub = fx8.User;
+                Topic tb = fx8.Topic;
                 Run ra = await QueueAsync(ua, ta, token).ConfigureAwait(false);
                 Run rb = await QueueAsync(ub, tb, token).ConfigureAwait(false);
-                int executed = await server.Context.Scheduling.ExecuteQueuedAsync(ok, "test", token).ConfigureAwait(false);
-                Assert.Equal(1, executed, "one slot");
-                bool oneQueued = (await ReadRunAsync(server, ra, token).ConfigureAwait(false)).Status == RunStatusEnum.Queued || (await ReadRunAsync(server, rb, token).ConfigureAwait(false)).Status == RunStatusEnum.Queued;
-                Assert.True(oneQueued, "the other waits");
-                await DrainAsync(server, ok, token).ConfigureAwait(false);
+                // The queue is shared with suites running in parallel, so another suite may claim these runs or hold the slot.
+                // The rule under test: one pass never claims more runs than there are free slots, and both runs finish.
+                IRunExecutor routed = Routed(server, ok);
+                for (int i = 0; i < 400; i++)
+                {
+                    int executed = await server.Context.Scheduling.ExecuteQueuedAsync(routed, "test", token).ConfigureAwait(false);
+                    Assert.True(executed <= 1, "never more than one run at a time (" + executed + ")");
+                    if ((await ReadRunAsync(server, ra, token).ConfigureAwait(false)).Status == RunStatusEnum.Completed && (await ReadRunAsync(server, rb, token).ConfigureAwait(false)).Status == RunStatusEnum.Completed) break;
+                    if (executed == 0) await Task.Delay(25, token).ConfigureAwait(false);
+                }
+
+                Assert.True((await ReadRunAsync(server, ra, token).ConfigureAwait(false)).Status == RunStatusEnum.Completed && (await ReadRunAsync(server, rb, token).ConfigureAwait(false)).Status == RunStatusEnum.Completed, "both runs finish one at a time");
             }
             finally
             {
                 server.Context.SettingsService.Current.Pipeline.MaxConcurrentRuns = before;
             }
 
-            (TestUser uc, Topic tc) = await ActiveTopicAsync(token).ConfigureAwait(false);
+            TopicFixture fx9 = await ActiveTopicAsync(token).ConfigureAwait(false);
+            TestUser uc = fx9.User;
+            Topic tc = fx9.Topic;
             Run slow = await QueueAsync(uc, tc, token).ConfigureAwait(false);
-            TestExecutor waiting = new TestExecutor
+            StubRunExecutor waiting = new StubRunExecutor
             {
                 Body = async (r, tk) =>
                 {
@@ -310,7 +335,9 @@ namespace Test.Shared.Suites
         private static async Task RunApiAsync(CancellationToken token)
         {
             MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
-            (TestUser u, Topic topic) = await ActiveTopicAsync(token).ConfigureAwait(false);
+            TopicFixture fx10 = await ActiveTopicAsync(token).ConfigureAwait(false);
+            TestUser u = fx10.User;
+            Topic topic = fx10.Topic;
             Run run = await QueueAsync(u, topic, token).ConfigureAwait(false);
             Assert.True(run.Status == RunStatusEnum.Queued && run.Trigger == RunTriggerEnum.Manual && run.UserId == u.User.Id, "queued manually");
             (await u.Client.PostAsync("/v1.0/api/topics/" + topic.Id + "/run", null, token).ConfigureAwait(false)).Expect(409, "one active run per topic");
@@ -341,12 +368,13 @@ namespace Test.Shared.Suites
             ResearchRequestResponse r = (await ta.Client.PostAsync("/v1.0/api/requests", new { requestText = "Podcast on the history of the shipping container", deliverables = new[] { "Podcast" }, skipQuestions = true }, token).ConfigureAwait(false))
                 .Expect(201, "request").Json<ResearchRequestResponse>();
             await ta.Client.PostAsync("/v1.0/api/requests/" + r.Request.Id + "/confirm", null, token).ConfigureAwait(false);
+            if (r.Request.TopicId != null) _Topics[r.Request.TopicId] = true;
             await server.Context.Scheduling.TickAsync(DateTime.UtcNow.AddSeconds(1), token).ConfigureAwait(false);
             ResearchRequest running = (await server.Context.Database.ResearchRequests.ReadAsync(t.Id, r.Request.Id, token).ConfigureAwait(false))!;
             Assert.True(running.Status == ResearchRequestStatusEnum.Running && running.RunId != null, "request claimed and queued");
             Run run = (await server.Context.Database.Runs.ReadAsync(t.Id, running.RunId!, token).ConfigureAwait(false))!;
             Assert.True(run.Trigger == RunTriggerEnum.Request && run.ResearchRequestId == r.Request.Id && run.TopicId == r.Request.TopicId, "run for the request");
-            await DrainAsync(server, new TestExecutor { Body = (x, tk) => Task.FromResult(new RunResult { Summary = "delivered", BriefingId = "brf_test", Delivered = true }) }, token).ConfigureAwait(false);
+            await DrainAsync(server, new StubRunExecutor { Body = (x, tk) => Task.FromResult(new RunResult { Summary = "delivered", BriefingId = "brf_test", Delivered = true }) }, token).ConfigureAwait(false);
             ResearchRequest done = (await server.Context.Database.ResearchRequests.ReadAsync(t.Id, r.Request.Id, token).ConfigureAwait(false))!;
             Assert.True(done.Status == ResearchRequestStatusEnum.Completed && done.BriefingId == "brf_test" && done.CompletedUtc.HasValue, "request completed when delivered");
         }

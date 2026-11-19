@@ -287,6 +287,26 @@ namespace MyMorningNews.Core.Database
         public IBriefingItemMethods BriefingItems { get; protected set; } = null!;
 
         /// <summary>
+        /// Voice profiles.
+        /// </summary>
+        public IVoiceProfileMethods VoiceProfiles { get; protected set; } = null!;
+
+        /// <summary>
+        /// Audio episodes.
+        /// </summary>
+        public IMediaAssetMethods MediaAssets { get; protected set; } = null!;
+
+        /// <summary>
+        /// Audio chapters.
+        /// </summary>
+        public IMediaChapterMethods MediaChapters { get; protected set; } = null!;
+
+        /// <summary>
+        /// Podcast feed tokens.
+        /// </summary>
+        public IFeedTokenMethods FeedTokens { get; protected set; } = null!;
+
+        /// <summary>
         /// Embedding vectors (pgvector).
         /// </summary>
         public IEmbeddingMethods Embeddings { get; protected set; } = null!;

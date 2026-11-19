@@ -107,14 +107,7 @@ namespace Test.Shared.Suites
         internal static async Task<Run> RunAsync(PipelineFixture f, CancellationToken token)
         {
             Run queued = (await f.User.Client.PostAsync("/v1.0/api/topics/" + f.Topic.Id + "/run", null, token).ConfigureAwait(false)).Expect(202, "run now").Json<Run>();
-            for (int i = 0; i < 20; i++)
-            {
-                await f.Server.Context.Scheduling.ExecuteQueuedAsync(f.Server.Context.RunExecutor, "test", token).ConfigureAwait(false);
-                Run current = (await f.Server.Context.Database.Runs.ReadAsync(queued.TenantId, queued.Id, token).ConfigureAwait(false))!;
-                if (current.Status != RunStatusEnum.Queued && current.Status != RunStatusEnum.Running) return current;
-            }
-
-            throw new InvalidOperationException("The run did not finish.");
+            return await RunWaiter.FinishAsync(f.Server, queued, token).ConfigureAwait(false);
         }
 
         private static async Task FullRunAsync(CancellationToken token)
@@ -233,32 +226,6 @@ namespace Test.Shared.Suites
             Assert.Equal(0L, await f.Server.Context.Database.RunStages.CountAsync(new RunStageFilter { TenantId = f.Topic.TenantId, RunId = run.Id }, token).ConfigureAwait(false), "run stages deleted with the topic");
             EnumerationResult<LlmCall> kept = (await f.User.Client.GetAsync("/v1.0/api/llm-calls?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<LlmCall>>();
             Assert.True(kept.Items.Count > 0, "model call records kept for cost accounting");
-        }
-
-        /// <summary>
-        /// Pipeline fixture.
-        /// </summary>
-        internal class PipelineFixture
-        {
-            /// <summary>
-            /// Server.
-            /// </summary>
-            public MyMorningNewsServer Server { get; set; } = null!;
-
-            /// <summary>
-            /// Tenant administrator who owns the topic.
-            /// </summary>
-            public TestUser User { get; set; } = null!;
-
-            /// <summary>
-            /// Topic.
-            /// </summary>
-            public Topic Topic { get; set; } = new Topic();
-
-            /// <summary>
-            /// Search provider.
-            /// </summary>
-            public SearchProvider Provider { get; set; } = new SearchProvider();
         }
     }
 }

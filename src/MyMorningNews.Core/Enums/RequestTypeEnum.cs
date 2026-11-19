@@ -403,6 +403,36 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// Pin or delete stored files.
         /// </summary>
-        ArtifactWrite
+        ArtifactWrite,
+
+        /// <summary>
+        /// Read and stream audio.
+        /// </summary>
+        MediaRead,
+
+        /// <summary>
+        /// Generate or delete audio.
+        /// </summary>
+        MediaWrite,
+
+        /// <summary>
+        /// Read voice profiles.
+        /// </summary>
+        VoiceRead,
+
+        /// <summary>
+        /// Create, update, test, or delete voice profiles.
+        /// </summary>
+        VoiceWrite,
+
+        /// <summary>
+        /// List my podcast feed tokens.
+        /// </summary>
+        FeedTokenRead,
+
+        /// <summary>
+        /// Create or revoke podcast feed tokens.
+        /// </summary>
+        FeedTokenWrite
     }
 }

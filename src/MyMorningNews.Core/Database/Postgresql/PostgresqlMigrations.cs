@@ -145,6 +145,15 @@ namespace MyMorningNews.Core.Database.Postgresql
                 {
                     "CREATE INDEX IF NOT EXISTS ix_artifacts_expiry ON artifacts (pinned, deletedutc, expiresutc)",
                     "CREATE INDEX IF NOT EXISTS ix_briefings_queue ON briefings (status, composeafterutc)"
+                })),
+            new SchemaMigration(9, "Audio: voice profiles, media assets, chapters, and podcast feed tokens", Concat(
+                VoiceProfileQueries.Schema,
+                MediaAssetQueries.Schema,
+                MediaChapterQueries.Schema,
+                FeedTokenQueries.Schema,
+                new List<string>
+                {
+                    "CREATE INDEX IF NOT EXISTS ix_mediaassets_queue ON mediaassets (status, createdutc)"
                 }))
         };
 

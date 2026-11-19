@@ -81,6 +81,11 @@ namespace MyMorningNews.Server
         /// </summary>
         public IArtifactStore? ArtifactStoreOverride { get; set; } = null;
 
+        /// <summary>
+        /// Speech provider to use instead of the OpenAI-compatible one (tests). Null uses the default.
+        /// </summary>
+        public MyMorningNews.Core.Audio.ITtsProvider? TtsOverride { get; set; } = null;
+
         #endregion
 
         #region Private-Members
@@ -100,6 +105,7 @@ namespace MyMorningNews.Server
         private SearchService? _Search = null;
         private FetchService? _Fetch = null;
         private ArtifactService? _Artifacts = null;
+        private MyMorningNews.Core.Audio.AudioService? _Audio = null;
         private bool _Disposed = false;
 
         #endregion
@@ -160,10 +166,14 @@ namespace MyMorningNews.Server
             BriefingComposer composer = new BriefingComposer(_Database, _Models, prompts, _Artifacts, settings, _Logging);
             BriefingService briefings = new BriefingService(_Database, composer, templates, scheduling, _Artifacts, settings, _Logging);
             scheduling.EditionTrigger = briefings;
+            _Audio = new MyMorningNews.Core.Audio.AudioService(_Database, _Models, prompts, _Artifacts, vault, settings, _Logging, TtsOverride);
+            briefings.Audio = _Audio;
+            tenantDefaults.Audio = _Audio;
             tenantDefaults.Briefings = briefings;
             await tenantDefaults.EnsureAllAsync(token).ConfigureAwait(false);
             _Context.Artifacts = _Artifacts;
             _Context.Briefings = briefings;
+            _Context.Audio = _Audio;
             PipelineServices pipelineServices = new PipelineServices(_Database, _Models, prompts, _Search!, _Fetch!, settings, _Logging) { Briefings = briefings };
             _Context.RunExecutor = new ResearchPipeline(pipelineServices);
 
@@ -199,6 +209,8 @@ namespace MyMorningNews.Server
                 _Workers.Add(Task.Run(() => retention.RunAsync(Lifetime.Token)));
                 BriefingWorker briefingWorker = new BriefingWorker(_Context);
                 _Workers.Add(Task.Run(() => briefingWorker.RunAsync(Lifetime.Token)));
+                MediaWorker mediaWorker = new MediaWorker(_Context);
+                _Workers.Add(Task.Run(() => mediaWorker.RunAsync(Lifetime.Token)));
                 if (settings.Scheduler.Enabled)
                 {
                     SchedulerWorker scheduler = new SchedulerWorker(_Context);
@@ -254,6 +266,7 @@ namespace MyMorningNews.Server
                 _Refinement?.Dispose();
                 _Search?.Dispose();
                 _Fetch?.Dispose();
+                _Audio?.Dispose();
                 _Artifacts?.Dispose();
                 _Models?.Dispose();
                 _Database?.Dispose();
@@ -294,6 +307,7 @@ namespace MyMorningNews.Server
                 new BriefingRoutes(context),
                 new EditionRoutes(context),
                 new TemplateRoutes(context),
+                new MediaRoutes(context),
                 new PromptRoutes(context)
             };
         }

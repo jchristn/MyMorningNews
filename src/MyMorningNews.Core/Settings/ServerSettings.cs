@@ -146,6 +146,16 @@ namespace MyMorningNews.Core.Settings
             set { _Search = value ?? throw new ArgumentNullException(nameof(Search)); }
         }
 
+        /// <summary>
+        /// Text-to-speech and audio.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Value is null.</exception>
+        public TtsSettings Tts
+        {
+            get { return _Tts; }
+            set { _Tts = value ?? throw new ArgumentNullException(nameof(Tts)); }
+        }
+
         #endregion
 
         #region Private-Members
@@ -163,6 +173,7 @@ namespace MyMorningNews.Core.Settings
         private StorageSettings _Storage = new StorageSettings();
         private SchedulerSettings _Scheduler = new SchedulerSettings();
         private SearchSettings _Search = new SearchSettings();
+        private TtsSettings _Tts = new TtsSettings();
 
         #endregion
     }

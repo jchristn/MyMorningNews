@@ -252,6 +252,20 @@ namespace MyMorningNews.Server.Routes
         }
 
         /// <summary>
+        /// Read an optional JSON body: an empty body returns null without an error; invalid JSON throws (400).
+        /// </summary>
+        /// <typeparam name="T">Body type.</typeparam>
+        /// <param name="ctx">HTTP context.</param>
+        /// <returns>Body, or null when empty.</returns>
+        /// <exception cref="JsonException">The body is not valid JSON.</exception>
+        protected static Task<T?> ReadOptionalBodyAsync<T>(HttpContextBase ctx) where T : class
+        {
+            string body = ctx.Request.DataAsString ?? String.Empty;
+            if (String.IsNullOrWhiteSpace(body)) return Task.FromResult<T?>(null);
+            return Task.FromResult(Serializer.Deserialize<T>(body));
+        }
+
+        /// <summary>
         /// Deserialize the request body into a typed DTO. Sends 400 and returns null when the body is missing or invalid.
         /// </summary>
         /// <typeparam name="T">DTO type.</typeparam>

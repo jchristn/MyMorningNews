@@ -42,6 +42,11 @@ namespace Test.Shared.Helpers
         /// </summary>
         public ConcurrentQueue<string> PushRequests { get; } = new ConcurrentQueue<string>();
 
+        /// <summary>
+        /// Bodies of speech requests received (/audio/speech).
+        /// </summary>
+        public ConcurrentQueue<string> SpeechRequests { get; } = new ConcurrentQueue<string>();
+
         #endregion
 
         #region Private-Members
@@ -154,6 +159,30 @@ namespace Test.Shared.Helpers
                 }
 
                 string path = ctx.Request.Url?.AbsolutePath ?? String.Empty;
+                if (path.EndsWith("/audio/speech", StringComparison.Ordinal))
+                {
+                    SpeechRequests.Enqueue(body);
+                    if (path.Contains("/ttsfail/", StringComparison.Ordinal))
+                    {
+                        await WriteAsync(ctx, 400, "{\"detail\":\"voice not found\"}").ConfigureAwait(false);
+                        return;
+                    }
+
+                    using (JsonDocument speech = JsonDocument.Parse(body))
+                    {
+                        string input = speech.RootElement.TryGetProperty("input", out JsonElement ie) ? ie.GetString() ?? String.Empty : String.Empty;
+                        string voice = speech.RootElement.TryGetProperty("voice", out JsonElement ve) ? ve.GetString() ?? String.Empty : String.Empty;
+                        byte[] wav = MyMorningNews.Core.Audio.WavAudio.Tone(Math.Max(0.05, input.Length / 400.0), voice == "am_michael" ? 330 : 440, 8000);
+                        ctx.Response.StatusCode = 200;
+                        ctx.Response.ContentType = "audio/wav";
+                        ctx.Response.ContentLength64 = wav.Length;
+                        await ctx.Response.OutputStream.WriteAsync(wav).ConfigureAwait(false);
+                        ctx.Response.Close();
+                    }
+
+                    return;
+                }
+
                 if (path.EndsWith("/push/send", StringComparison.Ordinal))
                 {
                     PushRequests.Enqueue(body);
@@ -271,6 +300,12 @@ namespace Test.Shared.Helpers
                         return;
                     }
 
+                    if (model == "stub-research" && body.Contains("You turn a written briefing into a script", StringComparison.Ordinal) && body.Contains("FAILSCRIPT", StringComparison.Ordinal))
+                    {
+                        await WriteAsync(ctx, 400, "{\"error\":{\"message\":\"script model rejected the request\"}}").ConfigureAwait(false);
+                        return;
+                    }
+
                     string text = jsonMode ? "Here you go:\n```json\n" + args + "\n```" : model == "stub-research" ? ResearchText(body) : "ready";
                     string usage = "{\"prompt_tokens\":12,\"completion_tokens\":3,\"total_tokens\":15,\"prompt_tokens_details\":{\"cached_tokens\":4},\"completion_tokens_details\":{\"reasoning_tokens\":1}}";
 
@@ -355,6 +390,8 @@ namespace Test.Shared.Helpers
             }
 
             if (body.Contains("You write the opening of a personal briefing", StringComparison.Ordinal)) return "Rebates moved today.";
+            if (body.Contains("You turn a written briefing into a script", StringComparison.Ordinal))
+                return "## Introduction\nHOST_A: Good morning. Here is what moved.\nHOST_B: What changed first?\n## By topic\nHOST_A: Rebates expanded [1], see https://example.test/a for details.\nHOST_B: Good to know.\n## Dig into next\nHOST_A: Check your rebate eligibility this week.";
             return "ready";
         }
 

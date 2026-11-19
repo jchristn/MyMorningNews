@@ -28,6 +28,17 @@ Expo, Mailgun on latticetech.ai) are reused; only the app-specific items below a
 - [ ] **Decide the website's sign-up buttons** until the hosted service exists (Phase 14): keep them, point them at a
   "Get notified" email link, or point them at GitHub for self-hosting.
 
+## Phase 8: Audio and podcasts
+
+- [ ] **Podcast artwork:** Apple Podcasts wants square artwork from 1400 to 3000 pixels (3000 recommended, JPEG or
+  PNG, RGB). Feeds use `assets/glyph.png` (1254 pixels) for now. Drop a 3000 by 3000 version at
+  `assets/podcast-artwork.png` and tell me, and I'll switch the feed to it.
+- [ ] **Listen to a sample** once the stack is up: in the dashboard, Voices, press Test on "Kokoro (local)". Choose
+  the narrator and second-host voices you like (Kokoro lists them at http://127.0.0.1:12104/v1/audio/voices).
+- [ ] **Reachable feed address:** podcast apps on your phone need a URL they can reach. Set
+  `MYMORNINGNEWS_PUBLIC_BASE_URL` in `docker/.env` to an address your phone can open (a LAN address or the hosted
+  domain), or subscribe from a desktop app on the same machine.
+
 ## Phase 9: Email delivery
 
 - [ ] **Mailgun sending domain** for My Morning News. Suggested: send from `no-reply@mymorningnews.ai` through a

@@ -67,12 +67,37 @@ namespace MyMorningNews.Core.Settings
             }
         }
 
+        /// <summary>
+        /// Public base URL of this server, used in podcast feeds, email links, and public pages. Default http://127.0.0.1:12100.
+        /// No trailing slash.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Value is null or empty.</exception>
+        [Setting(Description = "Public base URL of the server (feeds, email links).", EnvironmentVariable = "PUBLIC_BASE_URL")]
+        public string PublicBaseUrl
+        {
+            get { return _PublicBaseUrl; }
+            set { _PublicBaseUrl = String.IsNullOrWhiteSpace(value) ? throw new ArgumentNullException(nameof(PublicBaseUrl)) : value.Trim().TrimEnd('/'); }
+        }
+
+        /// <summary>
+        /// Public base URL of the web app (dashboard), used for deep links. Default http://127.0.0.1:12101. No trailing slash.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Value is null or empty.</exception>
+        [Setting(Description = "Public base URL of the web app (deep links).", EnvironmentVariable = "APP_BASE_URL")]
+        public string AppBaseUrl
+        {
+            get { return _AppBaseUrl; }
+            set { _AppBaseUrl = String.IsNullOrWhiteSpace(value) ? throw new ArgumentNullException(nameof(AppBaseUrl)) : value.Trim().TrimEnd('/'); }
+        }
+
         #endregion
 
         #region Private-Members
 
         private string _Hostname = "127.0.0.1";
         private int _Port = 8000;
+        private string _PublicBaseUrl = "http://127.0.0.1:12100";
+        private string _AppBaseUrl = "http://127.0.0.1:12101";
         private string _CorsAllowedOrigins = "*";
 
         #endregion

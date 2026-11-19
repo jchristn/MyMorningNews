@@ -479,6 +479,42 @@ namespace MyMorningNews.Core.Helpers
         }
 
         /// <summary>
+        /// Generate a VoiceProfile identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateVoiceProfileId()
+        {
+            return Generate(IdPrefixes.VoiceProfile);
+        }
+
+        /// <summary>
+        /// Generate a MediaAsset identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateMediaAssetId()
+        {
+            return Generate(IdPrefixes.MediaAsset);
+        }
+
+        /// <summary>
+        /// Generate a MediaChapter identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateMediaChapterId()
+        {
+            return Generate(IdPrefixes.MediaChapter);
+        }
+
+        /// <summary>
+        /// Generate a FeedToken identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateFeedTokenId()
+        {
+            return Generate(IdPrefixes.FeedToken);
+        }
+
+        /// <summary>
         /// Generate a RequestHistory identifier.
         /// </summary>
         /// <returns>Identifier.</returns>

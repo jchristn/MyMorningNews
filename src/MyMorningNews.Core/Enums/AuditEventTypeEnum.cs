@@ -98,6 +98,16 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// A vault credential was created, rotated, or deleted.
         /// </summary>
-        VaultCredentialChanged
+        VaultCredentialChanged,
+
+        /// <summary>
+        /// A podcast feed token was created.
+        /// </summary>
+        FeedTokenCreated,
+
+        /// <summary>
+        /// A podcast feed token was revoked.
+        /// </summary>
+        FeedTokenRevoked
     }
 }

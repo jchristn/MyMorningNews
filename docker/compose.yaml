@@ -47,6 +47,9 @@ services:
       MYMORNINGNEWS_OLLAMA_ENDPOINT: ${MYMORNINGNEWS_OLLAMA_ENDPOINT:-http://host.docker.internal:11434}
       MYMORNINGNEWS_SEARXNG_URL: http://searxng:8080
       MYMORNINGNEWS_TTS_URL: http://tts:8880/v1
+      MYMORNINGNEWS_TTS_ENABLED: ${MYMORNINGNEWS_TTS_ENABLED:-true}
+      MYMORNINGNEWS_PUBLIC_BASE_URL: ${MYMORNINGNEWS_PUBLIC_BASE_URL:-http://127.0.0.1:12100}
+      MYMORNINGNEWS_APP_BASE_URL: ${MYMORNINGNEWS_APP_BASE_URL:-http://127.0.0.1:12101}
       MYMORNINGNEWS_STORAGE_PROVIDER: ${MYMORNINGNEWS_STORAGE_PROVIDER:-Local}
       MYMORNINGNEWS_STORAGE_LOCAL_DIRECTORY: /data/media
       MYMORNINGNEWS_STORAGE_S3_BUCKET: ${MYMORNINGNEWS_STORAGE_S3_BUCKET:-}
@@ -113,8 +116,8 @@ services:
       start_period: 20s
 
   tts:
-    # Kokoro text-to-speech. Large image (several GB); started with --profile tts until Phase 8 wires audio.
-    profiles: ["tts"]
+    # Kokoro text-to-speech (CPU) for briefing audio and podcast episodes. Large image (several GB). Set
+    # MYMORNINGNEWS_TTS_ENABLED=false on the server and skip this service ("docker compose up -d --scale tts=0") to run without audio.
     build:
       context: ./tts
     image: mymorningnews/tts:local

@@ -903,6 +903,77 @@ ENTITIES = [
             f('SortOrder', 'int', doc='Order.', default=0, sort=True),
         ],
     },
+
+    # ------------------------------------------------------------------ Phase 8: audio and podcast
+    {
+        'name': 'VoiceProfile', 'table': 'voiceprofiles', 'prefix': 'voi_',
+        'doc': 'A text-to-speech voice: provider, endpoint, voices for narrator and two-host formats, and speed.',
+        'uniques': [['tenantid', 'name']],
+        'fields': [
+            f('Name', doc='Name.', required=True, length=128, search=True, sort=True),
+            f('Provider', 'enum:TtsProviderEnum', doc='Provider.', default='OpenAiCompatibleSpeech', filter=True),
+            f('Endpoint', doc='Base URL; null uses Tts.Endpoint.', nullable=True, length=512),
+            f('Model', doc='Speech model.', required=True, length=128, default='kokoro'),
+            f('Voice', doc='Narrator voice, and HOST_A in two-host scripts.', required=True, length=128, default='af_heart'),
+            f('SecondaryVoice', doc='HOST_B voice for two-host scripts; null uses the narrator voice.', nullable=True, length=128),
+            f('Speed', 'double', doc='Speaking speed (0.5 to 2.0).', default=1.0, clamp=(0.5, 2.0)),
+            f('CredentialId', doc='Vault credential with the API key, or null.', nullable=True, length=64),
+            f('IsDefault', 'bool', doc='Used when an edition names no voice.', default=False, filter=True),
+        ],
+    },
+    {
+        # HAND-EDITED after generation: do not --force.
+        'name': 'MediaAsset', 'table': 'mediaassets', 'prefix': 'med_',
+        'doc': 'An audio episode made from a briefing: script, synthesis status, stored audio, and chapters.',
+        'fields': [
+            f('UserId', doc='Owner.', required=True, length=64, filter=True),
+            f('BriefingId', doc='Briefing.', required=True, length=64, filter=True),
+            f('EditionId', doc='Edition, for the podcast feed.', nullable=True, length=64, filter=True),
+            f('Kind', 'enum:MediaKindEnum', doc='Kind.', default='BriefingAudio', filter=True),
+            f('Status', 'enum:MediaStatusEnum', doc='Status.', default='Queued', filter=True),
+            f('Format', doc='narrator or two-host.', required=True, length=16, default='narrator'),
+            f('VoiceProfileId', doc='Voice used.', nullable=True, length=64),
+            f('Title', doc='Episode title.', required=True, length=256),
+            f('ScriptMarkdown', 'text', doc='Spoken script.', nullable=True),
+            f('ScriptFromModel', 'bool', doc='Written by the model (false: written from the briefing text without a model).', default=False),
+            f('ArtifactId', doc='Stored audio.', nullable=True, length=64),
+            f('ChaptersArtifactId', doc='Stored chapters JSON.', nullable=True, length=64),
+            f('ContentType', doc='Audio media type.', nullable=True, length=64),
+            f('Bytes', 'long', doc='Audio size.', default=0),
+            f('DurationSeconds', 'double', doc='Duration.', default=0),
+            f('SegmentCount', 'int', doc='Speech segments synthesized.', default=0),
+            f('Attempts', 'int', doc='Attempts.', default=0),
+            f('LockedUntilUtc', 'datetime', doc='Worker claim expiry.', nullable=True),
+            f('ErrorMessage', 'text', doc='Failure reason.', nullable=True),
+            f('CompletedUtc', 'datetime', doc='When the audio was ready.', nullable=True, sort=True),
+        ],
+    },
+    {
+        'name': 'MediaChapter', 'table': 'mediachapters', 'prefix': 'chp_',
+        'doc': 'A chapter of an audio episode, aligned to a briefing section.',
+        'fields': [
+            f('MediaAssetId', doc='Audio.', required=True, length=64, filter=True),
+            f('BriefingSectionId', doc='Section.', nullable=True, length=64),
+            f('Title', doc='Title.', required=True, length=256),
+            f('StartSeconds', 'double', doc='Start.', default=0),
+            f('EndSeconds', 'double', doc='End.', default=0),
+            f('SortOrder', 'int', doc='Order.', default=0, sort=True),
+        ],
+    },
+    {
+        # HAND-EDITED after generation: do not --force.
+        'name': 'FeedToken', 'table': 'feedtokens', 'prefix': 'fdt_',
+        'doc': 'A private podcast feed token. Only its SHA-256 hash is stored.',
+        'fields': [
+            f('UserId', doc='Owner.', required=True, length=64, filter=True),
+            f('EditionId', doc='Limit the feed to one edition, or null for all of the owner audio.', nullable=True, length=64),
+            f('Name', doc='Label, such as the podcast app.', required=True, length=128),
+            f('TokenHash', doc='SHA-256 of the token, lowercase hex.', required=True, length=64, unique=True, filter=True),
+            f('TokenPrefix', doc='First characters of the token, for recognition.', required=True, length=16),
+            f('LastUsedUtc', 'datetime', doc='Last fetch.', nullable=True),
+            f('RevokedUtc', 'datetime', doc='Revoked.', nullable=True),
+        ],
+    },
 ]
 
 # Prefixes for identifiers that are not codegen entities.
@@ -931,6 +1002,9 @@ ENUMS = [
     ('BriefingKindEnum', 'What a briefing covers.', [('Edition', 'An edition across topics.'), ('Run', 'A single research run.'), ('OneTime', 'A one-time report.')]),
     ('BriefingStatusEnum', 'Briefing status.', [('Queued', 'Waiting to compose.'), ('Composing', 'Composing.'), ('Ready', 'Ready.'), ('Failed', 'Failed.')]),
     ('BriefingItemTypeEnum', 'Kind of item in a briefing.', [('Finding', 'Finding.'), ('Prediction', 'Prediction.'), ('Suggestion', 'Suggestion.')]),
+    ('TtsProviderEnum', 'Text-to-speech provider.', [('OpenAiCompatibleSpeech', 'POST {endpoint}/audio/speech (Kokoro-FastAPI, OpenAI, and compatible servers).'), ('Disabled', 'No audio.')]),
+    ('MediaKindEnum', 'Kind of audio.', [('BriefingAudio', 'Audio for a briefing.'), ('PodcastEpisode', 'A one-time podcast episode.')]),
+    ('MediaStatusEnum', 'Audio status.', [('Queued', 'Waiting.'), ('Scripting', 'Writing the script.'), ('Synthesizing', 'Synthesizing speech.'), ('Ready', 'Ready.'), ('Failed', 'Failed.')]),
     ('DedupeVerdictEnum', 'Duplicate judgment.', [('Duplicate', 'Same thing.'), ('Update', 'Adds a material fact to an earlier finding.'), ('Different', 'Different.')]),
     ('IntervalTypeEnum', 'Schedule interval type.', [('EveryNMinutes', 'Every n minutes.'), ('EveryNHours', 'Every n hours.'), ('EveryNDays', 'Every n days at times of day.'),
         ('EveryNWeeks', 'Every n weeks on days of week at times of day.'), ('DaysOfWeek', 'On days of week at times of day.'), ('DaysOfMonth', 'On days of month at times of day.'),
@@ -983,7 +1057,8 @@ ENUMS = [
         ('PermissionChanged', 'Permission or role mapping changed.'), ('AssignmentChanged', 'Role assignment changed.'),
         ('UserChanged', 'User created, updated, or deleted.'), ('TenantChanged', 'Tenant created, updated, or deleted.'),
         ('SettingsChanged', 'Server settings changed.'), ('RestartRequested', 'Server restart requested.'),
-        ('CredentialRevealed', 'A stored vault credential was revealed.'), ('VaultCredentialChanged', 'A vault credential was created, rotated, or deleted.')]),
+        ('CredentialRevealed', 'A stored vault credential was revealed.'), ('VaultCredentialChanged', 'A vault credential was created, rotated, or deleted.'),
+        ('FeedTokenCreated', 'A podcast feed token was created.'), ('FeedTokenRevoked', 'A podcast feed token was revoked.')]),
     ('ResourceTypeEnum', 'Resource types used by permissions.', [
         ('All', 'Wildcard.'), ('Tenant', 'Tenant.'), ('Admin', 'Administrative control plane.'), ('User', 'User.'), ('Credential', 'Credential.'),
         ('Session', 'Session.'), ('Role', 'Role.'), ('Permission', 'Permission.'), ('Assignment', 'Role assignment.'), ('Audit', 'Audit record.'),
@@ -1074,6 +1149,9 @@ ENUMS = [
         ('EditionRead', 'Read editions.'), ('EditionWrite', 'Create, update, or delete editions.'),
         ('TemplateRead', 'Read briefing templates.'), ('TemplateWrite', 'Create, version, or delete briefing templates.'),
         ('ArtifactRead', 'Read stored files.'), ('ArtifactWrite', 'Pin or delete stored files.'),
+        ('MediaRead', 'Read and stream audio.'), ('MediaWrite', 'Generate or delete audio.'),
+        ('VoiceRead', 'Read voice profiles.'), ('VoiceWrite', 'Create, update, test, or delete voice profiles.'),
+        ('FeedTokenRead', 'List my podcast feed tokens.'), ('FeedTokenWrite', 'Create or revoke podcast feed tokens.'),
         ('ResearchRequestRead', 'Read one-time requests.'), ('ResearchRequestWrite', 'Create, confirm, or convert one-time requests.'), ('ResearchRequestDelete', 'Delete one-time requests.'),
     ]),
 ]

@@ -41,6 +41,11 @@ namespace MyMorningNews.Core.Services
         /// </summary>
         public Briefings.BriefingService? Briefings { get; set; } = null;
 
+        /// <summary>
+        /// Audio service for the default voice; null skips it.
+        /// </summary>
+        public Audio.AudioService? Audio { get; set; } = null;
+
         #endregion
 
         #region Private-Members
@@ -127,6 +132,9 @@ namespace MyMorningNews.Core.Services
                 if (templates > 0) _Logging.Info(_Header + "seeded or updated " + templates + " briefing templates for tenant " + tenantId);
                 await Briefings.BackfillDefaultEditionsAsync(tenantId, token).ConfigureAwait(false);
             }
+
+            if (Audio != null && await Audio.EnsureDefaultVoiceAsync(tenantId, token).ConfigureAwait(false))
+                _Logging.Info(_Header + "seeded the default voice for tenant " + tenantId);
 
             long endpoints = await _Database.ModelEndpoints.CountAsync(new ModelEndpointFilter { TenantId = tenantId }, token).ConfigureAwait(false);
             if (endpoints > 0) return;

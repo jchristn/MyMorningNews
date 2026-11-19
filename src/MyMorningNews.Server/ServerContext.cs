@@ -126,6 +126,11 @@ namespace MyMorningNews.Server
         public BriefingService Briefings { get; set; } = null!;
 
         /// <summary>
+        /// Audio, voices, and podcast feeds.
+        /// </summary>
+        public MyMorningNews.Core.Audio.AudioService Audio { get; set; } = null!;
+
+        /// <summary>
         /// Instantiate.
         /// </summary>
         /// <param name="settingsService">Settings service.</param>

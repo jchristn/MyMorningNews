@@ -39,6 +39,11 @@ namespace MyMorningNews.Core.Briefings
         /// </summary>
         public BriefingTemplateService Templates { get; }
 
+        /// <summary>
+        /// Audio service; when set, ready briefings with audio turned on are queued for audio.
+        /// </summary>
+        public Audio.AudioService? Audio { get; set; } = null;
+
         #endregion
 
         #region Private-Members
@@ -129,6 +134,10 @@ namespace MyMorningNews.Core.Briefings
                 await _Database.ResearchRequests.UpdateAsync(request, token).ConfigureAwait(false);
             }
 
+            bool wantsAudio = request != null
+                ? request.Deliverables.Any(d => String.Equals(d, "Podcast", StringComparison.OrdinalIgnoreCase))
+                : template.Definition.Audio.Enabled;
+            if (wantsAudio) await QueueAudioAsync(composed, request != null ? MediaKindEnum.PodcastEpisode : MediaKindEnum.BriefingAudio, null, token).ConfigureAwait(false);
             return composed;
         }
 
@@ -430,6 +439,7 @@ namespace MyMorningNews.Core.Briefings
             {
                 edition.LastComposedUtc = composed.ComposedUtc ?? nowUtc;
                 await _Database.Editions.UpdateAsync(edition, token).ConfigureAwait(false);
+                if (edition.AudioEnabled) await QueueAudioAsync(composed, MediaKindEnum.BriefingAudio, edition.VoiceProfileId, token).ConfigureAwait(false);
             }
         }
 
@@ -465,6 +475,19 @@ namespace MyMorningNews.Core.Briefings
                 b.ErrorMessage = ex.Message;
                 b.LockedUntilUtc = null;
                 return await _Database.Briefings.UpdateAsync(b, CancellationToken.None).ConfigureAwait(false);
+            }
+        }
+
+        private async Task QueueAudioAsync(Briefing b, MediaKindEnum kind, string? voiceProfileId, CancellationToken token)
+        {
+            if (Audio == null || b.Status != BriefingStatusEnum.Ready || b.IsDryRun) return;
+            try
+            {
+                await Audio.QueueForBriefingAsync(b, kind, voiceProfileId, false, token).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (!(ex is OperationCanceledException))
+            {
+                _Logging.Warn(_Header + "could not queue audio for briefing " + b.Id + ": " + ex.Message);
             }
         }
 

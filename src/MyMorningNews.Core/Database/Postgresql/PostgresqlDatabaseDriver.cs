@@ -104,6 +104,10 @@ namespace MyMorningNews.Core.Database.Postgresql
             Briefings = new BriefingMethods(this);
             BriefingSections = new BriefingSectionMethods(this);
             BriefingItems = new BriefingItemMethods(this);
+            VoiceProfiles = new VoiceProfileMethods(this);
+            MediaAssets = new MediaAssetMethods(this);
+            MediaChapters = new MediaChapterMethods(this);
+            FeedTokens = new FeedTokenMethods(this);
             Embeddings = new EmbeddingMethods(this);
         }
 

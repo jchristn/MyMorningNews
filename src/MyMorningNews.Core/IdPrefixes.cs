@@ -251,6 +251,26 @@ namespace MyMorningNews.Core
         public const string BriefingItem = "bit_";
 
         /// <summary>
+        /// Prefix for VoiceProfile identifiers.
+        /// </summary>
+        public const string VoiceProfile = "voi_";
+
+        /// <summary>
+        /// Prefix for MediaAsset identifiers.
+        /// </summary>
+        public const string MediaAsset = "med_";
+
+        /// <summary>
+        /// Prefix for MediaChapter identifiers.
+        /// </summary>
+        public const string MediaChapter = "chp_";
+
+        /// <summary>
+        /// Prefix for FeedToken identifiers.
+        /// </summary>
+        public const string FeedToken = "fdt_";
+
+        /// <summary>
         /// Prefix for request history entries.
         /// </summary>
         public const string RequestHistory = "req_";

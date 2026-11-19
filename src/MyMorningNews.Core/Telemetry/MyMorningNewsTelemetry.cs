@@ -171,6 +171,11 @@ namespace MyMorningNews.Core.Telemetry
         public static readonly Counter<long> Briefings = Meter.CreateCounter<long>("mymorningnews.briefings", "{briefing}", "Briefings composed by kind and outcome.");
 
         /// <summary>
+        /// Audio episodes by outcome and format.
+        /// </summary>
+        public static readonly Counter<long> MediaEpisodes = Meter.CreateCounter<long>("mymorningnews.media.episodes", "{episode}", "Audio episodes by outcome and format.");
+
+        /// <summary>
         /// Push notifications by outcome.
         /// </summary>
         public static readonly Counter<long> PushMessages = Meter.CreateCounter<long>("mymorningnews.push.messages", "{message}", "Push notifications by outcome.");

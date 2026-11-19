@@ -1474,9 +1474,9 @@ Exit: "Morning News" composes on schedule from the template you wrote, with cita
 
 ### Phase 8: Audio and podcast
 
-- [ ] Kokoro TTS container (with curl), `ITtsProvider`, `MediaWorker`, script, segmenting, ffmpeg concatenation, chapters, Range serving, voices, feed tokens, podcast RSS.
+- [x] Kokoro TTS container (with curl, now in the default stack), `ITtsProvider` (OpenAI-compatible speech), `MediaWorker`, `podcast.script` with a fallback that speaks the briefing text when no model is available, sentence-boundary segmenting by speaker, WAV joining with exact durations, ffmpeg loudness normalization and MP3 encoding (WAV when ffmpeg is missing), chapters aligned to briefing sections (Podcasting 2.0 JSON), Range serving, voices with a test sample, feed tokens (hashed, audited, revocable), podcast RSS with iTunes tags and public artwork. Audio is queued for editions with audio on, run briefings whose template turns audio on, and one-time requests with the Podcast deliverable. Migration 9.
 - [ ] Dashboard: audio player with chapters and synced section highlighting, Voices page, feed-token management in Profile.
-- [ ] Suites: Media.
+- [x] Suites: Media (script, WAV, edition audio, script fallback, failure and retries, voices, feed).
 
 Exit: a briefing produces a playable MP3 with chapters, and a podcast app can subscribe to the private feed.
 
@@ -1659,6 +1659,7 @@ No open questions remain.
 | 2026-11-19 | 16 | Foundation done | Mobile app merged: Expo SDK 58, React Native 0.88, JavaScript; sign-in with refresh tokens, tenant picker, biometric lock, account screens, `expo-audio` player (background and lock-screen verified by logs), push, deep links, tablet split views, 12 locales plus pseudo-locales, parity manifest, `npm run verify`, EAS and signed update scripts, `APP_STORE_SUBMISSION.md` with 57 owner fields. Ran on iPhone and iPad simulators and an Android emulator. `OWNER_ACTIONS.md` updated. |
 | 2026-11-19 | 6 | Core done | Research pipeline with 13 stages, quote verification, composite ranking, pgvector de-duplication with fallbacks, predictions with reviews and Brier scores, suggestions, research APIs (findings with evidence, run stages, queries, results, predictions, suggestions, sources). Verified end to end against stub search and model servers, and against live SearXNG and real pages in Docker (stops at extraction without an Anthropic key, as expected). 122 tests pass on net8 and net10, 123 on Xunit3. |
 | 2026-11-19 | 7 | Core done | Artifact storage (local and S3 with presigned URLs, 365-day retention, pinning with a cap, ranged downloads), briefing templates (parser and validator with line numbers, versions, rollback, reset, export), BriefingComposer with citations and a plain fallback, editions with fresh research, schedules, previews, seeded Morning News, run briefings and one-time reports. Migration 8. Merged the Phase 6 dashboard pages and fixed the gaps it found (NUL bytes in fetched pages, findings filters in the query, sources list, dry-run toggles, sort keys, full topic cascade). 134 tests pass on net8 and net10, 135 on Xunit3; verified in Docker. Dashboard pages for Phase 7 are next. |
+| 2026-11-19 | 8 | Core done | Audio: voices, episodes with chapters, private podcast feeds, ffmpeg encoding, retries; TTS joins the default Docker stack. Test infrastructure: runs are routed to the executor of the test that owns their topic, so parallel suites no longer steal each other's runs; nested helper classes and a test tuple moved out to follow the code style. 141 tests pass on net8 and net10, 142 on Xunit3 (four runs in a row). |
 
 ---
 

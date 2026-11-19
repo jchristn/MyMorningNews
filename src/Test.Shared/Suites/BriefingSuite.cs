@@ -87,7 +87,7 @@ namespace Test.Shared.Suites
             return Task.CompletedTask;
         }
 
-        private static async Task<Briefing> RunBriefingForAsync(PipelineSuite.PipelineFixture f, Run run, CancellationToken token)
+        private static async Task<Briefing> RunBriefingForAsync(PipelineFixture f, Run run, CancellationToken token)
         {
             EnumerationResult<Briefing> list = (await f.User.Client.GetAsync("/v1.0/api/briefings?runId=" + run.Id, token).ConfigureAwait(false)).Expect(200, "briefings by run").Json<EnumerationResult<Briefing>>();
             Assert.Equal(1, list.Items.Count, "one briefing for the run");
@@ -96,7 +96,7 @@ namespace Test.Shared.Suites
 
         private static async Task RunBriefingAsync(CancellationToken token)
         {
-            PipelineSuite.PipelineFixture f = await PipelineSuite.FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
+            PipelineFixture f = await PipelineSuite.FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
             Run run = await PipelineSuite.RunAsync(f, token).ConfigureAwait(false);
             Assert.True(run.Status == RunStatusEnum.Completed, "run completed: " + run.Status + " " + run.Summary);
             Briefing listed = await RunBriefingForAsync(f, run, token).ConfigureAwait(false);
@@ -172,14 +172,14 @@ namespace Test.Shared.Suites
             (await member.Client.GetAsync("/v1.0/api/briefing-templates/" + created.Template.Id, token).ConfigureAwait(false)).Expect(404, "deleted");
         }
 
-        private static async Task<EditionResponse> CreateEditionAsync(PipelineSuite.PipelineFixture f, string name, bool fresh, string? templateId, CancellationToken token)
+        private static async Task<EditionResponse> CreateEditionAsync(PipelineFixture f, string name, bool fresh, string? templateId, CancellationToken token)
         {
             EditionResponse e = (await f.User.Client.PostAsync("/v1.0/api/editions", new { name = name, freshResearchBeforeCompose = fresh, lookbackHours = 48, briefingTemplateId = templateId }, token).ConfigureAwait(false))
                 .Expect(201, "create edition").Json<EditionResponse>();
             return (await f.User.Client.PutAsync("/v1.0/api/editions/" + e.Edition.Id + "/topics", new { topicIds = new[] { f.Topic.Id } }, token).ConfigureAwait(false)).Expect(200, "topics").Json<EditionResponse>();
         }
 
-        private static async Task<Briefing> ComposeNowAsync(PipelineSuite.PipelineFixture f, string editionId, CancellationToken token)
+        private static async Task<Briefing> ComposeNowAsync(PipelineFixture f, string editionId, CancellationToken token)
         {
             Briefing queued = (await f.User.Client.PostAsync("/v1.0/api/editions/" + editionId + "/compose", null, token).ConfigureAwait(false)).Expect(202, "compose").Json<Briefing>();
             Assert.True(queued.Status == BriefingStatusEnum.Queued && queued.Kind == BriefingKindEnum.Edition, "queued");
@@ -189,7 +189,7 @@ namespace Test.Shared.Suites
 
         private static async Task EditionComposeAsync(CancellationToken token)
         {
-            PipelineSuite.PipelineFixture f = await PipelineSuite.FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
+            PipelineFixture f = await PipelineSuite.FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
             await PipelineSuite.RunAsync(f, token).ConfigureAwait(false);
             EditionResponse e = await CreateEditionAsync(f, "Weekday Heat", false, null, token).ConfigureAwait(false);
             Assert.True(e.Topics.Count == 1 && e.CoveredTopicIds.SequenceEqual(new[] { f.Topic.Id }), "topics set");
@@ -224,19 +224,14 @@ namespace Test.Shared.Suites
 
         private static async Task FreshResearchAsync(CancellationToken token)
         {
-            PipelineSuite.PipelineFixture f = await PipelineSuite.FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
+            PipelineFixture f = await PipelineSuite.FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
             EditionResponse e = await CreateEditionAsync(f, "Fresh Heat", true, null, token).ConfigureAwait(false);
             Briefing waiting = await ComposeNowAsync(f, e.Edition.Id, token).ConfigureAwait(false);
             DateTime now = DateTime.UtcNow;
             Assert.True(waiting.Status == BriefingStatusEnum.Queued && waiting.ResearchDeadlineUtc > now.AddMinutes(30) && waiting.ComposeAfterUtc > now.AddSeconds(10), "put back to wait for research: " + waiting.Status + " " + waiting.ComposeAfterUtc);
             EnumerationResult<Run> runs = (await f.User.Client.GetAsync("/v1.0/api/runs?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Run>>();
             Assert.True(runs.Items.Count == 1 && runs.Items[0].Trigger == RunTriggerEnum.Edition && runs.Items[0].Status == RunStatusEnum.Queued, "fresh research queued");
-            for (int i = 0; i < 10; i++)
-            {
-                await f.Server.Context.Scheduling.ExecuteQueuedAsync(f.Server.Context.RunExecutor, "test", token).ConfigureAwait(false);
-                Run r = (await f.Server.Context.Database.Runs.ReadAsync(f.Topic.TenantId, runs.Items[0].Id, token).ConfigureAwait(false))!;
-                if (r.Status != RunStatusEnum.Queued && r.Status != RunStatusEnum.Running) break;
-            }
+            await RunWaiter.FinishAsync(f.Server, runs.Items[0], token).ConfigureAwait(false);
 
             await f.Server.Context.Briefings.ProcessQueuedAsync(now.AddMinutes(1), token).ConfigureAwait(false);
             Briefing done = (await f.Server.Context.Database.Briefings.ReadAsync(waiting.TenantId, waiting.Id, token).ConfigureAwait(false))!;
@@ -278,7 +273,7 @@ namespace Test.Shared.Suites
 
         private static async Task PinRegenerateDeleteAsync(CancellationToken token)
         {
-            PipelineSuite.PipelineFixture f = await PipelineSuite.FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
+            PipelineFixture f = await PipelineSuite.FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
             Run run = await PipelineSuite.RunAsync(f, token).ConfigureAwait(false);
             Briefing b = await RunBriefingForAsync(f, run, token).ConfigureAwait(false);
             Briefing pinned = (await f.User.Client.PutAsync("/v1.0/api/briefings/" + b.Id + "/pin", new { pinned = true }, token).ConfigureAwait(false)).Expect(200, "pin").Json<Briefing>();

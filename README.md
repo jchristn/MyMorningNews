@@ -17,6 +17,7 @@ My Morning News is a self-hosted research assistant. You tell it what you care a
 - **Deliver it your way.** Briefing structure comes from a Markdown template you write. Output is Markdown, audio (local Kokoro TTS by default), a private podcast feed, and an email after every run.
 - **Learn from you.** Rate anything as relevant or not and say why. The system distills that into preferences you approve, and dozens of charts show how relevance and accuracy change over time.
 - **Use any model.** Model access goes through [PolyPrompt](https://github.com/jchristn/PolyPrompt): Anthropic (the default), OpenAI, OpenAI-compatible servers, Ollama, Gemini, xAI, and more, assignable per task.
+- **Self-host it or use the hosted service.** Run it yourself with Docker, or sign up at [mymorningnews.ai](https://mymorningnews.ai) (hosted service coming with a later phase). Apps for iPhone, iPad, and Android phones and tablets are planned.
 - **Multi-tenant with RBAC,** request history, audit, OpenAPI-driven API explorer, Grafana dashboards, SDKs, and an MCP server.
 
 ## Models, web search, and credentials

@@ -14,7 +14,9 @@ My Morning News: multi-tenant research assistant. Topics are refined through an 
 - `src/Test.Shared`, `src/Test.Automated`, `src/Test.Xunit3`: Touchstone tests. `Test.Automated` requires `--provider postgresql`.
 - `dashboard/`: React 19 + Vite dashboard.
 - `sdk/{csharp,js,python}`: SDKs with test harnesses.
-- `docker/`: compose stack, settings, factory reset, observability config.
+- `docker/`: compose stack, settings, factory reset, observability config. `docker/hosted/` is the hosted-service overlay (plan section 33).
+- `mobile/`: Expo app for iOS and Android, phone and tablet (plan section 35, Phase 16). JavaScript and JSX; reuses `dashboard/src/shared/` through `sharing.config.js`.
+- The marketing website is a separate repository: `~/Websites/mymorningnews.ai` (`jchristn/mymorningnews.ai`, plan section 34). Keep its claims in step with shipped features.
 
 ## Build and test
 
@@ -39,7 +41,7 @@ cd docker && docker compose up -d --build
 - Default chat model is Anthropic `claude-opus-5-5`. Anthropic requests omit temperature/top_p/top_k, never prefill, never force `tool_choice`, and set `ReasoningEffort` explicitly. Embeddings default to Ollama `all-minilm`, and vectors carry model and dimensions.
 - Charts are hand-rolled SVG. No chart libraries.
 - Use `127.0.0.1`, never `localhost`, for loopback.
-- Host ports are 12xxx: server 12100, dashboard 12101, postgres 12102, searxng 12103, tts 12104, mcp 12105, grafana 12110, prometheus 12111, tempo 12112 to 12114, loki 12115, ollama 12120, vite dev 12190. Never 12345.
+- Host ports are 12xxx: server 12100, dashboard 12101, postgres 12102, searxng 12103, tts 12104, mcp 12105, grafana 12110, prometheus 12111, tempo 12112 to 12114, loki 12115, ollama 12120, vite dev 12190, expo metro 12191, website preview 12192. Never 12345.
 - Never change version numbers (`0.1.0-alpha`) without explicit approval.
 
 ## C# code style (strict)
@@ -60,6 +62,10 @@ cd docker && docker compose up -d --build
 - Regions (`Public-Members`, `Private-Members`, `Constructors-and-Factories`, `Public-Methods`, `Private-Methods`) are not required in files under 500 lines.
 - Do not assume members exist on opaque classes. Read the source in `~/Code/<Library>` or ask.
 - Compile with zero warnings and zero errors.
+
+## Screenshots
+
+Do not capture product screenshots for the README or the website until the owner has reviewed the interfaces (plan section 34.1). README screenshots go in collapsible `<details>` sections.
 
 ## Writing
 

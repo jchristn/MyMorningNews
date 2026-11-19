@@ -41,12 +41,15 @@ Initial version: `0.1.0-alpha` (set once at creation; never changed afterward wi
 30. [Open Questions](#30-open-questions)
 31. [Risks](#31-risks)
 32. [Progress Log](#32-progress-log)
+33. [Hosted Service and Public Sign-up](#33-hosted-service-and-public-sign-up)
+34. [Marketing Website (mymorningnews.ai)](#34-marketing-website-mymorningnewsai)
+35. [Mobile App (iOS and Android, Phone and Tablet)](#35-mobile-app-ios-and-android-phone-and-tablet)
 
 ---
 
 ## 1. What We Are Building
 
-My Morning News is a self-hosted, multi-tenant research assistant. You tell it what you care about ("I want to learn about AI developer tools"). A wizard uses your configured models to break that interest into dimensions, asks you clarifying questions, and records what to look for and what to avoid. Scheduled research agents then search, read, extract, rank, and synthesize. Each run produces findings with evidence, a view of where things might go next (predictions), and concrete suggestions for what you should dig into. Results arrive as a Markdown briefing, as audio or a podcast episode, and as an email after every run. The email has deep links to the details and one-click feedback links.
+My Morning News is a multi-tenant research assistant that you can self-host with Docker or use as a hosted service at `app.mymorningnews.ai` (section 33), with a marketing site at `mymorningnews.ai` (section 34) and apps for iOS and Android phones and tablets (section 35). You tell it what you care about ("I want to learn about AI developer tools"). A wizard uses your configured models to break that interest into dimensions, asks you clarifying questions, and records what to look for and what to avoid. Scheduled research agents then search, read, extract, rank, and synthesize. Each run produces findings with evidence, a view of where things might go next (predictions), and concrete suggestions for what you should dig into. Results arrive as a Markdown briefing, as audio or a podcast episode, as an email after every run, and in the mobile app with push notifications. The email has deep links to the details and one-click feedback links.
 
 What makes it more than a news reader is the loop. Every item examined, every suggestion, every prediction, and every piece of feedback is persisted. The system uses that history to rank tomorrow's results, stops repeating what you already saw, learns what you find irrelevant and why, and keeps a running scorecard of which predictions came true. Dozens of charts make that history visible.
 
@@ -65,6 +68,8 @@ Hard constraints from the request:
 - An email summary on every iteration, with links to details and feedback links in the email, following the SendWithMailgun and HtmlPageBuilder patterns from Xeno and BjjWithJoel.
 - Default login: `admin@mymorningnews` / `password` / tenant `default`.
 - `assets/logo.png` and `assets/glyph.png` used on the login page, as the favicon, in the README, and elsewhere.
+- A marketing website at `~/Websites/mymorningnews.ai` with sign-up and login links to the web app (section 34).
+- A mobile app for iOS and Android, phone and tablet, following BjjWithJoel (TrellisKit) and Mux (MuxCloud.Mobile) (section 35).
 
 ---
 
@@ -206,6 +211,7 @@ MyMorningNews/
 |-- .github/workflows/
 |   |-- tests.yml                 backend suite on postgres service (every push, every PR)
 |   |-- dashboard.yml             lint, unit tests, i18n checks, build
+|   |-- mobile.yml                mobile verify (Phase 16)
 |   `-- benchmarks.yml            ci-gate (Phase 13)
 |-- assets/
 |   |-- logo.png, glyph.png       (provided)
@@ -213,7 +219,7 @@ MyMorningNews/
 |   |-- postman/MyMorningNews.postman_collection.json
 |   `-- grafana/                  dashboard JSON (mirrored into docker/grafana)
 |-- benchmarks/                   (Phase 13; layout per BENCHMARKING.md)
-|-- dashboard/                    React app (section 25)
+|-- dashboard/                    React app (section 25); host-agnostic modules under src/shared/ are reused by mobile/
 |-- docker/
 |   |-- compose.yaml
 |   |-- update.bat, update.sh
@@ -223,11 +229,14 @@ MyMorningNews/
 |   |-- prometheus.yaml, tempo.yaml, loki.yaml
 |   |-- grafana/provisioning/{datasources,dashboards}/, grafana/dashboards/mymorningnews/
 |   `-- factory/reset.bat, reset.sh, compose.yaml (seeded demo profile), seed/
+|-- docker/hosted/               hosted overlay: compose.yaml (adds Caddy), Caddyfile, mymorningnews.json (section 33)
 |-- docs/
 |   |-- BRIEFING_TEMPLATES.md     template format reference
 |   |-- PROMPTS.md                prompt keys, variables, defaults
 |   |-- EMAIL.md                  email setup (Mailgun, file provider), link and token model
 |   |-- I18N.md                   locale governance (glossary, keys, adding a locale)
+|   |-- HOSTING.md                hosted deployment (section 33)
+|   |-- MOBILE_DEVICE_TESTING.md  simulators, emulators, devices (section 35)
 |   `-- ARCHITECTURE.md
 |-- src/
 |   |-- MyMorningNews.sln
@@ -239,6 +248,8 @@ MyMorningNews/
 |   |-- Test.Automated/
 |   |-- Test.Xunit3/
 |   `-- Test.Benchmark/           assembly MyMorningNews.Benchmark (Phase 13)
+|-- mobile/                       Expo app for iOS and Android (section 35): app/, src/, parity.json, sharing.config.js,
+|                                 eas.json, app.config.js, APP_STORE_SUBMISSION.md
 |-- sdk/
 |   |-- README.md
 |   |-- csharp/                   MyMorningNews.Sdk, MyMorningNews.Sdk.TestHarness, run-tests.sh/.bat
@@ -274,7 +285,7 @@ Every host port is bound to `127.0.0.1` and sits in the 12xxx range. The survey 
 | `mcp` | built from `src/MyMorningNews.McpServer/Dockerfile` | 12105 | 8100 | `curl -f http://127.0.0.1:8100/health` |
 | `ollama` (optional profile `ollama`) | `ollama/ollama:<pin>` plus `curl` | 12120 | 11434 | `curl -f http://127.0.0.1:11434/api/tags` |
 
-The Vite dev server uses port 12190 (not 3000, which collides with Grafana defaults across `~/Code`). The isolated benchmark stack uses 125xx and the user-test stack uses 127xx (section 28).
+The Vite dev server uses port 12190, the Expo Metro dev server 12191, and the website preview 12192 (not 3000, which collides with Grafana defaults across `~/Code`). The isolated benchmark stack uses 125xx and the user-test stack uses 127xx (section 28).
 
 Compose rules applied:
 
@@ -1458,6 +1469,7 @@ Exit: each SDK harness passes against a fresh stack, and an MCP client can list 
 - [ ] `REST_API.md` complete. The Postman collection covers every route with descriptions and variables.
 - [ ] Complete translations for the 12 locales. RTL and expansion QA.
 - [ ] Grafana dashboards for every domain. Factory seeded demo profile.
+- [ ] Joint review of the experiences and interfaces with the owner (dashboard, email, podcast, mobile when available). After approval, capture screenshots and add them to the README in collapsible sections and to the website (section 34.1). Not before the review.
 - [ ] README (use cases, architecture, quick start, default credentials, ports, email setup, models, AOT support statement, database support statement, benchmarks link) and DOCKERHUB_README, both run through the humanizer pass and the Signs of AI writing review.
 - [ ] `docs/` complete. Dashboard handoff report. Full Playwright visual QA.
 
@@ -1470,6 +1482,46 @@ Exit: a clean checkout reaches a first briefing by following only the README.
 - [ ] Final review against every document in section 3.
 
 Exit: all Definition of Done checklists in `BENCHMARKING.md` and `SIMULATED_USER_TESTING.md` are satisfied, or each exception is recorded with a reason.
+
+### Phase 14: Hosted service and public sign-up
+
+Depends on Phases 9 (email) and 12 (CORS allow-list, retention). Can start after Phase 10.
+
+- [ ] `Hosting` settings, sign-up with personal tenants, email verification, tenant-less sign-in, forgot and reset password, welcome and deletion emails, rate limits, optional Turnstile (section 33.1).
+- [ ] Account deletion with a grace period and purge worker, and data export.
+- [ ] Entitlements (plans, assignments, overrides), the Free and Unlimited plans, cost cap enforcement in the gateway and scheduler, `402 cap_reached`, usage meter, admin plan and override UI (section 33.2).
+- [ ] Platform-scoped credentials, private-network egress blocking, hosted CORS defaults, `docker/hosted/` overlay, `docs/HOSTING.md`, universal link files (section 33.3).
+- [ ] Dashboard: `/signup`, `/verify`, `/forgot-password`, `/reset-password`, Account settings with delete and export, usage meter.
+- [ ] Suites: Signup, Entitlements, CostCaps, Egress, AccountDeletion.
+
+Exit: a stranger can sign up from the website, verify, create a topic, receive a briefing, hit the cap and see why, and delete the account, all on the hosted profile.
+
+### Phase 15: Marketing website
+
+The site can be built any time. It was started early, on 2026-11-19. Its sign-up links go live with Phase 14.
+
+- [x] `~/Websites/mymorningnews.ai` initialized with remote `jchristn/mymorningnews.ai` and pushed (2026-11-19): `index.html`, `styles.css`, `script.js`, `assets/`, `CNAME`, `README.md` (section 34).
+- [x] Privacy, terms, support, and delete-account pages (drafts for owner review), `404.html`, `robots.txt`, `sitemap.xml`, and Open Graph image. Checked at 360, 390, 768, and 1280 px in both themes with no horizontal overflow.
+- [ ] Owner review: legal page wording and the support contact (`hello@latticetech.ai`, the contact used by the other products).
+- [ ] Screenshots (section 34.1), only after the joint interface review. Store badges are added after Phase 16 ships.
+- [ ] Owner actions: enable GitHub Pages (main, root) and point `mymorningnews.ai` DNS at it.
+
+Exit: `https://mymorningnews.ai` loads in both themes at 360, 768, and 1280 px, every link works, and sign-up reaches the hosted app.
+
+### Phase 16: Mobile app
+
+Depends on Phases 8 (audio), 10 (feedback and analytics), and 14 (sign-up and caps).
+
+- [ ] Spike: `expo-audio` background playback, lock-screen metadata and controls, and Android foreground service on SDK 58. Decide between it and `react-native-track-player`.
+- [ ] Dashboard refactor: host-agnostic `src/shared/` (API client with injected storage, base URL, and `onUnauthorized`; i18n catalog; formatters and chart math), plus `lint:shared`.
+- [ ] Backend: devices, `PushWorker` and the Push delivery channel, mobile refresh tokens, HTTP range requests on media, briefing progress (section 35.5). Suites: Devices, Push, MediaRanges, Progress.
+- [ ] App: auth (sign-in, sign-up, tenant-less sign-in, secure storage, biometric lock, change server), Today, Listen (player, downloads, synced progress), Topics (wizard, workspace, editions), feedback everywhere, Insights charts with react-native-svg, Account (delivery, notifications, usage meter, export, delete), deep and universal links, offline queue (section 35.3).
+- [ ] Phone tabs and tablet split views, accessibility, RTL, 12 locales plus pseudo-locales.
+- [ ] `parity.json` with `parity:check`, `npm run verify`, `.github/workflows/mobile.yml`, `docs/MOBILE_DEVICE_TESTING.md`.
+- [ ] EAS profiles, signed `expo-updates`, `mobile/APP_STORE_SUBMISSION.md`, a screenshot set, and store badges on the website.
+- [ ] Owner actions: Apple and Google developer accounts, APNs key, FCM credentials, EAS project, TestFlight and Play internal testing, then public listings.
+
+Exit: on an iPhone, an iPad, an Android phone, and an Android tablet, a new user signs up, builds a topic, receives a push when the briefing is ready, reads it, listens with the screen locked, gives feedback, and deletes the account.
 
 ---
 
@@ -1491,6 +1543,16 @@ Decided on 2026-11-19:
 | Q9 | Default model | Anthropic `claude-opus-5-5` for every chat role, through PolyPrompt (which also supports Ollama, OpenAI, OpenAI-compatible, Gemini, xAI, and others). Embeddings on Ollama `all-minilm`, with dimension changes handled (section 10.1). Ollama is not the default chat model. |
 | Q10 | Commits | Commit and push to `origin/main` at the end of each phase. |
 
+Decided on 2026-11-19 (hosted service, website, and mobile):
+
+| # | Question | Decision |
+|---|----------|----------|
+| Q11 | Who pays for hosted users' model calls | Free with caps, billing later. Open sign-up, a monthly cost cap per user enforced from the call accounting (section 11.5), admin overrides, and an entitlements model so billing (Stripe on the web, in-app purchase on iOS and Android) is a later data change (section 33.2). |
+| Q12 | Mobile scope | Full end-user parity with the web dashboard. Administrator and operator pages stay on the web. Enforced by `parity.json` (section 35.3). |
+| Q13 | Hosted and self-hosted | Both, from one codebase. Self-hosting with Docker stays first class. Hosting is a settings profile plus a compose overlay (section 33). The website links to GitHub for self-hosting. |
+| Q14 | Website repository | `~/Websites/mymorningnews.ai`, remote `https://github.com/jchristn/mymorningnews.ai` (authorized 2026-11-19). Enabling GitHub Pages and DNS for `mymorningnews.ai` are owner actions. |
+| Q15 | App URL | `https://app.mymorningnews.ai` for the hosted dashboard and API (same origin through the reverse proxy). |
+
 No open questions remain.
 
 ---
@@ -1505,6 +1567,10 @@ No open questions remain.
 | Search quality from SearXNG varies | Multiple providers per topic, provider yield chart, RSS and seed sources |
 | Sites block fetching | Robots respected, per-domain delay, honest dispositions recorded, optional headless mode |
 | Kokoro CPU synthesis is slow for long briefings | Segment parallelism, an audio length target in the template, a background worker, and the option to point at a faster OpenAI-compatible TTS |
+| Public sign-up abuse or runaway cost on the operator's key | Email verification, rate limits, optional Turnstile, per-user and per-tenant monthly cost caps checked before every run and call, admin overrides, and the cost-by-user report (sections 11.5 and 33.2) |
+| Server-side request forgery from user-supplied URLs on the hosted service | Private-network blocking after DNS resolution and on redirects for fetches, model endpoints, MCP servers, and search providers (section 33.3) |
+| App Store or Play rejection | The submission checklist (section 35.6), in-app account deletion, a reviewer demo account, no in-app purchases while free, privacy and support pages on the website |
+| Background audio differs across platforms | A Phase 16 spike confirms `expo-audio` lock-screen and background behavior before the player is built, with `react-native-track-player` as the fallback |
 | Scope is large | The phases are ordered so each one produces a usable product. After Phase 6 the system already researches, ranks, and shows results, and Phase 9 completes the email loop. |
 
 ---
@@ -1518,3 +1584,130 @@ No open questions remain.
 | 2026-11-19 | 1 | Done | Settings with live and restart-required metadata, PostgreSQL driver and migrations, AAA (tokens, sessions, credentials, admin key, RBAC with built-in roles, effective permissions, audit), request history with gap-filled summaries, control-plane routes, telemetry (Radiant, Prometheus, Tempo, Loki, Grafana with Overview and HTTP dashboards). 62 tests passing. Plan amended with the credential vault, reveal API, and MCP server registry (section 15.1). |
 | 2026-11-19 | 3 | Backend done | Credential vault with audited no-store reveal, model endpoints, role assignments, `ModelGateway` (tool-based structured output with `tool_choice` auto, repair turns, JSON fallback, retry and backoff, refusals), prompts with versioning, rollback, reset, overrides, and lab. Per-tenant defaults (Anthropic `claude-opus-5-5`, Ollama `all-minilm`, 11 assignments, 19 prompts). Added on request: full model call accounting (section 11.5: streaming time to first token, token types, tool calls, user attribution, split cost, usage analytics APIs restricted to admins and auditors, Grafana Models and cost dashboard) and the scope guardrail (11.6). Migrations 2 and 3. 83 tests passing on net8 and net10, 84 on Xunit3. Dashboard pages for Phase 3 follow the Phase 2 shell. |
 | 2026-11-19 | 2 | Done | Dashboard foundation: tokens and themes, contexts, API client, ICU i18n with pseudo-locales and a verifier, shell, shared components, hand-rolled SVG chart primitives, and every Phase 1 page. 49 Vitest tests, lint and build clean, Playwright captures at two widths in both themes. Backend fixes from the dashboard: single CORS origin on the OpenAPI document, request bodies and query parameters in OpenAPI, request history status range filters. |
+| 2026-11-19 | Plan | Amended | Added the hosted service with public sign-up, caps, and entitlements (section 33), the mymorningnews.ai website (section 34, Phase 15), screenshots for the website and README in collapsible sections after a joint interface review (section 34.1), and the iOS and Android phone and tablet app with full end-user parity (section 35, Phase 16). Decisions Q11 to Q15. Phases 14 to 16 added. |
+| 2026-11-19 | 15 | Started | Website built and pushed to `jchristn/mymorningnews.ai`: home page, privacy, terms, support, delete-account, and 404 pages, light and dark themes, responsive, no third-party scripts. Sign-up and log-in point at `app.mymorningnews.ai` (live with Phase 14). GitHub Pages and DNS are owner actions. No product screenshots until the joint interface review. |
+
+---
+
+## 33. Hosted Service and Public Sign-up
+
+My Morning News ships two ways from one codebase: self-hosted with Docker (MIT, the defaults in section 7) and a hosted service at `https://app.mymorningnews.ai` that anyone can join from the website (section 34). Hosting is a settings profile, not a fork. With `Hosting.PublicSignupEnabled` off (the self-hosted default), nothing in this section is reachable.
+
+### 33.1 Sign-up, verification, and sign-in
+
+- **Sign-up.** `POST /v1.0/public/signup` with email, password, display name, time zone, locale, and terms acceptance (terms version recorded). It creates a personal tenant (the user is its TenantAdmin) and a pending user, then sends a verification email. Sign-in is blocked until the email is verified (`Hosting.RequireEmailVerification`, default true when sign-up is on). Duplicate emails get the same response as new ones, so the route does not reveal who has an account.
+- **Abuse controls.** Per-IP and per-email rate limits, an optional Cloudflare Turnstile check (`Hosting.TurnstileSecretKey`; off when unset), an optional disposable-domain blocklist, and an audit record per sign-up.
+- **Email flows** (section 23 templates, HtmlPageBuilder layout): verify email, welcome (links to the topic wizard and the apps), password reset (`POST /v1.0/public/password/forgot` and `/reset`, single-use hashed token, 60 minutes), password changed, and account deletion confirmation.
+- **Tenant-less sign-in.** Hosted users never see a tenant ID. `POST /v1.0/token` accepts email and password without a tenant. If the email belongs to one tenant, it signs in. If it belongs to several, it returns the tenant list and the client picks one. The tenant field stays on the self-hosted login page.
+- **Dashboard routes:** `/signup`, `/verify`, `/forgot-password`, `/reset-password`, and Account settings (profile, password, delete account, data export).
+- **Account deletion** (required by both app stores, and by Google Play as a web link too). Account settings, the mobile app, and `https://mymorningnews.ai/delete-account` all reach `POST /v1.0/api/account/delete`. Deletion signs out every session, schedules purge of the personal tenant after a 7-day grace period (`Hosting.DeletionGraceDays`), and sends a confirmation email. A sign-in during the grace period cancels it. `GET /v1.0/api/account/export` returns a ZIP of topics, briefings, findings, feedback, and predictions as JSON and Markdown.
+
+### 33.2 Caps now, billing later (decision Q11)
+
+The hosted service is free with caps. Billing is designed in but not built.
+
+- **Entitlements** (modelled on MuxCloud): `plans` (name, feature values), `planassignments` (tenant or user, plan, from and to), and `entitlementoverrides` (an admin's per-tenant or per-user value with a reason). Code checks entitlement keys, never plan names, so a later Stripe or in-app subscription is a data change. `IEntitlementService.GetEffectiveAsync` is cached and invalidated on change.
+- **Keys:** `usage.monthlyCostUsd.max` (default 5.00 on the Free plan), `topics.max` (5), `schedule.minIntervalMinutes` (360), `runs.daily.max` (8), `audio.enabled` (true), `audio.monthlyMinutes.max` (120), `email.enabled` (true), `mobile.access` (true), `endpoints.custom` (false: hosted users run on the platform models unless an admin allows their own).
+- **Enforcement** uses the section 11.5 accounting. Before a run or interactive call, the gateway checks month-to-date `estimatedcostusd` for the attributed user and tenant against the cap. A run that would start over the cap is skipped with `RunSkippedReason = CostCapReached`, and the user gets one email and push per period. Interactive calls return `402 cap_reached` with the reset date. The dashboard and app show a usage meter (spent, cap, reset date). Self-hosted installs default to an "Unlimited" plan, so nothing changes for them.
+- **Admin surfaces:** `/admin/usage` (section 11.5) gains plan assignment and overrides, top users by cost, and tenants near their cap.
+
+### 33.3 Platform credentials and hosted safety
+
+- **Platform credentials.** On the hosted service, the operator's Anthropic key is a platform-scoped vault credential (null tenant). Tenant defaults reference it, and it is never copied into a tenant vault. Tenants can use it through the gateway but cannot read it, reveal it, or see where else it is used. The reveal API returns 403 for platform credentials to everyone except global administrators.
+- **Network egress (SSRF).** With `Hosting.RestrictPrivateNetworks` on (default when sign-up is on), fetches, user-defined model endpoints, MCP servers, and search providers refuse loopback, link-local, private, and metadata addresses. The check runs after DNS resolution and again on every redirect.
+- **Hosted defaults:** `Rest.CorsAllowedOrigins` set to the app origin (requirements BACKEND_ARCHITECTURE CORS rule), secure cookies off (bearer tokens only), `PublicDashboardBaseUrl` `https://app.mymorningnews.ai`, and `PublicServerBaseUrl` `https://app.mymorningnews.ai` (the API is served under the same origin by the reverse proxy).
+- **Deployment artifacts:** `docker/hosted/compose.yaml` (an overlay that adds Caddy for TLS on 443 and keeps every other port on 127.0.0.1), `docker/hosted/Caddyfile`, `docker/hosted/mymorningnews.json`, and `docs/HOSTING.md` (DNS, Mailgun domain and DMARC alignment, backups, upgrades). Provisioning the host and DNS are owner actions.
+- **Universal links.** The app domain serves `/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json` (generated from settings), so email and web links open the mobile app when it is installed (section 35).
+
+---
+
+## 34. Marketing Website (mymorningnews.ai)
+
+A static marketing site in `~/Websites/mymorningnews.ai`, its own repository `https://github.com/jchristn/mymorningnews.ai`, served by GitHub Pages at `https://mymorningnews.ai` (`CNAME`). It follows the other sites in `~/Websites` (notdory.ai, usemux.ai): plain `index.html`, `styles.css`, and `script.js`, with no build step, framework, analytics, or third-party scripts.
+
+- **Message.** Hero: "Sign up, tell us what you want to stay on top of, and let AI curate your regular news." Second theme: "Consume it how you like it: podcast, email, or in the app."
+- **Calls to action.** "Sign up free" goes to `https://app.mymorningnews.ai/signup` and "Log in" to `https://app.mymorningnews.ai/login`, in the header, the hero, and the closing band. App Store and Google Play badges appear once the apps are live (section 35), and are hidden until then.
+- **Sections:**
+  - Hero, with an illustrative briefing card built in HTML and CSS (no fabricated metrics).
+  - How it works, in three steps: tell us what you care about (the refinement wizard asks a few questions), AI researches on your schedule, and you get a ranked briefing with sources.
+  - Your way: podcast (private feed for any podcast app), email (after every edition, with one-click feedback), and the app (phone and tablet, iOS and Android).
+  - Why it's different: relevance ranking that learns from your feedback, every claim backed by a quote and a link, predictions it keeps score on, and suggestions for what to dig into.
+  - Free while in alpha (with a usage cap).
+  - Self-host it (open source, Docker, link to GitHub).
+  - FAQ: what models it uses, privacy, cost, cancelling, and self-hosting.
+  - Closing call to action and footer.
+- **Pages:** `privacy.html`, `terms.html`, `support.html`, and `delete-account.html`. The app stores require privacy, support, and account-deletion URLs. The legal pages are drafts that the owner reviews before launch.
+- **Design.** Light and dark themes through CSS variables (dark follows the system, with a toggle), responsive down to 360 px with a mobile menu, the `assets/logo.png`, `glyph.png`, and generated favicons from the main repository, Open Graph and Twitter card metadata, `robots.txt`, `sitemap.xml`, a `404.html`, accessible contrast, focus styles, and reduced-motion support. No em-dashes in any copy.
+- **Facts stay true.** Feature claims come from the main repository's README and this plan. Anything not built yet is labelled "coming soon" until it ships. The site is updated in the same phase that ships a feature it mentions.
+- **Local preview:** `python3 -m http.server 12192` from the site folder.
+
+### 34.1 Screenshots on the website and in the README
+
+Both the website and the main repository README get product screenshots. **Screenshots are not captured until the owner and I have reviewed the experiences and interfaces together** (a review session per surface: dashboard, email, podcast, mobile), and the owner has approved what is shown. Until then, the website uses the illustrative HTML card and the README has no screenshots.
+
+- **Capture.** Playwright for the dashboard (1280 px desktop and 390 px phone, light and dark), the rendered email in a browser and a phone mail client, and simulator or device captures for the iOS and Android apps (phone and tablet). Captures run against the factory demo profile (Phase 12) with seeded, clearly fictional demo data. No real accounts, emails, or keys appear.
+- **Files.** Stored once in the main repository at `assets/screenshots/<surface>/<name>-<theme>.png`, optimized (lossless PNG, plus WebP for the website), and copied into the website's `assets/screenshots/`. Every image has descriptive alt text.
+- **README.** Screenshots go in collapsible sections (`<details><summary>...</summary>`), one per surface: Dashboard, Topic wizard, Briefing and evidence, Insights and charts, Email, Podcast, and Mobile (phone and tablet). Each section is collapsed by default, has one line on what the screen does, and shows light and dark captures side by side where both matter.
+- **Website.** A screenshots band with a phone and desktop frame per channel (app, email, podcast), lazy-loaded, with `srcset` for density, and a light and dark pair that follows the active theme.
+- **Upkeep.** The capture script lives at `tools/screenshots/` in the main repository, so a release can refresh every image in one run. A screenshot is retaken in the phase that changes its screen.
+
+---
+
+## 35. Mobile App (iOS and Android, Phone and Tablet)
+
+A native app for iPhone, iPad, and Android phones and tablets in `mobile/`. It follows MuxCloud.Mobile (`~/Code/MuxCloud/src/MuxCloud.Mobile`: shared dashboard modules, parity manifest, secure token storage, push devices, phone and tablet layouts) and TrellisKit mobile (`~/Code/BjjWithJoel/trelliskit/mobile`: JavaScript and JSX, EAS builds, signed `expo-updates`, store submission checklist).
+
+### 35.1 Stack
+
+Expo SDK 58, React Native 0.88, React 19.3, expo-router, and JavaScript with JSX (matching the dashboard and TrellisKit). Key modules:
+
+- `expo-secure-store`: tokens, per server, `AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY`.
+- `expo-local-authentication`: optional biometric unlock.
+- `expo-audio`: playback with background audio and lock-screen controls (Phase 16 opens with a spike that confirms lock-screen metadata, remote controls, and Android foreground-service behavior on SDK 58; if any is missing, `react-native-track-player` replaces it).
+- `expo-file-system`: offline downloads.
+- `expo-notifications`: push.
+- `expo-linking`: deep and universal links.
+- `expo-localization` with i18next: the 12 locales plus `qps-ploc` and `qps-rtl`.
+- `react-native-svg`: the hand-rolled charts (no chart libraries).
+- `expo-updates`: signed over-the-air updates.
+
+The Metro dev server runs on port 12191.
+
+### 35.2 Shared code
+
+Following MuxCloud, the app imports the dashboard's host-agnostic modules instead of copying them: `@dashboard/api` (API client and routes), `@dashboard/i18n/catalog` (translations), and `@dashboard/lib` (formatters, chart math, briefing and finding helpers). `sharing.config.js` feeds Metro, Jest, and ESLint. Shared modules must not use `window`, `document`, `localStorage`, `navigator`, `import.meta`, or React, and `npm run lint:shared` enforces that. Phase 16 first refactors `dashboard/src/utils/api.js` to take injected token storage, base URL, and an `onUnauthorized` callback (today it calls `window.dispatchEvent`), then moves the shared parts under `dashboard/src/shared/`. The app's own strings live under `mobile.*`.
+
+### 35.3 Scope: full end-user parity (decision Q12)
+
+Everything a member can do on the web, the app can do. Operator and administrator pages (tenants, users, RBAC, settings, request history, audit, API explorer, Grafana links, platform usage) stay on the web. `parity.json` maps every dashboard route to a mobile screen as `implemented`, or `not-applicable` with a reason. `npm run parity:check` fails on anything `planned`, on a missing screen file, and on any dashboard route the manifest does not cover.
+
+- **Tabs on phones:** Today, Listen, Topics, Insights, Account.
+- **Today:** the latest edition per schedule, the briefing reader (rendered Markdown, linked findings, sources), findings with relevance and the evidence quote sheet, suggestions, and predictions due to grade.
+- **Listen:** the podcast player (play and pause, skip back 15 and forward 30, speed 0.75x to 2x, chapters from briefing sections, sleep timer, lock-screen and notification controls, AirPlay and Bluetooth output), the episode list, downloads for offline use with storage management, and resume position synced across devices (`PUT /v1.0/api/briefings/{id}/progress`).
+- **Topics:** the topic list, the refinement wizard as a chat (dimensions, question rounds, editable brief), the topic workspace (overview, context, schedule, sources, runs, findings, predictions, suggestions, feedback, preferences, analytics, delivery, prompts), and editions with custom schedules.
+- **Feedback everywhere:** relevant or not relevant, with the "why" box, on findings, suggestions, predictions, and briefings. The same API as the email feedback pages.
+- **Insights:** relevance, accuracy, feedback, preferences, and your own usage, all with the section 25.6 charts that apply to members, drawn with react-native-svg.
+- **Account:** profile, password, delivery channels (push, email, podcast feed URL with copy and "Open in podcast app"), notification preferences, usage meter against the cap (section 33.2), language, theme, biometric lock, "Change server" for self-hosted installs, export data, sign out, and delete account.
+- **Sign-in and sign-up:** in-app sign-up, verification handoff, forgot password, and tenant-less sign-in (section 33.1). Email and password only, so Sign in with Apple is not required (App Store Guideline 4.8). If a third-party sign-in is ever added, Sign in with Apple is added with it.
+
+### 35.4 Layout, accessibility, and quality
+
+- **Tablets and wide windows** (768 points and up) use split views: briefings beside the reader, topics beside the workspace, and the player as a persistent bottom bar. Phones use tabs with stacks. Both orientations are supported.
+- **Accessibility:** Dynamic Type and font scaling, VoiceOver and TalkBack labels on every control, reduced motion, and minimum 44-point targets. Light and dark themes follow the system, with an override. RTL switches direction on the next launch.
+- **Offline and network:** cached briefings and downloaded audio stay readable and playable offline. Feedback given offline is queued and sent when the device reconnects. A banner shows connection state.
+
+### 35.5 Backend additions for the app
+
+- **Devices:** `POST /v1.0/api/devices` (Expo push token, platform, name; idempotent per user and token) and `DELETE /v1.0/api/devices/{id}`, in a `devices` table.
+- **Push channel:** `Push` joins email and podcast as a delivery channel per edition. `PushWorker` sends through the Expo Push API (access token from the vault) for briefing ready, predictions due, run failed, and cap reached. Payloads carry IDs and the edition name, never briefing content. Unregistered tokens are pruned from receipts.
+- **Audio:** media routes serve HTTP range requests (`206 Partial Content`, `Accept-Ranges`), which iOS needs for seeking. `briefingprogress` holds user, briefing, position in seconds, completion, and last update.
+- **Refresh tokens:** mobile sign-in (`client: "mobile"`) returns a rotating refresh token (30 days, stored hashed), following MuxCloud and AUTHENTICATION.md.
+- **Universal links** (section 33.3). Email "Open briefing" links open the app when it is installed and fall back to the web otherwise.
+
+### 35.6 Tests, builds, and stores
+
+- **`npm run verify`** runs lint (including `lint:shared`), the i18n check, the parity check, the dependency audit check, Jest with `@testing-library/react-native`, and `expo export` for iOS and Android. `.github/workflows/mobile.yml` runs it on every push. `docs/MOBILE_DEVICE_TESTING.md` covers simulators, emulators, and physical devices against a local server (`http://<lan-ip>:12100`). Plain HTTP shows a warning.
+- **Builds:** EAS profiles `development` (dev client), `preview` (internal distribution), and `production`. Code-signed `expo-updates` follow TrellisKit (certificate generation, key rotation, `publish-update`). Identifiers: iOS bundle and Android application ID `ai.mymorningnews.app`, URL scheme `mymorningnews`.
+- **Version.** The store version is `0.1.0` with incrementing build numbers, matching the product's `0.1.0-alpha` (stores do not accept the `-alpha` suffix). No version number changes without approval.
+- **`mobile/APP_STORE_SUBMISSION.md`**, modelled on BjjWithJoel's: app information, age rating, Apple privacy label and Google data safety answers (account email, usage data, no tracking, no ads), account deletion (in app and on the website), a reviewer demo account on the hosted service, a screenshot plan (6.9-inch and 6.5-inch iPhone, 13-inch iPad, Android phone and 10-inch tablet, both themes), and review notes. No in-app purchases while the service is free (decision Q11). When billing arrives, digital plans bought in the app go through in-app purchase per Guideline 3.1.1, sharing the entitlements model.
+- **Owner actions before the first store build:** an Apple Developer account and App Store Connect app, a Google Play Console app, an APNs key, an FCM V1 service account, the EAS project, and store listing copy review.

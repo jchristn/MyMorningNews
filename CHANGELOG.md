@@ -38,6 +38,8 @@ All notable changes to this project are documented here. The project follows [Se
 - Dashboard pages for stored credentials (with audited reveal), models (endpoints, assignments, call log), prompts (editor, version diff, lab), usage and cost insights, and platform usage for administrators.
 - Prompts a tenant never customized now follow updated defaults; the prompt lab reports cost; the call log filters by user and topic.
 - Web search through SearXNG (bundled, no key), Tavily, You.com, RSS and Atom feeds, Hacker News, and arXiv, with per-topic provider choices and a test action. Page fetching respects robots.txt, spaces requests per domain, extracts the main content, and converts HTML and PDF to Markdown.
+- Mobile app foundation for iPhone, iPad, and Android phones and tablets (`mobile/`): sign-in with secure token storage and refresh, account screens with usage, a podcast player with background playback, lock-screen controls, downloads, and a sleep timer, push notifications, deep links, tablet split views, and translations scaffolding. `APP_STORE_SUBMISSION.md` lists every store field to fill in.
+- Unknown API endpoints return `RouteNotFound`, distinct from `NotFound` for missing records.
 - `OWNER_ACTIONS.md` with everything the owner needs to do, grouped by phase.
 - Scope guardrail on every model call and in every default prompt, so models stay on research and briefing tasks and treat fetched content as data.
 - Prompt templates: 19 defaults, renderer with list expansion, save-time variable validation, versions, rollback, reset, topic overrides, and a prompt lab.

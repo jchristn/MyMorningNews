@@ -8,9 +8,11 @@ namespace MyMorningNews.Server
     using MyMorningNews.Core.Database;
     using MyMorningNews.Core.Database.Postgresql;
     using MyMorningNews.Core.Fetch;
+    using MyMorningNews.Core.Responses;
     using MyMorningNews.Core.Scheduling;
     using MyMorningNews.Core.Search;
     using MyMorningNews.Core.Security;
+    using MyMorningNews.Core.Serialization;
     using MyMorningNews.Core.Services;
     using MyMorningNews.Core.Settings;
     using MyMorningNews.Server.Routes;
@@ -300,7 +302,9 @@ namespace MyMorningNews.Server
         {
             ctx.Response.StatusCode = 404;
             ctx.Response.ContentType = "application/json";
-            await ctx.Response.Send("{\"error\":\"NotFound\",\"message\":\"The requested resource was not found.\"}", ctx.Token).ConfigureAwait(false);
+            // RouteNotFound (no such endpoint on this server version) is distinct from NotFound (the endpoint exists but the
+            // record does not), so clients such as the mobile app can tell an older server from a missing item.
+            await ctx.Response.Send(Serializer.Serialize(new ErrorResponse { Error = "RouteNotFound", Message = "This server has no " + ctx.Request.Method + " " + ctx.Request.Url.RawWithoutQuery + " endpoint." }), ctx.Token).ConfigureAwait(false);
         }
 
         #endregion

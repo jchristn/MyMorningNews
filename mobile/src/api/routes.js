@@ -41,6 +41,8 @@ export const routes = {
   prediction: (id) => '/v1.0/api/predictions/' + enc(id),
   predictionResolve: (id) => '/v1.0/api/predictions/' + enc(id) + '/resolve',
   suggestions: '/v1.0/api/suggestions',
+  requests: '/v1.0/api/requests',
+  request: (id) => '/v1.0/api/requests/' + encodeURIComponent(id),
   suggestionStatus: (id) => '/v1.0/api/suggestions/' + enc(id) + '/status',
   // Briefings and editions (planned, Phase 7; progress is Phase 16)
   briefings: '/v1.0/api/briefings',

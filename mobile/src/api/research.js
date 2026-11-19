@@ -55,6 +55,13 @@ export const suggestionsApi = {
   setStatus: (client, id, body) => client.put(routes.suggestionStatus(id), body),
 };
 
+/** One-time requests (plan section 13.1): reports, podcasts, and email summaries researched once. */
+export const requestsApi = {
+  list: (client, query) => client.get(routes.requests, query),
+  get: (client, id) => client.get(routes.request(id)),
+  create: (client, body) => client.post(routes.requests, body),
+};
+
 /** Feedback (Phase 10): `{ targetType, targetId, rating, reason }`, the same API as the email feedback pages. */
 export const feedbackApi = {
   submit: (client, body) => client.post(routes.feedback, body),

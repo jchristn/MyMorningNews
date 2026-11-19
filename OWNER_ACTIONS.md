@@ -48,20 +48,35 @@ Expo, Mailgun on latticetech.ai) are reused; only the app-specific items below a
 
 ## Phase 16: Mobile apps (iOS and Android, phone and tablet)
 
-- [ ] **Fill out `APP_STORE_SUBMISSION.md`** (repository root): supply or confirm every field marked `Owner:`.
-  This is required before the first TestFlight and Play internal builds.
-- [ ] **Apple Developer Program** (Lattice AI organization): confirm enrollment is complete and send me the Team ID
-  (not secret).
-- [ ] **App Store Connect app record** for bundle ID `ai.mymorningnews.app`; send me the App Store Connect app ID.
-- [ ] **Google Play Console app** with package `ai.mymorningnews.app`.
-- [ ] **Expo (EAS) project** under the `joel-christner` account (for example `@joel-christner/mymorningnews`);
-  send me the project ID.
-- [ ] **Push credentials:** an APNs key (`.p8`) uploaded to EAS for iOS, and a Firebase project with
-  `google-services.json` (as the EAS file variable `GOOGLE_SERVICES_JSON`) and the FCM V1 service account key in
-  EAS credentials for Android.
-- [ ] **Live updates signing key** for `expo-updates` (I'll generate the certificate with the script; you keep the
-  private key outside Git).
-- [ ] **Reviewer demo account** on the hosted service for Apple and Google review.
+The app foundation is built and runs on the iPhone and iPad simulators and an Android emulator. The full, ordered mobile
+checklist with exact commands is in [`mobile/OWNER_ACTIONS.md`](mobile/OWNER_ACTIONS.md). The short version:
+
+- [ ] **Fill out [`APP_STORE_SUBMISSION.md`](APP_STORE_SUBMISSION.md)** (repository root). Every field lists the store, the
+  console field name, its limits, and a proposed value; supply or confirm each `Owner:` line (57 of them). Needed before
+  the first TestFlight and Play internal builds.
+- [ ] **Publisher accounts:** confirm the Lattice AI LLC Apple Developer organization enrollment is complete and send
+  me the Apple Team ID (not secret).
+- [ ] **EAS project:** from `mobile/`, `npx eas-cli@latest login` (account `joel-christner`), then `npx eas-cli@latest init`;
+  send me the project ID (it goes in `MYMORNINGNEWS_MOBILE_EAS_PROJECT_ID`).
+- [ ] **Live update signing key:** from `mobile/`, `npm run updates-certificate`; commit only `certificate.pem` and keep
+  the private key outside Git.
+- [ ] **App Store Connect app** for bundle ID `ai.mymorningnews.app`; fill the `eas.json` submit placeholders (Apple ID
+  email, App Store Connect app ID, Team ID).
+- [ ] **APNs key** for iOS push, through `npx eas-cli@latest credentials`.
+- [ ] **Google Play Console app** with package `ai.mymorningnews.app`; upload the first build by hand.
+- [ ] **Firebase and FCM V1** for Android push: `google-services.json` as the EAS file variable `GOOGLE_SERVICES_JSON`,
+  and the FCM V1 service account key in EAS credentials.
+- [ ] **Play service account** for automated submissions.
+- [ ] **Expo push access token** (only if the Expo project enforces authenticated push): set
+  `MYMORNINGNEWS_PUSH_EXPO_ACCESS_TOKEN` in the server's `docker/.env`.
+- [ ] **Universal links:** send me the Apple Team ID and, after the first Play upload, the Play App Signing SHA-256
+  fingerprint, so the server can publish the association files.
+- [ ] **Reviewer demo account** on the hosted service, with a topic and at least one briefing.
+- [ ] **Hold the first public release** until briefings, audio, and in-app account deletion exist (App Review is
+  likely to reject an app whose main tabs say "arrives in a later update"). TestFlight and Play internal testing can
+  start earlier.
+- [ ] **Play foreground service video:** Google Play requires a short video showing background audio playback for the
+  media playback foreground service declaration.
 - [ ] **Interface review session** with me before any screenshots are captured for the stores, the website, or the
   README.
 

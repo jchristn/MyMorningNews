@@ -39,6 +39,7 @@ export const en = {
     audio: 'Audio briefings',
     usage: 'Usage reporting',
     wizard: 'The topic wizard',
+    requests: 'One-time requests',
   },
   signIn: {
     tagline: 'Your research, briefed every morning.',
@@ -144,6 +145,10 @@ export const en = {
     select: 'Select a prediction to review it',
     emptyTitle: 'No predictions yet',
     emptyBody: 'Briefings add predictions you can grade when they come due.',
+  },
+  requests: {
+    emptyTitle: 'No one-time requests yet',
+    emptyBody: 'Ask for a report, podcast, or email summary on anything, once. Creating requests in the app arrives in a later update; use the web app for now.',
   },
   suggestions: {
     title: 'Suggestions',

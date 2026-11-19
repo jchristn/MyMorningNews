@@ -3,9 +3,9 @@ import { RefreshControl } from 'react-native';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { listItems } from '@/api/client';
-import { briefingsApi, findingsApi, predictionsApi, suggestionsApi } from '@/api/research';
+import { briefingsApi, findingsApi, predictionsApi, requestsApi, suggestionsApi } from '@/api/research';
 import { FeedbackBar } from '@/components/FeedbackBar';
-import { EmptyState, ResourceView } from '@/components/states';
+import { EmptyState, ResourceView, NotAvailableState } from '@/components/states';
 import { Card, ListRow, Screen, SectionHeader, T } from '@/components/ui';
 import { displayName, formatDate } from '@/lib/format';
 import { useAuth } from '@/state/AuthContext';
@@ -123,6 +123,25 @@ export function PredictionDetail({ id }) {
       {(prediction) => <FeedbackBar targetType="Prediction" targetId={prediction.id} />}
     </ResourceDetail>
   );
+}
+
+export function RequestsScreen() {
+  const { t } = useTranslation();
+  const { client } = useAuth();
+  return (
+    <ResourceListScreen
+      testID="requests-screen"
+      load={() => requestsApi.list(client, PAGE)}
+      deps={[client]}
+      feature={t('mobile.features.requests')}
+      empty={{ icon: 'sparkles-outline', title: t('mobile.requests.emptyTitle'), body: t('mobile.requests.emptyBody') }}
+    />
+  );
+}
+
+export function NewRequestScreen() {
+  const { t } = useTranslation();
+  return <NotAvailableState feature={t('mobile.features.requests')} />;
 }
 
 export function SuggestionsScreen() {

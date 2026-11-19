@@ -16,4 +16,4 @@ export {
 export { routes } from './routes';
 export { authApi } from './auth';
 export { accountApi, serverApi, devicesApi } from './account';
-export { topicsApi, refinementApi, briefingsApi, editionsApi, findingsApi, predictionsApi, suggestionsApi, feedbackApi, insightsApi } from './research';
+export { topicsApi, refinementApi, briefingsApi, editionsApi, findingsApi, predictionsApi, suggestionsApi, requestsApi, feedbackApi, insightsApi } from './research';

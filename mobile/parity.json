@@ -1,65 +1,469 @@
 {
   "comment": "Every dashboard route (MY_MORNING_NEWS_PLAN.md section 25.4, plus the sign-in and account routes of section 33.1) mapped to a mobile screen. Status: implemented (the screen exists and works against the server today), planned (the screen or its scaffold exists, and the named plan phase delivers the server routes it needs), or not-applicable (operator and administrator pages that stay on the web, with a reason). Screen paths are relative to src/. npm run parity:check enforces this; npm run parity:strict (before store submission) also fails on planned.",
   "routes": [
-    { "route": "/login", "group": "Shell", "status": "implemented", "screen": "app/(auth)/sign-in.jsx", "api": ["POST /v1.0/token", "POST /v1.0/token/refresh-token", "DELETE /v1.0/token"], "notes": "Server URL with Change server, email, password, optional tenant, tenant picker for contract B." },
-    { "route": "/signup", "group": "Account", "status": "planned", "phase": "Phase 14", "screen": "app/(auth)/sign-up.jsx", "api": ["POST /v1.0/public/signup"], "notes": "Screen built; shows 'not available' until the route exists or when client config has signupEnabled false." },
-    { "route": "/verify", "group": "Account", "status": "planned", "phase": "Phase 14", "notes": "Verification links open the web page; an in-app handoff screen follows the sign-up route." },
-    { "route": "/forgot-password", "group": "Account", "status": "planned", "phase": "Phase 14", "screen": "app/(auth)/forgot-password.jsx", "api": ["POST /v1.0/public/password/forgot"] },
-    { "route": "/reset-password", "group": "Account", "status": "planned", "phase": "Phase 14", "notes": "Reset links open the web page until the app handles the universal link." },
-
-    { "route": "/home", "group": "Start", "status": "planned", "phase": "Phase 10", "screen": "app/(app)/today/index.jsx", "notes": "Today merges the dashboard Home and Today pages; the analytics overview and runs panels arrive with Phase 10." },
-    { "route": "/today", "group": "Start", "status": "planned", "phase": "Phase 7", "screen": "app/(app)/today/index.jsx", "api": ["GET /v1.0/api/briefings"] },
-
-    { "route": "/topics", "group": "Research", "status": "planned", "phase": "Phase 4", "screen": "app/(app)/topics/index.jsx", "api": ["GET /v1.0/api/topics"], "notes": "The server routes landed with Phase 4 (2026-11-19) and the list works against them; topic creation through the wizard chat is the remaining mobile work." },
-    { "route": "/topics/new", "group": "Research", "status": "planned", "phase": "Phase 4", "screen": "app/(app)/topics/new.jsx", "api": ["POST /v1.0/api/refinement-sessions"], "notes": "Starts a session with { seedText }; the question rounds, dimensions, context, and sources steps are the remaining mobile work." },
-    { "route": "/topics/:id/refine", "group": "Research", "status": "planned", "phase": "Phase 4", "screen": "app/(app)/topics/new.jsx", "notes": "The wizard as a chat; the same screen resumes a session." },
-    { "route": "/topics/:id", "group": "Research", "status": "planned", "phase": "Phase 4", "screen": "app/(app)/topics/[topicId].jsx", "api": ["GET /v1.0/api/topics/{id}", "POST /v1.0/api/topics/{id}/run"], "notes": "Workspace sections fill in from Phase 4 (overview, context) to Phase 10 (analytics, preferences)." },
-    { "route": "/runs", "group": "Research", "status": "planned", "phase": "Phase 6", "screen": "app/(app)/topics/[topicId].jsx", "notes": "Runs live in the topic workspace on mobile." },
-    { "route": "/runs/:id", "group": "Research", "status": "planned", "phase": "Phase 6", "screen": "app/(app)/topics/[topicId].jsx" },
-    { "route": "/findings", "group": "Research", "status": "planned", "phase": "Phase 6", "screen": "app/(app)/today/findings/index.jsx", "api": ["GET /v1.0/api/findings"] },
-    { "route": "/findings/:id", "group": "Research", "status": "planned", "phase": "Phase 6", "screen": "app/(app)/today/findings/[findingId].jsx", "api": ["GET /v1.0/api/findings/{id}", "POST /v1.0/api/feedback"] },
-    { "route": "/sources", "group": "Research", "status": "planned", "phase": "Phase 6", "screen": "app/(app)/topics/[topicId].jsx", "notes": "Sources live in the topic workspace on mobile." },
-    { "route": "/predictions", "group": "Research", "status": "planned", "phase": "Phase 6", "screen": "app/(app)/today/predictions/index.jsx", "api": ["GET /v1.0/api/predictions"] },
-    { "route": "/predictions/:id", "group": "Research", "status": "planned", "phase": "Phase 6", "screen": "app/(app)/today/predictions/[predictionId].jsx", "api": ["GET /v1.0/api/predictions/{id}", "POST /v1.0/api/predictions/{id}/resolve"] },
-    { "route": "/suggestions", "group": "Research", "status": "planned", "phase": "Phase 6", "screen": "app/(app)/today/suggestions/index.jsx", "api": ["GET /v1.0/api/suggestions"] },
-
-    { "route": "/briefings", "group": "Briefings", "status": "planned", "phase": "Phase 7", "screen": "app/(app)/today/briefings/index.jsx", "api": ["GET /v1.0/api/briefings"] },
-    { "route": "/briefings/:id", "group": "Briefings", "status": "planned", "phase": "Phase 8", "screen": "app/(app)/today/briefings/[briefingId].jsx", "api": ["GET /v1.0/api/briefings/{id}", "GET /v1.0/api/media/{id}", "PUT /v1.0/api/briefings/{id}/progress"], "notes": "Reader in Phase 7; audio, downloads, and synced progress in Phase 8 and 16. The player itself is built and verified with the bundled test tone." },
-    { "route": "/editions", "group": "Briefings", "status": "planned", "phase": "Phase 7", "screen": "app/(app)/topics/editions.jsx", "api": ["GET /v1.0/api/editions"] },
-    { "route": "/templates", "group": "Briefings", "status": "not-applicable", "reason": "Template authoring (Markdown editor with live preview, validation markers, version diff, import and export of .md files) needs a large screen and a keyboard; it stays on the web dashboard." },
-    { "route": "/templates/:id", "group": "Briefings", "status": "not-applicable", "reason": "Template authoring stays on the web dashboard (see /templates); briefings composed from templates are read in the app." },
-
-    { "route": "/insights/relevance", "group": "Insights", "status": "planned", "phase": "Phase 10", "screen": "app/(app)/insights/relevance.jsx", "api": ["GET /v1.0/api/analytics/relevance"] },
-    { "route": "/insights/accuracy", "group": "Insights", "status": "planned", "phase": "Phase 10", "screen": "app/(app)/insights/accuracy.jsx", "api": ["GET /v1.0/api/analytics/accuracy"] },
-    { "route": "/insights/feedback", "group": "Insights", "status": "planned", "phase": "Phase 10", "screen": "app/(app)/insights/feedback.jsx", "api": ["GET /v1.0/api/analytics/feedback"] },
-    { "route": "/insights/preferences", "group": "Insights", "status": "planned", "phase": "Phase 10", "screen": "app/(app)/insights/preferences.jsx", "api": ["GET /v1.0/api/learned-preferences"] },
-    { "route": "/insights/usage", "group": "Insights", "status": "implemented", "screen": "app/(app)/insights/usage.jsx", "api": ["GET /v1.0/api/usage/me"], "notes": "Members see their own usage (cost, calls, tokens, by task or model) with react-native-svg bar charts; also under Account. Cost by user and CSV export are administrator views and stay on the web." },
-    { "route": "/admin/usage", "group": "Admin", "status": "not-applicable", "reason": "Platform cost by tenant is a global administrator page; operator and administrator pages stay on the web (plan section 35.3)." },
-
-    { "route": "/models", "group": "Configuration", "status": "not-applicable", "reason": "Model endpoints and assignments are operator configuration; operator and administrator pages stay on the web (plan section 35.3)." },
-    { "route": "/prompts", "group": "Configuration", "status": "not-applicable", "reason": "Prompt editing, versions, diff, and the prompt lab are operator configuration that stays on the web." },
-    { "route": "/prompts/:key", "group": "Configuration", "status": "not-applicable", "reason": "Prompt editing is operator configuration that stays on the web (see /prompts)." },
-    { "route": "/search-providers", "group": "Configuration", "status": "not-applicable", "reason": "Search provider setup is operator configuration that stays on the web." },
-    { "route": "/credentials-vault", "group": "Configuration", "status": "not-applicable", "reason": "Revealing and rotating stored API keys is an audited administrator task kept on the web, away from phones." },
-    { "route": "/mcp-servers", "group": "Configuration", "status": "not-applicable", "reason": "MCP server registration and tool toggles are operator configuration that stays on the web." },
-    { "route": "/voices", "group": "Configuration", "status": "not-applicable", "reason": "Text-to-speech voice setup is operator configuration that stays on the web; the app plays the audio it produces." },
-    { "route": "/email", "group": "Configuration", "status": "not-applicable", "reason": "The email outbox (resend, delete, send test) is an operator page that stays on the web; members manage their own email preferences under Account." },
-
-    { "route": "/requests", "group": "Observability", "status": "not-applicable", "reason": "Request history is an administrator diagnostics page that stays on the web (plan section 35.3)." },
-    { "route": "/explorer", "group": "Observability", "status": "not-applicable", "reason": "The API Explorer is a developer tool that stays on the web (plan section 35.3)." },
-    { "route": "/health", "group": "Observability", "status": "not-applicable", "reason": "Worker, queue, and provider health is an operator page that stays on the web; the app shows the server version under About." },
-    { "route": "/audit", "group": "Observability", "status": "not-applicable", "reason": "Security audit events are an administrator page that stays on the web (plan section 35.3)." },
-
-    { "route": "/admin/tenants", "group": "Administration", "status": "not-applicable", "reason": "Tenant management is a global administrator page that stays on the web (plan section 35.3)." },
-    { "route": "/admin/users", "group": "Administration", "status": "not-applicable", "reason": "User management is an administrator page that stays on the web (plan section 35.3)." },
-    { "route": "/admin/credentials", "group": "Administration", "status": "not-applicable", "reason": "API credential management is an administrator page that stays on the web (plan section 35.3)." },
-    { "route": "/admin/roles", "group": "Administration", "status": "not-applicable", "reason": "Role management is an administrator page that stays on the web (plan section 35.3)." },
-    { "route": "/admin/assignments", "group": "Administration", "status": "not-applicable", "reason": "Role assignment is an administrator page that stays on the web (plan section 35.3)." },
-
-    { "route": "/settings", "group": "System", "status": "not-applicable", "reason": "Server settings and restart are operator tasks that stay on the web (plan section 35.3)." },
-    { "route": "/server-info", "group": "System", "status": "implemented", "screen": "app/(app)/account/about.jsx", "api": ["GET /v1.0/api/server-info", "GET /v1.0/api/client-config"], "notes": "About shows the app and server versions, copyright, and legal links; Account > Server shows the address and changes it." },
-    { "route": "/profile", "group": "System", "status": "implemented", "screen": "app/(app)/account/profile.jsx", "api": ["GET /v1.0/api/me", "PUT /v1.0/api/me", "PUT /v1.0/api/me/password", "POST /v1.0/api/devices"], "notes": "Profile, password, notifications, language, theme, and app lock work today. Email preferences (Phase 9) and podcast feed tokens (Phase 8) join this screen when their routes land." },
-    { "route": "/account/delete", "group": "Account", "status": "planned", "phase": "Phase 14", "screen": "app/(app)/account/delete.jsx", "api": ["POST /v1.0/api/account/delete"], "notes": "Required by both stores. Screen built; it links to the web deletion page until the route exists." },
-    { "route": "/account/export", "group": "Account", "status": "planned", "phase": "Phase 14", "screen": "app/(app)/account/export.jsx", "api": ["GET /v1.0/api/account/export"] }
+    {
+      "route": "/login",
+      "group": "Shell",
+      "status": "implemented",
+      "screen": "app/(auth)/sign-in.jsx",
+      "api": [
+        "POST /v1.0/token",
+        "POST /v1.0/token/refresh-token",
+        "DELETE /v1.0/token"
+      ],
+      "notes": "Server URL with Change server, email, password, optional tenant, tenant picker for contract B."
+    },
+    {
+      "route": "/signup",
+      "group": "Account",
+      "status": "planned",
+      "phase": "Phase 14",
+      "screen": "app/(auth)/sign-up.jsx",
+      "api": [
+        "POST /v1.0/public/signup"
+      ],
+      "notes": "Screen built; shows 'not available' until the route exists or when client config has signupEnabled false."
+    },
+    {
+      "route": "/verify",
+      "group": "Account",
+      "status": "planned",
+      "phase": "Phase 14",
+      "notes": "Verification links open the web page; an in-app handoff screen follows the sign-up route."
+    },
+    {
+      "route": "/forgot-password",
+      "group": "Account",
+      "status": "planned",
+      "phase": "Phase 14",
+      "screen": "app/(auth)/forgot-password.jsx",
+      "api": [
+        "POST /v1.0/public/password/forgot"
+      ]
+    },
+    {
+      "route": "/reset-password",
+      "group": "Account",
+      "status": "planned",
+      "phase": "Phase 14",
+      "notes": "Reset links open the web page until the app handles the universal link."
+    },
+    {
+      "route": "/home",
+      "group": "Start",
+      "status": "planned",
+      "phase": "Phase 10",
+      "screen": "app/(app)/today/index.jsx",
+      "notes": "Today merges the dashboard Home and Today pages; the analytics overview and runs panels arrive with Phase 10."
+    },
+    {
+      "route": "/today",
+      "group": "Start",
+      "status": "planned",
+      "phase": "Phase 7",
+      "screen": "app/(app)/today/index.jsx",
+      "api": [
+        "GET /v1.0/api/briefings"
+      ]
+    },
+    {
+      "route": "/one-time",
+      "group": "Research",
+      "status": "planned",
+      "phase": "Phase 4",
+      "screen": "app/(app)/today/requests.jsx",
+      "api": [
+        "GET /v1.0/api/requests",
+        "POST /v1.0/api/requests/{id}/confirm",
+        "POST /v1.0/api/requests/{id}/cancel",
+        "POST /v1.0/api/requests/{id}/convert",
+        "DELETE /v1.0/api/requests/{id}"
+      ],
+      "notes": "One-time reports, podcasts, and email summaries (plan section 13.1). Backend exists; screens follow the web pages."
+    },
+    {
+      "route": "/one-time/new",
+      "group": "Research",
+      "status": "planned",
+      "phase": "Phase 4",
+      "screen": "app/(app)/today/new-request.jsx",
+      "api": [
+        "POST /v1.0/api/requests",
+        "PUT /v1.0/api/requests/{id}/questions/{questionId}",
+        "POST /v1.0/api/requests/{id}/replan"
+      ],
+      "notes": "New request from the Today tab: text, deliverables, run now or once at, then at most three clarifying questions."
+    },
+    {
+      "route": "/topics",
+      "group": "Research",
+      "status": "planned",
+      "phase": "Phase 4",
+      "screen": "app/(app)/topics/index.jsx",
+      "api": [
+        "GET /v1.0/api/topics"
+      ],
+      "notes": "The server routes landed with Phase 4 (2026-11-19) and the list works against them; topic creation through the wizard chat is the remaining mobile work."
+    },
+    {
+      "route": "/topics/new",
+      "group": "Research",
+      "status": "planned",
+      "phase": "Phase 4",
+      "screen": "app/(app)/topics/new.jsx",
+      "api": [
+        "POST /v1.0/api/refinement-sessions"
+      ],
+      "notes": "Starts a session with { seedText }; the question rounds, dimensions, context, and sources steps are the remaining mobile work."
+    },
+    {
+      "route": "/topics/:id/refine",
+      "group": "Research",
+      "status": "planned",
+      "phase": "Phase 4",
+      "screen": "app/(app)/topics/new.jsx",
+      "notes": "The wizard as a chat; the same screen resumes a session."
+    },
+    {
+      "route": "/topics/:id",
+      "group": "Research",
+      "status": "planned",
+      "phase": "Phase 4",
+      "screen": "app/(app)/topics/[topicId].jsx",
+      "api": [
+        "GET /v1.0/api/topics/{id}",
+        "POST /v1.0/api/topics/{id}/run"
+      ],
+      "notes": "Workspace sections fill in from Phase 4 (overview, context) to Phase 10 (analytics, preferences)."
+    },
+    {
+      "route": "/runs",
+      "group": "Research",
+      "status": "planned",
+      "phase": "Phase 6",
+      "screen": "app/(app)/topics/[topicId].jsx",
+      "notes": "Runs live in the topic workspace on mobile."
+    },
+    {
+      "route": "/runs/:id",
+      "group": "Research",
+      "status": "planned",
+      "phase": "Phase 6",
+      "screen": "app/(app)/topics/[topicId].jsx"
+    },
+    {
+      "route": "/findings",
+      "group": "Research",
+      "status": "planned",
+      "phase": "Phase 6",
+      "screen": "app/(app)/today/findings/index.jsx",
+      "api": [
+        "GET /v1.0/api/findings"
+      ]
+    },
+    {
+      "route": "/findings/:id",
+      "group": "Research",
+      "status": "planned",
+      "phase": "Phase 6",
+      "screen": "app/(app)/today/findings/[findingId].jsx",
+      "api": [
+        "GET /v1.0/api/findings/{id}",
+        "POST /v1.0/api/feedback"
+      ]
+    },
+    {
+      "route": "/sources",
+      "group": "Research",
+      "status": "planned",
+      "phase": "Phase 6",
+      "screen": "app/(app)/topics/[topicId].jsx",
+      "notes": "Sources live in the topic workspace on mobile."
+    },
+    {
+      "route": "/predictions",
+      "group": "Research",
+      "status": "planned",
+      "phase": "Phase 6",
+      "screen": "app/(app)/today/predictions/index.jsx",
+      "api": [
+        "GET /v1.0/api/predictions"
+      ]
+    },
+    {
+      "route": "/predictions/:id",
+      "group": "Research",
+      "status": "planned",
+      "phase": "Phase 6",
+      "screen": "app/(app)/today/predictions/[predictionId].jsx",
+      "api": [
+        "GET /v1.0/api/predictions/{id}",
+        "POST /v1.0/api/predictions/{id}/resolve"
+      ]
+    },
+    {
+      "route": "/suggestions",
+      "group": "Research",
+      "status": "planned",
+      "phase": "Phase 6",
+      "screen": "app/(app)/today/suggestions/index.jsx",
+      "api": [
+        "GET /v1.0/api/suggestions"
+      ]
+    },
+    {
+      "route": "/briefings",
+      "group": "Briefings",
+      "status": "planned",
+      "phase": "Phase 7",
+      "screen": "app/(app)/today/briefings/index.jsx",
+      "api": [
+        "GET /v1.0/api/briefings"
+      ]
+    },
+    {
+      "route": "/briefings/:id",
+      "group": "Briefings",
+      "status": "planned",
+      "phase": "Phase 8",
+      "screen": "app/(app)/today/briefings/[briefingId].jsx",
+      "api": [
+        "GET /v1.0/api/briefings/{id}",
+        "GET /v1.0/api/media/{id}",
+        "PUT /v1.0/api/briefings/{id}/progress"
+      ],
+      "notes": "Reader in Phase 7; audio, downloads, and synced progress in Phase 8 and 16. The player itself is built and verified with the bundled test tone."
+    },
+    {
+      "route": "/editions",
+      "group": "Briefings",
+      "status": "planned",
+      "phase": "Phase 7",
+      "screen": "app/(app)/topics/editions.jsx",
+      "api": [
+        "GET /v1.0/api/editions"
+      ]
+    },
+    {
+      "route": "/templates",
+      "group": "Briefings",
+      "status": "not-applicable",
+      "reason": "Template authoring (Markdown editor with live preview, validation markers, version diff, import and export of .md files) needs a large screen and a keyboard; it stays on the web dashboard."
+    },
+    {
+      "route": "/templates/:id",
+      "group": "Briefings",
+      "status": "not-applicable",
+      "reason": "Template authoring stays on the web dashboard (see /templates); briefings composed from templates are read in the app."
+    },
+    {
+      "route": "/insights/relevance",
+      "group": "Insights",
+      "status": "planned",
+      "phase": "Phase 10",
+      "screen": "app/(app)/insights/relevance.jsx",
+      "api": [
+        "GET /v1.0/api/analytics/relevance"
+      ]
+    },
+    {
+      "route": "/insights/accuracy",
+      "group": "Insights",
+      "status": "planned",
+      "phase": "Phase 10",
+      "screen": "app/(app)/insights/accuracy.jsx",
+      "api": [
+        "GET /v1.0/api/analytics/accuracy"
+      ]
+    },
+    {
+      "route": "/insights/feedback",
+      "group": "Insights",
+      "status": "planned",
+      "phase": "Phase 10",
+      "screen": "app/(app)/insights/feedback.jsx",
+      "api": [
+        "GET /v1.0/api/analytics/feedback"
+      ]
+    },
+    {
+      "route": "/insights/preferences",
+      "group": "Insights",
+      "status": "planned",
+      "phase": "Phase 10",
+      "screen": "app/(app)/insights/preferences.jsx",
+      "api": [
+        "GET /v1.0/api/learned-preferences"
+      ]
+    },
+    {
+      "route": "/insights/usage",
+      "group": "Insights",
+      "status": "implemented",
+      "screen": "app/(app)/insights/usage.jsx",
+      "api": [
+        "GET /v1.0/api/usage/me"
+      ],
+      "notes": "Members see their own usage (cost, calls, tokens, by task or model) with react-native-svg bar charts; also under Account. Cost by user and CSV export are administrator views and stay on the web."
+    },
+    {
+      "route": "/admin/usage",
+      "group": "Admin",
+      "status": "not-applicable",
+      "reason": "Platform cost by tenant is a global administrator page; operator and administrator pages stay on the web (plan section 35.3)."
+    },
+    {
+      "route": "/models",
+      "group": "Configuration",
+      "status": "not-applicable",
+      "reason": "Model endpoints and assignments are operator configuration; operator and administrator pages stay on the web (plan section 35.3)."
+    },
+    {
+      "route": "/prompts",
+      "group": "Configuration",
+      "status": "not-applicable",
+      "reason": "Prompt editing, versions, diff, and the prompt lab are operator configuration that stays on the web."
+    },
+    {
+      "route": "/prompts/:key",
+      "group": "Configuration",
+      "status": "not-applicable",
+      "reason": "Prompt editing is operator configuration that stays on the web (see /prompts)."
+    },
+    {
+      "route": "/search-providers",
+      "group": "Configuration",
+      "status": "not-applicable",
+      "reason": "Search provider setup is operator configuration that stays on the web."
+    },
+    {
+      "route": "/credentials-vault",
+      "group": "Configuration",
+      "status": "not-applicable",
+      "reason": "Revealing and rotating stored API keys is an audited administrator task kept on the web, away from phones."
+    },
+    {
+      "route": "/mcp-servers",
+      "group": "Configuration",
+      "status": "not-applicable",
+      "reason": "MCP server registration and tool toggles are operator configuration that stays on the web."
+    },
+    {
+      "route": "/voices",
+      "group": "Configuration",
+      "status": "not-applicable",
+      "reason": "Text-to-speech voice setup is operator configuration that stays on the web; the app plays the audio it produces."
+    },
+    {
+      "route": "/email",
+      "group": "Configuration",
+      "status": "not-applicable",
+      "reason": "The email outbox (resend, delete, send test) is an operator page that stays on the web; members manage their own email preferences under Account."
+    },
+    {
+      "route": "/requests",
+      "group": "Observability",
+      "status": "not-applicable",
+      "reason": "Request history is an administrator diagnostics page that stays on the web (plan section 35.3)."
+    },
+    {
+      "route": "/explorer",
+      "group": "Observability",
+      "status": "not-applicable",
+      "reason": "The API Explorer is a developer tool that stays on the web (plan section 35.3)."
+    },
+    {
+      "route": "/health",
+      "group": "Observability",
+      "status": "not-applicable",
+      "reason": "Worker, queue, and provider health is an operator page that stays on the web; the app shows the server version under About."
+    },
+    {
+      "route": "/audit",
+      "group": "Observability",
+      "status": "not-applicable",
+      "reason": "Security audit events are an administrator page that stays on the web (plan section 35.3)."
+    },
+    {
+      "route": "/admin/tenants",
+      "group": "Administration",
+      "status": "not-applicable",
+      "reason": "Tenant management is a global administrator page that stays on the web (plan section 35.3)."
+    },
+    {
+      "route": "/admin/users",
+      "group": "Administration",
+      "status": "not-applicable",
+      "reason": "User management is an administrator page that stays on the web (plan section 35.3)."
+    },
+    {
+      "route": "/admin/credentials",
+      "group": "Administration",
+      "status": "not-applicable",
+      "reason": "API credential management is an administrator page that stays on the web (plan section 35.3)."
+    },
+    {
+      "route": "/admin/roles",
+      "group": "Administration",
+      "status": "not-applicable",
+      "reason": "Role management is an administrator page that stays on the web (plan section 35.3)."
+    },
+    {
+      "route": "/admin/assignments",
+      "group": "Administration",
+      "status": "not-applicable",
+      "reason": "Role assignment is an administrator page that stays on the web (plan section 35.3)."
+    },
+    {
+      "route": "/settings",
+      "group": "System",
+      "status": "not-applicable",
+      "reason": "Server settings and restart are operator tasks that stay on the web (plan section 35.3)."
+    },
+    {
+      "route": "/server-info",
+      "group": "System",
+      "status": "implemented",
+      "screen": "app/(app)/account/about.jsx",
+      "api": [
+        "GET /v1.0/api/server-info",
+        "GET /v1.0/api/client-config"
+      ],
+      "notes": "About shows the app and server versions, copyright, and legal links; Account > Server shows the address and changes it."
+    },
+    {
+      "route": "/profile",
+      "group": "System",
+      "status": "implemented",
+      "screen": "app/(app)/account/profile.jsx",
+      "api": [
+        "GET /v1.0/api/me",
+        "PUT /v1.0/api/me",
+        "PUT /v1.0/api/me/password",
+        "POST /v1.0/api/devices"
+      ],
+      "notes": "Profile, password, notifications, language, theme, and app lock work today. Email preferences (Phase 9) and podcast feed tokens (Phase 8) join this screen when their routes land."
+    },
+    {
+      "route": "/account/delete",
+      "group": "Account",
+      "status": "planned",
+      "phase": "Phase 14",
+      "screen": "app/(app)/account/delete.jsx",
+      "api": [
+        "POST /v1.0/api/account/delete"
+      ],
+      "notes": "Required by both stores. Screen built; it links to the web deletion page until the route exists."
+    },
+    {
+      "route": "/account/export",
+      "group": "Account",
+      "status": "planned",
+      "phase": "Phase 14",
+      "screen": "app/(app)/account/export.jsx",
+      "api": [
+        "GET /v1.0/api/account/export"
+      ]
+    }
   ]
 }

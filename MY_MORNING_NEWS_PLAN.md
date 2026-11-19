@@ -712,7 +712,7 @@ The wizard is modeled on Pneuma's `SubjectWizard` (step rail, server-persisted d
 
 Not everything is a recurring topic. "Build me a podcast on the history of the shipping container", "Write me a report on heat pump rebates in California", or "Email me a summary of this week's AI chip announcements" are one-time requests, run once now or once at a chosen time.
 
-- **Entry points.** A "New request" box on Home, in the web app at `/requests/new`, in the mobile app's Today tab, and through the API (`POST /v1.0/api/requests`), the SDKs, and the MCP server.
+- **Entry points.** A "New request" box on Home, in the web app at `/one-time/new`, in the mobile app's Today tab, and through the API (`POST /v1.0/api/requests`), the SDKs, and the MCP server.
 - **Deliverables.** One or more of: Report (Markdown plus rendered HTML), Podcast (audio episode, also published to the user's private feed if they choose), and Email (the report or a summary sent to chosen recipients). Length, depth, voice, and tone are options with defaults.
 - **Quick refinement.** The request runs a short version of the wizard: `refinement.quick` turns the text into a brief with dimensions and includes and excludes, and asks at most three clarifying questions (skippable with "Just do it"). The user can open the full wizard instead.
 - **Timing.** "Run now" or "Run once at" a date and time in the user's time zone. Internally this is a schedule with interval type `Once` (section 14.1) attached to a request, so the scheduler, pipeline, ranking, evidence, and delivery are the same code paths as recurring topics. Nothing repeats unless the user chooses "Make this a recurring topic" afterward, which converts the request into a topic with its context and history.
@@ -1174,7 +1174,7 @@ Written here before any code, as `DASHBOARD_STYLE_AND_USABILITY.md` requires. Al
 |-------|-------|----------|-------|---------|-----------------|--------------------|------------------------|
 | Start | `/home` | See what happened and what needs me | all | analytics/overview, runs, predictions due, health | recent runs table | Run now, open briefing, grade predictions | first-run CTA to create a topic; per-panel retry |
 | Start | `/today` | Read the latest briefing and listen | all | briefings latest | none | feedback per item, audio, download | "No briefing yet" with Compose now |
-| Research | `/requests` and `/requests/new` | One-time reports, podcasts, and email summaries (section 13.1) | Topic | requests | status, deliverable, date | New request, Run now or once at, Open, Listen, Download, Re-run, Make recurring, Delete | "Ask for anything once" CTA |
+| Research | `/one-time` and `/one-time/new` | One-time reports, podcasts, and email summaries (section 13.1; `/requests` is request history) | Topic | requests | status, deliverable, date | New request, Run now or once at, Open, Listen, Download, Re-run, Make recurring, Delete | "Ask for anything once" CTA |
 | Research | `/topics` | Manage topics | Topic | topics | status, owner, schedule, last run, precision | + Add (wizard), View, Edit, Duplicate, Pause, Run now, Delete, View JSON, bulk pause and delete | "Tell me what you care about" CTA |
 | Research | `/topics/new` and `/topics/:id/refine` | Refinement wizard | Topic Write | refinement-sessions | none | step rail, regenerate, lock, preview run | model failure panel |
 | Research | `/topics/:id` | Topic workspace (tabs: Overview, Context, Schedule, Sources, Runs, Findings, Predictions, Suggestions, Feedback, Preferences, Analytics, Delivery, Prompts, Models) | Topic Read | many | per tab | per tab | per tab |
@@ -1430,7 +1430,7 @@ Exit: you can register Ollama and an API model, assign roles, edit a prompt, and
 ### Phase 4: Topics and the refinement wizard
 
 - [x] One-time requests (section 13.1), backend: `researchrequests` table (`rrq_`) and `/v1.0/api/requests` (create with planning, answer, replan, confirm now or at a time, cancel, convert to recurring, delete), `refinement.quick` prompt (seeded into existing tenants automatically), deliverables Report, Podcast, and Email.
-- [ ] One-time requests, clients: web `/requests` pages and the mobile Requests screens. The run itself is picked up by Phase 5 and 6.
+- [ ] One-time requests, clients: web `/one-time` pages and the mobile Requests screens. The run itself is picked up by Phase 5 and 6.
 
 - [x] Topic, dimension, constraint, and recipient models, routes, and cascades (owner or tenant administrator access, unique slugs, duplicate, pause, resume, archive).
 - [x] Refinement sessions, all wizard steps (dimensions with lock and regenerate, question rounds with follow-up, context, sources with live checks, accept, apply), resume, abandon, refine again, out-of-scope detection, and failures stored for the failure panel. The topic exists in Draft from the start, so all state is relational. Steps return the full state synchronously; SSE progress streaming moves to Phase 6 with run streaming.
@@ -1555,15 +1555,18 @@ Exit: `https://mymorningnews.ai` loads in both themes at 360, 768, and 1280 px, 
 
 Depends on Phases 8 (audio), 10 (feedback and analytics), and 14 (sign-up and caps).
 
-- [ ] Spike: `expo-audio` background playback, lock-screen metadata and controls, and Android foreground service on SDK 58. Decide between it and `react-native-track-player`.
+- [x] Spike: `expo-audio` passed on iOS (lock-screen metadata and remote controls registered, playback continued in the background) and Android (media session and media-playback foreground service). Kept `expo-audio`. Physically locking the device and viewing the Android notification shade remain on the device testing checklist.
 - [ ] Dashboard refactor: host-agnostic `src/shared/` (API client with injected storage, base URL, and `onUnauthorized`; i18n catalog; formatters and chart math), plus `lint:shared`.
 - [x] Backend contracts built early (2026-11-19): rotating mobile refresh tokens with reuse detection, tenant-less sign-in, devices with idempotent registration and test push, `PushService` with Expo ticket handling and pruning of unregistered devices, `Push` settings, public client config. Migration 4. Mobile suite (6 cases).
-- [ ] Backend, remaining: `PushWorker` and the Push delivery channel per edition, HTTP range requests on media, briefing progress (section 35.5). Suites: MediaRanges, Progress.
-- [ ] App: auth (sign-in, sign-up, tenant-less sign-in, secure storage, biometric lock, change server), Today, Listen (player, downloads, synced progress), Topics (wizard, workspace, editions), feedback everywhere, Insights charts with react-native-svg, Account (delivery, notifications, usage meter, export, delete), deep and universal links, offline queue (section 35.3).
-- [ ] Phone tabs and tablet split views, accessibility, RTL, 12 locales plus pseudo-locales.
-- [ ] `parity.json` with `parity:check`, `npm run verify`, `.github/workflows/mobile.yml`, `docs/MOBILE_DEVICE_TESTING.md`.
-- [ ] EAS profiles, signed `expo-updates`, a screenshot set (after the interface review), and store badges on the website.
-- [ ] `APP_STORE_SUBMISSION.md` at the repository root: every metadata field and data point the App Store and Google Play require, as a form (store, console field name, limits, proposed value, and an `Owner:` line for anything only the owner can supply or confirm). See section 35.7.
+- [ ] Backend, remaining: `PushWorker` and the Push delivery channel per edition, HTTP range requests on media with bearer authentication, briefing progress (`PUT` and `GET /v1.0/api/briefings/{id}/progress`), audio fields on briefings (`mediaId`, chapters, duration), feedback `channel: "mobile"`, and the universal link association files (section 35.5). Suites: MediaRanges, Progress.
+- [x] Unknown endpoints return `RouteNotFound` (distinct from `NotFound` for missing records), so the app can tell an older server from a missing item.
+- [x] App foundation (2026-11-19): sign-in with server choice, tenant picker, rotating refresh tokens in the Keychain and Keystore, biometric lock; Account (profile, password, usage chart, notifications and devices, language, theme, server, About); the player (speed, skip, chapters, sleep timer, downloads, local resume); push registration and notification routing; deep and universal links; screens for Today, Topics, Insights, and one-time requests wired to the planned routes (they show "later server update" until each phase lands).
+- [ ] App, remaining as each backend phase lands: briefing reader with audio, findings and evidence, predictions, suggestions, feedback everywhere (Phases 6 to 10), the topic workspace and wizard beyond the first step, one-time request creation, editions, offline feedback queue and connection banner, `minimumAppVersion` enforcement, full translations (Phase 12).
+- [x] Phone tabs and tablet split views, accessibility labels and Dynamic Type, RTL with restart, 12 locales plus pseudo-locales (English complete).
+- [x] `parity.json` with `parity:check` (strict mode for release), `npm run verify` (lint, shared lint, i18n, parity, audit, 121 tests, iOS and Android export), `.github/workflows/mobile.yml`, `docs/MOBILE_DEVICE_TESTING.md`, Maestro smoke flows.
+- [x] EAS profiles (development, preview, production) and code-signed `expo-updates` scripts (no keys generated or committed).
+- [ ] A screenshot set (after the interface review), and store badges on the website.
+- [x] `APP_STORE_SUBMISSION.md` at the repository root: every metadata field and data point the App Store and Google Play require, as a form (store, console field name, limits, proposed value, and an `Owner:` line for anything only the owner can supply or confirm). See section 35.7.
 - [ ] **Owner: fill out `APP_STORE_SUBMISSION.md`.** Ask the owner to supply and confirm every `Owner:` field (account IDs, reviewer demo account, contact phone, pricing and availability, tax and banking, approval of all proposed text) before the first TestFlight and Play internal builds.
 - [ ] Owner actions: Apple and Google developer accounts, APNs key, FCM credentials, EAS project, TestFlight and Play internal testing, then public listings.
 
@@ -1651,6 +1654,7 @@ No open questions remain.
 | 2026-11-19 | 5 | Scheduling done | Schedule calculator with daylight-saving handling, schedules API and preview, scheduler and run workers with skip-locked claims, missed-run policies, run now, dry run, cancel, timeouts, concurrency limit, and due one-time requests. Verified across a Docker restart. Search providers, fetch, and the MCP registry are next. 107 tests pass on net8 and net10, 108 on Xunit3. |
 | 2026-11-19 | 3 | Done | Phase 3 dashboard pages merged (stored credentials with reveal, models, prompts with diff and lab, usage insights, admin usage). Backend fixes: uncustomized tenant prompts follow updated defaults, lab returns cost, call log filters by user and topic. 108 backend tests, 98 dashboard tests. |
 | 2026-11-19 | 5 | Done | Search providers (SearXNG, Tavily, You.com, RSS, Hacker News, arXiv) with per-topic choice and seeded defaults, fetch service with robots, per-domain delay, main-content extraction, and Markdown conversion, URL canonicalization. MCP registry and agentic search move to Phase 6. 116 tests pass on net8 and net10, 117 on Xunit3. |
+| 2026-11-19 | 16 | Foundation done | Mobile app merged: Expo SDK 58, React Native 0.88, JavaScript; sign-in with refresh tokens, tenant picker, biometric lock, account screens, `expo-audio` player (background and lock-screen verified by logs), push, deep links, tablet split views, 12 locales plus pseudo-locales, parity manifest, `npm run verify`, EAS and signed update scripts, `APP_STORE_SUBMISSION.md` with 57 owner fields. Ran on iPhone and iPad simulators and an Android emulator. `OWNER_ACTIONS.md` updated. |
 
 ---
 

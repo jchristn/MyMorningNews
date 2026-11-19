@@ -143,7 +143,8 @@ namespace Test.Shared.Suites
             Assert.Equal(12, s.Buckets.Count, "12 five-minute buckets");
             Assert.Equal(s.TotalCount, s.Buckets.Sum(b => b.SuccessCount + b.FailureCount), "totals match buckets");
             (await admin.GetAsync("/v1.0/api/request-history/summary", token).ConfigureAwait(false)).Expect(400, "missing range");
-            await admin.GetAsync("/v1.0/api/tenants-does-not-exist", token).ConfigureAwait(false);
+            TestResponse unknown = await admin.GetAsync("/v1.0/api/tenants-does-not-exist", token).ConfigureAwait(false);
+            Assert.True(unknown.StatusCode == 404 && unknown.Body.Contains("RouteNotFound", StringComparison.Ordinal), "unknown routes are RouteNotFound");
             EnumerationResult<RequestHistoryEntry> failures = (await admin.GetAsync("/v1.0/api/request-history?statusClass=4xx&pageSize=100", token).ConfigureAwait(false)).Expect(200, "4xx").Json<EnumerationResult<RequestHistoryEntry>>();
             Assert.True(failures.Items.Count > 0 && failures.Items.All(e => e.StatusCode >= 400 && e.StatusCode <= 499), "status class filter");
             EnumerationResult<RequestHistoryEntry> ok = (await admin.GetAsync("/v1.0/api/request-history?maxStatusCode=299&pageSize=100", token).ConfigureAwait(false)).Expect(200, "2xx").Json<EnumerationResult<RequestHistoryEntry>>();

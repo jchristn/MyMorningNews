@@ -1,7 +1,91 @@
+import { lazy, Suspense } from 'react';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import PropTypes from 'prop-types';
+import { AppProvider } from './context/AppContext.jsx';
+import { AuthProvider } from './context/AuthContext.jsx';
+import { ThemeProvider } from './context/ThemeContext.jsx';
+import Dashboard from './components/Dashboard.jsx';
+import LoadingState from './components/LoadingState.jsx';
+import Login from './components/Login.jsx';
+import PhasePlaceholder from './components/PhasePlaceholder.jsx';
+import { PrivateRoute, PublicRoute, RequireAccess } from './components/ProtectedRoute.jsx';
+import { ALL_ROUTES } from './utils/navigation.js';
+
+const VIEWS = {
+  home: lazy(() => import('./views/HomeView.jsx')),
+  requests: lazy(() => import('./views/RequestHistoryView.jsx')),
+  explorer: lazy(() => import('./views/ApiExplorerView.jsx')),
+  health: lazy(() => import('./views/HealthView.jsx')),
+  audit: lazy(() => import('./views/AuditView.jsx')),
+  tenants: lazy(() => import('./views/TenantsView.jsx')),
+  users: lazy(() => import('./views/UsersView.jsx')),
+  credentials: lazy(() => import('./views/CredentialsView.jsx')),
+  roles: lazy(() => import('./views/RolesView.jsx')),
+  settings: lazy(() => import('./views/SettingsView.jsx')),
+  serverInfo: lazy(() => import('./views/ServerInfoView.jsx')),
+  profile: lazy(() => import('./views/ProfileView.jsx'))
+};
+
+function RouteElement({ route }) {
+  const View = VIEWS[route.key];
+  return (
+    <RequireAccess item={route}>
+      {route.phase || !View ? (
+        <PhasePlaceholder routeKey={route.key} phase={route.phase || 12} />
+      ) : (
+        <Suspense fallback={<LoadingState />}>
+          <View />
+        </Suspense>
+      )}
+    </RequireAccess>
+  );
+}
+
+RouteElement.propTypes = { route: PropTypes.object.isRequired };
+
+export function AppRoutes() {
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/dashboard"
+        element={
+          <PrivateRoute>
+            <Dashboard />
+          </PrivateRoute>
+        }
+      >
+        <Route index element={<Navigate to="home" replace />} />
+        {ALL_ROUTES.map((route) => (
+          <Route key={route.path} path={route.path + '/*'} element={<RouteElement route={route} />} />
+        ))}
+        <Route path="request-history" element={<Navigate to="/dashboard/requests" replace />} />
+        <Route path="api-explorer" element={<Navigate to="/dashboard/explorer" replace />} />
+        <Route path="admin/assignments" element={<Navigate to="/dashboard/admin/roles" replace />} />
+        <Route path="*" element={<Navigate to="home" replace />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
+
 export default function App() {
   return (
-    <main className="scaffold">
-      <img src="/assets/logo.png" alt="My Morning News" className="scaffold-logo" />
-    </main>
+    <ThemeProvider>
+      <AuthProvider>
+        <AppProvider>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </AppProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

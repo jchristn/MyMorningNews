@@ -62,6 +62,12 @@ export function NotAvailableState({ feature }) {
   );
 }
 
+/** The item does not exist (deleted, or a link to something from another account or server). */
+export function NotFoundState() {
+  const { t } = useTranslation();
+  return <EmptyState icon="help-circle-outline" title={t('mobile.states.notFoundTitle')} body={t('mobile.states.notFoundBody')} />;
+}
+
 /** Error with Retry. Network and session errors get their own wording. */
 export function ErrorState({ error, onRetry }) {
   const p = useTheme();
@@ -89,6 +95,7 @@ export function ErrorState({ error, onRetry }) {
 export function ResourceView({ resource, feature, isEmpty, empty, children }) {
   if (resource.status === 'loading') return <LoadingState />;
   if (resource.status === 'notAvailable') return <NotAvailableState feature={feature} />;
+  if (resource.status === 'notFound') return <NotFoundState />;
   if (resource.status === 'error' && !resource.data) return <ErrorState error={resource.error} onRetry={resource.reload} />;
   if (isEmpty && isEmpty(resource.data) && empty) return empty;
   return typeof children === 'function' ? children(resource.data) : children;

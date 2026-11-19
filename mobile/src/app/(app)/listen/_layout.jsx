@@ -16,3 +16,6 @@ export default function ListenLayout() {
     />
   );
 }
+
+/** Deep links straight to a detail screen still get the tab's list underneath, so Back works. */
+export const unstable_settings = { anchor: 'index' };

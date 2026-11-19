@@ -116,6 +116,7 @@ app calls arrives with its plan phase; see `parity.json` for the route list. Gap
 | `GET /v1.0/api/media/{id}` honoring `Authorization: Bearer` and `Range` | Streaming and seeking on iOS, and downloads. |
 | `POST /v1.0/api/feedback` accepting `channel: "mobile"` | Feedback attribution by channel (chart 11). |
 | `/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json` on `app.mymorningnews.ai` | Universal links (section 33.3) need the Apple team id and the Android signing certificate fingerprint. |
+| A distinct error code for unknown routes (for example `RouteNotFound`) | The app tells "not on this server yet" from "this item does not exist" by whether a 404 carries a `requestId` (the server's default handler omits it). An explicit code would make that robust. |
 | `minimumAppVersion` enforcement | The value arrives in client config; the app does not block old versions yet. |
 
 ## Builds, updates, and stores
@@ -182,5 +183,15 @@ mobile/
 
 ## Verification
 
-See the final report of the Phase 16 foundation in `OWNER_ACTIONS.md` for what still needs the owner, and the
-progress log in the plan. Simulator and emulator results for this foundation are summarized there by the parent.
+Automated: `npm run verify` (lint, i18n, parity, audit, Jest, export). Against a running server,
+`MYMORNINGNEWS_LIVE_SERVER=http://127.0.0.1:12100 npx jest src/__tests__/live.test.js` checks contracts A to D end to
+end (tenant-less mobile sign-in, refresh-token rotation and reuse revocation, devices, client config). On simulators and
+emulators, the Maestro flows in `e2e/` drive sign-in, every tab, the Account sections, the theme, the RTL
+pseudo-locale, the tablet split view, and the developer player (see `docs/MOBILE_DEVICE_TESTING.md`).
+
+Player spike results (iOS simulator, expo-audio 58): the Now Playing center received title, artist, album, artwork,
+duration, elapsed time, and rate; the remote command center registered play, pause, toggle, seek, skip backward with
+a preferred interval of 15, and skip forward with 30 (next and previous track disabled); and the test tone kept
+playing with the app in the background (position advanced from 1:01 to 3:55 at 1.5x, sleep timer still counting).
+The Android media notification and the three-minute background limit need a check on a device or emulator with the
+notification shade open (`docs/MOBILE_DEVICE_TESTING.md`, "What to check").

@@ -10,8 +10,8 @@
     { "route": "/home", "group": "Start", "status": "planned", "phase": "Phase 10", "screen": "app/(app)/today/index.jsx", "notes": "Today merges the dashboard Home and Today pages; the analytics overview and runs panels arrive with Phase 10." },
     { "route": "/today", "group": "Start", "status": "planned", "phase": "Phase 7", "screen": "app/(app)/today/index.jsx", "api": ["GET /v1.0/api/briefings"] },
 
-    { "route": "/topics", "group": "Research", "status": "planned", "phase": "Phase 4", "screen": "app/(app)/topics/index.jsx", "api": ["GET /v1.0/api/topics"] },
-    { "route": "/topics/new", "group": "Research", "status": "planned", "phase": "Phase 4", "screen": "app/(app)/topics/new.jsx", "api": ["POST /v1.0/api/refinement-sessions"] },
+    { "route": "/topics", "group": "Research", "status": "planned", "phase": "Phase 4", "screen": "app/(app)/topics/index.jsx", "api": ["GET /v1.0/api/topics"], "notes": "The server routes landed with Phase 4 (2026-11-19) and the list works against them; topic creation through the wizard chat is the remaining mobile work." },
+    { "route": "/topics/new", "group": "Research", "status": "planned", "phase": "Phase 4", "screen": "app/(app)/topics/new.jsx", "api": ["POST /v1.0/api/refinement-sessions"], "notes": "Starts a session with { seedText }; the question rounds, dimensions, context, and sources steps are the remaining mobile work." },
     { "route": "/topics/:id/refine", "group": "Research", "status": "planned", "phase": "Phase 4", "screen": "app/(app)/topics/new.jsx", "notes": "The wizard as a chat; the same screen resumes a session." },
     { "route": "/topics/:id", "group": "Research", "status": "planned", "phase": "Phase 4", "screen": "app/(app)/topics/[topicId].jsx", "api": ["GET /v1.0/api/topics/{id}", "POST /v1.0/api/topics/{id}/run"], "notes": "Workspace sections fill in from Phase 4 (overview, context) to Phase 10 (analytics, preferences)." },
     { "route": "/runs", "group": "Research", "status": "planned", "phase": "Phase 6", "screen": "app/(app)/topics/[topicId].jsx", "notes": "Runs live in the topic workspace on mobile." },

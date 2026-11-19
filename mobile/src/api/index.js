@@ -8,6 +8,7 @@ export {
   SessionExpiredError,
   TenantSelectionRequiredError,
   isNotAvailable,
+  isItemNotFound,
   isNetworkError,
   isSessionExpired,
   fieldErrors,

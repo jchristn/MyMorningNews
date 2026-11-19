@@ -26,6 +26,8 @@ export const en = {
     notAvailableTitle: 'Not on this server yet',
     notAvailableBody: 'This arrives in a later server update.',
     notAvailableFeature: '{feature} will be available after a later server update.',
+    notFoundTitle: 'Not found',
+    notFoundBody: 'This item no longer exists, or it belongs to another account or server.',
   },
   features: {
     briefings: 'Briefings',

@@ -9,8 +9,24 @@ env:
   EMAIL: admin@mymorningnews
   PASSWORD: password
 ---
-- launchApp:
-    clearState: true
+- launchApp
+- extendedWaitUntil:
+    visible: "Change server|Latest briefing"
+    timeout: 90000
+# Start signed out: a previous run on this server may still be signed in.
+- runFlow:
+    when:
+      visible: "Latest briefing"
+    commands:
+      - tapOn: "Account.*"
+      - scrollUntilVisible:
+          element:
+            id: "sign-out"
+      - tapOn:
+          id: "sign-out"
+      - extendedWaitUntil:
+          visible: "Change server"
+          timeout: 30000
 - tapOn: "Change server"
 - tapOn:
     id: "server-url"

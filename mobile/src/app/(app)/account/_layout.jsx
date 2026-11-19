@@ -9,3 +9,6 @@ export default function AccountLayout() {
   for (const section of ACCOUNT_SECTIONS) titles[section.key] = t('mobile.account.sections.' + section.key);
   return <TabStack titles={titles} />;
 }
+
+/** Deep links straight to a detail screen still get the tab's list underneath, so Back works. */
+export const unstable_settings = { anchor: 'index' };

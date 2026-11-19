@@ -1,5 +1,5 @@
 import { ApiClient, buildQuery, listItems } from '@/api/client';
-import { ApiError, NetworkError, SessionExpiredError, TenantSelectionRequiredError, TimeoutError, isNotAvailable } from '@/api/errors';
+import { ApiError, NetworkError, SessionExpiredError, TenantSelectionRequiredError, TimeoutError, isItemNotFound, isNotAvailable } from '@/api/errors';
 import { authApi } from '@/api/auth';
 import { accountApi, devicesApi } from '@/api/account';
 import { routes } from '@/api/routes';
@@ -43,6 +43,15 @@ describe('ApiClient', () => {
     expect(error).toBeInstanceOf(ApiError);
     expect(isNotAvailable(error)).toBe(true);
     expect(isNotAvailable(new ApiError(500, null))).toBe(false);
+  });
+
+  it('tells a missing item (404 with a request ID) from a missing route', () => {
+    const item = new ApiError(404, { error: 'NotFound', message: 'Topic was not found.', requestId: 'rqi_1' });
+    const route = new ApiError(404, { error: 'NotFound', message: 'The requested resource was not found.' });
+    expect([isNotAvailable(item), isItemNotFound(item)]).toEqual([false, true]);
+    expect([isNotAvailable(route), isItemNotFound(route)]).toEqual([true, false]);
+    expect(isNotAvailable(new ApiError(404, { error: 'RouteNotFound', requestId: 'rqi_2' }))).toBe(true);
+    expect(isNotAvailable(new ApiError(501, null))).toBe(true);
   });
 
   it('raises TenantSelectionRequiredError with the tenant list on 409 (contract B)', async () => {

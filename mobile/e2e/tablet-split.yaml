@@ -1,0 +1,50 @@
+# Tablet layout (iPad or Android tablet): sign in, check the persistent mini player, and open Account sections beside
+# the menu. Run from mobile/qa/ against a tablet simulator or emulator:
+#   maestro --device <tablet id> test -e SERVER=http://127.0.0.1:12100 ../e2e/tablet-split.yaml
+appId: ai.mymorningnews.app
+env:
+  SERVER: http://127.0.0.1:12100
+  EMAIL: admin@mymorningnews
+  PASSWORD: password
+---
+- launchApp
+- runFlow:
+    when:
+      visible: "Change server"
+    commands:
+      - tapOn: "Change server"
+      - tapOn:
+          id: "server-url"
+      - eraseText: 80
+      - inputText: ${SERVER}
+      - pressKey: Enter
+- runFlow:
+    when:
+      visible:
+        id: "sign-in-email"
+    commands:
+      - tapOn:
+          id: "sign-in-email"
+      - eraseText: 60
+      - inputText: ${EMAIL}
+      - tapOn:
+          id: "sign-in-password"
+      - inputText: ${PASSWORD}
+      - pressKey: Enter
+      # iOS offers to save the password; decline so the flow can continue.
+      - tapOn:
+          text: "Not Now"
+          optional: true
+- assertVisible: "Latest briefing"
+# Tablets keep the mini player docked even with nothing playing.
+- assertVisible:
+    id: "mini-player"
+- takeScreenshot: 40-tablet-today
+- tapOn: "Account.*"
+# The menu and the Profile section render side by side.
+- assertVisible: "First name"
+- tapOn: "Your usage.*"
+- assertVisible: "Model calls"
+- takeScreenshot: 41-tablet-account-usage
+- tapOn: "Topics.*"
+- takeScreenshot: 42-tablet-topics

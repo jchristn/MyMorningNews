@@ -1,0 +1,285 @@
+/* Audio and podcasts (Phase 8): the player, the briefing audio panel, voices, and podcast feeds. Tokens only. */
+
+.audio-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.audio-panel.compact {
+  padding: 10px 12px;
+  margin: 0 0 14px;
+  background: var(--color-surface-alt);
+  box-shadow: none;
+}
+
+.audio-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.audio-panel-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.audio-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.audio-make {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.audio-make select {
+  min-width: 180px;
+  max-width: 100%;
+}
+
+.audio-make.compact select {
+  min-width: 140px;
+}
+
+.audio-player {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.audio-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.audio-controls .icon-button {
+  position: relative;
+  width: 34px;
+  height: 34px;
+}
+
+.audio-skip-label {
+  position: absolute;
+  inset-block-end: 1px;
+  inset-inline-end: 1px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-text-secondary);
+}
+
+.audio-play {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: 50%;
+  justify-content: center;
+  flex: none;
+}
+
+.audio-timeline {
+  flex: 1;
+  min-width: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.audio-now {
+  min-height: 1.2em;
+}
+
+.audio-clock {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+}
+
+.audio-speed {
+  width: auto;
+  flex: none;
+}
+
+/* The progress bar runs left to right in every locale, as media controls do. */
+.audio-progress {
+  direction: ltr;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  outline: none;
+}
+
+.audio-progress svg {
+  display: block;
+  overflow: visible;
+}
+
+.audio-progress:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-focus);
+}
+
+.audio-progress-track {
+  fill: var(--color-border);
+}
+
+.audio-progress-fill {
+  fill: var(--color-primary);
+}
+
+.audio-progress-tick {
+  fill: var(--color-text-muted);
+}
+
+.audio-progress-thumb {
+  fill: var(--color-surface);
+  stroke: var(--color-primary);
+  stroke-width: 2;
+}
+
+.audio-chapters {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 4px;
+}
+
+.audio-chapter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  text-align: start;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.audio-chapter:hover,
+.audio-chapter:focus-visible {
+  background: var(--color-row-hover);
+  color: var(--color-text);
+}
+
+.audio-chapter.current {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+/* The section the audio is reading, in the outline and the article. */
+.briefing-outline li {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.briefing-outline li > a {
+  flex: 1;
+  min-width: 0;
+}
+
+.briefing-outline li.speaking > a {
+  color: var(--color-text);
+  font-weight: 600;
+  border-inline-start-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.outline-listen {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+
+.briefing-section.speaking {
+  box-shadow: inset 3px 0 0 var(--color-primary);
+  background: var(--color-primary-soft);
+  padding-inline: 10px;
+  transition: background 0.3s ease;
+}
+
+[dir='rtl'] .briefing-section.speaking {
+  box-shadow: inset -3px 0 0 var(--color-primary);
+}
+
+/* Voices */
+.speed-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.speed-input input[type='range'] {
+  flex: 1;
+  min-width: 0;
+}
+
+.speed-input input[type='number'] {
+  width: 80px;
+}
+
+.voice-sample {
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* Podcast feeds */
+.feed-create {
+  margin-bottom: 14px;
+}
+
+.feed-help {
+  margin-top: 14px;
+  color: var(--color-text-secondary);
+}
+
+.feed-help summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.feed-help ol {
+  margin: 8px 0 0;
+  padding-inline-start: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+#podcast-feeds-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .audio-controls {
+    flex-wrap: wrap;
+  }
+
+  .audio-timeline {
+    order: 5;
+    flex-basis: 100%;
+  }
+}

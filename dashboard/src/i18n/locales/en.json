@@ -180,7 +180,8 @@
       "serverInfo": "Server info",
       "profile": "Profile",
       "adminUsage": "Platform usage",
-      "oneTimeRequests": "One-time requests"
+      "oneTimeRequests": "One-time requests",
+      "listen": "Listen"
     }
   },
   "routes": {
@@ -291,6 +292,9 @@
     },
     "oneTimeRequests": {
       "summary": "One-time reports, podcasts, and email summaries"
+    },
+    "listen": {
+      "summary": "Audio episodes of your briefings, ready to play"
     }
   },
   "placeholder": {
@@ -1107,6 +1111,21 @@
       "Audio": "Audio",
       "Chapters": "Chapters",
       "Export": "Export"
+    },
+    "mediaStatus": {
+      "Queued": "Queued",
+      "Scripting": "Writing script",
+      "Synthesizing": "Synthesizing",
+      "Ready": "Ready",
+      "Failed": "Failed"
+    },
+    "mediaKind": {
+      "BriefingAudio": "Briefing audio",
+      "PodcastEpisode": "Podcast episode"
+    },
+    "ttsProvider": {
+      "OpenAiCompatibleSpeech": "OpenAI-compatible speech",
+      "Disabled": "Disabled"
     }
   },
   "vault": {
@@ -2500,8 +2519,6 @@
       "readMinutes": "{minutes} min read"
     },
     "slots": {
-      "audioTitle": "Audio player",
-      "audioMessage": "Listening to briefings arrives in Phase 8.",
       "feedbackTitle": "Feedback",
       "feedbackMessage": "Rating this section arrives in Phase 10."
     },
@@ -2747,6 +2764,191 @@
       "copyOf": "A copy of {name}",
       "shared": "Share with everyone in this workspace",
       "invalid": "The template has problems."
+    }
+  },
+  "audio": {
+    "panel": {
+      "label": "Briefing audio",
+      "title": "Listen",
+      "fromText": "Read from the briefing text",
+      "checking": "Checking for audio..."
+    },
+    "player": {
+      "loading": "Loading audio...",
+      "loadingSize": "Loading audio ({size})...",
+      "play": "Play",
+      "pause": "Pause",
+      "back": "Back {seconds} seconds",
+      "forward": "Forward {seconds} seconds",
+      "seek": "Playback position",
+      "position": "{time} of {duration}",
+      "nowPlaying": "Now playing: {chapter}",
+      "speed": "Playback speed",
+      "speedOption": "{speed}x",
+      "chapters": "Chapters"
+    },
+    "progress": {
+      "Queued": "Audio is queued. It will be made shortly.",
+      "Scripting": "Writing the spoken script.",
+      "Synthesizing": "Synthesizing speech. Longer briefings take a few minutes."
+    },
+    "make": {
+      "action": "Make audio",
+      "again": "Make audio again",
+      "remake": "Remake audio",
+      "voice": "Voice",
+      "defaultVoice": "Default voice",
+      "voiceDefault": "{name} (default)",
+      "queued": "Audio queued",
+      "conflict": "Audio was not queued. Audio for this briefing is already being made, or audio is turned off on this server. {message}"
+    },
+    "failed": "Making audio failed.",
+    "missingFile": "The audio file is not available. Make audio again to listen.",
+    "none": "This briefing has no audio yet.",
+    "listenFrom": "Listen from {section}"
+  },
+  "voices": {
+    "columns": {
+      "name": "Name",
+      "provider": "Provider",
+      "voice": "Voice",
+      "model": "Model",
+      "speed": "Speed",
+      "endpoint": "Endpoint",
+      "credential": "Credential",
+      "created": "Created",
+      "id": "ID"
+    },
+    "default": "Default",
+    "secondaryShort": "Second host: {voice}",
+    "serverDefault": "Server default",
+    "adminOnly": "Only tenant administrators can change voices.",
+    "memberNotice": "You can list and test voices. Creating, editing, and deleting them requires a tenant administrator.",
+    "twoHostHint": "Two-host scripts alternate HOST_A and HOST_B lines: HOST_A uses the voice, and HOST_B uses the second voice (or the voice again when no second voice is set).",
+    "makeDefault": "Make default",
+    "defaultSet": "{name} is now the default voice",
+    "empty": {
+      "title": "No voices yet",
+      "message": "Audio uses the server speech settings until you add a voice."
+    },
+    "form": {
+      "createTitle": "Add voice",
+      "editTitle": "Edit voice"
+    },
+    "fields": {
+      "endpointHelp": "Base URL of an OpenAI-compatible speech server. Leave blank to use the server default.",
+      "endpointPlaceholder": "Server default",
+      "modelHelp": "Leave blank for the default model.",
+      "modelPlaceholder": "kokoro",
+      "voice": "Voice",
+      "voiceHelp": "The narrator voice, and HOST_A in two-host scripts.",
+      "voicePlaceholder": "af_heart",
+      "secondaryVoice": "Second voice",
+      "secondaryVoiceHelp": "HOST_B in two-host scripts. Leave blank to use the voice for both hosts.",
+      "speedHelp": "From {min} to {max}.",
+      "credentialHelp": "A stored credential with the API key, when the speech server needs one.",
+      "isDefault": "Default voice",
+      "isDefaultHelp": "Used when an edition or request names no voice."
+    },
+    "test": {
+      "action": "Test",
+      "title": "Test voice",
+      "text": "Sample text",
+      "textHelp": "Leave blank to hear a short greeting.",
+      "defaultText": "Good morning. Here is what moved in your topics.",
+      "speak": "Speak",
+      "speaking": "Speaking...",
+      "ttsError": "The speech service failed: {message}"
+    },
+    "delete": {
+      "title": "Delete voice",
+      "message": "Delete the voice \"{name}\"? Editions that use it fall back to the default voice."
+    }
+  },
+  "listen": {
+    "untitled": "Untitled episode",
+    "columns": {
+      "title": "Episode",
+      "status": "Status",
+      "kind": "Kind",
+      "duration": "Duration",
+      "size": "Size",
+      "segments": "Segments",
+      "script": "Script",
+      "created": "Created",
+      "completed": "Completed",
+      "id": "ID"
+    },
+    "noValue": "None",
+    "scriptModel": "Written by a model",
+    "scriptText": "Read from the text",
+    "actions": {
+      "play": "Play",
+      "briefing": "Open briefing",
+      "remake": "Remake audio"
+    },
+    "empty": {
+      "title": "No audio yet",
+      "message": "Make audio from a briefing, or turn audio on for an edition."
+    },
+    "delete": {
+      "title": "Delete episode",
+      "message": "Delete \"{title}\" and its audio files? The briefing stays.",
+      "done": "Episode deleted"
+    }
+  },
+  "feeds": {
+    "title": "Podcast feeds",
+    "summary": "Private feed URLs for podcast apps. Each feed carries a secret, so treat its URL like a password.",
+    "fields": {
+      "name": "Name",
+      "nameHelp": "A label you will recognize, such as the app or device.",
+      "namePlaceholder": "Overcast on my phone",
+      "edition": "Edition",
+      "editionHelp": "Limit the feed to one edition, or include all of your audio."
+    },
+    "allAudio": "All my audio",
+    "create": "Create feed",
+    "created": {
+      "title": "Feed created",
+      "warning": "This URL is private and is shown only once. Anyone with it can listen to your briefings. Copy it now, and revoke the feed if it leaks.",
+      "feedUrl": "Feed URL",
+      "copyUrl": "Copy feed URL",
+      "secret": "Secret",
+      "copySecret": "Copy secret",
+      "done": "I have saved it"
+    },
+    "empty": {
+      "title": "No podcast feeds",
+      "message": "Create a feed to listen to your briefings in a podcast app."
+    },
+    "columns": {
+      "name": "Name",
+      "prefix": "Token",
+      "edition": "Edition",
+      "created": "Created",
+      "lastUsed": "Last used",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "unnamed": "Unnamed feed",
+    "prefix": "{prefix}...",
+    "neverUsed": "Never",
+    "revoked": "Revoked",
+    "revoke": "Revoke",
+    "revokeNamed": "Revoke {name}",
+    "revokeConfirm": {
+      "title": "Revoke feed",
+      "message": "Revoke \"{name}\"? Podcast apps subscribed to it stop receiving episodes. This cannot be undone.",
+      "done": "Feed revoked"
+    },
+    "help": {
+      "title": "How to subscribe",
+      "step1": "Create a feed above and copy its URL.",
+      "apple": "Apple Podcasts: open Library, choose Follow a Show by URL from the menu, and paste the URL.",
+      "overcast": "Overcast: tap the plus button, choose Add URL, and paste the URL.",
+      "publicUrl": "Your phone has to reach the server. Set MYMORNINGNEWS_PUBLIC_BASE_URL to an address the phone can open (not 127.0.0.1), then create the feed again so its URL uses that address.",
+      "loopback": "This URL points at 127.0.0.1, which only this computer can reach. Set MYMORNINGNEWS_PUBLIC_BASE_URL on the server so podcast apps on your phone can reach it."
     }
   }
 }

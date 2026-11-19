@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { BookOpen, FileCode, FileText, Headphones, Newspaper, Send } from 'lucide-react';
+import { BookOpen, FileCode, FileText, Newspaper, Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../context/AppContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -16,8 +16,8 @@ import EmptyState from '../components/EmptyState.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import LoadingState from '../components/LoadingState.jsx';
 import PageHeader from '../components/PageHeader.jsx';
+import BriefingAudio from './briefings/BriefingAudio.jsx';
 import BriefingMarkdown from './briefings/BriefingMarkdown.jsx';
-import { UpcomingSlot } from './briefings/BriefingReader.jsx';
 import useBriefingActions, { BriefingStatusBadge } from './briefings/briefingParts.jsx';
 
 const POLL_MS = 3000;
@@ -70,6 +70,7 @@ export default function TodayView() {
   const [oneTime, setOneTime] = useState(null);
   const [error, setError] = useState(null);
   const [composing, setComposing] = useState(false);
+  const [speakingSectionId, setSpeakingSectionId] = useState(null);
   const pendingRef = useRef([]);
 
   const loadLatest = useCallback(async () => {
@@ -240,8 +241,8 @@ export default function TodayView() {
               </button>
             </div>
           </div>
-          <UpcomingSlot slot="audio-player" icon={Headphones} title={t('briefings.slots.audioTitle')} message={t('briefings.slots.audioMessage')} />
-          <BriefingMarkdown markdown={briefing.markdown} sections={latest.sections || []} />
+          <BriefingAudio key={briefing.id} briefing={briefing} compact onSectionChange={setSpeakingSectionId} />
+          <BriefingMarkdown markdown={briefing.markdown} sections={latest.sections || []} currentSectionId={speakingSectionId} />
         </section>
       ) : null}
 

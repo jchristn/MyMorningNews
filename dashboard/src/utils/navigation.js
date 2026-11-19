@@ -45,7 +45,7 @@ export const NAV_GROUPS = [
     key: 'start',
     items: [
       { path: 'home', key: 'home', icon: House, access: 'all' },
-      { path: 'today', key: 'today', icon: Newspaper, access: 'all', phase: 7 }
+      { path: 'today', key: 'today', icon: Newspaper, access: 'all' }
     ]
   },
   {
@@ -63,9 +63,9 @@ export const NAV_GROUPS = [
   {
     key: 'briefings',
     items: [
-      { path: 'briefings', key: 'briefings', icon: BookOpen, access: 'all', phase: 7 },
-      { path: 'editions', key: 'editions', icon: CalendarClock, access: 'all', phase: 7 },
-      { path: 'templates', key: 'templates', icon: FileText, access: 'all', phase: 7 }
+      { path: 'briefings', key: 'briefings', icon: BookOpen, access: 'all' },
+      { path: 'editions', key: 'editions', icon: CalendarClock, access: 'all' },
+      { path: 'templates', key: 'templates', icon: FileText, access: 'all' }
     ]
   },
   {

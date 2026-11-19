@@ -41,6 +41,22 @@ export function pagedQuery({ pageNumber, pageSize, sortBy, sortDirection, search
 
 const enc = encodeURIComponent;
 
+// The file name in a Content-Disposition header (filename* first, then filename), or null.
+export function filenameFromDisposition(header) {
+  if (!header) return null;
+  const star = /filename\*\s*=\s*(?:UTF-8'')?([^;]+)/i.exec(header);
+  if (star) {
+    try {
+      return decodeURIComponent(star[1].trim().replace(/^"|"$/g, ''));
+    } catch {
+      return star[1].trim().replace(/^"|"$/g, '');
+    }
+  }
+  const plain = /filename\s*=\s*("([^"]*)"|[^;]+)/i.exec(header);
+  if (!plain) return null;
+  return (plain[2] !== undefined ? plain[2] : plain[1]).trim() || null;
+}
+
 export class ApiClient {
   constructor(baseUrl, token = null, options = {}) {
     this.baseUrl = String(baseUrl || DEFAULT_SERVER_URL).replace(/\/+$/, '');
@@ -86,6 +102,35 @@ export class ApiClient {
     }
     if (!response.ok) throw new ApiError(response.status, data && typeof data === 'object' ? data : null, typeof data === 'string' ? data : undefined);
     return data;
+  }
+
+  // A file download: resolves to { blob, filename, contentType, status }. Error bodies are parsed as JSON when they
+  // can be, so a 410 ArtifactExpired carries its stable code.
+  async _requestBlob(method, path, { query, headers, signal } = {}) {
+    const url = this.baseUrl + path + buildQuery(query);
+    const init = { method, headers: this._headers({ Accept: '*/*', ...(headers || {}) }), signal };
+    let response;
+    try {
+      response = await this.fetchImpl(url, init);
+    } catch (err) {
+      if (err && err.name === 'AbortError') throw err;
+      throw new ApiError(0, null, err && err.message ? err.message : 'Network error');
+    }
+    if (!response.ok) {
+      const text = await response.text();
+      let data = null;
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch {
+        data = null;
+      }
+      if (response.status === 401 && this.token && typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('auth:unauthorized', { detail: { path } }));
+      }
+      throw new ApiError(response.status, data && typeof data === 'object' ? data : null, data ? undefined : text || undefined);
+    }
+    const header = (name) => (response.headers && typeof response.headers.get === 'function' ? response.headers.get(name) : null);
+    return { blob: await response.blob(), filename: filenameFromDisposition(header('Content-Disposition')), contentType: header('Content-Type'), status: response.status };
   }
 
   get(path, query, signal) {
@@ -580,6 +625,99 @@ export class ApiClient {
   }
   setSuggestionStatus(id, status, snoozedUntilUtc) {
     return this._request('PUT', '/v1.0/api/suggestions/' + enc(id) + '/status', { body: { status, snoozedUntilUtc: status === 'Snoozed' ? snoozedUntilUtc || null : null } });
+  }
+
+  // Briefings and their stored files (Phase 7). List items omit markdown; the detail carries sections, items, and files.
+  listBriefings(query) {
+    return this._request('GET', '/v1.0/api/briefings', { query });
+  }
+  getBriefing(id, signal) {
+    return this._request('GET', '/v1.0/api/briefings/' + enc(id), { signal });
+  }
+  downloadBriefing(id, format = 'md') {
+    return this._requestBlob('GET', '/v1.0/api/briefings/' + enc(id) + '/download', { query: { format } });
+  }
+  pinBriefing(id, pinned) {
+    return this._request('PUT', '/v1.0/api/briefings/' + enc(id) + '/pin', { body: { pinned: Boolean(pinned) } });
+  }
+  regenerateBriefing(id) {
+    return this._request('POST', '/v1.0/api/briefings/' + enc(id) + '/regenerate');
+  }
+  deleteBriefing(id) {
+    return this._request('DELETE', '/v1.0/api/briefings/' + enc(id));
+  }
+  listArtifacts(query) {
+    return this._request('GET', '/v1.0/api/artifacts', { query });
+  }
+  getArtifact(id) {
+    return this._request('GET', '/v1.0/api/artifacts/' + enc(id));
+  }
+  // range is an optional { start, end } byte range (end inclusive, optional) sent as a Range header.
+  getArtifactContent(id, { range, download = false, signal } = {}) {
+    const headers = range ? { Range: 'bytes=' + range.start + '-' + (range.end === undefined || range.end === null ? '' : range.end) } : undefined;
+    return this._requestBlob('GET', '/v1.0/api/artifacts/' + enc(id) + '/content', { query: download ? { download: true } : undefined, headers, signal });
+  }
+  getArtifactDownloadUrl(id) {
+    return this._request('GET', '/v1.0/api/artifacts/' + enc(id) + '/download-url');
+  }
+
+  // Editions. The detail returns { edition, topics, schedules, coveredTopicIds }. An empty topic list covers every
+  // active recurring topic. Schedules use the schedules API with ownerType=Edition.
+  listEditions(query) {
+    return this._request('GET', '/v1.0/api/editions', { query });
+  }
+  getEdition(id) {
+    return this._request('GET', '/v1.0/api/editions/' + enc(id));
+  }
+  createEdition(body) {
+    return this._request('POST', '/v1.0/api/editions', { body });
+  }
+  updateEdition(id, body) {
+    return this._request('PUT', '/v1.0/api/editions/' + enc(id), { body });
+  }
+  deleteEdition(id) {
+    return this._request('DELETE', '/v1.0/api/editions/' + enc(id));
+  }
+  setEditionTopics(id, topicIds) {
+    return this._request('PUT', '/v1.0/api/editions/' + enc(id) + '/topics', { body: { topicIds: topicIds || [] } });
+  }
+  composeEdition(id) {
+    return this._request('POST', '/v1.0/api/editions/' + enc(id) + '/compose');
+  }
+  previewEdition(id, signal) {
+    return this._request('POST', '/v1.0/api/editions/' + enc(id) + '/preview', { signal });
+  }
+
+  // Briefing templates: Markdown with front matter and mmn:section directives (plan section 21.1).
+  listBriefingTemplates(query) {
+    return this._request('GET', '/v1.0/api/briefing-templates', { query });
+  }
+  getBriefingTemplate(id) {
+    return this._request('GET', '/v1.0/api/briefing-templates/' + enc(id));
+  }
+  createBriefingTemplate({ content, name, shared = false }) {
+    return this._request('POST', '/v1.0/api/briefing-templates', { body: { content: content || '', name: name || null, shared: Boolean(shared) } });
+  }
+  validateBriefingTemplate(content, signal) {
+    return this._request('POST', '/v1.0/api/briefing-templates/validate', { body: { content: content || '' }, signal });
+  }
+  saveBriefingTemplate(id, content, changeNote) {
+    return this._request('PUT', '/v1.0/api/briefing-templates/' + enc(id), { body: { content: content || '', changeNote: changeNote || null } });
+  }
+  deleteBriefingTemplate(id) {
+    return this._request('DELETE', '/v1.0/api/briefing-templates/' + enc(id));
+  }
+  listBriefingTemplateVersions(id) {
+    return this._request('GET', '/v1.0/api/briefing-templates/' + enc(id) + '/versions');
+  }
+  rollbackBriefingTemplate(id, version) {
+    return this._request('POST', '/v1.0/api/briefing-templates/' + enc(id) + '/rollback', { body: { version: Number(version) } });
+  }
+  resetBriefingTemplate(id) {
+    return this._request('POST', '/v1.0/api/briefing-templates/' + enc(id) + '/reset');
+  }
+  exportBriefingTemplate(id) {
+    return this._requestBlob('GET', '/v1.0/api/briefing-templates/' + enc(id) + '/export');
   }
 
   // API Explorer: returns the raw Response so the explorer can show status, headers, timing, and streams.

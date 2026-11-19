@@ -99,7 +99,18 @@ export const STAGE_STATUS_TONES = { Pending: 'neutral', Running: 'accent', Succe
 export const STAGE_STATUS_COLORS = { Pending: 'var(--color-border-strong)', Running: 'var(--color-accent)', Succeeded: 'var(--color-success)', Failed: 'var(--color-danger)', Skipped: 'var(--color-warning)' };
 export const RUN_STAGES = ['AssembleContext', 'PlanQueries', 'Search', 'Filter', 'Fetch', 'Extract', 'Embed', 'Dedupe', 'Score', 'Synthesize', 'ReviewPredictions', 'Predict', 'Suggest'];
 
-export const SEARCH_DISPOSITIONS = ['Pending', 'Fetched', 'SkippedSeen', 'SkippedBlocked', 'SkippedRobots', 'SkippedLimit', 'SkippedDuplicate', 'FetchFailed'];
+// Briefings, editions, and templates (Phase 7).
+export const BRIEFING_KINDS = ['Edition', 'Run', 'OneTime'];
+export const BRIEFING_KIND_TONES = { Edition: 'accent', Run: 'info', OneTime: 'neutral' };
+export const BRIEFING_STATUSES = ['Queued', 'Composing', 'Ready', 'Failed'];
+export const BRIEFING_STATUS_TONES = { Queued: 'info', Composing: 'accent', Ready: 'success', Failed: 'danger' };
+export const ACTIVE_BRIEFING_STATUSES = ['Queued', 'Composing'];
+export const BRIEFING_ITEM_TYPES = ['Finding', 'Prediction', 'Suggestion'];
+export const LOOKBACK_MODES = ['SinceLastEdition', 'FixedHours'];
+// Bounds the server clamps edition values to.
+export const EDITION_BOUNDS = { leadMinutes: { min: 5, max: 240 }, lookbackHours: { min: 1, max: 2160 } };
+
+export const SEARCH_DISPOSITIONS =['Pending', 'Fetched', 'SkippedSeen', 'SkippedBlocked', 'SkippedRobots', 'SkippedLimit', 'SkippedDuplicate', 'FetchFailed'];
 export const SEARCH_DISPOSITION_TONES = {
   Pending: 'neutral',
   Fetched: 'success',

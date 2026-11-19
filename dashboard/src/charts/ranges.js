@@ -17,6 +17,35 @@ export function computeRange(rangeId, now = Date.now()) {
   return { fromUtc: new Date(start).toISOString(), toUtc: new Date(end).toISOString(), bucketMinutes: range.bucketMinutes };
 }
 
+// Ranges for the usage and cost pages: a longer horizon with coarser buckets.
+export const USAGE_RANGES = {
+  day: { id: 'day', bucketMinutes: 60, count: 24 },
+  week: { id: 'week', bucketMinutes: 360, count: 28 },
+  month: { id: 'month', bucketMinutes: 1440, count: 30 },
+  quarter: { id: 'quarter', bucketMinutes: 10080, count: 13 }
+};
+
+export const USAGE_RANGE_IDS = ['day', 'week', 'month', 'quarter'];
+
+export function computeUsageRange(rangeId, now = Date.now()) {
+  const range = USAGE_RANGES[rangeId] || USAGE_RANGES.month;
+  const size = range.bucketMinutes * 60000;
+  const end = Math.ceil((now + 1) / size) * size;
+  const start = end - range.count * size;
+  return { from: new Date(start).toISOString(), to: new Date(end).toISOString(), bucketMinutes: range.bucketMinutes, count: range.count };
+}
+
+// Split a range into at most maxBuckets equal windows (used where the server has no per-group time series).
+export function splitRange(range, maxBuckets) {
+  const start = new Date(range.from).getTime();
+  const end = new Date(range.to).getTime();
+  const n = Math.max(1, Math.min(maxBuckets, range.count || maxBuckets));
+  const size = (end - start) / n;
+  const out = [];
+  for (let i = 0; i < n; i++) out.push({ from: new Date(start + i * size).toISOString(), to: new Date(start + (i + 1) * size).toISOString() });
+  return out;
+}
+
 // Fill any missing buckets with zeros (the server already gap-fills; this guards partial responses).
 export function fillBuckets(buckets, range) {
   const size = range.bucketMinutes * 60000;

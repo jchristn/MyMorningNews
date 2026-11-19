@@ -4,7 +4,9 @@ import {
   Building2,
   CalendarClock,
   ChartColumn,
+  ChartPie,
   CirclePlay,
+  Coins,
   Compass,
   Cpu,
   FileText,
@@ -71,15 +73,15 @@ export const NAV_GROUPS = [
       { path: 'insights/accuracy', key: 'accuracy', icon: ChartColumn, access: 'all', phase: 10 },
       { path: 'insights/feedback', key: 'feedback', icon: MessageSquare, access: 'all', phase: 10 },
       { path: 'insights/preferences', key: 'preferences', icon: Heart, access: 'all', phase: 10 },
-      { path: 'insights/usage', key: 'usage', icon: Activity, access: 'all', phase: 10 }
+      { path: 'insights/usage', key: 'usage', icon: Coins, access: 'all' }
     ]
   },
   {
     key: 'configuration',
     items: [
-      { path: 'models', key: 'models', icon: Cpu, access: 'all', phase: 3 },
-      { path: 'prompts', key: 'prompts', icon: WandSparkles, access: 'all', phase: 3 },
-      { path: 'credentials-vault', key: 'vault', icon: KeyRound, access: 'tenantAdmin', phase: 3 },
+      { path: 'models', key: 'models', icon: Cpu, access: 'all' },
+      { path: 'prompts', key: 'prompts', icon: WandSparkles, access: 'all' },
+      { path: 'credentials-vault', key: 'vault', icon: KeyRound, access: 'all' },
       { path: 'search-providers', key: 'searchProviders', icon: Search, access: 'all', phase: 5 },
       { path: 'mcp-servers', key: 'mcpServers', icon: Plug, access: 'tenantAdmin', phase: 5 },
       { path: 'voices', key: 'voices', icon: Mic, access: 'all', phase: 8 },
@@ -101,7 +103,8 @@ export const NAV_GROUPS = [
       { path: 'admin/tenants', key: 'tenants', icon: Building2, access: 'tenantAdmin' },
       { path: 'admin/users', key: 'users', icon: Users, access: 'tenantAdmin' },
       { path: 'admin/credentials', key: 'credentials', icon: Key, access: 'tenantAdmin' },
-      { path: 'admin/roles', key: 'roles', icon: Shield, access: 'tenantAdmin' }
+      { path: 'admin/roles', key: 'roles', icon: Shield, access: 'tenantAdmin' },
+      { path: 'admin/usage', key: 'adminUsage', icon: ChartPie, access: 'admin' }
     ]
   },
   {

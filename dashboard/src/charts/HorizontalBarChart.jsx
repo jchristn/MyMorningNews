@@ -6,7 +6,7 @@ import { formatNumber } from '../i18n/formatters.js';
 export default function HorizontalBarChart({ items, ariaLabel, formatValue, onItemClick, color = 'var(--chart-series-1)' }) {
   const { locale } = useLocale();
   const fmt = formatValue || ((v) => formatNumber(v, locale));
-  const max = Math.max(1, ...items.map((i) => i.value || 0));
+  const max = Math.max(0, ...items.map((i) => i.value || 0)) || 1;
   return (
     <div className="hbar-chart" role="list" aria-label={ariaLabel}>
       {items.map((item) => {

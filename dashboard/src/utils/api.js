@@ -57,9 +57,10 @@ export class ApiClient {
     return { ...headers, ...extra };
   }
 
-  async _request(method, path, { query, body, headers, signal } = {}) {
+  async _request(method, path, { query, body, headers, signal, cache } = {}) {
     const url = this.baseUrl + path + buildQuery(query);
     const init = { method, headers: this._headers(headers), signal };
+    if (cache) init.cache = cache;
     if (body !== undefined && body !== null) {
       init.headers['Content-Type'] = 'application/json';
       init.body = typeof body === 'string' ? body : JSON.stringify(body);
@@ -271,6 +272,110 @@ export class ApiClient {
   }
   restartServer() {
     return this._request('POST', '/v1.0/api/settings/restart');
+  }
+
+  // Credential vault. Reads never return secrets; reveal is audited and its response must not be kept.
+  listVaultCredentials(query) {
+    return this._request('GET', '/v1.0/api/vault/credentials', { query });
+  }
+  getVaultCredential(id) {
+    return this._request('GET', '/v1.0/api/vault/credentials/' + enc(id));
+  }
+  createVaultCredential(body) {
+    return this._request('POST', '/v1.0/api/vault/credentials', { body });
+  }
+  updateVaultCredential(id, body) {
+    return this._request('PUT', '/v1.0/api/vault/credentials/' + enc(id), { body });
+  }
+  deleteVaultCredential(id) {
+    return this._request('DELETE', '/v1.0/api/vault/credentials/' + enc(id));
+  }
+  revealVaultCredential(id) {
+    return this._request('POST', '/v1.0/api/vault/credentials/' + enc(id) + '/reveal', { cache: 'no-store' });
+  }
+  getVaultCredentialUsage(id) {
+    return this._request('GET', '/v1.0/api/vault/credentials/' + enc(id) + '/usage');
+  }
+
+  // Model endpoints, task role assignments, and the model call log
+  listModelEndpoints(query) {
+    return this._request('GET', '/v1.0/api/model-endpoints', { query });
+  }
+  getModelEndpoint(id) {
+    return this._request('GET', '/v1.0/api/model-endpoints/' + enc(id));
+  }
+  createModelEndpoint(body) {
+    return this._request('POST', '/v1.0/api/model-endpoints', { body });
+  }
+  updateModelEndpoint(id, body) {
+    return this._request('PUT', '/v1.0/api/model-endpoints/' + enc(id), { body });
+  }
+  deleteModelEndpoint(id) {
+    return this._request('DELETE', '/v1.0/api/model-endpoints/' + enc(id));
+  }
+  validateModelEndpoint(id) {
+    return this._request('POST', '/v1.0/api/model-endpoints/' + enc(id) + '/validate');
+  }
+  listEndpointModels(id) {
+    return this._request('GET', '/v1.0/api/model-endpoints/' + enc(id) + '/models');
+  }
+  testModelEndpoint(id, body) {
+    return this._request('POST', '/v1.0/api/model-endpoints/' + enc(id) + '/test', { body: body || {} });
+  }
+  listModelAssignments(query) {
+    return this._request('GET', '/v1.0/api/model-assignments', { query });
+  }
+  upsertModelAssignment(body) {
+    return this._request('PUT', '/v1.0/api/model-assignments', { body });
+  }
+  deleteModelAssignment(id) {
+    return this._request('DELETE', '/v1.0/api/model-assignments/' + enc(id));
+  }
+  listLlmCalls(query) {
+    return this._request('GET', '/v1.0/api/llm-calls', { query });
+  }
+  getLlmCall(id) {
+    return this._request('GET', '/v1.0/api/llm-calls/' + enc(id));
+  }
+
+  // Prompt templates
+  listPrompts(query) {
+    return this._request('GET', '/v1.0/api/prompts', { query });
+  }
+  getPrompt(id) {
+    return this._request('GET', '/v1.0/api/prompts/' + enc(id));
+  }
+  savePrompt(id, content, changeNote) {
+    return this._request('PUT', '/v1.0/api/prompts/' + enc(id), { body: { content, changeNote: changeNote || null } });
+  }
+  deletePrompt(id) {
+    return this._request('DELETE', '/v1.0/api/prompts/' + enc(id));
+  }
+  listPromptVersions(id) {
+    return this._request('GET', '/v1.0/api/prompts/' + enc(id) + '/versions');
+  }
+  rollbackPrompt(id, version) {
+    return this._request('POST', '/v1.0/api/prompts/' + enc(id) + '/rollback', { query: { version } });
+  }
+  resetPrompt(id) {
+    return this._request('POST', '/v1.0/api/prompts/' + enc(id) + '/reset');
+  }
+  createPromptOverride(body) {
+    return this._request('POST', '/v1.0/api/prompts/overrides', { body });
+  }
+  runPromptLab(body) {
+    return this._request('POST', '/v1.0/api/prompts/lab', { body });
+  }
+
+  // Usage and cost analytics
+  getUsageReport(query) {
+    return this._request('GET', '/v1.0/api/usage/report', { query });
+  }
+  getUsageTimeseries(query) {
+    return this._request('GET', '/v1.0/api/usage/timeseries', { query });
+  }
+  getMyUsage(query) {
+    return this._request('GET', '/v1.0/api/usage/me', { query });
   }
 
   // API Explorer: returns the raw Response so the explorer can show status, headers, timing, and streams.

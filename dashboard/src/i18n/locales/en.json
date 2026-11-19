@@ -112,14 +112,17 @@
       "hour": "Last hour",
       "day": "Last day",
       "week": "Last week",
-      "month": "Last month"
+      "month": "Last month",
+      "quarter": "Last quarter"
     },
     "totals": {
       "avg": "Avg {value}",
       "failed": "{count} failed",
       "success": "{count} succeeded",
       "total": "{count} total"
-    }
+    },
+    "rank": "Rank",
+    "share": "Share"
   },
   "nav": {
     "collapse": "Collapse sidebar",
@@ -160,7 +163,7 @@
       "usage": "Usage",
       "models": "Models",
       "prompts": "Prompts",
-      "vault": "Credentials vault",
+      "vault": "Stored credentials",
       "searchProviders": "Search providers",
       "mcpServers": "MCP servers",
       "voices": "Voices",
@@ -175,44 +178,116 @@
       "roles": "Roles and access",
       "settings": "Settings",
       "serverInfo": "Server info",
-      "profile": "Profile"
+      "profile": "Profile",
+      "adminUsage": "Platform usage"
     }
   },
   "routes": {
-    "home": { "summary": "Your workspace at a glance" },
-    "today": { "summary": "Today's briefing and highlights" },
-    "topics": { "summary": "Subjects you want researched" },
-    "runs": { "summary": "Research runs and their progress" },
-    "findings": { "summary": "What research has found" },
-    "sources": { "summary": "Sources gathered by research" },
-    "predictions": { "summary": "Forecasts and how they turned out" },
-    "suggestions": { "summary": "Ideas for new topics" },
-    "briefings": { "summary": "Briefings built from your findings" },
-    "editions": { "summary": "Published briefing editions" },
-    "templates": { "summary": "Layouts for briefings" },
-    "relevance": { "summary": "How relevant findings have been" },
-    "accuracy": { "summary": "How accurate predictions have been" },
-    "feedback": { "summary": "Feedback you have given" },
-    "preferences": { "summary": "Preferences learned from feedback" },
-    "usage": { "summary": "Model and search usage" },
-    "models": { "summary": "Model endpoints used by research" },
-    "prompts": { "summary": "Prompt templates" },
-    "vault": { "summary": "Secrets for external services" },
-    "searchProviders": { "summary": "Web search providers" },
-    "mcpServers": { "summary": "Model Context Protocol servers" },
-    "voices": { "summary": "Voices for audio briefings" },
-    "email": { "summary": "Email delivery" },
-    "requests": { "summary": "Every API request the server handled" },
-    "explorer": { "summary": "Try any API operation" },
-    "health": { "summary": "Server and component health" },
-    "audit": { "summary": "Security and change events" },
-    "tenants": { "summary": "Isolated workspaces" },
-    "users": { "summary": "People who can sign in" },
-    "credentials": { "summary": "API keys for scripts and integrations" },
-    "roles": { "summary": "Roles, permissions, and assignments" },
-    "settings": { "summary": "Server configuration" },
-    "serverInfo": { "summary": "Version, runtime, and service URLs" },
-    "profile": { "summary": "Your account" }
+    "home": {
+      "summary": "Your workspace at a glance"
+    },
+    "today": {
+      "summary": "Today's briefing and highlights"
+    },
+    "topics": {
+      "summary": "Subjects you want researched"
+    },
+    "runs": {
+      "summary": "Research runs and their progress"
+    },
+    "findings": {
+      "summary": "What research has found"
+    },
+    "sources": {
+      "summary": "Sources gathered by research"
+    },
+    "predictions": {
+      "summary": "Forecasts and how they turned out"
+    },
+    "suggestions": {
+      "summary": "Ideas for new topics"
+    },
+    "briefings": {
+      "summary": "Briefings built from your findings"
+    },
+    "editions": {
+      "summary": "Published briefing editions"
+    },
+    "templates": {
+      "summary": "Layouts for briefings"
+    },
+    "relevance": {
+      "summary": "How relevant findings have been"
+    },
+    "accuracy": {
+      "summary": "How accurate predictions have been"
+    },
+    "feedback": {
+      "summary": "Feedback you have given"
+    },
+    "preferences": {
+      "summary": "Preferences learned from feedback"
+    },
+    "usage": {
+      "summary": "What does this cost, and who uses it most?"
+    },
+    "models": {
+      "summary": "Model endpoints, task role assignments, and every model call"
+    },
+    "prompts": {
+      "summary": "Versioned prompt templates for every model call"
+    },
+    "vault": {
+      "summary": "API keys and tokens for models and external services, encrypted at rest"
+    },
+    "searchProviders": {
+      "summary": "Web search providers"
+    },
+    "mcpServers": {
+      "summary": "Model Context Protocol servers"
+    },
+    "voices": {
+      "summary": "Voices for audio briefings"
+    },
+    "email": {
+      "summary": "Email delivery"
+    },
+    "requests": {
+      "summary": "Every API request the server handled"
+    },
+    "explorer": {
+      "summary": "Try any API operation"
+    },
+    "health": {
+      "summary": "Server and component health"
+    },
+    "audit": {
+      "summary": "Security and change events"
+    },
+    "tenants": {
+      "summary": "Isolated workspaces"
+    },
+    "users": {
+      "summary": "People who can sign in"
+    },
+    "credentials": {
+      "summary": "API keys for scripts and integrations"
+    },
+    "roles": {
+      "summary": "Roles, permissions, and assignments"
+    },
+    "settings": {
+      "summary": "Server configuration"
+    },
+    "serverInfo": {
+      "summary": "Version, runtime, and service URLs"
+    },
+    "profile": {
+      "summary": "Your account"
+    },
+    "adminUsage": {
+      "summary": "Platform cost by tenant, the input to pricing decisions"
+    }
   },
   "placeholder": {
     "title": "Arrives in Phase {phase}",
@@ -253,7 +328,7 @@
     }
   },
   "login": {
-    "copyright": "\u00a9 2026 Lattice AI LLC",
+    "copyright": "© 2026 Lattice AI LLC",
     "defaults": "First run? Sign in with {email} and password {password} in tenant {tenant}, then change the password.",
     "email": "Email",
     "password": "Password",
@@ -774,5 +849,607 @@
     "passwordChanged": "Password changed",
     "saved": "Profile saved",
     "timeZoneHelp": "Leave blank to use your browser time zone ({zone})."
+  },
+  "enums": {
+    "task": {
+      "Refinement": "Refinement",
+      "QueryPlanning": "Query planning",
+      "Extraction": "Extraction",
+      "Scoring": "Scoring",
+      "Synthesis": "Synthesis",
+      "Prediction": "Prediction",
+      "Suggestion": "Suggestion",
+      "Composition": "Composition",
+      "PodcastScript": "Podcast script",
+      "FeedbackAnalysis": "Feedback analysis",
+      "Embedding": "Embedding"
+    },
+    "provider": {
+      "Anthropic": "Anthropic",
+      "OpenAi": "OpenAI",
+      "OpenAiCompatible": "OpenAI-compatible",
+      "Ollama": "Ollama",
+      "Gemini": "Gemini",
+      "XAi": "xAI",
+      "OllamaCloud": "Ollama Cloud"
+    },
+    "reasoningEffort": {
+      "None": "None",
+      "Minimal": "Minimal",
+      "Low": "Low",
+      "Medium": "Medium",
+      "High": "High",
+      "XHigh": "Extra high",
+      "Max": "Max"
+    },
+    "vaultKind": {
+      "ApiKey": "API key",
+      "BearerToken": "Bearer token",
+      "BasicAuth": "Basic auth",
+      "CustomHeader": "Custom header",
+      "ConnectionString": "Connection string"
+    },
+    "vaultProvider": {
+      "Anthropic": "Anthropic",
+      "OpenAi": "OpenAI",
+      "Gemini": "Gemini",
+      "XAi": "xAI",
+      "OllamaCloud": "Ollama Cloud",
+      "OpenAiCompatible": "OpenAI-compatible",
+      "Tavily": "Tavily",
+      "YouCom": "You.com",
+      "Mailgun": "Mailgun",
+      "ElevenLabs": "ElevenLabs",
+      "Mcp": "MCP server",
+      "Custom": "Custom"
+    }
+  },
+  "vault": {
+    "adminOnly": "Only administrators can change stored credentials.",
+    "memberNotice": "You can see which credentials are stored. Adding, changing, rotating, and revealing them requires a tenant administrator.",
+    "columns": {
+      "name": "Name",
+      "kind": "Kind",
+      "provider": "Provider",
+      "secret": "Secret",
+      "lastUsed": "Last used",
+      "lastRevealed": "Last revealed",
+      "expires": "Expires",
+      "status": "Status",
+      "created": "Created",
+      "id": "ID"
+    },
+    "fields": {
+      "headerName": "Header name",
+      "headerNameHelp": "The HTTP header that carries the secret, for example X-Api-Key.",
+      "username": "Username",
+      "secret": "Secret",
+      "secretHelp": "Stored encrypted. After saving, only the last four characters are shown.",
+      "expiresHelp": "Optional. Used as a reminder; the server does not delete expired secrets.",
+      "description": "Description"
+    },
+    "form": {
+      "createTitle": "Store a credential",
+      "editTitle": "Edit credential",
+      "rotateHint": "To replace the secret itself, use Rotate secret."
+    },
+    "empty": {
+      "title": "No stored credentials",
+      "message": "Store API keys and tokens here once, then pick them on model endpoints, search providers, voices, and email settings."
+    },
+    "rotate": {
+      "action": "Rotate secret",
+      "title": "Rotate secret",
+      "message": "Replace the secret stored as {name}. Everything that uses this credential picks up the new value on its next call.",
+      "newSecret": "New secret",
+      "confirm": "Rotate",
+      "required": "Enter the new secret.",
+      "done": "Secret rotated"
+    },
+    "reveal": {
+      "action": "Reveal",
+      "actionAdminOnly": "Reveal (administrators only)",
+      "confirmTitle": "Reveal secret",
+      "confirmMessage": "Show the plaintext of {name}? It is shown for {seconds} seconds and then hidden again.",
+      "audited": "Reveals are audited: who revealed which credential and from where is recorded.",
+      "confirm": "Reveal",
+      "shownTitle": "Secret revealed",
+      "hidesIn": "{count, plural, one {Hides in # second} other {Hides in # seconds}}",
+      "hideNow": "Hide now",
+      "copy": "Copy secret"
+    },
+    "usage": {
+      "action": "Where used",
+      "title": "Where this credential is used",
+      "none": "Nothing uses this credential yet.",
+      "types": {
+        "ModelEndpoint": "Model endpoint"
+      }
+    },
+    "delete": {
+      "title": "Delete credential",
+      "message": "Delete {name}? Anything that uses it stops working until it is given another credential."
+    }
+  },
+  "models": {
+    "add": "Add model",
+    "adminOnly": "Only administrators can change model endpoints.",
+    "memberNotice": "You can see the configured models and assignments. Changing or testing them requires a tenant administrator.",
+    "created": "Added {name}",
+    "unknown": "Not checked",
+    "tabs": {
+      "endpoints": "Endpoints",
+      "assignments": "Assignments",
+      "calls": "Model calls"
+    },
+    "columns": {
+      "name": "Name",
+      "provider": "Provider",
+      "model": "Model",
+      "embeddingModel": "Embedding model",
+      "capabilities": "Capabilities",
+      "price": "Price per million tokens",
+      "priceValue": "{input} in, {output} out",
+      "noPrice": "No price set",
+      "reasoningEffort": "Reasoning effort",
+      "credential": "Credential",
+      "lastValidated": "Last validated",
+      "status": "Status",
+      "id": "ID"
+    },
+    "capabilities": {
+      "chat": "Chat",
+      "tools": "Tools",
+      "noTools": "No tools",
+      "embeddings": "Embeddings",
+      "embeddingsDims": "Embeddings ({dims})"
+    },
+    "actions": {
+      "test": "Test",
+      "validate": "Validate",
+      "listModels": "List models"
+    },
+    "empty": {
+      "title": "Add your first model",
+      "message": "Connect a model provider such as Anthropic, OpenAI, or a local Ollama server. Research, ranking, and briefings all run through these endpoints."
+    },
+    "delete": {
+      "title": "Delete model endpoint",
+      "message": "Delete {name}? Task roles assigned to it fall back to the first active endpoint until you reassign them."
+    },
+    "form": {
+      "createTitle": "Add a model endpoint",
+      "editTitle": "Edit model endpoint",
+      "duplicateTitle": "Duplicate model endpoint",
+      "endpoint": "Base URL",
+      "endpointRequired": "Base URL (required)",
+      "endpointHelp": {
+        "Anthropic": "Leave empty for the Anthropic API.",
+        "OpenAi": "Leave empty for the OpenAI API.",
+        "OpenAiCompatible": "Required. The server runs in Docker, so use host.docker.internal for a server on this machine.",
+        "Ollama": "The Ollama server. From the Docker container, use host.docker.internal for an Ollama on this machine.",
+        "Gemini": "Leave empty for the Gemini API.",
+        "XAi": "Leave empty for the xAI API.",
+        "OllamaCloud": "Leave empty for Ollama Cloud."
+      },
+      "apiKey": "API key",
+      "keyModes": {
+        "new": "Enter a key",
+        "vault": "Use a stored credential",
+        "none": "No key"
+      },
+      "newKey": "New API key",
+      "newKeyHelp": "Saved to the credential vault (encrypted) and linked to this endpoint. Leave empty to keep the current key.",
+      "storedKey": "Stored credential",
+      "storedKeyHelp": "Rotate it on the Stored credentials page and every endpoint that uses it picks up the change.",
+      "pickCredential": "Choose a credential",
+      "noKeyWarning": "This provider normally needs an API key. Calls will fail without one.",
+      "capabilities": "Serves",
+      "toolsDetected": "Tool support and embedding dimensions are detected when you run Validate.",
+      "embeddingDimensions": "Embedding dimensions",
+      "embeddingDimensionsHelp": "Detected by Validate.",
+      "notDetected": "Not detected yet",
+      "maxTokens": "Max output tokens",
+      "maxTokensHelp": "About 16000 suits non-streaming calls.",
+      "reasoningEffort": "Reasoning effort",
+      "reasoningEffortHelp": "Default for this endpoint. Task role assignments can override it.",
+      "providerDefault": "Provider default",
+      "temperature": "Temperature",
+      "temperatureHelp": "Optional sampling temperature.",
+      "temperatureAnthropic": "Not used: current Anthropic models reject temperature, so it is never sent.",
+      "contextLength": "Context length",
+      "timeoutMs": "Timeout (ms)",
+      "timeoutHelp": "Per call, across retries.",
+      "modelsLoaded": "{count, plural, one {# model available; pick it from the list.} other {# models available; pick one from the list.}}",
+      "pricing": "Pricing",
+      "pricingHelp": "US dollars per million tokens. Leave empty for local models. Cost is computed when each call is logged, so later edits never change history.",
+      "inputCost": "Input",
+      "outputCost": "Output",
+      "cachedInputCost": "Cached input",
+      "cachedInputCostHelp": "Cache reads. Falls back to the input price.",
+      "cacheWriteCost": "Cache writes",
+      "cacheWriteCostHelp": "Falls back to the input price.",
+      "errors": {
+        "name": "A name is required.",
+        "endpointRequired": "OpenAI-compatible endpoints need a base URL.",
+        "endpointUrl": "Enter an absolute URL, for example http://host.docker.internal:8000/v1.",
+        "model": "A chat model is required when the endpoint serves chat.",
+        "embeddingModel": "An embedding model is required when the endpoint serves embeddings.",
+        "capability": "Choose chat, embeddings, or both.",
+        "credential": "Choose a stored credential.",
+        "number": "Enter a number of zero or more."
+      }
+    },
+    "test": {
+      "title": "Test model",
+      "prompt": "Prompt",
+      "model": "Model override",
+      "modelHelp": "Optional. Leave empty to use the endpoint model.",
+      "run": "Send",
+      "running": "Waiting for the model...",
+      "succeeded": "Succeeded",
+      "failed": "Failed",
+      "tokens": "{input} in, {output} out",
+      "duration": "Took {value}",
+      "tools": "Tools: {value}",
+      "output": "Reply"
+    },
+    "validate": {
+      "title": "Validate endpoint",
+      "running": "Checking connectivity, tool support, and embeddings...",
+      "reachable": "Reachable",
+      "modelFound": "Model found",
+      "supportsTools": "Supports tool calls",
+      "embeddingDimensions": "Embedding dimensions",
+      "validatedUtc": "Checked"
+    },
+    "list": {
+      "title": "Available models",
+      "filter": "Filter models",
+      "none": "No models match.",
+      "name": "Model",
+      "inputLimit": "Input limit",
+      "outputLimit": "Output limit",
+      "tools": "Tools",
+      "current": "In use",
+      "use": "Use",
+      "used": "Now using {model}"
+    },
+    "assignments": {
+      "intro": "Each pipeline task runs on the endpoint assigned to its role. A topic override wins over the tenant default, which wins over the first active endpoint.",
+      "role": "Task role",
+      "endpoint": "Endpoint",
+      "modelOverride": "Model override",
+      "reasoningEffort": "Reasoning effort",
+      "endpointFor": "Endpoint for {role}",
+      "modelOverrideFor": "Model override for {role}",
+      "effortFor": "Reasoning effort for {role}",
+      "pickEndpoint": "Choose an endpoint",
+      "endpointDefault": "Endpoint default",
+      "notApplicable": "Not used",
+      "noTools": "No tool support",
+      "noToolsHelp": "This model cannot call tools, so structured results use the JSON fallback, which some models handle poorly.",
+      "undo": "Undo changes",
+      "saved": "{role} assignment saved",
+      "uses": {
+        "Refinement": "Wizard dimensions, questions, and context",
+        "QueryPlanning": "Search query generation",
+        "Extraction": "Findings and evidence from documents",
+        "Scoring": "Relevance judgment",
+        "Synthesis": "Run summary and trends",
+        "Prediction": "Predictions and reviews",
+        "Suggestion": "Dig-into suggestions",
+        "Composition": "Briefing Markdown",
+        "PodcastScript": "Audio script",
+        "FeedbackAnalysis": "Reason tagging and preferences",
+        "Embedding": "Vectors for dedupe and affinity"
+      },
+      "overridesTitle": "Topic overrides",
+      "overridesIntro": "A topic can run a role on a different endpoint than the tenant default.",
+      "noOverrides": "No topic overrides.",
+      "topic": "Topic",
+      "topicId": "Topic ID",
+      "topicIdHelp": "The ID of the topic to override.",
+      "addOverride": "Add topic override",
+      "overrideAdded": "Topic override saved",
+      "deleteTitle": "Remove topic override",
+      "deleteMessage": "Remove the {role} override for topic {topic}? The topic goes back to the tenant default."
+    },
+    "calls": {
+      "detailTitle": "Model call",
+      "succeeded": "Succeeded",
+      "failed": "Failed",
+      "dryRun": "Dry run",
+      "system": "System",
+      "tokensTitle": "{input} in, {output} out",
+      "payloadCleared": "Not available. Payloads are cleared after the retention window.",
+      "openPrompt": "Open prompt {key}",
+      "columns": {
+        "time": "Time",
+        "task": "Task",
+        "model": "Model",
+        "promptKey": "Prompt",
+        "user": "User",
+        "tokens": "Tokens",
+        "ttft": "First token",
+        "duration": "Duration",
+        "cost": "Cost",
+        "outcome": "Outcome"
+      },
+      "filters": {
+        "task": "Task",
+        "endpoint": "Endpoint",
+        "outcome": "Outcome",
+        "dryRun": "Dry runs",
+        "dryRunOnly": "Dry runs only",
+        "realOnly": "Exclude dry runs",
+        "from": "From",
+        "to": "To"
+      },
+      "empty": {
+        "title": "No model calls yet",
+        "message": "Every model call is logged here with tokens, timing, and cost. Try Test on an endpoint or run the Prompt lab."
+      },
+      "sections": {
+        "attribution": "Attribution",
+        "tokens": "Tokens",
+        "timing": "Timing",
+        "outcome": "Outcome and tools",
+        "cost": "Cost",
+        "prompt": "Prompt",
+        "response": "Response"
+      },
+      "fields": {
+        "provider": "Provider",
+        "endpoint": "Endpoint",
+        "user": "User",
+        "topic": "Topic",
+        "run": "Run",
+        "refinementSession": "Refinement session",
+        "briefing": "Briefing",
+        "promptKey": "Prompt key",
+        "promptVersion": "Prompt version",
+        "inputTokens": "Input (all)",
+        "uncachedInputTokens": "Uncached input",
+        "cachedInputTokens": "Cached input",
+        "cacheWriteTokens": "Cache writes",
+        "outputTokens": "Output",
+        "reasoningTokens": "Reasoning",
+        "totalTokens": "Total",
+        "duration": "Duration",
+        "timeToFirstToken": "Time to first token",
+        "streamingDuration": "Streaming duration",
+        "chunks": "Chunks",
+        "tokensPerSecond": "Output tokens per second",
+        "streamed": "Streamed",
+        "attempts": "Attempts",
+        "statusCode": "Status code",
+        "finishReason": "Finish reason",
+        "repairs": "Structured output repairs",
+        "toolCalls": "Tool calls",
+        "toolNames": "Tools called",
+        "dryRun": "Dry run",
+        "inputCost": "Input cost",
+        "outputCost": "Output cost",
+        "estimatedCost": "Total cost"
+      }
+    }
+  },
+  "prompts": {
+    "guardrailNotice": "The server always puts the scope guardrail ahead of the system prompt of every model call. Editing a prompt cannot remove it.",
+    "searchPlaceholder": "Key or name",
+    "filteredByKey": "Key: {key}",
+    "empty": "No prompts",
+    "open": "Open editor",
+    "back": "All prompts",
+    "versionLabel": "v{version}",
+    "current": "current",
+    "customized": "Customized",
+    "default": "Default",
+    "noNote": "No change note",
+    "saved": "Saved a new version",
+    "columns": {
+      "key": "Key",
+      "role": "Role",
+      "scope": "Scope",
+      "version": "Version",
+      "customized": "Customized",
+      "updated": "Updated"
+    },
+    "scope": {
+      "tenant": "Tenant",
+      "topic": "Topic override",
+      "tenantOnly": "Tenant prompts only"
+    },
+    "panels": {
+      "versions": "Versions",
+      "compare": "Compare",
+      "lab": "Prompt lab"
+    },
+    "editor": {
+      "title": "Template",
+      "panels": "Prompt tools",
+      "unsaved": "Unsaved changes",
+      "format": "Markdown with YAML front matter (key, name, role, output, variables), then a System section and a User section. Placeholders use the variable names declared in the front matter.",
+      "missingUser": "The template has no User section heading. Add a line reading ## User.",
+      "missingSystem": "The template has no System section heading. The guardrail is still sent as the system prompt.",
+      "invalid": "The server rejected this version.",
+      "variables": "Declared variables",
+      "noVariables": "No variables declared.",
+      "changeNote": "Change note",
+      "changeNoteHelp": "Optional. Shown in the version history.",
+      "discard": "Discard changes",
+      "save": "Save version",
+      "fields": {
+        "content": "Template",
+        "key": "Key",
+        "user": "User section",
+        "variables": "Variables"
+      }
+    },
+    "compareWithCurrent": "Compare v{version} with the editor",
+    "rollbackTo": "Roll back to v{version}",
+    "rollbackTitle": "Roll back",
+    "rollbackMessage": "Make v{version} the current version? A new version is created with its content, so nothing is lost.",
+    "rollbackConfirm": "Roll back",
+    "rolledBack": "Rolled back to v{version}",
+    "reset": "Reset to default",
+    "resetTitle": "Reset to default",
+    "resetMessage": "Replace this prompt with the shipped default? A new version is created, so you can roll back later.",
+    "resetDone": "Reset to the default",
+    "deleteOverride": "Delete override",
+    "deleteTitle": "Delete topic override",
+    "deleteMessage": "Delete the {key} override for topic {topic}? The topic goes back to the tenant prompt.",
+    "diff": {
+      "from": "From",
+      "to": "To",
+      "draft": "Editor (unsaved)",
+      "current": "Editor",
+      "default": "Shipped default",
+      "label": "Line differences",
+      "added": "{count, plural, one {# line added} other {# lines added}}",
+      "removed": "{count, plural, one {# line removed} other {# lines removed}}",
+      "addedLine": "Added",
+      "removedLine": "Removed",
+      "showAll": "Show unchanged lines",
+      "skipped": "{count, plural, one {# unchanged line} other {# unchanged lines}}",
+      "identical": "The two versions are identical."
+    },
+    "override": {
+      "button": "Create topic override",
+      "title": "Create a topic override",
+      "intro": "A topic override replaces the tenant prompt for one topic only. It starts as a copy of the tenant prompt.",
+      "pickKey": "Choose a prompt",
+      "topicId": "Topic ID",
+      "topicIdHelp": "The ID of the topic that should use its own version of this prompt.",
+      "copyDraft": "Start from the unsaved editor text",
+      "create": "Create override"
+    },
+    "lab": {
+      "intro": "Render the prompt with your values and run it against any model. Runs are dry runs: they are logged as model calls but never affect research.",
+      "endpoint": "Endpoint",
+      "assigned": "Assigned to {role}",
+      "model": "Model override",
+      "modelHelp": "Optional.",
+      "variables": "Variables",
+      "noVariables": "This prompt declares no variables.",
+      "useDraft": "Run the unsaved editor text",
+      "run": "Run",
+      "running": "Running the prompt...",
+      "cost": "Cost {value}",
+      "costUnknown": "not available",
+      "unknownVariables": "Not filled in: {names}",
+      "guardrailNote": "The rendered system prompt below is what the template produces. The server adds the scope guardrail ahead of it when it calls the model.",
+      "renderedSystem": "Rendered system prompt",
+      "renderedUser": "Rendered user prompt",
+      "output": "Output",
+      "emptySection": "Empty.",
+      "loggedAs": "Logged as",
+      "openCall": "Open the logged call"
+    }
+  },
+  "usage": {
+    "noData": "No model calls in this window.",
+    "noToolCalls": "No tool calls in this window.",
+    "total": "Total",
+    "exportCsv": "Export CSV",
+    "window": "From {from} to {to}",
+    "kpi": {
+      "cost": "Cost",
+      "perCall": "{value} per call",
+      "calls": "Model calls",
+      "tokens": "Tokens",
+      "tokensDetail": "{input} in, {output} out",
+      "failures": "Failures",
+      "failureRate": "{value} of calls",
+      "avgTtft": "Average first token",
+      "p95Ttft": "p95 first token"
+    },
+    "filters": {
+      "task": "Task",
+      "endpoint": "Endpoint",
+      "user": "User",
+      "userPlaceholder": "User ID",
+      "topic": "Topic",
+      "topicPlaceholder": "Topic ID",
+      "includeDryRun": "Include dry runs"
+    },
+    "groups": {
+      "User": "User",
+      "Model": "Model",
+      "Task": "Task",
+      "Provider": "Provider",
+      "Topic": "Topic",
+      "PromptKey": "Prompt",
+      "Day": "Day",
+      "Tenant": "Tenant"
+    },
+    "labels": {
+      "system": "System",
+      "noTopic": "No topic",
+      "none": "None",
+      "unknown": "Unknown"
+    },
+    "columns": {
+      "cost": "Cost",
+      "calls": "Calls",
+      "failures": "Failures",
+      "tokens": "Tokens",
+      "inputTokens": "Input",
+      "cachedInputTokens": "Cached input",
+      "cacheWriteTokens": "Cache writes",
+      "outputTokens": "Output",
+      "reasoningTokens": "Reasoning",
+      "toolCalls": "Tool calls",
+      "avgDuration": "Average duration",
+      "avgTtft": "Average first token",
+      "p95Ttft": "p95 first token"
+    },
+    "tokens": {
+      "uncachedInput": "Uncached input",
+      "cachedInput": "Cached input",
+      "cacheWrite": "Cache writes",
+      "output": "Output",
+      "reasoning": "Reasoning"
+    },
+    "series": {
+      "average": "Average",
+      "p95": "p95",
+      "toolCallsPerCall": "Tool calls per call"
+    },
+    "charts": {
+      "groupBy": "Group by",
+      "costOverTime": "Cost over time",
+      "costOverTimeHelp": "Estimated cost per bucket, computed when each call was logged.",
+      "costByUser": "Cost by user",
+      "costByUserHelp": "Top 20 users and their share of the cost. Select a row to filter the page to that user.",
+      "costByModel": "Cost by model",
+      "costByTask": "Cost by task",
+      "costByTopic": "Cost by topic",
+      "ttftByModel": "Time to first token by model",
+      "ttftHelp": "Average and p95 for streamed calls.",
+      "tokenMix": "Token type mix",
+      "tokenMixHelp": "Output excludes reasoning tokens, which are shown separately.",
+      "toolCalls": "Tool calls by task",
+      "toolCallsHelp": "Average tool calls per model call."
+    },
+    "breakdown": {
+      "title": "Breakdown",
+      "help": "Every token type, cost share, and timing for the selected grouping. Export CSV downloads exactly this table."
+    },
+    "member": {
+      "notice": "Tenant-wide usage is limited to administrators and auditors. This is your own usage.",
+      "byTask": "Your cost by task"
+    },
+    "admin": {
+      "costByTenant": "Cost by tenant",
+      "costByTenantHelp": "Every tenant ranked by cost, with its share of platform cost.",
+      "tenantTrend": "Cost by tenant over time",
+      "tenantTrendHelp": "{count, plural, one {The range split into # window.} other {The range split into # windows.}} The top tenants are stacked; everyone else is grouped.",
+      "otherTenants": "Other tenants",
+      "platformTrend": "Platform cost over time",
+      "costByModel": "Platform cost by model",
+      "breakdownHelp": "Every tenant with token types, cost share, and timing. Export CSV downloads this table."
+    }
   }
 }

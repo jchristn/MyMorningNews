@@ -43,6 +43,7 @@ docker/email/
 # Secrets
 .env
 .env.*
+!.env.example
 *.pfx
 *.key
 

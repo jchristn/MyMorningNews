@@ -34,8 +34,14 @@ namespace MyMorningNews.Server.Routes
                 "Defaults: no duplicates, no dry runs, and no below-threshold findings unless tier=BelowThreshold, includeBelowThreshold=true, or includeDuplicates=true (duplicates are below threshold).").WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("runId", typeof(string)))
                 .WithParameter(QueryParam("tier", typeof(FindingTierEnum))).WithParameter(QueryParam("category", typeof(FindingCategoryEnum))).WithParameter(QueryParam("includeDuplicates", typeof(bool)))
                 .WithParameter(QueryParam("includeDryRun", typeof(bool))).WithParameter(QueryParam("minScore", typeof(int))).WithParameter(QueryParam("dimensionId", typeof(string)))
-                .WithParameter(QueryParam("includeBelowThreshold", typeof(bool)))));
+                .WithParameter(QueryParam("includeBelowThreshold", typeof(bool))).WithParameter(QueryParam("includeHidden", typeof(bool))).WithParameter(QueryParam("pinned", typeof(bool)))));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/findings/{id}", ReadFindingAsync, null, openApiMetadata: Doc("Read a finding with its evidence", "Findings"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/api/findings/{id}", UpdateFindingAsync, null, openApiMetadata: Doc("Pin or hide a finding", "Findings",
+                "Hidden findings are left out of lists (unless includeHidden=true), briefings, and emails.").WithRequestBody(Body<FindingUpdateRequest>()));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/api/findings/{id}", DeleteFindingAsync, null, openApiMetadata: Doc("Delete a finding", "Findings",
+                "Removes the finding and its evidence links. Shared evidence and sources stay. Ratings of it stay in history."));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/evidence/{id}", ReadEvidenceAsync, null, openApiMetadata: Doc("Read one piece of evidence with its source", "Findings"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}/llm-calls", RunCallsAsync, null, openApiMetadata: Paged(Doc("A run's model calls, oldest first", "Runs")));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}/stages", StagesAsync, null, openApiMetadata: Doc("A run's stages", "Runs"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}/queries", QueriesAsync, null, openApiMetadata: Doc("A run's search queries", "Runs"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}/results", ResultsAsync, null, openApiMetadata: Doc("A run's search results with dispositions", "Runs")
@@ -73,7 +79,9 @@ namespace MyMorningNews.Server.Routes
                 IsDuplicate = QueryBool(ctx, "includeDuplicates") == true ? null : false,
                 IsDryRun = QueryBool(ctx, "includeDryRun") == true ? null : false,
                 DimensionId = Query(ctx, "dimensionId"),
-                MinRelevanceScore = QueryInt(ctx, "minScore")
+                MinRelevanceScore = QueryInt(ctx, "minScore"),
+                Hidden = QueryBool(ctx, "includeHidden") == true ? null : false,
+                Pinned = QueryBool(ctx, "pinned")
             };
             if (!filter.Tier.HasValue && QueryBool(ctx, "includeBelowThreshold") != true && QueryBool(ctx, "includeDuplicates") != true) filter.ExcludeTier = FindingTierEnum.BelowThreshold;
             ApplyPaging(ctx, filter);
@@ -101,6 +109,86 @@ namespace MyMorningNews.Server.Routes
             }
 
             await SendJsonAsync(ctx, 200, detail).ConfigureAwait(false);
+        }
+
+        private async Task UpdateFindingAsync(HttpContextBase ctx)
+        {
+            Finding? f = await OwnedFindingAsync(ctx, RequestTypeEnum.FindingWrite).ConfigureAwait(false);
+            if (f == null) return;
+            FindingUpdateRequest? req = await ReadBodyAsync<FindingUpdateRequest>(ctx).ConfigureAwait(false);
+            if (req == null) return;
+            if (!req.Pinned.HasValue && !req.Hidden.HasValue)
+            {
+                await SendErrorAsync(ctx, 400, "ValidationFailed", "Send pinned, hidden, or both.").ConfigureAwait(false);
+                return;
+            }
+
+            if (req.Pinned.HasValue) f.Pinned = req.Pinned.Value;
+            if (req.Hidden.HasValue) f.Hidden = req.Hidden.Value;
+            await SendJsonAsync(ctx, 200, await Server.Database.Findings.UpdateAsync(f, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async Task DeleteFindingAsync(HttpContextBase ctx)
+        {
+            Finding? f = await OwnedFindingAsync(ctx, RequestTypeEnum.FindingDelete).ConfigureAwait(false);
+            if (f == null) return;
+            foreach (FindingEvidence link in (await Server.Database.FindingEvidence.EnumerateAsync(new FindingEvidenceFilter { TenantId = f.TenantId, FindingId = f.Id, PageSize = 1000 }, ctx.Token).ConfigureAwait(false)).Items)
+                await Server.Database.FindingEvidence.DeleteAsync(f.TenantId, link.Id, ctx.Token).ConfigureAwait(false);
+            await Server.Database.Findings.DeleteAsync(f.TenantId, f.Id, ctx.Token).ConfigureAwait(false);
+            await SendJsonAsync(ctx, 204, null).ConfigureAwait(false);
+        }
+
+        private async Task ReadEvidenceAsync(HttpContextBase ctx)
+        {
+            if (!await AuthorizeAsync(ctx, RequestTypeEnum.FindingRead).ConfigureAwait(false)) return;
+            string? tenantId = await RequireTenantAsync(ctx).ConfigureAwait(false);
+            if (tenantId == null) return;
+            Evidence? e = await Server.Database.Evidence.ReadAsync(tenantId, Param(ctx, "id") ?? String.Empty, ctx.Token).ConfigureAwait(false);
+            if (e == null || !await EvidenceVisibleAsync(ctx, e).ConfigureAwait(false)) { await SendNotFoundAsync(ctx, "Evidence").ConfigureAwait(false); return; }
+            SourceItem? s = await Server.Database.SourceItems.ReadAsync(tenantId, e.SourceItemId, ctx.Token).ConfigureAwait(false);
+            await SendJsonAsync(ctx, 200, new EvidenceView { Evidence = e, SourceUrl = s?.CanonicalUrl, SourceTitle = s?.Title, SourceDomain = s?.Domain, SourcePublishedUtc = s?.PublishedUtc }).ConfigureAwait(false);
+        }
+
+        private async Task RunCallsAsync(HttpContextBase ctx)
+        {
+            Run? run = await OwnedRunAsync(ctx).ConfigureAwait(false);
+            if (run == null) return;
+            LlmCallFilter filter = new LlmCallFilter { TenantId = run.TenantId, RunId = run.Id };
+            ApplyPaging(ctx, filter);
+            if (String.IsNullOrEmpty(Query(ctx, "sortDirection"))) filter.SortDirection = SortDirectionEnum.Ascending;
+            await SendJsonAsync(ctx, 200, await Server.Database.LlmCalls.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async Task<Finding?> OwnedFindingAsync(HttpContextBase ctx, RequestTypeEnum type)
+        {
+            if (!await AuthorizeAsync(ctx, type).ConfigureAwait(false)) return null;
+            string? tenantId = await RequireTenantAsync(ctx).ConfigureAwait(false);
+            if (tenantId == null) return null;
+            Finding? f = await Server.Database.Findings.ReadAsync(tenantId, Param(ctx, "id") ?? String.Empty, ctx.Token).ConfigureAwait(false);
+            if (f == null || !IsOwnerOrAdmin(ctx, f.UserId))
+            {
+                await SendNotFoundAsync(ctx, "Finding").ConfigureAwait(false);
+                return null;
+            }
+
+            return f;
+        }
+
+        private async Task<bool> EvidenceVisibleAsync(HttpContextBase ctx, Evidence e)
+        {
+            if (!String.IsNullOrEmpty(e.RunId))
+            {
+                Run? run = await Server.Database.Runs.ReadAsync(e.TenantId, e.RunId, ctx.Token).ConfigureAwait(false);
+                if (run != null) return IsOwnerOrAdmin(ctx, run.UserId);
+            }
+
+            foreach (FindingEvidence link in (await Server.Database.FindingEvidence.EnumerateAsync(new FindingEvidenceFilter { TenantId = e.TenantId, EvidenceId = e.Id, PageSize = 20 }, ctx.Token).ConfigureAwait(false)).Items)
+            {
+                Finding? f = await Server.Database.Findings.ReadAsync(e.TenantId, link.FindingId, ctx.Token).ConfigureAwait(false);
+                if (f != null && IsOwnerOrAdmin(ctx, f.UserId)) return true;
+            }
+
+            return false;
         }
 
         private async Task StagesAsync(HttpContextBase ctx)
@@ -248,7 +336,14 @@ namespace MyMorningNews.Server.Routes
             string? tenantId = await RequireTenantAsync(ctx).ConfigureAwait(false);
             if (tenantId == null) return;
             SourceItem? s = await Server.Database.SourceItems.ReadAsync(tenantId, Param(ctx, "id") ?? String.Empty, ctx.Token).ConfigureAwait(false);
-            if (s == null) { await SendNotFoundAsync(ctx, "Source").ConfigureAwait(false); return; }
+            RequestContext rc = Context(ctx);
+            bool admin = rc.IsAdmin || rc.IsTenantAdmin;
+            if (s == null || (!admin && (String.IsNullOrEmpty(rc.UserId) || !await Server.Database.SourceItems.IsVisibleToUserAsync(tenantId, rc.UserId, s.Id, ctx.Token).ConfigureAwait(false))))
+            {
+                await SendNotFoundAsync(ctx, "Source").ConfigureAwait(false);
+                return;
+            }
+
             await SendJsonAsync(ctx, 200, s).ConfigureAwait(false);
         }
 

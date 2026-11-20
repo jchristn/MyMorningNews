@@ -343,7 +343,7 @@ namespace MyMorningNews.Core.Email
         private async Task<DigestContent> DigestAsync(Run run, Topic topic, CancellationToken token)
         {
             DigestContent c = new DigestContent();
-            c.Findings = (await _Database.Findings.EnumerateAsync(new FindingFilter { TenantId = run.TenantId, RunId = run.Id, IsDuplicate = false, ExcludeTier = FindingTierEnum.BelowThreshold, PageSize = 200 }, token).ConfigureAwait(false)).Items
+            c.Findings = (await _Database.Findings.EnumerateAsync(new FindingFilter { TenantId = run.TenantId, RunId = run.Id, IsDuplicate = false, Hidden = false, ExcludeTier = FindingTierEnum.BelowThreshold, PageSize = 200 }, token).ConfigureAwait(false)).Items
                 .OrderBy(f => f.Rank <= 0 ? int.MaxValue : f.Rank).ThenByDescending(f => f.RelevanceScore).Take(topic.MaxEmailFindings).ToList();
             List<Prediction> preds = (await _Database.Predictions.EnumerateAsync(new PredictionFilter { TenantId = run.TenantId, TopicId = topic.Id, IsDryRun = false, PageSize = 500 }, token).ConfigureAwait(false)).Items;
             c.NewPredictions = preds.Where(p => p.RunId == run.Id && p.Status == PredictionStatusEnum.Open).OrderByDescending(p => p.Confidence).Take(5).ToList();

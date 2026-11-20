@@ -72,5 +72,15 @@ namespace MyMorningNews.Core.Requests
         /// Match Active exactly when set.
         /// </summary>
         public bool? Active { get; set; } = null;
+
+        /// <summary>
+        /// Pinned findings only (true) or unpinned only (false). Null for both.
+        /// </summary>
+        public bool? Pinned { get; set; } = null;
+
+        /// <summary>
+        /// Hidden findings only (true) or visible only (false). Null for both.
+        /// </summary>
+        public bool? Hidden { get; set; } = null;
     }
 }

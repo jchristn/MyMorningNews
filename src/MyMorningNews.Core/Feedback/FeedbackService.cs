@@ -77,7 +77,7 @@ namespace MyMorningNews.Core.Feedback
         {
             switch (input.Action)
             {
-                case null: return;
+                case null: break;
                 case "relevant": input.Relevance = RelevanceRatingEnum.Relevant; break;
                 case "somewhat": input.Relevance = RelevanceRatingEnum.SomewhatRelevant; break;
                 case "not-relevant": input.Relevance = RelevanceRatingEnum.NotRelevant; break;
@@ -95,7 +95,9 @@ namespace MyMorningNews.Core.Feedback
             }
 
             bool decision = input.Action == "apply" || input.Action == "dismiss";
-            if (decision != (input.TargetType == FeedbackTargetTypeEnum.LearnedPreference)) throw new ArgumentException("Apply and dismiss are for learned preference proposals.", nameof(input));
+            if (decision && input.TargetType != FeedbackTargetTypeEnum.LearnedPreference) throw new ArgumentException("Apply and dismiss are for learned preference proposals.", nameof(input));
+            if (input.Action != null && !decision && input.TargetType == FeedbackTargetTypeEnum.LearnedPreference)
+                throw new ArgumentException("Use apply or dismiss for a learned preference proposal, or send a rating with a reason.", nameof(input));
             bool fits = input.TargetType switch
             {
                 FeedbackTargetTypeEnum.LearnedPreference => !input.Accuracy.HasValue && !input.Usefulness.HasValue,

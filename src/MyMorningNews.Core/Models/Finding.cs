@@ -233,6 +233,16 @@ namespace MyMorningNews.Core.Models
         /// </summary>
         public DateTime LastUpdateUtc { get; set; } = DateTime.UtcNow;
 
+        /// <summary>
+        /// Pinned by the owner: kept at the top of lists. Default false.
+        /// </summary>
+        public bool Pinned { get; set; } = false;
+
+        /// <summary>
+        /// Hidden by the owner: left out of lists, briefings, and emails unless asked for. Default false.
+        /// </summary>
+        public bool Hidden { get; set; } = false;
+
         #endregion
 
         #region Private-Members

@@ -224,7 +224,18 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 "DELETE FROM predictions WHERE tenantid = $1 AND topicid = $2",
                 "DELETE FROM suggestions WHERE tenantid = $1 AND topicid = $2",
                 "DELETE FROM runs WHERE tenantid = $1 AND topicid = $2",
-                "DELETE FROM researchrequests WHERE tenantid = $1 AND topicid = $2"
+                "DELETE FROM researchrequests WHERE tenantid = $1 AND topicid = $2",
+                "DELETE FROM emailactiontokens WHERE tenantid = $1 AND topicid = $2",
+                "DELETE FROM emailsuppressions WHERE tenantid = $1 AND topicid = $2",
+                "DELETE FROM feedbackreasontags WHERE tenantid = $1 AND topicid = $2",
+                "DELETE FROM learnedpreferencefeedback WHERE tenantid = $1 AND learnedpreferenceid IN (SELECT id FROM learnedpreferences WHERE tenantid = $1 AND topicid = $2)",
+                "DELETE FROM learnedpreferencefeedback WHERE tenantid = $1 AND feedbackid IN (SELECT id FROM feedback WHERE tenantid = $1 AND topicid = $2)",
+                "DELETE FROM learnedpreferences WHERE tenantid = $1 AND topicid = $2",
+                "DELETE FROM feedback WHERE tenantid = $1 AND topicid = $2",
+                "DELETE FROM learningcheckpoints WHERE tenantid = $1 AND topicid = $2",
+                "DELETE FROM modelassignments WHERE tenantid = $1 AND topicid = $2",
+                "DELETE FROM prompttemplates WHERE tenantid = $1 AND topicid = $2",
+                "UPDATE emailmessages SET topicid = NULL WHERE tenantid = $1 AND topicid = $2"
             };
             foreach (string sql in statements) await ExecuteAsync(sql, token, tenantId, topicId).ConfigureAwait(false);
             return await ExecuteAsync("DELETE FROM topics WHERE tenantid = $1 AND id = $2", token, tenantId, topicId).ConfigureAwait(false) > 0;

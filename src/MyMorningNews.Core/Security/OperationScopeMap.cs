@@ -44,6 +44,7 @@ namespace MyMorningNews.Core.Security
             { RequestTypeEnum.SearchProviderRead, new RequiredPermission(ResourceTypeEnum.SearchProvider, OperationTypeEnum.Read) },
             { RequestTypeEnum.SearchProviderWrite, new RequiredPermission(ResourceTypeEnum.SearchProvider, OperationTypeEnum.Admin) },
             { RequestTypeEnum.FindingRead, new RequiredPermission(ResourceTypeEnum.Finding, OperationTypeEnum.Read) },
+            { RequestTypeEnum.FindingDelete, new RequiredPermission(ResourceTypeEnum.Finding, OperationTypeEnum.Delete) },
             { RequestTypeEnum.FindingWrite, new RequiredPermission(ResourceTypeEnum.Finding, OperationTypeEnum.Update) },
             { RequestTypeEnum.PredictionRead, new RequiredPermission(ResourceTypeEnum.Prediction, OperationTypeEnum.Read) },
             { RequestTypeEnum.PredictionWrite, new RequiredPermission(ResourceTypeEnum.Prediction, OperationTypeEnum.Update) },

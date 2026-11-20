@@ -1,0 +1,36 @@
+{
+  "name": "mymorningnews-sdk",
+  "version": "0.1.0-alpha",
+  "description": "JavaScript SDK for the My Morning News REST API (Node 20+, fetch only, no runtime dependencies).",
+  "type": "module",
+  "main": "mymorningnews-sdk.js",
+  "module": "mymorningnews-sdk.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./mymorningnews-sdk.js",
+      "default": "./mymorningnews-sdk.js"
+    }
+  },
+  "files": [
+    "mymorningnews-sdk.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node test-harness.js",
+    "check": "node --check mymorningnews-sdk.js && node --check test-harness.js"
+  },
+  "keywords": [
+    "mymorningnews",
+    "research",
+    "briefings",
+    "sdk"
+  ],
+  "author": "Lattice AI LLC",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

@@ -101,5 +101,15 @@ namespace MyMorningNews.Core.Database.Interfaces
         /// <param name="token">Cancellation token.</param>
         /// <returns>Page of sources; content text is left out.</returns>
         Task<EnumerationResult<SourceItem>> ListForTopicsAsync(string tenantId, string? userId, string? topicId, string? runId, string? search, int pageNumber, int pageSize, CancellationToken token = default);
+
+        /// <summary>
+        /// Whether a user's topics found this source (a search result of one of their topics points at it).
+        /// </summary>
+        /// <param name="tenantId">Tenant.</param>
+        /// <param name="userId">User.</param>
+        /// <param name="sourceItemId">Source.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>True when visible to the user.</returns>
+        Task<bool> IsVisibleToUserAsync(string tenantId, string userId, string sourceItemId, CancellationToken token = default);
     }
 }

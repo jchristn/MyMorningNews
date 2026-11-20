@@ -176,6 +176,17 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
         }
 
         /// <inheritdoc />
+        public async Task<bool> IsVisibleToUserAsync(string tenantId, string userId, string sourceItemId, CancellationToken token = default)
+        {
+            if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrWhiteSpace(userId)) throw new ArgumentNullException(nameof(userId));
+            if (String.IsNullOrWhiteSpace(sourceItemId)) throw new ArgumentNullException(nameof(sourceItemId));
+            List<long> rows = await QueryAsync("SELECT COUNT(*) FROM searchresults r WHERE r.tenantid = $1 AND r.sourceitemid = $2 AND r.topicid IN (SELECT id FROM topics WHERE tenantid = $1 AND userid = $3)",
+                r => r.GetInt64(0), token, tenantId, sourceItemId, userId).ConfigureAwait(false);
+            return rows.FirstOrDefault() > 0;
+        }
+
+        /// <inheritdoc />
         public async Task<EnumerationResult<SourceItem>> ListForTopicsAsync(string tenantId, string? userId, string? topicId, string? runId, string? search, int pageNumber, int pageSize, CancellationToken token = default)
         {
             if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));

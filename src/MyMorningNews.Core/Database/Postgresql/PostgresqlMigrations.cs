@@ -183,7 +183,12 @@ namespace MyMorningNews.Core.Database.Postgresql
                 new List<string>
                 {
                     "CREATE INDEX IF NOT EXISTS ix_planassignments_user ON planassignments (tenantid, userid, startsutc)"
-                }))
+                })),
+            new SchemaMigration(13, "Pinned and hidden findings", new List<string>
+            {
+                "ALTER TABLE findings ADD COLUMN IF NOT EXISTS pinned BOOLEAN NOT NULL DEFAULT FALSE",
+                "ALTER TABLE findings ADD COLUMN IF NOT EXISTS hidden BOOLEAN NOT NULL DEFAULT FALSE"
+            })
         };
 
         private static List<string> Concat(params IReadOnlyList<string>[] parts)

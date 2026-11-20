@@ -271,6 +271,11 @@ namespace MyMorningNews.Core.Enums
         FindingWrite,
 
         /// <summary>
+        /// Delete findings.
+        /// </summary>
+        FindingDelete,
+
+        /// <summary>
         /// Read predictions.
         /// </summary>
         PredictionRead,

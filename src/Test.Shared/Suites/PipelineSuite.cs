@@ -215,7 +215,38 @@ namespace Test.Shared.Suites
             Assert.Equal(0L, (await other.Client.GetAsync("/v1.0/api/sources", token).ConfigureAwait(false)).Json<EnumerationResult<SourceItem>>().TotalCount, "another member sees no sources");
             (await other.Client.GetAsync("/v1.0/api/findings/" + high.Items[0].Id, token).ConfigureAwait(false)).Expect(404, "finding private");
             (await other.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages", token).ConfigureAwait(false)).Expect(404, "run private");
+            (await other.Client.GetAsync("/v1.0/api/sources/" + sources.Items[0].Id, token).ConfigureAwait(false)).Expect(404, "source private to the member whose topics found it");
+            (await f.User.Client.GetAsync("/v1.0/api/sources/" + sources.Items[0].Id, token).ConfigureAwait(false)).Expect(200, "owner reads the source");
 
+            FindingDetailResponse detail = (await f.User.Client.GetAsync("/v1.0/api/findings/" + high.Items[0].Id, token).ConfigureAwait(false)).Json<FindingDetailResponse>();
+            string evidenceId = detail.Evidence[0].Evidence.Id;
+            EvidenceView ev = (await f.User.Client.GetAsync("/v1.0/api/evidence/" + evidenceId, token).ConfigureAwait(false)).Expect(200, "evidence").Json<EvidenceView>();
+            Assert.True(ev.Evidence.Id == evidenceId && !String.IsNullOrEmpty(ev.SourceUrl), "evidence with its source");
+            (await other.Client.GetAsync("/v1.0/api/evidence/" + evidenceId, token).ConfigureAwait(false)).Expect(404, "evidence private");
+            EnumerationResult<LlmCall> runCalls = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/llm-calls?pageSize=500", token).ConfigureAwait(false)).Expect(200, "run calls").Json<EnumerationResult<LlmCall>>();
+            Assert.True(runCalls.Items.Count > 0 && runCalls.Items.All(c => c.RunId == run.Id) && runCalls.Items.SequenceEqual(runCalls.Items.OrderBy(c => c.CreatedUtc)), "run calls oldest first");
+            (await other.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/llm-calls", token).ConfigureAwait(false)).Expect(404, "run calls private");
+
+            string fid = high.Items[0].Id;
+            (await f.User.Client.PutAsync("/v1.0/api/findings/" + fid, new { }, token).ConfigureAwait(false)).Expect(400, "nothing to change");
+            Finding pinned = (await f.User.Client.PutAsync("/v1.0/api/findings/" + fid, new { pinned = true }, token).ConfigureAwait(false)).Expect(200, "pin").Json<Finding>();
+            Assert.True(pinned.Pinned && !pinned.Hidden, "pinned");
+            Assert.Equal(1L, (await f.User.Client.GetAsync("/v1.0/api/findings?topicId=" + f.Topic.Id + "&pinned=true", token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().TotalCount, "pinned filter");
+            long before = (await f.User.Client.GetAsync("/v1.0/api/findings?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().TotalCount;
+            (await f.User.Client.PutAsync("/v1.0/api/findings/" + fid, new { hidden = true }, token).ConfigureAwait(false)).Expect(200, "hide");
+            Assert.Equal(before - 1, (await f.User.Client.GetAsync("/v1.0/api/findings?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().TotalCount, "hidden left out");
+            Assert.Equal(before, (await f.User.Client.GetAsync("/v1.0/api/findings?topicId=" + f.Topic.Id + "&includeHidden=true", token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().TotalCount, "includeHidden");
+            (await other.Client.PutAsync("/v1.0/api/findings/" + fid, new { hidden = false }, token).ConfigureAwait(false)).Expect(404, "others cannot change it");
+            (await other.Client.DeleteAsync("/v1.0/api/findings/" + fid, token).ConfigureAwait(false)).Expect(404, "others cannot delete it");
+            string doomed = (await f.User.Client.GetAsync("/v1.0/api/findings?topicId=" + f.Topic.Id + "&includeBelowThreshold=true&includeHidden=true&pageSize=100", token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().Items.First(x => x.Id != fid).Id;
+            (await f.User.Client.DeleteAsync("/v1.0/api/findings/" + doomed, token).ConfigureAwait(false)).Expect(204, "delete finding");
+            (await f.User.Client.GetAsync("/v1.0/api/findings/" + doomed, token).ConfigureAwait(false)).Expect(404, "gone");
+            Assert.Equal(0L, await f.Server.Context.Database.FindingEvidence.CountAsync(new FindingEvidenceFilter { TenantId = f.Topic.TenantId, FindingId = doomed }, token).ConfigureAwait(false), "evidence links removed");
+
+            TestResponse wrongRating = (await f.User.Client.PostAsync("/v1.0/api/feedback", new { targetType = "Finding", targetId = fid, accuracy = "Accurate" }, token).ConfigureAwait(false)).Expect(400, "accuracy does not apply to a finding");
+            Assert.True(!wrongRating.Body.Contains("(Parameter", StringComparison.Ordinal), "no parameter suffix in the message");
+            (await f.User.Client.PostAsync("/v1.0/api/feedback", new { targetType = "Finding", targetId = fid, relevance = "Relevant", reason = "Kept for the cascade check" }, token).ConfigureAwait(false)).Expect(201, "rate before delete");
+            (await f.User.Client.PostAsync("/v1.0/api/learned-preferences", new { topicId = f.Topic.Id, statement = "Prefer primary sources." }, token).ConfigureAwait(false)).Expect(201, "topic preference");
             Schedule sched = (await f.User.Client.PostAsync("/v1.0/api/schedules", new { ownerId = f.Topic.Id, intervalType = "EveryNMinutes", intervalValue = 30 }, token).ConfigureAwait(false)).Expect(201, "schedule").Json<Schedule>();
             (await f.User.Client.DeleteAsync("/v1.0/api/topics/" + f.Topic.Id, token).ConfigureAwait(false)).Expect(204, "delete topic");
             Assert.True(await f.Server.Context.Database.Schedules.ReadAsync(f.Topic.TenantId, sched.Id, token).ConfigureAwait(false) == null, "schedule deleted with the topic");
@@ -224,6 +255,8 @@ namespace Test.Shared.Suites
             Assert.Equal(0L, await f.Server.Context.Database.Briefings.CountAsync(new MyMorningNews.Core.Requests.BriefingFilter { TenantId = f.Topic.TenantId, TopicId = f.Topic.Id }, token).ConfigureAwait(false), "briefings deleted with the topic");
             Assert.Equal(0L, await f.Server.Context.Database.SearchResults.CountAsync(new SearchResultFilter { TenantId = f.Topic.TenantId, RunId = run.Id }, token).ConfigureAwait(false), "search results deleted with the topic");
             Assert.Equal(0L, await f.Server.Context.Database.RunStages.CountAsync(new RunStageFilter { TenantId = f.Topic.TenantId, RunId = run.Id }, token).ConfigureAwait(false), "run stages deleted with the topic");
+            Assert.Equal(0L, await f.Server.Context.Database.Feedback.CountAsync(new FeedbackFilter { TenantId = f.Topic.TenantId, TopicId = f.Topic.Id }, token).ConfigureAwait(false), "feedback deleted with the topic");
+            Assert.Equal(0L, await f.Server.Context.Database.LearnedPreferences.CountAsync(new LearnedPreferenceFilter { TenantId = f.Topic.TenantId, TopicId = f.Topic.Id }, token).ConfigureAwait(false), "preferences deleted with the topic");
             EnumerationResult<LlmCall> kept = (await f.User.Client.GetAsync("/v1.0/api/llm-calls?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<LlmCall>>();
             Assert.True(kept.Items.Count > 0, "model call records kept for cost accounting");
         }

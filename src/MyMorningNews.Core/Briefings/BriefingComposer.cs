@@ -247,7 +247,7 @@ namespace MyMorningNews.Core.Briefings
             foreach (Topic t in scope.Topics)
             {
                 data.TopicsById[t.Id] = t;
-                List<Finding> findings = (await _Database.Findings.EnumerateAsync(new FindingFilter { TenantId = scope.TenantId, TopicId = t.Id, RunId = scope.RunId, IsDuplicate = false, IsDryRun = scope.IsDryRun, PageSize = 500 }, token).ConfigureAwait(false)).Items;
+                List<Finding> findings = (await _Database.Findings.EnumerateAsync(new FindingFilter { TenantId = scope.TenantId, TopicId = t.Id, RunId = scope.RunId, IsDuplicate = false, Hidden = false, IsDryRun = scope.IsDryRun, PageSize = 500 }, token).ConfigureAwait(false)).Items;
                 data.Findings.AddRange(findings.Where(f => f.Tier != FindingTierEnum.BelowThreshold && (scope.RunId != null || (f.CreatedUtc >= scope.PeriodStartUtc && f.CreatedUtc <= scope.PeriodEndUtc))));
                 List<Prediction> preds = (await _Database.Predictions.EnumerateAsync(new PredictionFilter { TenantId = scope.TenantId, TopicId = t.Id, IsDryRun = scope.IsDryRun, PageSize = 500 }, token).ConfigureAwait(false)).Items;
                 data.Predictions.AddRange(preds);

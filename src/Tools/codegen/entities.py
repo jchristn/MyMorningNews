@@ -699,6 +699,8 @@ ENTITIES = [
             f('UserRating', doc='Latest reader rating.', nullable=True, length=32, filter=True),
             f('PublishedUtc', 'datetime', doc='Source publication time.', nullable=True, sort=True),
             f('IsDryRun', 'bool', doc='From a dry run.', default=False, filter=True),
+            f('Pinned', 'bool', doc='Pinned by the owner (migration 13, after lastupdateutc).', default=False, filter=True),
+            f('Hidden', 'bool', doc='Hidden by the owner (migration 13, after lastupdateutc).', default=False, filter=True),
         ],
     },
     {

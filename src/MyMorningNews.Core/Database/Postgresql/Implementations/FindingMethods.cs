@@ -87,7 +87,9 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.IsDryRun,
                 obj.Active,
                 DateTime.SpecifyKind(obj.CreatedUtc, DateTimeKind.Utc),
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
+                obj.Pinned,
+                obj.Hidden).ConfigureAwait(false);
             return obj;
         }
 
@@ -142,7 +144,9 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.PublishedUtc.HasValue ? DateTime.SpecifyKind(obj.PublishedUtc.Value, DateTimeKind.Utc) : null,
                 obj.IsDryRun,
                 obj.Active,
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
+                obj.Pinned,
+                obj.Hidden).ConfigureAwait(false);
             if (affected < 1) throw new KeyNotFoundException("Finding " + obj.Id + " was not found.");
             return obj;
         }
@@ -240,6 +244,8 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             obj.Active = reader.GetBoolean(27);
             obj.CreatedUtc = DateTime.SpecifyKind(reader.GetDateTime(28), DateTimeKind.Utc);
             obj.LastUpdateUtc = DateTime.SpecifyKind(reader.GetDateTime(29), DateTimeKind.Utc);
+            obj.Pinned = reader.GetBoolean(30);
+            obj.Hidden = reader.GetBoolean(31);
             return obj;
         }
 
@@ -287,6 +293,16 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             {
                 args.Add(filter.MinRelevanceScore.Value);
                 clauses.Add("relevancescore >= $" + args.Count);
+            }
+            if (filter.Pinned.HasValue)
+            {
+                args.Add(filter.Pinned.Value);
+                clauses.Add("pinned = $" + args.Count);
+            }
+            if (filter.Hidden.HasValue)
+            {
+                args.Add(filter.Hidden.Value);
+                clauses.Add("hidden = $" + args.Count);
             }
             if (filter.ExcludeTier.HasValue)
             {

@@ -6,6 +6,10 @@ All notable changes to this project are documented here. The project follows [Se
 
 ### Fixed
 
+- A member could read another member's fetched source by ID; sources are now visible only to members whose topics found them.
+- Deleting a topic now also removes its feedback, reason tags, learned preferences, learning checkpoints, email action tokens and suppressions, prompt overrides, and model assignments. Sent emails stay in the outbox with the topic cleared.
+- Feedback ratings are checked against the item type even without an action, and an action on a learned preference gets a clear message.
+- Validation messages no longer end with the parameter name. Empty source and template lists report zero pages and their duration. The prompts tenantOnly filter is applied before paging, so counts are right. OpenAPI: the model test body is declared and `search` is no longer listed twice.
 - `/openapi.json` sent `Access-Control-Allow-Origin` twice, which browsers reject.
 
 ### Added
@@ -49,6 +53,8 @@ All notable changes to this project are documented here. The project follows [Se
 - `OWNER_ACTIONS.md` with everything the owner needs to do, grouped by phase.
 - Analytics overview (`GET /v1.0/api/analytics/overview`): active topics, runs by outcome, findings shown and rated, relevance precision, briefings, emails, predictions and accuracy, feedback, suggestions, quote failure rate, and model calls and cost in one call.
 - Email analytics (`GET /v1.0/api/analytics/email`): sent, failed, pending, and skipped counts, delivery rate, mean time to send, breakdowns by template, day, and status, feedback link use, and unsubscribes. The feedback report adds a split by day and channel.
+- Findings can be pinned and hidden (`PUT /v1.0/api/findings/{id}`) and deleted; hidden findings stay out of lists, briefings, and emails. `GET /v1.0/api/evidence/{id}` and `GET /v1.0/api/runs/{id}/llm-calls`.
+- JavaScript SDK (`sdk/js`, ES module with type declarations) and Python SDK (`sdk/python`), each with a harness that runs against a live server.
 - Signed requests (`MMN1-HMAC-SHA256`): machine clients sign each request with the credential secret instead of sending it, with a clock skew window (`Auth.SignatureMaxSkewSeconds`, default 300) and nonce replay protection.
 - Scope guardrail on every model call and in every default prompt, so models stay on research and briefing tasks and treat fetched content as data.
 - Prompt templates: 19 defaults, renderer with list expansion, save-time variable validation, versions, rollback, reset, topic overrides, and a prompt lab.

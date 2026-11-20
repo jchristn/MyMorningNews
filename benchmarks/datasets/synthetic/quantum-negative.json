@@ -1,0 +1,20 @@
+{
+  "id": "quantum-negative",
+  "description": "A negative corpus: the topic is quantum error correction hardware, and search returns only Harbor City local news, one of which uses the word quantum in a business name. The correct briefing is empty.",
+  "rounds": 1,
+  "topic": {
+    "name": "Quantum error correction hardware",
+    "brief": "Track superconducting and trapped ion quantum computing hardware progress on error correction: logical qubits, physical error rates, code distances, and decoder speed.",
+    "noveltyPreference": 50,
+    "seedQueries": ["logical qubit error correction", "surface code distance hardware"],
+    "dimensions": [
+      { "name": "Logical qubits", "weight": "High", "description": "Demonstrations of logical qubits." },
+      { "name": "Error rates", "weight": "Normal", "description": "Physical and logical error rates." }
+    ],
+    "constraints": []
+  },
+  "feedback": [],
+  "probes": [
+    { "id": "empty-round", "type": "empty", "category": "relevance", "round": 1, "negative": true, "note": "Nothing in the round is relevant, so nothing should be shown." }
+  ]
+}

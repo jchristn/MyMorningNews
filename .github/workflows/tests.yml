@@ -163,3 +163,42 @@ jobs:
         with:
           name: sdk-harness-results
           path: .run/
+
+  benchmark:
+    name: Benchmark gate
+    # Deterministic, stub-backed benchmark checks against committed baselines (benchmarks/README.md "CI gate").
+    # The bench stack needs Docker, so this job is Linux only. No model, search, or speech call leaves the runner.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Bring up the bench stack
+        run: docker compose -f benchmarks/docker/compose.yaml up -d --wait
+      - name: Start the bench server
+        run: |
+          mkdir -p benchmarks/.run
+          nohup ./benchmarks/start-bench-server.sh > benchmarks/.run/server-console.log 2>&1 &
+          for i in $(seq 1 90); do curl -fs http://127.0.0.1:12500/v1.0/api/health > /dev/null && exit 0; sleep 2; done
+          cat benchmarks/.run/server-console.log; exit 1
+      - name: Benchmark gate
+        shell: bash
+        run: ./benchmarks/ci-gate.sh
+      - name: Upload benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-gate
+          path: |
+            benchmarks/.run/ci/
+            benchmarks/.run/server-console.log
+            benchmarks/.run/server/logs/
+      - name: Tear down the bench stack
+        if: always()
+        run: docker compose -f benchmarks/docker/compose.yaml down -v

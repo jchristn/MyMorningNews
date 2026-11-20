@@ -1,0 +1,763 @@
+{
+  "name": "mymorningnews-live",
+  "description": "Frozen snapshot of the product's own operator docs, sectioned into pages.",
+  "tier": "live",
+  "snapshot": "2026-11-20",
+  "corpora": [
+    {
+      "id": "hosted-service-docs",
+      "description": "A frozen snapshot of the product's own operator documentation (docs/HOSTING.md, docs/I18N.md, docs/MOBILE_DEVICE_TESTING.md), one page per section, researched under a topic about running the hosted service. Relevance labels are hand-assigned by section and are good but not gold.",
+      "rounds": 1,
+      "topic": {
+        "name": "My Morning News hosted service operations",
+        "brief": "Follow how My Morning News runs as a hosted public service: public sign-up and email verification, plans and cost caps, account deletion and data export, platform model credentials, and blocking requests to private networks.",
+        "noveltyPreference": 50,
+        "seedQueries": [
+          "hosted sign-up verification",
+          "plan cost cap"
+        ],
+        "dimensions": [
+          {
+            "name": "Sign-up and accounts",
+            "weight": "High",
+            "description": "Public sign-up, email verification, password reset, and account deletion."
+          },
+          {
+            "name": "Plans and caps",
+            "weight": "High",
+            "description": "Plans, monthly cost caps, and limits."
+          },
+          {
+            "name": "Security",
+            "weight": "Normal",
+            "description": "Platform credentials and private network blocking."
+          }
+        ],
+        "constraints": []
+      },
+      "items": [
+        {
+          "id": "hosting-profile",
+          "title": "What the hosted profile changes",
+          "paragraphs": [
+            "The settings live in docker/hosted/mymorningnews.json. Every value can also be changed in the dashboard under Server settings, or with the MYMORNINGNEWS_HOSTING_* environment variables."
+          ],
+          "rounds": [
+            1
+          ],
+          "hoursAgo": 24.0,
+          "relevance": 2,
+          "url": null,
+          "aliasOf": null,
+          "quotes": "verbatim"
+        },
+        {
+          "id": "hosting-before",
+          "title": "Before you start",
+          "paragraphs": [
+            "A Linux host with Docker and Compose, ports 80 and 443 open to the internet, and every other port closed.",
+            "DNS: an A (and AAAA, if you have IPv6) record for app.mymorningnews.ai pointing at the host.",
+            "A Mailgun sending domain, verified (SPF, DKIM, and DMARC records published). Sign-up cannot work without email.",
+            "An Anthropic API key for the platform. Hosted users run on it; they never see it.",
+            "S3-compatible storage for audio and briefing files (recommended; local disk works for a small service)."
+          ],
+          "rounds": [
+            1
+          ],
+          "hoursAgo": 24.0,
+          "relevance": 1,
+          "url": null,
+          "aliasOf": null,
+          "quotes": "verbatim"
+        },
+        {
+          "id": "hosting-steps",
+          "title": "Steps",
+          "paragraphs": [
+            "MYMORNINGNEWS_AUTH_SIGNING_KEY and MYMORNINGNEWS_AUTH_ADMIN_API_KEY: long random values (openssl rand -hex 32).",
+            "MYMORNINGNEWS_ANTHROPIC_API_KEY: the platform key.",
+            "MYMORNINGNEWS_PUBLIC_BASE_URL and MYMORNINGNEWS_APP_BASE_URL: both https://app.mymorningnews.ai.",
+            "MYMORNINGNEWS_EMAIL_PROVIDER=Mailgun, plus MYMORNINGNEWS_MAILGUN_DOMAIN and MYMORNINGNEWS_MAILGUN_API_KEY.",
+            "MYMORNINGNEWS_STORAGE_* for S3."
+          ],
+          "rounds": [
+            1
+          ],
+          "hoursAgo": 24.0,
+          "relevance": 1,
+          "url": null,
+          "aliasOf": null,
+          "quotes": "verbatim"
+        },
+        {
+          "id": "hosting-signup",
+          "title": "Sign-up and accounts",
+          "paragraphs": [
+            "POST /v1.0/public/signup creates a personal tenant and an unverified user, then emails a link to /verify. The same answer comes back whether or not the email already has an account, so the form cannot be used to find out who is a customer.",
+            "Sign-in is refused (403 EmailNotVerified) until the link is used. POST /v1.0/public/verify-email/resend sends a new one. Links last hosting.verificationHours (default 24).",
+            "POST /v1.0/public/password/forgot and POST /v1.0/public/password/reset handle lost passwords. A reset signs out every session and sends a confirmation email. Reset links last hosting.passwordResetMinutes (default 60).",
+            "Sign-up is rate limited per address (hosting.signupsPerIpPerHour, default 5), and addresses at hosting.blockedEmailDomains are refused. Users confirm they accept the terms (hosting.termsVersion) and are at least hosting.minimumAge (18).",
+            "A promotional code entered at sign-up is redeemed after the account is created."
+          ],
+          "rounds": [
+            1
+          ],
+          "hoursAgo": 24.0,
+          "relevance": 3,
+          "url": null,
+          "aliasOf": null,
+          "quotes": "verbatim"
+        },
+        {
+          "id": "hosting-plans",
+          "title": "Plans and caps",
+          "paragraphs": [
+            "Users without a plan assignment get hosting.defaultPlanKey (Free on the hosted profile). Limits are enforced as 402 CapReached with key, limit, and resetUtc in details:",
+            "GET /v1.0/api/account/usage returns the usage meter the dashboard and mobile app show. Edit plan values in the dashboard under Administration, Plans; changes apply at once."
+          ],
+          "rounds": [
+            1
+          ],
+          "hoursAgo": 24.0,
+          "relevance": 3,
+          "url": null,
+          "aliasOf": null,
+          "quotes": "verbatim"
+        },
+        {
+          "id": "hosting-deletion",
+          "title": "Account deletion and export",
+          "paragraphs": [
+            "POST /v1.0/api/account/delete signs out every session and schedules the purge after hosting.deletionGraceDays (default 7). Signing in again before then cancels it. The retention worker purges due accounts: a personal tenant goes with its last user.",
+            "GET /v1.0/api/account/export downloads a ZIP of the profile, topics, findings, predictions, suggestions, feedback, learned preferences, and every briefing as Markdown.",
+            "The website's delete-account page explains both for people without the app."
+          ],
+          "rounds": [
+            1
+          ],
+          "hoursAgo": 24.0,
+          "relevance": 3,
+          "url": null,
+          "aliasOf": null,
+          "quotes": "verbatim"
+        },
+        {
+          "id": "hosting-credentials",
+          "title": "Platform credentials",
+          "paragraphs": [
+            "With hosting.usePlatformCredentials on (and always for personal tenants), a new tenant's Anthropic endpoint refers to the credential platform:anthropic. It resolves from MYMORNINGNEWS_ANTHROPIC_API_KEY at call time and is never copied into a tenant vault, so tenants cannot read or reveal it. Tenants cannot assign it to their own endpoints, and an endpoint that uses it cannot be pointed at a different provider or URL."
+          ],
+          "rounds": [
+            1
+          ],
+          "hoursAgo": 24.0,
+          "relevance": 2,
+          "url": null,
+          "aliasOf": null,
+          "quotes": "verbatim"
+        },
+        {
+          "id": "hosting-private-network",
+          "title": "Private network blocking",
+          "paragraphs": [
+            "With hosting.restrictPrivateNetworks on, the server refuses outbound requests to loopback, private (10/8, 172.16/12, 192.168/16), link-local and cloud metadata (169.254/16, fd00:ec2::254), carrier-grade NAT (100.64/10), unique-local IPv6, multicast, and unspecified addresses, and host names ending in .localhost or .internal. The check runs when model endpoints, search providers, and MCP servers are saved (400 EgressBlocked) and again on every connection after DNS resolution and redirects, so a host name that later resolves to a private address is still refused. Page fetches to such addresses are recorded as Blocked.",
+            "The stack's own services (SearXNG, the text-to-speech server, Ollama) resolve to private addresses on the Docker network, so their host names are listed in hosting.allowedPrivateHosts (default searxng, tts, ollama) and are reached as usual. Add a name there only for a service you run yourself; anything on the list is reachable by tenant-configured URLs too."
+          ],
+          "rounds": [
+            1
+          ],
+          "hoursAgo": 24.0,
+          "relevance": 2,
+          "url": null,
+          "aliasOf": null,
+          "quotes": "verbatim"
+        },
+        {
+          "id": "hosting-universal-links",
+          "title": "Universal links",
+          "paragraphs": [
+            "/.well-known/apple-app-site-association and /.well-known/assetlinks.json are served once hosting.appleTeamId and hosting.androidCertificateFingerprints are set. Get the Android SHA-256 fingerprint from Google Play Console, under Setup, App signing."
+          ],
+          "rounds": [
+            1
+          ],
+          "hoursAgo": 24.0,
+          "relevance": 1,
+          "url": null,
+          "aliasOf": null,
+          "quotes": "verbatim"
+        },
+        {
+          "id": "hosting-operations",
+          "title": "Operations",
+          "paragraphs": [
+            "Grafana (127.0.0.1:12110, reach it over SSH) has dashboards for the pipeline, email, auth, workers, and MCP.",
+            "Back up the Postgres volume daily (docker compose exec postgres pg_dump -U postgres mymorningnews).",
+            "Update with ./update.sh and the same -f flags.",
+            "The support address is hello@latticetech.ai."
+          ],
+          "rounds": [
+            1
+          ],
+          "hoursAgo": 24.0,
+          "relevance": 1,
+          "url": null,
+          "aliasOf": null,
+          "quotes": "verbatim"
+        },
+        {
+          "id": "i18n-locales",
+          "title": "Locales",
+          "paragraphs": [
+            "The registry lives in dashboard/src/i18n/localeRegistry.js and is mirrored in mobile/src/i18n/locales.js. Locale resolution is: an explicit choice (the language selector on the login page, the top bar, and settings, stored under mymorningnews.locale), then the browser or device language, then English. Regional tags and aliases are normalized (en-US to en, zh-Hans to zh). The active locale sets lang and dir on the document, formats numbers and dates through Intl with that locale, and is sent to the server as Accept-Language.",
+            "Product names stay in English in every locale: My Morning News, Claude, Anthropic, OpenAI, Gemini, MCP, SearXNG, Ollama, Kokoro, Mailgun, and the other vendor names. So do code, identifiers, environment variables, cron syntax, URLs, HTTP methods, and route paths."
+          ],
+          "rounds": [
+            1
+          ],
+          "hoursAgo": 24.0,
+          "relevance": 0,
+          "url": null,
+          "aliasOf": null,
+          "quotes": "verbatim"
+        },
+        {
+          "id": "i18n-catalogs",
+          "title": "How the catalogs are organized",
+          "paragraphs": [
+            "dashboard/src/i18n/locales/<code>.json: one nested JSON file per locale. Top-level keys are namespaces (common, nav, topics, insights, and so on); messages are ICU MessageFormat strings. Every catalog has exactly the keys of en.json, about 2,900 of them.",
+            "dashboard/src/i18n/resources.js: English is bundled. The other catalogs are found with import.meta.glob, so Vite builds each into its own chunk that loads the first time its locale is selected. The pseudo-locales are generated from English at load time (pseudo.js).",
+            "dashboard/src/i18n/index.js: i18next with i18next-icu. English is the fallback language, so a key that is somehow missing at run time shows English rather than a raw key.",
+            "Enum display labels (statuses, tiers, providers, stages) are keyed by their stable server codes under enums.*.",
+            "mobile/src/i18n/catalog/<code>.js: one module per locale exporting the app's own strings, which the runtime mounts under the mobile.* key prefix. Same ICU syntax as the dashboard. Every catalog has exactly the keys of en.js, about 1,100 of them."
+          ],
+          "rounds": [
+            1
+          ],
+          "hoursAgo": 24.0,
+          "relevance": 0,
+          "url": null,
+          "aliasOf": null,
+          "quotes": "verbatim"
+        },
+        {
+          "id": "i18n-message-format",
+          "title": "Message format",
+          "paragraphs": [
+            "Messages are ICU MessageFormat:",
+            "{name} is a placeholder. Keep the name exactly; move it wherever the target grammar needs it.",
+            "{count, plural, one {# item} other {# items}} is a plural. Translate the text inside each branch and keep #, which prints the number. Each locale must spell out the plural categories its language uses for whole numbers: one and other for most European languages and Hindi; one, few, many, other for Russian; zero, one, two, few, many, other for Arabic; only other for Chinese, Japanese, and Malay. Exact matches such as =0 or =1 are allowed in any locale.",
+            "{kind, select, a {...} other {...}} is a select. Keep the option keys exactly and translate the branch text.",
+            "An ASCII apostrophe directly before { or } starts an ICU quoted literal and swallows the placeholder. Use the typographic apostrophe (’) for elisions such as French d’{name}."
+          ],
+          "rounds": [
+            1
+          ],
+          "hoursAgo": 24.0,
+          "relevance": 0,
+          "url": null,
+          "aliasOf": null,
+          "quotes": "verbatim"
+        },
+        {
+          "id": "i18n-adding-key",
+          "title": "Adding a key",
+          "paragraphs": [
+            "Add the English message to dashboard/src/i18n/locales/en.json under the right namespace (or to mobile/src/i18n/catalog/en.js).",
+            "Use it from the source with t('namespace.key'), or with a literal prefix such as t('enums.runStatus.' + status) for keys chosen at run time. The verifier treats a literal prefix as covering every key under it.",
+            "Add the translation to every other catalog, at the same path. The verifier fails until all 11 have it. When a translation is not available yet, have it machine-translated in the same change and note it for review; do not copy the English text.",
+            "Run npm run i18n:verify (dashboard) or npm run i18n:check (mobile).",
+            "Removing a key works the same way in reverse: remove it from every catalog, or the verifier reports it as orphaned in English and unknown in the others."
+          ],
+          "rounds": [
+            1
+          ],
+          "hoursAgo": 24.0,
+          "relevance": 0,
+          "url": null,
+          "aliasOf": null,
+          "quotes": "verbatim"
+        },
+        {
+          "id": "i18n-adding-locale",
+          "title": "Adding a locale",
+          "paragraphs": [
+            "Add an entry to SUPPORTED_LOCALES in dashboard/src/i18n/localeRegistry.js and mobile/src/i18n/locales.js (code, English and native names, direction).",
+            "Add dashboard/src/i18n/locales/<code>.json and mobile/src/i18n/catalog/<code>.js (registering the latter in catalog/index.js), complete against English.",
+            "Update the locale list test in dashboard/src/i18n/i18n.test.js. No other code changes: the dashboard discovers the catalog by its file name."
+          ],
+          "rounds": [
+            1
+          ],
+          "hoursAgo": 24.0,
+          "relevance": 0,
+          "url": null,
+          "aliasOf": null,
+          "quotes": "verbatim"
+        },
+        {
+          "id": "i18n-verifiers",
+          "title": "Verifiers",
+          "paragraphs": [
+            "dashboard/scripts/verify-i18n.mjs fails when:",
+            "the source uses a key that en.json lacks, or en.json has a key nothing references (orphans);.",
+            "a supported locale has no catalog, a catalog misses an English key, or it has a key English lacks;.",
+            "any message fails to parse or format as ICU;.",
+            "a translation drops, renames, or adds a placeholder, changes an argument's type (plain, plural, select, number, date), or changes a select's options;."
+          ],
+          "rounds": [
+            1
+          ],
+          "hoursAgo": 24.0,
+          "relevance": 0,
+          "url": null,
+          "aliasOf": null,
+          "quotes": "verbatim"
+        },
+        {
+          "id": "i18n-pseudo",
+          "title": "Pseudo-locales and smoke tests",
+          "paragraphs": [
+            "The pseudo-locales find problems that real translations would hide:",
+            "qps-rtl (right to left). Every message is wrapped in right-to-left embedding marks and the document gets dir=\"rtl\", so layout mirroring can be checked without reading Arabic.",
+            "Placeholders and plural syntax pass through both transforms untouched.",
+            "npm run i18n:smoke runs verify-i18n.mjs --pseudo (which builds both pseudo-locales and formats every message in them) and then the Vitest suites under src/i18n:",
+            "pseudo.smoke.test.jsx renders the login page, the shell, and the users page in the pseudo-locales and fails on surviving English text or unformatted placeholders."
+          ],
+          "rounds": [
+            1
+          ],
+          "hoursAgo": 24.0,
+          "relevance": 0,
+          "url": null,
+          "aliasOf": null,
+          "quotes": "verbatim"
+        },
+        {
+          "id": "i18n-rtl",
+          "title": "Right-to-left layout rules",
+          "paragraphs": [
+            "Use logical properties: margin-inline-start, padding-inline-end, inset-inline-start, border-inline-start, text-align: start or end. The stylesheet test rejects margin-left, padding-right, left:, right:, float, and text-align: left or right.",
+            "Effects that only take physical values (an inset box-shadow used as an edge accent, a translateX slide-in) need a [dir='rtl'] override beside them.",
+            "Directional icons mirror under [dir='rtl'] (styles/components.css): back and next arrows, disclosure and pagination chevrons, the sidebar panel toggles, sign in and sign out, send, and undo. Media, clock, refresh, and trend icons keep their orientation.",
+            "Code, JSON, URL and email inputs, and monospace text stay left to right inside RTL pages, isolated so they do not reorder the surrounding text. The JSON tree keeps its chevrons unmirrored for the same reason.",
+            "Charts are drawn in SVG coordinates that run left to right. Their SVG and the HTML axis labels under columns stay direction: ltr so labels line up with their bars; legends and card chrome follow the page direction."
+          ],
+          "rounds": [
+            1
+          ],
+          "hoursAgo": 24.0,
+          "relevance": 0,
+          "url": null,
+          "aliasOf": null,
+          "quotes": "verbatim"
+        },
+        {
+          "id": "i18n-terminology",
+          "title": "Terminology",
+          "paragraphs": [
+            "The machine translation used this glossary for the core product terms. Reviewers should check these first; changing one means changing it everywhere in that locale's catalogs.",
+            "(c) 2026 Lattice AI LLC."
+          ],
+          "rounds": [
+            1
+          ],
+          "hoursAgo": 24.0,
+          "relevance": 0,
+          "url": null,
+          "aliasOf": null,
+          "quotes": "verbatim"
+        },
+        {
+          "id": "mobile-prerequisites",
+          "title": "Prerequisites",
+          "paragraphs": [
+            "Node.js 24 and npm (cd mobile && npm ci).",
+            "The Docker stack running (cd docker && docker compose up -d), with the server on http://127.0.0.1:12100. Local sign-in: admin@mymorningnews / password. Leave the tenant empty; the server finds it (tenant-less sign-in).",
+            "iOS: Xcode with an iOS simulator runtime (macOS only).",
+            "Android: Android Studio (for the SDK at ~/Library/Android/sdk and its bundled Java runtime) and an emulator image. Gradle needs Java: export JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\".",
+            "Optional: Maestro for the smoke flows in mobile/e2e/ (it also needs JAVA_HOME)."
+          ],
+          "rounds": [
+            1
+          ],
+          "hoursAgo": 24.0,
+          "relevance": 0,
+          "url": null,
+          "aliasOf": null,
+          "quotes": "verbatim"
+        },
+        {
+          "id": "mobile-ios",
+          "title": "iOS simulator (iPhone)",
+          "paragraphs": [
+            "This builds a debug app, installs it, and starts Metro on port 12191. On the sign-in screen tap Change server, then Use a local development server (http://127.0.0.1:12100; the simulator shares the Mac's loopback). The plain HTTP warning is expected."
+          ],
+          "rounds": [
+            1
+          ],
+          "hoursAgo": 24.0,
+          "relevance": 0,
+          "url": null,
+          "aliasOf": null,
+          "quotes": "verbatim"
+        },
+        {
+          "id": "mobile-android",
+          "title": "Android emulator (phone and tablet)",
+          "paragraphs": [
+            "Create an emulator once (any recent Google APIs image), start it, and build:",
+            "In the app, Change server > Use a local development server gives http://10.0.2.2:12100 (the emulator's alias for the Mac's loopback). For a tablet, create a second AVD with -d pixel_tablet.",
+            "If Metro is already running on 12191 from another build, build with --no-bundler and forward the default port: adb -s emulator-5580 reverse tcp:8081 tcp:12191."
+          ],
+          "rounds": [
+            1
+          ],
+          "hoursAgo": 24.0,
+          "relevance": 0,
+          "url": null,
+          "aliasOf": null,
+          "quotes": "verbatim"
+        },
+        {
+          "id": "mobile-devices",
+          "title": "Physical devices on your network",
+          "paragraphs": [
+            "The phone reaches the server through your Mac's LAN address, for example http://192.168.1.20:12100 (ipconfig getifaddr en0). Make sure the macOS firewall lets Docker accept connections, then enter that URL under Change server. Plain HTTP is allowed only for local networks (NSAllowsLocalNetworking on iOS); use HTTPS for anything else.",
+            "Without the Lattice AI LLC Apple Developer team you can still install on your own device for seven days at a time:",
+            "In Xcode > Settings > Accounts, add your Apple ID; note the personal team ID (Membership details).",
+            "Build with the local team, which switches the bundle id to ai.latticetech.mymorningnews.dev and drops the push and associated domains entitlements that personal teams cannot sign:",
+            "On the device, trust the developer profile (Settings > General > VPN & Device Management) and enable Developer Mode if asked."
+          ],
+          "rounds": [
+            1
+          ],
+          "hoursAgo": 24.0,
+          "relevance": 0,
+          "url": null,
+          "aliasOf": null,
+          "quotes": "verbatim"
+        },
+        {
+          "id": "mobile-limitations",
+          "title": "Known local limitations",
+          "paragraphs": [
+            "Push notifications need a physical device, an EAS project ID, and (Android) Firebase credentials; simulators and emulators show \"Push notifications need a physical device\".",
+            "Universal links need the hosted domain's association files; use the custom scheme locally.",
+            "Over-the-air updates are off in development and until the update certificate and EAS project exist."
+          ],
+          "rounds": [
+            1
+          ],
+          "hoursAgo": 24.0,
+          "relevance": 0,
+          "url": null,
+          "aliasOf": null,
+          "quotes": "verbatim"
+        }
+      ],
+      "feedback": [],
+      "probes": [
+        {
+          "id": "surfaced-hosting-profile",
+          "type": "surfaced",
+          "category": "relevance",
+          "round": 1,
+          "negative": false,
+          "item": "hosting-profile",
+          "of": null,
+          "items": [],
+          "above": null,
+          "below": null,
+          "note": null
+        },
+        {
+          "id": "surfaced-hosting-signup",
+          "type": "surfaced",
+          "category": "relevance",
+          "round": 1,
+          "negative": false,
+          "item": "hosting-signup",
+          "of": null,
+          "items": [],
+          "above": null,
+          "below": null,
+          "note": null
+        },
+        {
+          "id": "surfaced-hosting-plans",
+          "type": "surfaced",
+          "category": "relevance",
+          "round": 1,
+          "negative": false,
+          "item": "hosting-plans",
+          "of": null,
+          "items": [],
+          "above": null,
+          "below": null,
+          "note": null
+        },
+        {
+          "id": "surfaced-hosting-deletion",
+          "type": "surfaced",
+          "category": "relevance",
+          "round": 1,
+          "negative": false,
+          "item": "hosting-deletion",
+          "of": null,
+          "items": [],
+          "above": null,
+          "below": null,
+          "note": null
+        },
+        {
+          "id": "surfaced-hosting-credentials",
+          "type": "surfaced",
+          "category": "relevance",
+          "round": 1,
+          "negative": false,
+          "item": "hosting-credentials",
+          "of": null,
+          "items": [],
+          "above": null,
+          "below": null,
+          "note": null
+        },
+        {
+          "id": "surfaced-hosting-private-network",
+          "type": "surfaced",
+          "category": "relevance",
+          "round": 1,
+          "negative": false,
+          "item": "hosting-private-network",
+          "of": null,
+          "items": [],
+          "above": null,
+          "below": null,
+          "note": null
+        },
+        {
+          "id": "suppressed-i18n-locales",
+          "type": "suppressed",
+          "category": "relevance",
+          "round": 1,
+          "negative": true,
+          "item": "i18n-locales",
+          "of": null,
+          "items": [],
+          "above": null,
+          "below": null,
+          "note": null
+        },
+        {
+          "id": "suppressed-i18n-catalogs",
+          "type": "suppressed",
+          "category": "relevance",
+          "round": 1,
+          "negative": true,
+          "item": "i18n-catalogs",
+          "of": null,
+          "items": [],
+          "above": null,
+          "below": null,
+          "note": null
+        },
+        {
+          "id": "suppressed-i18n-message-format",
+          "type": "suppressed",
+          "category": "relevance",
+          "round": 1,
+          "negative": true,
+          "item": "i18n-message-format",
+          "of": null,
+          "items": [],
+          "above": null,
+          "below": null,
+          "note": null
+        },
+        {
+          "id": "suppressed-i18n-adding-key",
+          "type": "suppressed",
+          "category": "relevance",
+          "round": 1,
+          "negative": true,
+          "item": "i18n-adding-key",
+          "of": null,
+          "items": [],
+          "above": null,
+          "below": null,
+          "note": null
+        },
+        {
+          "id": "suppressed-i18n-adding-locale",
+          "type": "suppressed",
+          "category": "relevance",
+          "round": 1,
+          "negative": true,
+          "item": "i18n-adding-locale",
+          "of": null,
+          "items": [],
+          "above": null,
+          "below": null,
+          "note": null
+        },
+        {
+          "id": "suppressed-i18n-verifiers",
+          "type": "suppressed",
+          "category": "relevance",
+          "round": 1,
+          "negative": true,
+          "item": "i18n-verifiers",
+          "of": null,
+          "items": [],
+          "above": null,
+          "below": null,
+          "note": null
+        },
+        {
+          "id": "suppressed-i18n-pseudo",
+          "type": "suppressed",
+          "category": "relevance",
+          "round": 1,
+          "negative": true,
+          "item": "i18n-pseudo",
+          "of": null,
+          "items": [],
+          "above": null,
+          "below": null,
+          "note": null
+        },
+        {
+          "id": "suppressed-i18n-rtl",
+          "type": "suppressed",
+          "category": "relevance",
+          "round": 1,
+          "negative": true,
+          "item": "i18n-rtl",
+          "of": null,
+          "items": [],
+          "above": null,
+          "below": null,
+          "note": null
+        },
+        {
+          "id": "suppressed-i18n-terminology",
+          "type": "suppressed",
+          "category": "relevance",
+          "round": 1,
+          "negative": true,
+          "item": "i18n-terminology",
+          "of": null,
+          "items": [],
+          "above": null,
+          "below": null,
+          "note": null
+        },
+        {
+          "id": "suppressed-mobile-prerequisites",
+          "type": "suppressed",
+          "category": "relevance",
+          "round": 1,
+          "negative": true,
+          "item": "mobile-prerequisites",
+          "of": null,
+          "items": [],
+          "above": null,
+          "below": null,
+          "note": null
+        },
+        {
+          "id": "suppressed-mobile-ios",
+          "type": "suppressed",
+          "category": "relevance",
+          "round": 1,
+          "negative": true,
+          "item": "mobile-ios",
+          "of": null,
+          "items": [],
+          "above": null,
+          "below": null,
+          "note": null
+        },
+        {
+          "id": "suppressed-mobile-android",
+          "type": "suppressed",
+          "category": "relevance",
+          "round": 1,
+          "negative": true,
+          "item": "mobile-android",
+          "of": null,
+          "items": [],
+          "above": null,
+          "below": null,
+          "note": null
+        },
+        {
+          "id": "suppressed-mobile-devices",
+          "type": "suppressed",
+          "category": "relevance",
+          "round": 1,
+          "negative": true,
+          "item": "mobile-devices",
+          "of": null,
+          "items": [],
+          "above": null,
+          "below": null,
+          "note": null
+        },
+        {
+          "id": "suppressed-mobile-limitations",
+          "type": "suppressed",
+          "category": "relevance",
+          "round": 1,
+          "negative": true,
+          "item": "mobile-limitations",
+          "of": null,
+          "items": [],
+          "above": null,
+          "below": null,
+          "note": null
+        },
+        {
+          "id": "ranking-r1",
+          "type": "ranking",
+          "category": "relevance",
+          "round": 1,
+          "negative": false,
+          "item": null,
+          "of": null,
+          "items": [],
+          "above": null,
+          "below": null,
+          "note": "nDCG@10 of the shown findings against graded relevance."
+        },
+        {
+          "id": "dedupe-precision-r1",
+          "type": "dedupe-precision",
+          "category": "dedupe",
+          "round": 1,
+          "negative": false,
+          "item": null,
+          "of": null,
+          "items": [],
+          "above": null,
+          "below": null,
+          "note": "Findings flagged as duplicates are true duplicates."
+        },
+        {
+          "id": "guardrail",
+          "type": "guardrail",
+          "category": "scope",
+          "round": 1,
+          "negative": false,
+          "item": null,
+          "of": null,
+          "items": [],
+          "above": null,
+          "below": null,
+          "note": "Every model request leads with the scope guardrail."
+        }
+      ]
+    }
+  ]
+}

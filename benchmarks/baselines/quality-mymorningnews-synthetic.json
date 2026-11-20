@@ -1,0 +1,6221 @@
+{
+  "format": 1,
+  "kind": "quality",
+  "dataset": "mymorningnews-synthetic",
+  "label": "ci",
+  "mode": "stub",
+  "arms": [
+    "default",
+    "llm-only",
+    "floor-search-order",
+    "reference-lexical"
+  ],
+  "provenance": {
+    "startUtc": "2026-11-20T21:52:30.97825Z",
+    "sutUrl": "http://127.0.0.1:12500",
+    "sutVersion": "0.1.0-alpha, schema 16, .NET 10.0.14",
+    "productCommit": "c6c0ffae25b825029006fe85cb579ba4133013ce-dirty",
+    "harnessVersion": "0.1.0-alpha",
+    "harnessCommit": "uncommitted-dirty",
+    "machine": "(scrubbed)",
+    "os": "macOS 26.6.0 Arm64",
+    "cpu": "Apple M5 Max, 18 logical cores",
+    "runtime": ".NET 10.0.14",
+    "images": {
+      "mymorningnews-bench-postgres": "pgvector/pgvector:0.8.1-pg17 sha256:3e8b3adfd27b5707128f60956f62a793c3c9326ea8cfaf0eab7adccb5d700b21 (pgvector/pgvector@sha256:3e8b3adfd27b5707128f60956f62a793c3c9326ea8cfaf0eab7adccb5d700b21)"
+    },
+    "services": {
+      "embeddings": "stub bench-hash-384",
+      "model": "stub bench-stub-chat (stub-2)",
+      "search, pages, speech": "stub on 127.0.0.1:12503"
+    },
+    "dataset": "mymorningnews-synthetic",
+    "datasetSha256": "67a12e73ce6d0fdf4cb8b26f1a6914139d1e53870d4a1495fd05f3392c087565",
+    "commandLine": "MyMorningNews.Benchmark quality --label ci --output-dir \u003Crepo\u003E/benchmarks/.run/ci --scrub --dataset benchmarks/datasets/mymorningnews-synthetic.json --reingest",
+    "httpClient": "SocketsHttpHandler, 256 connections per server, 120 s timeout, 2 min pooled lifetime"
+  },
+  "options": {
+    "admin-key": "(set)",
+    "arms": "default,llm-only",
+    "corpora": "",
+    "dataset": "benchmarks/datasets/mymorningnews-synthetic.json",
+    "http-timeout-seconds": "120",
+    "label": "ci",
+    "max-connections": "256",
+    "metrics-url": "http://127.0.0.1:12509/metrics",
+    "no-reference": "false",
+    "output-dir": "\u003Crepo\u003E/benchmarks/.run/ci",
+    "paid": "false",
+    "reingest": "true",
+    "resamples": "2000",
+    "run-timeout-seconds": "300",
+    "scrub": "true",
+    "seed": "20261120",
+    "server": "http://127.0.0.1:12500",
+    "stub-port": "12503"
+  },
+  "incomplete": false,
+  "incompleteReasons": [],
+  "summaries": [
+    {
+      "arm": "default",
+      "group": "overall",
+      "metric": "score",
+      "value": {
+        "mean": 0.8550090560962161,
+        "low": 0.7615682113475832,
+        "high": 0.9335988713416299,
+        "n": 65,
+        "indicative": false
+      }
+    },
+    {
+      "arm": "default",
+      "group": "positive",
+      "metric": "score",
+      "value": {
+        "mean": 0.9239019699167567,
+        "low": 0.8417108329321233,
+        "high": 0.9876363448475112,
+        "n": 45,
+        "indicative": false
+      }
+    },
+    {
+      "arm": "default",
+      "group": "negative",
+      "metric": "score",
+      "value": {
+        "mean": 0.7,
+        "low": 0.5,
+        "high": 0.9,
+        "n": 20,
+        "indicative": false
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:blocked",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:canonical",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:cluster",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:dedupe-precision",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:dedupe-precision",
+      "metric": "flagged",
+      "value": {
+        "mean": 1,
+        "low": 0.4,
+        "high": 1.6,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:duplicate",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:duplicate",
+      "metric": "flagged",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:duplicate",
+      "metric": "linked",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:empty",
+      "metric": "score",
+      "value": {
+        "mean": 0,
+        "low": 0,
+        "high": 0,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:empty",
+      "metric": "shown",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:evidence",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 7,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:evidence",
+      "metric": "accepted",
+      "value": {
+        "mean": 1.2857142857142858,
+        "low": 0.7142857142857143,
+        "high": 1.7142857142857142,
+        "n": 7,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:evidence",
+      "metric": "precision",
+      "value": {
+        "mean": 0.6428571428571429,
+        "low": 0.35714285714285715,
+        "high": 0.8571428571428571,
+        "n": 7,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:evidence",
+      "metric": "rejected",
+      "value": {
+        "mean": 0.5714285714285714,
+        "low": 0.2857142857142857,
+        "high": 0.8571428571428571,
+        "n": 7,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:guardrail",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:guardrail",
+      "metric": "requests",
+      "value": {
+        "mean": 38,
+        "low": 11,
+        "high": 60,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:injection",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:order",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:ranking",
+      "metric": "score",
+      "value": {
+        "mean": 0.7151177292508105,
+        "low": 0.35079499277821746,
+        "high": 0.9229120945248901,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:ranking",
+      "metric": "evidencePrecision",
+      "value": {
+        "mean": 0.5047619047619047,
+        "low": 0.5,
+        "high": 0.5142857142857142,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:ranking",
+      "metric": "ndcg10",
+      "value": {
+        "mean": 0.7151177292508105,
+        "low": 0.35079499277821746,
+        "high": 0.9229120945248901,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:ranking",
+      "metric": "p5",
+      "value": {
+        "mean": 0.67,
+        "low": 0.32,
+        "high": 0.95,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:ranking",
+      "metric": "recall",
+      "value": {
+        "mean": 0.95,
+        "low": 0.85,
+        "high": 1,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:ranking",
+      "metric": "shown",
+      "value": {
+        "mean": 6,
+        "low": 3,
+        "high": 9,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:ranking",
+      "metric": "shownPrecision",
+      "value": {
+        "mean": 0.5022727272727272,
+        "low": 0.25,
+        "high": 0.6772727272727272,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:seen",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:suppressed",
+      "metric": "score",
+      "value": {
+        "mean": 0.6153846153846154,
+        "low": 0.38461538461538464,
+        "high": 0.8461538461538461,
+        "n": 13,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:surfaced",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 15,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:update",
+      "metric": "score",
+      "value": {
+        "mean": 0.3333333333333333,
+        "low": 0,
+        "high": 1,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:update",
+      "metric": "shown",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "category:constraints",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "category:dedupe",
+      "metric": "score",
+      "value": {
+        "mean": 0.875,
+        "low": 0.6875,
+        "high": 1,
+        "n": 16,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "category:evidence",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 7,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "category:feedback",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "category:relevance",
+      "metric": "score",
+      "value": {
+        "mean": 0.7816349601839427,
+        "low": 0.6392142425470368,
+        "high": 0.9071065363985629,
+        "n": 34,
+        "indicative": false
+      }
+    },
+    {
+      "arm": "default",
+      "group": "category:scope",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 4,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "overall",
+      "metric": "score",
+      "value": {
+        "mean": 0.9161171382376154,
+        "low": 0.8442613458760853,
+        "high": 0.9758247854818011,
+        "n": 65,
+        "indicative": false
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "positive",
+      "metric": "score",
+      "value": {
+        "mean": 0.945502533009889,
+        "low": 0.8770431593270565,
+        "high": 0.9937715785349048,
+        "n": 45,
+        "indicative": false
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "negative",
+      "metric": "score",
+      "value": {
+        "mean": 0.85,
+        "low": 0.7,
+        "high": 1,
+        "n": 20,
+        "indicative": false
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:blocked",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:canonical",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:cluster",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:dedupe-precision",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:dedupe-precision",
+      "metric": "flagged",
+      "value": {
+        "mean": 1,
+        "low": 0.4,
+        "high": 1.6,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:duplicate",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:duplicate",
+      "metric": "flagged",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:duplicate",
+      "metric": "linked",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:empty",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:empty",
+      "metric": "shown",
+      "value": {
+        "mean": 0,
+        "low": 0,
+        "high": 0,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:evidence",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 7,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:evidence",
+      "metric": "accepted",
+      "value": {
+        "mean": 1.2857142857142858,
+        "low": 0.7142857142857143,
+        "high": 1.7142857142857142,
+        "n": 7,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:evidence",
+      "metric": "precision",
+      "value": {
+        "mean": 0.6428571428571429,
+        "low": 0.35714285714285715,
+        "high": 0.8571428571428571,
+        "n": 7,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:evidence",
+      "metric": "rejected",
+      "value": {
+        "mean": 0.5714285714285714,
+        "low": 0.2857142857142857,
+        "high": 0.8571428571428571,
+        "n": 7,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:guardrail",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:guardrail",
+      "metric": "requests",
+      "value": {
+        "mean": 37.333333333333336,
+        "low": 9,
+        "high": 60,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:injection",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:order",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:ranking",
+      "metric": "score",
+      "value": {
+        "mean": 0.9095227970890015,
+        "low": 0.8656901996076194,
+        "high": 0.9592631332436156,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:ranking",
+      "metric": "evidencePrecision",
+      "value": {
+        "mean": 0.5047619047619047,
+        "low": 0.5,
+        "high": 0.5142857142857142,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:ranking",
+      "metric": "ndcg10",
+      "value": {
+        "mean": 0.9095227970890015,
+        "low": 0.8656901996076194,
+        "high": 0.9592631332436156,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:ranking",
+      "metric": "p5",
+      "value": {
+        "mean": 0.63,
+        "low": 0.31,
+        "high": 0.8800000000000001,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:ranking",
+      "metric": "recall",
+      "value": {
+        "mean": 0.95,
+        "low": 0.85,
+        "high": 1,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:ranking",
+      "metric": "shown",
+      "value": {
+        "mean": 5.6,
+        "low": 2.4,
+        "high": 8.4,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:ranking",
+      "metric": "shownPrecision",
+      "value": {
+        "mean": 0.7150000000000001,
+        "low": 0.58,
+        "high": 0.865,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:seen",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:suppressed",
+      "metric": "score",
+      "value": {
+        "mean": 0.7692307692307693,
+        "low": 0.5384615384615384,
+        "high": 1,
+        "n": 13,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:surfaced",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 15,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:update",
+      "metric": "score",
+      "value": {
+        "mean": 0.3333333333333333,
+        "low": 0,
+        "high": 1,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:update",
+      "metric": "shown",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "category:constraints",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "category:dedupe",
+      "metric": "score",
+      "value": {
+        "mean": 0.875,
+        "low": 0.6875,
+        "high": 1,
+        "n": 16,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "category:evidence",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 7,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "category:feedback",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "category:relevance",
+      "metric": "score",
+      "value": {
+        "mean": 0.8984592348660296,
+        "low": 0.7870595042531663,
+        "high": 0.9852505722021692,
+        "n": 34,
+        "indicative": false
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "category:scope",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 4,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "overall",
+      "metric": "score",
+      "value": {
+        "mean": 0.5369078615739901,
+        "low": 0.39913811389859954,
+        "high": 0.670297117083838,
+        "n": 49,
+        "indicative": false
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "positive",
+      "metric": "score",
+      "value": {
+        "mean": 0.6769495072375171,
+        "low": 0.513908238505801,
+        "high": 0.830648489731409,
+        "n": 30,
+        "indicative": false
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "negative",
+      "metric": "score",
+      "value": {
+        "mean": 0.3157894736842105,
+        "low": 0.10526315789473684,
+        "high": 0.5263157894736842,
+        "n": 19,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:blocked",
+      "metric": "score",
+      "value": {
+        "mean": 0,
+        "low": 0,
+        "high": 0,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:canonical",
+      "metric": "score",
+      "value": {
+        "mean": 0,
+        "low": 0,
+        "high": 0,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:cluster",
+      "metric": "score",
+      "value": {
+        "mean": 0,
+        "low": 0,
+        "high": 0,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:duplicate",
+      "metric": "score",
+      "value": {
+        "mean": 0,
+        "low": 0,
+        "high": 0,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:duplicate",
+      "metric": "flagged",
+      "value": {
+        "mean": 0,
+        "low": 0,
+        "high": 0,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:duplicate",
+      "metric": "linked",
+      "value": {
+        "mean": 0,
+        "low": 0,
+        "high": 0,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:empty",
+      "metric": "score",
+      "value": {
+        "mean": 0,
+        "low": 0,
+        "high": 0,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:empty",
+      "metric": "shown",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:order",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:ranking",
+      "metric": "score",
+      "value": {
+        "mean": 0.6616970434251032,
+        "low": 0.3243653689051288,
+        "high": 0.8792650717410307,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:ranking",
+      "metric": "ndcg10",
+      "value": {
+        "mean": 0.6616970434251032,
+        "low": 0.3243653689051288,
+        "high": 0.8792650717410307,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:ranking",
+      "metric": "p5",
+      "value": {
+        "mean": 0.52,
+        "low": 0.24,
+        "high": 0.72,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:ranking",
+      "metric": "recall",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:ranking",
+      "metric": "shown",
+      "value": {
+        "mean": 8.6,
+        "low": 4.6,
+        "high": 12,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:ranking",
+      "metric": "shownPrecision",
+      "value": {
+        "mean": 0.3566233766233766,
+        "low": 0.17142857142857143,
+        "high": 0.4709090909090909,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:seen",
+      "metric": "score",
+      "value": {
+        "mean": 0,
+        "low": 0,
+        "high": 0,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:suppressed",
+      "metric": "score",
+      "value": {
+        "mean": 0.46153846153846156,
+        "low": 0.23076923076923078,
+        "high": 0.7692307692307693,
+        "n": 13,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:surfaced",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 15,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:update",
+      "metric": "score",
+      "value": {
+        "mean": 0,
+        "low": 0,
+        "high": 0,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:update",
+      "metric": "shown",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "category:constraints",
+      "metric": "score",
+      "value": {
+        "mean": 0,
+        "low": 0,
+        "high": 0,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "category:dedupe",
+      "metric": "score",
+      "value": {
+        "mean": 0,
+        "low": 0,
+        "high": 0,
+        "n": 11,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "category:feedback",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "category:relevance",
+      "metric": "score",
+      "value": {
+        "mean": 0.7149554475625152,
+        "low": 0.5676924114651287,
+        "high": 0.84991879474664,
+        "n": 34,
+        "indicative": false
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "overall",
+      "metric": "score",
+      "value": {
+        "mean": 0.8589584900728665,
+        "low": 0.7622978765246692,
+        "high": 0.9382383461301383,
+        "n": 53,
+        "indicative": false
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "positive",
+      "metric": "score",
+      "value": {
+        "mean": 0.9271999992312332,
+        "low": 0.8389647051135861,
+        "high": 0.9925026827181352,
+        "n": 34,
+        "indicative": false
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "negative",
+      "metric": "score",
+      "value": {
+        "mean": 0.7368421052631579,
+        "low": 0.5263157894736842,
+        "high": 0.8947368421052632,
+        "n": 19,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:blocked",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:canonical",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:cluster",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:dedupe-precision",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 4,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:dedupe-precision",
+      "metric": "flagged",
+      "value": {
+        "mean": 1.25,
+        "low": 1,
+        "high": 1.75,
+        "n": 4,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:duplicate",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:duplicate",
+      "metric": "flagged",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:duplicate",
+      "metric": "linked",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:empty",
+      "metric": "score",
+      "value": {
+        "mean": 0,
+        "low": 0,
+        "high": 0,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:empty",
+      "metric": "shown",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:order",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:ranking",
+      "metric": "score",
+      "value": {
+        "mean": 0.7049599947723847,
+        "low": 0.34901824248331986,
+        "high": 0.9152554415698239,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:ranking",
+      "metric": "ndcg10",
+      "value": {
+        "mean": 0.7049599947723847,
+        "low": 0.34901824248331986,
+        "high": 0.9152554415698239,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:ranking",
+      "metric": "p5",
+      "value": {
+        "mean": 0.63,
+        "low": 0.31,
+        "high": 0.8800000000000001,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:ranking",
+      "metric": "recall",
+      "value": {
+        "mean": 0.95,
+        "low": 0.85,
+        "high": 1,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:ranking",
+      "metric": "shown",
+      "value": {
+        "mean": 5.8,
+        "low": 3,
+        "high": 8.4,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:ranking",
+      "metric": "shownPrecision",
+      "value": {
+        "mean": 0.515,
+        "low": 0.25,
+        "high": 0.7,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:seen",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:suppressed",
+      "metric": "score",
+      "value": {
+        "mean": 0.6923076923076923,
+        "low": 0.46153846153846156,
+        "high": 0.9230769230769231,
+        "n": 13,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:surfaced",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 15,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:update",
+      "metric": "score",
+      "value": {
+        "mean": 0.6666666666666666,
+        "low": 0,
+        "high": 1,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:update",
+      "metric": "shown",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "category:constraints",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "category:dedupe",
+      "metric": "score",
+      "value": {
+        "mean": 0.9333333333333333,
+        "low": 0.8,
+        "high": 1,
+        "n": 15,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "category:feedback",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "category:relevance",
+      "metric": "score",
+      "value": {
+        "mean": 0.8095529404077038,
+        "low": 0.6692345577615026,
+        "high": 0.9256389281562921,
+        "n": 34,
+        "indicative": false
+      }
+    }
+  ],
+  "probes": [
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-rebate-expands",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 1, MustRead, score 80.7",
+      "error": null,
+      "key": "default/heat-pumps/surfaced-hp-rebate-expands"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "evidence-hp-rebate-expands",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "accepted": 2,
+        "precision": 0.5,
+        "rejected": 0
+      },
+      "latency": null,
+      "detail": "2 of 2 quotes classified correctly (verbatim)",
+      "error": null,
+      "key": "default/heat-pumps/evidence-hp-rebate-expands"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "seen-hp-rebate-expands-r2",
+      "type": "seen",
+      "category": "dedupe",
+      "round": 2,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Disposition SkippedDuplicate, SkippedSeen",
+      "error": null,
+      "key": "default/heat-pumps/seen-hp-rebate-expands-r2"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "canonical-hp-rebate-expands-utm",
+      "type": "canonical",
+      "category": "dedupe",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Fetched 1 time(s); alias , original SkippedDuplicate, SkippedDuplicate, Fetched",
+      "error": null,
+      "key": "default/heat-pumps/canonical-hp-rebate-expands-utm"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-tax-credit",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 5, WorthALook, score 69.5",
+      "error": null,
+      "key": "default/heat-pumps/surfaced-hp-tax-credit"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-installer-license",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 2, WorthALook, score 79.5",
+      "error": null,
+      "key": "default/heat-pumps/surfaced-hp-installer-license"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-efficiency-standard",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 3, WorthALook, score 78.7",
+      "error": null,
+      "key": "default/heat-pumps/surfaced-hp-efficiency-standard"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "evidence-hp-efficiency-standard",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "accepted": 2,
+        "precision": 0.5,
+        "rejected": 0
+      },
+      "latency": null,
+      "detail": "2 of 2 quotes classified correctly (typography)",
+      "error": null,
+      "key": "default/heat-pumps/evidence-hp-efficiency-standard"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-application-deadline",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 4, WorthALook, score 71.9",
+      "error": null,
+      "key": "default/heat-pumps/surfaced-hp-application-deadline"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "evidence-hp-application-deadline",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "accepted": 1,
+        "precision": 0,
+        "rejected": 1
+      },
+      "latency": null,
+      "detail": "2 of 2 quotes classified correctly (fabricated)",
+      "error": null,
+      "key": "default/heat-pumps/evidence-hp-application-deadline"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-budget",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 6, WorthALook, score 67.3",
+      "error": null,
+      "key": "default/heat-pumps/surfaced-hp-budget"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "evidence-hp-budget",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "accepted": 1,
+        "precision": 1,
+        "rejected": 1
+      },
+      "latency": null,
+      "detail": "2 of 2 quotes classified correctly (altered)",
+      "error": null,
+      "key": "default/heat-pumps/evidence-hp-budget"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "evidence-hp-backlog",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "accepted": 1,
+        "precision": 1,
+        "rejected": 1
+      },
+      "latency": null,
+      "detail": "2 of 2 quotes classified correctly (short)",
+      "error": null,
+      "key": "default/heat-pumps/evidence-hp-backlog"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "injection-hp-buyers-guide",
+      "type": "injection",
+      "category": "scope",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "1 finding(s), all on task",
+      "error": null,
+      "key": "default/heat-pumps/injection-hp-buyers-guide"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "suppressed-hp-heat-basketball",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "default/heat-pumps/suppressed-hp-heat-basketball"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "suppressed-hp-pumpkin-festival",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "default/heat-pumps/suppressed-hp-pumpkin-festival"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "suppressed-hp-solar-permits",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as Fyi at rank 11 (score 45.5, model 24.0)",
+      "error": null,
+      "key": "default/heat-pumps/suppressed-hp-solar-permits"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "blocked-hp-clickfarm",
+      "type": "blocked",
+      "category": "constraints",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not in the results",
+      "error": null,
+      "key": "default/heat-pumps/blocked-hp-clickfarm"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-r2-rebate-cap-r2",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 4, WorthALook, score 72.1",
+      "error": null,
+      "key": "default/heat-pumps/surfaced-hp-r2-rebate-cap-r2"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "update-hp-r2-rebate-cap-r2",
+      "type": "update",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "shown": 1
+      },
+      "latency": null,
+      "detail": "Shown and linked as an update of the original",
+      "error": null,
+      "key": "default/heat-pumps/update-hp-r2-rebate-cap-r2"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "duplicate-hp-r2-rebate-repeat-r2",
+      "type": "duplicate",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 1,
+        "linked": 1
+      },
+      "latency": null,
+      "detail": "Flagged as a duplicate of the original",
+      "error": null,
+      "key": "default/heat-pumps/duplicate-hp-r2-rebate-repeat-r2"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "duplicate-hp-r2-tax-credit-copy-r2",
+      "type": "duplicate",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 1,
+        "linked": 1
+      },
+      "latency": null,
+      "detail": "Flagged as a duplicate of the original",
+      "error": null,
+      "key": "default/heat-pumps/duplicate-hp-r2-tax-credit-copy-r2"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "update-hp-r2-standard-delay-r2",
+      "type": "update",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 0,
+      "metrics": {
+        "shown": 1
+      },
+      "latency": null,
+      "detail": "Shown but not linked as an update",
+      "error": null,
+      "key": "default/heat-pumps/update-hp-r2-standard-delay-r2"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-r2-installer-training-r2",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 2, WorthALook, score 72.5",
+      "error": null,
+      "key": "default/heat-pumps/surfaced-hp-r2-installer-training-r2"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-r2-landlord-lawsuit-r2",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 5, WorthALook, score 67.4",
+      "error": null,
+      "key": "default/heat-pumps/surfaced-hp-r2-landlord-lawsuit-r2"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "suppressed-hp-r2-heat-wave-r2",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 2,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as Fyi at rank 7 (score 55.3, model 53.0)",
+      "error": null,
+      "key": "default/heat-pumps/suppressed-hp-r2-heat-wave-r2"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "suppressed-hp-r2-heat-hockey-r2",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 2,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as WorthALook at rank 6 (score 61.0, model 68.0)",
+      "error": null,
+      "key": "default/heat-pumps/suppressed-hp-r2-heat-hockey-r2"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "ranking-r1",
+      "type": "ranking",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 0.9653169177092562,
+      "metrics": {
+        "evidencePrecision": 0.5238095238095238,
+        "ndcg10": 0.9653169177092562,
+        "p5": 1,
+        "recall": 1,
+        "shown": 11,
+        "shownPrecision": 0.6363636363636364
+      },
+      "latency": null,
+      "detail": "11 shown: hp-rebate-expands(3), hp-installer-license(2), hp-efficiency-standard(2), hp-application-deadline(3), hp-tax-credit(3), hp-budget(2), hp-buyers-guide(1), hp-geothermal-schools(1), hp-thermostat-pilot(1), hp-backlog(2)",
+      "error": null,
+      "key": "default/heat-pumps/ranking-r1"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "dedupe-precision-r1",
+      "type": "dedupe-precision",
+      "category": "dedupe",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 1
+      },
+      "latency": null,
+      "detail": "1 of 1 flagged duplicates are true duplicates",
+      "error": null,
+      "key": "default/heat-pumps/dedupe-precision-r1"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "ranking-r2",
+      "type": "ranking",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 0.891662009048114,
+      "metrics": {
+        "evidencePrecision": 0.5,
+        "ndcg10": 0.891662009048114,
+        "p5": 1,
+        "recall": 1,
+        "shown": 8,
+        "shownPrecision": 0.625
+      },
+      "latency": null,
+      "detail": "8 shown: hp-r2-tax-credit-claim(2), hp-r2-installer-training(2), hp-r2-standard-delay(2), hp-r2-rebate-cap(3), hp-r2-landlord-lawsuit(3), hp-r2-heat-hockey(0), hp-r2-heat-wave(0), hp-r2-geothermal-district(1)",
+      "error": null,
+      "key": "default/heat-pumps/ranking-r2"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "dedupe-precision-r2",
+      "type": "dedupe-precision",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 2
+      },
+      "latency": null,
+      "detail": "2 of 2 flagged duplicates are true duplicates",
+      "error": null,
+      "key": "default/heat-pumps/dedupe-precision-r2"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "guardrail",
+      "type": "guardrail",
+      "category": "scope",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "requests": 60
+      },
+      "latency": null,
+      "detail": "60 of 60 model requests led with the scope guardrail",
+      "error": null,
+      "key": "default/heat-pumps/guardrail"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "cluster-tax-credit",
+      "type": "cluster",
+      "category": "dedupe",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "1 of 2 shown: hp-tax-credit",
+      "error": null,
+      "key": "default/heat-pumps/cluster-tax-credit"
+    },
+    {
+      "arm": "default",
+      "corpus": "heat-pumps",
+      "probeId": "order-feedback",
+      "type": "order",
+      "category": "feedback",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "hp-r2-tax-credit-claim rank 1 (76.3, feedback 68.7); hp-r2-geothermal-district rank 8 (50.8, feedback 38.6)",
+      "error": null,
+      "key": "default/heat-pumps/order-feedback"
+    },
+    {
+      "arm": "default",
+      "corpus": "transit",
+      "probeId": "surfaced-tr-ferry-order",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 1, MustRead, score 80.8",
+      "error": null,
+      "key": "default/transit/surfaced-tr-ferry-order"
+    },
+    {
+      "arm": "default",
+      "corpus": "transit",
+      "probeId": "surfaced-tr-charging-dock",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 4, WorthALook, score 61.3",
+      "error": null,
+      "key": "default/transit/surfaced-tr-charging-dock"
+    },
+    {
+      "arm": "default",
+      "corpus": "transit",
+      "probeId": "evidence-tr-charging-dock",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "accepted": 2,
+        "precision": 0.5,
+        "rejected": 0
+      },
+      "latency": null,
+      "detail": "2 of 2 quotes classified correctly (typography)",
+      "error": null,
+      "key": "default/transit/evidence-tr-charging-dock"
+    },
+    {
+      "arm": "default",
+      "corpus": "transit",
+      "probeId": "seen-tr-charging-dock-r2",
+      "type": "seen",
+      "category": "dedupe",
+      "round": 2,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Disposition SkippedDuplicate, SkippedSeen",
+      "error": null,
+      "key": "default/transit/seen-tr-charging-dock-r2"
+    },
+    {
+      "arm": "default",
+      "corpus": "transit",
+      "probeId": "surfaced-tr-bus-routes",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 3, WorthALook, score 70.1",
+      "error": null,
+      "key": "default/transit/surfaced-tr-bus-routes"
+    },
+    {
+      "arm": "default",
+      "corpus": "transit",
+      "probeId": "evidence-tr-budget",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "accepted": 0,
+        "precision": 1,
+        "rejected": 1
+      },
+      "latency": null,
+      "detail": "1 of 1 quotes classified correctly (fabricated-only)",
+      "error": null,
+      "key": "default/transit/evidence-tr-budget"
+    },
+    {
+      "arm": "default",
+      "corpus": "transit",
+      "probeId": "suppressed-tr-marathon",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as Fyi at rank 6 (score 55.2, model 45.0)",
+      "error": null,
+      "key": "default/transit/suppressed-tr-marathon"
+    },
+    {
+      "arm": "default",
+      "corpus": "transit",
+      "probeId": "suppressed-tr-scooters",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: Fetched; no finding extracted.",
+      "error": null,
+      "key": "default/transit/suppressed-tr-scooters"
+    },
+    {
+      "arm": "default",
+      "corpus": "transit",
+      "probeId": "blocked-tr-spamwire",
+      "type": "blocked",
+      "category": "constraints",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not in the results",
+      "error": null,
+      "key": "default/transit/blocked-tr-spamwire"
+    },
+    {
+      "arm": "default",
+      "corpus": "transit",
+      "probeId": "surfaced-tr-r2-ferry-delivery-r2",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 3, Fyi, score 55.7",
+      "error": null,
+      "key": "default/transit/surfaced-tr-r2-ferry-delivery-r2"
+    },
+    {
+      "arm": "default",
+      "corpus": "transit",
+      "probeId": "update-tr-r2-ferry-delivery-r2",
+      "type": "update",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 0,
+      "metrics": {
+        "shown": 1
+      },
+      "latency": null,
+      "detail": "Shown but not linked as an update",
+      "error": null,
+      "key": "default/transit/update-tr-r2-ferry-delivery-r2"
+    },
+    {
+      "arm": "default",
+      "corpus": "transit",
+      "probeId": "duplicate-tr-r2-ferry-repeat-r2",
+      "type": "duplicate",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 1,
+        "linked": 1
+      },
+      "latency": null,
+      "detail": "Flagged as a duplicate of the original",
+      "error": null,
+      "key": "default/transit/duplicate-tr-r2-ferry-repeat-r2"
+    },
+    {
+      "arm": "default",
+      "corpus": "transit",
+      "probeId": "surfaced-tr-r2-depot-chargers-r2",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 1, WorthALook, score 73.4",
+      "error": null,
+      "key": "default/transit/surfaced-tr-r2-depot-chargers-r2"
+    },
+    {
+      "arm": "default",
+      "corpus": "transit",
+      "probeId": "surfaced-tr-r2-crew-training-r2",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 4, Fyi, score 51.1",
+      "error": null,
+      "key": "default/transit/surfaced-tr-r2-crew-training-r2"
+    },
+    {
+      "arm": "default",
+      "corpus": "transit",
+      "probeId": "suppressed-tr-r2-concert-r2",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 2,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: Fetched; no finding extracted.",
+      "error": null,
+      "key": "default/transit/suppressed-tr-r2-concert-r2"
+    },
+    {
+      "arm": "default",
+      "corpus": "transit",
+      "probeId": "ranking-r1",
+      "type": "ranking",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 0.8416222375511387,
+      "metrics": {
+        "evidencePrecision": 0.5,
+        "ndcg10": 0.8416222375511387,
+        "p5": 0.6,
+        "recall": 0.75,
+        "shown": 6,
+        "shownPrecision": 0.5
+      },
+      "latency": null,
+      "detail": "6 shown: tr-ferry-order(3), tr-wooden-ferries(1), tr-bus-routes(2), tr-charging-dock(3), tr-fare-rise(1), tr-marathon(0)",
+      "error": null,
+      "key": "default/transit/ranking-r1"
+    },
+    {
+      "arm": "default",
+      "corpus": "transit",
+      "probeId": "dedupe-precision-r1",
+      "type": "dedupe-precision",
+      "category": "dedupe",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 1
+      },
+      "latency": null,
+      "detail": "1 of 1 flagged duplicates are true duplicates",
+      "error": null,
+      "key": "default/transit/dedupe-precision-r1"
+    },
+    {
+      "arm": "default",
+      "corpus": "transit",
+      "probeId": "ranking-r2",
+      "type": "ranking",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 0.8769874819455437,
+      "metrics": {
+        "evidencePrecision": 0.5,
+        "ndcg10": 0.8769874819455437,
+        "p5": 0.75,
+        "recall": 1,
+        "shown": 4,
+        "shownPrecision": 0.75
+      },
+      "latency": null,
+      "detail": "4 shown: tr-r2-depot-chargers(2), tr-r2-fare-cap(1), tr-r2-ferry-delivery(3), tr-r2-crew-training(2)",
+      "error": null,
+      "key": "default/transit/ranking-r2"
+    },
+    {
+      "arm": "default",
+      "corpus": "transit",
+      "probeId": "dedupe-precision-r2",
+      "type": "dedupe-precision",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 1
+      },
+      "latency": null,
+      "detail": "1 of 1 flagged duplicates are true duplicates",
+      "error": null,
+      "key": "default/transit/dedupe-precision-r2"
+    },
+    {
+      "arm": "default",
+      "corpus": "transit",
+      "probeId": "guardrail",
+      "type": "guardrail",
+      "category": "scope",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "requests": 43
+      },
+      "latency": null,
+      "detail": "43 of 43 model requests led with the scope guardrail",
+      "error": null,
+      "key": "default/transit/guardrail"
+    },
+    {
+      "arm": "default",
+      "corpus": "transit",
+      "probeId": "cluster-ferry-order",
+      "type": "cluster",
+      "category": "dedupe",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "1 of 2 shown: tr-ferry-order",
+      "error": null,
+      "key": "default/transit/cluster-ferry-order"
+    },
+    {
+      "arm": "default",
+      "corpus": "transit",
+      "probeId": "order-feedback",
+      "type": "order",
+      "category": "feedback",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "tr-r2-depot-chargers rank 1 (73.4, feedback 61.9); tr-r2-fare-cap rank 2 (66.0, feedback 50.0)",
+      "error": null,
+      "key": "default/transit/order-feedback"
+    },
+    {
+      "arm": "default",
+      "corpus": "quantum-negative",
+      "probeId": "suppressed-qn-quantum-cafe",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as Fyi at rank 1 (score 48.3, model 28.0)",
+      "error": null,
+      "key": "default/quantum-negative/suppressed-qn-quantum-cafe"
+    },
+    {
+      "arm": "default",
+      "corpus": "quantum-negative",
+      "probeId": "suppressed-qn-library-hours",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "default/quantum-negative/suppressed-qn-library-hours"
+    },
+    {
+      "arm": "default",
+      "corpus": "quantum-negative",
+      "probeId": "suppressed-qn-road-repairs",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "default/quantum-negative/suppressed-qn-road-repairs"
+    },
+    {
+      "arm": "default",
+      "corpus": "quantum-negative",
+      "probeId": "suppressed-qn-science-fair",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "default/quantum-negative/suppressed-qn-science-fair"
+    },
+    {
+      "arm": "default",
+      "corpus": "quantum-negative",
+      "probeId": "suppressed-qn-ferry-schedule",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "default/quantum-negative/suppressed-qn-ferry-schedule"
+    },
+    {
+      "arm": "default",
+      "corpus": "quantum-negative",
+      "probeId": "ranking-r1",
+      "type": "ranking",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 0,
+      "metrics": {
+        "evidencePrecision": 0.5,
+        "ndcg10": 0,
+        "p5": 0,
+        "recall": 1,
+        "shown": 1,
+        "shownPrecision": 0
+      },
+      "latency": null,
+      "detail": "1 shown: qn-quantum-cafe(0)",
+      "error": null,
+      "key": "default/quantum-negative/ranking-r1"
+    },
+    {
+      "arm": "default",
+      "corpus": "quantum-negative",
+      "probeId": "dedupe-precision-r1",
+      "type": "dedupe-precision",
+      "category": "dedupe",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 0
+      },
+      "latency": null,
+      "detail": "No duplicates flagged",
+      "error": null,
+      "key": "default/quantum-negative/dedupe-precision-r1"
+    },
+    {
+      "arm": "default",
+      "corpus": "quantum-negative",
+      "probeId": "guardrail",
+      "type": "guardrail",
+      "category": "scope",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "requests": 11
+      },
+      "latency": null,
+      "detail": "11 of 11 model requests led with the scope guardrail",
+      "error": null,
+      "key": "default/quantum-negative/guardrail"
+    },
+    {
+      "arm": "default",
+      "corpus": "quantum-negative",
+      "probeId": "empty-round",
+      "type": "empty",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {
+        "shown": 1
+      },
+      "latency": null,
+      "detail": "1 shown: Fyi 48.3 Quantum Cafe opens on Main Street with a computing theme",
+      "error": null,
+      "key": "default/quantum-negative/empty-round"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-rebate-expands",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 2, MustRead, score 100.0",
+      "error": null,
+      "key": "llm-only/heat-pumps/surfaced-hp-rebate-expands"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "evidence-hp-rebate-expands",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "accepted": 2,
+        "precision": 0.5,
+        "rejected": 0
+      },
+      "latency": null,
+      "detail": "2 of 2 quotes classified correctly (verbatim)",
+      "error": null,
+      "key": "llm-only/heat-pumps/evidence-hp-rebate-expands"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "seen-hp-rebate-expands-r2",
+      "type": "seen",
+      "category": "dedupe",
+      "round": 2,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Disposition SkippedDuplicate, SkippedSeen",
+      "error": null,
+      "key": "llm-only/heat-pumps/seen-hp-rebate-expands-r2"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "canonical-hp-rebate-expands-utm",
+      "type": "canonical",
+      "category": "dedupe",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Fetched 1 time(s); alias , original SkippedDuplicate, SkippedDuplicate, Fetched",
+      "error": null,
+      "key": "llm-only/heat-pumps/canonical-hp-rebate-expands-utm"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-tax-credit",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 6, WorthALook, score 76.0",
+      "error": null,
+      "key": "llm-only/heat-pumps/surfaced-hp-tax-credit"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-installer-license",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 3, MustRead, score 100.0",
+      "error": null,
+      "key": "llm-only/heat-pumps/surfaced-hp-installer-license"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-efficiency-standard",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 1, MustRead, score 100.0",
+      "error": null,
+      "key": "llm-only/heat-pumps/surfaced-hp-efficiency-standard"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "evidence-hp-efficiency-standard",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "accepted": 2,
+        "precision": 0.5,
+        "rejected": 0
+      },
+      "latency": null,
+      "detail": "2 of 2 quotes classified correctly (typography)",
+      "error": null,
+      "key": "llm-only/heat-pumps/evidence-hp-efficiency-standard"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-application-deadline",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 4, MustRead, score 80.0",
+      "error": null,
+      "key": "llm-only/heat-pumps/surfaced-hp-application-deadline"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "evidence-hp-application-deadline",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "accepted": 1,
+        "precision": 0,
+        "rejected": 1
+      },
+      "latency": null,
+      "detail": "2 of 2 quotes classified correctly (fabricated)",
+      "error": null,
+      "key": "llm-only/heat-pumps/evidence-hp-application-deadline"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-budget",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 7, WorthALook, score 72.0",
+      "error": null,
+      "key": "llm-only/heat-pumps/surfaced-hp-budget"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "evidence-hp-budget",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "accepted": 1,
+        "precision": 1,
+        "rejected": 1
+      },
+      "latency": null,
+      "detail": "2 of 2 quotes classified correctly (altered)",
+      "error": null,
+      "key": "llm-only/heat-pumps/evidence-hp-budget"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "evidence-hp-backlog",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "accepted": 1,
+        "precision": 1,
+        "rejected": 1
+      },
+      "latency": null,
+      "detail": "2 of 2 quotes classified correctly (short)",
+      "error": null,
+      "key": "llm-only/heat-pumps/evidence-hp-backlog"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "injection-hp-buyers-guide",
+      "type": "injection",
+      "category": "scope",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "1 finding(s), all on task",
+      "error": null,
+      "key": "llm-only/heat-pumps/injection-hp-buyers-guide"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "suppressed-hp-heat-basketball",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "llm-only/heat-pumps/suppressed-hp-heat-basketball"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "suppressed-hp-pumpkin-festival",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "llm-only/heat-pumps/suppressed-hp-pumpkin-festival"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "suppressed-hp-solar-permits",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: SkippedDuplicate, Fetched; finding BelowThreshold 24.0",
+      "error": null,
+      "key": "llm-only/heat-pumps/suppressed-hp-solar-permits"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "blocked-hp-clickfarm",
+      "type": "blocked",
+      "category": "constraints",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not in the results",
+      "error": null,
+      "key": "llm-only/heat-pumps/blocked-hp-clickfarm"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-r2-rebate-cap-r2",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 2, MustRead, score 100.0",
+      "error": null,
+      "key": "llm-only/heat-pumps/surfaced-hp-r2-rebate-cap-r2"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "update-hp-r2-rebate-cap-r2",
+      "type": "update",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "shown": 1
+      },
+      "latency": null,
+      "detail": "Shown and linked as an update of the original",
+      "error": null,
+      "key": "llm-only/heat-pumps/update-hp-r2-rebate-cap-r2"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "duplicate-hp-r2-rebate-repeat-r2",
+      "type": "duplicate",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 1,
+        "linked": 1
+      },
+      "latency": null,
+      "detail": "Flagged as a duplicate of the original",
+      "error": null,
+      "key": "llm-only/heat-pumps/duplicate-hp-r2-rebate-repeat-r2"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "duplicate-hp-r2-tax-credit-copy-r2",
+      "type": "duplicate",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 1,
+        "linked": 1
+      },
+      "latency": null,
+      "detail": "Flagged as a duplicate of the original",
+      "error": null,
+      "key": "llm-only/heat-pumps/duplicate-hp-r2-tax-credit-copy-r2"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "update-hp-r2-standard-delay-r2",
+      "type": "update",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 0,
+      "metrics": {
+        "shown": 1
+      },
+      "latency": null,
+      "detail": "Shown but not linked as an update",
+      "error": null,
+      "key": "llm-only/heat-pumps/update-hp-r2-standard-delay-r2"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-r2-installer-training-r2",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 4, MustRead, score 91.0",
+      "error": null,
+      "key": "llm-only/heat-pumps/surfaced-hp-r2-installer-training-r2"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-r2-landlord-lawsuit-r2",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 5, WorthALook, score 78.0",
+      "error": null,
+      "key": "llm-only/heat-pumps/surfaced-hp-r2-landlord-lawsuit-r2"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "suppressed-hp-r2-heat-wave-r2",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 2,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as Fyi at rank 8 (score 53.0, model 53.0)",
+      "error": null,
+      "key": "llm-only/heat-pumps/suppressed-hp-r2-heat-wave-r2"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "suppressed-hp-r2-heat-hockey-r2",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 2,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as WorthALook at rank 6 (score 68.0, model 68.0)",
+      "error": null,
+      "key": "llm-only/heat-pumps/suppressed-hp-r2-heat-hockey-r2"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "ranking-r1",
+      "type": "ranking",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 0.9213667760625874,
+      "metrics": {
+        "evidencePrecision": 0.5238095238095238,
+        "ndcg10": 0.9213667760625874,
+        "p5": 0.8,
+        "recall": 1,
+        "shown": 10,
+        "shownPrecision": 0.7
+      },
+      "latency": null,
+      "detail": "10 shown: hp-efficiency-standard(2), hp-rebate-expands(3), hp-installer-license(2), hp-application-deadline(3), hp-buyers-guide(1), hp-tax-credit(3), hp-budget(2), hp-thermostat-pilot(1), hp-geothermal-schools(1), hp-backlog(2)",
+      "error": null,
+      "key": "llm-only/heat-pumps/ranking-r1"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "dedupe-precision-r1",
+      "type": "dedupe-precision",
+      "category": "dedupe",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 1
+      },
+      "latency": null,
+      "detail": "1 of 1 flagged duplicates are true duplicates",
+      "error": null,
+      "key": "llm-only/heat-pumps/dedupe-precision-r1"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "ranking-r2",
+      "type": "ranking",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 0.9193281842725338,
+      "metrics": {
+        "evidencePrecision": 0.5,
+        "ndcg10": 0.9193281842725338,
+        "p5": 1,
+        "recall": 1,
+        "shown": 8,
+        "shownPrecision": 0.625
+      },
+      "latency": null,
+      "detail": "8 shown: hp-r2-standard-delay(2), hp-r2-rebate-cap(3), hp-r2-tax-credit-claim(2), hp-r2-installer-training(2), hp-r2-landlord-lawsuit(3), hp-r2-heat-hockey(0), hp-r2-geothermal-district(1), hp-r2-heat-wave(0)",
+      "error": null,
+      "key": "llm-only/heat-pumps/ranking-r2"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "dedupe-precision-r2",
+      "type": "dedupe-precision",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 2
+      },
+      "latency": null,
+      "detail": "2 of 2 flagged duplicates are true duplicates",
+      "error": null,
+      "key": "llm-only/heat-pumps/dedupe-precision-r2"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "guardrail",
+      "type": "guardrail",
+      "category": "scope",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "requests": 60
+      },
+      "latency": null,
+      "detail": "60 of 60 model requests led with the scope guardrail",
+      "error": null,
+      "key": "llm-only/heat-pumps/guardrail"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "cluster-tax-credit",
+      "type": "cluster",
+      "category": "dedupe",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "1 of 2 shown: hp-tax-credit",
+      "error": null,
+      "key": "llm-only/heat-pumps/cluster-tax-credit"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "heat-pumps",
+      "probeId": "order-feedback",
+      "type": "order",
+      "category": "feedback",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "hp-r2-tax-credit-claim rank 3 (97.0, feedback 68.7); hp-r2-geothermal-district rank 7 (54.0, feedback 38.6)",
+      "error": null,
+      "key": "llm-only/heat-pumps/order-feedback"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "transit",
+      "probeId": "surfaced-tr-ferry-order",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 1, MustRead, score 100.0",
+      "error": null,
+      "key": "llm-only/transit/surfaced-tr-ferry-order"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "transit",
+      "probeId": "surfaced-tr-charging-dock",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 5, Fyi, score 58.0",
+      "error": null,
+      "key": "llm-only/transit/surfaced-tr-charging-dock"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "transit",
+      "probeId": "evidence-tr-charging-dock",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "accepted": 2,
+        "precision": 0.5,
+        "rejected": 0
+      },
+      "latency": null,
+      "detail": "2 of 2 quotes classified correctly (typography)",
+      "error": null,
+      "key": "llm-only/transit/evidence-tr-charging-dock"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "transit",
+      "probeId": "seen-tr-charging-dock-r2",
+      "type": "seen",
+      "category": "dedupe",
+      "round": 2,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Disposition SkippedDuplicate, SkippedSeen",
+      "error": null,
+      "key": "llm-only/transit/seen-tr-charging-dock-r2"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "transit",
+      "probeId": "surfaced-tr-bus-routes",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 3, WorthALook, score 79.0",
+      "error": null,
+      "key": "llm-only/transit/surfaced-tr-bus-routes"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "transit",
+      "probeId": "evidence-tr-budget",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "accepted": 0,
+        "precision": 1,
+        "rejected": 1
+      },
+      "latency": null,
+      "detail": "1 of 1 quotes classified correctly (fabricated-only)",
+      "error": null,
+      "key": "llm-only/transit/evidence-tr-budget"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "transit",
+      "probeId": "suppressed-tr-marathon",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as Fyi at rank 6 (score 45.0, model 45.0)",
+      "error": null,
+      "key": "llm-only/transit/suppressed-tr-marathon"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "transit",
+      "probeId": "suppressed-tr-scooters",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: Fetched; no finding extracted.",
+      "error": null,
+      "key": "llm-only/transit/suppressed-tr-scooters"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "transit",
+      "probeId": "blocked-tr-spamwire",
+      "type": "blocked",
+      "category": "constraints",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not in the results",
+      "error": null,
+      "key": "llm-only/transit/blocked-tr-spamwire"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "transit",
+      "probeId": "surfaced-tr-r2-ferry-delivery-r2",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 3, Fyi, score 47.0",
+      "error": null,
+      "key": "llm-only/transit/surfaced-tr-r2-ferry-delivery-r2"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "transit",
+      "probeId": "update-tr-r2-ferry-delivery-r2",
+      "type": "update",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 0,
+      "metrics": {
+        "shown": 1
+      },
+      "latency": null,
+      "detail": "Shown but not linked as an update",
+      "error": null,
+      "key": "llm-only/transit/update-tr-r2-ferry-delivery-r2"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "transit",
+      "probeId": "duplicate-tr-r2-ferry-repeat-r2",
+      "type": "duplicate",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 1,
+        "linked": 1
+      },
+      "latency": null,
+      "detail": "Flagged as a duplicate of the original",
+      "error": null,
+      "key": "llm-only/transit/duplicate-tr-r2-ferry-repeat-r2"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "transit",
+      "probeId": "surfaced-tr-r2-depot-chargers-r2",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 1, MustRead, score 88.0",
+      "error": null,
+      "key": "llm-only/transit/surfaced-tr-r2-depot-chargers-r2"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "transit",
+      "probeId": "surfaced-tr-r2-crew-training-r2",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 4, Fyi, score 42.0",
+      "error": null,
+      "key": "llm-only/transit/surfaced-tr-r2-crew-training-r2"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "transit",
+      "probeId": "suppressed-tr-r2-concert-r2",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 2,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: Fetched; no finding extracted.",
+      "error": null,
+      "key": "llm-only/transit/suppressed-tr-r2-concert-r2"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "transit",
+      "probeId": "ranking-r1",
+      "type": "ranking",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 0.8299315431643429,
+      "metrics": {
+        "evidencePrecision": 0.5,
+        "ndcg10": 0.8299315431643429,
+        "p5": 0.6,
+        "recall": 0.75,
+        "shown": 6,
+        "shownPrecision": 0.5
+      },
+      "latency": null,
+      "detail": "6 shown: tr-ferry-order(3), tr-wooden-ferries(1), tr-bus-routes(2), tr-fare-rise(1), tr-charging-dock(3), tr-marathon(0)",
+      "error": null,
+      "key": "llm-only/transit/ranking-r1"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "transit",
+      "probeId": "dedupe-precision-r1",
+      "type": "dedupe-precision",
+      "category": "dedupe",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 1
+      },
+      "latency": null,
+      "detail": "1 of 1 flagged duplicates are true duplicates",
+      "error": null,
+      "key": "llm-only/transit/dedupe-precision-r1"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "transit",
+      "probeId": "ranking-r2",
+      "type": "ranking",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 0.8769874819455437,
+      "metrics": {
+        "evidencePrecision": 0.5,
+        "ndcg10": 0.8769874819455437,
+        "p5": 0.75,
+        "recall": 1,
+        "shown": 4,
+        "shownPrecision": 0.75
+      },
+      "latency": null,
+      "detail": "4 shown: tr-r2-depot-chargers(2), tr-r2-fare-cap(1), tr-r2-ferry-delivery(3), tr-r2-crew-training(2)",
+      "error": null,
+      "key": "llm-only/transit/ranking-r2"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "transit",
+      "probeId": "dedupe-precision-r2",
+      "type": "dedupe-precision",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 1
+      },
+      "latency": null,
+      "detail": "1 of 1 flagged duplicates are true duplicates",
+      "error": null,
+      "key": "llm-only/transit/dedupe-precision-r2"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "transit",
+      "probeId": "guardrail",
+      "type": "guardrail",
+      "category": "scope",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "requests": 43
+      },
+      "latency": null,
+      "detail": "43 of 43 model requests led with the scope guardrail",
+      "error": null,
+      "key": "llm-only/transit/guardrail"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "transit",
+      "probeId": "cluster-ferry-order",
+      "type": "cluster",
+      "category": "dedupe",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "1 of 2 shown: tr-ferry-order",
+      "error": null,
+      "key": "llm-only/transit/cluster-ferry-order"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "transit",
+      "probeId": "order-feedback",
+      "type": "order",
+      "category": "feedback",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "tr-r2-depot-chargers rank 1 (88.0, feedback 61.9); tr-r2-fare-cap rank 2 (74.0, feedback 50.0)",
+      "error": null,
+      "key": "llm-only/transit/order-feedback"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "quantum-negative",
+      "probeId": "suppressed-qn-quantum-cafe",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: SkippedDuplicate, Fetched; finding BelowThreshold 28.0",
+      "error": null,
+      "key": "llm-only/quantum-negative/suppressed-qn-quantum-cafe"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "quantum-negative",
+      "probeId": "suppressed-qn-library-hours",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "llm-only/quantum-negative/suppressed-qn-library-hours"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "quantum-negative",
+      "probeId": "suppressed-qn-road-repairs",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "llm-only/quantum-negative/suppressed-qn-road-repairs"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "quantum-negative",
+      "probeId": "suppressed-qn-science-fair",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "llm-only/quantum-negative/suppressed-qn-science-fair"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "quantum-negative",
+      "probeId": "suppressed-qn-ferry-schedule",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "llm-only/quantum-negative/suppressed-qn-ferry-schedule"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "quantum-negative",
+      "probeId": "ranking-r1",
+      "type": "ranking",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "evidencePrecision": 0.5,
+        "ndcg10": 1,
+        "p5": 0,
+        "recall": 1,
+        "shown": 0,
+        "shownPrecision": 1
+      },
+      "latency": null,
+      "detail": "0 shown: ",
+      "error": null,
+      "key": "llm-only/quantum-negative/ranking-r1"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "quantum-negative",
+      "probeId": "dedupe-precision-r1",
+      "type": "dedupe-precision",
+      "category": "dedupe",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 0
+      },
+      "latency": null,
+      "detail": "No duplicates flagged",
+      "error": null,
+      "key": "llm-only/quantum-negative/dedupe-precision-r1"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "quantum-negative",
+      "probeId": "guardrail",
+      "type": "guardrail",
+      "category": "scope",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "requests": 9
+      },
+      "latency": null,
+      "detail": "9 of 9 model requests led with the scope guardrail",
+      "error": null,
+      "key": "llm-only/quantum-negative/guardrail"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "quantum-negative",
+      "probeId": "empty-round",
+      "type": "empty",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "shown": 0
+      },
+      "latency": null,
+      "detail": "Nothing shown: 1 findings stood out. The lead development: Quantum Cafe opens on Main Street with a computing theme.",
+      "error": null,
+      "key": "llm-only/quantum-negative/empty-round"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-rebate-expands",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 1, Fyi, score 50.0",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/surfaced-hp-rebate-expands"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "evidence-hp-rebate-expands",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Reference arms extract no evidence.",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/evidence-hp-rebate-expands"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "seen-hp-rebate-expands-r2",
+      "type": "seen",
+      "category": "dedupe",
+      "round": 2,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Disposition Fetched; shown again",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/seen-hp-rebate-expands-r2"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "canonical-hp-rebate-expands-utm",
+      "type": "canonical",
+      "category": "dedupe",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Fetched 2 time(s); alias Fetched, original Fetched",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/canonical-hp-rebate-expands-utm"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-tax-credit",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 11, Fyi, score 50.0",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/surfaced-hp-tax-credit"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-installer-license",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 3, Fyi, score 50.0",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/surfaced-hp-installer-license"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-efficiency-standard",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 4, Fyi, score 50.0",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/surfaced-hp-efficiency-standard"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "evidence-hp-efficiency-standard",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Reference arms extract no evidence.",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/evidence-hp-efficiency-standard"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-application-deadline",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 5, Fyi, score 50.0",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/surfaced-hp-application-deadline"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "evidence-hp-application-deadline",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Reference arms extract no evidence.",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/evidence-hp-application-deadline"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-budget",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 6, Fyi, score 50.0",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/surfaced-hp-budget"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "evidence-hp-budget",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Reference arms extract no evidence.",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/evidence-hp-budget"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "evidence-hp-backlog",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Reference arms extract no evidence.",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/evidence-hp-backlog"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "injection-hp-buyers-guide",
+      "type": "injection",
+      "category": "scope",
+      "round": 1,
+      "negative": true,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Reference arms generate no text.",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/injection-hp-buyers-guide"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "suppressed-hp-heat-basketball",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/suppressed-hp-heat-basketball"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "suppressed-hp-pumpkin-festival",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/suppressed-hp-pumpkin-festival"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "suppressed-hp-solar-permits",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as Fyi at rank 13 (score 50.0, model 50.0)",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/suppressed-hp-solar-permits"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "blocked-hp-clickfarm",
+      "type": "blocked",
+      "category": "constraints",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Disposition Fetched",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/blocked-hp-clickfarm"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-r2-rebate-cap-r2",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 2, Fyi, score 50.0",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/surfaced-hp-r2-rebate-cap-r2"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "update-hp-r2-rebate-cap-r2",
+      "type": "update",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 0,
+      "metrics": {
+        "shown": 1
+      },
+      "latency": null,
+      "detail": "Shown but not linked as an update",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/update-hp-r2-rebate-cap-r2"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "duplicate-hp-r2-rebate-repeat-r2",
+      "type": "duplicate",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 0,
+      "metrics": {
+        "flagged": 0,
+        "linked": 0
+      },
+      "latency": null,
+      "detail": "Shown again as new (Fyi, rank 3)",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/duplicate-hp-r2-rebate-repeat-r2"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "duplicate-hp-r2-tax-credit-copy-r2",
+      "type": "duplicate",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 0,
+      "metrics": {
+        "flagged": 0,
+        "linked": 0
+      },
+      "latency": null,
+      "detail": "Shown again as new (Fyi, rank 11)",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/duplicate-hp-r2-tax-credit-copy-r2"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "update-hp-r2-standard-delay-r2",
+      "type": "update",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 0,
+      "metrics": {
+        "shown": 1
+      },
+      "latency": null,
+      "detail": "Shown but not linked as an update",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/update-hp-r2-standard-delay-r2"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-r2-installer-training-r2",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 5, Fyi, score 50.0",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/surfaced-hp-r2-installer-training-r2"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-r2-landlord-lawsuit-r2",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 6, Fyi, score 50.0",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/surfaced-hp-r2-landlord-lawsuit-r2"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "suppressed-hp-r2-heat-wave-r2",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 2,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as Fyi at rank 9 (score 50.0, model 50.0)",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/suppressed-hp-r2-heat-wave-r2"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "suppressed-hp-r2-heat-hockey-r2",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 2,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as Fyi at rank 10 (score 50.0, model 50.0)",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/suppressed-hp-r2-heat-hockey-r2"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "ranking-r1",
+      "type": "ranking",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 0.8054847374083777,
+      "metrics": {
+        "ndcg10": 0.8054847374083777,
+        "p5": 0.8,
+        "recall": 1,
+        "shown": 14,
+        "shownPrecision": 0.5
+      },
+      "latency": null,
+      "detail": "14 shown: hp-rebate-expands(3), hp-rebate-expands(0), hp-installer-license(2), hp-efficiency-standard(2), hp-application-deadline(3), hp-budget(2), hp-backlog(2), hp-thermostat-pilot(1), hp-geothermal-schools(1), hp-buyers-guide(1)",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/ranking-r1"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "dedupe-precision-r1",
+      "type": "dedupe-precision",
+      "category": "dedupe",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "The arm flags no duplicates.",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/dedupe-precision-r1"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "ranking-r2",
+      "type": "ranking",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 0.7075801690687505,
+      "metrics": {
+        "ndcg10": 0.7075801690687505,
+        "p5": 0.6,
+        "recall": 1,
+        "shown": 11,
+        "shownPrecision": 0.45454545454545453
+      },
+      "latency": null,
+      "detail": "11 shown: hp-rebate-expands(0), hp-r2-rebate-cap(3), hp-r2-rebate-repeat(0), hp-r2-standard-delay(2), hp-r2-installer-training(2), hp-r2-landlord-lawsuit(3), hp-r2-tax-credit-claim(2), hp-r2-geothermal-district(1), hp-r2-heat-wave(0), hp-r2-heat-hockey(0)",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/ranking-r2"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "dedupe-precision-r2",
+      "type": "dedupe-precision",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "The arm flags no duplicates.",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/dedupe-precision-r2"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "guardrail",
+      "type": "guardrail",
+      "category": "scope",
+      "round": 2,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Only measurable when the stub model receives the requests.",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/guardrail"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "cluster-tax-credit",
+      "type": "cluster",
+      "category": "dedupe",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "2 of 2 shown: hp-tax-credit, hp-tax-credit-wire",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/cluster-tax-credit"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "heat-pumps",
+      "probeId": "order-feedback",
+      "type": "order",
+      "category": "feedback",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "hp-r2-tax-credit-claim rank 7 (50.0, feedback 0.0); hp-r2-geothermal-district rank 8 (50.0, feedback 0.0)",
+      "error": null,
+      "key": "floor-search-order/heat-pumps/order-feedback"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "transit",
+      "probeId": "surfaced-tr-ferry-order",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 1, Fyi, score 50.0",
+      "error": null,
+      "key": "floor-search-order/transit/surfaced-tr-ferry-order"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "transit",
+      "probeId": "surfaced-tr-charging-dock",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 6, Fyi, score 50.0",
+      "error": null,
+      "key": "floor-search-order/transit/surfaced-tr-charging-dock"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "transit",
+      "probeId": "evidence-tr-charging-dock",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Reference arms extract no evidence.",
+      "error": null,
+      "key": "floor-search-order/transit/evidence-tr-charging-dock"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "transit",
+      "probeId": "seen-tr-charging-dock-r2",
+      "type": "seen",
+      "category": "dedupe",
+      "round": 2,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Disposition Fetched; shown again",
+      "error": null,
+      "key": "floor-search-order/transit/seen-tr-charging-dock-r2"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "transit",
+      "probeId": "surfaced-tr-bus-routes",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 3, Fyi, score 50.0",
+      "error": null,
+      "key": "floor-search-order/transit/surfaced-tr-bus-routes"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "transit",
+      "probeId": "evidence-tr-budget",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Reference arms extract no evidence.",
+      "error": null,
+      "key": "floor-search-order/transit/evidence-tr-budget"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "transit",
+      "probeId": "suppressed-tr-marathon",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as Fyi at rank 8 (score 50.0, model 50.0)",
+      "error": null,
+      "key": "floor-search-order/transit/suppressed-tr-marathon"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "transit",
+      "probeId": "suppressed-tr-scooters",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as Fyi at rank 10 (score 50.0, model 50.0)",
+      "error": null,
+      "key": "floor-search-order/transit/suppressed-tr-scooters"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "transit",
+      "probeId": "blocked-tr-spamwire",
+      "type": "blocked",
+      "category": "constraints",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Disposition Fetched",
+      "error": null,
+      "key": "floor-search-order/transit/blocked-tr-spamwire"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "transit",
+      "probeId": "surfaced-tr-r2-ferry-delivery-r2",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 1, Fyi, score 50.0",
+      "error": null,
+      "key": "floor-search-order/transit/surfaced-tr-r2-ferry-delivery-r2"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "transit",
+      "probeId": "update-tr-r2-ferry-delivery-r2",
+      "type": "update",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 0,
+      "metrics": {
+        "shown": 1
+      },
+      "latency": null,
+      "detail": "Shown but not linked as an update",
+      "error": null,
+      "key": "floor-search-order/transit/update-tr-r2-ferry-delivery-r2"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "transit",
+      "probeId": "duplicate-tr-r2-ferry-repeat-r2",
+      "type": "duplicate",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 0,
+      "metrics": {
+        "flagged": 0,
+        "linked": 0
+      },
+      "latency": null,
+      "detail": "Shown again as new (Fyi, rank 2)",
+      "error": null,
+      "key": "floor-search-order/transit/duplicate-tr-r2-ferry-repeat-r2"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "transit",
+      "probeId": "surfaced-tr-r2-depot-chargers-r2",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 3, Fyi, score 50.0",
+      "error": null,
+      "key": "floor-search-order/transit/surfaced-tr-r2-depot-chargers-r2"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "transit",
+      "probeId": "surfaced-tr-r2-crew-training-r2",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 5, Fyi, score 50.0",
+      "error": null,
+      "key": "floor-search-order/transit/surfaced-tr-r2-crew-training-r2"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "transit",
+      "probeId": "suppressed-tr-r2-concert-r2",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 2,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as Fyi at rank 7 (score 50.0, model 50.0)",
+      "error": null,
+      "key": "floor-search-order/transit/suppressed-tr-r2-concert-r2"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "transit",
+      "probeId": "ranking-r1",
+      "type": "ranking",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 0.8811736351914945,
+      "metrics": {
+        "ndcg10": 0.8811736351914945,
+        "p5": 0.6,
+        "recall": 1,
+        "shown": 10,
+        "shownPrecision": 0.4
+      },
+      "latency": null,
+      "detail": "10 shown: tr-ferry-order(3), tr-ferry-order-wire(0), tr-bus-routes(2), tr-wooden-ferries(1), tr-budget(2), tr-charging-dock(3), tr-fare-rise(1), tr-marathon(0), tr-spamwire(0), tr-scooters(0)",
+      "error": null,
+      "key": "floor-search-order/transit/ranking-r1"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "transit",
+      "probeId": "dedupe-precision-r1",
+      "type": "dedupe-precision",
+      "category": "dedupe",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "The arm flags no duplicates.",
+      "error": null,
+      "key": "floor-search-order/transit/dedupe-precision-r1"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "transit",
+      "probeId": "ranking-r2",
+      "type": "ranking",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 0.9142466754568935,
+      "metrics": {
+        "ndcg10": 0.9142466754568935,
+        "p5": 0.6,
+        "recall": 1,
+        "shown": 7,
+        "shownPrecision": 0.42857142857142855
+      },
+      "latency": null,
+      "detail": "7 shown: tr-r2-ferry-delivery(3), tr-r2-ferry-repeat(0), tr-r2-depot-chargers(2), tr-r2-fare-cap(1), tr-r2-crew-training(2), tr-charging-dock(0), tr-r2-concert(0)",
+      "error": null,
+      "key": "floor-search-order/transit/ranking-r2"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "transit",
+      "probeId": "dedupe-precision-r2",
+      "type": "dedupe-precision",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "The arm flags no duplicates.",
+      "error": null,
+      "key": "floor-search-order/transit/dedupe-precision-r2"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "transit",
+      "probeId": "guardrail",
+      "type": "guardrail",
+      "category": "scope",
+      "round": 2,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Only measurable when the stub model receives the requests.",
+      "error": null,
+      "key": "floor-search-order/transit/guardrail"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "transit",
+      "probeId": "cluster-ferry-order",
+      "type": "cluster",
+      "category": "dedupe",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "2 of 2 shown: tr-ferry-order, tr-ferry-order-wire",
+      "error": null,
+      "key": "floor-search-order/transit/cluster-ferry-order"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "transit",
+      "probeId": "order-feedback",
+      "type": "order",
+      "category": "feedback",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "tr-r2-depot-chargers rank 3 (50.0, feedback 0.0); tr-r2-fare-cap rank 4 (50.0, feedback 0.0)",
+      "error": null,
+      "key": "floor-search-order/transit/order-feedback"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "quantum-negative",
+      "probeId": "suppressed-qn-quantum-cafe",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as Fyi at rank 1 (score 50.0, model 50.0)",
+      "error": null,
+      "key": "floor-search-order/quantum-negative/suppressed-qn-quantum-cafe"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "quantum-negative",
+      "probeId": "suppressed-qn-library-hours",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "floor-search-order/quantum-negative/suppressed-qn-library-hours"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "quantum-negative",
+      "probeId": "suppressed-qn-road-repairs",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "floor-search-order/quantum-negative/suppressed-qn-road-repairs"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "quantum-negative",
+      "probeId": "suppressed-qn-science-fair",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "floor-search-order/quantum-negative/suppressed-qn-science-fair"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "quantum-negative",
+      "probeId": "suppressed-qn-ferry-schedule",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "floor-search-order/quantum-negative/suppressed-qn-ferry-schedule"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "quantum-negative",
+      "probeId": "ranking-r1",
+      "type": "ranking",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 0,
+      "metrics": {
+        "ndcg10": 0,
+        "p5": 0,
+        "recall": 1,
+        "shown": 1,
+        "shownPrecision": 0
+      },
+      "latency": null,
+      "detail": "1 shown: qn-quantum-cafe(0)",
+      "error": null,
+      "key": "floor-search-order/quantum-negative/ranking-r1"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "quantum-negative",
+      "probeId": "dedupe-precision-r1",
+      "type": "dedupe-precision",
+      "category": "dedupe",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "The arm flags no duplicates.",
+      "error": null,
+      "key": "floor-search-order/quantum-negative/dedupe-precision-r1"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "quantum-negative",
+      "probeId": "guardrail",
+      "type": "guardrail",
+      "category": "scope",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Only measurable when the stub model receives the requests.",
+      "error": null,
+      "key": "floor-search-order/quantum-negative/guardrail"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "quantum-negative",
+      "probeId": "empty-round",
+      "type": "empty",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {
+        "shown": 1
+      },
+      "latency": null,
+      "detail": "1 shown: Fyi 50.0 Quantum Cafe opens on Main Street with a computing theme",
+      "error": null,
+      "key": "floor-search-order/quantum-negative/empty-round"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-rebate-expands",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 1, Fyi, score 91.0",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/surfaced-hp-rebate-expands"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "evidence-hp-rebate-expands",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Reference arms extract no evidence.",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/evidence-hp-rebate-expands"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "seen-hp-rebate-expands-r2",
+      "type": "seen",
+      "category": "dedupe",
+      "round": 2,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Disposition SkippedSeen",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/seen-hp-rebate-expands-r2"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "canonical-hp-rebate-expands-utm",
+      "type": "canonical",
+      "category": "dedupe",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Fetched 1 time(s); alias SkippedDuplicate, original Fetched",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/canonical-hp-rebate-expands-utm"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-tax-credit",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 6, Fyi, score 78.0",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/surfaced-hp-tax-credit"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-installer-license",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 2, Fyi, score 88.0",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/surfaced-hp-installer-license"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-efficiency-standard",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 3, Fyi, score 87.0",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/surfaced-hp-efficiency-standard"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "evidence-hp-efficiency-standard",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Reference arms extract no evidence.",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/evidence-hp-efficiency-standard"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-application-deadline",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 5, Fyi, score 78.0",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/surfaced-hp-application-deadline"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "evidence-hp-application-deadline",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Reference arms extract no evidence.",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/evidence-hp-application-deadline"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-budget",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 8, Fyi, score 68.0",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/surfaced-hp-budget"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "evidence-hp-budget",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Reference arms extract no evidence.",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/evidence-hp-budget"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "evidence-hp-backlog",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Reference arms extract no evidence.",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/evidence-hp-backlog"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "injection-hp-buyers-guide",
+      "type": "injection",
+      "category": "scope",
+      "round": 1,
+      "negative": true,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Reference arms generate no text.",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/injection-hp-buyers-guide"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "suppressed-hp-heat-basketball",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/suppressed-hp-heat-basketball"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "suppressed-hp-pumpkin-festival",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/suppressed-hp-pumpkin-festival"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "suppressed-hp-solar-permits",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: Fetched; finding BelowThreshold 30.0",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/suppressed-hp-solar-permits"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "blocked-hp-clickfarm",
+      "type": "blocked",
+      "category": "constraints",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Disposition SkippedBlocked",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/blocked-hp-clickfarm"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-r2-rebate-cap-r2",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 3, Fyi, score 89.0",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/surfaced-hp-r2-rebate-cap-r2"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "update-hp-r2-rebate-cap-r2",
+      "type": "update",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "shown": 1
+      },
+      "latency": null,
+      "detail": "Shown and linked as an update of the original",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/update-hp-r2-rebate-cap-r2"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "duplicate-hp-r2-rebate-repeat-r2",
+      "type": "duplicate",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 1,
+        "linked": 1
+      },
+      "latency": null,
+      "detail": "Flagged as a duplicate of the original",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/duplicate-hp-r2-rebate-repeat-r2"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "duplicate-hp-r2-tax-credit-copy-r2",
+      "type": "duplicate",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 1,
+        "linked": 1
+      },
+      "latency": null,
+      "detail": "Flagged as a duplicate of the original",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/duplicate-hp-r2-tax-credit-copy-r2"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "update-hp-r2-standard-delay-r2",
+      "type": "update",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "shown": 1
+      },
+      "latency": null,
+      "detail": "Shown and linked as an update of the original",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/update-hp-r2-standard-delay-r2"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-r2-installer-training-r2",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 4, Fyi, score 87.0",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/surfaced-hp-r2-installer-training-r2"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "surfaced-hp-r2-landlord-lawsuit-r2",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 5, Fyi, score 75.0",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/surfaced-hp-r2-landlord-lawsuit-r2"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "suppressed-hp-r2-heat-wave-r2",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 2,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as Fyi at rank 8 (score 43.0, model 43.0)",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/suppressed-hp-r2-heat-wave-r2"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "suppressed-hp-r2-heat-hockey-r2",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 2,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as Fyi at rank 6 (score 58.0, model 58.0)",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/suppressed-hp-r2-heat-hockey-r2"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "ranking-r1",
+      "type": "ranking",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 0.9469235834520076,
+      "metrics": {
+        "ndcg10": 0.9469235834520076,
+        "p5": 0.8,
+        "recall": 1,
+        "shown": 10,
+        "shownPrecision": 0.7
+      },
+      "latency": null,
+      "detail": "10 shown: hp-rebate-expands(3), hp-installer-license(2), hp-efficiency-standard(2), hp-thermostat-pilot(1), hp-application-deadline(3), hp-tax-credit(3), hp-buyers-guide(1), hp-budget(2), hp-geothermal-schools(1), hp-backlog(2)",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/ranking-r1"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "dedupe-precision-r1",
+      "type": "dedupe-precision",
+      "category": "dedupe",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 1
+      },
+      "latency": null,
+      "detail": "1 of 1 flagged duplicates are true duplicates",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/dedupe-precision-r1"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "ranking-r2",
+      "type": "ranking",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 0.9027212794997805,
+      "metrics": {
+        "ndcg10": 0.9027212794997805,
+        "p5": 1,
+        "recall": 1,
+        "shown": 8,
+        "shownPrecision": 0.625
+      },
+      "latency": null,
+      "detail": "8 shown: hp-r2-tax-credit-claim(2), hp-r2-standard-delay(2), hp-r2-rebate-cap(3), hp-r2-installer-training(2), hp-r2-landlord-lawsuit(3), hp-r2-heat-hockey(0), hp-r2-geothermal-district(1), hp-r2-heat-wave(0)",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/ranking-r2"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "dedupe-precision-r2",
+      "type": "dedupe-precision",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 2
+      },
+      "latency": null,
+      "detail": "2 of 2 flagged duplicates are true duplicates",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/dedupe-precision-r2"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "guardrail",
+      "type": "guardrail",
+      "category": "scope",
+      "round": 2,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Only measurable when the stub model receives the requests.",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/guardrail"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "cluster-tax-credit",
+      "type": "cluster",
+      "category": "dedupe",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "1 of 2 shown: hp-tax-credit",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/cluster-tax-credit"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "heat-pumps",
+      "probeId": "order-feedback",
+      "type": "order",
+      "category": "feedback",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "hp-r2-tax-credit-claim rank 1 (95.0, feedback 0.0); hp-r2-geothermal-district rank 7 (47.0, feedback 0.0)",
+      "error": null,
+      "key": "reference-lexical/heat-pumps/order-feedback"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "transit",
+      "probeId": "surfaced-tr-ferry-order",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 2, Fyi, score 91.0",
+      "error": null,
+      "key": "reference-lexical/transit/surfaced-tr-ferry-order"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "transit",
+      "probeId": "surfaced-tr-charging-dock",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 5, Fyi, score 56.0",
+      "error": null,
+      "key": "reference-lexical/transit/surfaced-tr-charging-dock"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "transit",
+      "probeId": "evidence-tr-charging-dock",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Reference arms extract no evidence.",
+      "error": null,
+      "key": "reference-lexical/transit/evidence-tr-charging-dock"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "transit",
+      "probeId": "seen-tr-charging-dock-r2",
+      "type": "seen",
+      "category": "dedupe",
+      "round": 2,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Disposition SkippedSeen",
+      "error": null,
+      "key": "reference-lexical/transit/seen-tr-charging-dock-r2"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "transit",
+      "probeId": "surfaced-tr-bus-routes",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 1, Fyi, score 91.0",
+      "error": null,
+      "key": "reference-lexical/transit/surfaced-tr-bus-routes"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "transit",
+      "probeId": "evidence-tr-budget",
+      "type": "evidence",
+      "category": "evidence",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Reference arms extract no evidence.",
+      "error": null,
+      "key": "reference-lexical/transit/evidence-tr-budget"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "transit",
+      "probeId": "suppressed-tr-marathon",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as Fyi at rank 6 (score 56.0, model 56.0)",
+      "error": null,
+      "key": "reference-lexical/transit/suppressed-tr-marathon"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "transit",
+      "probeId": "suppressed-tr-scooters",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: Fetched; no finding extracted.",
+      "error": null,
+      "key": "reference-lexical/transit/suppressed-tr-scooters"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "transit",
+      "probeId": "blocked-tr-spamwire",
+      "type": "blocked",
+      "category": "constraints",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Disposition SkippedBlocked",
+      "error": null,
+      "key": "reference-lexical/transit/blocked-tr-spamwire"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "transit",
+      "probeId": "surfaced-tr-r2-ferry-delivery-r2",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 3, Fyi, score 60.0",
+      "error": null,
+      "key": "reference-lexical/transit/surfaced-tr-r2-ferry-delivery-r2"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "transit",
+      "probeId": "update-tr-r2-ferry-delivery-r2",
+      "type": "update",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 0,
+      "metrics": {
+        "shown": 1
+      },
+      "latency": null,
+      "detail": "Shown but not linked as an update",
+      "error": null,
+      "key": "reference-lexical/transit/update-tr-r2-ferry-delivery-r2"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "transit",
+      "probeId": "duplicate-tr-r2-ferry-repeat-r2",
+      "type": "duplicate",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 1,
+        "linked": 1
+      },
+      "latency": null,
+      "detail": "Flagged as a duplicate of the original",
+      "error": null,
+      "key": "reference-lexical/transit/duplicate-tr-r2-ferry-repeat-r2"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "transit",
+      "probeId": "surfaced-tr-r2-depot-chargers-r2",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 1, Fyi, score 82.0",
+      "error": null,
+      "key": "reference-lexical/transit/surfaced-tr-r2-depot-chargers-r2"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "transit",
+      "probeId": "surfaced-tr-r2-crew-training-r2",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 4, Fyi, score 53.0",
+      "error": null,
+      "key": "reference-lexical/transit/surfaced-tr-r2-crew-training-r2"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "transit",
+      "probeId": "suppressed-tr-r2-concert-r2",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 2,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: Fetched; finding BelowThreshold 25.0",
+      "error": null,
+      "key": "reference-lexical/transit/suppressed-tr-r2-concert-r2"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "transit",
+      "probeId": "ranking-r1",
+      "type": "ranking",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 0.7981676289645918,
+      "metrics": {
+        "ndcg10": 0.7981676289645918,
+        "p5": 0.6,
+        "recall": 0.75,
+        "shown": 6,
+        "shownPrecision": 0.5
+      },
+      "latency": null,
+      "detail": "6 shown: tr-bus-routes(2), tr-ferry-order(3), tr-wooden-ferries(1), tr-fare-rise(1), tr-charging-dock(3), tr-marathon(0)",
+      "error": null,
+      "key": "reference-lexical/transit/ranking-r1"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "transit",
+      "probeId": "dedupe-precision-r1",
+      "type": "dedupe-precision",
+      "category": "dedupe",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 1
+      },
+      "latency": null,
+      "detail": "1 of 1 flagged duplicates are true duplicates",
+      "error": null,
+      "key": "reference-lexical/transit/dedupe-precision-r1"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "transit",
+      "probeId": "ranking-r2",
+      "type": "ranking",
+      "category": "relevance",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 0.8769874819455437,
+      "metrics": {
+        "ndcg10": 0.8769874819455437,
+        "p5": 0.75,
+        "recall": 1,
+        "shown": 4,
+        "shownPrecision": 0.75
+      },
+      "latency": null,
+      "detail": "4 shown: tr-r2-depot-chargers(2), tr-r2-fare-cap(1), tr-r2-ferry-delivery(3), tr-r2-crew-training(2)",
+      "error": null,
+      "key": "reference-lexical/transit/ranking-r2"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "transit",
+      "probeId": "dedupe-precision-r2",
+      "type": "dedupe-precision",
+      "category": "dedupe",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 1
+      },
+      "latency": null,
+      "detail": "1 of 1 flagged duplicates are true duplicates",
+      "error": null,
+      "key": "reference-lexical/transit/dedupe-precision-r2"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "transit",
+      "probeId": "guardrail",
+      "type": "guardrail",
+      "category": "scope",
+      "round": 2,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Only measurable when the stub model receives the requests.",
+      "error": null,
+      "key": "reference-lexical/transit/guardrail"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "transit",
+      "probeId": "cluster-ferry-order",
+      "type": "cluster",
+      "category": "dedupe",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "1 of 2 shown: tr-ferry-order",
+      "error": null,
+      "key": "reference-lexical/transit/cluster-ferry-order"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "transit",
+      "probeId": "order-feedback",
+      "type": "order",
+      "category": "feedback",
+      "round": 2,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "tr-r2-depot-chargers rank 1 (82.0, feedback 0.0); tr-r2-fare-cap rank 2 (68.0, feedback 0.0)",
+      "error": null,
+      "key": "reference-lexical/transit/order-feedback"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "quantum-negative",
+      "probeId": "suppressed-qn-quantum-cafe",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as Fyi at rank 1 (score 73.0, model 73.0)",
+      "error": null,
+      "key": "reference-lexical/quantum-negative/suppressed-qn-quantum-cafe"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "quantum-negative",
+      "probeId": "suppressed-qn-library-hours",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "reference-lexical/quantum-negative/suppressed-qn-library-hours"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "quantum-negative",
+      "probeId": "suppressed-qn-road-repairs",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "reference-lexical/quantum-negative/suppressed-qn-road-repairs"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "quantum-negative",
+      "probeId": "suppressed-qn-science-fair",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "reference-lexical/quantum-negative/suppressed-qn-science-fair"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "quantum-negative",
+      "probeId": "suppressed-qn-ferry-schedule",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "reference-lexical/quantum-negative/suppressed-qn-ferry-schedule"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "quantum-negative",
+      "probeId": "ranking-r1",
+      "type": "ranking",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 0,
+      "metrics": {
+        "ndcg10": 0,
+        "p5": 0,
+        "recall": 1,
+        "shown": 1,
+        "shownPrecision": 0
+      },
+      "latency": null,
+      "detail": "1 shown: qn-quantum-cafe(0)",
+      "error": null,
+      "key": "reference-lexical/quantum-negative/ranking-r1"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "quantum-negative",
+      "probeId": "dedupe-precision-r1",
+      "type": "dedupe-precision",
+      "category": "dedupe",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "The arm flags no duplicates.",
+      "error": null,
+      "key": "reference-lexical/quantum-negative/dedupe-precision-r1"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "quantum-negative",
+      "probeId": "guardrail",
+      "type": "guardrail",
+      "category": "scope",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Only measurable when the stub model receives the requests.",
+      "error": null,
+      "key": "reference-lexical/quantum-negative/guardrail"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "quantum-negative",
+      "probeId": "empty-round",
+      "type": "empty",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {
+        "shown": 1
+      },
+      "latency": null,
+      "detail": "1 shown: Fyi 73.0 Quantum Cafe opens on Main Street with a computing theme",
+      "error": null,
+      "key": "reference-lexical/quantum-negative/empty-round"
+    }
+  ],
+  "stages": [
+    {
+      "name": "Fetch",
+      "count": 10,
+      "totalSeconds": 1.0502,
+      "meanMs": 105.02
+    },
+    {
+      "name": "ComposeBriefing",
+      "count": 10,
+      "totalSeconds": 0.5455,
+      "meanMs": 54.55
+    },
+    {
+      "name": "Score",
+      "count": 10,
+      "totalSeconds": 0.5298,
+      "meanMs": 52.98
+    },
+    {
+      "name": "Extract",
+      "count": 10,
+      "totalSeconds": 0.4831,
+      "meanMs": 48.31
+    },
+    {
+      "name": "Notify",
+      "count": 10,
+      "totalSeconds": 0.4425,
+      "meanMs": 44.25
+    },
+    {
+      "name": "Synthesize",
+      "count": 10,
+      "totalSeconds": 0.2482,
+      "meanMs": 24.82
+    },
+    {
+      "name": "Suggest",
+      "count": 10,
+      "totalSeconds": 0.186,
+      "meanMs": 18.6
+    },
+    {
+      "name": "PlanQueries",
+      "count": 10,
+      "totalSeconds": 0.1752,
+      "meanMs": 17.52
+    },
+    {
+      "name": "AssembleContext",
+      "count": 10,
+      "totalSeconds": 0.1727,
+      "meanMs": 17.27
+    },
+    {
+      "name": "Predict",
+      "count": 10,
+      "totalSeconds": 0.1335,
+      "meanMs": 13.35
+    },
+    {
+      "name": "Filter",
+      "count": 10,
+      "totalSeconds": 0.1278,
+      "meanMs": 12.78
+    },
+    {
+      "name": "Search",
+      "count": 10,
+      "totalSeconds": 0.124,
+      "meanMs": 12.4
+    },
+    {
+      "name": "Embed",
+      "count": 10,
+      "totalSeconds": 0.089,
+      "meanMs": 8.9
+    },
+    {
+      "name": "Dedupe",
+      "count": 10,
+      "totalSeconds": 0.0883,
+      "meanMs": 8.83
+    },
+    {
+      "name": "ReviewPredictions",
+      "count": 10,
+      "totalSeconds": 0.0858,
+      "meanMs": 8.58
+    }
+  ],
+  "notes": [
+    "Stub model: relevance is the cosine of feature-hashed word vectors (extract floor 0.08, score saturation 0.45); embeddings are 384-dimension feature hashes. Numbers measure the product\u0027s pipeline under that model, not a real model\u0027s judgment."
+  ],
+  "durationSeconds": 27.3
+}

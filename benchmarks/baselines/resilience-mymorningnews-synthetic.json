@@ -1,0 +1,571 @@
+{
+  "format": 1,
+  "kind": "resilience",
+  "dataset": "mymorningnews-synthetic",
+  "label": "ci",
+  "mode": "stub",
+  "arms": [
+    "default"
+  ],
+  "provenance": {
+    "startUtc": "2026-11-20T21:53:05.368935Z",
+    "sutUrl": "http://127.0.0.1:12500",
+    "sutVersion": "0.1.0-alpha, schema 16, .NET 10.0.14",
+    "productCommit": "c6c0ffae25b825029006fe85cb579ba4133013ce-dirty",
+    "harnessVersion": "0.1.0-alpha",
+    "harnessCommit": "uncommitted-dirty",
+    "machine": "(scrubbed)",
+    "os": "macOS 26.6.0 Arm64",
+    "cpu": "Apple M5 Max, 18 logical cores",
+    "runtime": ".NET 10.0.14",
+    "images": {
+      "mymorningnews-bench-postgres": "pgvector/pgvector:0.8.1-pg17 sha256:3e8b3adfd27b5707128f60956f62a793c3c9326ea8cfaf0eab7adccb5d700b21 (pgvector/pgvector@sha256:3e8b3adfd27b5707128f60956f62a793c3c9326ea8cfaf0eab7adccb5d700b21)"
+    },
+    "services": {
+      "embeddings": "stub bench-hash-384",
+      "model": "stub bench-stub-chat (stub-2)",
+      "search, pages, speech": "stub on 127.0.0.1:12503"
+    },
+    "dataset": "mymorningnews-synthetic",
+    "datasetSha256": "67a12e73ce6d0fdf4cb8b26f1a6914139d1e53870d4a1495fd05f3392c087565",
+    "commandLine": "MyMorningNews.Benchmark resilience --label ci --output-dir \u003Crepo\u003E/benchmarks/.run/ci --scrub",
+    "httpClient": "SocketsHttpHandler, 256 connections per server, 120 s timeout, 2 min pooled lifetime"
+  },
+  "options": {
+    "admin-key": "(set)",
+    "corpus": "heat-pumps",
+    "dataset": "benchmarks/datasets/mymorningnews-synthetic.json",
+    "http-timeout-seconds": "120",
+    "label": "ci",
+    "max-connections": "256",
+    "metrics-url": "http://127.0.0.1:12509/metrics",
+    "output-dir": "\u003Crepo\u003E/benchmarks/.run/ci",
+    "paid": "false",
+    "resamples": "2000",
+    "run-timeout-seconds": "300",
+    "scenarios": "",
+    "scrub": "true",
+    "seed": "20261120",
+    "server": "http://127.0.0.1:12500",
+    "step-timeout-seconds": "120",
+    "stub-port": "12503"
+  },
+  "incomplete": false,
+  "incompleteReasons": [],
+  "summaries": [
+    {
+      "arm": "default",
+      "group": "overall",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 11,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "positive",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 7,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "negative",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 4,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:audio",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:audio",
+      "metric": "audioSeconds",
+      "value": {
+        "mean": 25.36,
+        "low": 9.66,
+        "high": 41.06,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:audio",
+      "metric": "clean",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:fail-and-recover",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:fail-and-recover",
+      "metric": "clean",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:fail-and-recover",
+      "metric": "recoveredShown",
+      "value": {
+        "mean": 11,
+        "low": 11,
+        "high": 11,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:fail-and-recover",
+      "metric": "retriedCalls",
+      "value": {
+        "mean": 4,
+        "low": 0,
+        "high": 12,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:fail-and-recover",
+      "metric": "runSeconds",
+      "value": {
+        "mean": 5.4366666666666665,
+        "low": 2.06,
+        "high": 9.15,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:fail-and-recover",
+      "metric": "shown",
+      "value": {
+        "mean": 0,
+        "low": 0,
+        "high": 0,
+        "n": 3,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:run",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 6,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:run",
+      "metric": "clean",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 6,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:run",
+      "metric": "dryRunShown",
+      "value": {
+        "mean": 11,
+        "low": 11,
+        "high": 11,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:run",
+      "metric": "retriedCalls",
+      "value": {
+        "mean": 4.166666666666667,
+        "low": 0,
+        "high": 12.5,
+        "n": 6,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:run",
+      "metric": "runSeconds",
+      "value": {
+        "mean": 7.041666666666667,
+        "low": 1.9933333333333334,
+        "high": 13.358333333333334,
+        "n": 6,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:run",
+      "metric": "shown",
+      "value": {
+        "mean": 11,
+        "low": 11,
+        "high": 11,
+        "n": 6,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "category:embeddings",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "category:model",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "category:pages",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "category:search",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 2,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "category:tts",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 2,
+        "indicative": true
+      }
+    }
+  ],
+  "probes": [
+    {
+      "arm": "default",
+      "corpus": "resilience",
+      "probeId": "baseline",
+      "type": "run",
+      "category": "model",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "clean": 1,
+        "retriedCalls": 0,
+        "runSeconds": 1.07,
+        "shown": 11
+      },
+      "latency": null,
+      "detail": "Completed (expected Completed), 11 shown, 0 model calls retried",
+      "error": null,
+      "key": "default/resilience/baseline"
+    },
+    {
+      "arm": "default",
+      "corpus": "resilience",
+      "probeId": "model-429-once",
+      "type": "run",
+      "category": "model",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "clean": 1,
+        "retriedCalls": 25,
+        "runSeconds": 10.65,
+        "shown": 11
+      },
+      "latency": null,
+      "detail": "Completed (expected Completed), 11 shown, 25 model calls retried",
+      "error": null,
+      "key": "default/resilience/model-429-once"
+    },
+    {
+      "arm": "default",
+      "corpus": "resilience",
+      "probeId": "model-slow",
+      "type": "run",
+      "category": "model",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "clean": 1,
+        "retriedCalls": 0,
+        "runSeconds": 21.8,
+        "shown": 11
+      },
+      "latency": null,
+      "detail": "Completed (expected Completed), 11 shown, 0 model calls retried",
+      "error": null,
+      "key": "default/resilience/model-slow"
+    },
+    {
+      "arm": "default",
+      "corpus": "resilience",
+      "probeId": "model-down",
+      "type": "fail-and-recover",
+      "category": "model",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "clean": 1,
+        "recoveredShown": 11,
+        "retriedCalls": 12,
+        "runSeconds": 9.15,
+        "shown": 0
+      },
+      "latency": null,
+      "detail": "Failed (expected Failed), 0 shown, 12 model calls retried; error: Extract failed: Extraction failed for every source: Model call to bench stub failed (503): HTTP 503: {\u0022error\u0022:{\u0022message\u0022:\u0022unavailable (stub fault)\u0022,\u0022type\u0022:\u0022server_error\u0022}}; after recovery: Completed, 11 shown (healthy baseline 11) (11 findings stood out. The lead development: Harbor City expands heat pump rebates to renters.)",
+      "error": null,
+      "key": "default/resilience/model-down"
+    },
+    {
+      "arm": "default",
+      "corpus": "resilience",
+      "probeId": "dry-run-first",
+      "type": "run",
+      "category": "model",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "clean": 1,
+        "dryRunShown": 11,
+        "retriedCalls": 0,
+        "runSeconds": 2.07,
+        "shown": 11
+      },
+      "latency": null,
+      "detail": "Completed (expected Completed), 11 shown, 0 model calls retried",
+      "error": null,
+      "key": "default/resilience/dry-run-first"
+    },
+    {
+      "arm": "default",
+      "corpus": "resilience",
+      "probeId": "embeddings-down",
+      "type": "run",
+      "category": "embeddings",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "clean": 1,
+        "retriedCalls": 0,
+        "runSeconds": 2.05,
+        "shown": 11
+      },
+      "latency": null,
+      "detail": "PartiallySucceeded (expected PartiallySucceeded), 11 shown, 0 model calls retried",
+      "error": null,
+      "key": "default/resilience/embeddings-down"
+    },
+    {
+      "arm": "default",
+      "corpus": "resilience",
+      "probeId": "search-down",
+      "type": "fail-and-recover",
+      "category": "search",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "clean": 1,
+        "recoveredShown": 11,
+        "retriedCalls": 0,
+        "runSeconds": 5.1,
+        "shown": 0
+      },
+      "latency": null,
+      "detail": "Failed (expected Failed), 0 shown, 0 model calls retried; error: Search failed: Every search provider failed; see the run\u0027s queries for the errors.; after recovery: Completed, 11 shown (healthy baseline 11) (11 findings stood out. The lead development: Harbor City expands heat pump rebates to renters.)",
+      "error": null,
+      "key": "default/resilience/search-down"
+    },
+    {
+      "arm": "default",
+      "corpus": "resilience",
+      "probeId": "search-429-once",
+      "type": "run",
+      "category": "search",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "clean": 1,
+        "retriedCalls": 0,
+        "runSeconds": 4.61,
+        "shown": 11
+      },
+      "latency": null,
+      "detail": "Completed (expected Completed), 11 shown, 0 model calls retried",
+      "error": null,
+      "key": "default/resilience/search-429-once"
+    },
+    {
+      "arm": "default",
+      "corpus": "resilience",
+      "probeId": "pages-down",
+      "type": "fail-and-recover",
+      "category": "pages",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "clean": 1,
+        "recoveredShown": 11,
+        "retriedCalls": 0,
+        "runSeconds": 2.06,
+        "shown": 0
+      },
+      "latency": null,
+      "detail": "Failed (expected Failed), 0 shown, 0 model calls retried; error: Fetch failed: None of the 12 selected pages could be read.; after recovery: Completed, 11 shown (healthy baseline 11) (11 findings stood out. The lead development: Harbor City expands heat pump rebates to renters.)",
+      "error": null,
+      "key": "default/resilience/pages-down"
+    },
+    {
+      "arm": "default",
+      "corpus": "resilience",
+      "probeId": "tts-down",
+      "type": "audio",
+      "category": "tts",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "audioSeconds": 41.06,
+        "clean": 1
+      },
+      "latency": null,
+      "detail": "Audio request 202; episode Failed (expected Failed), error: The speech endpoint returned 503: {\u0022error\u0022:{\u0022message\u0022:\u0022unavailable (stub fault)\u0022,\u0022type\u0022:\u0022server_error\u0022}}; briefing Ready",
+      "error": null,
+      "key": "default/resilience/tts-down"
+    },
+    {
+      "arm": "default",
+      "corpus": "resilience",
+      "probeId": "tts-429-once",
+      "type": "audio",
+      "category": "tts",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "audioSeconds": 9.66,
+        "clean": 1
+      },
+      "latency": null,
+      "detail": "Audio request 202; episode Ready (expected Ready); briefing Ready",
+      "error": null,
+      "key": "default/resilience/tts-429-once"
+    }
+  ],
+  "stages": [],
+  "notes": [
+    "Faults injected: Model 68, Embeddings 1, Search 20, Pages 12, Tts 20. Slow mode adds 1500 ms."
+  ],
+  "durationSeconds": 123.8
+}

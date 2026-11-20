@@ -6912,7 +6912,7 @@ The email outbox, test and preview sends, resends, and the signed-in user's emai
 | Query parameter | Type | Notes |
 |---|---|---|
 | `status` | enum (`Queued`, `Sending`, `Sent`, `Failed`, `Suppressed`, `Skipped`) |  |
-| `template` | enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`) | Email template. |
+| `template` | enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`, `CapReached`) | Email template. |
 | `runId` | string | Only records from this run. |
 | `briefingId` | string | Only records for this briefing. |
 | `topicId` | string | Only records for this topic. |
@@ -13697,6 +13697,7 @@ Email template.
 | `PasswordReset` | Password reset link. |
 | `PasswordChanged` | The password was changed. |
 | `AccountDeletion` | Account deletion scheduled. |
+| `CapReached` | A plan limit stopped a scheduled run (sent at most once per limit per month). |
 
 #### FeedbackChannelEnum
 

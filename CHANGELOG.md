@@ -11,6 +11,9 @@ All notable changes to this project are documented here. The project follows [Se
 
 ### Fixed
 
+- Found by the benchmark suite: search requests were never retried, so a single 429 (or 502, 503, 504) from SearXNG failed the query, and a run whose queries all hit one failed. Search now retries 408, 429, and 5xx responses up to `search.maxAttempts` (default 3), waiting for `Retry-After` (at most 5 seconds) or an exponential backoff.
+- Found by the benchmark suite: pages fetched by a run that then failed, or by a dry run, were remembered as seen, so the next run skipped them and their findings were lost (after a model outage the recovery run showed 1 finding where a healthy run shows 11). A page now counts as seen only when a finished, non-dry run fetched it.
+- `REST_API.md` and the Postman collection list the `CapReached` email template.
 - OpenAPI declares the `userId` and `mine` filters on every list route that reads them, the request history summary and bulk delete filters, and the feedback page's `a` value; the bulk delete no longer advertises paging, and `GET /v1.0/api/usage/me` no longer lists values it ignores.
 
 - The MCP server bound its Prometheus endpoint to `*`, which Radiant rejects, so setting `MYMORNINGNEWS_MCP_PROMETHEUS_PORT` turned all MCP telemetry off. It now binds `MYMORNINGNEWS_MCP_PROMETHEUS_HOSTNAME` (default `127.0.0.1`, `mcp` in compose).
@@ -27,6 +30,8 @@ All notable changes to this project are documented here. The project follows [Se
 
 ### Added
 
+- Benchmark suite (Phase 13, `BENCHMARKING.md`): the `MyMorningNews.Benchmark` harness in `src/Test.Benchmark` (validate, ingest, quality, e2e, load, resilience, compare, history, stub) that talks to the server only over REST, with an in-process stub for the model, embeddings, search, pages, and speech so no default or CI run makes a paid call; an isolated stack (`benchmarks/docker/compose.yaml`, project `mymorningnews-bench`, ports 125xx); a synthetic corpus and a frozen live snapshot of the docs with negative probes; floor and reference arms; paired JSON and Markdown reports with provenance; a deterministic CI gate (`benchmarks/ci-gate.sh`, job "Benchmark gate") against committed baselines; round 0 and round 1 in `benchmarks/RESULTS.md`; ranked candidates in `IMPROVEMENTS.md`. Paid runs need `--paid` and a spend cap.
+- `search.maxAttempts` setting (default 3, 1 to 6).
 - Hosted accounts: public sign-up with a personal tenant (`POST /v1.0/public/signup`), email verification and resend, sign-in refused until verified, forgot and reset password, welcome, password changed, and deletion emails, optional Cloudflare Turnstile, per-address rate limits, and a disposable-domain block list.
 - Account deletion with a 7-day grace period (signing in cancels it) and a purge in the retention worker; `GET /v1.0/api/account/export` (ZIP of JSON and Markdown); `GET /v1.0/api/account/usage` (the usage meter).
 - Plan limits enforced as `402 CapReached` with key, limit, and reset time: the monthly model cost cap (before every model call and run), daily runs, topic count, the shortest schedule, audio minutes, and custom model endpoints. Scheduled runs over a limit are recorded as Skipped with the reason.

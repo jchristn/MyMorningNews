@@ -69,10 +69,23 @@ namespace MyMorningNews.Core.Settings
             set { _MaxFetchBytes = Math.Clamp(value, 65536, 52428800); }
         }
 
+        /// <summary>
+        /// Attempts per search request, counting the first. A request that gets 408, 429, 500, 502, 503, or 504 is
+        /// retried after the Retry-After delay (at most 5 seconds) or an exponential backoff from 500 ms. Default 3.
+        /// Minimum 1 (no retry), maximum 6.
+        /// </summary>
+        [Setting(Description = "Attempts per search request (retries on 429 and 5xx).", Minimum = 1, Maximum = 6)]
+        public int MaxAttempts
+        {
+            get { return _MaxAttempts; }
+            set { _MaxAttempts = Math.Clamp(value, 1, 6); }
+        }
+
         #endregion
 
         #region Private-Members
 
+        private int _MaxAttempts = 3;
         private int _FetchTimeoutMs = 20000;
         private int _PerDomainDelayMs = 1500;
         private int _MaxFetchBytes = 2097152;

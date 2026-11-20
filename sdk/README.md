@@ -12,7 +12,9 @@ All three:
 
 - Default to `http://127.0.0.1:12100`.
 - Sign in with an email and password, an access key and secret, or signed requests (`MMN1-HMAC-SHA256`, so the secret never travels), and log out.
-- Raise a typed error carrying the HTTP status, error code, message, request ID, and details from the server's `{ error, message, requestId, details }` body.
+- Raise a typed error carrying the HTTP status, error code, message, request ID, and details from the server's `{ error, message, requestId, details }` body. A plan limit (402 `CapReached`) raises `CapReachedException` / `CapReachedError` with the limit's key, limit, and reset time, and a sign-in refused for an unconfirmed email (403 `EmailNotVerified`) raises `EmailNotVerifiedException` / `EmailNotVerifiedError`.
+- Cover hosted accounts: the public sign-up, email verification (and resend), and password reset routes (sent without credentials), plus the usage meter, data export (ZIP), and account deletion for a signed-in user.
+- Cover the MCP server registry for agentic research (register, test, discover tools, turn tools on or off), topics' `agenticSearch` and `mcpToolIds`, and a run's agentic tool calls.
 - Page through lists with `pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`, and per-resource filters, and offer a helper that walks every page.
 - Download briefings (Markdown, HTML, audio) and stored files, with byte ranges.
 - Wait for a run by polling, because the server has no run event stream yet.
@@ -38,6 +40,8 @@ The last line is the SHA-256 of the body (here, of nothing). With the secret `se
 ## Harnesses
 
 Each harness creates its own data, prefixed `SDK-<language>-`, removes it afterward, and exits non-zero on any failure. Cases that would call real models or start research runs are skipped unless you pass `--with-run`.
+
+Sign-up is off by default, so each harness's sign-up case turns `Hosting.PublicSignupEnabled` on through the settings API as the administrator (also requiring email verification and raising the per-address sign-up limit), restores the original settings afterward, and deletes the personal tenant it created. It skips when an environment variable pins the setting. The plan limit case grants a harness user the Free plan to provoke 402 `CapReached`. The MCP registry case runs a small fake MCP server on 127.0.0.1 inside the harness, so its discovery part skips when the server runs somewhere that cannot reach the harness host (for example in a container).
 
 ```bash
 ./sdk/csharp/run-tests.sh

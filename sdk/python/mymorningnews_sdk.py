@@ -313,6 +313,52 @@ class PermissionDeniedError(MyMorningNewsError):
         return self.body.get("requiredPermission") if isinstance(self.body, dict) else None
 
 
+class EmailNotVerifiedError(PermissionDeniedError):
+    """HTTP 403 ``EmailNotVerified`` at sign-in: the account signed up publicly and has not confirmed its email.
+
+    Open the emailed link (:meth:`AccountResource.verify_email`) or ask for a new one
+    (:meth:`AccountResource.resend_verification`), then sign in again.
+    """
+
+
+class PlanLimitError(MyMorningNewsError):
+    """HTTP 402 that is not ``CapReached`` (payment required by the plan)."""
+
+
+class CapReachedError(PlanLimitError):
+    """HTTP 402 ``CapReached``: a plan limit was reached.
+
+    Attributes:
+        key: The limit, for example ``topics.max``, ``runs.daily.max``, ``usage.monthlyCostUsd.max``,
+            ``audio.enabled``, or ``endpoints.custom`` (None when the server sent none).
+        limit: The plan's value for the limit as text, for example ``"1"`` or ``"false"``.
+        reset_utc: When the limit resets (timezone-aware UTC datetime), or None.
+    """
+
+    @property
+    def key(self) -> Optional[str]:
+        """The limit key from ``details.key``."""
+        return (self.details or {}).get("key")
+
+    @property
+    def limit(self) -> Optional[str]:
+        """The plan's value for the limit from ``details.limit``."""
+        return (self.details or {}).get("limit")
+
+    @property
+    def reset_utc(self) -> Optional[datetime]:
+        """When the limit resets, from ``details.resetUtc``, or None."""
+        raw = (self.details or {}).get("resetUtc")
+        if not raw:
+            return None
+        text = re.sub(r"(\.\d{6})\d+", r"\1", str(raw).strip()).replace("Z", "+00:00")
+        try:
+            parsed = datetime.fromisoformat(text)
+        except ValueError:
+            return None
+        return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+
+
 class NotFoundError(MyMorningNewsError):
     """HTTP 404: the resource does not exist or is not visible to the caller."""
 
@@ -415,6 +461,10 @@ def _error_from_response(resp: requests.Response) -> MyMorningNewsError:
         raw_details = body.get("details")
         details = dict(raw_details) if isinstance(raw_details, dict) else None
     cls = _ERRORS_BY_STATUS.get(resp.status_code)
+    if resp.status_code == 402:
+        cls = CapReachedError if code == "CapReached" else PlanLimitError
+    elif resp.status_code == 403 and code == "EmailNotVerified":
+        cls = EmailNotVerifiedError
     if cls is None:
         cls = ServerError if resp.status_code >= 500 else MyMorningNewsError
     return cls(message, status=resp.status_code, code=code, request_id=request_id, details=details, body=body)
@@ -1106,6 +1156,13 @@ class RefinementStatus(str, Enum):
     ABANDONED = "Abandoned"
 
 
+class McpTransport(str, Enum):
+    """MCP server transport."""
+
+    STREAMABLE_HTTP = "StreamableHttp"
+    SSE = "Sse"
+
+
 # ---------------------------------------------------------------------------
 # Response models (fields mirror the server DTOs in snake_case)
 # ---------------------------------------------------------------------------
@@ -1264,6 +1321,101 @@ class Topic(Model):
     active: Optional[bool] = None
     created_utc: Optional[str] = None
     last_update_utc: Optional[str] = None
+    agentic_search: Optional[bool] = None
+    """Agentic search: the research model searches and reads pages itself (web_search, fetch_url, allowed MCP tools)."""
+    mcp_tool_ids: Optional[List[str]] = None
+    """MCP tool IDs (``mct_...``) the topic may use in agentic search; empty allows every enabled tool."""
+
+
+@dataclass
+class McpServer(Model):
+    """A registered MCP server (Streamable HTTP or SSE) whose tools agentic research may call."""
+    id: Optional[str] = None
+    tenant_id: Optional[str] = None
+    name: Optional[str] = None
+    url: Optional[str] = None
+    transport: Optional[str] = None
+    vault_credential_id: Optional[str] = None
+    header_name: Optional[str] = None
+    header_prefix: Optional[str] = None
+    enabled: Optional[bool] = None
+    tool_count: Optional[int] = None
+    last_discovered_utc: Optional[str] = None
+    last_error: Optional[str] = None
+    active: Optional[bool] = None
+    created_utc: Optional[str] = None
+    last_update_utc: Optional[str] = None
+
+
+@dataclass
+class McpServerTool(Model):
+    """A tool discovered on an MCP server. New tools start disabled."""
+    id: Optional[str] = None
+    tenant_id: Optional[str] = None
+    mcp_server_id: Optional[str] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    input_schema: Optional[str] = None
+    enabled: Optional[bool] = None
+    active: Optional[bool] = None
+    created_utc: Optional[str] = None
+    last_update_utc: Optional[str] = None
+
+
+@dataclass
+class McpServerDetail(Model):
+    """An MCP server with its tools (sorted by name)."""
+    _nested: ClassVar[Dict[str, str]] = {'server': 'McpServer', 'tools': 'McpServerTool'}
+    server: Optional[McpServer] = None
+    tools: Optional[List[McpServerTool]] = None
+
+
+@dataclass
+class McpServerTestResult(Model):
+    """Result of testing an MCP server connection; nothing is saved. A failed connection has ``success`` False."""
+    success: Optional[bool] = None
+    tool_count: Optional[int] = None
+    tools: Optional[List[str]] = None
+    error: Optional[str] = None
+
+
+@dataclass
+class RunToolCall(Model):
+    """One agentic tool call made during a run."""
+    id: Optional[str] = None
+    tenant_id: Optional[str] = None
+    run_id: Optional[str] = None
+    topic_id: Optional[str] = None
+    tool: Optional[str] = None
+    arguments_summary: Optional[str] = None
+    succeeded: Optional[bool] = None
+    error_message: Optional[str] = None
+    result_characters: Optional[int] = None
+    duration_ms: Optional[float] = None
+    sort_order: Optional[int] = None
+    active: Optional[bool] = None
+    created_utc: Optional[str] = None
+    last_update_utc: Optional[str] = None
+
+
+@dataclass
+class UsageMeter(Model):
+    """My usage against my plan's limits. A None limit means unlimited."""
+    plan_key: Optional[str] = None
+    plan_name: Optional[str] = None
+    month_to_date_cost_usd: Optional[float] = None
+    monthly_cost_cap_usd: Optional[float] = None
+    cost_used_fraction: Optional[float] = None
+    reset_utc: Optional[str] = None
+    topics: Optional[int] = None
+    topics_max: Optional[int] = None
+    runs_today: Optional[int] = None
+    runs_daily_max: Optional[int] = None
+    schedule_min_interval_minutes: Optional[int] = None
+    audio_minutes: Optional[float] = None
+    audio_minutes_max: Optional[int] = None
+    audio_enabled: Optional[bool] = None
+    custom_endpoints: Optional[bool] = None
 
 
 @dataclass
@@ -3055,6 +3207,14 @@ class RunsResource(_Resource):
         """A run's model calls, oldest first (paging filters)."""
         return self._page(LlmCall, API + "/runs/" + _seg(run_id) + "/llm-calls", filters)
 
+    def tool_calls(self, run_id: str) -> List[RunToolCall]:
+        """A run's agentic tool calls (web_search, fetch_url, and MCP tools), in call order.
+
+        Raises:
+            NotFoundError: The run does not exist or belongs to another user.
+        """
+        return self._many(RunToolCall, "GET", API + "/runs/" + _seg(run_id) + "/tool-calls")
+
     def email_preview(self, run_id: str) -> Dict[str, Any]:
         """Render the run digest email without sending it. May call a model for the lead paragraph.
 
@@ -3935,7 +4095,8 @@ class DevicesResource(_Resource):
 
 
 class AccountResource(_Resource):
-    """The signed-in user's plan and promotional codes."""
+    """The signed-in user's account (plan, promotional codes, usage, export, deletion) and the public
+    sign-up, email verification, and password reset routes (which never send the client's credentials)."""
 
     def plan(self) -> EffectivePlan:
         """My plan and its limits."""
@@ -3944,6 +4105,135 @@ class AccountResource(_Resource):
     def redeem(self, code: str) -> EffectivePlan:
         """Redeem a promotional code. Returns the plan now in effect (HTTP 201)."""
         return self._one(EffectivePlan, "POST", API + "/promo-codes/redeem", body={"code": code})
+
+    def usage(self) -> UsageMeter:
+        """My usage against my plan's limits. Needs a signed-in user, not an access key (BadRequestError otherwise)."""
+        return self._one(UsageMeter, "GET", API + "/account/usage")
+
+    def export(self) -> Download:
+        """Download my data as a ZIP of JSON and Markdown. Needs a signed-in user."""
+        return self._download(API + "/account/export")
+
+    def delete(self) -> Dict[str, Any]:
+        """Delete my account (HTTP 202). Signs out every session and schedules the purge after the grace
+        period (default 7 days); signing in again before ``purgeAfterUtc`` cancels it.
+
+        Returns:
+            ``{"purgeAfterUtc": ..., "message": ...}``.
+
+        Raises:
+            ConflictError: Administrators and protected accounts cannot be deleted.
+        """
+        return self._json("POST", API + "/account/delete")
+
+    def signup(self, body: Optional[Mapping[str, Any]] = None, **fields: Any) -> Dict[str, Any]:
+        """Sign up for the hosted service (public). Always HTTP 202 with the same body, whether or not the
+        email already has an account.
+
+        Args:
+            body: A ``SignupRequest`` dict.
+            **fields: ``email``, ``password``, ``accept_terms``, ``confirm_age`` (required), and
+                ``display_name``, ``time_zone``, ``locale``, ``promo_code``, ``turnstile_token``.
+
+        Returns:
+            ``{"message": ..., "verificationRequired": bool}``.
+
+        Raises:
+            NotFoundError: Sign-up is closed (code ``SignupClosed``).
+            BadRequestError: Validation failed (weak password, terms or age not confirmed, blocked domain).
+            RateLimitError: Too many sign-ups from this address.
+        """
+        return self._json("POST", "/v1.0/public/signup", body=_merge(body, fields), auth=False)
+
+    def verify_email(self, token: str) -> Dict[str, Any]:
+        """Confirm an email address with the token from the emailed link (public).
+
+        Returns:
+            ``{"verified": True, "email": ...}``.
+
+        Raises:
+            BadRequestError: The link is not valid, was already used, or expired.
+        """
+        return self._json("POST", "/v1.0/public/verify-email", body={"token": token}, auth=False)
+
+    def resend_verification(self, email: str) -> Dict[str, Any]:
+        """Send a new verification link (public). Always HTTP 202 with ``{"message": ...}``."""
+        return self._json("POST", "/v1.0/public/verify-email/resend", body={"email": email}, auth=False)
+
+    def forgot_password(self, email: str) -> Dict[str, Any]:
+        """Email a password reset link (public). Always HTTP 202 with ``{"message": ...}``."""
+        return self._json("POST", "/v1.0/public/password/forgot", body={"email": email}, auth=False)
+
+    def reset_password(self, token: str, password: str) -> Dict[str, Any]:
+        """Set a new password with the token from a reset link (public). Signs out every session.
+
+        Returns:
+            ``{"reset": True, "email": ...}``.
+
+        Raises:
+            BadRequestError: The link is not valid or the password is too weak (minimum 8 characters).
+        """
+        return self._json("POST", "/v1.0/public/password/reset", body={"token": token, "password": password}, auth=False)
+
+
+class McpServersResource(_Resource):
+    """MCP server registry for agentic research (``/v1.0/api/mcp-servers``): register remote MCP servers
+    (Streamable HTTP or SSE URLs; stdio is not supported), test them, discover tools, and turn tools on
+    or off. Tenant administrators manage it; members read it."""
+
+    def list(self, **filters: Any) -> Page[McpServer]:
+        """List registered servers.
+
+        Args:
+            **filters: ``enabled`` and the paging filters.
+        """
+        return self._page(McpServer, API + "/mcp-servers", filters)
+
+    def get(self, server_id: str) -> McpServerDetail:
+        """Read a server with its tools."""
+        return self._one(McpServerDetail, "GET", API + "/mcp-servers/" + _seg(server_id))
+
+    def create(self, body: Optional[Mapping[str, Any]] = None, **fields: Any) -> McpServer:
+        """Register a server (HTTP 201).
+
+        Args:
+            body: A ``McpServerUpsertRequest`` dict.
+            **fields: ``name`` and ``url`` (required), ``transport`` (McpTransport), ``vault_credential_id``,
+                ``header_name``, ``header_prefix``, ``enabled``.
+
+        Raises:
+            BadRequestError: ``name`` or ``url`` is missing, or the URL is not absolute http or https.
+        """
+        return self._one(McpServer, "POST", API + "/mcp-servers", body=_merge(body, fields))
+
+    def update(self, server_id: str, body: Optional[Mapping[str, Any]] = None, **fields: Any) -> McpServer:
+        """Change a server; only the fields you send change. Send ``vault_credential_id=""`` to remove the credential."""
+        return self._one(McpServer, "PUT", API + "/mcp-servers/" + _seg(server_id), body=_merge(body, fields))
+
+    def delete(self, server_id: str) -> None:
+        """Remove a server and its tools (HTTP 204)."""
+        self._json("DELETE", API + "/mcp-servers/" + _seg(server_id))
+
+    def test(self, server_id: str) -> McpServerTestResult:
+        """Connect and list tools without saving them. A failed connection is HTTP 200 with ``success`` False."""
+        return self._one(McpServerTestResult, "POST", API + "/mcp-servers/" + _seg(server_id) + "/test")
+
+    def discover(self, server_id: str) -> McpServerDetail:
+        """Discover the server's tools and save them. New tools start disabled, existing tools keep their
+        setting, and tools the server no longer lists are removed.
+
+        Raises:
+            ServerError: HTTP 502 ``McpServerUnavailable`` when the server cannot be reached.
+        """
+        return self._one(McpServerDetail, "POST", API + "/mcp-servers/" + _seg(server_id) + "/discover")
+
+    def set_tool_enabled(self, server_id: str, tool_id: str, enabled: bool) -> McpServerTool:
+        """Turn a tool on or off for agentic research.
+
+        Raises:
+            NotFoundError: The tool is not on this server.
+        """
+        return self._one(McpServerTool, "PUT", API + "/mcp-servers/" + _seg(server_id) + "/tools/" + _seg(tool_id), body={"enabled": bool(enabled)})
 
 
 class SettingsResource(_Resource):
@@ -4093,6 +4383,7 @@ class MyMorningNewsClient:
         self.vault = VaultResource(self)
         self.devices = DevicesResource(self)
         self.account = AccountResource(self)
+        self.mcp_servers = McpServersResource(self)
         self.settings = SettingsResource(self)
         self.public = PublicResource(self)
 
@@ -4238,6 +4529,7 @@ class MyMorningNewsClient:
         Raises:
             TenantSelectionRequired: The email belongs to several tenants (see ``tenants``).
             AuthenticationError: The credentials are wrong.
+            EmailNotVerifiedError: The account signed up publicly and has not confirmed its email (403).
             RateLimitError: Too many sign-in attempts.
         """
         headers = {"x-email": email, "x-password": password}
@@ -4375,7 +4667,7 @@ def iterate(list_fn: Callable[..., Any], page_size: int = 100, max_pages: Option
 __all__ = [
     "MyMorningNewsClient", "MyMorningNewsError", "BadRequestError", "AuthenticationError", "PermissionDeniedError",
     "NotFoundError", "ConflictError", "GoneError", "RangeNotSatisfiableError", "RateLimitError", "ServerError",
-    "TenantSelectionRequired", "WaitTimeoutError", "Model", "Page", "Download", "iterate", "to_camel", "to_snake",
+    "TenantSelectionRequired", "WaitTimeoutError", "EmailNotVerifiedError", "PlanLimitError", "CapReachedError", "Model", "Page", "Download", "iterate", "to_camel", "to_snake",
     "sign_request", "string_to_sign", "body_sha256", "SIGNATURE_ALGORITHM", "RunEvent", "parse_sse", "RUN_STAGES",
     "RESUMABLE_RUN_STAGES",
     "DEFAULT_BASE_URL", "TERMINAL_RUN_STATUSES", "__version__",

@@ -56,6 +56,16 @@ namespace MyMorningNews.Sdk.Models
         public DateTime LastUpdateUtc { get; set; }
 
         /// <summary>
+        /// A personal tenant created by public sign-up. Default false.
+        /// </summary>
+        public bool IsPersonal { get; set; } = false;
+
+        /// <summary>
+        /// When the tenant is purged after an account deletion, or null.
+        /// </summary>
+        public DateTime? PurgeAfterUtc { get; set; } = null;
+
+        /// <summary>
         /// Instantiate.
         /// </summary>
         public Tenant()

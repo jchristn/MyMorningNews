@@ -22,12 +22,18 @@ passed or was skipped.
 from __future__ import annotations
 
 import argparse
+import copy
+import json
 import os
+import re
 import sys
+import threading
 import time
 import traceback
+import urllib.parse
 import uuid
 from dataclasses import dataclass, field
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Callable, Dict, List, Optional, Tuple, Type
 
 import requests
@@ -1445,6 +1451,290 @@ def t_account(h: Harness) -> None:
     ex = expect_error(ConflictError, lambda: h.client.account.redeem("SDKPY-NOT-A-CODE"))
     eq(ex.code, "PromoCodeInvalid", "error code")
     check(ex.details and ex.details.get("reason"), "details carry the reason")
+
+
+class _FakeMcpHandler(BaseHTTPRequestHandler):
+    """Minimal Streamable HTTP MCP endpoint: initialize, ping, and tools/list answered with JSON."""
+
+    tool_names = ("harness_echo", "harness_time")
+    requests_seen = 0
+
+    def log_message(self, format: str, *args: Any) -> None:  # noqa: A002 - signature from the base class
+        """Keep the harness output quiet."""
+
+    def do_DELETE(self) -> None:  # noqa: N802 - http.server naming
+        """End a session."""
+        type(self).requests_seen += 1
+        self.send_response(200)
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
+    def do_GET(self) -> None:  # noqa: N802
+        """No event stream."""
+        type(self).requests_seen += 1
+        self.send_response(405)
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
+    def do_POST(self) -> None:  # noqa: N802
+        """Answer one JSON-RPC message."""
+        type(self).requests_seen += 1
+        length = int(self.headers.get("Content-Length") or 0)
+        try:
+            msg = json.loads(self.rfile.read(length) or b"{}")
+        except ValueError:
+            self.send_response(400)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+        if msg.get("id") is None:
+            self.send_response(202)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+        reply: Dict[str, Any] = {"jsonrpc": "2.0", "id": msg["id"]}
+        method = msg.get("method")
+        extra: Dict[str, str] = {}
+        if method == "initialize":
+            reply["result"] = {
+                "protocolVersion": (msg.get("params") or {}).get("protocolVersion") or "2025-11-25",
+                "capabilities": {"tools": {}},
+                "serverInfo": {"name": "sdk-harness-fake", "version": "1.0.0"},
+            }
+            extra["Mcp-Session-Id"] = uuid.uuid4().hex
+        elif method == "tools/list":
+            reply["result"] = {"tools": [{"name": n, "description": "Harness tool " + n + "; never called.",
+                                          "inputSchema": {"type": "object", "properties": {}}} for n in self.tool_names]}
+        elif method == "ping":
+            reply["result"] = {}
+        else:
+            reply["error"] = {"code": -32601, "message": "Method not found: " + str(method)}
+        payload = json.dumps(reply).encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(payload)))
+        for k, v in extra.items():
+            self.send_header(k, v)
+        self.end_headers()
+        self.wfile.write(payload)
+
+
+def _start_fake_mcp() -> Tuple[ThreadingHTTPServer, str]:
+    """Start the fake MCP server on a free loopback port. Returns the server and its MCP URL."""
+    server = ThreadingHTTPServer(("127.0.0.1", 0), _FakeMcpHandler)
+    server.daemon_threads = True
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    return server, "http://127.0.0.1:" + str(server.server_address[1]) + "/mcp"
+
+
+def _link_token(outbox: MyMorningNewsClient, template: str) -> str:
+    """The newest link token in an outbox for a template."""
+    page = outbox.email.list(template=template, page_size=20)
+    items = sorted(page.items, key=lambda m: str(m.created_utc or ""), reverse=True)
+    check(items, "a " + template + " email is in the outbox")
+    full = outbox.email.get(items[0].id)
+    m = re.search(r"token=([A-Za-z0-9%_\-.~]+)", full.get("renderedText") or "")
+    check(m, "the " + template + " email carries a link token")
+    return urllib.parse.unquote(m.group(1))
+
+
+@case("Account: usage, export, delete, and 402 CapReached (Free plan)")
+def t_account_limits(h: Harness) -> None:
+    tenant = h.need("tenant")
+    if not h.state.get("is_admin"):
+        raise Skip("needs an administrator to create a user and grant a plan")
+    mine = h.client.account.usage()
+    check(mine.plan_key, "admin plan key")
+    expect_error(ConflictError, h.client.account.delete, code="Conflict")
+    plans = h.client.request("GET", "/v1.0/api/admin/plans")
+    free = next((p for p in plans if p["plan"]["key"] == "free"), None)
+    if free is None:
+        raise Skip("the server has no Free plan")
+    email = "sdk-python-cap-" + uuid.uuid4().hex[:8] + "@example.com"
+    password = "Harness-" + uuid.uuid4().hex[:8]
+    user = h.client.request("POST", "/v1.0/tenants/" + tenant + "/users",
+                            body={"email": email, "password": password, "first_name": "SDK", "last_name": "Harness", "active": True})
+
+    def remove_user() -> None:
+        for e in h.client.editions.list(user_id=user["id"], page_size=100).items:
+            if e.user_id == user["id"]:
+                h.client.editions.delete(e.id)
+        h.client.request("DELETE", "/v1.0/tenants/" + tenant + "/users/" + user["id"])
+
+    h.on_cleanup("cap user", remove_user)
+    grant = h.client.request("POST", "/v1.0/api/admin/plan-assignments",
+                             body={"tenant_id": tenant, "user_id": user["id"], "plan_id": free["plan"]["id"], "duration_days": 1, "note": "SDK Python harness"})
+    h.on_cleanup("cap plan assignment", lambda: h.client.request("DELETE", "/v1.0/api/admin/plan-assignments/" + grant["id"], query={"tenant_id": tenant}))
+    with MyMorningNewsClient(h.config.base_url) as u:
+        u.login(email, password, tenant)
+        meter = u.account.usage()
+        eq(meter.plan_key, "free", "plan key")
+        check(isinstance(meter.topics_max, int), "the Free plan limits topics")
+        zip_file = u.account.export()
+        eq(zip_file.content_type, "application/zip", "export content type")
+        check(zip_file.content[:2] == b"PK", "ZIP signature")
+        created: List[str] = []
+        try:
+            for _ in range(int(meter.topics or 0), int(meter.topics_max)):
+                created.append(u.topics.create(name=h.name("cap"), brief="Harness data; plan limit check.").id)
+            cap = expect_error(mmn.CapReachedError, lambda: u.topics.create(name=h.name("cap"), brief="Over the limit."), code="CapReached")
+            eq(cap.status, 402, "status")
+            eq(cap.key, "topics.max", "cap key")
+            eq(cap.limit, str(meter.topics_max), "cap limit")
+            check(isinstance(cap, mmn.PlanLimitError), "CapReachedError is a PlanLimitError")
+        finally:
+            for tid in created:
+                u.topics.delete(tid)
+        deletion = u.account.delete()
+        check(deletion.get("purgeAfterUtc"), "purgeAfterUtc")
+        expect_error(AuthenticationError, u.me)
+        u.login(email, password, tenant)
+        eq(u.me().id, user["id"], "signing in again keeps the account")
+        u.logout()
+    h.client.request("DELETE", "/v1.0/api/admin/plan-assignments/" + grant["id"], query={"tenant_id": tenant})
+    remove_user()
+
+
+@case("Account: public sign-up, EmailNotVerifiedError, verify, resend, forgot, reset")
+def t_signup(h: Harness) -> None:
+    h.need("tenant")
+    if not h.state.get("is_admin"):
+        raise Skip("needs an administrator to open sign-up through the settings API")
+    current = h.client.settings.get()
+    original = copy.deepcopy(current["settings"])
+    hosting = current["settings"].get("hosting")
+    if not isinstance(hosting, dict):
+        raise Skip("the server has no hosting settings")
+    if any(f.get("path") == "hosting.publicSignupEnabled" and f.get("overriddenByEnvironment") for f in current.get("fields") or []):
+        raise Skip("Hosting.PublicSignupEnabled is set by the environment")
+    unique = uuid.uuid4().hex[:8]
+    email = "sdk-python-signup-" + unique + "@example.com"
+    display = h.prefix + "-signup-" + unique
+    password = "Harness signup " + unique
+    body = {"email": email, "password": password, "display_name": display, "time_zone": "UTC", "accept_terms": True, "confirm_age": True}
+    was_open = bool(hosting.get("publicSignupEnabled"))
+    with MyMorningNewsClient(h.config.base_url) as anon:
+        if not was_open:
+            expect_error(NotFoundError, lambda: anon.account.signup(body), code="SignupClosed")
+
+        def restore() -> None:
+            h.client.request("PUT", "/v1.0/api/settings", body=original)
+
+        h.on_cleanup("settings (sign-up)", restore)
+        opened = copy.deepcopy(current["settings"])
+        opened["hosting"].update({"publicSignupEnabled": True, "requireEmailVerification": True, "signupsPerIpPerHour": 1000})
+        check(h.client.request("PUT", "/v1.0/api/settings", body=opened).get("success"), "settings accepted")
+        try:
+            first = anon.account.signup(body)
+            check(first.get("verificationRequired") is True, "verification required")
+            eq(anon.account.signup(body).get("message"), first.get("message"), "same answer for an existing account")
+            expect_error(BadRequestError, lambda: anon.account.signup(dict(body, email="x" + email, accept_terms=False)), code="ValidationFailed")
+            blocked = expect_error(mmn.EmailNotVerifiedError, lambda: anon.login(email, password), code="EmailNotVerified")
+            eq(blocked.status, 403, "status")
+            check(isinstance(blocked, mmn.PermissionDeniedError), "EmailNotVerifiedError is a PermissionDeniedError")
+            check(anon.token is None, "no session after a refused sign-in")
+            check(anon.account.resend_verification(email).get("message"), "resend message")
+            anon.account.resend_verification("nobody-" + unique + "@example.com")
+            anon.account.forgot_password("nobody-" + unique + "@example.com")
+            expect_error(BadRequestError, lambda: anon.account.verify_email("not-a-token"), code="ValidationFailed")
+            expect_error(BadRequestError, lambda: anon.account.reset_password("not-a-token", "a long new password"), code="ValidationFailed")
+
+            tenants = h.client.request("GET", "/v1.0/tenants", query={"page_size": 1000})
+            personal = next((t for t in tenants["items"] if t["name"] == display + " (personal)"), None)
+            check(personal is not None, "the personal tenant exists")
+            pid = personal["id"]
+            h.on_cleanup("personal tenant", lambda: h.client.request("DELETE", "/v1.0/tenants/" + pid))
+            check(personal.get("isPersonal") is True, "personal tenant")
+            users = h.client.request("GET", "/v1.0/tenants/" + pid + "/users")
+            signed_up = next(x for x in users["items"] if x["email"] == email)
+            key = h.client.request("POST", "/v1.0/tenants/" + pid + "/credentials", body={"user_id": signed_up["id"], "name": h.name("outbox"), "auth_mode": "Hybrid"})
+            with MyMorningNewsClient(h.config.base_url, access_key=key["credential"]["accessKey"], secret_key=key["secretKey"], tenant_id=pid) as outbox:
+                verify_token = _link_token(outbox, "VerifyEmail")
+                verified = anon.account.verify_email(verify_token)
+                check(verified.get("verified") is True and verified.get("email") == email, "verified")
+                expect_error(BadRequestError, lambda: anon.account.verify_email(verify_token))
+                session = anon.login(email, password)
+                eq(session.tenant_id, pid, "signed in to the personal tenant")
+                eq(anon.account.usage().topics, 0, "no topics yet")
+                anon.logout()
+                anon.account.forgot_password(email)
+                reset_token = _link_token(outbox, "PasswordReset")
+                expect_error(BadRequestError, lambda: anon.account.reset_password(reset_token, "short"))
+                renewed = password + " renewed"
+                check(anon.account.reset_password(reset_token, renewed).get("reset") is True, "reset")
+                expect_error(AuthenticationError, lambda: anon.login(email, password))
+                anon.login(email, renewed)
+                anon.logout()
+            h.client.request("DELETE", "/v1.0/tenants/" + pid)
+        finally:
+            restore()
+        if not was_open:
+            expect_error(NotFoundError, lambda: anon.account.signup(body), code="SignupClosed")
+
+
+@case("MCP servers: CRUD, test, discover, tools, agentic topic, run tool calls")
+def t_mcp_servers(h: Harness) -> str:
+    h.need("tenant")
+    c = h.client
+    expect_error(BadRequestError, lambda: c.mcp_servers.create(name=h.name("mcp")), code="ValidationFailed")
+    expect_error(BadRequestError, lambda: c.mcp_servers.create(name=h.name("mcp"), url="ftp://127.0.0.1/mcp"), code="ValidationFailed")
+    expect_error(NotFoundError, lambda: c.runs.tool_calls("run_sdkpythondoesnotexist"))
+    runs = c.runs.list(page_size=1)
+    if runs.items:
+        calls = c.runs.tool_calls(runs.items[0].id)
+        check(all(x.run_id == runs.items[0].id for x in calls), "tool calls belong to the run")
+
+    dead = c.mcp_servers.create(name=h.name("mcp-dead"), url="http://127.0.0.1:9/mcp", enabled=False)
+    h.on_cleanup("mcp server (dead)", lambda: c.mcp_servers.delete(dead.id))
+    check(dead.id.startswith("mcs_") and dead.enabled is False and dead.header_name == "Authorization", "created disabled with defaults")
+    failed = c.mcp_servers.test(dead.id)
+    check(failed.success is False and failed.error, "a failed test is success False with an error")
+    bad = expect_error(mmn.ServerError, lambda: c.mcp_servers.discover(dead.id), code="McpServerUnavailable")
+    eq(bad.status, 502, "status")
+    check(c.mcp_servers.get(dead.id).server.last_error, "lastError is saved")
+    expect_error(NotFoundError, lambda: c.mcp_servers.set_tool_enabled(dead.id, "mct_sdkpythondoesnotexist", True))
+    check(dead.id in ids(c.mcp_servers.list(enabled=False, page_size=100).items), "the disabled server is listed")
+    c.mcp_servers.delete(dead.id)
+    expect_error(NotFoundError, lambda: c.mcp_servers.get(dead.id))
+
+    fake, url = _start_fake_mcp()
+    try:
+        server = c.mcp_servers.create(name=h.name("mcp"), url=url, transport=mmn.McpTransport.STREAMABLE_HTTP)
+        h.on_cleanup("mcp server", lambda: c.mcp_servers.delete(server.id))
+        renamed = c.mcp_servers.update(server.id, name=server.name + "-renamed", header_prefix="Token ")
+        check(renamed.name == server.name + "-renamed" and renamed.header_prefix == "Token ", "updated")
+        expect_error(BadRequestError, lambda: c.mcp_servers.update(server.id, name=" "), code="ValidationFailed")
+        ok = c.mcp_servers.test(server.id)
+        if not ok.success:
+            raise Skip("the server cannot reach the fake MCP server at " + url + " (server in a container?): " + str(ok.error))
+        eq(ok.tool_count, len(_FakeMcpHandler.tool_names), "tool count")
+        eq(len(c.mcp_servers.get(server.id).tools or []), 0, "test saves nothing")
+        found = c.mcp_servers.discover(server.id)
+        eq(len(found.tools), len(_FakeMcpHandler.tool_names), "discovered tools")
+        check(found.server.last_discovered_utc, "lastDiscoveredUtc")
+        check(all(t.enabled is False and t.id.startswith("mct_") for t in found.tools), "new tools start disabled")
+        echo = next(t for t in found.tools if t.name == "harness_echo")
+        check(c.mcp_servers.set_tool_enabled(server.id, echo.id, True).enabled is True, "tool enabled")
+        again = c.mcp_servers.discover(server.id)
+        check(next(t for t in again.tools if t.name == "harness_echo").enabled is True, "rediscovery keeps the setting")
+
+        topic = c.topics.create(name=h.name("agentic"), brief="Harness data for agentic fields; never run.", agentic_search=True, mcp_tool_ids=[echo.id, "not-a-tool-id"])
+        h.on_cleanup("agentic topic", lambda: c.topics.delete(topic.id))
+        check(topic.agentic_search is True, "agenticSearch saved")
+        eq(topic.mcp_tool_ids, [echo.id], "mcpToolIds keeps only mct_ IDs")
+        read = c.topics.get(topic.id).topic
+        check(read.agentic_search is True and echo.id in read.mcp_tool_ids, "agentic fields read back")
+        cleared = c.topics.update(topic.id, agentic_search=False, mcp_tool_ids=[])
+        check(cleared.agentic_search is False and cleared.mcp_tool_ids == [], "agentic fields cleared")
+        c.topics.delete(topic.id)
+        c.mcp_servers.delete(server.id)
+        check(_FakeMcpHandler.requests_seen > 0, "the server talked to the fake MCP server")
+    finally:
+        fake.shutdown()
+        fake.server_close()
+    with MyMorningNewsClient(h.config.base_url) as anon:
+        expect_error(AuthenticationError, anon.mcp_servers.list)
+    return str(len(found.tools)) + " tools discovered from the fake MCP server"
 
 
 @case("Public: promo code check (unknown and real)")

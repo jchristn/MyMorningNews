@@ -179,10 +179,105 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
  * @property {boolean} emailWhenEmpty Email when a run finds nothing.
  * @property {number} maxEmailFindings Findings per email.
  * @property {number|null} displayThreshold Minimum score to show.
+ * @property {number|null} weightLlm Ranking weight override for the model score, or null for the tenant default.
+ * @property {number|null} weightFeedback Ranking weight override for feedback, or null.
+ * @property {number|null} weightNovelty Ranking weight override for novelty, or null.
+ * @property {number|null} weightSource Ranking weight override for source quality, or null.
+ * @property {number|null} weightRecency Ranking weight override for recency, or null.
  * @property {string[]} seedQueries Seed queries.
+ * @property {string|null} briefingTemplateId Briefing template, or null for the default.
+ * @property {boolean} agenticSearch Agentic search: the research model searches and reads pages itself (web_search, fetch_url, and allowed MCP tools). Default false.
+ * @property {string[]} mcpToolIds MCP tool IDs (`mct_...`) the topic may use in agentic search. Empty allows every enabled tool.
  * @property {string|null} lastRunUtc Last run.
+ * @property {string|null} lastRefinedUtc Last refinement.
+ * @property {boolean} active Active.
  * @property {string} createdUtc Created.
  * @property {string} lastUpdateUtc Updated.
+ */
+
+/**
+ * A registered MCP server.
+ * @typedef {object} McpServer
+ * @property {string} id Identifier (`mcs_...`).
+ * @property {string} tenantId Tenant.
+ * @property {string} name Name.
+ * @property {string} url Streamable HTTP or SSE URL.
+ * @property {string} transport `StreamableHttp` or `Sse`.
+ * @property {string|null} vaultCredentialId Vault credential sent to the server, or null.
+ * @property {string} headerName Header that carries the credential. Default `Authorization`.
+ * @property {string} headerPrefix Prefix before the credential. Default `Bearer `.
+ * @property {boolean} enabled Whether agentic research may use the server.
+ * @property {number} toolCount Tools found by the last discovery.
+ * @property {string|null} lastDiscoveredUtc Last discovery.
+ * @property {string|null} lastError Last connection error, or null.
+ * @property {string} createdUtc Created.
+ * @property {string} lastUpdateUtc Updated.
+ */
+
+/**
+ * A tool discovered on an MCP server.
+ * @typedef {object} McpServerTool
+ * @property {string} id Identifier (`mct_...`).
+ * @property {string} tenantId Tenant.
+ * @property {string} mcpServerId Server.
+ * @property {string} name Tool name.
+ * @property {string|null} description Description.
+ * @property {string|null} inputSchema JSON schema of the arguments, as text.
+ * @property {boolean} enabled Whether agentic research may call it. New tools start disabled.
+ * @property {string} createdUtc Created.
+ * @property {string} lastUpdateUtc Updated.
+ */
+
+/**
+ * An MCP server with its tools.
+ * @typedef {object} McpServerDetail
+ * @property {McpServer} server Server.
+ * @property {McpServerTool[]} tools Tools, sorted by name.
+ */
+
+/**
+ * Result of testing an MCP server connection (nothing is saved).
+ * @typedef {object} McpServerTestResult
+ * @property {boolean} success Whether the server connected and listed its tools.
+ * @property {number} [toolCount] Number of tools, on success.
+ * @property {string[]} [tools] Tool names, on success.
+ * @property {string} [error] Why the connection failed, on failure.
+ */
+
+/**
+ * One agentic tool call made during a run.
+ * @typedef {object} RunToolCall
+ * @property {string} id Identifier (`rtc_...`).
+ * @property {string} runId Run.
+ * @property {string} topicId Topic.
+ * @property {string} tool Tool name.
+ * @property {string|null} argumentsSummary Short summary of the arguments.
+ * @property {boolean} succeeded Whether the call succeeded.
+ * @property {string|null} errorMessage Error, when it failed.
+ * @property {number} resultCharacters Characters returned.
+ * @property {number} durationMs Duration.
+ * @property {number} sortOrder Position in the run.
+ * @property {string} createdUtc Created.
+ */
+
+/**
+ * My usage against my plan's limits. A null limit means unlimited.
+ * @typedef {object} UsageMeter
+ * @property {string} planKey Plan key.
+ * @property {string} planName Plan name.
+ * @property {number} monthToDateCostUsd Model cost this month (UTC).
+ * @property {number|null} [monthlyCostCapUsd] Monthly cost cap.
+ * @property {number|null} [costUsedFraction] Share of the cap used, 0 to 1.
+ * @property {string} resetUtc When the monthly counters reset.
+ * @property {number} topics Topics.
+ * @property {number|null} [topicsMax] Topic limit.
+ * @property {number} runsToday Runs today.
+ * @property {number|null} [runsDailyMax] Daily run limit.
+ * @property {number|null} [scheduleMinIntervalMinutes] Shortest schedule interval allowed.
+ * @property {number} audioMinutes Audio minutes this month.
+ * @property {number|null} [audioMinutesMax] Monthly audio limit.
+ * @property {boolean} audioEnabled Whether the plan includes audio.
+ * @property {boolean} customEndpoints Whether the plan allows custom model endpoints.
  */
 
 /**
@@ -774,6 +869,46 @@ export class TenantSelectionRequiredError extends MyMorningNewsError {
         this.name = 'TenantSelectionRequiredError';
         /** @type {{ id: string, name: string }[]} */
         this.tenants = Array.isArray(tenants) ? tenants : [];
+    }
+}
+
+/**
+ * Raised for HTTP 402 `CapReached`: a plan limit was reached. `key` names the limit (for example `topics.max`,
+ * `runs.daily.max`, `usage.monthlyCostUsd.max`, `audio.enabled`, `endpoints.custom`), `limit` is the plan's value, and
+ * `resetUtc` is when the counter resets, or null.
+ */
+export class CapReachedError extends MyMorningNewsError {
+    /**
+     * Create the error.
+     * @param {string} message Message.
+     * @param {object} info Error details, as for {@link MyMorningNewsError}.
+     */
+    constructor(message, info) {
+        super(message, info);
+        this.name = 'CapReachedError';
+        const d = this.details ?? {};
+        /** @type {string|null} Limit key from `details.key`. */
+        this.key = d.key ?? null;
+        /** @type {string|null} The plan's value for the limit from `details.limit`. */
+        this.limit = d.limit ?? null;
+        /** @type {Date|null} When the limit resets, from `details.resetUtc`. */
+        this.resetUtc = d.resetUtc && !Number.isNaN(Date.parse(d.resetUtc)) ? new Date(d.resetUtc) : null;
+    }
+}
+
+/**
+ * Raised by `login` for HTTP 403 `EmailNotVerified`: the account signed up publicly and has not confirmed its email
+ * yet. Open the emailed link (`account.verifyEmail`) or ask for a new one (`account.resendVerification`).
+ */
+export class EmailNotVerifiedError extends MyMorningNewsError {
+    /**
+     * Create the error.
+     * @param {string} message Message.
+     * @param {object} info Error details, as for {@link MyMorningNewsError}.
+     */
+    constructor(message, info) {
+        super(message, info);
+        this.name = 'EmailNotVerifiedError';
     }
 }
 
@@ -1751,6 +1886,17 @@ export class RunsResource extends ResourceGroup {
      */
     llmCalls(id, options = {}) {
         return this._req('GET', this._path(id, '/llm-calls'), { query: options });
+    }
+
+    /**
+     * A run's agentic tool calls (web_search, fetch_url, and MCP tools), in call order. Empty for runs without agentic
+     * search.
+     * @param {string} id Run.
+     * @returns {Promise<RunToolCall[]>} Tool calls.
+     * @throws {MyMorningNewsError} 404 when the run is not found.
+     */
+    toolCalls(id) {
+        return this._req('GET', this._path(id, '/tool-calls'));
     }
 
     /**
@@ -3079,9 +3225,85 @@ export class DevicesResource extends ResourceGroup {
 }
 
 /**
- * The caller's account plan and promotional codes.
+ * The caller's account: plan, promotional codes, usage meter, data export, and deletion. Also the public sign-up, email
+ * verification, and password reset routes, which never send the client's credentials.
  */
 export class AccountResource extends ResourceGroup {
+    /**
+     * My usage against my plan's limits. Needs a signed-in user, not an access key (400 otherwise).
+     * @returns {Promise<UsageMeter>} Meter.
+     */
+    usage() {
+        return this._req('GET', '/v1.0/api/account/usage');
+    }
+
+    /**
+     * Download my data as a ZIP of JSON and Markdown. Needs a signed-in user.
+     * @param {{ signal?: AbortSignal }} [options] Options.
+     * @returns {Promise<DownloadResult>} ZIP file.
+     */
+    export(options = {}) {
+        return this._req('GET', '/v1.0/api/account/export', { raw: true, signal: options.signal });
+    }
+
+    /**
+     * Delete my account. Signs out every session and schedules the purge after the grace period (default 7 days);
+     * signing in again before then cancels it. Administrators and protected accounts get 409.
+     * @returns {Promise<{ purgeAfterUtc: string, message: string }>} When the purge happens.
+     */
+    delete() {
+        return this._req('POST', '/v1.0/api/account/delete');
+    }
+
+    /**
+     * Sign up for the hosted service (public). Always 202 with the same body whether or not the email has an account;
+     * 404 `SignupClosed` when sign-up is off, 400 for validation problems, 429 when one address signs up too often.
+     * @param {{ email: string, password: string, acceptTerms: boolean, confirmAge: boolean, displayName?: string, timeZone?: string, locale?: string, promoCode?: string, turnstileToken?: string }} body Sign-up request.
+     * @returns {Promise<{ message: string, verificationRequired: boolean }>} Answer.
+     */
+    signup(body) {
+        return this._req('POST', '/v1.0/public/signup', { body: requireValue(body, 'body'), auth: false });
+    }
+
+    /**
+     * Confirm an email address with the token from the emailed link (public). 400 when the link is not valid, used, or
+     * expired.
+     * @param {string} token Token from the link.
+     * @returns {Promise<{ verified: boolean, email: string }>} Answer.
+     */
+    verifyEmail(token) {
+        return this._req('POST', '/v1.0/public/verify-email', { body: { token: requireValue(token, 'token') }, auth: false });
+    }
+
+    /**
+     * Send a new verification link (public). Always 202.
+     * @param {string} email Email.
+     * @returns {Promise<{ message: string }>} Answer.
+     */
+    resendVerification(email) {
+        return this._req('POST', '/v1.0/public/verify-email/resend', { body: { email: requireValue(email, 'email') }, auth: false });
+    }
+
+    /**
+     * Email a password reset link (public). Always 202.
+     * @param {string} email Email.
+     * @returns {Promise<{ message: string }>} Answer.
+     */
+    forgotPassword(email) {
+        return this._req('POST', '/v1.0/public/password/forgot', { body: { email: requireValue(email, 'email') }, auth: false });
+    }
+
+    /**
+     * Set a new password with the token from a reset link (public). Signs out every session. 400 when the link is not
+     * valid or the password is too weak (minimum 8 characters).
+     * @param {string} token Token from the link.
+     * @param {string} password New password.
+     * @returns {Promise<{ reset: boolean, email: string }>} Answer.
+     */
+    resetPassword(token, password) {
+        return this._req('POST', '/v1.0/public/password/reset', { body: { token: requireValue(token, 'token'), password: requireValue(password, 'password') }, auth: false });
+    }
+
     /**
      * My plan and its limits.
      * @returns {Promise<EffectivePlan>} Plan.
@@ -3097,6 +3319,79 @@ export class AccountResource extends ResourceGroup {
      */
     redeem(code) {
         return this._req('POST', '/v1.0/api/promo-codes/redeem', { body: { code: requireValue(code, 'code') } });
+    }
+}
+
+/**
+ * MCP server registry for agentic research: register remote MCP servers (Streamable HTTP or SSE URLs; stdio is not
+ * supported), test them, discover their tools, and turn tools on or off. Tenant administrators manage it; members read it.
+ */
+export class McpServersResource extends CrudResource {
+    /**
+     * List registered MCP servers.
+     * @param {ListOptions & { enabled?: boolean }} [options] Paging and the `enabled` filter.
+     * @returns {Promise<EnumerationResult<McpServer>>} Page.
+     */
+    list(options = {}) {
+        return super.list(options);
+    }
+
+    /**
+     * Read a server with its tools.
+     * @param {string} id Server.
+     * @returns {Promise<McpServerDetail>} Server and tools.
+     */
+    get(id) {
+        return super.get(id);
+    }
+
+    /**
+     * Register a server (201). `name` and `url` are required; 400 `ValidationFailed` otherwise.
+     * @param {{ name: string, url: string, transport?: 'StreamableHttp'|'Sse', vaultCredentialId?: string, headerName?: string, headerPrefix?: string, enabled?: boolean }} body Server.
+     * @returns {Promise<McpServer>} Server.
+     */
+    create(body) {
+        return super.create(body);
+    }
+
+    /**
+     * Change a server; fields left out are unchanged. Send `vaultCredentialId: ''` to remove the credential.
+     * @param {string} id Server.
+     * @param {object} body Changes.
+     * @returns {Promise<McpServer>} Server.
+     */
+    update(id, body) {
+        return super.update(id, body);
+    }
+
+    /**
+     * Connect and list tools without saving them. A failed connection is still HTTP 200 with `success: false`.
+     * @param {string} id Server.
+     * @returns {Promise<McpServerTestResult>} Result.
+     */
+    test(id) {
+        return this._req('POST', this._path(id, '/test'));
+    }
+
+    /**
+     * Discover the server's tools and save them. New tools start disabled, existing tools keep their setting, and tools the
+     * server no longer lists are removed. 502 `McpServerUnavailable` when the server cannot be reached.
+     * @param {string} id Server.
+     * @returns {Promise<McpServerDetail>} Server and tools.
+     */
+    discover(id) {
+        return this._req('POST', this._path(id, '/discover'));
+    }
+
+    /**
+     * Turn a tool on or off for agentic research.
+     * @param {string} id Server.
+     * @param {string} toolId Tool (`mct_...`).
+     * @param {boolean} enabled Whether agentic research may call it.
+     * @returns {Promise<McpServerTool>} Tool.
+     */
+    setToolEnabled(id, toolId, enabled) {
+        return this._req('PUT', this._path(id, '/tools/' + seg(toolId, 'toolId')), { body: { enabled: Boolean(enabled) } });
     }
 }
 
@@ -3273,6 +3568,8 @@ export class MyMorningNewsClient {
         this.devices = new DevicesResource(this, '/v1.0/api/devices');
         /** @type {AccountResource} */
         this.account = new AccountResource(this, '/v1.0/api/account');
+        /** @type {McpServersResource} */
+        this.mcpServers = new McpServersResource(this, '/v1.0/api/mcp-servers');
         /** @type {SettingsResource} */
         this.settings = new SettingsResource(this, '/v1.0/api/settings');
         /** @type {PublicResource} */
@@ -3308,6 +3605,7 @@ export class MyMorningNewsClient {
      * @param {{ tenantId?: string }} [options] Tenant, required when the email exists in several tenants.
      * @returns {Promise<TokenResponse>} Token.
      * @throws {TenantSelectionRequiredError} The email exists in several tenants and no tenant was given.
+     * @throws {EmailNotVerifiedError} The account signed up publicly and has not confirmed its email (403).
      * @throws {MyMorningNewsError} Sign-in failed (401, 429, ...).
      */
     async login(email, password, options = {}) {
@@ -3656,6 +3954,8 @@ export class MyMorningNewsClient {
         if (response.status === 409 && Array.isArray(obj.tenants)) {
             return new TenantSelectionRequiredError(message || 'Choose a tenant to sign in.', { ...info, code: obj.error ?? 'TenantSelectionRequired' }, obj.tenants);
         }
+        if (response.status === 402 && obj.error === 'CapReached') return new CapReachedError(String(message).trim(), info);
+        if (response.status === 403 && obj.error === 'EmailNotVerified') return new EmailNotVerifiedError(String(message).trim(), info);
         return new MyMorningNewsError(String(message).trim(), info);
     }
 

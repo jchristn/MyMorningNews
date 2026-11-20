@@ -226,9 +226,15 @@ namespace MyMorningNews.Sdk
         public DevicesResource Devices { get; }
 
         /// <summary>
-        /// The caller's plan and promotional code redemption.
+        /// The caller's account: plan, promotional codes, usage meter, data export, and deletion, plus the public sign-up,
+        /// email verification, and password reset routes.
         /// </summary>
         public AccountResource Account { get; }
+
+        /// <summary>
+        /// MCP server registry for agentic research: register, test, discover tools, and turn tools on or off.
+        /// </summary>
+        public McpServersResource McpServers { get; }
 
         /// <summary>
         /// Administration: control plane, promotional codes, plans, audit, request history, and settings.
@@ -303,6 +309,7 @@ namespace MyMorningNews.Sdk
             Vault = new VaultResource(this);
             Devices = new DevicesResource(this);
             Account = new AccountResource(this);
+            McpServers = new McpServersResource(this);
             Admin = new AdminResource(this);
         }
 
@@ -320,6 +327,7 @@ namespace MyMorningNews.Sdk
         /// <returns>Token response.</returns>
         /// <exception cref="ArgumentNullException">email or password is null or empty.</exception>
         /// <exception cref="TenantSelectionRequiredException">The email exists in several tenants; pass tenantId.</exception>
+        /// <exception cref="EmailNotVerifiedException">The account signed up publicly and its email is not confirmed yet (403).</exception>
         /// <exception cref="MyMorningNewsException">The server rejected the login.</exception>
         public async Task<TokenResponse> LoginAsync(string email, string password, string? tenantId = null, CancellationToken token = default)
         {
@@ -877,6 +885,8 @@ namespace MyMorningNews.Sdk
             }
 
             if (String.IsNullOrWhiteSpace(message)) message = "The server returned HTTP " + status + " " + response.ReasonPhrase + ".";
+            if (status == 402 && String.Equals(error, "CapReached", StringComparison.Ordinal)) return new CapReachedException(message, requestId, details, text);
+            if (status == 403 && String.Equals(error, "EmailNotVerified", StringComparison.Ordinal)) return new EmailNotVerifiedException(message, requestId, details, text);
             return new MyMorningNewsException(status, error, message, requestId, details, text);
         }
 

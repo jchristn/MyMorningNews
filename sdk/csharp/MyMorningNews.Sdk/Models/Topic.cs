@@ -158,6 +158,16 @@ namespace MyMorningNews.Sdk.Models
         public DateTime LastUpdateUtc { get; set; }
 
         /// <summary>
+        /// Agentic search: when the research model supports tools, it searches and reads pages itself (web_search, fetch_url, and allowed MCP tools) before the usual reading and verification. Opt-in, default false.
+        /// </summary>
+        public bool AgenticSearch { get; set; } = false;
+
+        /// <summary>
+        /// MCP tool IDs (mct_...) this topic may use in agentic search. Empty allows every enabled tool.
+        /// </summary>
+        public List<string> McpToolIds { get; set; } = new List<string>();
+
+        /// <summary>
         /// Instantiate.
         /// </summary>
         public Topic()

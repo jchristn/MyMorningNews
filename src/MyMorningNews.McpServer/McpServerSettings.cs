@@ -160,6 +160,11 @@ namespace MyMorningNews.McpServer
         /// </summary>
         public bool Verbose { get; set; } = false;
 
+        /// <summary>
+        /// Print the tool, resource, and prompt definitions as JSON and exit. Default false. Argument <c>--describe</c>.
+        /// </summary>
+        public bool Describe { get; set; } = false;
+
         #endregion
 
         #region Private-Members
@@ -217,6 +222,9 @@ namespace MyMorningNews.McpServer
                     case "--verbose":
                         s.Verbose = true;
                         break;
+                    case "--describe":
+                        s.Describe = true;
+                        break;
                     case "--api-url":
                         s.ApiUrl = Next(args, ref i, a);
                         break;
@@ -227,7 +235,7 @@ namespace MyMorningNews.McpServer
                         s.Port = Int(Next(args, ref i, a)) ?? throw new ArgumentException("--port needs a number.");
                         break;
                     default:
-                        throw new ArgumentException("Unknown argument " + a + ". Use --stdio, --api-url, --host, --port, or --verbose.");
+                        throw new ArgumentException("Unknown argument " + a + ". Use --stdio, --api-url, --host, --port, --verbose, or --describe.");
                 }
             }
 

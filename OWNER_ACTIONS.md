@@ -45,6 +45,16 @@ Expo, Mailgun on latticetech.ai) are reused; only the app-specific items below a
   Mailgun domain such as `mg.mymorningnews.ai` (DMARC alignment means the From domain must match the sending
   domain). Add the DNS records Mailgun shows, then put the API key in `docker/.env`.
 
+## Phase 11: SDKs and MCP server
+
+- [ ] **Package publishing (optional, when you want public packages):** decide whether to publish `MyMorningNews.Sdk` to
+  NuGet, `mymorningnews-sdk` to npm, and `mymorningnews-sdk` to PyPI, and under which accounts. Each needs an API key
+  stored as a GitHub Actions secret (never in chat). Until then the SDKs are used from the repository.
+- [ ] **Try the MCP server with your own client:** run `cd docker && docker compose --profile mcp up -d`, then add it to
+  Claude Code with the command in `MCP_API.md`, and tell me what felt missing or awkward in the tools.
+- [ ] **MCP registry listing (optional):** decide whether to list the server in public MCP registries once the hosted
+  service has a public `/mcp` endpoint (Phase 14).
+
 ## Phase 14: Hosted service
 
 - [ ] **Promotional code policy:** confirm what the Complimentary plan should include (it allows $30 of model use a month, 25 topics, hourly schedules, and 600 audio minutes; change it in the admin Plans page or tell me) and the default length for new codes (30 days).

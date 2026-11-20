@@ -3,6 +3,7 @@ namespace MyMorningNews.McpServer
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using MyMorningNews.McpServer.Prompts;
@@ -83,6 +84,31 @@ namespace MyMorningNews.McpServer
             tools.AddRange(OutcomeTools.Build());
             tools.AddRange(LearningTools.Build());
             return tools;
+        }
+
+        /// <summary>
+        /// The tool, resource, and prompt definitions as indented JSON, for documentation (MCP_API.md is generated from it).
+        /// </summary>
+        /// <returns>JSON.</returns>
+        public static string DescribeJson()
+        {
+            Dictionary<string, object?> doc = new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                { "server", McpHost.ServerName },
+                { "version", McpHost.ServerVersion },
+                { "tools", AllTools().Select(t => new Dictionary<string, object?>
+                    {
+                        { "name", t.Name }, { "title", t.Title }, { "description", t.Description }, { "readOnly", t.ReadOnly }, { "destructive", t.Destructive },
+                        { "inputSchema", t.InputSchema }, { "outputSchema", t.OutputSchema }
+                    }).ToList() },
+                { "resources", ResourceCatalog.Build().Select(r => new Dictionary<string, object?> { { "uri", r.Uri }, { "name", r.Name }, { "description", r.Description }, { "template", r.IsTemplate } }).ToList() },
+                { "prompts", PromptCatalog.Build().Select(p => new Dictionary<string, object?>
+                    {
+                        { "name", p.Name }, { "title", p.Title }, { "description", p.Description },
+                        { "arguments", p.Arguments.Select(a => new Dictionary<string, object?> { { "name", a.Name }, { "description", a.Description }, { "required", a.Required == true } }).ToList() }
+                    }).ToList() }
+            };
+            return JsonSerializer.Serialize(doc, new JsonSerializerOptions { WriteIndented = true });
         }
 
         /// <summary>

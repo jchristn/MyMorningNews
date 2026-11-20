@@ -13,7 +13,7 @@ namespace MyMorningNews.McpServer
         /// <summary>
         /// Entry point.
         /// </summary>
-        /// <param name="args">Arguments: <c>--stdio</c>, <c>--api-url</c>, <c>--host</c>, <c>--port</c>, <c>--verbose</c>.</param>
+        /// <param name="args">Arguments: <c>--stdio</c>, <c>--api-url</c>, <c>--host</c>, <c>--port</c>, <c>--verbose</c>, <c>--describe</c>.</param>
         /// <returns>Exit code: 0 on a clean stop, 2 for bad arguments, 1 for other failures.</returns>
         public static async Task<int> Main(string[] args)
         {
@@ -27,6 +27,12 @@ namespace MyMorningNews.McpServer
             {
                 Console.Error.WriteLine(ex.Message);
                 return 2;
+            }
+
+            if (settings.Describe)
+            {
+                Console.Out.WriteLine(McpSurface.DescribeJson());
+                return 0;
             }
 
             Action<string> log = message => Console.Error.WriteLine(message);

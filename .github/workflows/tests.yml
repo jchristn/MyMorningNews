@@ -89,3 +89,73 @@ jobs:
         with:
           name: test-results-provider-${{ matrix.provider }}
           path: results-provider-*.json
+
+  sdk:
+    name: SDK harnesses
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.1-pg17
+        env:
+          POSTGRES_PASSWORD: Test_Passw0rd
+          POSTGRES_DB: mymorningnews
+        ports:
+          - 127.0.0.1:5432:5432
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1 -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      MYMORNINGNEWS_DB_SERVER: 127.0.0.1
+      MYMORNINGNEWS_DB_PORT: "5432"
+      MYMORNINGNEWS_DB_DATABASE: mymorningnews
+      MYMORNINGNEWS_DB_USERNAME: postgres
+      MYMORNINGNEWS_DB_PASSWORD: Test_Passw0rd
+      MYMORNINGNEWS_REST_HOSTNAME: 127.0.0.1
+      MYMORNINGNEWS_REST_PORT: "12100"
+      MYMORNINGNEWS_TTS_ENABLED: "false"
+      MYMORNINGNEWS_EMAIL_PROVIDER: File
+      MYMORNINGNEWS_BASE_URL: http://127.0.0.1:12100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build
+        run: dotnet build src/MyMorningNews.sln
+      - name: Start the server
+        run: |
+          mkdir -p .run
+          nohup dotnet run --project src/MyMorningNews.Server -f net10.0 --no-build > .run/server.log 2>&1 &
+          for i in $(seq 1 60); do curl -fs http://127.0.0.1:12100/v1.0/api/health > /dev/null && exit 0; sleep 2; done
+          cat .run/server.log; exit 1
+      - name: Seed the demo member for the cross-user checks
+        run: |
+          TOKEN=$(curl -fs -X POST http://127.0.0.1:12100/v1.0/token -H "x-email: admin@mymorningnews" -H "x-password: password" | python3 -c "import json,sys;print(json.load(sys.stdin)['token'])")
+          curl -fs -X POST http://127.0.0.1:12100/v1.0/tenants/default/users -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" --data-binary @docker/factory/seed/demo-user.json > /dev/null
+      - name: C# harness
+        shell: bash
+        run: ./sdk/csharp/run-tests.sh 2>&1 | tee .run/sdk-csharp.txt
+      - name: JavaScript harness
+        shell: bash
+        run: ./sdk/js/run-tests.sh 2>&1 | tee .run/sdk-js.txt
+      - name: Python harness
+        shell: bash
+        run: ./sdk/python/run-tests.sh 2>&1 | tee .run/sdk-python.txt
+      - name: MCP reference is current
+        run: python3 src/Tools/mcpdocs/generate_mcp_api.py --check
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdk-harness-results
+          path: .run/

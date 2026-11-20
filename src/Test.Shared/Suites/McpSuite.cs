@@ -89,9 +89,29 @@ namespace Test.Shared.Suites
                 Assert.True(resources.Contains("mmn://briefings/latest") && templates.Contains("mmn://briefings/{id}") && templates.Contains("mmn://topics/{id}/brief") && templates.Contains("mmn://runs/{id}/summary"), "resources");
                 List<string> prompts = (await c.CallAsync("prompts/list", null, token).ConfigureAwait(false)).GetProperty("prompts").EnumerateArray().Select(p => p.GetProperty("name").GetString()!).ToList();
                 Assert.True(prompts.Contains("review_morning_briefing") && prompts.Contains("refine_topic"), "prompts");
+                string? doc = FindUp("MCP_API.md");
+                if (doc != null)
+                {
+                    string text = File.ReadAllText(doc);
+                    Assert.True(names.All(n => text.Contains("### " + n + "\n", StringComparison.Ordinal)), "every tool documented in MCP_API.md: missing " + String.Join(", ", names.Where(n => !text.Contains("### " + n + "\n", StringComparison.Ordinal))));
+                }
+
                 McpToolOutcome bad = await c.ToolAsync("list_findings", new { tier = "Bogus" }, token).ConfigureAwait(false);
                 Assert.True(bad.IsError && bad.Text.Contains("MustRead", StringComparison.Ordinal), "input schema enforced: " + bad.Text);
             }
+        }
+
+        private static string? FindUp(string fileName)
+        {
+            DirectoryInfo? dir = new DirectoryInfo(AppContext.BaseDirectory);
+            while (dir != null)
+            {
+                string candidate = Path.Combine(dir.FullName, fileName);
+                if (File.Exists(candidate)) return candidate;
+                dir = dir.Parent;
+            }
+
+            return null;
         }
 
         private static async Task AuthAsync(CancellationToken token)

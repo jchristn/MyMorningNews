@@ -78,3 +78,4 @@ mobile/*.jks
 mobile/*.keystore
 mobile/*.p8
 mobile/**/private-key*.pem
+.run/

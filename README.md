@@ -68,13 +68,28 @@ Every port is bound to `127.0.0.1` and sits in the 12xxx range to stay clear of 
 | REST server | 12100 |
 | Dashboard | 12101 |
 | PostgreSQL | 12102 |
-| SearXNG (planned) | 12103 |
-| Kokoro TTS (planned) | 12104 |
-| MCP server (planned) | 12105 |
+| SearXNG | 12103 |
+| Kokoro TTS | 12104 |
+| MCP server (`--profile mcp`) | 12105 |
 | Grafana (admin / admin) | 12110 |
 | Prometheus | 12111 |
 | Tempo (HTTP, OTLP gRPC, OTLP HTTP) | 12112, 12113, 12114 |
 | Loki | 12115 |
+
+## MCP server
+
+The MCP server lets Claude Code, Claude Desktop, and other MCP clients list your topics, read today's briefing, check the evidence behind a finding, and record feedback with a reason. It acts only with your own credentials.
+
+```bash
+cd docker && docker compose --profile mcp up -d
+claude mcp add --transport http mymorningnews http://127.0.0.1:12105/mcp --header "Authorization: Bearer <session token>"
+```
+
+A session token comes from `POST /v1.0/token` with `x-email` and `x-password`; for a long-lived connection, create an access key under Credentials instead. Stdio mode, every tool, the resources, the prompts, and client configuration snippets are in [`MCP_API.md`](MCP_API.md).
+
+## SDKs
+
+C#, JavaScript, and Python SDKs live in [`sdk/`](sdk/README.md). Each covers the API, supports signed requests, and ships a harness you can run against your own server.
 
 ## Building from source
 

@@ -805,6 +805,7 @@ export interface Edition extends Record_ {
     voiceProfileId: string | null;
     audioEnabled: boolean;
     emailEnabled: boolean;
+    pushEnabled: boolean;
     enabled: boolean;
     freshResearchBeforeCompose: boolean;
     freshResearchLeadMinutes: number;
@@ -826,6 +827,7 @@ export interface EditionUpsertRequest {
     briefingTemplateId?: string;
     audioEnabled?: boolean;
     emailEnabled?: boolean;
+    pushEnabled?: boolean;
     enabled?: boolean;
     freshResearchBeforeCompose?: boolean;
     freshResearchLeadMinutes?: number;
@@ -1361,12 +1363,26 @@ export declare class EditionsResource extends CrudResource<Edition, EditionRespo
     preview(id: string, body?: { templateContent?: string }): Promise<Briefing>;
 }
 
+export interface BriefingProgress {
+    id: string;
+    tenantId: string;
+    userId: string;
+    briefingId: string;
+    positionSeconds: number;
+    durationSeconds?: number | null;
+    completed: boolean;
+    createdUtc: string;
+    lastUpdateUtc: string;
+}
+
 export declare class BriefingsResource extends ResourceGroup {
     list(options?: ListOptions): Promise<EnumerationResult<Briefing>>;
     get(id: string): Promise<BriefingDetail>;
     remove(id: string): Promise<null>;
     pin(id: string, pinned?: boolean): Promise<Briefing>;
     unpin(id: string): Promise<Briefing>;
+    getProgress(id: string): Promise<BriefingProgress>;
+    saveProgress(id: string, progress: { positionSeconds: number; durationSeconds?: number; completed?: boolean }): Promise<BriefingProgress>;
     regenerate(id: string): Promise<Briefing>;
     generateAudio(id: string, body?: { voiceProfileId?: string }): Promise<MediaAsset>;
     download(id: string, options?: DownloadOptions & { format?: 'md' | 'markdown' | 'html' }): Promise<DownloadResult>;

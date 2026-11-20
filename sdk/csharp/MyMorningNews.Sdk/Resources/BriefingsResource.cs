@@ -78,6 +78,34 @@ namespace MyMorningNews.Sdk.Resources
         }
 
         /// <summary>
+        /// Where the caller stopped listening to a briefing (position 0 and not completed when nothing is saved).
+        /// </summary>
+        /// <param name="id">Identifier.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The BriefingProgress.</returns>
+        /// <exception cref="ArgumentNullException">id is null or empty.</exception>
+        /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
+        public Task<BriefingProgress> GetProgressAsync(string id, CancellationToken token = default)
+        {
+            return Client.SendAsync<BriefingProgress>(HttpMethod.Get, "/v1.0/api/briefings/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/progress", null, null, token);
+        }
+
+        /// <summary>
+        /// Save where the caller stopped listening to a briefing.
+        /// </summary>
+        /// <param name="id">Identifier.</param>
+        /// <param name="request">Position, optional duration, and whether it is finished.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The BriefingProgress.</returns>
+        /// <exception cref="ArgumentNullException">id or request is null.</exception>
+        /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
+        public Task<BriefingProgress> SaveProgressAsync(string id, BriefingProgressRequest request, CancellationToken token = default)
+        {
+            ArgumentNullException.ThrowIfNull(request);
+            return Client.SendAsync<BriefingProgress>(HttpMethod.Put, "/v1.0/api/briefings/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/progress", null, request, token);
+        }
+
+        /// <summary>
         /// Store fresh Markdown and HTML files from the saved briefing.
         /// </summary>
         /// <param name="id">Identifier.</param>

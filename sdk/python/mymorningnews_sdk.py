@@ -1983,6 +1983,7 @@ class Edition(Model):
     voice_profile_id: Optional[str] = None
     audio_enabled: Optional[bool] = None
     email_enabled: Optional[bool] = None
+    push_enabled: Optional[bool] = None
     enabled: Optional[bool] = None
     fresh_research_before_compose: Optional[bool] = None
     fresh_research_lead_minutes: Optional[int] = None
@@ -3573,6 +3574,17 @@ class BriefingsResource(_Resource):
     def unpin(self, briefing_id: str) -> Briefing:
         """Unpin a briefing."""
         return self.pin(briefing_id, False)
+
+    def get_progress(self, briefing_id: str) -> Dict[str, Any]:
+        """Where the caller stopped listening: ``positionSeconds``, ``durationSeconds``, ``completed``."""
+        return self._json("GET", API + "/briefings/" + _seg(briefing_id) + "/progress")
+
+    def save_progress(self, briefing_id: str, position_seconds: float, completed: bool = False, duration_seconds: Optional[float] = None) -> Dict[str, Any]:
+        """Save where the caller stopped listening."""
+        body: Dict[str, Any] = {"positionSeconds": position_seconds, "completed": completed}
+        if duration_seconds is not None:
+            body["durationSeconds"] = duration_seconds
+        return self._json("PUT", API + "/briefings/" + _seg(briefing_id) + "/progress", body=body)
 
     def regenerate(self, briefing_id: str) -> Briefing:
         """Store fresh Markdown and HTML files from the saved briefing (after ``GoneError``)."""

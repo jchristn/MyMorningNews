@@ -51,9 +51,9 @@ ROOTS = [
     # Service results the routes serialize directly.
     "SearchOutcome", "FetchResult", "EffectivePlan", "FeedTokenCreated", "PromoCheck", "PromoCodeStats",
     "EmailPreview", "RelevanceReport", "AccuracyReport", "FeedbackReport", "SuggestionReport", "ReasonReport",
-    "QualityReport", "RankingRecommendation", "PushResult", "OverviewReport", "EmailReport", "UsageMeter",
+    "QualityReport", "RankingRecommendation", "PushResult", "OverviewReport", "EmailReport", "UsageMeter", "BriefingProgress",
     # Request bodies.
-    "AssignmentUpsertRequest", "AudioGenerateRequest", "FindingUpdateRequest", "BriefingPinRequest", "ConstraintUpsertRequest",
+    "AssignmentUpsertRequest", "AccountDeleteRequest", "BriefingProgressRequest", "AudioGenerateRequest", "FindingUpdateRequest", "BriefingPinRequest", "ConstraintUpsertRequest",
     "CredentialCreateRequest", "CredentialUpdateRequest", "DeviceRegisterRequest", "DimensionUpsertRequest",
     "EditionPreviewRequest", "EditionTopicsRequest", "EditionUpsertRequest", "EmailPreferencesRequest",
     "FeedbackCreateRequest", "FeedbackUpdateRequest", "FeedTokenCreateRequest", "FetchTestRequest",

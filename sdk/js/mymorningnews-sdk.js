@@ -2386,6 +2386,25 @@ export class BriefingsResource extends ResourceGroup {
     }
 
     /**
+     * Where the caller stopped listening (position 0 and not completed when nothing is saved).
+     * @param {string} id Briefing.
+     * @returns {Promise<BriefingProgress>} Progress.
+     */
+    getProgress(id) {
+        return this._req('GET', this._path(id, '/progress'));
+    }
+
+    /**
+     * Save where the caller stopped listening.
+     * @param {string} id Briefing.
+     * @param {{ positionSeconds: number, durationSeconds?: number, completed?: boolean }} progress Position.
+     * @returns {Promise<BriefingProgress>} Progress.
+     */
+    saveProgress(id, progress) {
+        return this._req('PUT', this._path(id, '/progress'), { body: progress });
+    }
+
+    /**
      * Store fresh Markdown and HTML files from the saved briefing.
      * @param {string} id Briefing.
      * @returns {Promise<Briefing>} Briefing.

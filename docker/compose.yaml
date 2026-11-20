@@ -163,6 +163,9 @@ services:
       MYMORNINGNEWS_MCP_HOSTNAME: "*"
       MYMORNINGNEWS_MCP_PORT: "8100"
       MYMORNINGNEWS_OTLP_ENDPOINT: http://tempo:4317
+      # Voltaic metrics for the Grafana MCP dashboard; Prometheus scrapes mcp:9465 on the compose network only.
+      MYMORNINGNEWS_MCP_PROMETHEUS_HOSTNAME: mcp
+      MYMORNINGNEWS_MCP_PROMETHEUS_PORT: "9465"
     ports:
       - "127.0.0.1:12105:8100"
     healthcheck:

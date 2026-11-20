@@ -57,7 +57,7 @@ curl -s -X POST http://127.0.0.1:12100/v1.0/token \
 
 Send the returned token as `Authorization: Bearer <token>`. The full API is described at http://127.0.0.1:12100/openapi.json (Swagger UI at `/swagger`).
 
-Useful helpers: `docker/update.sh` (or `.bat`) pulls and recreates the stack without touching data. `docker/factory/reset.sh` (or `.bat`) deletes all data and starts fresh.
+Useful helpers: `docker/update.sh` (or `.bat`) pulls and recreates the stack without touching data. `docker/factory/reset.sh` (or `.bat`) deletes all data and starts fresh; add `--demo` for a seeded demo account (`demo@mymorningnews` / `password`) with topics, completed runs, findings, evidence, predictions, briefings, and feedback, made without model calls or an API key.
 
 ## Ports
 

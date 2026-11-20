@@ -156,6 +156,25 @@ namespace MyMorningNews.McpServer
         }
 
         /// <summary>
+        /// Hostname the Prometheus scrape endpoint binds and answers to. Default <c>127.0.0.1</c>. Wildcards are not
+        /// supported; in Docker Compose use the service name (<c>mcp</c>) so Prometheus can scrape <c>mcp:9465</c>.
+        /// Environment <c>MYMORNINGNEWS_MCP_PROMETHEUS_HOSTNAME</c>.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Value is null or empty.</exception>
+        public string PrometheusHostname
+        {
+            get
+            {
+                return _PrometheusHostname;
+            }
+            set
+            {
+                if (String.IsNullOrWhiteSpace(value)) throw new ArgumentNullException(nameof(PrometheusHostname));
+                _PrometheusHostname = value.Trim();
+            }
+        }
+
+        /// <summary>
         /// Write diagnostic messages to standard error. Default false. Argument <c>--verbose</c>.
         /// </summary>
         public bool Verbose { get; set; } = false;
@@ -175,6 +194,7 @@ namespace MyMorningNews.McpServer
         private int _CredentialCacheSeconds = 60;
         private int _RequestTimeoutSeconds = 120;
         private int _PrometheusPort = 0;
+        private string _PrometheusHostname = "127.0.0.1";
 
         #endregion
 
@@ -210,6 +230,8 @@ namespace MyMorningNews.McpServer
             s.OtlpEndpoint = Clean(env("MYMORNINGNEWS_OTLP_ENDPOINT"));
             int? prometheus = Int(env("MYMORNINGNEWS_MCP_PROMETHEUS_PORT"));
             if (prometheus.HasValue) s.PrometheusPort = prometheus.Value;
+            string? prometheusHost = Clean(env("MYMORNINGNEWS_MCP_PROMETHEUS_HOSTNAME"));
+            if (prometheusHost != null) s.PrometheusHostname = prometheusHost;
 
             for (int i = 0; i < args.Length; i++)
             {

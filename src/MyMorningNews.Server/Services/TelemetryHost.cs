@@ -7,9 +7,10 @@ namespace MyMorningNews.Server.Services
     using SyslogLogging;
 
     /// <summary>
-    /// In-process telemetry collector (Radiant) subscribed to the Watson, PolyPrompt, SendWithMailgun, CrawlSharp, and
-    /// MyMorningNews meters and activity sources. Exports traces over OTLP, logs to Loki, and serves a Prometheus scrape
-    /// endpoint on an internal port. Best effort: failure to start logs a warning and the server continues.
+    /// In-process telemetry collector (Radiant) subscribed to the Watson, PolyPrompt, SendWithMailgun, CrawlSharp, Voltaic,
+    /// and MyMorningNews meters and activity sources, plus the Npgsql meter (connection pool and command metrics; its
+    /// per-command spans are left off to keep traces readable). Exports traces over OTLP, logs to Loki, and serves a
+    /// Prometheus scrape endpoint on an internal port. Best effort: failure to start logs a warning and the server continues.
     /// </summary>
     public class TelemetryHost : IDisposable
     {
@@ -28,6 +29,7 @@ namespace MyMorningNews.Server.Services
         #region Private-Members
 
         private static readonly string[] _Sources = new[] { "Watson", "PolyPrompt", "SendWithMailgun", "CrawlSharp", "Voltaic", MyMorningNewsTelemetry.Name };
+        private static readonly string[] _MeterOnlySources = new[] { "Npgsql" };
         private RadiantHost? _Host = null;
         private bool _Disposed = false;
 
@@ -53,6 +55,8 @@ namespace MyMorningNews.Server.Services
                     radiant.Sources.AddMeter(source);
                     radiant.Sources.AddActivitySource(source);
                 }
+
+                foreach (string source in _MeterOnlySources) radiant.Sources.AddMeter(source);
 
                 radiant.Otlp.Enable = !String.IsNullOrWhiteSpace(settings.OtlpEndpoint);
                 if (radiant.Otlp.Enable) radiant.Otlp.Endpoint = settings.OtlpEndpoint;

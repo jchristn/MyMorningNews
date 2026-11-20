@@ -1,8 +1,12 @@
-# Factory demo profile: the base stack plus a one-shot seeder that adds demo data on top of the first-boot seed.
+# Factory demo profile: the base stack plus three one-shot seeders that add demo data on top of the first-boot seed.
 #   docker compose -f compose.yaml -f factory/compose.factory.yaml up -d --build
-# The seeder is best-effort and idempotent: routes that a phase has not built yet are skipped, never fatal.
+# (c) 2026 Lattice AI LLC
+# Sign in as demo@mymorningnews / password (tenant default) to see two topics, three completed runs with findings and
+# evidence, predictions, suggestions, Markdown briefings, feedback, and learned preferences. Seeding makes no model calls
+# and needs no API key. Each seeder is best-effort and idempotent (see factory/seed/seed.sh and factory/seed/demo.sql).
 services:
   factory-seed:
+    # Step 1: the demo user, through the REST API.
     image: curlimages/curl:8.11.1
     container_name: mymorningnews-factory-seed
     depends_on:
@@ -15,5 +19,42 @@ services:
       MYMORNINGNEWS_ADMIN_TENANT: default
     volumes:
       - ./factory/seed:/seed:ro
-    entrypoint: ["/bin/sh", "/seed/seed.sh"]
+    entrypoint: ["/bin/sh", "/seed/seed.sh", "accounts"]
+    restart: "no"
+
+  factory-seed-data:
+    # Step 2: demo topics, runs, findings, briefings, and feedback, inserted with psql in one transaction.
+    image: pgvector/pgvector:0.8.1-pg17
+    container_name: mymorningnews-factory-seed-data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      factory-seed:
+        condition: service_completed_successfully
+    environment:
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: password
+      PGDATABASE: mymorningnews
+    volumes:
+      - ./factory/seed:/seed:ro
+    entrypoint: ["/bin/sh", "-c", "psql -v ON_ERROR_STOP=1 --single-transaction -f /seed/demo.sql || echo '[seed-data] demo data was not seeded (see the error above)'"]
+    restart: "no"
+
+  factory-seed-files:
+    # Step 3: the server stores each demo briefing's Markdown and HTML files.
+    image: curlimages/curl:8.11.1
+    container_name: mymorningnews-factory-seed-files
+    depends_on:
+      factory-seed-data:
+        condition: service_completed_successfully
+    environment:
+      MYMORNINGNEWS_REST_BASE: http://server:8000
+      MYMORNINGNEWS_ADMIN_TENANT: default
+      MYMORNINGNEWS_DEMO_EMAIL: demo@mymorningnews
+      MYMORNINGNEWS_DEMO_PASSWORD: password
+    volumes:
+      - ./factory/seed:/seed:ro
+    entrypoint: ["/bin/sh", "/seed/seed.sh", "files"]
     restart: "no"

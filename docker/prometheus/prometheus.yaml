@@ -7,6 +7,11 @@ scrape_configs:
     metrics_path: '/metrics'
     static_configs:
       - targets: ['server:9464']
+  # The MCP server (compose profile mcp). The target shows as down when that profile is not running.
+  - job_name: 'mymorningnews-mcp'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['mcp:9465']
   - job_name: 'prometheus'
     static_configs:
       - targets: ['127.0.0.1:9090']

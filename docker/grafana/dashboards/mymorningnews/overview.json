@@ -35,7 +35,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "max(watson_server_up{job=\"mymorningnews-server\"})"
+          "expr": "max(watson_server_up{job=\"mymorningnews-server\",instance=~\"$instance\"})"
         }
       ],
       "id": 1
@@ -62,7 +62,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "max(watson_server_uptime_seconds{job=\"mymorningnews-server\"})"
+          "expr": "max(watson_server_uptime_seconds{job=\"mymorningnews-server\",instance=~\"$instance\"})"
         }
       ],
       "id": 2
@@ -89,7 +89,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(rate(http_server_request_duration_seconds_count{job=\"mymorningnews-server\"}[5m]))"
+          "expr": "sum(rate(http_server_request_duration_seconds_count{job=\"mymorningnews-server\",instance=~\"$instance\"}[5m]))"
         }
       ],
       "id": 3
@@ -116,7 +116,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(rate(http_server_request_duration_seconds_count{job=\"mymorningnews-server\",http_response_status_code=~\"5..\"}[5m])) / clamp_min(sum(rate(http_server_request_duration_seconds_count{job=\"mymorningnews-server\"}[5m])), 1e-9)"
+          "expr": "sum(rate(http_server_request_duration_seconds_count{job=\"mymorningnews-server\",instance=~\"$instance\",http_response_status_code=~\"5..\"}[5m])) / clamp_min(sum(rate(http_server_request_duration_seconds_count{job=\"mymorningnews-server\",instance=~\"$instance\"}[5m])), 1e-9)"
         }
       ],
       "id": 4
@@ -143,7 +143,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (class) (label_replace(rate(http_server_request_duration_seconds_count{job=\"mymorningnews-server\"}[5m]), \"class\", \"${1}xx\", \"http_response_status_code\", \"(.)..\"))",
+          "expr": "sum by (class) (label_replace(rate(http_server_request_duration_seconds_count{job=\"mymorningnews-server\",instance=~\"$instance\"}[5m]), \"class\", \"${1}xx\", \"http_response_status_code\", \"(.)..\"))",
           "legendFormat": "{{class}}"
         }
       ],
@@ -171,7 +171,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (scheme, result) (rate(mymorningnews_auth_requests_total{job=\"mymorningnews-server\"}[5m]))",
+          "expr": "sum by (scheme, result) (rate(mymorningnews_auth_requests_total{job=\"mymorningnews-server\",instance=~\"$instance\"}[5m]))",
           "legendFormat": "{{scheme}} {{result}}"
         }
       ],
@@ -199,7 +199,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (result) (rate(mymorningnews_authz_requests_total{job=\"mymorningnews-server\"}[5m]))",
+          "expr": "sum by (result) (rate(mymorningnews_authz_requests_total{job=\"mymorningnews-server\",instance=~\"$instance\"}[5m]))",
           "legendFormat": "{{result}}"
         }
       ],
@@ -227,7 +227,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "max(dotnet_process_memory_working_set_bytes{job=\"mymorningnews-server\"})",
+          "expr": "max(dotnet_process_memory_working_set_bytes{job=\"mymorningnews-server\",instance=~\"$instance\"})",
           "legendFormat": "working set"
         }
       ],
@@ -255,7 +255,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (outcome) (rate(mymorningnews_request_history_captures_total{job=\"mymorningnews-server\"}[5m]))",
+          "expr": "sum by (outcome) (rate(mymorningnews_request_history_captures_total{job=\"mymorningnews-server\",instance=~\"$instance\"}[5m]))",
           "legendFormat": "{{outcome}}"
         }
       ],
@@ -283,11 +283,58 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (worker, outcome) (increase(mymorningnews_worker_iterations_total{job=\"mymorningnews-server\"}[1h]))",
+          "expr": "sum by (worker, outcome) (increase(mymorningnews_worker_iterations_total{job=\"mymorningnews-server\",instance=~\"$instance\"}[1h]))",
           "legendFormat": "{{worker}} {{outcome}}"
         }
       ],
       "id": 10
     }
-  ]
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "instance",
+        "label": "Instance",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "query": {
+          "query": "label_values(up{job=\"mymorningnews-server\"}, instance)",
+          "refId": "instance"
+        },
+        "definition": "label_values(up{job=\"mymorningnews-server\"}, instance)",
+        "refresh": 2,
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "sort": 1,
+        "hide": 0
+      }
+    ]
+  },
+  "links": [
+    {
+      "title": "My Morning News",
+      "type": "dashboards",
+      "tags": [
+        "mymorningnews"
+      ],
+      "asDropdown": true,
+      "includeVars": true,
+      "keepTime": true,
+      "icon": "external link"
+    }
+  ],
+  "graphTooltip": 1
 }

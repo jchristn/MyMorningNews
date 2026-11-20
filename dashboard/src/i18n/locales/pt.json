@@ -1979,8 +1979,7 @@
       "noBrief": "Nenhum resumo ainda. Refine o tema para criar um rascunho.",
       "dimensions": "Dimensões",
       "brief": "Resumo e público",
-      "sourcesHelp": "Feeds e páginas iniciais são lidos em toda execução, junto com a pesquisa na web.",
-      "searchProvidersLater": "A escolha de provedores de pesquisa por tema chega com a página de provedores de pesquisa."
+      "sourcesHelp": "Feeds e páginas iniciais são lidos em toda execução, junto com a pesquisa na web."
     },
     "agentic": {
       "title": "Busca agêntica",
@@ -3812,17 +3811,16 @@
       "closed": "O cadastro não está aberto neste servidor. Peça uma conta a um administrador.",
       "displayName": "Seu nome",
       "codeHelp": "Opcional. Um código promocional que você recebeu.",
-      "acceptTerms": "Aceito os",
-      "terms": "termos de serviço",
-      "and": "e a",
-      "privacy": "política de privacidade",
       "confirmAge": "Tenho pelo menos {age} anos.",
       "create": "Criar conta",
       "creating": "Criando sua conta...",
       "checkEmailTitle": "Verifique seu e-mail",
       "checkEmail": "Enviamos um link para {email}. Abra-o para confirmar seu endereço e depois entre.",
       "readyTitle": "Sua conta está pronta",
-      "ready": "Entre para criar seu primeiro tema."
+      "ready": "Entre para criar seu primeiro tema.",
+      "consent": "Aceito os {terms} e a {privacy}.",
+      "termsLink": "termos de serviço",
+      "privacyLink": "política de privacidade"
     },
     "verify": {
       "title": "Confirme seu e-mail",
@@ -3895,6 +3893,63 @@
     "delete": {
       "title": "Remover este servidor MCP?",
       "message": "Remover {name} e suas ferramentas? Os temas que as permitiam deixam de usá-las."
+    }
+  },
+  "searchProviders": {
+    "about": "Provedores de pesquisa são onde a pesquisa procura páginas. Os provedores padrão são usados por todo tema que não escolheu os seus. Tavily e You.com precisam de uma chave de API nas credenciais armazenadas.",
+    "never": "Nunca",
+    "columns": {
+      "name": "Nome",
+      "kind": "Tipo",
+      "default": "Padrão",
+      "lastTest": "Último teste",
+      "status": "Status"
+    },
+    "kinds": {
+      "Searxng": "SearXNG",
+      "Tavily": "Tavily",
+      "YouCom": "You.com",
+      "Rss": "Feeds RSS",
+      "HackerNews": "Hacker News",
+      "Arxiv": "arXiv",
+      "HostedModelWebSearch": "Pesquisa na web do modelo hospedado"
+    },
+    "empty": {
+      "title": "Nenhum provedor de pesquisa",
+      "message": "Adicione um provedor para que a pesquisa tenha onde procurar."
+    },
+    "form": {
+      "createTitle": "Adicionar provedor de pesquisa",
+      "editTitle": "Editar provedor de pesquisa",
+      "endpoint": "Endpoint",
+      "endpointHelp": "A URL base do SearXNG, como http://searxng:8080 dentro do Docker.",
+      "credential": "Chave de API",
+      "credentialHelp": "Uma credencial armazenada com a chave de API do provedor.",
+      "maxResults": "Resultados por consulta",
+      "timeoutMs": "Tempo limite (ms)",
+      "defaultHelp": "Usado pelos temas que não escolheram os próprios provedores."
+    },
+    "test": {
+      "action": "Testar",
+      "title": "Testar um provedor de pesquisa",
+      "run": "Executar teste",
+      "query": "Consulta",
+      "feeds": "URLs de feed",
+      "feedsHelp": "Uma URL de feed RSS ou Atom por linha.",
+      "ok": "Funcionando",
+      "failed": "Falhou",
+      "results": "Resultados",
+      "noResults": "Nenhum resultado retornado."
+    },
+    "delete": {
+      "title": "Excluir este provedor de pesquisa?",
+      "message": "Excluir {name}? Os temas que o escolheram deixam de usá-lo."
+    },
+    "topic": {
+      "title": "Provedores de pesquisa",
+      "help": "Escolha onde este tema pesquisa. Mantenha o padrão para seguir os provedores padrão do locatário.",
+      "none": "Nenhum provedor de pesquisa configurado ainda.",
+      "useDefaults": "Usar o padrão"
     }
   }
 }

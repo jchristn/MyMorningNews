@@ -1979,8 +1979,7 @@
       "noBrief": "Pas encore de cahier des charges. Affinez le sujet pour en rédiger un.",
       "dimensions": "Dimensions",
       "brief": "Cahier des charges et public",
-      "sourcesHelp": "Les flux et pages de départ sont lus à chaque exécution, en plus de la recherche web.",
-      "searchProvidersLater": "Le choix des fournisseurs de recherche par sujet arrivera avec la page des fournisseurs de recherche."
+      "sourcesHelp": "Les flux et pages de départ sont lus à chaque exécution, en plus de la recherche web."
     },
     "agentic": {
       "title": "Recherche agentique",
@@ -3812,17 +3811,16 @@
       "closed": "L’inscription n’est pas ouverte sur ce serveur. Demandez un compte à un administrateur.",
       "displayName": "Votre nom",
       "codeHelp": "Facultatif. Un code promotionnel qui vous a été remis.",
-      "acceptTerms": "J’accepte les",
-      "terms": "conditions d’utilisation",
-      "and": "et la",
-      "privacy": "politique de confidentialité",
       "confirmAge": "J’ai au moins {age} ans.",
       "create": "Créer le compte",
       "creating": "Création de votre compte...",
       "checkEmailTitle": "Consultez vos e-mails",
       "checkEmail": "Nous avons envoyé un lien à {email}. Ouvrez-le pour confirmer votre adresse, puis connectez-vous.",
       "readyTitle": "Votre compte est prêt",
-      "ready": "Connectez-vous pour créer votre premier sujet."
+      "ready": "Connectez-vous pour créer votre premier sujet.",
+      "consent": "J’accepte les {terms} et la {privacy}.",
+      "termsLink": "conditions d’utilisation",
+      "privacyLink": "politique de confidentialité"
     },
     "verify": {
       "title": "Confirmez votre e-mail",
@@ -3895,6 +3893,63 @@
     "delete": {
       "title": "Retirer ce serveur MCP ?",
       "message": "Retirer {name} et ses outils ? Les sujets qui les autorisaient cessent de les utiliser."
+    }
+  },
+  "searchProviders": {
+    "about": "Les fournisseurs de recherche sont les sources où la recherche trouve des pages. Les fournisseurs par défaut servent à chaque sujet qui n’a pas choisi les siens. Tavily et You.com nécessitent une clé d’API dans les identifiants enregistrés.",
+    "never": "Jamais",
+    "columns": {
+      "name": "Nom",
+      "kind": "Genre",
+      "default": "Par défaut",
+      "lastTest": "Dernier test",
+      "status": "Statut"
+    },
+    "kinds": {
+      "Searxng": "SearXNG",
+      "Tavily": "Tavily",
+      "YouCom": "You.com",
+      "Rss": "Flux RSS",
+      "HackerNews": "Hacker News",
+      "Arxiv": "arXiv",
+      "HostedModelWebSearch": "Recherche web du modèle hébergé"
+    },
+    "empty": {
+      "title": "Aucun fournisseur de recherche",
+      "message": "Ajoutez un fournisseur pour que la recherche ait où chercher."
+    },
+    "form": {
+      "createTitle": "Ajouter un fournisseur de recherche",
+      "editTitle": "Modifier le fournisseur de recherche",
+      "endpoint": "Point de terminaison",
+      "endpointHelp": "L’URL de base de SearXNG, par exemple http://searxng:8080 dans Docker.",
+      "credential": "Clé d’API",
+      "credentialHelp": "Un identifiant enregistré contenant la clé d’API du fournisseur.",
+      "maxResults": "Résultats par requête",
+      "timeoutMs": "Délai d’expiration (ms)",
+      "defaultHelp": "Utilisé par les sujets qui n’ont pas choisi leurs propres fournisseurs."
+    },
+    "test": {
+      "action": "Tester",
+      "title": "Tester un fournisseur de recherche",
+      "run": "Lancer le test",
+      "query": "Requête",
+      "feeds": "URL de flux",
+      "feedsHelp": "Une URL de flux RSS ou Atom par ligne.",
+      "ok": "Fonctionne",
+      "failed": "Échec",
+      "results": "Résultats",
+      "noResults": "Aucun résultat renvoyé."
+    },
+    "delete": {
+      "title": "Supprimer ce fournisseur de recherche ?",
+      "message": "Supprimer {name} ? Les sujets qui l’ont choisi cessent de l’utiliser."
+    },
+    "topic": {
+      "title": "Fournisseurs de recherche",
+      "help": "Choisissez où ce sujet effectue ses recherches. Laissez les valeurs par défaut pour suivre les fournisseurs par défaut du locataire.",
+      "none": "Aucun fournisseur de recherche n’est encore configuré.",
+      "useDefaults": "Utiliser les valeurs par défaut"
     }
   }
 }

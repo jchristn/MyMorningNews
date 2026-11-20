@@ -132,8 +132,6 @@
     "expand": "Развернуть боковую панель",
     "label": "Основная навигация",
     "open": "Открыть навигацию",
-    "phase": "Появится в фазе {phase}",
-    "phaseShort": "Ф{phase}",
     "skip": "Перейти к содержимому",
     "version": "v{version}",
     "groups": {
@@ -319,10 +317,6 @@
       "summary": "Подключите Claude Code или другой клиент MCP к вашим исследованиям"
     }
   },
-  "placeholder": {
-    "title": "Появится в фазе {phase}",
-    "message": "{feature}: запланировано на фазу {phase}. Навигация уже готова, чтобы вы видели, где это будет."
-  },
   "topbar": {
     "copyServerUrl": "Копировать URL сервера",
     "health": "Состояние сервера: {state}",
@@ -381,7 +375,6 @@
   },
   "home": {
     "summary": "Вот что происходит на вашем сервере.",
-    "title": "Доброе утро, {name}",
     "failures": {
       "none": "Недавних сбоев нет",
       "noneMessage": "Все запросы за этот период выполнены успешно.",
@@ -402,7 +395,7 @@
     },
     "next": {
       "explorer": "Попробуйте API в обозревателе",
-      "models": "Добавьте конечную точку модели (фаза 3)",
+      "models": "Настройте конечную точку модели",
       "password": "Смените пароль по умолчанию",
       "title": "Следующие шаги",
       "topic": "Создайте первую тему",
@@ -412,7 +405,13 @@
       "credentials": "Учетные данные",
       "none": "Внешние сервисы не настроены.",
       "summary": "Инструменты, работающие вместе с сервером",
-      "title": "Внешние сервисы"
+      "title": "Внешние сервисы",
+      "descriptions": {
+        "grafana": "Дашборды для метрик, трассировок и журналов.",
+        "prometheus": "Метрики.",
+        "tempo": "Трассировки.",
+        "loki": "Журналы."
+      }
     },
     "request": {
       "title": "Новый запрос",
@@ -421,6 +420,14 @@
     "overview": {
       "title": "{count, plural, one {Последний # день} few {Последние # дня} many {Последние # дней} other {Последние # дня}}",
       "more": "Открыть аналитику"
+    },
+    "greeting": {
+      "morning": "Доброе утро, {name}",
+      "morningPlain": "Доброе утро",
+      "afternoon": "Добрый день, {name}",
+      "afternoonPlain": "Добрый день",
+      "evening": "Добрый вечер, {name}",
+      "eveningPlain": "Добрый вечер"
     }
   },
   "requests": {
@@ -429,8 +436,8 @@
       "allFilters": "все запросы",
       "button": "Удалить подходящие",
       "confirm": "Удалить",
-      "done": "Удалено запросов: {count}",
-      "message": "Удалить запросы ({count}), соответствующие условию {filters}? Это действие нельзя отменить.",
+      "done": "{count, plural, one {Удален # запрос} few {Удалено # запроса} many {Удалено # запросов} other {Удалено # запроса}}",
+      "message": "Удалить {count, plural, one {# запрос, соответствующий} few {# запроса, соответствующих} many {# запросов, соответствующих} other {# запроса, соответствующих}} условию {filters}? Это действие нельзя отменить.",
       "title": "Удалить подходящие запросы"
     },
     "columns": {
@@ -622,7 +629,115 @@
       "diagnostics_maxPayloadCharacters": "Максимум символов содержимого",
       "models_defaultChatModel": "Модель чата по умолчанию",
       "models_defaultOllamaEndpoint": "Конечная точка Ollama по умолчанию",
-      "models_defaultEmbeddingModel": "Модель эмбеддингов по умолчанию"
+      "models_defaultEmbeddingModel": "Модель эмбеддингов по умолчанию",
+      "rest_publicBaseUrl": "Публичный URL сервера",
+      "rest_appBaseUrl": "Публичный URL приложения",
+      "rest_mcpPublicUrl": "Публичный URL MCP",
+      "rest_eventStreamPollMs": "Интервал опроса потока событий (мс)",
+      "rest_eventStreamMaxMinutes": "Максимальная длительность потока событий (минуты)",
+      "auth_signatureMaxSkewSeconds": "Допустимое расхождение часов для подписанных запросов (секунды)",
+      "auth_refreshTokenLifetimeDays": "Время жизни токена обновления (дни)",
+      "pipeline_useStreaming": "Потоковая передача ответов модели",
+      "pipeline_scopeGuardrail": "Ограничитель области",
+      "pipeline_maxQueriesPerRun": "Поисковых запросов за запуск",
+      "pipeline_maxResultsPerQuery": "Результатов на запрос",
+      "pipeline_maxToolCallsPerRun": "Вызовов инструментов за запуск",
+      "pipeline_maxFetchesPerRun": "Загружаемых страниц за запуск",
+      "pipeline_maxFindingsPerRun": "Сохраняемых находок за запуск",
+      "pipeline_maxDocumentCharacters": "Символов документа для извлечения",
+      "pipeline_maxParallelFetches": "Параллельные загрузки страниц",
+      "pipeline_dedupeLookbackDays": "Период поиска дубликатов (дни)",
+      "pipeline_noveltyLookbackDays": "Период оценки новизны (дни)",
+      "pipeline_recencyHalfLifeHours": "Период полураспада свежести (часы)",
+      "pipeline_displayThreshold": "Порог отображения",
+      "pipeline_duplicateSimilarity": "Сходство дубликатов",
+      "pipeline_borderlineSimilarity": "Пограничное сходство",
+      "pipeline_weightLlm": "Вес: оценка модели",
+      "pipeline_weightFeedback": "Вес: отзывы",
+      "pipeline_weightNovelty": "Вес: новизна",
+      "pipeline_weightSource": "Вес: репутация источника",
+      "pipeline_weightRecency": "Вес: свежесть",
+      "diagnostics_auditRetentionDays": "Хранение аудита (дни)",
+      "push_enabled": "Отправлять push-уведомления",
+      "push_expoPushUrl": "URL push-сервиса Expo",
+      "push_expoAccessToken": "Токен доступа Expo",
+      "push_timeoutMs": "Тайм-аут push (мс)",
+      "storage_provider": "Провайдер хранилища",
+      "storage_localDirectory": "Локальный каталог",
+      "storage_s3Bucket": "Бакет S3",
+      "storage_s3Region": "Регион S3",
+      "storage_s3Endpoint": "Конечная точка S3",
+      "storage_s3AccessKey": "Идентификатор ключа доступа S3",
+      "storage_s3SecretKey": "Секретный ключ доступа S3",
+      "storage_s3Prefix": "Префикс ключей S3",
+      "storage_s3ForcePathStyle": "Адресация S3 в стиле пути",
+      "storage_presignedUrlMinutes": "Время жизни предподписанных URL (минуты)",
+      "storage_artifactRetentionDays": "Хранение отчетов и аудио (дни)",
+      "scheduler_enabled": "Запускать планировщик",
+      "scheduler_pollIntervalSeconds": "Интервал опроса планировщика (секунды)",
+      "scheduler_minimumIntervalMinutes": "Минимальный интервал расписания (минуты)",
+      "scheduler_missedRunGraceMinutes": "Допуск для пропущенных запусков (минуты)",
+      "scheduler_runPollSeconds": "Интервал опроса очереди запусков (секунды)",
+      "search_searxngUrl": "URL SearXNG",
+      "search_hackerNewsUrl": "URL API Hacker News",
+      "search_arxivUrl": "URL API arXiv",
+      "search_userAgent": "User-Agent",
+      "search_respectRobots": "Соблюдать robots.txt",
+      "search_fetchTimeoutMs": "Тайм-аут загрузки (мс)",
+      "search_perDomainDelayMs": "Задержка на домен (мс)",
+      "search_maxFetchBytes": "Максимальный размер страницы (байты)",
+      "tts_enabled": "Создавать аудио",
+      "tts_endpoint": "Конечная точка синтеза речи",
+      "tts_model": "Модель синтеза речи",
+      "tts_voice": "Голос диктора",
+      "tts_secondaryVoice": "Второй голос",
+      "tts_maxSegmentCharacters": "Символов на запрос синтеза",
+      "tts_maxParallelSegments": "Параллельные запросы синтеза",
+      "tts_timeoutSeconds": "Тайм-аут запроса синтеза (секунды)",
+      "tts_maxAttempts": "Попыток на аудиовыпуск",
+      "tts_ffmpegPath": "Путь к ffmpeg",
+      "tts_bitrate": "Битрейт MP3",
+      "tts_normalizeLoudness": "Нормализовать громкость",
+      "email_enabled": "Отправлять почту",
+      "email_provider": "Почтовый провайдер",
+      "email_fromAddress": "Адрес отправителя",
+      "email_fromName": "Имя отправителя",
+      "email_replyToAddress": "Адрес для ответа",
+      "email_subjectPrefix": "Префикс темы письма",
+      "email_mailgunDomain": "Домен Mailgun",
+      "email_mailgunApiKey": "Ключ API Mailgun",
+      "email_mailgunBaseUrl": "URL API Mailgun",
+      "email_fileDirectory": "Каталог файлового провайдера",
+      "email_actionTokenLifetimeDays": "Время жизни ссылок в письмах (дни)",
+      "email_recordFeedbackOnClick": "Записывать отзыв при открытии ссылки",
+      "email_deliveryMaxAttempts": "Попытки доставки",
+      "email_deliveryIntervalSeconds": "Интервал доставки (секунды)",
+      "email_messageRetentionDays": "Хранение отправленных писем (дни)",
+      "email_publicRequestsPerMinute": "Запросов к публичным страницам в минуту",
+      "learning_enabled": "Учиться на отзывах",
+      "learning_feedbackPerPass": "Отзывов за проход обучения",
+      "learning_autoApply": "Применять выявленные предпочтения автоматически",
+      "learning_intervalMinutes": "Интервал обучения (минуты)",
+      "learning_feedbackNeighbors": "Сравниваемых оцененных находок",
+      "hosting_publicSignupEnabled": "Открыть публичную регистрацию",
+      "hosting_defaultPlanKey": "Тариф по умолчанию",
+      "hosting_promoChecksPerMinute": "Проверок промокодов в минуту",
+      "hosting_requireEmailVerification": "Требовать подтверждение почты",
+      "hosting_turnstileSecretKey": "Секретный ключ Turnstile",
+      "hosting_turnstileSiteKey": "Ключ сайта Turnstile",
+      "hosting_signupsPerIpPerHour": "Регистраций с одного IP в час",
+      "hosting_verificationHours": "Время жизни ссылки подтверждения (часы)",
+      "hosting_passwordResetMinutes": "Время жизни ссылки сброса пароля (минуты)",
+      "hosting_deletionGraceDays": "Отсрочка удаления аккаунта (дни)",
+      "hosting_restrictPrivateNetworks": "Блокировать частные сети",
+      "hosting_usePlatformCredentials": "Использовать ключ модели платформы",
+      "hosting_requestsPerMinutePerIp": "Запросов API в минуту с одного IP",
+      "hosting_trustForwardedFor": "Доверять X-Forwarded-For",
+      "hosting_allowedPrivateHosts": "Разрешенные частные хосты",
+      "hosting_termsVersion": "Версия условий",
+      "hosting_minimumAge": "Минимальный возраст",
+      "hosting_appleTeamId": "Apple Team ID",
+      "hosting_mobileAppId": "ID мобильного приложения"
     }
   },
   "serverInfo": {
@@ -1987,6 +2102,33 @@
       "enable": "Использовать агентный поиск для этой темы",
       "tools": "Разрешенные инструменты MCP",
       "noTools": "Инструменты MCP еще не включены."
+    },
+    "schedule": {
+      "pausedItem": "{schedule} (приостановлено)",
+      "viaEditions": "Исследуется для выпусков: {editions}",
+      "paused": "Приостановлено"
+    },
+    "prompts": {
+      "add": "Переопределить промпт",
+      "help": "Промпты, которые эта тема использует вместо промптов арендатора. Все остальные промпты используются в версии арендатора.",
+      "emptyTitle": "Нет переопределений промптов",
+      "emptyMessage": "Эта тема использует промпты арендатора.",
+      "allPrompts": "Все промпты"
+    },
+    "models": {
+      "help": "Модель, которую каждая задача использует для этой темы. Назначение для этой темы переопределяет назначение арендатора.",
+      "task": "Задача",
+      "endpoint": "Конечная точка",
+      "model": "Модель",
+      "source": "Источник",
+      "none": "Нет конечной точки",
+      "scope": {
+        "topic": "Эта тема",
+        "tenant": "По умолчанию для арендатора",
+        "fallback": "Первая доступная конечная точка"
+      },
+      "change": "Изменить назначения на странице «Модели»",
+      "view": "Посмотреть назначения на странице «Модели»"
     }
   },
   "wizard": {
@@ -2184,7 +2326,7 @@
       "summary": "Сводные данные",
       "id": "ID",
       "findings": "Новые находки",
-      "findingsTitle": "Пропущено дубликатов: {duplicates}",
+      "findingsTitle": "{duplicates, plural, one {Пропущен # дубликат} few {Пропущено # дубликата} many {Пропущено # дубликатов} other {Пропущено # дубликата}}",
       "sources": "Источники",
       "cost": "Стоимость"
     },
@@ -2201,7 +2343,11 @@
       "duplicates": "Дубликаты",
       "tokens": "Токены",
       "tokenSplit": "{input} на входе, {output} на выходе",
-      "cost": "Оценочная стоимость"
+      "cost": "Оценочная стоимость",
+      "modelUsage": "Использование моделей",
+      "notRecorded": "Не записано",
+      "notRecordedHelp": "Для этого запуска не записано ни одного вызова модели.",
+      "costPending": "Без цены"
     },
     "stages": {
       "empty": "Для этого запуска этапы не записаны.",
@@ -2511,10 +2657,11 @@
     "kpis": {
       "open": "Открытые",
       "graded": "Оцененные",
-      "ofTotal": "из {total} прогнозов",
+      "ofTotal": "{total, plural, one {из # прогноза} few {из # прогнозов} many {из # прогнозов} other {из # прогноза}}",
       "accuracy": "Фактическая точность",
       "accuracyHelp": "Частично точные считаются за половину.",
-      "brier": "Средняя оценка Брайера"
+      "brier": "Средняя оценка Брайера",
+      "proposed": "{count, plural, one {# ждет вашей оценки} few {# ждут вашей оценки} many {# ждут вашей оценки} other {# ждут вашей оценки}}"
     },
     "calibration": {
       "title": "Калибровка",
@@ -2638,7 +2785,7 @@
       },
       "noFiles": "Нет сохраненных файлов.",
       "openRun": "Открыть запуск",
-      "stats": "Чтение {minutes} мин, слов: {words}, элементов: {items}",
+      "stats": "Чтение {minutes} мин, {words, plural, one {# слово} few {# слова} many {# слов} other {# слова}}, {items, plural, one {# элемент} few {# элемента} many {# элементов} other {# элемента}}",
       "failed": "Не удалось составить сводку.",
       "noContent": "В этой сводке нет содержимого.",
       "items": "В этой сводке ({count})",
@@ -3713,7 +3860,7 @@
       "quoteFailure": "Доля ошибок цитат",
       "quoteFailureHelp": "Цитаты, не прошедшие проверку",
       "modelCost": "Стоимость моделей",
-      "modelCalls": "Вызовов модели: {count}"
+      "modelCalls": "{count, plural, one {# вызов модели} few {# вызова модели} many {# вызовов модели} other {# вызова модели}}"
     },
     "email": {
       "total": "Сообщения",
@@ -3753,7 +3900,8 @@
       "body": "Создайте ключ доступа и секрет для клиента MCP, чтобы позже отозвать их без смены пароля. Скопируйте секрет при создании: он показывается только один раз.",
       "authMode": "Выберите режим аутентификации «Прямой заголовок» или «Гибридный»: клиент Streamable HTTP отправляет ключ и секрет в каждом запросе, а ключи с режимами «Подписанные запросы» и «Обмен на сеанс» это отклоняют.",
       "create": "Создать ключ доступа",
-      "askAdmin": "Ключи доступа создает администратор. Попросите у него ключ доступа с режимом аутентификации «Прямой заголовок»."
+      "askAdmin": "Ключи доступа создает администратор. Попросите у него ключ доступа с режимом аутентификации «Прямой заголовок».",
+      "titleMember": "Получите ключ доступа"
     },
     "connect": {
       "title": "Подключите клиент",
@@ -3799,7 +3947,8 @@
     "empty": {
       "title": "Источников пока нет",
       "message": "Источники появляются после того, как запуск ищет в интернете и загружает страницы по одной из ваших тем."
-    }
+    },
+    "runLabel": "Запуск от {when}"
   },
   "auth": {
     "resend": "Отправить новую ссылку",
@@ -3827,7 +3976,7 @@
     "verify": {
       "title": "Подтвердите адрес эл. почты",
       "done": "Ваш адрес эл. почты подтвержден. Теперь можно войти.",
-      "failed": "Срок действия ссылки истек, или она уже использована. Введите адрес эл. почты, чтобы получить новую."
+      "failed": "Ссылка недействительна, или срок ее действия истек. Введите адрес эл. почты, чтобы получить новую."
     },
     "forgot": {
       "title": "Сброс пароля",
@@ -3847,10 +3996,10 @@
     "about": "Зарегистрируйте удаленные серверы MCP, инструменты которых может вызывать агентное исследование. Получите список инструментов сервера, включите те, которым доверяете, а затем разрешите их для темы.",
     "created": "Сервер зарегистрирован.",
     "test": "Проверить подключение",
-    "testOk": "Подключено. Инструментов на сервере: {count}.",
+    "testOk": "Подключено. Сервер предоставляет {count, plural, one {# инструмент} few {# инструмента} many {# инструментов} other {# инструмента}}.",
     "testFailed": "Не удалось подключиться: {error}",
     "discover": "Найти инструменты",
-    "discovered": "Сохранено инструментов: {count}.",
+    "discovered": "{count, plural, one {Сохранен # инструмент} few {Сохранено # инструмента} many {Сохранено # инструментов} other {Сохранено # инструмента}}.",
     "columns": {
       "name": "Название",
       "transport": "Транспорт",
@@ -4007,5 +4156,22 @@
       "help": "Доля результатов каждого провайдера, которые привели к находке на пороге отображения или выше.",
       "label": "{provider} ({used} из {results})"
     }
+  },
+  "modelKeys": {
+    "title": "У конечной точки модели нет пригодного ключа API",
+    "problem": {
+      "missing": "У {name} нет ключа API, поэтому вызовы завершаются ошибкой.",
+      "notFound": "{name} использует сохраненные учетные данные, которых больше нет.",
+      "inactive": "{name} использует сохраненные учетные данные, которые отключены.",
+      "expired": "{name} использует сохраненные учетные данные с истекшим сроком действия."
+    },
+    "fix": "Добавить ключ для {name}",
+    "view": "Показать конечные точки моделей",
+    "consequence": {
+      "general": "Для уточнения тем, запусков исследований и сводок нужна рабочая модель, поэтому до устранения проблемы они завершаются ошибкой.",
+      "wizard": "Мастер просит модель предложить аспекты и вопросы, поэтому до устранения проблемы он завершается ошибкой уже на первом шаге."
+    },
+    "askAdmin": "Добавить ключ может только администратор арендатора. Попросите своего администратора устранить проблему.",
+    "badge": "Нет ключа API"
   }
 }

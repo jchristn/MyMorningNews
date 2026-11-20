@@ -118,7 +118,7 @@ export default function FindingsTable({ topicId = null, runId = null, tableKey =
             key: 'topicId',
             header: t('findings.columns.topic'),
             filter: { type: 'select', param: 'topicId', options: topics.map((x) => ({ value: x.id, label: x.name })) },
-            render: (r) => <span className="truncate">{topicNames.get(r.topicId) || r.topicId}</span>
+            render: (r) => <span className="topic-cell">{topicNames.get(r.topicId) || r.topicId}</span>
           }
         ]),
     {

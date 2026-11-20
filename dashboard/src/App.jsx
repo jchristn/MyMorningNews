@@ -11,7 +11,6 @@ import ResetPasswordPage from './components/auth/ResetPasswordPage.jsx';
 import SignupPage from './components/auth/SignupPage.jsx';
 import VerifyEmailPage from './components/auth/VerifyEmailPage.jsx';
 import Login from './components/Login.jsx';
-import PhasePlaceholder from './components/PhasePlaceholder.jsx';
 import { PrivateRoute, PublicRoute, RequireAccess } from './components/ProtectedRoute.jsx';
 import { ALL_ROUTES } from './utils/navigation.js';
 
@@ -64,13 +63,11 @@ function RouteElement({ route }) {
   const View = VIEWS[route.key];
   return (
     <RequireAccess item={route}>
-      {route.phase || !View ? (
-        <PhasePlaceholder routeKey={route.key} phase={route.phase || 12} />
-      ) : (
+      {View ? (
         <Suspense fallback={<LoadingState />}>
           <View />
         </Suspense>
-      )}
+      ) : null}
     </RequireAccess>
   );
 }

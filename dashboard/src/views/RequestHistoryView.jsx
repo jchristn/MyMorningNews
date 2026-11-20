@@ -201,13 +201,13 @@ export default function RequestHistoryView() {
       <ConfirmModal
         open={bulkOpen}
         title={t('requests.bulk.title')}
-        message={t('requests.bulk.message', { count: page ? f.number(page.totalCount) : '0', filters: describeFilters() })}
+        message={t('requests.bulk.message', { count: page ? page.totalCount : 0, filters: describeFilters() })}
         confirmLabel={t('requests.bulk.confirm')}
         danger
         onClose={() => setBulkOpen(false)}
         onConfirm={async () => {
           const result = await apiClient.deleteRequestHistoryBulk(activeFilters);
-          addNotification(t('requests.bulk.done', { count: f.number(result ? result.deletedCount : 0) }), 'success');
+          addNotification(t('requests.bulk.done', { count: result ? result.deletedCount : 0 }), 'success');
           setRefresh((n) => n + 1);
         }}
       />

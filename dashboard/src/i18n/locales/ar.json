@@ -132,8 +132,6 @@
     "expand": "توسيع الشريط الجانبي",
     "label": "التنقل الرئيسي",
     "open": "فتح التنقل",
-    "phase": "يصل في المرحلة {phase}",
-    "phaseShort": "م{phase}",
     "skip": "انتقل إلى المحتوى",
     "version": "v{version}",
     "groups": {
@@ -319,10 +317,6 @@
       "summary": "اربط Claude Code أو أي عميل MCP آخر بأبحاثك"
     }
   },
-  "placeholder": {
-    "title": "يصل في المرحلة {phase}",
-    "message": "الميزة {feature} مخطط لها في المرحلة {phase}. التنقل جاهز لتعرف أين ستكون."
-  },
   "topbar": {
     "copyServerUrl": "نسخ عنوان URL للخادم",
     "health": "صحة الخادم: {state}",
@@ -381,7 +375,6 @@
   },
   "home": {
     "summary": "إليك ما يحدث على خادمك.",
-    "title": "صباح الخير يا {name}",
     "failures": {
       "none": "لا توجد إخفاقات حديثة",
       "noneMessage": "نجحت كل الطلبات في هذا النطاق.",
@@ -402,7 +395,7 @@
     },
     "next": {
       "explorer": "جرّب API في المستكشف",
-      "models": "أضف نقطة نهاية لنموذج (المرحلة 3)",
+      "models": "أعدّ نقطة نهاية لنموذج",
       "password": "غيّر كلمة المرور الافتراضية",
       "title": "الخطوات التالية",
       "topic": "أنشئ موضوعك الأول",
@@ -412,7 +405,13 @@
       "credentials": "بيانات الاعتماد",
       "none": "لم يتم إعداد أي خدمات خارجية.",
       "summary": "أدوات تعمل بجانب الخادم",
-      "title": "الخدمات الخارجية"
+      "title": "الخدمات الخارجية",
+      "descriptions": {
+        "grafana": "لوحات معلومات للمقاييس والتتبعات والسجلات.",
+        "prometheus": "المقاييس.",
+        "tempo": "التتبعات.",
+        "loki": "السجلات."
+      }
     },
     "request": {
       "title": "طلب جديد",
@@ -421,6 +420,14 @@
     "overview": {
       "title": "{count, plural, zero {آخر # يوم} one {آخر يوم} two {آخر يومين} few {آخر # أيام} many {آخر # يومًا} other {آخر # يوم}}",
       "more": "فتح الرؤى"
+    },
+    "greeting": {
+      "morning": "صباح الخير يا {name}",
+      "morningPlain": "صباح الخير",
+      "afternoon": "طاب يومك يا {name}",
+      "afternoonPlain": "طاب يومك",
+      "evening": "مساء الخير يا {name}",
+      "eveningPlain": "مساء الخير"
     }
   },
   "requests": {
@@ -429,8 +436,8 @@
       "allFilters": "كل الطلبات",
       "button": "حذف المطابق",
       "confirm": "حذف",
-      "done": "تم حذف {count} طلب",
-      "message": "هل تريد حذف {count} طلب مطابق لـ {filters}؟ لا يمكن التراجع عن ذلك.",
+      "done": "{count, plural, zero {لم يُحذف أي طلب} one {تم حذف طلب واحد} two {تم حذف طلبين} few {تم حذف # طلبات} many {تم حذف # طلبًا} other {تم حذف # طلب}}",
+      "message": "هل تريد حذف {count, plural, zero {# طلب مطابق} one {طلب واحد مطابق} two {طلبين مطابقين} few {# طلبات مطابقة} many {# طلبًا مطابقًا} other {# طلب مطابق}} لـ {filters}؟ لا يمكن التراجع عن ذلك.",
       "title": "حذف الطلبات المطابقة"
     },
     "columns": {
@@ -622,7 +629,115 @@
       "diagnostics_maxPayloadCharacters": "الحد الأقصى لأحرف الحمولة",
       "models_defaultChatModel": "نموذج المحادثة الافتراضي",
       "models_defaultOllamaEndpoint": "نقطة نهاية Ollama الافتراضية",
-      "models_defaultEmbeddingModel": "نموذج التضمين الافتراضي"
+      "models_defaultEmbeddingModel": "نموذج التضمين الافتراضي",
+      "rest_publicBaseUrl": "عنوان URL العام للخادم",
+      "rest_appBaseUrl": "عنوان URL العام للتطبيق",
+      "rest_mcpPublicUrl": "عنوان URL العام لـ MCP",
+      "rest_eventStreamPollMs": "فاصل استطلاع تدفق الأحداث (ms)",
+      "rest_eventStreamMaxMinutes": "الحد الأقصى لمدة تدفق الأحداث (بالدقائق)",
+      "auth_signatureMaxSkewSeconds": "فارق الساعة للطلبات الموقّعة (بالثواني)",
+      "auth_refreshTokenLifetimeDays": "مدة رمز التحديث (بالأيام)",
+      "pipeline_useStreaming": "بث استجابات النماذج",
+      "pipeline_scopeGuardrail": "حاجز النطاق",
+      "pipeline_maxQueriesPerRun": "استعلامات البحث لكل تشغيل",
+      "pipeline_maxResultsPerQuery": "نتائج البحث لكل استعلام",
+      "pipeline_maxToolCallsPerRun": "استدعاءات الأدوات لكل تشغيل",
+      "pipeline_maxFetchesPerRun": "الصفحات المجلوبة لكل تشغيل",
+      "pipeline_maxFindingsPerRun": "النتائج المحتفظ بها لكل تشغيل",
+      "pipeline_maxDocumentCharacters": "أحرف المستند المرسلة للاستخراج",
+      "pipeline_maxParallelFetches": "عمليات جلب الصفحات المتوازية",
+      "pipeline_dedupeLookbackDays": "فترة البحث عن التكرارات (بالأيام)",
+      "pipeline_noveltyLookbackDays": "فترة تقييم الجِدّة (بالأيام)",
+      "pipeline_recencyHalfLifeHours": "عمر النصف للحداثة (بالساعات)",
+      "pipeline_displayThreshold": "حد العرض",
+      "pipeline_duplicateSimilarity": "تشابه التكرار",
+      "pipeline_borderlineSimilarity": "التشابه الحدّي",
+      "pipeline_weightLlm": "الوزن: حكم النموذج",
+      "pipeline_weightFeedback": "الوزن: الملاحظات",
+      "pipeline_weightNovelty": "الوزن: الجِدّة",
+      "pipeline_weightSource": "الوزن: سمعة المصدر",
+      "pipeline_weightRecency": "الوزن: الحداثة",
+      "diagnostics_auditRetentionDays": "مدة الاحتفاظ بسجل التدقيق (بالأيام)",
+      "push_enabled": "إرسال الإشعارات الفورية",
+      "push_expoPushUrl": "عنوان URL لإشعارات Expo",
+      "push_expoAccessToken": "رمز وصول Expo",
+      "push_timeoutMs": "مهلة الإشعار (ms)",
+      "storage_provider": "مزود التخزين",
+      "storage_localDirectory": "المجلد المحلي",
+      "storage_s3Bucket": "حاوية S3",
+      "storage_s3Region": "منطقة S3",
+      "storage_s3Endpoint": "نقطة نهاية S3",
+      "storage_s3AccessKey": "معرّف مفتاح الوصول لـ S3",
+      "storage_s3SecretKey": "مفتاح الوصول السري لـ S3",
+      "storage_s3Prefix": "بادئة مفاتيح S3",
+      "storage_s3ForcePathStyle": "عنونة S3 بنمط المسار",
+      "storage_presignedUrlMinutes": "مدة صلاحية عنوان URL الموقّع مسبقًا (بالدقائق)",
+      "storage_artifactRetentionDays": "مدة الاحتفاظ بالتقارير والصوت (بالأيام)",
+      "scheduler_enabled": "تشغيل المجدول",
+      "scheduler_pollIntervalSeconds": "فاصل استطلاع المجدول (بالثواني)",
+      "scheduler_minimumIntervalMinutes": "أقصر فاصل للجدول (بالدقائق)",
+      "scheduler_missedRunGraceMinutes": "مهلة السماح للتشغيل الفائت (بالدقائق)",
+      "scheduler_runPollSeconds": "فاصل استطلاع قائمة انتظار التشغيل (بالثواني)",
+      "search_searxngUrl": "عنوان URL لـ SearXNG",
+      "search_hackerNewsUrl": "عنوان URL لـ Hacker News API",
+      "search_arxivUrl": "عنوان URL لـ arXiv API",
+      "search_userAgent": "وكيل المستخدم",
+      "search_respectRobots": "احترام robots.txt",
+      "search_fetchTimeoutMs": "مهلة الجلب (ms)",
+      "search_perDomainDelayMs": "التأخير لكل نطاق (ms)",
+      "search_maxFetchBytes": "أكبر صفحة مجلوبة (بالبايت)",
+      "tts_enabled": "إنتاج الصوت",
+      "tts_endpoint": "نقطة نهاية الكلام",
+      "tts_model": "نموذج الكلام",
+      "tts_voice": "صوت الراوي",
+      "tts_secondaryVoice": "الصوت الثاني",
+      "tts_maxSegmentCharacters": "الأحرف لكل طلب كلام",
+      "tts_maxParallelSegments": "طلبات الكلام المتوازية",
+      "tts_timeoutSeconds": "مهلة طلب الكلام (بالثواني)",
+      "tts_maxAttempts": "المحاولات لكل حلقة",
+      "tts_ffmpegPath": "مسار ffmpeg",
+      "tts_bitrate": "معدل بت MP3",
+      "tts_normalizeLoudness": "توحيد مستوى الصوت",
+      "email_enabled": "إرسال البريد الإلكتروني",
+      "email_provider": "مزود البريد الإلكتروني",
+      "email_fromAddress": "عنوان المرسل",
+      "email_fromName": "اسم المرسل",
+      "email_replyToAddress": "عنوان الرد",
+      "email_subjectPrefix": "بادئة عنوان الرسالة",
+      "email_mailgunDomain": "نطاق Mailgun",
+      "email_mailgunApiKey": "مفتاح API لـ Mailgun",
+      "email_mailgunBaseUrl": "عنوان URL لـ Mailgun API",
+      "email_fileDirectory": "مجلد مزود الملفات",
+      "email_actionTokenLifetimeDays": "مدة صلاحية روابط البريد (بالأيام)",
+      "email_recordFeedbackOnClick": "تسجيل الملاحظات عند فتح رابط",
+      "email_deliveryMaxAttempts": "محاولات التسليم",
+      "email_deliveryIntervalSeconds": "فاصل التسليم (بالثواني)",
+      "email_messageRetentionDays": "مدة الاحتفاظ بالرسائل المرسلة (بالأيام)",
+      "email_publicRequestsPerMinute": "طلبات الصفحات العامة في الدقيقة",
+      "learning_enabled": "التعلّم من الملاحظات",
+      "learning_feedbackPerPass": "الملاحظات لكل جولة تعلّم",
+      "learning_autoApply": "تطبيق التفضيلات المكتسبة تلقائيًا",
+      "learning_intervalMinutes": "فاصل التعلّم (بالدقائق)",
+      "learning_feedbackNeighbors": "النتائج المقيّمة المقارنة",
+      "hosting_publicSignupEnabled": "فتح التسجيل العام",
+      "hosting_defaultPlanKey": "الخطة الافتراضية",
+      "hosting_promoChecksPerMinute": "عمليات التحقق من الرموز الترويجية في الدقيقة",
+      "hosting_requireEmailVerification": "طلب تأكيد البريد الإلكتروني",
+      "hosting_turnstileSecretKey": "المفتاح السري لـ Turnstile",
+      "hosting_turnstileSiteKey": "مفتاح الموقع لـ Turnstile",
+      "hosting_signupsPerIpPerHour": "عمليات التسجيل لكل IP في الساعة",
+      "hosting_verificationHours": "مدة صلاحية رابط التأكيد (بالساعات)",
+      "hosting_passwordResetMinutes": "مدة صلاحية رابط إعادة تعيين كلمة المرور (بالدقائق)",
+      "hosting_deletionGraceDays": "فترة السماح لحذف الحساب (بالأيام)",
+      "hosting_restrictPrivateNetworks": "حظر الشبكات الخاصة",
+      "hosting_usePlatformCredentials": "استخدام مفتاح النموذج الخاص بالمنصة",
+      "hosting_requestsPerMinutePerIp": "طلبات API في الدقيقة لكل IP",
+      "hosting_trustForwardedFor": "الوثوق بـ X-Forwarded-For",
+      "hosting_allowedPrivateHosts": "المضيفون الخاصون المسموح بهم",
+      "hosting_termsVersion": "نسخة الشروط",
+      "hosting_minimumAge": "الحد الأدنى للعمر",
+      "hosting_appleTeamId": "Apple Team ID",
+      "hosting_mobileAppId": "معرّف تطبيق الجوال"
     }
   },
   "serverInfo": {
@@ -1987,6 +2102,33 @@
       "enable": "استخدام البحث الوكيلي لهذا الموضوع",
       "tools": "أدوات MCP المسموح بها",
       "noTools": "لم يتم تفعيل أي أدوات MCP بعد."
+    },
+    "schedule": {
+      "pausedItem": "{schedule} (متوقف مؤقتًا)",
+      "viaEditions": "يُبحث لصالح {editions}",
+      "paused": "متوقف مؤقتًا"
+    },
+    "prompts": {
+      "add": "تجاوز موجّه",
+      "help": "موجّهات يستخدمها هذا الموضوع بدلًا من موجّهات المستأجر. تستخدم كل الموجّهات الأخرى نسخة المستأجر.",
+      "emptyTitle": "لا توجد تجاوزات للموجّهات",
+      "emptyMessage": "يستخدم هذا الموضوع موجّهات المستأجر.",
+      "allPrompts": "كل الموجّهات"
+    },
+    "models": {
+      "help": "النموذج الذي تستخدمه كل مهمة لهذا الموضوع. يتقدم تعيين هذا الموضوع على تعيين المستأجر.",
+      "task": "المهمة",
+      "endpoint": "نقطة النهاية",
+      "model": "النموذج",
+      "source": "مصدر التعيين",
+      "none": "لا توجد نقطة نهاية",
+      "scope": {
+        "topic": "هذا الموضوع",
+        "tenant": "افتراضي المستأجر",
+        "fallback": "أول نقطة نهاية متاحة"
+      },
+      "change": "غيّر التعيينات في صفحة النماذج",
+      "view": "اعرض التعيينات في صفحة النماذج"
     }
   },
   "wizard": {
@@ -2184,7 +2326,7 @@
       "summary": "الملخص",
       "id": "المعرّف",
       "findings": "نتائج جديدة",
-      "findingsTitle": "تم تخطي {duplicates} من التكرارات",
+      "findingsTitle": "{duplicates, plural, zero {لم يُتخطَّ أي تكرار} one {تم تخطي تكرار واحد} two {تم تخطي تكرارين} few {تم تخطي # تكرارات} many {تم تخطي # تكرارًا} other {تم تخطي # تكرار}}",
       "sources": "المصادر",
       "cost": "التكلفة"
     },
@@ -2201,7 +2343,11 @@
       "duplicates": "التكرارات",
       "tokens": "الرموز المميزة",
       "tokenSplit": "{input} داخل، {output} خارج",
-      "cost": "التكلفة التقديرية"
+      "cost": "التكلفة التقديرية",
+      "modelUsage": "استخدام النماذج",
+      "notRecorded": "غير مسجل",
+      "notRecordedHelp": "لم تُسجَّل أي استدعاءات للنماذج لهذا التشغيل.",
+      "costPending": "غير مسعّر"
     },
     "stages": {
       "empty": "لم تُسجَّل أي مراحل لهذا التشغيل.",
@@ -2511,10 +2657,11 @@
     "kpis": {
       "open": "مفتوحة",
       "graded": "مقيّمة",
-      "ofTotal": "من أصل {total} توقع",
+      "ofTotal": "من أصل {total, plural, zero {# توقع} one {توقع واحد} two {توقعين} few {# توقعات} many {# توقعًا} other {# توقع}}",
       "accuracy": "الدقة الملحوظة",
       "accuracyHelp": "تُحتسب الدقة الجزئية بنصف قيمة.",
-      "brier": "متوسط درجة Brier"
+      "brier": "متوسط درجة Brier",
+      "proposed": "{count, plural, zero {لا توقعات بانتظار تقييمك} one {توقع واحد بانتظار تقييمك} two {توقعان بانتظار تقييمك} few {# توقعات بانتظار تقييمك} many {# توقعًا بانتظار تقييمك} other {# توقع بانتظار تقييمك}}"
     },
     "calibration": {
       "title": "المعايرة",
@@ -2638,7 +2785,7 @@
       },
       "noFiles": "لا توجد ملفات محفوظة.",
       "openRun": "فتح التشغيل",
-      "stats": "قراءة {minutes} دقيقة، {words} كلمة، {items} عنصر",
+      "stats": "قراءة {minutes} دقيقة، {words, plural, zero {# كلمة} one {كلمة واحدة} two {كلمتان} few {# كلمات} many {# كلمةً} other {# كلمة}}، {items, plural, zero {# عنصر} one {عنصر واحد} two {عنصران} few {# عناصر} many {# عنصرًا} other {# عنصر}}",
       "failed": "فشل الإعداد.",
       "noContent": "لا يحتوي هذا الموجز على أي محتوى.",
       "items": "في هذا الموجز ({count})",
@@ -3713,7 +3860,7 @@
       "quoteFailure": "معدل إخفاق الاقتباسات",
       "quoteFailureHelp": "الاقتباسات التي فشل التحقق منها",
       "modelCost": "تكلفة النموذج",
-      "modelCalls": "{count} استدعاء للنموذج"
+      "modelCalls": "{count, plural, zero {لا استدعاءات للنموذج} one {استدعاء واحد للنموذج} two {استدعاءان للنموذج} few {# استدعاءات للنموذج} many {# استدعاءً للنموذج} other {# استدعاء للنموذج}}"
     },
     "email": {
       "total": "الرسائل",
@@ -3753,7 +3900,8 @@
       "body": "أنشئ مفتاح وصول وسرًّا لعميل MCP، لتتمكن من إلغائه لاحقًا دون تغيير كلمة المرور. انسخ السر عند إنشائه؛ فهو يُعرض مرة واحدة فقط.",
       "authMode": "اختر وضع المصادقة «رأس مباشر» أو «هجين»: يرسل عميل Streamable HTTP المفتاح والسر مع كل طلب، وهو ما ترفضه مفاتيح «طلبات موقّعة» و«تبادل الجلسة».",
       "create": "إنشاء مفتاح وصول",
-      "askAdmin": "ينشئ المسؤول مفاتيح الوصول. اطلب من مسؤولك مفتاح وصول بوضع المصادقة «رأس مباشر»."
+      "askAdmin": "ينشئ المسؤول مفاتيح الوصول. اطلب من مسؤولك مفتاح وصول بوضع المصادقة «رأس مباشر».",
+      "titleMember": "احصل على مفتاح وصول"
     },
     "connect": {
       "title": "ربط عميل",
@@ -3799,7 +3947,8 @@
     "empty": {
       "title": "لا توجد مصادر بعد",
       "message": "تظهر المصادر بعد أن يبحث تشغيل في الويب ويجلب صفحات لأحد مواضيعك."
-    }
+    },
+    "runLabel": "تشغيل {when}"
   },
   "auth": {
     "resend": "إرسال رابط جديد",
@@ -3827,7 +3976,7 @@
     "verify": {
       "title": "أكّد بريدك الإلكتروني",
       "done": "تم تأكيد بريدك الإلكتروني. يمكنك تسجيل الدخول الآن.",
-      "failed": "انتهت صلاحية هذا الرابط أو تم استخدامه بالفعل. أدخل بريدك الإلكتروني للحصول على رابط جديد."
+      "failed": "هذا الرابط غير صالح أو انتهت صلاحيته. أدخل بريدك الإلكتروني للحصول على رابط جديد."
     },
     "forgot": {
       "title": "إعادة تعيين كلمة المرور",
@@ -3847,10 +3996,10 @@
     "about": "سجّل خوادم MCP بعيدة يمكن للبحث الوكيلي استدعاء أدواتها. اكتشف أدوات الخادم، وفعّل الأدوات التي تثق بها، ثم اسمح بها في موضوع.",
     "created": "تم تسجيل الخادم.",
     "test": "اختبار الاتصال",
-    "testOk": "تم الاتصال. يوفر الخادم {count} أداة.",
+    "testOk": "تم الاتصال. {count, plural, zero {لا يوفر الخادم أي أداة.} one {يوفر الخادم أداة واحدة.} two {يوفر الخادم أداتين.} few {يوفر الخادم # أدوات.} many {يوفر الخادم # أداةً.} other {يوفر الخادم # أداة.}}",
     "testFailed": "تعذر الاتصال: {error}",
     "discover": "اكتشاف الأدوات",
-    "discovered": "تم حفظ {count} أداة.",
+    "discovered": "{count, plural, zero {لم تُحفظ أي أداة.} one {تم حفظ أداة واحدة.} two {تم حفظ أداتين.} few {تم حفظ # أدوات.} many {تم حفظ # أداةً.} other {تم حفظ # أداة.}}",
     "columns": {
       "name": "الاسم",
       "transport": "النقل",
@@ -4007,5 +4156,22 @@
       "help": "حصة نتائج كل مزود التي أدت إلى نتيجة عند حد العرض أو فوقه.",
       "label": "{provider} ({used} من {results})"
     }
+  },
+  "modelKeys": {
+    "title": "لا تملك نقطة نهاية النموذج مفتاح API صالحًا للاستخدام",
+    "problem": {
+      "missing": "لا يملك {name} مفتاح API، لذا تفشل الاستدعاءات إليه.",
+      "notFound": "يستخدم {name} بيانات اعتماد مخزنة لم تعد موجودة.",
+      "inactive": "يستخدم {name} بيانات اعتماد مخزنة معطّلة.",
+      "expired": "يستخدم {name} بيانات اعتماد مخزنة انتهت صلاحيتها."
+    },
+    "fix": "أضف مفتاحًا إلى {name}",
+    "view": "عرض نقاط نهاية النماذج",
+    "consequence": {
+      "general": "يحتاج تحسين المواضيع وعمليات البحث والموجزات إلى نموذج يعمل، لذا ستفشل حتى يُصلَح ذلك.",
+      "wizard": "يطلب المعالج من النموذج اقتراح أبعاد وأسئلة، لذا سيفشل في الخطوة الأولى حتى يُصلَح ذلك."
+    },
+    "askAdmin": "يمكن لمسؤول المستأجر فقط إضافة مفتاح. اطلب من مسؤولك إصلاح ذلك.",
+    "badge": "بلا مفتاح API"
   }
 }

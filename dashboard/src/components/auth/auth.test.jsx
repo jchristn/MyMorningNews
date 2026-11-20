@@ -111,7 +111,7 @@ describe('email and password links', () => {
 
   it('offers a new link when verification fails', async () => {
     renderSignedOut('/verify?token=old', { verifyEmail: vi.fn(async () => Promise.reject(new ApiError(400, { error: 'BadRequest' }))) });
-    expect(await screen.findByText(/expired or was already used/)).toBeInTheDocument();
+    expect(await screen.findByText(/not valid or has expired/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Send a new link' })).toBeDisabled();
   });
 

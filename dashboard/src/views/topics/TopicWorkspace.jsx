@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Construction, FlaskConical, Play, WandSparkles } from 'lucide-react';
+import { ArrowLeft, FlaskConical, Play, WandSparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext.jsx';
 import useFormat from '../../hooks/useFormat.js';
 import { CONTEXT_CONSTRAINT_KINDS, SOURCE_CONSTRAINT_KINDS, TOPIC_STATUS_TONES } from '../../utils/enums.js';
+import { coveringEditions, scheduleState } from '../../utils/topicSchedule.js';
 import ActionMenu from '../../components/ActionMenu.jsx';
 import CopyableId from '../../components/CopyableId.jsx';
 import DateCell from '../../components/DateCell.jsx';
-import EmptyState from '../../components/EmptyState.jsx';
 import ErrorState from '../../components/ErrorState.jsx';
 import KeyValueGrid from '../../components/KeyValueGrid.jsx';
 import LoadingState from '../../components/LoadingState.jsx';
@@ -27,12 +27,14 @@ import AgenticSearchSettings from './AgenticSearchSettings.jsx';
 import ConstraintEditor from './ConstraintEditor.jsx';
 import DeliverySettings from './DeliverySettings.jsx';
 import DimensionList from './DimensionList.jsx';
+import TopicModels from './TopicModels.jsx';
+import TopicPrompts from './TopicPrompts.jsx';
 import TopicSchedules from './TopicSchedules.jsx';
 import TopicSearchProviders from './TopicSearchProviders.jsx';
 import useTopicActions from './useTopicActions.jsx';
 import { TopicContextForm } from './wizard/ContentSteps.jsx';
 
-// Workspace tabs from the plan. Tabs with a phase show where the feature will live.
+// Workspace tabs from the plan, in order.
 export const WORKSPACE_TABS = [
   { id: 'overview' },
   { id: 'context' },
@@ -46,9 +48,12 @@ export const WORKSPACE_TABS = [
   { id: 'preferences' },
   { id: 'analytics' },
   { id: 'delivery' },
-  { id: 'prompts', phase: 12 },
-  { id: 'models', phase: 12 }
+  { id: 'prompts' },
+  { id: 'models' }
 ];
+
+// Editions are few per user; at most this many are read to find the ones that research a topic.
+const MAX_EDITIONS = 20;
 
 function upsert(list, item) {
   return list.some((x) => x.id === item.id) ? list.map((x) => (x.id === item.id ? item : x)) : [...list, item];
@@ -64,6 +69,7 @@ export default function TopicWorkspace() {
   const [detail, setDetail] = useState(null);
   const [error, setError] = useState(null);
   const [schedules, setSchedules] = useState([]);
+  const [editions, setEditions] = useState([]);
   const [runsRefresh, setRunsRefresh] = useState(0);
   const requested = params.get('tab') || 'overview';
   const tab = WORKSPACE_TABS.some((x) => x.id === requested) ? requested : 'overview';
@@ -82,6 +88,19 @@ export default function TopicWorkspace() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // The editions that research this topic before composing, with whether each is paused.
+  useEffect(() => {
+    let live = true;
+    apiClient
+      .listEditions({ pageSize: MAX_EDITIONS })
+      .then((page) => Promise.all(((page && page.items) || []).slice(0, MAX_EDITIONS).map((e) => apiClient.getEdition(e.id).catch(() => null))))
+      .then((details) => live && setEditions(coveringEditions(details, id)))
+      .catch(() => live && setEditions([]));
+    return () => {
+      live = false;
+    };
+  }, [apiClient, id]);
 
   const { actionsFor, modals, run } = useTopicActions({
     onChanged: () => {
@@ -104,10 +123,21 @@ export default function TopicWorkspace() {
   const topic = detail.topic;
   const setTopic = (next) => setDetail((d) => ({ ...d, topic: next }));
   const isDraft = topic.status === 'Draft';
-  const nextRun = schedules
-    .filter((s) => s.enabled && s.nextRunUtc)
-    .map((s) => s.nextRunUtc)
-    .sort()[0];
+  const own = scheduleState(schedules);
+  const editionNext =
+    editions
+      .filter((e) => !e.paused && e.nextRunUtc)
+      .map((e) => e.nextRunUtc)
+      .sort()[0] || null;
+  const nextRun = own.nextRunUtc || editionNext;
+  const allPaused = !nextRun && (own.state === 'paused' || (own.state === 'none' && editions.length > 0 && editions.every((e) => e.paused)));
+  const describeOwn = (s) => (s.enabled ? describeSchedule(s, t, f) : t('topics.schedule.pausedItem', { schedule: describeSchedule(s, t, f) }));
+  const scheduleValue =
+    own.state !== 'none'
+      ? f.list(own.enabled.concat(own.paused).map(describeOwn))
+      : editions.length > 0
+        ? t('topics.schedule.viaEditions', { editions: f.list(editions.map((e) => (e.paused ? t('topics.schedule.pausedItem', { schedule: e.name }) : e.name))) })
+        : t('wizard.review.noSchedule');
   const select = (next) => setParams(next === 'overview' ? {} : { tab: next }, { replace: true });
   const menu = actionsFor(topic).filter((a) => !['view', 'run', 'dry', 'refine'].includes(a.key));
 
@@ -151,9 +181,8 @@ export default function TopicWorkspace() {
       <section className="panel">
         <div className="tabs" role="tablist" aria-label={t('topics.workspace.tabsLabel')}>
           {WORKSPACE_TABS.map((x) => (
-            <button type="button" role="tab" key={x.id} aria-selected={tab === x.id} className={(tab === x.id ? 'active' : '') + (x.phase ? ' upcoming' : '')} onClick={() => select(x.id)}>
+            <button type="button" role="tab" key={x.id} aria-selected={tab === x.id} className={tab === x.id ? 'active' : ''} onClick={() => select(x.id)}>
               {t('topics.workspace.tabs.' + x.id)}
-              {x.phase ? <span className="nav-phase">{t('nav.phaseShort', { phase: x.phase })}</span> : null}
             </button>
           ))}
         </div>
@@ -169,8 +198,12 @@ export default function TopicWorkspace() {
                   { key: 'audience', label: t('wizard.context.audience'), value: t('enums.audienceLevel.' + topic.audienceLevel) },
                   { key: 'horizon', label: t('wizard.context.horizon'), value: t('enums.horizon.' + topic.horizon) },
                   { key: 'dimensions', label: t('topics.workspace.dimensionCount'), value: f.number((detail.dimensions || []).length) },
-                  { key: 'schedule', label: t('wizard.delivery.schedule'), value: schedules.length > 0 ? f.list(schedules.map((s) => describeSchedule(s, t, f))) : t('wizard.review.noSchedule') },
-                  { key: 'nextRun', label: t('schedule.nextRun'), value: nextRun ? <DateCell value={nextRun} /> : null },
+                  { key: 'schedule', label: t('wizard.delivery.schedule'), value: <span data-testid="topic-schedule">{scheduleValue}</span> },
+                  {
+                    key: 'nextRun',
+                    label: t('schedule.nextRun'),
+                    value: nextRun ? <DateCell value={nextRun} /> : allPaused ? <span data-testid="topic-next-run">{t('topics.schedule.paused')}</span> : null
+                  },
                   { key: 'lastRun', label: t('topics.columns.lastRun'), value: <DateCell value={topic.lastRunUtc} /> },
                   { key: 'lastRefined', label: t('topics.columns.lastRefined'), value: <DateCell value={topic.lastRefinedUtc} /> },
                   { key: 'created', label: t('topics.columns.created'), value: <DateCell value={topic.createdUtc} /> }
@@ -180,7 +213,7 @@ export default function TopicWorkspace() {
             <div className="stack">
               <h3>{t('wizard.context.brief')}</h3>
               {topic.brief ? (
-                <div className="brief-box">
+                <div className="brief-box" dir="auto">
                   <MarkdownView source={topic.brief} />
                 </div>
               ) : (
@@ -262,13 +295,9 @@ export default function TopicWorkspace() {
 
         {tab === 'delivery' ? <DeliverySettings topic={topic} recipients={detail.recipients || []} onTopicUpdated={setTopic} onRecipientsChanged={(recipients) => setDetail((x) => ({ ...x, recipients }))} /> : null}
 
-        {WORKSPACE_TABS.some((x) => x.id === tab && x.phase) ? (
-          <EmptyState
-            icon={Construction}
-            title={t('placeholder.title', { phase: WORKSPACE_TABS.find((x) => x.id === tab).phase })}
-            message={t('placeholder.message', { feature: t('topics.workspace.tabs.' + tab), phase: WORKSPACE_TABS.find((x) => x.id === tab).phase })}
-          />
-        ) : null}
+        {tab === 'prompts' ? <TopicPrompts topicId={topic.id} /> : null}
+
+        {tab === 'models' ? <TopicModels topicId={topic.id} /> : null}
       </section>
       {modals}
     </div>

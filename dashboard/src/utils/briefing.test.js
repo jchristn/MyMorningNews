@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { briefingFilename, citationAnchor, itemHref, linkCitations, matchSections, parseSourceList, splitBriefingMarkdown } from './briefing.js';
+import { briefingFilename, citationAnchor, itemHref, linkCitations, matchSections, parseSourceList, splitBriefingMarkdown, splitSourceList } from './briefing.js';
 import { frontMatterName, lineRange, starterTemplate, templateCapabilities, templateFilename } from './briefingTemplate.js';
 import { MARKDOWN, SECTIONS } from '../test/briefingFixtures.js';
 
@@ -28,8 +28,15 @@ describe('briefing Markdown helpers', () => {
     const sources = parseSourceList('1. [A](https://a.test), a.test\n2. [B](https://b.test)\n   continued\n\nnot a list');
     expect(sources).toEqual([
       { number: 1, text: '[A](https://a.test), a.test' },
-      { number: 2, text: '[B](https://b.test) continued not a list' }
+      { number: 2, text: '[B](https://b.test) continued' }
     ]);
+  });
+
+  it('keeps a note after the Sources list out of the last source', () => {
+    const { entries, trailing } = splitSourceList('1. [A](https://a.test)\n7. [G](https://g.test), g.test\n\n_Demo content: fictional._\n');
+    expect(entries.map((e) => e.number)).toEqual([1, 7]);
+    expect(entries[1].text).toBe('[G](https://g.test), g.test');
+    expect(trailing).toBe('_Demo content: fictional._');
   });
 
   it('matches chunks to stored sections by heading', () => {

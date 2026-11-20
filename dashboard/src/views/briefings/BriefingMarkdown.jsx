@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import MarkdownView from '../../components/MarkdownView.jsx';
-import { citationAnchor, linkCitations, matchSections, parseSourceList, sectionAnchor, splitBriefingMarkdown } from '../../utils/briefing.js';
+import { citationAnchor, linkCitations, matchSections, sectionAnchor, splitBriefingMarkdown, splitSourceList } from '../../utils/briefing.js';
 
 const CITE_PREFIX = '#briefing-cite-';
 
@@ -60,7 +60,8 @@ export default function BriefingMarkdown({ markdown, sections = [], showTitle = 
       {showTitle && parsed.title ? <h1 className="briefing-title">{parsed.title}</h1> : null}
       {parsed.preamble ? <MarkdownView source={linkCitations(parsed.preamble)} components={COMPONENTS} className="briefing-opening" /> : null}
       {chunks.map((chunk) => {
-        const sources = isSources(chunk) ? parseSourceList(chunk.body) : [];
+        const list = isSources(chunk) ? splitSourceList(chunk.body) : { entries: [], trailing: '' };
+        const sources = list.entries;
         const speaking = Boolean(currentSectionId && chunk.section && chunk.section.id === currentSectionId);
         return (
           <section
@@ -81,7 +82,9 @@ export default function BriefingMarkdown({ markdown, sections = [], showTitle = 
                   </li>
                 ))}
               </ol>
-            ) : (
+            ) : null}
+            {sources.length > 0 && list.trailing ? <MarkdownView source={list.trailing} components={COMPONENTS} className="briefing-sources-note" /> : null}
+            {sources.length > 0 ? null : (
               <MarkdownView source={linkCitations(chunk.body)} components={COMPONENTS} />
             )}
             {sectionExtra ? sectionExtra(chunk) : null}

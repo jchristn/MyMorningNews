@@ -86,7 +86,7 @@ export default function RunsTable({ topicId = null, tableKey = 'runs', toolbar =
             key: 'topicId',
             header: t('runs.columns.topic'),
             filter: { type: 'select', param: 'topicId', options: topics.map((x) => ({ value: x.id, label: x.name })) },
-            render: (r) => <span className="truncate">{topicNames.get(r.topicId) || r.topicId}</span>
+            render: (r) => <span className="topic-cell">{topicNames.get(r.topicId) || r.topicId}</span>
           }
         ]),
     {
@@ -113,7 +113,7 @@ export default function RunsTable({ topicId = null, tableKey = 'runs', toolbar =
       align: 'right',
       render: (r) =>
         r.newFindingCount > 0 ? (
-          <Link to={findingsLink(r)} title={t('runs.columns.findingsTitle', { duplicates: f.number(r.duplicateCount || 0) })}>
+          <Link to={findingsLink(r)} title={t('runs.columns.findingsTitle', { duplicates: r.duplicateCount || 0 })}>
             {f.number(r.newFindingCount)}
           </Link>
         ) : (

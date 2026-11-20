@@ -132,8 +132,6 @@
     "expand": "サイドバーを展開",
     "label": "メインナビゲーション",
     "open": "ナビゲーションを開く",
-    "phase": "フェーズ {phase} で提供予定",
-    "phaseShort": "P{phase}",
     "skip": "コンテンツへスキップ",
     "version": "v{version}",
     "groups": {
@@ -319,10 +317,6 @@
       "summary": "Claude Code などの MCP クライアントをリサーチに接続します"
     }
   },
-  "placeholder": {
-    "title": "フェーズ {phase} で提供予定",
-    "message": "{feature} はフェーズ {phase} で予定されています。配置場所がわかるよう、ナビゲーションは先に用意しています。"
-  },
   "topbar": {
     "copyServerUrl": "サーバー URL をコピー",
     "health": "サーバーのヘルス: {state}",
@@ -381,7 +375,6 @@
   },
   "home": {
     "summary": "サーバーで起きていることはこちらです。",
-    "title": "おはようございます、{name} さん",
     "failures": {
       "none": "最近の失敗はありません",
       "noneMessage": "この期間のリクエストはすべて成功しました。",
@@ -402,7 +395,7 @@
     },
     "next": {
       "explorer": "エクスプローラーで API を試す",
-      "models": "モデルエンドポイントを追加 (フェーズ 3)",
+      "models": "モデルエンドポイントを設定",
       "password": "デフォルトのパスワードを変更",
       "title": "次のステップ",
       "topic": "最初のトピックを作成",
@@ -412,7 +405,13 @@
       "credentials": "認証情報",
       "none": "外部サービスは構成されていません。",
       "summary": "サーバーと一緒に動作するツール",
-      "title": "外部サービス"
+      "title": "外部サービス",
+      "descriptions": {
+        "grafana": "メトリクス、トレース、ログのダッシュボード。",
+        "prometheus": "メトリクス。",
+        "tempo": "トレース。",
+        "loki": "ログ。"
+      }
     },
     "request": {
       "title": "新しいリクエスト",
@@ -421,6 +420,14 @@
     "overview": {
       "title": "{count, plural, other {過去 # 日間}}",
       "more": "インサイトを開く"
+    },
+    "greeting": {
+      "morning": "おはようございます、{name} さん",
+      "morningPlain": "おはようございます",
+      "afternoon": "こんにちは、{name} さん",
+      "afternoonPlain": "こんにちは",
+      "evening": "こんばんは、{name} さん",
+      "eveningPlain": "こんばんは"
     }
   },
   "requests": {
@@ -429,8 +436,8 @@
       "allFilters": "すべてのリクエスト",
       "button": "一致する項目を削除",
       "confirm": "削除",
-      "done": "{count} 件のリクエストを削除しました",
-      "message": "{filters} に一致する {count} 件のリクエストを削除しますか? この操作は元に戻せません。",
+      "done": "{count, plural, other {# 件のリクエストを削除しました}}",
+      "message": "{filters} に一致する {count, plural, other {# 件のリクエスト}}を削除しますか? この操作は元に戻せません。",
       "title": "一致するリクエストを削除"
     },
     "columns": {
@@ -622,7 +629,115 @@
       "diagnostics_maxPayloadCharacters": "ペイロードの最大文字数",
       "models_defaultChatModel": "デフォルトのチャットモデル",
       "models_defaultOllamaEndpoint": "デフォルトの Ollama エンドポイント",
-      "models_defaultEmbeddingModel": "デフォルトの埋め込みモデル"
+      "models_defaultEmbeddingModel": "デフォルトの埋め込みモデル",
+      "rest_publicBaseUrl": "公開サーバー URL",
+      "rest_appBaseUrl": "公開アプリ URL",
+      "rest_mcpPublicUrl": "公開 MCP URL",
+      "rest_eventStreamPollMs": "イベントストリームのポーリング間隔 (ms)",
+      "rest_eventStreamMaxMinutes": "イベントストリームの最大時間 (分)",
+      "auth_signatureMaxSkewSeconds": "署名付きリクエストの時刻ずれ (秒)",
+      "auth_refreshTokenLifetimeDays": "リフレッシュトークンの有効期間 (日)",
+      "pipeline_useStreaming": "モデルの応答をストリーミング",
+      "pipeline_scopeGuardrail": "スコープガードレール",
+      "pipeline_maxQueriesPerRun": "実行あたりの検索クエリ数",
+      "pipeline_maxResultsPerQuery": "クエリあたりの結果数",
+      "pipeline_maxToolCallsPerRun": "実行あたりのツール呼び出し数",
+      "pipeline_maxFetchesPerRun": "実行あたりの取得ページ数",
+      "pipeline_maxFindingsPerRun": "実行あたりに保持する発見事項数",
+      "pipeline_maxDocumentCharacters": "抽出に送るドキュメントの文字数",
+      "pipeline_maxParallelFetches": "ページの並列取得数",
+      "pipeline_dedupeLookbackDays": "重複の遡及期間 (日)",
+      "pipeline_noveltyLookbackDays": "新規性の遡及期間 (日)",
+      "pipeline_recencyHalfLifeHours": "新しさの半減期 (時間)",
+      "pipeline_displayThreshold": "表示しきい値",
+      "pipeline_duplicateSimilarity": "重複の類似度",
+      "pipeline_borderlineSimilarity": "境界の類似度",
+      "pipeline_weightLlm": "重み: モデルの判断",
+      "pipeline_weightFeedback": "重み: フィードバック",
+      "pipeline_weightNovelty": "重み: 新規性",
+      "pipeline_weightSource": "重み: ソースの評判",
+      "pipeline_weightRecency": "重み: 新しさ",
+      "diagnostics_auditRetentionDays": "監査の保持期間 (日)",
+      "push_enabled": "プッシュ通知を送信",
+      "push_expoPushUrl": "Expo プッシュ URL",
+      "push_expoAccessToken": "Expo アクセストークン",
+      "push_timeoutMs": "プッシュのタイムアウト (ms)",
+      "storage_provider": "ストレージプロバイダー",
+      "storage_localDirectory": "ローカルディレクトリ",
+      "storage_s3Bucket": "S3 バケット",
+      "storage_s3Region": "S3 リージョン",
+      "storage_s3Endpoint": "S3 エンドポイント",
+      "storage_s3AccessKey": "S3 アクセスキー ID",
+      "storage_s3SecretKey": "S3 シークレットアクセスキー",
+      "storage_s3Prefix": "S3 キープレフィックス",
+      "storage_s3ForcePathStyle": "S3 パス形式のアドレス指定",
+      "storage_presignedUrlMinutes": "署名付き URL の有効期間 (分)",
+      "storage_artifactRetentionDays": "レポートと音声の保持期間 (日)",
+      "scheduler_enabled": "スケジューラーを実行",
+      "scheduler_pollIntervalSeconds": "スケジューラーのポーリング間隔 (秒)",
+      "scheduler_minimumIntervalMinutes": "スケジュールの最短間隔 (分)",
+      "scheduler_missedRunGraceMinutes": "実行漏れの猶予 (分)",
+      "scheduler_runPollSeconds": "実行キューのポーリング間隔 (秒)",
+      "search_searxngUrl": "SearXNG URL",
+      "search_hackerNewsUrl": "Hacker News API URL",
+      "search_arxivUrl": "arXiv API URL",
+      "search_userAgent": "ユーザーエージェント",
+      "search_respectRobots": "robots.txt に従う",
+      "search_fetchTimeoutMs": "取得のタイムアウト (ms)",
+      "search_perDomainDelayMs": "ドメインごとの遅延 (ms)",
+      "search_maxFetchBytes": "取得するページの最大サイズ (バイト)",
+      "tts_enabled": "音声を作成",
+      "tts_endpoint": "音声エンドポイント",
+      "tts_model": "音声モデル",
+      "tts_voice": "ナレーターの音声",
+      "tts_secondaryVoice": "2 人目の音声",
+      "tts_maxSegmentCharacters": "音声リクエストあたりの文字数",
+      "tts_maxParallelSegments": "音声リクエストの並列数",
+      "tts_timeoutSeconds": "音声リクエストのタイムアウト (秒)",
+      "tts_maxAttempts": "エピソードあたりの試行回数",
+      "tts_ffmpegPath": "ffmpeg のパス",
+      "tts_bitrate": "MP3 ビットレート",
+      "tts_normalizeLoudness": "ラウドネスを正規化",
+      "email_enabled": "メールを送信",
+      "email_provider": "メールプロバイダー",
+      "email_fromAddress": "送信元アドレス",
+      "email_fromName": "送信者名",
+      "email_replyToAddress": "返信先アドレス",
+      "email_subjectPrefix": "件名のプレフィックス",
+      "email_mailgunDomain": "Mailgun ドメイン",
+      "email_mailgunApiKey": "Mailgun API キー",
+      "email_mailgunBaseUrl": "Mailgun API URL",
+      "email_fileDirectory": "ファイルプロバイダーのディレクトリ",
+      "email_actionTokenLifetimeDays": "メールリンクの有効期間 (日)",
+      "email_recordFeedbackOnClick": "リンクを開いたときにフィードバックを記録",
+      "email_deliveryMaxAttempts": "配信の試行回数",
+      "email_deliveryIntervalSeconds": "配信間隔 (秒)",
+      "email_messageRetentionDays": "送信済みメールの保持期間 (日)",
+      "email_publicRequestsPerMinute": "1 分あたりの公開ページリクエスト数",
+      "learning_enabled": "フィードバックから学習",
+      "learning_feedbackPerPass": "学習パスあたりのフィードバック数",
+      "learning_autoApply": "学習した好みを自動的に適用",
+      "learning_intervalMinutes": "学習間隔 (分)",
+      "learning_feedbackNeighbors": "比較する評価済み発見事項数",
+      "hosting_publicSignupEnabled": "公開の新規登録を受け付ける",
+      "hosting_defaultPlanKey": "デフォルトのプラン",
+      "hosting_promoChecksPerMinute": "1 分あたりのプロモーションコード確認回数",
+      "hosting_requireEmailVerification": "メールアドレスの確認を必須にする",
+      "hosting_turnstileSecretKey": "Turnstile シークレットキー",
+      "hosting_turnstileSiteKey": "Turnstile サイトキー",
+      "hosting_signupsPerIpPerHour": "IP あたり 1 時間の新規登録数",
+      "hosting_verificationHours": "確認リンクの有効期間 (時間)",
+      "hosting_passwordResetMinutes": "パスワードリセットリンクの有効期間 (分)",
+      "hosting_deletionGraceDays": "アカウント削除の猶予期間 (日)",
+      "hosting_restrictPrivateNetworks": "プライベートネットワークをブロック",
+      "hosting_usePlatformCredentials": "プラットフォームのモデルキーを使用",
+      "hosting_requestsPerMinutePerIp": "IP あたり 1 分間の API リクエスト数",
+      "hosting_trustForwardedFor": "X-Forwarded-For を信頼",
+      "hosting_allowedPrivateHosts": "許可するプライベートホスト",
+      "hosting_termsVersion": "規約のバージョン",
+      "hosting_minimumAge": "最低年齢",
+      "hosting_appleTeamId": "Apple Team ID",
+      "hosting_mobileAppId": "モバイルアプリ ID"
     }
   },
   "serverInfo": {
@@ -1987,6 +2102,33 @@
       "enable": "このトピックでエージェント検索を使用する",
       "tools": "許可する MCP ツール",
       "noTools": "オンになっている MCP ツールはまだありません。"
+    },
+    "schedule": {
+      "pausedItem": "{schedule} (一時停止)",
+      "viaEditions": "{editions} 向けにリサーチ",
+      "paused": "一時停止"
+    },
+    "prompts": {
+      "add": "プロンプトを上書き",
+      "help": "このトピックがテナントのプロンプトの代わりに使うプロンプトです。それ以外のプロンプトはすべてテナントのバージョンを使います。",
+      "emptyTitle": "プロンプトの上書きなし",
+      "emptyMessage": "このトピックはテナントのプロンプトを使います。",
+      "allPrompts": "すべてのプロンプト"
+    },
+    "models": {
+      "help": "このトピックで各タスクが使うモデルです。このトピックの割り当てはテナントの割り当てより優先されます。",
+      "task": "タスク",
+      "endpoint": "エンドポイント",
+      "model": "モデル",
+      "source": "設定元",
+      "none": "エンドポイントなし",
+      "scope": {
+        "topic": "このトピック",
+        "tenant": "テナントのデフォルト",
+        "fallback": "最初に利用可能なエンドポイント"
+      },
+      "change": "[モデル] ページで割り当てを変更",
+      "view": "[モデル] ページで割り当てを表示"
     }
   },
   "wizard": {
@@ -2184,7 +2326,7 @@
       "summary": "概要",
       "id": "ID",
       "findings": "新しい発見事項",
-      "findingsTitle": "{duplicates} 件の重複をスキップ",
+      "findingsTitle": "{duplicates, plural, other {# 件の重複をスキップ}}",
       "sources": "ソース",
       "cost": "コスト"
     },
@@ -2201,7 +2343,11 @@
       "duplicates": "重複",
       "tokens": "トークン",
       "tokenSplit": "入力 {input}、出力 {output}",
-      "cost": "推定コスト"
+      "cost": "推定コスト",
+      "modelUsage": "モデル使用量",
+      "notRecorded": "記録なし",
+      "notRecordedHelp": "この実行ではモデル呼び出しが記録されていません。",
+      "costPending": "価格未設定"
     },
     "stages": {
       "empty": "この実行にはステージの記録がありません。",
@@ -2511,10 +2657,11 @@
     "kpis": {
       "open": "未判定",
       "graded": "採点済み",
-      "ofTotal": "{total} 件の予測中",
+      "ofTotal": "{total, plural, other {# 件の予測中}}",
       "accuracy": "実測の正答率",
       "accuracyHelp": "「一部正確」は 0.5 として数えます。",
-      "brier": "平均ブライアスコア"
+      "brier": "平均ブライアスコア",
+      "proposed": "{count, plural, other {# 件が採点待ち}}"
     },
     "calibration": {
       "title": "キャリブレーション",
@@ -2638,7 +2785,7 @@
       },
       "noFiles": "保存されたファイルはありません。",
       "openRun": "実行を開く",
-      "stats": "{minutes} 分で読めます、{words} 語、{items} 項目",
+      "stats": "{minutes} 分で読めます、{words, plural, other {# 語}}、{items, plural, other {# 項目}}",
       "failed": "作成に失敗しました。",
       "noContent": "このブリーフィングには内容がありません。",
       "items": "このブリーフィングの内容 ({count})",
@@ -3713,7 +3860,7 @@
       "quoteFailure": "引用の失敗率",
       "quoteFailureHelp": "検証に失敗した引用",
       "modelCost": "モデルのコスト",
-      "modelCalls": "モデル呼び出し {count} 回"
+      "modelCalls": "{count, plural, other {モデル呼び出し # 回}}"
     },
     "email": {
       "total": "メッセージ",
@@ -3753,7 +3900,8 @@
       "body": "後でパスワードを変えずに取り消せるよう、MCP クライアント用のアクセスキーとシークレットを作成してください。シークレットは作成時に一度しか表示されないので、そのときにコピーしてください。",
       "authMode": "認証モードは「直接ヘッダー」または「ハイブリッド」を選んでください。Streamable HTTP クライアントはリクエストのたびにキーとシークレットを送信しますが、「署名付きリクエスト」と「セッション交換」のキーはこれを拒否します。",
       "create": "アクセスキーを作成",
-      "askAdmin": "アクセスキーは管理者が作成します。認証モードが「直接ヘッダー」のアクセスキーを管理者に依頼してください。"
+      "askAdmin": "アクセスキーは管理者が作成します。認証モードが「直接ヘッダー」のアクセスキーを管理者に依頼してください。",
+      "titleMember": "アクセスキーを取得"
     },
     "connect": {
       "title": "クライアントを接続",
@@ -3799,7 +3947,8 @@
     "empty": {
       "title": "まだソースはありません",
       "message": "ソースは、トピックの実行で Web を検索してページを取得した後に表示されます。"
-    }
+    },
+    "runLabel": "{when} の実行"
   },
   "auth": {
     "resend": "新しいリンクを送信",
@@ -3827,7 +3976,7 @@
     "verify": {
       "title": "メールアドレスの確認",
       "done": "メールアドレスが確認されました。サインインできます。",
-      "failed": "このリンクは期限切れか、すでに使用されています。メールアドレスを入力して新しいリンクを受け取ってください。"
+      "failed": "このリンクは無効か、期限切れです。メールアドレスを入力して新しいリンクを受け取ってください。"
     },
     "forgot": {
       "title": "パスワードのリセット",
@@ -3847,10 +3996,10 @@
     "about": "エージェントリサーチがツールを呼び出せるリモート MCP サーバーを登録します。サーバーのツールを検出し、信頼できるものをオンにしてから、トピックで許可してください。",
     "created": "サーバーを登録しました。",
     "test": "接続をテスト",
-    "testOk": "接続しました。このサーバーには {count} 個のツールがあります。",
+    "testOk": "接続しました。このサーバーには {count, plural, other {# 個のツール}}があります。",
     "testFailed": "接続できませんでした: {error}",
     "discover": "ツールを検出",
-    "discovered": "{count} 個のツールを保存しました。",
+    "discovered": "{count, plural, other {# 個のツール}}を保存しました。",
     "columns": {
       "name": "名前",
       "transport": "トランスポート",
@@ -4007,5 +4156,22 @@
       "help": "各プロバイダーの結果のうち、表示しきい値以上の発見事項につながったものの割合です。",
       "label": "{provider} ({results} 件中 {used} 件)"
     }
+  },
+  "modelKeys": {
+    "title": "モデルエンドポイントに使用できる API キーがありません",
+    "problem": {
+      "missing": "{name} には API キーがないため、呼び出しが失敗します。",
+      "notFound": "{name} は、すでに存在しない保存済み認証情報を使用しています。",
+      "inactive": "{name} は、無効になっている保存済み認証情報を使用しています。",
+      "expired": "{name} は、期限切れの保存済み認証情報を使用しています。"
+    },
+    "fix": "{name} にキーを追加",
+    "view": "モデルエンドポイントを表示",
+    "consequence": {
+      "general": "トピックの絞り込み、リサーチの実行、ブリーフィングには動作するモデルが必要なため、これを修正するまで失敗します。",
+      "wizard": "ウィザードはモデルに観点と質問の提案を求めるため、これを修正するまで最初のステップで失敗します。"
+    },
+    "askAdmin": "キーを追加できるのはテナント管理者のみです。管理者に修正を依頼してください。",
+    "badge": "API キーなし"
   }
 }

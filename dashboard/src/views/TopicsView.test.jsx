@@ -151,7 +151,7 @@ describe('Topic workspace', () => {
     expect(screen.getByRole('tab', { name: /Findings/ })).toBeInTheDocument();
   });
 
-  it('edits context, shows the research tabs and placeholders for later tabs, and lists the topic runs', async () => {
+  it('edits context, shows the research tabs, the topic prompts and models, and lists the topic runs', async () => {
     const client = renderRoute('/dashboard/topics/top_1?tab=context', {
       getTopic: vi.fn(async () => detail),
       listSchedules: vi.fn(async () => page([])),
@@ -174,7 +174,11 @@ describe('Topic workspace', () => {
     expect(await screen.findByText('No feedback yet')).toBeInTheDocument();
     await waitFor(() => expect(client.listFeedback).toHaveBeenCalledWith(expect.objectContaining({ topicId: 'top_1' })));
     await userEvent.click(screen.getByRole('tab', { name: /^Models/ }));
-    expect(screen.getByText('Arrives in Phase 12')).toBeInTheDocument();
+    expect(await screen.findByTestId('topic-models')).toBeInTheDocument();
+    expect(screen.queryByText(/Arrives in Phase/)).toBeNull();
+    await userEvent.click(screen.getByRole('tab', { name: /^Prompts/ }));
+    expect(await screen.findByText('No prompt overrides')).toBeInTheDocument();
+    expect(client.listPrompts).toHaveBeenCalledWith(expect.objectContaining({ topicId: 'top_1' }));
     await userEvent.click(screen.getByRole('tab', { name: 'Runs' }));
     expect(await screen.findByText(/stages are not installed/)).toBeInTheDocument();
     expect(client.listRuns).toHaveBeenCalledWith(expect.objectContaining({ topicId: 'top_1' }));

@@ -1,20 +1,10 @@
-import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 
-// Whether the caller may read the model call log (TenantAdmin and Auditor). Members get 403, so pages hide what
-// depends on it. null while the probe is in flight.
+// Whether the caller may read the tenant-wide model call log and usage report. Decided from the session's role flags
+// (tenant administrators and system administrators) rather than by probing an endpoint, so a member's page view never
+// produces a 403 or an access-denied audit record. Auditors also hold this permission on the server, but the session
+// does not say which roles it carries, so they see the member view here.
 export default function useCanReadCalls() {
-  const { apiClient } = useAuth();
-  const [allowed, setAllowed] = useState(null);
-  useEffect(() => {
-    let cancelled = false;
-    apiClient
-      .listLlmCalls({ pageSize: 1 })
-      .then(() => !cancelled && setAllowed(true))
-      .catch((err) => !cancelled && setAllowed(!(err && (err.status === 403 || err.status === 401))));
-    return () => {
-      cancelled = true;
-    };
-  }, [apiClient]);
-  return allowed;
+  const { isTenantAdmin } = useAuth();
+  return isTenantAdmin;
 }

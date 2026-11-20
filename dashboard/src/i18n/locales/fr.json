@@ -132,8 +132,6 @@
     "expand": "Développer la barre latérale",
     "label": "Navigation principale",
     "open": "Ouvrir la navigation",
-    "phase": "Prévu en phase {phase}",
-    "phaseShort": "P{phase}",
     "skip": "Aller au contenu",
     "version": "v{version}",
     "groups": {
@@ -319,10 +317,6 @@
       "summary": "Connectez Claude Code ou un autre client MCP à vos recherches"
     }
   },
-  "placeholder": {
-    "title": "Prévu en phase {phase}",
-    "message": "{feature} est prévu pour la phase {phase}. La navigation est déjà en place pour que vous voyiez où il se trouvera."
-  },
   "topbar": {
     "copyServerUrl": "Copier l’URL du serveur",
     "health": "État du serveur : {state}",
@@ -381,7 +375,6 @@
   },
   "home": {
     "summary": "Voici ce qui se passe sur votre serveur.",
-    "title": "Bonjour, {name}",
     "failures": {
       "none": "Aucun échec récent",
       "noneMessage": "Toutes les requêtes de cette période ont réussi.",
@@ -402,7 +395,7 @@
     },
     "next": {
       "explorer": "Essayer l’API dans l’explorateur",
-      "models": "Ajouter un point de terminaison de modèle (phase 3)",
+      "models": "Configurer un point de terminaison de modèle",
       "password": "Changer le mot de passe par défaut",
       "title": "Prochaines étapes",
       "topic": "Créer votre premier sujet",
@@ -412,7 +405,13 @@
       "credentials": "Identifiants",
       "none": "Aucun service externe n’est configuré.",
       "summary": "Les outils qui fonctionnent à côté du serveur",
-      "title": "Services externes"
+      "title": "Services externes",
+      "descriptions": {
+        "grafana": "Tableaux de bord pour les métriques, les traces et les journaux.",
+        "prometheus": "Métriques.",
+        "tempo": "Traces.",
+        "loki": "Journaux."
+      }
     },
     "request": {
       "title": "Nouvelle demande",
@@ -421,6 +420,14 @@
     "overview": {
       "title": "{count, plural, one {Dernier jour} other {# derniers jours}}",
       "more": "Ouvrir les analyses"
+    },
+    "greeting": {
+      "morning": "Bonjour, {name}",
+      "morningPlain": "Bonjour",
+      "afternoon": "Bon après-midi, {name}",
+      "afternoonPlain": "Bon après-midi",
+      "evening": "Bonsoir, {name}",
+      "eveningPlain": "Bonsoir"
     }
   },
   "requests": {
@@ -429,8 +436,8 @@
       "allFilters": "toutes les requêtes",
       "button": "Supprimer les correspondances",
       "confirm": "Supprimer",
-      "done": "{count} requêtes supprimées",
-      "message": "Supprimer {count} requêtes correspondant à {filters} ? Cette action est irréversible.",
+      "done": "{count, plural, one {# requête supprimée} many {# requêtes supprimées} other {# requêtes supprimées}}",
+      "message": "Supprimer {count, plural, one {# requête correspondant} many {# requêtes correspondant} other {# requêtes correspondant}} à {filters} ? Cette action est irréversible.",
       "title": "Supprimer les requêtes correspondantes"
     },
     "columns": {
@@ -622,7 +629,115 @@
       "diagnostics_maxPayloadCharacters": "Nombre maximal de caractères par charge utile",
       "models_defaultChatModel": "Modèle de chat par défaut",
       "models_defaultOllamaEndpoint": "Point de terminaison Ollama par défaut",
-      "models_defaultEmbeddingModel": "Modèle d’embedding par défaut"
+      "models_defaultEmbeddingModel": "Modèle d’embedding par défaut",
+      "rest_publicBaseUrl": "URL publique du serveur",
+      "rest_appBaseUrl": "URL publique de l’application",
+      "rest_mcpPublicUrl": "URL publique MCP",
+      "rest_eventStreamPollMs": "Intervalle d’interrogation du flux d’événements (ms)",
+      "rest_eventStreamMaxMinutes": "Durée maximale du flux d’événements (minutes)",
+      "auth_signatureMaxSkewSeconds": "Décalage d’horloge des requêtes signées (secondes)",
+      "auth_refreshTokenLifetimeDays": "Durée de vie du jeton d’actualisation (jours)",
+      "pipeline_useStreaming": "Diffuser les réponses du modèle en streaming",
+      "pipeline_scopeGuardrail": "Garde-fou de portée",
+      "pipeline_maxQueriesPerRun": "Requêtes de recherche par exécution",
+      "pipeline_maxResultsPerQuery": "Résultats par requête",
+      "pipeline_maxToolCallsPerRun": "Appels d’outils par exécution",
+      "pipeline_maxFetchesPerRun": "Pages récupérées par exécution",
+      "pipeline_maxFindingsPerRun": "Constats conservés par exécution",
+      "pipeline_maxDocumentCharacters": "Caractères de document envoyés à l’extraction",
+      "pipeline_maxParallelFetches": "Récupérations de pages en parallèle",
+      "pipeline_dedupeLookbackDays": "Fenêtre de recherche des doublons (jours)",
+      "pipeline_noveltyLookbackDays": "Fenêtre de nouveauté (jours)",
+      "pipeline_recencyHalfLifeHours": "Demi-vie de la récence (heures)",
+      "pipeline_displayThreshold": "Seuil d’affichage",
+      "pipeline_duplicateSimilarity": "Similarité des doublons",
+      "pipeline_borderlineSimilarity": "Similarité limite",
+      "pipeline_weightLlm": "Poids : jugement du modèle",
+      "pipeline_weightFeedback": "Poids : avis",
+      "pipeline_weightNovelty": "Poids : nouveauté",
+      "pipeline_weightSource": "Poids : réputation de la source",
+      "pipeline_weightRecency": "Poids : récence",
+      "diagnostics_auditRetentionDays": "Conservation de l’audit (jours)",
+      "push_enabled": "Envoyer des notifications push",
+      "push_expoPushUrl": "URL push Expo",
+      "push_expoAccessToken": "Jeton d’accès Expo",
+      "push_timeoutMs": "Délai d’expiration push (ms)",
+      "storage_provider": "Fournisseur de stockage",
+      "storage_localDirectory": "Répertoire local",
+      "storage_s3Bucket": "Bucket S3",
+      "storage_s3Region": "Région S3",
+      "storage_s3Endpoint": "Point de terminaison S3",
+      "storage_s3AccessKey": "ID de clé d’accès S3",
+      "storage_s3SecretKey": "Clé d’accès secrète S3",
+      "storage_s3Prefix": "Préfixe de clé S3",
+      "storage_s3ForcePathStyle": "Adressage S3 par chemin",
+      "storage_presignedUrlMinutes": "Durée de vie des URL présignées (minutes)",
+      "storage_artifactRetentionDays": "Conservation des rapports et de l’audio (jours)",
+      "scheduler_enabled": "Exécuter le planificateur",
+      "scheduler_pollIntervalSeconds": "Intervalle d’interrogation du planificateur (secondes)",
+      "scheduler_minimumIntervalMinutes": "Intervalle de planification minimal (minutes)",
+      "scheduler_missedRunGraceMinutes": "Délai de grâce des exécutions manquées (minutes)",
+      "scheduler_runPollSeconds": "Intervalle d’interrogation de la file d’exécutions (secondes)",
+      "search_searxngUrl": "URL SearXNG",
+      "search_hackerNewsUrl": "URL de l’API Hacker News",
+      "search_arxivUrl": "URL de l’API arXiv",
+      "search_userAgent": "Agent utilisateur",
+      "search_respectRobots": "Respecter robots.txt",
+      "search_fetchTimeoutMs": "Délai d’expiration de récupération (ms)",
+      "search_perDomainDelayMs": "Délai par domaine (ms)",
+      "search_maxFetchBytes": "Taille maximale d’une page récupérée (octets)",
+      "tts_enabled": "Générer l’audio",
+      "tts_endpoint": "Point de terminaison vocal",
+      "tts_model": "Modèle vocal",
+      "tts_voice": "Voix du narrateur",
+      "tts_secondaryVoice": "Seconde voix",
+      "tts_maxSegmentCharacters": "Caractères par requête vocale",
+      "tts_maxParallelSegments": "Requêtes vocales en parallèle",
+      "tts_timeoutSeconds": "Délai d’expiration des requêtes vocales (secondes)",
+      "tts_maxAttempts": "Tentatives par épisode",
+      "tts_ffmpegPath": "Chemin de ffmpeg",
+      "tts_bitrate": "Débit MP3",
+      "tts_normalizeLoudness": "Normaliser le volume sonore",
+      "email_enabled": "Envoyer des e-mails",
+      "email_provider": "Fournisseur d’e-mail",
+      "email_fromAddress": "Adresse de l’expéditeur",
+      "email_fromName": "Nom de l’expéditeur",
+      "email_replyToAddress": "Adresse de réponse",
+      "email_subjectPrefix": "Préfixe de l’objet",
+      "email_mailgunDomain": "Domaine Mailgun",
+      "email_mailgunApiKey": "Clé d’API Mailgun",
+      "email_mailgunBaseUrl": "URL de l’API Mailgun",
+      "email_fileDirectory": "Répertoire du fournisseur de fichiers",
+      "email_actionTokenLifetimeDays": "Durée de vie des liens d’e-mail (jours)",
+      "email_recordFeedbackOnClick": "Enregistrer un avis à l’ouverture d’un lien",
+      "email_deliveryMaxAttempts": "Tentatives de distribution",
+      "email_deliveryIntervalSeconds": "Intervalle de distribution (secondes)",
+      "email_messageRetentionDays": "Conservation des e-mails envoyés (jours)",
+      "email_publicRequestsPerMinute": "Requêtes de pages publiques par minute",
+      "learning_enabled": "Apprendre à partir des avis",
+      "learning_feedbackPerPass": "Avis par passe d’apprentissage",
+      "learning_autoApply": "Appliquer automatiquement les préférences apprises",
+      "learning_intervalMinutes": "Intervalle d’apprentissage (minutes)",
+      "learning_feedbackNeighbors": "Constats notés comparés",
+      "hosting_publicSignupEnabled": "Ouvrir l’inscription publique",
+      "hosting_defaultPlanKey": "Forfait par défaut",
+      "hosting_promoChecksPerMinute": "Vérifications de codes promotionnels par minute",
+      "hosting_requireEmailVerification": "Exiger la vérification de l’e-mail",
+      "hosting_turnstileSecretKey": "Clé secrète Turnstile",
+      "hosting_turnstileSiteKey": "Clé de site Turnstile",
+      "hosting_signupsPerIpPerHour": "Inscriptions par IP par heure",
+      "hosting_verificationHours": "Durée de vie du lien de vérification (heures)",
+      "hosting_passwordResetMinutes": "Durée de vie du lien de réinitialisation du mot de passe (minutes)",
+      "hosting_deletionGraceDays": "Délai de grâce avant suppression du compte (jours)",
+      "hosting_restrictPrivateNetworks": "Bloquer les réseaux privés",
+      "hosting_usePlatformCredentials": "Utiliser la clé de modèle de la plateforme",
+      "hosting_requestsPerMinutePerIp": "Requêtes d’API par minute par IP",
+      "hosting_trustForwardedFor": "Faire confiance à X-Forwarded-For",
+      "hosting_allowedPrivateHosts": "Hôtes privés autorisés",
+      "hosting_termsVersion": "Version des conditions",
+      "hosting_minimumAge": "Âge minimal",
+      "hosting_appleTeamId": "Apple Team ID",
+      "hosting_mobileAppId": "ID de l’application mobile"
     }
   },
   "serverInfo": {
@@ -1987,6 +2102,33 @@
       "enable": "Utiliser la recherche agentique pour ce sujet",
       "tools": "Outils MCP autorisés",
       "noTools": "Aucun outil MCP n’est encore activé."
+    },
+    "schedule": {
+      "pausedItem": "{schedule} (en pause)",
+      "viaEditions": "Recherché pour {editions}",
+      "paused": "En pause"
+    },
+    "prompts": {
+      "add": "Remplacer un prompt",
+      "help": "Prompts que ce sujet utilise à la place de ceux du locataire. Tous les autres prompts utilisent la version du locataire.",
+      "emptyTitle": "Aucun remplacement de prompt",
+      "emptyMessage": "Ce sujet utilise les prompts du locataire.",
+      "allPrompts": "Tous les prompts"
+    },
+    "models": {
+      "help": "Le modèle utilisé par chaque tâche pour ce sujet. Une attribution propre à ce sujet remplace celle du locataire.",
+      "task": "Tâche",
+      "endpoint": "Point de terminaison",
+      "model": "Modèle",
+      "source": "Défini par",
+      "none": "Aucun point de terminaison",
+      "scope": {
+        "topic": "Ce sujet",
+        "tenant": "Valeur par défaut du locataire",
+        "fallback": "Premier point de terminaison disponible"
+      },
+      "change": "Modifier les attributions sur la page Modèles d’IA",
+      "view": "Voir les attributions sur la page Modèles d’IA"
     }
   },
   "wizard": {
@@ -2184,7 +2326,7 @@
       "summary": "Résumé",
       "id": "ID",
       "findings": "Nouveaux constats",
-      "findingsTitle": "{duplicates} doublons ignorés",
+      "findingsTitle": "{duplicates, plural, one {# doublon ignoré} many {# doublons ignorés} other {# doublons ignorés}}",
       "sources": "Sources",
       "cost": "Coût"
     },
@@ -2201,7 +2343,11 @@
       "duplicates": "Doublons",
       "tokens": "Jetons",
       "tokenSplit": "{input} en entrée, {output} en sortie",
-      "cost": "Coût estimé"
+      "cost": "Coût estimé",
+      "modelUsage": "Utilisation des modèles",
+      "notRecorded": "Non enregistré",
+      "notRecordedHelp": "Aucun appel de modèle n’a été enregistré pour cette exécution.",
+      "costPending": "Non tarifé"
     },
     "stages": {
       "empty": "Aucune étape enregistrée pour cette exécution.",
@@ -2511,10 +2657,11 @@
     "kpis": {
       "open": "Ouvertes",
       "graded": "Évaluées",
-      "ofTotal": "sur {total} prédictions",
+      "ofTotal": "{total, plural, one {sur # prédiction} many {sur # prédictions} other {sur # prédictions}}",
       "accuracy": "Précision observée",
       "accuracyHelp": "Partiellement exacte compte pour moitié.",
-      "brier": "Score de Brier moyen"
+      "brier": "Score de Brier moyen",
+      "proposed": "{count, plural, one {# en attente de votre évaluation} many {# en attente de votre évaluation} other {# en attente de votre évaluation}}"
     },
     "calibration": {
       "title": "Calibrage",
@@ -2638,7 +2785,7 @@
       },
       "noFiles": "Aucun fichier stocké.",
       "openRun": "Ouvrir l’exécution",
-      "stats": "{minutes} min de lecture, {words} mots, {items} éléments",
+      "stats": "{minutes} min de lecture, {words, plural, one {# mot} many {# mots} other {# mots}}, {items, plural, one {# élément} many {# éléments} other {# éléments}}",
       "failed": "La composition a échoué.",
       "noContent": "Ce briefing n’a aucun contenu.",
       "items": "Dans ce briefing ({count})",
@@ -3713,7 +3860,7 @@
       "quoteFailure": "Taux d’échec des citations",
       "quoteFailureHelp": "Citations dont la vérification a échoué",
       "modelCost": "Coût des modèles",
-      "modelCalls": "{count} appels au modèle"
+      "modelCalls": "{count, plural, one {# appel de modèle} many {# appels de modèle} other {# appels de modèle}}"
     },
     "email": {
       "total": "Messages",
@@ -3753,7 +3900,8 @@
       "body": "Créez une clé d’accès et un secret pour le client MCP, afin de pouvoir la révoquer plus tard sans changer votre mot de passe. Copiez le secret lors de sa création : il n’est affiché qu’une seule fois.",
       "authMode": "Choisissez le mode d’authentification En-tête direct ou Hybride : un client Streamable HTTP envoie la clé et le secret à chaque requête, ce que refusent les clés Requêtes signées et Échange de session.",
       "create": "Créer une clé d’accès",
-      "askAdmin": "Les clés d’accès sont créées par un administrateur. Demandez au vôtre une clé d’accès avec le mode d’authentification En-tête direct."
+      "askAdmin": "Les clés d’accès sont créées par un administrateur. Demandez au vôtre une clé d’accès avec le mode d’authentification En-tête direct.",
+      "titleMember": "Obtenir une clé d’accès"
     },
     "connect": {
       "title": "Connecter un client",
@@ -3799,7 +3947,8 @@
     "empty": {
       "title": "Aucune source pour l’instant",
       "message": "Les sources apparaissent après qu’une exécution a effectué des recherches sur le web et récupéré des pages pour l’un de vos sujets."
-    }
+    },
+    "runLabel": "Exécution du {when}"
   },
   "auth": {
     "resend": "Envoyer un nouveau lien",
@@ -3827,7 +3976,7 @@
     "verify": {
       "title": "Confirmez votre e-mail",
       "done": "Votre e-mail est confirmé. Vous pouvez maintenant vous connecter.",
-      "failed": "Ce lien a expiré ou a déjà été utilisé. Saisissez votre e-mail pour en recevoir un nouveau."
+      "failed": "Ce lien n’est pas valide ou a expiré. Saisissez votre e-mail pour en recevoir un nouveau."
     },
     "forgot": {
       "title": "Réinitialiser votre mot de passe",
@@ -3847,10 +3996,10 @@
     "about": "Enregistrez des serveurs MCP distants dont la recherche agentique peut appeler les outils. Découvrez les outils d’un serveur, activez ceux auxquels vous faites confiance, puis autorisez-les sur un sujet.",
     "created": "Serveur enregistré.",
     "test": "Tester la connexion",
-    "testOk": "Connecté. Le serveur propose {count} outils.",
+    "testOk": "Connecté. Le serveur propose {count, plural, one {# outil} many {# outils} other {# outils}}.",
     "testFailed": "Connexion impossible : {error}",
     "discover": "Découvrir les outils",
-    "discovered": "{count} outils enregistrés.",
+    "discovered": "{count, plural, one {# outil enregistré} many {# outils enregistrés} other {# outils enregistrés}}.",
     "columns": {
       "name": "Nom",
       "transport": "Transport",
@@ -4007,5 +4156,22 @@
       "help": "Part des résultats de chaque fournisseur qui ont mené à un constat au niveau du seuil d'affichage ou au-dessus.",
       "label": "{provider} ({used} sur {results})"
     }
+  },
+  "modelKeys": {
+    "title": "Le point de terminaison de modèle n’a pas de clé d’API utilisable",
+    "problem": {
+      "missing": "{name} n’a pas de clé d’API, ses appels échouent donc.",
+      "notFound": "{name} utilise un identifiant enregistré qui n’existe plus.",
+      "inactive": "{name} utilise un identifiant enregistré qui est désactivé.",
+      "expired": "{name} utilise un identifiant enregistré qui a expiré."
+    },
+    "fix": "Ajouter une clé à {name}",
+    "view": "Voir les points de terminaison de modèles",
+    "consequence": {
+      "general": "L’affinage des sujets, les exécutions de recherche et les briefings nécessitent un modèle fonctionnel : ils échouent tant que ce problème n’est pas corrigé.",
+      "wizard": "L’assistant demande au modèle de proposer des dimensions et des questions : il échoue dès la première étape tant que ce problème n’est pas corrigé."
+    },
+    "askAdmin": "Seul un administrateur du locataire peut ajouter une clé. Demandez au vôtre de corriger ce problème.",
+    "badge": "Aucune clé d’API"
   }
 }

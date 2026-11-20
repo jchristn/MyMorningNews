@@ -6,7 +6,8 @@ import FormField from '../FormField.jsx';
 import LoadingState from '../LoadingState.jsx';
 import AuthShell from './AuthShell.jsx';
 
-// The link from the verification email (/verify?token=...). A used or expired link offers to send a new one.
+// The link from the verification email (/verify?token=...). A link that does not work (never valid, used, or expired;
+// the server does not say which) offers to send a new one.
 export default function VerifyEmailPage() {
   const { t } = useTranslation();
   const { apiClient } = useAuth();

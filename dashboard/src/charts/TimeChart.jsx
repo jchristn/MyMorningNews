@@ -1,23 +1,24 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { useLocale } from '../i18n/index.js';
-import { formatDateTime, formatNumber } from '../i18n/formatters.js';
+import useFormat from '../hooks/useFormat.js';
+import { formatNumber } from '../i18n/formatters.js';
 import ChartTooltip from './ChartTooltip.jsx';
 import useChartWidth from './useChartWidth.js';
 
 const TOP = 8;
 const BOTTOM = 22;
 
-function bucketLabel(startUtc, bucketMinutes, locale) {
+function bucketLabel(startUtc, bucketMinutes, f) {
   const options = bucketMinutes >= 360 ? { month: 'short', day: 'numeric' } : bucketMinutes >= 60 ? { month: 'short', day: 'numeric', hour: 'numeric' } : { hour: 'numeric', minute: '2-digit' };
-  return formatDateTime(startUtc, locale, options);
+  return f.dateTime(startUtc, options);
 }
 
 // Stacked column chart over time buckets. Every slot is focusable; click or Enter drills down through onBucketClick.
 export default function TimeChart({ buckets, series, bucketMinutes, height = 200, onBucketClick, ariaLabel, formatValue }) {
   const { t } = useTranslation();
-  const { locale } = useLocale();
+  const f = useFormat();
+  const locale = f.locale;
   const [frameRef, width] = useChartWidth();
   const [tip, setTip] = useState(null);
   const fmt = formatValue || ((v) => formatNumber(v, locale));
@@ -36,7 +37,7 @@ export default function TimeChart({ buckets, series, bucketMinutes, height = 200
     setTip({
       x: event.clientX,
       y: event.clientY,
-      title: formatDateTime(b.startUtc, locale, { dateStyle: 'short', timeStyle: 'short' }) + ' - ' + formatDateTime(b.endUtc, locale, { timeStyle: 'short' }),
+      title: f.dateTime(b.startUtc, { dateStyle: 'short', timeStyle: 'short' }) + ' - ' + f.dateTime(b.endUtc, { timeStyle: 'short' }),
       lines: [
         ...series.map((s) => ({ label: s.label, color: s.color, value: fmt(s.values[index] || 0) })),
         { label: t('charts.total'), value: fmt(totals[index]) },
@@ -85,7 +86,7 @@ export default function TimeChart({ buckets, series, bucketMinutes, height = 200
               height={plotHeight}
               fill="transparent"
               tabIndex={0}
-              aria-label={t('charts.bucketAria', { when: bucketLabel(b.startUtc, bucketMinutes, locale), total: fmt(totals[index]) })}
+              aria-label={t('charts.bucketAria', { when: bucketLabel(b.startUtc, bucketMinutes, f), total: fmt(totals[index]) })}
               style={{ cursor: onBucketClick ? 'pointer' : 'default' }}
               onMouseMove={(e) => show(e, index)}
               onMouseLeave={() => setTip(null)}
@@ -98,7 +99,7 @@ export default function TimeChart({ buckets, series, bucketMinutes, height = 200
             />
             {index % labelEvery === 0 ? (
               <text fill="var(--color-text-muted)" fontSize="10" x={left + index * slot + 2} y={TOP + plotHeight + 14}>
-                {bucketLabel(b.startUtc, bucketMinutes, locale)}
+                {bucketLabel(b.startUtc, bucketMinutes, f)}
               </text>
             ) : null}
           </g>

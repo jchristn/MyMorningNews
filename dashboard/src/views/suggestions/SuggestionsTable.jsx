@@ -151,7 +151,7 @@ export default function SuggestionsTable({ topicId = null, tableKey = 'suggestio
             key: 'topicId',
             header: t('suggestions.columns.topic'),
             filter: { type: 'select', param: 'topicId', options: topics.map((x) => ({ value: x.id, label: x.name })) },
-            render: (r) => <span className="truncate">{topicNames.get(r.topicId) || r.topicId}</span>
+            render: (r) => <span className="topic-cell">{topicNames.get(r.topicId) || r.topicId}</span>
           }
         ]),
     {

@@ -132,8 +132,6 @@
     "expand": "展开侧边栏",
     "label": "主导航",
     "open": "打开导航",
-    "phase": "将在第 {phase} 阶段推出",
-    "phaseShort": "P{phase}",
     "skip": "跳到内容",
     "version": "v{version}",
     "groups": {
@@ -319,10 +317,6 @@
       "summary": "将 Claude Code 或其他 MCP 客户端连接到您的研究"
     }
   },
-  "placeholder": {
-    "title": "将在第 {phase} 阶段推出",
-    "message": "{feature} 计划在第 {phase} 阶段推出。导航已就位，您可以看到它将出现的位置。"
-  },
   "topbar": {
     "copyServerUrl": "复制服务器 URL",
     "health": "服务器健康状况：{state}",
@@ -381,7 +375,6 @@
   },
   "home": {
     "summary": "以下是您服务器上的最新动态。",
-    "title": "早上好，{name}",
     "failures": {
       "none": "近期没有失败",
       "noneMessage": "此时间范围内的请求全部成功。",
@@ -402,7 +395,7 @@
     },
     "next": {
       "explorer": "在浏览器中试用 API",
-      "models": "添加模型端点（第 3 阶段）",
+      "models": "设置模型端点",
       "password": "修改默认密码",
       "title": "后续步骤",
       "topic": "创建您的第一个主题",
@@ -412,7 +405,13 @@
       "credentials": "凭据",
       "none": "未配置任何外部服务。",
       "summary": "与服务器一同运行的工具",
-      "title": "外部服务"
+      "title": "外部服务",
+      "descriptions": {
+        "grafana": "指标、追踪和日志的仪表板。",
+        "prometheus": "指标。",
+        "tempo": "追踪。",
+        "loki": "日志。"
+      }
     },
     "request": {
       "title": "新请求",
@@ -421,6 +420,14 @@
     "overview": {
       "title": "{count, plural, other {过去 # 天}}",
       "more": "打开洞察"
+    },
+    "greeting": {
+      "morning": "早上好，{name}",
+      "morningPlain": "早上好",
+      "afternoon": "下午好，{name}",
+      "afternoonPlain": "下午好",
+      "evening": "晚上好，{name}",
+      "eveningPlain": "晚上好"
     }
   },
   "requests": {
@@ -429,8 +436,8 @@
       "allFilters": "所有请求",
       "button": "删除匹配项",
       "confirm": "删除",
-      "done": "已删除 {count} 个请求",
-      "message": "删除符合 {filters} 的 {count} 个请求？此操作无法撤销。",
+      "done": "{count, plural, other {已删除 # 个请求}}",
+      "message": "删除符合 {filters} 的 {count, plural, other {# 个请求}}？此操作无法撤销。",
       "title": "删除匹配的请求"
     },
     "columns": {
@@ -622,7 +629,115 @@
       "diagnostics_maxPayloadCharacters": "最大负载字符数",
       "models_defaultChatModel": "默认聊天模型",
       "models_defaultOllamaEndpoint": "默认 Ollama 端点",
-      "models_defaultEmbeddingModel": "默认嵌入模型"
+      "models_defaultEmbeddingModel": "默认嵌入模型",
+      "rest_publicBaseUrl": "公共服务器 URL",
+      "rest_appBaseUrl": "公共应用 URL",
+      "rest_mcpPublicUrl": "公共 MCP URL",
+      "rest_eventStreamPollMs": "事件流轮询间隔（毫秒）",
+      "rest_eventStreamMaxMinutes": "事件流最长时长（分钟）",
+      "auth_signatureMaxSkewSeconds": "签名请求时钟偏差（秒）",
+      "auth_refreshTokenLifetimeDays": "刷新令牌有效期（天）",
+      "pipeline_useStreaming": "流式传输模型响应",
+      "pipeline_scopeGuardrail": "范围护栏",
+      "pipeline_maxQueriesPerRun": "每次运行的搜索查询数",
+      "pipeline_maxResultsPerQuery": "每个查询的结果数",
+      "pipeline_maxToolCallsPerRun": "每次运行的工具调用数",
+      "pipeline_maxFetchesPerRun": "每次运行抓取的页面数",
+      "pipeline_maxFindingsPerRun": "每次运行保留的发现数",
+      "pipeline_maxDocumentCharacters": "发送给提取的文档字符数",
+      "pipeline_maxParallelFetches": "并行页面抓取数",
+      "pipeline_dedupeLookbackDays": "重复回溯期（天）",
+      "pipeline_noveltyLookbackDays": "新颖性回溯期（天）",
+      "pipeline_recencyHalfLifeHours": "时效性半衰期（小时）",
+      "pipeline_displayThreshold": "展示阈值",
+      "pipeline_duplicateSimilarity": "重复相似度",
+      "pipeline_borderlineSimilarity": "临界相似度",
+      "pipeline_weightLlm": "权重：模型判断",
+      "pipeline_weightFeedback": "权重：反馈",
+      "pipeline_weightNovelty": "权重：新颖性",
+      "pipeline_weightSource": "权重：来源声誉",
+      "pipeline_weightRecency": "权重：时效性",
+      "diagnostics_auditRetentionDays": "审计保留期（天）",
+      "push_enabled": "发送推送通知",
+      "push_expoPushUrl": "Expo 推送 URL",
+      "push_expoAccessToken": "Expo 访问令牌",
+      "push_timeoutMs": "推送超时（毫秒）",
+      "storage_provider": "存储提供商",
+      "storage_localDirectory": "本地目录",
+      "storage_s3Bucket": "S3 存储桶",
+      "storage_s3Region": "S3 区域",
+      "storage_s3Endpoint": "S3 端点",
+      "storage_s3AccessKey": "S3 访问密钥 ID",
+      "storage_s3SecretKey": "S3 私密访问密钥",
+      "storage_s3Prefix": "S3 键前缀",
+      "storage_s3ForcePathStyle": "S3 路径式寻址",
+      "storage_presignedUrlMinutes": "预签名 URL 有效期（分钟）",
+      "storage_artifactRetentionDays": "报告和音频保留期（天）",
+      "scheduler_enabled": "运行调度器",
+      "scheduler_pollIntervalSeconds": "调度器轮询间隔（秒）",
+      "scheduler_minimumIntervalMinutes": "最短计划间隔（分钟）",
+      "scheduler_missedRunGraceMinutes": "错过运行的宽限期（分钟）",
+      "scheduler_runPollSeconds": "运行队列轮询间隔（秒）",
+      "search_searxngUrl": "SearXNG URL",
+      "search_hackerNewsUrl": "Hacker News API URL",
+      "search_arxivUrl": "arXiv API URL",
+      "search_userAgent": "用户代理",
+      "search_respectRobots": "遵守 robots.txt",
+      "search_fetchTimeoutMs": "抓取超时（毫秒）",
+      "search_perDomainDelayMs": "每个域名的延迟（毫秒）",
+      "search_maxFetchBytes": "最大抓取页面（字节）",
+      "tts_enabled": "生成音频",
+      "tts_endpoint": "语音端点",
+      "tts_model": "语音模型",
+      "tts_voice": "旁白语音",
+      "tts_secondaryVoice": "第二语音",
+      "tts_maxSegmentCharacters": "每个语音请求的字符数",
+      "tts_maxParallelSegments": "并行语音请求数",
+      "tts_timeoutSeconds": "语音请求超时（秒）",
+      "tts_maxAttempts": "每个单集的尝试次数",
+      "tts_ffmpegPath": "ffmpeg 路径",
+      "tts_bitrate": "MP3 比特率",
+      "tts_normalizeLoudness": "响度标准化",
+      "email_enabled": "发送电子邮件",
+      "email_provider": "电子邮件提供商",
+      "email_fromAddress": "发件人地址",
+      "email_fromName": "发件人名称",
+      "email_replyToAddress": "回复地址",
+      "email_subjectPrefix": "主题前缀",
+      "email_mailgunDomain": "Mailgun 域名",
+      "email_mailgunApiKey": "Mailgun API 密钥",
+      "email_mailgunBaseUrl": "Mailgun API URL",
+      "email_fileDirectory": "文件提供商目录",
+      "email_actionTokenLifetimeDays": "邮件链接有效期（天）",
+      "email_recordFeedbackOnClick": "打开链接时记录反馈",
+      "email_deliveryMaxAttempts": "投递尝试次数",
+      "email_deliveryIntervalSeconds": "投递间隔（秒）",
+      "email_messageRetentionDays": "已发送邮件保留期（天）",
+      "email_publicRequestsPerMinute": "每分钟公共页面请求数",
+      "learning_enabled": "从反馈中学习",
+      "learning_feedbackPerPass": "每轮学习的反馈数",
+      "learning_autoApply": "自动应用学到的偏好",
+      "learning_intervalMinutes": "学习间隔（分钟）",
+      "learning_feedbackNeighbors": "比较的已评价发现数",
+      "hosting_publicSignupEnabled": "开放公开注册",
+      "hosting_defaultPlanKey": "默认套餐",
+      "hosting_promoChecksPerMinute": "每分钟优惠码检查次数",
+      "hosting_requireEmailVerification": "要求验证电子邮件",
+      "hosting_turnstileSecretKey": "Turnstile 私密密钥",
+      "hosting_turnstileSiteKey": "Turnstile 站点密钥",
+      "hosting_signupsPerIpPerHour": "每个 IP 每小时注册数",
+      "hosting_verificationHours": "验证链接有效期（小时）",
+      "hosting_passwordResetMinutes": "密码重置链接有效期（分钟）",
+      "hosting_deletionGraceDays": "账户删除宽限期（天）",
+      "hosting_restrictPrivateNetworks": "阻止私有网络",
+      "hosting_usePlatformCredentials": "使用平台模型密钥",
+      "hosting_requestsPerMinutePerIp": "每个 IP 每分钟 API 请求数",
+      "hosting_trustForwardedFor": "信任 X-Forwarded-For",
+      "hosting_allowedPrivateHosts": "允许的私有主机",
+      "hosting_termsVersion": "条款版本",
+      "hosting_minimumAge": "最低年龄",
+      "hosting_appleTeamId": "Apple Team ID",
+      "hosting_mobileAppId": "移动应用 ID"
     }
   },
   "serverInfo": {
@@ -1987,6 +2102,33 @@
       "enable": "为此主题使用智能体搜索",
       "tools": "允许的 MCP 工具",
       "noTools": "尚未开启任何 MCP 工具。"
+    },
+    "schedule": {
+      "pausedItem": "{schedule}（已暂停）",
+      "viaEditions": "为 {editions} 进行研究",
+      "paused": "已暂停"
+    },
+    "prompts": {
+      "add": "覆盖提示词",
+      "help": "此主题用来替代租户提示词的提示词。其他所有提示词都使用租户版本。",
+      "emptyTitle": "没有提示词覆盖",
+      "emptyMessage": "此主题使用租户的提示词。",
+      "allPrompts": "所有提示词"
+    },
+    "models": {
+      "help": "此主题中每个任务使用的模型。此主题的分配会覆盖租户的分配。",
+      "task": "任务",
+      "endpoint": "端点",
+      "model": "模型",
+      "source": "设置来源",
+      "none": "无端点",
+      "scope": {
+        "topic": "此主题",
+        "tenant": "租户默认值",
+        "fallback": "第一个可用端点"
+      },
+      "change": "在“模型”页面更改分配",
+      "view": "在“模型”页面查看分配"
     }
   },
   "wizard": {
@@ -2184,7 +2326,7 @@
       "summary": "摘要",
       "id": "ID",
       "findings": "新发现",
-      "findingsTitle": "已跳过 {duplicates} 个重复项",
+      "findingsTitle": "{duplicates, plural, other {已跳过 # 个重复项}}",
       "sources": "来源",
       "cost": "费用"
     },
@@ -2201,7 +2343,11 @@
       "duplicates": "重复项",
       "tokens": "令牌",
       "tokenSplit": "输入 {input}，输出 {output}",
-      "cost": "预估费用"
+      "cost": "预估费用",
+      "modelUsage": "模型用量",
+      "notRecorded": "未记录",
+      "notRecordedHelp": "此运行没有记录任何模型调用。",
+      "costPending": "未定价"
     },
     "stages": {
       "empty": "此运行没有记录任何阶段。",
@@ -2511,10 +2657,11 @@
     "kpis": {
       "open": "未判定",
       "graded": "已评分",
-      "ofTotal": "共 {total} 条预测",
+      "ofTotal": "{total, plural, other {共 # 条预测}}",
       "accuracy": "实际准确率",
       "accuracyHelp": "部分准确按一半计算。",
-      "brier": "平均 Brier 分数"
+      "brier": "平均 Brier 分数",
+      "proposed": "{count, plural, other {# 条待您评分}}"
     },
     "calibration": {
       "title": "校准",
@@ -2638,7 +2785,7 @@
       },
       "noFiles": "没有已存储的文件。",
       "openRun": "打开运行",
-      "stats": "阅读约 {minutes} 分钟，{words} 字，{items} 个条目",
+      "stats": "阅读约 {minutes} 分钟，{words, plural, other {# 字}}，{items, plural, other {# 个条目}}",
       "failed": "撰写失败。",
       "noContent": "此简报没有内容。",
       "items": "本简报包含（{count}）",
@@ -3713,7 +3860,7 @@
       "quoteFailure": "引文失败率",
       "quoteFailureHelp": "未通过验证的引文",
       "modelCost": "模型费用",
-      "modelCalls": "{count} 次模型调用"
+      "modelCalls": "{count, plural, other {# 次模型调用}}"
     },
     "email": {
       "total": "邮件数",
@@ -3753,7 +3900,8 @@
       "body": "为 MCP 客户端创建访问密钥和私密密钥，以便日后无需更改密码即可撤销。请在创建时复制私密密钥；它只显示一次。",
       "authMode": "请选择“直接标头”或“混合”认证模式：Streamable HTTP 客户端会在每个请求中发送密钥和私密密钥，而“签名请求”和“会话交换”模式的密钥会拒绝这种方式。",
       "create": "创建访问密钥",
-      "askAdmin": "访问密钥由管理员创建。请向你的管理员申请“直接标头”认证模式的访问密钥。"
+      "askAdmin": "访问密钥由管理员创建。请向你的管理员申请“直接标头”认证模式的访问密钥。",
+      "titleMember": "获取访问密钥"
     },
     "connect": {
       "title": "连接客户端",
@@ -3799,7 +3947,8 @@
     "empty": {
       "title": "暂无来源",
       "message": "运行为你的某个主题搜索网络并抓取页面后，来源会显示在这里。"
-    }
+    },
+    "runLabel": "{when} 的运行"
   },
   "auth": {
     "resend": "发送新链接",
@@ -3827,7 +3976,7 @@
     "verify": {
       "title": "确认您的电子邮件",
       "done": "您的电子邮件已确认。现在可以登录了。",
-      "failed": "此链接已过期或已被使用。请输入您的电子邮件以获取新链接。"
+      "failed": "此链接无效或已过期。请输入您的电子邮件以获取新链接。"
     },
     "forgot": {
       "title": "重置密码",
@@ -3847,10 +3996,10 @@
     "about": "注册远程 MCP 服务器，供智能体研究调用其工具。先发现服务器的工具，开启您信任的工具，然后在主题中允许使用它们。",
     "created": "服务器已注册。",
     "test": "测试连接",
-    "testOk": "已连接。该服务器提供 {count} 个工具。",
+    "testOk": "已连接。该服务器提供 {count, plural, other {# 个工具}}。",
     "testFailed": "无法连接：{error}",
     "discover": "发现工具",
-    "discovered": "已保存 {count} 个工具。",
+    "discovered": "已保存 {count, plural, other {# 个工具}}。",
     "columns": {
       "name": "名称",
       "transport": "传输方式",
@@ -4007,5 +4156,22 @@
       "help": "每个提供商的结果中，带来达到或高于显示阈值的发现所占比例。",
       "label": "{provider}（{results} 个中的 {used} 个）"
     }
+  },
+  "modelKeys": {
+    "title": "模型端点没有可用的 API 密钥",
+    "problem": {
+      "missing": "{name} 没有 API 密钥，因此对它的调用会失败。",
+      "notFound": "{name} 使用的已存储凭据已不存在。",
+      "inactive": "{name} 使用的已存储凭据已被停用。",
+      "expired": "{name} 使用的已存储凭据已过期。"
+    },
+    "fix": "为 {name} 添加密钥",
+    "view": "查看模型端点",
+    "consequence": {
+      "general": "主题细化、研究运行和简报都需要可用的模型，因此在修复之前它们都会失败。",
+      "wizard": "向导会请模型提出维度和问题，因此在修复之前它会在第一步失败。"
+    },
+    "askAdmin": "只有租户管理员可以添加密钥。请联系您的管理员进行修复。",
+    "badge": "无 API 密钥"
   }
 }

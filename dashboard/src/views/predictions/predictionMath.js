@@ -18,8 +18,9 @@ export function graded(predictions) {
   return (predictions || []).filter((p) => outcomeOf(p.status) !== null);
 }
 
-// Summary over a list: total, open, graded, mean Brier score, and mean observed accuracy. Means are null when
-// nothing is graded. The stored brierScore wins when present.
+// Summary over a list: total, open, awaiting review, graded, mean Brier score, and mean observed accuracy. Means are
+// null when nothing is graded. The stored brierScore wins when present. open counts status Open only, as the server's
+// Insights overview does; a proposed resolution waiting for the user's grade is counted in proposed.
 export function predictionSummary(predictions) {
   const list = predictions || [];
   const done = graded(list);
@@ -27,7 +28,8 @@ export function predictionSummary(predictions) {
   const mean = (values) => (values.length > 0 ? values.reduce((s, v) => s + v, 0) / values.length : null);
   return {
     total: list.length,
-    open: list.filter((p) => p.status === 'Open' || p.status === 'ProposedResolved').length,
+    open: list.filter((p) => p.status === 'Open').length,
+    proposed: list.filter((p) => p.status === 'ProposedResolved').length,
     graded: done.length,
     meanBrier: mean(briers),
     accuracy: mean(done.map((p) => outcomeOf(p.status)))

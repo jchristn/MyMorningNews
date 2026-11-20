@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Braces, Eye, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext.jsx';
+import useFormat from '../hooks/useFormat.js';
 import { pagedQuery } from '../utils/api.js';
 import CopyableId from '../components/CopyableId.jsx';
 import DataTable from '../components/DataTable.jsx';
@@ -17,8 +18,11 @@ import SourceDetailDrawer from './sources/SourceDetailDrawer.jsx';
 // fetched, and used per run (chart 23), for the selected topic.
 export default function SourcesView() {
   const { t } = useTranslation();
+  const f = useFormat();
   const { apiClient } = useAuth();
   const [params, setParams] = useSearchParams();
+  const [runs, setRuns] = useState({});
+  const requestedRuns = useRef(new Set());
   const runId = params.get('runId');
   const [topics, setTopics] = useState([]);
   const [openId, setOpenId] = useState(params.get('source'));
@@ -43,6 +47,45 @@ export default function SourcesView() {
   };
   const extraFilters = useMemo(() => ({ runId: runId || undefined, topicId: topicId || undefined }), [runId, topicId]);
   const fetchPage = useCallback((q) => apiClient.listSources(pagedQuery(q)), [apiClient]);
+  const topicNames = useMemo(() => new Map(topics.map((x) => [x.id, x.name])), [topics]);
+
+  // The runs the listed sources were first seen in, read once each, so the column can name the run's topic and time.
+  const loadRuns = useCallback(
+    (result) => {
+      const ids = Array.from(new Set(((result && result.items) || []).map((r) => r.firstSeenRunId).filter(Boolean))).filter((id) => !requestedRuns.current.has(id));
+      for (const id of ids) {
+        requestedRuns.current.add(id);
+        apiClient
+          .getRun(id)
+          .then((run) => {
+            if (run && run.id === id) setRuns((current) => ({ ...current, [id]: run }));
+          })
+          .catch(() => {});
+      }
+    },
+    [apiClient]
+  );
+
+  const runCell = (runIdValue) => {
+    const run = runs[runIdValue];
+    const href = '/dashboard/runs?run=' + encodeURIComponent(runIdValue);
+    if (!run) {
+      return (
+        <Link className="mono small" to={href}>
+          {runIdValue}
+        </Link>
+      );
+    }
+    const when = run.startedUtc || run.queuedUtc || run.createdUtc;
+    return (
+      <span className="date-cell">
+        <Link to={href} title={runIdValue}>
+          {t('sources.runLabel', { when: f.dateTime(when, { dateStyle: 'short', timeStyle: 'short' }) })}
+        </Link>
+        {topicNames.get(run.topicId) ? <span className="muted small truncate">{topicNames.get(run.topicId)}</span> : null}
+      </span>
+    );
+  };
 
   const columns = [
     {
@@ -63,12 +106,7 @@ export default function SourcesView() {
     {
       key: 'firstSeenRunId',
       header: t('sources.columns.firstRun'),
-      render: (r) =>
-        r.firstSeenRunId ? (
-          <Link className="mono small" to={'/dashboard/runs?run=' + encodeURIComponent(r.firstSeenRunId)}>
-            {r.firstSeenRunId}
-          </Link>
-        ) : null
+      render: (r) => (r.firstSeenRunId ? runCell(r.firstSeenRunId) : null)
     },
     { key: 'fetchedUtc', header: t('sources.columns.fetched'), defaultHidden: true, render: (r) => <DateCell value={r.fetchedUtc} /> },
     { key: 'timesSeen', header: t('sources.columns.timesSeen'), defaultHidden: true, align: 'right', render: (r) => r.timesSeen || 0 },
@@ -111,6 +149,7 @@ export default function SourcesView() {
           fetchPage={fetchPage}
           extraFilters={extraFilters}
           toolbar={toolbar}
+          onLoaded={loadRuns}
           onRowClick={(r) => setOpenId(r.id)}
           rowActions={(r) => [
             { key: 'view', label: t('common.view'), icon: Eye, onClick: () => setOpenId(r.id) },

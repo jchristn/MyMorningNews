@@ -14,7 +14,7 @@ ExternalLink.propTypes = { node: PropTypes.object };
 export default function MarkdownView({ source, className = '', components = null }) {
   if (!source) return null;
   return (
-    <div className={'markdown-view ' + className}>
+    <div className={'markdown-view ' + className} dir="auto">
       <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSanitize]} components={{ a: ExternalLink, ...(components || {}) }}>
         {source}
       </ReactMarkdown>

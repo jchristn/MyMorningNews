@@ -83,9 +83,9 @@ export default function McpView() {
       </section>
       <section className="panel stack" data-testid="mcp-access-key">
         <h2>
-          <KeyRound size={16} aria-hidden="true" /> {t('mcp.key.title')}
+          <KeyRound size={16} aria-hidden="true" /> {isTenantAdmin ? t('mcp.key.title') : t('mcp.key.titleMember')}
         </h2>
-        <p>{t('mcp.key.body')}</p>
+        <p>{isTenantAdmin ? t('mcp.key.body') : t('mcp.key.askAdmin')}</p>
         <p className="muted small">{t('mcp.key.authMode')}</p>
         {isTenantAdmin ? (
           <div className="row-actions">
@@ -93,9 +93,7 @@ export default function McpView() {
               {t('mcp.key.create')}
             </Link>
           </div>
-        ) : (
-          <p className="muted small">{t('mcp.key.askAdmin')}</p>
-        )}
+        ) : null}
       </section>
       <section className="panel stack">
         <h2>{t('mcp.connect.title')}</h2>

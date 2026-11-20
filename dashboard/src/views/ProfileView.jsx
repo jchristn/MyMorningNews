@@ -17,7 +17,7 @@ import PodcastFeeds from './profile/PodcastFeeds.jsx';
 
 export default function ProfileView() {
   const { t } = useTranslation();
-  const { apiClient } = useAuth();
+  const { apiClient, refreshProfile } = useAuth();
   const { addNotification } = useApp();
   const [me, setMe] = useState(null);
   const [form, setForm] = useState({ firstName: '', lastName: '', timeZone: '', locale: '' });
@@ -43,6 +43,7 @@ export default function ProfileView() {
       const body = { ...form };
       for (const k of ['timeZone', 'locale']) if (!body[k]) delete body[k];
       setMe(await apiClient.updateMe(body));
+      refreshProfile();
       addNotification(t('profile.saved'), 'success');
     } catch (err) {
       setSaveError(err);

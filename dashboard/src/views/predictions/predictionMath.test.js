@@ -17,7 +17,7 @@ describe('prediction math', () => {
 
   it('summarizes open, graded, accuracy, and mean Brier, preferring stored scores', () => {
     const s = predictionSummary([p(0.8, 'Accurate'), p(0.6, 'Inaccurate', { brierScore: 0.5 }), p(0.5, 'Open'), p(0.9, 'ProposedResolved'), p(0.4, 'Withdrawn')]);
-    expect(s).toMatchObject({ total: 5, open: 2, graded: 2 });
+    expect(s).toMatchObject({ total: 5, open: 1, proposed: 1, graded: 2 });
     expect(s.accuracy).toBeCloseTo(0.5, 6);
     expect(s.meanBrier).toBeCloseTo((0.04 + 0.5) / 2, 6);
     expect(predictionSummary([]).meanBrier).toBeNull();

@@ -122,7 +122,7 @@ export default function BriefingsTable({ tableKey = 'briefings', extraFilters = 
       key: 'topicId',
       header: t('briefings.columns.topic'),
       filter: { type: 'select', param: 'topicId', options: topics.map((x) => ({ value: x.id, label: x.name })) },
-      render: (r) => (r.topicId ? <span className="truncate">{topicNames.get(r.topicId) || r.topicId}</span> : <span className="muted">-</span>)
+      render: (r) => (r.topicId ? <span className="topic-cell">{topicNames.get(r.topicId) || r.topicId}</span> : <span className="muted">-</span>)
     },
     { key: 'itemCount', header: t('briefings.columns.items'), align: 'right', render: (r) => r.itemCount || 0 },
     {

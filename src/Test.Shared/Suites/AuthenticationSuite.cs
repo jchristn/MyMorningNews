@@ -1,11 +1,15 @@
 namespace Test.Shared.Suites
 {
     using System;
+    using System.Collections.Generic;
+    using System.Globalization;
     using System.Net.Http;
+    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
     using MyMorningNews.Core.Models;
     using MyMorningNews.Core.Responses;
+    using MyMorningNews.Core.Security;
     using Test.Shared.Helpers;
     using Touchstone.Core;
 
@@ -37,7 +41,8 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "PasswordHeadersOnlyOnLogin", "Login headers are rejected on ordinary routes", PasswordHeadersAsync),
                 Cases.Case(S, "InactiveUserRejected", "A deactivated user's session stops working", InactiveAsync),
                 Cases.Case(S, "AdminApiKey", "The administration key authenticates and wrong keys fail", AdminKeyAsync),
-                Cases.Case(S, "CredentialAuth", "Access key and secret authenticate; a wrong secret fails", CredentialAsync)
+                Cases.Case(S, "CredentialAuth", "Access key and secret authenticate; a wrong secret fails", CredentialAsync),
+                Cases.Case(S, "SignedRequests", "Signed requests authenticate without sending the secret; tampering, replay, and stale dates fail", SignedAsync)
             });
         }
 
@@ -172,6 +177,49 @@ namespace Test.Shared.Suites
             (await machine.GetAsync("/v1.0/tenants/default/users", token).ConfigureAwait(false)).Expect(401, "wrong secret");
             CredentialResponse read = (await admin.GetAsync("/v1.0/tenants/default/credentials/" + created.Credential.Id, token).ConfigureAwait(false)).Expect(200, "read credential").Json<CredentialResponse>();
             Assert.True(!read.SecretKeyPreview.Contains(created.SecretKey, StringComparison.Ordinal) && read.SecretKeyPreview.EndsWith(created.SecretKey.Substring(created.SecretKey.Length - 4), StringComparison.Ordinal), "only last four shown");
+        }
+
+        private static async Task SignedAsync(CancellationToken token)
+        {
+            TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
+            CredentialCreatedResponse created = (await admin.PostAsync("/v1.0/tenants/default/credentials", new { name = "suite-signed" }, token).ConfigureAwait(false))
+                .Expect(201, "create credential").Json<CredentialCreatedResponse>();
+            TestApiClient anon = await SharedTestServer.AnonymousClientAsync(token).ConfigureAwait(false);
+            string key = created.Credential.AccessKey;
+            string secret = created.SecretKey;
+
+            Dictionary<string, string> Sign(string method, string path, string body, DateTime when, string nonce, string? secretOverride = null)
+            {
+                string date = when.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
+                string toSign = RequestSigner.StringToSign(method, path, "default", date, nonce, RequestSigner.BodyHash(Encoding.UTF8.GetBytes(body)));
+                return new Dictionary<string, string>
+                {
+                    { "x-access-key", key }, { "x-tenant-guid", "default" }, { "x-date", date }, { "x-nonce", nonce }, { "x-signature", RequestSigner.Sign(secretOverride ?? secret, toSign) }
+                };
+            }
+
+            string path = "/v1.0/tenants/default/users?pageSize=2";
+            Dictionary<string, string> good = Sign("GET", path, String.Empty, DateTime.UtcNow, "nonce-" + Guid.NewGuid().ToString("N"));
+            (await anon.SendAsync(HttpMethod.Get, path, null, good, token).ConfigureAwait(false)).Expect(200, "signed GET");
+            (await anon.SendAsync(HttpMethod.Get, path, null, good, token).ConfigureAwait(false)).Expect(401, "replayed nonce");
+            (await anon.SendAsync(HttpMethod.Get, "/v1.0/tenants/default/users?pageSize=3", null, Sign("GET", path, String.Empty, DateTime.UtcNow, "nonce-" + Guid.NewGuid().ToString("N")), token).ConfigureAwait(false))
+                .Expect(401, "query changed after signing");
+            (await anon.SendAsync(HttpMethod.Get, path, null, Sign("GET", path, String.Empty, DateTime.UtcNow.AddMinutes(-10), "nonce-" + Guid.NewGuid().ToString("N")), token).ConfigureAwait(false))
+                .Expect(401, "stale date");
+            (await anon.SendAsync(HttpMethod.Get, path, null, Sign("GET", path, String.Empty, DateTime.UtcNow, "nonce-" + Guid.NewGuid().ToString("N"), "secret_wrong"), token).ConfigureAwait(false))
+                .Expect(401, "wrong secret");
+            Dictionary<string, string> both = Sign("GET", path, String.Empty, DateTime.UtcNow, "nonce-" + Guid.NewGuid().ToString("N"));
+            both["x-secret-key"] = secret;
+            (await anon.SendAsync(HttpMethod.Get, path, null, both, token).ConfigureAwait(false)).Expect(401, "signature and secret together");
+
+            string body = "{\"name\":\"suite-signed-renamed\"}";
+            string put = "/v1.0/tenants/default/credentials/" + created.Credential.Id;
+            (await anon.SendAsync(HttpMethod.Put, put, body, Sign("PUT", put, body, DateTime.UtcNow, "nonce-" + Guid.NewGuid().ToString("N")), token).ConfigureAwait(false)).Expect(200, "signed PUT with body");
+            (await anon.SendAsync(HttpMethod.Put, put, "{\"name\":\"tampered\"}", Sign("PUT", put, body, DateTime.UtcNow, "nonce-" + Guid.NewGuid().ToString("N")), token).ConfigureAwait(false))
+                .Expect(401, "body changed after signing");
+            TokenDetailsResponse details = (await anon.SendAsync(HttpMethod.Get, "/v1.0/token/details", null, Sign("GET", "/v1.0/token/details", String.Empty, DateTime.UtcNow, "nonce-" + Guid.NewGuid().ToString("N")), token).ConfigureAwait(false))
+                .Expect(200, "details").Json<TokenDetailsResponse>();
+            Assert.Equal("AccessKeySignature", details.Scheme?.ToString(), "scheme reported");
         }
     }
 }

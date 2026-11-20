@@ -47,6 +47,9 @@ All notable changes to this project are documented here. The project follows [Se
 - Learning: your ratings and reasons shape what the next run ranks highly and what it searches for, recurring reasons turn into preferences you can apply with one click, and Insights reports show relevance, prediction accuracy and calibration, feedback, suggestions, and evidence quality.
 - Promotional codes: administrators can create codes that give a free subscription for a set number of days, cap how many people can use each one, generate batches, see who used them, and revoke them.
 - `OWNER_ACTIONS.md` with everything the owner needs to do, grouped by phase.
+- Analytics overview (`GET /v1.0/api/analytics/overview`): active topics, runs by outcome, findings shown and rated, relevance precision, briefings, emails, predictions and accuracy, feedback, suggestions, quote failure rate, and model calls and cost in one call.
+- Email analytics (`GET /v1.0/api/analytics/email`): sent, failed, pending, and skipped counts, delivery rate, mean time to send, breakdowns by template, day, and status, feedback link use, and unsubscribes. The feedback report adds a split by day and channel.
+- Signed requests (`MMN1-HMAC-SHA256`): machine clients sign each request with the credential secret instead of sending it, with a clock skew window (`Auth.SignatureMaxSkewSeconds`, default 300) and nonce replay protection.
 - Scope guardrail on every model call and in every default prompt, so models stay on research and briefing tasks and treat fetched content as data.
 - Prompt templates: 19 defaults, renderer with list expansion, save-time variable validation, versions, rollback, reset, topic overrides, and a prompt lab.
 - New tenants are seeded with an Anthropic `claude-opus-5-5` endpoint, an Ollama `all-minilm` embedding endpoint, assignments for every task, and the default prompts.

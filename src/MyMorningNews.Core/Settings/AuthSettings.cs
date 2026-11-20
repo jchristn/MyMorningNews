@@ -67,6 +67,23 @@ namespace MyMorningNews.Core.Settings
         }
 
         /// <summary>
+        /// Largest allowed difference between a signed request's x-date and the server clock, in seconds. Default 300.
+        /// Minimum 30, maximum 3600. Nonces are remembered for twice this window.
+        /// </summary>
+        [Setting(Description = "Clock skew allowed for signed requests, in seconds.", Minimum = 30, Maximum = 3600)]
+        public int SignatureMaxSkewSeconds
+        {
+            get
+            {
+                return _SignatureMaxSkewSeconds;
+            }
+            set
+            {
+                _SignatureMaxSkewSeconds = Math.Clamp(value, 30, 3600);
+            }
+        }
+
+        /// <summary>
         /// Whether sessions can be refreshed. Default true.
         /// </summary>
         [Setting(Description = "Allow session refresh.")]
@@ -95,6 +112,7 @@ namespace MyMorningNews.Core.Settings
         private string _SigningKey = "mymorningnews-change-this-signing-key";
         private int _SessionLifetimeMinutes = 480;
         private int _LoginRateLimitPerMinute = 10;
+        private int _SignatureMaxSkewSeconds = 300;
         private int _RefreshTokenLifetimeDays = 30;
 
         #endregion

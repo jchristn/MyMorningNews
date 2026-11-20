@@ -107,7 +107,10 @@ namespace MyMorningNews.Server.Services
             {
                 GetHeader = name => ctx.Request.RetrieveHeaderValue(name),
                 SourceIp = rc.SourceIp,
-                UserAgent = rc.UserAgent
+                UserAgent = rc.UserAgent,
+                Method = ctx.Request.Method.ToString().ToUpperInvariant(),
+                PathAndQuery = ctx.Request.Url.RawWithQuery,
+                GetBody = () => ctx.Request.DataAsBytes ?? Array.Empty<byte>()
             }, ctx.Token).ConfigureAwait(false);
 
             rc.ApplyAuthentication(auth);
@@ -219,7 +222,7 @@ namespace MyMorningNews.Server.Services
             if (!String.Equals(ctx.Request.Url.RawWithoutQuery, OpenApiDocumentPath, StringComparison.Ordinal))
                 ctx.Response.Headers.Set("Access-Control-Allow-Origin", _Server.Settings.Rest.CorsAllowedOrigins);
             ctx.Response.Headers.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
-            ctx.Response.Headers.Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Api-Key, X-Token, X-Email, X-Password, X-Tenant-Guid, X-Access-Key, X-Secret-Key, X-Request, Accept-Language, Range");
+            ctx.Response.Headers.Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Api-Key, X-Token, X-Email, X-Password, X-Tenant-Guid, X-Access-Key, X-Secret-Key, X-Date, X-Nonce, X-Signature, X-Request, Accept-Language, Range");
             ctx.Response.Headers.Set("Access-Control-Expose-Headers", "X-Request-Id, Content-Disposition, Content-Range, Accept-Ranges, Content-Length, ETag");
         }
 

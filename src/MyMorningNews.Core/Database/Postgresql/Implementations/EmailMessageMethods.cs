@@ -3,6 +3,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Globalization;
     using System.Linq;
     using System.Text;
     using System.Threading;
@@ -186,6 +187,24 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             string where = BuildWhere(filter, args);
             List<long> counts = await QueryAsync("SELECT COUNT(*) FROM " + EmailMessageQueries.Table + where, r => r.GetInt64(0), token, args.ToArray()).ConfigureAwait(false);
             return counts.FirstOrDefault();
+        }
+
+        /// <inheritdoc />
+        public async Task<List<EmailAggregateRow>> AggregateAsync(EmailMessageFilter filter, CancellationToken token = default)
+        {
+            ArgumentNullException.ThrowIfNull(filter);
+            List<object?> args = new List<object?>();
+            string where = BuildWhere(filter, args);
+            string sql = "SELECT to_char(createdutc, 'YYYY-MM-DD'), template, status, COUNT(*), AVG(EXTRACT(EPOCH FROM (sentutc - createdutc))) FROM " + EmailMessageQueries.Table + where +
+                " GROUP BY 1, 2, 3 ORDER BY 1, 2, 3";
+            return await QueryAsync(sql, r => new EmailAggregateRow
+            {
+                Day = r.GetString(0),
+                Template = r.GetString(1),
+                Status = r.GetString(2),
+                Count = r.GetInt64(3),
+                MeanSecondsToSend = r.IsDBNull(4) ? null : Math.Round(Convert.ToDouble(r.GetValue(4), CultureInfo.InvariantCulture), 2)
+            }, token, args.ToArray()).ConfigureAwait(false);
         }
 
         /// <inheritdoc />

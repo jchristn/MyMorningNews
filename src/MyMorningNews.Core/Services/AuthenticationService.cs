@@ -28,6 +28,7 @@ namespace MyMorningNews.Core.Services
         private readonly AuthSettings _Settings;
         private readonly AuditService _Audit;
         private readonly LoginRateLimiter _RateLimiter;
+        private readonly NonceCache _Nonces = new NonceCache();
         private readonly CryptoProtector _TokenProtector;
         private readonly CryptoProtector _SecretProtector;
 
@@ -99,6 +100,13 @@ namespace MyMorningNews.Core.Services
 
             if (sessionToken != null) return await AuthenticateSessionAsync(sessionToken, bearer != null ? AuthSchemeEnum.BearerToken : AuthSchemeEnum.XToken, tenantHint, token).ConfigureAwait(false);
             if (apiKey != null) return await AuthenticateAdminKeyAsync(apiKey, tenantHint, token).ConfigureAwait(false);
+            string? signature = Clean(request.GetHeader("x-signature"));
+            if (signature != null)
+            {
+                if (secretKey != null) return AuthenticationContext.Fail(AuthenticationOutcomeEnum.Invalid, "Send x-signature or x-secret-key, not both.", AuthSchemeEnum.AccessKeySignature);
+                return await AuthenticateSignedAsync(request, accessKey!, signature, tenantHint, token).ConfigureAwait(false);
+            }
+
             return await AuthenticateCredentialAsync(accessKey!, secretKey, tenantHint, token).ConfigureAwait(false);
         }
 
@@ -549,12 +557,48 @@ namespace MyMorningNews.Core.Services
             if (credential == null || !SecretHasher.FixedTimeEquals(_SecretProtector.Unprotect(credential.SecretKeyEncrypted), secretKey))
                 return AuthenticationContext.Fail(AuthenticationOutcomeEnum.Invalid, "Invalid credentials.", AuthSchemeEnum.AccessKeySecret);
 
+            return await CredentialContextAsync(tenant, credential, AuthSchemeEnum.AccessKeySecret, token).ConfigureAwait(false);
+        }
+
+        private async Task<AuthenticationContext> AuthenticateSignedAsync(AuthenticationRequest request, string accessKey, string signature, string? tenantHint, CancellationToken token)
+        {
+            const AuthSchemeEnum scheme = AuthSchemeEnum.AccessKeySignature;
+            if (tenantHint == null) return AuthenticationContext.Fail(AuthenticationOutcomeEnum.Invalid, "x-tenant-guid is required with signed requests.", scheme);
+            string? date = Clean(request.GetHeader("x-date"));
+            string? nonce = Clean(request.GetHeader("x-nonce"));
+            if (date == null || nonce == null) return AuthenticationContext.Fail(AuthenticationOutcomeEnum.Invalid, "Signed requests need x-date and x-nonce.", scheme);
+            if (nonce.Length < 8 || nonce.Length > 128) return AuthenticationContext.Fail(AuthenticationOutcomeEnum.Invalid, "x-nonce must be 8 to 128 characters.", scheme);
+            if (!RequestSigner.TryParseDate(date, out DateTime signedUtc)) return AuthenticationContext.Fail(AuthenticationOutcomeEnum.Invalid, "x-date must be an ISO 8601 UTC time.", scheme);
+            DateTime now = DateTime.UtcNow;
+            int skew = _Settings.SignatureMaxSkewSeconds;
+            if (Math.Abs((now - signedUtc).TotalSeconds) > skew)
+                return AuthenticationContext.Fail(AuthenticationOutcomeEnum.Invalid, "x-date is more than " + skew + " seconds from the server clock.", scheme);
+            if (request.GetBody == null || String.IsNullOrEmpty(request.Method) || String.IsNullOrEmpty(request.PathAndQuery))
+                return AuthenticationContext.Fail(AuthenticationOutcomeEnum.Invalid, "Signed requests are not supported on this route.", scheme);
+
+            Tenant? tenant = await _Database.Tenants.ReadAsync(tenantHint, token).ConfigureAwait(false);
+            if (tenant == null || !tenant.Active) return AuthenticationContext.Fail(AuthenticationOutcomeEnum.Invalid, "Invalid credentials.", scheme);
+            Credential? credential = await FindCredentialAsync(tenant.Id, accessKey, token).ConfigureAwait(false);
+            if (credential == null) return AuthenticationContext.Fail(AuthenticationOutcomeEnum.Invalid, "Invalid credentials.", scheme);
+            string toSign = RequestSigner.StringToSign(request.Method, request.PathAndQuery, tenant.Id, date, nonce, RequestSigner.BodyHash(request.GetBody()));
+            string? secret = _SecretProtector.Unprotect(credential.SecretKeyEncrypted);
+            if (String.IsNullOrEmpty(secret)) return AuthenticationContext.Fail(AuthenticationOutcomeEnum.Invalid, "Invalid credentials.", scheme);
+            string expected = RequestSigner.Sign(secret, toSign);
+            if (!SecretHasher.FixedTimeEquals(expected, signature.ToLowerInvariant())) return AuthenticationContext.Fail(AuthenticationOutcomeEnum.Invalid, "Invalid credentials.", scheme);
+            if (!_Nonces.TryUse(credential.Id + "|" + nonce, now, now.AddSeconds(skew * 2)))
+                return AuthenticationContext.Fail(AuthenticationOutcomeEnum.Invalid, "This nonce was already used.", scheme);
+
+            return await CredentialContextAsync(tenant, credential, scheme, token).ConfigureAwait(false);
+        }
+
+        private async Task<AuthenticationContext> CredentialContextAsync(Tenant tenant, Credential credential, AuthSchemeEnum scheme, CancellationToken token)
+        {
             DateTime now = DateTime.UtcNow;
             if (!credential.Active || (credential.ExpiresUtc.HasValue && credential.ExpiresUtc.Value < now))
-                return AuthenticationContext.Fail(AuthenticationOutcomeEnum.Inactive, "The credential is inactive or expired.", AuthSchemeEnum.AccessKeySecret);
+                return AuthenticationContext.Fail(AuthenticationOutcomeEnum.Inactive, "The credential is inactive or expired.", scheme);
 
             User? user = await _Database.Users.ReadAsync(tenant.Id, credential.UserId, token).ConfigureAwait(false);
-            if (user == null || !user.Active) return AuthenticationContext.Fail(AuthenticationOutcomeEnum.Inactive, "The owning user is inactive.", AuthSchemeEnum.AccessKeySecret);
+            if (user == null || !user.Active) return AuthenticationContext.Fail(AuthenticationOutcomeEnum.Inactive, "The owning user is inactive.", scheme);
 
             if (!credential.LastUsedUtc.HasValue || (now - credential.LastUsedUtc.Value).TotalSeconds > 60)
             {
@@ -565,7 +609,7 @@ namespace MyMorningNews.Core.Services
             return new AuthenticationContext
             {
                 Outcome = AuthenticationOutcomeEnum.Success,
-                Scheme = AuthSchemeEnum.AccessKeySecret,
+                Scheme = scheme,
                 PrincipalType = PrincipalTypeEnum.Credential,
                 PrincipalId = credential.Id,
                 Tenant = tenant,

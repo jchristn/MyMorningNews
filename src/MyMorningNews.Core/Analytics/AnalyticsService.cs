@@ -11,6 +11,7 @@ namespace MyMorningNews.Core.Analytics
     using MyMorningNews.Core.Enums;
     using MyMorningNews.Core.Models;
     using MyMorningNews.Core.Requests;
+    using MyMorningNews.Core.Responses;
     using MyMorningNews.Core.Settings;
 
     /// <summary>
@@ -155,12 +156,79 @@ namespace MyMorningNews.Core.Analytics
             r.ByChannel = Rows(all.GroupBy(f => f.Channel.ToString()), reason, null);
             r.ByTargetType = Rows(all.GroupBy(f => f.TargetType.ToString()), reason, null);
             r.ByDay = Rows(all.GroupBy(f => Day(f.CreatedUtc)), reason, null).OrderBy(x => x.Key, StringComparer.Ordinal).ToList();
+            r.ByChannelDay = all.GroupBy(f => Day(f.CreatedUtc) + "|" + f.Channel.ToString())
+                .Select(g => new BreakdownRow { Key = g.Key.Split('|')[0], Label = g.Key.Split('|')[1], Count = g.Count(), Positive = g.Count(reason), Rate = Rate(g.Count(reason), g.Count()) })
+                .OrderBy(x => x.Key, StringComparer.Ordinal).ThenBy(x => x.Label, StringComparer.Ordinal).ToList();
             List<EmailActionToken> tokens = (await _Database.EmailActionTokens.EnumerateAsync(new EmailActionTokenFilter
             {
                 TenantId = scope.TenantId, UserId = scope.UserId, Kind = ActionTokenKindEnum.Feedback, FromUtc = scope.FromUtc, ToUtc = scope.ToUtc, PageSize = 10000
             }, token).ConfigureAwait(false)).Items;
             r.EmailLinkOpens = tokens.Sum(t => t.OpenCount);
             r.EmailLinkSubmits = tokens.Sum(t => t.SubmitCount);
+            return r;
+        }
+
+        /// <summary>
+        /// Email delivery: totals, delivery rate, time to send, breakdowns by template, day, and status, feedback link use,
+        /// and unsubscribes.
+        /// </summary>
+        /// <param name="scope">Scope.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Report.</returns>
+        /// <exception cref="ArgumentNullException">Scope is null.</exception>
+        public async Task<EmailReport> EmailAsync(AnalyticsScope scope, CancellationToken token = default)
+        {
+            ArgumentNullException.ThrowIfNull(scope);
+            List<EmailAggregateRow> rows = await _Database.EmailMessages.AggregateAsync(new EmailMessageFilter
+            {
+                TenantId = scope.TenantId, UserId = scope.UserId, TopicId = scope.TopicId, FromUtc = scope.FromUtc, ToUtc = scope.ToUtc
+            }, token).ConfigureAwait(false);
+            Func<EmailAggregateRow, bool> sent = x => x.Status == EmailStatusEnum.Sent.ToString();
+            Func<EmailAggregateRow, bool> finished = x => x.Status == EmailStatusEnum.Sent.ToString() || x.Status == EmailStatusEnum.Failed.ToString();
+            EmailReport r = new EmailReport
+            {
+                Total = rows.Sum(x => x.Count),
+                Sent = rows.Where(sent).Sum(x => x.Count),
+                Failed = rows.Where(x => x.Status == EmailStatusEnum.Failed.ToString()).Sum(x => x.Count),
+                Pending = rows.Where(x => x.Status == EmailStatusEnum.Queued.ToString() || x.Status == EmailStatusEnum.Sending.ToString()).Sum(x => x.Count),
+                Skipped = rows.Where(x => x.Status == EmailStatusEnum.Skipped.ToString() || x.Status == EmailStatusEnum.Suppressed.ToString()).Sum(x => x.Count)
+            };
+            long done = rows.Where(finished).Sum(x => x.Count);
+            r.DeliveryRate = done == 0 ? null : Math.Round(r.Sent / (double)done, 4);
+            List<EmailAggregateRow> timed = rows.Where(x => sent(x) && x.MeanSecondsToSend.HasValue).ToList();
+            long timedCount = timed.Sum(x => x.Count);
+            r.MeanSecondsToSend = timedCount == 0 ? null : Math.Round(timed.Sum(x => x.MeanSecondsToSend!.Value * x.Count) / timedCount, 2);
+            Func<IEnumerable<EmailAggregateRow>, string, BreakdownRow> row = (g, key) =>
+            {
+                long count = g.Sum(x => x.Count);
+                long positive = g.Where(sent).Sum(x => x.Count);
+                long fin = g.Where(finished).Sum(x => x.Count);
+                return new BreakdownRow { Key = key, Count = (int)Math.Min(count, int.MaxValue), Positive = (int)Math.Min(positive, int.MaxValue), Rate = fin == 0 ? null : Math.Round(positive / (double)fin, 4) };
+            };
+            r.ByTemplate = rows.GroupBy(x => x.Template).Select(g => row(g, g.Key)).OrderByDescending(x => x.Count).ToList();
+            r.ByDay = rows.GroupBy(x => x.Day).Select(g => row(g, g.Key)).OrderBy(x => x.Key, StringComparer.Ordinal).ToList();
+            r.ByStatus = rows.GroupBy(x => x.Status).Select(g => new BreakdownRow { Key = g.Key, Count = (int)Math.Min(g.Sum(x => x.Count), int.MaxValue) }).OrderByDescending(x => x.Count).ToList();
+            List<EmailActionToken> tokens = (await _Database.EmailActionTokens.EnumerateAsync(new EmailActionTokenFilter
+            {
+                TenantId = scope.TenantId, UserId = scope.UserId, Kind = ActionTokenKindEnum.Feedback, FromUtc = scope.FromUtc, ToUtc = scope.ToUtc, PageSize = 10000
+            }, token).ConfigureAwait(false)).Items;
+            r.FeedbackLinkOpens = tokens.Sum(t => t.OpenCount);
+            r.FeedbackLinkSubmits = tokens.Sum(t => t.SubmitCount);
+            string? recipient = null;
+            if (scope.UserId != null)
+            {
+                User? user = await _Database.Users.ReadAsync(scope.TenantId, scope.UserId, token).ConfigureAwait(false);
+                recipient = user?.Email;
+            }
+
+            if (scope.UserId == null || recipient != null)
+            {
+                r.Unsubscribes = await _Database.EmailSuppressions.CountAsync(new EmailSuppressionFilter
+                {
+                    TenantId = scope.TenantId, Recipient = recipient, TopicId = scope.TopicId, FromUtc = scope.FromUtc, ToUtc = scope.ToUtc
+                }, token).ConfigureAwait(false);
+            }
+
             return r;
         }
 
@@ -252,6 +320,68 @@ namespace MyMorningNews.Core.Analytics
                 ByDay = counts.GroupBy(c => c.Day).Select(g => new BreakdownRow { Key = g.Key, Count = g.Sum(x => x.Total), Positive = g.Sum(x => x.Verified), Rate = Rate(g.Sum(x => x.Verified), g.Sum(x => x.Total)) })
                     .OrderBy(x => x.Key, StringComparer.Ordinal).ToList()
             };
+        }
+
+        /// <summary>
+        /// Headline numbers for the scope: activity counts plus the key figures from the other reports and model usage.
+        /// </summary>
+        /// <param name="scope">Scope.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Report.</returns>
+        /// <exception cref="ArgumentNullException">Scope is null.</exception>
+        public async Task<OverviewReport> OverviewAsync(AnalyticsScope scope, CancellationToken token = default)
+        {
+            ArgumentNullException.ThrowIfNull(scope);
+            OverviewReport r = new OverviewReport { FromUtc = scope.FromUtc, ToUtc = scope.ToUtc };
+            if (scope.TopicId == null)
+                r.ActiveTopics = await _Database.Topics.CountAsync(new TopicFilter { TenantId = scope.TenantId, UserId = scope.UserId, Status = TopicStatusEnum.Active }, token).ConfigureAwait(false);
+            else
+            {
+                Topic? topic = await _Database.Topics.ReadAsync(scope.TenantId, scope.TopicId, token).ConfigureAwait(false);
+                r.ActiveTopics = topic != null && topic.Status == TopicStatusEnum.Active ? 1 : 0;
+            }
+
+            RunFilter runs = new RunFilter { TenantId = scope.TenantId, UserId = scope.UserId, TopicId = scope.TopicId, IsDryRun = false, FromUtc = scope.FromUtc, ToUtc = scope.ToUtc };
+            r.Runs = await _Database.Runs.CountAsync(runs, token).ConfigureAwait(false);
+            runs.Status = RunStatusEnum.Completed;
+            r.RunsCompleted = await _Database.Runs.CountAsync(runs, token).ConfigureAwait(false);
+            runs.Status = RunStatusEnum.PartiallySucceeded;
+            r.RunsPartiallySucceeded = await _Database.Runs.CountAsync(runs, token).ConfigureAwait(false);
+            runs.Status = RunStatusEnum.Failed;
+            r.RunsFailed = await _Database.Runs.CountAsync(runs, token).ConfigureAwait(false);
+            r.BriefingsReady = await _Database.Briefings.CountAsync(new BriefingFilter
+            {
+                TenantId = scope.TenantId, UserId = scope.UserId, TopicId = scope.TopicId, Status = BriefingStatusEnum.Ready, IsDryRun = false, FromUtc = scope.FromUtc, ToUtc = scope.ToUtc
+            }, token).ConfigureAwait(false);
+            EmailMessageFilter emails = new EmailMessageFilter { TenantId = scope.TenantId, UserId = scope.UserId, TopicId = scope.TopicId, Status = EmailStatusEnum.Sent, FromUtc = scope.FromUtc, ToUtc = scope.ToUtc };
+            r.EmailsSent = await _Database.EmailMessages.CountAsync(emails, token).ConfigureAwait(false);
+            emails.Status = EmailStatusEnum.Failed;
+            r.EmailsFailed = await _Database.EmailMessages.CountAsync(emails, token).ConfigureAwait(false);
+
+            RelevanceReport relevance = await RelevanceAsync(scope, token).ConfigureAwait(false);
+            r.FindingsShown = relevance.Shown;
+            r.FindingsRated = relevance.Rated;
+            r.RelevancePrecision = relevance.Precision;
+            AccuracyReport accuracy = await AccuracyAsync(scope, token).ConfigureAwait(false);
+            r.PredictionsOpen = accuracy.Open;
+            r.PredictionsResolved = accuracy.Resolved;
+            r.PredictionAccuracy = accuracy.AccuracyRate;
+            r.MeanBrier = accuracy.MeanBrier;
+            FeedbackReport feedback = await FeedbackAsync(scope, token).ConfigureAwait(false);
+            r.FeedbackTotal = feedback.Total;
+            r.FeedbackWithReason = feedback.WithReason;
+            SuggestionReport suggestions = await SuggestionsAsync(scope, token).ConfigureAwait(false);
+            r.SuggestionsNew = suggestions.New;
+            r.SuggestionsAccepted = suggestions.Accepted + suggestions.Done;
+            QualityReport quality = await QualityAsync(scope, token).ConfigureAwait(false);
+            r.QuoteFailureRate = quality.FailureRate;
+            UsageReport usage = await _Database.UsageAnalytics.ReportAsync(new UsageReportFilter
+            {
+                TenantId = scope.TenantId, UserId = scope.UserId, TopicId = scope.TopicId, FromUtc = scope.FromUtc, ToUtc = scope.ToUtc, Top = 1
+            }, token).ConfigureAwait(false);
+            r.ModelCalls = usage.Totals.Calls;
+            r.ModelCostUsd = usage.Totals.CostUsd;
+            return r;
         }
 
         /// <summary>

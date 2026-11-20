@@ -40,7 +40,7 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "Preferences", "Preferences are written, edited, accepted, disabled, and kept private", PreferencesAsync),
                 Cases.Case(S, "EmailProposals", "Proposals appear in the next digest and Apply from email makes them active", EmailProposalsAsync),
                 Cases.Case(S, "FeedbackEdits", "Feedback reasons can be edited and a retraction restores the earlier rating", FeedbackEditsAsync),
-                Cases.Case(S, "Analytics", "Relevance, accuracy, feedback, suggestions, reasons, quality, and ranking reports reflect the data", AnalyticsAsync)
+                Cases.Case(S, "Analytics", "Overview, relevance, accuracy, feedback, suggestions, reasons, quality, and ranking reports reflect the data", AnalyticsAsync)
             });
         }
 
@@ -229,6 +229,10 @@ namespace Test.Shared.Suites
             Assert.True(reasons.Tags.Sum(t => t.Count) == 2 && reasons.ByWeek.Count >= 1, "reason tags");
             QualityReport quality = (await f.User.Client.GetAsync("/v1.0/api/analytics/quality" + q, token).ConfigureAwait(false)).Expect(200, "quality").Json<QualityReport>();
             Assert.True(quality.Quotes == 4 && quality.Verified == 2 && quality.FailureRate == 0.5 && quality.ByModel.Single().Key == "stub-research", "quote verification by model: " + quality.Quotes + " " + quality.Verified);
+            OverviewReport ov = (await f.User.Client.GetAsync("/v1.0/api/analytics/overview" + q, token).ConfigureAwait(false)).Expect(200, "overview").Json<OverviewReport>();
+            Assert.True(ov.ActiveTopics == 1 && ov.Runs == 1 && ov.FindingsShown == 2 && ov.FindingsRated == 2 && ov.RelevancePrecision == 0.5 && ov.PredictionsResolved == 3
+                && ov.FeedbackTotal == 2 && ov.FeedbackWithReason == 2 && ov.SuggestionsAccepted == 1 && ov.QuoteFailureRate == 0.5 && ov.ModelCalls > 0,
+                "overview headline numbers: runs " + ov.Runs + ", shown " + ov.FindingsShown + ", calls " + ov.ModelCalls);
             RankingRecommendation rr = (await f.User.Client.GetAsync("/v1.0/api/topics/" + f.Topic.Id + "/ranking-recommendation", token).ConfigureAwait(false)).Expect(200, "ranking").Json<RankingRecommendation>();
             Assert.True(!rr.Enough && rr.RatedFindings == 2 && rr.Current["llm"] == 0.45 && rr.Recommended["llm"] == 0.45, "not enough ratings yet");
             Topic weighted = (await f.User.Client.PutAsync("/v1.0/api/topics/" + f.Topic.Id, new { weightLlm = 0.6, weightRecency = 2.0, weightNovelty = -1.0 }, token).ConfigureAwait(false)).Expect(200, "set weights").Json<Topic>();

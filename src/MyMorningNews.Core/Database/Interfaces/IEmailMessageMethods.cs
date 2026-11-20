@@ -90,6 +90,14 @@ namespace MyMorningNews.Core.Database.Interfaces
         Task<long> CountAsync(EmailMessageFilter filter, CancellationToken token = default);
 
         /// <summary>
+        /// Count messages matching the filter, grouped by creation day, template, and status, with the mean time to send.
+        /// </summary>
+        /// <param name="filter">Filter (tenant required).</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Groups ordered by day, template, and status.</returns>
+        Task<List<EmailAggregateRow>> AggregateAsync(EmailMessageFilter filter, CancellationToken token = default);
+
+        /// <summary>
         /// Claim queued emails that are due (oldest first), marking them Sending with a lock expiry and counting the attempt.
         /// </summary>
         /// <param name="nowUtc">Now.</param>

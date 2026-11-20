@@ -9,6 +9,7 @@ namespace Test.Shared.Suites
     using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
+    using MyMorningNews.Core.Analytics;
     using MyMorningNews.Core.Email;
     using MyMorningNews.Core.Enums;
     using MyMorningNews.Core.Models;
@@ -95,6 +96,9 @@ namespace Test.Shared.Suites
             Assert.True(sent.Status == EmailStatusEnum.Sent && sent.Provider == EmailProviderEnum.File && sent.ProviderMessageId == "file:" + m.Id && sent.SentUtc.HasValue, "sent by the File provider");
             string dir = f.Server.Context.Settings.Email.FileDirectory;
             Assert.True(File.Exists(Path.Combine(dir, m.Id + ".html")) && File.Exists(Path.Combine(dir, m.Id + ".txt")) && File.ReadAllText(Path.Combine(dir, m.Id + ".json")).Contains(m.Subject.Replace("\"", "\\\""), StringComparison.Ordinal), "files written");
+            EmailReport er = (await f.User.Client.GetAsync("/v1.0/api/analytics/email?all=true&topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Expect(200, "email analytics").Json<EmailReport>();
+            Assert.True(er.Total == 2 && er.Sent + er.Pending == 2 && er.Sent >= 1 && er.DeliveryRate == 1 && er.MeanSecondsToSend.HasValue && er.ByTemplate.Single().Key == "RunDigest"
+                && er.ByDay.Single().Count == 2 && er.ByStatus.Any(x => x.Key == "Sent"), "email analytics: total " + er.Total + ", sent " + er.Sent);
 
             (await f.User.Client.PutAsync("/v1.0/api/topics/" + f.Topic.Id, new { emailOnRun = false }, token).ConfigureAwait(false)).Expect(200, "email off");
             Run quiet = await PipelineSuite.RunAsync(f, token).ConfigureAwait(false);

@@ -1510,7 +1510,8 @@ Exit: each SDK harness passes against a fresh stack, and an MCP client can list 
 
 ### Phase 12: Hardening, documentation, and polish
 
-- [ ] Signed-request credential auth, CORS allow-list setting, rate-limit tuning, retention workers for every table with a retention setting.
+- [x] Signed-request credential auth (`MMN1-HMAC-SHA256`: x-access-key, x-tenant-guid, x-date, x-nonce, x-signature over method, path and query, tenant, date, nonce, and body hash; skew window and in-memory nonce replay cache). CORS allow-list setting (`Rest.CorsAllowedOrigins`, done in Phase 1).
+- [ ] Rate-limit tuning, retention workers for every table with a retention setting.
 - [ ] `REST_API.md` complete. The Postman collection covers every route with descriptions and variables.
 - [ ] Complete translations for the 12 locales. RTL and expansion QA.
 - [ ] Grafana dashboards for every domain. Factory seeded demo profile.

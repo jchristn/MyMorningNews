@@ -34,6 +34,11 @@ namespace MyMorningNews.Core.Analytics
         public List<BreakdownRow> ByDay { get; set; } = new List<BreakdownRow>();
 
         /// <summary>
+        /// By day and channel: Key is the day (yyyy-MM-dd), Label is the channel, Count is feedback, Positive is with a reason.
+        /// </summary>
+        public List<BreakdownRow> ByChannelDay { get; set; } = new List<BreakdownRow>();
+
+        /// <summary>
         /// Email feedback page views.
         /// </summary>
         public int EmailLinkOpens { get; set; } = 0;

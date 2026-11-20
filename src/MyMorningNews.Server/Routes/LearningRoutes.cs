@@ -51,7 +51,7 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/api/feedback/{id}", RetractFeedbackAsync, null, openApiMetadata: Doc("Retract my feedback (the earlier rating, if any, becomes current)", "Feedback"));
 
             const string a2 = "/v1.0/api/analytics/";
-            foreach (string report in new[] { "relevance", "accuracy", "feedback", "suggestions", "reasons", "quality" })
+            foreach (string report in new[] { "overview", "relevance", "accuracy", "feedback", "suggestions", "reasons", "quality", "email" })
             {
                 string r = report;
                 webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, a2 + r, ctx => ReportAsync(ctx, r), null, openApiMetadata: Doc(Char.ToUpperInvariant(r[0]) + r.Substring(1) + " analytics", "Analytics",
@@ -236,11 +236,13 @@ namespace MyMorningNews.Server.Routes
             AnalyticsScope scope = new AnalyticsScope { TenantId = tenantId, UserId = userId, TopicId = topicId, FromUtc = QueryDate(ctx, "from") ?? to.AddDays(-90), ToUtc = to };
             object result = report switch
             {
+                "overview" => await Server.Analytics.OverviewAsync(scope, ctx.Token).ConfigureAwait(false),
                 "relevance" => await Server.Analytics.RelevanceAsync(scope, ctx.Token).ConfigureAwait(false),
                 "accuracy" => await Server.Analytics.AccuracyAsync(scope, ctx.Token).ConfigureAwait(false),
                 "feedback" => await Server.Analytics.FeedbackAsync(scope, ctx.Token).ConfigureAwait(false),
                 "suggestions" => await Server.Analytics.SuggestionsAsync(scope, ctx.Token).ConfigureAwait(false),
                 "reasons" => await Server.Analytics.ReasonsAsync(scope, ctx.Token).ConfigureAwait(false),
+                "email" => await Server.Analytics.EmailAsync(scope, ctx.Token).ConfigureAwait(false),
                 _ => await Server.Analytics.QualityAsync(scope, ctx.Token).ConfigureAwait(false)
             };
             await SendJsonAsync(ctx, 200, result).ConfigureAwait(false);

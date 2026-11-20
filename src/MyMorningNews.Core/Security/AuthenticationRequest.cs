@@ -21,5 +21,21 @@ namespace MyMorningNews.Core.Security
         /// User agent.
         /// </summary>
         public string? UserAgent { get; set; } = null;
+
+        /// <summary>
+        /// HTTP method in upper case, for signed requests. Empty when unknown.
+        /// </summary>
+        public string Method { get; set; } = String.Empty;
+
+        /// <summary>
+        /// Path and query exactly as sent, for signed requests. Empty when unknown.
+        /// </summary>
+        public string PathAndQuery { get; set; } = String.Empty;
+
+        /// <summary>
+        /// Body reader for signed requests. Called only when a request carries x-signature. Returns an empty array for
+        /// no body. Null when the transport cannot supply the body.
+        /// </summary>
+        public Func<byte[]>? GetBody { get; set; } = null;
     }
 }

@@ -76,6 +76,11 @@ namespace MyMorningNews.Core.Pipeline
         /// </summary>
         public MyMorningNews.Core.Feedback.LearningService? Learning { get; set; } = null;
 
+        /// <summary>
+        /// MCP client for registered servers' tools in agentic search, or null when unavailable.
+        /// </summary>
+        public MyMorningNews.Core.Mcp.McpClientService? Mcp { get; set; } = null;
+
         #endregion
 
         #region Constructors-and-Factories
@@ -136,6 +141,42 @@ namespace MyMorningNews.Core.Pipeline
                 UserPrompt = rendered.User,
                 IsDryRun = ctx.Run.IsDryRun
             }, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Render a prompt and run it as an agentic loop with tools (<see cref="ModelGateway.ChatAgenticAsync{T}"/>).
+        /// </summary>
+        /// <typeparam name="T">Result type.</typeparam>
+        /// <param name="ctx">Run context.</param>
+        /// <param name="key">Prompt key.</param>
+        /// <param name="values">Extra template values.</param>
+        /// <param name="tools">Tools.</param>
+        /// <param name="maxToolCalls">Tool call budget.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Result.</returns>
+        /// <exception cref="ArgumentNullException">An argument is null.</exception>
+        public async Task<StructuredCallResult<T>> CallAgenticAsync<T>(RunContext ctx, string key, Dictionary<string, object?> values, IReadOnlyList<AgentTool> tools, int maxToolCalls, CancellationToken token) where T : class, IStructuredResult
+        {
+            ArgumentNullException.ThrowIfNull(ctx);
+            ArgumentNullException.ThrowIfNull(values);
+            ArgumentNullException.ThrowIfNull(tools);
+            Dictionary<string, object?> all = new Dictionary<string, object?>(ctx.BaseValues, StringComparer.Ordinal);
+            foreach (KeyValuePair<string, object?> kv in values) all[kv.Key] = kv.Value;
+            ResolvedPrompt prompt = await Prompts.ResolveAsync(ctx.Run.TenantId, key, ctx.Topic.Id, token).ConfigureAwait(false);
+            RenderedPrompt rendered = PromptService.Render(prompt.Definition, all);
+            return await Models.ChatAgenticAsync<T>(new ModelCallRequest
+            {
+                TenantId = ctx.Run.TenantId,
+                UserId = ctx.Run.UserId,
+                TopicId = ctx.Topic.Id,
+                RunId = ctx.Run.Id,
+                Task = prompt.Definition.Role,
+                PromptKey = key,
+                PromptTemplateVersionId = prompt.Version.Id,
+                SystemPrompt = rendered.System,
+                UserPrompt = rendered.User,
+                IsDryRun = ctx.Run.IsDryRun
+            }, tools, maxToolCalls, token).ConfigureAwait(false);
         }
 
         /// <summary>

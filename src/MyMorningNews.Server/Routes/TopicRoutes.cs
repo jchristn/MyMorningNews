@@ -4,6 +4,7 @@ namespace MyMorningNews.Server.Routes
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using MyMorningNews.Core;
     using MyMorningNews.Core.Enums;
     using MyMorningNews.Core.Models;
     using MyMorningNews.Core.Requests;
@@ -440,6 +441,8 @@ namespace MyMorningNews.Server.Routes
             if (req.WeightNovelty.HasValue) topic.WeightNovelty = req.WeightNovelty.Value < 0 ? null : Math.Clamp(req.WeightNovelty.Value, 0, 1);
             if (req.WeightSource.HasValue) topic.WeightSource = req.WeightSource.Value < 0 ? null : Math.Clamp(req.WeightSource.Value, 0, 1);
             if (req.WeightRecency.HasValue) topic.WeightRecency = req.WeightRecency.Value < 0 ? null : Math.Clamp(req.WeightRecency.Value, 0, 1);
+            if (req.AgenticSearch.HasValue) topic.AgenticSearch = req.AgenticSearch.Value;
+            if (req.McpToolIds != null) topic.McpToolIds = req.McpToolIds.Where(i => !String.IsNullOrWhiteSpace(i) && i.Trim().StartsWith(IdPrefixes.McpServerTool, StringComparison.Ordinal)).Select(i => i.Trim()).Distinct(StringComparer.Ordinal).Take(100).ToList();
             if (req.SeedQueries != null) topic.SeedQueries = req.SeedQueries.Where(q => !String.IsNullOrWhiteSpace(q)).Select(q => q.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).Take(20).ToList();
         }
 

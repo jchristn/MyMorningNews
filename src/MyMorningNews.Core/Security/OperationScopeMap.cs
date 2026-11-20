@@ -97,6 +97,8 @@ namespace MyMorningNews.Core.Security
             { RequestTypeEnum.ServerRestart, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
             { RequestTypeEnum.ServerInfoRead, new RequiredPermission(ResourceTypeEnum.All, OperationTypeEnum.Read, anyAuthenticated: true) },
             { RequestTypeEnum.VaultRead, new RequiredPermission(ResourceTypeEnum.VaultCredential, OperationTypeEnum.Read) },
+            { RequestTypeEnum.McpServerRead, new RequiredPermission(ResourceTypeEnum.McpServer, OperationTypeEnum.Read) },
+            { RequestTypeEnum.McpServerWrite, new RequiredPermission(ResourceTypeEnum.McpServer, OperationTypeEnum.Admin) },
             { RequestTypeEnum.VaultWrite, new RequiredPermission(ResourceTypeEnum.VaultCredential, OperationTypeEnum.Admin) },
             { RequestTypeEnum.VaultDelete, new RequiredPermission(ResourceTypeEnum.VaultCredential, OperationTypeEnum.Admin) },
             { RequestTypeEnum.VaultReveal, new RequiredPermission(ResourceTypeEnum.VaultCredential, OperationTypeEnum.Admin) },

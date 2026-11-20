@@ -336,6 +336,21 @@ namespace MyMorningNews.Core
         public const string PromoRedemption = "prr_";
 
         /// <summary>
+        /// Prefix for McpServer identifiers.
+        /// </summary>
+        public const string McpServer = "mcs_";
+
+        /// <summary>
+        /// Prefix for McpServerTool identifiers.
+        /// </summary>
+        public const string McpServerTool = "mct_";
+
+        /// <summary>
+        /// Prefix for RunToolCall identifiers.
+        /// </summary>
+        public const string RunToolCall = "rtc_";
+
+        /// <summary>
         /// Prefix for request history entries.
         /// </summary>
         public const string RequestHistory = "req_";

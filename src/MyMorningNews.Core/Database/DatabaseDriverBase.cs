@@ -372,6 +372,21 @@ namespace MyMorningNews.Core.Database
         public IPromoRedemptionMethods PromoRedemptions { get; protected set; } = null!;
 
         /// <summary>
+        /// Registered MCP servers.
+        /// </summary>
+        public IMcpServerMethods McpServers { get; protected set; } = null!;
+
+        /// <summary>
+        /// Tools discovered on registered MCP servers.
+        /// </summary>
+        public IMcpServerToolMethods McpServerTools { get; protected set; } = null!;
+
+        /// <summary>
+        /// Tool executions in agentic research runs.
+        /// </summary>
+        public IRunToolCallMethods RunToolCalls { get; protected set; } = null!;
+
+        /// <summary>
         /// Embedding vectors (pgvector).
         /// </summary>
         public IEmbeddingMethods Embeddings { get; protected set; } = null!;

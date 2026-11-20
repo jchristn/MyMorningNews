@@ -483,6 +483,16 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// Redeem a promotional code and read my plan.
         /// </summary>
-        PromoCodeRedeem
+        PromoCodeRedeem,
+
+        /// <summary>
+        /// Read registered MCP servers and their tools.
+        /// </summary>
+        McpServerRead,
+
+        /// <summary>
+        /// Register, change, test, and discover MCP servers, and toggle their tools.
+        /// </summary>
+        McpServerWrite
     }
 }

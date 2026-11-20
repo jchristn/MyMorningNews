@@ -241,6 +241,130 @@ namespace MyMorningNews.Core.Services
         }
 
         /// <summary>
+        /// Agentic structured completion: the model may call the given tools (up to <paramref name="maxToolCalls"/>
+        /// executions) before returning a value of type T through the submit tool. Tool results go back to the model,
+        /// a tool error is returned to the model as text, and once the budget is spent only the submit tool is offered.
+        /// The whole loop is one llmcalls record with every tool name. Needs a model whose endpoint supports tools.
+        /// </summary>
+        /// <typeparam name="T">Result type.</typeparam>
+        /// <param name="request">Request.</param>
+        /// <param name="tools">Tools the model may call.</param>
+        /// <param name="maxToolCalls">Most tool executions. Minimum 0, maximum 200.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Result.</returns>
+        /// <exception cref="ArgumentNullException">An argument is null.</exception>
+        /// <exception cref="InvalidOperationException">The endpoint does not support tools.</exception>
+        /// <exception cref="StructuredOutputException">No valid output within the turn budget.</exception>
+        /// <exception cref="ModelCallException">The call failed.</exception>
+        public async Task<StructuredCallResult<T>> ChatAgenticAsync<T>(ModelCallRequest request, IReadOnlyList<AgentTool> tools, int maxToolCalls, CancellationToken token = default) where T : class, IStructuredResult
+        {
+            ArgumentNullException.ThrowIfNull(request);
+            ArgumentNullException.ThrowIfNull(tools);
+            int budget = Math.Clamp(maxToolCalls, 0, 200);
+            ResolvedModel resolved = await ResolveAsync(request.TenantId, request.Task, request.TopicId, request.ModelEndpointId, request.Model, token).ConfigureAwait(false);
+            if (resolved.Endpoint.SupportsTools == false) throw new InvalidOperationException("The " + request.Task + " model does not support tool calls.");
+            Dictionary<string, object> schema = JsonSchemaBuilder.Build(typeof(T));
+            ToolDefinition submit = ToolDefinition.Function(SubmitToolName, "Submit the final structured result. Call it exactly once, when you are done.", schema);
+            List<ToolDefinition> all = tools.Select(t => ToolDefinition.Function(t.Name, t.Description, t.Parameters)).Append(submit).ToList();
+            Dictionary<string, AgentTool> byName = tools.ToDictionary(t => t.Name, StringComparer.Ordinal);
+            string instruction = "Use the tools as needed (at most " + budget + " tool calls in total), then return your answer by calling " + SubmitToolName
+                + " exactly once with arguments that match its schema. Do not answer in plain text.";
+            string system = String.IsNullOrWhiteSpace(request.SystemPrompt) ? instruction : request.SystemPrompt.TrimEnd() + "\n\n" + instruction;
+            List<ChatMessage> messages = BuildMessages(system, request.UserPrompt);
+            CallState state = new CallState(request, resolved);
+            int used = 0;
+            int repairs = 0;
+            int maxRepairs = _Settings.Pipeline.StructuredOutputRepairs;
+            string? lastRaw = null;
+            try
+            {
+                for (int turn = 0; turn < budget + maxRepairs + 4; turn++)
+                {
+                    List<ToolDefinition> offered = used >= budget ? new List<ToolDefinition> { submit } : all;
+                    ModelExchange response = await SendAsync(resolved, messages, offered, request, state, token).ConfigureAwait(false);
+                    List<ToolCall> calls = response.ToolCalls ?? new List<ToolCall>();
+                    if (calls.Count == 0)
+                    {
+                        if (repairs >= maxRepairs) break;
+                        repairs++;
+                        messages.Add(ChatMessage.Assistant(String.IsNullOrEmpty(response.Text) ? "(no answer)" : response.Text));
+                        messages.Add(ChatMessage.User("Call " + SubmitToolName + " now with your result."));
+                        continue;
+                    }
+
+                    messages.Add(response.AssistantMessage);
+                    foreach (ToolCall call in calls)
+                    {
+                        if (String.Equals(call.Name, SubmitToolName, StringComparison.Ordinal))
+                        {
+                            lastRaw = call.ArgumentsJson;
+                            List<string> errors = new List<string>();
+                            T? value = null;
+                            try
+                            {
+                                value = String.IsNullOrWhiteSpace(call.ArgumentsJson) ? null : Serializer.Deserialize<T>(call.ArgumentsJson);
+                                if (value == null) errors.Add("The result was empty.");
+                                else errors.AddRange(value.Validate());
+                            }
+                            catch (JsonException ex)
+                            {
+                                errors.Add("The result is not valid JSON for the schema: " + ex.Message);
+                            }
+
+                            if (errors.Count == 0 && value != null)
+                            {
+                                state.Output = call.ArgumentsJson ?? String.Empty;
+                                await LogAsync(state, true, null, response.StatusCode, response.FinishReason, token).ConfigureAwait(false);
+                                StructuredCallResult<T> ok = state.ToResult(new StructuredCallResult<T> { Value = value });
+                                ok.Text = call.ArgumentsJson ?? String.Empty;
+                                return ok;
+                            }
+
+                            repairs++;
+                            messages.Add(ChatMessage.ToolResult(call.Id, call.Name, "Your result failed validation: " + String.Join(" ", errors) + " Fix these problems and submit again."));
+                            continue;
+                        }
+
+                        string result;
+                        if (!byName.TryGetValue(call.Name, out AgentTool? tool)) result = "Error: there is no tool named " + call.Name + ".";
+                        else if (used >= budget) result = "Error: the tool budget is used up. Call " + SubmitToolName + " now.";
+                        else
+                        {
+                            used++;
+                            try
+                            {
+                                result = await tool.Execute(call.ArgumentsJson ?? "{}", token).ConfigureAwait(false);
+                            }
+                            catch (OperationCanceledException) when (token.IsCancellationRequested)
+                            {
+                                throw;
+                            }
+                            catch (Exception ex)
+                            {
+                                result = "Error: " + ex.Message;
+                            }
+                        }
+
+                        if (result.Length > 12000) result = result.Substring(0, 12000) + "\n[truncated]";
+                        messages.Add(ChatMessage.ToolResult(call.Id, call.Name, result));
+                    }
+
+                    if (repairs > maxRepairs) break;
+                }
+
+                state.Output = lastRaw ?? String.Empty;
+                StructuredOutputException failure = new StructuredOutputException("The model did not submit valid " + typeof(T).Name + " output in the agentic loop (" + used + " tool calls).", lastRaw);
+                await LogAsync(state, false, failure.Message, null, null, token).ConfigureAwait(false);
+                throw failure;
+            }
+            catch (ModelCallException ex) when (!(ex is StructuredOutputException))
+            {
+                await LogAsync(state, false, ex.Message, ex.StatusCode, null, token).ConfigureAwait(false);
+                throw;
+            }
+        }
+
+        /// <summary>
         /// Embed texts with the tenant's Embedding assignment.
         /// </summary>
         /// <param name="tenantId">Tenant.</param>

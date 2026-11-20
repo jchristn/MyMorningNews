@@ -95,6 +95,16 @@ namespace MyMorningNews.Core.Requests
         public double? WeightRecency { get; set; } = null;
 
         /// <summary>
+        /// Turn agentic search on or off for this topic (the research model searches and reads pages itself).
+        /// </summary>
+        public bool? AgenticSearch { get; set; } = null;
+
+        /// <summary>
+        /// MCP tool IDs (mct_...) agentic search may use; an empty list allows every enabled tool. Null leaves it.
+        /// </summary>
+        public List<string>? McpToolIds { get; set; } = null;
+
+        /// <summary>
         /// Seed search queries.
         /// </summary>
         public List<string>? SeedQueries { get; set; } = null;

@@ -319,6 +319,28 @@ namespace Test.Shared.Helpers
                         return;
                     }
 
+                    string toolName = "submit_result";
+                    if (toolTurn && model == "stub-research" && body.Contains("You are the search step of a research agent", StringComparison.Ordinal))
+                    {
+                        int toolResults = System.Text.RegularExpressions.Regex.Matches(body, "\"role\":\"tool\"").Count;
+                        List<string> urls = System.Text.RegularExpressions.Regex.Matches(body, "https?://127\\.0\\.0\\.1:[0-9]+/[A-Za-z0-9/._-]*news/[A-Za-z0-9._-]+")
+                            .Select(m => m.Value).Distinct(StringComparer.Ordinal).ToList();
+                        if (toolResults == 0)
+                        {
+                            toolName = "web_search";
+                            args = "{\"query\":\"heat pump rebates\"}";
+                        }
+                        else if (toolResults == 1 && urls.Count > 0)
+                        {
+                            toolName = "fetch_url";
+                            args = "{\"url\":" + JsonSerializer.Serialize(urls[0]) + "}";
+                        }
+                        else
+                        {
+                            args = "{\"picks\":[" + String.Join(",", urls.Select(u => "{\"url\":" + JsonSerializer.Serialize(u) + ",\"title\":\"Picked\",\"dimension\":\"Rebates\",\"reason\":\"Relevant.\"}")) + "]}";
+                        }
+                    }
+
                     string text = jsonMode ? "Here you go:\n```json\n" + args + "\n```" : model == "stub-research" ? ResearchText(body) : "ready";
                     string usage = "{\"prompt_tokens\":12,\"completion_tokens\":3,\"total_tokens\":15,\"prompt_tokens_details\":{\"cached_tokens\":4},\"completion_tokens_details\":{\"reasoning_tokens\":1}}";
 
@@ -330,7 +352,7 @@ namespace Test.Shared.Helpers
                         {
                             string half = args.Substring(0, args.Length / 2);
                             string rest = args.Substring(args.Length / 2);
-                            events.Add(head + "{\"role\":\"assistant\",\"tool_calls\":[{\"index\":0,\"id\":\"call_" + count + "\",\"type\":\"function\",\"function\":{\"name\":\"submit_result\",\"arguments\":" + JsonSerializer.Serialize(half) + "}}]},\"finish_reason\":null}]}");
+                            events.Add(head + "{\"role\":\"assistant\",\"tool_calls\":[{\"index\":0,\"id\":\"call_" + count + "\",\"type\":\"function\",\"function\":{\"name\":\"" + toolName + "\",\"arguments\":" + JsonSerializer.Serialize(half) + "}}]},\"finish_reason\":null}]}");
                             events.Add(head + "{\"tool_calls\":[{\"index\":0,\"function\":{\"arguments\":" + JsonSerializer.Serialize(rest) + "}}]},\"finish_reason\":null}]}");
                         }
                         else
@@ -346,7 +368,7 @@ namespace Test.Shared.Helpers
                     }
 
                     string message = toolTurn
-                        ? "{\"role\":\"assistant\",\"content\":null,\"tool_calls\":[{\"id\":\"call_" + count + "\",\"type\":\"function\",\"function\":{\"name\":\"submit_result\",\"arguments\":" + JsonSerializer.Serialize(args) + "}}]}"
+                        ? "{\"role\":\"assistant\",\"content\":null,\"tool_calls\":[{\"id\":\"call_" + count + "\",\"type\":\"function\",\"function\":{\"name\":\"" + toolName + "\",\"arguments\":" + JsonSerializer.Serialize(args) + "}}]}"
                         : "{\"role\":\"assistant\",\"content\":" + JsonSerializer.Serialize(text) + "}";
                     string response = "{\"id\":\"stub-" + count + "\",\"object\":\"chat.completion\",\"model\":\"" + model + "\",\"choices\":[{\"index\":0,\"message\":" + message +
                         ",\"finish_reason\":\"" + finish + "\"}],\"usage\":" + usage + "}";

@@ -362,6 +362,7 @@ ENTITIES = [
             f('WeightSource', 'double', doc='Ranking weight override for source reputation.', nullable=True),
             f('WeightRecency', 'double', doc='Ranking weight override for recency.', nullable=True),
             f('SeedQueries', 'strings', doc='Seed search queries from refinement.'),
+            # Migration 15 (hand-added after lastupdateutc): AgenticSearch bool, McpToolIds strings.
             f('BriefingTemplateId', doc='Topic-specific briefing template.', nullable=True, length=64),
             f('LastRunUtc', 'datetime', doc='UTC time of the last run.', nullable=True, sort=True),
             f('LastRefinedUtc', 'datetime', doc='UTC time the topic was last refined.', nullable=True),
@@ -1176,6 +1177,49 @@ ENTITIES = [
             f('RevokedUtc', 'datetime', doc='Revoked by an administrator.', nullable=True),
         ],
     },
+    # ------------------------------------------------------------------ Phase 12: MCP server registry and agentic search
+    {
+        'name': 'McpServer', 'table': 'mcpservers', 'prefix': 'mcs_',
+        'doc': 'A remote MCP server registered by the tenant; its tools can be offered to agentic research.',
+        'fields': [
+            f('Name', doc='Display name.', required=True, length=128, search=True, sort=True),
+            f('Url', doc='Streamable HTTP or SSE endpoint URL.', required=True, length=2048),
+            f('Transport', 'enum:McpTransportEnum', doc='Transport.', default='StreamableHttp', filter=True),
+            f('VaultCredentialId', doc='Vault credential whose value is sent in the auth header; null for none.', nullable=True, length=64),
+            f('HeaderName', doc='Header that carries the credential.', default='Authorization', length=128),
+            f('HeaderPrefix', doc='Text placed before the credential value, for example "Bearer ".', default='Bearer ', length=64),
+            f('Enabled', 'bool', doc='Whether its tools may be used.', default=True, filter=True),
+            f('ToolCount', 'int', doc='Tools found at the last discovery.', default=0),
+            f('LastDiscoveredUtc', 'datetime', doc='Last successful discovery.', nullable=True),
+            f('LastError', 'text', doc='Last connection or discovery error.', nullable=True),
+        ],
+    },
+    {
+        'name': 'McpServerTool', 'table': 'mcpservertools', 'prefix': 'mct_',
+        'doc': 'A tool discovered on a registered MCP server.',
+        'fields': [
+            f('McpServerId', doc='Server.', required=True, length=64, filter=True, fk=('mcpservers', 'CASCADE')),
+            f('Name', doc='Tool name as the server lists it.', required=True, length=256, search=True, sort=True),
+            f('Description', 'text', doc='Tool description.', nullable=True),
+            f('InputSchema', 'text', doc='JSON Schema of the tool arguments, as the server sent it.', nullable=True),
+            f('Enabled', 'bool', doc='Offered to agentic research.', default=False, filter=True),
+        ],
+    },
+    {
+        'name': 'RunToolCall', 'table': 'runtoolcalls', 'prefix': 'rtc_',
+        'doc': 'One tool execution in an agentic research loop.',
+        'fields': [
+            f('RunId', doc='Run.', required=True, length=64, filter=True),
+            f('TopicId', doc='Topic.', required=True, length=64, filter=True),
+            f('Tool', doc='Tool name (web_search, fetch_url, or mcp:server:tool).', required=True, length=320, filter=True),
+            f('ArgumentsSummary', 'text', doc='Arguments, shortened.', nullable=True),
+            f('Succeeded', 'bool', doc='Whether the tool returned without error.', default=True, filter=True),
+            f('ErrorMessage', 'text', doc='Error, when it failed.', nullable=True),
+            f('ResultCharacters', 'int', doc='Characters returned to the model.', default=0),
+            f('DurationMs', 'double', doc='Duration in milliseconds.', default=0),
+            f('SortOrder', 'int', doc='Order within the run.', default=0, sort=True),
+        ],
+    },
 ]
 
 # Prefixes for identifiers that are not codegen entities.
@@ -1187,6 +1231,7 @@ EXTRA_PREFIXES = [
 ]
 
 ENUMS = [
+    ('McpTransportEnum', 'MCP transport.', [('StreamableHttp', 'Streamable HTTP.'), ('Sse', 'HTTP with server-sent events (older servers).')]),
     ('StageStatusEnum', 'Run stage status.', [('Pending', 'Not started.'), ('Running', 'Running.'), ('Succeeded', 'Succeeded.'), ('Failed', 'Failed.'), ('Skipped', 'Skipped.')]),
     ('SearchResultDispositionEnum', 'What happened to a search result.', [('Pending', 'Not processed.'), ('Fetched', 'Fetched.'), ('SkippedSeen', 'Already seen in this topic.'),
         ('SkippedBlocked', 'Blocked domain.'), ('SkippedRobots', 'Disallowed by robots.txt.'), ('SkippedLimit', 'Over the fetch limit.'), ('SkippedDuplicate', 'Duplicate in this run.'), ('FetchFailed', 'Fetch failed.')]),

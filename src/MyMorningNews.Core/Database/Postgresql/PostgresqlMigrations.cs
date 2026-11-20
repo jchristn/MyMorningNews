@@ -192,7 +192,17 @@ namespace MyMorningNews.Core.Database.Postgresql
             new SchemaMigration(14, "Retry a run from a stage", new List<string>
             {
                 "ALTER TABLE runs ADD COLUMN IF NOT EXISTS resumefromstage VARCHAR(64)"
-            })
+            }),
+            new SchemaMigration(15, "MCP server registry, agentic search, and run tool calls", Concat(
+                McpServerQueries.Schema,
+                McpServerToolQueries.Schema,
+                RunToolCallQueries.Schema,
+                new List<string>
+                {
+                    "ALTER TABLE topics ADD COLUMN IF NOT EXISTS agenticsearch BOOLEAN NOT NULL DEFAULT FALSE",
+                    "ALTER TABLE topics ADD COLUMN IF NOT EXISTS mcptoolids TEXT[]",
+                    "CREATE INDEX IF NOT EXISTS ix_runtoolcalls_run ON runtoolcalls (tenantid, runid, sortorder)"
+                }))
         };
 
         private static List<string> Concat(params IReadOnlyList<string>[] parts)

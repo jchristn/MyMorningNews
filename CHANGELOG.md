@@ -61,6 +61,8 @@ All notable changes to this project are documented here. The project follows [Se
 - Findings can be pinned and hidden (`PUT /v1.0/api/findings/{id}`) and deleted; hidden findings stay out of lists, briefings, and emails. `GET /v1.0/api/evidence/{id}` and `GET /v1.0/api/runs/{id}/llm-calls`.
 - SDKs for C# (`sdk/csharp`, NuGet-ready `MyMorningNews.Sdk` for net8 and net10), JavaScript (`sdk/js`, ES module with type declarations), and Python (`sdk/python`), each with signed-request support and a harness that runs against a live server.
 - MCP server (`src/MyMorningNews.McpServer`, Voltaic): Streamable HTTP on `/mcp` (port 12105, compose profile `mcp`) and stdio, 26 tools, four Markdown resources, and two prompts, acting with the caller's own credentials.
+- Agentic search (opt-in per topic): tool-capable research models search and read with `web_search`, `fetch_url`, and allowed MCP tools, capped by `Pipeline.MaxToolCallsPerRun` and logged per call (`GET /v1.0/api/runs/{id}/tool-calls`); the picked pages still go through quote verification.
+- MCP server registry (`/v1.0/api/mcp-servers`): register remote Streamable HTTP servers with a vault credential, test, discover tools, and choose which tools research may use.
 - Plans: Free is $3 a month, 1 topic, daily schedules, and 10 audio minutes; Complimentary (from promotional codes) is $10, 2 topics, daily, and 30 audio minutes. Existing installs move off the earlier defaults unless an administrator changed them.
 - SDK publishing workflow for NuGet, npm, and PyPI (runs only when the registry secrets exist) and the MCP registry `server.json`.
 - Mobile bundle identifier is `ai.latticetech.mymorningnews`.

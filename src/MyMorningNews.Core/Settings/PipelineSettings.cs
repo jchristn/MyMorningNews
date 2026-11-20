@@ -98,6 +98,16 @@ namespace MyMorningNews.Core.Settings
         }
 
         /// <summary>
+        /// Tool calls allowed in one agentic search (web_search, fetch_url, MCP tools). Default 20. Minimum 1, maximum 100.
+        /// </summary>
+        [Setting(Description = "Tool calls allowed in one agentic search.", Minimum = 1, Maximum = 100)]
+        public int MaxToolCallsPerRun
+        {
+            get { return _MaxToolCallsPerRun; }
+            set { _MaxToolCallsPerRun = Math.Clamp(value, 1, 100); }
+        }
+
+        /// <summary>
         /// Pages fetched per run. Default 40. Minimum 1, maximum 500.
         /// </summary>
         [Setting(Description = "Pages fetched per run.", Minimum = 1, Maximum = 500)]
@@ -254,6 +264,7 @@ namespace MyMorningNews.Core.Settings
         private int _MaxQueriesPerRun = 8;
         private int _MaxResultsPerQuery = 10;
         private int _MaxFetchesPerRun = 40;
+        private int _MaxToolCallsPerRun = 20;
         private int _MaxFindingsPerRun = 25;
         private int _MaxDocumentCharacters = 24000;
         private int _MaxParallelFetches = 4;

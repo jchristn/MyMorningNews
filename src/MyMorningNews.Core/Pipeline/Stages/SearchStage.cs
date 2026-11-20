@@ -31,6 +31,14 @@ namespace MyMorningNews.Core.Pipeline.Stages
         /// <inheritdoc />
         public async Task<StageOutcome> ExecuteAsync(RunContext ctx, PipelineServices services, CancellationToken token)
         {
+            if (ctx.Topic.AgenticSearch)
+            {
+                string? fallback = await AgenticSearch.TryRunAsync(ctx, services, token).ConfigureAwait(false);
+                if (fallback == null) return StageOutcome.Of(ctx.PlannedQueries.Count, ctx.Results.Count, "Agentic search: " + ctx.Results.Count + " pages picked.");
+                ctx.Notes.Add(fallback);
+                services.Logging.Info("[SearchStage] run " + ctx.Run.Id + ": " + fallback);
+            }
+
             List<string> feeds = ctx.Constraints.Where(c => c.Kind == ConstraintKindEnum.FeedUrl).Select(c => c.Value).ToList();
             List<string> include = ctx.Constraints.Where(c => c.Kind == ConstraintKindEnum.IncludeKeyword).Select(c => c.Value).ToList();
             List<string> blocked = ctx.Constraints.Where(c => c.Kind == ConstraintKindEnum.BlockedDomain).Select(c => c.Value).ToList();

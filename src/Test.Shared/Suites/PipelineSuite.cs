@@ -37,6 +37,8 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "SecondRunDedupe", "A later run skips seen pages and marks a repeated finding as a duplicate", SecondRunAsync),
                 Cases.Case(S, "Failures", "A critical failure fails the run; an optional failure leaves it partially succeeded", FailuresAsync),
                 Cases.Case(S, "ResearchApi", "Findings, evidence, predictions, suggestions, and run details are served, private, and deleted with their topic", ApiAsync),
+                Cases.Case(S, "AgenticSearch", "A topic with agentic search lets the model search and read with tools, logs each call, and extracts from its picks", AgenticAsync),
+                Cases.Case(S, "McpRegistry", "MCP servers are registered, tested, and discovered; tools are toggled and callable; secrets come from the vault", McpRegistryAsync),
                 Cases.Case(S, "RetryFromStage", "A partially failed run is retried from the failed stage on the same run; earlier stages start a new run", RetryAsync),
                 Cases.Case(S, "RunEvents", "The run event stream replays the current state, follows a live run stage by stage, and ends with done", RunEventsAsync),
                 Cases.Case(S, "UserDelete", "Deleting a user removes their topics with all research, editions with schedules, briefings, and feedback", UserDeleteAsync)
@@ -264,6 +266,75 @@ namespace Test.Shared.Suites
             Assert.Equal(0L, await f.Server.Context.Database.LearnedPreferences.CountAsync(new LearnedPreferenceFilter { TenantId = f.Topic.TenantId, TopicId = f.Topic.Id }, token).ConfigureAwait(false), "preferences deleted with the topic");
             EnumerationResult<LlmCall> kept = (await f.User.Client.GetAsync("/v1.0/api/llm-calls?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<LlmCall>>();
             Assert.True(kept.Items.Count > 0, "model call records kept for cost accounting");
+        }
+
+        private static async Task AgenticAsync(CancellationToken token)
+        {
+            PipelineFixture f = await FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
+            Topic on = (await f.User.Client.PutAsync("/v1.0/api/topics/" + f.Topic.Id, new { agenticSearch = true }, token).ConfigureAwait(false)).Expect(200, "opt in").Json<Topic>();
+            Assert.True(on.AgenticSearch, "agentic search on");
+            Run run = await RunAsync(f, token).ConfigureAwait(false);
+            Assert.True(run.Status == RunStatusEnum.Completed, "completed: " + run.Status + " " + run.ErrorMessage + " " + run.Summary);
+            List<RunToolCall> calls = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/tool-calls", token).ConfigureAwait(false)).Expect(200, "tool calls").Json<List<RunToolCall>>();
+            Assert.True(calls.Count == 2 && calls[0].Tool == "web_search" && calls[1].Tool == "fetch_url" && calls.All(c => c.Succeeded && c.ResultCharacters > 0), "web_search then fetch_url, logged: " + String.Join(",", calls.Select(c => c.Tool + "=" + c.Succeeded + ":" + c.ErrorMessage)));
+            List<SearchQuery> queries = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/queries", token).ConfigureAwait(false)).Json<List<SearchQuery>>();
+            Assert.True(queries.Any(q => q.Rationale == "Agentic search"), "the agent's searches are recorded");
+            List<RunStage> stages = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages", token).ConfigureAwait(false)).Json<List<RunStage>>();
+            Assert.True(stages.Single(st => st.Stage == "Search").ErrorMessage!.Contains("Agentic search", StringComparison.Ordinal), "search stage says it ran agentically");
+            EnumerationResult<Finding> found = (await f.User.Client.GetAsync("/v1.0/api/findings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>();
+            Assert.True(found.TotalCount >= 1, "findings extracted from the picked pages");
+            EnumerationResult<LlmCall> llm = (await f.User.Client.GetAsync("/v1.0/api/llm-calls?runId=" + run.Id + "&promptKey=research.agentic-search", token).ConfigureAwait(false)).Json<EnumerationResult<LlmCall>>();
+            Assert.True(llm.Items.Count == 1 && llm.Items[0].ToolNames.Contains("web_search") && llm.Items[0].ToolNames.Contains("fetch_url"), "one model call record with the tools it used");
+
+            Run plain = await RunWithoutAgentAsync(f, token).ConfigureAwait(false);
+            Assert.Equal(0, (await f.User.Client.GetAsync("/v1.0/api/runs/" + plain.Id + "/tool-calls", token).ConfigureAwait(false)).Json<List<RunToolCall>>().Count, "off again: fixed query plan, no tool calls");
+        }
+
+        private static async Task<Run> RunWithoutAgentAsync(PipelineFixture f, CancellationToken token)
+        {
+            (await f.User.Client.PutAsync("/v1.0/api/topics/" + f.Topic.Id, new { agenticSearch = false }, token).ConfigureAwait(false)).Expect(200, "opt out");
+            return await RunAsync(f, token).ConfigureAwait(false);
+        }
+
+        private static async Task McpRegistryAsync(CancellationToken token)
+        {
+            PipelineFixture f = await FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
+            MyMorningNews.McpServer.McpServerSettings settings = new MyMorningNews.McpServer.McpServerSettings
+            {
+                ApiUrl = await SharedTestServer.GetBaseUrlAsync(token).ConfigureAwait(false), Hostname = "127.0.0.1", Port = PortAllocator.GetFreePort(), CredentialCacheSeconds = 0, TelemetryEnabled = false
+            };
+            using (MyMorningNews.McpServer.McpHost host = new MyMorningNews.McpServer.McpHost(settings))
+            {
+                await host.StartHttpAsync(token).ConfigureAwait(false);
+                TestUser member = await TestFixtures.CreateUserAsync(await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false), f.Topic.TenantId, false, token).ConfigureAwait(false);
+                (await member.Client.PostAsync("/v1.0/api/mcp-servers", new { name = "Mine", url = host.HttpBaseUrl + "mcp" }, token).ConfigureAwait(false)).Expect(403, "members cannot register servers");
+                (await f.User.Client.PostAsync("/v1.0/api/mcp-servers", new { name = "Bad", url = "stdio:///usr/bin/thing" }, token).ConfigureAwait(false)).Expect(400, "http or https only");
+
+                McpServer noAuth = (await f.User.Client.PostAsync("/v1.0/api/mcp-servers", new { name = "Self no auth", url = host.HttpBaseUrl + "mcp" }, token).ConfigureAwait(false)).Expect(201, "register").Json<McpServer>();
+                (await f.User.Client.PostAsync("/v1.0/api/mcp-servers/" + noAuth.Id + "/discover", null, token).ConfigureAwait(false)).Expect(502, "the server wants credentials");
+
+                VaultCredential cred = (await f.User.Client.PostAsync("/v1.0/api/vault/credentials", new { name = "self mcp token", kind = "BearerToken", provider = "Mcp", secret = f.User.Client.Token }, token).ConfigureAwait(false))
+                    .Expect(201, "vault credential").Json<VaultCredential>();
+                McpServer server = (await f.User.Client.PutAsync("/v1.0/api/mcp-servers/" + noAuth.Id, new { name = "Self", vaultCredentialId = cred.Id }, token).ConfigureAwait(false)).Expect(200, "set credential").Json<McpServer>();
+                TestResponse test = (await f.User.Client.PostAsync("/v1.0/api/mcp-servers/" + server.Id + "/test", null, token).ConfigureAwait(false)).Expect(200, "test");
+                Assert.True(test.Body.Contains("\"success\":true", StringComparison.Ordinal) && test.Body.Contains("list_topics", StringComparison.Ordinal), "test lists tools: " + test.Body);
+                McpServerDetailResponse discovered = (await f.User.Client.PostAsync("/v1.0/api/mcp-servers/" + server.Id + "/discover", null, token).ConfigureAwait(false)).Expect(200, "discover").Json<McpServerDetailResponse>();
+                Assert.True(discovered.Tools.Count == MyMorningNews.McpServer.McpSurface.AllTools().Count && discovered.Tools.All(t => !t.Enabled) && discovered.Server.ToolCount == discovered.Tools.Count && discovered.Server.LastError == null,
+                    "tools saved, all off: " + discovered.Tools.Count);
+                McpServerTool listTopics = discovered.Tools.Single(t => t.Name == "list_topics");
+                Assert.True(listTopics.InputSchema!.Contains("\"type\"", StringComparison.Ordinal), "input schema kept");
+                McpServerTool enabled = (await f.User.Client.PutAsync("/v1.0/api/mcp-servers/" + server.Id + "/tools/" + listTopics.Id, new { enabled = true }, token).ConfigureAwait(false)).Expect(200, "enable").Json<McpServerTool>();
+                Assert.True(enabled.Enabled, "tool on");
+                (await member.Client.GetAsync("/v1.0/api/mcp-servers/" + server.Id, token).ConfigureAwait(false)).Expect(200, "members can read");
+
+                string output = await f.Server.Context.Mcp.CallToolAsync((await f.Server.Context.Database.McpServers.ReadAsync(f.Topic.TenantId, server.Id, token).ConfigureAwait(false))!, "list_topics", "{}", token).ConfigureAwait(false);
+                Assert.True(output.Contains(f.Topic.Id, StringComparison.Ordinal), "a tool call through the registry returns the caller's data: " + output);
+                Topic allow = (await f.User.Client.PutAsync("/v1.0/api/topics/" + f.Topic.Id, new { mcpToolIds = new[] { listTopics.Id, "bogus" } }, token).ConfigureAwait(false)).Expect(200, "allowlist").Json<Topic>();
+                Assert.True(allow.McpToolIds.SequenceEqual(new[] { listTopics.Id }), "allowlist keeps tool IDs only");
+
+                (await f.User.Client.DeleteAsync("/v1.0/api/mcp-servers/" + server.Id, token).ConfigureAwait(false)).Expect(204, "remove");
+                Assert.Equal(0L, await f.Server.Context.Database.McpServerTools.CountAsync(new McpServerToolFilter { TenantId = f.Topic.TenantId, McpServerId = server.Id }, token).ConfigureAwait(false), "tools removed with it");
+            }
         }
 
         private static async Task RetryAsync(CancellationToken token)

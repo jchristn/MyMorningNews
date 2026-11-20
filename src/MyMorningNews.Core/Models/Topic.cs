@@ -257,9 +257,32 @@ namespace MyMorningNews.Core.Models
         /// </summary>
         public DateTime LastUpdateUtc { get; set; } = DateTime.UtcNow;
 
+        /// <summary>
+        /// Agentic search: when the research model supports tools, it searches and reads pages itself (web_search,
+        /// fetch_url, and allowed MCP tools) before the usual reading and verification. Opt-in, default false.
+        /// </summary>
+        public bool AgenticSearch { get; set; } = false;
+
+        /// <summary>
+        /// MCP tool IDs (mct_...) this topic may use in agentic search. Empty allows every enabled tool.
+        /// </summary>
+        public List<string> McpToolIds
+        {
+            get
+            {
+                return _McpToolIds;
+            }
+            set
+            {
+                _McpToolIds = value ?? new List<string>();
+            }
+        }
+
         #endregion
 
         #region Private-Members
+
+        private List<string> _McpToolIds = new List<string>();
 
         private string _Id = IdGenerator.GenerateTopicId();
         private string _TenantId = String.Empty;

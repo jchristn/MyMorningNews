@@ -121,6 +121,9 @@ namespace MyMorningNews.Core.Database.Postgresql
             PlanAssignments = new PlanAssignmentMethods(this);
             PromoCodes = new PromoCodeMethods(this);
             PromoRedemptions = new PromoRedemptionMethods(this);
+            McpServers = new McpServerMethods(this);
+            McpServerTools = new McpServerToolMethods(this);
+            RunToolCalls = new RunToolCallMethods(this);
             Embeddings = new EmbeddingMethods(this);
         }
 

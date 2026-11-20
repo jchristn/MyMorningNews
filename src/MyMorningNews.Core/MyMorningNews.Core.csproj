@@ -20,6 +20,7 @@
     <PackageReference Include="SendWithMailgun" Version="1.2.2" />
     <PackageReference Include="SyslogLogging" Version="2.4.2" />
     <PackageReference Include="TextChunker" Version="0.3.3" />
+    <PackageReference Include="Voltaic" Version="2.4.1" />
   </ItemGroup>
 
   <ItemGroup>

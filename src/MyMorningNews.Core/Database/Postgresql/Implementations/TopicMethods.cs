@@ -86,7 +86,9 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.LastRefinedUtc.HasValue ? DateTime.SpecifyKind(obj.LastRefinedUtc.Value, DateTimeKind.Utc) : null,
                 obj.Active,
                 DateTime.SpecifyKind(obj.CreatedUtc, DateTimeKind.Utc),
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
+                obj.AgenticSearch,
+                obj.McpToolIds.ToArray()).ConfigureAwait(false);
             return obj;
         }
 
@@ -140,7 +142,9 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.LastRunUtc.HasValue ? DateTime.SpecifyKind(obj.LastRunUtc.Value, DateTimeKind.Utc) : null,
                 obj.LastRefinedUtc.HasValue ? DateTime.SpecifyKind(obj.LastRefinedUtc.Value, DateTimeKind.Utc) : null,
                 obj.Active,
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
+                obj.AgenticSearch,
+                obj.McpToolIds.ToArray()).ConfigureAwait(false);
             if (affected < 1) throw new KeyNotFoundException("Topic " + obj.Id + " was not found.");
             return obj;
         }
@@ -217,6 +221,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 "DELETE FROM findingevidence WHERE tenantid = $1 AND findingid IN (SELECT id FROM findings WHERE tenantid = $1 AND topicid = $2)",
                 "DELETE FROM evidence WHERE tenantid = $1 AND runid IN (SELECT id FROM runs WHERE tenantid = $1 AND topicid = $2)",
                 "DELETE FROM runstages WHERE tenantid = $1 AND runid IN (SELECT id FROM runs WHERE tenantid = $1 AND topicid = $2)",
+                "DELETE FROM runtoolcalls WHERE tenantid = $1 AND topicid = $2",
                 "DELETE FROM searchresults WHERE tenantid = $1 AND topicid = $2",
                 "DELETE FROM searchqueries WHERE tenantid = $1 AND topicid = $2",
                 "DELETE FROM embeddings WHERE tenantid = $1 AND topicid = $2",
@@ -279,6 +284,8 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             obj.Active = reader.GetBoolean(26);
             obj.CreatedUtc = DateTime.SpecifyKind(reader.GetDateTime(27), DateTimeKind.Utc);
             obj.LastUpdateUtc = DateTime.SpecifyKind(reader.GetDateTime(28), DateTimeKind.Utc);
+            obj.AgenticSearch = reader.GetBoolean(29);
+            obj.McpToolIds = reader.IsDBNull(30) ? new List<string>() : new List<string>(reader.GetFieldValue<string[]>(30));
             return obj;
         }
 

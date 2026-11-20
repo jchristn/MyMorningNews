@@ -186,7 +186,8 @@ namespace MyMorningNews.Server
             if (plans > 0) _Logging.Info(_Header + "seeded " + plans + " plans");
             _Context.PromoCodes = new MyMorningNews.Core.Entitlements.PromoCodeService(_Database);
             _Context.Accounts = new AccountDataService(_Database, briefings, _Artifacts);
-            PipelineServices pipelineServices = new PipelineServices(_Database, _Models, prompts, _Search!, _Fetch!, settings, _Logging) { Briefings = briefings, Email = email, Learning = learning };
+            _Context.Mcp = new MyMorningNews.Core.Mcp.McpClientService(vault);
+            PipelineServices pipelineServices = new PipelineServices(_Database, _Models, prompts, _Search!, _Fetch!, settings, _Logging) { Briefings = briefings, Email = email, Learning = learning, Mcp = _Context.Mcp };
             _Context.RunExecutor = new ResearchPipeline(pipelineServices);
 
             _Capture = new RequestHistoryCaptureService(_Database, settings.RequestHistory, _Logging);
@@ -309,6 +310,7 @@ namespace MyMorningNews.Server
                 new RequestHistoryRoutes(context),
                 new SettingsRoutes(context),
                 new VaultRoutes(context),
+                new McpServerRoutes(context),
                 new ModelRoutes(context),
                 new UsageRoutes(context),
                 new DeviceRoutes(context),

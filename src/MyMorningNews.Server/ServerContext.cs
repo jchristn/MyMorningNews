@@ -166,6 +166,11 @@ namespace MyMorningNews.Server
         public AccountDataService Accounts { get; set; } = null!;
 
         /// <summary>
+        /// Client for registered MCP servers.
+        /// </summary>
+        public MyMorningNews.Core.Mcp.McpClientService Mcp { get; set; } = null!;
+
+        /// <summary>
         /// Instantiate.
         /// </summary>
         /// <param name="settingsService">Settings service.</param>

@@ -632,6 +632,33 @@ namespace MyMorningNews.Core.Helpers
         }
 
         /// <summary>
+        /// Generate a McpServer identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateMcpServerId()
+        {
+            return Generate(IdPrefixes.McpServer);
+        }
+
+        /// <summary>
+        /// Generate a McpServerTool identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateMcpServerToolId()
+        {
+            return Generate(IdPrefixes.McpServerTool);
+        }
+
+        /// <summary>
+        /// Generate a RunToolCall identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateRunToolCallId()
+        {
+            return Generate(IdPrefixes.RunToolCall);
+        }
+
+        /// <summary>
         /// Generate a RequestHistory identifier.
         /// </summary>
         /// <returns>Identifier.</returns>

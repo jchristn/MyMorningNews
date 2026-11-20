@@ -170,6 +170,24 @@ pre {
   font-size: 12.5px;
 }
 
+/* Code, JSON, URLs, and email addresses read left to right inside right-to-left pages. Isolation keeps inline code
+   from reordering the Arabic text around it. */
+[dir='rtl'] code,
+[dir='rtl'] .mono,
+[dir='rtl'] pre,
+[dir='rtl'] .code-editor,
+[dir='rtl'] .json-tree,
+[dir='rtl'] input[type='url'],
+[dir='rtl'] input[type='email'] {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+[dir='rtl'] input[type='url'],
+[dir='rtl'] input[type='email'] {
+  text-align: end;
+}
+
 input,
 select,
 textarea,

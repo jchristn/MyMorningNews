@@ -1,0 +1,3750 @@
+{
+  "app": {
+    "name": "My Morning News"
+  },
+  "common": {
+    "active": "活动",
+    "add": "添加",
+    "cancel": "取消",
+    "clearFilters": "清除筛选",
+    "close": "关闭",
+    "confirm": "确认",
+    "copied": "已复制",
+    "copy": "复制",
+    "copyId": "复制 ID",
+    "copyUrl": "复制 URL",
+    "created": "创建时间",
+    "delete": "删除",
+    "dismiss": "忽略",
+    "duplicate": "复制副本",
+    "edit": "编辑",
+    "hidePassword": "隐藏密码",
+    "inactive": "未启用",
+    "language": "语言",
+    "lastLoaded": "上次加载于 {time}",
+    "loading": "正在加载...",
+    "no": "否",
+    "none": "无",
+    "refresh": "刷新",
+    "remove": "移除",
+    "retry": "重试",
+    "save": "保存",
+    "saving": "正在保存...",
+    "showPassword": "显示密码",
+    "status": "状态",
+    "view": "查看",
+    "viewJson": "查看 JSON",
+    "working": "正在处理...",
+    "yes": "是"
+  },
+  "errors": {
+    "badRequest": "请求无效。",
+    "conflict": "此更改与现有数据冲突。",
+    "forbidden": "您没有执行此操作的权限。",
+    "generic": "出现问题。",
+    "network": "无法连接到服务器。请检查服务器 URL 并确认服务器正在运行。",
+    "notFound": "未找到请求的项目。",
+    "requestId": "请求 ID",
+    "server": "服务器报告了一个错误。",
+    "tooMany": "请求过多。请稍候再试。",
+    "unauthorized": "您的会话已失效。请重新登录。"
+  },
+  "access": {
+    "deniedTitle": "拒绝访问",
+    "deniedMessage": "您的角色无权访问此页面。如有需要，请联系管理员。"
+  },
+  "admin": {
+    "copyOf": "{name} 的副本",
+    "deleted": "已删除",
+    "saved": "已保存",
+    "tenant": "租户"
+  },
+  "roles": {
+    "credential": "API 凭据",
+    "globalAdmin": "全局管理员",
+    "member": "成员",
+    "none": "已退出登录",
+    "tenantAdmin": "租户管理员"
+  },
+  "theme": {
+    "dark": "切换到深色主题",
+    "light": "切换到浅色主题"
+  },
+  "json": {
+    "copy": "复制 JSON",
+    "items": "{count, plural, other {# 项}}",
+    "keys": "{count, plural, other {# 个键}}",
+    "raw": "原始",
+    "title": "JSON",
+    "tree": "树状",
+    "view": "查看 JSON"
+  },
+  "table": {
+    "actions": "操作",
+    "any": "任意",
+    "clearSelection": "清除选择",
+    "emptyTitle": "暂无内容",
+    "filterBy": "按{column}筛选",
+    "firstPage": "第一页",
+    "jumpToPage": "页",
+    "lastPage": "最后一页",
+    "nextPage": "下一页",
+    "noMatchesMessage": "没有符合当前筛选条件的记录。清除筛选即可查看全部。",
+    "noMatchesTitle": "无匹配结果",
+    "ofPages": "共 {total} 页",
+    "pageSize": "每页行数",
+    "previousPage": "上一页",
+    "selectAll": "选择本页所有行",
+    "selectColumns": "列",
+    "selectRow": "选择行",
+    "selected": "{count, plural, other {已选择 # 项}}",
+    "showing": "第 {from} 至 {to} 条，共 {total} 条"
+  },
+  "charts": {
+    "avgDuration": "平均时长",
+    "bucketAria": "{when}：{total} 个请求",
+    "failure": "失败",
+    "range": "时间范围",
+    "requestActivity": "请求活动",
+    "success": "成功",
+    "total": "总计",
+    "ranges": {
+      "hour": "过去 1 小时",
+      "day": "过去 1 天",
+      "week": "过去 1 周",
+      "month": "过去 1 个月",
+      "quarter": "过去 1 个季度"
+    },
+    "totals": {
+      "avg": "平均 {value}",
+      "failed": "{count} 个失败",
+      "success": "{count} 个成功",
+      "total": "共 {count} 个"
+    },
+    "rank": "排名",
+    "share": "占比"
+  },
+  "nav": {
+    "collapse": "收起侧边栏",
+    "environment": "本地",
+    "expand": "展开侧边栏",
+    "label": "主导航",
+    "open": "打开导航",
+    "phase": "将在第 {phase} 阶段推出",
+    "phaseShort": "P{phase}",
+    "skip": "跳到内容",
+    "version": "v{version}",
+    "groups": {
+      "start": "开始",
+      "research": "研究",
+      "briefings": "简报",
+      "insights": "洞察",
+      "configuration": "配置",
+      "observability": "可观测性",
+      "administration": "管理",
+      "system": "系统"
+    },
+    "items": {
+      "home": "首页",
+      "today": "今日",
+      "topics": "主题",
+      "runs": "运行",
+      "findings": "发现",
+      "sources": "来源",
+      "predictions": "预测",
+      "suggestions": "建议",
+      "briefings": "简报",
+      "editions": "期刊",
+      "templates": "模板",
+      "relevance": "相关性",
+      "accuracy": "准确性",
+      "feedback": "反馈",
+      "preferences": "偏好",
+      "usage": "用量",
+      "models": "模型",
+      "prompts": "提示词",
+      "vault": "已存储凭据",
+      "searchProviders": "搜索提供商",
+      "mcpServers": "MCP 服务器",
+      "voices": "语音",
+      "email": "电子邮件",
+      "requests": "请求历史",
+      "explorer": "API 浏览器",
+      "health": "健康状况",
+      "audit": "审计",
+      "tenants": "租户",
+      "users": "用户",
+      "credentials": "凭据",
+      "roles": "角色与访问权限",
+      "settings": "设置",
+      "serverInfo": "服务器信息",
+      "profile": "个人资料",
+      "adminUsage": "平台用量",
+      "oneTimeRequests": "一次性请求",
+      "listen": "收听",
+      "promoCodes": "优惠码",
+      "insightsOverview": "概览",
+      "plans": "套餐",
+      "emailInsights": "邮件投递",
+      "mcp": "MCP 客户端"
+    }
+  },
+  "routes": {
+    "home": {
+      "summary": "工作区概览"
+    },
+    "today": {
+      "summary": "最新一期简报，以及近期研究的产出"
+    },
+    "topics": {
+      "summary": "您希望研究的主题"
+    },
+    "runs": {
+      "summary": "研究运行：排队中、运行中和已完成"
+    },
+    "findings": {
+      "summary": "研究得出的发现"
+    },
+    "sources": {
+      "summary": "研究收集的来源"
+    },
+    "predictions": {
+      "summary": "预测及其结果"
+    },
+    "suggestions": {
+      "summary": "来自运行、值得深入研究的内容"
+    },
+    "briefings": {
+      "summary": "所有简报：期刊、运行简报和一次性报告"
+    },
+    "editions": {
+      "summary": "按计划生成的简报，各有自己的主题、模板和投递方式"
+    },
+    "templates": {
+      "summary": "告诉撰写器每份简报包含哪些内容的 Markdown 布局"
+    },
+    "relevance": {
+      "summary": "发现的相关程度"
+    },
+    "accuracy": {
+      "summary": "预测的准确程度"
+    },
+    "feedback": {
+      "summary": "您提供的反馈"
+    },
+    "preferences": {
+      "summary": "从反馈中学到的偏好"
+    },
+    "usage": {
+      "summary": "费用是多少，谁用得最多？"
+    },
+    "models": {
+      "summary": "模型端点、任务角色分配以及每次模型调用"
+    },
+    "prompts": {
+      "summary": "每次模型调用所用的带版本提示词模板"
+    },
+    "vault": {
+      "summary": "模型和外部服务的 API 密钥与令牌，静态加密存储"
+    },
+    "searchProviders": {
+      "summary": "网络搜索提供商"
+    },
+    "mcpServers": {
+      "summary": "Model Context Protocol 服务器"
+    },
+    "voices": {
+      "summary": "音频简报所用的语音"
+    },
+    "email": {
+      "summary": "邮件投递"
+    },
+    "requests": {
+      "summary": "服务器处理过的每个 API 请求"
+    },
+    "explorer": {
+      "summary": "试用任意 API 操作"
+    },
+    "health": {
+      "summary": "服务器和组件的健康状况"
+    },
+    "audit": {
+      "summary": "安全和变更事件"
+    },
+    "tenants": {
+      "summary": "相互隔离的工作区"
+    },
+    "users": {
+      "summary": "可以登录的人员"
+    },
+    "credentials": {
+      "summary": "用于脚本和集成的 API 密钥"
+    },
+    "roles": {
+      "summary": "角色、权限和分配"
+    },
+    "settings": {
+      "summary": "服务器配置"
+    },
+    "serverInfo": {
+      "summary": "版本、运行时和服务 URL"
+    },
+    "profile": {
+      "summary": "您的账户"
+    },
+    "adminUsage": {
+      "summary": "按租户统计的平台费用，作为定价决策的依据"
+    },
+    "oneTimeRequests": {
+      "summary": "一次性报告、播客和邮件摘要"
+    },
+    "listen": {
+      "summary": "简报的音频节目，随时可播放"
+    },
+    "promoCodes": {
+      "summary": "在一定天数内提供某个套餐的代码，附带限制和使用情况"
+    },
+    "plans": {
+      "summary": "套餐、其权益值，以及谁拥有哪个套餐"
+    },
+    "insightsOverview": {
+      "summary": "研究、投递、学习和费用方面的关键数据"
+    },
+    "emailInsights": {
+      "summary": "邮件投递、时间，以及读者如何使用每封邮件中的链接"
+    },
+    "mcp": {
+      "summary": "将 Claude Code 或其他 MCP 客户端连接到您的研究"
+    }
+  },
+  "placeholder": {
+    "title": "将在第 {phase} 阶段推出",
+    "message": "{feature} 计划在第 {phase} 阶段推出。导航已就位，您可以看到它将出现的位置。"
+  },
+  "topbar": {
+    "copyServerUrl": "复制服务器 URL",
+    "health": "服务器健康状况：{state}",
+    "logout": "退出登录",
+    "repository": "GitHub 上的源代码",
+    "tenant": "租户",
+    "tenantTitle": "租户 ID：{tenant}"
+  },
+  "health": {
+    "autoRefresh": "自动刷新",
+    "checkedAt": "检查于 {time}",
+    "components": "组件",
+    "off": "关闭",
+    "overall": "总体",
+    "uptime": "运行时间",
+    "version": "版本",
+    "states": {
+      "healthy": "健康",
+      "degraded": "性能下降",
+      "unreachable": "无法访问",
+      "unknown": "正在检查"
+    },
+    "status": {
+      "Healthy": "健康",
+      "Degraded": "性能下降",
+      "Unhealthy": "不健康",
+      "Enabled": "已启用",
+      "Disabled": "已禁用"
+    },
+    "componentNames": {
+      "database": "数据库",
+      "requestHistory": "请求历史"
+    }
+  },
+  "login": {
+    "copyright": "© 2026 Lattice AI LLC",
+    "defaults": "首次运行？请在租户 {tenant} 中使用 {email} 和密码 {password} 登录，然后修改密码。",
+    "email": "电子邮件",
+    "password": "密码",
+    "serverUrl": "服务器 URL",
+    "serverUrlHelp": "My Morning News 服务器的地址。",
+    "sessionExpired": "您的会话已过期。请重新登录以继续。",
+    "signIn": "登录",
+    "signingIn": "正在登录...",
+    "subtitle": "登录您的工作区",
+    "tagline": "研究您关心的主题，每天醒来都能看到一份越来越好的简报。",
+    "tenant": "租户",
+    "tenantHelp": "租户 ID。新安装请使用 default。",
+    "title": "欢迎回来"
+  },
+  "home": {
+    "summary": "以下是您服务器上的最新动态。",
+    "title": "早上好，{name}",
+    "failures": {
+      "none": "近期没有失败",
+      "noneMessage": "此时间范围内的请求全部成功。",
+      "title": "近期失败"
+    },
+    "kpi": {
+      "average": "平均时长",
+      "failureRate": "失败率",
+      "failures": "{count} 个失败",
+      "health": "健康状况",
+      "latency": "延迟",
+      "requests": "请求",
+      "tenants": "租户",
+      "topics": "主题",
+      "uptime": "已运行 {value}",
+      "users": "用户",
+      "recurring": "定期主题"
+    },
+    "next": {
+      "explorer": "在浏览器中试用 API",
+      "models": "添加模型端点（第 3 阶段）",
+      "password": "修改默认密码",
+      "title": "后续步骤",
+      "topic": "创建您的第一个主题",
+      "topics": "查看您的主题"
+    },
+    "services": {
+      "credentials": "凭据",
+      "none": "未配置任何外部服务。",
+      "summary": "与服务器一同运行的工具",
+      "title": "外部服务"
+    },
+    "request": {
+      "title": "新请求",
+      "summary": "申请一次性报告、播客或邮件摘要。"
+    },
+    "overview": {
+      "title": "{count, plural, other {过去 # 天}}",
+      "more": "打开洞察"
+    }
+  },
+  "requests": {
+    "anonymous": "匿名",
+    "bulk": {
+      "allFilters": "所有请求",
+      "button": "删除匹配项",
+      "confirm": "删除",
+      "done": "已删除 {count} 个请求",
+      "message": "删除符合 {filters} 的 {count} 个请求？此操作无法撤销。",
+      "title": "删除匹配的请求"
+    },
+    "columns": {
+      "completed": "完成时间",
+      "duration": "时长",
+      "id": "ID",
+      "method": "方法",
+      "path": "路径",
+      "principal": "主体",
+      "route": "路由",
+      "sourceIp": "源 IP",
+      "status": "状态",
+      "tenant": "租户",
+      "time": "时间",
+      "url": "URL"
+    },
+    "delete": {
+      "done": "请求已删除",
+      "message": "删除 {method} {path} 的记录？",
+      "title": "删除请求"
+    },
+    "details": {
+      "metadata": "元数据",
+      "noBody": "未捕获正文。",
+      "noHeaders": "未捕获标头。",
+      "raw": "原始记录",
+      "requestBody": "请求正文",
+      "requestHeaders": "请求标头",
+      "responseBody": "响应正文",
+      "responseHeaders": "响应标头",
+      "title": "请求详情",
+      "truncated": "已截断至 {size}"
+    },
+    "empty": {
+      "filtered": "没有符合这些筛选条件的请求。",
+      "message": "客户端调用 API 后，请求会显示在这里。",
+      "title": "暂无请求"
+    },
+    "filters": {
+      "from": "开始",
+      "method": "方法",
+      "path": "路径",
+      "pathPlaceholder": "/v1.0/...",
+      "status": "状态",
+      "statusPlaceholder": "200",
+      "tenant": "租户",
+      "tenantPlaceholder": "租户 ID",
+      "to": "结束"
+    },
+    "kpi": {
+      "avgDuration": "平均时长",
+      "failures": "失败",
+      "matchingFilters": "符合筛选条件",
+      "onThisPage": "本页",
+      "retained": "已保留",
+      "successRate": "成功率",
+      "uniquePaths": "不同路径"
+    }
+  },
+  "explorer": {
+    "authInherited": "请求使用您当前的会话令牌。",
+    "body": "请求正文",
+    "cancel": "取消",
+    "confirmMessage": "发送 {method} {url}？此操作可能会更改或删除数据。",
+    "confirmTitle": "发送请求",
+    "copyResponse": "复制响应",
+    "duration": "时长",
+    "emptyBody": "响应没有正文。",
+    "execute": "发送",
+    "format": "格式化",
+    "headers": "标头",
+    "history": "{count, plural, other {最近的请求（#）}}",
+    "invalidJson": "JSON 无效：{message}",
+    "name": "名称",
+    "noOperations": "没有匹配的操作。",
+    "noResponse": "暂无响应",
+    "noResponseMessage": "发送请求后，响应会显示在这里。",
+    "pathParams": "路径参数",
+    "pickOperation": "选择操作",
+    "pickOperationMessage": "从列表中选择一个操作来构建请求。",
+    "queryParams": "查询参数",
+    "running": "正在发送...",
+    "search": "搜索操作",
+    "searchPlaceholder": "按路径或名称筛选",
+    "specMissing": "无法加载 OpenAPI 文档。",
+    "status": "状态",
+    "streaming": "正在流式传输...",
+    "url": "URL",
+    "validJson": "JSON 有效",
+    "value": "值",
+    "tabs": {
+      "preview": "预览",
+      "body": "正文",
+      "headers": "标头",
+      "status": "状态",
+      "code": "代码"
+    },
+    "snippets": {
+      "curl": "curl",
+      "fetch": "JavaScript",
+      "csharp": "C#"
+    }
+  },
+  "settings": {
+    "discard": "放弃更改",
+    "environment": "环境变量",
+    "live": "即时生效",
+    "noChanges": "没有要保存的更改",
+    "notSet": "未设置",
+    "overridden": "已被 {variable} 覆盖",
+    "pendingRestart": "重启服务器以应用：{fields}",
+    "raw": "原始设置",
+    "restart": "重启服务器",
+    "restartConfirm": "重启",
+    "restartHelp": "服务器将停止并重新启动。正在处理的请求可能会失败。",
+    "restartRequired": "需要重启",
+    "restartTitle": "重启服务器",
+    "restarted": "已请求重启",
+    "restarting": "正在重启...",
+    "saved": "已保存。{live} 已即时生效，{restart} 等待重启。",
+    "secretNotSet": "未存储值",
+    "secretSet": "已存储值。输入新值即可替换。",
+    "set": "已设置",
+    "viewRaw": "查看原始数据",
+    "groups": {
+      "rest": "Web 服务器",
+      "database": "数据库",
+      "logging": "日志",
+      "auth": "身份验证",
+      "requestHistory": "请求历史",
+      "telemetry": "遥测",
+      "pipeline": "研究流水线",
+      "diagnostics": "诊断",
+      "models": "模型",
+      "push": "推送通知",
+      "storage": "存储",
+      "scheduler": "调度器",
+      "search": "搜索",
+      "tts": "文字转语音",
+      "email": "电子邮件",
+      "learning": "学习",
+      "hosting": "托管"
+    },
+    "fields": {
+      "rest_hostname": "主机名",
+      "rest_port": "端口",
+      "rest_ssl": "使用 TLS",
+      "rest_corsAllowedOrigins": "CORS 允许的来源",
+      "database_type": "数据库类型",
+      "database_server": "服务器",
+      "database_port": "端口",
+      "database_databaseName": "数据库名称",
+      "database_username": "用户名",
+      "database_password": "密码",
+      "database_maxPoolSize": "最大连接池大小",
+      "database_commandTimeoutSeconds": "命令超时（秒）",
+      "logging_consoleLogging": "记录到控制台",
+      "logging_fileLogging": "记录到文件",
+      "logging_logDirectory": "日志目录",
+      "logging_logFilename": "日志文件名",
+      "logging_minimumSeverity": "最低严重级别",
+      "auth_signingKey": "令牌签名密钥",
+      "auth_sessionLifetimeMinutes": "会话有效期（分钟）",
+      "auth_adminApiKey": "管理员 API 密钥",
+      "auth_loginRateLimitPerMinute": "每分钟登录尝试次数",
+      "auth_allowRefresh": "允许刷新会话",
+      "requestHistory_enabled": "记录请求",
+      "requestHistory_maxRequestBodyBytes": "最大请求正文（字节）",
+      "requestHistory_maxResponseBodyBytes": "最大响应正文（字节）",
+      "requestHistory_retentionDays": "保留期（天）",
+      "telemetry_enabled": "启用遥测",
+      "telemetry_serviceName": "服务名称",
+      "telemetry_otlpEndpoint": "OTLP 端点",
+      "telemetry_lokiEndpoint": "Loki 端点",
+      "telemetry_prometheusEnabled": "公开 Prometheus 指标",
+      "telemetry_prometheusHostname": "Prometheus 主机名",
+      "telemetry_prometheusPort": "Prometheus 端口",
+      "telemetry_grafanaUrl": "Grafana URL",
+      "telemetry_prometheusUrl": "Prometheus URL",
+      "telemetry_tempoUrl": "Tempo URL",
+      "telemetry_lokiUrl": "Loki URL",
+      "pipeline_maxConcurrentRuns": "最大并发运行数",
+      "pipeline_maxConcurrentModelCalls": "最大并发模型调用数",
+      "pipeline_modelCallAttempts": "模型调用尝试次数",
+      "pipeline_structuredOutputRepairs": "结构化输出修复次数",
+      "pipeline_runTimeoutMinutes": "运行超时（分钟）",
+      "diagnostics_captureLlmPayloads": "捕获模型负载",
+      "diagnostics_llmPayloadRetentionDays": "负载保留期（天）",
+      "diagnostics_maxPayloadCharacters": "最大负载字符数",
+      "models_defaultChatModel": "默认聊天模型",
+      "models_defaultOllamaEndpoint": "默认 Ollama 端点",
+      "models_defaultEmbeddingModel": "默认嵌入模型"
+    }
+  },
+  "serverInfo": {
+    "apiBase": "API 基础 URL",
+    "database": "数据库",
+    "expires": "过期时间",
+    "health": "健康检查端点",
+    "openapi": "OpenAPI 文档",
+    "os": "操作系统",
+    "pendingRestart": "有设置正在等待重启。",
+    "principal": "登录身份",
+    "principalType": "主体类型",
+    "product": "产品",
+    "repository": "代码仓库",
+    "runtime": "运行时",
+    "schemaVersion": "架构版本 {version}",
+    "server": "服务器",
+    "session": "会话",
+    "started": "启动时间",
+    "swagger": "Swagger UI",
+    "uptime": "运行时间",
+    "urls": "常用 URL",
+    "vector": "向量搜索",
+    "version": "版本"
+  },
+  "audit": {
+    "recordTitle": "审计记录",
+    "columns": {
+      "event": "事件",
+      "path": "路径",
+      "permission": "权限",
+      "principal": "主体",
+      "reason": "原因",
+      "result": "结果",
+      "sourceIp": "源 IP",
+      "tenant": "租户",
+      "time": "时间"
+    },
+    "empty": {
+      "message": "登录、权限检查和更改都会记录在这里。",
+      "title": "没有审计事件"
+    },
+    "events": {
+      "AuthSuccess": "登录成功",
+      "AuthFailure": "登录失败",
+      "SessionIssued": "已签发会话",
+      "SessionRefreshed": "已刷新会话",
+      "SessionRevoked": "已撤销会话",
+      "CredentialCreated": "已创建凭据",
+      "CredentialUsed": "已使用凭据",
+      "CredentialRevoked": "已撤销凭据",
+      "AuthorizationDenied": "拒绝访问",
+      "AuthorizationBypass": "管理员绕过",
+      "RoleChanged": "角色已更改",
+      "PermissionChanged": "权限已更改",
+      "AssignmentChanged": "分配已更改",
+      "UserChanged": "用户已更改",
+      "TenantChanged": "租户已更改",
+      "SettingsChanged": "设置已更改",
+      "RestartRequested": "已请求重启",
+      "CredentialRevealed": "已显示凭据",
+      "VaultCredentialChanged": "保管库密钥已更改"
+    },
+    "authz": {
+      "Permitted": "已允许",
+      "DeniedExplicit": "被规则拒绝",
+      "DeniedImplicit": "已拒绝（无授权）",
+      "NotFound": "未找到",
+      "Conflict": "冲突"
+    }
+  },
+  "tenants": {
+    "create": "创建租户",
+    "deleteMessage": "删除租户 {name} 及其中的所有内容？此操作无法撤销。",
+    "deleteTitle": "删除租户",
+    "description": "描述",
+    "edit": "编辑租户",
+    "empty": "没有租户",
+    "region": "区域",
+    "timeZoneHelp": "IANA 时区，例如 America/New_York。",
+    "columns": {
+      "created": "创建时间",
+      "id": "ID",
+      "name": "名称",
+      "protected": "受保护",
+      "status": "状态",
+      "timeZone": "时区"
+    }
+  },
+  "users": {
+    "create": "创建用户",
+    "deleteMessage": "删除用户 {email}？其会话和凭据将停止工作。",
+    "deleteTitle": "删除用户",
+    "edit": "编辑用户",
+    "effectivePermissions": "有效权限",
+    "empty": "没有用户",
+    "firstName": "名",
+    "lastName": "姓",
+    "locale": "区域设置",
+    "password": "密码",
+    "passwordHelp": "至少 8 个字符。",
+    "resetHelp": "留空则保留当前密码。",
+    "resetPassword": "重置密码",
+    "timeZone": "时区",
+    "columns": {
+      "created": "创建时间",
+      "email": "电子邮件",
+      "id": "ID",
+      "lastLogin": "上次登录",
+      "name": "名称",
+      "role": "角色",
+      "status": "状态",
+      "tenantAdmin": "租户管理员"
+    },
+    "permissions": {
+      "allowed": "允许",
+      "bypass": "管理员会绕过权限检查。{reason}",
+      "denied": "拒绝",
+      "grants": "{count, plural, other {基于 # 项授权}}",
+      "resource": "资源",
+      "title": "有效权限"
+    }
+  },
+  "credentials": {
+    "allScopes": "全部",
+    "copyAccessKey": "复制访问密钥",
+    "copySecret": "复制私密密钥",
+    "create": "创建凭据",
+    "createdTitle": "凭据已创建",
+    "deleteMessage": "删除凭据 {name}？所有使用它的地方都将停止工作。",
+    "deleteTitle": "删除凭据",
+    "edit": "编辑凭据",
+    "empty": "没有凭据",
+    "emptyMessage": "创建凭据，以便从脚本和集成中调用 API。",
+    "ownerHelp": "该凭据以此用户的权限执行操作。",
+    "ownerSelf": "我",
+    "scopesHelp": "全部不勾选则允许所有者能执行的所有操作。",
+    "secretKey": "私密密钥",
+    "secretOnce": "请立即复制私密密钥。它只显示一次，之后无法再次获取。",
+    "stored": "我已保存该密钥",
+    "tenantHeader": "租户 ID",
+    "columns": {
+      "accessKey": "访问密钥",
+      "created": "创建时间",
+      "expires": "过期时间",
+      "lastUsed": "上次使用",
+      "name": "名称",
+      "owner": "所有者",
+      "scopes": "范围",
+      "secret": "密钥",
+      "status": "状态",
+      "authMode": "认证模式"
+    },
+    "scopes": {
+      "read": "读取",
+      "write": "写入",
+      "admin": "管理"
+    },
+    "authModes": {
+      "DirectHeader": "直接标头",
+      "SignedRequest": "签名请求",
+      "SessionExchange": "会话交换",
+      "Hybrid": "混合"
+    },
+    "authModeHelp": {
+      "DirectHeader": "默认模式。接受以标头传递的访问密钥和私密密钥、签名请求以及会话交换。",
+      "SignedRequest": "仅接受 HMAC 签名请求，私密密钥不会在网络中传输。携带私密密钥的标头和会话交换会被拒绝。",
+      "SessionExchange": "只能通过 POST /v1.0/token 获取会话令牌。逐请求的私密密钥和签名会被拒绝。",
+      "Hybrid": "全部接受，与直接标头相同。"
+    }
+  },
+  "rbac": {
+    "tabs": {
+      "roles": "角色",
+      "permissions": "权限",
+      "assignments": "分配"
+    },
+    "builtIn": {
+      "TenantAdmin": "租户管理员",
+      "SecurityAdmin": "安全管理员",
+      "Auditor": "审计员",
+      "TopicAdmin": "主题管理员",
+      "Editor": "编辑者",
+      "Viewer": "查看者",
+      "TenantMember": "租户成员",
+      "Custom": "自定义"
+    },
+    "scopes": {
+      "Tenant": "整个租户",
+      "Resource": "单个资源"
+    },
+    "permissionTypes": {
+      "Permit": "允许",
+      "Deny": "拒绝"
+    },
+    "roles": {
+      "builtIn": "内置",
+      "clone": "克隆",
+      "create": "创建角色",
+      "custom": "自定义",
+      "deleteMessage": "删除角色 {name}？分配了该角色的用户将失去其权限。",
+      "deleteTitle": "删除角色",
+      "description": "描述",
+      "edit": "编辑角色",
+      "kind": "类型",
+      "name": "名称",
+      "noPermissions": "此角色没有任何权限。",
+      "noTenantPermissions": "此租户还没有自定义权限。请在“权限”选项卡中创建。",
+      "permissions": "权限",
+      "scope": "范围"
+    },
+    "permissions": {
+      "create": "创建权限",
+      "deleteMessage": "删除权限 {name}？包含该权限的角色将失去它。",
+      "deleteTitle": "删除权限",
+      "edit": "编辑权限",
+      "name": "名称",
+      "operations": "操作",
+      "resources": "资源",
+      "type": "类型"
+    },
+    "assignments": {
+      "assign": "分配",
+      "empty": "没有分配",
+      "emptyMessage": "为此用户分配角色以授予其权限。",
+      "pickRole": "选择角色",
+      "remove": "移除",
+      "removeMessage": "从此用户移除 {role} 角色？",
+      "removeTitle": "移除分配",
+      "resource": "资源 ID",
+      "resourcePlaceholder": "资源 ID",
+      "role": "角色",
+      "user": "用户"
+    },
+    "operations": {
+      "All": "全部",
+      "Create": "创建",
+      "Read": "读取",
+      "Write": "写入",
+      "Update": "更新",
+      "Delete": "删除",
+      "Execute": "执行",
+      "Admin": "管理"
+    },
+    "resources": {
+      "All": "全部",
+      "Tenant": "租户",
+      "Admin": "管理",
+      "User": "用户",
+      "Credential": "凭据",
+      "Session": "会话",
+      "Role": "角色",
+      "Permission": "权限",
+      "Assignment": "分配",
+      "Audit": "审计",
+      "RequestHistory": "请求历史",
+      "Settings": "设置",
+      "Topic": "主题",
+      "Schedule": "计划",
+      "RefinementSession": "细化会话",
+      "Run": "运行",
+      "Finding": "发现",
+      "Source": "来源",
+      "Evidence": "证据",
+      "Prediction": "预测",
+      "Suggestion": "建议",
+      "Feedback": "反馈",
+      "LearnedPreference": "学习到的偏好",
+      "Briefing": "简报",
+      "Edition": "期刊",
+      "Template": "模板",
+      "Prompt": "提示词",
+      "ModelEndpoint": "模型端点",
+      "SearchProvider": "搜索提供商",
+      "Voice": "语音",
+      "Media": "媒体",
+      "EmailMessage": "邮件消息",
+      "Analytics": "分析"
+    }
+  },
+  "profile": {
+    "changePassword": "修改密码",
+    "confirmPassword": "确认新密码",
+    "currentPassword": "当前密码",
+    "details": "详细信息",
+    "emailHelp": "如需更改电子邮件，请联系管理员。",
+    "mismatch": "两次输入的密码不一致。",
+    "newPassword": "新密码",
+    "password": "密码",
+    "passwordChanged": "密码已修改",
+    "saved": "个人资料已保存",
+    "timeZoneHelp": "留空则使用浏览器时区（{zone}）。"
+  },
+  "enums": {
+    "task": {
+      "Refinement": "细化",
+      "QueryPlanning": "查询规划",
+      "Extraction": "提取",
+      "Scoring": "评分",
+      "Synthesis": "综合",
+      "Prediction": "预测",
+      "Suggestion": "建议",
+      "Composition": "撰写",
+      "PodcastScript": "播客脚本",
+      "FeedbackAnalysis": "反馈分析",
+      "Embedding": "嵌入"
+    },
+    "provider": {
+      "Anthropic": "Anthropic",
+      "OpenAi": "OpenAI",
+      "OpenAiCompatible": "OpenAI 兼容",
+      "Ollama": "Ollama",
+      "Gemini": "Gemini",
+      "XAi": "xAI",
+      "OllamaCloud": "Ollama Cloud"
+    },
+    "reasoningEffort": {
+      "None": "无",
+      "Minimal": "极低",
+      "Low": "低",
+      "Medium": "中",
+      "High": "高",
+      "XHigh": "超高",
+      "Max": "最高"
+    },
+    "vaultKind": {
+      "ApiKey": "API 密钥",
+      "BearerToken": "Bearer 令牌",
+      "BasicAuth": "基本认证",
+      "CustomHeader": "自定义标头",
+      "ConnectionString": "连接字符串"
+    },
+    "vaultProvider": {
+      "Anthropic": "Anthropic",
+      "OpenAi": "OpenAI",
+      "Gemini": "Gemini",
+      "XAi": "xAI",
+      "OllamaCloud": "Ollama Cloud",
+      "OpenAiCompatible": "OpenAI 兼容",
+      "Tavily": "Tavily",
+      "YouCom": "You.com",
+      "Mailgun": "Mailgun",
+      "ElevenLabs": "ElevenLabs",
+      "Mcp": "MCP 服务器",
+      "Custom": "自定义"
+    },
+    "intervalType": {
+      "EveryNMinutes": "每 N 分钟",
+      "EveryNHours": "每 N 小时",
+      "EveryNDays": "每 N 天",
+      "EveryNWeeks": "每 N 周",
+      "DaysOfWeek": "每周指定日期",
+      "DaysOfMonth": "每月指定日期",
+      "Once": "一次",
+      "Cron": "Cron（高级）",
+      "Manual": "仅手动"
+    },
+    "missedRunPolicy": {
+      "Skip": "跳过",
+      "RunOnceOnRecovery": "恢复后运行一次"
+    },
+    "questionKind": {
+      "SingleChoice": "单选",
+      "MultiChoice": "多选",
+      "Scale": "1 到 5 分",
+      "YesNo": "是或否",
+      "FreeText": "自由文本"
+    },
+    "dimensionWeight": {
+      "High": "高",
+      "Normal": "普通",
+      "Low": "低",
+      "Exclude": "排除"
+    },
+    "constraintKind": {
+      "IncludeKeyword": "包含关键词",
+      "ExcludeKeyword": "排除关键词",
+      "IncludeEntity": "始终包含",
+      "ExcludeEntity": "始终忽略",
+      "PreferredDomain": "首选域名",
+      "BlockedDomain": "屏蔽的域名",
+      "TrackedQuestion": "跟踪的问题",
+      "FeedUrl": "订阅源",
+      "SeedUrl": "种子页面"
+    },
+    "topicStatus": {
+      "Draft": "草稿",
+      "Active": "活动",
+      "Paused": "已暂停",
+      "Archived": "已归档"
+    },
+    "audienceLevel": {
+      "Beginner": "入门",
+      "Practitioner": "从业者",
+      "Expert": "专家"
+    },
+    "horizon": {
+      "Days": "天",
+      "Weeks": "周",
+      "Months": "月",
+      "Years": "年"
+    },
+    "runStatus": {
+      "Queued": "排队中",
+      "Running": "运行中",
+      "Completed": "已完成",
+      "PartiallySucceeded": "部分成功",
+      "Failed": "失败",
+      "Cancelled": "已取消",
+      "Skipped": "已跳过"
+    },
+    "runTrigger": {
+      "Schedule": "计划",
+      "Manual": "立即运行",
+      "Request": "一次性请求",
+      "Edition": "期刊",
+      "Preview": "预览"
+    },
+    "requestStatus": {
+      "Clarifying": "等待您的回复",
+      "Scheduled": "已计划",
+      "Running": "运行中",
+      "Completed": "已完成",
+      "Failed": "失败",
+      "Cancelled": "已取消",
+      "Declined": "已拒绝"
+    },
+    "deliverable": {
+      "Report": "报告",
+      "Podcast": "播客",
+      "Email": "电子邮件"
+    },
+    "deliverableLength": {
+      "Short": "简短",
+      "Standard": "标准",
+      "Long": "详细"
+    },
+    "findingTier": {
+      "MustRead": "必读",
+      "WorthALook": "值得一看",
+      "Fyi": "供参考",
+      "BelowThreshold": "低于阈值"
+    },
+    "findingCategory": {
+      "News": "新闻",
+      "Release": "发布",
+      "Research": "研究",
+      "Opinion": "观点",
+      "Tutorial": "教程",
+      "Data": "数据",
+      "Other": "其他"
+    },
+    "evidenceRole": {
+      "Supports": "支持",
+      "Contradicts": "反驳",
+      "Context": "背景"
+    },
+    "predictionStatus": {
+      "Open": "未决",
+      "ProposedResolved": "已提议判定",
+      "Accurate": "准确",
+      "PartiallyAccurate": "部分准确",
+      "Inaccurate": "不准确",
+      "Unresolvable": "无法判定",
+      "Withdrawn": "已撤回"
+    },
+    "suggestionStatus": {
+      "New": "新",
+      "Accepted": "已接受",
+      "Snoozed": "已延后",
+      "Dismissed": "已忽略",
+      "Done": "已完成"
+    },
+    "suggestionPriority": {
+      "High": "高",
+      "Medium": "中",
+      "Low": "低"
+    },
+    "suggestionEffort": {
+      "Minutes": "分钟",
+      "Hours": "小时",
+      "Days": "天"
+    },
+    "stageStatus": {
+      "Pending": "待处理",
+      "Running": "运行中",
+      "Succeeded": "成功",
+      "Failed": "失败",
+      "Skipped": "已跳过"
+    },
+    "runStage": {
+      "AssembleContext": "整理上下文",
+      "PlanQueries": "规划查询",
+      "Search": "搜索",
+      "Filter": "筛选",
+      "Fetch": "抓取",
+      "Extract": "提取",
+      "Embed": "嵌入",
+      "Dedupe": "去重",
+      "Score": "评分",
+      "Synthesize": "综合",
+      "ReviewPredictions": "复核预测",
+      "Predict": "预测",
+      "Suggest": "建议",
+      "ComposeBriefing": "撰写简报",
+      "Notify": "通知"
+    },
+    "searchDisposition": {
+      "Pending": "待处理",
+      "Fetched": "已抓取",
+      "SkippedSeen": "以前见过",
+      "SkippedBlocked": "域名已屏蔽",
+      "SkippedRobots": "被 robots.txt 阻止",
+      "SkippedLimit": "超出抓取上限",
+      "SkippedDuplicate": "重复",
+      "FetchFailed": "抓取失败"
+    },
+    "briefingKind": {
+      "Edition": "期刊",
+      "Run": "运行简报",
+      "OneTime": "一次性报告"
+    },
+    "briefingStatus": {
+      "Queued": "排队中",
+      "Composing": "撰写中",
+      "Ready": "就绪",
+      "Failed": "失败"
+    },
+    "briefingItemType": {
+      "Finding": "发现",
+      "Prediction": "预测",
+      "Suggestion": "建议"
+    },
+    "lookbackMode": {
+      "SinceLastEdition": "自上一期以来",
+      "FixedHours": "固定时间窗口"
+    },
+    "artifactKind": {
+      "BriefingMarkdown": "Markdown",
+      "BriefingHtml": "HTML 报告",
+      "Audio": "音频",
+      "Chapters": "章节",
+      "Export": "导出"
+    },
+    "mediaStatus": {
+      "Queued": "排队中",
+      "Scripting": "正在撰写脚本",
+      "Synthesizing": "正在合成",
+      "Ready": "就绪",
+      "Failed": "失败"
+    },
+    "mediaKind": {
+      "BriefingAudio": "简报音频",
+      "PodcastEpisode": "播客节目"
+    },
+    "ttsProvider": {
+      "OpenAiCompatibleSpeech": "OpenAI 兼容语音",
+      "Disabled": "已禁用"
+    }
+  },
+  "vault": {
+    "adminOnly": "只有管理员可以更改已存储的凭据。",
+    "memberNotice": "您可以查看已存储了哪些凭据。添加、更改、轮换和显示凭据需要租户管理员权限。",
+    "columns": {
+      "name": "名称",
+      "kind": "类型",
+      "provider": "提供商",
+      "secret": "密钥",
+      "lastUsed": "上次使用",
+      "lastRevealed": "上次显示",
+      "expires": "过期时间",
+      "status": "状态",
+      "created": "创建时间",
+      "id": "ID"
+    },
+    "fields": {
+      "headerName": "标头名称",
+      "headerNameHelp": "携带密钥的 HTTP 标头，例如 X-Api-Key。",
+      "username": "用户名",
+      "secret": "密钥",
+      "secretHelp": "加密存储。保存后只显示最后四个字符。",
+      "expiresHelp": "可选。仅用作提醒；服务器不会删除已过期的密钥。",
+      "description": "描述"
+    },
+    "form": {
+      "createTitle": "存储凭据",
+      "editTitle": "编辑凭据",
+      "rotateHint": "要替换密钥本身，请使用“轮换密钥”。"
+    },
+    "empty": {
+      "title": "没有已存储的凭据",
+      "message": "在此存储一次 API 密钥和令牌，之后即可在模型端点、搜索提供商、语音和邮件设置中选用。"
+    },
+    "rotate": {
+      "action": "轮换密钥",
+      "title": "轮换密钥",
+      "message": "替换以 {name} 存储的密钥。所有使用此凭据的地方会在下次调用时使用新值。",
+      "newSecret": "新密钥",
+      "confirm": "轮换",
+      "required": "请输入新密钥。",
+      "done": "密钥已轮换"
+    },
+    "reveal": {
+      "action": "显示",
+      "actionAdminOnly": "显示（仅限管理员）",
+      "confirmTitle": "显示密钥",
+      "confirmMessage": "显示 {name} 的明文？它将显示 {seconds} 秒后再次隐藏。",
+      "audited": "显示操作会被审计：记录谁从何处显示了哪个凭据。",
+      "confirm": "显示",
+      "shownTitle": "密钥已显示",
+      "hidesIn": "{count, plural, other {# 秒后隐藏}}",
+      "hideNow": "立即隐藏",
+      "copy": "复制密钥"
+    },
+    "usage": {
+      "action": "使用位置",
+      "title": "此凭据的使用位置",
+      "none": "目前没有任何地方使用此凭据。",
+      "types": {
+        "ModelEndpoint": "模型端点"
+      }
+    },
+    "delete": {
+      "title": "删除凭据",
+      "message": "删除 {name}？所有使用它的地方都将停止工作，直到为其指定其他凭据。"
+    }
+  },
+  "models": {
+    "add": "添加模型",
+    "adminOnly": "只有管理员可以更改模型端点。",
+    "memberNotice": "您可以查看已配置的模型和分配。更改或测试它们需要租户管理员权限。",
+    "created": "已添加 {name}",
+    "unknown": "未检查",
+    "tabs": {
+      "endpoints": "端点",
+      "assignments": "分配",
+      "calls": "模型调用"
+    },
+    "columns": {
+      "name": "名称",
+      "provider": "提供商",
+      "model": "模型",
+      "embeddingModel": "嵌入模型",
+      "capabilities": "能力",
+      "price": "每百万令牌价格",
+      "priceValue": "输入 {input}，输出 {output}",
+      "noPrice": "未设置价格",
+      "reasoningEffort": "推理强度",
+      "credential": "凭据",
+      "lastValidated": "上次验证",
+      "status": "状态",
+      "id": "ID"
+    },
+    "capabilities": {
+      "chat": "聊天",
+      "tools": "工具",
+      "noTools": "无工具",
+      "embeddings": "嵌入",
+      "embeddingsDims": "嵌入（{dims}）"
+    },
+    "actions": {
+      "test": "测试",
+      "validate": "验证",
+      "listModels": "列出模型"
+    },
+    "empty": {
+      "title": "添加您的第一个模型",
+      "message": "连接 Anthropic、OpenAI 或本地 Ollama 服务器等模型提供商。研究、排序和简报都通过这些端点运行。"
+    },
+    "delete": {
+      "title": "删除模型端点",
+      "message": "删除 {name}？分配给它的任务角色将改用第一个活动端点，直到您重新分配。"
+    },
+    "form": {
+      "createTitle": "添加模型端点",
+      "editTitle": "编辑模型端点",
+      "duplicateTitle": "复制模型端点",
+      "endpoint": "基础 URL",
+      "endpointRequired": "基础 URL（必填）",
+      "endpointHelp": {
+        "Anthropic": "留空则使用 Anthropic API。",
+        "OpenAi": "留空则使用 OpenAI API。",
+        "OpenAiCompatible": "必填。服务器在 Docker 中运行，因此本机上的服务器请使用 host.docker.internal。",
+        "Ollama": "Ollama 服务器。在 Docker 容器中访问本机上的 Ollama 时，请使用 host.docker.internal。",
+        "Gemini": "留空则使用 Gemini API。",
+        "XAi": "留空则使用 xAI API。",
+        "OllamaCloud": "留空则使用 Ollama Cloud。"
+      },
+      "apiKey": "API 密钥",
+      "keyModes": {
+        "new": "输入密钥",
+        "vault": "使用已存储的凭据",
+        "none": "无密钥"
+      },
+      "newKey": "新 API 密钥",
+      "newKeyHelp": "保存到凭据保管库（加密）并关联到此端点。留空则保留当前密钥。",
+      "storedKey": "已存储的凭据",
+      "storedKeyHelp": "在“已存储凭据”页面轮换它后，所有使用它的端点都会获得更新。",
+      "pickCredential": "选择凭据",
+      "noKeyWarning": "此提供商通常需要 API 密钥。没有密钥时调用会失败。",
+      "capabilities": "提供",
+      "toolsDetected": "运行“验证”时会检测工具支持和嵌入维度。",
+      "embeddingDimensions": "嵌入维度",
+      "embeddingDimensionsHelp": "由“验证”检测。",
+      "notDetected": "尚未检测",
+      "maxTokens": "最大输出令牌数",
+      "maxTokensHelp": "约 16000 适用于非流式调用。",
+      "reasoningEffort": "推理强度",
+      "reasoningEffortHelp": "此端点的默认值。任务角色分配可以覆盖它。",
+      "providerDefault": "提供商默认值",
+      "temperature": "温度",
+      "temperatureHelp": "可选的采样温度。",
+      "temperatureAnthropic": "不使用：当前的 Anthropic 模型不接受温度参数，因此从不发送。",
+      "contextLength": "上下文长度",
+      "timeoutMs": "超时（毫秒）",
+      "timeoutHelp": "每次调用，包括重试。",
+      "modelsLoaded": "{count, plural, other {有 # 个可用模型；请从列表中选择。}}",
+      "pricing": "定价",
+      "pricingHelp": "每百万令牌的美元价格。本地模型请留空。费用在记录每次调用时计算，因此之后的修改不会改变历史记录。",
+      "inputCost": "输入",
+      "outputCost": "输出",
+      "cachedInputCost": "缓存输入",
+      "cachedInputCostHelp": "缓存读取。未设置时使用输入价格。",
+      "cacheWriteCost": "缓存写入",
+      "cacheWriteCostHelp": "未设置时使用输入价格。",
+      "errors": {
+        "name": "名称为必填项。",
+        "endpointRequired": "OpenAI 兼容端点需要基础 URL。",
+        "endpointUrl": "请输入绝对 URL，例如 http://host.docker.internal:8000/v1.",
+        "model": "端点提供聊天时，需要指定聊天模型。",
+        "embeddingModel": "端点提供嵌入时，需要指定嵌入模型。",
+        "capability": "请选择聊天、嵌入或两者。",
+        "credential": "请选择已存储的凭据。",
+        "number": "请输入零或更大的数字。"
+      }
+    },
+    "test": {
+      "title": "测试模型",
+      "prompt": "提示词",
+      "model": "覆盖模型",
+      "modelHelp": "可选。留空则使用端点的模型。",
+      "run": "发送",
+      "running": "正在等待模型...",
+      "succeeded": "成功",
+      "failed": "失败",
+      "tokens": "输入 {input}，输出 {output}",
+      "duration": "耗时 {value}",
+      "tools": "工具：{value}",
+      "output": "回复"
+    },
+    "validate": {
+      "title": "验证端点",
+      "running": "正在检查连通性、工具支持和嵌入...",
+      "reachable": "可访问",
+      "modelFound": "已找到模型",
+      "supportsTools": "支持工具调用",
+      "embeddingDimensions": "嵌入维度",
+      "validatedUtc": "检查时间"
+    },
+    "list": {
+      "title": "可用模型",
+      "filter": "筛选模型",
+      "none": "没有匹配的模型。",
+      "name": "模型",
+      "inputLimit": "输入上限",
+      "outputLimit": "输出上限",
+      "tools": "工具",
+      "current": "使用中",
+      "use": "使用",
+      "used": "现在使用 {model}"
+    },
+    "assignments": {
+      "intro": "每个流水线任务在分配给其角色的端点上运行。主题覆盖优先于租户默认值，租户默认值优先于第一个活动端点。",
+      "role": "任务角色",
+      "endpoint": "端点",
+      "modelOverride": "覆盖模型",
+      "reasoningEffort": "推理强度",
+      "endpointFor": "{role} 的端点",
+      "modelOverrideFor": "{role} 的覆盖模型",
+      "effortFor": "{role} 的推理强度",
+      "pickEndpoint": "选择端点",
+      "endpointDefault": "端点默认值",
+      "notApplicable": "不使用",
+      "noTools": "不支持工具",
+      "noToolsHelp": "此模型无法调用工具，因此结构化结果将使用 JSON 回退方式，部分模型对此处理不佳。",
+      "undo": "撤销更改",
+      "saved": "{role} 的分配已保存",
+      "uses": {
+        "Refinement": "向导中的维度、问题和上下文",
+        "QueryPlanning": "生成搜索查询",
+        "Extraction": "从文档中提取发现和证据",
+        "Scoring": "相关性判断",
+        "Synthesis": "运行摘要和趋势",
+        "Prediction": "预测及复核",
+        "Suggestion": "深入研究建议",
+        "Composition": "简报 Markdown",
+        "PodcastScript": "音频脚本",
+        "FeedbackAnalysis": "原因标记和偏好",
+        "Embedding": "用于去重和关联度的向量"
+      },
+      "overridesTitle": "主题覆盖",
+      "overridesIntro": "主题可以在与租户默认值不同的端点上运行某个角色。",
+      "noOverrides": "没有主题覆盖。",
+      "topic": "主题",
+      "topicId": "主题 ID",
+      "topicIdHelp": "要覆盖的主题的 ID。",
+      "addOverride": "添加主题覆盖",
+      "overrideAdded": "主题覆盖已保存",
+      "deleteTitle": "移除主题覆盖",
+      "deleteMessage": "移除主题 {topic} 的 {role} 覆盖？该主题将恢复使用租户默认值。"
+    },
+    "calls": {
+      "detailTitle": "模型调用",
+      "succeeded": "成功",
+      "failed": "失败",
+      "dryRun": "试运行",
+      "system": "系统",
+      "tokensTitle": "输入 {input}，输出 {output}",
+      "payloadCleared": "不可用。负载在保留期结束后会被清除。",
+      "openPrompt": "打开提示词 {key}",
+      "columns": {
+        "time": "时间",
+        "task": "任务",
+        "model": "模型",
+        "promptKey": "提示词",
+        "user": "用户",
+        "tokens": "令牌",
+        "ttft": "首个令牌",
+        "duration": "时长",
+        "cost": "费用",
+        "outcome": "结果"
+      },
+      "filters": {
+        "task": "任务",
+        "endpoint": "端点",
+        "outcome": "结果",
+        "dryRun": "试运行",
+        "dryRunOnly": "仅试运行",
+        "realOnly": "排除试运行",
+        "from": "开始",
+        "to": "结束"
+      },
+      "empty": {
+        "title": "暂无模型调用",
+        "message": "每次模型调用都会连同令牌、耗时和费用记录在这里。可以在端点上试用“测试”或运行提示词实验室。"
+      },
+      "sections": {
+        "attribution": "归属",
+        "tokens": "令牌",
+        "timing": "耗时",
+        "outcome": "结果和工具",
+        "cost": "费用",
+        "prompt": "提示词",
+        "response": "响应"
+      },
+      "fields": {
+        "provider": "提供商",
+        "endpoint": "端点",
+        "user": "用户",
+        "topic": "主题",
+        "run": "运行",
+        "refinementSession": "细化会话",
+        "briefing": "简报",
+        "promptKey": "提示词键",
+        "promptVersion": "提示词版本",
+        "inputTokens": "输入（全部）",
+        "uncachedInputTokens": "未缓存输入",
+        "cachedInputTokens": "缓存输入",
+        "cacheWriteTokens": "缓存写入",
+        "outputTokens": "输出",
+        "reasoningTokens": "推理",
+        "totalTokens": "总计",
+        "duration": "时长",
+        "timeToFirstToken": "首个令牌耗时",
+        "streamingDuration": "流式传输时长",
+        "chunks": "数据块",
+        "tokensPerSecond": "每秒输出令牌数",
+        "streamed": "流式传输",
+        "attempts": "尝试次数",
+        "statusCode": "状态码",
+        "finishReason": "结束原因",
+        "repairs": "结构化输出修复",
+        "toolCalls": "工具调用",
+        "toolNames": "调用的工具",
+        "dryRun": "试运行",
+        "inputCost": "输入费用",
+        "outputCost": "输出费用",
+        "estimatedCost": "总费用"
+      }
+    }
+  },
+  "prompts": {
+    "guardrailNotice": "服务器始终会在每次模型调用的系统提示词之前加上范围护栏。编辑提示词无法移除它。",
+    "searchPlaceholder": "键或名称",
+    "filteredByKey": "键：{key}",
+    "empty": "没有提示词",
+    "open": "打开编辑器",
+    "back": "所有提示词",
+    "versionLabel": "v{version}",
+    "current": "当前",
+    "customized": "已自定义",
+    "default": "默认",
+    "noNote": "无更改说明",
+    "saved": "已保存新版本",
+    "columns": {
+      "key": "键",
+      "role": "角色",
+      "scope": "范围",
+      "version": "版本",
+      "customized": "已自定义",
+      "updated": "更新时间"
+    },
+    "scope": {
+      "tenant": "租户",
+      "topic": "主题覆盖",
+      "tenantOnly": "仅租户提示词"
+    },
+    "panels": {
+      "versions": "版本",
+      "compare": "比较",
+      "lab": "提示词实验室"
+    },
+    "editor": {
+      "title": "模板",
+      "panels": "提示词工具",
+      "unsaved": "未保存的更改",
+      "format": "带 YAML 前置元数据（key、name、role、output、variables）的 Markdown，后接 System 部分和 User 部分。占位符使用前置元数据中声明的变量名。",
+      "missingUser": "模板没有 User 部分标题。请添加一行 ## User。",
+      "missingSystem": "模板没有 System 部分标题。护栏仍会作为系统提示词发送。",
+      "invalid": "服务器拒绝了此版本。",
+      "variables": "已声明的变量",
+      "noVariables": "未声明变量。",
+      "changeNote": "更改说明",
+      "changeNoteHelp": "可选。显示在版本历史中。",
+      "discard": "放弃更改",
+      "save": "保存版本",
+      "fields": {
+        "content": "模板",
+        "key": "键",
+        "user": "User 部分",
+        "variables": "变量"
+      }
+    },
+    "compareWithCurrent": "将 v{version} 与编辑器内容比较",
+    "rollbackTo": "回滚到 v{version}",
+    "rollbackTitle": "回滚",
+    "rollbackMessage": "将 v{version} 设为当前版本？系统会用其内容创建一个新版本，因此不会丢失任何内容。",
+    "rollbackConfirm": "回滚",
+    "rolledBack": "已回滚到 v{version}",
+    "reset": "重置为默认值",
+    "resetTitle": "重置为默认值",
+    "resetMessage": "用随附的默认提示词替换此提示词？系统会创建一个新版本，因此之后可以回滚。",
+    "resetDone": "已重置为默认值",
+    "deleteOverride": "删除覆盖",
+    "deleteTitle": "删除主题覆盖",
+    "deleteMessage": "删除主题 {topic} 的 {key} 覆盖？该主题将恢复使用租户提示词。",
+    "diff": {
+      "from": "从",
+      "to": "到",
+      "draft": "编辑器（未保存）",
+      "current": "编辑器",
+      "default": "随附默认值",
+      "label": "行差异",
+      "added": "{count, plural, other {新增 # 行}}",
+      "removed": "{count, plural, other {删除 # 行}}",
+      "addedLine": "新增",
+      "removedLine": "删除",
+      "showAll": "显示未更改的行",
+      "skipped": "{count, plural, other {# 行未更改}}",
+      "identical": "两个版本完全相同。"
+    },
+    "override": {
+      "button": "创建主题覆盖",
+      "title": "创建主题覆盖",
+      "intro": "主题覆盖仅为一个主题替换租户提示词。它以租户提示词的副本作为起点。",
+      "pickKey": "选择提示词",
+      "topicId": "主题 ID",
+      "topicIdHelp": "应使用此提示词自有版本的主题 ID。",
+      "copyDraft": "从编辑器中未保存的文本开始",
+      "create": "创建覆盖"
+    },
+    "lab": {
+      "intro": "用您的值渲染提示词，并在任意模型上运行。这些运行都是试运行：会记录为模型调用，但绝不会影响研究。",
+      "endpoint": "端点",
+      "assigned": "已分配给 {role}",
+      "model": "覆盖模型",
+      "modelHelp": "可选。",
+      "variables": "变量",
+      "noVariables": "此提示词未声明变量。",
+      "useDraft": "运行编辑器中未保存的文本",
+      "run": "运行",
+      "running": "正在运行提示词...",
+      "cost": "费用 {value}",
+      "costUnknown": "不可用",
+      "unknownVariables": "未填写：{names}",
+      "guardrailNote": "下方渲染的系统提示词是模板生成的内容。服务器调用模型时会在其前面加上范围护栏。",
+      "renderedSystem": "渲染后的系统提示词",
+      "renderedUser": "渲染后的用户提示词",
+      "output": "输出",
+      "emptySection": "空。",
+      "loggedAs": "记录为",
+      "openCall": "打开已记录的调用"
+    }
+  },
+  "usage": {
+    "noData": "此时间窗口内没有模型调用。",
+    "noToolCalls": "此时间窗口内没有工具调用。",
+    "total": "总计",
+    "exportCsv": "导出 CSV",
+    "window": "从 {from} 到 {to}",
+    "kpi": {
+      "cost": "费用",
+      "perCall": "每次调用 {value}",
+      "calls": "模型调用",
+      "tokens": "令牌",
+      "tokensDetail": "输入 {input}，输出 {output}",
+      "failures": "失败",
+      "failureRate": "占调用的 {value}",
+      "avgTtft": "平均首个令牌耗时",
+      "p95Ttft": "p95 首个令牌耗时"
+    },
+    "filters": {
+      "task": "任务",
+      "endpoint": "端点",
+      "user": "用户",
+      "userPlaceholder": "用户 ID",
+      "topic": "主题",
+      "topicPlaceholder": "主题 ID",
+      "includeDryRun": "包含试运行"
+    },
+    "groups": {
+      "User": "用户",
+      "Model": "模型",
+      "Task": "任务",
+      "Provider": "提供商",
+      "Topic": "主题",
+      "PromptKey": "提示词",
+      "Day": "日",
+      "Tenant": "租户"
+    },
+    "labels": {
+      "system": "系统",
+      "noTopic": "无主题",
+      "none": "无",
+      "unknown": "未知"
+    },
+    "columns": {
+      "cost": "费用",
+      "calls": "调用",
+      "failures": "失败",
+      "tokens": "令牌",
+      "inputTokens": "输入",
+      "cachedInputTokens": "缓存输入",
+      "cacheWriteTokens": "缓存写入",
+      "outputTokens": "输出",
+      "reasoningTokens": "推理",
+      "toolCalls": "工具调用",
+      "avgDuration": "平均时长",
+      "avgTtft": "平均首个令牌耗时",
+      "p95Ttft": "p95 首个令牌耗时"
+    },
+    "tokens": {
+      "uncachedInput": "未缓存输入",
+      "cachedInput": "缓存输入",
+      "cacheWrite": "缓存写入",
+      "output": "输出",
+      "reasoning": "推理"
+    },
+    "series": {
+      "average": "平均",
+      "p95": "p95",
+      "toolCallsPerCall": "每次调用的工具调用数"
+    },
+    "charts": {
+      "groupBy": "分组依据",
+      "costOverTime": "费用趋势",
+      "costOverTimeHelp": "每个时间段的估算费用，在记录每次调用时计算。",
+      "costByUser": "按用户统计费用",
+      "costByUserHelp": "前 20 名用户及其费用占比。选择一行可将页面筛选为该用户。",
+      "costByModel": "按模型统计费用",
+      "costByTask": "按任务统计费用",
+      "costByTopic": "按主题统计费用",
+      "ttftByModel": "按模型统计首个令牌耗时",
+      "ttftHelp": "流式调用的平均值和 p95。",
+      "tokenMix": "令牌类型构成",
+      "tokenMixHelp": "输出不含推理令牌，推理令牌单独显示。",
+      "toolCalls": "按任务统计工具调用",
+      "toolCallsHelp": "每次模型调用的平均工具调用数。"
+    },
+    "breakdown": {
+      "title": "明细",
+      "help": "所选分组的每种令牌类型、费用占比和耗时。“导出 CSV”下载的正是此表。"
+    },
+    "member": {
+      "notice": "租户范围的用量仅对管理员和审计员开放。这是您自己的用量。",
+      "byTask": "您按任务统计的费用"
+    },
+    "admin": {
+      "costByTenant": "按租户统计费用",
+      "costByTenantHelp": "按费用排列的所有租户及其在平台费用中的占比。",
+      "tenantTrend": "按租户统计的费用趋势",
+      "tenantTrendHelp": "{count, plural, other {时间范围分为 # 个窗口。}}费用最高的租户堆叠显示；其余租户合并为一组。",
+      "otherTenants": "其他租户",
+      "platformTrend": "平台费用趋势",
+      "costByModel": "按模型统计平台费用",
+      "breakdownHelp": "所有租户的令牌类型、费用占比和耗时。“导出 CSV”下载此表。"
+    }
+  },
+  "markdown": {
+    "mode": "编辑器模式",
+    "write": "编写",
+    "preview": "预览",
+    "empty": "暂无可预览的内容。"
+  },
+  "schedule": {
+    "fields": {
+      "intervalType": "重复",
+      "every": "每",
+      "everyHelp": "{min} 到 {max}",
+      "minuteOffset": "在第几分钟",
+      "minuteOffsetHelp": "整点后的分钟数，0 到 59",
+      "timeZone": "时区",
+      "timeZoneHelp": "时间按此时区计算，包括夏令时变化",
+      "runOnce": "运行时间",
+      "localTimeHelp": "{zone} 的本地时间",
+      "cron": "Cron 表达式",
+      "cronHelp": "五个字段：分钟、小时、日、月、星期",
+      "daysOfWeek": "星期",
+      "daysOfMonth": "日期",
+      "timesOfDay": "每日时间",
+      "timeN": "时间 {n}",
+      "start": "开始",
+      "end": "结束",
+      "optionalLocal": "可选，{zone} 的本地时间",
+      "missedRunPolicy": "错过运行时",
+      "enabled": "已启用"
+    },
+    "units": {
+      "minutes": "分钟",
+      "hours": "小时",
+      "days": "天",
+      "weeks": "周"
+    },
+    "presets": {
+      "weekdays": "工作日",
+      "weekends": "周末",
+      "everyDay": "每天"
+    },
+    "lastDay": "最后一天",
+    "removeTime": "移除此时间",
+    "addTime": "添加时间",
+    "enabledOn": "开",
+    "enabledOff": "关",
+    "missedHelp": {
+      "Skip": "服务器停机期间错过的运行将被跳过。",
+      "RunOnceOnRecovery": "服务器恢复后进行一次补充运行。"
+    },
+    "preview": {
+      "title": "接下来的 5 次运行",
+      "checking": "正在检查...",
+      "manual": "此主题只在您点击“立即运行”时运行。",
+      "none": "没有即将进行的运行。请检查开始和结束日期。"
+    },
+    "summary": {
+      "EveryNMinutes": "{count, plural, =1 {每分钟} other {每 # 分钟}}",
+      "EveryNHours": "{count, plural, =1 {每小时} other {每 # 小时}}的第 :{minute} 分",
+      "EveryNDays": "{count, plural, =1 {每天} other {每 # 天}}的 {times}",
+      "EveryNWeeks": "{count, plural, =1 {每周} other {每 # 周}}的{days} {times}",
+      "DaysOfWeek": "{days} {times}",
+      "DaysOfMonth": "每月 {days} 日 {times}",
+      "Once": "于 {when} 运行一次",
+      "Cron": "Cron {expression}",
+      "Manual": "仅在您运行时"
+    },
+    "saved": "计划已保存",
+    "create": "创建计划",
+    "save": "保存计划",
+    "emptyTitle": "暂无计划",
+    "emptyMessage": "添加计划以自动研究此主题，或手动运行。",
+    "add": "添加计划",
+    "nextRun": "下次运行",
+    "noNextRun": "未计划",
+    "lastRun": "上次运行",
+    "enableFor": "启用 {name}",
+    "edit": "编辑计划",
+    "delete": "删除计划",
+    "deleteTitle": "删除计划",
+    "deleteMessage": "删除计划“{name}”？已排队的运行不受影响。"
+  },
+  "questions": {
+    "pickOne": "请至少选择一个选项、填写答案或跳过此问题。",
+    "somethingElse": "其他（可选）",
+    "scaleLow": "完全不",
+    "scaleHigh": "非常",
+    "save": "保存答案",
+    "why": "提问原因：{reason}",
+    "answered": "已回答",
+    "skipped": "已跳过",
+    "skip": "跳过",
+    "skippedHint": "已跳过。回答即可恢复。"
+  },
+  "dimensions": {
+    "emptyTitle": "暂无维度",
+    "emptyMessage": "维度是研究涵盖的角度。可以请系统提议一些，或添加您自己的。",
+    "locked": "已锁定",
+    "yours": "您的",
+    "suggested": "建议",
+    "why": "可能重要的原因：{reason}",
+    "include": "包含",
+    "exclude": "排除",
+    "weightFor": "{name} 的权重",
+    "unlock": "解锁 {name}",
+    "lock": "锁定 {name}",
+    "unlockHint": "解锁后，重新生成时可替换它",
+    "lockHint": "锁定后，重新生成时会保留它",
+    "edit": "编辑 {name}",
+    "delete": "删除 {name}",
+    "add": "添加维度",
+    "addTitle": "添加维度",
+    "editTitle": "编辑维度",
+    "editHint": "编辑过的维度归您所有，重新生成时会保留。",
+    "fields": {
+      "name": "名称",
+      "description": "描述",
+      "rationale": "对您的重要性",
+      "weight": "权重",
+      "includeTerms": "包含词",
+      "excludeTerms": "排除词",
+      "termsHelp": "用逗号分隔各词"
+    },
+    "deleteTitle": "删除维度",
+    "deleteMessage": "删除维度“{name}”？"
+  },
+  "constraints": {
+    "count": "{count, plural, other {# 项}}",
+    "help": {
+      "IncludeKeyword": "使结果更相关的词语。",
+      "ExcludeKeyword": "使结果被排除的词语。",
+      "IncludeEntity": "始终包含的公司、产品或人物。",
+      "ExcludeEntity": "始终忽略的公司、产品或人物。",
+      "PreferredDomain": "优先使用的网站，例如 example.com。",
+      "BlockedDomain": "绝不使用的网站。",
+      "TrackedQuestion": "需要长期跟踪的未决问题。",
+      "FeedUrl": "每次运行都会读取的 RSS 或 Atom 订阅源。",
+      "SeedUrl": "每次运行都会检查的页面。"
+    },
+    "value": "值",
+    "note": "备注",
+    "unlock": "解锁 {value}",
+    "lock": "锁定 {value}",
+    "edit": "编辑 {value}",
+    "delete": "删除 {value}",
+    "addTo": "添加到{kind}",
+    "placeholder": {
+      "IncludeKeyword": "添加关键词",
+      "ExcludeKeyword": "添加要排除的关键词",
+      "IncludeEntity": "添加公司或产品",
+      "ExcludeEntity": "添加要忽略的公司或产品",
+      "PreferredDomain": "添加域名",
+      "BlockedDomain": "添加要屏蔽的域名",
+      "TrackedQuestion": "添加要跟踪的问题",
+      "FeedUrl": "添加订阅源 URL（https://...）",
+      "SeedUrl": "添加页面 URL（https://...）"
+    }
+  },
+  "delivery": {
+    "saved": "投递选项已保存",
+    "emailOnRun": "每次运行后发送邮件",
+    "emailOnRunHelp": "包含详情和反馈链接的摘要",
+    "emailWhenEmpty": "未找到内容时也发送邮件",
+    "emailWhenEmptyHelp": "否则空运行不发送邮件",
+    "maxFindings": "每封邮件的发现数",
+    "maxFindingsHelp": "1 到 50",
+    "saveOptions": "保存投递选项",
+    "recipients": "收件人",
+    "recipientsHelp": "此处的每个人都会在每次运行后收到邮件。收件人默认为您。",
+    "noRecipients": "暂无收件人。",
+    "you": "您",
+    "removeRecipient": "移除 {email}",
+    "addRecipient": "收件人电子邮件地址",
+    "emailPlaceholder": "name@example.com",
+    "addMe": "添加我"
+  },
+  "topics": {
+    "actions": {
+      "dryRunQueued": "已为 {name} 排队试运行",
+      "runQueued": "已为 {name} 排队运行",
+      "continueRefining": "继续细化",
+      "refine": "重新细化",
+      "runNow": "立即运行",
+      "dryRun": "试运行",
+      "pause": "暂停",
+      "paused": "已暂停 {name}",
+      "resume": "恢复",
+      "resumed": "已恢复 {name}",
+      "archive": "归档",
+      "archived": "已归档 {name}",
+      "duplicated": "已将 {name} 复制为草稿"
+    },
+    "delete": {
+      "title": "删除主题",
+      "message": "删除“{name}”及其维度、约束、计划和运行？此操作无法撤销。",
+      "done": "已删除 {name}"
+    },
+    "bulk": {
+      "paused": "{count, plural, other {已暂停 # 个主题}}",
+      "pause": "暂停",
+      "delete": "删除",
+      "deleteTitle": "删除主题",
+      "deleteMessage": "{count, plural, other {删除 # 个主题及其下的所有内容？}}此操作无法撤销。",
+      "deleted": "{count, plural, other {已删除 # 个主题}}"
+    },
+    "columns": {
+      "name": "名称",
+      "status": "状态",
+      "oneTime": "类型",
+      "lastRun": "上次运行",
+      "lastRefined": "上次细化",
+      "created": "创建时间",
+      "audience": "受众",
+      "id": "ID"
+    },
+    "searchPlaceholder": "搜索主题",
+    "oneTime": "一次性",
+    "recurring": "定期",
+    "new": "新建主题",
+    "empty": {
+      "title": "暂无主题",
+      "message": "描述您想持续关注的内容，向导会将其转化为研究计划。",
+      "action": "告诉我您关心什么"
+    },
+    "backToList": "所有主题",
+    "draftNoRun": "请先完成细化再运行，或开始试运行",
+    "draftNotice": "此主题是草稿。完成细化后即可开始按计划研究。",
+    "workspace": {
+      "tabsLabel": "主题版块",
+      "tabs": {
+        "overview": "概览",
+        "context": "上下文",
+        "schedule": "计划",
+        "sources": "来源",
+        "runs": "运行",
+        "findings": "发现",
+        "predictions": "预测",
+        "suggestions": "建议",
+        "feedback": "反馈",
+        "preferences": "偏好",
+        "analytics": "分析",
+        "delivery": "投递",
+        "prompts": "提示词",
+        "models": "模型"
+      },
+      "dimensionCount": "维度",
+      "noBrief": "暂无概要。细化主题即可起草。",
+      "dimensions": "维度",
+      "brief": "概要与受众",
+      "sourcesHelp": "每次运行除网络搜索外，还会读取订阅源和种子页面。",
+      "searchProvidersLater": "为每个主题选择搜索提供商的功能将随搜索提供商页面推出。"
+    }
+  },
+  "wizard": {
+    "railLabel": "向导步骤",
+    "steps": {
+      "Describe": "描述",
+      "Dimensions": "维度",
+      "Questions": "问题",
+      "Context": "上下文",
+      "Sources": "来源",
+      "Delivery": "投递",
+      "Review": "审阅"
+    },
+    "stepHelp": {
+      "Describe": "说明您想持续关注什么以及原因。",
+      "Dimensions": "研究涵盖的角度。可以保留、设置权重、编辑、锁定或添加您自己的。",
+      "Questions": "回答您想回答的问题，其余可跳过。每个回答都会让研究更精准。",
+      "Context": "研究遵循的概要和约束。已锁定的项目在重新起草时会保留。",
+      "Sources": "每次运行都会读取的订阅源和页面，每个都会实时抓取检查。",
+      "Delivery": "研究何时运行，以及谁会收到邮件。",
+      "Review": "所有信息均已记录。预览试运行，然后应用。"
+    },
+    "generating": {
+      "dimensions": "正在提议维度...",
+      "questions": "正在编写问题...",
+      "context": "正在起草概要和约束...",
+      "sources": "正在查找来源并逐一检查...",
+      "request": "正在规划您的请求...",
+      "replan": "正在根据您的回答重新规划...",
+      "patience": "已用 {seconds} 秒。大型模型可能需要一分钟。"
+    },
+    "stopWaiting": "停止等待",
+    "failure": {
+      "title": "模型无法完成此步骤",
+      "refusedTitle": "模型拒绝了此步骤",
+      "hint": "请重试，或更换用于细化的模型。",
+      "changeModel": "更换细化模型"
+    },
+    "guidance": {
+      "label": "下次尝试的指引",
+      "placeholder": "例如：多关注本地模型，少关注企业采购"
+    },
+    "regenerate": "重新生成",
+    "describe": {
+      "existing": "此会话从以下描述开始。",
+      "seedText": "您想持续关注什么？",
+      "seedHelp": "一句话或一段话都可以。之后可以细化所有内容。",
+      "seedPlaceholder": "我想了解 AI 开发者工具",
+      "goal": "原因",
+      "depth": "深度",
+      "horizon": "时间范围",
+      "horizonHelp": "可选，例如“未来六个月”",
+      "known": "您已了解的内容",
+      "started": "开始时间",
+      "optional": "可选",
+      "notSaying": "不透露",
+      "goals": {
+        "work": "工作决策",
+        "investing": "投资",
+        "curiosity": "好奇",
+        "hiring": "招聘",
+        "building": "构建产品"
+      },
+      "model": "模型",
+      "modelHelp": "默认使用细化分配",
+      "defaultModel": "细化分配（默认）",
+      "starting": "正在开始...",
+      "start": "开始并提议维度",
+      "resumeTitle": "从上次中断处继续"
+    },
+    "outOfScope": {
+      "title": "这超出了 My Morning News 的研究范围",
+      "rephrase": "换个说法"
+    },
+    "dimensions": {
+      "noneTitle": "暂无维度",
+      "noneMessage": "根据您的描述提议维度，或在下方添加您自己的。",
+      "propose": "提议维度",
+      "intro": "{count, plural, other {# 个维度}}，其中 {kept} 个已归您所有或已锁定。将权重设为“排除”即可去掉某个维度。",
+      "regenerateHelp": "重新生成会替换建议的维度，并保留已锁定的和您自己的维度。"
+    },
+    "questions": {
+      "sufficient": "上下文应该已经足够。您可以继续编写概要。",
+      "noneTitle": "暂无问题",
+      "noneMessage": "模型会根据您保留的维度提出几个问题。",
+      "ask": "向我提问",
+      "progress": "已回答或跳过 {done} / {total}",
+      "round": "第 {round} 轮",
+      "moreLabel": "对下一轮有什么指引吗？",
+      "askMore": "再问我一些",
+      "moreHelp": "{left, plural, other {还可以进行 # 轮}}",
+      "maxed": "最多 {max} 轮。请继续编写概要。"
+    },
+    "context": {
+      "name": "主题名称",
+      "audience": "受众水平",
+      "horizon": "时间范围",
+      "novelty": "新颖度偏好：{value}",
+      "noveltyHelp": "数值越高，越偏重新进展而非背景知识",
+      "brief": "概要",
+      "briefHelp": "Markdown。研究会遵循此概要。",
+      "seedQueries": "种子查询",
+      "seedQueriesHelp": "每行一个搜索查询",
+      "saved": "上下文已保存",
+      "save": "保存上下文",
+      "savedState": "已保存",
+      "noneTitle": "暂无概要",
+      "noneMessage": "根据您的维度和回答起草概要、约束和种子查询。",
+      "draft": "起草上下文",
+      "intro": "任何内容都可编辑。已锁定的约束和您自己的约束在重新起草时会保留。",
+      "redraft": "重新起草",
+      "constraints": "约束"
+    },
+    "sources": {
+      "intro": "建议的订阅源和种子页面会实时抓取。绿色表示已响应。",
+      "again": "再次建议",
+      "suggest": "建议来源",
+      "noneSuggested": "模型没有建议任何来源。请在下方添加您自己的。",
+      "allAccepted": "所有建议都已添加到主题中。",
+      "select": "选择 {url}",
+      "unreachable": "无法访问",
+      "accept": "{count, plural, =0 {接受} other {接受 # 个来源}}",
+      "noneTitle": "暂无来源",
+      "noneMessage": "建议来源、添加您自己的来源，或跳过此步骤。",
+      "accepted": "已用于此主题"
+    },
+    "delivery": {
+      "schedule": "研究计划",
+      "scheduleHelp": "继续时会保存计划。",
+      "email": "电子邮件"
+    },
+    "review": {
+      "novelty": "新颖度偏好",
+      "noSchedule": "无计划（手动运行）",
+      "applied": "此主题已应用，正在研究。",
+      "openTopic": "打开主题",
+      "dimensions": "{count, plural, other {# 个维度}}",
+      "constraintCount": "{kind}：{count}",
+      "preview": "预览运行",
+      "previewHelp": "试运行不会发送邮件，也不计入历史记录。",
+      "apply": "应用主题",
+      "appliedToast": "{name} 已就绪",
+      "previewQueued": "试运行已排队。可在主题的“运行”标签页中查看进度。"
+    },
+    "newTitle": "新建主题",
+    "refineTitle": "细化 {name}",
+    "refineTitleShort": "细化主题",
+    "saveExit": "保存并退出",
+    "abandon": "放弃",
+    "refineSummary": "从当前上下文重新打开向导",
+    "refineStart": "为“{name}”开始新的细化会话。其维度和约束会保留，在应用之前不会有任何更改。",
+    "refineStartButton": "开始细化",
+    "backToTopic": "返回主题",
+    "summary": "每一步都会随时保存，你可以离开后再继续。",
+    "back": "返回",
+    "nextTo": "下一步：{step}",
+    "abandonTitle": "放弃此会话",
+    "abandonDraft": "要放弃向导吗？草稿主题及其所有内容都将被删除。",
+    "abandonExisting": "要放弃此细化会话吗？主题会保留你在过程中已保存的更改。",
+    "abandoned": "会话已放弃"
+  },
+  "runs": {
+    "detail": {
+      "title": "运行",
+      "summary": "摘要",
+      "cancelRequested": "已请求取消",
+      "schedule": "计划",
+      "request": "一次性请求",
+      "worker": "工作进程",
+      "partial": "部分成功：某个非关键阶段失败。其他阶段已完成，其结果已保留。",
+      "partialWithStages": "部分成功：{stages} 失败。其他阶段已完成，其结果已保留。",
+      "viewFindings": "查看发现（{count}）",
+      "tabsLabel": "运行分区",
+      "tabs": {
+        "stages": "阶段",
+        "queries": "查询",
+        "results": "结果",
+        "details": "详情",
+        "calls": "模型调用"
+      },
+      "contextHash": "上下文快照"
+    },
+    "cancelRequested": "正在取消...",
+    "cancel": "取消运行",
+    "dryRun": "试运行",
+    "columns": {
+      "topic": "主题",
+      "queued": "排队时间",
+      "started": "开始时间",
+      "completed": "完成时间",
+      "status": "状态",
+      "trigger": "触发方式",
+      "duration": "耗时",
+      "summary": "摘要",
+      "id": "ID",
+      "findings": "新发现",
+      "findingsTitle": "已跳过 {duplicates} 个重复项",
+      "sources": "来源",
+      "cost": "费用"
+    },
+    "cancelled": "已请求取消",
+    "openTopic": "打开主题",
+    "empty": {
+      "title": "暂无运行",
+      "message": "当计划触发、一次性请求开始或你点击“立即运行”时，运行会显示在这里。",
+      "topicMessage": "点击“立即运行”或“试运行”，或添加计划。"
+    },
+    "totals": {
+      "sources": "已读取来源",
+      "newFindings": "新发现",
+      "duplicates": "重复项",
+      "tokens": "令牌",
+      "tokenSplit": "输入 {input}，输出 {output}",
+      "cost": "预估费用"
+    },
+    "stages": {
+      "empty": "此运行没有记录任何阶段。",
+      "aria": "包含 {count} 个阶段的阶段时间线",
+      "stage": "阶段",
+      "status": "状态",
+      "duration": "耗时",
+      "items": "条目",
+      "inOut": "输入 {in}，输出 {out}",
+      "in": "输入",
+      "out": "输出"
+    },
+    "queries": {
+      "empty": "此运行未发送任何搜索查询。",
+      "query": "查询",
+      "provider": "提供商",
+      "results": "结果",
+      "succeeded": "成功",
+      "failed": "失败"
+    },
+    "results": {
+      "disposition": "处理结果",
+      "filterDisposition": "按处理结果筛选",
+      "dispositionCount": "{disposition}：{count}",
+      "noMatches": "没有此处理结果的条目。",
+      "empty": "此运行没有搜索结果。",
+      "rank": "排名",
+      "result": "结果",
+      "viewSource": "查看来源"
+    },
+    "source": {
+      "title": "来源",
+      "domain": "域名",
+      "httpStatus": "HTTP 状态",
+      "contentType": "内容类型",
+      "size": "大小",
+      "published": "发布时间",
+      "fetched": "抓取时间",
+      "timesSeen": "出现次数",
+      "text": "提取的文本",
+      "truncated": "显示前 {shown} 个字符，共 {total} 个。",
+      "noText": "未从此来源提取到文本。"
+    },
+    "calls": {
+      "openCall": "在模型调用日志中打开",
+      "emptyTitle": "没有模型调用",
+      "emptyMessage": "此运行未进行模型调用，或其调用仍在记录中。"
+    },
+    "live": {
+      "streaming": "实时",
+      "polling": "每隔几秒刷新"
+    },
+    "retry": {
+      "column": "重试",
+      "fromStage": "从此阶段重试",
+      "fromStageAria": "从此阶段重试（{stage}）",
+      "runAgain": "再次运行",
+      "runAgainAria": "再次运行（{stage} 失败）",
+      "resumeTitle": "从此阶段重试",
+      "resumeMessage": "使用此运行已保存的发现，重新运行 {stage} 及其后的所有阶段？这会产生计入你用量的模型调用。",
+      "newTitle": "再次运行",
+      "newMessage": "从头为此主题排队一次新运行？搜索和抓取结果不会保留，因此每个阶段都会重新运行，并产生计入你用量的模型调用。",
+      "resumeQueued": "已从 {stage} 重新排队运行",
+      "newQueued": "新运行已排队"
+    }
+  },
+  "oneTime": {
+    "form": {
+      "failedHint": "如果规划失败，请求仍会保存，你可以在列表中重新规划。",
+      "openList": "打开请求",
+      "text": "你想要什么？",
+      "textHelp": "例如：为我制作一期关于集装箱历史的播客。",
+      "placeholder": "为我写一份关于加州热泵补贴的报告",
+      "deliverables": "交付内容",
+      "length": "长度",
+      "timing": "时间",
+      "runNow": "立即运行",
+      "runAt": "在指定时间运行一次",
+      "when": "日期和时间",
+      "recipients": "邮件收件人",
+      "recipientsHelp": "以逗号分隔。默认为你（{email}）。",
+      "publishToFeed": "发布到我的订阅源",
+      "publishToFeedHelp": "同时将播客添加到你的私人订阅源",
+      "justDoIt": "直接执行",
+      "justDoItHelp": "跳过澄清问题，立即确认计划",
+      "submitNow": "规划并运行",
+      "submit": "开始规划",
+      "moreOptions": "更多选项"
+    },
+    "actions": {
+      "confirmed": "请求已确认",
+      "cancelled": "请求已取消",
+      "open": "打开",
+      "confirm": "确认",
+      "cancel": "取消请求",
+      "convert": "设为周期性",
+      "openTopic": "打开主题"
+    },
+    "convert": {
+      "title": "将其设为周期性主题",
+      "message": "要将“{title}”及其概要和维度转为周期性主题吗？之后可以为其设置计划。",
+      "done": "已创建周期性主题"
+    },
+    "delete": {
+      "title": "删除请求",
+      "message": "要删除“{title}”及其计划吗？",
+      "done": "请求已删除"
+    },
+    "columns": {
+      "title": "请求",
+      "status": "状态",
+      "deliverables": "交付内容",
+      "length": "长度",
+      "runAt": "运行时间",
+      "created": "创建时间",
+      "id": "ID"
+    },
+    "searchPlaceholder": "搜索请求",
+    "whenConfirmed": "确认后",
+    "new": "新建请求",
+    "empty": {
+      "title": "暂无一次性请求",
+      "message": "报告、播客或邮件摘要，可立即运行一次，也可在你选定的时间运行。",
+      "action": "一次性提出任何需求"
+    },
+    "backToList": "所有请求",
+    "declined": {
+      "title": "此请求超出了 My Morning News 的研究范围",
+      "rephrase": "重新表述"
+    },
+    "detail": {
+      "request": "请求",
+      "estimatedCost": "预估费用",
+      "confirmed": "确认时间",
+      "completed": "完成时间",
+      "run": "运行",
+      "openRun": "打开运行",
+      "confirmTitle": "确认并运行",
+      "confirmAt": "确认在该时间运行",
+      "confirmNow": "确认并立即运行",
+      "needsPlan": "确认前请重新规划此请求。",
+      "plan": "计划",
+      "noPlanDeclined": "已拒绝的请求没有计划。",
+      "noPlan": "暂无计划。",
+      "dimensions": "将涵盖的内容",
+      "questions": "澄清问题",
+      "questionsHelp": "已回答 {answered}/{total}。重新规划以使用你的回答，或按现状确认。",
+      "replan": "根据我的回答重新规划"
+    },
+    "newTitle": "新建请求",
+    "newSummary": "一次性报告、播客和邮件摘要"
+  },
+  "findings": {
+    "backToList": "返回发现列表",
+    "openPage": "打开完整页面",
+    "duplicate": "重复",
+    "update": "更新",
+    "scoreAria": "相关性评分 {score}",
+    "searchPlaceholder": "搜索标题和摘要",
+    "minScore": "最低分",
+    "runFilter": "运行 {id}",
+    "clearRun": "显示所有运行的发现",
+    "includeDuplicates": "包含重复项",
+    "includeDryRuns": "包含试运行",
+    "components": {
+      "llm": "模型判断",
+      "feedback": "反馈",
+      "novelty": "新颖度",
+      "source": "来源",
+      "recency": "时效性",
+      "composite": "综合"
+    },
+    "columns": {
+      "title": "发现",
+      "tier": "等级",
+      "score": "评分",
+      "category": "类别",
+      "topic": "主题",
+      "published": "发布时间",
+      "found": "发现时间",
+      "id": "ID",
+      "rating": "你的评价"
+    },
+    "detail": {
+      "title": "发现",
+      "whyItMatters": "为何重要",
+      "scoreBreakdown": "评分明细",
+      "scoreChartAria": "综合评分为 {score} 的评分明细",
+      "scoreHelp": "每个分项的范围为 0 到 100。综合评分是按主题排序权重计算的加权平均值。",
+      "rationale": "理由",
+      "noRationale": "模型未给出此评分的理由。",
+      "evidence": "证据（{count}）",
+      "dimension": "维度",
+      "noDimension": "未关联任何维度。",
+      "run": "运行",
+      "confidence": "置信度",
+      "rank": "排名",
+      "duplicateOf": "重复于",
+      "updateOf": "更新自"
+    },
+    "evidence": {
+      "unknownSource": "未知来源",
+      "verified": "已验证引文",
+      "unverified": "未验证",
+      "emptyTitle": "没有证据",
+      "emptyMessage": "没有已验证的引文支持此发现。",
+      "open": "查看上下文",
+      "detailTitle": "证据",
+      "quote": "引文",
+      "inContext": "引文上下文",
+      "unverifiedHelp": "无法将此引文与抓取的来源文本匹配。",
+      "source": "来源",
+      "domain": "域名",
+      "position": "在来源中的位置",
+      "positionValue": "第 {start} 至 {end} 个字符",
+      "sourceId": "来源 ID"
+    },
+    "empty": {
+      "title": "暂无发现",
+      "message": "运行读取并排序来源后，发现会显示在这里。运行一个主题即可获得发现。",
+      "topicMessage": "运行此主题以查找并排序来源。"
+    },
+    "pinnedMarker": "已置顶",
+    "pinnedBadge": "已置顶",
+    "hiddenBadge": "已隐藏",
+    "hiddenHelp": "已隐藏的发现不会出现在列表、简报和邮件中。取消隐藏即可恢复。",
+    "showHidden": "显示已隐藏",
+    "pinnedOnly": "仅显示已置顶",
+    "actions": {
+      "pin": "置顶",
+      "unpin": "取消置顶",
+      "hide": "隐藏",
+      "unhide": "取消隐藏",
+      "pinned": "发现已置顶",
+      "unpinned": "发现已取消置顶",
+      "hidden": "发现已隐藏",
+      "unhidden": "发现已重新显示",
+      "deleted": "发现已删除",
+      "deleteTitle": "删除发现",
+      "deleteMessage": "要删除“{title}”吗？其证据链接将被移除。共享来源和你的评价历史会保留。"
+    }
+  },
+  "predictions": {
+    "overdue": "已过时限",
+    "brierHelp": "越低越好：0 为完美，0.25 相当于抛硬币。",
+    "columns": {
+      "statement": "预测",
+      "status": "状态",
+      "confidence": "置信度",
+      "horizon": "时限",
+      "brier": "Brier 分数",
+      "topic": "主题",
+      "created": "创建时间",
+      "id": "ID",
+      "rating": "你的评分"
+    },
+    "actions": {
+      "resolve": "判定",
+      "reresolve": "重新判定"
+    },
+    "resolvedBy": {
+      "User": "你",
+      "Agent": "智能体",
+      "AgentConfirmed": "智能体判定，经你确认"
+    },
+    "detail": {
+      "title": "预测",
+      "resolved": "判定时间",
+      "resolvedBy": "判定者",
+      "note": "判定说明"
+    },
+    "reviews": {
+      "title": "评审（{count}）",
+      "empty": "暂无评审。后续运行会根据新发现检查未判定的预测，并在此提出判定建议。",
+      "proposes": "建议",
+      "confidence": "置信度 {confidence}",
+      "finding": "发现 {id}",
+      "accept": "接受",
+      "reject": "拒绝",
+      "accepted": "已接受",
+      "rejected": "已拒绝",
+      "acceptedToast": "判定已接受",
+      "rejectedToast": "判定已拒绝"
+    },
+    "resolve": {
+      "title": "判定预测",
+      "submit": "判定",
+      "outcome": "结果",
+      "outcomeHelp": "准确、部分准确和不准确会计入准确率和 Brier 分数。",
+      "note": "说明",
+      "notePlaceholder": "发生了什么，如有链接请附上",
+      "notGraded": "此结果不参与评分，因此没有 Brier 分数。",
+      "brierPreview": "在 {confidence} 的置信度下，此结果的 Brier 分数为 {brier}。",
+      "done": "预测已判定"
+    },
+    "kpis": {
+      "open": "未判定",
+      "graded": "已评分",
+      "ofTotal": "共 {total} 条预测",
+      "accuracy": "实际准确率",
+      "accuracyHelp": "部分准确按一半计算。",
+      "brier": "平均 Brier 分数"
+    },
+    "calibration": {
+      "title": "校准",
+      "subtitle": "声明的置信度与预测实际成真频率的对比",
+      "aria": "{count} 条已评分预测的校准",
+      "xAxis": "声明的置信度",
+      "count": "预测",
+      "meanConfidence": "平均置信度",
+      "observed": "实际准确率",
+      "perfect": "完美校准",
+      "bucket": "置信度 {from} 至 {to}",
+      "empty": "为一些预测评分后即可查看校准。"
+    },
+    "empty": {
+      "title": "暂无预测",
+      "message": "运行会对主题的发展方向做出预测。预测会显示在这里，供你跟踪和评分。"
+    }
+  },
+  "suggestions": {
+    "priority": "{priority}优先级",
+    "effort": "需要 {effort}",
+    "until": "直到",
+    "changed": "已标记为{status}",
+    "columns": {
+      "title": "建议",
+      "status": "状态",
+      "priorityEffort": "优先级和工作量",
+      "topic": "主题",
+      "created": "创建时间",
+      "id": "ID",
+      "rating": "你的评价"
+    },
+    "actions": {
+      "accept": "接受",
+      "snooze": "暂缓",
+      "dismiss": "忽略",
+      "complete": "完成"
+    },
+    "detail": {
+      "title": "建议",
+      "rationale": "原因",
+      "statusChanged": "状态变更时间",
+      "findings": "相关发现"
+    },
+    "snooze": {
+      "title": "暂缓建议",
+      "quick": "快速选择",
+      "tomorrow": "明天上午",
+      "nextWeek": "一周后",
+      "nextMonth": "一个月后",
+      "until": "暂缓至",
+      "future": "请选择未来的时间。",
+      "help": "到时它会重新出现在你的列表中。"
+    },
+    "empty": {
+      "title": "暂无建议",
+      "message": "运行会建议值得深入研究的内容。建议会显示在这里，你可以接受、暂缓、忽略或完成。"
+    }
+  },
+  "briefings": {
+    "untitled": "未命名简报",
+    "dryRun": "试运行",
+    "searchPlaceholder": "标题",
+    "includeDryRun": "包含试运行",
+    "columns": {
+      "title": "简报",
+      "kind": "类型",
+      "status": "状态",
+      "edition": "期刊",
+      "topic": "主题",
+      "items": "条目",
+      "pinned": "已置顶",
+      "created": "撰写时间",
+      "id": "ID"
+    },
+    "actions": {
+      "open": "打开"
+    },
+    "download": {
+      "md": "下载 .md",
+      "html": "下载 .html"
+    },
+    "pin": {
+      "pin": "置顶",
+      "unpin": "取消置顶",
+      "pinNamed": "置顶 {title}",
+      "unpinNamed": "取消置顶 {title}",
+      "pinned": "已置顶。其文件会在保留期后继续保留。",
+      "unpinned": "已取消置顶。其文件重新遵循保留期。",
+      "cap": "你已达到此工作区的置顶上限。请先取消置顶其他简报。",
+      "badge": "已置顶"
+    },
+    "expired": {
+      "notice": "报告文件已过期。重新生成后即可再次下载。",
+      "title": "报告文件已过期。",
+      "message": "报告文件最多保留 365 天。简报及其发现仍然保留，因此可以重新生成文件。",
+      "regenerate": "重新生成",
+      "regenerated": "已重新生成报告文件"
+    },
+    "files": {
+      "expired": "文件已过期",
+      "pinned": "已置顶",
+      "expires": "保留至 {date}",
+      "download": "下载 {name}"
+    },
+    "progress": {
+      "Queued": "已排队，即将开始撰写。",
+      "Composing": "正在撰写。",
+      "researching": "正在等待最新研究，最晚至 {time}。"
+    },
+    "reader": {
+      "back": "所有简报",
+      "citation": "来源 {number}",
+      "outline": "大纲",
+      "noItems": "此简报未使用任何发现、预测或建议。",
+      "otherItems": "其他",
+      "open": {
+        "Finding": "打开发现",
+        "Prediction": "打开预测",
+        "Suggestion": "打开建议"
+      },
+      "noFiles": "没有已存储的文件。",
+      "openRun": "打开运行",
+      "stats": "阅读约 {minutes} 分钟，{words} 字，{items} 个条目",
+      "failed": "撰写失败。",
+      "noContent": "此简报没有内容。",
+      "items": "本简报包含（{count}）",
+      "files": "文件",
+      "period": "涵盖时段",
+      "readMinutes": "阅读约 {minutes} 分钟"
+    },
+    "delete": {
+      "title": "删除简报",
+      "message": "要删除“{title}”及其已存储的文件吗？它使用的发现、预测和建议会保留。",
+      "done": "简报已删除"
+    },
+    "empty": {
+      "title": "暂无简报",
+      "message": "撰写一期期刊、运行一个主题或提出一次性问题即可获得简报。"
+    }
+  },
+  "today": {
+    "seeAll": "查看全部",
+    "composeNow": "立即撰写",
+    "composeQueued": "简报已排队",
+    "composeReady": "你的简报已就绪",
+    "composeFailed": "简报失败：{message}",
+    "composeConflict": "此期刊的简报已在生成中。",
+    "edition": "期刊",
+    "follow": "查看进度",
+    "noEditions": "你还没有期刊。",
+    "createEdition": "创建一个",
+    "empty": {
+      "title": "暂无简报",
+      "message": "立即撰写你的期刊，或等待其计划时间。"
+    },
+    "openReader": "在阅读器中打开",
+    "runs": "最近的运行简报",
+    "oneTime": "一次性报告",
+    "noRuns": "暂无运行简报。",
+    "noOneTime": "暂无一次性报告。"
+  },
+  "editions": {
+    "add": "新建期刊",
+    "back": "所有期刊",
+    "newTitle": "新建期刊",
+    "newSummary": "按自己的计划，覆盖你所选主题的简报。",
+    "created": "期刊已创建",
+    "saved": "期刊已保存",
+    "deleted": "期刊已删除",
+    "composeQueued": "简报已排队",
+    "enabledOn": "已启用",
+    "enabledOff": "已停用",
+    "preview": "预览",
+    "previewing": "正在撰写预览...",
+    "previewTitle": "预览：{name}",
+    "previewSubtitle": "根据最新数据撰写。不会保存或发送任何内容。",
+    "previewFallbacks": "由于没有模型响应，{count, plural, other {# 个部分}}以普通列表形式写出。",
+    "previewEmpty": "预览为空。",
+    "discard": "放弃更改",
+    "create": "创建期刊",
+    "save": "保存期刊",
+    "schedulesHelp": "此期刊的撰写时间。开启最新研究后，研究会在每个计划时间之前开始。",
+    "schedulesEmpty": "添加计划以自动撰写此期刊，或手动撰写。",
+    "deleteTitle": "删除期刊",
+    "deleteMessage": "要删除期刊“{name}”及其计划吗？其简报会保留。",
+    "viewBriefings": "查看简报",
+    "lookbackHours": "过去 {hours} 小时",
+    "sections": {
+      "settings": "设置",
+      "topics": "主题",
+      "schedules": "计划",
+      "briefings": "简报"
+    },
+    "columns": {
+      "name": "期刊",
+      "enabled": "状态",
+      "delivery": "投递",
+      "lookback": "回溯范围",
+      "lastComposed": "上次撰写",
+      "created": "创建时间",
+      "id": "ID"
+    },
+    "badges": {
+      "email": "邮件",
+      "audio": "音频",
+      "fresh": "最新研究（{minutes} 分钟）"
+    },
+    "empty": {
+      "title": "暂无期刊",
+      "message": "创建期刊即可按计划获得简报。"
+    },
+    "form": {
+      "name": "名称",
+      "nameRequired": "名称为必填项。",
+      "description": "描述",
+      "template": "模板",
+      "templateDefault": "使用默认模板 {name}。",
+      "defaultName": "默认模板",
+      "useDefault": "默认模板",
+      "sharedOption": "{name}（共享）",
+      "enabled": "已启用",
+      "enabledHelp": "按计划撰写。无论是否启用，都可以立即撰写。",
+      "email": "邮件",
+      "emailHelp": "简报就绪后通过邮件发送。",
+      "audio": "音频",
+      "audioHelp": "为每份简报生成音频版本。",
+      "fresh": "先进行最新研究",
+      "freshHelp": "撰写前先运行每个主题的研究。",
+      "lead": "研究提前时间（分钟）",
+      "leadHelp": "等待研究的时长，{min} 到 {max} 分钟。",
+      "lookbackMode": "回溯范围",
+      "lookbackModeHelp": {
+        "SinceLastEdition": "自上一期期刊撰写以来的所有内容。",
+        "FixedHours": "在期刊撰写时结束的固定时间窗口。"
+      },
+      "lookbackHours": "回溯窗口（小时）",
+      "lookbackHoursHelp": "{min} 到 {max} 小时。“自上一期以来”也不会超出此范围。"
+    },
+    "topics": {
+      "mode": "主题",
+      "modes": {
+        "all": "所有活跃主题",
+        "chosen": "选择主题"
+      },
+      "allHelp": "涵盖所有活跃的周期性主题，包括你以后添加的主题。",
+      "covered": "涵盖的主题",
+      "noneActive": "你还没有活跃的周期性主题。",
+      "chosenHelp": "仅限这些主题，按此顺序。",
+      "noneChosen": "尚未选择主题。",
+      "chosen": "已选主题",
+      "chooseOne": "请至少选择一个主题，或涵盖所有活跃主题。",
+      "moveUp": "上移 {name}",
+      "moveDown": "下移 {name}",
+      "remove": "移除 {name}",
+      "addLabel": "要添加的主题",
+      "pick": "选择主题",
+      "add": "添加",
+      "save": "保存主题",
+      "saved": "主题已保存"
+    }
+  },
+  "templates": {
+    "add": "新建模板",
+    "back": "所有模板",
+    "open": "打开编辑器",
+    "empty": "暂无模板",
+    "searchPlaceholder": "名称或描述",
+    "saved": "已保存新版本",
+    "created": "模板已创建",
+    "deleted": "模板已删除",
+    "export": "导出 .md",
+    "copy": "创建副本",
+    "copyName": "{name}（副本）",
+    "reset": "恢复默认",
+    "resetTitle": "重置模板",
+    "resetMessage": "要将内容替换为内置默认内容并另存为新版本吗？早期版本会保留在历史记录中。",
+    "resetDone": "已恢复为默认",
+    "deleteTitle": "删除模板",
+    "deleteMessage": "要删除模板“{name}”及其所有版本吗？使用它的期刊将改用默认模板。",
+    "readOnly": "只有租户管理员可以更改共享模板。创建副本即可编辑你自己的版本。",
+    "scope": {
+      "shared": "共享",
+      "mine": "我的"
+    },
+    "badges": {
+      "editionDefault": "期刊默认",
+      "builtIn": "内置"
+    },
+    "columns": {
+      "name": "模板",
+      "scope": "范围",
+      "origin": "来源",
+      "version": "版本",
+      "updated": "更新时间"
+    },
+    "import": {
+      "button": "导入 .md",
+      "file": "模板文件",
+      "tooLarge": "该文件太大，不能作为模板。"
+    },
+    "editor": {
+      "title": "模板",
+      "panels": "模板工具",
+      "valid": "有效",
+      "errors": "{count, plural, other {# 个错误}}",
+      "rejected": "服务器拒绝了此版本。",
+      "format": "带 front matter（name、description、tone、length、audience、citations、audio）的 Markdown。每个二级标题是一个部分。标题下的 mmn:section 注释用于选择数据（source、tier、status、group、limit、order、topic、dimension），标题下的文本告诉撰写器要写什么。"
+    },
+    "panels": {
+      "problems": "问题",
+      "problemsCount": "问题（{count}）",
+      "outline": "大纲",
+      "preview": "预览",
+      "versions": "版本"
+    },
+    "problems": {
+      "none": "未发现问题。",
+      "errors": "{count, plural, other {# 个错误}}",
+      "warnings": "{count, plural, other {# 个警告}}",
+      "checking": "正在检查...",
+      "jump": "转到第 {line} 行",
+      "line": "第 {line} 行",
+      "general": "常规",
+      "warning": "警告",
+      "error": "错误"
+    },
+    "outline": {
+      "pending": "正在验证...",
+      "name": "名称",
+      "title": "标题",
+      "audio": "音频",
+      "audioOn": "开启：{format}，约 {minutes} 分钟",
+      "audioOff": "关闭",
+      "intro": "开头",
+      "noSections": "暂无部分。请添加一个二级标题。",
+      "jump": "转到第 {line} 行的 {heading}",
+      "source": "source={source}"
+    },
+    "preview": {
+      "help": "使用期刊已保存的模板，根据最新数据撰写所选期刊。不会保存或发送任何内容。",
+      "noEditions": "创建期刊后即可预览模板。",
+      "edition": "要预览的期刊",
+      "otherTemplate": "{name} 使用的是其他模板，因此此预览不会显示当前模板。",
+      "unsaved": "保存更改后才能在预览中看到。"
+    },
+    "versions": {
+      "none": "暂无版本。",
+      "rollbackMessage": "要将版本 {version} 恢复为新版本吗？当前内容会保留在历史记录中。"
+    },
+    "create": {
+      "titles": {
+        "new": "新建模板",
+        "import": "导入模板",
+        "copy": "创建副本"
+      },
+      "confirm": {
+        "new": "创建",
+        "import": "导入",
+        "copy": "创建副本"
+      },
+      "contentHelp": {
+        "import": "导入 {lines} 行 Markdown。",
+        "copy": "复制编辑器中的 {lines} 行内容，包括未保存的更改。"
+      },
+      "defaultName": "我的简报",
+      "name": "名称",
+      "nameHelp": "留空则使用 front matter 中的名称。",
+      "startFrom": "起始内容",
+      "starter": "一个简单的入门模板",
+      "copyOf": "{name} 的副本",
+      "shared": "与此工作区中的所有人共享",
+      "invalid": "模板存在问题。"
+    }
+  },
+  "audio": {
+    "panel": {
+      "label": "简报音频",
+      "title": "收听",
+      "fromText": "朗读简报文本",
+      "checking": "正在检查音频..."
+    },
+    "player": {
+      "loading": "正在加载音频...",
+      "loadingSize": "正在加载音频（{size}）...",
+      "play": "播放",
+      "pause": "暂停",
+      "back": "后退 {seconds} 秒",
+      "forward": "前进 {seconds} 秒",
+      "seek": "播放位置",
+      "position": "{time} / {duration}",
+      "nowPlaying": "正在播放：{chapter}",
+      "speed": "播放速度",
+      "speedOption": "{speed}x",
+      "chapters": "章节"
+    },
+    "progress": {
+      "Queued": "音频已排队，即将生成。",
+      "Scripting": "正在撰写朗读稿。",
+      "Synthesizing": "正在合成语音。较长的简报需要几分钟。"
+    },
+    "make": {
+      "action": "生成音频",
+      "again": "再次生成音频",
+      "remake": "重新生成音频",
+      "voice": "语音",
+      "defaultVoice": "默认语音",
+      "voiceDefault": "{name}（默认）",
+      "queued": "音频已排队",
+      "conflict": "音频未排队。此简报的音频已在生成中，或此服务器已关闭音频功能。{message}"
+    },
+    "failed": "音频生成失败。",
+    "missingFile": "音频文件不可用。请再次生成音频后收听。",
+    "none": "此简报还没有音频。",
+    "listenFrom": "从 {section} 开始收听"
+  },
+  "voices": {
+    "columns": {
+      "name": "名称",
+      "provider": "提供商",
+      "voice": "语音",
+      "model": "模型",
+      "speed": "语速",
+      "endpoint": "端点",
+      "credential": "凭据",
+      "created": "创建时间",
+      "id": "ID"
+    },
+    "default": "默认",
+    "secondaryShort": "第二主持人：{voice}",
+    "serverDefault": "服务器默认",
+    "adminOnly": "只有租户管理员可以更改语音。",
+    "memberNotice": "你可以查看和测试语音。创建、编辑和删除语音需要租户管理员。",
+    "twoHostHint": "双主持人脚本交替使用 HOST_A 和 HOST_B 行：HOST_A 使用该语音，HOST_B 使用第二语音（未设置第二语音时仍使用该语音）。",
+    "makeDefault": "设为默认",
+    "defaultSet": "{name} 现在是默认语音",
+    "empty": {
+      "title": "暂无语音",
+      "message": "在你添加语音之前，音频使用服务器的语音设置。"
+    },
+    "form": {
+      "createTitle": "添加语音",
+      "editTitle": "编辑语音"
+    },
+    "fields": {
+      "endpointHelp": "OpenAI 兼容语音服务器的基础 URL。留空则使用服务器默认值。",
+      "endpointPlaceholder": "服务器默认",
+      "modelHelp": "留空则使用默认模型。",
+      "modelPlaceholder": "kokoro",
+      "voice": "语音",
+      "voiceHelp": "旁白语音，也是双主持人脚本中的 HOST_A。",
+      "voicePlaceholder": "af_heart",
+      "secondaryVoice": "第二语音",
+      "secondaryVoiceHelp": "双主持人脚本中的 HOST_B。留空则两位主持人都使用该语音。",
+      "speedHelp": "范围 {min} 到 {max}。",
+      "credentialHelp": "语音服务器需要 API 密钥时，使用包含该密钥的已存储凭据。",
+      "isDefault": "默认语音",
+      "isDefaultHelp": "在期刊或请求未指定语音时使用。"
+    },
+    "test": {
+      "action": "测试",
+      "title": "测试语音",
+      "text": "示例文本",
+      "textHelp": "留空则播放一段简短的问候。",
+      "defaultText": "早上好。以下是你关注的主题的最新动态。",
+      "speak": "朗读",
+      "speaking": "正在朗读...",
+      "ttsError": "语音服务失败：{message}"
+    },
+    "delete": {
+      "title": "删除语音",
+      "message": "要删除语音“{name}”吗？使用它的期刊将改用默认语音。"
+    }
+  },
+  "listen": {
+    "untitled": "未命名单集",
+    "columns": {
+      "title": "单集",
+      "status": "状态",
+      "kind": "类型",
+      "duration": "时长",
+      "size": "大小",
+      "segments": "片段",
+      "script": "脚本",
+      "created": "创建时间",
+      "completed": "完成时间",
+      "id": "ID"
+    },
+    "noValue": "无",
+    "scriptModel": "由模型撰写",
+    "scriptText": "朗读原文",
+    "actions": {
+      "play": "播放",
+      "briefing": "打开简报",
+      "remake": "重新生成音频"
+    },
+    "empty": {
+      "title": "暂无音频",
+      "message": "从简报生成音频，或为期刊开启音频。"
+    },
+    "delete": {
+      "title": "删除单集",
+      "message": "要删除“{title}”及其音频文件吗？简报会保留。",
+      "done": "单集已删除"
+    }
+  },
+  "feeds": {
+    "title": "播客订阅源",
+    "summary": "供播客应用使用的私人订阅源 URL。每个订阅源都包含一个密钥，请像对待密码一样保管其 URL。",
+    "fields": {
+      "name": "名称",
+      "nameHelp": "便于你识别的标签，例如应用或设备名称。",
+      "namePlaceholder": "我手机上的 Overcast",
+      "edition": "期刊",
+      "editionHelp": "将订阅源限定为某一期刊，或包含你的所有音频。"
+    },
+    "allAudio": "我的所有音频",
+    "create": "创建订阅源",
+    "created": {
+      "title": "订阅源已创建",
+      "warning": "此 URL 是私密的，并且只显示一次。任何拥有它的人都可以收听你的简报。请立即复制；如果泄露，请撤销该订阅源。",
+      "feedUrl": "订阅源 URL",
+      "copyUrl": "复制订阅源 URL",
+      "secret": "密钥",
+      "copySecret": "复制密钥",
+      "done": "我已保存"
+    },
+    "empty": {
+      "title": "暂无播客订阅源",
+      "message": "创建订阅源即可在播客应用中收听你的简报。"
+    },
+    "columns": {
+      "name": "名称",
+      "prefix": "令牌",
+      "edition": "期刊",
+      "created": "创建时间",
+      "lastUsed": "上次使用",
+      "status": "状态",
+      "actions": "操作"
+    },
+    "unnamed": "未命名订阅源",
+    "prefix": "{prefix}...",
+    "neverUsed": "从未",
+    "revoked": "已撤销",
+    "revoke": "撤销",
+    "revokeNamed": "撤销 {name}",
+    "revokeConfirm": {
+      "title": "撤销订阅源",
+      "message": "要撤销“{name}”吗？订阅它的播客应用将不再收到新单集。此操作无法撤消。",
+      "done": "订阅源已撤销"
+    },
+    "help": {
+      "title": "如何订阅",
+      "step1": "在上方创建订阅源并复制其 URL。",
+      "apple": "Apple Podcasts：打开“资料库”，从菜单中选择“通过 URL 关注节目”，然后粘贴 URL。",
+      "overcast": "Overcast：点按加号按钮，选择“Add URL”，然后粘贴 URL。",
+      "publicUrl": "你的手机必须能访问服务器。请将 MYMORNINGNEWS_PUBLIC_BASE_URL 设置为手机可以打开的地址（不是 127.0.0.1），然后重新创建订阅源，使其 URL 使用该地址。",
+      "loopback": "此 URL 指向 127.0.0.1，只有这台计算机可以访问。请在服务器上设置 MYMORNINGNEWS_PUBLIC_BASE_URL，以便手机上的播客应用能够访问。"
+    }
+  },
+  "promo": {
+    "picker": {
+      "search": "查找用户",
+      "searchPlaceholder": "邮箱包含",
+      "user": "用户",
+      "noUsers": "没有匹配的用户。",
+      "choose": "选择用户"
+    },
+    "validation": {
+      "codeRequired": "请输入优惠码。",
+      "codeFormat": "使用 4 到 40 个字母、数字和短横线，并以字母或数字开头和结尾。",
+      "prefixFormat": "最多使用 16 个字母和数字。",
+      "countRange": "请输入 1 到 {max, number} 之间的整数。",
+      "planRequired": "请选择套餐。",
+      "durationRange": "请输入 0（无结束）到 3650 之间的整数天数。",
+      "maxRange": "请输入 0（不限）或兑换次数的整数。",
+      "maxBelowUsed": "此优惠码已使用 {used} 次，因此上限不能低于该次数。",
+      "perUserRange": "请输入 1 到 100 之间的整数。",
+      "dateInvalid": "请输入有效的日期和时间。",
+      "expiresAfterStarts": "到期时间必须晚于开始时间。"
+    },
+    "create": {
+      "title": "新建优惠码",
+      "open": "新建优惠码"
+    },
+    "edit": {
+      "title": "编辑 {code}"
+    },
+    "batch": {
+      "title": "批量生成优惠码",
+      "open": "批量生成",
+      "createdTitle": "{count, plural, other {已创建 # 个优惠码}}",
+      "batchId": "批次 {id}",
+      "downloadCsv": "下载 CSV",
+      "copyAll": "复制所有优惠码",
+      "codes": "已创建的优惠码",
+      "generate": "生成"
+    },
+    "fields": {
+      "code": "优惠码",
+      "codeHelp": "字母、数字和短横线。以大写形式存储。",
+      "codeLocked": "优惠码无法重命名。请改为新建一个。",
+      "prefix": "前缀",
+      "prefixHelp": "可选，最多 16 个字母和数字。每个优惠码会附加随机后缀。",
+      "count": "数量",
+      "countHelp": "1 到 {max, number} 个优惠码。",
+      "plan": "套餐",
+      "noPlans": "暂无套餐",
+      "description": "描述",
+      "duration": "有效天数",
+      "durationHelp": "0 表示套餐没有结束时间。",
+      "maxRedemptions": "总兑换次数",
+      "maxHelp": "0 表示不限。",
+      "maxUsedHelp": "0 表示不限。已使用 {used} 次。",
+      "perUserLimit": "每用户上限",
+      "perUserHelp": "每个人可兑换的次数。",
+      "starts": "开始时间",
+      "startsHelp": "留空则立即开始。使用你的本地时间。",
+      "expires": "到期时间",
+      "expiresHelp": "留空则永不过期。使用你的本地时间。",
+      "enabled": "已启用",
+      "newAccountsOnly": "仅限新账户",
+      "newAccountsOnlyHelp": "只有使用此优惠码注册的账户才能兑换。"
+    },
+    "status": {
+      "enabled": "已启用",
+      "disabled": "已停用",
+      "notStarted": "未开始",
+      "expired": "已过期",
+      "exhausted": "已用完"
+    },
+    "usage": {
+      "usedOf": "{used} / {max}",
+      "usedUnlimited": "{used} / 不限",
+      "unlimited": "不限"
+    },
+    "duration": {
+      "days": "{count, plural, other {# 天}}",
+      "noEnd": "无结束"
+    },
+    "reasons": {
+      "NotFound": "找不到该优惠码。请检查拼写后重试。",
+      "Disabled": "该优惠码已停用。",
+      "NotStarted": "该优惠码尚不可用。",
+      "Expired": "该优惠码已过期。",
+      "Exhausted": "该优惠码已达到允许的使用次数。",
+      "AlreadyRedeemed": "此账户已使用过该优惠码。",
+      "NewAccountsOnly": "该优惠码仅限新账户使用。"
+    },
+    "delete": {
+      "title": "删除优惠码",
+      "message": "要删除 {code} 吗？此操作无法撤消。",
+      "usedMessage": "{code} 已被兑换 {count, plural, other {# 次}}，因此无法删除。请改为停用，以保留其历史记录。",
+      "disableInstead": "改为停用",
+      "conflict": "此优惠码已被使用，因此无法删除。请改为停用。"
+    },
+    "notify": {
+      "disabled": "{code} 已停用",
+      "enabled": "{code} 已启用",
+      "copied": "已复制 {code}",
+      "generated": "{count, plural, other {已生成 # 个优惠码}}",
+      "created": "{code} 已创建"
+    },
+    "columns": {
+      "code": "优惠码",
+      "description": "描述",
+      "plan": "套餐",
+      "duration": "时长",
+      "usage": "已用 / 上限",
+      "remaining": "剩余",
+      "activeSubscriptions": "有效订阅",
+      "status": "状态",
+      "batch": "批次",
+      "expires": "到期时间",
+      "lastRedeemed": "上次兑换",
+      "created": "创建时间"
+    },
+    "filters": {
+      "search": "优惠码或描述",
+      "enabledOnly": "已启用",
+      "disabledOnly": "已停用"
+    },
+    "actions": {
+      "disable": "停用",
+      "enable": "启用",
+      "copyCode": "复制优惠码"
+    },
+    "never": "从未",
+    "immediately": "立即",
+    "createdBy": "创建者",
+    "empty": {
+      "title": "暂无优惠码",
+      "message": "创建优惠码或批量生成，为用户提供套餐。"
+    },
+    "apply": {
+      "open": "应用到用户",
+      "title": "将 {code} 应用到用户",
+      "help": "该用户将获得 {plan}，有效期 {duration}。优惠码的限制仍然适用。",
+      "confirm": "应用优惠码",
+      "done": "{code} 已应用到 {email}"
+    },
+    "redemptions": {
+      "title": "兑换记录",
+      "user": "用户",
+      "tenant": "租户",
+      "channel": "渠道",
+      "date": "兑换时间",
+      "status": "状态",
+      "active": "有效",
+      "revoked": "已撤销",
+      "revokedOn": "撤销于 {date}",
+      "userId": "用户 ID",
+      "revoke": "撤销",
+      "revokeTitle": "撤销兑换",
+      "revokeMessage": "要撤销 {email} 的 {code} 吗？其通过此优惠码获得的套餐将立即结束。",
+      "revokedNotice": "兑换已撤销",
+      "empty": "尚无人兑换此优惠码",
+      "emptyMessage": "兑换记录会显示在这里，包括兑换者、时间和渠道。"
+    },
+    "channels": {
+      "Signup": "注册",
+      "Account": "账户",
+      "Admin": "管理员",
+      "Api": "API"
+    },
+    "detail": {
+      "summary": "此优惠码的使用情况、兑换记录和设置",
+      "back": "所有优惠码",
+      "settings": "设置"
+    },
+    "kpi": {
+      "redemptions": "兑换次数",
+      "remaining": "剩余",
+      "activeSubscriptions": "有效订阅",
+      "revoked": "已撤销",
+      "lastRedeemed": "上次兑换",
+      "notYet": "尚未兑换"
+    },
+    "chart": {
+      "title": "兑换趋势",
+      "subtitle": "按兑换日期每日统计",
+      "empty": "暂无兑换记录。"
+    }
+  },
+  "plans": {
+    "default": "默认",
+    "noFeatures": "没有权益值。",
+    "validation": {
+      "key": "使用 2 到 63 个小写字母、数字和短横线。",
+      "name": "请输入名称。",
+      "duplicate": "键 {key} 重复出现。"
+    },
+    "create": {
+      "title": "新建套餐",
+      "open": "新建套餐"
+    },
+    "edit": {
+      "title": "编辑 {name}",
+      "open": "编辑 {name}"
+    },
+    "fields": {
+      "key": "键",
+      "keyHelp": "稳定的标识符，例如 team-pilot。",
+      "keyLocked": "套餐键无法更改。",
+      "name": "名称",
+      "description": "描述",
+      "features": "权益值",
+      "featuresHelp": "代码检查的是这些键，而不是套餐名称。请使用数字、true 或 false，或 unlimited。值为空则移除该键。",
+      "featureKey": "权益键",
+      "featureValue": "{key} 的值",
+      "emptyRemoves": "留空即移除",
+      "clearValue": "清除 {key}",
+      "addFeature": "添加值"
+    },
+    "featureNames": {
+      "usage_monthlyCostUsd_max": "每月费用上限（美元）",
+      "topics_max": "主题数",
+      "schedule_minIntervalMinutes": "最短计划间隔（分钟）",
+      "runs_daily_max": "每日运行次数",
+      "audio_enabled": "音频",
+      "audio_monthlyMinutes_max": "每月音频分钟数",
+      "email_enabled": "邮件",
+      "mobile_access": "移动应用",
+      "endpoints_custom": "自有模型端点",
+      "artifacts_pinned_max": "置顶报告数"
+    },
+    "assignments": {
+      "title": "用户的套餐",
+      "help": "选择一个用户，查看其所有套餐期（包括稍后开始的），并可撤销其中之一。",
+      "plan": "套餐",
+      "source": "来源",
+      "starts": "开始",
+      "ends": "结束",
+      "state": "状态",
+      "note": "备注",
+      "revoke": "撤销",
+      "revokeTitle": "撤销套餐",
+      "revokeMessage": "要撤销此用户的 {plan} 吗？它将立即结束。",
+      "revoked": "套餐已撤销",
+      "empty": "没有套餐分配",
+      "emptyMessage": "此用户使用默认套餐。"
+    },
+    "sources": {
+      "Default": "默认",
+      "Admin": "管理员",
+      "Promo": "优惠码",
+      "Billing": "账单"
+    },
+    "states": {
+      "current": "当前",
+      "upcoming": "即将开始",
+      "ended": "已结束",
+      "revoked": "已撤销"
+    },
+    "grant": {
+      "open": "授予套餐",
+      "title": "授予套餐",
+      "titleFor": "向 {email} 授予套餐",
+      "confirm": "授予",
+      "note": "备注",
+      "noteHelp": "此用户获得该套餐的原因。会显示在审计日志中。",
+      "done": "已向 {email} 授予套餐"
+    },
+    "userPanel": {
+      "action": "套餐",
+      "title": "{email} 的套餐"
+    }
+  },
+  "account": {
+    "plan": {
+      "title": "套餐",
+      "endsOn": "你的套餐将于 {date} 结束。",
+      "noEnd": "你的套餐没有结束日期。",
+      "limits": "限制",
+      "upcoming": "稍后开始",
+      "anotherPlan": "另一个套餐",
+      "period": "从 {from} 到 {to}",
+      "periodOpen": "从 {from} 开始，无结束日期",
+      "redeemTitle": "兑换优惠码",
+      "code": "优惠码",
+      "codeHelp": "你获得的优惠码。若优惠码对应你当前已有的套餐，则会在当前套餐结束后开始。",
+      "redeem": "兑换",
+      "redeemed": "优惠码已兑换。你现在拥有 {plan}。"
+    }
+  },
+  "email": {
+    "memberNotice": "你只能看到发送给你的邮件。管理员可以看到所有邮件。",
+    "resend": "重新发送",
+    "resent": "已重新发送给 {recipient}",
+    "columns": {
+      "time": "时间",
+      "template": "模板",
+      "recipient": "收件人",
+      "subject": "主题",
+      "status": "状态",
+      "attempts": "尝试次数",
+      "sent": "发送时间",
+      "topic": "主题",
+      "providerId": "提供商 ID"
+    },
+    "statuses": {
+      "Queued": "已排队",
+      "Sending": "发送中",
+      "Sent": "已发送",
+      "Failed": "失败",
+      "Suppressed": "已屏蔽",
+      "Skipped": "已跳过"
+    },
+    "templates": {
+      "RunDigest": "运行摘要",
+      "BriefingPublished": "简报已发布",
+      "RunFailed": "运行失败",
+      "PreferenceProposal": "偏好建议",
+      "Test": "测试"
+    },
+    "chart": {
+      "title": "按状态统计的每日邮件数",
+      "subtitle": "过去 {days} 天",
+      "empty": "此时间段内没有邮件。"
+    },
+    "empty": {
+      "title": "尚未发送邮件",
+      "message": "运行、简报和测试后，邮件会显示在这里。"
+    },
+    "delete": {
+      "title": "删除邮件",
+      "message": "要从发件箱中删除发送给 {recipient} 的“{subject}”吗？"
+    },
+    "preview": {
+      "title": "邮件",
+      "runButton": "邮件预览",
+      "runTitle": "运行邮件预览",
+      "to": "收件人：{recipient}",
+      "format": "格式",
+      "html": "渲染效果",
+      "text": "纯文本",
+      "frame": "渲染后的邮件",
+      "noHtml": "此邮件没有 HTML 正文。",
+      "noText": "此邮件没有纯文本正文。"
+    },
+    "test": {
+      "button": "发送测试邮件",
+      "sent": "已为 {recipient} 排队测试邮件",
+      "failed": "无法发送测试邮件：{message}",
+      "settingsHelp": "请先保存更改，然后给自己发送一封测试邮件。"
+    }
+  },
+  "emailPrefs": {
+    "title": "邮件偏好",
+    "address": "邮件将发送至 {address}。",
+    "saved": "邮件偏好已保存",
+    "categories": {
+      "runEmails": "运行邮件",
+      "briefingEmails": "简报邮件",
+      "failureEmails": "失败通知邮件"
+    },
+    "help": {
+      "runEmails": "你的主题每次运行后发送的摘要。",
+      "briefingEmails": "期刊或运行简报发布时。",
+      "failureEmails": "运行失败时。"
+    },
+    "unsubscribedTitle": "你已退订的主题",
+    "noUnsubscribed": "你会收到所有发送运行邮件的主题的邮件。",
+    "resubscribeHelp": "要重新接收其中某个主题的运行邮件，请使用其最近一封邮件中的链接。"
+  },
+  "feedbackControl": {
+    "rate": "评价",
+    "rateItem": "评价 {title}",
+    "rateType": "评价此{type}",
+    "rateSection": "评价部分 {section}",
+    "sectionPrompt": "此部分是否相关？",
+    "isRelevant": "是否相关？",
+    "isAccurate": "此预测的表现如何？",
+    "isUseful": "是否有用？",
+    "why": "原因？",
+    "whyHelp": "可选。你给出的原因会帮助研究判断哪些内容应保留或舍弃。",
+    "whyTitle": "为什么这样评价？",
+    "whyAdd": "添加原因",
+    "whyEdit": "编辑原因",
+    "ratedAs": "已评价为{rating}",
+    "retract": "撤回评价",
+    "actions": {
+      "relevant": "相关",
+      "somewhat": "部分相关",
+      "not-relevant": "不相关",
+      "accurate": "准确",
+      "partially": "部分准确",
+      "inaccurate": "不准确",
+      "too-early": "为时过早",
+      "useful": "有用",
+      "not-useful": "没用",
+      "none": "未评价"
+    }
+  },
+  "insights": {
+    "noData": "此范围内暂无数据。",
+    "withCount": "{label}（{count}）",
+    "scope": {
+      "days": "{count, plural, other {# 天}}",
+      "topic": "主题",
+      "allTopics": "所有主题",
+      "everyone": "租户中的所有人"
+    },
+    "topic": {
+      "last90": "过去 90 天"
+    },
+    "relevance": {
+      "precision": "精确率",
+      "precisionHelp": "已评价发现中被标为相关或部分相关的比例",
+      "coverage": "覆盖率",
+      "coverageHelp": "已展示发现中获得任何评价的比例",
+      "shown": "已展示的发现",
+      "rated": "已评价的发现",
+      "byDay": "精确率趋势",
+      "byDayHelp": "按天统计，基于当天给出的评价",
+      "byTopic": "各主题精确率",
+      "byTier": "各等级精确率",
+      "byDomain": "各来源域名精确率",
+      "byDomainHelp": "评价最多的 20 个域名",
+      "byDimension": "各维度精确率"
+    },
+    "quality": {
+      "failureRate": "证据验证失败",
+      "quotes": "{count, plural, other {已检查 # 条引文}}",
+      "byModel": "各模型验证失败率",
+      "byModelHelp": "提取的引文中与已存储来源文本不匹配的比例"
+    },
+    "accuracy": {
+      "rate": "准确率",
+      "rateHelp": "准确数加部分准确数的一半，除以已判定数",
+      "brier": "平均 Brier 分数",
+      "due": "待评审",
+      "dueHelp": "已过时限但尚未判定",
+      "resolved": "已判定",
+      "ofTotal": "共 {total} 条，{open} 条未判定",
+      "unresolvable": "无法判定",
+      "agreement": "智能体一致率",
+      "agreementHelp": "{count, plural, other {基于 # 条已决定的评审}}",
+      "latency": "判定耗时",
+      "days": "{count, plural, other {# 天}}",
+      "calibration": "校准曲线",
+      "calibrationHelp": "声明的置信度与预测实际成真频率的对比",
+      "byTopic": "各主题准确率",
+      "byTopicHelp": "每个主题已判定预测的准确率"
+    },
+    "feedback": {
+      "total": "反馈条数",
+      "withReason": "附有原因",
+      "withoutReason": "未附原因",
+      "share": "占全部的 {share}",
+      "emailOpens": "邮件链接打开次数",
+      "emailSubmits": "邮件链接提交次数",
+      "submitRate": "占打开次数的 {rate}",
+      "byDay": "每日反馈量",
+      "byDayHelp": "每天给出的评价，按是否附有原因区分",
+      "byChannel": "各渠道反馈",
+      "byTarget": "各条目类型反馈",
+      "listTitle": "所有反馈",
+      "includeHistory": "包含已被取代的评价",
+      "noReason": "未给出原因",
+      "current": "当前",
+      "superseded": "已被取代",
+      "editWhy": "编辑原因",
+      "saved": "原因已保存",
+      "retractTitle": "撤回此评价",
+      "retractMessage": "要撤回此评价吗？如果同一条目有更早的评价，它将重新成为当前评价。",
+      "retracted": "评价已撤回",
+      "emptyTitle": "暂无反馈",
+      "emptyMessage": "评价发现、预测和建议，让研究了解你在意什么。",
+      "columns": {
+        "when": "时间",
+        "target": "条目",
+        "rating": "评价",
+        "reason": "原因",
+        "channel": "渠道",
+        "current": "状态"
+      },
+      "targetTypes": {
+        "Finding": "发现",
+        "Prediction": "预测",
+        "PredictionReview": "预测评审",
+        "Suggestion": "建议",
+        "SourceItem": "来源",
+        "Domain": "域名",
+        "Briefing": "简报",
+        "BriefingSection": "简报部分",
+        "LearnedPreference": "学习到的偏好"
+      },
+      "channels": {
+        "Dashboard": "控制台",
+        "Email": "邮件",
+        "Mobile": "移动应用",
+        "Api": "API",
+        "Mcp": "MCP"
+      },
+      "byChannelDay": "按天和渠道统计的反馈",
+      "byChannelDayHelp": "每天给出的评价，按来源渠道堆叠"
+    },
+    "reasons": {
+      "title": "原因主题",
+      "help": "从你的原因中标记出的主题，方括号内为过去 30 天的数量",
+      "tagRecent": "{tag} [{recent}]",
+      "byWeek": "每周原因主题"
+    },
+    "suggestions": {
+      "title": "建议结果",
+      "decision": "平均 {days} 天做出决定",
+      "outcomes": {
+        "new": "仍为新建（{share}）",
+        "accepted": "已接受（{share}）",
+        "done": "已完成（{share}）",
+        "snoozed": "已暂缓（{share}）",
+        "dismissed": "已忽略（{share}）"
+      }
+    },
+    "preferences": {
+      "statement": "偏好",
+      "statementHelp": "一句简单的话，例如：跳过供应商融资公告。",
+      "kind": "类型",
+      "origin": "来源",
+      "confidence": "置信度",
+      "supportCount": "支持反馈",
+      "decided": "决定时间",
+      "allTopics": "所有主题",
+      "topicHelp": "留空则应用于所有主题。",
+      "writeOwn": "自己编写",
+      "createTitle": "编写偏好",
+      "createHelp": "你编写的偏好会立即生效，并与你的主题一起提供给研究。",
+      "editTitle": "编辑偏好",
+      "detailTitle": "学习到的偏好",
+      "supportTitle": "{count, plural, =0 {支持反馈} other {# 条支持反馈}}",
+      "noSupport": "没有反馈关联到此偏好。",
+      "learnFor": "学习对象",
+      "chooseTopic": "选择主题",
+      "learnNow": "立即学习",
+      "learning": "正在学习...",
+      "learned": "{count, plural, =0 {学习完成，没有新建议} other {有 # 条新建议待评审}}",
+      "emptyTitle": "暂无学习到的偏好",
+      "emptyMessage": "在你为若干条目附上原因进行评价后，建议会显示在这里；你也可以自己编写。",
+      "deleteTitle": "删除偏好",
+      "deleteMessage": "要删除“{statement}”吗？它将不再影响你的研究。",
+      "statuses": {
+        "Proposed": "已建议",
+        "Active": "生效中",
+        "Rejected": "已拒绝",
+        "Disabled": "已停用"
+      },
+      "origins": {
+        "Distilled": "学习所得",
+        "User": "由你编写"
+      },
+      "kinds": {
+        "Prefer": "偏好",
+        "Avoid": "避免",
+        "PreferSource": "偏好来源",
+        "AvoidSource": "避免来源",
+        "StyleNote": "风格说明"
+      },
+      "actions": {
+        "accept": "接受",
+        "reject": "拒绝",
+        "disable": "停用",
+        "enable": "启用"
+      },
+      "changed": {
+        "accept": "偏好已接受",
+        "reject": "偏好已拒绝",
+        "disable": "偏好已停用",
+        "enable": "偏好已启用"
+      }
+    },
+    "ranking": {
+      "title": "排序建议",
+      "rated": "{count, plural, other {基于 # 条已评价的发现}}",
+      "apply": "应用这些权重",
+      "applyTitle": "应用建议的权重",
+      "applyMessage": "要为 {topic} 使用建议的排序权重吗？之后的运行将以此为发现评分。",
+      "applied": "权重已应用",
+      "notStored": "服务器未保存此主题的权重。",
+      "notEnough": "请为此主题评价更多发现，建议才会可靠。",
+      "component": "分项",
+      "current": "当前",
+      "recommended": "建议",
+      "separation": "区分度",
+      "help": "区分度表示相关与不相关的发现在各分项上的得分差距。区分效果越好的分项获得的权重越高。"
+    },
+    "overview": {
+      "window": "{from} 至 {to}",
+      "help": "除非另有说明，计数均基于所选范围。未判定预测、新建议和活跃主题为当前总数。",
+      "activeTopics": "活跃主题",
+      "runs": "运行",
+      "runOutcomes": "{completed} 个完成，{partial} 个部分成功，{failed} 个失败",
+      "findingsShown": "已展示的发现",
+      "findingsRated": "{count} 条已评价",
+      "precision": "相关性精确率",
+      "precisionHelp": "已评价发现中被判定为相关的比例",
+      "briefingsReady": "已就绪的简报",
+      "emailsSent": "已发送邮件",
+      "emailsFailed": "{count} 封失败",
+      "predictionsOpen": "未判定预测",
+      "predictionsResolved": "{count} 条已判定",
+      "accuracy": "预测准确率",
+      "brier": "平均 Brier {value}",
+      "feedback": "反馈",
+      "feedbackWithReason": "{count} 条附有原因",
+      "suggestionsNew": "新建议",
+      "suggestionsAccepted": "{count} 条已接受或已完成",
+      "quoteFailure": "引文失败率",
+      "quoteFailureHelp": "未通过验证的引文",
+      "modelCost": "模型费用",
+      "modelCalls": "{count} 次模型调用"
+    },
+    "email": {
+      "total": "邮件数",
+      "pendingSkipped": "{pending} 封待发送，{skipped} 封已跳过",
+      "sent": "已发送",
+      "notSent": "未发送",
+      "failed": "失败",
+      "deliveryRate": "投递率",
+      "deliveryRateHelp": "已完成邮件中成功发送的比例",
+      "meanTimeToSend": "平均发送耗时",
+      "meanTimeToSendHelp": "从排队到发送",
+      "linkOpens": "反馈链接打开次数",
+      "linkSubmits": "反馈链接提交次数",
+      "unsubscribes": "退订次数",
+      "byDay": "每日邮件数",
+      "byDayHelp": "每天排队的邮件，按是否已发送区分",
+      "byTemplate": "各模板投递率",
+      "byTemplateHelp": "每个模板的邮件中成功发送的比例",
+      "byStatus": "按状态统计的邮件"
+    }
+  },
+  "mcp": {
+    "tokenWarning": "切勿将会话令牌粘贴到 MCP 客户端或配置文件中。请使用可撤销的访问密钥。此页面不会显示你的令牌。",
+    "about": {
+      "title": "关于 MCP 服务器",
+      "body": "My Morning News MCP 服务器让 Claude Code、Claude Desktop、IDE 或你自己的智能体可以列出你的主题、阅读简报、深入查看发现背后的证据、判定预测、处理建议，并附上原因提供反馈。",
+      "privileges": "它没有自己的权限。每次调用都会使用你的访问密钥访问 REST API，因此你的角色和所有权与在此处完全一致。通过它提供的反馈会以 MCP 渠道记录。"
+    },
+    "url": {
+      "label": "Streamable HTTP URL",
+      "help": "MCP 服务器作为独立进程运行，与 REST API 分开。如果你的服务器运行在其他位置，请修改此项；下面的命令会随之更新。",
+      "invalid": "请输入 http 或 https URL。",
+      "reset": "恢复为建议的 URL"
+    },
+    "key": {
+      "title": "创建访问密钥",
+      "body": "为 MCP 客户端创建访问密钥和私密密钥，以便日后无需更改密码即可撤销。请在创建时复制私密密钥；它只显示一次。",
+      "authMode": "请选择“直接标头”或“混合”认证模式：Streamable HTTP 客户端会在每个请求中发送密钥和私密密钥，而“签名请求”和“会话交换”模式的密钥会拒绝这种方式。",
+      "create": "创建访问密钥",
+      "askAdmin": "访问密钥由管理员创建。请向你的管理员申请“直接标头”认证模式的访问密钥。"
+    },
+    "connect": {
+      "title": "连接客户端",
+      "claudeHttp": "通过 Streamable HTTP 使用 Claude Code",
+      "claudeHttpHelp": "将占位符替换为你的访问密钥和私密密钥，然后在终端中运行。",
+      "claudeStdio": "通过 stdio 使用 Claude Code",
+      "claudeStdioHelp": "从源代码检出运行 MCP 服务器。请替换路径和占位符。",
+      "desktop": "Claude Desktop 及其他客户端",
+      "desktopHelp": "适用于读取 mcpServers JSON 文件的客户端。请替换路径和占位符。",
+      "run": "启动 MCP 服务器",
+      "runHelp": "在 Docker 栈运行时，此命令会在端口 12105 上启动 MCP 服务器。"
+    },
+    "try": {
+      "title": "试一试",
+      "topics": "列出我的 My Morning News 主题",
+      "briefing": "阅读今天的简报",
+      "review": "运行 review_morning_briefing 提示词",
+      "safety": "发现和简报包含来自网页的文本。客户端会被告知将其视为数据，绝不当作指令。"
+    }
+  },
+  "sources": {
+    "searchPlaceholder": "搜索标题和地址",
+    "topic": "主题",
+    "allTopics": "所有主题",
+    "clearRun": "显示所有运行的来源",
+    "columns": {
+      "title": "来源",
+      "domain": "域名",
+      "published": "发布时间",
+      "contentType": "内容类型",
+      "firstRun": "首次出现的运行",
+      "fetched": "抓取时间",
+      "timesSeen": "出现次数",
+      "id": "ID"
+    },
+    "detail": {
+      "title": "来源",
+      "open": "打开页面",
+      "monospace": "等宽字体",
+      "copyText": "复制文本",
+      "characters": "{count, plural, other {{formatted} 个字符}}"
+    },
+    "empty": {
+      "title": "暂无来源",
+      "message": "运行为你的某个主题搜索网络并抓取页面后，来源会显示在这里。"
+    }
+  }
+}

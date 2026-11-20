@@ -3,16 +3,20 @@
 //   1. every key the source uses exists in the English catalog (missing keys)
 //   2. every English key is used by the source (orphaned keys), allowing keys under dynamic prefixes
 //   3. every message in every catalog parses as ICU MessageFormat and keeps the English placeholders
-//   4. non-English catalogs contain no keys that English lacks
-//   5. no user-visible text is hard-coded in JSX (text children and user-facing attributes)
-//   6. no catalog value contains an em-dash
+//   4. every supported locale has a catalog, and each catalog is complete: every English key and no others
+//   5. translated messages keep each argument's type and select options, spell out the plural categories their
+//      locale needs, and keep product names, URLs, and route paths (scripts/i18n-rules.mjs)
+//   6. no user-visible text is hard-coded in JSX (text children and user-facing attributes)
+//   7. no catalog value contains an em-dash
 // With --pseudo it also builds the qps-ploc and qps-rtl pseudo-locales and formats every message in them.
 // Exits non-zero on any failure.
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as espree from 'espree';
 import IntlMessageFormat from 'intl-messageformat';
+import { SOURCE_LOCALE, SUPPORTED_LOCALES } from '../src/i18n/localeRegistry.js';
+import { messageProblems } from './i18n-rules.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..');
@@ -79,32 +83,55 @@ function checkMessage(locale, key, message, sourceMessage) {
     return;
   }
   if (message.includes(String.fromCharCode(0x2014))) fail(`${locale}: ${key} contains an em-dash`);
-  try {
-    new IntlMessageFormat(message, locale.startsWith('qps') ? 'en' : locale).format(sampleValues(sourceMessage || message));
-  } catch (err) {
-    fail(`${locale}: ${key} is not valid ICU (${err.message})`);
+  if (sourceMessage === undefined) {
+    try {
+      new IntlMessageFormat(message, locale).format(sampleValues(message));
+    } catch (err) {
+      fail(`${locale}: ${key} is not valid ICU (${err.message})`);
+    }
+    return;
   }
-  if (sourceMessage !== undefined) {
-    const want = placeholders(sourceMessage);
-    const got = placeholders(message);
-    for (const name of want) if (!got.has(name)) fail(`${locale}: ${key} is missing placeholder {${name}}`);
-    for (const name of got) if (!want.has(name)) fail(`${locale}: ${key} has unknown placeholder {${name}}`);
-  }
+  for (const problem of messageProblems(locale, sourceMessage, message).problems) fail(`${locale}: ${key} ${problem}`);
 }
 
 // Catalogs
-const en = JSON.parse(readFileSync(join(localesDir, 'en.json'), 'utf8'));
+const en = JSON.parse(readFileSync(join(localesDir, SOURCE_LOCALE + '.json'), 'utf8'));
 const enFlat = flatten(en);
 for (const [key, value] of Object.entries(enFlat)) checkMessage('en', key, value);
 
+const translatedLocales = SUPPORTED_LOCALES.filter((l) => l.code !== SOURCE_LOCALE && !l.pseudo).map((l) => l.code);
 for (const file of readdirSync(localesDir)) {
-  if (!file.endsWith('.json') || file === 'en.json') continue;
-  const locale = file.replace(/\.json$/, '');
-  const flat = flatten(JSON.parse(readFileSync(join(localesDir, file), 'utf8')));
+  if (!file.endsWith('.json')) continue;
+  const code = file.replace(/\.json$/, '');
+  if (code !== SOURCE_LOCALE && !translatedLocales.includes(code)) fail(`${file} is not a supported locale (src/i18n/localeRegistry.js)`);
+}
+
+const localeCounts = [];
+for (const locale of translatedLocales) {
+  const path = join(localesDir, locale + '.json');
+  if (!existsSync(path)) {
+    fail(`${locale}: catalog src/i18n/locales/${locale}.json is missing`);
+    continue;
+  }
+  let flat;
+  try {
+    flat = flatten(JSON.parse(readFileSync(path, 'utf8')));
+  } catch (err) {
+    fail(`${locale}: catalog is not valid JSON (${err.message})`);
+    continue;
+  }
+  let missing = 0;
+  for (const key of Object.keys(enFlat)) {
+    if (!(key in flat)) {
+      missing++;
+      fail(`${locale}: ${key} is missing (every English key needs a translation)`);
+    }
+  }
   for (const [key, value] of Object.entries(flat)) {
     if (!(key in enFlat)) fail(`${locale}: ${key} does not exist in en.json`);
     else checkMessage(locale, key, value, enFlat[key]);
   }
+  localeCounts.push(`${locale} ${Object.keys(enFlat).length - missing}`);
 }
 
 // Source
@@ -200,3 +227,4 @@ if (problems.length > 0) {
   process.exit(1);
 }
 console.log(`i18n verify passed: ${count} keys, ${usedKeys.size} referenced directly, ${dynamicPrefixes.size} dynamic prefixes${pseudo ? ', pseudo-locales formatted' : ''}.`);
+console.log(`Complete catalogs: ${localeCounts.join(', ')}.`);

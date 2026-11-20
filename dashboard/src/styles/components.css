@@ -1231,8 +1231,38 @@ table {
   }
 }
 
-/* Directional icons point the other way in right-to-left layouts. */
+/* Directional icons point the other way in right-to-left layouts: back and next arrows, disclosure and pagination
+   chevrons, the sidebar panel toggles, sign in and out, send, and undo. Media, clock, and trend icons keep their
+   orientation. */
 [dir='rtl'] .table-pagination svg,
-[dir='rtl'] .nav-group-label svg.lucide-chevron-right {
+[dir='rtl'] svg.lucide-arrow-left,
+[dir='rtl'] svg.lucide-arrow-right,
+[dir='rtl'] svg.lucide-chevron-left,
+[dir='rtl'] svg.lucide-chevron-right,
+[dir='rtl'] svg.lucide-chevrons-left,
+[dir='rtl'] svg.lucide-chevrons-right,
+[dir='rtl'] svg.lucide-panel-left-close,
+[dir='rtl'] svg.lucide-panel-left-open,
+[dir='rtl'] svg.lucide-log-in,
+[dir='rtl'] svg.lucide-log-out,
+[dir='rtl'] svg.lucide-send,
+[dir='rtl'] svg.lucide-send-horizontal,
+[dir='rtl'] svg.lucide-undo-2 {
   transform: scaleX(-1);
+}
+
+/* The JSON tree stays left to right (index.css), so its disclosure chevrons keep their direction. */
+[dir='rtl'] .json-tree svg {
+  transform: none;
+}
+
+/* Chart plots are drawn in SVG coordinates that run left to right. Keep their text anchors and the HTML axis labels
+   under the columns in the same direction, so labels stay beside their axes and under their bars in RTL locales. */
+[dir='rtl'] .time-chart svg,
+[dir='rtl'] .column-chart svg,
+[dir='rtl'] .calibration-chart svg,
+[dir='rtl'] .stage-timeline svg,
+[dir='rtl'] .score-breakdown svg,
+[dir='rtl'] .column-chart-labels {
+  direction: ltr;
 }

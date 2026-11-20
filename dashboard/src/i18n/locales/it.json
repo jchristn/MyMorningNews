@@ -1,0 +1,3750 @@
+{
+  "app": {
+    "name": "My Morning News"
+  },
+  "common": {
+    "active": "Attivo",
+    "add": "Aggiungi",
+    "cancel": "Annulla",
+    "clearFilters": "Cancella filtri",
+    "close": "Chiudi",
+    "confirm": "Conferma",
+    "copied": "Copiato",
+    "copy": "Copia",
+    "copyId": "Copia ID",
+    "copyUrl": "Copia URL",
+    "created": "Creato",
+    "delete": "Elimina",
+    "dismiss": "Ignora",
+    "duplicate": "Duplica",
+    "edit": "Modifica",
+    "hidePassword": "Nascondi password",
+    "inactive": "Inattivo",
+    "language": "Lingua",
+    "lastLoaded": "Ultimo caricamento {time}",
+    "loading": "Caricamento...",
+    "no": "No",
+    "none": "Nessuno",
+    "refresh": "Aggiorna",
+    "remove": "Rimuovi",
+    "retry": "Riprova",
+    "save": "Salva",
+    "saving": "Salvataggio...",
+    "showPassword": "Mostra password",
+    "status": "Stato",
+    "view": "Visualizza",
+    "viewJson": "Visualizza JSON",
+    "working": "Elaborazione...",
+    "yes": "Sì"
+  },
+  "errors": {
+    "badRequest": "La richiesta non è valida.",
+    "conflict": "La modifica è in conflitto con i dati esistenti.",
+    "forbidden": "Non hai l’autorizzazione per farlo.",
+    "generic": "Si è verificato un errore.",
+    "network": "Impossibile raggiungere il server. Controlla l’URL del server e che il server sia in esecuzione.",
+    "notFound": "L’elemento richiesto non è stato trovato.",
+    "requestId": "ID richiesta",
+    "server": "Il server ha segnalato un errore.",
+    "tooMany": "Troppe richieste. Attendi un momento e riprova.",
+    "unauthorized": "La tua sessione non è più valida. Accedi di nuovo."
+  },
+  "access": {
+    "deniedTitle": "Accesso negato",
+    "deniedMessage": "Il tuo ruolo non include l’accesso a questa pagina. Chiedi a un amministratore se ti serve."
+  },
+  "admin": {
+    "copyOf": "Copia di {name}",
+    "deleted": "Eliminato",
+    "saved": "Salvato",
+    "tenant": "Tenant"
+  },
+  "roles": {
+    "credential": "Credenziale API",
+    "globalAdmin": "Amministratore globale",
+    "member": "Membro",
+    "none": "Disconnesso",
+    "tenantAdmin": "Amministratore del tenant"
+  },
+  "theme": {
+    "dark": "Passa al tema scuro",
+    "light": "Passa al tema chiaro"
+  },
+  "json": {
+    "copy": "Copia JSON",
+    "items": "{count, plural, one {# elemento} other {# elementi}}",
+    "keys": "{count, plural, one {# chiave} other {# chiavi}}",
+    "raw": "Grezzo",
+    "title": "JSON",
+    "tree": "Albero",
+    "view": "Visualizza JSON"
+  },
+  "table": {
+    "actions": "Azioni",
+    "any": "Qualsiasi",
+    "clearSelection": "Cancella selezione",
+    "emptyTitle": "Ancora niente qui",
+    "filterBy": "Filtra per {column}",
+    "firstPage": "Prima pagina",
+    "jumpToPage": "Pagina",
+    "lastPage": "Ultima pagina",
+    "nextPage": "Pagina successiva",
+    "noMatchesMessage": "Nessun record corrisponde ai filtri attuali. Cancella i filtri per vedere tutto.",
+    "noMatchesTitle": "Nessuna corrispondenza",
+    "ofPages": "di {total}",
+    "pageSize": "Righe per pagina",
+    "previousPage": "Pagina precedente",
+    "selectAll": "Seleziona tutte le righe di questa pagina",
+    "selectColumns": "Colonne",
+    "selectRow": "Seleziona riga",
+    "selected": "{count, plural, one {# selezionato} other {# selezionati}}",
+    "showing": "Da {from} a {to} di {total}"
+  },
+  "charts": {
+    "avgDuration": "Durata media",
+    "bucketAria": "{when}: {total} richieste",
+    "failure": "Errore",
+    "range": "Intervallo di tempo",
+    "requestActivity": "Attività delle richieste",
+    "success": "Successo",
+    "total": "Totale",
+    "ranges": {
+      "hour": "Ultima ora",
+      "day": "Ultimo giorno",
+      "week": "Ultima settimana",
+      "month": "Ultimo mese",
+      "quarter": "Ultimo trimestre"
+    },
+    "totals": {
+      "avg": "Media {value}",
+      "failed": "{count} non riuscite",
+      "success": "{count} riuscite",
+      "total": "{count} in totale"
+    },
+    "rank": "Posizione",
+    "share": "Quota"
+  },
+  "nav": {
+    "collapse": "Comprimi barra laterale",
+    "environment": "Locale",
+    "expand": "Espandi barra laterale",
+    "label": "Navigazione principale",
+    "open": "Apri navigazione",
+    "phase": "Disponibile nella fase {phase}",
+    "phaseShort": "F{phase}",
+    "skip": "Vai al contenuto",
+    "version": "v{version}",
+    "groups": {
+      "start": "Inizio",
+      "research": "Ricerca",
+      "briefings": "Briefing",
+      "insights": "Analisi",
+      "configuration": "Configurazione",
+      "observability": "Osservabilità",
+      "administration": "Amministrazione",
+      "system": "Sistema"
+    },
+    "items": {
+      "home": "Home",
+      "today": "Oggi",
+      "topics": "Argomenti",
+      "runs": "Esecuzioni",
+      "findings": "Risultati",
+      "sources": "Fonti",
+      "predictions": "Previsioni",
+      "suggestions": "Suggerimenti",
+      "briefings": "Briefing",
+      "editions": "Edizioni",
+      "templates": "Modelli",
+      "relevance": "Pertinenza",
+      "accuracy": "Accuratezza",
+      "feedback": "Feedback",
+      "preferences": "Preferenze",
+      "usage": "Utilizzo",
+      "models": "Modelli di IA",
+      "prompts": "Prompt",
+      "vault": "Credenziali salvate",
+      "searchProviders": "Provider di ricerca",
+      "mcpServers": "Server MCP",
+      "voices": "Voci",
+      "email": "Email",
+      "requests": "Cronologia richieste",
+      "explorer": "Esplora API",
+      "health": "Stato",
+      "audit": "Audit",
+      "tenants": "Tenant",
+      "users": "Utenti",
+      "credentials": "Credenziali",
+      "roles": "Ruoli e accesso",
+      "settings": "Impostazioni",
+      "serverInfo": "Info server",
+      "profile": "Profilo",
+      "adminUsage": "Utilizzo della piattaforma",
+      "oneTimeRequests": "Richieste una tantum",
+      "listen": "Ascolta",
+      "promoCodes": "Codici promozionali",
+      "insightsOverview": "Panoramica",
+      "plans": "Piani",
+      "emailInsights": "Consegna email",
+      "mcp": "Client MCP"
+    }
+  },
+  "routes": {
+    "home": {
+      "summary": "Il tuo spazio di lavoro a colpo d’occhio"
+    },
+    "today": {
+      "summary": "L’ultima edizione del tuo briefing e ciò che la ricerca ha prodotto di recente"
+    },
+    "topics": {
+      "summary": "Gli argomenti che vuoi far ricercare"
+    },
+    "runs": {
+      "summary": "Esecuzioni di ricerca: in coda, in corso e completate"
+    },
+    "findings": {
+      "summary": "Ciò che la ricerca ha trovato"
+    },
+    "sources": {
+      "summary": "Fonti raccolte dalla ricerca"
+    },
+    "predictions": {
+      "summary": "Previsioni e come sono andate"
+    },
+    "suggestions": {
+      "summary": "Spunti da approfondire, dalle tue esecuzioni"
+    },
+    "briefings": {
+      "summary": "Tutti i briefing: edizioni, briefing delle esecuzioni e report una tantum"
+    },
+    "editions": {
+      "summary": "Briefing pianificati, ciascuno con argomenti, modello e consegna propri"
+    },
+    "templates": {
+      "summary": "Layout Markdown che indicano al compositore cosa contiene ogni briefing"
+    },
+    "relevance": {
+      "summary": "Quanto sono stati pertinenti i risultati"
+    },
+    "accuracy": {
+      "summary": "Quanto sono state accurate le previsioni"
+    },
+    "feedback": {
+      "summary": "Il feedback che hai dato"
+    },
+    "preferences": {
+      "summary": "Preferenze apprese dal feedback"
+    },
+    "usage": {
+      "summary": "Quanto costa e chi lo usa di più?"
+    },
+    "models": {
+      "summary": "Endpoint dei modelli, assegnazioni dei ruoli per attività e ogni chiamata ai modelli"
+    },
+    "prompts": {
+      "summary": "Modelli di prompt con versioni per ogni chiamata ai modelli"
+    },
+    "vault": {
+      "summary": "Chiavi API e token per modelli e servizi esterni, cifrati a riposo"
+    },
+    "searchProviders": {
+      "summary": "Provider di ricerca web"
+    },
+    "mcpServers": {
+      "summary": "Server Model Context Protocol"
+    },
+    "voices": {
+      "summary": "Voci per i briefing audio"
+    },
+    "email": {
+      "summary": "Consegna email"
+    },
+    "requests": {
+      "summary": "Ogni richiesta API gestita dal server"
+    },
+    "explorer": {
+      "summary": "Prova qualsiasi operazione API"
+    },
+    "health": {
+      "summary": "Stato del server e dei componenti"
+    },
+    "audit": {
+      "summary": "Eventi di sicurezza e di modifica"
+    },
+    "tenants": {
+      "summary": "Spazi di lavoro isolati"
+    },
+    "users": {
+      "summary": "Persone che possono accedere"
+    },
+    "credentials": {
+      "summary": "Chiavi API per script e integrazioni"
+    },
+    "roles": {
+      "summary": "Ruoli, autorizzazioni e assegnazioni"
+    },
+    "settings": {
+      "summary": "Configurazione del server"
+    },
+    "serverInfo": {
+      "summary": "Versione, runtime e URL dei servizi"
+    },
+    "profile": {
+      "summary": "Il tuo account"
+    },
+    "adminUsage": {
+      "summary": "Costo della piattaforma per tenant, la base delle decisioni sui prezzi"
+    },
+    "oneTimeRequests": {
+      "summary": "Report, podcast e riepiloghi email una tantum"
+    },
+    "listen": {
+      "summary": "Episodi audio dei tuoi briefing, pronti da ascoltare"
+    },
+    "promoCodes": {
+      "summary": "Codici che assegnano un piano per un certo numero di giorni, con limiti e utilizzo"
+    },
+    "plans": {
+      "summary": "Piani, i valori dei relativi diritti e chi ha quale piano"
+    },
+    "insightsOverview": {
+      "summary": "I numeri principali su ricerca, consegna, apprendimento e costi"
+    },
+    "emailInsights": {
+      "summary": "Consegna delle email, tempistiche e come i lettori usano i link di ogni messaggio"
+    },
+    "mcp": {
+      "summary": "Collega Claude Code o un altro client MCP alla tua ricerca"
+    }
+  },
+  "placeholder": {
+    "title": "Disponibile nella fase {phase}",
+    "message": "{feature} è prevista per la fase {phase}. La navigazione è già pronta, così puoi vedere dove si troverà."
+  },
+  "topbar": {
+    "copyServerUrl": "Copia URL del server",
+    "health": "Stato del server: {state}",
+    "logout": "Esci",
+    "repository": "Codice sorgente su GitHub",
+    "tenant": "Tenant",
+    "tenantTitle": "ID tenant: {tenant}"
+  },
+  "health": {
+    "autoRefresh": "Aggiornamento automatico",
+    "checkedAt": "Verificato {time}",
+    "components": "Componenti",
+    "off": "Disattivato",
+    "overall": "Complessivo",
+    "uptime": "Tempo di attività",
+    "version": "Versione",
+    "states": {
+      "healthy": "Integro",
+      "degraded": "Degradato",
+      "unreachable": "Non raggiungibile",
+      "unknown": "Verifica in corso"
+    },
+    "status": {
+      "Healthy": "Integro",
+      "Degraded": "Degradato",
+      "Unhealthy": "Non integro",
+      "Enabled": "Abilitato",
+      "Disabled": "Disabilitato"
+    },
+    "componentNames": {
+      "database": "Database",
+      "requestHistory": "Cronologia richieste"
+    }
+  },
+  "login": {
+    "copyright": "© 2026 Lattice AI LLC",
+    "defaults": "Primo avvio? Accedi con {email} e la password {password} nel tenant {tenant}, poi cambia la password.",
+    "email": "Email",
+    "password": "Password",
+    "serverUrl": "URL del server",
+    "serverUrlHelp": "L’indirizzo del server My Morning News.",
+    "sessionExpired": "La sessione è scaduta. Accedi di nuovo per continuare.",
+    "signIn": "Accedi",
+    "signingIn": "Accesso in corso...",
+    "subtitle": "Accedi al tuo spazio di lavoro",
+    "tagline": "Fai ricerche sugli argomenti che ti interessano e svegliati con un briefing che migliora ogni giorno.",
+    "tenant": "Tenant",
+    "tenantHelp": "L’ID del tenant. Usa default in una nuova installazione.",
+    "title": "Bentornato"
+  },
+  "home": {
+    "summary": "Ecco cosa sta succedendo sul tuo server.",
+    "title": "Buongiorno, {name}",
+    "failures": {
+      "none": "Nessun errore recente",
+      "noneMessage": "Tutte le richieste in questo intervallo sono riuscite.",
+      "title": "Errori recenti"
+    },
+    "kpi": {
+      "average": "Durata media",
+      "failureRate": "Tasso di errore",
+      "failures": "{count} non riuscite",
+      "health": "Stato",
+      "latency": "Latenza",
+      "requests": "Richieste",
+      "tenants": "Tenant",
+      "topics": "Argomenti",
+      "uptime": "Attivo da {value}",
+      "users": "Utenti",
+      "recurring": "Argomenti ricorrenti"
+    },
+    "next": {
+      "explorer": "Prova l’API nell’esploratore",
+      "models": "Aggiungi un endpoint di modello (fase 3)",
+      "password": "Cambia la password predefinita",
+      "title": "Prossimi passi",
+      "topic": "Crea il tuo primo argomento",
+      "topics": "Rivedi i tuoi argomenti"
+    },
+    "services": {
+      "credentials": "Credenziali",
+      "none": "Nessun servizio esterno configurato.",
+      "summary": "Strumenti che funzionano accanto al server",
+      "title": "Servizi esterni"
+    },
+    "request": {
+      "title": "Nuova richiesta",
+      "summary": "Richiedi un report, un podcast o un riepilogo email una tantum."
+    },
+    "overview": {
+      "title": "{count, plural, one {Ultimo giorno} other {Ultimi # giorni}}",
+      "more": "Apri Analisi"
+    }
+  },
+  "requests": {
+    "anonymous": "Anonimo",
+    "bulk": {
+      "allFilters": "tutte le richieste",
+      "button": "Elimina corrispondenti",
+      "confirm": "Elimina",
+      "done": "{count} richieste eliminate",
+      "message": "Eliminare {count} richieste corrispondenti a {filters}? L’operazione non può essere annullata.",
+      "title": "Elimina richieste corrispondenti"
+    },
+    "columns": {
+      "completed": "Completata",
+      "duration": "Durata",
+      "id": "ID",
+      "method": "Metodo",
+      "path": "Percorso",
+      "principal": "Principal",
+      "route": "Route",
+      "sourceIp": "IP di origine",
+      "status": "Stato",
+      "tenant": "Tenant",
+      "time": "Ora",
+      "url": "URL"
+    },
+    "delete": {
+      "done": "Richiesta eliminata",
+      "message": "Eliminare il record di {method} {path}?",
+      "title": "Elimina richiesta"
+    },
+    "details": {
+      "metadata": "Metadati",
+      "noBody": "Nessun corpo acquisito.",
+      "noHeaders": "Nessuna intestazione acquisita.",
+      "raw": "Record grezzo",
+      "requestBody": "Corpo della richiesta",
+      "requestHeaders": "Intestazioni della richiesta",
+      "responseBody": "Corpo della risposta",
+      "responseHeaders": "Intestazioni della risposta",
+      "title": "Dettagli richiesta",
+      "truncated": "Troncato a {size}"
+    },
+    "empty": {
+      "filtered": "Nessuna richiesta corrisponde a questi filtri.",
+      "message": "Le richieste compaiono qui quando i client chiamano l’API.",
+      "title": "Ancora nessuna richiesta"
+    },
+    "filters": {
+      "from": "Da",
+      "method": "Metodo",
+      "path": "Percorso",
+      "pathPlaceholder": "/v1.0/...",
+      "status": "Stato",
+      "statusPlaceholder": "200",
+      "tenant": "Tenant",
+      "tenantPlaceholder": "ID tenant",
+      "to": "A"
+    },
+    "kpi": {
+      "avgDuration": "Durata media",
+      "failures": "Errori",
+      "matchingFilters": "Corrispondenti ai filtri",
+      "onThisPage": "In questa pagina",
+      "retained": "Conservate",
+      "successRate": "Tasso di successo",
+      "uniquePaths": "Percorsi unici"
+    }
+  },
+  "explorer": {
+    "authInherited": "Le richieste usano il token della tua sessione corrente.",
+    "body": "Corpo della richiesta",
+    "cancel": "Annulla",
+    "confirmMessage": "Inviare {method} {url}? Questa operazione può modificare o eliminare dati.",
+    "confirmTitle": "Invia richiesta",
+    "copyResponse": "Copia risposta",
+    "duration": "Durata",
+    "emptyBody": "La risposta non ha un corpo.",
+    "execute": "Invia",
+    "format": "Formatta",
+    "headers": "Intestazioni",
+    "history": "{count, plural, one {Richiesta recente (#)} other {Richieste recenti (#)}}",
+    "invalidJson": "JSON non valido: {message}",
+    "name": "Nome",
+    "noOperations": "Nessuna operazione corrispondente.",
+    "noResponse": "Ancora nessuna risposta",
+    "noResponseMessage": "Invia la richiesta per vedere qui la risposta.",
+    "pathParams": "Parametri del percorso",
+    "pickOperation": "Scegli un’operazione",
+    "pickOperationMessage": "Scegli un’operazione dall’elenco per creare una richiesta.",
+    "queryParams": "Parametri della query",
+    "running": "Invio in corso...",
+    "search": "Cerca operazioni",
+    "searchPlaceholder": "Filtra per percorso o nome",
+    "specMissing": "Impossibile caricare il documento OpenAPI.",
+    "status": "Stato",
+    "streaming": "Streaming in corso...",
+    "url": "URL",
+    "validJson": "JSON valido",
+    "value": "Valore",
+    "tabs": {
+      "preview": "Anteprima",
+      "body": "Corpo",
+      "headers": "Intestazioni",
+      "status": "Stato",
+      "code": "Codice"
+    },
+    "snippets": {
+      "curl": "curl",
+      "fetch": "JavaScript",
+      "csharp": "C#"
+    }
+  },
+  "settings": {
+    "discard": "Annulla modifiche",
+    "environment": "Variabile d’ambiente",
+    "live": "Applicato subito",
+    "noChanges": "Nessuna modifica da salvare",
+    "notSet": "Non impostato",
+    "overridden": "Sostituito da {variable}",
+    "pendingRestart": "Riavvia il server per applicare: {fields}",
+    "raw": "Impostazioni grezze",
+    "restart": "Riavvia server",
+    "restartConfirm": "Riavvia",
+    "restartHelp": "Il server si arresta e si riavvia. Le richieste in corso potrebbero non riuscire.",
+    "restartRequired": "Riavvio necessario",
+    "restartTitle": "Riavvia il server",
+    "restarted": "Riavvio richiesto",
+    "restarting": "Riavvio in corso...",
+    "saved": "Salvato. {live} applicate subito, {restart} in attesa di un riavvio.",
+    "secretNotSet": "Nessun valore memorizzato",
+    "secretSet": "Un valore è memorizzato. Inserisci un nuovo valore per sostituirlo.",
+    "set": "Impostato",
+    "viewRaw": "Visualizza grezzo",
+    "groups": {
+      "rest": "Server web",
+      "database": "Database",
+      "logging": "Log",
+      "auth": "Autenticazione",
+      "requestHistory": "Cronologia richieste",
+      "telemetry": "Telemetria",
+      "pipeline": "Pipeline di ricerca",
+      "diagnostics": "Diagnostica",
+      "models": "Modelli di IA",
+      "push": "Notifiche push",
+      "storage": "Archiviazione",
+      "scheduler": "Pianificatore",
+      "search": "Ricerca",
+      "tts": "Sintesi vocale",
+      "email": "Email",
+      "learning": "Apprendimento",
+      "hosting": "Hosting"
+    },
+    "fields": {
+      "rest_hostname": "Nome host",
+      "rest_port": "Porta",
+      "rest_ssl": "Usa TLS",
+      "rest_corsAllowedOrigins": "Origini consentite CORS",
+      "database_type": "Tipo di database",
+      "database_server": "Server",
+      "database_port": "Porta",
+      "database_databaseName": "Nome del database",
+      "database_username": "Nome utente",
+      "database_password": "Password",
+      "database_maxPoolSize": "Dimensione massima del pool",
+      "database_commandTimeoutSeconds": "Timeout dei comandi (secondi)",
+      "logging_consoleLogging": "Log sulla console",
+      "logging_fileLogging": "Log su file",
+      "logging_logDirectory": "Directory dei log",
+      "logging_logFilename": "Nome del file di log",
+      "logging_minimumSeverity": "Gravità minima",
+      "auth_signingKey": "Chiave di firma dei token",
+      "auth_sessionLifetimeMinutes": "Durata della sessione (minuti)",
+      "auth_adminApiKey": "Chiave API di amministrazione",
+      "auth_loginRateLimitPerMinute": "Tentativi di accesso al minuto",
+      "auth_allowRefresh": "Consenti il rinnovo della sessione",
+      "requestHistory_enabled": "Registra le richieste",
+      "requestHistory_maxRequestBodyBytes": "Corpo massimo della richiesta (byte)",
+      "requestHistory_maxResponseBodyBytes": "Corpo massimo della risposta (byte)",
+      "requestHistory_retentionDays": "Conservazione (giorni)",
+      "telemetry_enabled": "Abilita telemetria",
+      "telemetry_serviceName": "Nome del servizio",
+      "telemetry_otlpEndpoint": "Endpoint OTLP",
+      "telemetry_lokiEndpoint": "Endpoint Loki",
+      "telemetry_prometheusEnabled": "Esponi metriche Prometheus",
+      "telemetry_prometheusHostname": "Nome host Prometheus",
+      "telemetry_prometheusPort": "Porta Prometheus",
+      "telemetry_grafanaUrl": "URL di Grafana",
+      "telemetry_prometheusUrl": "URL di Prometheus",
+      "telemetry_tempoUrl": "URL di Tempo",
+      "telemetry_lokiUrl": "URL di Loki",
+      "pipeline_maxConcurrentRuns": "Esecuzioni simultanee massime",
+      "pipeline_maxConcurrentModelCalls": "Chiamate simultanee massime ai modelli",
+      "pipeline_modelCallAttempts": "Tentativi per chiamata al modello",
+      "pipeline_structuredOutputRepairs": "Riparazioni dell’output strutturato",
+      "pipeline_runTimeoutMinutes": "Timeout dell’esecuzione (minuti)",
+      "diagnostics_captureLlmPayloads": "Acquisisci i payload dei modelli",
+      "diagnostics_llmPayloadRetentionDays": "Conservazione dei payload (giorni)",
+      "diagnostics_maxPayloadCharacters": "Caratteri massimi del payload",
+      "models_defaultChatModel": "Modello di chat predefinito",
+      "models_defaultOllamaEndpoint": "Endpoint Ollama predefinito",
+      "models_defaultEmbeddingModel": "Modello di embedding predefinito"
+    }
+  },
+  "serverInfo": {
+    "apiBase": "URL di base dell’API",
+    "database": "Database",
+    "expires": "Scadenza",
+    "health": "Endpoint di stato",
+    "openapi": "Documento OpenAPI",
+    "os": "Sistema operativo",
+    "pendingRestart": "Alcune impostazioni sono in attesa di un riavvio.",
+    "principal": "Accesso effettuato come",
+    "principalType": "Tipo di principal",
+    "product": "Prodotto",
+    "repository": "Repository",
+    "runtime": "Runtime",
+    "schemaVersion": "Versione dello schema {version}",
+    "server": "Server",
+    "session": "Sessione",
+    "started": "Avviato",
+    "swagger": "Swagger UI",
+    "uptime": "Tempo di attività",
+    "urls": "URL utili",
+    "vector": "Ricerca vettoriale",
+    "version": "Versione"
+  },
+  "audit": {
+    "recordTitle": "Record di audit",
+    "columns": {
+      "event": "Evento",
+      "path": "Percorso",
+      "permission": "Autorizzazione",
+      "principal": "Principal",
+      "reason": "Motivo",
+      "result": "Esito",
+      "sourceIp": "IP di origine",
+      "tenant": "Tenant",
+      "time": "Ora"
+    },
+    "empty": {
+      "message": "Accessi, controlli delle autorizzazioni e modifiche vengono registrati qui.",
+      "title": "Nessun evento di audit"
+    },
+    "events": {
+      "AuthSuccess": "Accesso riuscito",
+      "AuthFailure": "Accesso non riuscito",
+      "SessionIssued": "Sessione emessa",
+      "SessionRefreshed": "Sessione rinnovata",
+      "SessionRevoked": "Sessione revocata",
+      "CredentialCreated": "Credenziale creata",
+      "CredentialUsed": "Credenziale usata",
+      "CredentialRevoked": "Credenziale revocata",
+      "AuthorizationDenied": "Accesso negato",
+      "AuthorizationBypass": "Bypass amministratore",
+      "RoleChanged": "Ruolo modificato",
+      "PermissionChanged": "Autorizzazione modificata",
+      "AssignmentChanged": "Assegnazione modificata",
+      "UserChanged": "Utente modificato",
+      "TenantChanged": "Tenant modificato",
+      "SettingsChanged": "Impostazioni modificate",
+      "RestartRequested": "Riavvio richiesto",
+      "CredentialRevealed": "Credenziale mostrata",
+      "VaultCredentialChanged": "Segreto salvato modificato"
+    },
+    "authz": {
+      "Permitted": "Consentito",
+      "DeniedExplicit": "Negato da una regola",
+      "DeniedImplicit": "Negato (nessuna concessione)",
+      "NotFound": "Non trovato",
+      "Conflict": "Conflitto"
+    }
+  },
+  "tenants": {
+    "create": "Crea tenant",
+    "deleteMessage": "Eliminare il tenant {name} e tutto il suo contenuto? L’operazione non può essere annullata.",
+    "deleteTitle": "Elimina tenant",
+    "description": "Descrizione",
+    "edit": "Modifica tenant",
+    "empty": "Nessun tenant",
+    "region": "Regione",
+    "timeZoneHelp": "Un fuso orario IANA come America/New_York.",
+    "columns": {
+      "created": "Creato",
+      "id": "ID",
+      "name": "Nome",
+      "protected": "Protetto",
+      "status": "Stato",
+      "timeZone": "Fuso orario"
+    }
+  },
+  "users": {
+    "create": "Crea utente",
+    "deleteMessage": "Eliminare l’utente {email}? Le sue sessioni e credenziali smetteranno di funzionare.",
+    "deleteTitle": "Elimina utente",
+    "edit": "Modifica utente",
+    "effectivePermissions": "Autorizzazioni effettive",
+    "empty": "Nessun utente",
+    "firstName": "Nome",
+    "lastName": "Cognome",
+    "locale": "Lingua e regione",
+    "password": "Password",
+    "passwordHelp": "Almeno 8 caratteri.",
+    "resetHelp": "Lascia vuoto per mantenere la password attuale.",
+    "resetPassword": "Reimposta password",
+    "timeZone": "Fuso orario",
+    "columns": {
+      "created": "Creato",
+      "email": "Email",
+      "id": "ID",
+      "lastLogin": "Ultimo accesso",
+      "name": "Nome",
+      "role": "Ruolo",
+      "status": "Stato",
+      "tenantAdmin": "Amministratore del tenant"
+    },
+    "permissions": {
+      "allowed": "Consentito",
+      "bypass": "Gli amministratori bypassano i controlli delle autorizzazioni. {reason}",
+      "denied": "Negato",
+      "grants": "{count, plural, one {In base a # concessione} other {In base a # concessioni}}",
+      "resource": "Risorsa",
+      "title": "Autorizzazioni effettive"
+    }
+  },
+  "credentials": {
+    "allScopes": "Tutti",
+    "copyAccessKey": "Copia chiave di accesso",
+    "copySecret": "Copia chiave segreta",
+    "create": "Crea credenziale",
+    "createdTitle": "Credenziale creata",
+    "deleteMessage": "Eliminare la credenziale {name}? Tutto ciò che la usa smetterà di funzionare.",
+    "deleteTitle": "Elimina credenziale",
+    "edit": "Modifica credenziale",
+    "empty": "Nessuna credenziale",
+    "emptyMessage": "Crea una credenziale per chiamare l’API da script e integrazioni.",
+    "ownerHelp": "La credenziale agisce con le autorizzazioni di questo utente.",
+    "ownerSelf": "Io",
+    "scopesHelp": "Lascia tutto deselezionato per consentire tutto ciò che il proprietario può fare.",
+    "secretKey": "Chiave segreta",
+    "secretOnce": "Copia ora la chiave segreta. Viene mostrata una sola volta e non può essere recuperata in seguito.",
+    "stored": "Ho salvato il segreto",
+    "tenantHeader": "ID tenant",
+    "columns": {
+      "accessKey": "Chiave di accesso",
+      "created": "Creata",
+      "expires": "Scadenza",
+      "lastUsed": "Ultimo utilizzo",
+      "name": "Nome",
+      "owner": "Proprietario",
+      "scopes": "Ambiti",
+      "secret": "Segreto",
+      "status": "Stato",
+      "authMode": "Modalità di autenticazione"
+    },
+    "scopes": {
+      "read": "Lettura",
+      "write": "Scrittura",
+      "admin": "Amministrazione"
+    },
+    "authModes": {
+      "DirectHeader": "Intestazione diretta",
+      "SignedRequest": "Richieste firmate",
+      "SessionExchange": "Scambio di sessione",
+      "Hybrid": "Ibrida"
+    },
+    "authModeHelp": {
+      "DirectHeader": "Predefinita. Accetta la chiave di accesso e il segreto come intestazioni, le richieste firmate e lo scambio di sessione.",
+      "SignedRequest": "Accetta solo richieste firmate con HMAC, quindi il segreto non viene mai trasmesso. Le intestazioni con il segreto e lo scambio di sessione vengono rifiutati.",
+      "SessionExchange": "Funziona solo tramite POST /v1.0/token per ottenere un token di sessione. Segreti e firme per singola richiesta vengono rifiutati.",
+      "Hybrid": "Accetta tutto, come Intestazione diretta."
+    }
+  },
+  "rbac": {
+    "tabs": {
+      "roles": "Ruoli",
+      "permissions": "Autorizzazioni",
+      "assignments": "Assegnazioni"
+    },
+    "builtIn": {
+      "TenantAdmin": "Amministratore del tenant",
+      "SecurityAdmin": "Amministratore della sicurezza",
+      "Auditor": "Revisore",
+      "TopicAdmin": "Amministratore degli argomenti",
+      "Editor": "Editor",
+      "Viewer": "Visualizzatore",
+      "TenantMember": "Membro del tenant",
+      "Custom": "Personalizzato"
+    },
+    "scopes": {
+      "Tenant": "Intero tenant",
+      "Resource": "Una risorsa"
+    },
+    "permissionTypes": {
+      "Permit": "Consenti",
+      "Deny": "Nega"
+    },
+    "roles": {
+      "builtIn": "Predefinito",
+      "clone": "Clona",
+      "create": "Crea ruolo",
+      "custom": "Personalizzato",
+      "deleteMessage": "Eliminare il ruolo {name}? Gli utenti a cui è assegnato perdono le sue autorizzazioni.",
+      "deleteTitle": "Elimina ruolo",
+      "description": "Descrizione",
+      "edit": "Modifica ruolo",
+      "kind": "Tipo",
+      "name": "Nome",
+      "noPermissions": "Questo ruolo non ha autorizzazioni.",
+      "noTenantPermissions": "Questo tenant non ha ancora autorizzazioni personalizzate. Creale nella scheda Autorizzazioni.",
+      "permissions": "Autorizzazioni",
+      "scope": "Ambito"
+    },
+    "permissions": {
+      "create": "Crea autorizzazione",
+      "deleteMessage": "Eliminare l’autorizzazione {name}? I ruoli che la includono la perdono.",
+      "deleteTitle": "Elimina autorizzazione",
+      "edit": "Modifica autorizzazione",
+      "name": "Nome",
+      "operations": "Operazioni",
+      "resources": "Risorse",
+      "type": "Tipo"
+    },
+    "assignments": {
+      "assign": "Assegna",
+      "empty": "Nessuna assegnazione",
+      "emptyMessage": "Assegna un ruolo per dare a questo utente le relative autorizzazioni.",
+      "pickRole": "Scegli un ruolo",
+      "remove": "Rimuovi",
+      "removeMessage": "Rimuovere il ruolo {role} da questo utente?",
+      "removeTitle": "Rimuovi assegnazione",
+      "resource": "ID risorsa",
+      "resourcePlaceholder": "ID risorsa",
+      "role": "Ruolo",
+      "user": "Utente"
+    },
+    "operations": {
+      "All": "Tutte",
+      "Create": "Creazione",
+      "Read": "Lettura",
+      "Write": "Scrittura",
+      "Update": "Aggiornamento",
+      "Delete": "Eliminazione",
+      "Execute": "Esecuzione",
+      "Admin": "Amministrazione"
+    },
+    "resources": {
+      "All": "Tutte",
+      "Tenant": "Tenant",
+      "Admin": "Amministrazione",
+      "User": "Utente",
+      "Credential": "Credenziale",
+      "Session": "Sessione",
+      "Role": "Ruolo",
+      "Permission": "Autorizzazione",
+      "Assignment": "Assegnazione",
+      "Audit": "Audit",
+      "RequestHistory": "Cronologia richieste",
+      "Settings": "Impostazioni",
+      "Topic": "Argomento",
+      "Schedule": "Pianificazione",
+      "RefinementSession": "Sessione di perfezionamento",
+      "Run": "Esecuzione",
+      "Finding": "Risultato",
+      "Source": "Fonte",
+      "Evidence": "Prova",
+      "Prediction": "Previsione",
+      "Suggestion": "Suggerimento",
+      "Feedback": "Feedback",
+      "LearnedPreference": "Preferenza appresa",
+      "Briefing": "Briefing",
+      "Edition": "Edizione",
+      "Template": "Modello",
+      "Prompt": "Prompt",
+      "ModelEndpoint": "Endpoint del modello",
+      "SearchProvider": "Provider di ricerca",
+      "Voice": "Voce",
+      "Media": "Contenuti multimediali",
+      "EmailMessage": "Messaggio email",
+      "Analytics": "Analisi"
+    }
+  },
+  "profile": {
+    "changePassword": "Cambia password",
+    "confirmPassword": "Conferma la nuova password",
+    "currentPassword": "Password attuale",
+    "details": "Dettagli",
+    "emailHelp": "Chiedi a un amministratore di cambiare la tua email.",
+    "mismatch": "Le password non corrispondono.",
+    "newPassword": "Nuova password",
+    "password": "Password",
+    "passwordChanged": "Password cambiata",
+    "saved": "Profilo salvato",
+    "timeZoneHelp": "Lascia vuoto per usare il fuso orario del browser ({zone})."
+  },
+  "enums": {
+    "task": {
+      "Refinement": "Perfezionamento",
+      "QueryPlanning": "Pianificazione delle query",
+      "Extraction": "Estrazione",
+      "Scoring": "Valutazione",
+      "Synthesis": "Sintesi",
+      "Prediction": "Previsione",
+      "Suggestion": "Suggerimento",
+      "Composition": "Composizione",
+      "PodcastScript": "Script del podcast",
+      "FeedbackAnalysis": "Analisi del feedback",
+      "Embedding": "Embedding"
+    },
+    "provider": {
+      "Anthropic": "Anthropic",
+      "OpenAi": "OpenAI",
+      "OpenAiCompatible": "Compatibile con OpenAI",
+      "Ollama": "Ollama",
+      "Gemini": "Gemini",
+      "XAi": "xAI",
+      "OllamaCloud": "Ollama Cloud"
+    },
+    "reasoningEffort": {
+      "None": "Nessuno",
+      "Minimal": "Minimo",
+      "Low": "Basso",
+      "Medium": "Medio",
+      "High": "Alto",
+      "XHigh": "Molto alto",
+      "Max": "Massimo"
+    },
+    "vaultKind": {
+      "ApiKey": "Chiave API",
+      "BearerToken": "Token bearer",
+      "BasicAuth": "Autenticazione di base",
+      "CustomHeader": "Intestazione personalizzata",
+      "ConnectionString": "Stringa di connessione"
+    },
+    "vaultProvider": {
+      "Anthropic": "Anthropic",
+      "OpenAi": "OpenAI",
+      "Gemini": "Gemini",
+      "XAi": "xAI",
+      "OllamaCloud": "Ollama Cloud",
+      "OpenAiCompatible": "Compatibile con OpenAI",
+      "Tavily": "Tavily",
+      "YouCom": "You.com",
+      "Mailgun": "Mailgun",
+      "ElevenLabs": "ElevenLabs",
+      "Mcp": "Server MCP",
+      "Custom": "Personalizzato"
+    },
+    "intervalType": {
+      "EveryNMinutes": "Ogni N minuti",
+      "EveryNHours": "Ogni N ore",
+      "EveryNDays": "Ogni N giorni",
+      "EveryNWeeks": "Ogni N settimane",
+      "DaysOfWeek": "In giorni della settimana",
+      "DaysOfMonth": "In giorni del mese",
+      "Once": "Una volta",
+      "Cron": "Cron (avanzato)",
+      "Manual": "Solo manuale"
+    },
+    "missedRunPolicy": {
+      "Skip": "Saltala",
+      "RunOnceOnRecovery": "Esegui una volta al ripristino"
+    },
+    "questionKind": {
+      "SingleChoice": "Scegline una",
+      "MultiChoice": "Scegline quante vuoi",
+      "Scale": "Scala da 1 a 5",
+      "YesNo": "Sì o no",
+      "FreeText": "Testo libero"
+    },
+    "dimensionWeight": {
+      "High": "Alto",
+      "Normal": "Normale",
+      "Low": "Basso",
+      "Exclude": "Escludi"
+    },
+    "constraintKind": {
+      "IncludeKeyword": "Includi parole chiave",
+      "ExcludeKeyword": "Escludi parole chiave",
+      "IncludeEntity": "Includi sempre",
+      "ExcludeEntity": "Ignora sempre",
+      "PreferredDomain": "Domini preferiti",
+      "BlockedDomain": "Domini bloccati",
+      "TrackedQuestion": "Domande monitorate",
+      "FeedUrl": "Feed",
+      "SeedUrl": "Pagine iniziali"
+    },
+    "topicStatus": {
+      "Draft": "Bozza",
+      "Active": "Attivo",
+      "Paused": "In pausa",
+      "Archived": "Archiviato"
+    },
+    "audienceLevel": {
+      "Beginner": "Principiante",
+      "Practitioner": "Professionista",
+      "Expert": "Esperto"
+    },
+    "horizon": {
+      "Days": "Giorni",
+      "Weeks": "Settimane",
+      "Months": "Mesi",
+      "Years": "Anni"
+    },
+    "runStatus": {
+      "Queued": "In coda",
+      "Running": "In esecuzione",
+      "Completed": "Completata",
+      "PartiallySucceeded": "Parzialmente riuscita",
+      "Failed": "Non riuscita",
+      "Cancelled": "Annullata",
+      "Skipped": "Saltata"
+    },
+    "runTrigger": {
+      "Schedule": "Pianificazione",
+      "Manual": "Esegui ora",
+      "Request": "Richiesta una tantum",
+      "Edition": "Edizione",
+      "Preview": "Anteprima"
+    },
+    "requestStatus": {
+      "Clarifying": "In attesa di te",
+      "Scheduled": "Pianificata",
+      "Running": "In esecuzione",
+      "Completed": "Completata",
+      "Failed": "Non riuscita",
+      "Cancelled": "Annullata",
+      "Declined": "Rifiutata"
+    },
+    "deliverable": {
+      "Report": "Report",
+      "Podcast": "Podcast",
+      "Email": "Email"
+    },
+    "deliverableLength": {
+      "Short": "Breve",
+      "Standard": "Standard",
+      "Long": "Lungo"
+    },
+    "findingTier": {
+      "MustRead": "Da leggere",
+      "WorthALook": "Da vedere",
+      "Fyi": "Per informazione",
+      "BelowThreshold": "Sotto soglia"
+    },
+    "findingCategory": {
+      "News": "Notizie",
+      "Release": "Rilascio",
+      "Research": "Ricerca",
+      "Opinion": "Opinione",
+      "Tutorial": "Tutorial",
+      "Data": "Dati",
+      "Other": "Altro"
+    },
+    "evidenceRole": {
+      "Supports": "A supporto",
+      "Contradicts": "Contraddice",
+      "Context": "Contesto"
+    },
+    "predictionStatus": {
+      "Open": "Aperta",
+      "ProposedResolved": "Esito proposto",
+      "Accurate": "Accurata",
+      "PartiallyAccurate": "Parzialmente accurata",
+      "Inaccurate": "Non accurata",
+      "Unresolvable": "Non verificabile",
+      "Withdrawn": "Ritirata"
+    },
+    "suggestionStatus": {
+      "New": "Nuovo",
+      "Accepted": "Accettato",
+      "Snoozed": "Posticipato",
+      "Dismissed": "Ignorato",
+      "Done": "Fatto"
+    },
+    "suggestionPriority": {
+      "High": "Alta",
+      "Medium": "Media",
+      "Low": "Bassa"
+    },
+    "suggestionEffort": {
+      "Minutes": "minuti",
+      "Hours": "ore",
+      "Days": "giorni"
+    },
+    "stageStatus": {
+      "Pending": "In attesa",
+      "Running": "In esecuzione",
+      "Succeeded": "Riuscita",
+      "Failed": "Non riuscita",
+      "Skipped": "Saltata"
+    },
+    "runStage": {
+      "AssembleContext": "Raccolta del contesto",
+      "PlanQueries": "Pianificazione delle query",
+      "Search": "Ricerca",
+      "Filter": "Filtro",
+      "Fetch": "Recupero",
+      "Extract": "Estrazione",
+      "Embed": "Embedding",
+      "Dedupe": "Deduplicazione",
+      "Score": "Valutazione",
+      "Synthesize": "Sintesi",
+      "ReviewPredictions": "Revisione delle previsioni",
+      "Predict": "Previsione",
+      "Suggest": "Suggerimenti",
+      "ComposeBriefing": "Composizione del briefing",
+      "Notify": "Notifica"
+    },
+    "searchDisposition": {
+      "Pending": "In attesa",
+      "Fetched": "Recuperato",
+      "SkippedSeen": "Già visto",
+      "SkippedBlocked": "Dominio bloccato",
+      "SkippedRobots": "Bloccato da robots.txt",
+      "SkippedLimit": "Oltre il limite di recupero",
+      "SkippedDuplicate": "Duplicato",
+      "FetchFailed": "Recupero non riuscito"
+    },
+    "briefingKind": {
+      "Edition": "Edizione",
+      "Run": "Briefing dell’esecuzione",
+      "OneTime": "Report una tantum"
+    },
+    "briefingStatus": {
+      "Queued": "In coda",
+      "Composing": "In composizione",
+      "Ready": "Pronto",
+      "Failed": "Non riuscito"
+    },
+    "briefingItemType": {
+      "Finding": "Risultato",
+      "Prediction": "Previsione",
+      "Suggestion": "Suggerimento"
+    },
+    "lookbackMode": {
+      "SinceLastEdition": "Dall’ultima edizione",
+      "FixedHours": "Finestra fissa"
+    },
+    "artifactKind": {
+      "BriefingMarkdown": "Markdown",
+      "BriefingHtml": "Report HTML",
+      "Audio": "Audio",
+      "Chapters": "Capitoli",
+      "Export": "Esportazione"
+    },
+    "mediaStatus": {
+      "Queued": "In coda",
+      "Scripting": "Scrittura dello script",
+      "Synthesizing": "Sintesi in corso",
+      "Ready": "Pronto",
+      "Failed": "Non riuscito"
+    },
+    "mediaKind": {
+      "BriefingAudio": "Audio del briefing",
+      "PodcastEpisode": "Episodio del podcast"
+    },
+    "ttsProvider": {
+      "OpenAiCompatibleSpeech": "Sintesi vocale compatibile con OpenAI",
+      "Disabled": "Disabilitato"
+    }
+  },
+  "vault": {
+    "adminOnly": "Solo gli amministratori possono modificare le credenziali salvate.",
+    "memberNotice": "Puoi vedere quali credenziali sono salvate. Per aggiungerle, modificarle, ruotarle e mostrarle serve un amministratore del tenant.",
+    "columns": {
+      "name": "Nome",
+      "kind": "Tipo",
+      "provider": "Provider",
+      "secret": "Segreto",
+      "lastUsed": "Ultimo utilizzo",
+      "lastRevealed": "Ultima visualizzazione",
+      "expires": "Scadenza",
+      "status": "Stato",
+      "created": "Creata",
+      "id": "ID"
+    },
+    "fields": {
+      "headerName": "Nome dell’intestazione",
+      "headerNameHelp": "L’intestazione HTTP che contiene il segreto, per esempio X-Api-Key.",
+      "username": "Nome utente",
+      "secret": "Segreto",
+      "secretHelp": "Salvato cifrato. Dopo il salvataggio vengono mostrati solo gli ultimi quattro caratteri.",
+      "expiresHelp": "Facoltativo. Serve come promemoria; il server non elimina i segreti scaduti.",
+      "description": "Descrizione"
+    },
+    "form": {
+      "createTitle": "Salva una credenziale",
+      "editTitle": "Modifica credenziale",
+      "rotateHint": "Per sostituire il segreto stesso, usa Ruota segreto."
+    },
+    "empty": {
+      "title": "Nessuna credenziale salvata",
+      "message": "Salva qui chiavi API e token una sola volta, poi selezionali negli endpoint dei modelli, nei provider di ricerca, nelle voci e nelle impostazioni email."
+    },
+    "rotate": {
+      "action": "Ruota segreto",
+      "title": "Ruota segreto",
+      "message": "Sostituisci il segreto salvato come {name}. Tutto ciò che usa questa credenziale riceve il nuovo valore alla chiamata successiva.",
+      "newSecret": "Nuovo segreto",
+      "confirm": "Ruota",
+      "required": "Inserisci il nuovo segreto.",
+      "done": "Segreto ruotato"
+    },
+    "reveal": {
+      "action": "Mostra",
+      "actionAdminOnly": "Mostra (solo amministratori)",
+      "confirmTitle": "Mostra segreto",
+      "confirmMessage": "Mostrare il testo in chiaro di {name}? Rimane visibile per {seconds} secondi e poi viene nascosto di nuovo.",
+      "audited": "Le visualizzazioni sono sottoposte ad audit: vengono registrati chi ha mostrato quale credenziale e da dove.",
+      "confirm": "Mostra",
+      "shownTitle": "Segreto mostrato",
+      "hidesIn": "{count, plural, one {Si nasconde tra # secondo} other {Si nasconde tra # secondi}}",
+      "hideNow": "Nascondi ora",
+      "copy": "Copia segreto"
+    },
+    "usage": {
+      "action": "Dove è usata",
+      "title": "Dove viene usata questa credenziale",
+      "none": "Nulla usa ancora questa credenziale.",
+      "types": {
+        "ModelEndpoint": "Endpoint del modello"
+      }
+    },
+    "delete": {
+      "title": "Elimina credenziale",
+      "message": "Eliminare {name}? Tutto ciò che la usa smette di funzionare finché non riceve un’altra credenziale."
+    }
+  },
+  "models": {
+    "add": "Aggiungi modello",
+    "adminOnly": "Solo gli amministratori possono modificare gli endpoint dei modelli.",
+    "memberNotice": "Puoi vedere i modelli configurati e le assegnazioni. Per modificarli o testarli serve un amministratore del tenant.",
+    "created": "{name} aggiunto",
+    "unknown": "Non verificato",
+    "tabs": {
+      "endpoints": "Endpoint",
+      "assignments": "Assegnazioni",
+      "calls": "Chiamate ai modelli"
+    },
+    "columns": {
+      "name": "Nome",
+      "provider": "Provider",
+      "model": "Modello",
+      "embeddingModel": "Modello di embedding",
+      "capabilities": "Funzionalità",
+      "price": "Prezzo per milione di token",
+      "priceValue": "{input} in ingresso, {output} in uscita",
+      "noPrice": "Nessun prezzo impostato",
+      "reasoningEffort": "Livello di ragionamento",
+      "credential": "Credenziale",
+      "lastValidated": "Ultima convalida",
+      "status": "Stato",
+      "id": "ID"
+    },
+    "capabilities": {
+      "chat": "Chat",
+      "tools": "Strumenti",
+      "noTools": "Nessuno strumento",
+      "embeddings": "Embedding",
+      "embeddingsDims": "Embedding ({dims})"
+    },
+    "actions": {
+      "test": "Testa",
+      "validate": "Convalida",
+      "listModels": "Elenca modelli"
+    },
+    "empty": {
+      "title": "Aggiungi il tuo primo modello",
+      "message": "Collega un provider di modelli come Anthropic, OpenAI o un server Ollama locale. Ricerca, classificazione e briefing passano tutti da questi endpoint."
+    },
+    "delete": {
+      "title": "Elimina endpoint del modello",
+      "message": "Eliminare {name}? I ruoli delle attività assegnati a questo endpoint passano al primo endpoint attivo finché non li riassegni."
+    },
+    "form": {
+      "createTitle": "Aggiungi un endpoint di modello",
+      "editTitle": "Modifica endpoint del modello",
+      "duplicateTitle": "Duplica endpoint del modello",
+      "endpoint": "URL di base",
+      "endpointRequired": "URL di base (obbligatorio)",
+      "endpointHelp": {
+        "Anthropic": "Lascia vuoto per l’API di Anthropic.",
+        "OpenAi": "Lascia vuoto per l’API di OpenAI.",
+        "OpenAiCompatible": "Obbligatorio. Il server è eseguito in Docker, quindi usa host.docker.internal per un server su questa macchina.",
+        "Ollama": "Il server Ollama. Dal container Docker, usa host.docker.internal per un Ollama su questa macchina.",
+        "Gemini": "Lascia vuoto per l’API di Gemini.",
+        "XAi": "Lascia vuoto per l’API di xAI.",
+        "OllamaCloud": "Lascia vuoto per Ollama Cloud."
+      },
+      "apiKey": "Chiave API",
+      "keyModes": {
+        "new": "Inserisci una chiave",
+        "vault": "Usa una credenziale salvata",
+        "none": "Nessuna chiave"
+      },
+      "newKey": "Nuova chiave API",
+      "newKeyHelp": "Salvata nel vault delle credenziali (cifrata) e collegata a questo endpoint. Lascia vuoto per mantenere la chiave attuale.",
+      "storedKey": "Credenziale salvata",
+      "storedKeyHelp": "Ruotala nella pagina Credenziali salvate e ogni endpoint che la usa riceve la modifica.",
+      "pickCredential": "Scegli una credenziale",
+      "noKeyWarning": "Questo provider di solito richiede una chiave API. Senza, le chiamate non riusciranno.",
+      "capabilities": "Fornisce",
+      "toolsDetected": "Il supporto degli strumenti e le dimensioni degli embedding vengono rilevati quando esegui Convalida.",
+      "embeddingDimensions": "Dimensioni degli embedding",
+      "embeddingDimensionsHelp": "Rilevate da Convalida.",
+      "notDetected": "Non ancora rilevato",
+      "maxTokens": "Token massimi in uscita",
+      "maxTokensHelp": "Circa 16000 va bene per le chiamate senza streaming.",
+      "reasoningEffort": "Livello di ragionamento",
+      "reasoningEffortHelp": "Predefinito per questo endpoint. Le assegnazioni dei ruoli per attività possono sostituirlo.",
+      "providerDefault": "Predefinito del provider",
+      "temperature": "Temperatura",
+      "temperatureHelp": "Temperatura di campionamento facoltativa.",
+      "temperatureAnthropic": "Non usata: gli attuali modelli Anthropic rifiutano la temperatura, quindi non viene mai inviata.",
+      "contextLength": "Lunghezza del contesto",
+      "timeoutMs": "Timeout (ms)",
+      "timeoutHelp": "Per chiamata, inclusi i nuovi tentativi.",
+      "modelsLoaded": "{count, plural, one {# modello disponibile; selezionalo dall’elenco.} other {# modelli disponibili; scegline uno dall’elenco.}}",
+      "pricing": "Prezzi",
+      "pricingHelp": "Dollari statunitensi per milione di token. Lascia vuoto per i modelli locali. Il costo viene calcolato quando ogni chiamata viene registrata, quindi le modifiche successive non cambiano mai lo storico.",
+      "inputCost": "Ingresso",
+      "outputCost": "Uscita",
+      "cachedInputCost": "Ingresso in cache",
+      "cachedInputCostHelp": "Letture dalla cache. Se vuoto, si usa il prezzo di ingresso.",
+      "cacheWriteCost": "Scritture in cache",
+      "cacheWriteCostHelp": "Se vuoto, si usa il prezzo di ingresso.",
+      "errors": {
+        "name": "Il nome è obbligatorio.",
+        "endpointRequired": "Gli endpoint compatibili con OpenAI richiedono un URL di base.",
+        "endpointUrl": "Inserisci un URL assoluto, per esempio http://host.docker.internal:8000/v1.",
+        "model": "Un modello di chat è obbligatorio quando l’endpoint fornisce la chat.",
+        "embeddingModel": "Un modello di embedding è obbligatorio quando l’endpoint fornisce gli embedding.",
+        "capability": "Scegli chat, embedding o entrambi.",
+        "credential": "Scegli una credenziale salvata.",
+        "number": "Inserisci un numero pari o superiore a zero."
+      }
+    },
+    "test": {
+      "title": "Testa modello",
+      "prompt": "Prompt",
+      "model": "Modello sostitutivo",
+      "modelHelp": "Facoltativo. Lascia vuoto per usare il modello dell’endpoint.",
+      "run": "Invia",
+      "running": "In attesa del modello...",
+      "succeeded": "Riuscito",
+      "failed": "Non riuscito",
+      "tokens": "{input} in ingresso, {output} in uscita",
+      "duration": "Durata {value}",
+      "tools": "Strumenti: {value}",
+      "output": "Risposta"
+    },
+    "validate": {
+      "title": "Convalida endpoint",
+      "running": "Verifica di connettività, supporto degli strumenti ed embedding...",
+      "reachable": "Raggiungibile",
+      "modelFound": "Modello trovato",
+      "supportsTools": "Supporta le chiamate agli strumenti",
+      "embeddingDimensions": "Dimensioni degli embedding",
+      "validatedUtc": "Verificato"
+    },
+    "list": {
+      "title": "Modelli disponibili",
+      "filter": "Filtra modelli",
+      "none": "Nessun modello corrispondente.",
+      "name": "Modello",
+      "inputLimit": "Limite di ingresso",
+      "outputLimit": "Limite di uscita",
+      "tools": "Strumenti",
+      "current": "In uso",
+      "use": "Usa",
+      "used": "Ora in uso: {model}"
+    },
+    "assignments": {
+      "intro": "Ogni attività della pipeline viene eseguita sull’endpoint assegnato al suo ruolo. Un’impostazione dell’argomento prevale su quella predefinita del tenant, che prevale sul primo endpoint attivo.",
+      "role": "Ruolo dell’attività",
+      "endpoint": "Endpoint",
+      "modelOverride": "Modello sostitutivo",
+      "reasoningEffort": "Livello di ragionamento",
+      "endpointFor": "Endpoint per {role}",
+      "modelOverrideFor": "Modello sostitutivo per {role}",
+      "effortFor": "Livello di ragionamento per {role}",
+      "pickEndpoint": "Scegli un endpoint",
+      "endpointDefault": "Predefinito dell’endpoint",
+      "notApplicable": "Non usato",
+      "noTools": "Nessun supporto degli strumenti",
+      "noToolsHelp": "Questo modello non può chiamare strumenti, quindi i risultati strutturati usano il fallback JSON, che alcuni modelli gestiscono male.",
+      "undo": "Annulla modifiche",
+      "saved": "Assegnazione di {role} salvata",
+      "uses": {
+        "Refinement": "Dimensioni, domande e contesto della procedura guidata",
+        "QueryPlanning": "Generazione delle query di ricerca",
+        "Extraction": "Risultati e prove dai documenti",
+        "Scoring": "Giudizio di pertinenza",
+        "Synthesis": "Riepilogo dell’esecuzione e tendenze",
+        "Prediction": "Previsioni e revisioni",
+        "Suggestion": "Suggerimenti da approfondire",
+        "Composition": "Markdown del briefing",
+        "PodcastScript": "Script audio",
+        "FeedbackAnalysis": "Classificazione dei motivi e preferenze",
+        "Embedding": "Vettori per deduplicazione e affinità"
+      },
+      "overridesTitle": "Impostazioni per argomento",
+      "overridesIntro": "Un argomento può eseguire un ruolo su un endpoint diverso da quello predefinito del tenant.",
+      "noOverrides": "Nessuna impostazione per argomento.",
+      "topic": "Argomento",
+      "topicId": "ID argomento",
+      "topicIdHelp": "L’ID dell’argomento da personalizzare.",
+      "addOverride": "Aggiungi impostazione per argomento",
+      "overrideAdded": "Impostazione per argomento salvata",
+      "deleteTitle": "Rimuovi impostazione per argomento",
+      "deleteMessage": "Rimuovere l’impostazione di {role} per l’argomento {topic}? L’argomento torna all’impostazione predefinita del tenant."
+    },
+    "calls": {
+      "detailTitle": "Chiamata al modello",
+      "succeeded": "Riuscita",
+      "failed": "Non riuscita",
+      "dryRun": "Esecuzione di prova",
+      "system": "Sistema",
+      "tokensTitle": "{input} in ingresso, {output} in uscita",
+      "payloadCleared": "Non disponibile. I payload vengono cancellati dopo il periodo di conservazione.",
+      "openPrompt": "Apri il prompt {key}",
+      "columns": {
+        "time": "Ora",
+        "task": "Attività",
+        "model": "Modello",
+        "promptKey": "Prompt",
+        "user": "Utente",
+        "tokens": "Token",
+        "ttft": "Primo token",
+        "duration": "Durata",
+        "cost": "Costo",
+        "outcome": "Esito"
+      },
+      "filters": {
+        "task": "Attività",
+        "endpoint": "Endpoint",
+        "outcome": "Esito",
+        "dryRun": "Prove a vuoto",
+        "dryRunOnly": "Solo prove a vuoto",
+        "realOnly": "Escludi prove a vuoto",
+        "from": "Da",
+        "to": "A"
+      },
+      "empty": {
+        "title": "Ancora nessuna chiamata ai modelli",
+        "message": "Ogni chiamata ai modelli viene registrata qui con token, tempi e costi. Prova Testa su un endpoint o esegui il laboratorio dei prompt."
+      },
+      "sections": {
+        "attribution": "Attribuzione",
+        "tokens": "Token",
+        "timing": "Tempi",
+        "outcome": "Esito e strumenti",
+        "cost": "Costo",
+        "prompt": "Prompt",
+        "response": "Risposta"
+      },
+      "fields": {
+        "provider": "Provider",
+        "endpoint": "Endpoint",
+        "user": "Utente",
+        "topic": "Argomento",
+        "run": "Esecuzione",
+        "refinementSession": "Sessione di perfezionamento",
+        "briefing": "Briefing",
+        "promptKey": "Chiave del prompt",
+        "promptVersion": "Versione del prompt",
+        "inputTokens": "Ingresso (totale)",
+        "uncachedInputTokens": "Ingresso non in cache",
+        "cachedInputTokens": "Ingresso in cache",
+        "cacheWriteTokens": "Scritture in cache",
+        "outputTokens": "Uscita",
+        "reasoningTokens": "Ragionamento",
+        "totalTokens": "Totale",
+        "duration": "Durata",
+        "timeToFirstToken": "Tempo al primo token",
+        "streamingDuration": "Durata dello streaming",
+        "chunks": "Blocchi",
+        "tokensPerSecond": "Token in uscita al secondo",
+        "streamed": "In streaming",
+        "attempts": "Tentativi",
+        "statusCode": "Codice di stato",
+        "finishReason": "Motivo di fine",
+        "repairs": "Riparazioni dell’output strutturato",
+        "toolCalls": "Chiamate agli strumenti",
+        "toolNames": "Strumenti chiamati",
+        "dryRun": "Esecuzione di prova",
+        "inputCost": "Costo di ingresso",
+        "outputCost": "Costo di uscita",
+        "estimatedCost": "Costo totale"
+      }
+    }
+  },
+  "prompts": {
+    "guardrailNotice": "Il server antepone sempre la protezione di ambito al prompt di sistema di ogni chiamata ai modelli. Modificare un prompt non può rimuoverla.",
+    "searchPlaceholder": "Chiave o nome",
+    "filteredByKey": "Chiave: {key}",
+    "empty": "Nessun prompt",
+    "open": "Apri editor",
+    "back": "Tutti i prompt",
+    "versionLabel": "v{version}",
+    "current": "attuale",
+    "customized": "Personalizzato",
+    "default": "Predefinito",
+    "noNote": "Nessuna nota di modifica",
+    "saved": "Nuova versione salvata",
+    "columns": {
+      "key": "Chiave",
+      "role": "Ruolo",
+      "scope": "Ambito",
+      "version": "Versione",
+      "customized": "Personalizzato",
+      "updated": "Aggiornato"
+    },
+    "scope": {
+      "tenant": "Tenant",
+      "topic": "Impostazione per argomento",
+      "tenantOnly": "Solo prompt del tenant"
+    },
+    "panels": {
+      "versions": "Versioni",
+      "compare": "Confronta",
+      "lab": "Laboratorio dei prompt"
+    },
+    "editor": {
+      "title": "Modello",
+      "panels": "Strumenti per i prompt",
+      "unsaved": "Modifiche non salvate",
+      "format": "Markdown con front matter YAML (key, name, role, output, variables), seguito da una sezione System e una sezione User. I segnaposto usano i nomi delle variabili dichiarati nel front matter.",
+      "missingUser": "Il modello non ha l’intestazione della sezione User. Aggiungi una riga con ## User.",
+      "missingSystem": "Il modello non ha l’intestazione della sezione System. La protezione viene comunque inviata come prompt di sistema.",
+      "invalid": "Il server ha rifiutato questa versione.",
+      "variables": "Variabili dichiarate",
+      "noVariables": "Nessuna variabile dichiarata.",
+      "changeNote": "Nota di modifica",
+      "changeNoteHelp": "Facoltativa. Mostrata nella cronologia delle versioni.",
+      "discard": "Annulla modifiche",
+      "save": "Salva versione",
+      "fields": {
+        "content": "Modello",
+        "key": "Chiave",
+        "user": "Sezione User",
+        "variables": "Variabili"
+      }
+    },
+    "compareWithCurrent": "Confronta v{version} con l’editor",
+    "rollbackTo": "Ripristina v{version}",
+    "rollbackTitle": "Ripristina",
+    "rollbackMessage": "Rendere v{version} la versione attuale? Viene creata una nuova versione con il suo contenuto, quindi non si perde nulla.",
+    "rollbackConfirm": "Ripristina",
+    "rolledBack": "Ripristinata v{version}",
+    "reset": "Ripristina predefinito",
+    "resetTitle": "Ripristina predefinito",
+    "resetMessage": "Sostituire questo prompt con quello predefinito fornito? Viene creata una nuova versione, quindi potrai ripristinarla in seguito.",
+    "resetDone": "Ripristinato il predefinito",
+    "deleteOverride": "Elimina personalizzazione",
+    "deleteTitle": "Elimina personalizzazione per argomento",
+    "deleteMessage": "Eliminare la personalizzazione di {key} per l’argomento {topic}? L’argomento torna al prompt del tenant.",
+    "diff": {
+      "from": "Da",
+      "to": "A",
+      "draft": "Editor (non salvato)",
+      "current": "Editor",
+      "default": "Predefinito fornito",
+      "label": "Differenze per riga",
+      "added": "{count, plural, one {# riga aggiunta} other {# righe aggiunte}}",
+      "removed": "{count, plural, one {# riga rimossa} other {# righe rimosse}}",
+      "addedLine": "Aggiunta",
+      "removedLine": "Rimossa",
+      "showAll": "Mostra righe invariate",
+      "skipped": "{count, plural, one {# riga invariata} other {# righe invariate}}",
+      "identical": "Le due versioni sono identiche."
+    },
+    "override": {
+      "button": "Crea personalizzazione per argomento",
+      "title": "Crea una personalizzazione per argomento",
+      "intro": "Una personalizzazione per argomento sostituisce il prompt del tenant per un solo argomento. Parte come copia del prompt del tenant.",
+      "pickKey": "Scegli un prompt",
+      "topicId": "ID argomento",
+      "topicIdHelp": "L’ID dell’argomento che deve usare una propria versione di questo prompt.",
+      "copyDraft": "Parti dal testo non salvato dell’editor",
+      "create": "Crea personalizzazione"
+    },
+    "lab": {
+      "intro": "Genera il prompt con i tuoi valori ed eseguilo su qualsiasi modello. Le esecuzioni sono prove a vuoto: vengono registrate come chiamate ai modelli ma non influiscono mai sulla ricerca.",
+      "endpoint": "Endpoint",
+      "assigned": "Assegnato a {role}",
+      "model": "Modello sostitutivo",
+      "modelHelp": "Facoltativo.",
+      "variables": "Variabili",
+      "noVariables": "Questo prompt non dichiara variabili.",
+      "useDraft": "Esegui il testo non salvato dell’editor",
+      "run": "Esegui",
+      "running": "Esecuzione del prompt...",
+      "cost": "Costo {value}",
+      "costUnknown": "non disponibile",
+      "unknownVariables": "Non compilate: {names}",
+      "guardrailNote": "Il prompt di sistema generato qui sotto è ciò che produce il modello. Il server vi antepone la protezione di ambito quando chiama il modello.",
+      "renderedSystem": "Prompt di sistema generato",
+      "renderedUser": "Prompt utente generato",
+      "output": "Output",
+      "emptySection": "Vuoto.",
+      "loggedAs": "Registrato come",
+      "openCall": "Apri la chiamata registrata"
+    }
+  },
+  "usage": {
+    "noData": "Nessuna chiamata ai modelli in questo intervallo.",
+    "noToolCalls": "Nessuna chiamata agli strumenti in questo intervallo.",
+    "total": "Totale",
+    "exportCsv": "Esporta CSV",
+    "window": "Da {from} a {to}",
+    "kpi": {
+      "cost": "Costo",
+      "perCall": "{value} per chiamata",
+      "calls": "Chiamate ai modelli",
+      "tokens": "Token",
+      "tokensDetail": "{input} in ingresso, {output} in uscita",
+      "failures": "Errori",
+      "failureRate": "{value} delle chiamate",
+      "avgTtft": "Primo token medio",
+      "p95Ttft": "Primo token p95"
+    },
+    "filters": {
+      "task": "Attività",
+      "endpoint": "Endpoint",
+      "user": "Utente",
+      "userPlaceholder": "ID utente",
+      "topic": "Argomento",
+      "topicPlaceholder": "ID argomento",
+      "includeDryRun": "Includi prove a vuoto"
+    },
+    "groups": {
+      "User": "Utente",
+      "Model": "Modello",
+      "Task": "Attività",
+      "Provider": "Provider",
+      "Topic": "Argomento",
+      "PromptKey": "Prompt",
+      "Day": "Giorno",
+      "Tenant": "Tenant"
+    },
+    "labels": {
+      "system": "Sistema",
+      "noTopic": "Nessun argomento",
+      "none": "Nessuno",
+      "unknown": "Sconosciuto"
+    },
+    "columns": {
+      "cost": "Costo",
+      "calls": "Chiamate",
+      "failures": "Errori",
+      "tokens": "Token",
+      "inputTokens": "Ingresso",
+      "cachedInputTokens": "Ingresso in cache",
+      "cacheWriteTokens": "Scritture in cache",
+      "outputTokens": "Uscita",
+      "reasoningTokens": "Ragionamento",
+      "toolCalls": "Chiamate agli strumenti",
+      "avgDuration": "Durata media",
+      "avgTtft": "Primo token medio",
+      "p95Ttft": "Primo token p95"
+    },
+    "tokens": {
+      "uncachedInput": "Ingresso non in cache",
+      "cachedInput": "Ingresso in cache",
+      "cacheWrite": "Scritture in cache",
+      "output": "Uscita",
+      "reasoning": "Ragionamento"
+    },
+    "series": {
+      "average": "Media",
+      "p95": "p95",
+      "toolCallsPerCall": "Chiamate agli strumenti per chiamata"
+    },
+    "charts": {
+      "groupBy": "Raggruppa per",
+      "costOverTime": "Costo nel tempo",
+      "costOverTimeHelp": "Costo stimato per intervallo, calcolato quando ogni chiamata è stata registrata.",
+      "costByUser": "Costo per utente",
+      "costByUserHelp": "I primi 20 utenti e la loro quota del costo. Seleziona una riga per filtrare la pagina su quell’utente.",
+      "costByModel": "Costo per modello",
+      "costByTask": "Costo per attività",
+      "costByTopic": "Costo per argomento",
+      "ttftByModel": "Tempo al primo token per modello",
+      "ttftHelp": "Media e p95 per le chiamate in streaming.",
+      "tokenMix": "Composizione per tipo di token",
+      "tokenMixHelp": "L’uscita esclude i token di ragionamento, mostrati separatamente.",
+      "toolCalls": "Chiamate agli strumenti per attività",
+      "toolCallsHelp": "Media delle chiamate agli strumenti per chiamata al modello."
+    },
+    "breakdown": {
+      "title": "Dettaglio",
+      "help": "Ogni tipo di token, quota del costo e tempistica per il raggruppamento selezionato. Esporta CSV scarica esattamente questa tabella."
+    },
+    "member": {
+      "notice": "L’utilizzo dell’intero tenant è riservato ad amministratori e revisori. Questo è il tuo utilizzo personale.",
+      "byTask": "Il tuo costo per attività"
+    },
+    "admin": {
+      "costByTenant": "Costo per tenant",
+      "costByTenantHelp": "Tutti i tenant ordinati per costo, con la loro quota del costo della piattaforma.",
+      "tenantTrend": "Costo per tenant nel tempo",
+      "tenantTrendHelp": "{count, plural, one {L’intervallo diviso in # finestra.} other {L’intervallo diviso in # finestre.}} I tenant principali sono impilati; tutti gli altri sono raggruppati.",
+      "otherTenants": "Altri tenant",
+      "platformTrend": "Costo della piattaforma nel tempo",
+      "costByModel": "Costo della piattaforma per modello",
+      "breakdownHelp": "Tutti i tenant con tipi di token, quota del costo e tempistiche. Esporta CSV scarica questa tabella."
+    }
+  },
+  "markdown": {
+    "mode": "Modalità dell’editor",
+    "write": "Scrivi",
+    "preview": "Anteprima",
+    "empty": "Ancora niente da visualizzare in anteprima."
+  },
+  "schedule": {
+    "fields": {
+      "intervalType": "Ripetizione",
+      "every": "Ogni",
+      "everyHelp": "Da {min} a {max}",
+      "minuteOffset": "Al minuto",
+      "minuteOffsetHelp": "Minuti dopo l’ora, da 0 a 59",
+      "timeZone": "Fuso orario",
+      "timeZoneHelp": "Gli orari sono calcolati in questo fuso, inclusi i cambi dell’ora legale",
+      "runOnce": "Esegui il",
+      "localTimeHelp": "Ora locale in {zone}",
+      "cron": "Espressione cron",
+      "cronHelp": "Cinque campi: minuto, ora, giorno del mese, mese, giorno della settimana",
+      "daysOfWeek": "Giorni della settimana",
+      "daysOfMonth": "Giorni del mese",
+      "timesOfDay": "Orari del giorno",
+      "timeN": "Orario {n}",
+      "start": "Inizio",
+      "end": "Fine",
+      "optionalLocal": "Facoltativo, ora locale in {zone}",
+      "missedRunPolicy": "Se un’esecuzione viene saltata",
+      "enabled": "Abilitata"
+    },
+    "units": {
+      "minutes": "minuti",
+      "hours": "ore",
+      "days": "giorni",
+      "weeks": "settimane"
+    },
+    "presets": {
+      "weekdays": "Giorni feriali",
+      "weekends": "Fine settimana",
+      "everyDay": "Ogni giorno"
+    },
+    "lastDay": "Ultimo giorno",
+    "removeTime": "Rimuovi questo orario",
+    "addTime": "Aggiungi un orario",
+    "enabledOn": "Attiva",
+    "enabledOff": "Disattiva",
+    "missedHelp": {
+      "Skip": "Le esecuzioni perse mentre il server era inattivo vengono saltate.",
+      "RunOnceOnRecovery": "Quando il server torna attivo viene effettuata un’esecuzione di recupero."
+    },
+    "preview": {
+      "title": "Prossime 5 esecuzioni",
+      "checking": "Verifica in corso...",
+      "manual": "Questo argomento viene eseguito solo quando premi Esegui ora.",
+      "none": "Nessuna esecuzione in programma. Controlla le date di inizio e fine."
+    },
+    "summary": {
+      "EveryNMinutes": "Ogni {count, plural, one {minuto} other {# minuti}}",
+      "EveryNHours": "Ogni {count, plural, one {ora} other {# ore}} al minuto :{minute}",
+      "EveryNDays": "Ogni {count, plural, one {giorno} other {# giorni}} alle {times}",
+      "EveryNWeeks": "Ogni {count, plural, one {settimana} other {# settimane}} il {days} alle {times}",
+      "DaysOfWeek": "{days} alle {times}",
+      "DaysOfMonth": "Il giorno {days} alle {times}",
+      "Once": "Una volta il {when}",
+      "Cron": "Cron {expression}",
+      "Manual": "Solo quando lo esegui tu"
+    },
+    "saved": "Pianificazione salvata",
+    "create": "Crea pianificazione",
+    "save": "Salva pianificazione",
+    "emptyTitle": "Ancora nessuna pianificazione",
+    "emptyMessage": "Aggiungi una pianificazione per ricercare questo argomento automaticamente, oppure eseguilo a mano.",
+    "add": "Aggiungi pianificazione",
+    "nextRun": "Prossima esecuzione",
+    "noNextRun": "Non pianificata",
+    "lastRun": "Ultima esecuzione",
+    "enableFor": "Abilita {name}",
+    "edit": "Modifica pianificazione",
+    "delete": "Elimina pianificazione",
+    "deleteTitle": "Elimina pianificazione",
+    "deleteMessage": "Eliminare la pianificazione \"{name}\"? Le esecuzioni già in coda non sono interessate."
+  },
+  "questions": {
+    "pickOne": "Scegli almeno un’opzione, scrivi una risposta o salta la domanda.",
+    "somethingElse": "Altro (facoltativo)",
+    "scaleLow": "Per niente",
+    "scaleHigh": "Moltissimo",
+    "save": "Salva risposta",
+    "why": "Perché te lo chiedo: {reason}",
+    "answered": "Risposta data",
+    "skipped": "Saltata",
+    "skip": "Salta",
+    "skippedHint": "Saltata. Rispondi per ripristinarla."
+  },
+  "dimensions": {
+    "emptyTitle": "Ancora nessuna dimensione",
+    "emptyMessage": "Le dimensioni sono le prospettive coperte dalla ricerca. Fattene proporre alcune o aggiungi le tue.",
+    "locked": "Bloccata",
+    "yours": "Tua",
+    "suggested": "Suggerita",
+    "why": "Perché potrebbe essere importante: {reason}",
+    "include": "Includi",
+    "exclude": "Escludi",
+    "weightFor": "Peso di {name}",
+    "unlock": "Sblocca {name}",
+    "lock": "Blocca {name}",
+    "unlockHint": "Sblocca per consentire alla rigenerazione di sostituirla",
+    "lockHint": "Blocca per mantenerla quando rigeneri",
+    "edit": "Modifica {name}",
+    "delete": "Elimina {name}",
+    "add": "Aggiungi una dimensione",
+    "addTitle": "Aggiungi una dimensione",
+    "editTitle": "Modifica dimensione",
+    "editHint": "Le dimensioni modificate diventano tue e vengono mantenute quando rigeneri.",
+    "fields": {
+      "name": "Nome",
+      "description": "Descrizione",
+      "rationale": "Perché è importante per te",
+      "weight": "Peso",
+      "includeTerms": "Termini da includere",
+      "excludeTerms": "Termini da escludere",
+      "termsHelp": "Separa i termini con virgole"
+    },
+    "deleteTitle": "Elimina dimensione",
+    "deleteMessage": "Eliminare la dimensione \"{name}\"?"
+  },
+  "constraints": {
+    "count": "{count, plural, one {# elemento} other {# elementi}}",
+    "help": {
+      "IncludeKeyword": "Parole che rendono un risultato più pertinente.",
+      "ExcludeKeyword": "Parole che escludono un risultato.",
+      "IncludeEntity": "Aziende, prodotti o persone da includere sempre.",
+      "ExcludeEntity": "Aziende, prodotti o persone da ignorare sempre.",
+      "PreferredDomain": "Siti da privilegiare, per esempio example.com.",
+      "BlockedDomain": "Siti da non usare mai.",
+      "TrackedQuestion": "Domande aperte da seguire nel tempo.",
+      "FeedUrl": "Feed RSS o Atom letti a ogni esecuzione.",
+      "SeedUrl": "Pagine controllate a ogni esecuzione."
+    },
+    "value": "Valore",
+    "note": "Nota",
+    "unlock": "Sblocca {value}",
+    "lock": "Blocca {value}",
+    "edit": "Modifica {value}",
+    "delete": "Elimina {value}",
+    "addTo": "Aggiungi a {kind}",
+    "placeholder": {
+      "IncludeKeyword": "Aggiungi una parola chiave",
+      "ExcludeKeyword": "Aggiungi una parola chiave da escludere",
+      "IncludeEntity": "Aggiungi un’azienda o un prodotto",
+      "ExcludeEntity": "Aggiungi un’azienda o un prodotto da ignorare",
+      "PreferredDomain": "Aggiungi un dominio",
+      "BlockedDomain": "Aggiungi un dominio da bloccare",
+      "TrackedQuestion": "Aggiungi una domanda da monitorare",
+      "FeedUrl": "Aggiungi l’URL di un feed (https://...)",
+      "SeedUrl": "Aggiungi l’URL di una pagina (https://...)"
+    }
+  },
+  "delivery": {
+    "saved": "Opzioni di consegna salvate",
+    "emailOnRun": "Email dopo ogni esecuzione",
+    "emailOnRunHelp": "Un riepilogo con link ai dettagli e al feedback",
+    "emailWhenEmpty": "Email anche quando non si trova nulla",
+    "emailWhenEmptyHelp": "Altrimenti le esecuzioni vuote non inviano email",
+    "maxFindings": "Risultati per email",
+    "maxFindingsHelp": "Da 1 a 50",
+    "saveOptions": "Salva opzioni di consegna",
+    "recipients": "Destinatari",
+    "recipientsHelp": "Tutti i destinatari qui ricevono l’email dopo ogni esecuzione. Per impostazione predefinita il destinatario sei tu.",
+    "noRecipients": "Ancora nessun destinatario.",
+    "you": "tu",
+    "removeRecipient": "Rimuovi {email}",
+    "addRecipient": "Indirizzo email del destinatario",
+    "emailPlaceholder": "nome@example.com",
+    "addMe": "Aggiungimi"
+  },
+  "topics": {
+    "actions": {
+      "dryRunQueued": "Esecuzione di prova in coda per {name}",
+      "runQueued": "Esecuzione in coda per {name}",
+      "continueRefining": "Continua a perfezionare",
+      "refine": "Perfeziona di nuovo",
+      "runNow": "Esegui ora",
+      "dryRun": "Esecuzione di prova",
+      "pause": "Metti in pausa",
+      "paused": "{name} in pausa",
+      "resume": "Riprendi",
+      "resumed": "{name} ripreso",
+      "archive": "Archivia",
+      "archived": "{name} archiviato",
+      "duplicated": "{name} duplicato come bozza"
+    },
+    "delete": {
+      "title": "Elimina argomento",
+      "message": "Eliminare \"{name}\" con le sue dimensioni, vincoli, pianificazioni ed esecuzioni? L’operazione non può essere annullata.",
+      "done": "{name} eliminato"
+    },
+    "bulk": {
+      "paused": "{count, plural, one {# argomento in pausa} other {# argomenti in pausa}}",
+      "pause": "Metti in pausa",
+      "delete": "Elimina",
+      "deleteTitle": "Elimina argomenti",
+      "deleteMessage": "{count, plural, one {Eliminare # argomento e tutto ciò che contiene?} other {Eliminare # argomenti e tutto ciò che contengono?}} L’operazione non può essere annullata.",
+      "deleted": "{count, plural, one {# argomento eliminato} other {# argomenti eliminati}}"
+    },
+    "columns": {
+      "name": "Nome",
+      "status": "Stato",
+      "oneTime": "Tipo",
+      "lastRun": "Ultima esecuzione",
+      "lastRefined": "Ultimo perfezionamento",
+      "created": "Creato",
+      "audience": "Pubblico",
+      "id": "ID"
+    },
+    "searchPlaceholder": "Cerca argomenti",
+    "oneTime": "Una tantum",
+    "recurring": "Ricorrente",
+    "new": "Nuovo argomento",
+    "empty": {
+      "title": "Ancora nessun argomento",
+      "message": "Descrivi ciò che vuoi tenere sotto controllo e la procedura guidata lo trasforma in un piano di ricerca.",
+      "action": "Dimmi cosa ti interessa"
+    },
+    "backToList": "Tutti gli argomenti",
+    "draftNoRun": "Completa il perfezionamento prima di eseguire, oppure avvia un’esecuzione di prova",
+    "draftNotice": "Questo argomento è una bozza. Completa il perfezionamento per avviare la ricerca pianificata.",
+    "workspace": {
+      "tabsLabel": "Sezioni dell’argomento",
+      "tabs": {
+        "overview": "Panoramica",
+        "context": "Contesto",
+        "schedule": "Pianificazione",
+        "sources": "Fonti",
+        "runs": "Esecuzioni",
+        "findings": "Risultati",
+        "predictions": "Previsioni",
+        "suggestions": "Suggerimenti",
+        "feedback": "Feedback",
+        "preferences": "Preferenze",
+        "analytics": "Analisi",
+        "delivery": "Consegna",
+        "prompts": "Prompt",
+        "models": "Modelli di IA"
+      },
+      "dimensionCount": "Dimensioni",
+      "noBrief": "Ancora nessuna descrizione. Perfeziona l’argomento per redigerne una.",
+      "dimensions": "Dimensioni",
+      "brief": "Descrizione e pubblico",
+      "sourcesHelp": "Feed e pagine iniziali vengono letti a ogni esecuzione, insieme alla ricerca web.",
+      "searchProvidersLater": "La scelta dei provider di ricerca per argomento arriverà con la pagina dei provider di ricerca."
+    }
+  },
+  "wizard": {
+    "railLabel": "Passaggi della procedura guidata",
+    "steps": {
+      "Describe": "Descrivi",
+      "Dimensions": "Dimensioni",
+      "Questions": "Domande",
+      "Context": "Contesto",
+      "Sources": "Fonti",
+      "Delivery": "Consegna",
+      "Review": "Revisione"
+    },
+    "stepHelp": {
+      "Describe": "Indica cosa vuoi tenere sotto controllo e perché.",
+      "Dimensions": "Le prospettive coperte dalla ricerca. Mantienile, pesale, modificale, bloccale o aggiungi le tue.",
+      "Questions": "Rispondi a ciò che vuoi e salta il resto. Ogni risposta rende la ricerca più precisa.",
+      "Context": "La descrizione e i vincoli che la ricerca segue. Gli elementi bloccati restano anche dopo una nuova bozza.",
+      "Sources": "Feed e pagine letti a ogni esecuzione, ciascuno verificato con un recupero in tempo reale.",
+      "Delivery": "Quando viene eseguita la ricerca e chi riceve l’email.",
+      "Review": "Tutto ciò che è stato raccolto. Visualizza l’anteprima di un’esecuzione di prova, poi applica."
+    },
+    "generating": {
+      "dimensions": "Proposta delle dimensioni...",
+      "questions": "Scrittura delle domande...",
+      "context": "Stesura della descrizione e dei vincoli...",
+      "sources": "Ricerca delle fonti e verifica di ciascuna...",
+      "request": "Pianificazione della richiesta...",
+      "replan": "Nuova pianificazione con le tue risposte...",
+      "patience": "{seconds} s finora. I modelli grandi possono impiegare un minuto."
+    },
+    "stopWaiting": "Smetti di attendere",
+    "failure": {
+      "title": "Il modello non è riuscito a completare questo passaggio",
+      "refusedTitle": "Il modello ha rifiutato questo passaggio",
+      "hint": "Riprova o cambia il modello usato per il perfezionamento.",
+      "changeModel": "Cambia il modello di perfezionamento"
+    },
+    "guidance": {
+      "label": "Indicazioni per il prossimo tentativo",
+      "placeholder": "Per esempio: più sui modelli locali, meno sugli acquisti aziendali"
+    },
+    "regenerate": "Rigenera",
+    "describe": {
+      "existing": "Questa sessione è iniziata dalla descrizione qui sotto.",
+      "seedText": "Cosa vuoi tenere sotto controllo?",
+      "seedHelp": "Una frase o un paragrafo. Potrai perfezionare tutto in seguito.",
+      "seedPlaceholder": "Voglio conoscere gli strumenti di IA per sviluppatori",
+      "goal": "Perché",
+      "depth": "Profondità",
+      "horizon": "Orizzonte",
+      "horizonHelp": "Facoltativo, per esempio \"i prossimi sei mesi\"",
+      "known": "Cosa sai già",
+      "started": "Avviata",
+      "optional": "Facoltativo",
+      "notSaying": "Preferisco non dirlo",
+      "goals": {
+        "work": "Decisioni di lavoro",
+        "investing": "Investimenti",
+        "curiosity": "Curiosità",
+        "hiring": "Assunzioni",
+        "building": "Costruire qualcosa"
+      },
+      "model": "Modello",
+      "modelHelp": "Per impostazione predefinita, l’assegnazione per il perfezionamento",
+      "defaultModel": "Assegnazione per il perfezionamento (predefinita)",
+      "starting": "Avvio in corso...",
+      "start": "Avvia e proponi le dimensioni",
+      "resumeTitle": "Riprendi da dove avevi lasciato"
+    },
+    "outOfScope": {
+      "title": "Questo esula da ciò che My Morning News ricerca",
+      "rephrase": "Riformula"
+    },
+    "dimensions": {
+      "noneTitle": "Ancora nessuna dimensione",
+      "noneMessage": "Proponi dimensioni dalla tua descrizione o aggiungi le tue qui sotto.",
+      "propose": "Proponi dimensioni",
+      "intro": "{count, plural, one {# dimensione} other {# dimensioni}}, {kept} mantenute come tue o bloccate. Imposta il peso Escludi per lasciarne fuori una.",
+      "regenerateHelp": "La rigenerazione sostituisce le dimensioni suggerite e mantiene quelle bloccate e le tue."
+    },
+    "questions": {
+      "sufficient": "Il contesto dovrebbe bastare. Puoi passare alla descrizione.",
+      "noneTitle": "Ancora nessuna domanda",
+      "noneMessage": "Il modello pone alcune domande basate sulle dimensioni che hai mantenuto.",
+      "ask": "Fammi delle domande",
+      "progress": "{done} di {total} con risposta o saltate",
+      "round": "Turno {round}",
+      "moreLabel": "Qualcosa per orientare il prossimo turno?",
+      "askMore": "Fammi altre domande",
+      "moreHelp": "{left, plural, one {Ancora # turno disponibile} other {Ancora # turni disponibili}}",
+      "maxed": "Il limite è di {max} turni. Passa alla descrizione."
+    },
+    "context": {
+      "name": "Nome dell’argomento",
+      "audience": "Livello del pubblico",
+      "horizon": "Orizzonte",
+      "novelty": "Preferenza per le novità: {value}",
+      "noveltyHelp": "Valori più alti privilegiano i nuovi sviluppi rispetto al contesto di base",
+      "brief": "Descrizione",
+      "briefHelp": "Markdown. La ricerca segue questa descrizione.",
+      "seedQueries": "Query iniziali",
+      "seedQueriesHelp": "Una query di ricerca per riga",
+      "saved": "Contesto salvato",
+      "save": "Salva contesto",
+      "savedState": "Salvato",
+      "noneTitle": "Ancora nessuna descrizione",
+      "noneMessage": "Redigi la descrizione, i vincoli e le query iniziali a partire dalle tue dimensioni e risposte.",
+      "draft": "Redigi il contesto",
+      "intro": "Modifica qualsiasi cosa. I vincoli bloccati e i tuoi restano anche dopo una nuova bozza.",
+      "redraft": "Nuova bozza",
+      "constraints": "Vincoli"
+    },
+    "sources": {
+      "intro": "I feed e le pagine iniziali suggeriti vengono recuperati in tempo reale. Quelli verdi hanno risposto.",
+      "again": "Suggerisci di nuovo",
+      "suggest": "Suggerisci fonti",
+      "noneSuggested": "Il modello non ha suggerito fonti. Aggiungi le tue qui sotto.",
+      "allAccepted": "Ogni suggerimento è già presente nell’argomento.",
+      "select": "Seleziona {url}",
+      "unreachable": "Non raggiungibile",
+      "accept": "{count, plural, =0 {Accetta} one {Accetta # fonte} other {Accetta # fonti}}",
+      "noneTitle": "Ancora nessuna fonte",
+      "noneMessage": "Suggerisci fonti, aggiungi le tue o salta questo passaggio.",
+      "accepted": "Su questo argomento"
+    },
+    "delivery": {
+      "schedule": "Pianificazione della ricerca",
+      "scheduleHelp": "La pianificazione viene salvata quando prosegui.",
+      "email": "Email"
+    },
+    "review": {
+      "novelty": "Preferenza di novità",
+      "noSchedule": "Nessuna pianificazione (esecuzione manuale)",
+      "applied": "Questo argomento è applicato e la ricerca è in corso.",
+      "openTopic": "Apri l’argomento",
+      "dimensions": "{count, plural, one {# dimensione} other {# dimensioni}}",
+      "constraintCount": "{kind}: {count}",
+      "preview": "Esecuzione di anteprima",
+      "previewHelp": "Un’esecuzione di prova non invia email e non viene conteggiata nella cronologia.",
+      "apply": "Applica argomento",
+      "appliedToast": "{name} è pronto",
+      "previewQueued": "Esecuzione di prova in coda. Seguila nella scheda Esecuzioni dell’argomento."
+    },
+    "newTitle": "Nuovo argomento",
+    "refineTitle": "Perfeziona {name}",
+    "refineTitleShort": "Perfeziona argomento",
+    "saveExit": "Salva ed esci",
+    "abandon": "Abbandona",
+    "refineSummary": "Riapri la procedura guidata partendo dal contesto attuale",
+    "refineStart": "Avvia una nuova sessione di perfezionamento per \"{name}\". Le dimensioni e i vincoli vengono mantenuti e nulla cambia finché non applichi.",
+    "refineStartButton": "Inizia a perfezionare",
+    "backToTopic": "Torna all’argomento",
+    "summary": "Ogni passaggio viene salvato man mano, quindi puoi uscire e riprendere.",
+    "back": "Indietro",
+    "nextTo": "Avanti: {step}",
+    "abandonTitle": "Abbandona questa sessione",
+    "abandonDraft": "Abbandonare la procedura guidata? La bozza dell’argomento e tutto il suo contenuto vengono eliminati.",
+    "abandonExisting": "Abbandonare questa sessione di perfezionamento? L’argomento mantiene le modifiche salvate lungo il percorso.",
+    "abandoned": "Sessione abbandonata"
+  },
+  "runs": {
+    "detail": {
+      "title": "Esecuzione",
+      "summary": "Riepilogo",
+      "cancelRequested": "Annullamento richiesto",
+      "schedule": "Pianificazione",
+      "request": "Richiesta una tantum",
+      "worker": "Worker",
+      "partial": "Riuscita parziale: una fase non critica non è riuscita. Le altre fasi sono state completate e i loro risultati vengono conservati.",
+      "partialWithStages": "Riuscita parziale: {stages} non riuscite. Le altre fasi sono state completate e i loro risultati vengono conservati.",
+      "viewFindings": "Visualizza risultati ({count})",
+      "tabsLabel": "Sezioni dell’esecuzione",
+      "tabs": {
+        "stages": "Fasi",
+        "queries": "Query",
+        "results": "Risultati di ricerca",
+        "details": "Dettagli",
+        "calls": "Chiamate al modello"
+      },
+      "contextHash": "Istantanea del contesto"
+    },
+    "cancelRequested": "Annullamento...",
+    "cancel": "Annulla esecuzione",
+    "dryRun": "Esecuzione di prova",
+    "columns": {
+      "topic": "Argomento",
+      "queued": "In coda",
+      "started": "Avviata",
+      "completed": "Completata",
+      "status": "Stato",
+      "trigger": "Attivazione",
+      "duration": "Durata",
+      "summary": "Riepilogo",
+      "id": "ID",
+      "findings": "Nuovi risultati",
+      "findingsTitle": "{duplicates} duplicati ignorati",
+      "sources": "Fonti",
+      "cost": "Costo"
+    },
+    "cancelled": "Annullamento richiesto",
+    "openTopic": "Apri argomento",
+    "empty": {
+      "title": "Ancora nessuna esecuzione",
+      "message": "Le esecuzioni compaiono quando scatta una pianificazione, parte una richiesta una tantum o premi Esegui ora.",
+      "topicMessage": "Premi Esegui ora o Esecuzione di prova, oppure aggiungi una pianificazione."
+    },
+    "totals": {
+      "sources": "Fonti lette",
+      "newFindings": "Nuovi risultati",
+      "duplicates": "Duplicati",
+      "tokens": "Token",
+      "tokenSplit": "{input} in ingresso, {output} in uscita",
+      "cost": "Costo stimato"
+    },
+    "stages": {
+      "empty": "Nessuna fase registrata per questa esecuzione.",
+      "aria": "Cronologia delle fasi con {count} fasi",
+      "stage": "Fase",
+      "status": "Stato",
+      "duration": "Durata",
+      "items": "Elementi",
+      "inOut": "{in} in ingresso, {out} in uscita",
+      "in": "Ingresso",
+      "out": "Uscita"
+    },
+    "queries": {
+      "empty": "Questa esecuzione non ha inviato query di ricerca.",
+      "query": "Query",
+      "provider": "Provider",
+      "results": "Risultati",
+      "succeeded": "Riuscite",
+      "failed": "Non riuscite"
+    },
+    "results": {
+      "disposition": "Esito",
+      "filterDisposition": "Filtra i risultati per esito",
+      "dispositionCount": "{disposition}: {count}",
+      "noMatches": "Nessun risultato con questo esito.",
+      "empty": "Questa esecuzione non ha risultati di ricerca.",
+      "rank": "Posizione",
+      "result": "Risultato",
+      "viewSource": "Visualizza fonte"
+    },
+    "source": {
+      "title": "Fonte",
+      "domain": "Dominio",
+      "httpStatus": "Stato HTTP",
+      "contentType": "Tipo di contenuto",
+      "size": "Dimensione",
+      "published": "Pubblicata",
+      "fetched": "Recuperata",
+      "timesSeen": "Volte vista",
+      "text": "Testo estratto",
+      "truncated": "Vengono mostrati i primi {shown} di {total} caratteri.",
+      "noText": "Nessun testo estratto da questa fonte."
+    },
+    "calls": {
+      "openCall": "Apri nel registro delle chiamate al modello",
+      "emptyTitle": "Nessuna chiamata al modello",
+      "emptyMessage": "Questa esecuzione non ha effettuato chiamate al modello, oppure le chiamate sono ancora in fase di registrazione."
+    },
+    "live": {
+      "streaming": "In diretta",
+      "polling": "Aggiornamento ogni pochi secondi"
+    },
+    "retry": {
+      "column": "Riprova",
+      "fromStage": "Riprova da questa fase",
+      "fromStageAria": "Riprova da questa fase ({stage})",
+      "runAgain": "Esegui di nuovo",
+      "runAgainAria": "Esegui di nuovo ({stage} non riuscita)",
+      "resumeTitle": "Riprova da questa fase",
+      "resumeMessage": "Rieseguire {stage} e tutte le fasi successive di questa esecuzione, usando i risultati salvati? Verranno effettuate chiamate al modello che contano per il tuo utilizzo.",
+      "newTitle": "Esegui di nuovo",
+      "newMessage": "Mettere in coda una nuova esecuzione di questo argomento dall’inizio? I risultati di ricerca e di recupero non vengono conservati, quindi ogni fase viene rieseguita ed effettua chiamate al modello che contano per il tuo utilizzo.",
+      "resumeQueued": "Esecuzione rimessa in coda da {stage}",
+      "newQueued": "Nuova esecuzione in coda"
+    }
+  },
+  "oneTime": {
+    "form": {
+      "failedHint": "Se la pianificazione non è riuscita, la richiesta è stata comunque salvata e puoi pianificarla di nuovo dall’elenco.",
+      "openList": "Apri richieste",
+      "text": "Cosa desideri?",
+      "textHelp": "Ad esempio: creami un podcast sulla storia del container per le spedizioni.",
+      "placeholder": "Scrivimi un rapporto sugli incentivi per le pompe di calore in California",
+      "deliverables": "Contenuti da produrre",
+      "length": "Lunghezza",
+      "timing": "Quando",
+      "runNow": "Esegui ora",
+      "runAt": "Esegui una volta il",
+      "when": "Data e ora",
+      "recipients": "Destinatari email",
+      "recipientsHelp": "Separati da virgole. Per impostazione predefinita sei tu ({email}).",
+      "publishToFeed": "Pubblica nel mio feed",
+      "publishToFeedHelp": "Aggiungi anche il podcast al tuo feed privato",
+      "justDoIt": "Procedi subito",
+      "justDoItHelp": "Salta le domande di chiarimento e conferma subito il piano",
+      "submitNow": "Pianifica ed esegui",
+      "submit": "Pianifica",
+      "moreOptions": "Altre opzioni"
+    },
+    "actions": {
+      "confirmed": "Richiesta confermata",
+      "cancelled": "Richiesta annullata",
+      "open": "Apri",
+      "confirm": "Conferma",
+      "cancel": "Annulla richiesta",
+      "convert": "Rendi ricorrente",
+      "openTopic": "Apri argomento"
+    },
+    "convert": {
+      "title": "Trasforma in argomento ricorrente",
+      "message": "Trasformare \"{title}\" in un argomento ricorrente con il suo brief e le sue dimensioni? Potrai pianificarlo subito dopo.",
+      "done": "Argomento ricorrente creato"
+    },
+    "delete": {
+      "title": "Elimina richiesta",
+      "message": "Eliminare \"{title}\" e il relativo piano?",
+      "done": "Richiesta eliminata"
+    },
+    "columns": {
+      "title": "Richiesta",
+      "status": "Stato",
+      "deliverables": "Contenuti da produrre",
+      "length": "Lunghezza",
+      "runAt": "Esecuzione il",
+      "created": "Creata",
+      "id": "ID"
+    },
+    "searchPlaceholder": "Cerca richieste",
+    "whenConfirmed": "Alla conferma",
+    "new": "Nuova richiesta",
+    "empty": {
+      "title": "Ancora nessuna richiesta una tantum",
+      "message": "Un rapporto, un podcast o un riepilogo via email, eseguito una volta subito o all’orario che scegli.",
+      "action": "Chiedi qualsiasi cosa una volta"
+    },
+    "backToList": "Tutte le richieste",
+    "declined": {
+      "title": "Questa richiesta esula da ciò che My Morning News ricerca",
+      "rephrase": "Riformula"
+    },
+    "detail": {
+      "request": "Richiesta",
+      "estimatedCost": "Costo stimato",
+      "confirmed": "Confermata",
+      "completed": "Completata",
+      "run": "Esecuzione",
+      "openRun": "Apri l’esecuzione",
+      "confirmTitle": "Conferma ed esegui",
+      "confirmAt": "Conferma per quell’orario",
+      "confirmNow": "Conferma ed esegui ora",
+      "needsPlan": "Pianifica di nuovo la richiesta prima di confermare.",
+      "plan": "Piano",
+      "noPlanDeclined": "Nessun piano per una richiesta rifiutata.",
+      "noPlan": "Ancora nessun piano.",
+      "dimensions": "Cosa tratterà",
+      "questions": "Domande di chiarimento",
+      "questionsHelp": "{answered} di {total} con risposta. Pianifica di nuovo per usare le tue risposte, oppure conferma così com’è.",
+      "replan": "Pianifica di nuovo con le mie risposte"
+    },
+    "newTitle": "Nuova richiesta",
+    "newSummary": "Rapporti, podcast e riepiloghi via email una tantum"
+  },
+  "findings": {
+    "backToList": "Torna ai risultati",
+    "openPage": "Apri pagina completa",
+    "duplicate": "Duplicato",
+    "update": "Aggiornamento",
+    "scoreAria": "Punteggio di pertinenza {score}",
+    "searchPlaceholder": "Cerca in titoli e riepiloghi",
+    "minScore": "Minimo",
+    "runFilter": "Esecuzione {id}",
+    "clearRun": "Mostra i risultati di tutte le esecuzioni",
+    "includeDuplicates": "Includi duplicati",
+    "includeDryRuns": "Includi prove",
+    "components": {
+      "llm": "Giudizio del modello",
+      "feedback": "Feedback",
+      "novelty": "Novità",
+      "source": "Fonte",
+      "recency": "Attualità",
+      "composite": "Composito"
+    },
+    "columns": {
+      "title": "Risultato",
+      "tier": "Livello",
+      "score": "Punteggio",
+      "category": "Categoria",
+      "topic": "Argomento",
+      "published": "Pubblicato",
+      "found": "Trovato",
+      "id": "ID",
+      "rating": "La tua valutazione"
+    },
+    "detail": {
+      "title": "Risultato",
+      "whyItMatters": "Perché è importante",
+      "scoreBreakdown": "Dettaglio del punteggio",
+      "scoreChartAria": "Dettaglio del punteggio con un composito di {score}",
+      "scoreHelp": "Ogni componente va da 0 a 100. Il composito è la loro media ponderata secondo i pesi di classificazione dell’argomento.",
+      "rationale": "Motivazione",
+      "noRationale": "Il modello non ha fornito alcuna motivazione per questo punteggio.",
+      "evidence": "Prove ({count})",
+      "dimension": "Dimensione",
+      "noDimension": "Non legato a una dimensione.",
+      "run": "Esecuzione",
+      "confidence": "Affidabilità",
+      "rank": "Posizione",
+      "duplicateOf": "Duplicato di",
+      "updateOf": "Aggiornamento di"
+    },
+    "evidence": {
+      "unknownSource": "Fonte sconosciuta",
+      "verified": "Citazione verificata",
+      "unverified": "Non verificata",
+      "emptyTitle": "Nessuna prova",
+      "emptyMessage": "Nessuna citazione verificata supporta questo risultato.",
+      "open": "Visualizza nel contesto",
+      "detailTitle": "Prova",
+      "quote": "Citazione",
+      "inContext": "Citazione nel contesto",
+      "unverifiedHelp": "Non è stato possibile far corrispondere questa citazione al testo recuperato dalla fonte.",
+      "source": "Fonte",
+      "domain": "Dominio",
+      "position": "Posizione nella fonte",
+      "positionValue": "Caratteri da {start} a {end}",
+      "sourceId": "ID fonte"
+    },
+    "empty": {
+      "title": "Ancora nessun risultato",
+      "message": "I risultati compaiono dopo che un’esecuzione legge e classifica le fonti. Esegui un argomento per ottenerne.",
+      "topicMessage": "Esegui questo argomento per trovare e classificare le fonti."
+    },
+    "pinnedMarker": "Fissato",
+    "pinnedBadge": "Fissato",
+    "hiddenBadge": "Nascosto",
+    "hiddenHelp": "I risultati nascosti sono esclusi da elenchi, briefing ed email. Mostralo di nuovo per ripristinarlo.",
+    "showHidden": "Mostra nascosti",
+    "pinnedOnly": "Solo fissati",
+    "actions": {
+      "pin": "Fissa",
+      "unpin": "Sblocca",
+      "hide": "Nascondi",
+      "unhide": "Mostra",
+      "pinned": "Risultato fissato",
+      "unpinned": "Risultato sbloccato",
+      "hidden": "Risultato nascosto",
+      "unhidden": "Risultato di nuovo visibile",
+      "deleted": "Risultato eliminato",
+      "deleteTitle": "Elimina risultato",
+      "deleteMessage": "Eliminare \"{title}\"? I collegamenti alle prove vengono rimossi. Le fonti condivise e la cronologia delle tue valutazioni restano."
+    }
+  },
+  "predictions": {
+    "overdue": "Orizzonte superato",
+    "brierHelp": "Più basso è meglio: 0 è perfetto e 0,25 equivale a lanciare una moneta.",
+    "columns": {
+      "statement": "Previsione",
+      "status": "Stato",
+      "confidence": "Affidabilità",
+      "horizon": "Orizzonte",
+      "brier": "Punteggio di Brier",
+      "topic": "Argomento",
+      "created": "Creata",
+      "id": "ID",
+      "rating": "Il tuo giudizio"
+    },
+    "actions": {
+      "resolve": "Risolvi",
+      "reresolve": "Risolvi di nuovo"
+    },
+    "resolvedBy": {
+      "User": "Tu",
+      "Agent": "Agente",
+      "AgentConfirmed": "Agente, confermato da te"
+    },
+    "detail": {
+      "title": "Previsione",
+      "resolved": "Risolta",
+      "resolvedBy": "Risolta da",
+      "note": "Nota di risoluzione"
+    },
+    "reviews": {
+      "title": "Revisioni ({count})",
+      "empty": "Ancora nessuna revisione. Le esecuzioni successive confrontano le previsioni aperte con i nuovi risultati e propongono qui una risoluzione.",
+      "proposes": "Propone",
+      "confidence": "Affidabilità {confidence}",
+      "finding": "Risultato {id}",
+      "accept": "Accetta",
+      "reject": "Rifiuta",
+      "accepted": "Accettata",
+      "rejected": "Rifiutata",
+      "acceptedToast": "Risoluzione accettata",
+      "rejectedToast": "Risoluzione rifiutata"
+    },
+    "resolve": {
+      "title": "Risolvi previsione",
+      "submit": "Risolvi",
+      "outcome": "Esito",
+      "outcomeHelp": "Accurata, parzialmente accurata e non accurata contano per l’accuratezza e il punteggio di Brier.",
+      "note": "Nota",
+      "notePlaceholder": "Cosa è successo, con un link se ne hai uno",
+      "notGraded": "Questo esito non viene valutato, quindi non riceve un punteggio di Brier.",
+      "brierPreview": "Con un’affidabilità di {confidence} questo esito ottiene un punteggio di Brier di {brier}.",
+      "done": "Previsione risolta"
+    },
+    "kpis": {
+      "open": "Aperte",
+      "graded": "Valutate",
+      "ofTotal": "su {total} previsioni",
+      "accuracy": "Accuratezza osservata",
+      "accuracyHelp": "Parzialmente accurata conta come metà.",
+      "brier": "Punteggio di Brier medio"
+    },
+    "calibration": {
+      "title": "Calibrazione",
+      "subtitle": "Affidabilità dichiarata rispetto alla frequenza con cui le previsioni si sono avverate",
+      "aria": "Calibrazione di {count} previsioni valutate",
+      "xAxis": "Affidabilità dichiarata",
+      "count": "Previsioni",
+      "meanConfidence": "Affidabilità media",
+      "observed": "Accuratezza osservata",
+      "perfect": "Calibrazione perfetta",
+      "bucket": "Affidabilità da {from} a {to}",
+      "empty": "Valuta alcune previsioni per vedere la calibrazione."
+    },
+    "empty": {
+      "title": "Ancora nessuna previsione",
+      "message": "Le esecuzioni formulano previsioni sulla direzione di un argomento. Compaiono qui per essere seguite e valutate."
+    }
+  },
+  "suggestions": {
+    "priority": "Priorità {priority}",
+    "effort": "Richiede {effort}",
+    "until": "fino a",
+    "changed": "Contrassegnato come {status}",
+    "columns": {
+      "title": "Suggerimento",
+      "status": "Stato",
+      "priorityEffort": "Priorità e impegno",
+      "topic": "Argomento",
+      "created": "Creato",
+      "id": "ID",
+      "rating": "La tua valutazione"
+    },
+    "actions": {
+      "accept": "Accetta",
+      "snooze": "Posticipa",
+      "dismiss": "Ignora",
+      "complete": "Completa"
+    },
+    "detail": {
+      "title": "Suggerimento",
+      "rationale": "Perché",
+      "statusChanged": "Stato modificato",
+      "findings": "Risultati correlati"
+    },
+    "snooze": {
+      "title": "Posticipa suggerimento",
+      "quick": "Scelte rapide",
+      "tomorrow": "Domani mattina",
+      "nextWeek": "Tra una settimana",
+      "nextMonth": "Tra un mese",
+      "until": "Posticipa fino a",
+      "future": "Scegli un orario futuro.",
+      "help": "Torna nel tuo elenco a quell’orario."
+    },
+    "empty": {
+      "title": "Ancora nessun suggerimento",
+      "message": "Le esecuzioni suggeriscono aspetti da approfondire. Compaiono qui per essere accettati, posticipati, ignorati o completati."
+    }
+  },
+  "briefings": {
+    "untitled": "Briefing senza titolo",
+    "dryRun": "Esecuzione di prova",
+    "searchPlaceholder": "Titolo",
+    "includeDryRun": "Includi prove",
+    "columns": {
+      "title": "Briefing",
+      "kind": "Tipo",
+      "status": "Stato",
+      "edition": "Edizione",
+      "topic": "Argomento",
+      "items": "Elementi",
+      "pinned": "Fissato",
+      "created": "Composto",
+      "id": "ID"
+    },
+    "actions": {
+      "open": "Apri"
+    },
+    "download": {
+      "md": "Scarica .md",
+      "html": "Scarica .html"
+    },
+    "pin": {
+      "pin": "Fissa",
+      "unpin": "Sblocca",
+      "pinNamed": "Fissa {title}",
+      "unpinNamed": "Sblocca {title}",
+      "pinned": "Fissato. I suoi file vengono conservati oltre il periodo di conservazione.",
+      "unpinned": "Sbloccato. I suoi file seguono di nuovo il periodo di conservazione.",
+      "cap": "Hai raggiunto il limite di elementi fissati per questo spazio di lavoro. Sblocca prima un altro briefing.",
+      "badge": "Fissato"
+    },
+    "expired": {
+      "notice": "Il file del rapporto è scaduto. Rigeneralo per scaricarlo di nuovo.",
+      "title": "Il file del rapporto è scaduto.",
+      "message": "I file dei rapporti vengono conservati fino a 365 giorni. Il briefing e i suoi risultati sono ancora qui, quindi i file possono essere rigenerati.",
+      "regenerate": "Rigenera",
+      "regenerated": "File del rapporto rigenerati"
+    },
+    "files": {
+      "expired": "File scaduto",
+      "pinned": "Fissato",
+      "expires": "Conservato fino al {date}",
+      "download": "Scarica {name}"
+    },
+    "progress": {
+      "Queued": "In coda. Verrà composto a breve.",
+      "Composing": "Composizione in corso.",
+      "researching": "In attesa di una nuova ricerca, al più tardi fino alle {time}."
+    },
+    "reader": {
+      "back": "Tutti i briefing",
+      "citation": "Fonte {number}",
+      "outline": "Struttura",
+      "noItems": "Questo briefing non ha usato risultati, previsioni o suggerimenti.",
+      "otherItems": "Altro",
+      "open": {
+        "Finding": "Apri risultato",
+        "Prediction": "Apri previsione",
+        "Suggestion": "Apri suggerimenti"
+      },
+      "noFiles": "Nessun file archiviato.",
+      "openRun": "Apri l’esecuzione",
+      "stats": "{minutes} min di lettura, {words} parole, {items} elementi",
+      "failed": "Composizione non riuscita.",
+      "noContent": "Questo briefing non ha contenuti.",
+      "items": "In questo briefing ({count})",
+      "files": "File",
+      "period": "Periodo",
+      "readMinutes": "{minutes} min di lettura"
+    },
+    "delete": {
+      "title": "Elimina briefing",
+      "message": "Eliminare \"{title}\" e i suoi file archiviati? I risultati, le previsioni e i suggerimenti usati restano.",
+      "done": "Briefing eliminato"
+    },
+    "empty": {
+      "title": "Ancora nessun briefing",
+      "message": "Componi un’edizione, esegui un argomento o fai una domanda una tantum per ottenerne uno."
+    }
+  },
+  "today": {
+    "seeAll": "Vedi tutto",
+    "composeNow": "Componi ora",
+    "composeQueued": "Briefing in coda",
+    "composeReady": "Il tuo briefing è pronto",
+    "composeFailed": "Il briefing non è riuscito: {message}",
+    "composeConflict": "Un briefing per questa edizione è già in preparazione.",
+    "edition": "Edizione",
+    "follow": "Segui l’avanzamento",
+    "noEditions": "Non hai ancora edizioni.",
+    "createEdition": "Creane una",
+    "empty": {
+      "title": "Ancora nessun briefing",
+      "message": "Componi ora la tua edizione, oppure attendi la sua pianificazione."
+    },
+    "openReader": "Apri nel lettore",
+    "runs": "Briefing delle esecuzioni recenti",
+    "oneTime": "Report una tantum",
+    "noRuns": "Ancora nessun briefing delle esecuzioni.",
+    "noOneTime": "Ancora nessun report una tantum."
+  },
+  "editions": {
+    "add": "Nuova edizione",
+    "back": "Tutte le edizioni",
+    "newTitle": "Nuova edizione",
+    "newSummary": "Un briefing con la propria pianificazione, sugli argomenti che scegli.",
+    "created": "Edizione creata",
+    "saved": "Edizione salvata",
+    "deleted": "Edizione eliminata",
+    "composeQueued": "Briefing in coda",
+    "enabledOn": "Attiva",
+    "enabledOff": "Disattivata",
+    "preview": "Anteprima",
+    "previewing": "Composizione dell’anteprima...",
+    "previewTitle": "Anteprima: {name}",
+    "previewSubtitle": "Composta dai dati più recenti. Nulla viene salvato o inviato.",
+    "previewFallbacks": "{count, plural, one {# sezione è stata scritta} other {# sezioni sono state scritte}} come semplice elenco perché nessun modello ha risposto.",
+    "previewEmpty": "L’anteprima è vuota.",
+    "discard": "Annulla modifiche",
+    "create": "Crea edizione",
+    "save": "Salva edizione",
+    "schedulesHelp": "Quando viene composta questa edizione. Con la ricerca aggiornata attiva, la ricerca parte prima di ogni orario pianificato.",
+    "schedulesEmpty": "Aggiungi una pianificazione per comporre questa edizione automaticamente, oppure componila manualmente.",
+    "deleteTitle": "Elimina edizione",
+    "deleteMessage": "Eliminare l’edizione \"{name}\" e le sue pianificazioni? I suoi briefing restano.",
+    "viewBriefings": "Visualizza briefing",
+    "lookbackHours": "Ultime {hours} ore",
+    "sections": {
+      "settings": "Impostazioni",
+      "topics": "Argomenti",
+      "schedules": "Pianificazioni",
+      "briefings": "Briefing"
+    },
+    "columns": {
+      "name": "Edizione",
+      "enabled": "Stato",
+      "delivery": "Consegna",
+      "lookback": "Periodo considerato",
+      "lastComposed": "Ultima composizione",
+      "created": "Creata",
+      "id": "ID"
+    },
+    "badges": {
+      "email": "Email",
+      "audio": "Audio",
+      "fresh": "Ricerca aggiornata ({minutes} min)"
+    },
+    "empty": {
+      "title": "Nessuna edizione",
+      "message": "Crea un’edizione per ricevere un briefing secondo una pianificazione."
+    },
+    "form": {
+      "name": "Nome",
+      "nameRequired": "Il nome è obbligatorio.",
+      "description": "Descrizione",
+      "template": "Modello",
+      "templateDefault": "Usa {name}, il modello predefinito.",
+      "defaultName": "quello predefinito",
+      "useDefault": "Modello predefinito",
+      "sharedOption": "{name} (condiviso)",
+      "enabled": "Attiva",
+      "enabledHelp": "Viene composta secondo le sue pianificazioni. Componi ora funziona in ogni caso.",
+      "email": "Email",
+      "emailHelp": "Invia il briefing via email quando è pronto.",
+      "audio": "Audio",
+      "audioHelp": "Produci una versione audio di ogni briefing.",
+      "fresh": "Prima una ricerca aggiornata",
+      "freshHelp": "Esegui la ricerca di ogni argomento prima della composizione.",
+      "lead": "Anticipo della ricerca (minuti)",
+      "leadHelp": "Quanto attendere la ricerca, da {min} a {max} minuti.",
+      "lookbackMode": "Periodo considerato",
+      "lookbackModeHelp": {
+        "SinceLastEdition": "Tutto ciò che è successo dall’ultima edizione composta.",
+        "FixedHours": "Una finestra fissa che termina quando l’edizione viene composta."
+      },
+      "lookbackHours": "Finestra considerata (ore)",
+      "lookbackHoursHelp": "Da {min} a {max} ore. L’opzione dall’ultima edizione non va mai più indietro di così."
+    },
+    "topics": {
+      "mode": "Argomenti",
+      "modes": {
+        "all": "Tutti gli argomenti attivi",
+        "chosen": "Scegli argomenti"
+      },
+      "allHelp": "Copre tutti gli argomenti ricorrenti attivi, compresi quelli che aggiungerai in seguito.",
+      "covered": "Argomenti trattati",
+      "noneActive": "Non hai ancora argomenti ricorrenti attivi.",
+      "chosenHelp": "Solo questi argomenti, in quest’ordine.",
+      "noneChosen": "Ancora nessun argomento scelto.",
+      "chosen": "Argomenti scelti",
+      "chooseOne": "Scegli almeno un argomento, oppure copri tutti gli argomenti attivi.",
+      "moveUp": "Sposta su {name}",
+      "moveDown": "Sposta giù {name}",
+      "remove": "Rimuovi {name}",
+      "addLabel": "Argomento da aggiungere",
+      "pick": "Scegli un argomento",
+      "add": "Aggiungi",
+      "save": "Salva argomenti",
+      "saved": "Argomenti salvati"
+    }
+  },
+  "templates": {
+    "add": "Nuovo modello",
+    "back": "Tutti i modelli",
+    "open": "Apri editor",
+    "empty": "Nessun modello",
+    "searchPlaceholder": "Nome o descrizione",
+    "saved": "Nuova versione salvata",
+    "created": "Modello creato",
+    "deleted": "Modello eliminato",
+    "export": "Esporta .md",
+    "copy": "Crea una copia",
+    "copyName": "{name} (copia)",
+    "reset": "Ripristina predefinito",
+    "resetTitle": "Ripristina modello",
+    "resetMessage": "Sostituire il contenuto con quello predefinito fornito, come nuova versione? Le versioni precedenti restano nella cronologia.",
+    "resetDone": "Ripristinato il predefinito",
+    "deleteTitle": "Elimina modello",
+    "deleteMessage": "Eliminare il modello \"{name}\" e le sue versioni? Le edizioni che lo usano tornano al modello predefinito.",
+    "readOnly": "Solo gli amministratori del tenant possono modificare i modelli condivisi. Crea una copia per modificarne una tua.",
+    "scope": {
+      "shared": "Condiviso",
+      "mine": "Miei"
+    },
+    "badges": {
+      "editionDefault": "Predefinito delle edizioni",
+      "builtIn": "Integrato"
+    },
+    "columns": {
+      "name": "Modello",
+      "scope": "Ambito",
+      "origin": "Origine",
+      "version": "Versione",
+      "updated": "Aggiornato"
+    },
+    "import": {
+      "button": "Importa .md",
+      "file": "File del modello",
+      "tooLarge": "Il file è troppo grande per essere un modello."
+    },
+    "editor": {
+      "title": "Modello",
+      "panels": "Strumenti del modello",
+      "valid": "Valido",
+      "errors": "{count, plural, one {# errore} other {# errori}}",
+      "rejected": "Il server ha rifiutato questa versione.",
+      "format": "Markdown con front matter (name, description, tone, length, audience, citations, audio). Ogni intestazione di secondo livello è una sezione. Un commento mmn:section sotto di essa sceglie i dati (source, tier, status, group, limit, order, topic, dimension) e il testo sotto l’intestazione indica al compositore cosa scrivere."
+    },
+    "panels": {
+      "problems": "Problemi",
+      "problemsCount": "Problemi ({count})",
+      "outline": "Struttura",
+      "preview": "Anteprima",
+      "versions": "Versioni"
+    },
+    "problems": {
+      "none": "Nessun problema trovato.",
+      "errors": "{count, plural, one {# errore} other {# errori}}",
+      "warnings": "{count, plural, one {# avviso} other {# avvisi}}",
+      "checking": "Verifica in corso...",
+      "jump": "Vai alla riga {line}",
+      "line": "Riga {line}",
+      "general": "Generale",
+      "warning": "Avviso",
+      "error": "Errore"
+    },
+    "outline": {
+      "pending": "Convalida in corso...",
+      "name": "Nome",
+      "title": "Titolo",
+      "audio": "Audio",
+      "audioOn": "Attivo: {format}, circa {minutes} minuti",
+      "audioOff": "Disattivato",
+      "intro": "Introduzione",
+      "noSections": "Ancora nessuna sezione. Aggiungi un’intestazione di secondo livello.",
+      "jump": "Vai a {heading} alla riga {line}",
+      "source": "source={source}"
+    },
+    "preview": {
+      "help": "Compone l’edizione scelta dai dati più recenti con il modello salvato dell’edizione. Nulla viene salvato o inviato.",
+      "noEditions": "Crea un’edizione per visualizzare l’anteprima di un modello.",
+      "edition": "Edizione da visualizzare in anteprima",
+      "otherTemplate": "{name} usa un modello diverso, quindi questa anteprima non mostra questo.",
+      "unsaved": "Salva le modifiche per vederle nell’anteprima."
+    },
+    "versions": {
+      "none": "Ancora nessuna versione.",
+      "rollbackMessage": "Ripristinare la versione {version} come nuova versione? Il contenuto attuale resta nella cronologia."
+    },
+    "create": {
+      "titles": {
+        "new": "Nuovo modello",
+        "import": "Importa un modello",
+        "copy": "Crea una copia"
+      },
+      "confirm": {
+        "new": "Crea",
+        "import": "Importa",
+        "copy": "Crea copia"
+      },
+      "contentHelp": {
+        "import": "Importa {lines} righe di Markdown.",
+        "copy": "Copia le {lines} righe presenti nell’editor, comprese le modifiche non salvate."
+      },
+      "defaultName": "Il mio briefing",
+      "name": "Nome",
+      "nameHelp": "Lascia vuoto per usare il nome nel front matter.",
+      "startFrom": "Parti da",
+      "starter": "Un piccolo modello di partenza",
+      "copyOf": "Una copia di {name}",
+      "shared": "Condividi con tutti in questo spazio di lavoro",
+      "invalid": "Il modello presenta problemi."
+    }
+  },
+  "audio": {
+    "panel": {
+      "label": "Audio del briefing",
+      "title": "Ascolta",
+      "fromText": "Letto dal testo del briefing",
+      "checking": "Ricerca dell’audio..."
+    },
+    "player": {
+      "loading": "Caricamento audio...",
+      "loadingSize": "Caricamento audio ({size})...",
+      "play": "Riproduci",
+      "pause": "Pausa",
+      "back": "Indietro di {seconds} secondi",
+      "forward": "Avanti di {seconds} secondi",
+      "seek": "Posizione di riproduzione",
+      "position": "{time} di {duration}",
+      "nowPlaying": "In riproduzione: {chapter}",
+      "speed": "Velocità di riproduzione",
+      "speedOption": "{speed}x",
+      "chapters": "Capitoli"
+    },
+    "progress": {
+      "Queued": "L’audio è in coda. Verrà creato a breve.",
+      "Scripting": "Scrittura del testo parlato.",
+      "Synthesizing": "Sintesi vocale in corso. I briefing più lunghi richiedono qualche minuto."
+    },
+    "make": {
+      "action": "Crea audio",
+      "again": "Crea di nuovo l’audio",
+      "remake": "Rifai l’audio",
+      "voice": "Voce",
+      "defaultVoice": "Voce predefinita",
+      "voiceDefault": "{name} (predefinita)",
+      "queued": "Audio in coda",
+      "conflict": "L’audio non è stato messo in coda. L’audio di questo briefing è già in preparazione, oppure l’audio è disattivato su questo server. {message}"
+    },
+    "failed": "Creazione dell’audio non riuscita.",
+    "missingFile": "Il file audio non è disponibile. Crea di nuovo l’audio per ascoltarlo.",
+    "none": "Questo briefing non ha ancora un audio.",
+    "listenFrom": "Ascolta da {section}"
+  },
+  "voices": {
+    "columns": {
+      "name": "Nome",
+      "provider": "Provider",
+      "voice": "Voce",
+      "model": "Modello di IA",
+      "speed": "Velocità",
+      "endpoint": "Endpoint",
+      "credential": "Credenziale",
+      "created": "Creata",
+      "id": "ID"
+    },
+    "default": "Predefinita",
+    "secondaryShort": "Secondo conduttore: {voice}",
+    "serverDefault": "Predefinito del server",
+    "adminOnly": "Solo gli amministratori del tenant possono modificare le voci.",
+    "memberNotice": "Puoi elencare e provare le voci. Per crearle, modificarle ed eliminarle serve un amministratore del tenant.",
+    "twoHostHint": "I testi a due conduttori alternano righe HOST_A e HOST_B: HOST_A usa la voce e HOST_B usa la seconda voce (o di nuovo la stessa voce se non è impostata una seconda voce).",
+    "makeDefault": "Imposta come predefinita",
+    "defaultSet": "{name} è ora la voce predefinita",
+    "empty": {
+      "title": "Ancora nessuna voce",
+      "message": "L’audio usa le impostazioni vocali del server finché non aggiungi una voce."
+    },
+    "form": {
+      "createTitle": "Aggiungi voce",
+      "editTitle": "Modifica voce"
+    },
+    "fields": {
+      "endpointHelp": "URL di base di un server vocale compatibile con OpenAI. Lascia vuoto per usare il predefinito del server.",
+      "endpointPlaceholder": "Predefinito del server",
+      "modelHelp": "Lascia vuoto per il modello predefinito.",
+      "modelPlaceholder": "kokoro",
+      "voice": "Voce",
+      "voiceHelp": "La voce narrante, e HOST_A nei testi a due conduttori.",
+      "voicePlaceholder": "af_heart",
+      "secondaryVoice": "Seconda voce",
+      "secondaryVoiceHelp": "HOST_B nei testi a due conduttori. Lascia vuoto per usare la stessa voce per entrambi i conduttori.",
+      "speedHelp": "Da {min} a {max}.",
+      "credentialHelp": "Una credenziale salvata con la chiave API, quando il server vocale ne richiede una.",
+      "isDefault": "Voce predefinita",
+      "isDefaultHelp": "Usata quando un’edizione o una richiesta non indica alcuna voce."
+    },
+    "test": {
+      "action": "Prova",
+      "title": "Prova voce",
+      "text": "Testo di esempio",
+      "textHelp": "Lascia vuoto per ascoltare un breve saluto.",
+      "defaultText": "Buongiorno. Ecco le novità dei tuoi argomenti.",
+      "speak": "Pronuncia",
+      "speaking": "Riproduzione in corso...",
+      "ttsError": "Il servizio vocale non è riuscito: {message}"
+    },
+    "delete": {
+      "title": "Elimina voce",
+      "message": "Eliminare la voce \"{name}\"? Le edizioni che la usano tornano alla voce predefinita."
+    }
+  },
+  "listen": {
+    "untitled": "Episodio senza titolo",
+    "columns": {
+      "title": "Episodio",
+      "status": "Stato",
+      "kind": "Tipo",
+      "duration": "Durata",
+      "size": "Dimensione",
+      "segments": "Segmenti",
+      "script": "Testo",
+      "created": "Creato",
+      "completed": "Completato",
+      "id": "ID"
+    },
+    "noValue": "Nessuno",
+    "scriptModel": "Scritto da un modello",
+    "scriptText": "Letto dal testo",
+    "actions": {
+      "play": "Riproduci",
+      "briefing": "Apri briefing",
+      "remake": "Rifai l’audio"
+    },
+    "empty": {
+      "title": "Ancora nessun audio",
+      "message": "Crea un audio da un briefing, oppure attiva l’audio per un’edizione."
+    },
+    "delete": {
+      "title": "Elimina episodio",
+      "message": "Eliminare \"{title}\" e i suoi file audio? Il briefing resta.",
+      "done": "Episodio eliminato"
+    }
+  },
+  "feeds": {
+    "title": "Feed podcast",
+    "summary": "URL di feed privati per le app di podcast. Ogni feed contiene un segreto, quindi tratta il suo URL come una password.",
+    "fields": {
+      "name": "Nome",
+      "nameHelp": "Un’etichetta che riconoscerai, ad esempio l’app o il dispositivo.",
+      "namePlaceholder": "Overcast sul mio telefono",
+      "edition": "Edizione",
+      "editionHelp": "Limita il feed a una sola edizione, oppure includi tutto il tuo audio."
+    },
+    "allAudio": "Tutto il mio audio",
+    "create": "Crea feed",
+    "created": {
+      "title": "Feed creato",
+      "warning": "Questo URL è privato e viene mostrato una sola volta. Chiunque lo possieda può ascoltare i tuoi briefing. Copialo ora e revoca il feed se viene divulgato.",
+      "feedUrl": "URL del feed",
+      "copyUrl": "Copia URL del feed",
+      "secret": "Segreto",
+      "copySecret": "Copia segreto",
+      "done": "L’ho salvato"
+    },
+    "empty": {
+      "title": "Nessun feed podcast",
+      "message": "Crea un feed per ascoltare i tuoi briefing in un’app di podcast."
+    },
+    "columns": {
+      "name": "Nome",
+      "prefix": "Token",
+      "edition": "Edizione",
+      "created": "Creato",
+      "lastUsed": "Ultimo utilizzo",
+      "status": "Stato",
+      "actions": "Azioni"
+    },
+    "unnamed": "Feed senza nome",
+    "prefix": "{prefix}...",
+    "neverUsed": "Mai",
+    "revoked": "Revocato",
+    "revoke": "Revoca",
+    "revokeNamed": "Revoca {name}",
+    "revokeConfirm": {
+      "title": "Revoca feed",
+      "message": "Revocare \"{name}\"? Le app di podcast iscritte smetteranno di ricevere episodi. L’operazione non può essere annullata.",
+      "done": "Feed revocato"
+    },
+    "help": {
+      "title": "Come iscriversi",
+      "step1": "Crea un feed qui sopra e copia il suo URL.",
+      "apple": "Apple Podcasts: apri la Libreria, scegli Segui un podcast tramite URL dal menu e incolla l’URL.",
+      "overcast": "Overcast: tocca il pulsante più, scegli Aggiungi URL e incolla l’URL.",
+      "publicUrl": "Il telefono deve poter raggiungere il server. Imposta MYMORNINGNEWS_PUBLIC_BASE_URL su un indirizzo che il telefono può aprire (non 127.0.0.1), quindi crea di nuovo il feed in modo che il suo URL usi quell’indirizzo.",
+      "loopback": "Questo URL punta a 127.0.0.1, raggiungibile solo da questo computer. Imposta MYMORNINGNEWS_PUBLIC_BASE_URL sul server affinché le app di podcast sul telefono possano raggiungerlo."
+    }
+  },
+  "promo": {
+    "picker": {
+      "search": "Trova un utente",
+      "searchPlaceholder": "L’email contiene",
+      "user": "Utente",
+      "noUsers": "Nessun utente corrispondente.",
+      "choose": "Scegli un utente"
+    },
+    "validation": {
+      "codeRequired": "Inserisci un codice.",
+      "codeFormat": "Usa da 4 a 40 lettere, cifre e trattini, iniziando e terminando con una lettera o una cifra.",
+      "prefixFormat": "Usa fino a 16 lettere e cifre.",
+      "countRange": "Inserisci un numero intero da 1 a {max, number}.",
+      "planRequired": "Scegli un piano.",
+      "durationRange": "Inserisci un numero intero di giorni da 0 (nessuna scadenza) a 3650.",
+      "maxRange": "Inserisci 0 (illimitato) o un numero intero di utilizzi.",
+      "maxBelowUsed": "Questo codice è stato usato {used} volte, quindi il limite non può essere inferiore.",
+      "perUserRange": "Inserisci un numero intero da 1 a 100.",
+      "dateInvalid": "Inserisci una data e un’ora valide.",
+      "expiresAfterStarts": "La scadenza deve essere successiva all’inizio."
+    },
+    "create": {
+      "title": "Nuovo codice promozionale",
+      "open": "Nuovo codice"
+    },
+    "edit": {
+      "title": "Modifica {code}"
+    },
+    "batch": {
+      "title": "Genera un lotto di codici",
+      "open": "Genera lotto",
+      "createdTitle": "{count, plural, one {# codice creato} other {# codici creati}}",
+      "batchId": "Lotto {id}",
+      "downloadCsv": "Scarica CSV",
+      "copyAll": "Copia tutti i codici",
+      "codes": "Codici creati",
+      "generate": "Genera"
+    },
+    "fields": {
+      "code": "Codice",
+      "codeHelp": "Lettere, cifre e trattini. Salvato in maiuscolo.",
+      "codeLocked": "Un codice non può essere rinominato. Creane uno nuovo.",
+      "prefix": "Prefisso",
+      "prefixHelp": "Facoltativo, fino a 16 lettere e cifre. Ogni codice riceve un suffisso casuale.",
+      "count": "Quanti",
+      "countHelp": "Da 1 a {max, number} codici.",
+      "plan": "Piano",
+      "noPlans": "Nessun piano",
+      "description": "Descrizione",
+      "duration": "Durata in giorni",
+      "durationHelp": "0 significa che il piano non scade.",
+      "maxRedemptions": "Utilizzi totali",
+      "maxHelp": "0 significa illimitato.",
+      "maxUsedHelp": "0 significa illimitato. Già usato {used} volte.",
+      "perUserLimit": "Limite per utente",
+      "perUserHelp": "Quante volte una persona può utilizzarlo.",
+      "starts": "Inizio",
+      "startsHelp": "Lascia vuoto per iniziare subito. Ora locale.",
+      "expires": "Scadenza",
+      "expiresHelp": "Lascia vuoto per nessuna scadenza. Ora locale.",
+      "enabled": "Attivo",
+      "newAccountsOnly": "Solo nuovi account",
+      "newAccountsOnlyHelp": "Possono utilizzarlo solo gli account che si registrano con il codice."
+    },
+    "status": {
+      "enabled": "Attivo",
+      "disabled": "Disattivato",
+      "notStarted": "Non iniziato",
+      "expired": "Scaduto",
+      "exhausted": "Esaurito"
+    },
+    "usage": {
+      "usedOf": "{used} su {max}",
+      "usedUnlimited": "{used} su illimitati",
+      "unlimited": "Illimitato"
+    },
+    "duration": {
+      "days": "{count, plural, one {# giorno} other {# giorni}}",
+      "noEnd": "Nessuna scadenza"
+    },
+    "reasons": {
+      "NotFound": "Non abbiamo trovato quel codice. Controlla l’ortografia e riprova.",
+      "Disabled": "Quel codice è stato disattivato.",
+      "NotStarted": "Quel codice non può ancora essere usato.",
+      "Expired": "Quel codice è scaduto.",
+      "Exhausted": "Quel codice è stato usato il numero massimo di volte consentito.",
+      "AlreadyRedeemed": "Questo account ha già usato quel codice.",
+      "NewAccountsOnly": "Quel codice è riservato ai nuovi account."
+    },
+    "delete": {
+      "title": "Elimina codice promozionale",
+      "message": "Eliminare {code}? L’operazione non può essere annullata.",
+      "usedMessage": "{code} è stato utilizzato {count, plural, one {# volta} other {# volte}}, quindi non può essere eliminato. Disattivalo per conservarne la cronologia.",
+      "disableInstead": "Disattiva",
+      "conflict": "Questo codice è stato usato, quindi non può essere eliminato. Disattivalo."
+    },
+    "notify": {
+      "disabled": "{code} disattivato",
+      "enabled": "{code} attivato",
+      "copied": "{code} copiato",
+      "generated": "{count, plural, one {# codice generato} other {# codici generati}}",
+      "created": "{code} creato"
+    },
+    "columns": {
+      "code": "Codice",
+      "description": "Descrizione",
+      "plan": "Piano",
+      "duration": "Durata",
+      "usage": "Usati / max",
+      "remaining": "Rimanenti",
+      "activeSubscriptions": "Abbonamenti attivi",
+      "status": "Stato",
+      "batch": "Lotto",
+      "expires": "Scadenza",
+      "lastRedeemed": "Ultimo utilizzo",
+      "created": "Creato"
+    },
+    "filters": {
+      "search": "Codice o descrizione",
+      "enabledOnly": "Attivi",
+      "disabledOnly": "Disattivati"
+    },
+    "actions": {
+      "disable": "Disattiva",
+      "enable": "Attiva",
+      "copyCode": "Copia codice"
+    },
+    "never": "Mai",
+    "immediately": "Subito",
+    "createdBy": "Creato da",
+    "empty": {
+      "title": "Ancora nessun codice promozionale",
+      "message": "Crea un codice, o genera un lotto, per assegnare un piano alle persone."
+    },
+    "apply": {
+      "open": "Applica a un utente",
+      "title": "Applica {code} a un utente",
+      "help": "L’utente ottiene {plan} per {duration}. I limiti del codice restano validi.",
+      "confirm": "Applica codice",
+      "done": "{code} applicato a {email}"
+    },
+    "redemptions": {
+      "title": "Utilizzi",
+      "user": "Utente",
+      "tenant": "Tenant",
+      "channel": "Canale",
+      "date": "Utilizzato",
+      "status": "Stato",
+      "active": "Attivo",
+      "revoked": "Revocato",
+      "revokedOn": "Revocato il {date}",
+      "userId": "ID utente",
+      "revoke": "Revoca",
+      "revokeTitle": "Revoca utilizzo",
+      "revokeMessage": "Revocare {code} per {email}? Il piano ottenuto con questo codice termina subito.",
+      "revokedNotice": "Utilizzo revocato",
+      "empty": "Nessuno ha ancora utilizzato questo codice",
+      "emptyMessage": "Gli utilizzi compaiono qui con chi, quando e da dove."
+    },
+    "channels": {
+      "Signup": "Registrazione",
+      "Account": "Account",
+      "Admin": "Amministratore",
+      "Api": "API"
+    },
+    "detail": {
+      "summary": "Utilizzo, riscatti e impostazioni di questo codice",
+      "back": "Tutti i codici",
+      "settings": "Impostazioni"
+    },
+    "kpi": {
+      "redemptions": "Utilizzi",
+      "remaining": "Rimanenti",
+      "activeSubscriptions": "Abbonamenti attivi",
+      "revoked": "Revocati",
+      "lastRedeemed": "Ultimo utilizzo",
+      "notYet": "Non ancora"
+    },
+    "chart": {
+      "title": "Utilizzi nel tempo",
+      "subtitle": "Al giorno, in base alla data di utilizzo",
+      "empty": "Ancora nessun utilizzo."
+    }
+  },
+  "plans": {
+    "default": "Predefinito",
+    "noFeatures": "Nessun valore di diritto.",
+    "validation": {
+      "key": "Usa da 2 a 63 lettere minuscole, cifre e trattini.",
+      "name": "Inserisci un nome.",
+      "duplicate": "La chiave {key} è elencata due volte."
+    },
+    "create": {
+      "title": "Nuovo piano",
+      "open": "Nuovo piano"
+    },
+    "edit": {
+      "title": "Modifica {name}",
+      "open": "Modifica {name}"
+    },
+    "fields": {
+      "key": "Chiave",
+      "keyHelp": "Un identificatore stabile, ad esempio team-pilot.",
+      "keyLocked": "La chiave di un piano non può cambiare.",
+      "name": "Nome",
+      "description": "Descrizione",
+      "features": "Valori dei diritti",
+      "featuresHelp": "Il codice verifica queste chiavi, non i nomi dei piani. Usa numeri, true o false, oppure unlimited. Un valore vuoto rimuove la chiave.",
+      "featureKey": "Chiave del diritto",
+      "featureValue": "Valore per {key}",
+      "emptyRemoves": "Vuoto per rimuovere",
+      "clearValue": "Cancella {key}",
+      "addFeature": "Aggiungi un valore"
+    },
+    "featureNames": {
+      "usage_monthlyCostUsd_max": "Limite di costo mensile (USD)",
+      "topics_max": "Argomenti",
+      "schedule_minIntervalMinutes": "Intervallo di pianificazione minimo (minuti)",
+      "runs_daily_max": "Esecuzioni al giorno",
+      "audio_enabled": "Audio",
+      "audio_monthlyMinutes_max": "Minuti audio al mese",
+      "email_enabled": "Email",
+      "mobile_access": "App mobile",
+      "endpoints_custom": "Endpoint di modelli propri",
+      "artifacts_pinned_max": "Rapporti fissati"
+    },
+    "assignments": {
+      "title": "I piani di un utente",
+      "help": "Scegli un utente per vedere tutti i suoi periodi di piano, compresi quelli che iniziano più avanti, e revocarne uno.",
+      "plan": "Piano",
+      "source": "Origine",
+      "starts": "Inizio",
+      "ends": "Fine",
+      "state": "Stato",
+      "note": "Nota",
+      "revoke": "Revoca",
+      "revokeTitle": "Revoca piano",
+      "revokeMessage": "Revocare {plan} per questo utente? Termina subito.",
+      "revoked": "Piano revocato",
+      "empty": "Nessuna assegnazione di piano",
+      "emptyMessage": "Questo utente ha il piano predefinito."
+    },
+    "sources": {
+      "Default": "Predefinito",
+      "Admin": "Amministratore",
+      "Promo": "Codice promozionale",
+      "Billing": "Fatturazione"
+    },
+    "states": {
+      "current": "Attuale",
+      "upcoming": "In arrivo",
+      "ended": "Terminato",
+      "revoked": "Revocato"
+    },
+    "grant": {
+      "open": "Assegna un piano",
+      "title": "Assegna un piano",
+      "titleFor": "Assegna un piano a {email}",
+      "confirm": "Assegna",
+      "note": "Nota",
+      "noteHelp": "Perché questo utente riceve il piano. Mostrata nel registro di controllo.",
+      "done": "Piano assegnato a {email}"
+    },
+    "userPanel": {
+      "action": "Piano",
+      "title": "Piano di {email}"
+    }
+  },
+  "account": {
+    "plan": {
+      "title": "Piano",
+      "endsOn": "Il tuo piano termina il {date}.",
+      "noEnd": "Il tuo piano non ha una data di fine.",
+      "limits": "Limiti",
+      "upcoming": "Inizia più avanti",
+      "anotherPlan": "Un altro piano",
+      "period": "dal {from} al {to}",
+      "periodOpen": "dal {from}, senza fine",
+      "redeemTitle": "Utilizza un codice",
+      "code": "Codice promozionale",
+      "codeHelp": "Un codice che hai ricevuto. Un codice per il piano che hai già inizia quando termina quello attuale.",
+      "redeem": "Utilizza",
+      "redeemed": "Codice utilizzato. Ora hai {plan}."
+    }
+  },
+  "email": {
+    "memberNotice": "Vedi le email inviate a te. Gli amministratori vedono tutti i messaggi.",
+    "resend": "Invia di nuovo",
+    "resent": "Inviata di nuovo a {recipient}",
+    "columns": {
+      "time": "Ora",
+      "template": "Modello",
+      "recipient": "Destinatario",
+      "subject": "Oggetto",
+      "status": "Stato",
+      "attempts": "Tentativi",
+      "sent": "Inviata",
+      "topic": "Argomento",
+      "providerId": "ID del provider"
+    },
+    "statuses": {
+      "Queued": "In coda",
+      "Sending": "Invio in corso",
+      "Sent": "Inviata",
+      "Failed": "Non riuscita",
+      "Suppressed": "Soppressa",
+      "Skipped": "Ignorata"
+    },
+    "templates": {
+      "RunDigest": "Riepilogo dell’esecuzione",
+      "BriefingPublished": "Briefing pubblicato",
+      "RunFailed": "Esecuzione non riuscita",
+      "PreferenceProposal": "Proposta di preferenza",
+      "Test": "Prova"
+    },
+    "chart": {
+      "title": "Messaggi al giorno per stato",
+      "subtitle": "Gli ultimi {days} giorni",
+      "empty": "Nessuna email in questo periodo."
+    },
+    "empty": {
+      "title": "Ancora nessuna email inviata",
+      "message": "Le email compaiono qui dopo esecuzioni, briefing e prove."
+    },
+    "delete": {
+      "title": "Elimina email",
+      "message": "Eliminare \"{subject}\" per {recipient} dalla posta in uscita?"
+    },
+    "preview": {
+      "title": "Email",
+      "runButton": "Anteprima email",
+      "runTitle": "Anteprima dell’email dell’esecuzione",
+      "to": "A {recipient}",
+      "format": "Formato",
+      "html": "Visualizzata",
+      "text": "Testo semplice",
+      "frame": "Email visualizzata",
+      "noHtml": "Questo messaggio non ha un corpo HTML.",
+      "noText": "Questo messaggio non ha un corpo in testo semplice."
+    },
+    "test": {
+      "button": "Invia email di prova",
+      "sent": "Email di prova in coda per {recipient}",
+      "failed": "Impossibile inviare l’email di prova: {message}",
+      "settingsHelp": "Salva prima le modifiche, poi invia una prova a te stesso."
+    }
+  },
+  "emailPrefs": {
+    "title": "Preferenze email",
+    "address": "Le email vengono inviate a {address}.",
+    "saved": "Preferenze email salvate",
+    "categories": {
+      "runEmails": "Email delle esecuzioni",
+      "briefingEmails": "Email dei briefing",
+      "failureEmails": "Email di errore"
+    },
+    "help": {
+      "runEmails": "Un riepilogo dopo ogni esecuzione dei tuoi argomenti.",
+      "briefingEmails": "Quando viene pubblicato il briefing di un’edizione o di un’esecuzione.",
+      "failureEmails": "Quando un’esecuzione non riesce."
+    },
+    "unsubscribedTitle": "Argomenti da cui hai annullato l’iscrizione",
+    "noUnsubscribed": "Ricevi le email delle esecuzioni per ogni argomento che le invia.",
+    "resubscribeHelp": "Per ricevere di nuovo le email delle esecuzioni di uno di questi, usa il link nella sua ultima email."
+  },
+  "feedbackControl": {
+    "rate": "Valuta",
+    "rateItem": "Valuta {title}",
+    "rateType": "Valuta questo {type}",
+    "rateSection": "Valuta la sezione {section}",
+    "sectionPrompt": "Questa sezione era pertinente?",
+    "isRelevant": "Era pertinente?",
+    "isAccurate": "Com’è andata questa previsione?",
+    "isUseful": "Era utile?",
+    "why": "Perché?",
+    "whyHelp": "Facoltativo. Le tue motivazioni insegnano alla ricerca quali elementi tenere o scartare.",
+    "whyTitle": "Perché questa valutazione?",
+    "whyAdd": "Aggiungi motivazione",
+    "whyEdit": "Modifica motivazione",
+    "ratedAs": "Valutato {rating}",
+    "retract": "Ritira valutazione",
+    "actions": {
+      "relevant": "Pertinente",
+      "somewhat": "In parte",
+      "not-relevant": "Non pertinente",
+      "accurate": "Accurata",
+      "partially": "Parzialmente",
+      "inaccurate": "Non accurata",
+      "too-early": "Troppo presto",
+      "useful": "Utile",
+      "not-useful": "Non utile",
+      "none": "senza valutazione"
+    }
+  },
+  "insights": {
+    "noData": "Ancora nessun dato per questo intervallo.",
+    "withCount": "{label} ({count})",
+    "scope": {
+      "days": "{count, plural, one {# giorno} other {# giorni}}",
+      "topic": "Argomento",
+      "allTopics": "Tutti gli argomenti",
+      "everyone": "Tutti nel tenant"
+    },
+    "topic": {
+      "last90": "Ultimi 90 giorni"
+    },
+    "relevance": {
+      "precision": "Precisione",
+      "precisionHelp": "Risultati valutati segnati come pertinenti o in parte",
+      "coverage": "Copertura",
+      "coverageHelp": "Risultati mostrati che hanno ricevuto una valutazione",
+      "shown": "Risultati mostrati",
+      "rated": "Risultati valutati",
+      "byDay": "Precisione nel tempo",
+      "byDayHelp": "Al giorno, dalle valutazioni date quel giorno",
+      "byTopic": "Precisione per argomento",
+      "byTier": "Precisione per livello",
+      "byDomain": "Precisione per dominio della fonte",
+      "byDomainHelp": "I 20 domini con più valutazioni",
+      "byDimension": "Precisione per dimensione"
+    },
+    "quality": {
+      "failureRate": "Verifiche delle prove non riuscite",
+      "quotes": "{count, plural, one {# citazione verificata} other {# citazioni verificate}}",
+      "byModel": "Tasso di verifiche non riuscite per modello",
+      "byModelHelp": "Quota di citazioni estratte che non corrispondevano al testo della fonte archiviato"
+    },
+    "accuracy": {
+      "rate": "Tasso di accuratezza",
+      "rateHelp": "Accurate più metà delle parzialmente accurate, sul totale delle risolte",
+      "brier": "Punteggio di Brier medio",
+      "due": "Da rivedere",
+      "dueHelp": "Orizzonte superato senza risoluzione",
+      "resolved": "Risolte",
+      "ofTotal": "{open} aperte su {total}",
+      "unresolvable": "Non risolvibili",
+      "agreement": "Concordanza con l’agente",
+      "agreementHelp": "{count, plural, one {Su # revisione decisa} other {Su # revisioni decise}}",
+      "latency": "Tempo di risoluzione",
+      "days": "{count, plural, one {# giorno} other {# giorni}}",
+      "calibration": "Curva di calibrazione",
+      "calibrationHelp": "Affidabilità dichiarata rispetto alla frequenza con cui le previsioni si sono avverate",
+      "byTopic": "Accuratezza per argomento",
+      "byTopicHelp": "Tasso di accuratezza per argomento sulle previsioni risolte"
+    },
+    "feedback": {
+      "total": "Elementi di feedback",
+      "withReason": "Con motivazione",
+      "withoutReason": "Senza motivazione",
+      "share": "{share} del totale",
+      "emailOpens": "Aperture dei link email",
+      "emailSubmits": "Invii dai link email",
+      "submitRate": "{rate} delle aperture",
+      "byDay": "Volume di feedback al giorno",
+      "byDayHelp": "Valutazioni date al giorno, suddivise in base alla presenza di una motivazione",
+      "byChannel": "Feedback per canale",
+      "byTarget": "Feedback per tipo di elemento",
+      "listTitle": "Tutti gli elementi di feedback",
+      "includeHistory": "Includi valutazioni sostituite",
+      "noReason": "Nessuna motivazione fornita",
+      "current": "Attuale",
+      "superseded": "Sostituita",
+      "editWhy": "Modifica motivazione",
+      "saved": "Motivazione salvata",
+      "retractTitle": "Ritira questa valutazione",
+      "retractMessage": "Ritirare questa valutazione? Un’eventuale valutazione precedente dello stesso elemento torna attuale.",
+      "retracted": "Valutazione ritirata",
+      "emptyTitle": "Ancora nessun feedback",
+      "emptyMessage": "Valuta risultati, previsioni e suggerimenti per insegnare alla ricerca ciò che conta per te.",
+      "columns": {
+        "when": "Quando",
+        "target": "Elemento",
+        "rating": "Valutazione",
+        "reason": "Motivazione",
+        "channel": "Canale",
+        "current": "Stato"
+      },
+      "targetTypes": {
+        "Finding": "Risultato",
+        "Prediction": "Previsione",
+        "PredictionReview": "Revisione della previsione",
+        "Suggestion": "Suggerimento",
+        "SourceItem": "Fonte",
+        "Domain": "Dominio",
+        "Briefing": "Briefing",
+        "BriefingSection": "Sezione del briefing",
+        "LearnedPreference": "Preferenza appresa"
+      },
+      "channels": {
+        "Dashboard": "Dashboard",
+        "Email": "Email",
+        "Mobile": "App mobile",
+        "Api": "API",
+        "Mcp": "MCP"
+      },
+      "byChannelDay": "Feedback per giorno e canale",
+      "byChannelDayHelp": "Valutazioni date al giorno, raggruppate per provenienza"
+    },
+    "reasons": {
+      "title": "Temi delle motivazioni",
+      "help": "Temi ricavati dalle tue motivazioni, con gli ultimi 30 giorni tra parentesi",
+      "tagRecent": "{tag} [{recent}]",
+      "byWeek": "Temi delle motivazioni per settimana"
+    },
+    "suggestions": {
+      "title": "Esiti dei suggerimenti",
+      "decision": "In media {days} giorni per una decisione",
+      "outcomes": {
+        "new": "Ancora nuovi ({share})",
+        "accepted": "Accettati ({share})",
+        "done": "Completati ({share})",
+        "snoozed": "Posticipati ({share})",
+        "dismissed": "Ignorati ({share})"
+      }
+    },
+    "preferences": {
+      "statement": "Preferenza",
+      "statementHelp": "Una semplice frase, ad esempio: Salta gli annunci di finanziamento dei fornitori.",
+      "kind": "Tipo",
+      "origin": "Origine",
+      "confidence": "Affidabilità",
+      "supportCount": "Feedback a supporto",
+      "decided": "Decisa",
+      "allTopics": "Tutti gli argomenti",
+      "topicHelp": "Lascia vuoto per applicarla a tutti gli argomenti.",
+      "writeOwn": "Scrivi la tua",
+      "createTitle": "Scrivi una preferenza",
+      "createHelp": "Le preferenze che scrivi sono subito attive e vengono fornite alla ricerca insieme ai tuoi argomenti.",
+      "editTitle": "Modifica preferenza",
+      "detailTitle": "Preferenza appresa",
+      "supportTitle": "{count, plural, =0 {Feedback a supporto} one {# elemento di feedback a supporto} other {# elementi di feedback a supporto}}",
+      "noSupport": "Nessun feedback è collegato a questa preferenza.",
+      "learnFor": "Impara da",
+      "chooseTopic": "Scegli un argomento",
+      "learnNow": "Impara ora",
+      "learning": "Apprendimento...",
+      "learned": "{count, plural, =0 {Apprendimento terminato senza nuove proposte} one {# nuova proposta da esaminare} other {# nuove proposte da esaminare}}",
+      "emptyTitle": "Ancora nessuna preferenza appresa",
+      "emptyMessage": "Le proposte compaiono dopo che hai valutato alcuni elementi con una motivazione, oppure scrivi le tue.",
+      "deleteTitle": "Elimina preferenza",
+      "deleteMessage": "Eliminare \"{statement}\"? Smetterà di influenzare la tua ricerca.",
+      "statuses": {
+        "Proposed": "Proposta",
+        "Active": "Attiva",
+        "Rejected": "Rifiutata",
+        "Disabled": "Disattivata"
+      },
+      "origins": {
+        "Distilled": "Appresa",
+        "User": "Scritta da te"
+      },
+      "kinds": {
+        "Prefer": "Preferisci",
+        "Avoid": "Evita",
+        "PreferSource": "Preferisci una fonte",
+        "AvoidSource": "Evita una fonte",
+        "StyleNote": "Nota di stile"
+      },
+      "actions": {
+        "accept": "Accetta",
+        "reject": "Rifiuta",
+        "disable": "Disattiva",
+        "enable": "Attiva"
+      },
+      "changed": {
+        "accept": "Preferenza accettata",
+        "reject": "Preferenza rifiutata",
+        "disable": "Preferenza disattivata",
+        "enable": "Preferenza attivata"
+      }
+    },
+    "ranking": {
+      "title": "Raccomandazione di classificazione",
+      "rated": "{count, plural, one {Da # risultato valutato} other {Da # risultati valutati}}",
+      "apply": "Applica questi pesi",
+      "applyTitle": "Applica i pesi consigliati",
+      "applyMessage": "Usare i pesi di classificazione consigliati per {topic}? Le esecuzioni future assegneranno i punteggi ai risultati con questi pesi.",
+      "applied": "Pesi applicati",
+      "notStored": "Il server non ha salvato i pesi per questo argomento.",
+      "notEnough": "Valuta più risultati di questo argomento prima che la raccomandazione sia affidabile.",
+      "component": "Componente",
+      "current": "Attuale",
+      "recommended": "Consigliato",
+      "separation": "Separazione",
+      "help": "La separazione indica quanto distano i punteggi dei risultati pertinenti e non pertinenti su ciascun componente. I componenti che li separano meglio ricevono più peso."
+    },
+    "overview": {
+      "window": "Da {from} a {to}",
+      "help": "I conteggi coprono l’intervallo selezionato, salvo diversa indicazione. Previsioni aperte, nuovi suggerimenti e argomenti attivi sono totali attuali.",
+      "activeTopics": "Argomenti attivi",
+      "runs": "Esecuzioni",
+      "runOutcomes": "{completed} completate, {partial} parziali, {failed} non riuscite",
+      "findingsShown": "Risultati mostrati",
+      "findingsRated": "{count} valutati",
+      "precision": "Precisione di pertinenza",
+      "precisionHelp": "Quota di risultati valutati giudicati pertinenti",
+      "briefingsReady": "Briefing pronti",
+      "emailsSent": "Email inviate",
+      "emailsFailed": "{count} non riuscite",
+      "predictionsOpen": "Previsioni aperte",
+      "predictionsResolved": "{count} risolte",
+      "accuracy": "Accuratezza delle previsioni",
+      "brier": "Brier medio {value}",
+      "feedback": "Feedback",
+      "feedbackWithReason": "{count} con motivazione",
+      "suggestionsNew": "Nuovi suggerimenti",
+      "suggestionsAccepted": "{count} accettati o completati",
+      "quoteFailure": "Tasso di citazioni non verificate",
+      "quoteFailureHelp": "Citazioni che non hanno superato la verifica",
+      "modelCost": "Costo dei modelli",
+      "modelCalls": "{count} chiamate al modello"
+    },
+    "email": {
+      "total": "Messaggi",
+      "pendingSkipped": "{pending} in attesa, {skipped} ignorati",
+      "sent": "Inviati",
+      "notSent": "Non inviati",
+      "failed": "Non riusciti",
+      "deliveryRate": "Tasso di consegna",
+      "deliveryRateHelp": "Inviati sul totale dei messaggi conclusi",
+      "meanTimeToSend": "Tempo medio di invio",
+      "meanTimeToSendHelp": "Dalla messa in coda all’invio",
+      "linkOpens": "Aperture dei link di feedback",
+      "linkSubmits": "Invii dai link di feedback",
+      "unsubscribes": "Annullamenti dell’iscrizione",
+      "byDay": "Messaggi al giorno",
+      "byDayHelp": "Messaggi messi in coda al giorno, suddivisi in base all’invio",
+      "byTemplate": "Tasso di consegna per modello",
+      "byTemplateHelp": "Quota di messaggi di ciascun modello che sono stati inviati",
+      "byStatus": "Messaggi per stato"
+    }
+  },
+  "mcp": {
+    "tokenWarning": "Non incollare mai il tuo token di sessione in un client MCP o in un file di configurazione. Usa una chiave di accesso che puoi revocare. Questa pagina non mostra mai il tuo token.",
+    "about": {
+      "title": "Informazioni sul server MCP",
+      "body": "Il server MCP di My Morning News consente a Claude Code, Claude Desktop, un IDE o un tuo agente di elencare i tuoi argomenti, leggere i briefing, approfondire le prove alla base di un risultato, risolvere previsioni, agire sui suggerimenti e dare feedback con una motivazione.",
+      "privileges": "Non ha privilegi propri. Ogni chiamata passa dalla REST API con la tua chiave di accesso, quindi i tuoi ruoli e le tue proprietà si applicano esattamente come qui. Il feedback dato tramite il server viene registrato con il canale MCP."
+    },
+    "url": {
+      "label": "URL Streamable HTTP",
+      "help": "Il server MCP è un processo a sé, separato dalla REST API. Modificalo se il tuo è in esecuzione altrove; i comandi qui sotto si adeguano.",
+      "invalid": "Inserisci un URL http o https.",
+      "reset": "Ripristina l’URL suggerito"
+    },
+    "key": {
+      "title": "Crea una chiave di accesso",
+      "body": "Crea una chiave di accesso e un segreto per il client MCP, così potrai revocarli in seguito senza cambiare la password. Copia il segreto quando viene creato; viene mostrato una sola volta.",
+      "authMode": "Scegli la modalità di autenticazione Intestazione diretta o Ibrida: un client Streamable HTTP invia la chiave e il segreto a ogni richiesta, cosa che le chiavi Richieste firmate e Scambio di sessione rifiutano.",
+      "create": "Crea una chiave di accesso",
+      "askAdmin": "Le chiavi di accesso vengono create da un amministratore. Chiedi al tuo una chiave di accesso con la modalità di autenticazione Intestazione diretta."
+    },
+    "connect": {
+      "title": "Collega un client",
+      "claudeHttp": "Claude Code tramite Streamable HTTP",
+      "claudeHttpHelp": "Sostituisci i segnaposto con la tua chiave di accesso e il segreto, quindi esegui questo comando in un terminale.",
+      "claudeStdio": "Claude Code tramite stdio",
+      "claudeStdioHelp": "Esegue il server MCP da una copia del codice sorgente. Sostituisci il percorso e i segnaposto.",
+      "desktop": "Claude Desktop e altri client",
+      "desktopHelp": "Per i client che leggono un file JSON mcpServers. Sostituisci il percorso e i segnaposto.",
+      "run": "Avvia il server MCP",
+      "runHelp": "Con lo stack Docker in esecuzione, questo comando avvia il server MCP sulla porta 12105."
+    },
+    "try": {
+      "title": "Provalo",
+      "topics": "Elenca i miei argomenti di My Morning News",
+      "briefing": "Leggi il briefing di oggi",
+      "review": "Esegui il prompt review_morning_briefing",
+      "safety": "Risultati e briefing contengono testo proveniente da pagine web. Ai client viene detto di trattarlo come dati, mai come istruzioni."
+    }
+  },
+  "sources": {
+    "searchPlaceholder": "Cerca in titoli e indirizzi",
+    "topic": "Argomento",
+    "allTopics": "Tutti gli argomenti",
+    "clearRun": "Mostra le fonti di tutte le esecuzioni",
+    "columns": {
+      "title": "Fonte",
+      "domain": "Dominio",
+      "published": "Pubblicata",
+      "contentType": "Tipo di contenuto",
+      "firstRun": "Vista per la prima volta nell’esecuzione",
+      "fetched": "Recuperata",
+      "timesSeen": "Volte vista",
+      "id": "ID"
+    },
+    "detail": {
+      "title": "Fonte",
+      "open": "Apri la pagina",
+      "monospace": "Monospaziato",
+      "copyText": "Copia testo",
+      "characters": "{count, plural, one {{formatted} carattere} other {{formatted} caratteri}}"
+    },
+    "empty": {
+      "title": "Ancora nessuna fonte",
+      "message": "Le fonti compaiono dopo che un’esecuzione cerca sul web e recupera pagine per uno dei tuoi argomenti."
+    }
+  }
+}

@@ -1,0 +1,3750 @@
+{
+  "app": {
+    "name": "My Morning News"
+  },
+  "common": {
+    "active": "Aktif",
+    "add": "Tambah",
+    "cancel": "Batal",
+    "clearFilters": "Kosongkan penapis",
+    "close": "Tutup",
+    "confirm": "Sahkan",
+    "copied": "Disalin",
+    "copy": "Salin",
+    "copyId": "Salin ID",
+    "copyUrl": "Salin URL",
+    "created": "Dicipta",
+    "delete": "Padam",
+    "dismiss": "Abaikan",
+    "duplicate": "Duplikasi",
+    "edit": "Sunting",
+    "hidePassword": "Sembunyikan kata laluan",
+    "inactive": "Tidak aktif",
+    "language": "Bahasa",
+    "lastLoaded": "Kali terakhir dimuatkan {time}",
+    "loading": "Memuatkan...",
+    "no": "Tidak",
+    "none": "Tiada",
+    "refresh": "Muat semula",
+    "remove": "Alih keluar",
+    "retry": "Cuba semula",
+    "save": "Simpan",
+    "saving": "Menyimpan...",
+    "showPassword": "Tunjukkan kata laluan",
+    "status": "Status",
+    "view": "Lihat",
+    "viewJson": "Lihat JSON",
+    "working": "Sedang diproses...",
+    "yes": "Ya"
+  },
+  "errors": {
+    "badRequest": "Permintaan tidak sah.",
+    "conflict": "Perubahan ini bercanggah dengan data sedia ada.",
+    "forbidden": "Anda tidak mempunyai kebenaran untuk berbuat demikian.",
+    "generic": "Sesuatu telah berlaku.",
+    "network": "Pelayan tidak dapat dihubungi. Semak URL pelayan dan pastikan pelayan sedang berjalan.",
+    "notFound": "Item yang diminta tidak ditemui.",
+    "requestId": "ID permintaan",
+    "server": "Pelayan melaporkan ralat.",
+    "tooMany": "Terlalu banyak permintaan. Tunggu sebentar dan cuba lagi.",
+    "unauthorized": "Sesi anda tidak lagi sah. Log masuk semula."
+  },
+  "access": {
+    "deniedTitle": "Akses ditolak",
+    "deniedMessage": "Peranan anda tidak termasuk akses ke halaman ini. Minta pentadbir jika anda memerlukannya."
+  },
+  "admin": {
+    "copyOf": "Salinan {name}",
+    "deleted": "Dipadam",
+    "saved": "Disimpan",
+    "tenant": "Penyewa"
+  },
+  "roles": {
+    "credential": "Kelayakan API",
+    "globalAdmin": "Pentadbir global",
+    "member": "Ahli",
+    "none": "Telah log keluar",
+    "tenantAdmin": "Pentadbir penyewa"
+  },
+  "theme": {
+    "dark": "Tukar ke tema gelap",
+    "light": "Tukar ke tema cerah"
+  },
+  "json": {
+    "copy": "Salin JSON",
+    "items": "{count, plural, other {# item}}",
+    "keys": "{count, plural, other {# kunci}}",
+    "raw": "Mentah",
+    "title": "JSON",
+    "tree": "Pepohon",
+    "view": "Lihat JSON"
+  },
+  "table": {
+    "actions": "Tindakan",
+    "any": "Mana-mana",
+    "clearSelection": "Kosongkan pilihan",
+    "emptyTitle": "Belum ada apa-apa di sini",
+    "filterBy": "Tapis mengikut {column}",
+    "firstPage": "Halaman pertama",
+    "jumpToPage": "Halaman",
+    "lastPage": "Halaman terakhir",
+    "nextPage": "Halaman seterusnya",
+    "noMatchesMessage": "Tiada rekod sepadan dengan penapis semasa. Kosongkan penapis untuk melihat semuanya.",
+    "noMatchesTitle": "Tiada padanan",
+    "ofPages": "daripada {total}",
+    "pageSize": "Baris setiap halaman",
+    "previousPage": "Halaman sebelumnya",
+    "selectAll": "Pilih semua baris di halaman ini",
+    "selectColumns": "Lajur",
+    "selectRow": "Pilih baris",
+    "selected": "{count, plural, other {# dipilih}}",
+    "showing": "{from} hingga {to} daripada {total}"
+  },
+  "charts": {
+    "avgDuration": "Purata tempoh",
+    "bucketAria": "{when}: {total} permintaan",
+    "failure": "Gagal",
+    "range": "Julat masa",
+    "requestActivity": "Aktiviti permintaan",
+    "success": "Berjaya",
+    "total": "Jumlah",
+    "ranges": {
+      "hour": "Sejam lalu",
+      "day": "Sehari lalu",
+      "week": "Seminggu lalu",
+      "month": "Sebulan lalu",
+      "quarter": "Suku tahun lalu"
+    },
+    "totals": {
+      "avg": "Purata {value}",
+      "failed": "{count} gagal",
+      "success": "{count} berjaya",
+      "total": "{count} jumlah"
+    },
+    "rank": "Kedudukan",
+    "share": "Bahagian"
+  },
+  "nav": {
+    "collapse": "Kuncupkan bar sisi",
+    "environment": "Tempatan",
+    "expand": "Kembangkan bar sisi",
+    "label": "Navigasi utama",
+    "open": "Buka navigasi",
+    "phase": "Tiba dalam Fasa {phase}",
+    "phaseShort": "F{phase}",
+    "skip": "Langkau ke kandungan",
+    "version": "v{version}",
+    "groups": {
+      "start": "Mula",
+      "research": "Penyelidikan",
+      "briefings": "Taklimat",
+      "insights": "Analisis",
+      "configuration": "Konfigurasi",
+      "observability": "Kebolehcerapan",
+      "administration": "Pentadbiran",
+      "system": "Sistem"
+    },
+    "items": {
+      "home": "Utama",
+      "today": "Hari ini",
+      "topics": "Topik",
+      "runs": "Larian",
+      "findings": "Dapatan",
+      "sources": "Sumber",
+      "predictions": "Ramalan",
+      "suggestions": "Cadangan",
+      "briefings": "Taklimat",
+      "editions": "Edisi",
+      "templates": "Templat",
+      "relevance": "Kerelevanan",
+      "accuracy": "Ketepatan",
+      "feedback": "Maklum balas",
+      "preferences": "Keutamaan",
+      "usage": "Penggunaan",
+      "models": "Model",
+      "prompts": "Gesaan",
+      "vault": "Kelayakan tersimpan",
+      "searchProviders": "Penyedia carian",
+      "mcpServers": "Pelayan MCP",
+      "voices": "Suara",
+      "email": "E-mel",
+      "requests": "Sejarah permintaan",
+      "explorer": "Penjelajah API",
+      "health": "Kesihatan",
+      "audit": "Audit",
+      "tenants": "Penyewa",
+      "users": "Pengguna",
+      "credentials": "Kelayakan",
+      "roles": "Peranan dan akses",
+      "settings": "Tetapan",
+      "serverInfo": "Maklumat pelayan",
+      "profile": "Profil",
+      "adminUsage": "Penggunaan platform",
+      "oneTimeRequests": "Permintaan sekali",
+      "listen": "Dengar",
+      "promoCodes": "Kod promosi",
+      "insightsOverview": "Gambaran keseluruhan",
+      "plans": "Pelan",
+      "emailInsights": "Penghantaran e-mel",
+      "mcp": "Klien MCP"
+    }
+  },
+  "routes": {
+    "home": {
+      "summary": "Ruang kerja anda sepintas lalu"
+    },
+    "today": {
+      "summary": "Edisi terkini taklimat anda, dan hasil penyelidikan terbaharu"
+    },
+    "topics": {
+      "summary": "Subjek yang anda mahu diselidik"
+    },
+    "runs": {
+      "summary": "Larian penyelidikan: dalam baris gilir, sedang berjalan dan selesai"
+    },
+    "findings": {
+      "summary": "Apa yang ditemui oleh penyelidikan"
+    },
+    "sources": {
+      "summary": "Sumber yang dikumpul oleh penyelidikan"
+    },
+    "predictions": {
+      "summary": "Ramalan dan bagaimana kesudahannya"
+    },
+    "suggestions": {
+      "summary": "Perkara yang wajar diterokai, daripada larian anda"
+    },
+    "briefings": {
+      "summary": "Setiap taklimat: edisi, taklimat larian dan laporan sekali"
+    },
+    "editions": {
+      "summary": "Taklimat berjadual, masing-masing dengan topik, templat dan penghantarannya sendiri"
+    },
+    "templates": {
+      "summary": "Susun atur Markdown yang memberitahu penyusun kandungan setiap taklimat"
+    },
+    "relevance": {
+      "summary": "Sejauh mana dapatan itu relevan"
+    },
+    "accuracy": {
+      "summary": "Sejauh mana ramalan itu tepat"
+    },
+    "feedback": {
+      "summary": "Maklum balas yang telah anda berikan"
+    },
+    "preferences": {
+      "summary": "Keutamaan yang dipelajari daripada maklum balas"
+    },
+    "usage": {
+      "summary": "Berapakah kosnya, dan siapa yang paling banyak menggunakannya?"
+    },
+    "models": {
+      "summary": "Titik akhir model, tugasan peranan tugas dan setiap panggilan model"
+    },
+    "prompts": {
+      "summary": "Templat gesaan berversi untuk setiap panggilan model"
+    },
+    "vault": {
+      "summary": "Kunci API dan token untuk model dan perkhidmatan luaran, disulitkan semasa disimpan"
+    },
+    "searchProviders": {
+      "summary": "Penyedia carian web"
+    },
+    "mcpServers": {
+      "summary": "Pelayan Model Context Protocol"
+    },
+    "voices": {
+      "summary": "Suara untuk taklimat audio"
+    },
+    "email": {
+      "summary": "Penghantaran e-mel"
+    },
+    "requests": {
+      "summary": "Setiap permintaan API yang dikendalikan oleh pelayan"
+    },
+    "explorer": {
+      "summary": "Cuba sebarang operasi API"
+    },
+    "health": {
+      "summary": "Kesihatan pelayan dan komponen"
+    },
+    "audit": {
+      "summary": "Peristiwa keselamatan dan perubahan"
+    },
+    "tenants": {
+      "summary": "Ruang kerja terasing"
+    },
+    "users": {
+      "summary": "Orang yang boleh log masuk"
+    },
+    "credentials": {
+      "summary": "Kunci API untuk skrip dan integrasi"
+    },
+    "roles": {
+      "summary": "Peranan, kebenaran dan tugasan"
+    },
+    "settings": {
+      "summary": "Konfigurasi pelayan"
+    },
+    "serverInfo": {
+      "summary": "Versi, masa jalan dan URL perkhidmatan"
+    },
+    "profile": {
+      "summary": "Akaun anda"
+    },
+    "adminUsage": {
+      "summary": "Kos platform mengikut penyewa, input kepada keputusan harga"
+    },
+    "oneTimeRequests": {
+      "summary": "Laporan sekali, podcast dan ringkasan e-mel"
+    },
+    "listen": {
+      "summary": "Episod audio taklimat anda, sedia untuk dimainkan"
+    },
+    "promoCodes": {
+      "summary": "Kod yang memberikan pelan untuk beberapa hari, dengan had dan penggunaan"
+    },
+    "plans": {
+      "summary": "Pelan, nilai kelayakan haknya, dan siapa mempunyai pelan mana"
+    },
+    "insightsOverview": {
+      "summary": "Angka utama merentas penyelidikan, penghantaran, pembelajaran dan kos"
+    },
+    "emailInsights": {
+      "summary": "Penghantaran e-mel, masa, dan cara pembaca menggunakan pautan dalam setiap mesej"
+    },
+    "mcp": {
+      "summary": "Sambungkan Claude Code atau klien MCP lain kepada penyelidikan anda"
+    }
+  },
+  "placeholder": {
+    "title": "Tiba dalam Fasa {phase}",
+    "message": "{feature} dirancang untuk Fasa {phase}. Navigasi sudah tersedia supaya anda dapat melihat di mana ia akan diletakkan."
+  },
+  "topbar": {
+    "copyServerUrl": "Salin URL pelayan",
+    "health": "Kesihatan pelayan: {state}",
+    "logout": "Log keluar",
+    "repository": "Kod sumber di GitHub",
+    "tenant": "Penyewa",
+    "tenantTitle": "ID penyewa: {tenant}"
+  },
+  "health": {
+    "autoRefresh": "Muat semula automatik",
+    "checkedAt": "Disemak {time}",
+    "components": "Komponen",
+    "off": "Mati",
+    "overall": "Keseluruhan",
+    "uptime": "Masa aktif",
+    "version": "Versi",
+    "states": {
+      "healthy": "Sihat",
+      "degraded": "Terjejas",
+      "unreachable": "Tidak dapat dihubungi",
+      "unknown": "Sedang menyemak"
+    },
+    "status": {
+      "Healthy": "Sihat",
+      "Degraded": "Terjejas",
+      "Unhealthy": "Tidak sihat",
+      "Enabled": "Didayakan",
+      "Disabled": "Dilumpuhkan"
+    },
+    "componentNames": {
+      "database": "Pangkalan data",
+      "requestHistory": "Sejarah permintaan"
+    }
+  },
+  "login": {
+    "copyright": "© 2026 Lattice AI LLC",
+    "defaults": "Kali pertama? Log masuk dengan {email} dan kata laluan {password} dalam penyewa {tenant}, kemudian tukar kata laluan.",
+    "email": "E-mel",
+    "password": "Kata laluan",
+    "serverUrl": "URL pelayan",
+    "serverUrlHelp": "Alamat pelayan My Morning News.",
+    "sessionExpired": "Sesi anda telah tamat. Log masuk semula untuk meneruskan.",
+    "signIn": "Log masuk",
+    "signingIn": "Sedang log masuk...",
+    "subtitle": "Log masuk ke ruang kerja anda",
+    "tagline": "Selidik topik yang anda minati dan bangun dengan taklimat yang semakin baik setiap hari.",
+    "tenant": "Penyewa",
+    "tenantHelp": "ID penyewa. Gunakan default pada pemasangan baharu.",
+    "title": "Selamat kembali"
+  },
+  "home": {
+    "summary": "Inilah yang sedang berlaku pada pelayan anda.",
+    "title": "Selamat pagi, {name}",
+    "failures": {
+      "none": "Tiada kegagalan terkini",
+      "noneMessage": "Semua permintaan dalam julat ini berjaya.",
+      "title": "Kegagalan terkini"
+    },
+    "kpi": {
+      "average": "Purata tempoh",
+      "failureRate": "Kadar kegagalan",
+      "failures": "{count} gagal",
+      "health": "Kesihatan",
+      "latency": "Kependaman",
+      "requests": "Permintaan",
+      "tenants": "Penyewa",
+      "topics": "Topik",
+      "uptime": "Aktif {value}",
+      "users": "Pengguna",
+      "recurring": "Topik berulang"
+    },
+    "next": {
+      "explorer": "Cuba API dalam penjelajah",
+      "models": "Tambah titik akhir model (Fasa 3)",
+      "password": "Tukar kata laluan lalai",
+      "title": "Langkah seterusnya",
+      "topic": "Cipta topik pertama anda",
+      "topics": "Semak topik anda"
+    },
+    "services": {
+      "credentials": "Kelayakan",
+      "none": "Tiada perkhidmatan luaran dikonfigurasi.",
+      "summary": "Alat yang berjalan bersama pelayan",
+      "title": "Perkhidmatan luaran"
+    },
+    "request": {
+      "title": "Permintaan baharu",
+      "summary": "Minta laporan sekali, podcast atau ringkasan e-mel."
+    },
+    "overview": {
+      "title": "{count, plural, other {# hari lalu}}",
+      "more": "Buka Analisis"
+    }
+  },
+  "requests": {
+    "anonymous": "Tanpa nama",
+    "bulk": {
+      "allFilters": "semua permintaan",
+      "button": "Padam yang sepadan",
+      "confirm": "Padam",
+      "done": "{count} permintaan dipadam",
+      "message": "Padam {count} permintaan yang sepadan dengan {filters}? Tindakan ini tidak boleh dibuat asal.",
+      "title": "Padam permintaan yang sepadan"
+    },
+    "columns": {
+      "completed": "Selesai",
+      "duration": "Tempoh",
+      "id": "ID",
+      "method": "Kaedah",
+      "path": "Laluan",
+      "principal": "Prinsipal",
+      "route": "Laluan API",
+      "sourceIp": "IP sumber",
+      "status": "Status",
+      "tenant": "Penyewa",
+      "time": "Masa",
+      "url": "URL"
+    },
+    "delete": {
+      "done": "Permintaan dipadam",
+      "message": "Padam rekod {method} {path}?",
+      "title": "Padam permintaan"
+    },
+    "details": {
+      "metadata": "Metadata",
+      "noBody": "Tiada badan ditangkap.",
+      "noHeaders": "Tiada pengepala ditangkap.",
+      "raw": "Rekod mentah",
+      "requestBody": "Badan permintaan",
+      "requestHeaders": "Pengepala permintaan",
+      "responseBody": "Badan respons",
+      "responseHeaders": "Pengepala respons",
+      "title": "Butiran permintaan",
+      "truncated": "Dipotong pada {size}"
+    },
+    "empty": {
+      "filtered": "Tiada permintaan sepadan dengan penapis ini.",
+      "message": "Permintaan dipaparkan di sini apabila klien memanggil API.",
+      "title": "Belum ada permintaan"
+    },
+    "filters": {
+      "from": "Dari",
+      "method": "Kaedah",
+      "path": "Laluan",
+      "pathPlaceholder": "/v1.0/...",
+      "status": "Status",
+      "statusPlaceholder": "200",
+      "tenant": "Penyewa",
+      "tenantPlaceholder": "ID penyewa",
+      "to": "Hingga"
+    },
+    "kpi": {
+      "avgDuration": "Purata tempoh",
+      "failures": "Kegagalan",
+      "matchingFilters": "Sepadan dengan penapis",
+      "onThisPage": "Di halaman ini",
+      "retained": "Disimpan",
+      "successRate": "Kadar kejayaan",
+      "uniquePaths": "Laluan unik"
+    }
+  },
+  "explorer": {
+    "authInherited": "Permintaan menggunakan token sesi semasa anda.",
+    "body": "Badan permintaan",
+    "cancel": "Batal",
+    "confirmMessage": "Hantar {method} {url}? Operasi ini boleh mengubah atau memadam data.",
+    "confirmTitle": "Hantar permintaan",
+    "copyResponse": "Salin respons",
+    "duration": "Tempoh",
+    "emptyBody": "Respons tidak mempunyai badan.",
+    "execute": "Hantar",
+    "format": "Format",
+    "headers": "Pengepala",
+    "history": "{count, plural, other {Permintaan terkini (#)}}",
+    "invalidJson": "JSON tidak sah: {message}",
+    "name": "Nama",
+    "noOperations": "Tiada operasi yang sepadan.",
+    "noResponse": "Belum ada respons",
+    "noResponseMessage": "Hantar permintaan untuk melihat respons di sini.",
+    "pathParams": "Parameter laluan",
+    "pickOperation": "Pilih operasi",
+    "pickOperationMessage": "Pilih operasi daripada senarai untuk membina permintaan.",
+    "queryParams": "Parameter pertanyaan",
+    "running": "Menghantar...",
+    "search": "Cari operasi",
+    "searchPlaceholder": "Tapis mengikut laluan atau nama",
+    "specMissing": "Dokumen OpenAPI tidak dapat dimuatkan.",
+    "status": "Status",
+    "streaming": "Menstrim...",
+    "url": "URL",
+    "validJson": "JSON sah",
+    "value": "Nilai",
+    "tabs": {
+      "preview": "Pratonton",
+      "body": "Badan",
+      "headers": "Pengepala",
+      "status": "Status",
+      "code": "Kod"
+    },
+    "snippets": {
+      "curl": "curl",
+      "fetch": "JavaScript",
+      "csharp": "C#"
+    }
+  },
+  "settings": {
+    "discard": "Buang perubahan",
+    "environment": "Pemboleh ubah persekitaran",
+    "live": "Berkuat kuasa serta-merta",
+    "noChanges": "Tiada perubahan untuk disimpan",
+    "notSet": "Tidak ditetapkan",
+    "overridden": "Diatasi oleh {variable}",
+    "pendingRestart": "Mulakan semula pelayan untuk menggunakan: {fields}",
+    "raw": "Tetapan mentah",
+    "restart": "Mulakan semula pelayan",
+    "restartConfirm": "Mulakan semula",
+    "restartHelp": "Pelayan akan berhenti dan bermula semula. Permintaan yang sedang diproses mungkin gagal.",
+    "restartRequired": "Perlu dimulakan semula",
+    "restartTitle": "Mulakan semula pelayan",
+    "restarted": "Permulaan semula diminta",
+    "restarting": "Sedang dimulakan semula...",
+    "saved": "Disimpan. {live} berkuat kuasa serta-merta, {restart} menunggu permulaan semula.",
+    "secretNotSet": "Tiada nilai disimpan",
+    "secretSet": "Satu nilai telah disimpan. Masukkan nilai baharu untuk menggantikannya.",
+    "set": "Ditetapkan",
+    "viewRaw": "Lihat mentah",
+    "groups": {
+      "rest": "Pelayan web",
+      "database": "Pangkalan data",
+      "logging": "Pengelogan",
+      "auth": "Pengesahan",
+      "requestHistory": "Sejarah permintaan",
+      "telemetry": "Telemetri",
+      "pipeline": "Saluran penyelidikan",
+      "diagnostics": "Diagnostik",
+      "models": "Model",
+      "push": "Pemberitahuan tolak",
+      "storage": "Storan",
+      "scheduler": "Penjadual",
+      "search": "Carian",
+      "tts": "Teks ke pertuturan",
+      "email": "E-mel",
+      "learning": "Pembelajaran",
+      "hosting": "Pengehosan"
+    },
+    "fields": {
+      "rest_hostname": "Nama hos",
+      "rest_port": "Port",
+      "rest_ssl": "Gunakan TLS",
+      "rest_corsAllowedOrigins": "Asal yang dibenarkan CORS",
+      "database_type": "Jenis pangkalan data",
+      "database_server": "Pelayan",
+      "database_port": "Port",
+      "database_databaseName": "Nama pangkalan data",
+      "database_username": "Nama pengguna",
+      "database_password": "Kata laluan",
+      "database_maxPoolSize": "Saiz kolam maksimum",
+      "database_commandTimeoutSeconds": "Had masa arahan (saat)",
+      "logging_consoleLogging": "Log ke konsol",
+      "logging_fileLogging": "Log ke fail",
+      "logging_logDirectory": "Direktori log",
+      "logging_logFilename": "Nama fail log",
+      "logging_minimumSeverity": "Tahap keterukan minimum",
+      "auth_signingKey": "Kunci tandatangan token",
+      "auth_sessionLifetimeMinutes": "Jangka hayat sesi (minit)",
+      "auth_adminApiKey": "Kunci API pentadbir",
+      "auth_loginRateLimitPerMinute": "Percubaan log masuk seminit",
+      "auth_allowRefresh": "Benarkan penyegaran sesi",
+      "requestHistory_enabled": "Rekod permintaan",
+      "requestHistory_maxRequestBodyBytes": "Badan permintaan maksimum (bait)",
+      "requestHistory_maxResponseBodyBytes": "Badan respons maksimum (bait)",
+      "requestHistory_retentionDays": "Tempoh simpanan (hari)",
+      "telemetry_enabled": "Dayakan telemetri",
+      "telemetry_serviceName": "Nama perkhidmatan",
+      "telemetry_otlpEndpoint": "Titik akhir OTLP",
+      "telemetry_lokiEndpoint": "Titik akhir Loki",
+      "telemetry_prometheusEnabled": "Dedahkan metrik Prometheus",
+      "telemetry_prometheusHostname": "Nama hos Prometheus",
+      "telemetry_prometheusPort": "Port Prometheus",
+      "telemetry_grafanaUrl": "URL Grafana",
+      "telemetry_prometheusUrl": "URL Prometheus",
+      "telemetry_tempoUrl": "URL Tempo",
+      "telemetry_lokiUrl": "URL Loki",
+      "pipeline_maxConcurrentRuns": "Larian serentak maksimum",
+      "pipeline_maxConcurrentModelCalls": "Panggilan model serentak maksimum",
+      "pipeline_modelCallAttempts": "Percubaan panggilan model",
+      "pipeline_structuredOutputRepairs": "Pembaikan output berstruktur",
+      "pipeline_runTimeoutMinutes": "Had masa larian (minit)",
+      "diagnostics_captureLlmPayloads": "Tangkap muatan model",
+      "diagnostics_llmPayloadRetentionDays": "Tempoh simpanan muatan (hari)",
+      "diagnostics_maxPayloadCharacters": "Aksara muatan maksimum",
+      "models_defaultChatModel": "Model sembang lalai",
+      "models_defaultOllamaEndpoint": "Titik akhir Ollama lalai",
+      "models_defaultEmbeddingModel": "Model pembenaman lalai"
+    }
+  },
+  "serverInfo": {
+    "apiBase": "URL asas API",
+    "database": "Pangkalan data",
+    "expires": "Tamat tempoh",
+    "health": "Titik akhir kesihatan",
+    "openapi": "Dokumen OpenAPI",
+    "os": "Sistem pengendalian",
+    "pendingRestart": "Tetapan sedang menunggu permulaan semula.",
+    "principal": "Log masuk sebagai",
+    "principalType": "Jenis prinsipal",
+    "product": "Produk",
+    "repository": "Repositori",
+    "runtime": "Masa jalan",
+    "schemaVersion": "Versi skema {version}",
+    "server": "Pelayan",
+    "session": "Sesi",
+    "started": "Dimulakan",
+    "swagger": "Swagger UI",
+    "uptime": "Masa aktif",
+    "urls": "URL berguna",
+    "vector": "Carian vektor",
+    "version": "Versi"
+  },
+  "audit": {
+    "recordTitle": "Rekod audit",
+    "columns": {
+      "event": "Peristiwa",
+      "path": "Laluan",
+      "permission": "Kebenaran",
+      "principal": "Prinsipal",
+      "reason": "Sebab",
+      "result": "Keputusan",
+      "sourceIp": "IP sumber",
+      "tenant": "Penyewa",
+      "time": "Masa"
+    },
+    "empty": {
+      "message": "Log masuk, semakan kebenaran dan perubahan direkodkan di sini.",
+      "title": "Tiada peristiwa audit"
+    },
+    "events": {
+      "AuthSuccess": "Log masuk berjaya",
+      "AuthFailure": "Log masuk gagal",
+      "SessionIssued": "Sesi dikeluarkan",
+      "SessionRefreshed": "Sesi disegarkan",
+      "SessionRevoked": "Sesi dibatalkan",
+      "CredentialCreated": "Kelayakan dicipta",
+      "CredentialUsed": "Kelayakan digunakan",
+      "CredentialRevoked": "Kelayakan dibatalkan",
+      "AuthorizationDenied": "Akses ditolak",
+      "AuthorizationBypass": "Pintasan pentadbir",
+      "RoleChanged": "Peranan diubah",
+      "PermissionChanged": "Kebenaran diubah",
+      "AssignmentChanged": "Tugasan diubah",
+      "UserChanged": "Pengguna diubah",
+      "TenantChanged": "Penyewa diubah",
+      "SettingsChanged": "Tetapan diubah",
+      "RestartRequested": "Permulaan semula diminta",
+      "CredentialRevealed": "Kelayakan didedahkan",
+      "VaultCredentialChanged": "Rahsia peti besi diubah"
+    },
+    "authz": {
+      "Permitted": "Dibenarkan",
+      "DeniedExplicit": "Ditolak oleh peraturan",
+      "DeniedImplicit": "Ditolak (tiada pemberian)",
+      "NotFound": "Tidak ditemui",
+      "Conflict": "Konflik"
+    }
+  },
+  "tenants": {
+    "create": "Cipta penyewa",
+    "deleteMessage": "Padam penyewa {name} dan semua kandungannya? Tindakan ini tidak boleh dibuat asal.",
+    "deleteTitle": "Padam penyewa",
+    "description": "Penerangan",
+    "edit": "Sunting penyewa",
+    "empty": "Tiada penyewa",
+    "region": "Rantau",
+    "timeZoneHelp": "Zon waktu IANA seperti Asia/Kuala_Lumpur.",
+    "columns": {
+      "created": "Dicipta",
+      "id": "ID",
+      "name": "Nama",
+      "protected": "Dilindungi",
+      "status": "Status",
+      "timeZone": "Zon waktu"
+    }
+  },
+  "users": {
+    "create": "Cipta pengguna",
+    "deleteMessage": "Padam pengguna {email}? Sesi dan kelayakan mereka akan berhenti berfungsi.",
+    "deleteTitle": "Padam pengguna",
+    "edit": "Sunting pengguna",
+    "effectivePermissions": "Kebenaran berkesan",
+    "empty": "Tiada pengguna",
+    "firstName": "Nama pertama",
+    "lastName": "Nama keluarga",
+    "locale": "Tempat",
+    "password": "Kata laluan",
+    "passwordHelp": "Sekurang-kurangnya 8 aksara.",
+    "resetHelp": "Biarkan kosong untuk mengekalkan kata laluan semasa.",
+    "resetPassword": "Tetapkan semula kata laluan",
+    "timeZone": "Zon waktu",
+    "columns": {
+      "created": "Dicipta",
+      "email": "E-mel",
+      "id": "ID",
+      "lastLogin": "Log masuk terakhir",
+      "name": "Nama",
+      "role": "Peranan",
+      "status": "Status",
+      "tenantAdmin": "Pentadbir penyewa"
+    },
+    "permissions": {
+      "allowed": "Dibenarkan",
+      "bypass": "Pentadbir memintas semakan kebenaran. {reason}",
+      "denied": "Ditolak",
+      "grants": "{count, plural, other {Berdasarkan # pemberian}}",
+      "resource": "Sumber",
+      "title": "Kebenaran berkesan"
+    }
+  },
+  "credentials": {
+    "allScopes": "Semua",
+    "copyAccessKey": "Salin kunci akses",
+    "copySecret": "Salin kunci rahsia",
+    "create": "Cipta kelayakan",
+    "createdTitle": "Kelayakan dicipta",
+    "deleteMessage": "Padam kelayakan {name}? Apa-apa yang menggunakannya akan berhenti berfungsi.",
+    "deleteTitle": "Padam kelayakan",
+    "edit": "Sunting kelayakan",
+    "empty": "Tiada kelayakan",
+    "emptyMessage": "Cipta kelayakan untuk memanggil API daripada skrip dan integrasi.",
+    "ownerHelp": "Kelayakan ini bertindak dengan kebenaran pengguna ini.",
+    "ownerSelf": "Saya",
+    "scopesHelp": "Biarkan semua tidak ditanda untuk membenarkan semua yang boleh dilakukan oleh pemilik.",
+    "secretKey": "Kunci rahsia",
+    "secretOnce": "Salin kunci rahsia sekarang. Ia hanya ditunjukkan sekali dan tidak boleh diperoleh semula kemudian.",
+    "stored": "Saya telah menyimpan rahsia ini",
+    "tenantHeader": "ID penyewa",
+    "columns": {
+      "accessKey": "Kunci akses",
+      "created": "Dicipta",
+      "expires": "Tamat tempoh",
+      "lastUsed": "Kali terakhir digunakan",
+      "name": "Nama",
+      "owner": "Pemilik",
+      "scopes": "Skop",
+      "secret": "Rahsia",
+      "status": "Status",
+      "authMode": "Mod pengesahan"
+    },
+    "scopes": {
+      "read": "Baca",
+      "write": "Tulis",
+      "admin": "Pentadbir"
+    },
+    "authModes": {
+      "DirectHeader": "Pengepala terus",
+      "SignedRequest": "Permintaan bertandatangan",
+      "SessionExchange": "Pertukaran sesi",
+      "Hybrid": "Hibrid"
+    },
+    "authModeHelp": {
+      "DirectHeader": "Lalai. Menerima kunci akses dan rahsia sebagai pengepala, permintaan bertandatangan dan pertukaran sesi.",
+      "SignedRequest": "Hanya menerima permintaan bertandatangan HMAC, jadi rahsia tidak pernah dihantar. Pengepala dengan rahsia dan pertukaran sesi ditolak.",
+      "SessionExchange": "Hanya berfungsi melalui POST /v1.0/token untuk mendapatkan token sesi. Rahsia dan tandatangan setiap permintaan ditolak.",
+      "Hybrid": "Menerima semuanya, sama seperti Pengepala terus."
+    }
+  },
+  "rbac": {
+    "tabs": {
+      "roles": "Peranan",
+      "permissions": "Kebenaran",
+      "assignments": "Tugasan"
+    },
+    "builtIn": {
+      "TenantAdmin": "Pentadbir penyewa",
+      "SecurityAdmin": "Pentadbir keselamatan",
+      "Auditor": "Juruaudit",
+      "TopicAdmin": "Pentadbir topik",
+      "Editor": "Penyunting",
+      "Viewer": "Pemapar",
+      "TenantMember": "Ahli penyewa",
+      "Custom": "Tersuai"
+    },
+    "scopes": {
+      "Tenant": "Seluruh penyewa",
+      "Resource": "Satu sumber"
+    },
+    "permissionTypes": {
+      "Permit": "Benarkan",
+      "Deny": "Tolak"
+    },
+    "roles": {
+      "builtIn": "Terbina dalam",
+      "clone": "Klon",
+      "create": "Cipta peranan",
+      "custom": "Tersuai",
+      "deleteMessage": "Padam peranan {name}? Pengguna yang ditugaskan kepadanya akan kehilangan kebenarannya.",
+      "deleteTitle": "Padam peranan",
+      "description": "Penerangan",
+      "edit": "Sunting peranan",
+      "kind": "Jenis",
+      "name": "Nama",
+      "noPermissions": "Peranan ini tidak mempunyai kebenaran.",
+      "noTenantPermissions": "Penyewa ini belum mempunyai kebenaran tersuai. Ciptanya pada tab Kebenaran.",
+      "permissions": "Kebenaran",
+      "scope": "Skop"
+    },
+    "permissions": {
+      "create": "Cipta kebenaran",
+      "deleteMessage": "Padam kebenaran {name}? Peranan yang menyertakannya akan kehilangannya.",
+      "deleteTitle": "Padam kebenaran",
+      "edit": "Sunting kebenaran",
+      "name": "Nama",
+      "operations": "Operasi",
+      "resources": "Sumber",
+      "type": "Jenis"
+    },
+    "assignments": {
+      "assign": "Tugaskan",
+      "empty": "Tiada tugasan",
+      "emptyMessage": "Tugaskan peranan untuk memberikan kebenarannya kepada pengguna ini.",
+      "pickRole": "Pilih peranan",
+      "remove": "Alih keluar",
+      "removeMessage": "Alih keluar peranan {role} daripada pengguna ini?",
+      "removeTitle": "Alih keluar tugasan",
+      "resource": "ID sumber",
+      "resourcePlaceholder": "ID sumber",
+      "role": "Peranan",
+      "user": "Pengguna"
+    },
+    "operations": {
+      "All": "Semua",
+      "Create": "Cipta",
+      "Read": "Baca",
+      "Write": "Tulis",
+      "Update": "Kemas kini",
+      "Delete": "Padam",
+      "Execute": "Laksana",
+      "Admin": "Pentadbir"
+    },
+    "resources": {
+      "All": "Semua",
+      "Tenant": "Penyewa",
+      "Admin": "Pentadbir",
+      "User": "Pengguna",
+      "Credential": "Kelayakan",
+      "Session": "Sesi",
+      "Role": "Peranan",
+      "Permission": "Kebenaran",
+      "Assignment": "Tugasan",
+      "Audit": "Audit",
+      "RequestHistory": "Sejarah permintaan",
+      "Settings": "Tetapan",
+      "Topic": "Topik",
+      "Schedule": "Jadual",
+      "RefinementSession": "Sesi penghalusan",
+      "Run": "Larian",
+      "Finding": "Dapatan",
+      "Source": "Sumber",
+      "Evidence": "Bukti",
+      "Prediction": "Ramalan",
+      "Suggestion": "Cadangan",
+      "Feedback": "Maklum balas",
+      "LearnedPreference": "Keutamaan yang dipelajari",
+      "Briefing": "Taklimat",
+      "Edition": "Edisi",
+      "Template": "Templat",
+      "Prompt": "Gesaan",
+      "ModelEndpoint": "Titik akhir model",
+      "SearchProvider": "Penyedia carian",
+      "Voice": "Suara",
+      "Media": "Media",
+      "EmailMessage": "Mesej e-mel",
+      "Analytics": "Analitik"
+    }
+  },
+  "profile": {
+    "changePassword": "Tukar kata laluan",
+    "confirmPassword": "Sahkan kata laluan baharu",
+    "currentPassword": "Kata laluan semasa",
+    "details": "Butiran",
+    "emailHelp": "Minta pentadbir untuk menukar e-mel anda.",
+    "mismatch": "Kata laluan tidak sepadan.",
+    "newPassword": "Kata laluan baharu",
+    "password": "Kata laluan",
+    "passwordChanged": "Kata laluan ditukar",
+    "saved": "Profil disimpan",
+    "timeZoneHelp": "Biarkan kosong untuk menggunakan zon waktu pelayar anda ({zone})."
+  },
+  "enums": {
+    "task": {
+      "Refinement": "Penghalusan",
+      "QueryPlanning": "Perancangan pertanyaan",
+      "Extraction": "Pengekstrakan",
+      "Scoring": "Pemarkahan",
+      "Synthesis": "Sintesis",
+      "Prediction": "Ramalan",
+      "Suggestion": "Cadangan",
+      "Composition": "Penyusunan",
+      "PodcastScript": "Skrip podcast",
+      "FeedbackAnalysis": "Analisis maklum balas",
+      "Embedding": "Pembenaman"
+    },
+    "provider": {
+      "Anthropic": "Anthropic",
+      "OpenAi": "OpenAI",
+      "OpenAiCompatible": "Serasi OpenAI",
+      "Ollama": "Ollama",
+      "Gemini": "Gemini",
+      "XAi": "xAI",
+      "OllamaCloud": "Ollama Cloud"
+    },
+    "reasoningEffort": {
+      "None": "Tiada",
+      "Minimal": "Minimum",
+      "Low": "Rendah",
+      "Medium": "Sederhana",
+      "High": "Tinggi",
+      "XHigh": "Sangat tinggi",
+      "Max": "Maksimum"
+    },
+    "vaultKind": {
+      "ApiKey": "Kunci API",
+      "BearerToken": "Token pembawa",
+      "BasicAuth": "Pengesahan asas",
+      "CustomHeader": "Pengepala tersuai",
+      "ConnectionString": "Rentetan sambungan"
+    },
+    "vaultProvider": {
+      "Anthropic": "Anthropic",
+      "OpenAi": "OpenAI",
+      "Gemini": "Gemini",
+      "XAi": "xAI",
+      "OllamaCloud": "Ollama Cloud",
+      "OpenAiCompatible": "Serasi OpenAI",
+      "Tavily": "Tavily",
+      "YouCom": "You.com",
+      "Mailgun": "Mailgun",
+      "ElevenLabs": "ElevenLabs",
+      "Mcp": "Pelayan MCP",
+      "Custom": "Tersuai"
+    },
+    "intervalType": {
+      "EveryNMinutes": "Setiap N minit",
+      "EveryNHours": "Setiap N jam",
+      "EveryNDays": "Setiap N hari",
+      "EveryNWeeks": "Setiap N minggu",
+      "DaysOfWeek": "Pada hari dalam minggu",
+      "DaysOfMonth": "Pada hari dalam bulan",
+      "Once": "Sekali",
+      "Cron": "Cron (lanjutan)",
+      "Manual": "Manual sahaja"
+    },
+    "missedRunPolicy": {
+      "Skip": "Langkau",
+      "RunOnceOnRecovery": "Jalankan sekali selepas pemulihan"
+    },
+    "questionKind": {
+      "SingleChoice": "Pilih satu",
+      "MultiChoice": "Pilih mana-mana",
+      "Scale": "Skala 1 hingga 5",
+      "YesNo": "Ya atau tidak",
+      "FreeText": "Teks bebas"
+    },
+    "dimensionWeight": {
+      "High": "Tinggi",
+      "Normal": "Biasa",
+      "Low": "Rendah",
+      "Exclude": "Kecualikan"
+    },
+    "constraintKind": {
+      "IncludeKeyword": "Sertakan kata kunci",
+      "ExcludeKeyword": "Kecualikan kata kunci",
+      "IncludeEntity": "Sentiasa sertakan",
+      "ExcludeEntity": "Sentiasa abaikan",
+      "PreferredDomain": "Domain pilihan",
+      "BlockedDomain": "Domain disekat",
+      "TrackedQuestion": "Soalan dijejak",
+      "FeedUrl": "Suapan",
+      "SeedUrl": "Halaman benih"
+    },
+    "topicStatus": {
+      "Draft": "Draf",
+      "Active": "Aktif",
+      "Paused": "Dijeda",
+      "Archived": "Diarkibkan"
+    },
+    "audienceLevel": {
+      "Beginner": "Pemula",
+      "Practitioner": "Pengamal",
+      "Expert": "Pakar"
+    },
+    "horizon": {
+      "Days": "Hari",
+      "Weeks": "Minggu",
+      "Months": "Bulan",
+      "Years": "Tahun"
+    },
+    "runStatus": {
+      "Queued": "Dalam baris gilir",
+      "Running": "Sedang berjalan",
+      "Completed": "Selesai",
+      "PartiallySucceeded": "Berjaya sebahagian",
+      "Failed": "Gagal",
+      "Cancelled": "Dibatalkan",
+      "Skipped": "Dilangkau"
+    },
+    "runTrigger": {
+      "Schedule": "Jadual",
+      "Manual": "Jalankan sekarang",
+      "Request": "Permintaan sekali",
+      "Edition": "Edisi",
+      "Preview": "Pratonton"
+    },
+    "requestStatus": {
+      "Clarifying": "Menunggu anda",
+      "Scheduled": "Dijadualkan",
+      "Running": "Sedang berjalan",
+      "Completed": "Selesai",
+      "Failed": "Gagal",
+      "Cancelled": "Dibatalkan",
+      "Declined": "Ditolak"
+    },
+    "deliverable": {
+      "Report": "Laporan",
+      "Podcast": "Podcast",
+      "Email": "E-mel"
+    },
+    "deliverableLength": {
+      "Short": "Pendek",
+      "Standard": "Standard",
+      "Long": "Panjang"
+    },
+    "findingTier": {
+      "MustRead": "Wajib baca",
+      "WorthALook": "Patut dilihat",
+      "Fyi": "Untuk makluman",
+      "BelowThreshold": "Di bawah ambang"
+    },
+    "findingCategory": {
+      "News": "Berita",
+      "Release": "Keluaran",
+      "Research": "Penyelidikan",
+      "Opinion": "Pendapat",
+      "Tutorial": "Tutorial",
+      "Data": "Data",
+      "Other": "Lain-lain"
+    },
+    "evidenceRole": {
+      "Supports": "Menyokong",
+      "Contradicts": "Bercanggah",
+      "Context": "Konteks"
+    },
+    "predictionStatus": {
+      "Open": "Terbuka",
+      "ProposedResolved": "Penyelesaian dicadangkan",
+      "Accurate": "Tepat",
+      "PartiallyAccurate": "Tepat sebahagian",
+      "Inaccurate": "Tidak tepat",
+      "Unresolvable": "Tidak dapat diselesaikan",
+      "Withdrawn": "Ditarik balik"
+    },
+    "suggestionStatus": {
+      "New": "Baharu",
+      "Accepted": "Diterima",
+      "Snoozed": "Ditunda",
+      "Dismissed": "Diabaikan",
+      "Done": "Selesai"
+    },
+    "suggestionPriority": {
+      "High": "Tinggi",
+      "Medium": "Sederhana",
+      "Low": "Rendah"
+    },
+    "suggestionEffort": {
+      "Minutes": "minit",
+      "Hours": "jam",
+      "Days": "hari"
+    },
+    "stageStatus": {
+      "Pending": "Belum selesai",
+      "Running": "Sedang berjalan",
+      "Succeeded": "Berjaya",
+      "Failed": "Gagal",
+      "Skipped": "Dilangkau"
+    },
+    "runStage": {
+      "AssembleContext": "Himpun konteks",
+      "PlanQueries": "Rancang pertanyaan",
+      "Search": "Cari",
+      "Filter": "Tapis",
+      "Fetch": "Ambil",
+      "Extract": "Ekstrak",
+      "Embed": "Benamkan",
+      "Dedupe": "Nyahduplikasi",
+      "Score": "Beri skor",
+      "Synthesize": "Sintesis",
+      "ReviewPredictions": "Semak ramalan",
+      "Predict": "Ramal",
+      "Suggest": "Cadang",
+      "ComposeBriefing": "Susun taklimat",
+      "Notify": "Maklumkan"
+    },
+    "searchDisposition": {
+      "Pending": "Belum selesai",
+      "Fetched": "Diambil",
+      "SkippedSeen": "Pernah dilihat",
+      "SkippedBlocked": "Domain disekat",
+      "SkippedRobots": "Disekat oleh robots.txt",
+      "SkippedLimit": "Melebihi had pengambilan",
+      "SkippedDuplicate": "Pendua",
+      "FetchFailed": "Pengambilan gagal"
+    },
+    "briefingKind": {
+      "Edition": "Edisi",
+      "Run": "Taklimat larian",
+      "OneTime": "Laporan sekali"
+    },
+    "briefingStatus": {
+      "Queued": "Dalam baris gilir",
+      "Composing": "Sedang disusun",
+      "Ready": "Sedia",
+      "Failed": "Gagal"
+    },
+    "briefingItemType": {
+      "Finding": "Dapatan",
+      "Prediction": "Ramalan",
+      "Suggestion": "Cadangan"
+    },
+    "lookbackMode": {
+      "SinceLastEdition": "Sejak edisi terakhir",
+      "FixedHours": "Tetingkap tetap"
+    },
+    "artifactKind": {
+      "BriefingMarkdown": "Markdown",
+      "BriefingHtml": "Laporan HTML",
+      "Audio": "Audio",
+      "Chapters": "Bab",
+      "Export": "Eksport"
+    },
+    "mediaStatus": {
+      "Queued": "Dalam baris gilir",
+      "Scripting": "Menulis skrip",
+      "Synthesizing": "Sedang disintesis",
+      "Ready": "Sedia",
+      "Failed": "Gagal"
+    },
+    "mediaKind": {
+      "BriefingAudio": "Audio taklimat",
+      "PodcastEpisode": "Episod podcast"
+    },
+    "ttsProvider": {
+      "OpenAiCompatibleSpeech": "Pertuturan serasi OpenAI",
+      "Disabled": "Dilumpuhkan"
+    }
+  },
+  "vault": {
+    "adminOnly": "Hanya pentadbir boleh mengubah kelayakan tersimpan.",
+    "memberNotice": "Anda boleh melihat kelayakan yang disimpan. Menambah, mengubah, memutar dan mendedahkannya memerlukan pentadbir penyewa.",
+    "columns": {
+      "name": "Nama",
+      "kind": "Jenis",
+      "provider": "Penyedia",
+      "secret": "Rahsia",
+      "lastUsed": "Kali terakhir digunakan",
+      "lastRevealed": "Kali terakhir didedahkan",
+      "expires": "Tamat tempoh",
+      "status": "Status",
+      "created": "Dicipta",
+      "id": "ID"
+    },
+    "fields": {
+      "headerName": "Nama pengepala",
+      "headerNameHelp": "Pengepala HTTP yang membawa rahsia, contohnya X-Api-Key.",
+      "username": "Nama pengguna",
+      "secret": "Rahsia",
+      "secretHelp": "Disimpan secara disulitkan. Selepas disimpan, hanya empat aksara terakhir ditunjukkan.",
+      "expiresHelp": "Pilihan. Digunakan sebagai peringatan; pelayan tidak memadam rahsia yang tamat tempoh.",
+      "description": "Penerangan"
+    },
+    "form": {
+      "createTitle": "Simpan kelayakan",
+      "editTitle": "Sunting kelayakan",
+      "rotateHint": "Untuk menggantikan rahsia itu sendiri, gunakan Putar rahsia."
+    },
+    "empty": {
+      "title": "Tiada kelayakan tersimpan",
+      "message": "Simpan kunci API dan token di sini sekali, kemudian pilihnya pada titik akhir model, penyedia carian, suara dan tetapan e-mel."
+    },
+    "rotate": {
+      "action": "Putar rahsia",
+      "title": "Putar rahsia",
+      "message": "Gantikan rahsia yang disimpan sebagai {name}. Semua yang menggunakan kelayakan ini akan menggunakan nilai baharu pada panggilan seterusnya.",
+      "newSecret": "Rahsia baharu",
+      "confirm": "Putar",
+      "required": "Masukkan rahsia baharu.",
+      "done": "Rahsia diputar"
+    },
+    "reveal": {
+      "action": "Dedahkan",
+      "actionAdminOnly": "Dedahkan (pentadbir sahaja)",
+      "confirmTitle": "Dedahkan rahsia",
+      "confirmMessage": "Tunjukkan teks biasa {name}? Ia ditunjukkan selama {seconds} saat dan kemudian disembunyikan semula.",
+      "audited": "Pendedahan diaudit: siapa yang mendedahkan kelayakan mana dan dari mana direkodkan.",
+      "confirm": "Dedahkan",
+      "shownTitle": "Rahsia didedahkan",
+      "hidesIn": "{count, plural, other {Disembunyikan dalam # saat}}",
+      "hideNow": "Sembunyikan sekarang",
+      "copy": "Salin rahsia"
+    },
+    "usage": {
+      "action": "Tempat digunakan",
+      "title": "Tempat kelayakan ini digunakan",
+      "none": "Belum ada apa-apa yang menggunakan kelayakan ini.",
+      "types": {
+        "ModelEndpoint": "Titik akhir model"
+      }
+    },
+    "delete": {
+      "title": "Padam kelayakan",
+      "message": "Padam {name}? Apa-apa yang menggunakannya akan berhenti berfungsi sehingga diberikan kelayakan lain."
+    }
+  },
+  "models": {
+    "add": "Tambah model",
+    "adminOnly": "Hanya pentadbir boleh mengubah titik akhir model.",
+    "memberNotice": "Anda boleh melihat model dan tugasan yang dikonfigurasi. Mengubah atau mengujinya memerlukan pentadbir penyewa.",
+    "created": "{name} ditambah",
+    "unknown": "Belum disemak",
+    "tabs": {
+      "endpoints": "Titik akhir",
+      "assignments": "Tugasan",
+      "calls": "Panggilan model"
+    },
+    "columns": {
+      "name": "Nama",
+      "provider": "Penyedia",
+      "model": "Model",
+      "embeddingModel": "Model pembenaman",
+      "capabilities": "Keupayaan",
+      "price": "Harga setiap sejuta token",
+      "priceValue": "{input} masuk, {output} keluar",
+      "noPrice": "Tiada harga ditetapkan",
+      "reasoningEffort": "Usaha penaakulan",
+      "credential": "Kelayakan",
+      "lastValidated": "Kali terakhir disahkan",
+      "status": "Status",
+      "id": "ID"
+    },
+    "capabilities": {
+      "chat": "Sembang",
+      "tools": "Alat",
+      "noTools": "Tiada alat",
+      "embeddings": "Pembenaman",
+      "embeddingsDims": "Pembenaman ({dims})"
+    },
+    "actions": {
+      "test": "Uji",
+      "validate": "Sahkan",
+      "listModels": "Senaraikan model"
+    },
+    "empty": {
+      "title": "Tambah model pertama anda",
+      "message": "Sambungkan penyedia model seperti Anthropic, OpenAI atau pelayan Ollama tempatan. Penyelidikan, penarafan dan taklimat semuanya berjalan melalui titik akhir ini."
+    },
+    "delete": {
+      "title": "Padam titik akhir model",
+      "message": "Padam {name}? Peranan tugas yang ditugaskan kepadanya akan beralih ke titik akhir aktif pertama sehingga anda menugaskannya semula."
+    },
+    "form": {
+      "createTitle": "Tambah titik akhir model",
+      "editTitle": "Sunting titik akhir model",
+      "duplicateTitle": "Duplikasi titik akhir model",
+      "endpoint": "URL asas",
+      "endpointRequired": "URL asas (wajib)",
+      "endpointHelp": {
+        "Anthropic": "Biarkan kosong untuk API Anthropic.",
+        "OpenAi": "Biarkan kosong untuk API OpenAI.",
+        "OpenAiCompatible": "Wajib. Pelayan berjalan dalam Docker, jadi gunakan host.docker.internal untuk pelayan pada mesin ini.",
+        "Ollama": "Pelayan Ollama. Dari bekas Docker, gunakan host.docker.internal untuk Ollama pada mesin ini.",
+        "Gemini": "Biarkan kosong untuk API Gemini.",
+        "XAi": "Biarkan kosong untuk API xAI.",
+        "OllamaCloud": "Biarkan kosong untuk Ollama Cloud."
+      },
+      "apiKey": "Kunci API",
+      "keyModes": {
+        "new": "Masukkan kunci",
+        "vault": "Gunakan kelayakan tersimpan",
+        "none": "Tiada kunci"
+      },
+      "newKey": "Kunci API baharu",
+      "newKeyHelp": "Disimpan dalam peti besi kelayakan (disulitkan) dan dipautkan kepada titik akhir ini. Biarkan kosong untuk mengekalkan kunci semasa.",
+      "storedKey": "Kelayakan tersimpan",
+      "storedKeyHelp": "Putarnya pada halaman Kelayakan tersimpan dan setiap titik akhir yang menggunakannya akan menerima perubahan itu.",
+      "pickCredential": "Pilih kelayakan",
+      "noKeyWarning": "Penyedia ini biasanya memerlukan kunci API. Panggilan akan gagal tanpanya.",
+      "capabilities": "Menyediakan",
+      "toolsDetected": "Sokongan alat dan dimensi pembenaman dikesan apabila anda menjalankan Sahkan.",
+      "embeddingDimensions": "Dimensi pembenaman",
+      "embeddingDimensionsHelp": "Dikesan oleh Sahkan.",
+      "notDetected": "Belum dikesan",
+      "maxTokens": "Token output maksimum",
+      "maxTokensHelp": "Kira-kira 16000 sesuai untuk panggilan tanpa penstriman.",
+      "reasoningEffort": "Usaha penaakulan",
+      "reasoningEffortHelp": "Lalai untuk titik akhir ini. Tugasan peranan tugas boleh mengatasinya.",
+      "providerDefault": "Lalai penyedia",
+      "temperature": "Suhu",
+      "temperatureHelp": "Suhu pensampelan pilihan.",
+      "temperatureAnthropic": "Tidak digunakan: model Anthropic semasa menolak suhu, jadi ia tidak pernah dihantar.",
+      "contextLength": "Panjang konteks",
+      "timeoutMs": "Had masa (ms)",
+      "timeoutHelp": "Setiap panggilan, merentas percubaan semula.",
+      "modelsLoaded": "{count, plural, other {# model tersedia; pilih daripada senarai.}}",
+      "pricing": "Harga",
+      "pricingHelp": "Dolar AS setiap sejuta token. Biarkan kosong untuk model tempatan. Kos dikira semasa setiap panggilan direkodkan, jadi suntingan kemudian tidak pernah mengubah sejarah.",
+      "inputCost": "Input",
+      "outputCost": "Output",
+      "cachedInputCost": "Input dicache",
+      "cachedInputCostHelp": "Bacaan cache. Menggunakan harga input jika tiada.",
+      "cacheWriteCost": "Tulisan cache",
+      "cacheWriteCostHelp": "Menggunakan harga input jika tiada.",
+      "errors": {
+        "name": "Nama diperlukan.",
+        "endpointRequired": "Titik akhir serasi OpenAI memerlukan URL asas.",
+        "endpointUrl": "Masukkan URL mutlak, contohnya http://host.docker.internal:8000/v1.",
+        "model": "Model sembang diperlukan apabila titik akhir menyediakan sembang.",
+        "embeddingModel": "Model pembenaman diperlukan apabila titik akhir menyediakan pembenaman.",
+        "capability": "Pilih sembang, pembenaman atau kedua-duanya.",
+        "credential": "Pilih kelayakan tersimpan.",
+        "number": "Masukkan nombor sifar atau lebih."
+      }
+    },
+    "test": {
+      "title": "Uji model",
+      "prompt": "Gesaan",
+      "model": "Ganti model",
+      "modelHelp": "Pilihan. Biarkan kosong untuk menggunakan model titik akhir.",
+      "run": "Hantar",
+      "running": "Menunggu model...",
+      "succeeded": "Berjaya",
+      "failed": "Gagal",
+      "tokens": "{input} masuk, {output} keluar",
+      "duration": "Mengambil masa {value}",
+      "tools": "Alat: {value}",
+      "output": "Balasan"
+    },
+    "validate": {
+      "title": "Sahkan titik akhir",
+      "running": "Menyemak sambungan, sokongan alat dan pembenaman...",
+      "reachable": "Boleh dihubungi",
+      "modelFound": "Model ditemui",
+      "supportsTools": "Menyokong panggilan alat",
+      "embeddingDimensions": "Dimensi pembenaman",
+      "validatedUtc": "Disemak"
+    },
+    "list": {
+      "title": "Model tersedia",
+      "filter": "Tapis model",
+      "none": "Tiada model yang sepadan.",
+      "name": "Model",
+      "inputLimit": "Had input",
+      "outputLimit": "Had output",
+      "tools": "Alat",
+      "current": "Sedang digunakan",
+      "use": "Guna",
+      "used": "Kini menggunakan {model}"
+    },
+    "assignments": {
+      "intro": "Setiap tugas saluran berjalan pada titik akhir yang ditugaskan kepada peranannya. Penggantian topik mengatasi lalai penyewa, yang mengatasi titik akhir aktif pertama.",
+      "role": "Peranan tugas",
+      "endpoint": "Titik akhir",
+      "modelOverride": "Ganti model",
+      "reasoningEffort": "Usaha penaakulan",
+      "endpointFor": "Titik akhir untuk {role}",
+      "modelOverrideFor": "Ganti model untuk {role}",
+      "effortFor": "Usaha penaakulan untuk {role}",
+      "pickEndpoint": "Pilih titik akhir",
+      "endpointDefault": "Lalai titik akhir",
+      "notApplicable": "Tidak digunakan",
+      "noTools": "Tiada sokongan alat",
+      "noToolsHelp": "Model ini tidak boleh memanggil alat, jadi hasil berstruktur menggunakan sandaran JSON, yang kurang baik dikendalikan oleh sesetengah model.",
+      "undo": "Buat asal perubahan",
+      "saved": "Tugasan {role} disimpan",
+      "uses": {
+        "Refinement": "Dimensi, soalan dan konteks wizard",
+        "QueryPlanning": "Penjanaan pertanyaan carian",
+        "Extraction": "Dapatan dan bukti daripada dokumen",
+        "Scoring": "Penilaian kerelevanan",
+        "Synthesis": "Ringkasan larian dan trend",
+        "Prediction": "Ramalan dan semakan",
+        "Suggestion": "Cadangan untuk diterokai",
+        "Composition": "Markdown taklimat",
+        "PodcastScript": "Skrip audio",
+        "FeedbackAnalysis": "Penandaan sebab dan keutamaan",
+        "Embedding": "Vektor untuk nyahduplikasi dan pertalian"
+      },
+      "overridesTitle": "Penggantian topik",
+      "overridesIntro": "Sesuatu topik boleh menjalankan peranan pada titik akhir yang berbeza daripada lalai penyewa.",
+      "noOverrides": "Tiada penggantian topik.",
+      "topic": "Topik",
+      "topicId": "ID topik",
+      "topicIdHelp": "ID topik yang hendak diganti.",
+      "addOverride": "Tambah penggantian topik",
+      "overrideAdded": "Penggantian topik disimpan",
+      "deleteTitle": "Alih keluar penggantian topik",
+      "deleteMessage": "Alih keluar penggantian {role} untuk topik {topic}? Topik itu kembali kepada lalai penyewa."
+    },
+    "calls": {
+      "detailTitle": "Panggilan model",
+      "succeeded": "Berjaya",
+      "failed": "Gagal",
+      "dryRun": "Larian percubaan",
+      "system": "Sistem",
+      "tokensTitle": "{input} masuk, {output} keluar",
+      "payloadCleared": "Tidak tersedia. Muatan dikosongkan selepas tempoh simpanan.",
+      "openPrompt": "Buka gesaan {key}",
+      "columns": {
+        "time": "Masa",
+        "task": "Tugas",
+        "model": "Model",
+        "promptKey": "Gesaan",
+        "user": "Pengguna",
+        "tokens": "Token",
+        "ttft": "Token pertama",
+        "duration": "Tempoh",
+        "cost": "Kos",
+        "outcome": "Hasil"
+      },
+      "filters": {
+        "task": "Tugas",
+        "endpoint": "Titik akhir",
+        "outcome": "Hasil",
+        "dryRun": "Larian percubaan",
+        "dryRunOnly": "Larian percubaan sahaja",
+        "realOnly": "Kecualikan larian percubaan",
+        "from": "Dari",
+        "to": "Hingga"
+      },
+      "empty": {
+        "title": "Belum ada panggilan model",
+        "message": "Setiap panggilan model direkodkan di sini dengan token, masa dan kos. Cuba Uji pada titik akhir atau jalankan Makmal gesaan."
+      },
+      "sections": {
+        "attribution": "Atribusi",
+        "tokens": "Token",
+        "timing": "Masa",
+        "outcome": "Hasil dan alat",
+        "cost": "Kos",
+        "prompt": "Gesaan",
+        "response": "Respons"
+      },
+      "fields": {
+        "provider": "Penyedia",
+        "endpoint": "Titik akhir",
+        "user": "Pengguna",
+        "topic": "Topik",
+        "run": "Larian",
+        "refinementSession": "Sesi penghalusan",
+        "briefing": "Taklimat",
+        "promptKey": "Kunci gesaan",
+        "promptVersion": "Versi gesaan",
+        "inputTokens": "Input (semua)",
+        "uncachedInputTokens": "Input tidak dicache",
+        "cachedInputTokens": "Input dicache",
+        "cacheWriteTokens": "Tulisan cache",
+        "outputTokens": "Output",
+        "reasoningTokens": "Penaakulan",
+        "totalTokens": "Jumlah",
+        "duration": "Tempoh",
+        "timeToFirstToken": "Masa ke token pertama",
+        "streamingDuration": "Tempoh penstriman",
+        "chunks": "Cebisan",
+        "tokensPerSecond": "Token output sesaat",
+        "streamed": "Distrim",
+        "attempts": "Percubaan",
+        "statusCode": "Kod status",
+        "finishReason": "Sebab selesai",
+        "repairs": "Pembaikan output berstruktur",
+        "toolCalls": "Panggilan alat",
+        "toolNames": "Alat dipanggil",
+        "dryRun": "Larian percubaan",
+        "inputCost": "Kos input",
+        "outputCost": "Kos output",
+        "estimatedCost": "Jumlah kos"
+      }
+    }
+  },
+  "prompts": {
+    "guardrailNotice": "Pelayan sentiasa meletakkan pagar skop sebelum gesaan sistem bagi setiap panggilan model. Menyunting gesaan tidak boleh mengalih keluarnya.",
+    "searchPlaceholder": "Kunci atau nama",
+    "filteredByKey": "Kunci: {key}",
+    "empty": "Tiada gesaan",
+    "open": "Buka penyunting",
+    "back": "Semua gesaan",
+    "versionLabel": "v{version}",
+    "current": "semasa",
+    "customized": "Disesuaikan",
+    "default": "Lalai",
+    "noNote": "Tiada nota perubahan",
+    "saved": "Versi baharu disimpan",
+    "columns": {
+      "key": "Kunci",
+      "role": "Peranan",
+      "scope": "Skop",
+      "version": "Versi",
+      "customized": "Disesuaikan",
+      "updated": "Dikemas kini"
+    },
+    "scope": {
+      "tenant": "Penyewa",
+      "topic": "Penggantian topik",
+      "tenantOnly": "Gesaan penyewa sahaja"
+    },
+    "panels": {
+      "versions": "Versi",
+      "compare": "Bandingkan",
+      "lab": "Makmal gesaan"
+    },
+    "editor": {
+      "title": "Templat",
+      "panels": "Alat gesaan",
+      "unsaved": "Perubahan belum disimpan",
+      "format": "Markdown dengan front matter YAML (key, name, role, output, variables), diikuti bahagian System dan bahagian User. Pemegang tempat menggunakan nama pemboleh ubah yang diisytiharkan dalam front matter.",
+      "missingUser": "Templat tiada tajuk bahagian User. Tambah baris berbunyi ## User.",
+      "missingSystem": "Templat tiada tajuk bahagian System. Pagar skop masih dihantar sebagai gesaan sistem.",
+      "invalid": "Pelayan menolak versi ini.",
+      "variables": "Pemboleh ubah yang diisytiharkan",
+      "noVariables": "Tiada pemboleh ubah diisytiharkan.",
+      "changeNote": "Nota perubahan",
+      "changeNoteHelp": "Pilihan. Ditunjukkan dalam sejarah versi.",
+      "discard": "Buang perubahan",
+      "save": "Simpan versi",
+      "fields": {
+        "content": "Templat",
+        "key": "Kunci",
+        "user": "Bahagian User",
+        "variables": "Pemboleh ubah"
+      }
+    },
+    "compareWithCurrent": "Bandingkan v{version} dengan penyunting",
+    "rollbackTo": "Kembali ke v{version}",
+    "rollbackTitle": "Kembalikan",
+    "rollbackMessage": "Jadikan v{version} versi semasa? Versi baharu dicipta dengan kandungannya, jadi tiada apa-apa yang hilang.",
+    "rollbackConfirm": "Kembalikan",
+    "rolledBack": "Dikembalikan ke v{version}",
+    "reset": "Tetapkan semula ke lalai",
+    "resetTitle": "Tetapkan semula ke lalai",
+    "resetMessage": "Gantikan gesaan ini dengan lalai asal? Versi baharu dicipta, jadi anda boleh kembali kemudian.",
+    "resetDone": "Ditetapkan semula ke lalai",
+    "deleteOverride": "Padam penggantian",
+    "deleteTitle": "Padam penggantian topik",
+    "deleteMessage": "Padam penggantian {key} untuk topik {topic}? Topik itu kembali kepada gesaan penyewa.",
+    "diff": {
+      "from": "Dari",
+      "to": "Kepada",
+      "draft": "Penyunting (belum disimpan)",
+      "current": "Penyunting",
+      "default": "Lalai asal",
+      "label": "Perbezaan baris",
+      "added": "{count, plural, other {# baris ditambah}}",
+      "removed": "{count, plural, other {# baris dialih keluar}}",
+      "addedLine": "Ditambah",
+      "removedLine": "Dialih keluar",
+      "showAll": "Tunjukkan baris yang tidak berubah",
+      "skipped": "{count, plural, other {# baris tidak berubah}}",
+      "identical": "Kedua-dua versi adalah sama."
+    },
+    "override": {
+      "button": "Cipta penggantian topik",
+      "title": "Cipta penggantian topik",
+      "intro": "Penggantian topik menggantikan gesaan penyewa untuk satu topik sahaja. Ia bermula sebagai salinan gesaan penyewa.",
+      "pickKey": "Pilih gesaan",
+      "topicId": "ID topik",
+      "topicIdHelp": "ID topik yang patut menggunakan versi gesaan ini sendiri.",
+      "copyDraft": "Mula daripada teks penyunting yang belum disimpan",
+      "create": "Cipta penggantian"
+    },
+    "lab": {
+      "intro": "Paparkan gesaan dengan nilai anda dan jalankannya pada mana-mana model. Larian ialah larian percubaan: ia direkodkan sebagai panggilan model tetapi tidak pernah menjejaskan penyelidikan.",
+      "endpoint": "Titik akhir",
+      "assigned": "Ditugaskan kepada {role}",
+      "model": "Ganti model",
+      "modelHelp": "Pilihan.",
+      "variables": "Pemboleh ubah",
+      "noVariables": "Gesaan ini tidak mengisytiharkan pemboleh ubah.",
+      "useDraft": "Jalankan teks penyunting yang belum disimpan",
+      "run": "Jalankan",
+      "running": "Menjalankan gesaan...",
+      "cost": "Kos {value}",
+      "costUnknown": "tidak tersedia",
+      "unknownVariables": "Tidak diisi: {names}",
+      "guardrailNote": "Gesaan sistem yang dipaparkan di bawah ialah hasil templat. Pelayan menambah pagar skop sebelumnya apabila memanggil model.",
+      "renderedSystem": "Gesaan sistem yang dipaparkan",
+      "renderedUser": "Gesaan pengguna yang dipaparkan",
+      "output": "Output",
+      "emptySection": "Kosong.",
+      "loggedAs": "Direkodkan sebagai",
+      "openCall": "Buka panggilan yang direkodkan"
+    }
+  },
+  "usage": {
+    "noData": "Tiada panggilan model dalam tetingkap ini.",
+    "noToolCalls": "Tiada panggilan alat dalam tetingkap ini.",
+    "total": "Jumlah",
+    "exportCsv": "Eksport CSV",
+    "window": "Dari {from} hingga {to}",
+    "kpi": {
+      "cost": "Kos",
+      "perCall": "{value} setiap panggilan",
+      "calls": "Panggilan model",
+      "tokens": "Token",
+      "tokensDetail": "{input} masuk, {output} keluar",
+      "failures": "Kegagalan",
+      "failureRate": "{value} daripada panggilan",
+      "avgTtft": "Purata token pertama",
+      "p95Ttft": "Token pertama p95"
+    },
+    "filters": {
+      "task": "Tugas",
+      "endpoint": "Titik akhir",
+      "user": "Pengguna",
+      "userPlaceholder": "ID pengguna",
+      "topic": "Topik",
+      "topicPlaceholder": "ID topik",
+      "includeDryRun": "Sertakan larian percubaan"
+    },
+    "groups": {
+      "User": "Pengguna",
+      "Model": "Model",
+      "Task": "Tugas",
+      "Provider": "Penyedia",
+      "Topic": "Topik",
+      "PromptKey": "Gesaan",
+      "Day": "Hari",
+      "Tenant": "Penyewa"
+    },
+    "labels": {
+      "system": "Sistem",
+      "noTopic": "Tiada topik",
+      "none": "Tiada",
+      "unknown": "Tidak diketahui"
+    },
+    "columns": {
+      "cost": "Kos",
+      "calls": "Panggilan",
+      "failures": "Kegagalan",
+      "tokens": "Token",
+      "inputTokens": "Input",
+      "cachedInputTokens": "Input dicache",
+      "cacheWriteTokens": "Tulisan cache",
+      "outputTokens": "Output",
+      "reasoningTokens": "Penaakulan",
+      "toolCalls": "Panggilan alat",
+      "avgDuration": "Purata tempoh",
+      "avgTtft": "Purata token pertama",
+      "p95Ttft": "Token pertama p95"
+    },
+    "tokens": {
+      "uncachedInput": "Input tidak dicache",
+      "cachedInput": "Input dicache",
+      "cacheWrite": "Tulisan cache",
+      "output": "Output",
+      "reasoning": "Penaakulan"
+    },
+    "series": {
+      "average": "Purata",
+      "p95": "p95",
+      "toolCallsPerCall": "Panggilan alat setiap panggilan"
+    },
+    "charts": {
+      "groupBy": "Kumpulkan mengikut",
+      "costOverTime": "Kos mengikut masa",
+      "costOverTimeHelp": "Anggaran kos bagi setiap baldi, dikira semasa setiap panggilan direkodkan.",
+      "costByUser": "Kos mengikut pengguna",
+      "costByUserHelp": "20 pengguna teratas dan bahagian kos mereka. Pilih baris untuk menapis halaman kepada pengguna itu.",
+      "costByModel": "Kos mengikut model",
+      "costByTask": "Kos mengikut tugas",
+      "costByTopic": "Kos mengikut topik",
+      "ttftByModel": "Masa ke token pertama mengikut model",
+      "ttftHelp": "Purata dan p95 untuk panggilan yang distrim.",
+      "tokenMix": "Campuran jenis token",
+      "tokenMixHelp": "Output tidak termasuk token penaakulan, yang ditunjukkan secara berasingan.",
+      "toolCalls": "Panggilan alat mengikut tugas",
+      "toolCallsHelp": "Purata panggilan alat bagi setiap panggilan model."
+    },
+    "breakdown": {
+      "title": "Pecahan",
+      "help": "Setiap jenis token, bahagian kos dan masa untuk pengumpulan yang dipilih. Eksport CSV memuat turun jadual ini sebagaimana adanya."
+    },
+    "member": {
+      "notice": "Penggunaan seluruh penyewa terhad kepada pentadbir dan juruaudit. Ini ialah penggunaan anda sendiri.",
+      "byTask": "Kos anda mengikut tugas"
+    },
+    "admin": {
+      "costByTenant": "Kos mengikut penyewa",
+      "costByTenantHelp": "Setiap penyewa disusun mengikut kos, dengan bahagiannya daripada kos platform.",
+      "tenantTrend": "Kos mengikut penyewa dari semasa ke semasa",
+      "tenantTrendHelp": "{count, plural, other {Julat dibahagikan kepada # tetingkap.}} Penyewa teratas disusun bertindan; selebihnya dikumpulkan.",
+      "otherTenants": "Penyewa lain",
+      "platformTrend": "Kos platform dari semasa ke semasa",
+      "costByModel": "Kos platform mengikut model",
+      "breakdownHelp": "Setiap penyewa dengan jenis token, bahagian kos dan masa. Eksport CSV memuat turun jadual ini."
+    }
+  },
+  "markdown": {
+    "mode": "Mod penyunting",
+    "write": "Tulis",
+    "preview": "Pratonton",
+    "empty": "Belum ada apa-apa untuk dipratonton."
+  },
+  "schedule": {
+    "fields": {
+      "intervalType": "Berulang",
+      "every": "Setiap",
+      "everyHelp": "{min} hingga {max}",
+      "minuteOffset": "Pada minit",
+      "minuteOffsetHelp": "Minit selepas jam, 0 hingga 59",
+      "timeZone": "Zon waktu",
+      "timeZoneHelp": "Masa dikira dalam zon ini, termasuk perubahan waktu jimat siang",
+      "runOnce": "Jalankan pada",
+      "localTimeHelp": "Waktu tempatan di {zone}",
+      "cron": "Ungkapan cron",
+      "cronHelp": "Lima medan: minit, jam, hari dalam bulan, bulan, hari dalam minggu",
+      "daysOfWeek": "Hari dalam minggu",
+      "daysOfMonth": "Hari dalam bulan",
+      "timesOfDay": "Waktu dalam sehari",
+      "timeN": "Waktu {n}",
+      "start": "Bermula",
+      "end": "Berakhir",
+      "optionalLocal": "Pilihan, waktu tempatan di {zone}",
+      "missedRunPolicy": "Jika larian terlepas",
+      "enabled": "Didayakan"
+    },
+    "units": {
+      "minutes": "minit",
+      "hours": "jam",
+      "days": "hari",
+      "weeks": "minggu"
+    },
+    "presets": {
+      "weekdays": "Hari bekerja",
+      "weekends": "Hujung minggu",
+      "everyDay": "Setiap hari"
+    },
+    "lastDay": "Hari terakhir",
+    "removeTime": "Alih keluar waktu ini",
+    "addTime": "Tambah waktu",
+    "enabledOn": "Hidup",
+    "enabledOff": "Mati",
+    "missedHelp": {
+      "Skip": "Larian yang terlepas semasa pelayan tidak aktif akan dilangkau.",
+      "RunOnceOnRecovery": "Satu larian susulan berlaku apabila pelayan kembali aktif."
+    },
+    "preview": {
+      "title": "5 larian seterusnya",
+      "checking": "Sedang menyemak...",
+      "manual": "Topik ini hanya berjalan apabila anda menekan Jalankan sekarang.",
+      "none": "Tiada larian akan datang. Semak tarikh mula dan tamat."
+    },
+    "summary": {
+      "EveryNMinutes": "Setiap {count, plural, =1 {minit} other {# minit}}",
+      "EveryNHours": "Setiap {count, plural, =1 {jam} other {# jam}} pada :{minute}",
+      "EveryNDays": "Setiap {count, plural, =1 {hari} other {# hari}} pada {times}",
+      "EveryNWeeks": "Setiap {count, plural, =1 {minggu} other {# minggu}} pada {days} pukul {times}",
+      "DaysOfWeek": "{days} pada {times}",
+      "DaysOfMonth": "Pada hari {days} pukul {times}",
+      "Once": "Sekali pada {when}",
+      "Cron": "Cron {expression}",
+      "Manual": "Hanya apabila anda menjalankannya"
+    },
+    "saved": "Jadual disimpan",
+    "create": "Cipta jadual",
+    "save": "Simpan jadual",
+    "emptyTitle": "Belum ada jadual",
+    "emptyMessage": "Tambah jadual untuk menyelidik topik ini secara automatik, atau jalankannya secara manual.",
+    "add": "Tambah jadual",
+    "nextRun": "Larian seterusnya",
+    "noNextRun": "Tidak dijadualkan",
+    "lastRun": "Larian terakhir",
+    "enableFor": "Dayakan {name}",
+    "edit": "Sunting jadual",
+    "delete": "Padam jadual",
+    "deleteTitle": "Padam jadual",
+    "deleteMessage": "Padam jadual \"{name}\"? Larian yang sudah dalam baris gilir tidak terjejas."
+  },
+  "questions": {
+    "pickOne": "Pilih sekurang-kurangnya satu pilihan, tulis jawapan atau langkau soalan ini.",
+    "somethingElse": "Lain-lain (pilihan)",
+    "scaleLow": "Langsung tidak",
+    "scaleHigh": "Sangat",
+    "save": "Simpan jawapan",
+    "why": "Sebab saya bertanya: {reason}",
+    "answered": "Dijawab",
+    "skipped": "Dilangkau",
+    "skip": "Langkau",
+    "skippedHint": "Dilangkau. Jawab untuk membawanya kembali."
+  },
+  "dimensions": {
+    "emptyTitle": "Belum ada dimensi",
+    "emptyMessage": "Dimensi ialah sudut yang diliputi oleh penyelidikan. Cadangkan beberapa atau tambah dimensi anda sendiri.",
+    "locked": "Dikunci",
+    "yours": "Milik anda",
+    "suggested": "Dicadangkan",
+    "why": "Sebab ia mungkin penting: {reason}",
+    "include": "Sertakan",
+    "exclude": "Kecualikan",
+    "weightFor": "Pemberat untuk {name}",
+    "unlock": "Buka kunci {name}",
+    "lock": "Kunci {name}",
+    "unlockHint": "Buka kunci supaya penjanaan semula boleh menggantikannya",
+    "lockHint": "Kunci untuk mengekalkannya apabila anda menjana semula",
+    "edit": "Sunting {name}",
+    "delete": "Padam {name}",
+    "add": "Tambah dimensi",
+    "addTitle": "Tambah dimensi",
+    "editTitle": "Sunting dimensi",
+    "editHint": "Dimensi yang disunting menjadi milik anda dan dikekalkan apabila anda menjana semula.",
+    "fields": {
+      "name": "Nama",
+      "description": "Penerangan",
+      "rationale": "Sebab ia penting kepada anda",
+      "weight": "Pemberat",
+      "includeTerms": "Istilah yang disertakan",
+      "excludeTerms": "Istilah yang dikecualikan",
+      "termsHelp": "Asingkan istilah dengan koma"
+    },
+    "deleteTitle": "Padam dimensi",
+    "deleteMessage": "Padam dimensi \"{name}\"?"
+  },
+  "constraints": {
+    "count": "{count, plural, other {# item}}",
+    "help": {
+      "IncludeKeyword": "Perkataan yang menjadikan hasil lebih relevan.",
+      "ExcludeKeyword": "Perkataan yang menyingkirkan hasil.",
+      "IncludeEntity": "Syarikat, produk atau orang yang sentiasa disertakan.",
+      "ExcludeEntity": "Syarikat, produk atau orang yang sentiasa diabaikan.",
+      "PreferredDomain": "Laman yang diutamakan, contohnya example.com.",
+      "BlockedDomain": "Laman yang tidak sekali-kali digunakan.",
+      "TrackedQuestion": "Soalan terbuka untuk diikuti dari semasa ke semasa.",
+      "FeedUrl": "Suapan RSS atau Atom yang dibaca pada setiap larian.",
+      "SeedUrl": "Halaman yang disemak pada setiap larian."
+    },
+    "value": "Nilai",
+    "note": "Nota",
+    "unlock": "Buka kunci {value}",
+    "lock": "Kunci {value}",
+    "edit": "Sunting {value}",
+    "delete": "Padam {value}",
+    "addTo": "Tambah ke {kind}",
+    "placeholder": {
+      "IncludeKeyword": "Tambah kata kunci",
+      "ExcludeKeyword": "Tambah kata kunci untuk dikecualikan",
+      "IncludeEntity": "Tambah syarikat atau produk",
+      "ExcludeEntity": "Tambah syarikat atau produk untuk diabaikan",
+      "PreferredDomain": "Tambah domain",
+      "BlockedDomain": "Tambah domain untuk disekat",
+      "TrackedQuestion": "Tambah soalan untuk dijejak",
+      "FeedUrl": "Tambah URL suapan (https://...)",
+      "SeedUrl": "Tambah URL halaman (https://...)"
+    }
+  },
+  "delivery": {
+    "saved": "Pilihan penghantaran disimpan",
+    "emailOnRun": "E-mel selepas setiap larian",
+    "emailOnRunHelp": "Ringkasan dengan pautan butiran dan maklum balas",
+    "emailWhenEmpty": "E-mel apabila tiada apa-apa ditemui",
+    "emailWhenEmptyHelp": "Jika tidak, larian kosong tidak menghantar e-mel",
+    "maxFindings": "Dapatan setiap e-mel",
+    "maxFindingsHelp": "1 hingga 50",
+    "saveOptions": "Simpan pilihan penghantaran",
+    "recipients": "Penerima",
+    "recipientsHelp": "Semua orang di sini menerima e-mel selepas setiap larian. Penerima lalai ialah anda.",
+    "noRecipients": "Belum ada penerima.",
+    "you": "anda",
+    "removeRecipient": "Alih keluar {email}",
+    "addRecipient": "Alamat e-mel penerima",
+    "emailPlaceholder": "nama@example.com",
+    "addMe": "Tambah saya"
+  },
+  "topics": {
+    "actions": {
+      "dryRunQueued": "Larian percubaan untuk {name} dalam baris gilir",
+      "runQueued": "Larian untuk {name} dalam baris gilir",
+      "continueRefining": "Teruskan penghalusan",
+      "refine": "Halusi semula",
+      "runNow": "Jalankan sekarang",
+      "dryRun": "Larian percubaan",
+      "pause": "Jeda",
+      "paused": "{name} dijeda",
+      "resume": "Sambung semula",
+      "resumed": "{name} disambung semula",
+      "archive": "Arkibkan",
+      "archived": "{name} diarkibkan",
+      "duplicated": "{name} diduplikasi sebagai draf"
+    },
+    "delete": {
+      "title": "Padam topik",
+      "message": "Padam \"{name}\" bersama dimensi, kekangan, jadual dan lariannya? Tindakan ini tidak boleh dibuat asal.",
+      "done": "{name} dipadam"
+    },
+    "bulk": {
+      "paused": "{count, plural, other {# topik dijeda}}",
+      "pause": "Jeda",
+      "delete": "Padam",
+      "deleteTitle": "Padam topik",
+      "deleteMessage": "{count, plural, other {Padam # topik dan semua kandungan di bawahnya?}} Tindakan ini tidak boleh dibuat asal.",
+      "deleted": "{count, plural, other {# topik dipadam}}"
+    },
+    "columns": {
+      "name": "Nama",
+      "status": "Status",
+      "oneTime": "Jenis",
+      "lastRun": "Larian terakhir",
+      "lastRefined": "Kali terakhir dihalusi",
+      "created": "Dicipta",
+      "audience": "Khalayak",
+      "id": "ID"
+    },
+    "searchPlaceholder": "Cari topik",
+    "oneTime": "Sekali",
+    "recurring": "Berulang",
+    "new": "Topik baharu",
+    "empty": {
+      "title": "Belum ada topik",
+      "message": "Terangkan perkara yang anda mahu ikuti, dan wizard akan menukarnya menjadi pelan penyelidikan.",
+      "action": "Beritahu saya apa yang anda minati"
+    },
+    "backToList": "Semua topik",
+    "draftNoRun": "Selesaikan penghalusan sebelum menjalankan, atau mulakan larian percubaan",
+    "draftNotice": "Topik ini ialah draf. Selesaikan penghalusannya untuk memulakan penyelidikan berjadual.",
+    "workspace": {
+      "tabsLabel": "Bahagian topik",
+      "tabs": {
+        "overview": "Gambaran keseluruhan",
+        "context": "Konteks",
+        "schedule": "Jadual",
+        "sources": "Sumber",
+        "runs": "Larian",
+        "findings": "Dapatan",
+        "predictions": "Ramalan",
+        "suggestions": "Cadangan",
+        "feedback": "Maklum balas",
+        "preferences": "Keutamaan",
+        "analytics": "Analitik",
+        "delivery": "Penghantaran",
+        "prompts": "Gesaan",
+        "models": "Model"
+      },
+      "dimensionCount": "Dimensi",
+      "noBrief": "Belum ada ringkasan. Halusi topik untuk mendrafnya.",
+      "dimensions": "Dimensi",
+      "brief": "Ringkasan dan khalayak",
+      "sourcesHelp": "Suapan dan halaman benih dibaca pada setiap larian, bersama carian web.",
+      "searchProvidersLater": "Pemilihan penyedia carian bagi setiap topik akan tiba bersama halaman penyedia carian."
+    }
+  },
+  "wizard": {
+    "railLabel": "Langkah wizard",
+    "steps": {
+      "Describe": "Terangkan",
+      "Dimensions": "Dimensi",
+      "Questions": "Soalan",
+      "Context": "Konteks",
+      "Sources": "Sumber",
+      "Delivery": "Penghantaran",
+      "Review": "Semakan"
+    },
+    "stepHelp": {
+      "Describe": "Nyatakan perkara yang anda mahu ikuti dan sebabnya.",
+      "Dimensions": "Sudut yang diliputi oleh penyelidikan. Kekalkan, beri pemberat, sunting, kunci atau tambah dimensi anda sendiri.",
+      "Questions": "Jawab yang anda mahu dan langkau yang lain. Setiap jawapan mempertajam penyelidikan.",
+      "Context": "Ringkasan dan kekangan yang diikuti oleh penyelidikan. Item yang dikunci kekal selepas draf semula.",
+      "Sources": "Suapan dan halaman yang dibaca pada setiap larian, masing-masing disemak dengan pengambilan langsung.",
+      "Delivery": "Bila penyelidikan berjalan dan siapa yang menerima e-mel.",
+      "Review": "Semua telah direkodkan. Pratonton larian percubaan, kemudian gunakan."
+    },
+    "generating": {
+      "dimensions": "Mencadangkan dimensi...",
+      "questions": "Menulis soalan...",
+      "context": "Mendraf ringkasan dan kekangan...",
+      "sources": "Mencari sumber dan menyemak setiap satu...",
+      "request": "Merancang permintaan anda...",
+      "replan": "Merancang semula dengan jawapan anda...",
+      "patience": "{seconds}s setakat ini. Model besar boleh mengambil masa seminit."
+    },
+    "stopWaiting": "Berhenti menunggu",
+    "failure": {
+      "title": "Model tidak dapat menyelesaikan langkah ini",
+      "refusedTitle": "Model menolak langkah ini",
+      "hint": "Cuba semula, atau tukar model yang digunakan untuk penghalusan.",
+      "changeModel": "Tukar model Penghalusan"
+    },
+    "guidance": {
+      "label": "Panduan untuk cubaan seterusnya",
+      "placeholder": "Contohnya: lebih banyak tentang model tempatan, kurang tentang perolehan perusahaan"
+    },
+    "regenerate": "Jana semula",
+    "describe": {
+      "existing": "Sesi ini bermula daripada penerangan di bawah.",
+      "seedText": "Apakah perkara yang anda mahu ikuti?",
+      "seedHelp": "Satu ayat atau satu perenggan. Anda boleh menghalusi semuanya kemudian.",
+      "seedPlaceholder": "Saya mahu belajar tentang alat pembangun AI",
+      "goal": "Sebab",
+      "depth": "Kedalaman",
+      "horizon": "Jangka masa",
+      "horizonHelp": "Pilihan, contohnya \"enam bulan akan datang\"",
+      "known": "Apa yang anda sudah tahu",
+      "started": "Dimulakan",
+      "optional": "Pilihan",
+      "notSaying": "Tidak dinyatakan",
+      "goals": {
+        "work": "Keputusan kerja",
+        "investing": "Pelaburan",
+        "curiosity": "Rasa ingin tahu",
+        "hiring": "Pengambilan pekerja",
+        "building": "Membina sesuatu"
+      },
+      "model": "Model",
+      "modelHelp": "Lalai kepada tugasan Penghalusan",
+      "defaultModel": "Tugasan Penghalusan (lalai)",
+      "starting": "Memulakan...",
+      "start": "Mula dan cadangkan dimensi",
+      "resumeTitle": "Sambung dari tempat anda berhenti"
+    },
+    "outOfScope": {
+      "title": "Ini di luar skop penyelidikan My Morning News",
+      "rephrase": "Ungkap semula"
+    },
+    "dimensions": {
+      "noneTitle": "Belum ada dimensi",
+      "noneMessage": "Cadangkan dimensi daripada penerangan anda, atau tambah dimensi anda sendiri di bawah.",
+      "propose": "Cadangkan dimensi",
+      "intro": "{count, plural, other {# dimensi}}, {kept} dikekalkan sebagai milik anda atau dikunci. Tetapkan pemberat Kecualikan untuk meninggalkan satu dimensi.",
+      "regenerateHelp": "Penjanaan semula menggantikan dimensi yang dicadangkan dan mengekalkan dimensi yang dikunci serta milik anda."
+    },
+    "questions": {
+      "sufficient": "Itu sepatutnya konteks yang mencukupi. Anda boleh beralih ke ringkasan.",
+      "noneTitle": "Belum ada soalan",
+      "noneMessage": "Model bertanya beberapa soalan berdasarkan dimensi yang anda kekalkan.",
+      "ask": "Tanya saya soalan",
+      "progress": "{done} daripada {total} dijawab atau dilangkau",
+      "round": "Pusingan {round}",
+      "moreLabel": "Ada apa-apa untuk mengarahkan pusingan seterusnya?",
+      "askMore": "Tanya saya lagi",
+      "moreHelp": "{left, plural, other {# pusingan lagi tersedia}}",
+      "maxed": "{max} pusingan ialah hadnya. Beralih ke ringkasan."
+    },
+    "context": {
+      "name": "Nama topik",
+      "audience": "Tahap khalayak",
+      "horizon": "Jangka masa",
+      "novelty": "Keutamaan kebaharuan: {value}",
+      "noveltyHelp": "Lebih tinggi mengutamakan perkembangan baharu berbanding latar belakang",
+      "brief": "Ringkasan",
+      "briefHelp": "Markdown. Penyelidikan mengikut ringkasan ini.",
+      "seedQueries": "Pertanyaan benih",
+      "seedQueriesHelp": "Satu pertanyaan carian setiap baris",
+      "saved": "Konteks disimpan",
+      "save": "Simpan konteks",
+      "savedState": "Disimpan",
+      "noneTitle": "Belum ada ringkasan",
+      "noneMessage": "Draf ringkasan, kekangan dan pertanyaan benih daripada dimensi dan jawapan anda.",
+      "draft": "Draf konteks",
+      "intro": "Sunting apa-apa sahaja. Kekangan yang dikunci dan milik anda kekal selepas draf semula.",
+      "redraft": "Draf semula",
+      "constraints": "Kekangan"
+    },
+    "sources": {
+      "intro": "Suapan dan halaman benih yang dicadangkan diambil secara langsung. Yang hijau telah memberi respons.",
+      "again": "Cadangkan lagi",
+      "suggest": "Cadangkan sumber",
+      "noneSuggested": "Model tidak mencadangkan sebarang sumber. Tambah sumber anda sendiri di bawah.",
+      "allAccepted": "Setiap cadangan sudah ada pada topik.",
+      "select": "Pilih {url}",
+      "unreachable": "Tidak dapat dihubungi",
+      "accept": "{count, plural, =0 {Terima} other {Terima # sumber}}",
+      "noneTitle": "Belum ada sumber",
+      "noneMessage": "Cadangkan sumber, tambah sumber anda sendiri atau langkau langkah ini.",
+      "accepted": "Dalam topik ini"
+    },
+    "delivery": {
+      "schedule": "Jadual penyelidikan",
+      "scheduleHelp": "Jadual disimpan apabila anda meneruskan.",
+      "email": "E-mel"
+    },
+    "review": {
+      "novelty": "Keutamaan kebaharuan",
+      "noSchedule": "Tiada jadual (jalankan secara manual)",
+      "applied": "Topik ini telah digunakan dan sedang menyelidik.",
+      "openTopic": "Buka topik",
+      "dimensions": "{count, plural, other {# dimensi}}",
+      "constraintCount": "{kind}: {count}",
+      "preview": "Larian pratonton",
+      "previewHelp": "Larian percubaan tidak menghantar e-mel dan tidak dikira dalam sejarah.",
+      "apply": "Gunakan topik",
+      "appliedToast": "{name} sudah sedia",
+      "previewQueued": "Larian percubaan dibariskan. Ikutinya dalam tab Larian topik."
+    },
+    "newTitle": "Topik baharu",
+    "refineTitle": "Perhalusi {name}",
+    "refineTitleShort": "Perhalusi topik",
+    "saveExit": "Simpan dan keluar",
+    "abandon": "Tinggalkan",
+    "refineSummary": "Buka semula wizard bermula daripada konteks semasa",
+    "refineStart": "Mulakan sesi perhalusan baharu untuk \"{name}\". Dimensi dan kekangannya dibawa bersama, dan tiada apa-apa berubah sehingga anda menggunakannya.",
+    "refineStartButton": "Mula memperhalusi",
+    "backToTopic": "Kembali ke topik",
+    "summary": "Setiap langkah disimpan semasa anda meneruskan, jadi anda boleh keluar dan menyambung semula.",
+    "back": "Kembali",
+    "nextTo": "Seterusnya: {step}",
+    "abandonTitle": "Tinggalkan sesi ini",
+    "abandonDraft": "Tinggalkan wizard? Topik draf dan semua kandungannya akan dipadamkan.",
+    "abandonExisting": "Tinggalkan sesi perhalusan ini? Topik mengekalkan perubahan yang anda simpan sepanjang proses.",
+    "abandoned": "Sesi ditinggalkan"
+  },
+  "runs": {
+    "detail": {
+      "title": "Larian",
+      "summary": "Ringkasan",
+      "cancelRequested": "Pembatalan diminta",
+      "schedule": "Jadual",
+      "request": "Permintaan sekali",
+      "worker": "Pekerja",
+      "partial": "Berjaya sebahagian: satu peringkat tidak kritikal gagal. Peringkat lain selesai dan hasilnya disimpan.",
+      "partialWithStages": "Berjaya sebahagian: {stages} gagal. Peringkat lain selesai dan hasilnya disimpan.",
+      "viewFindings": "Lihat dapatan ({count})",
+      "tabsLabel": "Bahagian larian",
+      "tabs": {
+        "stages": "Peringkat",
+        "queries": "Pertanyaan",
+        "results": "Hasil",
+        "details": "Butiran",
+        "calls": "Panggilan model"
+      },
+      "contextHash": "Petikan konteks"
+    },
+    "cancelRequested": "Membatalkan...",
+    "cancel": "Batalkan larian",
+    "dryRun": "Larian percubaan",
+    "columns": {
+      "topic": "Topik",
+      "queued": "Dibariskan",
+      "started": "Dimulakan",
+      "completed": "Selesai",
+      "status": "Status",
+      "trigger": "Pencetus",
+      "duration": "Tempoh",
+      "summary": "Ringkasan",
+      "id": "ID",
+      "findings": "Dapatan baharu",
+      "findingsTitle": "{duplicates} pendua dilangkau",
+      "sources": "Sumber",
+      "cost": "Kos"
+    },
+    "cancelled": "Pembatalan diminta",
+    "openTopic": "Buka topik",
+    "empty": {
+      "title": "Belum ada larian",
+      "message": "Larian muncul apabila jadual dicetuskan, permintaan sekali bermula, atau anda menekan Jalankan sekarang.",
+      "topicMessage": "Tekan Jalankan sekarang atau Larian percubaan, atau tambah jadual."
+    },
+    "totals": {
+      "sources": "Sumber dibaca",
+      "newFindings": "Dapatan baharu",
+      "duplicates": "Pendua",
+      "tokens": "Token",
+      "tokenSplit": "{input} masuk, {output} keluar",
+      "cost": "Anggaran kos"
+    },
+    "stages": {
+      "empty": "Tiada peringkat direkodkan untuk larian ini.",
+      "aria": "Garis masa peringkat dengan {count} peringkat",
+      "stage": "Peringkat",
+      "status": "Status",
+      "duration": "Tempoh",
+      "items": "Item",
+      "inOut": "{in} masuk, {out} keluar",
+      "in": "Masuk",
+      "out": "Keluar"
+    },
+    "queries": {
+      "empty": "Larian ini tidak menghantar pertanyaan carian.",
+      "query": "Pertanyaan",
+      "provider": "Penyedia",
+      "results": "Hasil",
+      "succeeded": "Berjaya",
+      "failed": "Gagal"
+    },
+    "results": {
+      "disposition": "Kedudukan",
+      "filterDisposition": "Tapis hasil mengikut kedudukan",
+      "dispositionCount": "{disposition}: {count}",
+      "noMatches": "Tiada hasil dengan kedudukan ini.",
+      "empty": "Larian ini tiada hasil carian.",
+      "rank": "Pangkat",
+      "result": "Hasil",
+      "viewSource": "Lihat sumber"
+    },
+    "source": {
+      "title": "Sumber",
+      "domain": "Domain",
+      "httpStatus": "Status HTTP",
+      "contentType": "Jenis kandungan",
+      "size": "Saiz",
+      "published": "Diterbitkan",
+      "fetched": "Diambil",
+      "timesSeen": "Kali dilihat",
+      "text": "Teks diekstrak",
+      "truncated": "Menunjukkan {shown} aksara pertama daripada {total}.",
+      "noText": "Tiada teks diekstrak daripada sumber ini."
+    },
+    "calls": {
+      "openCall": "Buka dalam log panggilan model",
+      "emptyTitle": "Tiada panggilan model",
+      "emptyMessage": "Larian ini tidak membuat panggilan model, atau panggilannya masih sedang direkodkan."
+    },
+    "live": {
+      "streaming": "Langsung",
+      "polling": "Menyegar semula setiap beberapa saat"
+    },
+    "retry": {
+      "column": "Cuba semula",
+      "fromStage": "Cuba semula dari peringkat ini",
+      "fromStageAria": "Cuba semula dari peringkat ini ({stage})",
+      "runAgain": "Jalankan semula",
+      "runAgainAria": "Jalankan semula ({stage} gagal)",
+      "resumeTitle": "Cuba semula dari peringkat ini",
+      "resumeMessage": "Jalankan semula {stage} dan setiap peringkat selepasnya pada larian ini, menggunakan dapatan yang disimpan? Ini membuat panggilan model yang dikira dalam penggunaan anda.",
+      "newTitle": "Jalankan semula",
+      "newMessage": "Bariskan larian baharu topik ini dari awal? Hasil carian dan pengambilan tidak disimpan, jadi setiap peringkat dijalankan semula dan membuat panggilan model yang dikira dalam penggunaan anda.",
+      "resumeQueued": "Larian dibariskan semula dari {stage}",
+      "newQueued": "Larian baharu dibariskan"
+    }
+  },
+  "oneTime": {
+    "form": {
+      "failedHint": "Jika perancangan gagal, permintaan tetap disimpan dan anda boleh merancangnya semula dari senarai.",
+      "openList": "Buka permintaan",
+      "text": "Apakah yang anda mahu?",
+      "textHelp": "Contohnya: bina podcast tentang sejarah kontena perkapalan.",
+      "placeholder": "Tuliskan laporan tentang rebat pam haba di California",
+      "deliverables": "Hasil serahan",
+      "length": "Panjang",
+      "timing": "Bila",
+      "runNow": "Jalankan sekarang",
+      "runAt": "Jalankan sekali pada",
+      "when": "Tarikh dan masa",
+      "recipients": "Penerima e-mel",
+      "recipientsHelp": "Dipisahkan dengan koma. Lalai kepada anda ({email}).",
+      "publishToFeed": "Terbitkan ke suapan saya",
+      "publishToFeedHelp": "Tambah juga podcast ke suapan peribadi anda",
+      "justDoIt": "Terus laksanakan",
+      "justDoItHelp": "Langkau soalan penjelasan dan sahkan rancangan serta-merta",
+      "submitNow": "Rancang dan jalankan",
+      "submit": "Rancangkan",
+      "moreOptions": "Lagi pilihan"
+    },
+    "actions": {
+      "confirmed": "Permintaan disahkan",
+      "cancelled": "Permintaan dibatalkan",
+      "open": "Buka",
+      "confirm": "Sahkan",
+      "cancel": "Batalkan permintaan",
+      "convert": "Jadikan berulang",
+      "openTopic": "Buka topik"
+    },
+    "convert": {
+      "title": "Jadikan ini topik berulang",
+      "message": "Tukar \"{title}\" menjadi topik berulang dengan ringkasan dan dimensinya? Anda boleh menjadualkannya selepas ini.",
+      "done": "Topik berulang dicipta"
+    },
+    "delete": {
+      "title": "Padam permintaan",
+      "message": "Padam \"{title}\" dan rancangannya?",
+      "done": "Permintaan dipadam"
+    },
+    "columns": {
+      "title": "Permintaan",
+      "status": "Status",
+      "deliverables": "Hasil serahan",
+      "length": "Panjang",
+      "runAt": "Dijalankan pada",
+      "created": "Dicipta",
+      "id": "ID"
+    },
+    "searchPlaceholder": "Cari permintaan",
+    "whenConfirmed": "Apabila disahkan",
+    "new": "Permintaan baharu",
+    "empty": {
+      "title": "Belum ada permintaan sekali",
+      "message": "Laporan, podcast atau ringkasan e-mel, dijalankan sekali sekarang atau pada masa yang anda pilih.",
+      "action": "Minta apa sahaja sekali"
+    },
+    "backToList": "Semua permintaan",
+    "declined": {
+      "title": "Permintaan ini di luar skop penyelidikan My Morning News",
+      "rephrase": "Ubah ayat"
+    },
+    "detail": {
+      "request": "Permintaan",
+      "estimatedCost": "Anggaran kos",
+      "confirmed": "Disahkan",
+      "completed": "Selesai",
+      "run": "Larian",
+      "openRun": "Buka larian",
+      "confirmTitle": "Sahkan dan jalankan",
+      "confirmAt": "Sahkan untuk masa tersebut",
+      "confirmNow": "Sahkan dan jalankan sekarang",
+      "needsPlan": "Rancang semula permintaan sebelum mengesahkan.",
+      "plan": "Rancangan",
+      "noPlanDeclined": "Tiada rancangan untuk permintaan yang ditolak.",
+      "noPlan": "Belum ada rancangan.",
+      "dimensions": "Perkara yang akan diliputi",
+      "questions": "Soalan penjelasan",
+      "questionsHelp": "{answered} daripada {total} dijawab. Rancang semula untuk menggunakan jawapan anda, atau sahkan seadanya.",
+      "replan": "Rancang semula dengan jawapan saya"
+    },
+    "newTitle": "Permintaan baharu",
+    "newSummary": "Laporan, podcast dan ringkasan e-mel sekali"
+  },
+  "findings": {
+    "backToList": "Kembali ke dapatan",
+    "openPage": "Buka halaman penuh",
+    "duplicate": "Pendua",
+    "update": "Kemas kini",
+    "scoreAria": "Skor relevan {score}",
+    "searchPlaceholder": "Cari tajuk dan ringkasan",
+    "minScore": "Minimum",
+    "runFilter": "Larian {id}",
+    "clearRun": "Tunjukkan dapatan daripada setiap larian",
+    "includeDuplicates": "Sertakan pendua",
+    "includeDryRuns": "Sertakan larian percubaan",
+    "components": {
+      "llm": "Penilaian model",
+      "feedback": "Maklum balas",
+      "novelty": "Kebaharuan",
+      "source": "Sumber",
+      "recency": "Kebaharuan masa",
+      "composite": "Komposit"
+    },
+    "columns": {
+      "title": "Dapatan",
+      "tier": "Tahap",
+      "score": "Skor",
+      "category": "Kategori",
+      "topic": "Topik",
+      "published": "Diterbitkan",
+      "found": "Ditemui",
+      "id": "ID",
+      "rating": "Penilaian anda"
+    },
+    "detail": {
+      "title": "Dapatan",
+      "whyItMatters": "Mengapa ia penting",
+      "scoreBreakdown": "Pecahan skor",
+      "scoreChartAria": "Pecahan skor dengan komposit {score}",
+      "scoreHelp": "Setiap komponen bernilai dari 0 hingga 100. Komposit ialah purata berwajaran mengikut wajaran kedudukan topik.",
+      "rationale": "Rasional",
+      "noRationale": "Model tidak memberikan rasional untuk skor ini.",
+      "evidence": "Bukti ({count})",
+      "dimension": "Dimensi",
+      "noDimension": "Tidak dikaitkan dengan dimensi.",
+      "run": "Larian",
+      "confidence": "Keyakinan",
+      "rank": "Kedudukan",
+      "duplicateOf": "Pendua bagi",
+      "updateOf": "Kemas kini bagi"
+    },
+    "evidence": {
+      "unknownSource": "Sumber tidak diketahui",
+      "verified": "Petikan disahkan",
+      "unverified": "Tidak disahkan",
+      "emptyTitle": "Tiada bukti",
+      "emptyMessage": "Tiada petikan disahkan yang menyokong dapatan ini.",
+      "open": "Lihat dalam konteks",
+      "detailTitle": "Bukti",
+      "quote": "Petikan",
+      "inContext": "Petikan dalam konteks",
+      "unverifiedHelp": "Petikan ini tidak dapat dipadankan dengan teks sumber yang diambil.",
+      "source": "Sumber",
+      "domain": "Domain",
+      "position": "Kedudukan dalam sumber",
+      "positionValue": "Aksara {start} hingga {end}",
+      "sourceId": "ID sumber"
+    },
+    "empty": {
+      "title": "Belum ada dapatan",
+      "message": "Dapatan muncul selepas larian membaca dan menyusun sumber. Jalankan topik untuk mendapatkannya.",
+      "topicMessage": "Jalankan topik ini untuk mencari dan menyusun sumber."
+    },
+    "pinnedMarker": "Disemat",
+    "pinnedBadge": "Disemat",
+    "hiddenBadge": "Disembunyikan",
+    "hiddenHelp": "Dapatan tersembunyi dikecualikan daripada senarai, taklimat dan e-mel. Nyahsembunyikan untuk membawanya kembali.",
+    "showHidden": "Tunjukkan yang tersembunyi",
+    "pinnedOnly": "Disemat sahaja",
+    "actions": {
+      "pin": "Semat",
+      "unpin": "Nyahsemat",
+      "hide": "Sembunyikan",
+      "unhide": "Nyahsembunyikan",
+      "pinned": "Dapatan disemat",
+      "unpinned": "Dapatan dinyahsemat",
+      "hidden": "Dapatan disembunyikan",
+      "unhidden": "Dapatan ditunjukkan semula",
+      "deleted": "Dapatan dipadam",
+      "deleteTitle": "Padam dapatan",
+      "deleteMessage": "Padam \"{title}\"? Pautan buktinya akan dialih keluar. Sumber yang dikongsi dan sejarah penilaian anda kekal."
+    }
+  },
+  "predictions": {
+    "overdue": "Melepasi ufuk",
+    "brierHelp": "Lebih rendah lebih baik: 0 adalah sempurna dan 0.25 sama seperti melambung syiling.",
+    "columns": {
+      "statement": "Ramalan",
+      "status": "Status",
+      "confidence": "Keyakinan",
+      "horizon": "Ufuk masa",
+      "brier": "Skor Brier",
+      "topic": "Topik",
+      "created": "Dicipta",
+      "id": "ID",
+      "rating": "Gred anda"
+    },
+    "actions": {
+      "resolve": "Selesaikan",
+      "reresolve": "Selesaikan semula"
+    },
+    "resolvedBy": {
+      "User": "Anda",
+      "Agent": "Ejen",
+      "AgentConfirmed": "Ejen, disahkan oleh anda"
+    },
+    "detail": {
+      "title": "Ramalan",
+      "resolved": "Diselesaikan",
+      "resolvedBy": "Diselesaikan oleh",
+      "note": "Nota penyelesaian"
+    },
+    "reviews": {
+      "title": "Semakan ({count})",
+      "empty": "Belum ada semakan. Larian seterusnya menyemak ramalan terbuka dengan dapatan baharu dan mencadangkan penyelesaian di sini.",
+      "proposes": "Mencadangkan",
+      "confidence": "Keyakinan {confidence}",
+      "finding": "Dapatan {id}",
+      "accept": "Terima",
+      "reject": "Tolak",
+      "accepted": "Diterima",
+      "rejected": "Ditolak",
+      "acceptedToast": "Penyelesaian diterima",
+      "rejectedToast": "Penyelesaian ditolak"
+    },
+    "resolve": {
+      "title": "Selesaikan ramalan",
+      "submit": "Selesaikan",
+      "outcome": "Keputusan",
+      "outcomeHelp": "Tepat, separa tepat dan tidak tepat dikira untuk ketepatan dan skor Brier.",
+      "note": "Nota",
+      "notePlaceholder": "Apa yang berlaku, dengan pautan jika ada",
+      "notGraded": "Keputusan ini tidak digredkan, jadi tiada skor Brier.",
+      "brierPreview": "Pada keyakinan {confidence}, keputusan ini memperoleh skor Brier {brier}.",
+      "done": "Ramalan diselesaikan"
+    },
+    "kpis": {
+      "open": "Terbuka",
+      "graded": "Digredkan",
+      "ofTotal": "daripada {total} ramalan",
+      "accuracy": "Ketepatan diperhatikan",
+      "accuracyHelp": "Separa tepat dikira sebagai separuh.",
+      "brier": "Purata skor Brier"
+    },
+    "calibration": {
+      "title": "Kalibrasi",
+      "subtitle": "Keyakinan yang dinyatakan berbanding kekerapan ramalan menjadi kenyataan",
+      "aria": "Kalibrasi {count} ramalan yang digredkan",
+      "xAxis": "Keyakinan dinyatakan",
+      "count": "Ramalan",
+      "meanConfidence": "Purata keyakinan",
+      "observed": "Ketepatan diperhatikan",
+      "perfect": "Kalibrasi sempurna",
+      "bucket": "Keyakinan {from} hingga {to}",
+      "empty": "Gredkan beberapa ramalan untuk melihat kalibrasi."
+    },
+    "empty": {
+      "title": "Belum ada ramalan",
+      "message": "Larian membuat ramalan tentang hala tuju sesuatu topik. Ramalan dipaparkan di sini untuk dijejak dan digredkan."
+    }
+  },
+  "suggestions": {
+    "priority": "Keutamaan {priority}",
+    "effort": "Mengambil {effort}",
+    "until": "sehingga",
+    "changed": "Ditandakan {status}",
+    "columns": {
+      "title": "Cadangan",
+      "status": "Status",
+      "priorityEffort": "Keutamaan dan usaha",
+      "topic": "Topik",
+      "created": "Dicipta",
+      "id": "ID",
+      "rating": "Penilaian anda"
+    },
+    "actions": {
+      "accept": "Terima",
+      "snooze": "Tunda",
+      "dismiss": "Ketepikan",
+      "complete": "Selesai"
+    },
+    "detail": {
+      "title": "Cadangan",
+      "rationale": "Sebab",
+      "statusChanged": "Status diubah",
+      "findings": "Dapatan berkaitan"
+    },
+    "snooze": {
+      "title": "Tunda cadangan",
+      "quick": "Pilihan pantas",
+      "tomorrow": "Esok pagi",
+      "nextWeek": "Dalam seminggu",
+      "nextMonth": "Dalam sebulan",
+      "until": "Tunda sehingga",
+      "future": "Pilih masa pada masa hadapan.",
+      "help": "Ia kembali ke senarai anda pada masa ini."
+    },
+    "empty": {
+      "title": "Belum ada cadangan",
+      "message": "Larian mencadangkan perkara yang wajar diterokai. Cadangan dipaparkan di sini untuk diterima, ditunda, diketepikan atau diselesaikan."
+    }
+  },
+  "briefings": {
+    "untitled": "Taklimat tanpa tajuk",
+    "dryRun": "Larian percubaan",
+    "searchPlaceholder": "Tajuk",
+    "includeDryRun": "Sertakan larian percubaan",
+    "columns": {
+      "title": "Taklimat",
+      "kind": "Jenis",
+      "status": "Status",
+      "edition": "Edisi",
+      "topic": "Topik",
+      "items": "Item",
+      "pinned": "Disemat",
+      "created": "Disusun",
+      "id": "ID"
+    },
+    "actions": {
+      "open": "Buka"
+    },
+    "download": {
+      "md": "Muat turun .md",
+      "html": "Muat turun .html"
+    },
+    "pin": {
+      "pin": "Semat",
+      "unpin": "Nyahsemat",
+      "pinNamed": "Semat {title}",
+      "unpinNamed": "Nyahsemat {title}",
+      "pinned": "Disemat. Failnya disimpan melebihi tempoh pengekalan.",
+      "unpinned": "Dinyahsemat. Failnya kembali mengikut tempoh pengekalan.",
+      "cap": "Anda telah mencapai had semat untuk ruang kerja ini. Nyahsemat taklimat lain dahulu.",
+      "badge": "Disemat"
+    },
+    "expired": {
+      "notice": "Fail laporan telah tamat tempoh. Jana semula untuk memuat turunnya lagi.",
+      "title": "Fail laporan telah tamat tempoh.",
+      "message": "Fail laporan disimpan sehingga 365 hari. Taklimat dan dapatannya masih ada, jadi fail boleh dijana semula.",
+      "regenerate": "Jana semula",
+      "regenerated": "Fail laporan dijana semula"
+    },
+    "files": {
+      "expired": "Fail tamat tempoh",
+      "pinned": "Disemat",
+      "expires": "Disimpan sehingga {date}",
+      "download": "Muat turun {name}"
+    },
+    "progress": {
+      "Queued": "Dibariskan. Ia akan disusun sebentar lagi.",
+      "Composing": "Sedang disusun.",
+      "researching": "Menunggu penyelidikan terkini, selewat-lewatnya sehingga {time}."
+    },
+    "reader": {
+      "back": "Semua taklimat",
+      "citation": "Sumber {number}",
+      "outline": "Rangka",
+      "noItems": "Taklimat ini tidak menggunakan sebarang dapatan, ramalan atau cadangan.",
+      "otherItems": "Lain-lain",
+      "open": {
+        "Finding": "Buka dapatan",
+        "Prediction": "Buka ramalan",
+        "Suggestion": "Buka cadangan"
+      },
+      "noFiles": "Tiada fail tersimpan.",
+      "openRun": "Buka larian",
+      "stats": "{minutes} min bacaan, {words} perkataan, {items} item",
+      "failed": "Penyusunan gagal.",
+      "noContent": "Taklimat ini tiada kandungan.",
+      "items": "Dalam taklimat ini ({count})",
+      "files": "Fail",
+      "period": "Meliputi",
+      "readMinutes": "{minutes} min bacaan"
+    },
+    "delete": {
+      "title": "Padam taklimat",
+      "message": "Padam \"{title}\" dan fail tersimpannya? Dapatan, ramalan dan cadangan yang digunakannya kekal.",
+      "done": "Taklimat dipadam"
+    },
+    "empty": {
+      "title": "Belum ada taklimat",
+      "message": "Susun edisi, jalankan topik atau tanya soalan sekali untuk mendapatkannya."
+    }
+  },
+  "today": {
+    "seeAll": "Lihat semua",
+    "composeNow": "Susun sekarang",
+    "composeQueued": "Taklimat dibariskan",
+    "composeReady": "Taklimat anda sudah sedia",
+    "composeFailed": "Taklimat gagal: {message}",
+    "composeConflict": "Taklimat untuk edisi ini sudah dalam proses.",
+    "edition": "Edisi",
+    "follow": "Ikuti kemajuan",
+    "noEditions": "Anda belum ada edisi.",
+    "createEdition": "Cipta satu",
+    "empty": {
+      "title": "Belum ada taklimat",
+      "message": "Susun edisi anda sekarang, atau tunggu jadualnya."
+    },
+    "openReader": "Buka dalam pembaca",
+    "runs": "Taklimat larian terkini",
+    "oneTime": "Laporan sekali",
+    "noRuns": "Belum ada taklimat larian.",
+    "noOneTime": "Belum ada laporan sekali."
+  },
+  "editions": {
+    "add": "Edisi baharu",
+    "back": "Semua edisi",
+    "newTitle": "Edisi baharu",
+    "newSummary": "Taklimat dengan jadualnya sendiri, merentas topik yang anda pilih.",
+    "created": "Edisi dicipta",
+    "saved": "Edisi disimpan",
+    "deleted": "Edisi dipadam",
+    "composeQueued": "Taklimat dibariskan",
+    "enabledOn": "Didayakan",
+    "enabledOff": "Dilumpuhkan",
+    "preview": "Pratonton",
+    "previewing": "Menyusun pratonton...",
+    "previewTitle": "Pratonton: {name}",
+    "previewSubtitle": "Disusun daripada data terkini. Tiada apa-apa disimpan atau dihantar.",
+    "previewFallbacks": "{count, plural, other {# bahagian ditulis}} sebagai senarai biasa kerana tiada model yang menjawab.",
+    "previewEmpty": "Pratonton kosong.",
+    "discard": "Buang perubahan",
+    "create": "Cipta edisi",
+    "save": "Simpan edisi",
+    "schedulesHelp": "Bila edisi ini disusun. Dengan penyelidikan terkini dihidupkan, penyelidikan bermula lebih awal sebelum setiap masa berjadual.",
+    "schedulesEmpty": "Tambah jadual untuk menyusun edisi ini secara automatik, atau susunnya secara manual.",
+    "deleteTitle": "Padam edisi",
+    "deleteMessage": "Padam edisi \"{name}\" dan jadualnya? Taklimatnya kekal.",
+    "viewBriefings": "Lihat taklimat",
+    "lookbackHours": "{hours} jam terakhir",
+    "sections": {
+      "settings": "Tetapan",
+      "topics": "Topik",
+      "schedules": "Jadual",
+      "briefings": "Taklimat"
+    },
+    "columns": {
+      "name": "Edisi",
+      "enabled": "Status",
+      "delivery": "Penghantaran",
+      "lookback": "Tempoh liputan",
+      "lastComposed": "Terakhir disusun",
+      "created": "Dicipta",
+      "id": "ID"
+    },
+    "badges": {
+      "email": "E-mel",
+      "audio": "Audio",
+      "fresh": "Penyelidikan terkini ({minutes} min)"
+    },
+    "empty": {
+      "title": "Tiada edisi",
+      "message": "Cipta edisi untuk mendapat taklimat mengikut jadual."
+    },
+    "form": {
+      "name": "Nama",
+      "nameRequired": "Nama diperlukan.",
+      "description": "Keterangan",
+      "template": "Templat",
+      "templateDefault": "Menggunakan {name}, templat lalai.",
+      "defaultName": "templat lalai",
+      "useDefault": "Templat lalai",
+      "sharedOption": "{name} (dikongsi)",
+      "enabled": "Didayakan",
+      "enabledHelp": "Disusun mengikut jadualnya. Susun sekarang tetap berfungsi.",
+      "email": "E-mel",
+      "emailHelp": "E-melkan taklimat apabila ia sedia.",
+      "audio": "Audio",
+      "audioHelp": "Hasilkan versi audio bagi setiap taklimat.",
+      "fresh": "Penyelidikan terkini dahulu",
+      "freshHelp": "Jalankan penyelidikan setiap topik sebelum menyusun.",
+      "lead": "Masa mendahului penyelidikan (minit)",
+      "leadHelp": "Berapa lama menunggu penyelidikan, dari {min} hingga {max} minit.",
+      "lookbackMode": "Tempoh liputan",
+      "lookbackModeHelp": {
+        "SinceLastEdition": "Semua perkara sejak edisi terakhir disusun.",
+        "FixedHours": "Tetingkap tetap yang berakhir apabila edisi disusun."
+      },
+      "lookbackHours": "Tetingkap liputan (jam)",
+      "lookbackHoursHelp": "Dari {min} hingga {max} jam. Pilihan sejak edisi terakhir tidak akan melihat lebih jauh daripada ini."
+    },
+    "topics": {
+      "mode": "Topik",
+      "modes": {
+        "all": "Semua topik aktif",
+        "chosen": "Pilih topik"
+      },
+      "allHelp": "Meliputi setiap topik berulang yang aktif, termasuk topik yang anda tambah kemudian.",
+      "covered": "Topik yang diliputi",
+      "noneActive": "Anda belum ada topik berulang yang aktif.",
+      "chosenHelp": "Hanya topik ini, mengikut susunan ini.",
+      "noneChosen": "Belum ada topik dipilih.",
+      "chosen": "Topik dipilih",
+      "chooseOne": "Pilih sekurang-kurangnya satu topik, atau liputi semua topik aktif.",
+      "moveUp": "Alih {name} ke atas",
+      "moveDown": "Alih {name} ke bawah",
+      "remove": "Alih keluar {name}",
+      "addLabel": "Topik untuk ditambah",
+      "pick": "Pilih topik",
+      "add": "Tambah",
+      "save": "Simpan topik",
+      "saved": "Topik disimpan"
+    }
+  },
+  "templates": {
+    "add": "Templat baharu",
+    "back": "Semua templat",
+    "open": "Buka editor",
+    "empty": "Tiada templat",
+    "searchPlaceholder": "Nama atau keterangan",
+    "saved": "Versi baharu disimpan",
+    "created": "Templat dicipta",
+    "deleted": "Templat dipadam",
+    "export": "Eksport .md",
+    "copy": "Buat salinan",
+    "copyName": "{name} (salinan)",
+    "reset": "Set semula kepada lalai",
+    "resetTitle": "Set semula templat",
+    "resetMessage": "Gantikan kandungan dengan lalai asal sebagai versi baharu? Versi terdahulu kekal dalam sejarah.",
+    "resetDone": "Ditetapkan semula kepada lalai",
+    "deleteTitle": "Padam templat",
+    "deleteMessage": "Padam templat \"{name}\" dan versinya? Edisi yang menggunakannya akan kembali kepada templat lalai.",
+    "readOnly": "Hanya pentadbir penyewa boleh mengubah templat dikongsi. Buat salinan untuk menyunting templat anda sendiri.",
+    "scope": {
+      "shared": "Dikongsi",
+      "mine": "Milik saya"
+    },
+    "badges": {
+      "editionDefault": "Lalai edisi",
+      "builtIn": "Terbina dalam"
+    },
+    "columns": {
+      "name": "Templat",
+      "scope": "Skop",
+      "origin": "Asal",
+      "version": "Versi",
+      "updated": "Dikemas kini"
+    },
+    "import": {
+      "button": "Import .md",
+      "file": "Fail templat",
+      "tooLarge": "Fail itu terlalu besar untuk dijadikan templat."
+    },
+    "editor": {
+      "title": "Templat",
+      "panels": "Alatan templat",
+      "valid": "Sah",
+      "errors": "{count, plural, other {# ralat}}",
+      "rejected": "Pelayan menolak versi ini.",
+      "format": "Markdown dengan front matter (name, description, tone, length, audience, citations, audio). Setiap tajuk aras dua ialah satu bahagian. Komen mmn:section di bawahnya memilih data (source, tier, status, group, limit, order, topic, dimension), dan teks di bawah tajuk memberitahu penyusun apa yang perlu ditulis."
+    },
+    "panels": {
+      "problems": "Masalah",
+      "problemsCount": "Masalah ({count})",
+      "outline": "Rangka",
+      "preview": "Pratonton",
+      "versions": "Versi"
+    },
+    "problems": {
+      "none": "Tiada masalah ditemui.",
+      "errors": "{count, plural, other {# ralat}}",
+      "warnings": "{count, plural, other {# amaran}}",
+      "checking": "Menyemak...",
+      "jump": "Pergi ke baris {line}",
+      "line": "Baris {line}",
+      "general": "Umum",
+      "warning": "Amaran",
+      "error": "Ralat"
+    },
+    "outline": {
+      "pending": "Mengesahkan...",
+      "name": "Nama",
+      "title": "Tajuk",
+      "audio": "Audio",
+      "audioOn": "Hidup: {format}, kira-kira {minutes} minit",
+      "audioOff": "Mati",
+      "intro": "Pengenalan",
+      "noSections": "Belum ada bahagian. Tambah tajuk aras dua.",
+      "jump": "Pergi ke {heading} pada baris {line}",
+      "source": "source={source}"
+    },
+    "preview": {
+      "help": "Menyusun edisi yang dipilih daripada data terkini dengan templat tersimpan edisi itu. Tiada apa-apa disimpan atau dihantar.",
+      "noEditions": "Cipta edisi untuk pratonton templat.",
+      "edition": "Edisi untuk dipratonton",
+      "otherTemplate": "{name} menggunakan templat lain, jadi pratonton ini tidak menunjukkan templat ini.",
+      "unsaved": "Simpan perubahan anda untuk melihatnya dalam pratonton."
+    },
+    "versions": {
+      "none": "Belum ada versi.",
+      "rollbackMessage": "Pulihkan versi {version} sebagai versi baharu? Kandungan semasa kekal dalam sejarah."
+    },
+    "create": {
+      "titles": {
+        "new": "Templat baharu",
+        "import": "Import templat",
+        "copy": "Buat salinan"
+      },
+      "confirm": {
+        "new": "Cipta",
+        "import": "Import",
+        "copy": "Cipta salinan"
+      },
+      "contentHelp": {
+        "import": "Mengimport {lines} baris Markdown.",
+        "copy": "Menyalin {lines} baris dalam editor, termasuk perubahan yang belum disimpan."
+      },
+      "defaultName": "Taklimat saya",
+      "name": "Nama",
+      "nameHelp": "Biarkan kosong untuk menggunakan nama dalam front matter.",
+      "startFrom": "Mula daripada",
+      "starter": "Templat permulaan ringkas",
+      "copyOf": "Salinan {name}",
+      "shared": "Kongsi dengan semua orang dalam ruang kerja ini",
+      "invalid": "Templat ini mempunyai masalah."
+    }
+  },
+  "audio": {
+    "panel": {
+      "label": "Audio taklimat",
+      "title": "Dengar",
+      "fromText": "Dibaca daripada teks taklimat",
+      "checking": "Menyemak audio..."
+    },
+    "player": {
+      "loading": "Memuatkan audio...",
+      "loadingSize": "Memuatkan audio ({size})...",
+      "play": "Main",
+      "pause": "Jeda",
+      "back": "Undur {seconds} saat",
+      "forward": "Maju {seconds} saat",
+      "seek": "Kedudukan main balik",
+      "position": "{time} daripada {duration}",
+      "nowPlaying": "Sedang dimainkan: {chapter}",
+      "speed": "Kelajuan main balik",
+      "speedOption": "{speed}x",
+      "chapters": "Bab"
+    },
+    "progress": {
+      "Queued": "Audio dibariskan. Ia akan dihasilkan sebentar lagi.",
+      "Scripting": "Menulis skrip pertuturan.",
+      "Synthesizing": "Mensintesis pertuturan. Taklimat yang lebih panjang mengambil masa beberapa minit."
+    },
+    "make": {
+      "action": "Hasilkan audio",
+      "again": "Hasilkan audio semula",
+      "remake": "Buat semula audio",
+      "voice": "Suara",
+      "defaultVoice": "Suara lalai",
+      "voiceDefault": "{name} (lalai)",
+      "queued": "Audio dibariskan",
+      "conflict": "Audio tidak dibariskan. Audio untuk taklimat ini sedang dihasilkan, atau audio dimatikan pada pelayan ini. {message}"
+    },
+    "failed": "Penghasilan audio gagal.",
+    "missingFile": "Fail audio tidak tersedia. Hasilkan audio semula untuk mendengar.",
+    "none": "Taklimat ini belum ada audio.",
+    "listenFrom": "Dengar dari {section}"
+  },
+  "voices": {
+    "columns": {
+      "name": "Nama",
+      "provider": "Penyedia",
+      "voice": "Suara",
+      "model": "Model",
+      "speed": "Kelajuan",
+      "endpoint": "Titik akhir",
+      "credential": "Kelayakan",
+      "created": "Dicipta",
+      "id": "ID"
+    },
+    "default": "Lalai",
+    "secondaryShort": "Hos kedua: {voice}",
+    "serverDefault": "Lalai pelayan",
+    "adminOnly": "Hanya pentadbir penyewa boleh mengubah suara.",
+    "memberNotice": "Anda boleh menyenaraikan dan menguji suara. Mencipta, menyunting dan memadam suara memerlukan pentadbir penyewa.",
+    "twoHostHint": "Skrip dua hos menyelang-seli baris HOST_A dan HOST_B: HOST_A menggunakan suara utama, dan HOST_B menggunakan suara kedua (atau suara yang sama jika tiada suara kedua ditetapkan).",
+    "makeDefault": "Jadikan lalai",
+    "defaultSet": "{name} kini suara lalai",
+    "empty": {
+      "title": "Belum ada suara",
+      "message": "Audio menggunakan tetapan pertuturan pelayan sehingga anda menambah suara."
+    },
+    "form": {
+      "createTitle": "Tambah suara",
+      "editTitle": "Sunting suara"
+    },
+    "fields": {
+      "endpointHelp": "URL asas pelayan pertuturan yang serasi dengan OpenAI. Biarkan kosong untuk menggunakan lalai pelayan.",
+      "endpointPlaceholder": "Lalai pelayan",
+      "modelHelp": "Biarkan kosong untuk model lalai.",
+      "modelPlaceholder": "kokoro",
+      "voice": "Suara",
+      "voiceHelp": "Suara pencerita, dan HOST_A dalam skrip dua hos.",
+      "voicePlaceholder": "af_heart",
+      "secondaryVoice": "Suara kedua",
+      "secondaryVoiceHelp": "HOST_B dalam skrip dua hos. Biarkan kosong untuk menggunakan suara yang sama bagi kedua-dua hos.",
+      "speedHelp": "Dari {min} hingga {max}.",
+      "credentialHelp": "Kelayakan tersimpan dengan kunci API, apabila pelayan pertuturan memerlukannya.",
+      "isDefault": "Suara lalai",
+      "isDefaultHelp": "Digunakan apabila edisi atau permintaan tidak menamakan suara."
+    },
+    "test": {
+      "action": "Uji",
+      "title": "Uji suara",
+      "text": "Teks contoh",
+      "textHelp": "Biarkan kosong untuk mendengar ucapan ringkas.",
+      "defaultText": "Selamat pagi. Inilah perkembangan dalam topik anda.",
+      "speak": "Tuturkan",
+      "speaking": "Sedang bertutur...",
+      "ttsError": "Perkhidmatan pertuturan gagal: {message}"
+    },
+    "delete": {
+      "title": "Padam suara",
+      "message": "Padam suara \"{name}\"? Edisi yang menggunakannya akan kembali kepada suara lalai."
+    }
+  },
+  "listen": {
+    "untitled": "Episod tanpa tajuk",
+    "columns": {
+      "title": "Episod",
+      "status": "Status",
+      "kind": "Jenis",
+      "duration": "Tempoh",
+      "size": "Saiz",
+      "segments": "Segmen",
+      "script": "Skrip",
+      "created": "Dicipta",
+      "completed": "Selesai",
+      "id": "ID"
+    },
+    "noValue": "Tiada",
+    "scriptModel": "Ditulis oleh model",
+    "scriptText": "Dibaca daripada teks",
+    "actions": {
+      "play": "Main",
+      "briefing": "Buka taklimat",
+      "remake": "Buat semula audio"
+    },
+    "empty": {
+      "title": "Belum ada audio",
+      "message": "Hasilkan audio daripada taklimat, atau hidupkan audio untuk edisi."
+    },
+    "delete": {
+      "title": "Padam episod",
+      "message": "Padam \"{title}\" dan fail audionya? Taklimat kekal.",
+      "done": "Episod dipadam"
+    }
+  },
+  "feeds": {
+    "title": "Suapan podcast",
+    "summary": "URL suapan peribadi untuk aplikasi podcast. Setiap suapan membawa rahsia, jadi layan URLnya seperti kata laluan.",
+    "fields": {
+      "name": "Nama",
+      "nameHelp": "Label yang anda kenali, seperti nama aplikasi atau peranti.",
+      "namePlaceholder": "Overcast pada telefon saya",
+      "edition": "Edisi",
+      "editionHelp": "Hadkan suapan kepada satu edisi, atau sertakan semua audio anda."
+    },
+    "allAudio": "Semua audio saya",
+    "create": "Cipta suapan",
+    "created": {
+      "title": "Suapan dicipta",
+      "warning": "URL ini peribadi dan hanya ditunjukkan sekali. Sesiapa yang memilikinya boleh mendengar taklimat anda. Salin sekarang, dan batalkan suapan jika ia terdedah.",
+      "feedUrl": "URL suapan",
+      "copyUrl": "Salin URL suapan",
+      "secret": "Rahsia",
+      "copySecret": "Salin rahsia",
+      "done": "Saya telah menyimpannya"
+    },
+    "empty": {
+      "title": "Tiada suapan podcast",
+      "message": "Cipta suapan untuk mendengar taklimat anda dalam aplikasi podcast."
+    },
+    "columns": {
+      "name": "Nama",
+      "prefix": "Token",
+      "edition": "Edisi",
+      "created": "Dicipta",
+      "lastUsed": "Terakhir digunakan",
+      "status": "Status",
+      "actions": "Tindakan"
+    },
+    "unnamed": "Suapan tanpa nama",
+    "prefix": "{prefix}...",
+    "neverUsed": "Tidak pernah",
+    "revoked": "Dibatalkan",
+    "revoke": "Batalkan",
+    "revokeNamed": "Batalkan {name}",
+    "revokeConfirm": {
+      "title": "Batalkan suapan",
+      "message": "Batalkan \"{name}\"? Aplikasi podcast yang melanggan suapan ini akan berhenti menerima episod. Tindakan ini tidak boleh dibuat asal.",
+      "done": "Suapan dibatalkan"
+    },
+    "help": {
+      "title": "Cara melanggan",
+      "step1": "Cipta suapan di atas dan salin URLnya.",
+      "apple": "Apple Podcasts: buka Pustaka, pilih Ikuti Rancangan melalui URL daripada menu, dan tampal URL tersebut.",
+      "overcast": "Overcast: ketik butang tambah, pilih Add URL, dan tampal URL tersebut.",
+      "publicUrl": "Telefon anda perlu dapat mencapai pelayan. Tetapkan MYMORNINGNEWS_PUBLIC_BASE_URL kepada alamat yang boleh dibuka oleh telefon (bukan 127.0.0.1), kemudian cipta suapan semula supaya URLnya menggunakan alamat itu.",
+      "loopback": "URL ini menghala ke 127.0.0.1, yang hanya boleh dicapai oleh komputer ini. Tetapkan MYMORNINGNEWS_PUBLIC_BASE_URL pada pelayan supaya aplikasi podcast pada telefon anda boleh mencapainya."
+    }
+  },
+  "promo": {
+    "picker": {
+      "search": "Cari pengguna",
+      "searchPlaceholder": "E-mel mengandungi",
+      "user": "Pengguna",
+      "noUsers": "Tiada pengguna yang sepadan.",
+      "choose": "Pilih pengguna"
+    },
+    "validation": {
+      "codeRequired": "Masukkan kod.",
+      "codeFormat": "Gunakan 4 hingga 40 huruf, digit dan sempang, bermula dan berakhir dengan huruf atau digit.",
+      "prefixFormat": "Gunakan sehingga 16 huruf dan digit.",
+      "countRange": "Masukkan nombor bulat dari 1 hingga {max, number}.",
+      "planRequired": "Pilih pelan.",
+      "durationRange": "Masukkan bilangan hari dalam nombor bulat dari 0 (tiada penghujung) hingga 3650.",
+      "maxRange": "Masukkan 0 (tanpa had) atau bilangan penebusan dalam nombor bulat.",
+      "maxBelowUsed": "Kod ini telah digunakan {used} kali, jadi had tidak boleh lebih rendah daripada itu.",
+      "perUserRange": "Masukkan nombor bulat dari 1 hingga 100.",
+      "dateInvalid": "Masukkan tarikh dan masa yang sah.",
+      "expiresAfterStarts": "Tarikh tamat mestilah selepas tarikh mula."
+    },
+    "create": {
+      "title": "Kod promosi baharu",
+      "open": "Kod baharu"
+    },
+    "edit": {
+      "title": "Sunting {code}"
+    },
+    "batch": {
+      "title": "Jana sekumpulan kod",
+      "open": "Jana kumpulan",
+      "createdTitle": "{count, plural, other {# kod dicipta}}",
+      "batchId": "Kumpulan {id}",
+      "downloadCsv": "Muat turun CSV",
+      "copyAll": "Salin semua kod",
+      "codes": "Kod yang dicipta",
+      "generate": "Jana"
+    },
+    "fields": {
+      "code": "Kod",
+      "codeHelp": "Huruf, digit dan sempang. Disimpan dalam huruf besar.",
+      "codeLocked": "Kod tidak boleh dinamakan semula. Cipta kod baharu sebaliknya.",
+      "prefix": "Awalan",
+      "prefixHelp": "Pilihan, sehingga 16 huruf dan digit. Setiap kod mendapat akhiran rawak.",
+      "count": "Berapa banyak",
+      "countHelp": "1 hingga {max, number} kod.",
+      "plan": "Pelan",
+      "noPlans": "Tiada pelan",
+      "description": "Keterangan",
+      "duration": "Tempoh dalam hari",
+      "durationHelp": "0 bermaksud pelan tiada penghujung.",
+      "maxRedemptions": "Jumlah penebusan",
+      "maxHelp": "0 bermaksud tanpa had.",
+      "maxUsedHelp": "0 bermaksud tanpa had. Telah digunakan {used} kali.",
+      "perUserLimit": "Had setiap pengguna",
+      "perUserHelp": "Berapa kali seorang boleh menebusnya.",
+      "starts": "Mula",
+      "startsHelp": "Biarkan kosong untuk mula sekarang. Waktu tempatan anda.",
+      "expires": "Tamat",
+      "expiresHelp": "Biarkan kosong untuk tiada tarikh tamat. Waktu tempatan anda.",
+      "enabled": "Didayakan",
+      "newAccountsOnly": "Akaun baharu sahaja",
+      "newAccountsOnlyHelp": "Hanya akaun yang mendaftar dengan kod ini boleh menebusnya."
+    },
+    "status": {
+      "enabled": "Didayakan",
+      "disabled": "Dilumpuhkan",
+      "notStarted": "Belum bermula",
+      "expired": "Tamat tempoh",
+      "exhausted": "Habis digunakan"
+    },
+    "usage": {
+      "usedOf": "{used} daripada {max}",
+      "usedUnlimited": "{used} daripada tanpa had",
+      "unlimited": "Tanpa had"
+    },
+    "duration": {
+      "days": "{count, plural, other {# hari}}",
+      "noEnd": "Tiada penghujung"
+    },
+    "reasons": {
+      "NotFound": "Kami tidak menemui kod itu. Semak ejaan dan cuba lagi.",
+      "Disabled": "Kod itu telah dimatikan.",
+      "NotStarted": "Kod itu belum boleh digunakan.",
+      "Expired": "Kod itu telah tamat tempoh.",
+      "Exhausted": "Kod itu telah digunakan sebanyak yang dibenarkan.",
+      "AlreadyRedeemed": "Akaun ini telah menggunakan kod itu.",
+      "NewAccountsOnly": "Kod itu hanya untuk akaun baharu."
+    },
+    "delete": {
+      "title": "Padam kod promosi",
+      "message": "Padam {code}? Tindakan ini tidak boleh dibuat asal.",
+      "usedMessage": "{code} telah ditebus {count, plural, other {# kali}}, jadi ia tidak boleh dipadam. Lumpuhkannya sebaliknya supaya sejarahnya kekal.",
+      "disableInstead": "Lumpuhkan sebaliknya",
+      "conflict": "Kod ini telah digunakan, jadi ia tidak boleh dipadam. Lumpuhkannya sebaliknya."
+    },
+    "notify": {
+      "disabled": "{code} dilumpuhkan",
+      "enabled": "{code} didayakan",
+      "copied": "{code} disalin",
+      "generated": "{count, plural, other {# kod dijana}}",
+      "created": "{code} dicipta"
+    },
+    "columns": {
+      "code": "Kod",
+      "description": "Keterangan",
+      "plan": "Pelan",
+      "duration": "Tempoh",
+      "usage": "Digunakan / maks",
+      "remaining": "Baki",
+      "activeSubscriptions": "Langganan aktif",
+      "status": "Status",
+      "batch": "Kumpulan",
+      "expires": "Tamat",
+      "lastRedeemed": "Terakhir ditebus",
+      "created": "Dicipta"
+    },
+    "filters": {
+      "search": "Kod atau keterangan",
+      "enabledOnly": "Didayakan",
+      "disabledOnly": "Dilumpuhkan"
+    },
+    "actions": {
+      "disable": "Lumpuhkan",
+      "enable": "Dayakan",
+      "copyCode": "Salin kod"
+    },
+    "never": "Tidak pernah",
+    "immediately": "Serta-merta",
+    "createdBy": "Dicipta oleh",
+    "empty": {
+      "title": "Belum ada kod promosi",
+      "message": "Cipta kod, atau jana sekumpulan kod, untuk memberikan pelan kepada orang lain."
+    },
+    "apply": {
+      "open": "Gunakan pada pengguna",
+      "title": "Gunakan {code} pada pengguna",
+      "help": "Pengguna mendapat {plan} selama {duration}. Had kod tetap terpakai.",
+      "confirm": "Gunakan kod",
+      "done": "{code} digunakan pada {email}"
+    },
+    "redemptions": {
+      "title": "Penebusan",
+      "user": "Pengguna",
+      "tenant": "Penyewa",
+      "channel": "Saluran",
+      "date": "Ditebus",
+      "status": "Status",
+      "active": "Aktif",
+      "revoked": "Dibatalkan",
+      "revokedOn": "Dibatalkan {date}",
+      "userId": "ID pengguna",
+      "revoke": "Batalkan",
+      "revokeTitle": "Batalkan penebusan",
+      "revokeMessage": "Batalkan {code} untuk {email}? Pelan mereka daripada kod ini tamat sekarang.",
+      "revokedNotice": "Penebusan dibatalkan",
+      "empty": "Belum ada sesiapa menebus kod ini",
+      "emptyMessage": "Penebusan dipaparkan di sini bersama siapa, bila dan dari mana."
+    },
+    "channels": {
+      "Signup": "Pendaftaran",
+      "Account": "Akaun",
+      "Admin": "Pentadbir",
+      "Api": "API"
+    },
+    "detail": {
+      "summary": "Penggunaan, penebusan dan tetapan untuk kod ini",
+      "back": "Semua kod",
+      "settings": "Tetapan"
+    },
+    "kpi": {
+      "redemptions": "Penebusan",
+      "remaining": "Baki",
+      "activeSubscriptions": "Langganan aktif",
+      "revoked": "Dibatalkan",
+      "lastRedeemed": "Terakhir ditebus",
+      "notYet": "Belum lagi"
+    },
+    "chart": {
+      "title": "Penebusan dari masa ke masa",
+      "subtitle": "Setiap hari, mengikut tarikh setiap penebusan",
+      "empty": "Belum ada penebusan."
+    }
+  },
+  "plans": {
+    "default": "Lalai",
+    "noFeatures": "Tiada nilai kelayakan.",
+    "validation": {
+      "key": "Gunakan 2 hingga 63 huruf kecil, digit dan sempang.",
+      "name": "Masukkan nama.",
+      "duplicate": "Kunci {key} disenaraikan dua kali."
+    },
+    "create": {
+      "title": "Pelan baharu",
+      "open": "Pelan baharu"
+    },
+    "edit": {
+      "title": "Sunting {name}",
+      "open": "Sunting {name}"
+    },
+    "fields": {
+      "key": "Kunci",
+      "keyHelp": "Pengecam stabil, seperti team-pilot.",
+      "keyLocked": "Kunci pelan tidak boleh diubah.",
+      "name": "Nama",
+      "description": "Keterangan",
+      "features": "Nilai kelayakan",
+      "featuresHelp": "Kod menyemak kunci ini, bukan nama pelan. Gunakan nombor, true atau false, atau unlimited. Nilai kosong mengalih keluar kunci.",
+      "featureKey": "Kunci kelayakan",
+      "featureValue": "Nilai untuk {key}",
+      "emptyRemoves": "Kosong untuk mengalih keluar",
+      "clearValue": "Kosongkan {key}",
+      "addFeature": "Tambah nilai"
+    },
+    "featureNames": {
+      "usage_monthlyCostUsd_max": "Had kos bulanan (USD)",
+      "topics_max": "Topik",
+      "schedule_minIntervalMinutes": "Selang jadual terpendek (minit)",
+      "runs_daily_max": "Larian sehari",
+      "audio_enabled": "Audio",
+      "audio_monthlyMinutes_max": "Minit audio sebulan",
+      "email_enabled": "E-mel",
+      "mobile_access": "Aplikasi mudah alih",
+      "endpoints_custom": "Titik akhir model sendiri",
+      "artifacts_pinned_max": "Laporan disemat"
+    },
+    "assignments": {
+      "title": "Pelan pengguna",
+      "help": "Pilih pengguna untuk melihat setiap tempoh pelan yang dimilikinya, termasuk yang bermula kemudian, dan batalkan salah satu.",
+      "plan": "Pelan",
+      "source": "Sumber",
+      "starts": "Mula",
+      "ends": "Tamat",
+      "state": "Keadaan",
+      "note": "Nota",
+      "revoke": "Batalkan",
+      "revokeTitle": "Batalkan pelan",
+      "revokeMessage": "Batalkan {plan} untuk pengguna ini? Ia tamat sekarang.",
+      "revoked": "Pelan dibatalkan",
+      "empty": "Tiada tugasan pelan",
+      "emptyMessage": "Pengguna ini menggunakan pelan lalai."
+    },
+    "sources": {
+      "Default": "Lalai",
+      "Admin": "Pentadbir",
+      "Promo": "Kod promosi",
+      "Billing": "Pengebilan"
+    },
+    "states": {
+      "current": "Semasa",
+      "upcoming": "Akan datang",
+      "ended": "Tamat",
+      "revoked": "Dibatalkan"
+    },
+    "grant": {
+      "open": "Berikan pelan",
+      "title": "Berikan pelan",
+      "titleFor": "Berikan pelan kepada {email}",
+      "confirm": "Berikan",
+      "note": "Nota",
+      "noteHelp": "Sebab pengguna ini mendapat pelan. Dipaparkan dalam log audit.",
+      "done": "Pelan diberikan kepada {email}"
+    },
+    "userPanel": {
+      "action": "Pelan",
+      "title": "Pelan untuk {email}"
+    }
+  },
+  "account": {
+    "plan": {
+      "title": "Pelan",
+      "endsOn": "Pelan anda tamat pada {date}.",
+      "noEnd": "Pelan anda tiada tarikh tamat.",
+      "limits": "Had",
+      "upcoming": "Bermula kemudian",
+      "anotherPlan": "Pelan lain",
+      "period": "dari {from} hingga {to}",
+      "periodOpen": "dari {from}, tanpa tarikh tamat",
+      "redeemTitle": "Tebus kod",
+      "code": "Kod promosi",
+      "codeHelp": "Kod yang diberikan kepada anda. Kod untuk pelan yang sudah anda miliki bermula apabila pelan semasa tamat.",
+      "redeem": "Tebus",
+      "redeemed": "Kod ditebus. Anda kini mempunyai {plan}."
+    }
+  },
+  "email": {
+    "memberNotice": "Anda melihat e-mel yang dihantar kepada anda. Pentadbir melihat setiap mesej.",
+    "resend": "Hantar semula",
+    "resent": "Dihantar semula kepada {recipient}",
+    "columns": {
+      "time": "Masa",
+      "template": "Templat",
+      "recipient": "Penerima",
+      "subject": "Subjek",
+      "status": "Status",
+      "attempts": "Percubaan",
+      "sent": "Dihantar",
+      "topic": "Topik",
+      "providerId": "ID penyedia"
+    },
+    "statuses": {
+      "Queued": "Dibariskan",
+      "Sending": "Menghantar",
+      "Sent": "Dihantar",
+      "Failed": "Gagal",
+      "Suppressed": "Disekat",
+      "Skipped": "Dilangkau"
+    },
+    "templates": {
+      "RunDigest": "Ringkasan larian",
+      "BriefingPublished": "Taklimat diterbitkan",
+      "RunFailed": "Larian gagal",
+      "PreferenceProposal": "Cadangan keutamaan",
+      "Test": "Ujian"
+    },
+    "chart": {
+      "title": "Mesej sehari mengikut status",
+      "subtitle": "{days} hari terakhir",
+      "empty": "Tiada e-mel dalam tempoh ini."
+    },
+    "empty": {
+      "title": "Belum ada e-mel dihantar",
+      "message": "E-mel dipaparkan di sini selepas larian, taklimat dan ujian."
+    },
+    "delete": {
+      "title": "Padam e-mel",
+      "message": "Padam \"{subject}\" kepada {recipient} daripada peti keluar?"
+    },
+    "preview": {
+      "title": "E-mel",
+      "runButton": "Pratonton e-mel",
+      "runTitle": "Pratonton e-mel larian",
+      "to": "Kepada {recipient}",
+      "format": "Format",
+      "html": "Dipaparkan",
+      "text": "Teks biasa",
+      "frame": "E-mel yang dipaparkan",
+      "noHtml": "Mesej ini tiada badan HTML.",
+      "noText": "Mesej ini tiada badan teks biasa."
+    },
+    "test": {
+      "button": "Hantar e-mel ujian",
+      "sent": "E-mel ujian dibariskan untuk {recipient}",
+      "failed": "E-mel ujian tidak dapat dihantar: {message}",
+      "settingsHelp": "Simpan perubahan anda dahulu, kemudian hantar ujian kepada diri sendiri."
+    }
+  },
+  "emailPrefs": {
+    "title": "Keutamaan e-mel",
+    "address": "E-mel dihantar ke {address}.",
+    "saved": "Keutamaan e-mel disimpan",
+    "categories": {
+      "runEmails": "E-mel larian",
+      "briefingEmails": "E-mel taklimat",
+      "failureEmails": "E-mel kegagalan"
+    },
+    "help": {
+      "runEmails": "Ringkasan selepas setiap larian topik anda.",
+      "briefingEmails": "Apabila taklimat edisi atau larian diterbitkan.",
+      "failureEmails": "Apabila larian gagal."
+    },
+    "unsubscribedTitle": "Topik yang anda nyahlanggan",
+    "noUnsubscribed": "Anda menerima e-mel larian untuk setiap topik yang menghantarnya.",
+    "resubscribeHelp": "Untuk menerima e-mel larian salah satu topik ini semula, gunakan pautan dalam e-mel terakhirnya."
+  },
+  "feedbackControl": {
+    "rate": "Nilai ini",
+    "rateItem": "Nilai {title}",
+    "rateType": "Nilai {type} ini",
+    "rateSection": "Nilai bahagian {section}",
+    "sectionPrompt": "Adakah bahagian ini relevan?",
+    "isRelevant": "Adakah ini relevan?",
+    "isAccurate": "Bagaimanakah prestasi ramalan ini?",
+    "isUseful": "Adakah ini berguna?",
+    "why": "Mengapa?",
+    "whyHelp": "Pilihan. Sebab anda mengajar penyelidikan item mana yang perlu disimpan atau digugurkan.",
+    "whyTitle": "Mengapa penilaian ini?",
+    "whyAdd": "Tambah sebab",
+    "whyEdit": "Sunting sebab",
+    "ratedAs": "Dinilai {rating}",
+    "retract": "Tarik balik penilaian",
+    "actions": {
+      "relevant": "Relevan",
+      "somewhat": "Agak relevan",
+      "not-relevant": "Tidak relevan",
+      "accurate": "Tepat",
+      "partially": "Separa tepat",
+      "inaccurate": "Tidak tepat",
+      "too-early": "Terlalu awal",
+      "useful": "Berguna",
+      "not-useful": "Tidak berguna",
+      "none": "tanpa penilaian"
+    }
+  },
+  "insights": {
+    "noData": "Belum ada data untuk julat ini.",
+    "withCount": "{label} ({count})",
+    "scope": {
+      "days": "{count, plural, other {# hari}}",
+      "topic": "Topik",
+      "allTopics": "Semua topik",
+      "everyone": "Semua orang dalam penyewa"
+    },
+    "topic": {
+      "last90": "90 hari terakhir"
+    },
+    "relevance": {
+      "precision": "Ketepatan relevan",
+      "precisionHelp": "Dapatan dinilai yang ditandakan relevan atau agak relevan",
+      "coverage": "Liputan",
+      "coverageHelp": "Dapatan dipaparkan yang menerima sebarang penilaian",
+      "shown": "Dapatan dipaparkan",
+      "rated": "Dapatan dinilai",
+      "byDay": "Ketepatan relevan dari masa ke masa",
+      "byDayHelp": "Setiap hari, daripada penilaian yang diberikan pada hari itu",
+      "byTopic": "Ketepatan relevan mengikut topik",
+      "byTier": "Ketepatan relevan mengikut tahap",
+      "byDomain": "Ketepatan relevan mengikut domain sumber",
+      "byDomainHelp": "20 domain dengan penilaian terbanyak",
+      "byDimension": "Ketepatan relevan mengikut dimensi"
+    },
+    "quality": {
+      "failureRate": "Kegagalan pengesahan bukti",
+      "quotes": "{count, plural, other {# petikan disemak}}",
+      "byModel": "Kadar kegagalan pengesahan mengikut model",
+      "byModelHelp": "Bahagian petikan diekstrak yang tidak sepadan dengan teks sumber tersimpan"
+    },
+    "accuracy": {
+      "rate": "Kadar ketepatan",
+      "rateHelp": "Tepat ditambah separuh daripada separa tepat, berbanding yang diselesaikan",
+      "brier": "Purata skor Brier",
+      "due": "Perlu disemak",
+      "dueHelp": "Ufuk masa telah berlalu tanpa penyelesaian",
+      "resolved": "Diselesaikan",
+      "ofTotal": "{open} terbuka daripada {total}",
+      "unresolvable": "Tidak dapat diselesaikan",
+      "agreement": "Persetujuan ejen",
+      "agreementHelp": "{count, plural, other {Merentas # semakan yang diputuskan}}",
+      "latency": "Masa untuk diselesaikan",
+      "days": "{count, plural, other {# hari}}",
+      "calibration": "Lengkung kalibrasi",
+      "calibrationHelp": "Keyakinan yang dinyatakan berbanding kekerapan ramalan menjadi kenyataan",
+      "byTopic": "Ketepatan mengikut topik",
+      "byTopicHelp": "Kadar ketepatan setiap topik bagi ramalan yang diselesaikan"
+    },
+    "feedback": {
+      "total": "Item maklum balas",
+      "withReason": "Dengan sebab",
+      "withoutReason": "Tanpa sebab",
+      "share": "{share} daripada semua",
+      "emailOpens": "Pautan e-mel dibuka",
+      "emailSubmits": "Pautan e-mel dihantar",
+      "submitRate": "{rate} daripada bukaan",
+      "byDay": "Jumlah maklum balas mengikut hari",
+      "byDayHelp": "Penilaian yang diberikan setiap hari, diasingkan mengikut sama ada ia mempunyai sebab",
+      "byChannel": "Maklum balas mengikut saluran",
+      "byTarget": "Maklum balas mengikut jenis item",
+      "listTitle": "Setiap item maklum balas",
+      "includeHistory": "Sertakan penilaian yang telah digantikan",
+      "noReason": "Tiada sebab diberikan",
+      "current": "Semasa",
+      "superseded": "Digantikan",
+      "editWhy": "Sunting sebab",
+      "saved": "Sebab disimpan",
+      "retractTitle": "Tarik balik penilaian ini",
+      "retractMessage": "Tarik balik penilaian ini? Penilaian terdahulu pada item yang sama, jika ada, menjadi semasa semula.",
+      "retracted": "Penilaian ditarik balik",
+      "emptyTitle": "Belum ada maklum balas",
+      "emptyMessage": "Nilai dapatan, ramalan dan cadangan untuk mengajar penyelidikan perkara yang penting bagi anda.",
+      "columns": {
+        "when": "Bila",
+        "target": "Item",
+        "rating": "Penilaian",
+        "reason": "Sebab",
+        "channel": "Saluran",
+        "current": "Keadaan"
+      },
+      "targetTypes": {
+        "Finding": "Dapatan",
+        "Prediction": "Ramalan",
+        "PredictionReview": "Semakan ramalan",
+        "Suggestion": "Cadangan",
+        "SourceItem": "Sumber",
+        "Domain": "Domain",
+        "Briefing": "Taklimat",
+        "BriefingSection": "Bahagian taklimat",
+        "LearnedPreference": "Keutamaan yang dipelajari"
+      },
+      "channels": {
+        "Dashboard": "Papan pemuka",
+        "Email": "E-mel",
+        "Mobile": "Aplikasi mudah alih",
+        "Api": "API",
+        "Mcp": "MCP"
+      },
+      "byChannelDay": "Maklum balas mengikut hari dan saluran",
+      "byChannelDayHelp": "Penilaian yang diberikan setiap hari, disusun mengikut asalnya"
+    },
+    "reasons": {
+      "title": "Tema sebab",
+      "help": "Tema yang ditandakan daripada sebab anda, dengan 30 hari terakhir dalam kurungan",
+      "tagRecent": "{tag} [{recent}]",
+      "byWeek": "Tema sebab mengikut minggu"
+    },
+    "suggestions": {
+      "title": "Hasil cadangan",
+      "decision": "Purata {days} hari hingga keputusan",
+      "outcomes": {
+        "new": "Masih baharu ({share})",
+        "accepted": "Diterima ({share})",
+        "done": "Selesai ({share})",
+        "snoozed": "Ditunda ({share})",
+        "dismissed": "Diketepikan ({share})"
+      }
+    },
+    "preferences": {
+      "statement": "Keutamaan",
+      "statementHelp": "Satu ayat mudah, seperti: Langkau pengumuman pembiayaan vendor.",
+      "kind": "Jenis",
+      "origin": "Asal",
+      "confidence": "Keyakinan",
+      "supportCount": "Maklum balas sokongan",
+      "decided": "Diputuskan",
+      "allTopics": "Setiap topik",
+      "topicHelp": "Biarkan kosong untuk menggunakannya pada setiap topik.",
+      "writeOwn": "Tulis sendiri",
+      "createTitle": "Tulis keutamaan",
+      "createHelp": "Keutamaan yang anda tulis aktif serta-merta dan diberikan kepada penyelidikan bersama topik anda.",
+      "editTitle": "Sunting keutamaan",
+      "detailTitle": "Keutamaan yang dipelajari",
+      "supportTitle": "{count, plural, =0 {Maklum balas sokongan} other {# item maklum balas sokongan}}",
+      "noSupport": "Tiada maklum balas dipautkan kepada keutamaan ini.",
+      "learnFor": "Belajar daripada",
+      "chooseTopic": "Pilih topik",
+      "learnNow": "Belajar sekarang",
+      "learning": "Sedang belajar...",
+      "learned": "{count, plural, =0 {Pusingan pembelajaran selesai tanpa cadangan baharu} other {# cadangan baharu untuk disemak}}",
+      "emptyTitle": "Belum ada keutamaan yang dipelajari",
+      "emptyMessage": "Cadangan muncul selepas anda menilai beberapa item dengan sebab, atau tulis sendiri.",
+      "deleteTitle": "Padam keutamaan",
+      "deleteMessage": "Padam \"{statement}\"? Ia tidak lagi membentuk penyelidikan anda.",
+      "statuses": {
+        "Proposed": "Dicadangkan",
+        "Active": "Aktif",
+        "Rejected": "Ditolak",
+        "Disabled": "Dilumpuhkan"
+      },
+      "origins": {
+        "Distilled": "Dipelajari",
+        "User": "Ditulis oleh anda"
+      },
+      "kinds": {
+        "Prefer": "Utamakan",
+        "Avoid": "Elakkan",
+        "PreferSource": "Utamakan sumber",
+        "AvoidSource": "Elakkan sumber",
+        "StyleNote": "Nota gaya"
+      },
+      "actions": {
+        "accept": "Terima",
+        "reject": "Tolak",
+        "disable": "Lumpuhkan",
+        "enable": "Dayakan"
+      },
+      "changed": {
+        "accept": "Keutamaan diterima",
+        "reject": "Keutamaan ditolak",
+        "disable": "Keutamaan dilumpuhkan",
+        "enable": "Keutamaan didayakan"
+      }
+    },
+    "ranking": {
+      "title": "Cadangan kedudukan",
+      "rated": "{count, plural, other {Daripada # dapatan yang dinilai}}",
+      "apply": "Gunakan wajaran ini",
+      "applyTitle": "Gunakan wajaran yang disyorkan",
+      "applyMessage": "Gunakan wajaran kedudukan yang disyorkan untuk {topic}? Larian akan datang menskor dapatan menggunakannya.",
+      "applied": "Wajaran digunakan",
+      "notStored": "Pelayan tidak menyimpan wajaran untuk topik ini.",
+      "notEnough": "Nilai lebih banyak dapatan dalam topik ini sebelum cadangan boleh dipercayai.",
+      "component": "Komponen",
+      "current": "Semasa",
+      "recommended": "Disyorkan",
+      "separation": "Pemisahan",
+      "help": "Pemisahan ialah sejauh mana skor dapatan yang relevan dan tidak relevan berbeza pada setiap komponen. Komponen yang memisahkannya dengan lebih baik mendapat wajaran lebih tinggi."
+    },
+    "overview": {
+      "window": "{from} hingga {to}",
+      "help": "Kiraan meliputi julat yang dipilih melainkan dinyatakan. Ramalan terbuka, cadangan baharu dan topik aktif ialah jumlah semasa.",
+      "activeTopics": "Topik aktif",
+      "runs": "Larian",
+      "runOutcomes": "{completed} selesai, {partial} separa, {failed} gagal",
+      "findingsShown": "Dapatan dipaparkan",
+      "findingsRated": "{count} dinilai",
+      "precision": "Ketepatan relevan",
+      "precisionHelp": "Bahagian dapatan dinilai yang dianggap relevan",
+      "briefingsReady": "Taklimat sedia",
+      "emailsSent": "E-mel dihantar",
+      "emailsFailed": "{count} gagal",
+      "predictionsOpen": "Ramalan terbuka",
+      "predictionsResolved": "{count} diselesaikan",
+      "accuracy": "Ketepatan ramalan",
+      "brier": "Purata Brier {value}",
+      "feedback": "Maklum balas",
+      "feedbackWithReason": "{count} dengan sebab",
+      "suggestionsNew": "Cadangan baharu",
+      "suggestionsAccepted": "{count} diterima atau selesai",
+      "quoteFailure": "Kadar kegagalan petikan",
+      "quoteFailureHelp": "Petikan yang gagal pengesahan",
+      "modelCost": "Kos model",
+      "modelCalls": "{count} panggilan model"
+    },
+    "email": {
+      "total": "Mesej",
+      "pendingSkipped": "{pending} belum selesai, {skipped} dilangkau",
+      "sent": "Dihantar",
+      "notSent": "Tidak dihantar",
+      "failed": "Gagal",
+      "deliveryRate": "Kadar penghantaran",
+      "deliveryRateHelp": "Dihantar daripada mesej yang selesai diproses",
+      "meanTimeToSend": "Purata masa untuk menghantar",
+      "meanTimeToSendHelp": "Dari dibariskan hingga dihantar",
+      "linkOpens": "Pautan maklum balas dibuka",
+      "linkSubmits": "Pautan maklum balas dihantar",
+      "unsubscribes": "Nyahlanggan",
+      "byDay": "Mesej mengikut hari",
+      "byDayHelp": "Mesej dibariskan setiap hari, diasingkan mengikut sama ada ia dihantar",
+      "byTemplate": "Kadar penghantaran mengikut templat",
+      "byTemplateHelp": "Bahagian mesej setiap templat yang dihantar",
+      "byStatus": "Mesej mengikut status"
+    }
+  },
+  "mcp": {
+    "tokenWarning": "Jangan sekali-kali tampal token sesi anda ke dalam klien MCP atau fail konfigurasi. Gunakan kunci akses yang boleh anda batalkan. Halaman ini tidak pernah menunjukkan token anda.",
+    "about": {
+      "title": "Tentang pelayan MCP",
+      "body": "Pelayan MCP My Morning News membolehkan Claude Code, Claude Desktop, IDE atau ejen anda sendiri menyenaraikan topik anda, membaca taklimat, meneliti bukti di sebalik dapatan, menyelesaikan ramalan, bertindak atas cadangan dan memberi maklum balas beserta sebab.",
+      "privileges": "Ia tiada keistimewaan sendiri. Setiap panggilan pergi ke REST API dengan kunci akses anda, jadi peranan dan pemilikan anda terpakai sama seperti di sini. Maklum balas yang diberikan melaluinya direkodkan dengan saluran MCP."
+    },
+    "url": {
+      "label": "URL Streamable HTTP",
+      "help": "Pelayan MCP berjalan sebagai prosesnya sendiri, berasingan daripada REST API. Ubah ini jika pelayan anda berjalan di tempat lain; arahan di bawah akan mengikutinya.",
+      "invalid": "Masukkan URL http atau https.",
+      "reset": "Set semula kepada URL yang dicadangkan"
+    },
+    "key": {
+      "title": "Cipta kunci akses",
+      "body": "Cipta kunci akses dan rahsia untuk klien MCP, supaya anda boleh membatalkannya kemudian tanpa menukar kata laluan anda. Salin rahsia semasa ia dicipta; ia hanya ditunjukkan sekali.",
+      "authMode": "Pilih mod pengesahan Pengepala terus atau Hibrid: klien Streamable HTTP menghantar kunci dan rahsia pada setiap permintaan, yang ditolak oleh kunci Permintaan bertandatangan dan Pertukaran sesi.",
+      "create": "Cipta kunci akses",
+      "askAdmin": "Kunci akses dicipta oleh pentadbir. Minta kunci akses dengan mod pengesahan Pengepala terus daripada pentadbir anda."
+    },
+    "connect": {
+      "title": "Sambungkan klien",
+      "claudeHttp": "Claude Code melalui Streamable HTTP",
+      "claudeHttpHelp": "Gantikan pemegang tempat dengan kunci akses dan rahsia anda, kemudian jalankan ini dalam terminal.",
+      "claudeStdio": "Claude Code melalui stdio",
+      "claudeStdioHelp": "Menjalankan pelayan MCP daripada salinan kod sumber. Gantikan laluan dan pemegang tempat.",
+      "desktop": "Claude Desktop dan klien lain",
+      "desktopHelp": "Untuk klien yang membaca fail JSON mcpServers. Gantikan laluan dan pemegang tempat.",
+      "run": "Mulakan pelayan MCP",
+      "runHelp": "Dengan tindanan Docker berjalan, ini memulakan pelayan MCP pada port 12105."
+    },
+    "try": {
+      "title": "Cubalah",
+      "topics": "Senaraikan topik My Morning News saya",
+      "briefing": "Baca taklimat hari ini",
+      "review": "Jalankan gesaan review_morning_briefing",
+      "safety": "Dapatan dan taklimat mengandungi teks daripada halaman web. Klien diarahkan untuk menganggapnya sebagai data, bukan sebagai arahan."
+    }
+  },
+  "sources": {
+    "searchPlaceholder": "Cari tajuk dan alamat",
+    "topic": "Topik",
+    "allTopics": "Semua topik",
+    "clearRun": "Tunjukkan sumber daripada setiap larian",
+    "columns": {
+      "title": "Sumber",
+      "domain": "Domain",
+      "published": "Diterbitkan",
+      "contentType": "Jenis kandungan",
+      "firstRun": "Pertama kali dilihat dalam larian",
+      "fetched": "Diambil",
+      "timesSeen": "Kali dilihat",
+      "id": "ID"
+    },
+    "detail": {
+      "title": "Sumber",
+      "open": "Buka halaman",
+      "monospace": "Monospace",
+      "copyText": "Salin teks",
+      "characters": "{count, plural, other {{formatted} aksara}}"
+    },
+    "empty": {
+      "title": "Belum ada sumber",
+      "message": "Sumber muncul selepas larian mencari di web dan mengambil halaman untuk salah satu topik anda."
+    }
+  }
+}

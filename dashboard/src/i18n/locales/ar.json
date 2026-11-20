@@ -1,0 +1,3750 @@
+{
+  "app": {
+    "name": "My Morning News"
+  },
+  "common": {
+    "active": "نشط",
+    "add": "إضافة",
+    "cancel": "إلغاء",
+    "clearFilters": "مسح عوامل التصفية",
+    "close": "إغلاق",
+    "confirm": "تأكيد",
+    "copied": "تم النسخ",
+    "copy": "نسخ",
+    "copyId": "نسخ المعرّف",
+    "copyUrl": "نسخ عنوان URL",
+    "created": "تاريخ الإنشاء",
+    "delete": "حذف",
+    "dismiss": "تجاهل",
+    "duplicate": "تكرار",
+    "edit": "تعديل",
+    "hidePassword": "إخفاء كلمة المرور",
+    "inactive": "غير نشط",
+    "language": "اللغة",
+    "lastLoaded": "آخر تحميل {time}",
+    "loading": "جارٍ التحميل...",
+    "no": "لا",
+    "none": "لا شيء",
+    "refresh": "تحديث",
+    "remove": "إزالة",
+    "retry": "إعادة المحاولة",
+    "save": "حفظ",
+    "saving": "جارٍ الحفظ...",
+    "showPassword": "إظهار كلمة المرور",
+    "status": "الحالة",
+    "view": "عرض",
+    "viewJson": "عرض JSON",
+    "working": "جارٍ العمل...",
+    "yes": "نعم"
+  },
+  "errors": {
+    "badRequest": "الطلب غير صالح.",
+    "conflict": "يتعارض التغيير مع بيانات موجودة.",
+    "forbidden": "ليس لديك إذن للقيام بذلك.",
+    "generic": "حدث خطأ ما.",
+    "network": "تعذّر الوصول إلى الخادم. تحقق من عنوان URL الخاص بالخادم ومن أنه قيد التشغيل.",
+    "notFound": "لم يتم العثور على العنصر المطلوب.",
+    "requestId": "معرّف الطلب",
+    "server": "أبلغ الخادم عن خطأ.",
+    "tooMany": "طلبات كثيرة جدًا. انتظر لحظة وحاول مرة أخرى.",
+    "unauthorized": "لم تعد جلستك صالحة. سجّل الدخول مرة أخرى."
+  },
+  "access": {
+    "deniedTitle": "تم رفض الوصول",
+    "deniedMessage": "لا يتضمن دورك الوصول إلى هذه الصفحة. اطلب ذلك من المسؤول إذا كنت بحاجة إليه."
+  },
+  "admin": {
+    "copyOf": "نسخة من {name}",
+    "deleted": "تم الحذف",
+    "saved": "تم الحفظ",
+    "tenant": "المستأجر"
+  },
+  "roles": {
+    "credential": "بيانات اعتماد API",
+    "globalAdmin": "مسؤول عام",
+    "member": "عضو",
+    "none": "تم تسجيل الخروج",
+    "tenantAdmin": "مسؤول المستأجر"
+  },
+  "theme": {
+    "dark": "التبديل إلى المظهر الداكن",
+    "light": "التبديل إلى المظهر الفاتح"
+  },
+  "json": {
+    "copy": "نسخ JSON",
+    "items": "{count, plural, zero {لا عناصر} one {عنصر واحد} two {عنصران} few {# عناصر} many {# عنصرًا} other {# عنصر}}",
+    "keys": "{count, plural, zero {لا مفاتيح} one {مفتاح واحد} two {مفتاحان} few {# مفاتيح} many {# مفتاحًا} other {# مفتاح}}",
+    "raw": "خام",
+    "title": "JSON",
+    "tree": "شجرة",
+    "view": "عرض JSON"
+  },
+  "table": {
+    "actions": "الإجراءات",
+    "any": "أي",
+    "clearSelection": "مسح التحديد",
+    "emptyTitle": "لا يوجد شيء هنا بعد",
+    "filterBy": "تصفية حسب {column}",
+    "firstPage": "الصفحة الأولى",
+    "jumpToPage": "الصفحة",
+    "lastPage": "الصفحة الأخيرة",
+    "nextPage": "الصفحة التالية",
+    "noMatchesMessage": "لا توجد سجلات تطابق عوامل التصفية الحالية. امسح عوامل التصفية لعرض كل شيء.",
+    "noMatchesTitle": "لا توجد نتائج مطابقة",
+    "ofPages": "من {total}",
+    "pageSize": "صفوف لكل صفحة",
+    "previousPage": "الصفحة السابقة",
+    "selectAll": "تحديد كل الصفوف في هذه الصفحة",
+    "selectColumns": "الأعمدة",
+    "selectRow": "تحديد الصف",
+    "selected": "{count, plural, zero {لم يُحدَّد شيء} one {تم تحديد واحد} two {تم تحديد اثنين} few {تم تحديد #} many {تم تحديد #} other {تم تحديد #}}",
+    "showing": "{from} إلى {to} من {total}"
+  },
+  "charts": {
+    "avgDuration": "متوسط المدة",
+    "bucketAria": "{when}: {total} طلب",
+    "failure": "فشل",
+    "range": "النطاق الزمني",
+    "requestActivity": "نشاط الطلبات",
+    "success": "نجاح",
+    "total": "الإجمالي",
+    "ranges": {
+      "hour": "آخر ساعة",
+      "day": "آخر يوم",
+      "week": "آخر أسبوع",
+      "month": "آخر شهر",
+      "quarter": "آخر ربع سنة"
+    },
+    "totals": {
+      "avg": "المتوسط {value}",
+      "failed": "فشل {count}",
+      "success": "نجح {count}",
+      "total": "الإجمالي {count}"
+    },
+    "rank": "الترتيب",
+    "share": "الحصة"
+  },
+  "nav": {
+    "collapse": "طي الشريط الجانبي",
+    "environment": "محلي",
+    "expand": "توسيع الشريط الجانبي",
+    "label": "التنقل الرئيسي",
+    "open": "فتح التنقل",
+    "phase": "يصل في المرحلة {phase}",
+    "phaseShort": "م{phase}",
+    "skip": "انتقل إلى المحتوى",
+    "version": "v{version}",
+    "groups": {
+      "start": "البداية",
+      "research": "البحث",
+      "briefings": "الموجزات",
+      "insights": "الرؤى",
+      "configuration": "الإعداد",
+      "observability": "المراقبة",
+      "administration": "الإدارة",
+      "system": "النظام"
+    },
+    "items": {
+      "home": "الرئيسية",
+      "today": "اليوم",
+      "topics": "المواضيع",
+      "runs": "عمليات التشغيل",
+      "findings": "النتائج",
+      "sources": "المصادر",
+      "predictions": "التوقعات",
+      "suggestions": "الاقتراحات",
+      "briefings": "الموجزات",
+      "editions": "الإصدارات",
+      "templates": "القوالب",
+      "relevance": "الصلة",
+      "accuracy": "الدقة",
+      "feedback": "الملاحظات",
+      "preferences": "التفضيلات",
+      "usage": "الاستخدام",
+      "models": "النماذج",
+      "prompts": "الموجّهات",
+      "vault": "بيانات الاعتماد المخزنة",
+      "searchProviders": "مزودو البحث",
+      "mcpServers": "خوادم MCP",
+      "voices": "الأصوات",
+      "email": "البريد الإلكتروني",
+      "requests": "سجل الطلبات",
+      "explorer": "مستكشف API",
+      "health": "الحالة الصحية",
+      "audit": "التدقيق",
+      "tenants": "المستأجرون",
+      "users": "المستخدمون",
+      "credentials": "بيانات الاعتماد",
+      "roles": "الأدوار والوصول",
+      "settings": "الإعدادات",
+      "serverInfo": "معلومات الخادم",
+      "profile": "الملف الشخصي",
+      "adminUsage": "استخدام المنصة",
+      "oneTimeRequests": "الطلبات لمرة واحدة",
+      "listen": "استماع",
+      "promoCodes": "الرموز الترويجية",
+      "insightsOverview": "نظرة عامة",
+      "plans": "الخطط",
+      "emailInsights": "تسليم البريد الإلكتروني",
+      "mcp": "عميل MCP"
+    }
+  },
+  "routes": {
+    "home": {
+      "summary": "مساحة عملك في لمحة"
+    },
+    "today": {
+      "summary": "أحدث إصدار من موجزك، وما أنتجه البحث مؤخرًا"
+    },
+    "topics": {
+      "summary": "المواضيع التي تريد البحث فيها"
+    },
+    "runs": {
+      "summary": "عمليات تشغيل البحث: في الانتظار، وقيد التشغيل، والمنتهية"
+    },
+    "findings": {
+      "summary": "ما توصل إليه البحث"
+    },
+    "sources": {
+      "summary": "المصادر التي جمعها البحث"
+    },
+    "predictions": {
+      "summary": "التوقعات وما آلت إليه"
+    },
+    "suggestions": {
+      "summary": "أمور تستحق التعمق فيها، من عمليات التشغيل الخاصة بك"
+    },
+    "briefings": {
+      "summary": "كل الموجزات: الإصدارات، وموجزات التشغيل، والتقارير لمرة واحدة"
+    },
+    "editions": {
+      "summary": "موجزات وفق جدول، لكل منها مواضيعه وقالبه وطريقة تسليمه"
+    },
+    "templates": {
+      "summary": "تخطيطات Markdown تخبر المُنشئ بما يحتويه كل موجز"
+    },
+    "relevance": {
+      "summary": "مدى صلة النتائج"
+    },
+    "accuracy": {
+      "summary": "مدى دقة التوقعات"
+    },
+    "feedback": {
+      "summary": "الملاحظات التي قدّمتها"
+    },
+    "preferences": {
+      "summary": "التفضيلات المستفادة من الملاحظات"
+    },
+    "usage": {
+      "summary": "كم يكلّف هذا، ومن يستخدمه أكثر؟"
+    },
+    "models": {
+      "summary": "نقاط نهاية النماذج، وتعيينات أدوار المهام، وكل استدعاء للنماذج"
+    },
+    "prompts": {
+      "summary": "قوالب موجّهات ذات إصدارات لكل استدعاء للنماذج"
+    },
+    "vault": {
+      "summary": "مفاتيح API والرموز المميزة للنماذج والخدمات الخارجية، مشفّرة أثناء التخزين"
+    },
+    "searchProviders": {
+      "summary": "مزودو البحث على الويب"
+    },
+    "mcpServers": {
+      "summary": "خوادم Model Context Protocol"
+    },
+    "voices": {
+      "summary": "أصوات الموجزات الصوتية"
+    },
+    "email": {
+      "summary": "تسليم البريد الإلكتروني"
+    },
+    "requests": {
+      "summary": "كل طلب API عالجه الخادم"
+    },
+    "explorer": {
+      "summary": "جرّب أي عملية API"
+    },
+    "health": {
+      "summary": "الحالة الصحية للخادم ومكوناته"
+    },
+    "audit": {
+      "summary": "أحداث الأمان والتغييرات"
+    },
+    "tenants": {
+      "summary": "مساحات عمل معزولة"
+    },
+    "users": {
+      "summary": "الأشخاص الذين يمكنهم تسجيل الدخول"
+    },
+    "credentials": {
+      "summary": "مفاتيح API للبرامج النصية والتكاملات"
+    },
+    "roles": {
+      "summary": "الأدوار والأذونات والتعيينات"
+    },
+    "settings": {
+      "summary": "إعداد الخادم"
+    },
+    "serverInfo": {
+      "summary": "الإصدار وبيئة التشغيل وعناوين URL للخدمات"
+    },
+    "profile": {
+      "summary": "حسابك"
+    },
+    "adminUsage": {
+      "summary": "تكلفة المنصة حسب المستأجر، وهي أساس قرارات التسعير"
+    },
+    "oneTimeRequests": {
+      "summary": "تقارير وبودكاست وملخصات بريد إلكتروني لمرة واحدة"
+    },
+    "listen": {
+      "summary": "حلقات صوتية من موجزاتك، جاهزة للتشغيل"
+    },
+    "promoCodes": {
+      "summary": "رموز تمنح خطة لعدد من الأيام، مع حدود وسجل استخدام"
+    },
+    "plans": {
+      "summary": "الخطط وقيم استحقاقاتها ومن لديه كل خطة"
+    },
+    "insightsOverview": {
+      "summary": "الأرقام الرئيسية للبحث والتسليم والتعلّم والتكلفة"
+    },
+    "emailInsights": {
+      "summary": "تسليم البريد الإلكتروني وتوقيته وكيف يستخدم القراء الروابط في كل رسالة"
+    },
+    "mcp": {
+      "summary": "اربط Claude Code أو أي عميل MCP آخر بأبحاثك"
+    }
+  },
+  "placeholder": {
+    "title": "يصل في المرحلة {phase}",
+    "message": "الميزة {feature} مخطط لها في المرحلة {phase}. التنقل جاهز لتعرف أين ستكون."
+  },
+  "topbar": {
+    "copyServerUrl": "نسخ عنوان URL للخادم",
+    "health": "صحة الخادم: {state}",
+    "logout": "تسجيل الخروج",
+    "repository": "الشيفرة المصدرية على GitHub",
+    "tenant": "المستأجر",
+    "tenantTitle": "معرّف المستأجر: {tenant}"
+  },
+  "health": {
+    "autoRefresh": "تحديث تلقائي",
+    "checkedAt": "تم الفحص {time}",
+    "components": "المكونات",
+    "off": "إيقاف",
+    "overall": "الإجمالي",
+    "uptime": "مدة التشغيل",
+    "version": "الإصدار",
+    "states": {
+      "healthy": "سليم",
+      "degraded": "متدهور",
+      "unreachable": "يتعذّر الوصول",
+      "unknown": "جارٍ الفحص"
+    },
+    "status": {
+      "Healthy": "سليم",
+      "Degraded": "متدهور",
+      "Unhealthy": "غير سليم",
+      "Enabled": "مُفعّل",
+      "Disabled": "معطّل"
+    },
+    "componentNames": {
+      "database": "قاعدة البيانات",
+      "requestHistory": "سجل الطلبات"
+    }
+  },
+  "login": {
+    "copyright": "© 2026 Lattice AI LLC",
+    "defaults": "أول تشغيل؟ سجّل الدخول باستخدام {email} وكلمة المرور {password} في المستأجر {tenant}، ثم غيّر كلمة المرور.",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "serverUrl": "عنوان URL للخادم",
+    "serverUrlHelp": "عنوان خادم My Morning News.",
+    "sessionExpired": "انتهت صلاحية جلستك. سجّل الدخول مرة أخرى للمتابعة.",
+    "signIn": "تسجيل الدخول",
+    "signingIn": "جارٍ تسجيل الدخول...",
+    "subtitle": "سجّل الدخول إلى مساحة عملك",
+    "tagline": "ابحث في المواضيع التي تهمك واستيقظ على موجز يتحسن كل يوم.",
+    "tenant": "المستأجر",
+    "tenantHelp": "معرّف المستأجر. استخدم default في التثبيت الجديد.",
+    "title": "مرحبًا بعودتك"
+  },
+  "home": {
+    "summary": "إليك ما يحدث على خادمك.",
+    "title": "صباح الخير يا {name}",
+    "failures": {
+      "none": "لا توجد إخفاقات حديثة",
+      "noneMessage": "نجحت كل الطلبات في هذا النطاق.",
+      "title": "الإخفاقات الحديثة"
+    },
+    "kpi": {
+      "average": "متوسط المدة",
+      "failureRate": "معدل الإخفاق",
+      "failures": "فشل {count}",
+      "health": "الصحة",
+      "latency": "زمن الاستجابة",
+      "requests": "الطلبات",
+      "tenants": "المستأجرون",
+      "topics": "المواضيع",
+      "uptime": "يعمل منذ {value}",
+      "users": "المستخدمون",
+      "recurring": "المواضيع المتكررة"
+    },
+    "next": {
+      "explorer": "جرّب API في المستكشف",
+      "models": "أضف نقطة نهاية لنموذج (المرحلة 3)",
+      "password": "غيّر كلمة المرور الافتراضية",
+      "title": "الخطوات التالية",
+      "topic": "أنشئ موضوعك الأول",
+      "topics": "راجع مواضيعك"
+    },
+    "services": {
+      "credentials": "بيانات الاعتماد",
+      "none": "لم يتم إعداد أي خدمات خارجية.",
+      "summary": "أدوات تعمل بجانب الخادم",
+      "title": "الخدمات الخارجية"
+    },
+    "request": {
+      "title": "طلب جديد",
+      "summary": "اطلب تقريرًا أو بودكاست أو ملخص بريد إلكتروني لمرة واحدة."
+    },
+    "overview": {
+      "title": "{count, plural, zero {آخر # يوم} one {آخر يوم} two {آخر يومين} few {آخر # أيام} many {آخر # يومًا} other {آخر # يوم}}",
+      "more": "فتح الرؤى"
+    }
+  },
+  "requests": {
+    "anonymous": "مجهول",
+    "bulk": {
+      "allFilters": "كل الطلبات",
+      "button": "حذف المطابق",
+      "confirm": "حذف",
+      "done": "تم حذف {count} طلب",
+      "message": "هل تريد حذف {count} طلب مطابق لـ {filters}؟ لا يمكن التراجع عن ذلك.",
+      "title": "حذف الطلبات المطابقة"
+    },
+    "columns": {
+      "completed": "اكتمل",
+      "duration": "المدة",
+      "id": "المعرّف",
+      "method": "الطريقة",
+      "path": "المسار",
+      "principal": "الجهة",
+      "route": "المسار المسجّل",
+      "sourceIp": "عنوان IP المصدر",
+      "status": "الحالة",
+      "tenant": "المستأجر",
+      "time": "الوقت",
+      "url": "URL"
+    },
+    "delete": {
+      "done": "تم حذف الطلب",
+      "message": "هل تريد حذف سجل {method} {path}؟",
+      "title": "حذف الطلب"
+    },
+    "details": {
+      "metadata": "البيانات الوصفية",
+      "noBody": "لم يتم التقاط أي محتوى.",
+      "noHeaders": "لم يتم التقاط أي رؤوس.",
+      "raw": "السجل الخام",
+      "requestBody": "محتوى الطلب",
+      "requestHeaders": "رؤوس الطلب",
+      "responseBody": "محتوى الاستجابة",
+      "responseHeaders": "رؤوس الاستجابة",
+      "title": "تفاصيل الطلب",
+      "truncated": "مقتطع عند {size}"
+    },
+    "empty": {
+      "filtered": "لا توجد طلبات تطابق عوامل التصفية هذه.",
+      "message": "تظهر الطلبات هنا عندما يستدعي العملاء API.",
+      "title": "لا توجد طلبات بعد"
+    },
+    "filters": {
+      "from": "من",
+      "method": "الطريقة",
+      "path": "المسار",
+      "pathPlaceholder": "/v1.0/...",
+      "status": "الحالة",
+      "statusPlaceholder": "200",
+      "tenant": "المستأجر",
+      "tenantPlaceholder": "معرّف المستأجر",
+      "to": "إلى"
+    },
+    "kpi": {
+      "avgDuration": "متوسط المدة",
+      "failures": "الإخفاقات",
+      "matchingFilters": "مطابقة لعوامل التصفية",
+      "onThisPage": "في هذه الصفحة",
+      "retained": "المحفوظة",
+      "successRate": "معدل النجاح",
+      "uniquePaths": "المسارات الفريدة"
+    }
+  },
+  "explorer": {
+    "authInherited": "تستخدم الطلبات رمز جلستك الحالي.",
+    "body": "محتوى الطلب",
+    "cancel": "إلغاء",
+    "confirmMessage": "هل تريد إرسال {method} {url}؟ قد تغيّر هذه العملية البيانات أو تحذفها.",
+    "confirmTitle": "إرسال الطلب",
+    "copyResponse": "نسخ الاستجابة",
+    "duration": "المدة",
+    "emptyBody": "لا تحتوي الاستجابة على محتوى.",
+    "execute": "إرسال",
+    "format": "تنسيق",
+    "headers": "الرؤوس",
+    "history": "{count, plural, zero {الطلبات الأخيرة (#)} one {الطلب الأخير (#)} two {الطلبات الأخيرة (#)} few {الطلبات الأخيرة (#)} many {الطلبات الأخيرة (#)} other {الطلبات الأخيرة (#)}}",
+    "invalidJson": "JSON غير صالح: {message}",
+    "name": "الاسم",
+    "noOperations": "لا توجد عمليات مطابقة.",
+    "noResponse": "لا توجد استجابة بعد",
+    "noResponseMessage": "أرسل الطلب لعرض الاستجابة هنا.",
+    "pathParams": "معاملات المسار",
+    "pickOperation": "اختر عملية",
+    "pickOperationMessage": "اختر عملية من القائمة لإنشاء طلب.",
+    "queryParams": "معاملات الاستعلام",
+    "running": "جارٍ الإرسال...",
+    "search": "البحث في العمليات",
+    "searchPlaceholder": "تصفية حسب المسار أو الاسم",
+    "specMissing": "تعذّر تحميل مستند OpenAPI.",
+    "status": "الحالة",
+    "streaming": "جارٍ البث...",
+    "url": "URL",
+    "validJson": "JSON صالح",
+    "value": "القيمة",
+    "tabs": {
+      "preview": "معاينة",
+      "body": "المحتوى",
+      "headers": "الرؤوس",
+      "status": "الحالة",
+      "code": "الشيفرة"
+    },
+    "snippets": {
+      "curl": "curl",
+      "fetch": "JavaScript",
+      "csharp": "C#"
+    }
+  },
+  "settings": {
+    "discard": "تجاهل التغييرات",
+    "environment": "متغير البيئة",
+    "live": "يُطبَّق فورًا",
+    "noChanges": "لا توجد تغييرات لحفظها",
+    "notSet": "غير معيّن",
+    "overridden": "تم تجاوزه بواسطة {variable}",
+    "pendingRestart": "أعد تشغيل الخادم لتطبيق: {fields}",
+    "raw": "الإعدادات الخام",
+    "restart": "إعادة تشغيل الخادم",
+    "restartConfirm": "إعادة التشغيل",
+    "restartHelp": "يتوقف الخادم ثم يبدأ مجددًا. قد تفشل الطلبات الجارية.",
+    "restartRequired": "يلزم إعادة التشغيل",
+    "restartTitle": "إعادة تشغيل الخادم",
+    "restarted": "تم طلب إعادة التشغيل",
+    "restarting": "جارٍ إعادة التشغيل...",
+    "saved": "تم الحفظ. طُبّق {live} فورًا، و{restart} بانتظار إعادة التشغيل.",
+    "secretNotSet": "لا توجد قيمة مخزنة",
+    "secretSet": "توجد قيمة مخزنة. أدخل قيمة جديدة لاستبدالها.",
+    "set": "معيّن",
+    "viewRaw": "عرض الخام",
+    "groups": {
+      "rest": "خادم الويب",
+      "database": "قاعدة البيانات",
+      "logging": "التسجيل",
+      "auth": "المصادقة",
+      "requestHistory": "سجل الطلبات",
+      "telemetry": "القياس عن بُعد",
+      "pipeline": "مسار البحث",
+      "diagnostics": "التشخيص",
+      "models": "النماذج",
+      "push": "الإشعارات الفورية",
+      "storage": "التخزين",
+      "scheduler": "المجدول",
+      "search": "البحث",
+      "tts": "تحويل النص إلى كلام",
+      "email": "البريد الإلكتروني",
+      "learning": "التعلّم",
+      "hosting": "الاستضافة"
+    },
+    "fields": {
+      "rest_hostname": "اسم المضيف",
+      "rest_port": "المنفذ",
+      "rest_ssl": "استخدام TLS",
+      "rest_corsAllowedOrigins": "الأصول المسموح بها في CORS",
+      "database_type": "نوع قاعدة البيانات",
+      "database_server": "الخادم",
+      "database_port": "المنفذ",
+      "database_databaseName": "اسم قاعدة البيانات",
+      "database_username": "اسم المستخدم",
+      "database_password": "كلمة المرور",
+      "database_maxPoolSize": "الحد الأقصى لحجم المجمّع",
+      "database_commandTimeoutSeconds": "مهلة الأمر (بالثواني)",
+      "logging_consoleLogging": "التسجيل في وحدة التحكم",
+      "logging_fileLogging": "التسجيل في ملف",
+      "logging_logDirectory": "مجلد السجلات",
+      "logging_logFilename": "اسم ملف السجل",
+      "logging_minimumSeverity": "الحد الأدنى للخطورة",
+      "auth_signingKey": "مفتاح توقيع الرموز المميزة",
+      "auth_sessionLifetimeMinutes": "مدة الجلسة (بالدقائق)",
+      "auth_adminApiKey": "مفتاح API للمسؤول",
+      "auth_loginRateLimitPerMinute": "محاولات تسجيل الدخول في الدقيقة",
+      "auth_allowRefresh": "السماح بتحديث الجلسة",
+      "requestHistory_enabled": "تسجيل الطلبات",
+      "requestHistory_maxRequestBodyBytes": "الحد الأقصى لمحتوى الطلب (بالبايت)",
+      "requestHistory_maxResponseBodyBytes": "الحد الأقصى لمحتوى الاستجابة (بالبايت)",
+      "requestHistory_retentionDays": "مدة الاحتفاظ (بالأيام)",
+      "telemetry_enabled": "تفعيل القياس عن بُعد",
+      "telemetry_serviceName": "اسم الخدمة",
+      "telemetry_otlpEndpoint": "نقطة نهاية OTLP",
+      "telemetry_lokiEndpoint": "نقطة نهاية Loki",
+      "telemetry_prometheusEnabled": "عرض مقاييس Prometheus",
+      "telemetry_prometheusHostname": "اسم مضيف Prometheus",
+      "telemetry_prometheusPort": "منفذ Prometheus",
+      "telemetry_grafanaUrl": "عنوان URL لـ Grafana",
+      "telemetry_prometheusUrl": "عنوان URL لـ Prometheus",
+      "telemetry_tempoUrl": "عنوان URL لـ Tempo",
+      "telemetry_lokiUrl": "عنوان URL لـ Loki",
+      "pipeline_maxConcurrentRuns": "الحد الأقصى لعمليات التشغيل المتزامنة",
+      "pipeline_maxConcurrentModelCalls": "الحد الأقصى لاستدعاءات النماذج المتزامنة",
+      "pipeline_modelCallAttempts": "محاولات استدعاء النموذج",
+      "pipeline_structuredOutputRepairs": "إصلاحات المخرجات المنظمة",
+      "pipeline_runTimeoutMinutes": "مهلة التشغيل (بالدقائق)",
+      "diagnostics_captureLlmPayloads": "التقاط حمولات النماذج",
+      "diagnostics_llmPayloadRetentionDays": "مدة الاحتفاظ بالحمولات (بالأيام)",
+      "diagnostics_maxPayloadCharacters": "الحد الأقصى لأحرف الحمولة",
+      "models_defaultChatModel": "نموذج المحادثة الافتراضي",
+      "models_defaultOllamaEndpoint": "نقطة نهاية Ollama الافتراضية",
+      "models_defaultEmbeddingModel": "نموذج التضمين الافتراضي"
+    }
+  },
+  "serverInfo": {
+    "apiBase": "عنوان URL الأساسي لـ API",
+    "database": "قاعدة البيانات",
+    "expires": "ينتهي",
+    "health": "نقطة نهاية الصحة",
+    "openapi": "مستند OpenAPI",
+    "os": "نظام التشغيل",
+    "pendingRestart": "توجد إعدادات بانتظار إعادة التشغيل.",
+    "principal": "مسجّل الدخول باسم",
+    "principalType": "نوع الجهة",
+    "product": "المنتج",
+    "repository": "المستودع",
+    "runtime": "بيئة التشغيل",
+    "schemaVersion": "إصدار المخطط {version}",
+    "server": "الخادم",
+    "session": "الجلسة",
+    "started": "بدأ",
+    "swagger": "Swagger UI",
+    "uptime": "مدة التشغيل",
+    "urls": "عناوين URL مفيدة",
+    "vector": "البحث المتجهي",
+    "version": "الإصدار"
+  },
+  "audit": {
+    "recordTitle": "سجل التدقيق",
+    "columns": {
+      "event": "الحدث",
+      "path": "المسار",
+      "permission": "الإذن",
+      "principal": "الجهة",
+      "reason": "السبب",
+      "result": "النتيجة",
+      "sourceIp": "عنوان IP المصدر",
+      "tenant": "المستأجر",
+      "time": "الوقت"
+    },
+    "empty": {
+      "message": "تُسجَّل هنا عمليات تسجيل الدخول وفحوص الأذونات والتغييرات.",
+      "title": "لا توجد أحداث تدقيق"
+    },
+    "events": {
+      "AuthSuccess": "نجح تسجيل الدخول",
+      "AuthFailure": "فشل تسجيل الدخول",
+      "SessionIssued": "تم إصدار جلسة",
+      "SessionRefreshed": "تم تحديث الجلسة",
+      "SessionRevoked": "تم إلغاء الجلسة",
+      "CredentialCreated": "تم إنشاء بيانات اعتماد",
+      "CredentialUsed": "تم استخدام بيانات اعتماد",
+      "CredentialRevoked": "تم إلغاء بيانات اعتماد",
+      "AuthorizationDenied": "تم رفض الوصول",
+      "AuthorizationBypass": "تجاوز المسؤول",
+      "RoleChanged": "تم تغيير الدور",
+      "PermissionChanged": "تم تغيير الإذن",
+      "AssignmentChanged": "تم تغيير التعيين",
+      "UserChanged": "تم تغيير المستخدم",
+      "TenantChanged": "تم تغيير المستأجر",
+      "SettingsChanged": "تم تغيير الإعدادات",
+      "RestartRequested": "تم طلب إعادة التشغيل",
+      "CredentialRevealed": "تم كشف بيانات اعتماد",
+      "VaultCredentialChanged": "تم تغيير سر في الخزنة"
+    },
+    "authz": {
+      "Permitted": "مسموح",
+      "DeniedExplicit": "مرفوض بقاعدة",
+      "DeniedImplicit": "مرفوض (بلا منح)",
+      "NotFound": "غير موجود",
+      "Conflict": "تعارض"
+    }
+  },
+  "tenants": {
+    "create": "إنشاء مستأجر",
+    "deleteMessage": "هل تريد حذف المستأجر {name} وكل ما فيه؟ لا يمكن التراجع عن ذلك.",
+    "deleteTitle": "حذف المستأجر",
+    "description": "الوصف",
+    "edit": "تعديل المستأجر",
+    "empty": "لا يوجد مستأجرون",
+    "region": "المنطقة",
+    "timeZoneHelp": "منطقة زمنية من IANA مثل Asia/Riyadh.",
+    "columns": {
+      "created": "تاريخ الإنشاء",
+      "id": "المعرّف",
+      "name": "الاسم",
+      "protected": "محمي",
+      "status": "الحالة",
+      "timeZone": "المنطقة الزمنية"
+    }
+  },
+  "users": {
+    "create": "إنشاء مستخدم",
+    "deleteMessage": "هل تريد حذف المستخدم {email}؟ ستتوقف جلساته وبيانات اعتماده عن العمل.",
+    "deleteTitle": "حذف المستخدم",
+    "edit": "تعديل المستخدم",
+    "effectivePermissions": "الأذونات الفعلية",
+    "empty": "لا يوجد مستخدمون",
+    "firstName": "الاسم الأول",
+    "lastName": "اسم العائلة",
+    "locale": "اللغة والمنطقة",
+    "password": "كلمة المرور",
+    "passwordHelp": "8 أحرف على الأقل.",
+    "resetHelp": "اتركه فارغًا للاحتفاظ بكلمة المرور الحالية.",
+    "resetPassword": "إعادة تعيين كلمة المرور",
+    "timeZone": "المنطقة الزمنية",
+    "columns": {
+      "created": "تاريخ الإنشاء",
+      "email": "البريد الإلكتروني",
+      "id": "المعرّف",
+      "lastLogin": "آخر تسجيل دخول",
+      "name": "الاسم",
+      "role": "الدور",
+      "status": "الحالة",
+      "tenantAdmin": "مسؤول المستأجر"
+    },
+    "permissions": {
+      "allowed": "مسموح",
+      "bypass": "يتجاوز المسؤولون فحوص الأذونات. {reason}",
+      "denied": "مرفوض",
+      "grants": "{count, plural, zero {لا يستند إلى أي منح} one {يستند إلى منح واحد} two {يستند إلى منحين} few {يستند إلى # منح} many {يستند إلى # منحًا} other {يستند إلى # منح}}",
+      "resource": "المورد",
+      "title": "الأذونات الفعلية"
+    }
+  },
+  "credentials": {
+    "allScopes": "الكل",
+    "copyAccessKey": "نسخ مفتاح الوصول",
+    "copySecret": "نسخ المفتاح السري",
+    "create": "إنشاء بيانات اعتماد",
+    "createdTitle": "تم إنشاء بيانات الاعتماد",
+    "deleteMessage": "هل تريد حذف بيانات الاعتماد {name}؟ سيتوقف أي شيء يستخدمها عن العمل.",
+    "deleteTitle": "حذف بيانات الاعتماد",
+    "edit": "تعديل بيانات الاعتماد",
+    "empty": "لا توجد بيانات اعتماد",
+    "emptyMessage": "أنشئ بيانات اعتماد لاستدعاء API من البرامج النصية والتكاملات.",
+    "ownerHelp": "تعمل بيانات الاعتماد بأذونات هذا المستخدم.",
+    "ownerSelf": "أنا",
+    "scopesHelp": "اترك الكل دون تحديد للسماح بكل ما يستطيع المالك فعله.",
+    "secretKey": "المفتاح السري",
+    "secretOnce": "انسخ المفتاح السري الآن. يُعرض مرة واحدة فقط ولا يمكن استرجاعه لاحقًا.",
+    "stored": "لقد خزّنت السر",
+    "tenantHeader": "معرّف المستأجر",
+    "columns": {
+      "accessKey": "مفتاح الوصول",
+      "created": "تاريخ الإنشاء",
+      "expires": "ينتهي",
+      "lastUsed": "آخر استخدام",
+      "name": "الاسم",
+      "owner": "المالك",
+      "scopes": "النطاقات",
+      "secret": "السر",
+      "status": "الحالة",
+      "authMode": "وضع المصادقة"
+    },
+    "scopes": {
+      "read": "قراءة",
+      "write": "كتابة",
+      "admin": "إدارة"
+    },
+    "authModes": {
+      "DirectHeader": "رأس مباشر",
+      "SignedRequest": "طلبات موقّعة",
+      "SessionExchange": "تبادل الجلسة",
+      "Hybrid": "هجين"
+    },
+    "authModeHelp": {
+      "DirectHeader": "الوضع الافتراضي. يقبل مفتاح الوصول والسر كرؤوس، والطلبات الموقّعة، وتبادل الجلسة.",
+      "SignedRequest": "يقبل الطلبات الموقّعة بـ HMAC فقط، فلا ينتقل السر أبدًا. تُرفض الرؤوس التي تحمل السر وتبادل الجلسة.",
+      "SessionExchange": "يعمل فقط عبر POST /v1.0/token للحصول على رمز جلسة. تُرفض الأسرار والتوقيعات لكل طلب.",
+      "Hybrid": "يقبل كل شيء، مثل الرأس المباشر."
+    }
+  },
+  "rbac": {
+    "tabs": {
+      "roles": "الأدوار",
+      "permissions": "الأذونات",
+      "assignments": "التعيينات"
+    },
+    "builtIn": {
+      "TenantAdmin": "مسؤول المستأجر",
+      "SecurityAdmin": "مسؤول الأمان",
+      "Auditor": "مدقق",
+      "TopicAdmin": "مسؤول المواضيع",
+      "Editor": "محرر",
+      "Viewer": "مشاهد",
+      "TenantMember": "عضو المستأجر",
+      "Custom": "مخصص"
+    },
+    "scopes": {
+      "Tenant": "المستأجر كاملًا",
+      "Resource": "مورد واحد"
+    },
+    "permissionTypes": {
+      "Permit": "سماح",
+      "Deny": "رفض"
+    },
+    "roles": {
+      "builtIn": "مضمّن",
+      "clone": "استنساخ",
+      "create": "إنشاء دور",
+      "custom": "مخصص",
+      "deleteMessage": "هل تريد حذف الدور {name}؟ سيفقد المستخدمون المعيّنون له أذوناته.",
+      "deleteTitle": "حذف الدور",
+      "description": "الوصف",
+      "edit": "تعديل الدور",
+      "kind": "النوع",
+      "name": "الاسم",
+      "noPermissions": "لا يملك هذا الدور أي أذونات.",
+      "noTenantPermissions": "لا يملك هذا المستأجر أذونات مخصصة بعد. أنشئها في علامة تبويب الأذونات.",
+      "permissions": "الأذونات",
+      "scope": "النطاق"
+    },
+    "permissions": {
+      "create": "إنشاء إذن",
+      "deleteMessage": "هل تريد حذف الإذن {name}؟ ستفقده الأدوار التي تتضمنه.",
+      "deleteTitle": "حذف الإذن",
+      "edit": "تعديل الإذن",
+      "name": "الاسم",
+      "operations": "العمليات",
+      "resources": "الموارد",
+      "type": "النوع"
+    },
+    "assignments": {
+      "assign": "تعيين",
+      "empty": "لا توجد تعيينات",
+      "emptyMessage": "عيّن دورًا لمنح هذا المستخدم أذوناته.",
+      "pickRole": "اختر دورًا",
+      "remove": "إزالة",
+      "removeMessage": "هل تريد إزالة الدور {role} من هذا المستخدم؟",
+      "removeTitle": "إزالة التعيين",
+      "resource": "معرّف المورد",
+      "resourcePlaceholder": "معرّف المورد",
+      "role": "الدور",
+      "user": "المستخدم"
+    },
+    "operations": {
+      "All": "الكل",
+      "Create": "إنشاء",
+      "Read": "قراءة",
+      "Write": "كتابة",
+      "Update": "تحديث",
+      "Delete": "حذف",
+      "Execute": "تنفيذ",
+      "Admin": "إدارة"
+    },
+    "resources": {
+      "All": "الكل",
+      "Tenant": "المستأجر",
+      "Admin": "الإدارة",
+      "User": "المستخدم",
+      "Credential": "بيانات الاعتماد",
+      "Session": "الجلسة",
+      "Role": "الدور",
+      "Permission": "الإذن",
+      "Assignment": "التعيين",
+      "Audit": "التدقيق",
+      "RequestHistory": "سجل الطلبات",
+      "Settings": "الإعدادات",
+      "Topic": "الموضوع",
+      "Schedule": "الجدول",
+      "RefinementSession": "جلسة التحسين",
+      "Run": "التشغيل",
+      "Finding": "النتيجة",
+      "Source": "المصدر",
+      "Evidence": "الأدلة",
+      "Prediction": "التوقع",
+      "Suggestion": "الاقتراح",
+      "Feedback": "الملاحظات",
+      "LearnedPreference": "التفضيل المستفاد",
+      "Briefing": "الموجز",
+      "Edition": "الإصدار",
+      "Template": "القالب",
+      "Prompt": "الموجّه",
+      "ModelEndpoint": "نقطة نهاية النموذج",
+      "SearchProvider": "مزود البحث",
+      "Voice": "الصوت",
+      "Media": "الوسائط",
+      "EmailMessage": "رسالة البريد الإلكتروني",
+      "Analytics": "التحليلات"
+    }
+  },
+  "profile": {
+    "changePassword": "تغيير كلمة المرور",
+    "confirmPassword": "تأكيد كلمة المرور الجديدة",
+    "currentPassword": "كلمة المرور الحالية",
+    "details": "التفاصيل",
+    "emailHelp": "اطلب من المسؤول تغيير بريدك الإلكتروني.",
+    "mismatch": "كلمتا المرور غير متطابقتين.",
+    "newPassword": "كلمة المرور الجديدة",
+    "password": "كلمة المرور",
+    "passwordChanged": "تم تغيير كلمة المرور",
+    "saved": "تم حفظ الملف الشخصي",
+    "timeZoneHelp": "اتركه فارغًا لاستخدام المنطقة الزمنية لمتصفحك ({zone})."
+  },
+  "enums": {
+    "task": {
+      "Refinement": "التحسين",
+      "QueryPlanning": "تخطيط الاستعلامات",
+      "Extraction": "الاستخراج",
+      "Scoring": "التقييم",
+      "Synthesis": "التوليف",
+      "Prediction": "التوقع",
+      "Suggestion": "الاقتراح",
+      "Composition": "الإعداد",
+      "PodcastScript": "نص البودكاست",
+      "FeedbackAnalysis": "تحليل الملاحظات",
+      "Embedding": "التضمين"
+    },
+    "provider": {
+      "Anthropic": "Anthropic",
+      "OpenAi": "OpenAI",
+      "OpenAiCompatible": "متوافق مع OpenAI",
+      "Ollama": "Ollama",
+      "Gemini": "Gemini",
+      "XAi": "xAI",
+      "OllamaCloud": "Ollama Cloud"
+    },
+    "reasoningEffort": {
+      "None": "بلا",
+      "Minimal": "أدنى",
+      "Low": "منخفض",
+      "Medium": "متوسط",
+      "High": "مرتفع",
+      "XHigh": "مرتفع جدًا",
+      "Max": "أقصى"
+    },
+    "vaultKind": {
+      "ApiKey": "مفتاح API",
+      "BearerToken": "رمز Bearer",
+      "BasicAuth": "مصادقة أساسية",
+      "CustomHeader": "رأس مخصص",
+      "ConnectionString": "سلسلة الاتصال"
+    },
+    "vaultProvider": {
+      "Anthropic": "Anthropic",
+      "OpenAi": "OpenAI",
+      "Gemini": "Gemini",
+      "XAi": "xAI",
+      "OllamaCloud": "Ollama Cloud",
+      "OpenAiCompatible": "متوافق مع OpenAI",
+      "Tavily": "Tavily",
+      "YouCom": "You.com",
+      "Mailgun": "Mailgun",
+      "ElevenLabs": "ElevenLabs",
+      "Mcp": "خادم MCP",
+      "Custom": "مخصص"
+    },
+    "intervalType": {
+      "EveryNMinutes": "كل N دقيقة",
+      "EveryNHours": "كل N ساعة",
+      "EveryNDays": "كل N يوم",
+      "EveryNWeeks": "كل N أسبوع",
+      "DaysOfWeek": "في أيام من الأسبوع",
+      "DaysOfMonth": "في أيام من الشهر",
+      "Once": "مرة واحدة",
+      "Cron": "Cron (متقدم)",
+      "Manual": "يدوي فقط"
+    },
+    "missedRunPolicy": {
+      "Skip": "تخطيه",
+      "RunOnceOnRecovery": "التشغيل مرة واحدة عند الاستعادة"
+    },
+    "questionKind": {
+      "SingleChoice": "اختر واحدًا",
+      "MultiChoice": "اختر أيًّا منها",
+      "Scale": "مقياس من 1 إلى 5",
+      "YesNo": "نعم أو لا",
+      "FreeText": "نص حر"
+    },
+    "dimensionWeight": {
+      "High": "مرتفع",
+      "Normal": "عادي",
+      "Low": "منخفض",
+      "Exclude": "استبعاد"
+    },
+    "constraintKind": {
+      "IncludeKeyword": "تضمين كلمات مفتاحية",
+      "ExcludeKeyword": "استبعاد كلمات مفتاحية",
+      "IncludeEntity": "تضمين دائمًا",
+      "ExcludeEntity": "تجاهل دائمًا",
+      "PreferredDomain": "المواقع المفضلة",
+      "BlockedDomain": "المواقع المحظورة",
+      "TrackedQuestion": "الأسئلة المتابَعة",
+      "FeedUrl": "الخلاصات",
+      "SeedUrl": "صفحات البداية"
+    },
+    "topicStatus": {
+      "Draft": "مسودة",
+      "Active": "نشط",
+      "Paused": "متوقف مؤقتًا",
+      "Archived": "مؤرشف"
+    },
+    "audienceLevel": {
+      "Beginner": "مبتدئ",
+      "Practitioner": "ممارس",
+      "Expert": "خبير"
+    },
+    "horizon": {
+      "Days": "أيام",
+      "Weeks": "أسابيع",
+      "Months": "أشهر",
+      "Years": "سنوات"
+    },
+    "runStatus": {
+      "Queued": "في قائمة الانتظار",
+      "Running": "قيد التشغيل",
+      "Completed": "مكتمل",
+      "PartiallySucceeded": "نجح جزئيًا",
+      "Failed": "فشل",
+      "Cancelled": "ملغى",
+      "Skipped": "تم التخطي"
+    },
+    "runTrigger": {
+      "Schedule": "مجدول",
+      "Manual": "تشغيل الآن",
+      "Request": "طلب لمرة واحدة",
+      "Edition": "إصدار",
+      "Preview": "معاينة"
+    },
+    "requestStatus": {
+      "Clarifying": "بانتظارك",
+      "Scheduled": "مجدول",
+      "Running": "قيد التشغيل",
+      "Completed": "مكتمل",
+      "Failed": "فشل",
+      "Cancelled": "ملغى",
+      "Declined": "مرفوض"
+    },
+    "deliverable": {
+      "Report": "تقرير",
+      "Podcast": "بودكاست",
+      "Email": "بريد إلكتروني"
+    },
+    "deliverableLength": {
+      "Short": "قصير",
+      "Standard": "قياسي",
+      "Long": "طويل"
+    },
+    "findingTier": {
+      "MustRead": "قراءة ضرورية",
+      "WorthALook": "يستحق النظر",
+      "Fyi": "للعلم",
+      "BelowThreshold": "دون الحد"
+    },
+    "findingCategory": {
+      "News": "أخبار",
+      "Release": "إصدار جديد",
+      "Research": "بحث",
+      "Opinion": "رأي",
+      "Tutorial": "درس تعليمي",
+      "Data": "بيانات",
+      "Other": "أخرى"
+    },
+    "evidenceRole": {
+      "Supports": "يدعم",
+      "Contradicts": "يناقض",
+      "Context": "سياق"
+    },
+    "predictionStatus": {
+      "Open": "مفتوح",
+      "ProposedResolved": "حسم مقترح",
+      "Accurate": "دقيق",
+      "PartiallyAccurate": "دقيق جزئيًا",
+      "Inaccurate": "غير دقيق",
+      "Unresolvable": "يتعذّر الحسم",
+      "Withdrawn": "مسحوب"
+    },
+    "suggestionStatus": {
+      "New": "جديد",
+      "Accepted": "مقبول",
+      "Snoozed": "مؤجل",
+      "Dismissed": "مرفوض",
+      "Done": "منجز"
+    },
+    "suggestionPriority": {
+      "High": "عالية",
+      "Medium": "متوسطة",
+      "Low": "منخفضة"
+    },
+    "suggestionEffort": {
+      "Minutes": "دقائق",
+      "Hours": "ساعات",
+      "Days": "أيام"
+    },
+    "stageStatus": {
+      "Pending": "قيد الانتظار",
+      "Running": "قيد التشغيل",
+      "Succeeded": "نجح",
+      "Failed": "فشل",
+      "Skipped": "تم التخطي"
+    },
+    "runStage": {
+      "AssembleContext": "تجميع السياق",
+      "PlanQueries": "تخطيط الاستعلامات",
+      "Search": "البحث",
+      "Filter": "التصفية",
+      "Fetch": "الجلب",
+      "Extract": "الاستخراج",
+      "Embed": "التضمين",
+      "Dedupe": "إزالة التكرار",
+      "Score": "التقييم",
+      "Synthesize": "التوليف",
+      "ReviewPredictions": "مراجعة التوقعات",
+      "Predict": "التوقع",
+      "Suggest": "الاقتراح",
+      "ComposeBriefing": "إعداد الموجز",
+      "Notify": "الإشعار"
+    },
+    "searchDisposition": {
+      "Pending": "قيد الانتظار",
+      "Fetched": "تم الجلب",
+      "SkippedSeen": "شوهد من قبل",
+      "SkippedBlocked": "موقع محظور",
+      "SkippedRobots": "محظور بواسطة robots.txt",
+      "SkippedLimit": "تجاوز حد الجلب",
+      "SkippedDuplicate": "مكرر",
+      "FetchFailed": "تعذّر الجلب"
+    },
+    "briefingKind": {
+      "Edition": "إصدار",
+      "Run": "موجز تشغيل",
+      "OneTime": "تقرير لمرة واحدة"
+    },
+    "briefingStatus": {
+      "Queued": "في قائمة الانتظار",
+      "Composing": "قيد الإعداد",
+      "Ready": "جاهز",
+      "Failed": "فشل"
+    },
+    "briefingItemType": {
+      "Finding": "نتيجة",
+      "Prediction": "توقع",
+      "Suggestion": "اقتراح"
+    },
+    "lookbackMode": {
+      "SinceLastEdition": "منذ آخر إصدار",
+      "FixedHours": "نافذة ثابتة"
+    },
+    "artifactKind": {
+      "BriefingMarkdown": "Markdown",
+      "BriefingHtml": "تقرير HTML",
+      "Audio": "صوت",
+      "Chapters": "الفصول",
+      "Export": "تصدير"
+    },
+    "mediaStatus": {
+      "Queued": "في قائمة الانتظار",
+      "Scripting": "جارٍ كتابة النص",
+      "Synthesizing": "جارٍ توليد الصوت",
+      "Ready": "جاهز",
+      "Failed": "فشل"
+    },
+    "mediaKind": {
+      "BriefingAudio": "صوت الموجز",
+      "PodcastEpisode": "حلقة بودكاست"
+    },
+    "ttsProvider": {
+      "OpenAiCompatibleSpeech": "كلام متوافق مع OpenAI",
+      "Disabled": "معطّل"
+    }
+  },
+  "vault": {
+    "adminOnly": "يمكن للمسؤولين فقط تغيير بيانات الاعتماد المخزنة.",
+    "memberNotice": "يمكنك رؤية بيانات الاعتماد المخزنة. تتطلب إضافتها وتغييرها وتدويرها وكشفها مسؤولًا للمستأجر.",
+    "columns": {
+      "name": "الاسم",
+      "kind": "النوع",
+      "provider": "المزود",
+      "secret": "السر",
+      "lastUsed": "آخر استخدام",
+      "lastRevealed": "آخر كشف",
+      "expires": "ينتهي",
+      "status": "الحالة",
+      "created": "تاريخ الإنشاء",
+      "id": "المعرّف"
+    },
+    "fields": {
+      "headerName": "اسم الرأس",
+      "headerNameHelp": "رأس HTTP الذي يحمل السر، مثل X-Api-Key.",
+      "username": "اسم المستخدم",
+      "secret": "السر",
+      "secretHelp": "يُخزَّن مشفّرًا. بعد الحفظ تظهر الأحرف الأربعة الأخيرة فقط.",
+      "expiresHelp": "اختياري. يُستخدم للتذكير؛ لا يحذف الخادم الأسرار المنتهية.",
+      "description": "الوصف"
+    },
+    "form": {
+      "createTitle": "تخزين بيانات اعتماد",
+      "editTitle": "تعديل بيانات الاعتماد",
+      "rotateHint": "لاستبدال السر نفسه، استخدم تدوير السر."
+    },
+    "empty": {
+      "title": "لا توجد بيانات اعتماد مخزنة",
+      "message": "خزّن مفاتيح API والرموز المميزة هنا مرة واحدة، ثم اخترها في نقاط نهاية النماذج ومزودي البحث والأصوات وإعدادات البريد الإلكتروني."
+    },
+    "rotate": {
+      "action": "تدوير السر",
+      "title": "تدوير السر",
+      "message": "استبدل السر المخزن باسم {name}. كل ما يستخدم بيانات الاعتماد هذه يأخذ القيمة الجديدة في استدعائه التالي.",
+      "newSecret": "السر الجديد",
+      "confirm": "تدوير",
+      "required": "أدخل السر الجديد.",
+      "done": "تم تدوير السر"
+    },
+    "reveal": {
+      "action": "كشف",
+      "actionAdminOnly": "كشف (للمسؤولين فقط)",
+      "confirmTitle": "كشف السر",
+      "confirmMessage": "هل تريد عرض النص الصريح لـ {name}؟ يُعرض لمدة {seconds} ثانية ثم يُخفى مجددًا.",
+      "audited": "تخضع عمليات الكشف للتدقيق: يُسجَّل من كشف أي بيانات اعتماد ومن أين.",
+      "confirm": "كشف",
+      "shownTitle": "تم كشف السر",
+      "hidesIn": "{count, plural, zero {يُخفى الآن} one {يُخفى خلال ثانية واحدة} two {يُخفى خلال ثانيتين} few {يُخفى خلال # ثوانٍ} many {يُخفى خلال # ثانية} other {يُخفى خلال # ثانية}}",
+      "hideNow": "إخفاء الآن",
+      "copy": "نسخ السر"
+    },
+    "usage": {
+      "action": "أماكن الاستخدام",
+      "title": "أين تُستخدم بيانات الاعتماد هذه",
+      "none": "لا شيء يستخدم بيانات الاعتماد هذه بعد.",
+      "types": {
+        "ModelEndpoint": "نقطة نهاية النموذج"
+      }
+    },
+    "delete": {
+      "title": "حذف بيانات الاعتماد",
+      "message": "هل تريد حذف {name}؟ سيتوقف كل ما يستخدمها عن العمل حتى تُمنح بيانات اعتماد أخرى."
+    }
+  },
+  "models": {
+    "add": "إضافة نموذج",
+    "adminOnly": "يمكن للمسؤولين فقط تغيير نقاط نهاية النماذج.",
+    "memberNotice": "يمكنك رؤية النماذج والتعيينات المُعدّة. يتطلب تغييرها أو اختبارها مسؤولًا للمستأجر.",
+    "created": "تمت إضافة {name}",
+    "unknown": "لم يُفحص",
+    "tabs": {
+      "endpoints": "نقاط النهاية",
+      "assignments": "التعيينات",
+      "calls": "استدعاءات النماذج"
+    },
+    "columns": {
+      "name": "الاسم",
+      "provider": "المزود",
+      "model": "النموذج",
+      "embeddingModel": "نموذج التضمين",
+      "capabilities": "القدرات",
+      "price": "السعر لكل مليون رمز مميز",
+      "priceValue": "{input} للإدخال، {output} للإخراج",
+      "noPrice": "لم يُحدَّد سعر",
+      "reasoningEffort": "جهد الاستدلال",
+      "credential": "بيانات الاعتماد",
+      "lastValidated": "آخر تحقق",
+      "status": "الحالة",
+      "id": "المعرّف"
+    },
+    "capabilities": {
+      "chat": "محادثة",
+      "tools": "أدوات",
+      "noTools": "بلا أدوات",
+      "embeddings": "تضمينات",
+      "embeddingsDims": "تضمينات ({dims})"
+    },
+    "actions": {
+      "test": "اختبار",
+      "validate": "تحقق",
+      "listModels": "عرض النماذج"
+    },
+    "empty": {
+      "title": "أضف نموذجك الأول",
+      "message": "اربط مزود نماذج مثل Anthropic أو OpenAI أو خادم Ollama محلي. يعمل البحث والترتيب والموجزات كلها عبر نقاط النهاية هذه."
+    },
+    "delete": {
+      "title": "حذف نقطة نهاية النموذج",
+      "message": "هل تريد حذف {name}؟ ستعود أدوار المهام المعيّنة لها إلى أول نقطة نهاية نشطة حتى تعيد تعيينها."
+    },
+    "form": {
+      "createTitle": "إضافة نقطة نهاية لنموذج",
+      "editTitle": "تعديل نقطة نهاية النموذج",
+      "duplicateTitle": "تكرار نقطة نهاية النموذج",
+      "endpoint": "عنوان URL الأساسي",
+      "endpointRequired": "عنوان URL الأساسي (مطلوب)",
+      "endpointHelp": {
+        "Anthropic": "اتركه فارغًا لاستخدام Anthropic API.",
+        "OpenAi": "اتركه فارغًا لاستخدام OpenAI API.",
+        "OpenAiCompatible": "مطلوب. يعمل الخادم داخل Docker، لذا استخدم host.docker.internal لخادم على هذا الجهاز.",
+        "Ollama": "خادم Ollama. من حاوية Docker، استخدم host.docker.internal لخادم Ollama على هذا الجهاز.",
+        "Gemini": "اتركه فارغًا لاستخدام Gemini API.",
+        "XAi": "اتركه فارغًا لاستخدام xAI API.",
+        "OllamaCloud": "اتركه فارغًا لاستخدام Ollama Cloud."
+      },
+      "apiKey": "مفتاح API",
+      "keyModes": {
+        "new": "إدخال مفتاح",
+        "vault": "استخدام بيانات اعتماد مخزنة",
+        "none": "بلا مفتاح"
+      },
+      "newKey": "مفتاح API جديد",
+      "newKeyHelp": "يُحفظ في خزنة بيانات الاعتماد (مشفّرًا) ويُربط بنقطة النهاية هذه. اتركه فارغًا للاحتفاظ بالمفتاح الحالي.",
+      "storedKey": "بيانات الاعتماد المخزنة",
+      "storedKeyHelp": "دوّرها في صفحة بيانات الاعتماد المخزنة، وستأخذ كل نقطة نهاية تستخدمها التغيير.",
+      "pickCredential": "اختر بيانات اعتماد",
+      "noKeyWarning": "يحتاج هذا المزود عادةً إلى مفتاح API. ستفشل الاستدعاءات بدونه.",
+      "capabilities": "يخدم",
+      "toolsDetected": "يُكتشف دعم الأدوات وأبعاد التضمين عند تشغيل التحقق.",
+      "embeddingDimensions": "أبعاد التضمين",
+      "embeddingDimensionsHelp": "تُكتشف بواسطة التحقق.",
+      "notDetected": "لم تُكتشف بعد",
+      "maxTokens": "الحد الأقصى لرموز الإخراج",
+      "maxTokensHelp": "نحو 16000 مناسب للاستدعاءات دون بث.",
+      "reasoningEffort": "جهد الاستدلال",
+      "reasoningEffortHelp": "القيمة الافتراضية لنقطة النهاية هذه. يمكن لتعيينات أدوار المهام تجاوزها.",
+      "providerDefault": "افتراضي المزود",
+      "temperature": "درجة الحرارة",
+      "temperatureHelp": "درجة حرارة اختيارية لأخذ العينات.",
+      "temperatureAnthropic": "غير مستخدمة: نماذج Anthropic الحالية ترفض درجة الحرارة، لذا لا تُرسل أبدًا.",
+      "contextLength": "طول السياق",
+      "timeoutMs": "المهلة (ms)",
+      "timeoutHelp": "لكل استدعاء، شاملةً إعادة المحاولات.",
+      "modelsLoaded": "{count, plural, zero {لا تتوفر نماذج.} one {يتوفر نموذج واحد؛ اختره من القائمة.} two {يتوفر نموذجان؛ اختر أحدهما من القائمة.} few {تتوفر # نماذج؛ اختر واحدًا من القائمة.} many {يتوفر # نموذجًا؛ اختر واحدًا من القائمة.} other {يتوفر # نموذج؛ اختر واحدًا من القائمة.}}",
+      "pricing": "التسعير",
+      "pricingHelp": "بالدولار الأمريكي لكل مليون رمز مميز. اتركه فارغًا للنماذج المحلية. تُحسب التكلفة عند تسجيل كل استدعاء، لذا لا تغيّر التعديلات اللاحقة السجل أبدًا.",
+      "inputCost": "الإدخال",
+      "outputCost": "الإخراج",
+      "cachedInputCost": "الإدخال المخزن مؤقتًا",
+      "cachedInputCostHelp": "قراءات ذاكرة التخزين المؤقت. يُستخدم سعر الإدخال إن لم يُحدَّد.",
+      "cacheWriteCost": "كتابات ذاكرة التخزين المؤقت",
+      "cacheWriteCostHelp": "يُستخدم سعر الإدخال إن لم يُحدَّد.",
+      "errors": {
+        "name": "الاسم مطلوب.",
+        "endpointRequired": "تحتاج نقاط النهاية المتوافقة مع OpenAI إلى عنوان URL أساسي.",
+        "endpointUrl": "أدخل عنوان URL مطلقًا، مثل http://host.docker.internal:8000/v1.",
+        "model": "نموذج المحادثة مطلوب عندما تخدم نقطة النهاية المحادثة.",
+        "embeddingModel": "نموذج التضمين مطلوب عندما تخدم نقطة النهاية التضمينات.",
+        "capability": "اختر المحادثة أو التضمينات أو كليهما.",
+        "credential": "اختر بيانات اعتماد مخزنة.",
+        "number": "أدخل رقمًا يساوي صفرًا أو أكثر."
+      }
+    },
+    "test": {
+      "title": "اختبار النموذج",
+      "prompt": "الموجّه",
+      "model": "تجاوز النموذج",
+      "modelHelp": "اختياري. اتركه فارغًا لاستخدام نموذج نقطة النهاية.",
+      "run": "إرسال",
+      "running": "بانتظار النموذج...",
+      "succeeded": "نجح",
+      "failed": "فشل",
+      "tokens": "{input} للإدخال، {output} للإخراج",
+      "duration": "استغرق {value}",
+      "tools": "الأدوات: {value}",
+      "output": "الرد"
+    },
+    "validate": {
+      "title": "التحقق من نقطة النهاية",
+      "running": "جارٍ فحص الاتصال ودعم الأدوات والتضمينات...",
+      "reachable": "يمكن الوصول إليها",
+      "modelFound": "تم العثور على النموذج",
+      "supportsTools": "يدعم استدعاءات الأدوات",
+      "embeddingDimensions": "أبعاد التضمين",
+      "validatedUtc": "تم الفحص"
+    },
+    "list": {
+      "title": "النماذج المتاحة",
+      "filter": "تصفية النماذج",
+      "none": "لا توجد نماذج مطابقة.",
+      "name": "النموذج",
+      "inputLimit": "حد الإدخال",
+      "outputLimit": "حد الإخراج",
+      "tools": "الأدوات",
+      "current": "قيد الاستخدام",
+      "use": "استخدام",
+      "used": "يُستخدم الآن {model}"
+    },
+    "assignments": {
+      "intro": "تعمل كل مهمة في المسار على نقطة النهاية المعيّنة لدورها. يتقدم تجاوز الموضوع على افتراضي المستأجر، الذي يتقدم على أول نقطة نهاية نشطة.",
+      "role": "دور المهمة",
+      "endpoint": "نقطة النهاية",
+      "modelOverride": "تجاوز النموذج",
+      "reasoningEffort": "جهد الاستدلال",
+      "endpointFor": "نقطة النهاية لـ {role}",
+      "modelOverrideFor": "تجاوز النموذج لـ {role}",
+      "effortFor": "جهد الاستدلال لـ {role}",
+      "pickEndpoint": "اختر نقطة نهاية",
+      "endpointDefault": "افتراضي نقطة النهاية",
+      "notApplicable": "غير مستخدم",
+      "noTools": "لا يدعم الأدوات",
+      "noToolsHelp": "لا يستطيع هذا النموذج استدعاء الأدوات، لذا تستخدم النتائج المنظمة بديل JSON، الذي تتعامل معه بعض النماذج بشكل ضعيف.",
+      "undo": "التراجع عن التغييرات",
+      "saved": "تم حفظ تعيين {role}",
+      "uses": {
+        "Refinement": "أبعاد المعالج وأسئلته وسياقه",
+        "QueryPlanning": "توليد استعلامات البحث",
+        "Extraction": "النتائج والأدلة من المستندات",
+        "Scoring": "الحكم على الصلة",
+        "Synthesis": "ملخص التشغيل والاتجاهات",
+        "Prediction": "التوقعات ومراجعاتها",
+        "Suggestion": "اقتراحات للتعمق",
+        "Composition": "Markdown للموجز",
+        "PodcastScript": "النص الصوتي",
+        "FeedbackAnalysis": "وسم الأسباب والتفضيلات",
+        "Embedding": "متجهات لإزالة التكرار والتقارب"
+      },
+      "overridesTitle": "تجاوزات المواضيع",
+      "overridesIntro": "يمكن لموضوع أن يشغّل دورًا على نقطة نهاية غير افتراضي المستأجر.",
+      "noOverrides": "لا توجد تجاوزات للمواضيع.",
+      "topic": "الموضوع",
+      "topicId": "معرّف الموضوع",
+      "topicIdHelp": "معرّف الموضوع المراد تجاوزه.",
+      "addOverride": "إضافة تجاوز لموضوع",
+      "overrideAdded": "تم حفظ تجاوز الموضوع",
+      "deleteTitle": "إزالة تجاوز الموضوع",
+      "deleteMessage": "هل تريد إزالة تجاوز {role} للموضوع {topic}؟ سيعود الموضوع إلى افتراضي المستأجر."
+    },
+    "calls": {
+      "detailTitle": "استدعاء النموذج",
+      "succeeded": "نجح",
+      "failed": "فشل",
+      "dryRun": "تشغيل تجريبي",
+      "system": "النظام",
+      "tokensTitle": "{input} للإدخال، {output} للإخراج",
+      "payloadCleared": "غير متاح. تُمسح الحمولات بعد انتهاء مدة الاحتفاظ.",
+      "openPrompt": "فتح الموجّه {key}",
+      "columns": {
+        "time": "الوقت",
+        "task": "المهمة",
+        "model": "النموذج",
+        "promptKey": "الموجّه",
+        "user": "المستخدم",
+        "tokens": "الرموز المميزة",
+        "ttft": "أول رمز",
+        "duration": "المدة",
+        "cost": "التكلفة",
+        "outcome": "النتيجة"
+      },
+      "filters": {
+        "task": "المهمة",
+        "endpoint": "نقطة النهاية",
+        "outcome": "النتيجة",
+        "dryRun": "عمليات التشغيل التجريبي",
+        "dryRunOnly": "التشغيل التجريبي فقط",
+        "realOnly": "استبعاد التشغيل التجريبي",
+        "from": "من",
+        "to": "إلى"
+      },
+      "empty": {
+        "title": "لا توجد استدعاءات للنماذج بعد",
+        "message": "يُسجَّل هنا كل استدعاء للنماذج مع الرموز المميزة والتوقيت والتكلفة. جرّب اختبار نقطة نهاية أو شغّل مختبر الموجّهات."
+      },
+      "sections": {
+        "attribution": "الإسناد",
+        "tokens": "الرموز المميزة",
+        "timing": "التوقيت",
+        "outcome": "النتيجة والأدوات",
+        "cost": "التكلفة",
+        "prompt": "الموجّه",
+        "response": "الاستجابة"
+      },
+      "fields": {
+        "provider": "المزود",
+        "endpoint": "نقطة النهاية",
+        "user": "المستخدم",
+        "topic": "الموضوع",
+        "run": "التشغيل",
+        "refinementSession": "جلسة التحسين",
+        "briefing": "الموجز",
+        "promptKey": "مفتاح الموجّه",
+        "promptVersion": "إصدار الموجّه",
+        "inputTokens": "الإدخال (الكل)",
+        "uncachedInputTokens": "إدخال غير مخزن مؤقتًا",
+        "cachedInputTokens": "إدخال مخزن مؤقتًا",
+        "cacheWriteTokens": "كتابات ذاكرة التخزين المؤقت",
+        "outputTokens": "الإخراج",
+        "reasoningTokens": "الاستدلال",
+        "totalTokens": "الإجمالي",
+        "duration": "المدة",
+        "timeToFirstToken": "زمن أول رمز",
+        "streamingDuration": "مدة البث",
+        "chunks": "الأجزاء",
+        "tokensPerSecond": "رموز الإخراج في الثانية",
+        "streamed": "مبثوث",
+        "attempts": "المحاولات",
+        "statusCode": "رمز الحالة",
+        "finishReason": "سبب الانتهاء",
+        "repairs": "إصلاحات المخرجات المنظمة",
+        "toolCalls": "استدعاءات الأدوات",
+        "toolNames": "الأدوات المستدعاة",
+        "dryRun": "تشغيل تجريبي",
+        "inputCost": "تكلفة الإدخال",
+        "outputCost": "تكلفة الإخراج",
+        "estimatedCost": "التكلفة الإجمالية"
+      }
+    }
+  },
+  "prompts": {
+    "guardrailNotice": "يضع الخادم دائمًا حاجز النطاق قبل موجّه النظام في كل استدعاء للنماذج. لا يمكن لتعديل الموجّه إزالته.",
+    "searchPlaceholder": "المفتاح أو الاسم",
+    "filteredByKey": "المفتاح: {key}",
+    "empty": "لا توجد موجّهات",
+    "open": "فتح المحرر",
+    "back": "كل الموجّهات",
+    "versionLabel": "v{version}",
+    "current": "الحالي",
+    "customized": "مخصص",
+    "default": "افتراضي",
+    "noNote": "لا توجد ملاحظة تغيير",
+    "saved": "تم حفظ إصدار جديد",
+    "columns": {
+      "key": "المفتاح",
+      "role": "الدور",
+      "scope": "النطاق",
+      "version": "الإصدار",
+      "customized": "مخصص",
+      "updated": "تاريخ التحديث"
+    },
+    "scope": {
+      "tenant": "المستأجر",
+      "topic": "تجاوز الموضوع",
+      "tenantOnly": "موجّهات المستأجر فقط"
+    },
+    "panels": {
+      "versions": "الإصدارات",
+      "compare": "مقارنة",
+      "lab": "مختبر الموجّهات"
+    },
+    "editor": {
+      "title": "القالب",
+      "panels": "أدوات الموجّه",
+      "unsaved": "تغييرات غير محفوظة",
+      "format": "Markdown مع مقدمة YAML (key وname وrole وoutput وvariables)، ثم قسم System وقسم User. تستخدم العناصر النائبة أسماء المتغيرات المعلنة في المقدمة.",
+      "missingUser": "لا يحتوي القالب على عنوان قسم User. أضف سطرًا نصه ## User.",
+      "missingSystem": "لا يحتوي القالب على عنوان قسم System. لا يزال حاجز النطاق يُرسل كموجّه للنظام.",
+      "invalid": "رفض الخادم هذا الإصدار.",
+      "variables": "المتغيرات المعلنة",
+      "noVariables": "لا توجد متغيرات معلنة.",
+      "changeNote": "ملاحظة التغيير",
+      "changeNoteHelp": "اختيارية. تظهر في سجل الإصدارات.",
+      "discard": "تجاهل التغييرات",
+      "save": "حفظ الإصدار",
+      "fields": {
+        "content": "القالب",
+        "key": "المفتاح",
+        "user": "قسم User",
+        "variables": "المتغيرات"
+      }
+    },
+    "compareWithCurrent": "مقارنة v{version} بالمحرر",
+    "rollbackTo": "الرجوع إلى v{version}",
+    "rollbackTitle": "الرجوع",
+    "rollbackMessage": "هل تريد جعل v{version} الإصدار الحالي؟ يُنشأ إصدار جديد بمحتواه، فلا يضيع شيء.",
+    "rollbackConfirm": "الرجوع",
+    "rolledBack": "تم الرجوع إلى v{version}",
+    "reset": "إعادة التعيين إلى الافتراضي",
+    "resetTitle": "إعادة التعيين إلى الافتراضي",
+    "resetMessage": "هل تريد استبدال هذا الموجّه بالافتراضي المرفق؟ يُنشأ إصدار جديد، فيمكنك الرجوع لاحقًا.",
+    "resetDone": "تمت إعادة التعيين إلى الافتراضي",
+    "deleteOverride": "حذف التجاوز",
+    "deleteTitle": "حذف تجاوز الموضوع",
+    "deleteMessage": "هل تريد حذف تجاوز {key} للموضوع {topic}؟ سيعود الموضوع إلى موجّه المستأجر.",
+    "diff": {
+      "from": "من",
+      "to": "إلى",
+      "draft": "المحرر (غير محفوظ)",
+      "current": "المحرر",
+      "default": "الافتراضي المرفق",
+      "label": "فروق الأسطر",
+      "added": "{count, plural, zero {لم يُضف أي سطر} one {أُضيف سطر واحد} two {أُضيف سطران} few {أُضيفت # أسطر} many {أُضيف # سطرًا} other {أُضيف # سطر}}",
+      "removed": "{count, plural, zero {لم يُحذف أي سطر} one {حُذف سطر واحد} two {حُذف سطران} few {حُذفت # أسطر} many {حُذف # سطرًا} other {حُذف # سطر}}",
+      "addedLine": "مضاف",
+      "removedLine": "محذوف",
+      "showAll": "إظهار الأسطر غير المتغيرة",
+      "skipped": "{count, plural, zero {لا أسطر غير متغيرة} one {سطر واحد غير متغير} two {سطران غير متغيرين} few {# أسطر غير متغيرة} many {# سطرًا غير متغير} other {# سطر غير متغير}}",
+      "identical": "الإصداران متطابقان."
+    },
+    "override": {
+      "button": "إنشاء تجاوز لموضوع",
+      "title": "إنشاء تجاوز لموضوع",
+      "intro": "يستبدل تجاوز الموضوع موجّه المستأجر لموضوع واحد فقط. يبدأ كنسخة من موجّه المستأجر.",
+      "pickKey": "اختر موجّهًا",
+      "topicId": "معرّف الموضوع",
+      "topicIdHelp": "معرّف الموضوع الذي يجب أن يستخدم نسخته الخاصة من هذا الموجّه.",
+      "copyDraft": "البدء من نص المحرر غير المحفوظ",
+      "create": "إنشاء التجاوز"
+    },
+    "lab": {
+      "intro": "اعرض الموجّه بقيمك وشغّله على أي نموذج. عمليات التشغيل هنا تشغيل تجريبي: تُسجَّل كاستدعاءات للنماذج لكنها لا تؤثر في البحث أبدًا.",
+      "endpoint": "نقطة النهاية",
+      "assigned": "معيّن لـ {role}",
+      "model": "تجاوز النموذج",
+      "modelHelp": "اختياري.",
+      "variables": "المتغيرات",
+      "noVariables": "لا يعلن هذا الموجّه أي متغيرات.",
+      "useDraft": "تشغيل نص المحرر غير المحفوظ",
+      "run": "تشغيل",
+      "running": "جارٍ تشغيل الموجّه...",
+      "cost": "التكلفة {value}",
+      "costUnknown": "غير متاحة",
+      "unknownVariables": "لم تُملأ: {names}",
+      "guardrailNote": "موجّه النظام المعروض أدناه هو ما ينتجه القالب. يضيف الخادم حاجز النطاق قبله عند استدعاء النموذج.",
+      "renderedSystem": "موجّه النظام المعروض",
+      "renderedUser": "موجّه المستخدم المعروض",
+      "output": "المخرجات",
+      "emptySection": "فارغ.",
+      "loggedAs": "مسجّل باسم",
+      "openCall": "فتح الاستدعاء المسجّل"
+    }
+  },
+  "usage": {
+    "noData": "لا توجد استدعاءات للنماذج في هذه الفترة.",
+    "noToolCalls": "لا توجد استدعاءات للأدوات في هذه الفترة.",
+    "total": "الإجمالي",
+    "exportCsv": "تصدير CSV",
+    "window": "من {from} إلى {to}",
+    "kpi": {
+      "cost": "التكلفة",
+      "perCall": "{value} لكل استدعاء",
+      "calls": "استدعاءات النماذج",
+      "tokens": "الرموز المميزة",
+      "tokensDetail": "{input} للإدخال، {output} للإخراج",
+      "failures": "الإخفاقات",
+      "failureRate": "{value} من الاستدعاءات",
+      "avgTtft": "متوسط زمن أول رمز",
+      "p95Ttft": "p95 لأول رمز"
+    },
+    "filters": {
+      "task": "المهمة",
+      "endpoint": "نقطة النهاية",
+      "user": "المستخدم",
+      "userPlaceholder": "معرّف المستخدم",
+      "topic": "الموضوع",
+      "topicPlaceholder": "معرّف الموضوع",
+      "includeDryRun": "تضمين التشغيل التجريبي"
+    },
+    "groups": {
+      "User": "المستخدم",
+      "Model": "النموذج",
+      "Task": "المهمة",
+      "Provider": "المزود",
+      "Topic": "الموضوع",
+      "PromptKey": "الموجّه",
+      "Day": "اليوم",
+      "Tenant": "المستأجر"
+    },
+    "labels": {
+      "system": "النظام",
+      "noTopic": "بلا موضوع",
+      "none": "لا شيء",
+      "unknown": "غير معروف"
+    },
+    "columns": {
+      "cost": "التكلفة",
+      "calls": "الاستدعاءات",
+      "failures": "الإخفاقات",
+      "tokens": "الرموز المميزة",
+      "inputTokens": "الإدخال",
+      "cachedInputTokens": "إدخال مخزن مؤقتًا",
+      "cacheWriteTokens": "كتابات ذاكرة التخزين المؤقت",
+      "outputTokens": "الإخراج",
+      "reasoningTokens": "الاستدلال",
+      "toolCalls": "استدعاءات الأدوات",
+      "avgDuration": "متوسط المدة",
+      "avgTtft": "متوسط زمن أول رمز",
+      "p95Ttft": "p95 لأول رمز"
+    },
+    "tokens": {
+      "uncachedInput": "إدخال غير مخزن مؤقتًا",
+      "cachedInput": "إدخال مخزن مؤقتًا",
+      "cacheWrite": "كتابات ذاكرة التخزين المؤقت",
+      "output": "الإخراج",
+      "reasoning": "الاستدلال"
+    },
+    "series": {
+      "average": "المتوسط",
+      "p95": "p95",
+      "toolCallsPerCall": "استدعاءات الأدوات لكل استدعاء"
+    },
+    "charts": {
+      "groupBy": "التجميع حسب",
+      "costOverTime": "التكلفة عبر الزمن",
+      "costOverTimeHelp": "التكلفة المقدّرة لكل فترة، محسوبة عند تسجيل كل استدعاء.",
+      "costByUser": "التكلفة حسب المستخدم",
+      "costByUserHelp": "أعلى 20 مستخدمًا وحصتهم من التكلفة. اختر صفًا لتصفية الصفحة على ذلك المستخدم.",
+      "costByModel": "التكلفة حسب النموذج",
+      "costByTask": "التكلفة حسب المهمة",
+      "costByTopic": "التكلفة حسب الموضوع",
+      "ttftByModel": "زمن أول رمز حسب النموذج",
+      "ttftHelp": "المتوسط وp95 للاستدعاءات المبثوثة.",
+      "tokenMix": "توزيع أنواع الرموز المميزة",
+      "tokenMixHelp": "يستثني الإخراج رموز الاستدلال، التي تُعرض منفصلة.",
+      "toolCalls": "استدعاءات الأدوات حسب المهمة",
+      "toolCallsHelp": "متوسط استدعاءات الأدوات لكل استدعاء للنموذج."
+    },
+    "breakdown": {
+      "title": "التفصيل",
+      "help": "كل نوع من الرموز المميزة وحصة التكلفة والتوقيت للتجميع المحدد. يُنزّل تصدير CSV هذا الجدول تحديدًا."
+    },
+    "member": {
+      "notice": "الاستخدام على مستوى المستأجر متاح للمسؤولين والمدققين فقط. هذا استخدامك الخاص.",
+      "byTask": "تكلفتك حسب المهمة"
+    },
+    "admin": {
+      "costByTenant": "التكلفة حسب المستأجر",
+      "costByTenantHelp": "كل المستأجرين مرتبين حسب التكلفة، مع حصة كل منهم من تكلفة المنصة.",
+      "tenantTrend": "التكلفة حسب المستأجر عبر الزمن",
+      "tenantTrendHelp": "{count, plural, zero {النطاق غير مقسّم.} one {النطاق مقسّم إلى فترة واحدة.} two {النطاق مقسّم إلى فترتين.} few {النطاق مقسّم إلى # فترات.} many {النطاق مقسّم إلى # فترة.} other {النطاق مقسّم إلى # فترة.}} تُكدَّس أعلى المستأجرين، ويُجمَّع الباقون.",
+      "otherTenants": "مستأجرون آخرون",
+      "platformTrend": "تكلفة المنصة عبر الزمن",
+      "costByModel": "تكلفة المنصة حسب النموذج",
+      "breakdownHelp": "كل المستأجرين مع أنواع الرموز المميزة وحصة التكلفة والتوقيت. يُنزّل تصدير CSV هذا الجدول."
+    }
+  },
+  "markdown": {
+    "mode": "وضع المحرر",
+    "write": "كتابة",
+    "preview": "معاينة",
+    "empty": "لا يوجد ما يُعاين بعد."
+  },
+  "schedule": {
+    "fields": {
+      "intervalType": "التكرار",
+      "every": "كل",
+      "everyHelp": "من {min} إلى {max}",
+      "minuteOffset": "عند الدقيقة",
+      "minuteOffsetHelp": "الدقائق بعد رأس الساعة، من 0 إلى 59",
+      "timeZone": "المنطقة الزمنية",
+      "timeZoneHelp": "تُحسب الأوقات في هذه المنطقة، بما في ذلك تغييرات التوقيت الصيفي",
+      "runOnce": "التشغيل في",
+      "localTimeHelp": "التوقيت المحلي في {zone}",
+      "cron": "تعبير Cron",
+      "cronHelp": "خمسة حقول: الدقيقة، الساعة، يوم الشهر، الشهر، يوم الأسبوع",
+      "daysOfWeek": "أيام الأسبوع",
+      "daysOfMonth": "أيام الشهر",
+      "timesOfDay": "أوقات اليوم",
+      "timeN": "الوقت {n}",
+      "start": "يبدأ",
+      "end": "ينتهي",
+      "optionalLocal": "اختياري، بالتوقيت المحلي في {zone}",
+      "missedRunPolicy": "إذا فات تشغيل",
+      "enabled": "مُفعّل"
+    },
+    "units": {
+      "minutes": "دقائق",
+      "hours": "ساعات",
+      "days": "أيام",
+      "weeks": "أسابيع"
+    },
+    "presets": {
+      "weekdays": "أيام العمل",
+      "weekends": "عطلات نهاية الأسبوع",
+      "everyDay": "كل يوم"
+    },
+    "lastDay": "آخر يوم",
+    "removeTime": "إزالة هذا الوقت",
+    "addTime": "إضافة وقت",
+    "enabledOn": "تشغيل",
+    "enabledOff": "إيقاف",
+    "missedHelp": {
+      "Skip": "تُتخطى عمليات التشغيل الفائتة أثناء توقف الخادم.",
+      "RunOnceOnRecovery": "يحدث تشغيل تعويضي واحد عند عودة الخادم."
+    },
+    "preview": {
+      "title": "عمليات التشغيل الخمس التالية",
+      "checking": "جارٍ الفحص...",
+      "manual": "يعمل هذا الموضوع فقط عندما تضغط تشغيل الآن.",
+      "none": "لا توجد عمليات تشغيل قادمة. تحقق من تاريخي البداية والنهاية."
+    },
+    "summary": {
+      "EveryNMinutes": "كل {count, plural, zero {# دقيقة} one {دقيقة} two {دقيقتين} few {# دقائق} many {# دقيقة} other {# دقيقة}}",
+      "EveryNHours": "كل {count, plural, zero {# ساعة} one {ساعة} two {ساعتين} few {# ساعات} many {# ساعة} other {# ساعة}} عند الدقيقة :{minute}",
+      "EveryNDays": "كل {count, plural, zero {# يوم} one {يوم} two {يومين} few {# أيام} many {# يومًا} other {# يوم}} في {times}",
+      "EveryNWeeks": "كل {count, plural, zero {# أسبوع} one {أسبوع} two {أسبوعين} few {# أسابيع} many {# أسبوعًا} other {# أسبوع}} أيام {days} في {times}",
+      "DaysOfWeek": "{days} في {times}",
+      "DaysOfMonth": "في اليوم {days} عند {times}",
+      "Once": "مرة واحدة في {when}",
+      "Cron": "Cron {expression}",
+      "Manual": "فقط عندما تشغّله"
+    },
+    "saved": "تم حفظ الجدول",
+    "create": "إنشاء جدول",
+    "save": "حفظ الجدول",
+    "emptyTitle": "لا يوجد جدول بعد",
+    "emptyMessage": "أضف جدولًا للبحث في هذا الموضوع تلقائيًا، أو شغّله يدويًا.",
+    "add": "إضافة جدول",
+    "nextRun": "التشغيل التالي",
+    "noNextRun": "غير مجدول",
+    "lastRun": "آخر تشغيل",
+    "enableFor": "تفعيل {name}",
+    "edit": "تعديل الجدول",
+    "delete": "حذف الجدول",
+    "deleteTitle": "حذف الجدول",
+    "deleteMessage": "هل تريد حذف الجدول «{name}»؟ لا تتأثر عمليات التشغيل الموجودة في قائمة الانتظار."
+  },
+  "questions": {
+    "pickOne": "اختر خيارًا واحدًا على الأقل، أو اكتب إجابة، أو تخطَّ السؤال.",
+    "somethingElse": "شيء آخر (اختياري)",
+    "scaleLow": "إطلاقًا",
+    "scaleHigh": "كثيرًا جدًا",
+    "save": "حفظ الإجابة",
+    "why": "سبب سؤالي: {reason}",
+    "answered": "تمت الإجابة",
+    "skipped": "تم التخطي",
+    "skip": "تخطٍّ",
+    "skippedHint": "تم التخطي. أجب عنه لإعادته."
+  },
+  "dimensions": {
+    "emptyTitle": "لا توجد أبعاد بعد",
+    "emptyMessage": "الأبعاد هي الزوايا التي يغطيها البحث. اقترح بعضها أو أضف أبعادك.",
+    "locked": "مقفل",
+    "yours": "خاص بك",
+    "suggested": "مقترح",
+    "why": "لماذا قد يهم: {reason}",
+    "include": "تضمين",
+    "exclude": "استبعاد",
+    "weightFor": "وزن {name}",
+    "unlock": "إلغاء قفل {name}",
+    "lock": "قفل {name}",
+    "unlockHint": "ألغِ القفل ليتمكن التوليد من استبداله",
+    "lockHint": "اقفله للاحتفاظ به عند إعادة التوليد",
+    "edit": "تعديل {name}",
+    "delete": "حذف {name}",
+    "add": "إضافة بُعد",
+    "addTitle": "إضافة بُعد",
+    "editTitle": "تعديل البُعد",
+    "editHint": "تصبح الأبعاد المعدّلة خاصة بك وتُحفظ عند إعادة التوليد.",
+    "fields": {
+      "name": "الاسم",
+      "description": "الوصف",
+      "rationale": "لماذا يهمك",
+      "weight": "الوزن",
+      "includeTerms": "مصطلحات التضمين",
+      "excludeTerms": "مصطلحات الاستبعاد",
+      "termsHelp": "افصل المصطلحات بفواصل"
+    },
+    "deleteTitle": "حذف البُعد",
+    "deleteMessage": "هل تريد حذف البُعد «{name}»؟"
+  },
+  "constraints": {
+    "count": "{count, plural, zero {لا عناصر} one {عنصر واحد} two {عنصران} few {# عناصر} many {# عنصرًا} other {# عنصر}}",
+    "help": {
+      "IncludeKeyword": "كلمات تجعل النتيجة أكثر صلة.",
+      "ExcludeKeyword": "كلمات تستبعد النتيجة.",
+      "IncludeEntity": "شركات أو منتجات أو أشخاص يُضمَّنون دائمًا.",
+      "ExcludeEntity": "شركات أو منتجات أو أشخاص يُتجاهلون دائمًا.",
+      "PreferredDomain": "مواقع تُفضَّل، مثل example.com.",
+      "BlockedDomain": "مواقع لا تُستخدم أبدًا.",
+      "TrackedQuestion": "أسئلة مفتوحة تُتابَع مع الوقت.",
+      "FeedUrl": "خلاصات RSS أو Atom تُقرأ في كل تشغيل.",
+      "SeedUrl": "صفحات تُفحص في كل تشغيل."
+    },
+    "value": "القيمة",
+    "note": "ملاحظة",
+    "unlock": "إلغاء قفل {value}",
+    "lock": "قفل {value}",
+    "edit": "تعديل {value}",
+    "delete": "حذف {value}",
+    "addTo": "إضافة إلى {kind}",
+    "placeholder": {
+      "IncludeKeyword": "أضف كلمة مفتاحية",
+      "ExcludeKeyword": "أضف كلمة مفتاحية لاستبعادها",
+      "IncludeEntity": "أضف شركة أو منتجًا",
+      "ExcludeEntity": "أضف شركة أو منتجًا لتجاهله",
+      "PreferredDomain": "أضف نطاقًا",
+      "BlockedDomain": "أضف نطاقًا لحظره",
+      "TrackedQuestion": "أضف سؤالًا لمتابعته",
+      "FeedUrl": "أضف عنوان URL لخلاصة (https://...)",
+      "SeedUrl": "أضف عنوان URL لصفحة (https://...)"
+    }
+  },
+  "delivery": {
+    "saved": "تم حفظ خيارات التسليم",
+    "emailOnRun": "بريد إلكتروني بعد كل تشغيل",
+    "emailOnRunHelp": "ملخص مع روابط للتفاصيل والملاحظات",
+    "emailWhenEmpty": "بريد إلكتروني حتى عند عدم العثور على شيء",
+    "emailWhenEmptyHelp": "وإلا فلن تُرسل عمليات التشغيل الفارغة بريدًا",
+    "maxFindings": "النتائج في كل بريد",
+    "maxFindingsHelp": "من 1 إلى 50",
+    "saveOptions": "حفظ خيارات التسليم",
+    "recipients": "المستلمون",
+    "recipientsHelp": "يتلقى كل من هنا البريد بعد كل تشغيل. المستلم الافتراضي هو أنت.",
+    "noRecipients": "لا يوجد مستلمون بعد.",
+    "you": "أنت",
+    "removeRecipient": "إزالة {email}",
+    "addRecipient": "البريد الإلكتروني للمستلم",
+    "emailPlaceholder": "name@example.com",
+    "addMe": "أضفني"
+  },
+  "topics": {
+    "actions": {
+      "dryRunQueued": "تمت إضافة تشغيل تجريبي لـ {name} إلى قائمة الانتظار",
+      "runQueued": "تمت إضافة تشغيل لـ {name} إلى قائمة الانتظار",
+      "continueRefining": "متابعة التحسين",
+      "refine": "التحسين مجددًا",
+      "runNow": "تشغيل الآن",
+      "dryRun": "تشغيل تجريبي",
+      "pause": "إيقاف مؤقت",
+      "paused": "تم إيقاف {name} مؤقتًا",
+      "resume": "استئناف",
+      "resumed": "تم استئناف {name}",
+      "archive": "أرشفة",
+      "archived": "تمت أرشفة {name}",
+      "duplicated": "تم تكرار {name} كمسودة"
+    },
+    "delete": {
+      "title": "حذف الموضوع",
+      "message": "هل تريد حذف «{name}» مع أبعاده وقيوده وجداوله وعمليات تشغيله؟ لا يمكن التراجع عن ذلك.",
+      "done": "تم حذف {name}"
+    },
+    "bulk": {
+      "paused": "{count, plural, zero {لم يُوقف أي موضوع} one {تم إيقاف موضوع واحد مؤقتًا} two {تم إيقاف موضوعين مؤقتًا} few {تم إيقاف # مواضيع مؤقتًا} many {تم إيقاف # موضوعًا مؤقتًا} other {تم إيقاف # موضوع مؤقتًا}}",
+      "pause": "إيقاف مؤقت",
+      "delete": "حذف",
+      "deleteTitle": "حذف المواضيع",
+      "deleteMessage": "{count, plural, zero {لا توجد مواضيع للحذف.} one {هل تريد حذف موضوع واحد وكل ما يندرج تحته؟} two {هل تريد حذف موضوعين وكل ما يندرج تحتهما؟} few {هل تريد حذف # مواضيع وكل ما يندرج تحتها؟} many {هل تريد حذف # موضوعًا وكل ما يندرج تحتها؟} other {هل تريد حذف # موضوع وكل ما يندرج تحتها؟}} لا يمكن التراجع عن ذلك.",
+      "deleted": "{count, plural, zero {لم يُحذف أي موضوع} one {تم حذف موضوع واحد} two {تم حذف موضوعين} few {تم حذف # مواضيع} many {تم حذف # موضوعًا} other {تم حذف # موضوع}}"
+    },
+    "columns": {
+      "name": "الاسم",
+      "status": "الحالة",
+      "oneTime": "النوع",
+      "lastRun": "آخر تشغيل",
+      "lastRefined": "آخر تحسين",
+      "created": "تاريخ الإنشاء",
+      "audience": "الجمهور",
+      "id": "المعرّف"
+    },
+    "searchPlaceholder": "البحث في المواضيع",
+    "oneTime": "لمرة واحدة",
+    "recurring": "متكرر",
+    "new": "موضوع جديد",
+    "empty": {
+      "title": "لا توجد مواضيع بعد",
+      "message": "صِف ما تريد متابعته، وسيحوّله المعالج إلى خطة بحث.",
+      "action": "أخبرني بما يهمك"
+    },
+    "backToList": "كل المواضيع",
+    "draftNoRun": "أكمل التحسين قبل التشغيل، أو ابدأ تشغيلًا تجريبيًا",
+    "draftNotice": "هذا الموضوع مسودة. أكمل تحسينه لبدء البحث المجدول.",
+    "workspace": {
+      "tabsLabel": "أقسام الموضوع",
+      "tabs": {
+        "overview": "نظرة عامة",
+        "context": "السياق",
+        "schedule": "الجدول",
+        "sources": "المصادر",
+        "runs": "عمليات التشغيل",
+        "findings": "النتائج",
+        "predictions": "التوقعات",
+        "suggestions": "الاقتراحات",
+        "feedback": "الملاحظات",
+        "preferences": "التفضيلات",
+        "analytics": "التحليلات",
+        "delivery": "التسليم",
+        "prompts": "الموجّهات",
+        "models": "النماذج"
+      },
+      "dimensionCount": "الأبعاد",
+      "noBrief": "لا يوجد ملخص بحثي بعد. حسّن الموضوع لصياغة واحد.",
+      "dimensions": "الأبعاد",
+      "brief": "الملخص البحثي والجمهور",
+      "sourcesHelp": "تُقرأ الخلاصات وصفحات البداية في كل تشغيل، إلى جانب البحث على الويب.",
+      "searchProvidersLater": "يتوفر اختيار مزودي البحث لكل موضوع مع صفحة مزودي البحث."
+    }
+  },
+  "wizard": {
+    "railLabel": "خطوات المعالج",
+    "steps": {
+      "Describe": "الوصف",
+      "Dimensions": "الأبعاد",
+      "Questions": "الأسئلة",
+      "Context": "السياق",
+      "Sources": "المصادر",
+      "Delivery": "التسليم",
+      "Review": "المراجعة"
+    },
+    "stepHelp": {
+      "Describe": "قل ما تريد متابعته ولماذا.",
+      "Dimensions": "الزوايا التي يغطيها البحث. احتفظ بها، أو حدد وزنها، أو عدّلها، أو اقفلها، أو أضف أبعادك.",
+      "Questions": "أجب عما تشاء وتخطَّ الباقي. كل إجابة تجعل البحث أدق.",
+      "Context": "الملخص البحثي والقيود التي يتبعها البحث. تبقى العناصر المقفلة عند إعادة الصياغة.",
+      "Sources": "خلاصات وصفحات تُقرأ في كل تشغيل، ويُفحص كل منها بجلب مباشر.",
+      "Delivery": "متى يعمل البحث ومن يتلقى البريد الإلكتروني.",
+      "Review": "اكتمل كل شيء. عاين تشغيلًا تجريبيًا، ثم طبّق."
+    },
+    "generating": {
+      "dimensions": "جارٍ اقتراح الأبعاد...",
+      "questions": "جارٍ كتابة الأسئلة...",
+      "context": "جارٍ صياغة الملخص البحثي والقيود...",
+      "sources": "جارٍ البحث عن المصادر وفحص كل منها...",
+      "request": "جارٍ التخطيط لطلبك...",
+      "replan": "جارٍ التخطيط مجددًا بناءً على إجاباتك...",
+      "patience": "مرّت {seconds} ثانية حتى الآن. قد تستغرق النماذج الكبيرة دقيقة."
+    },
+    "stopWaiting": "إيقاف الانتظار",
+    "failure": {
+      "title": "تعذّر على النموذج إكمال هذه الخطوة",
+      "refusedTitle": "رفض النموذج هذه الخطوة",
+      "hint": "أعد المحاولة، أو غيّر النموذج المستخدم للتحسين.",
+      "changeModel": "تغيير نموذج التحسين"
+    },
+    "guidance": {
+      "label": "توجيه للمحاولة التالية",
+      "placeholder": "مثلًا: المزيد عن النماذج المحلية، وأقل عن مشتريات المؤسسات"
+    },
+    "regenerate": "إعادة التوليد",
+    "describe": {
+      "existing": "بدأت هذه الجلسة من الوصف أدناه.",
+      "seedText": "ما الذي تريد متابعته؟",
+      "seedHelp": "جملة أو فقرة. يمكنك تحسين كل شيء لاحقًا.",
+      "seedPlaceholder": "أريد التعرف على أدوات الذكاء الاصطناعي للمطورين",
+      "goal": "السبب",
+      "depth": "العمق",
+      "horizon": "الأفق الزمني",
+      "horizonHelp": "اختياري، مثلًا «الأشهر الستة القادمة»",
+      "known": "ما تعرفه بالفعل",
+      "started": "بدأ",
+      "optional": "اختياري",
+      "notSaying": "أفضّل عدم القول",
+      "goals": {
+        "work": "قرارات العمل",
+        "investing": "الاستثمار",
+        "curiosity": "الفضول",
+        "hiring": "التوظيف",
+        "building": "بناء شيء ما"
+      },
+      "model": "النموذج",
+      "modelHelp": "الافتراضي هو تعيين التحسين",
+      "defaultModel": "تعيين التحسين (افتراضي)",
+      "starting": "جارٍ البدء...",
+      "start": "البدء واقتراح الأبعاد",
+      "resumeTitle": "تابع من حيث توقفت"
+    },
+    "outOfScope": {
+      "title": "هذا خارج نطاق ما يبحث فيه My Morning News",
+      "rephrase": "إعادة الصياغة"
+    },
+    "dimensions": {
+      "noneTitle": "لا توجد أبعاد بعد",
+      "noneMessage": "اقترح أبعادًا من وصفك، أو أضف أبعادك أدناه.",
+      "propose": "اقتراح الأبعاد",
+      "intro": "{count, plural, zero {لا أبعاد} one {بُعد واحد} two {بُعدان} few {# أبعاد} many {# بُعدًا} other {# بُعد}}، منها {kept} محفوظة كأبعادك أو مقفلة. اضبط الوزن على استبعاد لإخراج أحدها.",
+      "regenerateHelp": "تستبدل إعادة التوليد الأبعاد المقترحة وتحتفظ بالمقفلة وبأبعادك."
+    },
+    "questions": {
+      "sufficient": "يُفترض أن هذا سياق كافٍ. يمكنك الانتقال إلى الملخص البحثي.",
+      "noneTitle": "لا توجد أسئلة بعد",
+      "noneMessage": "يطرح النموذج بضعة أسئلة مستندة إلى الأبعاد التي احتفظت بها.",
+      "ask": "اطرح عليّ أسئلة",
+      "progress": "تمت الإجابة عن {done} من {total} أو تخطيها",
+      "round": "الجولة {round}",
+      "moreLabel": "هل من توجيه للجولة التالية؟",
+      "askMore": "اطرح المزيد",
+      "moreHelp": "{left, plural, zero {لا جولات إضافية متاحة} one {جولة إضافية واحدة متاحة} two {جولتان إضافيتان متاحتان} few {# جولات إضافية متاحة} many {# جولة إضافية متاحة} other {# جولة إضافية متاحة}}",
+      "maxed": "الحد الأقصى {max} جولات. انتقل إلى الملخص البحثي."
+    },
+    "context": {
+      "name": "اسم الموضوع",
+      "audience": "مستوى الجمهور",
+      "horizon": "الأفق الزمني",
+      "novelty": "تفضيل الجِدّة: {value}",
+      "noveltyHelp": "القيمة الأعلى تفضّل التطورات الجديدة على الخلفية",
+      "brief": "الملخص البحثي",
+      "briefHelp": "Markdown. يتبع البحث هذا الملخص.",
+      "seedQueries": "استعلامات البداية",
+      "seedQueriesHelp": "استعلام بحث واحد في كل سطر",
+      "saved": "تم حفظ السياق",
+      "save": "حفظ السياق",
+      "savedState": "محفوظ",
+      "noneTitle": "لا يوجد ملخص بحثي بعد",
+      "noneMessage": "صِغ الملخص البحثي والقيود واستعلامات البداية من أبعادك وإجاباتك.",
+      "draft": "صياغة السياق",
+      "intro": "عدّل ما تشاء. تبقى القيود المقفلة وقيودك عند إعادة الصياغة.",
+      "redraft": "إعادة الصياغة",
+      "constraints": "القيود"
+    },
+    "sources": {
+      "intro": "تُجلب الخلاصات وصفحات البداية المقترحة مباشرة. الخضراء استجابت.",
+      "again": "اقتراح مجددًا",
+      "suggest": "اقتراح مصادر",
+      "noneSuggested": "لم يقترح النموذج أي مصادر. أضف مصادرك أدناه.",
+      "allAccepted": "كل الاقتراحات موجودة بالفعل في الموضوع.",
+      "select": "تحديد {url}",
+      "unreachable": "يتعذّر الوصول",
+      "accept": "{count, plural, =0 {قبول} zero {قبول} one {قبول مصدر واحد} two {قبول مصدرين} few {قبول # مصادر} many {قبول # مصدرًا} other {قبول # مصدر}}",
+      "noneTitle": "لا توجد مصادر بعد",
+      "noneMessage": "اقترح مصادر، أو أضف مصادرك، أو تخطَّ هذه الخطوة.",
+      "accepted": "في هذا الموضوع"
+    },
+    "delivery": {
+      "schedule": "جدول البحث",
+      "scheduleHelp": "يُحفظ الجدول عند المتابعة.",
+      "email": "البريد الإلكتروني"
+    },
+    "review": {
+      "novelty": "تفضيل الجِدّة",
+      "noSchedule": "بلا جدول (تشغيل يدوي)",
+      "applied": "تم تطبيق هذا الموضوع وبدأ البحث فيه.",
+      "openTopic": "فتح الموضوع",
+      "dimensions": "{count, plural, zero {لا أبعاد} one {بُعد واحد} two {بُعدان} few {# أبعاد} many {# بُعدًا} other {# بُعد}}",
+      "constraintCount": "{kind}: {count}",
+      "preview": "معاينة التشغيل",
+      "previewHelp": "التشغيل التجريبي لا يرسل بريدًا إلكترونيًا ولا يُحتسب في السجل.",
+      "apply": "تطبيق الموضوع",
+      "appliedToast": "{name} جاهز",
+      "previewQueued": "أُضيف التشغيل التجريبي إلى قائمة الانتظار. تابعه في علامة تبويب عمليات التشغيل الخاصة بالموضوع."
+    },
+    "newTitle": "موضوع جديد",
+    "refineTitle": "تحسين {name}",
+    "refineTitleShort": "تحسين الموضوع",
+    "saveExit": "حفظ وخروج",
+    "abandon": "تجاهل",
+    "refineSummary": "إعادة فتح المعالج بدءًا من السياق الحالي",
+    "refineStart": "ابدأ جلسة تحسين جديدة لـ \"{name}\". تنتقل أبعاده وقيوده معه، ولا يتغير شيء حتى تطبّق التغييرات.",
+    "refineStartButton": "بدء التحسين",
+    "backToTopic": "العودة إلى الموضوع",
+    "summary": "تُحفظ كل خطوة أولًا بأول، لذا يمكنك المغادرة والاستئناف لاحقًا.",
+    "back": "رجوع",
+    "nextTo": "التالي: {step}",
+    "abandonTitle": "تجاهل هذه الجلسة",
+    "abandonDraft": "تجاهل المعالج؟ سيُحذف الموضوع المسودة وكل ما فيه.",
+    "abandonExisting": "تجاهل جلسة التحسين هذه؟ يحتفظ الموضوع بالتغييرات التي حفظتها خلالها.",
+    "abandoned": "تم تجاهل الجلسة"
+  },
+  "runs": {
+    "detail": {
+      "title": "تشغيل",
+      "summary": "الملخص",
+      "cancelRequested": "طُلب الإلغاء",
+      "schedule": "الجدول",
+      "request": "طلب لمرة واحدة",
+      "worker": "العامل",
+      "partial": "نجح جزئيًا: فشلت مرحلة غير حرجة. اكتملت المراحل الأخرى وحُفظت نتائجها.",
+      "partialWithStages": "نجح جزئيًا: فشلت {stages}. اكتملت المراحل الأخرى وحُفظت نتائجها.",
+      "viewFindings": "عرض النتائج ({count})",
+      "tabsLabel": "أقسام التشغيل",
+      "tabs": {
+        "stages": "المراحل",
+        "queries": "الاستعلامات",
+        "results": "نتائج البحث",
+        "details": "التفاصيل",
+        "calls": "استدعاءات النموذج"
+      },
+      "contextHash": "لقطة السياق"
+    },
+    "cancelRequested": "جارٍ الإلغاء...",
+    "cancel": "إلغاء التشغيل",
+    "dryRun": "تشغيل تجريبي",
+    "columns": {
+      "topic": "الموضوع",
+      "queued": "في قائمة الانتظار",
+      "started": "البدء",
+      "completed": "الاكتمال",
+      "status": "الحالة",
+      "trigger": "المشغِّل",
+      "duration": "المدة",
+      "summary": "الملخص",
+      "id": "المعرّف",
+      "findings": "نتائج جديدة",
+      "findingsTitle": "تم تخطي {duplicates} من التكرارات",
+      "sources": "المصادر",
+      "cost": "التكلفة"
+    },
+    "cancelled": "طُلب الإلغاء",
+    "openTopic": "فتح الموضوع",
+    "empty": {
+      "title": "لا توجد عمليات تشغيل بعد",
+      "message": "تظهر عمليات التشغيل عند حلول موعد جدول، أو بدء طلب لمرة واحدة، أو عند الضغط على تشغيل الآن.",
+      "topicMessage": "اضغط تشغيل الآن أو تشغيل تجريبي، أو أضف جدولًا."
+    },
+    "totals": {
+      "sources": "المصادر المقروءة",
+      "newFindings": "نتائج جديدة",
+      "duplicates": "التكرارات",
+      "tokens": "الرموز المميزة",
+      "tokenSplit": "{input} داخل، {output} خارج",
+      "cost": "التكلفة التقديرية"
+    },
+    "stages": {
+      "empty": "لم تُسجَّل أي مراحل لهذا التشغيل.",
+      "aria": "{count, plural, zero {مخطط زمني بلا مراحل} one {مخطط زمني بمرحلة واحدة} two {مخطط زمني بمرحلتين} few {مخطط زمني بـ # مراحل} many {مخطط زمني بـ # مرحلة} other {مخطط زمني بـ # مرحلة}}",
+      "stage": "المرحلة",
+      "status": "الحالة",
+      "duration": "المدة",
+      "items": "العناصر",
+      "inOut": "{in} داخل، {out} خارج",
+      "in": "داخل",
+      "out": "خارج"
+    },
+    "queries": {
+      "empty": "لم يرسل هذا التشغيل أي استعلامات بحث.",
+      "query": "الاستعلام",
+      "provider": "المزوّد",
+      "results": "النتائج",
+      "succeeded": "نجح",
+      "failed": "فشل"
+    },
+    "results": {
+      "disposition": "التصنيف",
+      "filterDisposition": "تصفية النتائج حسب التصنيف",
+      "dispositionCount": "{disposition}: {count}",
+      "noMatches": "لا توجد نتائج بهذا التصنيف.",
+      "empty": "لا توجد نتائج بحث لهذا التشغيل.",
+      "rank": "الترتيب",
+      "result": "النتيجة",
+      "viewSource": "عرض المصدر"
+    },
+    "source": {
+      "title": "المصدر",
+      "domain": "النطاق",
+      "httpStatus": "حالة HTTP",
+      "contentType": "نوع المحتوى",
+      "size": "الحجم",
+      "published": "تاريخ النشر",
+      "fetched": "تاريخ الجلب",
+      "timesSeen": "مرات الظهور",
+      "text": "النص المستخرج",
+      "truncated": "يُعرض أول {shown} من أصل {total} حرف.",
+      "noText": "لم يُستخرج أي نص من هذا المصدر."
+    },
+    "calls": {
+      "openCall": "فتح في سجل استدعاءات النموذج",
+      "emptyTitle": "لا توجد استدعاءات للنموذج",
+      "emptyMessage": "لم يُجرِ هذا التشغيل أي استدعاءات للنموذج، أو ما زال تسجيل استدعاءاته جاريًا."
+    },
+    "live": {
+      "streaming": "مباشر",
+      "polling": "يُحدَّث كل بضع ثوانٍ"
+    },
+    "retry": {
+      "column": "إعادة المحاولة",
+      "fromStage": "إعادة المحاولة من هذه المرحلة",
+      "fromStageAria": "إعادة المحاولة من هذه المرحلة ({stage})",
+      "runAgain": "تشغيل مرة أخرى",
+      "runAgainAria": "تشغيل مرة أخرى (فشلت {stage})",
+      "resumeTitle": "إعادة المحاولة من هذه المرحلة",
+      "resumeMessage": "إعادة تشغيل {stage} وكل المراحل التي تليها في هذا التشغيل باستخدام نتائجه المحفوظة؟ يُجري ذلك استدعاءات للنموذج تُحتسب ضمن استخدامك.",
+      "newTitle": "تشغيل مرة أخرى",
+      "newMessage": "إضافة تشغيل جديد لهذا الموضوع من البداية إلى قائمة الانتظار؟ لا تُحفظ نتائج البحث والجلب، لذا تُعاد كل المراحل وتُجري استدعاءات للنموذج تُحتسب ضمن استخدامك.",
+      "resumeQueued": "أُعيد التشغيل إلى قائمة الانتظار بدءًا من {stage}",
+      "newQueued": "أُضيف تشغيل جديد إلى قائمة الانتظار"
+    }
+  },
+  "oneTime": {
+    "form": {
+      "failedHint": "إذا فشل التخطيط، يبقى الطلب محفوظًا ويمكنك تخطيطه مجددًا من القائمة.",
+      "openList": "فتح الطلبات",
+      "text": "ماذا تريد؟",
+      "textHelp": "مثلًا: أعدّ لي بودكاست عن تاريخ حاويات الشحن.",
+      "placeholder": "اكتب لي تقريرًا عن حوافز المضخات الحرارية في كاليفورنيا",
+      "deliverables": "المخرجات",
+      "length": "الطول",
+      "timing": "الموعد",
+      "runNow": "تشغيل الآن",
+      "runAt": "تشغيل مرة واحدة في",
+      "when": "التاريخ والوقت",
+      "recipients": "مستلمو البريد الإلكتروني",
+      "recipientsHelp": "مفصولة بفواصل. الافتراضي أنت ({email}).",
+      "publishToFeed": "النشر في خلاصتي",
+      "publishToFeedHelp": "أضف البودكاست أيضًا إلى خلاصتك الخاصة",
+      "justDoIt": "نفّذ مباشرة",
+      "justDoItHelp": "تخطَّ الأسئلة التوضيحية وأكّد الخطة فورًا",
+      "submitNow": "تخطيط وتشغيل",
+      "submit": "تخطيط",
+      "moreOptions": "خيارات إضافية"
+    },
+    "actions": {
+      "confirmed": "تم تأكيد الطلب",
+      "cancelled": "تم إلغاء الطلب",
+      "open": "فتح",
+      "confirm": "تأكيد",
+      "cancel": "إلغاء الطلب",
+      "convert": "جعله متكررًا",
+      "openTopic": "فتح الموضوع"
+    },
+    "convert": {
+      "title": "تحويله إلى موضوع متكرر",
+      "message": "تحويل \"{title}\" إلى موضوع متكرر مع ملخصه البحثي وأبعاده؟ يمكنك جدولته بعد ذلك.",
+      "done": "تم إنشاء موضوع متكرر"
+    },
+    "delete": {
+      "title": "حذف الطلب",
+      "message": "حذف \"{title}\" وخطته؟",
+      "done": "تم حذف الطلب"
+    },
+    "columns": {
+      "title": "الطلب",
+      "status": "الحالة",
+      "deliverables": "المخرجات",
+      "length": "الطول",
+      "runAt": "موعد التشغيل",
+      "created": "تاريخ الإنشاء",
+      "id": "المعرّف"
+    },
+    "searchPlaceholder": "البحث في الطلبات",
+    "whenConfirmed": "عند التأكيد",
+    "new": "طلب جديد",
+    "empty": {
+      "title": "لا توجد طلبات لمرة واحدة بعد",
+      "message": "تقرير أو بودكاست أو ملخص بالبريد الإلكتروني، يُشغَّل مرة واحدة الآن أو في وقت تختاره.",
+      "action": "اطلب أي شيء لمرة واحدة"
+    },
+    "backToList": "كل الطلبات",
+    "declined": {
+      "title": "هذا الطلب خارج نطاق ما يبحث فيه My Morning News",
+      "rephrase": "إعادة الصياغة"
+    },
+    "detail": {
+      "request": "الطلب",
+      "estimatedCost": "التكلفة التقديرية",
+      "confirmed": "تاريخ التأكيد",
+      "completed": "تاريخ الاكتمال",
+      "run": "التشغيل",
+      "openRun": "فتح التشغيل",
+      "confirmTitle": "التأكيد والتشغيل",
+      "confirmAt": "التأكيد لذلك الوقت",
+      "confirmNow": "التأكيد والتشغيل الآن",
+      "needsPlan": "خطّط للطلب مجددًا قبل التأكيد.",
+      "plan": "الخطة",
+      "noPlanDeclined": "لا توجد خطة لطلب مرفوض.",
+      "noPlan": "لا توجد خطة بعد.",
+      "dimensions": "ما سيغطيه",
+      "questions": "أسئلة توضيحية",
+      "questionsHelp": "تمت الإجابة عن {answered} من {total}. خطّط مجددًا لاستخدام إجاباتك، أو أكّد كما هو.",
+      "replan": "التخطيط مجددًا بإجاباتي"
+    },
+    "newTitle": "طلب جديد",
+    "newSummary": "تقارير وبودكاست وملخصات بالبريد الإلكتروني لمرة واحدة"
+  },
+  "findings": {
+    "backToList": "العودة إلى النتائج",
+    "openPage": "فتح الصفحة كاملة",
+    "duplicate": "مكرر",
+    "update": "تحديث",
+    "scoreAria": "درجة الصلة {score}",
+    "searchPlaceholder": "البحث في العناوين والملخصات",
+    "minScore": "الحد الأدنى",
+    "runFilter": "التشغيل {id}",
+    "clearRun": "عرض النتائج من كل عمليات التشغيل",
+    "includeDuplicates": "تضمين التكرارات",
+    "includeDryRuns": "تضمين عمليات التشغيل التجريبي",
+    "components": {
+      "llm": "تقييم النموذج",
+      "feedback": "الملاحظات",
+      "novelty": "الجِدّة",
+      "source": "المصدر",
+      "recency": "الحداثة",
+      "composite": "المركّبة"
+    },
+    "columns": {
+      "title": "النتيجة",
+      "tier": "المستوى",
+      "score": "الدرجة",
+      "category": "الفئة",
+      "topic": "الموضوع",
+      "published": "تاريخ النشر",
+      "found": "تاريخ العثور",
+      "id": "المعرّف",
+      "rating": "تقييمك"
+    },
+    "detail": {
+      "title": "النتيجة",
+      "whyItMatters": "لماذا يهم",
+      "scoreBreakdown": "تفصيل الدرجة",
+      "scoreChartAria": "تفصيل الدرجة بدرجة مركّبة قدرها {score}",
+      "scoreHelp": "يتراوح كل مكوّن من 0 إلى 100. الدرجة المركّبة هي متوسطها المرجّح وفق أوزان ترتيب الموضوع.",
+      "rationale": "المبرر",
+      "noRationale": "لم يقدّم النموذج أي مبرر لهذه الدرجة.",
+      "evidence": "الأدلة ({count})",
+      "dimension": "البُعد",
+      "noDimension": "غير مرتبط ببُعد.",
+      "run": "التشغيل",
+      "confidence": "الثقة",
+      "rank": "الترتيب",
+      "duplicateOf": "مكرر لـ",
+      "updateOf": "تحديث لـ"
+    },
+    "evidence": {
+      "unknownSource": "مصدر غير معروف",
+      "verified": "اقتباس موثّق",
+      "unverified": "غير موثّق",
+      "emptyTitle": "لا توجد أدلة",
+      "emptyMessage": "لا تدعم هذه النتيجة أي اقتباسات موثّقة.",
+      "open": "العرض في السياق",
+      "detailTitle": "الدليل",
+      "quote": "الاقتباس",
+      "inContext": "الاقتباس في سياقه",
+      "unverifiedHelp": "تعذّرت مطابقة هذا الاقتباس مع نص المصدر الذي تم جلبه.",
+      "source": "المصدر",
+      "domain": "النطاق",
+      "position": "الموضع في المصدر",
+      "positionValue": "الأحرف من {start} إلى {end}",
+      "sourceId": "معرّف المصدر"
+    },
+    "empty": {
+      "title": "لا توجد نتائج بعد",
+      "message": "تظهر النتائج بعد أن يقرأ التشغيل المصادر ويرتّبها. شغّل موضوعًا للحصول على بعضها.",
+      "topicMessage": "شغّل هذا الموضوع للعثور على المصادر وترتيبها."
+    },
+    "pinnedMarker": "مثبّتة",
+    "pinnedBadge": "مثبّتة",
+    "hiddenBadge": "مخفية",
+    "hiddenHelp": "تُستبعد النتائج المخفية من القوائم والموجزات ورسائل البريد الإلكتروني. ألغِ إخفاءها لإعادتها.",
+    "showHidden": "عرض المخفية",
+    "pinnedOnly": "المثبّتة فقط",
+    "actions": {
+      "pin": "تثبيت",
+      "unpin": "إلغاء التثبيت",
+      "hide": "إخفاء",
+      "unhide": "إلغاء الإخفاء",
+      "pinned": "تم تثبيت النتيجة",
+      "unpinned": "تم إلغاء تثبيت النتيجة",
+      "hidden": "تم إخفاء النتيجة",
+      "unhidden": "عادت النتيجة للظهور",
+      "deleted": "تم حذف النتيجة",
+      "deleteTitle": "حذف النتيجة",
+      "deleteMessage": "حذف \"{title}\"؟ ستُزال روابط أدلتها. تبقى المصادر المشتركة وسجل تقييماتك."
+    }
+  },
+  "predictions": {
+    "overdue": "تجاوز الأفق الزمني",
+    "brierHelp": "الأقل أفضل: 0 مثالي و0.25 يعادل رمي عملة.",
+    "columns": {
+      "statement": "التوقع",
+      "status": "الحالة",
+      "confidence": "الثقة",
+      "horizon": "الأفق الزمني",
+      "brier": "درجة Brier",
+      "topic": "الموضوع",
+      "created": "تاريخ الإنشاء",
+      "id": "المعرّف",
+      "rating": "تقديرك"
+    },
+    "actions": {
+      "resolve": "حسم",
+      "reresolve": "حسم مجددًا"
+    },
+    "resolvedBy": {
+      "User": "أنت",
+      "Agent": "الوكيل",
+      "AgentConfirmed": "الوكيل، بتأكيد منك"
+    },
+    "detail": {
+      "title": "التوقع",
+      "resolved": "تاريخ الحسم",
+      "resolvedBy": "حسمه",
+      "note": "ملاحظة الحسم"
+    },
+    "reviews": {
+      "title": "المراجعات ({count})",
+      "empty": "لا توجد مراجعات بعد. تفحص عمليات التشغيل اللاحقة التوقعات المفتوحة مقابل النتائج الجديدة وتقترح حسمًا هنا.",
+      "proposes": "يقترح",
+      "confidence": "بثقة {confidence}",
+      "finding": "النتيجة {id}",
+      "accept": "قبول",
+      "reject": "رفض",
+      "accepted": "مقبول",
+      "rejected": "مرفوض",
+      "acceptedToast": "تم قبول الحسم",
+      "rejectedToast": "تم رفض الحسم"
+    },
+    "resolve": {
+      "title": "حسم التوقع",
+      "submit": "حسم",
+      "outcome": "النتيجة النهائية",
+      "outcomeHelp": "تُحتسب النتائج الدقيقة والدقيقة جزئيًا وغير الدقيقة في الدقة ودرجة Brier.",
+      "note": "ملاحظة",
+      "notePlaceholder": "ما الذي حدث، مع رابط إن وُجد",
+      "notGraded": "هذه النتيجة غير مقيّمة، لذا لا تحصل على درجة Brier.",
+      "brierPreview": "بثقة {confidence} تحصل هذه النتيجة على درجة Brier قدرها {brier}.",
+      "done": "تم حسم التوقع"
+    },
+    "kpis": {
+      "open": "مفتوحة",
+      "graded": "مقيّمة",
+      "ofTotal": "من أصل {total} توقع",
+      "accuracy": "الدقة الملحوظة",
+      "accuracyHelp": "تُحتسب الدقة الجزئية بنصف قيمة.",
+      "brier": "متوسط درجة Brier"
+    },
+    "calibration": {
+      "title": "المعايرة",
+      "subtitle": "الثقة المعلنة مقابل عدد مرات تحقق التوقعات",
+      "aria": "{count, plural, zero {معايرة بلا توقعات مقيّمة} one {معايرة توقع مقيّم واحد} two {معايرة توقعين مقيّمين} few {معايرة # توقعات مقيّمة} many {معايرة # توقعًا مقيّمًا} other {معايرة # توقع مقيّم}}",
+      "xAxis": "الثقة المعلنة",
+      "count": "التوقعات",
+      "meanConfidence": "متوسط الثقة",
+      "observed": "الدقة الملحوظة",
+      "perfect": "معايرة مثالية",
+      "bucket": "ثقة من {from} إلى {to}",
+      "empty": "قيّم بعض التوقعات لرؤية المعايرة."
+    },
+    "empty": {
+      "title": "لا توجد توقعات بعد",
+      "message": "تضع عمليات التشغيل توقعات حول اتجاه الموضوع. تظهر هنا لتتبعها وتقييمها."
+    }
+  },
+  "suggestions": {
+    "priority": "أولوية {priority}",
+    "effort": "يستغرق {effort}",
+    "until": "حتى",
+    "changed": "تم وضع العلامة {status}",
+    "columns": {
+      "title": "الاقتراح",
+      "status": "الحالة",
+      "priorityEffort": "الأولوية والجهد",
+      "topic": "الموضوع",
+      "created": "تاريخ الإنشاء",
+      "id": "المعرّف",
+      "rating": "تقييمك"
+    },
+    "actions": {
+      "accept": "قبول",
+      "snooze": "تأجيل",
+      "dismiss": "تجاهل",
+      "complete": "إكمال"
+    },
+    "detail": {
+      "title": "الاقتراح",
+      "rationale": "السبب",
+      "statusChanged": "تاريخ تغيير الحالة",
+      "findings": "نتائج ذات صلة"
+    },
+    "snooze": {
+      "title": "تأجيل الاقتراح",
+      "quick": "اختيارات سريعة",
+      "tomorrow": "صباح الغد",
+      "nextWeek": "بعد أسبوع",
+      "nextMonth": "بعد شهر",
+      "until": "التأجيل حتى",
+      "future": "اختر وقتًا في المستقبل.",
+      "help": "يعود إلى قائمتك في هذا الوقت."
+    },
+    "empty": {
+      "title": "لا توجد اقتراحات بعد",
+      "message": "تقترح عمليات التشغيل أمورًا تستحق التعمق فيها. تظهر هنا لقبولها أو تأجيلها أو تجاهلها أو إكمالها."
+    }
+  },
+  "briefings": {
+    "untitled": "موجز بلا عنوان",
+    "dryRun": "تشغيل تجريبي",
+    "searchPlaceholder": "العنوان",
+    "includeDryRun": "تضمين عمليات التشغيل التجريبي",
+    "columns": {
+      "title": "الموجز",
+      "kind": "النوع",
+      "status": "الحالة",
+      "edition": "الإصدار",
+      "topic": "الموضوع",
+      "items": "العناصر",
+      "pinned": "مثبّت",
+      "created": "تاريخ الإعداد",
+      "id": "المعرّف"
+    },
+    "actions": {
+      "open": "فتح"
+    },
+    "download": {
+      "md": "تنزيل .md",
+      "html": "تنزيل .html"
+    },
+    "pin": {
+      "pin": "تثبيت",
+      "unpin": "إلغاء التثبيت",
+      "pinNamed": "تثبيت {title}",
+      "unpinNamed": "إلغاء تثبيت {title}",
+      "pinned": "تم التثبيت. تُحفظ ملفاته بعد انتهاء مدة الاحتفاظ.",
+      "unpinned": "تم إلغاء التثبيت. تخضع ملفاته لمدة الاحتفاظ مجددًا.",
+      "cap": "بلغت حد التثبيت لمساحة العمل هذه. ألغِ تثبيت موجز آخر أولًا.",
+      "badge": "مثبّت"
+    },
+    "expired": {
+      "notice": "انتهت صلاحية ملف التقرير. أعد إنشاءه لتنزيله مجددًا.",
+      "title": "انتهت صلاحية ملف التقرير.",
+      "message": "تُحفظ ملفات التقارير لمدة تصل إلى 365 يومًا. ما زال الموجز ونتائجه هنا، لذا يمكن إعادة إنشاء الملفات.",
+      "regenerate": "إعادة الإنشاء",
+      "regenerated": "تمت إعادة إنشاء ملفات التقرير"
+    },
+    "files": {
+      "expired": "انتهت صلاحية الملف",
+      "pinned": "مثبّت",
+      "expires": "محفوظ حتى {date}",
+      "download": "تنزيل {name}"
+    },
+    "progress": {
+      "Queued": "في قائمة الانتظار. سيُعدّ قريبًا.",
+      "Composing": "جارٍ الإعداد الآن.",
+      "researching": "بانتظار بحث جديد، حتى {time} كحد أقصى."
+    },
+    "reader": {
+      "back": "كل الموجزات",
+      "citation": "المصدر {number}",
+      "outline": "المخطط",
+      "noItems": "لم يستخدم هذا الموجز أي نتائج أو توقعات أو اقتراحات.",
+      "otherItems": "أخرى",
+      "open": {
+        "Finding": "فتح النتيجة",
+        "Prediction": "فتح التوقع",
+        "Suggestion": "فتح الاقتراحات"
+      },
+      "noFiles": "لا توجد ملفات محفوظة.",
+      "openRun": "فتح التشغيل",
+      "stats": "قراءة {minutes} دقيقة، {words} كلمة، {items} عنصر",
+      "failed": "فشل الإعداد.",
+      "noContent": "لا يحتوي هذا الموجز على أي محتوى.",
+      "items": "في هذا الموجز ({count})",
+      "files": "الملفات",
+      "period": "يغطي",
+      "readMinutes": "قراءة {minutes} دقيقة"
+    },
+    "delete": {
+      "title": "حذف الموجز",
+      "message": "حذف \"{title}\" وملفاته المحفوظة؟ تبقى النتائج والتوقعات والاقتراحات التي استخدمها.",
+      "done": "تم حذف الموجز"
+    },
+    "empty": {
+      "title": "لا توجد موجزات بعد",
+      "message": "أعدّ إصدارًا، أو شغّل موضوعًا، أو اطرح سؤالًا لمرة واحدة للحصول على موجز."
+    }
+  },
+  "today": {
+    "seeAll": "عرض الكل",
+    "composeNow": "الإعداد الآن",
+    "composeQueued": "أُضيف الموجز إلى قائمة الانتظار",
+    "composeReady": "موجزك جاهز",
+    "composeFailed": "فشل الموجز: {message}",
+    "composeConflict": "هناك موجز لهذا الإصدار قيد الإعداد بالفعل.",
+    "edition": "الإصدار",
+    "follow": "متابعة التقدم",
+    "noEditions": "ليست لديك إصدارات بعد.",
+    "createEdition": "إنشاء إصدار",
+    "empty": {
+      "title": "لا يوجد موجز بعد",
+      "message": "أعدّ إصدارك الآن، أو انتظر موعد جدوله."
+    },
+    "openReader": "فتح في القارئ",
+    "runs": "موجزات عمليات التشغيل الأخيرة",
+    "oneTime": "تقارير لمرة واحدة",
+    "noRuns": "لا توجد موجزات تشغيل بعد.",
+    "noOneTime": "لا توجد تقارير لمرة واحدة بعد."
+  },
+  "editions": {
+    "add": "إصدار جديد",
+    "back": "كل الإصدارات",
+    "newTitle": "إصدار جديد",
+    "newSummary": "موجز بجدوله الخاص، يشمل المواضيع التي تختارها.",
+    "created": "تم إنشاء الإصدار",
+    "saved": "تم حفظ الإصدار",
+    "deleted": "تم حذف الإصدار",
+    "composeQueued": "أُضيف الموجز إلى قائمة الانتظار",
+    "enabledOn": "مفعّل",
+    "enabledOff": "معطّل",
+    "preview": "معاينة",
+    "previewing": "جارٍ إعداد المعاينة...",
+    "previewTitle": "معاينة: {name}",
+    "previewSubtitle": "أُعدّت من أحدث البيانات. لا يُحفظ أو يُرسل أي شيء.",
+    "previewFallbacks": "{count, plural, zero {لم يُكتب أي قسم} one {كُتب قسم واحد} two {كُتب قسمان} few {كُتبت # أقسام} many {كُتب # قسمًا} other {كُتب # قسم}} كقائمة بسيطة لأن أي نموذج لم يستجب.",
+    "previewEmpty": "المعاينة فارغة.",
+    "discard": "تجاهل التغييرات",
+    "create": "إنشاء الإصدار",
+    "save": "حفظ الإصدار",
+    "schedulesHelp": "متى يُعدّ هذا الإصدار. عند تفعيل البحث الجديد، يبدأ البحث قبل كل موعد مجدول.",
+    "schedulesEmpty": "أضف جدولًا لإعداد هذا الإصدار تلقائيًا، أو أعدّه يدويًا.",
+    "deleteTitle": "حذف الإصدار",
+    "deleteMessage": "حذف الإصدار \"{name}\" وجداوله؟ تبقى موجزاته.",
+    "viewBriefings": "عرض الموجزات",
+    "lookbackHours": "آخر {hours} ساعة",
+    "sections": {
+      "settings": "الإعدادات",
+      "topics": "المواضيع",
+      "schedules": "الجداول",
+      "briefings": "الموجزات"
+    },
+    "columns": {
+      "name": "الإصدار",
+      "enabled": "الحالة",
+      "delivery": "التسليم",
+      "lookback": "الفترة المشمولة",
+      "lastComposed": "آخر إعداد",
+      "created": "تاريخ الإنشاء",
+      "id": "المعرّف"
+    },
+    "badges": {
+      "email": "البريد الإلكتروني",
+      "audio": "صوت",
+      "fresh": "بحث جديد ({minutes} دقيقة)"
+    },
+    "empty": {
+      "title": "لا توجد إصدارات",
+      "message": "أنشئ إصدارًا للحصول على موجز وفق جدول."
+    },
+    "form": {
+      "name": "الاسم",
+      "nameRequired": "الاسم مطلوب.",
+      "description": "الوصف",
+      "template": "القالب",
+      "templateDefault": "يستخدم {name}، القالب الافتراضي.",
+      "defaultName": "الافتراضي",
+      "useDefault": "القالب الافتراضي",
+      "sharedOption": "{name} (مشترك)",
+      "enabled": "مفعّل",
+      "enabledHelp": "يُعدّ وفق جداوله. يعمل الإعداد الآن في الحالتين.",
+      "email": "البريد الإلكتروني",
+      "emailHelp": "إرسال الموجز بالبريد الإلكتروني عندما يصبح جاهزًا.",
+      "audio": "صوت",
+      "audioHelp": "إنتاج نسخة صوتية من كل موجز.",
+      "fresh": "بحث جديد أولًا",
+      "freshHelp": "تشغيل بحث كل موضوع قبل الإعداد.",
+      "lead": "مهلة البحث المسبقة (بالدقائق)",
+      "leadHelp": "مدة انتظار البحث، من {min} إلى {max} دقيقة.",
+      "lookbackMode": "الفترة المشمولة",
+      "lookbackModeHelp": {
+        "SinceLastEdition": "كل ما جدّ منذ إعداد آخر إصدار.",
+        "FixedHours": "نافذة ثابتة تنتهي عند إعداد الإصدار."
+      },
+      "lookbackHours": "نافذة الفترة المشمولة (بالساعات)",
+      "lookbackHoursHelp": "من {min} إلى {max} ساعة. خيار منذ آخر إصدار لا يعود أبعد من ذلك أبدًا."
+    },
+    "topics": {
+      "mode": "المواضيع",
+      "modes": {
+        "all": "كل المواضيع النشطة",
+        "chosen": "اختيار المواضيع"
+      },
+      "allHelp": "يشمل كل موضوع متكرر نشط، بما في ذلك المواضيع التي تضيفها لاحقًا.",
+      "covered": "المواضيع المشمولة",
+      "noneActive": "ليست لديك مواضيع متكررة نشطة بعد.",
+      "chosenHelp": "هذه المواضيع فقط، بهذا الترتيب.",
+      "noneChosen": "لم تُختر أي مواضيع بعد.",
+      "chosen": "المواضيع المختارة",
+      "chooseOne": "اختر موضوعًا واحدًا على الأقل، أو اشمل كل المواضيع النشطة.",
+      "moveUp": "نقل {name} لأعلى",
+      "moveDown": "نقل {name} لأسفل",
+      "remove": "إزالة {name}",
+      "addLabel": "الموضوع المراد إضافته",
+      "pick": "اختر موضوعًا",
+      "add": "إضافة",
+      "save": "حفظ المواضيع",
+      "saved": "تم حفظ المواضيع"
+    }
+  },
+  "templates": {
+    "add": "قالب جديد",
+    "back": "كل القوالب",
+    "open": "فتح المحرر",
+    "empty": "لا توجد قوالب",
+    "searchPlaceholder": "الاسم أو الوصف",
+    "saved": "تم حفظ نسخة جديدة",
+    "created": "تم إنشاء القالب",
+    "deleted": "تم حذف القالب",
+    "export": "تصدير .md",
+    "copy": "إنشاء نسخة",
+    "copyName": "{name} (نسخة)",
+    "reset": "إعادة التعيين إلى الافتراضي",
+    "resetTitle": "إعادة تعيين القالب",
+    "resetMessage": "استبدال المحتوى بالقالب الافتراضي المرفق كنسخة جديدة؟ تبقى النسخ السابقة في السجل.",
+    "resetDone": "تمت إعادة التعيين إلى الافتراضي",
+    "deleteTitle": "حذف القالب",
+    "deleteMessage": "حذف القالب \"{name}\" ونسخه؟ ستعود الإصدارات التي تستخدمه إلى القالب الافتراضي.",
+    "readOnly": "لا يمكن تغيير القوالب المشتركة إلا لمسؤولي المستأجر. أنشئ نسخة لتعديل نسختك الخاصة.",
+    "scope": {
+      "shared": "مشترك",
+      "mine": "خاص بي"
+    },
+    "badges": {
+      "editionDefault": "افتراضي الإصدارات",
+      "builtIn": "مدمج"
+    },
+    "columns": {
+      "name": "القالب",
+      "scope": "النطاق",
+      "origin": "المصدر",
+      "version": "النسخة",
+      "updated": "تاريخ التحديث"
+    },
+    "import": {
+      "button": "استيراد .md",
+      "file": "ملف القالب",
+      "tooLarge": "هذا الملف أكبر من أن يكون قالبًا."
+    },
+    "editor": {
+      "title": "القالب",
+      "panels": "أدوات القالب",
+      "valid": "صالح",
+      "errors": "{count, plural, zero {لا أخطاء} one {خطأ واحد} two {خطآن} few {# أخطاء} many {# خطأً} other {# خطأ}}",
+      "rejected": "رفض الخادم هذه النسخة.",
+      "format": "Markdown مع ترويسة (name وdescription وtone وlength وaudience وcitations وaudio). كل عنوان من المستوى الثاني قسم. يحدد تعليق mmn:section أسفله البيانات (source وtier وstatus وgroup وlimit وorder وtopic وdimension)، ويخبر النص أسفل العنوان أداة الإعداد بما تكتبه."
+    },
+    "panels": {
+      "problems": "المشكلات",
+      "problemsCount": "المشكلات ({count})",
+      "outline": "المخطط",
+      "preview": "معاينة",
+      "versions": "النسخ"
+    },
+    "problems": {
+      "none": "لم يُعثر على مشكلات.",
+      "errors": "{count, plural, zero {لا أخطاء} one {خطأ واحد} two {خطآن} few {# أخطاء} many {# خطأً} other {# خطأ}}",
+      "warnings": "{count, plural, zero {لا تحذيرات} one {تحذير واحد} two {تحذيران} few {# تحذيرات} many {# تحذيرًا} other {# تحذير}}",
+      "checking": "جارٍ التحقق...",
+      "jump": "الانتقال إلى السطر {line}",
+      "line": "السطر {line}",
+      "general": "عام",
+      "warning": "تحذير",
+      "error": "خطأ"
+    },
+    "outline": {
+      "pending": "جارٍ التحقق من الصحة...",
+      "name": "الاسم",
+      "title": "العنوان",
+      "audio": "صوت",
+      "audioOn": "مفعّل: {format}، نحو {minutes} دقيقة",
+      "audioOff": "متوقف",
+      "intro": "المقدمة",
+      "noSections": "لا توجد أقسام بعد. أضف عنوانًا من المستوى الثاني.",
+      "jump": "الانتقال إلى {heading} في السطر {line}",
+      "source": "source={source}"
+    },
+    "preview": {
+      "help": "يُعدّ الإصدار المختار من أحدث البيانات بالقالب المحفوظ للإصدار. لا يُحفظ أو يُرسل أي شيء.",
+      "noEditions": "أنشئ إصدارًا لمعاينة قالب.",
+      "edition": "الإصدار المراد معاينته",
+      "otherTemplate": "يستخدم {name} قالبًا مختلفًا، لذا لا تعرض هذه المعاينة هذا القالب.",
+      "unsaved": "احفظ تغييراتك لرؤيتها في المعاينة."
+    },
+    "versions": {
+      "none": "لا توجد نسخ بعد.",
+      "rollbackMessage": "استعادة النسخة {version} كنسخة جديدة؟ يبقى المحتوى الحالي في السجل."
+    },
+    "create": {
+      "titles": {
+        "new": "قالب جديد",
+        "import": "استيراد قالب",
+        "copy": "إنشاء نسخة"
+      },
+      "confirm": {
+        "new": "إنشاء",
+        "import": "استيراد",
+        "copy": "إنشاء نسخة"
+      },
+      "contentHelp": {
+        "import": "يستورد {lines} سطرًا من Markdown.",
+        "copy": "ينسخ {lines} سطرًا من المحرر، بما في ذلك التغييرات غير المحفوظة."
+      },
+      "defaultName": "موجزي",
+      "name": "الاسم",
+      "nameHelp": "اتركه فارغًا لاستخدام الاسم الوارد في الترويسة.",
+      "startFrom": "البدء من",
+      "starter": "قالب مبدئي صغير",
+      "copyOf": "نسخة من {name}",
+      "shared": "المشاركة مع الجميع في مساحة العمل هذه",
+      "invalid": "في القالب مشكلات."
+    }
+  },
+  "audio": {
+    "panel": {
+      "label": "صوت الموجز",
+      "title": "استماع",
+      "fromText": "قراءة من نص الموجز",
+      "checking": "جارٍ البحث عن الصوت..."
+    },
+    "player": {
+      "loading": "جارٍ تحميل الصوت...",
+      "loadingSize": "جارٍ تحميل الصوت ({size})...",
+      "play": "تشغيل",
+      "pause": "إيقاف مؤقت",
+      "back": "رجوع {seconds} ثانية",
+      "forward": "تقديم {seconds} ثانية",
+      "seek": "موضع التشغيل",
+      "position": "{time} من {duration}",
+      "nowPlaying": "قيد التشغيل: {chapter}",
+      "speed": "سرعة التشغيل",
+      "speedOption": "{speed}x",
+      "chapters": "الفصول"
+    },
+    "progress": {
+      "Queued": "الصوت في قائمة الانتظار. سيُنتج قريبًا.",
+      "Scripting": "جارٍ كتابة النص المنطوق.",
+      "Synthesizing": "جارٍ توليد الكلام. تستغرق الموجزات الأطول بضع دقائق."
+    },
+    "make": {
+      "action": "إنتاج الصوت",
+      "again": "إنتاج الصوت مجددًا",
+      "remake": "إعادة إنتاج الصوت",
+      "voice": "الصوت",
+      "defaultVoice": "الصوت الافتراضي",
+      "voiceDefault": "{name} (افتراضي)",
+      "queued": "أُضيف الصوت إلى قائمة الانتظار",
+      "conflict": "لم يُضف الصوت إلى قائمة الانتظار. إما أن صوت هذا الموجز قيد الإنتاج بالفعل، أو أن الصوت معطّل على هذا الخادم. {message}"
+    },
+    "failed": "فشل إنتاج الصوت.",
+    "missingFile": "ملف الصوت غير متاح. أنتج الصوت مجددًا للاستماع.",
+    "none": "لا يحتوي هذا الموجز على صوت بعد.",
+    "listenFrom": "الاستماع من {section}"
+  },
+  "voices": {
+    "columns": {
+      "name": "الاسم",
+      "provider": "المزوّد",
+      "voice": "الصوت",
+      "model": "النموذج",
+      "speed": "السرعة",
+      "endpoint": "نقطة النهاية",
+      "credential": "بيانات الاعتماد",
+      "created": "تاريخ الإنشاء",
+      "id": "المعرّف"
+    },
+    "default": "افتراضي",
+    "secondaryShort": "المضيف الثاني: {voice}",
+    "serverDefault": "افتراضي الخادم",
+    "adminOnly": "لا يمكن تغيير الأصوات إلا لمسؤولي المستأجر.",
+    "memberNotice": "يمكنك عرض الأصوات واختبارها. يتطلب إنشاؤها وتعديلها وحذفها مسؤول مستأجر.",
+    "twoHostHint": "تتناوب النصوص ثنائية المضيف بين أسطر HOST_A وHOST_B: يستخدم HOST_A الصوت، ويستخدم HOST_B الصوت الثاني (أو الصوت نفسه إذا لم يُحدَّد صوت ثانٍ).",
+    "makeDefault": "جعله افتراضيًا",
+    "defaultSet": "أصبح {name} الصوت الافتراضي",
+    "empty": {
+      "title": "لا توجد أصوات بعد",
+      "message": "يستخدم الصوت إعدادات الكلام في الخادم حتى تضيف صوتًا."
+    },
+    "form": {
+      "createTitle": "إضافة صوت",
+      "editTitle": "تعديل الصوت"
+    },
+    "fields": {
+      "endpointHelp": "عنوان URL الأساسي لخادم كلام متوافق مع OpenAI. اتركه فارغًا لاستخدام افتراضي الخادم.",
+      "endpointPlaceholder": "افتراضي الخادم",
+      "modelHelp": "اتركه فارغًا لاستخدام النموذج الافتراضي.",
+      "modelPlaceholder": "kokoro",
+      "voice": "الصوت",
+      "voiceHelp": "صوت الراوي، وHOST_A في النصوص ثنائية المضيف.",
+      "voicePlaceholder": "af_heart",
+      "secondaryVoice": "الصوت الثاني",
+      "secondaryVoiceHelp": "HOST_B في النصوص ثنائية المضيف. اتركه فارغًا لاستخدام الصوت نفسه للمضيفين.",
+      "speedHelp": "من {min} إلى {max}.",
+      "credentialHelp": "بيانات اعتماد مخزنة تحتوي على مفتاح API، عندما يحتاج خادم الكلام إلى مفتاح.",
+      "isDefault": "الصوت الافتراضي",
+      "isDefaultHelp": "يُستخدم عندما لا يحدد الإصدار أو الطلب أي صوت."
+    },
+    "test": {
+      "action": "اختبار",
+      "title": "اختبار الصوت",
+      "text": "نص تجريبي",
+      "textHelp": "اتركه فارغًا لسماع تحية قصيرة.",
+      "defaultText": "صباح الخير. إليك أبرز ما تغيّر في مواضيعك.",
+      "speak": "نطق",
+      "speaking": "جارٍ النطق...",
+      "ttsError": "فشلت خدمة الكلام: {message}"
+    },
+    "delete": {
+      "title": "حذف الصوت",
+      "message": "حذف الصوت \"{name}\"؟ ستعود الإصدارات التي تستخدمه إلى الصوت الافتراضي."
+    }
+  },
+  "listen": {
+    "untitled": "حلقة بلا عنوان",
+    "columns": {
+      "title": "الحلقة",
+      "status": "الحالة",
+      "kind": "النوع",
+      "duration": "المدة",
+      "size": "الحجم",
+      "segments": "المقاطع",
+      "script": "النص",
+      "created": "تاريخ الإنشاء",
+      "completed": "تاريخ الاكتمال",
+      "id": "المعرّف"
+    },
+    "noValue": "لا شيء",
+    "scriptModel": "كتبه نموذج",
+    "scriptText": "مقروء من النص",
+    "actions": {
+      "play": "تشغيل",
+      "briefing": "فتح الموجز",
+      "remake": "إعادة إنتاج الصوت"
+    },
+    "empty": {
+      "title": "لا يوجد صوت بعد",
+      "message": "أنتج صوتًا من موجز، أو فعّل الصوت لإصدار."
+    },
+    "delete": {
+      "title": "حذف الحلقة",
+      "message": "حذف \"{title}\" وملفاتها الصوتية؟ يبقى الموجز.",
+      "done": "تم حذف الحلقة"
+    }
+  },
+  "feeds": {
+    "title": "خلاصات البودكاست",
+    "summary": "عناوين URL خاصة بالخلاصات لتطبيقات البودكاست. تحمل كل خلاصة سرًّا، لذا تعامل مع عنوانها ككلمة مرور.",
+    "fields": {
+      "name": "الاسم",
+      "nameHelp": "تسمية تتعرف عليها، مثل التطبيق أو الجهاز.",
+      "namePlaceholder": "Overcast على هاتفي",
+      "edition": "الإصدار",
+      "editionHelp": "اقصر الخلاصة على إصدار واحد، أو ضمّن كل ملفاتك الصوتية."
+    },
+    "allAudio": "كل ملفاتي الصوتية",
+    "create": "إنشاء خلاصة",
+    "created": {
+      "title": "تم إنشاء الخلاصة",
+      "warning": "هذا العنوان خاص ويُعرض مرة واحدة فقط. يستطيع أي شخص يملكه الاستماع إلى موجزاتك. انسخه الآن، وألغِ الخلاصة إن تسرّب.",
+      "feedUrl": "عنوان URL للخلاصة",
+      "copyUrl": "نسخ عنوان URL للخلاصة",
+      "secret": "السر",
+      "copySecret": "نسخ السر",
+      "done": "لقد حفظته"
+    },
+    "empty": {
+      "title": "لا توجد خلاصات بودكاست",
+      "message": "أنشئ خلاصة للاستماع إلى موجزاتك في تطبيق بودكاست."
+    },
+    "columns": {
+      "name": "الاسم",
+      "prefix": "الرمز المميز",
+      "edition": "الإصدار",
+      "created": "تاريخ الإنشاء",
+      "lastUsed": "آخر استخدام",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "unnamed": "خلاصة بلا اسم",
+    "prefix": "{prefix}...",
+    "neverUsed": "أبدًا",
+    "revoked": "ملغاة",
+    "revoke": "إلغاء",
+    "revokeNamed": "إلغاء {name}",
+    "revokeConfirm": {
+      "title": "إلغاء الخلاصة",
+      "message": "إلغاء \"{name}\"؟ ستتوقف تطبيقات البودكاست المشتركة فيها عن تلقي الحلقات. لا يمكن التراجع عن ذلك.",
+      "done": "تم إلغاء الخلاصة"
+    },
+    "help": {
+      "title": "كيفية الاشتراك",
+      "step1": "أنشئ خلاصة أعلاه وانسخ عنوانها.",
+      "apple": "Apple Podcasts: افتح المكتبة، واختر متابعة برنامج عبر URL من القائمة، ثم الصق العنوان.",
+      "overcast": "Overcast: اضغط زر الإضافة، واختر Add URL، ثم الصق العنوان.",
+      "publicUrl": "يجب أن يصل هاتفك إلى الخادم. اضبط MYMORNINGNEWS_PUBLIC_BASE_URL على عنوان يستطيع الهاتف فتحه (ليس 127.0.0.1)، ثم أنشئ الخلاصة مجددًا ليستخدم عنوانها ذلك العنوان.",
+      "loopback": "يشير هذا العنوان إلى 127.0.0.1، ولا يصل إليه سوى هذا الحاسوب. اضبط MYMORNINGNEWS_PUBLIC_BASE_URL على الخادم لتتمكن تطبيقات البودكاست على هاتفك من الوصول إليه."
+    }
+  },
+  "promo": {
+    "picker": {
+      "search": "البحث عن مستخدم",
+      "searchPlaceholder": "البريد الإلكتروني يحتوي على",
+      "user": "المستخدم",
+      "noUsers": "لا يوجد مستخدمون مطابقون.",
+      "choose": "اختر مستخدمًا"
+    },
+    "validation": {
+      "codeRequired": "أدخل رمزًا.",
+      "codeFormat": "استخدم من 4 إلى 40 حرفًا أو رقمًا أو شرطة، يبدأ وينتهي بحرف أو رقم.",
+      "prefixFormat": "استخدم حتى 16 حرفًا ورقمًا.",
+      "countRange": "أدخل عددًا صحيحًا من 1 إلى {max, number}.",
+      "planRequired": "اختر خطة.",
+      "durationRange": "أدخل عددًا صحيحًا من الأيام من 0 (بلا نهاية) إلى 3650.",
+      "maxRange": "أدخل 0 (بلا حد) أو عددًا صحيحًا من مرات الاستخدام.",
+      "maxBelowUsed": "استُخدم هذا الرمز {used} مرة، لذا لا يمكن أن يكون الحد أقل من ذلك.",
+      "perUserRange": "أدخل عددًا صحيحًا من 1 إلى 100.",
+      "dateInvalid": "أدخل تاريخًا ووقتًا صالحين.",
+      "expiresAfterStarts": "يجب أن يكون انتهاء الصلاحية بعد البدء."
+    },
+    "create": {
+      "title": "رمز ترويجي جديد",
+      "open": "رمز جديد"
+    },
+    "edit": {
+      "title": "تعديل {code}"
+    },
+    "batch": {
+      "title": "إنشاء دفعة من الرموز",
+      "open": "إنشاء دفعة",
+      "createdTitle": "{count, plural, zero {لم يُنشأ أي رمز} one {تم إنشاء رمز واحد} two {تم إنشاء رمزين} few {تم إنشاء # رموز} many {تم إنشاء # رمزًا} other {تم إنشاء # رمز}}",
+      "batchId": "الدفعة {id}",
+      "downloadCsv": "تنزيل CSV",
+      "copyAll": "نسخ كل الرموز",
+      "codes": "الرموز المُنشأة",
+      "generate": "إنشاء"
+    },
+    "fields": {
+      "code": "الرمز",
+      "codeHelp": "حروف وأرقام وشرطات. يُحفظ بأحرف كبيرة.",
+      "codeLocked": "لا يمكن إعادة تسمية الرمز. أنشئ رمزًا جديدًا بدلًا من ذلك.",
+      "prefix": "البادئة",
+      "prefixHelp": "اختيارية، حتى 16 حرفًا ورقمًا. يحصل كل رمز على لاحقة عشوائية.",
+      "count": "العدد",
+      "countHelp": "من 1 إلى {max, number} رمز.",
+      "plan": "الخطة",
+      "noPlans": "لا توجد خطط",
+      "description": "الوصف",
+      "duration": "المدة بالأيام",
+      "durationHelp": "0 يعني أن الخطة بلا نهاية.",
+      "maxRedemptions": "إجمالي مرات الاستخدام",
+      "maxHelp": "0 يعني بلا حد.",
+      "maxUsedHelp": "0 يعني بلا حد. استُخدم بالفعل {used} مرة.",
+      "perUserLimit": "الحد لكل مستخدم",
+      "perUserHelp": "عدد المرات التي يستطيع فيها شخص واحد استخدامه.",
+      "starts": "البدء",
+      "startsHelp": "اتركه فارغًا للبدء الآن. بتوقيتك المحلي.",
+      "expires": "انتهاء الصلاحية",
+      "expiresHelp": "اتركه فارغًا لعدم انتهاء الصلاحية. بتوقيتك المحلي.",
+      "enabled": "مفعّل",
+      "newAccountsOnly": "الحسابات الجديدة فقط",
+      "newAccountsOnlyHelp": "لا يستخدمه إلا من ينشئ حسابه بهذا الرمز."
+    },
+    "status": {
+      "enabled": "مفعّل",
+      "disabled": "معطّل",
+      "notStarted": "لم يبدأ",
+      "expired": "منتهي الصلاحية",
+      "exhausted": "مستنفد"
+    },
+    "usage": {
+      "usedOf": "{used} من {max}",
+      "usedUnlimited": "{used} من غير محدود",
+      "unlimited": "غير محدود"
+    },
+    "duration": {
+      "days": "{count, plural, zero {0 أيام} one {يوم واحد} two {يومان} few {# أيام} many {# يومًا} other {# يوم}}",
+      "noEnd": "بلا نهاية"
+    },
+    "reasons": {
+      "NotFound": "لم نعثر على هذا الرمز. تحقق من الكتابة وحاول مرة أخرى.",
+      "Disabled": "تم إيقاف هذا الرمز.",
+      "NotStarted": "لا يمكن استخدام هذا الرمز بعد.",
+      "Expired": "انتهت صلاحية هذا الرمز.",
+      "Exhausted": "استُخدم هذا الرمز الحد الأقصى من المرات المسموح بها.",
+      "AlreadyRedeemed": "استخدم هذا الحساب هذا الرمز بالفعل.",
+      "NewAccountsOnly": "هذا الرمز مخصص للحسابات الجديدة فقط."
+    },
+    "delete": {
+      "title": "حذف الرمز الترويجي",
+      "message": "حذف {code}؟ لا يمكن التراجع عن ذلك.",
+      "usedMessage": "استُخدم {code} {count, plural, zero {0 مرات} one {مرة واحدة} two {مرتين} few {# مرات} many {# مرة} other {# مرة}}، لذا لا يمكن حذفه. عطّله بدلًا من ذلك ليبقى سجله.",
+      "disableInstead": "التعطيل بدلًا من ذلك",
+      "conflict": "استُخدم هذا الرمز، لذا لا يمكن حذفه. عطّله بدلًا من ذلك."
+    },
+    "notify": {
+      "disabled": "تم تعطيل {code}",
+      "enabled": "تم تفعيل {code}",
+      "copied": "تم نسخ {code}",
+      "generated": "{count, plural, zero {لم يُنشأ أي رمز} one {تم إنشاء رمز واحد} two {تم إنشاء رمزين} few {تم إنشاء # رموز} many {تم إنشاء # رمزًا} other {تم إنشاء # رمز}}",
+      "created": "تم إنشاء {code}"
+    },
+    "columns": {
+      "code": "الرمز",
+      "description": "الوصف",
+      "plan": "الخطة",
+      "duration": "المدة",
+      "usage": "المستخدم / الحد",
+      "remaining": "المتبقي",
+      "activeSubscriptions": "الاشتراكات النشطة",
+      "status": "الحالة",
+      "batch": "الدفعة",
+      "expires": "انتهاء الصلاحية",
+      "lastRedeemed": "آخر استخدام",
+      "created": "تاريخ الإنشاء"
+    },
+    "filters": {
+      "search": "الرمز أو الوصف",
+      "enabledOnly": "مفعّل",
+      "disabledOnly": "معطّل"
+    },
+    "actions": {
+      "disable": "تعطيل",
+      "enable": "تفعيل",
+      "copyCode": "نسخ الرمز"
+    },
+    "never": "أبدًا",
+    "immediately": "فورًا",
+    "createdBy": "أنشأه",
+    "empty": {
+      "title": "لا توجد رموز ترويجية بعد",
+      "message": "أنشئ رمزًا، أو أنشئ دفعة، لمنح الأشخاص خطة."
+    },
+    "apply": {
+      "open": "التطبيق على مستخدم",
+      "title": "تطبيق {code} على مستخدم",
+      "help": "يحصل المستخدم على {plan} لمدة {duration}. تظل حدود الرمز سارية.",
+      "confirm": "تطبيق الرمز",
+      "done": "تم تطبيق {code} على {email}"
+    },
+    "redemptions": {
+      "title": "مرات الاستخدام",
+      "user": "المستخدم",
+      "tenant": "المستأجر",
+      "channel": "القناة",
+      "date": "تاريخ الاستخدام",
+      "status": "الحالة",
+      "active": "نشط",
+      "revoked": "ملغى",
+      "revokedOn": "أُلغي في {date}",
+      "userId": "معرّف المستخدم",
+      "revoke": "إلغاء",
+      "revokeTitle": "إلغاء الاستخدام",
+      "revokeMessage": "إلغاء {code} لـ {email}؟ تنتهي خطته من هذا الرمز الآن.",
+      "revokedNotice": "تم إلغاء الاستخدام",
+      "empty": "لم يستخدم أحد هذا الرمز بعد",
+      "emptyMessage": "تظهر مرات الاستخدام هنا مع من استخدمه ومتى ومن أين."
+    },
+    "channels": {
+      "Signup": "التسجيل",
+      "Account": "الحساب",
+      "Admin": "المسؤول",
+      "Api": "API"
+    },
+    "detail": {
+      "summary": "الاستخدام ومرات الاستخدام والإعدادات لهذا الرمز",
+      "back": "كل الرموز",
+      "settings": "الإعدادات"
+    },
+    "kpi": {
+      "redemptions": "مرات الاستخدام",
+      "remaining": "المتبقي",
+      "activeSubscriptions": "الاشتراكات النشطة",
+      "revoked": "الملغاة",
+      "lastRedeemed": "آخر استخدام",
+      "notYet": "ليس بعد"
+    },
+    "chart": {
+      "title": "مرات الاستخدام بمرور الوقت",
+      "subtitle": "يوميًا، حسب وقت كل استخدام",
+      "empty": "لا توجد مرات استخدام بعد."
+    }
+  },
+  "plans": {
+    "default": "افتراضية",
+    "noFeatures": "لا توجد قيم استحقاق.",
+    "validation": {
+      "key": "استخدم من 2 إلى 63 حرفًا صغيرًا أو رقمًا أو شرطة.",
+      "name": "أدخل اسمًا.",
+      "duplicate": "المفتاح {key} مُدرج مرتين."
+    },
+    "create": {
+      "title": "خطة جديدة",
+      "open": "خطة جديدة"
+    },
+    "edit": {
+      "title": "تعديل {name}",
+      "open": "تعديل {name}"
+    },
+    "fields": {
+      "key": "المفتاح",
+      "keyHelp": "معرّف ثابت، مثل team-pilot.",
+      "keyLocked": "لا يمكن تغيير مفتاح الخطة.",
+      "name": "الاسم",
+      "description": "الوصف",
+      "features": "قيم الاستحقاق",
+      "featuresHelp": "تتحقق الشيفرة من هذه المفاتيح، لا من أسماء الخطط. استخدم أرقامًا، أو true أو false، أو unlimited. القيمة الفارغة تزيل المفتاح.",
+      "featureKey": "مفتاح الاستحقاق",
+      "featureValue": "قيمة {key}",
+      "emptyRemoves": "الفارغ يزيله",
+      "clearValue": "مسح {key}",
+      "addFeature": "إضافة قيمة"
+    },
+    "featureNames": {
+      "usage_monthlyCostUsd_max": "سقف التكلفة الشهرية (USD)",
+      "topics_max": "المواضيع",
+      "schedule_minIntervalMinutes": "أقصر فاصل للجدول (بالدقائق)",
+      "runs_daily_max": "عمليات التشغيل يوميًا",
+      "audio_enabled": "الصوت",
+      "audio_monthlyMinutes_max": "دقائق الصوت شهريًا",
+      "email_enabled": "البريد الإلكتروني",
+      "mobile_access": "تطبيق الهاتف",
+      "endpoints_custom": "نقاط نهاية نماذج خاصة",
+      "artifacts_pinned_max": "التقارير المثبّتة"
+    },
+    "assignments": {
+      "title": "خطط المستخدم",
+      "help": "اختر مستخدمًا لعرض كل فترات الخطط لديه، بما فيها التي تبدأ لاحقًا، وإلغاء إحداها.",
+      "plan": "الخطة",
+      "source": "المصدر",
+      "starts": "البدء",
+      "ends": "الانتهاء",
+      "state": "الوضع",
+      "note": "ملاحظة",
+      "revoke": "إلغاء",
+      "revokeTitle": "إلغاء الخطة",
+      "revokeMessage": "إلغاء {plan} لهذا المستخدم؟ تنتهي الآن.",
+      "revoked": "تم إلغاء الخطة",
+      "empty": "لا توجد خطط مسندة",
+      "emptyMessage": "هذا المستخدم على الخطة الافتراضية."
+    },
+    "sources": {
+      "Default": "افتراضية",
+      "Admin": "المسؤول",
+      "Promo": "رمز ترويجي",
+      "Billing": "الفوترة"
+    },
+    "states": {
+      "current": "حالية",
+      "upcoming": "قادمة",
+      "ended": "منتهية",
+      "revoked": "ملغاة"
+    },
+    "grant": {
+      "open": "منح خطة",
+      "title": "منح خطة",
+      "titleFor": "منح خطة لـ {email}",
+      "confirm": "منح",
+      "note": "ملاحظة",
+      "noteHelp": "سبب حصول هذا المستخدم على الخطة. يظهر في سجل التدقيق.",
+      "done": "تم منح الخطة لـ {email}"
+    },
+    "userPanel": {
+      "action": "الخطة",
+      "title": "خطة {email}"
+    }
+  },
+  "account": {
+    "plan": {
+      "title": "الخطة",
+      "endsOn": "تنتهي خطتك في {date}.",
+      "noEnd": "ليس لخطتك تاريخ انتهاء.",
+      "limits": "الحدود",
+      "upcoming": "تبدأ لاحقًا",
+      "anotherPlan": "خطة أخرى",
+      "period": "من {from} إلى {to}",
+      "periodOpen": "من {from}، بلا نهاية",
+      "redeemTitle": "استخدام رمز",
+      "code": "الرمز الترويجي",
+      "codeHelp": "رمز حصلت عليه. رمز الخطة التي لديك بالفعل يبدأ عند انتهاء الخطة الحالية.",
+      "redeem": "استخدام",
+      "redeemed": "تم استخدام الرمز. لديك الآن {plan}."
+    }
+  },
+  "email": {
+    "memberNotice": "ترى الرسائل المرسلة إليك. يرى المسؤولون كل الرسائل.",
+    "resend": "إعادة الإرسال",
+    "resent": "أُعيد الإرسال إلى {recipient}",
+    "columns": {
+      "time": "الوقت",
+      "template": "القالب",
+      "recipient": "المستلم",
+      "subject": "الموضوع",
+      "status": "الحالة",
+      "attempts": "المحاولات",
+      "sent": "تاريخ الإرسال",
+      "topic": "الموضوع البحثي",
+      "providerId": "معرّف المزوّد"
+    },
+    "statuses": {
+      "Queued": "في قائمة الانتظار",
+      "Sending": "جارٍ الإرسال",
+      "Sent": "مُرسلة",
+      "Failed": "فشلت",
+      "Suppressed": "محظورة",
+      "Skipped": "متخطاة"
+    },
+    "templates": {
+      "RunDigest": "ملخص التشغيل",
+      "BriefingPublished": "نُشر موجز",
+      "RunFailed": "فشل التشغيل",
+      "PreferenceProposal": "اقتراح تفضيل",
+      "Test": "اختبار"
+    },
+    "chart": {
+      "title": "الرسائل يوميًا حسب الحالة",
+      "subtitle": "آخر {days} يوم",
+      "empty": "لا توجد رسائل بريد إلكتروني في هذه الفترة."
+    },
+    "empty": {
+      "title": "لم تُرسل أي رسالة بعد",
+      "message": "تظهر الرسائل هنا بعد عمليات التشغيل والموجزات والاختبارات."
+    },
+    "delete": {
+      "title": "حذف الرسالة",
+      "message": "حذف \"{subject}\" المرسلة إلى {recipient} من صندوق الصادر؟"
+    },
+    "preview": {
+      "title": "البريد الإلكتروني",
+      "runButton": "معاينة البريد",
+      "runTitle": "معاينة بريد التشغيل",
+      "to": "إلى {recipient}",
+      "format": "التنسيق",
+      "html": "معروض",
+      "text": "نص عادي",
+      "frame": "الرسالة المعروضة",
+      "noHtml": "لا تحتوي هذه الرسالة على نص HTML.",
+      "noText": "لا تحتوي هذه الرسالة على نص عادي."
+    },
+    "test": {
+      "button": "إرسال رسالة اختبار",
+      "sent": "أُضيفت رسالة الاختبار إلى قائمة الانتظار لـ {recipient}",
+      "failed": "تعذّر إرسال رسالة الاختبار: {message}",
+      "settingsHelp": "احفظ تغييراتك أولًا، ثم أرسل لنفسك رسالة اختبار."
+    }
+  },
+  "emailPrefs": {
+    "title": "تفضيلات البريد الإلكتروني",
+    "address": "يُرسل البريد إلى {address}.",
+    "saved": "تم حفظ تفضيلات البريد الإلكتروني",
+    "categories": {
+      "runEmails": "رسائل التشغيل",
+      "briefingEmails": "رسائل الموجزات",
+      "failureEmails": "رسائل الإخفاق"
+    },
+    "help": {
+      "runEmails": "ملخص بعد كل تشغيل لمواضيعك.",
+      "briefingEmails": "عند نشر موجز إصدار أو تشغيل.",
+      "failureEmails": "عند فشل تشغيل."
+    },
+    "unsubscribedTitle": "المواضيع التي ألغيت الاشتراك فيها",
+    "noUnsubscribed": "تصلك رسائل التشغيل لكل موضوع يرسلها.",
+    "resubscribeHelp": "لتلقي رسائل التشغيل لأحد هذه المواضيع مجددًا، استخدم الرابط في آخر رسالة منه."
+  },
+  "feedbackControl": {
+    "rate": "قيّم هذا",
+    "rateItem": "تقييم {title}",
+    "rateType": "تقييم {type}",
+    "rateSection": "تقييم القسم {section}",
+    "sectionPrompt": "هل كان هذا القسم ذا صلة؟",
+    "isRelevant": "هل كان هذا ذا صلة؟",
+    "isAccurate": "كيف كان أداء هذا التوقع؟",
+    "isUseful": "هل كان هذا مفيدًا؟",
+    "why": "لماذا؟",
+    "whyHelp": "اختياري. تُعلّم أسبابك البحث أي العناصر يحتفظ بها أو يستبعدها.",
+    "whyTitle": "لماذا هذا التقييم؟",
+    "whyAdd": "إضافة السبب",
+    "whyEdit": "تعديل السبب",
+    "ratedAs": "التقييم: {rating}",
+    "retract": "سحب التقييم",
+    "actions": {
+      "relevant": "ذو صلة",
+      "somewhat": "إلى حد ما",
+      "not-relevant": "ليس ذا صلة",
+      "accurate": "دقيق",
+      "partially": "جزئيًا",
+      "inaccurate": "غير دقيق",
+      "too-early": "من المبكر الحكم",
+      "useful": "مفيد",
+      "not-useful": "غير مفيد",
+      "none": "بلا تقييم"
+    }
+  },
+  "insights": {
+    "noData": "لا توجد بيانات لهذه الفترة بعد.",
+    "withCount": "{label} ({count})",
+    "scope": {
+      "days": "{count, plural, zero {0 أيام} one {يوم واحد} two {يومان} few {# أيام} many {# يومًا} other {# يوم}}",
+      "topic": "الموضوع",
+      "allTopics": "كل المواضيع",
+      "everyone": "كل من في المستأجر"
+    },
+    "topic": {
+      "last90": "آخر 90 يومًا"
+    },
+    "relevance": {
+      "precision": "الدقة",
+      "precisionHelp": "النتائج المقيّمة التي وُصفت بأنها ذات صلة أو ذات صلة إلى حد ما",
+      "coverage": "التغطية",
+      "coverageHelp": "النتائج المعروضة التي حصلت على أي تقييم",
+      "shown": "النتائج المعروضة",
+      "rated": "النتائج المقيّمة",
+      "byDay": "الدقة بمرور الوقت",
+      "byDayHelp": "يوميًا، من التقييمات المقدّمة في ذلك اليوم",
+      "byTopic": "الدقة حسب الموضوع",
+      "byTier": "الدقة حسب المستوى",
+      "byDomain": "الدقة حسب نطاق المصدر",
+      "byDomainHelp": "النطاقات العشرون الأكثر تقييمًا",
+      "byDimension": "الدقة حسب البُعد"
+    },
+    "quality": {
+      "failureRate": "إخفاقات التحقق من الأدلة",
+      "quotes": "{count, plural, zero {لم يُفحص أي اقتباس} one {فُحص اقتباس واحد} two {فُحص اقتباسان} few {فُحصت # اقتباسات} many {فُحص # اقتباسًا} other {فُحص # اقتباس}}",
+      "byModel": "معدل إخفاق التحقق حسب النموذج",
+      "byModelHelp": "نسبة الاقتباسات المستخرجة التي لم تطابق نص المصدر المحفوظ"
+    },
+    "accuracy": {
+      "rate": "معدل الدقة",
+      "rateHelp": "الدقيقة زائد نصف الدقيقة جزئيًا، من المحسومة",
+      "brier": "متوسط درجة Brier",
+      "due": "مستحقة المراجعة",
+      "dueHelp": "انقضى الأفق الزمني دون حسم",
+      "resolved": "المحسومة",
+      "ofTotal": "{open} مفتوحة من {total}",
+      "unresolvable": "غير قابلة للحسم",
+      "agreement": "توافق الوكيل",
+      "agreementHelp": "{count, plural, zero {دون أي مراجعة محسومة} one {عبر مراجعة محسومة واحدة} two {عبر مراجعتين محسومتين} few {عبر # مراجعات محسومة} many {عبر # مراجعةً محسومة} other {عبر # مراجعة محسومة}}",
+      "latency": "مدة الحسم",
+      "days": "{count, plural, zero {0 أيام} one {يوم واحد} two {يومان} few {# أيام} many {# يومًا} other {# يوم}}",
+      "calibration": "منحنى المعايرة",
+      "calibrationHelp": "الثقة المعلنة مقابل عدد مرات تحقق التوقعات",
+      "byTopic": "الدقة حسب الموضوع",
+      "byTopicHelp": "معدل الدقة لكل موضوع من التوقعات المحسومة"
+    },
+    "feedback": {
+      "total": "عناصر الملاحظات",
+      "withReason": "مع سبب",
+      "withoutReason": "دون سبب",
+      "share": "{share} من الإجمالي",
+      "emailOpens": "فتحات روابط البريد",
+      "emailSubmits": "إرسالات روابط البريد",
+      "submitRate": "{rate} من الفتحات",
+      "byDay": "حجم الملاحظات يوميًا",
+      "byDayHelp": "التقييمات المقدّمة يوميًا، مقسّمة حسب ما إذا كانت تتضمن سببًا",
+      "byChannel": "الملاحظات حسب القناة",
+      "byTarget": "الملاحظات حسب نوع العنصر",
+      "listTitle": "كل عناصر الملاحظات",
+      "includeHistory": "تضمين التقييمات المستبدلة",
+      "noReason": "لم يُذكر سبب",
+      "current": "حالي",
+      "superseded": "مستبدل",
+      "editWhy": "تعديل السبب",
+      "saved": "تم حفظ السبب",
+      "retractTitle": "سحب هذا التقييم",
+      "retractMessage": "سحب هذا التقييم؟ يعود أي تقييم سابق للعنصر نفسه، إن وُجد، ليصبح الحالي.",
+      "retracted": "تم سحب التقييم",
+      "emptyTitle": "لا توجد ملاحظات بعد",
+      "emptyMessage": "قيّم النتائج والتوقعات والاقتراحات لتعلّم البحث ما يهمك.",
+      "columns": {
+        "when": "الوقت",
+        "target": "العنصر",
+        "rating": "التقييم",
+        "reason": "السبب",
+        "channel": "القناة",
+        "current": "الوضع"
+      },
+      "targetTypes": {
+        "Finding": "نتيجة",
+        "Prediction": "توقع",
+        "PredictionReview": "مراجعة توقع",
+        "Suggestion": "اقتراح",
+        "SourceItem": "مصدر",
+        "Domain": "نطاق",
+        "Briefing": "موجز",
+        "BriefingSection": "قسم موجز",
+        "LearnedPreference": "تفضيل مُتعلَّم"
+      },
+      "channels": {
+        "Dashboard": "لوحة التحكم",
+        "Email": "البريد الإلكتروني",
+        "Mobile": "تطبيق الهاتف",
+        "Api": "API",
+        "Mcp": "MCP"
+      },
+      "byChannelDay": "الملاحظات حسب اليوم والقناة",
+      "byChannelDayHelp": "التقييمات المقدّمة يوميًا، مكدّسة حسب مصدرها"
+    },
+    "reasons": {
+      "title": "محاور الأسباب",
+      "help": "محاور مستخلصة من أسبابك، مع آخر 30 يومًا بين قوسين",
+      "tagRecent": "{tag} [{recent}]",
+      "byWeek": "محاور الأسباب أسبوعيًا"
+    },
+    "suggestions": {
+      "title": "مآلات الاقتراحات",
+      "decision": "متوسط {days} يوم حتى القرار",
+      "outcomes": {
+        "new": "ما زالت جديدة ({share})",
+        "accepted": "مقبولة ({share})",
+        "done": "منجزة ({share})",
+        "snoozed": "مؤجلة ({share})",
+        "dismissed": "متجاهلة ({share})"
+      }
+    },
+    "preferences": {
+      "statement": "التفضيل",
+      "statementHelp": "جملة واحدة بسيطة، مثل: تخطَّ إعلانات تمويل الشركات.",
+      "kind": "النوع",
+      "origin": "المصدر",
+      "confidence": "الثقة",
+      "supportCount": "الملاحظات الداعمة",
+      "decided": "تاريخ القرار",
+      "allTopics": "كل المواضيع",
+      "topicHelp": "اتركه فارغًا لتطبيقه على كل المواضيع.",
+      "writeOwn": "اكتب تفضيلك",
+      "createTitle": "كتابة تفضيل",
+      "createHelp": "التفضيلات التي تكتبها تصبح نشطة فورًا وتُقدَّم للبحث مع مواضيعك.",
+      "editTitle": "تعديل التفضيل",
+      "detailTitle": "تفضيل مُتعلَّم",
+      "supportTitle": "{count, plural, =0 {الملاحظات الداعمة} zero {الملاحظات الداعمة} one {عنصر ملاحظات داعم واحد} two {عنصرا ملاحظات داعمان} few {# عناصر ملاحظات داعمة} many {# عنصرًا من الملاحظات الداعمة} other {# عنصر ملاحظات داعم}}",
+      "noSupport": "لا توجد ملاحظات مرتبطة بهذا التفضيل.",
+      "learnFor": "التعلّم من",
+      "chooseTopic": "اختر موضوعًا",
+      "learnNow": "التعلّم الآن",
+      "learning": "جارٍ التعلّم...",
+      "learned": "{count, plural, =0 {انتهت جولة التعلّم دون اقتراحات جديدة} zero {انتهت جولة التعلّم دون اقتراحات جديدة} one {اقتراح جديد واحد للمراجعة} two {اقتراحان جديدان للمراجعة} few {# اقتراحات جديدة للمراجعة} many {# اقتراحًا جديدًا للمراجعة} other {# اقتراح جديد للمراجعة}}",
+      "emptyTitle": "لا توجد تفضيلات مُتعلَّمة بعد",
+      "emptyMessage": "تظهر الاقتراحات بعد أن تقيّم بضعة عناصر مع ذكر الأسباب، أو اكتب تفضيلك.",
+      "deleteTitle": "حذف التفضيل",
+      "deleteMessage": "حذف \"{statement}\"؟ سيتوقف عن توجيه بحثك.",
+      "statuses": {
+        "Proposed": "مقترح",
+        "Active": "نشط",
+        "Rejected": "مرفوض",
+        "Disabled": "معطّل"
+      },
+      "origins": {
+        "Distilled": "مُتعلَّم",
+        "User": "كتبته أنت"
+      },
+      "kinds": {
+        "Prefer": "تفضيل",
+        "Avoid": "تجنّب",
+        "PreferSource": "تفضيل مصدر",
+        "AvoidSource": "تجنّب مصدر",
+        "StyleNote": "ملاحظة أسلوب"
+      },
+      "actions": {
+        "accept": "قبول",
+        "reject": "رفض",
+        "disable": "تعطيل",
+        "enable": "تفعيل"
+      },
+      "changed": {
+        "accept": "تم قبول التفضيل",
+        "reject": "تم رفض التفضيل",
+        "disable": "تم تعطيل التفضيل",
+        "enable": "تم تفعيل التفضيل"
+      }
+    },
+    "ranking": {
+      "title": "توصية الترتيب",
+      "rated": "{count, plural, zero {دون أي نتيجة مقيّمة} one {من نتيجة مقيّمة واحدة} two {من نتيجتين مقيّمتين} few {من # نتائج مقيّمة} many {من # نتيجةً مقيّمة} other {من # نتيجة مقيّمة}}",
+      "apply": "تطبيق هذه الأوزان",
+      "applyTitle": "تطبيق الأوزان الموصى بها",
+      "applyMessage": "استخدام أوزان الترتيب الموصى بها لـ {topic}؟ ستقيّم عمليات التشغيل المستقبلية النتائج بها.",
+      "applied": "تم تطبيق الأوزان",
+      "notStored": "لم يحفظ الخادم الأوزان لهذا الموضوع.",
+      "notEnough": "قيّم مزيدًا من النتائج في هذا الموضوع قبل أن تصبح التوصية موثوقة.",
+      "component": "المكوّن",
+      "current": "الحالي",
+      "recommended": "الموصى به",
+      "separation": "قوة التمييز",
+      "help": "قوة التمييز هي مدى تباعد درجات النتائج ذات الصلة وغير ذات الصلة في كل مكوّن. المكوّنات الأقدر على التمييز بينها تحصل على وزن أكبر."
+    },
+    "overview": {
+      "window": "{from} إلى {to}",
+      "help": "تغطي الأعداد الفترة المحددة ما لم يُذكر خلاف ذلك. التوقعات المفتوحة والاقتراحات الجديدة والمواضيع النشطة إجماليات حالية.",
+      "activeTopics": "المواضيع النشطة",
+      "runs": "عمليات التشغيل",
+      "runOutcomes": "{completed} مكتملة، {partial} جزئية، {failed} فاشلة",
+      "findingsShown": "النتائج المعروضة",
+      "findingsRated": "{count} مقيّمة",
+      "precision": "دقة الصلة",
+      "precisionHelp": "نسبة النتائج المقيّمة التي عُدّت ذات صلة",
+      "briefingsReady": "الموجزات الجاهزة",
+      "emailsSent": "الرسائل المرسلة",
+      "emailsFailed": "{count} فاشلة",
+      "predictionsOpen": "التوقعات المفتوحة",
+      "predictionsResolved": "{count} محسومة",
+      "accuracy": "دقة التوقعات",
+      "brier": "متوسط Brier {value}",
+      "feedback": "الملاحظات",
+      "feedbackWithReason": "{count} مع سبب",
+      "suggestionsNew": "الاقتراحات الجديدة",
+      "suggestionsAccepted": "{count} مقبولة أو منجزة",
+      "quoteFailure": "معدل إخفاق الاقتباسات",
+      "quoteFailureHelp": "الاقتباسات التي فشل التحقق منها",
+      "modelCost": "تكلفة النموذج",
+      "modelCalls": "{count} استدعاء للنموذج"
+    },
+    "email": {
+      "total": "الرسائل",
+      "pendingSkipped": "{pending} معلّقة، {skipped} متخطاة",
+      "sent": "المرسلة",
+      "notSent": "غير المرسلة",
+      "failed": "الفاشلة",
+      "deliveryRate": "معدل التسليم",
+      "deliveryRateHelp": "المرسلة من الرسائل المنتهية",
+      "meanTimeToSend": "متوسط وقت الإرسال",
+      "meanTimeToSendHelp": "من الإضافة إلى قائمة الانتظار حتى الإرسال",
+      "linkOpens": "فتحات روابط الملاحظات",
+      "linkSubmits": "إرسالات روابط الملاحظات",
+      "unsubscribes": "إلغاءات الاشتراك",
+      "byDay": "الرسائل يوميًا",
+      "byDayHelp": "الرسائل المضافة إلى قائمة الانتظار يوميًا، مقسّمة حسب ما إذا أُرسلت",
+      "byTemplate": "معدل التسليم حسب القالب",
+      "byTemplateHelp": "نسبة رسائل كل قالب التي أُرسلت",
+      "byStatus": "الرسائل حسب الحالة"
+    }
+  },
+  "mcp": {
+    "tokenWarning": "لا تلصق رمز جلستك أبدًا في عميل MCP أو ملف إعدادات. استخدم مفتاح وصول يمكنك إلغاؤه. لا تعرض هذه الصفحة رمزك أبدًا.",
+    "about": {
+      "title": "حول خادم MCP",
+      "body": "يتيح خادم MCP الخاص بـ My Morning News لـ Claude Code أو Claude Desktop أو بيئة تطوير أو وكيلك الخاص عرض مواضيعك، وقراءة الموجزات، والتعمق في الأدلة وراء النتيجة، وحسم التوقعات، والتصرف بناءً على الاقتراحات، وتقديم ملاحظات مع سبب.",
+      "privileges": "ليست له صلاحيات خاصة به. يذهب كل استدعاء إلى REST API بمفتاح وصولك، لذا تنطبق أدوارك وملكيتك تمامًا كما هنا. تُسجَّل الملاحظات المقدّمة عبره بالقناة MCP."
+    },
+    "url": {
+      "label": "عنوان URL لـ Streamable HTTP",
+      "help": "يعمل خادم MCP كعملية مستقلة عن REST API. غيّر هذا إذا كان خادمك يعمل في مكان آخر؛ تتبعه الأوامر أدناه.",
+      "invalid": "أدخل عنوان URL يبدأ بـ http أو https.",
+      "reset": "إعادة التعيين إلى العنوان المقترح"
+    },
+    "key": {
+      "title": "إنشاء مفتاح وصول",
+      "body": "أنشئ مفتاح وصول وسرًّا لعميل MCP، لتتمكن من إلغائه لاحقًا دون تغيير كلمة المرور. انسخ السر عند إنشائه؛ فهو يُعرض مرة واحدة فقط.",
+      "authMode": "اختر وضع المصادقة «رأس مباشر» أو «هجين»: يرسل عميل Streamable HTTP المفتاح والسر مع كل طلب، وهو ما ترفضه مفاتيح «طلبات موقّعة» و«تبادل الجلسة».",
+      "create": "إنشاء مفتاح وصول",
+      "askAdmin": "ينشئ المسؤول مفاتيح الوصول. اطلب من مسؤولك مفتاح وصول بوضع المصادقة «رأس مباشر»."
+    },
+    "connect": {
+      "title": "ربط عميل",
+      "claudeHttp": "Claude Code عبر Streamable HTTP",
+      "claudeHttpHelp": "استبدل العناصر النائبة بمفتاح الوصول والسر، ثم شغّل هذا في الطرفية.",
+      "claudeStdio": "Claude Code عبر stdio",
+      "claudeStdioHelp": "يشغّل خادم MCP من نسخة الشيفرة المصدرية. استبدل المسار والعناصر النائبة.",
+      "desktop": "Claude Desktop وعملاء آخرون",
+      "desktopHelp": "للعملاء الذين يقرؤون ملف JSON باسم mcpServers. استبدل المسار والعناصر النائبة.",
+      "run": "تشغيل خادم MCP",
+      "runHelp": "مع تشغيل حزمة Docker، يشغّل هذا خادم MCP على المنفذ 12105."
+    },
+    "try": {
+      "title": "جرّبه",
+      "topics": "اعرض مواضيعي في My Morning News",
+      "briefing": "اقرأ موجز اليوم",
+      "review": "شغّل الموجّه review_morning_briefing",
+      "safety": "تحتوي النتائج والموجزات على نصوص من صفحات الويب. يُطلب من العملاء التعامل معها كبيانات، لا كتعليمات أبدًا."
+    }
+  },
+  "sources": {
+    "searchPlaceholder": "البحث في العناوين والروابط",
+    "topic": "الموضوع",
+    "allTopics": "كل المواضيع",
+    "clearRun": "عرض المصادر من كل عمليات التشغيل",
+    "columns": {
+      "title": "المصدر",
+      "domain": "النطاق",
+      "published": "تاريخ النشر",
+      "contentType": "نوع المحتوى",
+      "firstRun": "أول ظهور في التشغيل",
+      "fetched": "تاريخ الجلب",
+      "timesSeen": "مرات الظهور",
+      "id": "المعرّف"
+    },
+    "detail": {
+      "title": "المصدر",
+      "open": "فتح الصفحة",
+      "monospace": "خط ثابت العرض",
+      "copyText": "نسخ النص",
+      "characters": "{count, plural, zero {{formatted} حرف} one {حرف واحد} two {حرفان} few {{formatted} أحرف} many {{formatted} حرفًا} other {{formatted} حرف}}"
+    },
+    "empty": {
+      "title": "لا توجد مصادر بعد",
+      "message": "تظهر المصادر بعد أن يبحث تشغيل في الويب ويجلب صفحات لأحد مواضيعك."
+    }
+  }
+}

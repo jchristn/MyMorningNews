@@ -1,0 +1,3750 @@
+{
+  "app": {
+    "name": "My Morning News"
+  },
+  "common": {
+    "active": "有効",
+    "add": "追加",
+    "cancel": "キャンセル",
+    "clearFilters": "フィルターをクリア",
+    "close": "閉じる",
+    "confirm": "確認",
+    "copied": "コピーしました",
+    "copy": "コピー",
+    "copyId": "ID をコピー",
+    "copyUrl": "URL をコピー",
+    "created": "作成日時",
+    "delete": "削除",
+    "dismiss": "閉じる",
+    "duplicate": "複製",
+    "edit": "編集",
+    "hidePassword": "パスワードを隠す",
+    "inactive": "無効",
+    "language": "言語",
+    "lastLoaded": "最終読み込み: {time}",
+    "loading": "読み込み中...",
+    "no": "いいえ",
+    "none": "なし",
+    "refresh": "更新",
+    "remove": "削除",
+    "retry": "再試行",
+    "save": "保存",
+    "saving": "保存中...",
+    "showPassword": "パスワードを表示",
+    "status": "ステータス",
+    "view": "表示",
+    "viewJson": "JSON を表示",
+    "working": "処理中...",
+    "yes": "はい"
+  },
+  "errors": {
+    "badRequest": "リクエストが無効です。",
+    "conflict": "変更が既存のデータと競合しています。",
+    "forbidden": "この操作を行う権限がありません。",
+    "generic": "問題が発生しました。",
+    "network": "サーバーに接続できませんでした。サーバー URL とサーバーが稼働していることを確認してください。",
+    "notFound": "要求された項目が見つかりませんでした。",
+    "requestId": "リクエスト ID",
+    "server": "サーバーでエラーが発生しました。",
+    "tooMany": "リクエストが多すぎます。しばらく待ってから再試行してください。",
+    "unauthorized": "セッションが無効になりました。もう一度サインインしてください。"
+  },
+  "access": {
+    "deniedTitle": "アクセスが拒否されました",
+    "deniedMessage": "あなたのロールではこのページにアクセスできません。必要な場合は管理者に依頼してください。"
+  },
+  "admin": {
+    "copyOf": "{name} のコピー",
+    "deleted": "削除しました",
+    "saved": "保存しました",
+    "tenant": "テナント"
+  },
+  "roles": {
+    "credential": "API 認証情報",
+    "globalAdmin": "グローバル管理者",
+    "member": "メンバー",
+    "none": "サインアウト済み",
+    "tenantAdmin": "テナント管理者"
+  },
+  "theme": {
+    "dark": "ダークテーマに切り替え",
+    "light": "ライトテーマに切り替え"
+  },
+  "json": {
+    "copy": "JSON をコピー",
+    "items": "{count, plural, other {# 件の項目}}",
+    "keys": "{count, plural, other {# 個のキー}}",
+    "raw": "生データ",
+    "title": "JSON",
+    "tree": "ツリー",
+    "view": "JSON を表示"
+  },
+  "table": {
+    "actions": "操作",
+    "any": "すべて",
+    "clearSelection": "選択を解除",
+    "emptyTitle": "まだ何もありません",
+    "filterBy": "{column} で絞り込み",
+    "firstPage": "最初のページ",
+    "jumpToPage": "ページ",
+    "lastPage": "最後のページ",
+    "nextPage": "次のページ",
+    "noMatchesMessage": "現在のフィルターに一致するレコードはありません。すべて表示するにはフィルターをクリアしてください。",
+    "noMatchesTitle": "一致なし",
+    "ofPages": "/ {total}",
+    "pageSize": "1 ページの行数",
+    "previousPage": "前のページ",
+    "selectAll": "このページのすべての行を選択",
+    "selectColumns": "列",
+    "selectRow": "行を選択",
+    "selected": "{count, plural, other {# 件選択中}}",
+    "showing": "{total} 件中 {from} から {to} 件"
+  },
+  "charts": {
+    "avgDuration": "平均所要時間",
+    "bucketAria": "{when}: {total} 件のリクエスト",
+    "failure": "失敗",
+    "range": "期間",
+    "requestActivity": "リクエストのアクティビティ",
+    "success": "成功",
+    "total": "合計",
+    "ranges": {
+      "hour": "過去 1 時間",
+      "day": "過去 1 日",
+      "week": "過去 1 週間",
+      "month": "過去 1 か月",
+      "quarter": "過去 3 か月"
+    },
+    "totals": {
+      "avg": "平均 {value}",
+      "failed": "{count} 件失敗",
+      "success": "{count} 件成功",
+      "total": "合計 {count} 件"
+    },
+    "rank": "順位",
+    "share": "割合"
+  },
+  "nav": {
+    "collapse": "サイドバーを折りたたむ",
+    "environment": "ローカル",
+    "expand": "サイドバーを展開",
+    "label": "メインナビゲーション",
+    "open": "ナビゲーションを開く",
+    "phase": "フェーズ {phase} で提供予定",
+    "phaseShort": "P{phase}",
+    "skip": "コンテンツへスキップ",
+    "version": "v{version}",
+    "groups": {
+      "start": "スタート",
+      "research": "リサーチ",
+      "briefings": "ブリーフィング",
+      "insights": "インサイト",
+      "configuration": "構成",
+      "observability": "オブザーバビリティ",
+      "administration": "管理",
+      "system": "システム"
+    },
+    "items": {
+      "home": "ホーム",
+      "today": "今日",
+      "topics": "トピック",
+      "runs": "実行",
+      "findings": "発見事項",
+      "sources": "ソース",
+      "predictions": "予測",
+      "suggestions": "提案",
+      "briefings": "ブリーフィング",
+      "editions": "エディション",
+      "templates": "テンプレート",
+      "relevance": "関連性",
+      "accuracy": "精度",
+      "feedback": "フィードバック",
+      "preferences": "好み",
+      "usage": "使用状況",
+      "models": "モデル",
+      "prompts": "プロンプト",
+      "vault": "保存済み認証情報",
+      "searchProviders": "検索プロバイダー",
+      "mcpServers": "MCP サーバー",
+      "voices": "音声",
+      "email": "メール",
+      "requests": "リクエスト履歴",
+      "explorer": "API エクスプローラー",
+      "health": "ヘルス",
+      "audit": "監査",
+      "tenants": "テナント",
+      "users": "ユーザー",
+      "credentials": "認証情報",
+      "roles": "ロールとアクセス",
+      "settings": "設定",
+      "serverInfo": "サーバー情報",
+      "profile": "プロフィール",
+      "adminUsage": "プラットフォーム使用状況",
+      "oneTimeRequests": "単発リクエスト",
+      "listen": "聴く",
+      "promoCodes": "プロモーションコード",
+      "insightsOverview": "概要",
+      "plans": "プラン",
+      "emailInsights": "メール配信",
+      "mcp": "MCP クライアント"
+    }
+  },
+  "routes": {
+    "home": {
+      "summary": "ワークスペースの概要"
+    },
+    "today": {
+      "summary": "ブリーフィングの最新エディションと、最近のリサーチの成果"
+    },
+    "topics": {
+      "summary": "リサーチしたいテーマ"
+    },
+    "runs": {
+      "summary": "リサーチの実行: 待機中、実行中、完了"
+    },
+    "findings": {
+      "summary": "リサーチで見つかったこと"
+    },
+    "sources": {
+      "summary": "リサーチで集めたソース"
+    },
+    "predictions": {
+      "summary": "予測とその結果"
+    },
+    "suggestions": {
+      "summary": "実行から見つかった、掘り下げる価値のあること"
+    },
+    "briefings": {
+      "summary": "すべてのブリーフィング: エディション、実行ごとのブリーフィング、単発レポート"
+    },
+    "editions": {
+      "summary": "スケジュールに沿ったブリーフィング。それぞれ独自のトピック、テンプレート、配信設定を持ちます"
+    },
+    "templates": {
+      "summary": "各ブリーフィングの内容を作成機能に伝える Markdown レイアウト"
+    },
+    "relevance": {
+      "summary": "発見事項の関連性の推移"
+    },
+    "accuracy": {
+      "summary": "予測の精度の推移"
+    },
+    "feedback": {
+      "summary": "これまでに送ったフィードバック"
+    },
+    "preferences": {
+      "summary": "フィードバックから学習した好み"
+    },
+    "usage": {
+      "summary": "コストはいくらで、最も多く使っているのは誰か"
+    },
+    "models": {
+      "summary": "モデルエンドポイント、タスクのロール割り当て、すべてのモデル呼び出し"
+    },
+    "prompts": {
+      "summary": "すべてのモデル呼び出しのバージョン管理されたプロンプトテンプレート"
+    },
+    "vault": {
+      "summary": "モデルと外部サービスの API キーとトークン (保存時に暗号化)"
+    },
+    "searchProviders": {
+      "summary": "Web 検索プロバイダー"
+    },
+    "mcpServers": {
+      "summary": "Model Context Protocol サーバー"
+    },
+    "voices": {
+      "summary": "音声ブリーフィング用の音声"
+    },
+    "email": {
+      "summary": "メール配信"
+    },
+    "requests": {
+      "summary": "サーバーが処理したすべての API リクエスト"
+    },
+    "explorer": {
+      "summary": "任意の API 操作を試す"
+    },
+    "health": {
+      "summary": "サーバーとコンポーネントのヘルス"
+    },
+    "audit": {
+      "summary": "セキュリティと変更のイベント"
+    },
+    "tenants": {
+      "summary": "分離されたワークスペース"
+    },
+    "users": {
+      "summary": "サインインできるユーザー"
+    },
+    "credentials": {
+      "summary": "スクリプトと連携用の API キー"
+    },
+    "roles": {
+      "summary": "ロール、権限、割り当て"
+    },
+    "settings": {
+      "summary": "サーバー構成"
+    },
+    "serverInfo": {
+      "summary": "バージョン、ランタイム、サービス URL"
+    },
+    "profile": {
+      "summary": "あなたのアカウント"
+    },
+    "adminUsage": {
+      "summary": "テナント別のプラットフォームコスト (価格決定の材料)"
+    },
+    "oneTimeRequests": {
+      "summary": "単発のレポート、ポッドキャスト、メールサマリー"
+    },
+    "listen": {
+      "summary": "すぐに再生できるブリーフィングの音声エピソード"
+    },
+    "promoCodes": {
+      "summary": "一定日数のプランを付与するコード (上限と使用状況付き)"
+    },
+    "plans": {
+      "summary": "プラン、その利用枠の値、各ユーザーのプラン"
+    },
+    "insightsOverview": {
+      "summary": "リサーチ、配信、学習、コストの主要な数値"
+    },
+    "emailInsights": {
+      "summary": "メールの配信状況、タイミング、各メッセージのリンクの使われ方"
+    },
+    "mcp": {
+      "summary": "Claude Code などの MCP クライアントをリサーチに接続します"
+    }
+  },
+  "placeholder": {
+    "title": "フェーズ {phase} で提供予定",
+    "message": "{feature} はフェーズ {phase} で予定されています。配置場所がわかるよう、ナビゲーションは先に用意しています。"
+  },
+  "topbar": {
+    "copyServerUrl": "サーバー URL をコピー",
+    "health": "サーバーのヘルス: {state}",
+    "logout": "サインアウト",
+    "repository": "GitHub のソースコード",
+    "tenant": "テナント",
+    "tenantTitle": "テナント ID: {tenant}"
+  },
+  "health": {
+    "autoRefresh": "自動更新",
+    "checkedAt": "{time} に確認",
+    "components": "コンポーネント",
+    "off": "オフ",
+    "overall": "全体",
+    "uptime": "稼働時間",
+    "version": "バージョン",
+    "states": {
+      "healthy": "正常",
+      "degraded": "低下",
+      "unreachable": "接続不可",
+      "unknown": "確認中"
+    },
+    "status": {
+      "Healthy": "正常",
+      "Degraded": "低下",
+      "Unhealthy": "異常",
+      "Enabled": "有効",
+      "Disabled": "無効"
+    },
+    "componentNames": {
+      "database": "データベース",
+      "requestHistory": "リクエスト履歴"
+    }
+  },
+  "login": {
+    "copyright": "© 2026 Lattice AI LLC",
+    "defaults": "初回起動ですか? テナント {tenant} で {email} とパスワード {password} を使ってサインインし、その後パスワードを変更してください。",
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "serverUrl": "サーバー URL",
+    "serverUrlHelp": "My Morning News サーバーのアドレスです。",
+    "sessionExpired": "セッションの有効期限が切れました。続行するにはもう一度サインインしてください。",
+    "signIn": "サインイン",
+    "signingIn": "サインイン中...",
+    "subtitle": "ワークスペースにサインイン",
+    "tagline": "関心のあるトピックをリサーチし、毎日良くなるブリーフィングで朝を迎えましょう。",
+    "tenant": "テナント",
+    "tenantHelp": "テナント ID です。新規インストールでは default を使用します。",
+    "title": "おかえりなさい"
+  },
+  "home": {
+    "summary": "サーバーで起きていることはこちらです。",
+    "title": "おはようございます、{name} さん",
+    "failures": {
+      "none": "最近の失敗はありません",
+      "noneMessage": "この期間のリクエストはすべて成功しました。",
+      "title": "最近の失敗"
+    },
+    "kpi": {
+      "average": "平均所要時間",
+      "failureRate": "失敗率",
+      "failures": "{count} 件失敗",
+      "health": "ヘルス",
+      "latency": "レイテンシ",
+      "requests": "リクエスト",
+      "tenants": "テナント",
+      "topics": "トピック",
+      "uptime": "稼働 {value}",
+      "users": "ユーザー",
+      "recurring": "定期トピック"
+    },
+    "next": {
+      "explorer": "エクスプローラーで API を試す",
+      "models": "モデルエンドポイントを追加 (フェーズ 3)",
+      "password": "デフォルトのパスワードを変更",
+      "title": "次のステップ",
+      "topic": "最初のトピックを作成",
+      "topics": "トピックを確認"
+    },
+    "services": {
+      "credentials": "認証情報",
+      "none": "外部サービスは構成されていません。",
+      "summary": "サーバーと一緒に動作するツール",
+      "title": "外部サービス"
+    },
+    "request": {
+      "title": "新しいリクエスト",
+      "summary": "単発のレポート、ポッドキャスト、メールサマリーを依頼します。"
+    },
+    "overview": {
+      "title": "{count, plural, other {過去 # 日間}}",
+      "more": "インサイトを開く"
+    }
+  },
+  "requests": {
+    "anonymous": "匿名",
+    "bulk": {
+      "allFilters": "すべてのリクエスト",
+      "button": "一致する項目を削除",
+      "confirm": "削除",
+      "done": "{count} 件のリクエストを削除しました",
+      "message": "{filters} に一致する {count} 件のリクエストを削除しますか? この操作は元に戻せません。",
+      "title": "一致するリクエストを削除"
+    },
+    "columns": {
+      "completed": "完了日時",
+      "duration": "所要時間",
+      "id": "ID",
+      "method": "メソッド",
+      "path": "パス",
+      "principal": "プリンシパル",
+      "route": "ルート",
+      "sourceIp": "送信元 IP",
+      "status": "ステータス",
+      "tenant": "テナント",
+      "time": "時刻",
+      "url": "URL"
+    },
+    "delete": {
+      "done": "リクエストを削除しました",
+      "message": "{method} {path} の記録を削除しますか?",
+      "title": "リクエストを削除"
+    },
+    "details": {
+      "metadata": "メタデータ",
+      "noBody": "本文は記録されていません。",
+      "noHeaders": "ヘッダーは記録されていません。",
+      "raw": "生の記録",
+      "requestBody": "リクエスト本文",
+      "requestHeaders": "リクエストヘッダー",
+      "responseBody": "レスポンス本文",
+      "responseHeaders": "レスポンスヘッダー",
+      "title": "リクエストの詳細",
+      "truncated": "{size} で切り詰め"
+    },
+    "empty": {
+      "filtered": "これらのフィルターに一致するリクエストはありません。",
+      "message": "クライアントが API を呼び出すと、ここにリクエストが表示されます。",
+      "title": "リクエストはまだありません"
+    },
+    "filters": {
+      "from": "開始",
+      "method": "メソッド",
+      "path": "パス",
+      "pathPlaceholder": "/v1.0/...",
+      "status": "ステータス",
+      "statusPlaceholder": "200",
+      "tenant": "テナント",
+      "tenantPlaceholder": "テナント ID",
+      "to": "終了"
+    },
+    "kpi": {
+      "avgDuration": "平均所要時間",
+      "failures": "失敗",
+      "matchingFilters": "フィルターに一致",
+      "onThisPage": "このページ",
+      "retained": "保持件数",
+      "successRate": "成功率",
+      "uniquePaths": "一意のパス"
+    }
+  },
+  "explorer": {
+    "authInherited": "リクエストには現在のセッショントークンが使われます。",
+    "body": "リクエスト本文",
+    "cancel": "キャンセル",
+    "confirmMessage": "{method} {url} を送信しますか? この操作はデータを変更または削除する可能性があります。",
+    "confirmTitle": "リクエストを送信",
+    "copyResponse": "レスポンスをコピー",
+    "duration": "所要時間",
+    "emptyBody": "レスポンスに本文はありません。",
+    "execute": "送信",
+    "format": "整形",
+    "headers": "ヘッダー",
+    "history": "{count, plural, other {最近のリクエスト (#)}}",
+    "invalidJson": "無効な JSON: {message}",
+    "name": "名前",
+    "noOperations": "一致する操作はありません。",
+    "noResponse": "レスポンスはまだありません",
+    "noResponseMessage": "リクエストを送信すると、ここにレスポンスが表示されます。",
+    "pathParams": "パスパラメーター",
+    "pickOperation": "操作を選択",
+    "pickOperationMessage": "リストから操作を選んでリクエストを作成します。",
+    "queryParams": "クエリパラメーター",
+    "running": "送信中...",
+    "search": "操作を検索",
+    "searchPlaceholder": "パスまたは名前で絞り込み",
+    "specMissing": "OpenAPI ドキュメントを読み込めませんでした。",
+    "status": "ステータス",
+    "streaming": "ストリーミング中...",
+    "url": "URL",
+    "validJson": "有効な JSON",
+    "value": "値",
+    "tabs": {
+      "preview": "プレビュー",
+      "body": "本文",
+      "headers": "ヘッダー",
+      "status": "ステータス",
+      "code": "コード"
+    },
+    "snippets": {
+      "curl": "curl",
+      "fetch": "JavaScript",
+      "csharp": "C#"
+    }
+  },
+  "settings": {
+    "discard": "変更を破棄",
+    "environment": "環境変数",
+    "live": "即時反映",
+    "noChanges": "保存する変更はありません",
+    "notSet": "未設定",
+    "overridden": "{variable} で上書きされています",
+    "pendingRestart": "反映するにはサーバーを再起動してください: {fields}",
+    "raw": "生の設定",
+    "restart": "サーバーを再起動",
+    "restartConfirm": "再起動",
+    "restartHelp": "サーバーが停止してから再起動します。処理中のリクエストは失敗する可能性があります。",
+    "restartRequired": "再起動が必要",
+    "restartTitle": "サーバーを再起動",
+    "restarted": "再起動を要求しました",
+    "restarting": "再起動中...",
+    "saved": "保存しました。{live} 件は即時反映、{restart} 件は再起動待ちです。",
+    "secretNotSet": "値は保存されていません",
+    "secretSet": "値が保存されています。置き換えるには新しい値を入力してください。",
+    "set": "設定済み",
+    "viewRaw": "生データを表示",
+    "groups": {
+      "rest": "Web サーバー",
+      "database": "データベース",
+      "logging": "ログ",
+      "auth": "認証",
+      "requestHistory": "リクエスト履歴",
+      "telemetry": "テレメトリ",
+      "pipeline": "リサーチパイプライン",
+      "diagnostics": "診断",
+      "models": "モデル",
+      "push": "プッシュ通知",
+      "storage": "ストレージ",
+      "scheduler": "スケジューラー",
+      "search": "検索",
+      "tts": "音声合成",
+      "email": "メール",
+      "learning": "学習",
+      "hosting": "ホスティング"
+    },
+    "fields": {
+      "rest_hostname": "ホスト名",
+      "rest_port": "ポート",
+      "rest_ssl": "TLS を使用",
+      "rest_corsAllowedOrigins": "CORS 許可オリジン",
+      "database_type": "データベースの種類",
+      "database_server": "サーバー",
+      "database_port": "ポート",
+      "database_databaseName": "データベース名",
+      "database_username": "ユーザー名",
+      "database_password": "パスワード",
+      "database_maxPoolSize": "最大プールサイズ",
+      "database_commandTimeoutSeconds": "コマンドのタイムアウト (秒)",
+      "logging_consoleLogging": "コンソールにログ出力",
+      "logging_fileLogging": "ファイルにログ出力",
+      "logging_logDirectory": "ログディレクトリ",
+      "logging_logFilename": "ログファイル名",
+      "logging_minimumSeverity": "最小重大度",
+      "auth_signingKey": "トークン署名キー",
+      "auth_sessionLifetimeMinutes": "セッションの有効期間 (分)",
+      "auth_adminApiKey": "管理者 API キー",
+      "auth_loginRateLimitPerMinute": "1 分あたりのログイン試行回数",
+      "auth_allowRefresh": "セッションの更新を許可",
+      "requestHistory_enabled": "リクエストを記録",
+      "requestHistory_maxRequestBodyBytes": "リクエスト本文の最大サイズ (バイト)",
+      "requestHistory_maxResponseBodyBytes": "レスポンス本文の最大サイズ (バイト)",
+      "requestHistory_retentionDays": "保持期間 (日)",
+      "telemetry_enabled": "テレメトリを有効化",
+      "telemetry_serviceName": "サービス名",
+      "telemetry_otlpEndpoint": "OTLP エンドポイント",
+      "telemetry_lokiEndpoint": "Loki エンドポイント",
+      "telemetry_prometheusEnabled": "Prometheus メトリクスを公開",
+      "telemetry_prometheusHostname": "Prometheus ホスト名",
+      "telemetry_prometheusPort": "Prometheus ポート",
+      "telemetry_grafanaUrl": "Grafana URL",
+      "telemetry_prometheusUrl": "Prometheus URL",
+      "telemetry_tempoUrl": "Tempo URL",
+      "telemetry_lokiUrl": "Loki URL",
+      "pipeline_maxConcurrentRuns": "最大同時実行数",
+      "pipeline_maxConcurrentModelCalls": "モデル呼び出しの最大同時数",
+      "pipeline_modelCallAttempts": "モデル呼び出しの試行回数",
+      "pipeline_structuredOutputRepairs": "構造化出力の修復回数",
+      "pipeline_runTimeoutMinutes": "実行のタイムアウト (分)",
+      "diagnostics_captureLlmPayloads": "モデルのペイロードを記録",
+      "diagnostics_llmPayloadRetentionDays": "ペイロードの保持期間 (日)",
+      "diagnostics_maxPayloadCharacters": "ペイロードの最大文字数",
+      "models_defaultChatModel": "デフォルトのチャットモデル",
+      "models_defaultOllamaEndpoint": "デフォルトの Ollama エンドポイント",
+      "models_defaultEmbeddingModel": "デフォルトの埋め込みモデル"
+    }
+  },
+  "serverInfo": {
+    "apiBase": "API ベース URL",
+    "database": "データベース",
+    "expires": "有効期限",
+    "health": "ヘルスエンドポイント",
+    "openapi": "OpenAPI ドキュメント",
+    "os": "オペレーティングシステム",
+    "pendingRestart": "再起動待ちの設定があります。",
+    "principal": "サインイン中のユーザー",
+    "principalType": "プリンシパルの種類",
+    "product": "製品",
+    "repository": "リポジトリ",
+    "runtime": "ランタイム",
+    "schemaVersion": "スキーマバージョン {version}",
+    "server": "サーバー",
+    "session": "セッション",
+    "started": "起動日時",
+    "swagger": "Swagger UI",
+    "uptime": "稼働時間",
+    "urls": "便利な URL",
+    "vector": "ベクトル検索",
+    "version": "バージョン"
+  },
+  "audit": {
+    "recordTitle": "監査レコード",
+    "columns": {
+      "event": "イベント",
+      "path": "パス",
+      "permission": "権限",
+      "principal": "プリンシパル",
+      "reason": "理由",
+      "result": "結果",
+      "sourceIp": "送信元 IP",
+      "tenant": "テナント",
+      "time": "時刻"
+    },
+    "empty": {
+      "message": "サインイン、権限チェック、変更がここに記録されます。",
+      "title": "監査イベントはありません"
+    },
+    "events": {
+      "AuthSuccess": "サインイン成功",
+      "AuthFailure": "サインイン失敗",
+      "SessionIssued": "セッション発行",
+      "SessionRefreshed": "セッション更新",
+      "SessionRevoked": "セッション取り消し",
+      "CredentialCreated": "認証情報の作成",
+      "CredentialUsed": "認証情報の使用",
+      "CredentialRevoked": "認証情報の取り消し",
+      "AuthorizationDenied": "アクセス拒否",
+      "AuthorizationBypass": "管理者によるバイパス",
+      "RoleChanged": "ロールの変更",
+      "PermissionChanged": "権限の変更",
+      "AssignmentChanged": "割り当ての変更",
+      "UserChanged": "ユーザーの変更",
+      "TenantChanged": "テナントの変更",
+      "SettingsChanged": "設定の変更",
+      "RestartRequested": "再起動の要求",
+      "CredentialRevealed": "認証情報の表示",
+      "VaultCredentialChanged": "保存済みシークレットの変更"
+    },
+    "authz": {
+      "Permitted": "許可",
+      "DeniedExplicit": "ルールにより拒否",
+      "DeniedImplicit": "拒否 (付与なし)",
+      "NotFound": "見つかりません",
+      "Conflict": "競合"
+    }
+  },
+  "tenants": {
+    "create": "テナントを作成",
+    "deleteMessage": "テナント {name} とその中のすべてを削除しますか? この操作は元に戻せません。",
+    "deleteTitle": "テナントを削除",
+    "description": "説明",
+    "edit": "テナントを編集",
+    "empty": "テナントはありません",
+    "region": "リージョン",
+    "timeZoneHelp": "America/New_York のような IANA タイムゾーンです。",
+    "columns": {
+      "created": "作成日時",
+      "id": "ID",
+      "name": "名前",
+      "protected": "保護",
+      "status": "ステータス",
+      "timeZone": "タイムゾーン"
+    }
+  },
+  "users": {
+    "create": "ユーザーを作成",
+    "deleteMessage": "ユーザー {email} を削除しますか? そのユーザーのセッションと認証情報は使えなくなります。",
+    "deleteTitle": "ユーザーを削除",
+    "edit": "ユーザーを編集",
+    "effectivePermissions": "有効な権限",
+    "empty": "ユーザーはいません",
+    "firstName": "名",
+    "lastName": "姓",
+    "locale": "ロケール",
+    "password": "パスワード",
+    "passwordHelp": "8 文字以上。",
+    "resetHelp": "現在のパスワードを維持する場合は空欄のままにします。",
+    "resetPassword": "パスワードをリセット",
+    "timeZone": "タイムゾーン",
+    "columns": {
+      "created": "作成日時",
+      "email": "メールアドレス",
+      "id": "ID",
+      "lastLogin": "最終サインイン",
+      "name": "名前",
+      "role": "ロール",
+      "status": "ステータス",
+      "tenantAdmin": "テナント管理者"
+    },
+    "permissions": {
+      "allowed": "許可",
+      "bypass": "管理者は権限チェックをバイパスします。{reason}",
+      "denied": "拒否",
+      "grants": "{count, plural, other {# 件の付与に基づく}}",
+      "resource": "リソース",
+      "title": "有効な権限"
+    }
+  },
+  "credentials": {
+    "allScopes": "すべて",
+    "copyAccessKey": "アクセスキーをコピー",
+    "copySecret": "シークレットキーをコピー",
+    "create": "認証情報を作成",
+    "createdTitle": "認証情報を作成しました",
+    "deleteMessage": "認証情報 {name} を削除しますか? これを使用しているものはすべて動作しなくなります。",
+    "deleteTitle": "認証情報を削除",
+    "edit": "認証情報を編集",
+    "empty": "認証情報はありません",
+    "emptyMessage": "スクリプトや連携から API を呼び出すには、認証情報を作成してください。",
+    "ownerHelp": "この認証情報はこのユーザーの権限で動作します。",
+    "ownerSelf": "自分",
+    "scopesHelp": "所有者ができることをすべて許可するには、すべてのチェックを外したままにします。",
+    "secretKey": "シークレットキー",
+    "secretOnce": "今すぐシークレットキーをコピーしてください。表示されるのは一度だけで、後から取得することはできません。",
+    "stored": "シークレットを保管しました",
+    "tenantHeader": "テナント ID",
+    "columns": {
+      "accessKey": "アクセスキー",
+      "created": "作成日時",
+      "expires": "有効期限",
+      "lastUsed": "最終使用",
+      "name": "名前",
+      "owner": "所有者",
+      "scopes": "スコープ",
+      "secret": "シークレット",
+      "status": "ステータス",
+      "authMode": "認証モード"
+    },
+    "scopes": {
+      "read": "読み取り",
+      "write": "書き込み",
+      "admin": "管理"
+    },
+    "authModes": {
+      "DirectHeader": "直接ヘッダー",
+      "SignedRequest": "署名付きリクエスト",
+      "SessionExchange": "セッション交換",
+      "Hybrid": "ハイブリッド"
+    },
+    "authModeHelp": {
+      "DirectHeader": "デフォルトです。ヘッダーでのアクセスキーとシークレット、署名付きリクエスト、セッション交換を受け付けます。",
+      "SignedRequest": "HMAC 署名付きリクエストのみを受け付けるため、シークレットが送信されることはありません。シークレットを含むヘッダーとセッション交換は拒否されます。",
+      "SessionExchange": "POST /v1.0/token でセッショントークンを取得する方法でのみ動作します。リクエストごとのシークレットと署名は拒否されます。",
+      "Hybrid": "直接ヘッダーと同じく、すべてを受け付けます。"
+    }
+  },
+  "rbac": {
+    "tabs": {
+      "roles": "ロール",
+      "permissions": "権限",
+      "assignments": "割り当て"
+    },
+    "builtIn": {
+      "TenantAdmin": "テナント管理者",
+      "SecurityAdmin": "セキュリティ管理者",
+      "Auditor": "監査担当者",
+      "TopicAdmin": "トピック管理者",
+      "Editor": "編集者",
+      "Viewer": "閲覧者",
+      "TenantMember": "テナントメンバー",
+      "Custom": "カスタム"
+    },
+    "scopes": {
+      "Tenant": "テナント全体",
+      "Resource": "単一のリソース"
+    },
+    "permissionTypes": {
+      "Permit": "許可",
+      "Deny": "拒否"
+    },
+    "roles": {
+      "builtIn": "組み込み",
+      "clone": "複製",
+      "create": "ロールを作成",
+      "custom": "カスタム",
+      "deleteMessage": "ロール {name} を削除しますか? 割り当てられたユーザーはその権限を失います。",
+      "deleteTitle": "ロールを削除",
+      "description": "説明",
+      "edit": "ロールを編集",
+      "kind": "種類",
+      "name": "名前",
+      "noPermissions": "このロールには権限がありません。",
+      "noTenantPermissions": "このテナントにはまだカスタム権限がありません。[権限] タブで作成してください。",
+      "permissions": "権限",
+      "scope": "スコープ"
+    },
+    "permissions": {
+      "create": "権限を作成",
+      "deleteMessage": "権限 {name} を削除しますか? この権限を含むロールからは削除されます。",
+      "deleteTitle": "権限を削除",
+      "edit": "権限を編集",
+      "name": "名前",
+      "operations": "操作",
+      "resources": "リソース",
+      "type": "種類"
+    },
+    "assignments": {
+      "assign": "割り当て",
+      "empty": "割り当てはありません",
+      "emptyMessage": "ロールを割り当てると、このユーザーにその権限が付与されます。",
+      "pickRole": "ロールを選択",
+      "remove": "削除",
+      "removeMessage": "このユーザーから {role} ロールを削除しますか?",
+      "removeTitle": "割り当てを削除",
+      "resource": "リソース ID",
+      "resourcePlaceholder": "リソース ID",
+      "role": "ロール",
+      "user": "ユーザー"
+    },
+    "operations": {
+      "All": "すべて",
+      "Create": "作成",
+      "Read": "読み取り",
+      "Write": "書き込み",
+      "Update": "更新",
+      "Delete": "削除",
+      "Execute": "実行",
+      "Admin": "管理"
+    },
+    "resources": {
+      "All": "すべて",
+      "Tenant": "テナント",
+      "Admin": "管理",
+      "User": "ユーザー",
+      "Credential": "認証情報",
+      "Session": "セッション",
+      "Role": "ロール",
+      "Permission": "権限",
+      "Assignment": "割り当て",
+      "Audit": "監査",
+      "RequestHistory": "リクエスト履歴",
+      "Settings": "設定",
+      "Topic": "トピック",
+      "Schedule": "スケジュール",
+      "RefinementSession": "絞り込みセッション",
+      "Run": "実行",
+      "Finding": "発見事項",
+      "Source": "ソース",
+      "Evidence": "根拠",
+      "Prediction": "予測",
+      "Suggestion": "提案",
+      "Feedback": "フィードバック",
+      "LearnedPreference": "学習した好み",
+      "Briefing": "ブリーフィング",
+      "Edition": "エディション",
+      "Template": "テンプレート",
+      "Prompt": "プロンプト",
+      "ModelEndpoint": "モデルエンドポイント",
+      "SearchProvider": "検索プロバイダー",
+      "Voice": "音声",
+      "Media": "メディア",
+      "EmailMessage": "メールメッセージ",
+      "Analytics": "分析"
+    }
+  },
+  "profile": {
+    "changePassword": "パスワードを変更",
+    "confirmPassword": "新しいパスワードの確認",
+    "currentPassword": "現在のパスワード",
+    "details": "詳細",
+    "emailHelp": "メールアドレスの変更は管理者に依頼してください。",
+    "mismatch": "パスワードが一致しません。",
+    "newPassword": "新しいパスワード",
+    "password": "パスワード",
+    "passwordChanged": "パスワードを変更しました",
+    "saved": "プロフィールを保存しました",
+    "timeZoneHelp": "ブラウザーのタイムゾーン ({zone}) を使う場合は空欄のままにします。"
+  },
+  "enums": {
+    "task": {
+      "Refinement": "絞り込み",
+      "QueryPlanning": "クエリ計画",
+      "Extraction": "抽出",
+      "Scoring": "スコアリング",
+      "Synthesis": "統合",
+      "Prediction": "予測",
+      "Suggestion": "提案",
+      "Composition": "作成",
+      "PodcastScript": "ポッドキャスト台本",
+      "FeedbackAnalysis": "フィードバック分析",
+      "Embedding": "埋め込み"
+    },
+    "provider": {
+      "Anthropic": "Anthropic",
+      "OpenAi": "OpenAI",
+      "OpenAiCompatible": "OpenAI 互換",
+      "Ollama": "Ollama",
+      "Gemini": "Gemini",
+      "XAi": "xAI",
+      "OllamaCloud": "Ollama Cloud"
+    },
+    "reasoningEffort": {
+      "None": "なし",
+      "Minimal": "最小",
+      "Low": "低",
+      "Medium": "中",
+      "High": "高",
+      "XHigh": "非常に高い",
+      "Max": "最大"
+    },
+    "vaultKind": {
+      "ApiKey": "API キー",
+      "BearerToken": "Bearer トークン",
+      "BasicAuth": "Basic 認証",
+      "CustomHeader": "カスタムヘッダー",
+      "ConnectionString": "接続文字列"
+    },
+    "vaultProvider": {
+      "Anthropic": "Anthropic",
+      "OpenAi": "OpenAI",
+      "Gemini": "Gemini",
+      "XAi": "xAI",
+      "OllamaCloud": "Ollama Cloud",
+      "OpenAiCompatible": "OpenAI 互換",
+      "Tavily": "Tavily",
+      "YouCom": "You.com",
+      "Mailgun": "Mailgun",
+      "ElevenLabs": "ElevenLabs",
+      "Mcp": "MCP サーバー",
+      "Custom": "カスタム"
+    },
+    "intervalType": {
+      "EveryNMinutes": "N 分ごと",
+      "EveryNHours": "N 時間ごと",
+      "EveryNDays": "N 日ごと",
+      "EveryNWeeks": "N 週間ごと",
+      "DaysOfWeek": "曜日を指定",
+      "DaysOfMonth": "日付を指定",
+      "Once": "1 回のみ",
+      "Cron": "Cron (上級)",
+      "Manual": "手動のみ"
+    },
+    "missedRunPolicy": {
+      "Skip": "スキップする",
+      "RunOnceOnRecovery": "復旧時に 1 回実行"
+    },
+    "questionKind": {
+      "SingleChoice": "1 つ選択",
+      "MultiChoice": "複数選択",
+      "Scale": "1 から 5 の評価",
+      "YesNo": "はい/いいえ",
+      "FreeText": "自由記述"
+    },
+    "dimensionWeight": {
+      "High": "高",
+      "Normal": "標準",
+      "Low": "低",
+      "Exclude": "除外"
+    },
+    "constraintKind": {
+      "IncludeKeyword": "含めるキーワード",
+      "ExcludeKeyword": "除外するキーワード",
+      "IncludeEntity": "常に含める",
+      "ExcludeEntity": "常に無視",
+      "PreferredDomain": "優先ドメイン",
+      "BlockedDomain": "ブロックするドメイン",
+      "TrackedQuestion": "追跡する質問",
+      "FeedUrl": "フィード",
+      "SeedUrl": "起点ページ"
+    },
+    "topicStatus": {
+      "Draft": "下書き",
+      "Active": "有効",
+      "Paused": "一時停止",
+      "Archived": "アーカイブ済み"
+    },
+    "audienceLevel": {
+      "Beginner": "初心者",
+      "Practitioner": "実務者",
+      "Expert": "専門家"
+    },
+    "horizon": {
+      "Days": "日",
+      "Weeks": "週",
+      "Months": "月",
+      "Years": "年"
+    },
+    "runStatus": {
+      "Queued": "待機中",
+      "Running": "実行中",
+      "Completed": "完了",
+      "PartiallySucceeded": "一部成功",
+      "Failed": "失敗",
+      "Cancelled": "キャンセル済み",
+      "Skipped": "スキップ"
+    },
+    "runTrigger": {
+      "Schedule": "スケジュール",
+      "Manual": "今すぐ実行",
+      "Request": "単発リクエスト",
+      "Edition": "エディション",
+      "Preview": "プレビュー"
+    },
+    "requestStatus": {
+      "Clarifying": "回答待ち",
+      "Scheduled": "予定済み",
+      "Running": "実行中",
+      "Completed": "完了",
+      "Failed": "失敗",
+      "Cancelled": "キャンセル済み",
+      "Declined": "辞退"
+    },
+    "deliverable": {
+      "Report": "レポート",
+      "Podcast": "ポッドキャスト",
+      "Email": "メール"
+    },
+    "deliverableLength": {
+      "Short": "短め",
+      "Standard": "標準",
+      "Long": "長め"
+    },
+    "findingTier": {
+      "MustRead": "必読",
+      "WorthALook": "一読の価値あり",
+      "Fyi": "参考",
+      "BelowThreshold": "しきい値未満"
+    },
+    "findingCategory": {
+      "News": "ニュース",
+      "Release": "リリース",
+      "Research": "研究",
+      "Opinion": "意見",
+      "Tutorial": "チュートリアル",
+      "Data": "データ",
+      "Other": "その他"
+    },
+    "evidenceRole": {
+      "Supports": "裏付け",
+      "Contradicts": "反証",
+      "Context": "背景"
+    },
+    "predictionStatus": {
+      "Open": "未解決",
+      "ProposedResolved": "解決案あり",
+      "Accurate": "的中",
+      "PartiallyAccurate": "一部的中",
+      "Inaccurate": "外れ",
+      "Unresolvable": "判定不能",
+      "Withdrawn": "取り下げ"
+    },
+    "suggestionStatus": {
+      "New": "新規",
+      "Accepted": "承諾済み",
+      "Snoozed": "スヌーズ中",
+      "Dismissed": "却下",
+      "Done": "完了"
+    },
+    "suggestionPriority": {
+      "High": "高",
+      "Medium": "中",
+      "Low": "低"
+    },
+    "suggestionEffort": {
+      "Minutes": "分",
+      "Hours": "時間",
+      "Days": "日"
+    },
+    "stageStatus": {
+      "Pending": "保留中",
+      "Running": "実行中",
+      "Succeeded": "成功",
+      "Failed": "失敗",
+      "Skipped": "スキップ"
+    },
+    "runStage": {
+      "AssembleContext": "コンテキストの準備",
+      "PlanQueries": "クエリの計画",
+      "Search": "検索",
+      "Filter": "フィルター",
+      "Fetch": "取得",
+      "Extract": "抽出",
+      "Embed": "埋め込み",
+      "Dedupe": "重複除去",
+      "Score": "スコアリング",
+      "Synthesize": "統合",
+      "ReviewPredictions": "予測の見直し",
+      "Predict": "予測",
+      "Suggest": "提案",
+      "ComposeBriefing": "ブリーフィングの作成",
+      "Notify": "通知"
+    },
+    "searchDisposition": {
+      "Pending": "保留中",
+      "Fetched": "取得済み",
+      "SkippedSeen": "既出",
+      "SkippedBlocked": "ブロック対象ドメイン",
+      "SkippedRobots": "robots.txt によりブロック",
+      "SkippedLimit": "取得上限超過",
+      "SkippedDuplicate": "重複",
+      "FetchFailed": "取得失敗"
+    },
+    "briefingKind": {
+      "Edition": "エディション",
+      "Run": "実行ブリーフィング",
+      "OneTime": "単発レポート"
+    },
+    "briefingStatus": {
+      "Queued": "待機中",
+      "Composing": "作成中",
+      "Ready": "準備完了",
+      "Failed": "失敗"
+    },
+    "briefingItemType": {
+      "Finding": "発見事項",
+      "Prediction": "予測",
+      "Suggestion": "提案"
+    },
+    "lookbackMode": {
+      "SinceLastEdition": "前回のエディション以降",
+      "FixedHours": "固定期間"
+    },
+    "artifactKind": {
+      "BriefingMarkdown": "Markdown",
+      "BriefingHtml": "HTML レポート",
+      "Audio": "音声",
+      "Chapters": "チャプター",
+      "Export": "エクスポート"
+    },
+    "mediaStatus": {
+      "Queued": "待機中",
+      "Scripting": "台本作成中",
+      "Synthesizing": "音声合成中",
+      "Ready": "準備完了",
+      "Failed": "失敗"
+    },
+    "mediaKind": {
+      "BriefingAudio": "ブリーフィング音声",
+      "PodcastEpisode": "ポッドキャストエピソード"
+    },
+    "ttsProvider": {
+      "OpenAiCompatibleSpeech": "OpenAI 互換の音声合成",
+      "Disabled": "無効"
+    }
+  },
+  "vault": {
+    "adminOnly": "保存済み認証情報を変更できるのは管理者のみです。",
+    "memberNotice": "保存されている認証情報を確認できます。追加、変更、ローテーション、表示にはテナント管理者の権限が必要です。",
+    "columns": {
+      "name": "名前",
+      "kind": "種類",
+      "provider": "プロバイダー",
+      "secret": "シークレット",
+      "lastUsed": "最終使用",
+      "lastRevealed": "最終表示",
+      "expires": "有効期限",
+      "status": "ステータス",
+      "created": "作成日時",
+      "id": "ID"
+    },
+    "fields": {
+      "headerName": "ヘッダー名",
+      "headerNameHelp": "シークレットを送る HTTP ヘッダーです (例: X-Api-Key)。",
+      "username": "ユーザー名",
+      "secret": "シークレット",
+      "secretHelp": "暗号化して保存されます。保存後は末尾 4 文字のみ表示されます。",
+      "expiresHelp": "任意。リマインダーとして使われます。期限切れのシークレットをサーバーが削除することはありません。",
+      "description": "説明"
+    },
+    "form": {
+      "createTitle": "認証情報を保存",
+      "editTitle": "認証情報を編集",
+      "rotateHint": "シークレット自体を置き換えるには、[シークレットをローテーション] を使用します。"
+    },
+    "empty": {
+      "title": "保存済み認証情報はありません",
+      "message": "API キーやトークンをここに一度保存すれば、モデルエンドポイント、検索プロバイダー、音声、メール設定で選択できます。"
+    },
+    "rotate": {
+      "action": "シークレットをローテーション",
+      "title": "シークレットをローテーション",
+      "message": "{name} として保存されているシークレットを置き換えます。この認証情報を使うものはすべて、次回の呼び出しから新しい値を使用します。",
+      "newSecret": "新しいシークレット",
+      "confirm": "ローテーション",
+      "required": "新しいシークレットを入力してください。",
+      "done": "シークレットをローテーションしました"
+    },
+    "reveal": {
+      "action": "表示",
+      "actionAdminOnly": "表示 (管理者のみ)",
+      "confirmTitle": "シークレットを表示",
+      "confirmMessage": "{name} の平文を表示しますか? {seconds} 秒間表示された後、再び非表示になります。",
+      "audited": "表示は監査されます。誰がどの認証情報をどこから表示したかが記録されます。",
+      "confirm": "表示",
+      "shownTitle": "シークレットを表示しました",
+      "hidesIn": "{count, plural, other {# 秒後に非表示}}",
+      "hideNow": "今すぐ非表示",
+      "copy": "シークレットをコピー"
+    },
+    "usage": {
+      "action": "使用箇所",
+      "title": "この認証情報の使用箇所",
+      "none": "この認証情報はまだ使われていません。",
+      "types": {
+        "ModelEndpoint": "モデルエンドポイント"
+      }
+    },
+    "delete": {
+      "title": "認証情報を削除",
+      "message": "{name} を削除しますか? これを使うものは、別の認証情報が設定されるまで動作しなくなります。"
+    }
+  },
+  "models": {
+    "add": "モデルを追加",
+    "adminOnly": "モデルエンドポイントを変更できるのは管理者のみです。",
+    "memberNotice": "構成されたモデルと割り当てを確認できます。変更やテストにはテナント管理者の権限が必要です。",
+    "created": "{name} を追加しました",
+    "unknown": "未確認",
+    "tabs": {
+      "endpoints": "エンドポイント",
+      "assignments": "割り当て",
+      "calls": "モデル呼び出し"
+    },
+    "columns": {
+      "name": "名前",
+      "provider": "プロバイダー",
+      "model": "モデル",
+      "embeddingModel": "埋め込みモデル",
+      "capabilities": "機能",
+      "price": "100 万トークンあたりの価格",
+      "priceValue": "入力 {input}、出力 {output}",
+      "noPrice": "価格未設定",
+      "reasoningEffort": "推論の強度",
+      "credential": "認証情報",
+      "lastValidated": "最終検証",
+      "status": "ステータス",
+      "id": "ID"
+    },
+    "capabilities": {
+      "chat": "チャット",
+      "tools": "ツール",
+      "noTools": "ツールなし",
+      "embeddings": "埋め込み",
+      "embeddingsDims": "埋め込み ({dims})"
+    },
+    "actions": {
+      "test": "テスト",
+      "validate": "検証",
+      "listModels": "モデル一覧"
+    },
+    "empty": {
+      "title": "最初のモデルを追加",
+      "message": "Anthropic、OpenAI、ローカルの Ollama サーバーなどのモデルプロバイダーに接続します。リサーチ、ランキング、ブリーフィングはすべてこれらのエンドポイントを通じて実行されます。"
+    },
+    "delete": {
+      "title": "モデルエンドポイントを削除",
+      "message": "{name} を削除しますか? 割り当てられていたタスクロールは、再割り当てするまで最初の有効なエンドポイントを使用します。"
+    },
+    "form": {
+      "createTitle": "モデルエンドポイントを追加",
+      "editTitle": "モデルエンドポイントを編集",
+      "duplicateTitle": "モデルエンドポイントを複製",
+      "endpoint": "ベース URL",
+      "endpointRequired": "ベース URL (必須)",
+      "endpointHelp": {
+        "Anthropic": "Anthropic API を使う場合は空欄のままにします。",
+        "OpenAi": "OpenAI API を使う場合は空欄のままにします。",
+        "OpenAiCompatible": "必須。サーバーは Docker で動作するため、このマシン上のサーバーには host.docker.internal を使用してください。",
+        "Ollama": "Ollama サーバーです。Docker コンテナーからこのマシン上の Ollama に接続するには host.docker.internal を使用してください。",
+        "Gemini": "Gemini API を使う場合は空欄のままにします。",
+        "XAi": "xAI API を使う場合は空欄のままにします。",
+        "OllamaCloud": "Ollama Cloud を使う場合は空欄のままにします。"
+      },
+      "apiKey": "API キー",
+      "keyModes": {
+        "new": "キーを入力",
+        "vault": "保存済み認証情報を使用",
+        "none": "キーなし"
+      },
+      "newKey": "新しい API キー",
+      "newKeyHelp": "認証情報保管庫に (暗号化して) 保存され、このエンドポイントに紐付けられます。現在のキーを維持する場合は空欄のままにします。",
+      "storedKey": "保存済み認証情報",
+      "storedKeyHelp": "[保存済み認証情報] ページでローテーションすると、それを使うすべてのエンドポイントに変更が反映されます。",
+      "pickCredential": "認証情報を選択",
+      "noKeyWarning": "このプロバイダーには通常 API キーが必要です。キーがないと呼び出しは失敗します。",
+      "capabilities": "提供機能",
+      "toolsDetected": "ツールの対応状況と埋め込みの次元数は、[検証] を実行すると検出されます。",
+      "embeddingDimensions": "埋め込みの次元数",
+      "embeddingDimensionsHelp": "[検証] で検出されます。",
+      "notDetected": "まだ検出されていません",
+      "maxTokens": "最大出力トークン数",
+      "maxTokensHelp": "ストリーミングを使わない呼び出しには約 16000 が適しています。",
+      "reasoningEffort": "推論の強度",
+      "reasoningEffortHelp": "このエンドポイントのデフォルトです。タスクロールの割り当てで上書きできます。",
+      "providerDefault": "プロバイダーのデフォルト",
+      "temperature": "Temperature",
+      "temperatureHelp": "任意のサンプリング温度です。",
+      "temperatureAnthropic": "使用されません。現在の Anthropic モデルは temperature を受け付けないため、送信されることはありません。",
+      "contextLength": "コンテキスト長",
+      "timeoutMs": "タイムアウト (ms)",
+      "timeoutHelp": "1 回の呼び出しあたり (再試行を含む)。",
+      "modelsLoaded": "{count, plural, other {# 個のモデルが利用可能です。リストから選択してください。}}",
+      "pricing": "価格",
+      "pricingHelp": "100 万トークンあたりの米ドル価格です。ローカルモデルでは空欄のままにします。コストは各呼び出しの記録時に計算されるため、後で編集しても履歴は変わりません。",
+      "inputCost": "入力",
+      "outputCost": "出力",
+      "cachedInputCost": "キャッシュ済み入力",
+      "cachedInputCostHelp": "キャッシュ読み取り。未設定の場合は入力価格を使用します。",
+      "cacheWriteCost": "キャッシュ書き込み",
+      "cacheWriteCostHelp": "未設定の場合は入力価格を使用します。",
+      "errors": {
+        "name": "名前は必須です。",
+        "endpointRequired": "OpenAI 互換エンドポイントにはベース URL が必要です。",
+        "endpointUrl": "絶対 URL を入力してください (例: http://host.docker.internal:8000/v1)。",
+        "model": "エンドポイントがチャットを提供する場合、チャットモデルは必須です。",
+        "embeddingModel": "エンドポイントが埋め込みを提供する場合、埋め込みモデルは必須です。",
+        "capability": "チャット、埋め込み、またはその両方を選択してください。",
+        "credential": "保存済み認証情報を選択してください。",
+        "number": "0 以上の数値を入力してください。"
+      }
+    },
+    "test": {
+      "title": "モデルをテスト",
+      "prompt": "プロンプト",
+      "model": "モデルの上書き",
+      "modelHelp": "任意。エンドポイントのモデルを使う場合は空欄のままにします。",
+      "run": "送信",
+      "running": "モデルの応答を待っています...",
+      "succeeded": "成功",
+      "failed": "失敗",
+      "tokens": "入力 {input}、出力 {output}",
+      "duration": "所要時間 {value}",
+      "tools": "ツール: {value}",
+      "output": "応答"
+    },
+    "validate": {
+      "title": "エンドポイントを検証",
+      "running": "接続、ツール対応、埋め込みを確認しています...",
+      "reachable": "接続可能",
+      "modelFound": "モデルが見つかりました",
+      "supportsTools": "ツール呼び出しに対応",
+      "embeddingDimensions": "埋め込みの次元数",
+      "validatedUtc": "確認日時"
+    },
+    "list": {
+      "title": "利用可能なモデル",
+      "filter": "モデルを絞り込み",
+      "none": "一致するモデルはありません。",
+      "name": "モデル",
+      "inputLimit": "入力上限",
+      "outputLimit": "出力上限",
+      "tools": "ツール",
+      "current": "使用中",
+      "use": "使用",
+      "used": "{model} を使用中"
+    },
+    "assignments": {
+      "intro": "各パイプラインタスクは、そのロールに割り当てられたエンドポイントで実行されます。トピックの上書きはテナントのデフォルトより優先され、テナントのデフォルトは最初の有効なエンドポイントより優先されます。",
+      "role": "タスクロール",
+      "endpoint": "エンドポイント",
+      "modelOverride": "モデルの上書き",
+      "reasoningEffort": "推論の強度",
+      "endpointFor": "{role} のエンドポイント",
+      "modelOverrideFor": "{role} のモデルの上書き",
+      "effortFor": "{role} の推論の強度",
+      "pickEndpoint": "エンドポイントを選択",
+      "endpointDefault": "エンドポイントのデフォルト",
+      "notApplicable": "使用しない",
+      "noTools": "ツール非対応",
+      "noToolsHelp": "このモデルはツールを呼び出せないため、構造化結果には JSON フォールバックが使われます。モデルによってはうまく処理できません。",
+      "undo": "変更を元に戻す",
+      "saved": "{role} の割り当てを保存しました",
+      "uses": {
+        "Refinement": "ウィザードの観点、質問、コンテキスト",
+        "QueryPlanning": "検索クエリの生成",
+        "Extraction": "ドキュメントからの発見事項と根拠",
+        "Scoring": "関連性の判定",
+        "Synthesis": "実行のまとめと傾向",
+        "Prediction": "予測とその見直し",
+        "Suggestion": "掘り下げの提案",
+        "Composition": "ブリーフィングの Markdown",
+        "PodcastScript": "音声の台本",
+        "FeedbackAnalysis": "理由のタグ付けと好み",
+        "Embedding": "重複除去と類似度のためのベクトル"
+      },
+      "overridesTitle": "トピックの上書き",
+      "overridesIntro": "トピックごとに、テナントのデフォルトとは別のエンドポイントでロールを実行できます。",
+      "noOverrides": "トピックの上書きはありません。",
+      "topic": "トピック",
+      "topicId": "トピック ID",
+      "topicIdHelp": "上書きするトピックの ID です。",
+      "addOverride": "トピックの上書きを追加",
+      "overrideAdded": "トピックの上書きを保存しました",
+      "deleteTitle": "トピックの上書きを削除",
+      "deleteMessage": "トピック {topic} の {role} の上書きを削除しますか? トピックはテナントのデフォルトに戻ります。"
+    },
+    "calls": {
+      "detailTitle": "モデル呼び出し",
+      "succeeded": "成功",
+      "failed": "失敗",
+      "dryRun": "テスト実行",
+      "system": "システム",
+      "tokensTitle": "入力 {input}、出力 {output}",
+      "payloadCleared": "利用できません。ペイロードは保持期間の経過後に消去されます。",
+      "openPrompt": "プロンプト {key} を開く",
+      "columns": {
+        "time": "時刻",
+        "task": "タスク",
+        "model": "モデル",
+        "promptKey": "プロンプト",
+        "user": "ユーザー",
+        "tokens": "トークン",
+        "ttft": "最初のトークン",
+        "duration": "所要時間",
+        "cost": "コスト",
+        "outcome": "結果"
+      },
+      "filters": {
+        "task": "タスク",
+        "endpoint": "エンドポイント",
+        "outcome": "結果",
+        "dryRun": "テスト実行",
+        "dryRunOnly": "テスト実行のみ",
+        "realOnly": "テスト実行を除外",
+        "from": "開始",
+        "to": "終了"
+      },
+      "empty": {
+        "title": "モデル呼び出しはまだありません",
+        "message": "すべてのモデル呼び出しが、トークン、タイミング、コストとともにここに記録されます。エンドポイントで [テスト] を試すか、プロンプトラボを実行してください。"
+      },
+      "sections": {
+        "attribution": "帰属",
+        "tokens": "トークン",
+        "timing": "タイミング",
+        "outcome": "結果とツール",
+        "cost": "コスト",
+        "prompt": "プロンプト",
+        "response": "レスポンス"
+      },
+      "fields": {
+        "provider": "プロバイダー",
+        "endpoint": "エンドポイント",
+        "user": "ユーザー",
+        "topic": "トピック",
+        "run": "実行",
+        "refinementSession": "絞り込みセッション",
+        "briefing": "ブリーフィング",
+        "promptKey": "プロンプトキー",
+        "promptVersion": "プロンプトのバージョン",
+        "inputTokens": "入力 (全体)",
+        "uncachedInputTokens": "キャッシュなし入力",
+        "cachedInputTokens": "キャッシュ済み入力",
+        "cacheWriteTokens": "キャッシュ書き込み",
+        "outputTokens": "出力",
+        "reasoningTokens": "推論",
+        "totalTokens": "合計",
+        "duration": "所要時間",
+        "timeToFirstToken": "最初のトークンまでの時間",
+        "streamingDuration": "ストリーミング時間",
+        "chunks": "チャンク",
+        "tokensPerSecond": "1 秒あたりの出力トークン",
+        "streamed": "ストリーミング",
+        "attempts": "試行回数",
+        "statusCode": "ステータスコード",
+        "finishReason": "終了理由",
+        "repairs": "構造化出力の修復",
+        "toolCalls": "ツール呼び出し",
+        "toolNames": "呼び出したツール",
+        "dryRun": "テスト実行",
+        "inputCost": "入力コスト",
+        "outputCost": "出力コスト",
+        "estimatedCost": "合計コスト"
+      }
+    }
+  },
+  "prompts": {
+    "guardrailNotice": "サーバーは、すべてのモデル呼び出しのシステムプロンプトの前に必ずスコープガードレールを置きます。プロンプトを編集しても削除できません。",
+    "searchPlaceholder": "キーまたは名前",
+    "filteredByKey": "キー: {key}",
+    "empty": "プロンプトはありません",
+    "open": "エディターを開く",
+    "back": "すべてのプロンプト",
+    "versionLabel": "v{version}",
+    "current": "現在",
+    "customized": "カスタマイズ済み",
+    "default": "デフォルト",
+    "noNote": "変更メモなし",
+    "saved": "新しいバージョンを保存しました",
+    "columns": {
+      "key": "キー",
+      "role": "ロール",
+      "scope": "スコープ",
+      "version": "バージョン",
+      "customized": "カスタマイズ済み",
+      "updated": "更新日時"
+    },
+    "scope": {
+      "tenant": "テナント",
+      "topic": "トピックの上書き",
+      "tenantOnly": "テナントのプロンプトのみ"
+    },
+    "panels": {
+      "versions": "バージョン",
+      "compare": "比較",
+      "lab": "プロンプトラボ"
+    },
+    "editor": {
+      "title": "テンプレート",
+      "panels": "プロンプトツール",
+      "unsaved": "未保存の変更",
+      "format": "YAML フロントマター (key、name、role、output、variables) 付きの Markdown で、その後に System セクションと User セクションが続きます。プレースホルダーにはフロントマターで宣言した変数名を使います。",
+      "missingUser": "テンプレートに User セクションの見出しがありません。## User という行を追加してください。",
+      "missingSystem": "テンプレートに System セクションの見出しがありません。ガードレールは引き続きシステムプロンプトとして送信されます。",
+      "invalid": "サーバーがこのバージョンを拒否しました。",
+      "variables": "宣言された変数",
+      "noVariables": "宣言された変数はありません。",
+      "changeNote": "変更メモ",
+      "changeNoteHelp": "任意。バージョン履歴に表示されます。",
+      "discard": "変更を破棄",
+      "save": "バージョンを保存",
+      "fields": {
+        "content": "テンプレート",
+        "key": "キー",
+        "user": "User セクション",
+        "variables": "変数"
+      }
+    },
+    "compareWithCurrent": "v{version} をエディターと比較",
+    "rollbackTo": "v{version} にロールバック",
+    "rollbackTitle": "ロールバック",
+    "rollbackMessage": "v{version} を現在のバージョンにしますか? その内容で新しいバージョンが作成されるため、何も失われません。",
+    "rollbackConfirm": "ロールバック",
+    "rolledBack": "v{version} にロールバックしました",
+    "reset": "デフォルトにリセット",
+    "resetTitle": "デフォルトにリセット",
+    "resetMessage": "このプロンプトを出荷時のデフォルトに置き換えますか? 新しいバージョンが作成されるため、後からロールバックできます。",
+    "resetDone": "デフォルトにリセットしました",
+    "deleteOverride": "上書きを削除",
+    "deleteTitle": "トピックの上書きを削除",
+    "deleteMessage": "トピック {topic} の {key} の上書きを削除しますか? トピックはテナントのプロンプトに戻ります。",
+    "diff": {
+      "from": "比較元",
+      "to": "比較先",
+      "draft": "エディター (未保存)",
+      "current": "エディター",
+      "default": "出荷時のデフォルト",
+      "label": "行の差分",
+      "added": "{count, plural, other {# 行追加}}",
+      "removed": "{count, plural, other {# 行削除}}",
+      "addedLine": "追加",
+      "removedLine": "削除",
+      "showAll": "変更のない行を表示",
+      "skipped": "{count, plural, other {変更のない行 # 行}}",
+      "identical": "2 つのバージョンは同一です。"
+    },
+    "override": {
+      "button": "トピックの上書きを作成",
+      "title": "トピックの上書きを作成",
+      "intro": "トピックの上書きは、1 つのトピックについてのみテナントのプロンプトを置き換えます。最初はテナントのプロンプトのコピーから始まります。",
+      "pickKey": "プロンプトを選択",
+      "topicId": "トピック ID",
+      "topicIdHelp": "このプロンプトの独自バージョンを使うトピックの ID です。",
+      "copyDraft": "エディターの未保存テキストから開始",
+      "create": "上書きを作成"
+    },
+    "lab": {
+      "intro": "入力した値でプロンプトを展開し、任意のモデルで実行します。実行はテスト実行です。モデル呼び出しとして記録されますが、リサーチには影響しません。",
+      "endpoint": "エンドポイント",
+      "assigned": "{role} に割り当て済み",
+      "model": "モデルの上書き",
+      "modelHelp": "任意。",
+      "variables": "変数",
+      "noVariables": "このプロンプトは変数を宣言していません。",
+      "useDraft": "エディターの未保存テキストを実行",
+      "run": "実行",
+      "running": "プロンプトを実行しています...",
+      "cost": "コスト {value}",
+      "costUnknown": "利用不可",
+      "unknownVariables": "未入力: {names}",
+      "guardrailNote": "以下の展開済みシステムプロンプトはテンプレートが生成したものです。サーバーはモデルを呼び出す際、その前にスコープガードレールを追加します。",
+      "renderedSystem": "展開済みシステムプロンプト",
+      "renderedUser": "展開済みユーザープロンプト",
+      "output": "出力",
+      "emptySection": "空です。",
+      "loggedAs": "記録 ID",
+      "openCall": "記録された呼び出しを開く"
+    }
+  },
+  "usage": {
+    "noData": "この期間のモデル呼び出しはありません。",
+    "noToolCalls": "この期間のツール呼び出しはありません。",
+    "total": "合計",
+    "exportCsv": "CSV をエクスポート",
+    "window": "{from} から {to}",
+    "kpi": {
+      "cost": "コスト",
+      "perCall": "呼び出しあたり {value}",
+      "calls": "モデル呼び出し",
+      "tokens": "トークン",
+      "tokensDetail": "入力 {input}、出力 {output}",
+      "failures": "失敗",
+      "failureRate": "呼び出しの {value}",
+      "avgTtft": "最初のトークン (平均)",
+      "p95Ttft": "最初のトークン (p95)"
+    },
+    "filters": {
+      "task": "タスク",
+      "endpoint": "エンドポイント",
+      "user": "ユーザー",
+      "userPlaceholder": "ユーザー ID",
+      "topic": "トピック",
+      "topicPlaceholder": "トピック ID",
+      "includeDryRun": "テスト実行を含める"
+    },
+    "groups": {
+      "User": "ユーザー",
+      "Model": "モデル",
+      "Task": "タスク",
+      "Provider": "プロバイダー",
+      "Topic": "トピック",
+      "PromptKey": "プロンプト",
+      "Day": "日",
+      "Tenant": "テナント"
+    },
+    "labels": {
+      "system": "システム",
+      "noTopic": "トピックなし",
+      "none": "なし",
+      "unknown": "不明"
+    },
+    "columns": {
+      "cost": "コスト",
+      "calls": "呼び出し",
+      "failures": "失敗",
+      "tokens": "トークン",
+      "inputTokens": "入力",
+      "cachedInputTokens": "キャッシュ済み入力",
+      "cacheWriteTokens": "キャッシュ書き込み",
+      "outputTokens": "出力",
+      "reasoningTokens": "推論",
+      "toolCalls": "ツール呼び出し",
+      "avgDuration": "平均所要時間",
+      "avgTtft": "最初のトークン (平均)",
+      "p95Ttft": "最初のトークン (p95)"
+    },
+    "tokens": {
+      "uncachedInput": "キャッシュなし入力",
+      "cachedInput": "キャッシュ済み入力",
+      "cacheWrite": "キャッシュ書き込み",
+      "output": "出力",
+      "reasoning": "推論"
+    },
+    "series": {
+      "average": "平均",
+      "p95": "p95",
+      "toolCallsPerCall": "呼び出しあたりのツール呼び出し"
+    },
+    "charts": {
+      "groupBy": "グループ化",
+      "costOverTime": "コストの推移",
+      "costOverTimeHelp": "期間ごとの推定コストです。各呼び出しの記録時に計算されます。",
+      "costByUser": "ユーザー別コスト",
+      "costByUserHelp": "上位 20 ユーザーとコストの割合です。行を選択すると、ページがそのユーザーで絞り込まれます。",
+      "costByModel": "モデル別コスト",
+      "costByTask": "タスク別コスト",
+      "costByTopic": "トピック別コスト",
+      "ttftByModel": "モデル別の最初のトークンまでの時間",
+      "ttftHelp": "ストリーミング呼び出しの平均と p95 です。",
+      "tokenMix": "トークン種別の内訳",
+      "tokenMixHelp": "出力には推論トークンは含まれず、別に表示されます。",
+      "toolCalls": "タスク別のツール呼び出し",
+      "toolCallsHelp": "モデル呼び出しあたりの平均ツール呼び出し数です。"
+    },
+    "breakdown": {
+      "title": "内訳",
+      "help": "選択したグループ化での、すべてのトークン種別、コストの割合、タイミングです。[CSV をエクスポート] では、この表がそのままダウンロードされます。"
+    },
+    "member": {
+      "notice": "テナント全体の使用状況は管理者と監査担当者に限定されています。これはあなた自身の使用状況です。",
+      "byTask": "タスク別のあなたのコスト"
+    },
+    "admin": {
+      "costByTenant": "テナント別コスト",
+      "costByTenantHelp": "すべてのテナントをコスト順に、プラットフォームコストに占める割合とともに表示します。",
+      "tenantTrend": "テナント別コストの推移",
+      "tenantTrendHelp": "{count, plural, other {期間を # 個の区間に分割しています。}} 上位のテナントは積み上げ表示され、それ以外はまとめて表示されます。",
+      "otherTenants": "その他のテナント",
+      "platformTrend": "プラットフォームコストの推移",
+      "costByModel": "モデル別のプラットフォームコスト",
+      "breakdownHelp": "すべてのテナントのトークン種別、コストの割合、タイミングです。[CSV をエクスポート] でこの表をダウンロードできます。"
+    }
+  },
+  "markdown": {
+    "mode": "エディターモード",
+    "write": "編集",
+    "preview": "プレビュー",
+    "empty": "プレビューする内容はまだありません。"
+  },
+  "schedule": {
+    "fields": {
+      "intervalType": "繰り返し",
+      "every": "間隔",
+      "everyHelp": "{min} から {max}",
+      "minuteOffset": "分",
+      "minuteOffsetHelp": "毎時の何分か (0 から 59)",
+      "timeZone": "タイムゾーン",
+      "timeZoneHelp": "時刻はこのタイムゾーンで計算され、夏時間の切り替えも考慮されます",
+      "runOnce": "実行日時",
+      "localTimeHelp": "{zone} の現地時刻",
+      "cron": "Cron 式",
+      "cronHelp": "5 つのフィールド: 分、時、日、月、曜日",
+      "daysOfWeek": "曜日",
+      "daysOfMonth": "日付",
+      "timesOfDay": "時刻",
+      "timeN": "時刻 {n}",
+      "start": "開始",
+      "end": "終了",
+      "optionalLocal": "任意 ({zone} の現地時刻)",
+      "missedRunPolicy": "実行を逃した場合",
+      "enabled": "有効"
+    },
+    "units": {
+      "minutes": "分",
+      "hours": "時間",
+      "days": "日",
+      "weeks": "週"
+    },
+    "presets": {
+      "weekdays": "平日",
+      "weekends": "週末",
+      "everyDay": "毎日"
+    },
+    "lastDay": "末日",
+    "removeTime": "この時刻を削除",
+    "addTime": "時刻を追加",
+    "enabledOn": "オン",
+    "enabledOff": "オフ",
+    "missedHelp": {
+      "Skip": "サーバー停止中に逃した実行はスキップされます。",
+      "RunOnceOnRecovery": "サーバーが復旧したときに、遅れを取り戻すための実行が 1 回行われます。"
+    },
+    "preview": {
+      "title": "次の 5 回の実行",
+      "checking": "確認中...",
+      "manual": "このトピックは [今すぐ実行] を押したときにのみ実行されます。",
+      "none": "予定されている実行はありません。開始日と終了日を確認してください。"
+    },
+    "summary": {
+      "EveryNMinutes": "{count, plural, =1 {毎分} other {# 分ごと}}",
+      "EveryNHours": "{count, plural, =1 {毎時 :{minute}} other {# 時間ごと、:{minute}}}",
+      "EveryNDays": "{count, plural, =1 {毎日} other {# 日ごと}} {times}",
+      "EveryNWeeks": "{count, plural, =1 {毎週} other {# 週間ごと}} {days} の {times}",
+      "DaysOfWeek": "{days} の {times}",
+      "DaysOfMonth": "毎月 {days} 日の {times}",
+      "Once": "{when} に 1 回",
+      "Cron": "Cron {expression}",
+      "Manual": "手動で実行したときのみ"
+    },
+    "saved": "スケジュールを保存しました",
+    "create": "スケジュールを作成",
+    "save": "スケジュールを保存",
+    "emptyTitle": "スケジュールはまだありません",
+    "emptyMessage": "スケジュールを追加してこのトピックを自動的にリサーチするか、手動で実行してください。",
+    "add": "スケジュールを追加",
+    "nextRun": "次回の実行",
+    "noNextRun": "予定なし",
+    "lastRun": "前回の実行",
+    "enableFor": "{name} を有効化",
+    "edit": "スケジュールを編集",
+    "delete": "スケジュールを削除",
+    "deleteTitle": "スケジュールを削除",
+    "deleteMessage": "スケジュール「{name}」を削除しますか? すでに待機中の実行には影響しません。"
+  },
+  "questions": {
+    "pickOne": "少なくとも 1 つの選択肢を選ぶか、回答を書くか、質問をスキップしてください。",
+    "somethingElse": "その他 (任意)",
+    "scaleLow": "まったく当てはまらない",
+    "scaleHigh": "非常に当てはまる",
+    "save": "回答を保存",
+    "why": "質問の理由: {reason}",
+    "answered": "回答済み",
+    "skipped": "スキップ済み",
+    "skip": "スキップ",
+    "skippedHint": "スキップしました。回答すると元に戻ります。"
+  },
+  "dimensions": {
+    "emptyTitle": "観点はまだありません",
+    "emptyMessage": "観点は、リサーチで扱う切り口です。提案を受けるか、自分で追加してください。",
+    "locked": "ロック済み",
+    "yours": "あなたの観点",
+    "suggested": "提案",
+    "why": "重要になりうる理由: {reason}",
+    "include": "含める",
+    "exclude": "除外",
+    "weightFor": "{name} の重み",
+    "unlock": "{name} のロックを解除",
+    "lock": "{name} をロック",
+    "unlockHint": "ロックを解除すると、再生成で置き換えられるようになります",
+    "lockHint": "ロックすると、再生成しても保持されます",
+    "edit": "{name} を編集",
+    "delete": "{name} を削除",
+    "add": "観点を追加",
+    "addTitle": "観点を追加",
+    "editTitle": "観点を編集",
+    "editHint": "編集した観点はあなたのものになり、再生成しても保持されます。",
+    "fields": {
+      "name": "名前",
+      "description": "説明",
+      "rationale": "あなたにとって重要な理由",
+      "weight": "重み",
+      "includeTerms": "含める語句",
+      "excludeTerms": "除外する語句",
+      "termsHelp": "語句はカンマで区切ります"
+    },
+    "deleteTitle": "観点を削除",
+    "deleteMessage": "観点「{name}」を削除しますか?"
+  },
+  "constraints": {
+    "count": "{count, plural, other {# 件}}",
+    "help": {
+      "IncludeKeyword": "結果の関連性を高める語句です。",
+      "ExcludeKeyword": "結果を除外する語句です。",
+      "IncludeEntity": "常に含める企業、製品、人物です。",
+      "ExcludeEntity": "常に無視する企業、製品、人物です。",
+      "PreferredDomain": "優先するサイトです (例: example.com)。",
+      "BlockedDomain": "使用しないサイトです。",
+      "TrackedQuestion": "継続して追う未解決の質問です。",
+      "FeedUrl": "実行のたびに読み込む RSS または Atom フィードです。",
+      "SeedUrl": "実行のたびに確認するページです。"
+    },
+    "value": "値",
+    "note": "メモ",
+    "unlock": "{value} のロックを解除",
+    "lock": "{value} をロック",
+    "edit": "{value} を編集",
+    "delete": "{value} を削除",
+    "addTo": "{kind} に追加",
+    "placeholder": {
+      "IncludeKeyword": "キーワードを追加",
+      "ExcludeKeyword": "除外するキーワードを追加",
+      "IncludeEntity": "企業または製品を追加",
+      "ExcludeEntity": "無視する企業または製品を追加",
+      "PreferredDomain": "ドメインを追加",
+      "BlockedDomain": "ブロックするドメインを追加",
+      "TrackedQuestion": "追跡する質問を追加",
+      "FeedUrl": "フィード URL を追加 (https://...)",
+      "SeedUrl": "ページの URL を追加 (https://...)"
+    }
+  },
+  "delivery": {
+    "saved": "配信オプションを保存しました",
+    "emailOnRun": "実行のたびにメールを送信",
+    "emailOnRunHelp": "詳細とフィードバックへのリンク付きのサマリー",
+    "emailWhenEmpty": "何も見つからなかった場合もメールを送信",
+    "emailWhenEmptyHelp": "オフの場合、結果のない実行ではメールは送信されません",
+    "maxFindings": "メールあたりの発見事項数",
+    "maxFindingsHelp": "1 から 50",
+    "saveOptions": "配信オプションを保存",
+    "recipients": "受信者",
+    "recipientsHelp": "ここにいる全員が実行のたびにメールを受け取ります。受信者のデフォルトはあなたです。",
+    "noRecipients": "受信者はまだいません。",
+    "you": "あなた",
+    "removeRecipient": "{email} を削除",
+    "addRecipient": "受信者のメールアドレス",
+    "emailPlaceholder": "name@example.com",
+    "addMe": "自分を追加"
+  },
+  "topics": {
+    "actions": {
+      "dryRunQueued": "{name} のテスト実行をキューに追加しました",
+      "runQueued": "{name} の実行を待機列に追加しました",
+      "continueRefining": "絞り込みを続ける",
+      "refine": "もう一度絞り込む",
+      "runNow": "今すぐ実行",
+      "dryRun": "テスト実行",
+      "pause": "一時停止",
+      "paused": "{name} を一時停止しました",
+      "resume": "再開",
+      "resumed": "{name} を再開しました",
+      "archive": "アーカイブ",
+      "archived": "{name} をアーカイブしました",
+      "duplicated": "{name} を下書きとして複製しました"
+    },
+    "delete": {
+      "title": "トピックを削除",
+      "message": "「{name}」を、その観点、制約、スケジュール、実行とともに削除しますか? この操作は元に戻せません。",
+      "done": "{name} を削除しました"
+    },
+    "bulk": {
+      "paused": "{count, plural, other {# 件のトピックを一時停止しました}}",
+      "pause": "一時停止",
+      "delete": "削除",
+      "deleteTitle": "トピックを削除",
+      "deleteMessage": "{count, plural, other {# 件のトピックとその配下のすべてを削除しますか?}} この操作は元に戻せません。",
+      "deleted": "{count, plural, other {# 件のトピックを削除しました}}"
+    },
+    "columns": {
+      "name": "名前",
+      "status": "ステータス",
+      "oneTime": "種類",
+      "lastRun": "前回の実行",
+      "lastRefined": "前回の絞り込み",
+      "created": "作成日時",
+      "audience": "対象読者",
+      "id": "ID"
+    },
+    "searchPlaceholder": "トピックを検索",
+    "oneTime": "単発",
+    "recurring": "定期",
+    "new": "新しいトピック",
+    "empty": {
+      "title": "トピックはまだありません",
+      "message": "追いかけたいことを説明すると、ウィザードがそれをリサーチ計画に変えます。",
+      "action": "関心のあることを教えてください"
+    },
+    "backToList": "すべてのトピック",
+    "draftNoRun": "実行する前に絞り込みを完了するか、テスト実行を開始してください",
+    "draftNotice": "このトピックは下書きです。スケジュールされたリサーチを開始するには、絞り込みを完了してください。",
+    "workspace": {
+      "tabsLabel": "トピックのセクション",
+      "tabs": {
+        "overview": "概要",
+        "context": "コンテキスト",
+        "schedule": "スケジュール",
+        "sources": "ソース",
+        "runs": "実行",
+        "findings": "発見事項",
+        "predictions": "予測",
+        "suggestions": "提案",
+        "feedback": "フィードバック",
+        "preferences": "好み",
+        "analytics": "分析",
+        "delivery": "配信",
+        "prompts": "プロンプト",
+        "models": "モデル"
+      },
+      "dimensionCount": "観点",
+      "noBrief": "概要はまだありません。トピックを絞り込んで作成してください。",
+      "dimensions": "観点",
+      "brief": "概要と対象読者",
+      "sourcesHelp": "フィードと起点ページは、Web 検索とあわせて実行のたびに読み込まれます。",
+      "searchProvidersLater": "トピックごとの検索プロバイダーの選択は、検索プロバイダーのページとともに提供されます。"
+    }
+  },
+  "wizard": {
+    "railLabel": "ウィザードのステップ",
+    "steps": {
+      "Describe": "説明",
+      "Dimensions": "観点",
+      "Questions": "質問",
+      "Context": "コンテキスト",
+      "Sources": "ソース",
+      "Delivery": "配信",
+      "Review": "確認"
+    },
+    "stepHelp": {
+      "Describe": "何を追いかけたいか、その理由を説明してください。",
+      "Dimensions": "リサーチで扱う切り口です。残す、重み付けする、編集する、ロックする、または自分で追加できます。",
+      "Questions": "答えたいものだけ答え、残りはスキップしてください。回答のたびにリサーチが的確になります。",
+      "Context": "リサーチが従う概要と制約です。ロックした項目は再作成しても残ります。",
+      "Sources": "実行のたびに読み込むフィードとページです。それぞれ実際に取得して確認します。",
+      "Delivery": "リサーチを実行するタイミングと、メールを受け取る人です。",
+      "Review": "すべての内容がそろいました。テスト実行をプレビューしてから適用してください。"
+    },
+    "generating": {
+      "dimensions": "観点を提案しています...",
+      "questions": "質問を作成しています...",
+      "context": "概要と制約を作成しています...",
+      "sources": "ソースを探し、それぞれを確認しています...",
+      "request": "リクエストを計画しています...",
+      "replan": "回答をもとに計画し直しています...",
+      "patience": "経過 {seconds} 秒。大規模なモデルでは 1 分ほどかかることがあります。"
+    },
+    "stopWaiting": "待機を中止",
+    "failure": {
+      "title": "モデルはこのステップを完了できませんでした",
+      "refusedTitle": "モデルはこのステップを辞退しました",
+      "hint": "再試行するか、絞り込みに使うモデルを切り替えてください。",
+      "changeModel": "絞り込みモデルを変更"
+    },
+    "guidance": {
+      "label": "次回の試行への指示",
+      "placeholder": "例: ローカルモデルについてもっと、企業の調達についてはもっと少なく"
+    },
+    "regenerate": "再生成",
+    "describe": {
+      "existing": "このセッションは以下の説明から始まりました。",
+      "seedText": "何を追いかけたいですか?",
+      "seedHelp": "1 文でも 1 段落でもかまいません。すべて後から絞り込めます。",
+      "seedPlaceholder": "AI 開発者ツールについて知りたい",
+      "goal": "目的",
+      "depth": "深さ",
+      "horizon": "期間",
+      "horizonHelp": "任意 (例: 「今後 6 か月」)",
+      "known": "すでに知っていること",
+      "started": "開始日時",
+      "optional": "任意",
+      "notSaying": "回答しない",
+      "goals": {
+        "work": "仕事上の判断",
+        "investing": "投資",
+        "curiosity": "好奇心",
+        "hiring": "採用",
+        "building": "何かを作る"
+      },
+      "model": "モデル",
+      "modelHelp": "デフォルトは絞り込みの割り当てです",
+      "defaultModel": "絞り込みの割り当て (デフォルト)",
+      "starting": "開始しています...",
+      "start": "開始して観点を提案",
+      "resumeTitle": "前回の続きから再開"
+    },
+    "outOfScope": {
+      "title": "これは My Morning News のリサーチ対象外です",
+      "rephrase": "言い換える"
+    },
+    "dimensions": {
+      "noneTitle": "観点はまだありません",
+      "noneMessage": "説明から観点を提案するか、以下で自分で追加してください。",
+      "propose": "観点を提案",
+      "intro": "{count, plural, other {# 個の観点}}、うち {kept} 個はあなたの観点またはロック済みです。除外するには重みを [除外] に設定します。",
+      "regenerateHelp": "再生成すると提案された観点が置き換えられ、ロック済みの観点とあなたの観点は保持されます。"
+    },
+    "questions": {
+      "sufficient": "コンテキストは十分そろいました。概要に進めます。",
+      "noneTitle": "質問はまだありません",
+      "noneMessage": "モデルが、残した観点をもとにいくつか質問します。",
+      "ask": "質問してもらう",
+      "progress": "{total} 件中 {done} 件に回答またはスキップ済み",
+      "round": "ラウンド {round}",
+      "moreLabel": "次のラウンドへの指示はありますか?",
+      "askMore": "さらに質問してもらう",
+      "moreHelp": "{left, plural, other {あと # ラウンド可能}}",
+      "maxed": "上限は {max} ラウンドです。概要に進んでください。"
+    },
+    "context": {
+      "name": "トピック名",
+      "audience": "対象読者のレベル",
+      "horizon": "期間",
+      "novelty": "新しさの優先度: {value}",
+      "noveltyHelp": "高いほど背景情報より新しい動向を優先します",
+      "brief": "概要",
+      "briefHelp": "Markdown。リサーチはこの概要に従います。",
+      "seedQueries": "起点クエリ",
+      "seedQueriesHelp": "1 行に 1 つの検索クエリ",
+      "saved": "コンテキストを保存しました",
+      "save": "コンテキストを保存",
+      "savedState": "保存済み",
+      "noneTitle": "概要はまだありません",
+      "noneMessage": "観点と回答から、概要、制約、起点クエリを作成します。",
+      "draft": "コンテキストを作成",
+      "intro": "何でも編集できます。ロックした制約とあなたの制約は再作成しても残ります。",
+      "redraft": "再作成",
+      "constraints": "制約"
+    },
+    "sources": {
+      "intro": "提案されたフィードと起点ページは実際に取得されます。緑色のものは応答がありました。",
+      "again": "もう一度提案",
+      "suggest": "ソースを提案",
+      "noneSuggested": "モデルはソースを提案しませんでした。以下で自分で追加してください。",
+      "allAccepted": "すべての提案はすでにトピックに追加されています。",
+      "select": "{url} を選択",
+      "unreachable": "接続不可",
+      "accept": "{count, plural, =0 {承認} other {# 件のソースを承認}}",
+      "noneTitle": "ソースはまだありません",
+      "noneMessage": "ソースを提案してもらうか、自分で追加するか、このステップをスキップしてください。",
+      "accepted": "このトピックで使用"
+    },
+    "delivery": {
+      "schedule": "リサーチのスケジュール",
+      "scheduleHelp": "スケジュールは次へ進むときに保存されます。",
+      "email": "メール"
+    },
+    "review": {
+      "novelty": "新規性の重視度",
+      "noSchedule": "スケジュールなし (手動で実行)",
+      "applied": "このトピックは適用済みで、リサーチ中です。",
+      "openTopic": "トピックを開く",
+      "dimensions": "{count, plural, other {# 個の観点}}",
+      "constraintCount": "{kind}: {count}",
+      "preview": "プレビュー実行",
+      "previewHelp": "テスト実行ではメールは送信されず、履歴にも記録されません。",
+      "apply": "トピックを適用",
+      "appliedToast": "{name} の準備ができました",
+      "previewQueued": "テスト実行をキューに追加しました。トピックの「実行」タブで進行状況を確認できます。"
+    },
+    "newTitle": "新しいトピック",
+    "refineTitle": "{name} を調整",
+    "refineTitleShort": "トピックを調整",
+    "saveExit": "保存して終了",
+    "abandon": "破棄",
+    "refineSummary": "現在のコンテキストからウィザードを再開します",
+    "refineStart": "「{name}」の新しい調整セッションを開始します。観点と制約は引き継がれ、適用するまで何も変更されません。",
+    "refineStartButton": "調整を開始",
+    "backToTopic": "トピックに戻る",
+    "summary": "各ステップは自動で保存されるため、途中で中断して再開できます。",
+    "back": "戻る",
+    "nextTo": "次へ: {step}",
+    "abandonTitle": "このセッションを破棄",
+    "abandonDraft": "ウィザードを破棄しますか？下書きのトピックとその内容はすべて削除されます。",
+    "abandonExisting": "この調整セッションを破棄しますか？途中で保存した変更はトピックに残ります。",
+    "abandoned": "セッションを破棄しました"
+  },
+  "runs": {
+    "detail": {
+      "title": "実行",
+      "summary": "概要",
+      "cancelRequested": "キャンセルを要求済み",
+      "schedule": "スケジュール",
+      "request": "単発リクエスト",
+      "worker": "ワーカー",
+      "partial": "一部成功: 重要でないステージが失敗しました。他のステージは完了し、その結果は保持されています。",
+      "partialWithStages": "一部成功: {stages} が失敗しました。他のステージは完了し、その結果は保持されています。",
+      "viewFindings": "発見事項を表示 ({count})",
+      "tabsLabel": "実行のセクション",
+      "tabs": {
+        "stages": "ステージ",
+        "queries": "クエリ",
+        "results": "結果",
+        "details": "詳細",
+        "calls": "モデル呼び出し"
+      },
+      "contextHash": "コンテキストのスナップショット"
+    },
+    "cancelRequested": "キャンセル中...",
+    "cancel": "実行をキャンセル",
+    "dryRun": "テスト実行",
+    "columns": {
+      "topic": "トピック",
+      "queued": "キュー追加",
+      "started": "開始",
+      "completed": "完了",
+      "status": "ステータス",
+      "trigger": "トリガー",
+      "duration": "所要時間",
+      "summary": "概要",
+      "id": "ID",
+      "findings": "新しい発見事項",
+      "findingsTitle": "{duplicates} 件の重複をスキップ",
+      "sources": "ソース",
+      "cost": "コスト"
+    },
+    "cancelled": "キャンセルを要求しました",
+    "openTopic": "トピックを開く",
+    "empty": {
+      "title": "まだ実行はありません",
+      "message": "スケジュールが起動したとき、単発リクエストが開始したとき、または「今すぐ実行」を押したときに実行が表示されます。",
+      "topicMessage": "「今すぐ実行」または「テスト実行」を押すか、スケジュールを追加してください。"
+    },
+    "totals": {
+      "sources": "読み込んだソース",
+      "newFindings": "新しい発見事項",
+      "duplicates": "重複",
+      "tokens": "トークン",
+      "tokenSplit": "入力 {input}、出力 {output}",
+      "cost": "推定コスト"
+    },
+    "stages": {
+      "empty": "この実行にはステージの記録がありません。",
+      "aria": "{count} 個のステージのタイムライン",
+      "stage": "ステージ",
+      "status": "ステータス",
+      "duration": "所要時間",
+      "items": "項目",
+      "inOut": "入力 {in}、出力 {out}",
+      "in": "入力",
+      "out": "出力"
+    },
+    "queries": {
+      "empty": "この実行では検索クエリは送信されませんでした。",
+      "query": "クエリ",
+      "provider": "プロバイダー",
+      "results": "結果",
+      "succeeded": "成功",
+      "failed": "失敗"
+    },
+    "results": {
+      "disposition": "処理区分",
+      "filterDisposition": "処理区分で結果を絞り込む",
+      "dispositionCount": "{disposition}: {count}",
+      "noMatches": "この処理区分の結果はありません。",
+      "empty": "この実行には検索結果がありません。",
+      "rank": "順位",
+      "result": "結果",
+      "viewSource": "ソースを表示"
+    },
+    "source": {
+      "title": "ソース",
+      "domain": "ドメイン",
+      "httpStatus": "HTTP ステータス",
+      "contentType": "コンテンツタイプ",
+      "size": "サイズ",
+      "published": "公開日時",
+      "fetched": "取得日時",
+      "timesSeen": "検出回数",
+      "text": "抽出したテキスト",
+      "truncated": "{total} 文字のうち最初の {shown} 文字を表示しています。",
+      "noText": "このソースからテキストは抽出されませんでした。"
+    },
+    "calls": {
+      "openCall": "モデル呼び出しログで開く",
+      "emptyTitle": "モデル呼び出しはありません",
+      "emptyMessage": "この実行ではモデル呼び出しが行われなかったか、呼び出しをまだ記録中です。"
+    },
+    "live": {
+      "streaming": "ライブ",
+      "polling": "数秒ごとに更新中"
+    },
+    "retry": {
+      "column": "再試行",
+      "fromStage": "このステージから再試行",
+      "fromStageAria": "このステージから再試行 ({stage})",
+      "runAgain": "もう一度実行",
+      "runAgainAria": "もう一度実行 ({stage} が失敗)",
+      "resumeTitle": "このステージから再試行",
+      "resumeMessage": "保存済みの発見事項を使って、この実行の {stage} とそれ以降のすべてのステージを再実行しますか？モデル呼び出しが発生し、使用量に加算されます。",
+      "newTitle": "もう一度実行",
+      "newMessage": "このトピックの新しい実行を最初からキューに追加しますか？検索と取得の結果は保持されないため、すべてのステージが再実行され、使用量に加算されるモデル呼び出しが発生します。",
+      "resumeQueued": "{stage} から再びキューに追加しました",
+      "newQueued": "新しい実行をキューに追加しました"
+    }
+  },
+  "oneTime": {
+    "form": {
+      "failedHint": "計画に失敗してもリクエストは保存されているため、一覧からもう一度計画できます。",
+      "openList": "リクエストを開く",
+      "text": "何をご希望ですか？",
+      "textHelp": "例: 輸送用コンテナの歴史についてのポッドキャストを作成して。",
+      "placeholder": "カリフォルニア州のヒートポンプ補助金についてのレポートを書いて",
+      "deliverables": "成果物",
+      "length": "長さ",
+      "timing": "タイミング",
+      "runNow": "今すぐ実行",
+      "runAt": "指定日時に 1 回実行",
+      "when": "日時",
+      "recipients": "メールの宛先",
+      "recipientsHelp": "カンマ区切り。既定はご自身 ({email}) です。",
+      "publishToFeed": "マイフィードに公開",
+      "publishToFeedHelp": "ポッドキャストをプライベートフィードにも追加します",
+      "justDoIt": "そのまま進める",
+      "justDoItHelp": "確認の質問をスキップして、すぐに計画を確定します",
+      "submitNow": "計画して実行",
+      "submit": "計画する",
+      "moreOptions": "その他のオプション"
+    },
+    "actions": {
+      "confirmed": "リクエストを確定しました",
+      "cancelled": "リクエストをキャンセルしました",
+      "open": "開く",
+      "confirm": "確定",
+      "cancel": "リクエストをキャンセル",
+      "convert": "定期実行にする",
+      "openTopic": "トピックを開く"
+    },
+    "convert": {
+      "title": "定期トピックにする",
+      "message": "「{title}」を、概要と観点を引き継いだ定期トピックに変換しますか？次にスケジュールを設定できます。",
+      "done": "定期トピックを作成しました"
+    },
+    "delete": {
+      "title": "リクエストを削除",
+      "message": "「{title}」とその計画を削除しますか？",
+      "done": "リクエストを削除しました"
+    },
+    "columns": {
+      "title": "リクエスト",
+      "status": "ステータス",
+      "deliverables": "成果物",
+      "length": "長さ",
+      "runAt": "実行日時",
+      "created": "作成日時",
+      "id": "ID"
+    },
+    "searchPlaceholder": "リクエストを検索",
+    "whenConfirmed": "確定時",
+    "new": "新しいリクエスト",
+    "empty": {
+      "title": "単発リクエストはまだありません",
+      "message": "レポート、ポッドキャスト、メールの要約を、今すぐまたは指定した時刻に 1 回だけ実行します。",
+      "action": "1 回だけ依頼する"
+    },
+    "backToList": "すべてのリクエスト",
+    "declined": {
+      "title": "このリクエストは My Morning News のリサーチ対象外です",
+      "rephrase": "言い換える"
+    },
+    "detail": {
+      "request": "リクエスト",
+      "estimatedCost": "推定コスト",
+      "confirmed": "確定日時",
+      "completed": "完了日時",
+      "run": "実行",
+      "openRun": "実行を開く",
+      "confirmTitle": "確定して実行",
+      "confirmAt": "その時刻で確定",
+      "confirmNow": "確定して今すぐ実行",
+      "needsPlan": "確定する前にリクエストをもう一度計画してください。",
+      "plan": "計画",
+      "noPlanDeclined": "却下されたリクエストには計画がありません。",
+      "noPlan": "まだ計画はありません。",
+      "dimensions": "扱う内容",
+      "questions": "確認の質問",
+      "questionsHelp": "{total} 問中 {answered} 問に回答済み。回答を反映するにはもう一度計画するか、このまま確定してください。",
+      "replan": "回答を反映して再計画"
+    },
+    "newTitle": "新しいリクエスト",
+    "newSummary": "単発のレポート、ポッドキャスト、メールの要約"
+  },
+  "findings": {
+    "backToList": "発見事項に戻る",
+    "openPage": "ページ全体を開く",
+    "duplicate": "重複",
+    "update": "更新",
+    "scoreAria": "関連度スコア {score}",
+    "searchPlaceholder": "タイトルと要約を検索",
+    "minScore": "最小値",
+    "runFilter": "実行 {id}",
+    "clearRun": "すべての実行の発見事項を表示",
+    "includeDuplicates": "重複を含める",
+    "includeDryRuns": "テスト実行を含める",
+    "components": {
+      "llm": "モデルの判断",
+      "feedback": "フィードバック",
+      "novelty": "新規性",
+      "source": "ソース",
+      "recency": "新しさ",
+      "composite": "総合"
+    },
+    "columns": {
+      "title": "発見事項",
+      "tier": "ランク",
+      "score": "スコア",
+      "category": "カテゴリ",
+      "topic": "トピック",
+      "published": "公開日時",
+      "found": "発見日時",
+      "id": "ID",
+      "rating": "あなたの評価"
+    },
+    "detail": {
+      "title": "発見事項",
+      "whyItMatters": "重要な理由",
+      "scoreBreakdown": "スコアの内訳",
+      "scoreChartAria": "総合スコア {score} の内訳",
+      "scoreHelp": "各要素は 0 から 100 の範囲です。総合スコアは、トピックのランキングの重みによる加重平均です。",
+      "rationale": "根拠の説明",
+      "noRationale": "このスコアについてモデルは根拠を示しませんでした。",
+      "evidence": "根拠 ({count})",
+      "dimension": "観点",
+      "noDimension": "観点に関連付けられていません。",
+      "run": "実行",
+      "confidence": "確信度",
+      "rank": "順位",
+      "duplicateOf": "重複元",
+      "updateOf": "更新元"
+    },
+    "evidence": {
+      "unknownSource": "不明なソース",
+      "verified": "検証済みの引用",
+      "unverified": "未検証",
+      "emptyTitle": "根拠はありません",
+      "emptyMessage": "この発見事項を裏付ける検証済みの引用はありません。",
+      "open": "文脈の中で表示",
+      "detailTitle": "根拠",
+      "quote": "引用",
+      "inContext": "文脈の中の引用",
+      "unverifiedHelp": "この引用は、取得したソースのテキストと照合できませんでした。",
+      "source": "ソース",
+      "domain": "ドメイン",
+      "position": "ソース内の位置",
+      "positionValue": "{start} 文字目から {end} 文字目",
+      "sourceId": "ソース ID"
+    },
+    "empty": {
+      "title": "まだ発見事項はありません",
+      "message": "発見事項は、実行でソースを読み込んでランク付けした後に表示されます。トピックを実行してください。",
+      "topicMessage": "このトピックを実行して、ソースを見つけてランク付けします。"
+    },
+    "pinnedMarker": "ピン留め",
+    "pinnedBadge": "ピン留め",
+    "hiddenBadge": "非表示",
+    "hiddenHelp": "非表示の発見事項は、一覧、ブリーフィング、メールから除外されます。元に戻すには再表示してください。",
+    "showHidden": "非表示を表示",
+    "pinnedOnly": "ピン留めのみ",
+    "actions": {
+      "pin": "ピン留め",
+      "unpin": "ピン留めを解除",
+      "hide": "非表示",
+      "unhide": "再表示",
+      "pinned": "発見事項をピン留めしました",
+      "unpinned": "発見事項のピン留めを解除しました",
+      "hidden": "発見事項を非表示にしました",
+      "unhidden": "発見事項を再表示しました",
+      "deleted": "発見事項を削除しました",
+      "deleteTitle": "発見事項を削除",
+      "deleteMessage": "「{title}」を削除しますか？根拠へのリンクは削除されます。共有ソースと評価の履歴は残ります。"
+    }
+  },
+  "predictions": {
+    "overdue": "期限超過",
+    "brierHelp": "低いほど良好です。0 は完全、0.25 はコイン投げと同等です。",
+    "columns": {
+      "statement": "予測",
+      "status": "ステータス",
+      "confidence": "確信度",
+      "horizon": "期間",
+      "brier": "ブライアスコア",
+      "topic": "トピック",
+      "created": "作成日時",
+      "id": "ID",
+      "rating": "あなたの判定"
+    },
+    "actions": {
+      "resolve": "判定",
+      "reresolve": "再判定"
+    },
+    "resolvedBy": {
+      "User": "あなた",
+      "Agent": "エージェント",
+      "AgentConfirmed": "エージェント (あなたが確認済み)"
+    },
+    "detail": {
+      "title": "予測",
+      "resolved": "判定日時",
+      "resolvedBy": "判定者",
+      "note": "判定メモ"
+    },
+    "reviews": {
+      "title": "レビュー ({count})",
+      "empty": "まだレビューはありません。以降の実行で未判定の予測が新しい発見事項と照合され、判定案がここに表示されます。",
+      "proposes": "判定案",
+      "confidence": "確信度 {confidence}",
+      "finding": "発見事項 {id}",
+      "accept": "承認",
+      "reject": "却下",
+      "accepted": "承認済み",
+      "rejected": "却下済み",
+      "acceptedToast": "判定案を承認しました",
+      "rejectedToast": "判定案を却下しました"
+    },
+    "resolve": {
+      "title": "予測を判定",
+      "submit": "判定",
+      "outcome": "結果",
+      "outcomeHelp": "「正確」「一部正確」「不正確」は、正答率とブライアスコアに反映されます。",
+      "note": "メモ",
+      "notePlaceholder": "何が起きたか (リンクがあれば添えてください)",
+      "notGraded": "この結果は採点対象外のため、ブライアスコアは付きません。",
+      "brierPreview": "確信度 {confidence} の場合、この結果のブライアスコアは {brier} です。",
+      "done": "予測を判定しました"
+    },
+    "kpis": {
+      "open": "未判定",
+      "graded": "採点済み",
+      "ofTotal": "{total} 件の予測中",
+      "accuracy": "実測の正答率",
+      "accuracyHelp": "「一部正確」は 0.5 として数えます。",
+      "brier": "平均ブライアスコア"
+    },
+    "calibration": {
+      "title": "キャリブレーション",
+      "subtitle": "表明した確信度と、予測が実際に当たった頻度の比較",
+      "aria": "採点済みの予測 {count} 件のキャリブレーション",
+      "xAxis": "表明した確信度",
+      "count": "予測",
+      "meanConfidence": "平均確信度",
+      "observed": "実測の正答率",
+      "perfect": "完全なキャリブレーション",
+      "bucket": "確信度 {from} から {to}",
+      "empty": "キャリブレーションを表示するには、予測をいくつか採点してください。"
+    },
+    "empty": {
+      "title": "まだ予測はありません",
+      "message": "実行ではトピックの今後の動向について予測を行います。予測はここに表示され、追跡と採点ができます。"
+    }
+  },
+  "suggestions": {
+    "priority": "優先度: {priority}",
+    "effort": "所要: {effort}",
+    "until": "まで",
+    "changed": "{status} に変更しました",
+    "columns": {
+      "title": "提案",
+      "status": "ステータス",
+      "priorityEffort": "優先度と労力",
+      "topic": "トピック",
+      "created": "作成日時",
+      "id": "ID",
+      "rating": "あなたの評価"
+    },
+    "actions": {
+      "accept": "承認",
+      "snooze": "スヌーズ",
+      "dismiss": "却下",
+      "complete": "完了"
+    },
+    "detail": {
+      "title": "提案",
+      "rationale": "理由",
+      "statusChanged": "ステータス変更日時",
+      "findings": "関連する発見事項"
+    },
+    "snooze": {
+      "title": "提案をスヌーズ",
+      "quick": "クイック選択",
+      "tomorrow": "明日の朝",
+      "nextWeek": "1 週間後",
+      "nextMonth": "1 か月後",
+      "until": "スヌーズの期限",
+      "future": "将来の日時を選択してください。",
+      "help": "この日時になると一覧に戻ります。"
+    },
+    "empty": {
+      "title": "まだ提案はありません",
+      "message": "実行では掘り下げる価値のある事柄を提案します。提案はここに表示され、承認、スヌーズ、却下、完了ができます。"
+    }
+  },
+  "briefings": {
+    "untitled": "無題のブリーフィング",
+    "dryRun": "テスト実行",
+    "searchPlaceholder": "タイトル",
+    "includeDryRun": "テスト実行を含める",
+    "columns": {
+      "title": "ブリーフィング",
+      "kind": "種類",
+      "status": "ステータス",
+      "edition": "エディション",
+      "topic": "トピック",
+      "items": "項目",
+      "pinned": "ピン留め",
+      "created": "作成日時",
+      "id": "ID"
+    },
+    "actions": {
+      "open": "開く"
+    },
+    "download": {
+      "md": ".md をダウンロード",
+      "html": ".html をダウンロード"
+    },
+    "pin": {
+      "pin": "ピン留め",
+      "unpin": "ピン留めを解除",
+      "pinNamed": "{title} をピン留め",
+      "unpinNamed": "{title} のピン留めを解除",
+      "pinned": "ピン留めしました。ファイルは保持期間を過ぎても保存されます。",
+      "unpinned": "ピン留めを解除しました。ファイルは再び保持期間に従います。",
+      "cap": "このワークスペースのピン留め上限に達しました。先に別のブリーフィングのピン留めを解除してください。",
+      "badge": "ピン留め"
+    },
+    "expired": {
+      "notice": "レポートファイルの期限が切れました。再度ダウンロードするには再生成してください。",
+      "title": "レポートファイルの期限が切れました。",
+      "message": "レポートファイルは最長 365 日間保存されます。ブリーフィングとその発見事項は残っているため、ファイルを再生成できます。",
+      "regenerate": "再生成",
+      "regenerated": "レポートファイルを再生成しました"
+    },
+    "files": {
+      "expired": "ファイルの期限切れ",
+      "pinned": "ピン留め",
+      "expires": "{date} まで保存",
+      "download": "{name} をダウンロード"
+    },
+    "progress": {
+      "Queued": "キューに追加されました。まもなく作成されます。",
+      "Composing": "作成中です。",
+      "researching": "最新のリサーチを待っています (遅くとも {time} まで)。"
+    },
+    "reader": {
+      "back": "すべてのブリーフィング",
+      "citation": "ソース {number}",
+      "outline": "目次",
+      "noItems": "このブリーフィングでは、発見事項、予測、提案を使用していません。",
+      "otherItems": "その他",
+      "open": {
+        "Finding": "発見事項を開く",
+        "Prediction": "予測を開く",
+        "Suggestion": "提案を開く"
+      },
+      "noFiles": "保存されたファイルはありません。",
+      "openRun": "実行を開く",
+      "stats": "{minutes} 分で読めます、{words} 語、{items} 項目",
+      "failed": "作成に失敗しました。",
+      "noContent": "このブリーフィングには内容がありません。",
+      "items": "このブリーフィングの内容 ({count})",
+      "files": "ファイル",
+      "period": "対象期間",
+      "readMinutes": "{minutes} 分で読めます"
+    },
+    "delete": {
+      "title": "ブリーフィングを削除",
+      "message": "「{title}」と保存されたファイルを削除しますか？使用した発見事項、予測、提案は残ります。",
+      "done": "ブリーフィングを削除しました"
+    },
+    "empty": {
+      "title": "まだブリーフィングはありません",
+      "message": "エディションを作成するか、トピックを実行するか、単発の質問をするとブリーフィングが届きます。"
+    }
+  },
+  "today": {
+    "seeAll": "すべて表示",
+    "composeNow": "今すぐ作成",
+    "composeQueued": "ブリーフィングをキューに追加しました",
+    "composeReady": "ブリーフィングの準備ができました",
+    "composeFailed": "ブリーフィングに失敗しました: {message}",
+    "composeConflict": "このエディションのブリーフィングはすでに作成中です。",
+    "edition": "エディション",
+    "follow": "進行状況を確認",
+    "noEditions": "まだエディションがありません。",
+    "createEdition": "作成する",
+    "empty": {
+      "title": "まだブリーフィングはありません",
+      "message": "今すぐエディションを作成するか、スケジュールを待ってください。"
+    },
+    "openReader": "リーダーで開く",
+    "runs": "最近の実行のブリーフィング",
+    "oneTime": "単発レポート",
+    "noRuns": "実行のブリーフィングはまだありません。",
+    "noOneTime": "単発レポートはまだありません。"
+  },
+  "editions": {
+    "add": "新しいエディション",
+    "back": "すべてのエディション",
+    "newTitle": "新しいエディション",
+    "newSummary": "選択したトピックをまとめた、独自のスケジュールで届くブリーフィングです。",
+    "created": "エディションを作成しました",
+    "saved": "エディションを保存しました",
+    "deleted": "エディションを削除しました",
+    "composeQueued": "ブリーフィングをキューに追加しました",
+    "enabledOn": "有効",
+    "enabledOff": "無効",
+    "preview": "プレビュー",
+    "previewing": "プレビューを作成中...",
+    "previewTitle": "プレビュー: {name}",
+    "previewSubtitle": "最新のデータから作成しました。保存や送信は行われません。",
+    "previewFallbacks": "モデルが応答しなかったため、{count, plural, other {# 個のセクション}}を単純なリストとして作成しました。",
+    "previewEmpty": "プレビューは空です。",
+    "discard": "変更を破棄",
+    "create": "エディションを作成",
+    "save": "エディションを保存",
+    "schedulesHelp": "このエディションを作成するタイミングです。最新のリサーチを有効にすると、各予定時刻の前にリサーチが開始されます。",
+    "schedulesEmpty": "このエディションを自動で作成するにはスケジュールを追加するか、手動で作成してください。",
+    "deleteTitle": "エディションを削除",
+    "deleteMessage": "エディション「{name}」とそのスケジュールを削除しますか？ブリーフィングは残ります。",
+    "viewBriefings": "ブリーフィングを表示",
+    "lookbackHours": "過去 {hours} 時間",
+    "sections": {
+      "settings": "設定",
+      "topics": "トピック",
+      "schedules": "スケジュール",
+      "briefings": "ブリーフィング"
+    },
+    "columns": {
+      "name": "エディション",
+      "enabled": "ステータス",
+      "delivery": "配信",
+      "lookback": "対象期間",
+      "lastComposed": "最終作成日時",
+      "created": "作成日時",
+      "id": "ID"
+    },
+    "badges": {
+      "email": "メール",
+      "audio": "音声",
+      "fresh": "最新のリサーチ ({minutes} 分)"
+    },
+    "empty": {
+      "title": "エディションはありません",
+      "message": "エディションを作成すると、スケジュールに沿ってブリーフィングが届きます。"
+    },
+    "form": {
+      "name": "名前",
+      "nameRequired": "名前は必須です。",
+      "description": "説明",
+      "template": "テンプレート",
+      "templateDefault": "既定のテンプレート {name} を使用します。",
+      "defaultName": "既定",
+      "useDefault": "既定のテンプレート",
+      "sharedOption": "{name} (共有)",
+      "enabled": "有効",
+      "enabledHelp": "スケジュールに沿って作成します。「今すぐ作成」はどちらの場合も使えます。",
+      "email": "メール",
+      "emailHelp": "準備ができたらブリーフィングをメールで送信します。",
+      "audio": "音声",
+      "audioHelp": "各ブリーフィングの音声版を作成します。",
+      "fresh": "先に最新のリサーチを実行",
+      "freshHelp": "作成の前に各トピックのリサーチを実行します。",
+      "lead": "リサーチの準備時間 (分)",
+      "leadHelp": "リサーチを待つ時間です ({min} 分から {max} 分)。",
+      "lookbackMode": "対象期間",
+      "lookbackModeHelp": {
+        "SinceLastEdition": "前回のエディション作成以降のすべて。",
+        "FixedHours": "エディション作成時点で終わる固定の期間。"
+      },
+      "lookbackHours": "対象期間 (時間)",
+      "lookbackHoursHelp": "{min} 時間から {max} 時間。「前回のエディション以降」の場合も、これより前にはさかのぼりません。"
+    },
+    "topics": {
+      "mode": "トピック",
+      "modes": {
+        "all": "有効なすべてのトピック",
+        "chosen": "トピックを選択"
+      },
+      "allHelp": "後から追加するトピックを含め、有効なすべての定期トピックを対象にします。",
+      "covered": "対象のトピック",
+      "noneActive": "有効な定期トピックはまだありません。",
+      "chosenHelp": "これらのトピックのみを、この順序で扱います。",
+      "noneChosen": "まだトピックが選択されていません。",
+      "chosen": "選択したトピック",
+      "chooseOne": "トピックを 1 つ以上選択するか、有効なすべてのトピックを対象にしてください。",
+      "moveUp": "{name} を上へ移動",
+      "moveDown": "{name} を下へ移動",
+      "remove": "{name} を削除",
+      "addLabel": "追加するトピック",
+      "pick": "トピックを選択",
+      "add": "追加",
+      "save": "トピックを保存",
+      "saved": "トピックを保存しました"
+    }
+  },
+  "templates": {
+    "add": "新しいテンプレート",
+    "back": "すべてのテンプレート",
+    "open": "エディターを開く",
+    "empty": "テンプレートはありません",
+    "searchPlaceholder": "名前または説明",
+    "saved": "新しいバージョンを保存しました",
+    "created": "テンプレートを作成しました",
+    "deleted": "テンプレートを削除しました",
+    "export": ".md をエクスポート",
+    "copy": "コピーを作成",
+    "copyName": "{name} (コピー)",
+    "reset": "既定に戻す",
+    "resetTitle": "テンプレートをリセット",
+    "resetMessage": "内容を標準の既定テンプレートで置き換え、新しいバージョンとして保存しますか？以前のバージョンは履歴に残ります。",
+    "resetDone": "既定に戻しました",
+    "deleteTitle": "テンプレートを削除",
+    "deleteMessage": "テンプレート「{name}」とそのバージョンを削除しますか？このテンプレートを使用しているエディションは既定のテンプレートに戻ります。",
+    "readOnly": "共有テンプレートを変更できるのはテナント管理者のみです。自分用に編集するにはコピーを作成してください。",
+    "scope": {
+      "shared": "共有",
+      "mine": "自分用"
+    },
+    "badges": {
+      "editionDefault": "エディションの既定",
+      "builtIn": "組み込み"
+    },
+    "columns": {
+      "name": "テンプレート",
+      "scope": "範囲",
+      "origin": "作成元",
+      "version": "バージョン",
+      "updated": "更新日時"
+    },
+    "import": {
+      "button": ".md をインポート",
+      "file": "テンプレートファイル",
+      "tooLarge": "このファイルはテンプレートとしては大きすぎます。"
+    },
+    "editor": {
+      "title": "テンプレート",
+      "panels": "テンプレートツール",
+      "valid": "有効",
+      "errors": "{count, plural, other {# 件のエラー}}",
+      "rejected": "サーバーがこのバージョンを拒否しました。",
+      "format": "フロントマター (name、description、tone、length、audience、citations、audio) 付きの Markdown です。各レベル 2 見出しが 1 つのセクションになります。見出しの下の mmn:section コメントで使用するデータ (source、tier、status、group、limit、order、topic、dimension) を選び、見出しの下のテキストで作成内容をコンポーザーに指示します。"
+    },
+    "panels": {
+      "problems": "問題",
+      "problemsCount": "問題 ({count})",
+      "outline": "アウトライン",
+      "preview": "プレビュー",
+      "versions": "バージョン"
+    },
+    "problems": {
+      "none": "問題は見つかりませんでした。",
+      "errors": "{count, plural, other {# 件のエラー}}",
+      "warnings": "{count, plural, other {# 件の警告}}",
+      "checking": "確認中...",
+      "jump": "{line} 行目へ移動",
+      "line": "{line} 行目",
+      "general": "全般",
+      "warning": "警告",
+      "error": "エラー"
+    },
+    "outline": {
+      "pending": "検証中...",
+      "name": "名前",
+      "title": "タイトル",
+      "audio": "音声",
+      "audioOn": "オン: {format}、約 {minutes} 分",
+      "audioOff": "オフ",
+      "intro": "導入",
+      "noSections": "まだセクションがありません。レベル 2 見出しを追加してください。",
+      "jump": "{line} 行目の {heading} へ移動",
+      "source": "source={source}"
+    },
+    "preview": {
+      "help": "選択したエディションを、そのエディションに保存されたテンプレートで最新のデータから作成します。保存や送信は行われません。",
+      "noEditions": "テンプレートをプレビューするにはエディションを作成してください。",
+      "edition": "プレビューするエディション",
+      "otherTemplate": "{name} は別のテンプレートを使用しているため、このプレビューにはこのテンプレートは反映されません。",
+      "unsaved": "プレビューに反映するには変更を保存してください。"
+    },
+    "versions": {
+      "none": "まだバージョンはありません。",
+      "rollbackMessage": "バージョン {version} を新しいバージョンとして復元しますか？現在の内容は履歴に残ります。"
+    },
+    "create": {
+      "titles": {
+        "new": "新しいテンプレート",
+        "import": "テンプレートをインポート",
+        "copy": "コピーを作成"
+      },
+      "confirm": {
+        "new": "作成",
+        "import": "インポート",
+        "copy": "コピーを作成"
+      },
+      "contentHelp": {
+        "import": "Markdown {lines} 行をインポートします。",
+        "copy": "エディター内の {lines} 行を、未保存の変更も含めてコピーします。"
+      },
+      "defaultName": "マイブリーフィング",
+      "name": "名前",
+      "nameHelp": "空欄にすると、フロントマターの名前を使用します。",
+      "startFrom": "開始点",
+      "starter": "小さなスターターテンプレート",
+      "copyOf": "{name} のコピー",
+      "shared": "このワークスペースの全員と共有",
+      "invalid": "テンプレートに問題があります。"
+    }
+  },
+  "audio": {
+    "panel": {
+      "label": "ブリーフィングの音声",
+      "title": "聴く",
+      "fromText": "ブリーフィングのテキストから読み上げ",
+      "checking": "音声を確認中..."
+    },
+    "player": {
+      "loading": "音声を読み込み中...",
+      "loadingSize": "音声を読み込み中 ({size})...",
+      "play": "再生",
+      "pause": "一時停止",
+      "back": "{seconds} 秒戻る",
+      "forward": "{seconds} 秒進む",
+      "seek": "再生位置",
+      "position": "{time} / {duration}",
+      "nowPlaying": "再生中: {chapter}",
+      "speed": "再生速度",
+      "speedOption": "{speed}x",
+      "chapters": "チャプター"
+    },
+    "progress": {
+      "Queued": "音声はキューに追加されています。まもなく作成されます。",
+      "Scripting": "読み上げ用の台本を作成しています。",
+      "Synthesizing": "音声を合成しています。長いブリーフィングでは数分かかります。"
+    },
+    "make": {
+      "action": "音声を作成",
+      "again": "音声をもう一度作成",
+      "remake": "音声を作り直す",
+      "voice": "音声",
+      "defaultVoice": "既定の音声",
+      "voiceDefault": "{name} (既定)",
+      "queued": "音声をキューに追加しました",
+      "conflict": "音声はキューに追加されませんでした。このブリーフィングの音声がすでに作成中か、このサーバーで音声がオフになっています。{message}"
+    },
+    "failed": "音声の作成に失敗しました。",
+    "missingFile": "音声ファイルを利用できません。聴くには音声をもう一度作成してください。",
+    "none": "このブリーフィングにはまだ音声がありません。",
+    "listenFrom": "{section} から聴く"
+  },
+  "voices": {
+    "columns": {
+      "name": "名前",
+      "provider": "プロバイダー",
+      "voice": "音声",
+      "model": "モデル",
+      "speed": "速度",
+      "endpoint": "エンドポイント",
+      "credential": "認証情報",
+      "created": "作成日時",
+      "id": "ID"
+    },
+    "default": "既定",
+    "secondaryShort": "2 人目のホスト: {voice}",
+    "serverDefault": "サーバーの既定",
+    "adminOnly": "音声を変更できるのはテナント管理者のみです。",
+    "memberNotice": "音声の一覧表示とテストができます。作成、編集、削除にはテナント管理者の権限が必要です。",
+    "twoHostHint": "2 人のホストによる台本では HOST_A と HOST_B の行が交互になります。HOST_A はこの音声を、HOST_B は 2 番目の音声を使用します (2 番目の音声が未設定の場合は同じ音声)。",
+    "makeDefault": "既定にする",
+    "defaultSet": "{name} を既定の音声にしました",
+    "empty": {
+      "title": "まだ音声はありません",
+      "message": "音声を追加するまで、オーディオにはサーバーの音声設定が使用されます。"
+    },
+    "form": {
+      "createTitle": "音声を追加",
+      "editTitle": "音声を編集"
+    },
+    "fields": {
+      "endpointHelp": "OpenAI 互換の音声サーバーのベース URL です。空欄にするとサーバーの既定を使用します。",
+      "endpointPlaceholder": "サーバーの既定",
+      "modelHelp": "空欄にすると既定のモデルを使用します。",
+      "modelPlaceholder": "kokoro",
+      "voice": "音声",
+      "voiceHelp": "ナレーターの音声で、2 人のホストによる台本では HOST_A になります。",
+      "voicePlaceholder": "af_heart",
+      "secondaryVoice": "2 番目の音声",
+      "secondaryVoiceHelp": "2 人のホストによる台本の HOST_B です。空欄にすると両方のホストに同じ音声を使用します。",
+      "speedHelp": "{min} から {max} まで。",
+      "credentialHelp": "音声サーバーで必要な場合に、API キーを含む保存済み認証情報を指定します。",
+      "isDefault": "既定の音声",
+      "isDefaultHelp": "エディションやリクエストで音声が指定されていない場合に使用します。"
+    },
+    "test": {
+      "action": "テスト",
+      "title": "音声をテスト",
+      "text": "サンプルテキスト",
+      "textHelp": "空欄にすると短いあいさつが再生されます。",
+      "defaultText": "おはようございます。あなたのトピックの最新の動きをお伝えします。",
+      "speak": "読み上げ",
+      "speaking": "読み上げ中...",
+      "ttsError": "音声サービスでエラーが発生しました: {message}"
+    },
+    "delete": {
+      "title": "音声を削除",
+      "message": "音声「{name}」を削除しますか？この音声を使用しているエディションは既定の音声に戻ります。"
+    }
+  },
+  "listen": {
+    "untitled": "無題のエピソード",
+    "columns": {
+      "title": "エピソード",
+      "status": "ステータス",
+      "kind": "種類",
+      "duration": "再生時間",
+      "size": "サイズ",
+      "segments": "セグメント",
+      "script": "台本",
+      "created": "作成日時",
+      "completed": "完了日時",
+      "id": "ID"
+    },
+    "noValue": "なし",
+    "scriptModel": "モデルが作成",
+    "scriptText": "テキストから読み上げ",
+    "actions": {
+      "play": "再生",
+      "briefing": "ブリーフィングを開く",
+      "remake": "音声を作り直す"
+    },
+    "empty": {
+      "title": "まだ音声はありません",
+      "message": "ブリーフィングから音声を作成するか、エディションで音声をオンにしてください。"
+    },
+    "delete": {
+      "title": "エピソードを削除",
+      "message": "「{title}」とその音声ファイルを削除しますか？ブリーフィングは残ります。",
+      "done": "エピソードを削除しました"
+    }
+  },
+  "feeds": {
+    "title": "ポッドキャストフィード",
+    "summary": "ポッドキャストアプリ用のプライベートフィード URL です。各フィードにはシークレットが含まれるため、URL はパスワードと同様に扱ってください。",
+    "fields": {
+      "name": "名前",
+      "nameHelp": "アプリやデバイス名など、識別しやすいラベルです。",
+      "namePlaceholder": "スマートフォンの Overcast",
+      "edition": "エディション",
+      "editionHelp": "フィードを 1 つのエディションに限定するか、すべての音声を含めます。"
+    },
+    "allAudio": "すべての音声",
+    "create": "フィードを作成",
+    "created": {
+      "title": "フィードを作成しました",
+      "warning": "この URL は非公開で、表示されるのは一度だけです。URL を知っている人は誰でもあなたのブリーフィングを聴けます。今すぐコピーし、漏えいした場合はフィードを取り消してください。",
+      "feedUrl": "フィード URL",
+      "copyUrl": "フィード URL をコピー",
+      "secret": "シークレット",
+      "copySecret": "シークレットをコピー",
+      "done": "保存しました"
+    },
+    "empty": {
+      "title": "ポッドキャストフィードはありません",
+      "message": "フィードを作成すると、ポッドキャストアプリでブリーフィングを聴けます。"
+    },
+    "columns": {
+      "name": "名前",
+      "prefix": "トークン",
+      "edition": "エディション",
+      "created": "作成日時",
+      "lastUsed": "最終使用日時",
+      "status": "ステータス",
+      "actions": "操作"
+    },
+    "unnamed": "名前のないフィード",
+    "prefix": "{prefix}...",
+    "neverUsed": "未使用",
+    "revoked": "取り消し済み",
+    "revoke": "取り消す",
+    "revokeNamed": "{name} を取り消す",
+    "revokeConfirm": {
+      "title": "フィードを取り消す",
+      "message": "「{name}」を取り消しますか？登録しているポッドキャストアプリにはエピソードが配信されなくなります。この操作は元に戻せません。",
+      "done": "フィードを取り消しました"
+    },
+    "help": {
+      "title": "登録方法",
+      "step1": "上でフィードを作成し、その URL をコピーします。",
+      "apple": "Apple Podcasts: ライブラリを開き、メニューから「URL で番組をフォロー」を選んで URL を貼り付けます。",
+      "overcast": "Overcast: プラスボタンをタップし、「Add URL」を選んで URL を貼り付けます。",
+      "publicUrl": "スマートフォンからサーバーに接続できる必要があります。MYMORNINGNEWS_PUBLIC_BASE_URL をスマートフォンで開けるアドレス (127.0.0.1 以外) に設定し、そのアドレスを使った URL になるようフィードを作成し直してください。",
+      "loopback": "この URL は 127.0.0.1 を指しており、このコンピューターからしかアクセスできません。スマートフォンのポッドキャストアプリから接続できるよう、サーバーで MYMORNINGNEWS_PUBLIC_BASE_URL を設定してください。"
+    }
+  },
+  "promo": {
+    "picker": {
+      "search": "ユーザーを検索",
+      "searchPlaceholder": "メールアドレスに含まれる文字",
+      "user": "ユーザー",
+      "noUsers": "一致するユーザーはいません。",
+      "choose": "ユーザーを選択"
+    },
+    "validation": {
+      "codeRequired": "コードを入力してください。",
+      "codeFormat": "英字、数字、ハイフンを 4 文字から 40 文字で使用し、先頭と末尾は英字または数字にしてください。",
+      "prefixFormat": "英字と数字を 16 文字以内で使用してください。",
+      "countRange": "1 から {max, number} までの整数を入力してください。",
+      "planRequired": "プランを選択してください。",
+      "durationRange": "0 (無期限) から 3650 までの日数を整数で入力してください。",
+      "maxRange": "0 (無制限) または利用回数を整数で入力してください。",
+      "maxBelowUsed": "このコードはすでに {used} 回使用されているため、上限をそれより小さくすることはできません。",
+      "perUserRange": "1 から 100 までの整数を入力してください。",
+      "dateInvalid": "有効な日時を入力してください。",
+      "expiresAfterStarts": "有効期限は開始日時より後にしてください。"
+    },
+    "create": {
+      "title": "新しいプロモーションコード",
+      "open": "新しいコード"
+    },
+    "edit": {
+      "title": "{code} を編集"
+    },
+    "batch": {
+      "title": "コードを一括生成",
+      "open": "一括生成",
+      "createdTitle": "{count, plural, other {# 件のコードを作成しました}}",
+      "batchId": "バッチ {id}",
+      "downloadCsv": "CSV をダウンロード",
+      "copyAll": "すべてのコードをコピー",
+      "codes": "作成したコード",
+      "generate": "生成"
+    },
+    "fields": {
+      "code": "コード",
+      "codeHelp": "英字、数字、ハイフン。大文字で保存されます。",
+      "codeLocked": "コードの名前は変更できません。代わりに新しいコードを作成してください。",
+      "prefix": "プレフィックス",
+      "prefixHelp": "任意。英字と数字を 16 文字以内で指定します。各コードにはランダムなサフィックスが付きます。",
+      "count": "個数",
+      "countHelp": "1 から {max, number} 件のコード。",
+      "plan": "プラン",
+      "noPlans": "プランはありません",
+      "description": "説明",
+      "duration": "期間 (日数)",
+      "durationHelp": "0 はプランが無期限であることを意味します。",
+      "maxRedemptions": "合計利用回数",
+      "maxHelp": "0 は無制限を意味します。",
+      "maxUsedHelp": "0 は無制限を意味します。すでに {used} 回使用されています。",
+      "perUserLimit": "ユーザーごとの上限",
+      "perUserHelp": "1 人が利用できる回数です。",
+      "starts": "開始日時",
+      "startsHelp": "空欄にすると今すぐ開始します。現地時刻で指定します。",
+      "expires": "有効期限",
+      "expiresHelp": "空欄にすると有効期限なしになります。現地時刻で指定します。",
+      "enabled": "有効",
+      "newAccountsOnly": "新規アカウントのみ",
+      "newAccountsOnlyHelp": "このコードを使って登録したアカウントのみが利用できます。"
+    },
+    "status": {
+      "enabled": "有効",
+      "disabled": "無効",
+      "notStarted": "開始前",
+      "expired": "期限切れ",
+      "exhausted": "上限到達"
+    },
+    "usage": {
+      "usedOf": "{used} / {max}",
+      "usedUnlimited": "{used} / 無制限",
+      "unlimited": "無制限"
+    },
+    "duration": {
+      "days": "{count, plural, other {# 日}}",
+      "noEnd": "無期限"
+    },
+    "reasons": {
+      "NotFound": "そのコードは見つかりませんでした。綴りを確認して、もう一度お試しください。",
+      "Disabled": "そのコードは無効になっています。",
+      "NotStarted": "そのコードはまだ使用できません。",
+      "Expired": "そのコードは有効期限が切れています。",
+      "Exhausted": "そのコードは利用回数の上限に達しています。",
+      "AlreadyRedeemed": "このアカウントはすでにそのコードを使用しています。",
+      "NewAccountsOnly": "そのコードは新規アカウント専用です。"
+    },
+    "delete": {
+      "title": "プロモーションコードを削除",
+      "message": "{code} を削除しますか？この操作は元に戻せません。",
+      "usedMessage": "{code} はすでに {count, plural, other {# 回}}利用されているため、削除できません。履歴を残すため、代わりに無効にしてください。",
+      "disableInstead": "代わりに無効にする",
+      "conflict": "このコードは使用済みのため削除できません。代わりに無効にしてください。"
+    },
+    "notify": {
+      "disabled": "{code} を無効にしました",
+      "enabled": "{code} を有効にしました",
+      "copied": "{code} をコピーしました",
+      "generated": "{count, plural, other {# 件のコードを生成しました}}",
+      "created": "{code} を作成しました"
+    },
+    "columns": {
+      "code": "コード",
+      "description": "説明",
+      "plan": "プラン",
+      "duration": "期間",
+      "usage": "使用数 / 上限",
+      "remaining": "残り",
+      "activeSubscriptions": "有効なサブスクリプション",
+      "status": "ステータス",
+      "batch": "バッチ",
+      "expires": "有効期限",
+      "lastRedeemed": "最終利用日時",
+      "created": "作成日時"
+    },
+    "filters": {
+      "search": "コードまたは説明",
+      "enabledOnly": "有効",
+      "disabledOnly": "無効"
+    },
+    "actions": {
+      "disable": "無効にする",
+      "enable": "有効にする",
+      "copyCode": "コードをコピー"
+    },
+    "never": "なし",
+    "immediately": "即時",
+    "createdBy": "作成者",
+    "empty": {
+      "title": "プロモーションコードはまだありません",
+      "message": "コードを作成するか一括生成して、ユーザーにプランを提供しましょう。"
+    },
+    "apply": {
+      "open": "ユーザーに適用",
+      "title": "{code} をユーザーに適用",
+      "help": "ユーザーには {duration} の間 {plan} が付与されます。コードの制限は引き続き適用されます。",
+      "confirm": "コードを適用",
+      "done": "{code} を {email} に適用しました"
+    },
+    "redemptions": {
+      "title": "利用履歴",
+      "user": "ユーザー",
+      "tenant": "テナント",
+      "channel": "経路",
+      "date": "利用日時",
+      "status": "ステータス",
+      "active": "有効",
+      "revoked": "取り消し済み",
+      "revokedOn": "{date} に取り消し",
+      "userId": "ユーザー ID",
+      "revoke": "取り消す",
+      "revokeTitle": "利用を取り消す",
+      "revokeMessage": "{email} の {code} の利用を取り消しますか？このコードによるプランは今すぐ終了します。",
+      "revokedNotice": "利用を取り消しました",
+      "empty": "このコードはまだ誰も利用していません",
+      "emptyMessage": "利用履歴には、誰が、いつ、どこから利用したかが表示されます。"
+    },
+    "channels": {
+      "Signup": "新規登録",
+      "Account": "アカウント",
+      "Admin": "管理者",
+      "Api": "API"
+    },
+    "detail": {
+      "summary": "このコードの使用状況、利用履歴、設定",
+      "back": "すべてのコード",
+      "settings": "設定"
+    },
+    "kpi": {
+      "redemptions": "利用回数",
+      "remaining": "残り",
+      "activeSubscriptions": "有効なサブスクリプション",
+      "revoked": "取り消し済み",
+      "lastRedeemed": "最終利用日時",
+      "notYet": "まだありません"
+    },
+    "chart": {
+      "title": "利用回数の推移",
+      "subtitle": "利用日ごとの 1 日あたりの件数",
+      "empty": "まだ利用はありません。"
+    }
+  },
+  "plans": {
+    "default": "既定",
+    "noFeatures": "利用権の値はありません。",
+    "validation": {
+      "key": "小文字の英字、数字、ハイフンを 2 文字から 63 文字で使用してください。",
+      "name": "名前を入力してください。",
+      "duplicate": "キー {key} が重複しています。"
+    },
+    "create": {
+      "title": "新しいプラン",
+      "open": "新しいプラン"
+    },
+    "edit": {
+      "title": "{name} を編集",
+      "open": "{name} を編集"
+    },
+    "fields": {
+      "key": "キー",
+      "keyHelp": "team-pilot のような固定の識別子です。",
+      "keyLocked": "プランのキーは変更できません。",
+      "name": "名前",
+      "description": "説明",
+      "features": "利用権の値",
+      "featuresHelp": "コードはプラン名ではなく、これらのキーを確認します。数値、true または false、unlimited を使用してください。値を空にするとキーが削除されます。",
+      "featureKey": "利用権のキー",
+      "featureValue": "{key} の値",
+      "emptyRemoves": "空にすると削除されます",
+      "clearValue": "{key} をクリア",
+      "addFeature": "値を追加"
+    },
+    "featureNames": {
+      "usage_monthlyCostUsd_max": "月額コストの上限 (USD)",
+      "topics_max": "トピック数",
+      "schedule_minIntervalMinutes": "スケジュールの最短間隔 (分)",
+      "runs_daily_max": "1 日あたりの実行回数",
+      "audio_enabled": "音声",
+      "audio_monthlyMinutes_max": "1 か月あたりの音声時間 (分)",
+      "email_enabled": "メール",
+      "mobile_access": "モバイルアプリ",
+      "endpoints_custom": "独自のモデルエンドポイント",
+      "artifacts_pinned_max": "ピン留めできるレポート数"
+    },
+    "assignments": {
+      "title": "ユーザーのプラン",
+      "help": "ユーザーを選ぶと、後から開始するものも含めたすべてのプラン期間が表示され、取り消すことができます。",
+      "plan": "プラン",
+      "source": "付与元",
+      "starts": "開始日時",
+      "ends": "終了日時",
+      "state": "状態",
+      "note": "メモ",
+      "revoke": "取り消す",
+      "revokeTitle": "プランを取り消す",
+      "revokeMessage": "このユーザーの {plan} を取り消しますか？今すぐ終了します。",
+      "revoked": "プランを取り消しました",
+      "empty": "プランの割り当てはありません",
+      "emptyMessage": "このユーザーは既定のプランを利用しています。"
+    },
+    "sources": {
+      "Default": "既定",
+      "Admin": "管理者",
+      "Promo": "プロモーションコード",
+      "Billing": "請求"
+    },
+    "states": {
+      "current": "現在",
+      "upcoming": "予定",
+      "ended": "終了",
+      "revoked": "取り消し済み"
+    },
+    "grant": {
+      "open": "プランを付与",
+      "title": "プランを付与",
+      "titleFor": "{email} にプランを付与",
+      "confirm": "付与",
+      "note": "メモ",
+      "noteHelp": "このユーザーにプランを付与する理由です。監査ログに表示されます。",
+      "done": "{email} にプランを付与しました"
+    },
+    "userPanel": {
+      "action": "プラン",
+      "title": "{email} のプラン"
+    }
+  },
+  "account": {
+    "plan": {
+      "title": "プラン",
+      "endsOn": "プランは {date} に終了します。",
+      "noEnd": "プランに終了日はありません。",
+      "limits": "制限",
+      "upcoming": "後から開始",
+      "anotherPlan": "別のプラン",
+      "period": "{from} から {to} まで",
+      "periodOpen": "{from} から (終了日なし)",
+      "redeemTitle": "コードを利用",
+      "code": "プロモーションコード",
+      "codeHelp": "受け取ったコードを入力します。すでに利用中のプランのコードは、現在のプランが終了した時点で開始します。",
+      "redeem": "利用する",
+      "redeemed": "コードを利用しました。{plan} が利用可能になりました。"
+    }
+  },
+  "email": {
+    "memberNotice": "あなた宛てのメールが表示されます。管理者にはすべてのメッセージが表示されます。",
+    "resend": "再送信",
+    "resent": "{recipient} に再送信しました",
+    "columns": {
+      "time": "日時",
+      "template": "テンプレート",
+      "recipient": "宛先",
+      "subject": "件名",
+      "status": "ステータス",
+      "attempts": "試行回数",
+      "sent": "送信日時",
+      "topic": "トピック",
+      "providerId": "プロバイダー ID"
+    },
+    "statuses": {
+      "Queued": "キュー待ち",
+      "Sending": "送信中",
+      "Sent": "送信済み",
+      "Failed": "失敗",
+      "Suppressed": "抑止",
+      "Skipped": "スキップ"
+    },
+    "templates": {
+      "RunDigest": "実行ダイジェスト",
+      "BriefingPublished": "ブリーフィングの公開",
+      "RunFailed": "実行の失敗",
+      "PreferenceProposal": "好みの提案",
+      "Test": "テスト"
+    },
+    "chart": {
+      "title": "ステータス別の 1 日あたりのメッセージ数",
+      "subtitle": "過去 {days} 日間",
+      "empty": "この期間のメールはありません。"
+    },
+    "empty": {
+      "title": "まだメールは送信されていません",
+      "message": "実行、ブリーフィング、テストの後にメールがここに表示されます。"
+    },
+    "delete": {
+      "title": "メールを削除",
+      "message": "{recipient} 宛ての「{subject}」を送信トレイから削除しますか？"
+    },
+    "preview": {
+      "title": "メール",
+      "runButton": "メールのプレビュー",
+      "runTitle": "実行メールのプレビュー",
+      "to": "宛先: {recipient}",
+      "format": "形式",
+      "html": "表示形式",
+      "text": "プレーンテキスト",
+      "frame": "表示されたメール",
+      "noHtml": "このメッセージには HTML 本文がありません。",
+      "noText": "このメッセージにはプレーンテキスト本文がありません。"
+    },
+    "test": {
+      "button": "テストメールを送信",
+      "sent": "{recipient} 宛てのテストメールをキューに追加しました",
+      "failed": "テストメールを送信できませんでした: {message}",
+      "settingsHelp": "先に変更を保存してから、自分宛てにテストを送信してください。"
+    }
+  },
+  "emailPrefs": {
+    "title": "メールの設定",
+    "address": "メールは {address} に届きます。",
+    "saved": "メールの設定を保存しました",
+    "categories": {
+      "runEmails": "実行メール",
+      "briefingEmails": "ブリーフィングメール",
+      "failureEmails": "失敗通知メール"
+    },
+    "help": {
+      "runEmails": "トピックの実行ごとに届くダイジェストです。",
+      "briefingEmails": "エディションまたは実行のブリーフィングが公開されたときに届きます。",
+      "failureEmails": "実行が失敗したときに届きます。"
+    },
+    "unsubscribedTitle": "配信を停止したトピック",
+    "noUnsubscribed": "実行メールを送るすべてのトピックからメールを受け取ります。",
+    "resubscribeHelp": "これらのトピックの実行メールを再び受け取るには、最後に届いたメールのリンクを使用してください。"
+  },
+  "feedbackControl": {
+    "rate": "評価する",
+    "rateItem": "{title} を評価",
+    "rateType": "この{type}を評価",
+    "rateSection": "セクション「{section}」を評価",
+    "sectionPrompt": "このセクションは関連がありましたか？",
+    "isRelevant": "関連がありましたか？",
+    "isAccurate": "この予測はどうでしたか？",
+    "isUseful": "役に立ちましたか？",
+    "why": "理由は？",
+    "whyHelp": "任意。理由を入力すると、リサーチがどの項目を残し、どれを外すかを学習します。",
+    "whyTitle": "この評価の理由は？",
+    "whyAdd": "理由を追加",
+    "whyEdit": "理由を編集",
+    "ratedAs": "評価: {rating}",
+    "retract": "評価を取り消す",
+    "actions": {
+      "relevant": "関連あり",
+      "somewhat": "やや関連あり",
+      "not-relevant": "関連なし",
+      "accurate": "正確",
+      "partially": "一部正確",
+      "inaccurate": "不正確",
+      "too-early": "判断には早い",
+      "useful": "役に立った",
+      "not-useful": "役に立たなかった",
+      "none": "評価なし"
+    }
+  },
+  "insights": {
+    "noData": "この期間のデータはまだありません。",
+    "withCount": "{label} ({count})",
+    "scope": {
+      "days": "{count, plural, other {# 日間}}",
+      "topic": "トピック",
+      "allTopics": "すべてのトピック",
+      "everyone": "テナントの全員"
+    },
+    "topic": {
+      "last90": "過去 90 日間"
+    },
+    "relevance": {
+      "precision": "適合率",
+      "precisionHelp": "評価された発見事項のうち「関連あり」または「やや関連あり」の割合",
+      "coverage": "評価率",
+      "coverageHelp": "表示された発見事項のうち何らかの評価を受けた割合",
+      "shown": "表示された発見事項",
+      "rated": "評価された発見事項",
+      "byDay": "適合率の推移",
+      "byDayHelp": "その日に付けられた評価に基づく日ごとの値",
+      "byTopic": "トピック別の適合率",
+      "byTier": "ランク別の適合率",
+      "byDomain": "ソースのドメイン別の適合率",
+      "byDomainHelp": "評価数が最も多い 20 のドメイン",
+      "byDimension": "観点別の適合率"
+    },
+    "quality": {
+      "failureRate": "根拠の検証失敗",
+      "quotes": "{count, plural, other {# 件の引用を確認}}",
+      "byModel": "モデル別の検証失敗率",
+      "byModelHelp": "抽出した引用のうち、保存されたソースのテキストと一致しなかった割合"
+    },
+    "accuracy": {
+      "rate": "正答率",
+      "rateHelp": "判定済みのうち「正確」に「一部正確」の半分を加えた割合",
+      "brier": "平均ブライアスコア",
+      "due": "レビュー待ち",
+      "dueHelp": "期間が過ぎても判定されていないもの",
+      "resolved": "判定済み",
+      "ofTotal": "{total} 件中 {open} 件が未判定",
+      "unresolvable": "判定不能",
+      "agreement": "エージェントとの一致率",
+      "agreementHelp": "{count, plural, other {決定済みのレビュー # 件に基づく}}",
+      "latency": "判定までの時間",
+      "days": "{count, plural, other {# 日}}",
+      "calibration": "キャリブレーション曲線",
+      "calibrationHelp": "表明した確信度と、予測が実際に当たった頻度の比較",
+      "byTopic": "トピック別の正答率",
+      "byTopicHelp": "判定済みの予測に基づくトピックごとの正答率"
+    },
+    "feedback": {
+      "total": "フィードバック件数",
+      "withReason": "理由あり",
+      "withoutReason": "理由なし",
+      "share": "全体の {share}",
+      "emailOpens": "メールリンクのクリック",
+      "emailSubmits": "メールリンクからの送信",
+      "submitRate": "クリックの {rate}",
+      "byDay": "日ごとのフィードバック量",
+      "byDayHelp": "1 日あたりの評価数を、理由の有無で分けて表示",
+      "byChannel": "経路別のフィードバック",
+      "byTarget": "項目の種類別のフィードバック",
+      "listTitle": "すべてのフィードバック",
+      "includeHistory": "置き換えられた評価を含める",
+      "noReason": "理由なし",
+      "current": "現在",
+      "superseded": "置き換え済み",
+      "editWhy": "理由を編集",
+      "saved": "理由を保存しました",
+      "retractTitle": "この評価を取り消す",
+      "retractMessage": "この評価を取り消しますか？同じ項目に以前の評価がある場合は、それが再び現在の評価になります。",
+      "retracted": "評価を取り消しました",
+      "emptyTitle": "まだフィードバックはありません",
+      "emptyMessage": "発見事項、予測、提案を評価して、何が大切かをリサーチに教えましょう。",
+      "columns": {
+        "when": "日時",
+        "target": "項目",
+        "rating": "評価",
+        "reason": "理由",
+        "channel": "経路",
+        "current": "状態"
+      },
+      "targetTypes": {
+        "Finding": "発見事項",
+        "Prediction": "予測",
+        "PredictionReview": "予測のレビュー",
+        "Suggestion": "提案",
+        "SourceItem": "ソース",
+        "Domain": "ドメイン",
+        "Briefing": "ブリーフィング",
+        "BriefingSection": "ブリーフィングのセクション",
+        "LearnedPreference": "学習した好み"
+      },
+      "channels": {
+        "Dashboard": "ダッシュボード",
+        "Email": "メール",
+        "Mobile": "モバイルアプリ",
+        "Api": "API",
+        "Mcp": "MCP"
+      },
+      "byChannelDay": "日別、経路別のフィードバック",
+      "byChannelDayHelp": "1 日あたりの評価数を、送信元の経路ごとに積み上げて表示"
+    },
+    "reasons": {
+      "title": "理由のテーマ",
+      "help": "理由から抽出したテーマ (括弧内は過去 30 日間の件数)",
+      "tagRecent": "{tag} [{recent}]",
+      "byWeek": "週ごとの理由のテーマ"
+    },
+    "suggestions": {
+      "title": "提案の結果",
+      "decision": "決定までの平均 {days} 日",
+      "outcomes": {
+        "new": "未対応 ({share})",
+        "accepted": "承認 ({share})",
+        "done": "完了 ({share})",
+        "snoozed": "スヌーズ ({share})",
+        "dismissed": "却下 ({share})"
+      }
+    },
+    "preferences": {
+      "statement": "好み",
+      "statementHelp": "「ベンダーの資金調達の発表はスキップする」のような、簡潔な 1 文です。",
+      "kind": "種類",
+      "origin": "作成元",
+      "confidence": "確信度",
+      "supportCount": "裏付けとなるフィードバック",
+      "decided": "決定日時",
+      "allTopics": "すべてのトピック",
+      "topicHelp": "空欄にすると、すべてのトピックに適用されます。",
+      "writeOwn": "自分で書く",
+      "createTitle": "好みを書く",
+      "createHelp": "自分で書いた好みはすぐに有効になり、トピックとともにリサーチに渡されます。",
+      "editTitle": "好みを編集",
+      "detailTitle": "学習した好み",
+      "supportTitle": "{count, plural, =0 {裏付けとなるフィードバック} other {裏付けとなるフィードバック # 件}}",
+      "noSupport": "この好みに関連付けられたフィードバックはありません。",
+      "learnFor": "学習対象",
+      "chooseTopic": "トピックを選択",
+      "learnNow": "今すぐ学習",
+      "learning": "学習中...",
+      "learned": "{count, plural, =0 {学習が完了しました。新しい提案はありません} other {確認が必要な新しい提案が # 件あります}}",
+      "emptyTitle": "学習した好みはまだありません",
+      "emptyMessage": "理由を添えていくつかの項目を評価するか、自分で好みを書くと、提案が表示されます。",
+      "deleteTitle": "好みを削除",
+      "deleteMessage": "「{statement}」を削除しますか？今後のリサーチには反映されなくなります。",
+      "statuses": {
+        "Proposed": "提案中",
+        "Active": "有効",
+        "Rejected": "却下",
+        "Disabled": "無効"
+      },
+      "origins": {
+        "Distilled": "学習",
+        "User": "あなたが作成"
+      },
+      "kinds": {
+        "Prefer": "優先する",
+        "Avoid": "避ける",
+        "PreferSource": "ソースを優先",
+        "AvoidSource": "ソースを避ける",
+        "StyleNote": "スタイルのメモ"
+      },
+      "actions": {
+        "accept": "承認",
+        "reject": "却下",
+        "disable": "無効にする",
+        "enable": "有効にする"
+      },
+      "changed": {
+        "accept": "好みを承認しました",
+        "reject": "好みを却下しました",
+        "disable": "好みを無効にしました",
+        "enable": "好みを有効にしました"
+      }
+    },
+    "ranking": {
+      "title": "ランキングの推奨",
+      "rated": "{count, plural, other {評価済みの発見事項 # 件に基づく}}",
+      "apply": "この重みを適用",
+      "applyTitle": "推奨される重みを適用",
+      "applyMessage": "{topic} に推奨されるランキングの重みを使用しますか？今後の実行では、この重みで発見事項がスコア付けされます。",
+      "applied": "重みを適用しました",
+      "notStored": "サーバーはこのトピックの重みを保存しませんでした。",
+      "notEnough": "推奨の信頼性を高めるには、このトピックの発見事項をさらに評価してください。",
+      "component": "要素",
+      "current": "現在",
+      "recommended": "推奨",
+      "separation": "分離度",
+      "help": "分離度は、各要素で「関連あり」と「関連なし」の発見事項のスコアがどれだけ離れているかを示します。よりよく分離できる要素ほど重みが大きくなります。"
+    },
+    "overview": {
+      "window": "{from} から {to}",
+      "help": "特に記載がない限り、件数は選択した期間が対象です。未判定の予測、新しい提案、有効なトピックは現在の合計です。",
+      "activeTopics": "有効なトピック",
+      "runs": "実行",
+      "runOutcomes": "完了 {completed}、一部成功 {partial}、失敗 {failed}",
+      "findingsShown": "表示された発見事項",
+      "findingsRated": "{count} 件を評価",
+      "precision": "関連度の適合率",
+      "precisionHelp": "評価された発見事項のうち関連ありと判断された割合",
+      "briefingsReady": "準備済みのブリーフィング",
+      "emailsSent": "送信したメール",
+      "emailsFailed": "{count} 件が失敗",
+      "predictionsOpen": "未判定の予測",
+      "predictionsResolved": "{count} 件を判定済み",
+      "accuracy": "予測の正答率",
+      "brier": "平均ブライアスコア {value}",
+      "feedback": "フィードバック",
+      "feedbackWithReason": "{count} 件に理由あり",
+      "suggestionsNew": "新しい提案",
+      "suggestionsAccepted": "{count} 件を承認または完了",
+      "quoteFailure": "引用の失敗率",
+      "quoteFailureHelp": "検証に失敗した引用",
+      "modelCost": "モデルのコスト",
+      "modelCalls": "モデル呼び出し {count} 回"
+    },
+    "email": {
+      "total": "メッセージ",
+      "pendingSkipped": "保留 {pending}、スキップ {skipped}",
+      "sent": "送信済み",
+      "notSent": "未送信",
+      "failed": "失敗",
+      "deliveryRate": "配信率",
+      "deliveryRateHelp": "処理が完了したメッセージのうち送信された割合",
+      "meanTimeToSend": "平均送信時間",
+      "meanTimeToSendHelp": "キューへの追加から送信まで",
+      "linkOpens": "フィードバックリンクのクリック",
+      "linkSubmits": "フィードバックリンクからの送信",
+      "unsubscribes": "配信停止",
+      "byDay": "日ごとのメッセージ数",
+      "byDayHelp": "1 日あたりにキューに追加されたメッセージを、送信されたかどうかで分けて表示",
+      "byTemplate": "テンプレート別の配信率",
+      "byTemplateHelp": "各テンプレートのメッセージのうち送信された割合",
+      "byStatus": "ステータス別のメッセージ数"
+    }
+  },
+  "mcp": {
+    "tokenWarning": "セッショントークンを MCP クライアントや設定ファイルに貼り付けないでください。取り消し可能なアクセスキーを使用してください。このページにトークンが表示されることはありません。",
+    "about": {
+      "title": "MCP サーバーについて",
+      "body": "My Morning News の MCP サーバーを使うと、Claude Code、Claude Desktop、IDE、または独自のエージェントから、トピックの一覧表示、ブリーフィングの閲覧、発見事項の根拠の確認、予測の判定、提案への対応、理由付きのフィードバックができます。",
+      "privileges": "MCP サーバー自体には権限がありません。すべての呼び出しはあなたのアクセスキーで REST API に送られるため、ロールと所有権はここと同じように適用されます。MCP 経由のフィードバックは経路 MCP として記録されます。"
+    },
+    "url": {
+      "label": "Streamable HTTP の URL",
+      "help": "MCP サーバーは REST API とは別のプロセスとして動作します。別の場所で実行している場合は変更してください。下のコマンドもそれに合わせて変わります。",
+      "invalid": "http または https の URL を入力してください。",
+      "reset": "推奨の URL に戻す"
+    },
+    "key": {
+      "title": "アクセスキーを作成",
+      "body": "後でパスワードを変えずに取り消せるよう、MCP クライアント用のアクセスキーとシークレットを作成してください。シークレットは作成時に一度しか表示されないので、そのときにコピーしてください。",
+      "authMode": "認証モードは「直接ヘッダー」または「ハイブリッド」を選んでください。Streamable HTTP クライアントはリクエストのたびにキーとシークレットを送信しますが、「署名付きリクエスト」と「セッション交換」のキーはこれを拒否します。",
+      "create": "アクセスキーを作成",
+      "askAdmin": "アクセスキーは管理者が作成します。認証モードが「直接ヘッダー」のアクセスキーを管理者に依頼してください。"
+    },
+    "connect": {
+      "title": "クライアントを接続",
+      "claudeHttp": "Streamable HTTP 経由の Claude Code",
+      "claudeHttpHelp": "プレースホルダーをアクセスキーとシークレットに置き換えて、ターミナルで実行してください。",
+      "claudeStdio": "stdio 経由の Claude Code",
+      "claudeStdioHelp": "ソースのチェックアウトから MCP サーバーを実行します。パスとプレースホルダーを置き換えてください。",
+      "desktop": "Claude Desktop とその他のクライアント",
+      "desktopHelp": "mcpServers の JSON ファイルを読み込むクライアント向けです。パスとプレースホルダーを置き換えてください。",
+      "run": "MCP サーバーを起動",
+      "runHelp": "Docker スタックの実行中に、ポート 12105 で MCP サーバーを起動します。"
+    },
+    "try": {
+      "title": "試してみる",
+      "topics": "My Morning News のトピックを一覧表示して",
+      "briefing": "今日のブリーフィングを読んで",
+      "review": "review_morning_briefing プロンプトを実行して",
+      "safety": "発見事項とブリーフィングには Web ページのテキストが含まれます。クライアントには、それを指示ではなくデータとして扱うよう伝えています。"
+    }
+  },
+  "sources": {
+    "searchPlaceholder": "タイトルとアドレスを検索",
+    "topic": "トピック",
+    "allTopics": "すべてのトピック",
+    "clearRun": "すべての実行のソースを表示",
+    "columns": {
+      "title": "ソース",
+      "domain": "ドメイン",
+      "published": "公開日時",
+      "contentType": "コンテンツタイプ",
+      "firstRun": "最初に検出された実行",
+      "fetched": "取得日時",
+      "timesSeen": "検出回数",
+      "id": "ID"
+    },
+    "detail": {
+      "title": "ソース",
+      "open": "ページを開く",
+      "monospace": "等幅",
+      "copyText": "テキストをコピー",
+      "characters": "{count, plural, other {{formatted} 文字}}"
+    },
+    "empty": {
+      "title": "まだソースはありません",
+      "message": "ソースは、トピックの実行で Web を検索してページを取得した後に表示されます。"
+    }
+  }
+}

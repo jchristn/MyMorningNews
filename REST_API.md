@@ -8725,22 +8725,32 @@ curl -s "http://127.0.0.1:12100/v1.0/api/account/export" \
 
 ### POST /v1.0/api/account/delete
 
-**Delete my account.** Signs out every session and schedules the purge after Hosting.DeletionGraceDays (default 7); signing in again before then cancels it. Returns 202 with purgeAfterUtc.
+**Delete my account.** Signs out every session and schedules the purge after Hosting.DeletionGraceDays (default 7); signing in again before then cancels it. An optional password in the body must match. Returns 202 with purgeAfterUtc.
 
 - Auth: Any authenticated principal (`UserSelfWrite`).
 - Response: `DeletionScheduled`
 
+Request body: [`AccountDeleteRequest`](#accountdeleterequest).
+
+```json
+{
+  "password": "my current password",
+  "confirm": true
+}
+```
+
 | Status | Meaning |
 |---|---|
 | 202 | Accepted |
-| 400 | Bad Request: BadRequest (access keys are refused) |
+| 400 | Bad Request: BadRequest (access keys are refused), PasswordIncorrect |
 | 401 | Unauthorized |
 | 403 | Forbidden |
 | 409 | Conflict: Conflict (protected account) |
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/account/delete" \
-  -H "Authorization: Bearer $TOKEN"
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### POST /v1.0/api/promo-codes/redeem
@@ -9330,6 +9340,17 @@ curl -s -X PUT "http://127.0.0.1:12100/v1.0/api/mcp-servers/mcp_mwpff31e_Qw8eRt5
 Field names are camelCase on the wire. Enums travel as their names (`"Active"`, not a number). Null fields are left out of responses.
 
 ### Objects
+
+#### AccountDeleteRequest
+
+Optional body for account deletion. When a password is given it must match, as a second check that the person holding the session owns the account.
+
+Request body of [POST /v1.0/api/account/delete](#post-v10apiaccountdelete).
+
+| Field | Type | Description |
+|---|---|---|
+| `password` | string | Current password, or null to rely on the session alone. |
+| `confirm` | boolean | Explicit confirmation flag sent by the apps. Informational; deletion proceeds either way. |
 
 #### AccountEmailRequest
 

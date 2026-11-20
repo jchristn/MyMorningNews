@@ -507,7 +507,7 @@
     "GET /.well-known/assetlinks.json": {"response": "AssetLinks", "status": {"200": "OK", "404": "NotConfigured"}},
     "GET /v1.0/api/account/usage": {"response": "UsageMeter", "status": {"200": "OK", "400": "BadRequest (access keys are refused)", "403": "Forbidden"}},
     "GET /v1.0/api/account/export": {"response": "ZIP file", "status": {"200": "OK (application/zip)", "400": "BadRequest (access keys are refused)", "403": "Forbidden"}},
-    "POST /v1.0/api/account/delete": {"response": "DeletionScheduled", "status": {"202": "Accepted", "400": "BadRequest (access keys are refused)", "403": "Forbidden", "409": "Conflict (protected account)"}},
+    "POST /v1.0/api/account/delete": {"response": "DeletionScheduled", "status": {"202": "Accepted", "400": "BadRequest (access keys are refused), PasswordIncorrect", "403": "Forbidden", "409": "Conflict (protected account)"}},
     "GET /v1.0/api/mcp-servers": {"response": "EnumerationResult<McpServer>", "status": {"200": "OK", "403": "Forbidden"}},
     "POST /v1.0/api/mcp-servers": {"response": "McpServer", "status": {"201": "Created", "400": "ValidationFailed, EgressBlocked", "403": "Forbidden"}},
     "GET /v1.0/api/mcp-servers/{id}": {"response": "McpServerDetailResponse", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
@@ -1178,6 +1178,10 @@
     },
     "McpToolUpdateRequest": {
       "enabled": true
+    },
+    "AccountDeleteRequest": {
+      "password": "my current password",
+      "confirm": true
     }
   },
   "examples": {

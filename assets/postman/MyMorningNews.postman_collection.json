@@ -13226,7 +13226,13 @@
           "name": "Delete my account",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/v1.0/api/account/delete",
               "host": [
@@ -13239,7 +13245,16 @@
                 "delete"
               ]
             },
-            "description": "**Delete my account.** Signs out every session and schedules the purge after Hosting.DeletionGraceDays (default 7); signing in again before then cancels it. Returns 202 with purgeAfterUtc.\n\n- Auth: Any authenticated principal (`UserSelfWrite`).\n- Response: DeletionScheduled\n- Status: 202 Accepted; 400 BadRequest (access keys are refused); 401 Unauthorized; 403 Forbidden; 409 Conflict (protected account)\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#post-v10apiaccountdelete)"
+            "description": "**Delete my account.** Signs out every session and schedules the purge after Hosting.DeletionGraceDays (default 7); signing in again before then cancels it. An optional password in the body must match. Returns 202 with purgeAfterUtc.\n\n- Auth: Any authenticated principal (`UserSelfWrite`).\n- Response: DeletionScheduled\n- Status: 202 Accepted; 400 BadRequest (access keys are refused), PasswordIncorrect; 401 Unauthorized; 403 Forbidden; 409 Conflict (protected account)\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#post-v10apiaccountdelete)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"my current password\",\n  \"confirm\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {

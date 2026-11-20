@@ -18,7 +18,7 @@ import Modal from '../components/Modal.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
 
-export const MCP_TRANSPORTS = ['StreamableHttp', 'Sse'];
+export const MCP_TRANSPORTS = ['StreamableHttp'];
 const EMPTY = { name: '', url: '', transport: 'StreamableHttp', vaultCredentialId: '', headerName: 'Authorization', headerPrefix: 'Bearer ', enabled: true };
 
 // A server's discovered tools with on and off switches. Only enabled tools can be allowed on a topic.

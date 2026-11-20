@@ -172,7 +172,7 @@ namespace MyMorningNews.Core.Services
                     if (field.Attribute.Secret && (newValue == null || (newValue is string s && (s.Length == 0 || s == SecretMask)))) continue;
 
                     object? fileValue = field.Property.GetValue(field.Group.GetValue(candidate));
-                    if (Object.Equals(fileValue, newValue)) continue;
+                    if (SameValue(fileValue, newValue)) continue;
 
                     try
                     {
@@ -259,8 +259,15 @@ namespace MyMorningNews.Core.Services
             return null;
         }
 
+        private static bool SameValue(object? a, object? b)
+        {
+            if (a is IEnumerable<string> la && b is IEnumerable<string> lb) return la.SequenceEqual(lb, StringComparer.Ordinal);
+            return Object.Equals(a, b);
+        }
+
         private static string TypeName(Type type)
         {
+            if (typeof(IEnumerable<string>).IsAssignableFrom(type) && type != typeof(string)) return "list";
             if (type == typeof(int) || type == typeof(long)) return "integer";
             if (type == typeof(double) || type == typeof(decimal)) return "number";
             if (type == typeof(bool)) return "boolean";

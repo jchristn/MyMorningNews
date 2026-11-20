@@ -329,10 +329,14 @@ namespace Test.Shared.Suites
 
                 string output = await f.Server.Context.Mcp.CallToolAsync((await f.Server.Context.Database.McpServers.ReadAsync(f.Topic.TenantId, server.Id, token).ConfigureAwait(false))!, "list_topics", "{}", token).ConfigureAwait(false);
                 Assert.True(output.Contains(f.Topic.Id, StringComparison.Ordinal), "a tool call through the registry returns the caller's data: " + output);
-                Topic allow = (await f.User.Client.PutAsync("/v1.0/api/topics/" + f.Topic.Id, new { mcpToolIds = new[] { listTopics.Id, "bogus" } }, token).ConfigureAwait(false)).Expect(200, "allowlist").Json<Topic>();
-                Assert.True(allow.McpToolIds.SequenceEqual(new[] { listTopics.Id }), "allowlist keeps tool IDs only");
+                (await f.User.Client.PutAsync("/v1.0/api/topics/" + f.Topic.Id, new { mcpToolIds = new[] { listTopics.Id, "bogus" } }, token).ConfigureAwait(false)).Expect(400, "unknown tool IDs are refused");
+                (await f.User.Client.PutAsync("/v1.0/api/mcp-servers/" + server.Id, new { transport = "Sse" }, token).ConfigureAwait(false)).Expect(400, "only Streamable HTTP is supported");
+                Topic allow = (await f.User.Client.PutAsync("/v1.0/api/topics/" + f.Topic.Id, new { mcpToolIds = new[] { listTopics.Id } }, token).ConfigureAwait(false)).Expect(200, "allowlist").Json<Topic>();
+                Assert.True(allow.McpToolIds.SequenceEqual(new[] { listTopics.Id }), "allowlist saved");
 
                 (await f.User.Client.DeleteAsync("/v1.0/api/mcp-servers/" + server.Id, token).ConfigureAwait(false)).Expect(204, "remove");
+                Topic after = (await f.Server.Context.Database.Topics.ReadAsync(f.Topic.TenantId, f.Topic.Id, token).ConfigureAwait(false))!;
+                Assert.True(after.McpToolIds.Count == 0, "topics stop listing the removed server's tools");
                 Assert.Equal(0L, await f.Server.Context.Database.McpServerTools.CountAsync(new McpServerToolFilter { TenantId = f.Topic.TenantId, McpServerId = server.Id }, token).ConfigureAwait(false), "tools removed with it");
             }
         }

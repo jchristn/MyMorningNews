@@ -516,7 +516,9 @@
     "POST /v1.0/api/mcp-servers/{id}/test": {"response": "McpTestResult", "status": {"200": "OK (success false with the error when the server cannot be reached)", "403": "Forbidden", "404": "NotFound"}},
     "POST /v1.0/api/mcp-servers/{id}/discover": {"response": "McpServerDetailResponse", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound", "502": "McpServerUnavailable"}},
     "PUT /v1.0/api/mcp-servers/{id}/tools/{toolId}": {"response": "McpServerTool", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/runs/{id}/tool-calls": {"response": "List<RunToolCall>", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}}
+    "GET /v1.0/api/runs/{id}/tool-calls": {"response": "List<RunToolCall>", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
+    "GET /v1.0/api/briefings/{id}/progress": {"response": "BriefingProgress", "status": {"200": "OK", "400": "BadRequest (needs a signed-in user)", "403": "Forbidden", "404": "NotFound"}},
+    "PUT /v1.0/api/briefings/{id}/progress": {"response": "BriefingProgress", "status": {"200": "OK", "400": "BadRequest, ValidationFailed", "403": "Forbidden", "404": "NotFound"}}
   },
   "routeBodies": {
     "PUT /v1.0/api/topics/{id}/search-providers": [
@@ -1182,6 +1184,11 @@
     "AccountDeleteRequest": {
       "password": "my current password",
       "confirm": true
+    },
+    "BriefingProgressRequest": {
+      "positionSeconds": 312.5,
+      "durationSeconds": 905,
+      "completed": false
     }
   },
   "examples": {

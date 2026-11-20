@@ -134,6 +134,8 @@ namespace Test.Shared.Suites
                 ServerSettings incoming = s.Describe().Settings;
                 SettingsUpdateResult r = await s.UpdateAsync(incoming, token).ConfigureAwait(false);
                 Assert.True(r.Success && !r.Changed.Contains("auth.signingKey"), "mask not treated as a change");
+                Assert.True(r.Changed.Count == 0, "an unchanged round trip changes nothing (lists compare by content): " + String.Join(",", r.Changed));
+                Assert.Equal("list", s.Describe().Fields.Single(x => x.Path == "hosting.allowedPrivateHosts").Type, "list settings are described as lists");
                 ServerSettings onDisk = Serializer.Deserialize<ServerSettings>(File.ReadAllText(file))!;
                 Assert.Equal(original, onDisk.Auth.SigningKey, "file keeps the real secret");
             }

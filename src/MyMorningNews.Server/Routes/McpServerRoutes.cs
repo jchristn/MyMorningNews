@@ -77,7 +77,7 @@ namespace MyMorningNews.Server.Routes
         {
             McpServer? server = await LoadAsync(ctx, RequestTypeEnum.McpServerRead).ConfigureAwait(false);
             if (server == null) return;
-            await SendJsonAsync(ctx, 200, new McpServerDetailResponse { Server = server, Tools = await ToolsAsync(server).ConfigureAwait(false) }).ConfigureAwait(false);
+            await SendJsonAsync(ctx, 200, new McpServerDetailResponse { Server = server, Tools = await ToolsAsync(server, ctx).ConfigureAwait(false) }).ConfigureAwait(false);
         }
 
         private async Task UpdateAsync(HttpContextBase ctx)
@@ -101,8 +101,18 @@ namespace MyMorningNews.Server.Routes
         {
             McpServer? server = await LoadAsync(ctx, RequestTypeEnum.McpServerWrite).ConfigureAwait(false);
             if (server == null) return;
-            foreach (McpServerTool t in await ToolsAsync(server).ConfigureAwait(false))
+            List<McpServerTool> removed = await ToolsAsync(server, ctx).ConfigureAwait(false);
+            HashSet<string> removedIds = new HashSet<string>(removed.Select(x => x.Id), StringComparer.Ordinal);
+            foreach (McpServerTool t in removed)
                 await Server.Database.McpServerTools.DeleteAsync(server.TenantId, t.Id, ctx.Token).ConfigureAwait(false);
+            if (removedIds.Count > 0)
+            {
+                foreach (Topic topic in (await Server.Database.Topics.EnumerateAsync(new TopicFilter { TenantId = server.TenantId, PageSize = 1000 }, ctx.Token).ConfigureAwait(false)).Items.Where(x => x.McpToolIds.Any(removedIds.Contains)))
+                {
+                    topic.McpToolIds = topic.McpToolIds.Where(id => !removedIds.Contains(id)).ToList();
+                    await Server.Database.Topics.UpdateAsync(topic, ctx.Token).ConfigureAwait(false);
+                }
+            }
             await Server.Database.McpServers.DeleteAsync(server.TenantId, server.Id, ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 204, null).ConfigureAwait(false);
         }
@@ -139,7 +149,7 @@ namespace MyMorningNews.Server.Routes
                 return;
             }
 
-            List<McpServerTool> existing = await ToolsAsync(server).ConfigureAwait(false);
+            List<McpServerTool> existing = await ToolsAsync(server, ctx).ConfigureAwait(false);
             foreach (McpServerTool gone in existing.Where(e => found.All(f => f.Name != e.Name)))
                 await Server.Database.McpServerTools.DeleteAsync(server.TenantId, gone.Id, ctx.Token).ConfigureAwait(false);
             foreach (McpDiscoveredTool f in found)
@@ -164,7 +174,7 @@ namespace MyMorningNews.Server.Routes
             server.LastDiscoveredUtc = DateTime.UtcNow;
             server.LastError = null;
             await Server.Database.McpServers.UpdateAsync(server, ctx.Token).ConfigureAwait(false);
-            await SendJsonAsync(ctx, 200, new McpServerDetailResponse { Server = server, Tools = await ToolsAsync(server).ConfigureAwait(false) }).ConfigureAwait(false);
+            await SendJsonAsync(ctx, 200, new McpServerDetailResponse { Server = server, Tools = await ToolsAsync(server, ctx).ConfigureAwait(false) }).ConfigureAwait(false);
         }
 
         private async Task ToolAsync(HttpContextBase ctx)
@@ -201,6 +211,12 @@ namespace MyMorningNews.Server.Routes
             }
 
             await MyMorningNews.Core.Security.NetworkGuard.EnsureAllowedAsync(server.Url, ctx.Token).ConfigureAwait(false);
+            if (req.Transport.HasValue && req.Transport.Value != McpTransportEnum.StreamableHttp)
+            {
+                await SendErrorAsync(ctx, 400, "ValidationFailed", "Only the Streamable HTTP transport is supported.").ConfigureAwait(false);
+                return false;
+            }
+
             if (req.Transport.HasValue) server.Transport = req.Transport.Value;
             if (req.HeaderName != null) server.HeaderName = String.IsNullOrWhiteSpace(req.HeaderName) ? "Authorization" : req.HeaderName.Trim();
             if (req.HeaderPrefix != null) server.HeaderPrefix = req.HeaderPrefix;
@@ -229,9 +245,9 @@ namespace MyMorningNews.Server.Routes
             return server;
         }
 
-        private async Task<List<McpServerTool>> ToolsAsync(McpServer server)
+        private async Task<List<McpServerTool>> ToolsAsync(McpServer server, HttpContextBase ctx)
         {
-            return (await Server.Database.McpServerTools.EnumerateAsync(new McpServerToolFilter { TenantId = server.TenantId, McpServerId = server.Id, PageSize = 500 }, default).ConfigureAwait(false)).Items
+            return (await Server.Database.McpServerTools.EnumerateAsync(new McpServerToolFilter { TenantId = server.TenantId, McpServerId = server.Id, PageSize = 500 }, ctx.Token).ConfigureAwait(false)).Items
                 .OrderBy(t => t.Name, StringComparer.Ordinal).ToList();
         }
     }

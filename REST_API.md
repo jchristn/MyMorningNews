@@ -379,7 +379,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 
 ## Route reference
 
-292 routes in 45 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
+294 routes in 45 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
 
 | Group | Routes | What it covers |
 |---|---|---|
@@ -410,7 +410,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [Sources](#sources) | 2 | Pages the pipeline fetched for your topics, with their extracted text. |
 | [Predictions](#predictions) | 5 | Forecasts the pipeline extracted, with confidence and a horizon. They are resolved by hand or by accepting a proposed review. |
 | [Suggestions](#suggestions) | 3 | Things worth digging into next, with a status you move through (accept, snooze, dismiss, done). |
-| [Briefings](#briefings) | 6 | Composed briefings with sections and items, their Markdown and HTML files, pinning past retention, and regeneration. |
+| [Briefings](#briefings) | 8 | Composed briefings with sections and items, their Markdown and HTML files, pinning past retention, and regeneration. |
 | [Artifacts](#artifacts) | 4 | Stored files: briefing Markdown and HTML, audio, and exports. Content streams with Range support. |
 | [Editions](#editions) | 8 | Recurring briefings that gather several topics, with a template, audio and email switches, and a lookback window. |
 | [Templates](#templates) | 10 | Briefing templates in Markdown. Every save is a version; templates can be validated, previewed, rolled back, reset, imported, and exported. |
@@ -5640,6 +5640,8 @@ Composed briefings with sections and items, their Markdown and HTML files, pinni
 | GET | [`/v1.0/api/briefings/{id}`](#get-v10apibriefingsid) | Read a briefing with its sections, items, and files |
 | DELETE | [`/v1.0/api/briefings/{id}`](#delete-v10apibriefingsid) | Delete a briefing and its files |
 | GET | [`/v1.0/api/briefings/{id}/download`](#get-v10apibriefingsiddownload) | Download a briefing as Markdown or HTML |
+| GET | [`/v1.0/api/briefings/{id}/progress`](#get-v10apibriefingsidprogress) | Where I stopped listening |
+| PUT | [`/v1.0/api/briefings/{id}/progress`](#put-v10apibriefingsidprogress) | Save where I stopped listening |
 | PUT | [`/v1.0/api/briefings/{id}/pin`](#put-v10apibriefingsidpin) | Pin or unpin a briefing past the retention window |
 | POST | [`/v1.0/api/briefings/{id}/regenerate`](#post-v10apibriefingsidregenerate) | Store fresh Markdown and HTML files from the saved briefing |
 
@@ -5756,6 +5758,65 @@ curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/briefings/brf_mwpf8b9c_Er6tY9
 curl -s "http://127.0.0.1:12100/v1.0/api/briefings/brf_mwpf8b9c_Er6tY9uI2oPa5sDf8Gh/download" \
   -H "Authorization: Bearer $TOKEN" \
   -o output.bin
+```
+
+### GET /v1.0/api/briefings/{id}/progress
+
+**Where I stopped listening.** The caller's position in seconds and whether they finished. Position 0 and completed false when nothing is saved.
+
+- Auth: `Briefing:Read` (`BriefingRead`).
+- Response: [`BriefingProgress`](#briefingprogress)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{briefingId}}` |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: BadRequest (needs a signed-in user) |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/briefings/brf_mwpf8b9c_Er6tY9uI2oPa5sDf8Gh/progress" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### PUT /v1.0/api/briefings/{id}/progress
+
+**Save where I stopped listening.** Used by the mobile player so listening resumes on any device.
+
+- Auth: `Briefing:Read` (`BriefingRead`).
+- Response: [`BriefingProgress`](#briefingprogress)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{briefingId}}` |
+
+Request body: [`BriefingProgressRequest`](#briefingprogressrequest).
+
+```json
+{
+  "positionSeconds": 312.5,
+  "durationSeconds": 905,
+  "completed": false
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `BadRequest`, `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X PUT "http://127.0.0.1:12100/v1.0/api/briefings/brf_mwpf8b9c_Er6tY9uI2oPa5sDf8Gh/progress" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### PUT /v1.0/api/briefings/{id}/pin
@@ -9600,6 +9661,37 @@ Request body of [PUT /v1.0/api/briefings/{id}/pin](#put-v10apibriefingsidpin).
 |---|---|---|
 | `pinned` | boolean | Pinned. |
 
+#### BriefingProgress
+
+Where a user stopped listening to a briefing, and whether they finished it.
+
+Returned by [GET /v1.0/api/briefings/{id}/progress](#get-v10apibriefingsidprogress), [PUT /v1.0/api/briefings/{id}/progress](#put-v10apibriefingsidprogress).
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Identifier (prefix bpr_). |
+| `tenantId` | string | Tenant identifier. |
+| `userId` | string | Owning user identifier. |
+| `briefingId` | string | Briefing. |
+| `positionSeconds` | number | Playback position in seconds. Minimum 0, maximum 86400; the server clamps values outside the range. |
+| `durationSeconds` | number | Episode length in seconds when known. May be null. |
+| `completed` | boolean | Whether the user finished listening. |
+| `active` | boolean | Whether the record is active. |
+| `createdUtc` | date-time | UTC creation time. |
+| `lastUpdateUtc` | date-time | UTC time of the last update. |
+
+#### BriefingProgressRequest
+
+Save where the caller stopped listening to a briefing.
+
+Request body of [PUT /v1.0/api/briefings/{id}/progress](#put-v10apibriefingsidprogress).
+
+| Field | Type | Description |
+|---|---|---|
+| `positionSeconds` | number | Playback position in seconds. Minimum 0, maximum 86400. |
+| `durationSeconds` | number | Episode length in seconds, when the player knows it. |
+| `completed` | boolean | Whether the caller finished listening. |
+
 #### BriefingSection
 
 One section of a composed briefing.
@@ -9964,6 +10056,7 @@ Returned by [GET /v1.0/api/editions](#get-v10apieditions).
 | `active` | boolean | Whether the record is active. |
 | `createdUtc` | date-time | UTC creation time. |
 | `lastUpdateUtc` | date-time | UTC time of the last update. |
+| `pushEnabled` | boolean | Send a push notification to the owner's devices when the edition is ready. Default true. |
 
 #### EditionPreviewRequest
 
@@ -10025,6 +10118,7 @@ Request body of [POST /v1.0/api/editions](#post-v10apieditions), [PUT /v1.0/api/
 | `description` | string | Description. |
 | `briefingTemplateId` | string | Template; empty string clears it. |
 | `audioEnabled` | boolean | Produce audio. |
+| `pushEnabled` | boolean | Push a notification to the owner's devices when the edition is ready. |
 | `emailEnabled` | boolean | Email the briefing. |
 | `enabled` | boolean | Compose on schedule. |
 | `freshResearchBeforeCompose` | boolean | Run topics first. |

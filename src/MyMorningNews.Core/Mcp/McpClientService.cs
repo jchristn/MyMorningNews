@@ -76,7 +76,7 @@ namespace MyMorningNews.Core.Mcp
                 for (int page = 0; page < 20; page++)
                 {
                     object? args = cursor == null ? null : new Dictionary<string, object> { { "cursor", cursor } };
-                    JsonElement result = Result(await client.CallAsync("tools/list", args, _RequestTimeoutMs, token).ConfigureAwait(false), "tools/list");
+                    JsonElement result = Result(await SafeCallAsync(client, server, "tools/list", args, token).ConfigureAwait(false), "tools/list");
                     if (result.TryGetProperty("tools", out JsonElement list) && list.ValueKind == JsonValueKind.Array)
                     {
                         foreach (JsonElement t in list.EnumerateArray())
@@ -122,7 +122,7 @@ namespace MyMorningNews.Core.Mcp
 
             using (McpHttpClient client = await ConnectAsync(server, token).ConfigureAwait(false))
             {
-                JsonElement result = Result(await client.CallAsync("tools/call", new Dictionary<string, object> { { "name", toolName }, { "arguments", arguments } }, _RequestTimeoutMs, token).ConfigureAwait(false), "tools/call");
+                JsonElement result = Result(await SafeCallAsync(client, server, "tools/call", new Dictionary<string, object> { { "name", toolName }, { "arguments", arguments } }, token).ConfigureAwait(false), "tools/call");
                 StringBuilder sb = new StringBuilder();
                 if (result.TryGetProperty("content", out JsonElement content) && content.ValueKind == JsonValueKind.Array)
                 {
@@ -145,6 +145,18 @@ namespace MyMorningNews.Core.Mcp
         #endregion
 
         #region Private-Methods
+
+        private async Task<JsonRpcResponse> SafeCallAsync(McpHttpClient client, McpServer server, string method, object? args, CancellationToken token)
+        {
+            try
+            {
+                return await client.CallAsync(method, args, _RequestTimeoutMs, token).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (!token.IsCancellationRequested && (ex is System.Net.Http.HttpRequestException || ex is TimeoutException || ex is System.IO.IOException || ex is TaskCanceledException || ex is InvalidOperationException || ex is JsonException))
+            {
+                throw new McpConnectionException("The MCP server " + server.Name + " stopped responding during " + method + ": " + ex.Message, ex);
+            }
+        }
 
         private async Task<McpHttpClient> ConnectAsync(McpServer server, CancellationToken token)
         {

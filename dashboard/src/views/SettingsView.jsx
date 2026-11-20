@@ -141,6 +141,25 @@ export default function SettingsView() {
         />
       );
     }
+    if (field.type === 'list') {
+      const text = Array.isArray(value) ? value.join(', ') : value ?? '';
+      return (
+        <input
+          id={id}
+          type="text"
+          value={text}
+          onChange={(e) =>
+            change(
+              e.target.value
+                .split(',')
+                .map((x) => x.trim())
+                .filter((x, i, all) => x.length > 0 || i < all.length - 1)
+            )
+          }
+          disabled={disabled}
+        />
+      );
+    }
     if (field.secret) {
       return (
         <input

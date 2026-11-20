@@ -11,6 +11,9 @@ All notable changes to this project are documented here. The project follows [Se
 
 ### Fixed
 
+- Settings: an unchanged round trip no longer reports list settings as changed, and list settings are described as `list` (the dashboard edits them as comma-separated values).
+- MCP servers: the unsupported SSE transport is refused instead of silently using Streamable HTTP; topics refuse tool IDs that are not tools in the tenant; deleting a server removes its tools from topics' allow-lists; a server that stops responding mid-call reports a connection failure (502) instead of 500; tool lookups honor cancellation.
+
 - OpenAPI declares the `userId` and `mine` filters on every list route that reads them, the request history summary and bulk delete filters, and the feedback page's `a` value; the bulk delete no longer advertises paging, and `GET /v1.0/api/usage/me` no longer lists values it ignores.
 
 - The MCP server bound its Prometheus endpoint to `*`, which Radiant rejects, so setting `MYMORNINGNEWS_MCP_PROMETHEUS_PORT` turned all MCP telemetry off. It now binds `MYMORNINGNEWS_MCP_PROMETHEUS_HOSTNAME` (default `127.0.0.1`, `mcp` in compose).

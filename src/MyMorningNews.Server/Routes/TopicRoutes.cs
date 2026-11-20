@@ -92,6 +92,8 @@ namespace MyMorningNews.Server.Routes
                 return;
             }
 
+            string? toolError = await CheckToolIdsAsync(tenantId, req.McpToolIds, ctx).ConfigureAwait(false);
+            if (toolError != null) { await SendErrorAsync(ctx, 400, "ValidationFailed", toolError).ConfigureAwait(false); return; }
             Topic topic = await Server.Refinement.CreateTopicAsync(tenantId, rc.UserId, req.Name, req.Description, false, ctx.Token).ConfigureAwait(false);
             Apply(topic, req);
             topic = await Server.Database.Topics.UpdateAsync(topic, ctx.Token).ConfigureAwait(false);
@@ -113,6 +115,8 @@ namespace MyMorningNews.Server.Routes
             if (topic == null) return;
             TopicUpsertRequest? req = await ReadBodyAsync<TopicUpsertRequest>(ctx).ConfigureAwait(false);
             if (req == null) return;
+            string? badTools = await CheckToolIdsAsync(topic.TenantId, req.McpToolIds, ctx).ConfigureAwait(false);
+            if (badTools != null) { await SendErrorAsync(ctx, 400, "ValidationFailed", badTools).ConfigureAwait(false); return; }
             string oldName = topic.Name;
             Apply(topic, req);
             if (!String.Equals(oldName, topic.Name, StringComparison.Ordinal)) topic.Slug = await Server.Refinement.UniqueSlugAsync(topic.TenantId, topic.Name, ctx.Token).ConfigureAwait(false);
@@ -420,6 +424,19 @@ namespace MyMorningNews.Server.Routes
             {
                 TopicDimension? d = await Server.Database.TopicDimensions.ReadAsync(topic.TenantId, dimensionId, ctx.Token).ConfigureAwait(false);
                 if (d == null || d.TopicId != topic.Id) return "dimensionId must be a dimension of this topic.";
+            }
+
+            return null;
+        }
+
+        private async Task<string?> CheckToolIdsAsync(string tenantId, List<string>? ids, HttpContextBase ctx)
+        {
+            if (ids == null) return null;
+            if (ids.Count > 100) return "mcpToolIds can list at most 100 tools.";
+            foreach (string raw in ids.Where(i => !String.IsNullOrWhiteSpace(i)).Select(i => i.Trim()).Distinct(StringComparer.Ordinal))
+            {
+                if (await Server.Database.McpServerTools.ReadAsync(tenantId, raw, ctx.Token).ConfigureAwait(false) == null)
+                    return "mcpToolIds: " + raw + " is not a tool of an MCP server in this tenant.";
             }
 
             return null;

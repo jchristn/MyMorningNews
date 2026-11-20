@@ -784,8 +784,7 @@
       "SignedRequest": "Accepts only HMAC-signed requests, so the secret never travels. Headers with the secret and session exchange are refused.",
       "SessionExchange": "Works only through POST /v1.0/token to get a session token. Per-request secrets and signatures are refused.",
       "Hybrid": "Accepts everything, the same as Direct header."
-    },
-    "authModeFixed": "Set when the credential is created; create a new credential to change it."
+    }
   },
   "rbac": {
     "tabs": {
@@ -1119,7 +1118,9 @@
       "Synthesize": "Synthesize",
       "ReviewPredictions": "Review predictions",
       "Predict": "Predict",
-      "Suggest": "Suggest"
+      "Suggest": "Suggest",
+      "ComposeBriefing": "Compose briefing",
+      "Notify": "Notify"
     },
     "searchDisposition": {
       "Pending": "Pending",
@@ -2233,6 +2234,23 @@
       "openCall": "Open in the model call log",
       "emptyTitle": "No model calls",
       "emptyMessage": "This run made no model calls, or its calls are still being recorded."
+    },
+    "live": {
+      "streaming": "Live",
+      "polling": "Refreshing every few seconds"
+    },
+    "retry": {
+      "column": "Retry",
+      "fromStage": "Retry from this stage",
+      "fromStageAria": "Retry from this stage ({stage})",
+      "runAgain": "Run again",
+      "runAgainAria": "Run again ({stage} failed)",
+      "resumeTitle": "Retry from this stage",
+      "resumeMessage": "Rerun {stage} and every stage after it on this run, using its saved findings? This makes model calls that count toward your usage.",
+      "newTitle": "Run again",
+      "newMessage": "Queue a new run of this topic from the start? Search and fetch results are not kept, so every stage runs again and makes model calls that count toward your usage.",
+      "resumeQueued": "Run queued again from {stage}",
+      "newQueued": "New run queued"
     }
   },
   "oneTime": {
@@ -3700,6 +3718,33 @@
       "briefing": "Read today's briefing",
       "review": "Run the review_morning_briefing prompt",
       "safety": "Findings and briefings contain text from web pages. Clients are told to treat it as data, never as instructions."
+    }
+  },
+  "sources": {
+    "searchPlaceholder": "Search titles and addresses",
+    "topic": "Topic",
+    "allTopics": "All topics",
+    "clearRun": "Show sources from every run",
+    "columns": {
+      "title": "Source",
+      "domain": "Domain",
+      "published": "Published",
+      "contentType": "Content type",
+      "firstRun": "First seen in run",
+      "fetched": "Fetched",
+      "timesSeen": "Times seen",
+      "id": "ID"
+    },
+    "detail": {
+      "title": "Source",
+      "open": "Open the page",
+      "monospace": "Monospace",
+      "copyText": "Copy text",
+      "characters": "{count, plural, one {{formatted} character} other {{formatted} characters}}"
+    },
+    "empty": {
+      "title": "No sources yet",
+      "message": "Sources appear after a run searches the web and fetches pages for one of your topics."
     }
   }
 }

@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { Braces, CircleStop, ListChecks, Mail } from 'lucide-react';
+import { Braces, CircleStop, ListChecks, Mail, Play, Radio } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useApp } from '../../context/AppContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import useFormat from '../../hooks/useFormat.js';
 import useInterval from '../../hooks/useInterval.js';
 import { RUN_STATUS_TONES } from '../../utils/enums.js';
+import ConfirmModal from '../../components/ConfirmModal.jsx';
 import CopyableId from '../../components/CopyableId.jsx';
 import DateCell from '../../components/DateCell.jsx';
 import ErrorState from '../../components/ErrorState.jsx';
@@ -20,16 +22,22 @@ import EmailPreviewModal from '../email/EmailPreviewModal.jsx';
 import RunModelCalls from './RunModelCalls.jsx';
 import RunStages from './RunStages.jsx';
 import { RunQueriesTable, RunResultsTable } from './RunSearchTables.jsx';
-import { failedStages, findingsLink, isActiveRun, runDurationMs } from './runParts.js';
+import { failedStages, findingsLink, isActiveRun, isFinishedRun, mergeStage, retryAction, runDurationMs, withAllStages } from './runParts.js';
+import useRunEvents from './useRunEvents.js';
 
 const TABS = ['stages', 'queries', 'results', 'calls', 'details'];
 
-// Everything about one run: totals, the stage timeline, queries, results with dispositions, model calls, and provenance. It
-// refreshes while the run is queued or running.
-export default function RunDetailDrawer({ runId, topicLabel, onClose, onChanged }) {
+// Everything about one run: totals, the stage timeline, queries, results with dispositions, model calls, and provenance.
+// While the run is queued or running it follows the run's server-sent events and shows every stage as a live
+// timeline, falling back to polling when the stream cannot be used. A finished run can be retried from a stage at
+// Synthesize or later (same run) or run again (a new run, opened through onOpenRun).
+export default function RunDetailDrawer({ runId, topicLabel, onClose, onChanged, onOpenRun }) {
   const { t } = useTranslation();
   const f = useFormat();
   const { apiClient } = useAuth();
+  const { addNotification } = useApp();
+  const [retrying, setRetrying] = useState(null);
+  const [now, setNow] = useState(() => Date.now());
   const [run, setRun] = useState(null);
   const [stages, setStages] = useState(null);
   const [error, setError] = useState(null);
@@ -58,7 +66,32 @@ export default function RunDetailDrawer({ runId, topicLabel, onClose, onChanged 
     load();
   }, [load]);
 
-  useInterval(load, runId && isActiveRun(run) ? 3000 : 0);
+  const active = Boolean(runId) && isActiveRun(run);
+  const stream = useRunEvents(runId, active, {
+    onRun: (r) => setRun(r),
+    onStage: (stage) => setStages((current) => mergeStage(current, stage)),
+    onDone: (r) => {
+      if (r) setRun(r);
+      if (onChanged) onChanged();
+    }
+  });
+  const live = active && stream === 'live';
+  useInterval(load, active && !live ? 3000 : 0);
+  useInterval(() => setNow(Date.now()), active ? 1000 : 0);
+
+  async function retry() {
+    const result = await apiClient.retryRun(run.id, retrying.fromStage);
+    if (result && result.id && result.id !== run.id) {
+      addNotification(t('runs.retry.newQueued'), 'success');
+      if (onChanged) onChanged();
+      if (onOpenRun) onOpenRun(result.id);
+      else setRun(result);
+      return;
+    }
+    addNotification(t('runs.retry.resumeQueued', { stage: t('enums.runStage.' + retrying.fromStage, { defaultValue: retrying.fromStage }) }), 'success');
+    if (result) setRun(result);
+    if (onChanged) onChanged();
+  }
 
   async function cancel() {
     setCancelling(true);
@@ -88,6 +121,11 @@ export default function RunDetailDrawer({ runId, topicLabel, onClose, onChanged 
             {isActiveRun(run) ? (
               <button type="button" className="button secondary small" disabled={cancelling || run.cancelRequested} onClick={cancel}>
                 <CircleStop size={14} aria-hidden="true" /> {run.cancelRequested ? t('runs.cancelRequested') : t('runs.cancel')}
+              </button>
+            ) : null}
+            {isFinishedRun(run) ? (
+              <button type="button" className="button secondary small" onClick={() => setRetrying({ kind: 'new', fromStage: null })}>
+                <Play size={14} aria-hidden="true" /> {t('runs.retry.runAgain')}
               </button>
             ) : null}
             <button type="button" className="button secondary small" onClick={() => setEmailPreview(true)}>
@@ -146,7 +184,26 @@ export default function RunDetailDrawer({ runId, topicLabel, onClose, onChanged 
               </button>
             ))}
           </div>
-          {tab === 'stages' ? stages ? <RunStages stages={stages} /> : <LoadingState /> : null}
+          {tab === 'stages' ? (
+            <div className="stack" data-testid="run-stage-panel">
+              {active ? (
+                <div className="run-live" data-testid="run-live-state">
+                  {live ? (
+                    <span className="live-badge">
+                      <Radio size={12} aria-hidden="true" /> {t('runs.live.streaming')}
+                    </span>
+                  ) : (
+                    <span className="muted small">{t('runs.live.polling')}</span>
+                  )}
+                </div>
+              ) : null}
+              {stages || active ? (
+                <RunStages stages={active ? withAllStages(stages) : stages} now={now} retryFor={(stage) => retryAction(run, stage)} onRetry={(action) => setRetrying(action)} />
+              ) : (
+                <LoadingState />
+              )}
+            </div>
+          ) : null}
           {tab === 'queries' ? <RunQueriesTable runId={run.id} /> : null}
           {tab === 'results' ? <RunResultsTable runId={run.id} /> : null}
           {tab === 'calls' ? <RunModelCalls runId={run.id} /> : null}
@@ -168,6 +225,20 @@ export default function RunDetailDrawer({ runId, topicLabel, onClose, onChanged 
         </div>
       ) : null}
       <JsonViewerModal open={json && Boolean(run)} value={run} onClose={() => setJson(false)} />
+      <ConfirmModal
+        open={Boolean(retrying)}
+        title={retrying && retrying.kind === 'resume' ? t('runs.retry.resumeTitle') : t('runs.retry.newTitle')}
+        message={
+          retrying
+            ? retrying.kind === 'resume'
+              ? t('runs.retry.resumeMessage', { stage: t('enums.runStage.' + retrying.fromStage, { defaultValue: retrying.fromStage }) })
+              : t('runs.retry.newMessage')
+            : ''
+        }
+        confirmLabel={retrying && retrying.kind === 'resume' ? t('runs.retry.fromStage') : t('runs.retry.runAgain')}
+        onClose={() => setRetrying(null)}
+        onConfirm={retry}
+      />
       {emailPreview && runId ? <EmailPreviewModal title={t('email.preview.runTitle')} load={loadEmailPreview} onClose={() => setEmailPreview(false)} /> : null}
     </Modal>
   );
@@ -177,5 +248,6 @@ RunDetailDrawer.propTypes = {
   runId: PropTypes.string,
   topicLabel: PropTypes.func,
   onClose: PropTypes.func.isRequired,
-  onChanged: PropTypes.func
+  onChanged: PropTypes.func,
+  onOpenRun: PropTypes.func
 };

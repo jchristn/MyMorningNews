@@ -46,15 +46,15 @@ describe('CredentialsView auth mode', () => {
     expect(await screen.findByText('sk_new')).toBeInTheDocument();
   });
 
-  it('shows the auth mode read-only when editing, and does not send it', async () => {
+  it('changes the auth mode when editing', async () => {
     const client = renderRoute('/dashboard/admin/credentials', { listCredentials: vi.fn(async () => page([CREDENTIAL])), updateCredential: vi.fn(async () => CREDENTIAL) });
     await userEvent.click(await screen.findByText('Signed script'));
     const select = await screen.findByLabelText('Auth mode');
     expect(select).toHaveValue('SignedRequest');
-    expect(select).toBeDisabled();
-    expect(screen.getByText(/Set when the credential is created/)).toBeInTheDocument();
+    expect(select).toBeEnabled();
+    await userEvent.selectOptions(select, 'Hybrid');
+    expect(screen.getByText(/Accepts everything, the same as Direct header/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Save' }));
-    await waitFor(() => expect(client.updateCredential).toHaveBeenCalled());
-    expect(client.updateCredential.mock.calls[0][2]).not.toHaveProperty('authMode');
+    await waitFor(() => expect(client.updateCredential).toHaveBeenCalledWith('default', 'crd_1', expect.objectContaining({ authMode: 'Hybrid' })));
   });
 });

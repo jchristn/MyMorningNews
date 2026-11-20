@@ -74,7 +74,7 @@ export default function CredentialsView() {
         const result = await apiClient.createCredential(tenantId, { ...body, userId: form.userId || undefined, authMode: form.authMode || DEFAULT_AUTH_MODE });
         setCreated(result);
       } else {
-        await apiClient.updateCredential(tenantId, editing.id, { ...body, active: form.active });
+        await apiClient.updateCredential(tenantId, editing.id, { ...body, authMode: form.authMode || DEFAULT_AUTH_MODE, active: form.active });
         addNotification(t('admin.saved'), 'success');
       }
       setEditing(null);
@@ -165,10 +165,10 @@ export default function CredentialsView() {
           <FormField
             id="cred-auth-mode"
             label={t('credentials.columns.authMode')}
-            help={(editing && editing.mode === 'edit' ? t('credentials.authModeFixed') + ' ' : '') + t('credentials.authModeHelp.' + (form.authMode || DEFAULT_AUTH_MODE))}
+            help={t('credentials.authModeHelp.' + (form.authMode || DEFAULT_AUTH_MODE))}
             wide
           >
-            <select id="cred-auth-mode" value={form.authMode} onChange={(e) => setForm({ ...form, authMode: e.target.value })} disabled={editing && editing.mode === 'edit'}>
+            <select id="cred-auth-mode" value={form.authMode} onChange={(e) => setForm({ ...form, authMode: e.target.value })}>
               {CREDENTIAL_AUTH_MODES.map((mode) => (
                 <option key={mode} value={mode}>
                   {t('credentials.authModes.' + mode)}

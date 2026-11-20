@@ -1,7 +1,39 @@
-import { ACTIVE_RUN_STATUSES } from '../../utils/enums.js';
+import { ACTIVE_RUN_STATUSES, FINISHED_RUN_STATUSES, FINISHED_STAGE_STATUSES, RESUMABLE_STAGES, RUN_STAGES } from '../../utils/enums.js';
 
 export function isActiveRun(run) {
   return Boolean(run && ACTIVE_RUN_STATUSES.includes(run.status));
+}
+
+export function isFinishedRun(run) {
+  return Boolean(run && FINISHED_RUN_STATUSES.includes(run.status));
+}
+
+// Replace one stage (matched by stage name) in a list, or add it. Used as stage events arrive.
+export function mergeStage(stages, stage) {
+  if (!stage || !stage.stage) return stages || [];
+  const list = [...(stages || [])];
+  const at = list.findIndex((s) => s.stage === stage.stage);
+  if (at >= 0) list[at] = { ...list[at], ...stage };
+  else list.push(stage);
+  return list;
+}
+
+// Every pipeline stage in order, with Pending placeholders for those that have not reported yet, so a live run
+// shows the whole timeline. sortOrder follows the pipeline order; stages the dashboard does not know come last.
+export function withAllStages(stages) {
+  const byName = new Map((stages || []).map((s) => [s.stage, s]));
+  const known = RUN_STAGES.map((name, index) => ({ ...(byName.get(name) || { stage: name, status: 'Pending', itemsIn: 0, itemsOut: 0, durationMs: 0 }), sortOrder: index }));
+  const extra = (stages || []).filter((s) => !RUN_STAGES.includes(s.stage)).map((s, i) => ({ ...s, sortOrder: RUN_STAGES.length + i }));
+  return [...known, ...extra];
+}
+
+// The retry a stage row offers: { kind: 'resume', fromStage } re-queues the same run from a finished stage at
+// Synthesize or later; { kind: 'new' } runs the topic again from a failed earlier stage. Null for an unfinished run or
+// stage.
+export function retryAction(run, stage) {
+  if (!isFinishedRun(run) || !stage || !FINISHED_STAGE_STATUSES.includes(stage.status)) return null;
+  if (RESUMABLE_STAGES.includes(stage.stage)) return { kind: 'resume', fromStage: stage.stage };
+  return stage.status === 'Failed' ? { kind: 'new', fromStage: null } : null;
 }
 
 // Milliseconds from start to completion, or to now for a running run. Null before it starts.

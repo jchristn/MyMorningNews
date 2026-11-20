@@ -106,7 +106,12 @@ export const SUGGESTION_EFFORTS = ['Minutes', 'Hours', 'Days'];
 export const STAGE_STATUSES = ['Pending', 'Running', 'Succeeded', 'Failed', 'Skipped'];
 export const STAGE_STATUS_TONES = { Pending: 'neutral', Running: 'accent', Succeeded: 'success', Failed: 'danger', Skipped: 'warning' };
 export const STAGE_STATUS_COLORS = { Pending: 'var(--color-border-strong)', Running: 'var(--color-accent)', Succeeded: 'var(--color-success)', Failed: 'var(--color-danger)', Skipped: 'var(--color-warning)' };
-export const RUN_STAGES = ['AssembleContext', 'PlanQueries', 'Search', 'Filter', 'Fetch', 'Extract', 'Embed', 'Dedupe', 'Score', 'Synthesize', 'ReviewPredictions', 'Predict', 'Suggest'];
+export const RUN_STAGES = ['AssembleContext', 'PlanQueries', 'Search', 'Filter', 'Fetch', 'Extract', 'Embed', 'Dedupe', 'Score', 'Synthesize', 'ReviewPredictions', 'Predict', 'Suggest', 'ComposeBriefing', 'Notify'];
+// Stages a finished run can be re-queued from with its saved findings (ResearchPipeline.FirstResumableStage onward).
+export const RESUMABLE_STAGES = RUN_STAGES.slice(RUN_STAGES.indexOf('Synthesize'));
+export const FINISHED_RUN_STATUSES = ['Completed', 'PartiallySucceeded', 'Failed', 'Cancelled', 'Skipped'];
+// Stage statuses that count as finished for a retry.
+export const FINISHED_STAGE_STATUSES = ['Succeeded', 'Failed', 'Skipped'];
 
 // Briefings, editions, and templates (Phase 7).
 export const BRIEFING_KINDS = ['Edition', 'Run', 'OneTime'];

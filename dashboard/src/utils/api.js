@@ -1,5 +1,7 @@
 // The only HTTP client in the dashboard. Views call named methods; raw fetch handling stays here and in the API
 // Explorer. Base URLs use 127.0.0.1 rather than localhost.
+import { createSseParser } from './sse.js';
+
 export const DEFAULT_SERVER_URL = 'http://127.0.0.1:12100';
 
 export class ApiError extends Error {
@@ -584,6 +586,65 @@ export class ApiClient {
   cancelRun(id) {
     return this._request('POST', '/v1.0/api/runs/' + enc(id) + '/cancel');
   }
+  // Retry a finished run (202 with a Run; 409 while it is not finished). fromStage Synthesize or later re-queues the
+  // same run from that stage; no stage or an earlier one queues a new run of the topic.
+  retryRun(id, fromStage) {
+    return this._request('POST', '/v1.0/api/runs/' + enc(id) + '/retry', { query: { fromStage: fromStage || undefined } });
+  }
+
+  // Follow GET /runs/{id}/events (server-sent events) over fetch streaming, so the bearer token is sent. onEvent
+  // receives { event, data, raw, id } for run, stage, ping, done, and timeout. Resolves with the last event name when
+  // the stream ends ('done', 'timeout', or another name or null when it closed early). Rejects with ApiError when the
+  // response is not 2xx or the browser cannot stream; abort with signal to stop.
+  async streamRunEvents(id, { signal, onEvent } = {}) {
+    const path = '/v1.0/api/runs/' + enc(id) + '/events';
+    let response;
+    try {
+      response = await this.fetchImpl(this.baseUrl + path, { method: 'GET', headers: this._headers({ Accept: 'text/event-stream' }), signal, cache: 'no-store' });
+    } catch (err) {
+      if (err && err.name === 'AbortError') throw err;
+      throw new ApiError(0, null, err && err.message ? err.message : 'Network error');
+    }
+    if (!response.ok) {
+      const text = typeof response.text === 'function' ? await response.text() : '';
+      let data = null;
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch {
+        data = null;
+      }
+      if (response.status === 401 && this.token && typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('auth:unauthorized', { detail: { path } }));
+      }
+      throw new ApiError(response.status, data && typeof data === 'object' ? data : null, data ? undefined : text || undefined);
+    }
+    if (!response.body || typeof response.body.getReader !== 'function') throw new ApiError(0, null, 'Streaming responses are not supported here');
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let last = null;
+    const parser = createSseParser((evt) => {
+      last = evt.event;
+      if (onEvent) onEvent(evt);
+    });
+    let finished = false;
+    while (!finished) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      parser.push(typeof value === 'string' ? value : decoder.decode(value, { stream: true }));
+      finished = last === 'done' || last === 'timeout';
+    }
+    if (finished) {
+      try {
+        await reader.cancel();
+      } catch {
+        // The server closes the stream after done and timeout anyway.
+      }
+    } else {
+      parser.push(decoder.decode());
+      parser.flush();
+    }
+    return last;
+  }
   runTopic(id, { dryRun = false } = {}) {
     return this._request('POST', '/v1.0/api/topics/' + enc(id) + '/run', { query: dryRun ? { dryRun: true } : undefined });
   }
@@ -630,6 +691,10 @@ export class ApiClient {
   }
   getSource(id) {
     return this._request('GET', '/v1.0/api/sources/' + enc(id));
+  }
+  // Fetched sources for my topics, newest first, without content text. query: topicId, runId, search, paging.
+  listSources(query) {
+    return this._request('GET', '/v1.0/api/sources', { query });
   }
   listPredictions(query) {
     return this._request('GET', '/v1.0/api/predictions', { query });

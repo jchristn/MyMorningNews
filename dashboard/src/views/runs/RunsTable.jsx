@@ -173,6 +173,7 @@ export default function RunsTable({ topicId = null, tableKey = 'runs', toolbar =
           if (onRunClosed) onRunClosed();
         }}
         onChanged={bump}
+        onOpenRun={setOpenId}
       />
       <JsonViewerModal open={Boolean(json)} value={json} onClose={() => setJson(null)} />
     </>

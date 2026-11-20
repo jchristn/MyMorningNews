@@ -24,6 +24,7 @@ const VIEWS = {
   oneTimeRequests: lazy(() => import('./views/ResearchRequestsView.jsx')),
   runs: lazy(() => import('./views/RunsView.jsx')),
   findings: lazy(() => import('./views/FindingsView.jsx')),
+  sources: lazy(() => import('./views/SourcesView.jsx')),
   predictions: lazy(() => import('./views/PredictionsView.jsx')),
   suggestions: lazy(() => import('./views/SuggestionsView.jsx')),
   explorer: lazy(() => import('./views/ApiExplorerView.jsx')),

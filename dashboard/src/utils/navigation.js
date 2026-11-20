@@ -61,7 +61,7 @@ export const NAV_GROUPS = [
       { path: 'one-time', key: 'oneTimeRequests', icon: Send, access: 'all' },
       { path: 'runs', key: 'runs', icon: CirclePlay, access: 'all' },
       { path: 'findings', key: 'findings', icon: ListChecks, access: 'all' },
-      { path: 'sources', key: 'sources', icon: Globe, access: 'all', phase: 6 },
+      { path: 'sources', key: 'sources', icon: Globe, access: 'all' },
       { path: 'predictions', key: 'predictions', icon: TrendingUp, access: 'all' },
       { path: 'suggestions', key: 'suggestions', icon: Compass, access: 'all' }
     ]

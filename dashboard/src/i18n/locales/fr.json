@@ -47,7 +47,9 @@
     "requestId": "ID de requête",
     "server": "Le serveur a signalé une erreur.",
     "tooMany": "Trop de requêtes. Patientez un instant et réessayez.",
-    "unauthorized": "Votre session n’est plus valide. Reconnectez-vous."
+    "unauthorized": "Votre session n’est plus valide. Reconnectez-vous.",
+    "capReached": "Limite du forfait atteinte.",
+    "egressBlocked": "Cette adresse se trouve sur un réseau privé, ce que ce serveur n’autorise pas."
   },
   "access": {
     "deniedTitle": "Accès refusé",
@@ -368,8 +370,14 @@
     "subtitle": "Connectez-vous à votre espace de travail",
     "tagline": "Faites rechercher les sujets qui vous intéressent et réveillez-vous avec un briefing qui s’améliore chaque jour.",
     "tenant": "Locataire",
-    "tenantHelp": "L’ID du locataire. Utilisez default sur une nouvelle installation.",
-    "title": "Bon retour"
+    "title": "Bon retour",
+    "tenantOptionalHelp": "Facultatif. Laissez vide et nous trouverons votre espace de travail à partir de votre e-mail.",
+    "chooseTenant": "Espace de travail",
+    "chooseTenantHelp": "Votre e-mail appartient à plusieurs espaces de travail. Choisissez-en un et reconnectez-vous.",
+    "unverifiedTitle": "Confirmez d’abord votre e-mail.",
+    "unverifiedMessage": "Ouvrez le lien que nous vous avons envoyé ou demandez-en un nouveau.",
+    "forgot": "Mot de passe oublié ?",
+    "createAccount": "Créer un compte"
   },
   "home": {
     "summary": "Voici ce qui se passe sur votre serveur.",
@@ -1973,6 +1981,13 @@
       "brief": "Cahier des charges et public",
       "sourcesHelp": "Les flux et pages de départ sont lus à chaque exécution, en plus de la recherche web.",
       "searchProvidersLater": "Le choix des fournisseurs de recherche par sujet arrivera avec la page des fournisseurs de recherche."
+    },
+    "agentic": {
+      "title": "Recherche agentique",
+      "help": "Lorsqu’elle est activée, le modèle de recherche cherche et lit les pages lui-même et peut appeler les outils que vous autorisez ci-dessous. Tout ce qu’il retient passe toujours par la vérification des citations. Les exécutions peuvent coûter plus cher.",
+      "enable": "Utiliser la recherche agentique pour ce sujet",
+      "tools": "Outils MCP autorisés",
+      "noTools": "Aucun outil MCP n’est encore activé."
     }
   },
   "wizard": {
@@ -2151,7 +2166,8 @@
         "queries": "Requêtes",
         "results": "Résultats",
         "details": "Détails",
-        "calls": "Appels au modèle"
+        "calls": "Appels au modèle",
+        "tools": "Appels d’outils"
       },
       "contextHash": "Instantané du contexte"
     },
@@ -2251,6 +2267,17 @@
       "newMessage": "Mettre en file d’attente une nouvelle exécution de ce sujet depuis le début ? Les résultats de recherche et de récupération ne sont pas conservés : chaque étape est donc réexécutée et effectue des appels au modèle décomptés de votre utilisation.",
       "resumeQueued": "Exécution remise en file d’attente à partir de {stage}",
       "newQueued": "Nouvelle exécution en file d’attente"
+    },
+    "tools": {
+      "title": "Appels d’outils",
+      "emptyTitle": "Aucun appel d’outil",
+      "emptyMessage": "Cette exécution n’a pas utilisé la recherche agentique.",
+      "tool": "Outil",
+      "arguments": "Arguments",
+      "result": "Résultat",
+      "duration": "Durée",
+      "failed": "Échec",
+      "characters": "{count, plural, one {# caractère} other {# caractères}}"
     }
   },
   "oneTime": {
@@ -3332,6 +3359,32 @@
       "codeHelp": "Un code qui vous a été remis. Un code pour le forfait que vous avez déjà commence à la fin du forfait actuel.",
       "redeem": "Utiliser",
       "redeemed": "Code utilisé. Vous bénéficiez maintenant de {plan}."
+    },
+    "title": "Compte",
+    "usage": {
+      "summary": "Forfait {plan}. Les limites mensuelles sont réinitialisées le {date}.",
+      "cost": "Budget de recherche ce mois-ci",
+      "topics": "Sujets",
+      "runsToday": "Exécutions aujourd’hui",
+      "audio": "Minutes audio ce mois-ci",
+      "noAudio": "L’audio n’est pas inclus dans votre forfait.",
+      "schedule": "Les sujets s’exécutent au plus toutes les {minutes} minutes.",
+      "ofLimit": "{used} sur {max}",
+      "noLimit": "{used} (sans limite)"
+    },
+    "export": {
+      "button": "Télécharger mes données",
+      "working": "Préparation...",
+      "help": "Le téléchargement est un fichier ZIP contenant votre profil, vos sujets, constats, prédictions, suggestions, avis et chaque briefing au format Markdown."
+    },
+    "delete": {
+      "button": "Supprimer mon compte",
+      "title": "Supprimer votre compte ?",
+      "message": "Toutes les sessions sont déconnectées maintenant. Votre compte et vos données sont supprimés à la fin du délai de grâce ; vous connecter avant cette date les conserve.",
+      "typeEmail": "Saisissez votre e-mail pour confirmer",
+      "mismatch": "L’e-mail ne correspond pas à votre compte.",
+      "confirm": "Supprimer mon compte",
+      "scheduled": "Votre compte sera supprimé le {date}. Connectez-vous avant cette date pour le conserver."
     }
   },
   "email": {
@@ -3745,6 +3798,103 @@
     "empty": {
       "title": "Aucune source pour l’instant",
       "message": "Les sources apparaissent après qu’une exécution a effectué des recherches sur le web et récupéré des pages pour l’un de vos sujets."
+    }
+  },
+  "auth": {
+    "resend": "Envoyer un nouveau lien",
+    "resent": "Si cette adresse a un compte non confirmé, un nouveau lien est en route.",
+    "backToSignIn": "Retour à la connexion",
+    "haveAccount": "Vous avez déjà un compte ? Connectez-vous",
+    "passwordHelp": "Au moins {count} caractères.",
+    "signup": {
+      "title": "Créez votre compte",
+      "subtitle": "Dites-nous ce que vous voulez suivre, et réveillez-vous avec un briefing conçu pour vous.",
+      "closed": "L’inscription n’est pas ouverte sur ce serveur. Demandez un compte à un administrateur.",
+      "displayName": "Votre nom",
+      "codeHelp": "Facultatif. Un code promotionnel qui vous a été remis.",
+      "acceptTerms": "J’accepte les",
+      "terms": "conditions d’utilisation",
+      "and": "et la",
+      "privacy": "politique de confidentialité",
+      "confirmAge": "J’ai au moins {age} ans.",
+      "create": "Créer le compte",
+      "creating": "Création de votre compte...",
+      "checkEmailTitle": "Consultez vos e-mails",
+      "checkEmail": "Nous avons envoyé un lien à {email}. Ouvrez-le pour confirmer votre adresse, puis connectez-vous.",
+      "readyTitle": "Votre compte est prêt",
+      "ready": "Connectez-vous pour créer votre premier sujet."
+    },
+    "verify": {
+      "title": "Confirmez votre e-mail",
+      "done": "Votre e-mail est confirmé. Vous pouvez maintenant vous connecter.",
+      "failed": "Ce lien a expiré ou a déjà été utilisé. Saisissez votre e-mail pour en recevoir un nouveau."
+    },
+    "forgot": {
+      "title": "Réinitialiser votre mot de passe",
+      "subtitle": "Saisissez votre e-mail et nous vous enverrons un lien pour choisir un nouveau mot de passe.",
+      "send": "Envoyer le lien",
+      "sent": "Si {email} a un compte, un lien de réinitialisation est en route. Le lien est valable une heure."
+    },
+    "reset": {
+      "title": "Choisissez un nouveau mot de passe",
+      "save": "Enregistrer le nouveau mot de passe",
+      "done": "Votre mot de passe est modifié et toutes les autres sessions sont déconnectées.",
+      "noToken": "Cette page nécessite le lien de votre e-mail de réinitialisation.",
+      "requestNew": "Demander un nouveau lien"
+    }
+  },
+  "mcpServers": {
+    "about": "Enregistrez des serveurs MCP distants dont la recherche agentique peut appeler les outils. Découvrez les outils d’un serveur, activez ceux auxquels vous faites confiance, puis autorisez-les sur un sujet.",
+    "created": "Serveur enregistré.",
+    "test": "Tester la connexion",
+    "testOk": "Connecté. Le serveur propose {count} outils.",
+    "testFailed": "Connexion impossible : {error}",
+    "discover": "Découvrir les outils",
+    "discovered": "{count} outils enregistrés.",
+    "columns": {
+      "name": "Nom",
+      "transport": "Transport",
+      "tools": "Outils",
+      "discovered": "Dernière découverte",
+      "status": "Statut"
+    },
+    "status": {
+      "error": "Erreur"
+    },
+    "transports": {
+      "StreamableHttp": "Streamable HTTP",
+      "Sse": "Événements envoyés par le serveur"
+    },
+    "empty": {
+      "title": "Aucun serveur MCP pour l’instant",
+      "message": "Ajoutez un serveur pour que la recherche agentique utilise ses outils."
+    },
+    "form": {
+      "createTitle": "Ajouter un serveur MCP",
+      "editTitle": "Modifier le serveur MCP",
+      "url": "URL",
+      "urlHelp": "Le point de terminaison http ou https du serveur. Les serveurs stdio locaux ne sont pas pris en charge.",
+      "credential": "Identifiant",
+      "credentialHelp": "Un identifiant enregistré envoyé avec chaque requête, si le serveur en a besoin.",
+      "noCredential": "Aucun",
+      "headerName": "En-tête",
+      "headerPrefix": "Préfixe",
+      "headerPrefixHelp": "Texte placé avant le secret, comme « Bearer ».",
+      "urlPlaceholder": "https://mcp.example.com/mcp"
+    },
+    "tools": {
+      "action": "Outils",
+      "title": "Outils",
+      "none": "Aucun outil découvert pour l’instant. Utilisez Découvrir les outils.",
+      "name": "Outil",
+      "description": "Description",
+      "enabled": "Activé",
+      "toggle": "Autoriser {name}",
+      "help": "Seuls les outils activés peuvent être autorisés sur un sujet."
+    },
+    "delete": {
+      "title": "Retirer ce serveur MCP ?",
+      "message": "Retirer {name} et ses outils ? Les sujets qui les autorisaient cessent de les utiliser."
     }
   }
 }

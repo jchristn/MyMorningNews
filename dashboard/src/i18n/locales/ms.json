@@ -47,7 +47,9 @@
     "requestId": "ID permintaan",
     "server": "Pelayan melaporkan ralat.",
     "tooMany": "Terlalu banyak permintaan. Tunggu sebentar dan cuba lagi.",
-    "unauthorized": "Sesi anda tidak lagi sah. Log masuk semula."
+    "unauthorized": "Sesi anda tidak lagi sah. Log masuk semula.",
+    "capReached": "Had pelan telah dicapai.",
+    "egressBlocked": "Alamat itu berada dalam rangkaian persendirian, yang tidak dibenarkan oleh pelayan ini."
   },
   "access": {
     "deniedTitle": "Akses ditolak",
@@ -368,8 +370,14 @@
     "subtitle": "Log masuk ke ruang kerja anda",
     "tagline": "Selidik topik yang anda minati dan bangun dengan taklimat yang semakin baik setiap hari.",
     "tenant": "Penyewa",
-    "tenantHelp": "ID penyewa. Gunakan default pada pemasangan baharu.",
-    "title": "Selamat kembali"
+    "title": "Selamat kembali",
+    "tenantOptionalHelp": "Pilihan. Biarkan kosong dan kami akan mencari ruang kerja anda melalui e-mel anda.",
+    "chooseTenant": "Ruang kerja",
+    "chooseTenantHelp": "E-mel anda dimiliki oleh lebih daripada satu ruang kerja. Pilih satu dan log masuk semula.",
+    "unverifiedTitle": "Sahkan e-mel anda dahulu.",
+    "unverifiedMessage": "Buka pautan yang kami hantar kepada anda, atau minta pautan baharu.",
+    "forgot": "Lupa kata laluan?",
+    "createAccount": "Cipta akaun"
   },
   "home": {
     "summary": "Inilah yang sedang berlaku pada pelayan anda.",
@@ -1973,6 +1981,13 @@
       "brief": "Ringkasan dan khalayak",
       "sourcesHelp": "Suapan dan halaman benih dibaca pada setiap larian, bersama carian web.",
       "searchProvidersLater": "Pemilihan penyedia carian bagi setiap topik akan tiba bersama halaman penyedia carian."
+    },
+    "agentic": {
+      "title": "Carian agentik",
+      "help": "Apabila dihidupkan, model penyelidikan mencari dan membaca halaman sendiri dan boleh memanggil alat yang anda benarkan di bawah. Semua yang dipilihnya tetap melalui pengesahan petikan. Larian mungkin lebih mahal.",
+      "enable": "Gunakan carian agentik untuk topik ini",
+      "tools": "Alat MCP yang dibenarkan",
+      "noTools": "Belum ada alat MCP yang dihidupkan."
     }
   },
   "wizard": {
@@ -2151,7 +2166,8 @@
         "queries": "Pertanyaan",
         "results": "Hasil",
         "details": "Butiran",
-        "calls": "Panggilan model"
+        "calls": "Panggilan model",
+        "tools": "Panggilan alat"
       },
       "contextHash": "Petikan konteks"
     },
@@ -2251,6 +2267,17 @@
       "newMessage": "Bariskan larian baharu topik ini dari awal? Hasil carian dan pengambilan tidak disimpan, jadi setiap peringkat dijalankan semula dan membuat panggilan model yang dikira dalam penggunaan anda.",
       "resumeQueued": "Larian dibariskan semula dari {stage}",
       "newQueued": "Larian baharu dibariskan"
+    },
+    "tools": {
+      "title": "Panggilan alat",
+      "emptyTitle": "Tiada panggilan alat",
+      "emptyMessage": "Larian ini tidak menggunakan carian agentik.",
+      "tool": "Alat",
+      "arguments": "Argumen",
+      "result": "Hasil",
+      "duration": "Masa",
+      "failed": "Gagal",
+      "characters": "{count, plural, other {# aksara}}"
     }
   },
   "oneTime": {
@@ -3332,6 +3359,32 @@
       "codeHelp": "Kod yang diberikan kepada anda. Kod untuk pelan yang sudah anda miliki bermula apabila pelan semasa tamat.",
       "redeem": "Tebus",
       "redeemed": "Kod ditebus. Anda kini mempunyai {plan}."
+    },
+    "title": "Akaun",
+    "usage": {
+      "summary": "Pelan {plan}. Had bulanan ditetapkan semula pada {date}.",
+      "cost": "Bajet penyelidikan bulan ini",
+      "topics": "Topik",
+      "runsToday": "Larian hari ini",
+      "audio": "Minit audio bulan ini",
+      "noAudio": "Audio tidak termasuk dalam pelan anda.",
+      "schedule": "Topik dijalankan paling kerap setiap {minutes} minit.",
+      "ofLimit": "{used} daripada {max}",
+      "noLimit": "{used} (tiada had)"
+    },
+    "export": {
+      "button": "Muat turun data saya",
+      "working": "Sedang menyediakan...",
+      "help": "Muat turun ini ialah fail ZIP yang mengandungi profil, topik, dapatan, ramalan, cadangan, maklum balas dan setiap taklimat anda dalam format Markdown."
+    },
+    "delete": {
+      "button": "Padam akaun saya",
+      "title": "Padam akaun anda?",
+      "message": "Semua sesi dilog keluar sekarang. Akaun dan data anda dipadamkan selepas tempoh tangguh; log masuk sebelum itu akan mengekalkannya.",
+      "typeEmail": "Taip e-mel anda untuk mengesahkan",
+      "mismatch": "E-mel tidak sepadan dengan akaun anda.",
+      "confirm": "Padam akaun saya",
+      "scheduled": "Akaun anda akan dipadamkan pada {date}. Log masuk sebelum itu untuk mengekalkannya."
     }
   },
   "email": {
@@ -3745,6 +3798,103 @@
     "empty": {
       "title": "Belum ada sumber",
       "message": "Sumber muncul selepas larian mencari di web dan mengambil halaman untuk salah satu topik anda."
+    }
+  },
+  "auth": {
+    "resend": "Hantar pautan baharu",
+    "resent": "Jika alamat itu mempunyai akaun yang belum disahkan, pautan baharu sedang dihantar.",
+    "backToSignIn": "Kembali ke log masuk",
+    "haveAccount": "Sudah mempunyai akaun? Log masuk",
+    "passwordHelp": "Sekurang-kurangnya {count} aksara.",
+    "signup": {
+      "title": "Cipta akaun anda",
+      "subtitle": "Beritahu kami perkara yang anda mahu ikuti, dan bangun pagi dengan taklimat yang disediakan untuk anda.",
+      "closed": "Pendaftaran tidak dibuka di pelayan ini. Minta akaun daripada pentadbir.",
+      "displayName": "Nama anda",
+      "codeHelp": "Pilihan. Kod promosi yang diberikan kepada anda.",
+      "acceptTerms": "Saya menerima",
+      "terms": "terma perkhidmatan",
+      "and": "dan",
+      "privacy": "dasar privasi",
+      "confirmAge": "Saya berumur sekurang-kurangnya {age} tahun.",
+      "create": "Cipta akaun",
+      "creating": "Sedang mencipta akaun anda...",
+      "checkEmailTitle": "Semak e-mel anda",
+      "checkEmail": "Kami telah menghantar pautan ke {email}. Bukanya untuk mengesahkan alamat anda, kemudian log masuk.",
+      "readyTitle": "Akaun anda sudah sedia",
+      "ready": "Log masuk untuk mencipta topik pertama anda."
+    },
+    "verify": {
+      "title": "Sahkan e-mel anda",
+      "done": "E-mel anda telah disahkan. Anda boleh log masuk sekarang.",
+      "failed": "Pautan ini telah tamat tempoh atau sudah digunakan. Masukkan e-mel anda untuk mendapatkan pautan baharu."
+    },
+    "forgot": {
+      "title": "Tetapkan semula kata laluan anda",
+      "subtitle": "Masukkan e-mel anda dan kami akan menghantar pautan untuk memilih kata laluan baharu.",
+      "send": "Hantar pautan tetapan semula",
+      "sent": "Jika {email} mempunyai akaun, pautan tetapan semula sedang dihantar. Pautan itu sah selama satu jam."
+    },
+    "reset": {
+      "title": "Pilih kata laluan baharu",
+      "save": "Simpan kata laluan baharu",
+      "done": "Kata laluan anda telah ditukar dan semua sesi lain telah dilog keluar.",
+      "noToken": "Halaman ini memerlukan pautan daripada e-mel tetapan semula anda.",
+      "requestNew": "Minta pautan tetapan semula baharu"
+    }
+  },
+  "mcpServers": {
+    "about": "Daftarkan pelayan MCP jauh yang alatnya boleh dipanggil oleh penyelidikan agentik. Temui alat pelayan, hidupkan yang anda percayai, kemudian benarkannya pada sesuatu topik.",
+    "created": "Pelayan didaftarkan.",
+    "test": "Uji sambungan",
+    "testOk": "Bersambung. Pelayan menawarkan {count} alat.",
+    "testFailed": "Tidak dapat bersambung: {error}",
+    "discover": "Temui alat",
+    "discovered": "{count} alat disimpan.",
+    "columns": {
+      "name": "Nama",
+      "transport": "Pengangkutan",
+      "tools": "Alat",
+      "discovered": "Terakhir ditemui",
+      "status": "Status"
+    },
+    "status": {
+      "error": "Ralat"
+    },
+    "transports": {
+      "StreamableHttp": "Streamable HTTP",
+      "Sse": "Server-Sent Events"
+    },
+    "empty": {
+      "title": "Belum ada pelayan MCP",
+      "message": "Tambah pelayan supaya penyelidikan agentik boleh menggunakan alatnya."
+    },
+    "form": {
+      "createTitle": "Tambah pelayan MCP",
+      "editTitle": "Sunting pelayan MCP",
+      "url": "URL",
+      "urlHelp": "Titik akhir http atau https pelayan. Pelayan stdio setempat tidak disokong.",
+      "credential": "Kelayakan",
+      "credentialHelp": "Kelayakan tersimpan yang dihantar bersama setiap permintaan, jika pelayan memerlukannya.",
+      "noCredential": "Tiada",
+      "headerName": "Pengepala",
+      "headerPrefix": "Awalan",
+      "headerPrefixHelp": "Teks sebelum rahsia, seperti \"Bearer \".",
+      "urlPlaceholder": "https://mcp.example.com/mcp"
+    },
+    "tools": {
+      "action": "Alat",
+      "title": "Alat",
+      "none": "Belum ada alat ditemui. Gunakan Temui alat.",
+      "name": "Alat",
+      "description": "Penerangan",
+      "enabled": "Hidup",
+      "toggle": "Benarkan {name}",
+      "help": "Hanya alat yang dihidupkan boleh dibenarkan pada sesuatu topik."
+    },
+    "delete": {
+      "title": "Alih keluar pelayan MCP ini?",
+      "message": "Alih keluar {name} dan alatnya? Topik yang membenarkannya akan berhenti menggunakannya."
     }
   }
 }

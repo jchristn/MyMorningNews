@@ -892,6 +892,15 @@ export const en = {
     emptyTitle: 'No model calls in this period',
     emptyBody: 'Usage appears here once your topics run.',
     tokens: { input: 'Input', cached: 'Cached input', cacheWrite: 'Cache writes', output: 'Output', reasoning: 'Reasoning' },
+    // Plan usage meter on the Account screen (month to date against the plan's limits).
+    title: 'This month',
+    cost: 'Research budget',
+    topics: 'Topics',
+    runsToday: 'Runs today',
+    audio: 'Audio minutes',
+    resets: 'Monthly limits reset on {date}.',
+    ofLimit: '{used} of {max}',
+    noLimit: '{used} (no limit)',
   },
   account: {
     signOut: 'Sign out',
@@ -939,16 +948,6 @@ export const en = {
     upcoming: 'Coming up',
     period: '{from} to {to}',
     startsOn: 'Starts {date}',
-  },
-  usage: {
-    title: 'This month',
-    cost: 'Research budget',
-    topics: 'Topics',
-    runsToday: 'Runs today',
-    audio: 'Audio minutes',
-    resets: 'Monthly limits reset on {date}.',
-    ofLimit: '{used} of {max}',
-    noLimit: '{used} (no limit)',
   },
   promo: {
     title: 'Redeem a code',

@@ -47,7 +47,9 @@
     "requestId": "ID da solicitação",
     "server": "O servidor relatou um erro.",
     "tooMany": "Solicitações demais. Aguarde um momento e tente novamente.",
-    "unauthorized": "Sua sessão não é mais válida. Entre novamente."
+    "unauthorized": "Sua sessão não é mais válida. Entre novamente.",
+    "capReached": "Limite do plano atingido.",
+    "egressBlocked": "Esse endereço está em uma rede privada, o que este servidor não permite."
   },
   "access": {
     "deniedTitle": "Acesso negado",
@@ -368,8 +370,14 @@
     "subtitle": "Entre no seu espaço de trabalho",
     "tagline": "Pesquise os temas que importam para você e acorde com um boletim que melhora a cada dia.",
     "tenant": "Locatário",
-    "tenantHelp": "O ID do locatário. Use default em uma instalação nova.",
-    "title": "Bem-vindo de volta"
+    "title": "Bem-vindo de volta",
+    "tenantOptionalHelp": "Opcional. Deixe em branco e encontramos seu espaço de trabalho pelo seu e-mail.",
+    "chooseTenant": "Espaço de trabalho",
+    "chooseTenantHelp": "Seu e-mail pertence a mais de um espaço de trabalho. Escolha um e entre novamente.",
+    "unverifiedTitle": "Confirme seu e-mail primeiro.",
+    "unverifiedMessage": "Abra o link que enviamos ou peça um novo.",
+    "forgot": "Esqueceu sua senha?",
+    "createAccount": "Criar uma conta"
   },
   "home": {
     "summary": "Veja o que está acontecendo no seu servidor.",
@@ -1973,6 +1981,13 @@
       "brief": "Resumo e público",
       "sourcesHelp": "Feeds e páginas iniciais são lidos em toda execução, junto com a pesquisa na web.",
       "searchProvidersLater": "A escolha de provedores de pesquisa por tema chega com a página de provedores de pesquisa."
+    },
+    "agentic": {
+      "title": "Busca agêntica",
+      "help": "Quando ativada, o modelo de pesquisa busca e lê páginas por conta própria e pode chamar as ferramentas que você permitir abaixo. Tudo o que ele escolhe ainda passa pela verificação de citações. As execuções podem custar mais.",
+      "enable": "Usar busca agêntica neste tema",
+      "tools": "Ferramentas MCP permitidas",
+      "noTools": "Nenhuma ferramenta MCP está ativada ainda."
     }
   },
   "wizard": {
@@ -2151,7 +2166,8 @@
         "queries": "Consultas",
         "results": "Resultados",
         "details": "Detalhes",
-        "calls": "Chamadas ao modelo"
+        "calls": "Chamadas ao modelo",
+        "tools": "Chamadas de ferramentas"
       },
       "contextHash": "Instantâneo do contexto"
     },
@@ -2251,6 +2267,17 @@
       "newMessage": "Colocar na fila uma nova execução deste tema desde o início? Os resultados de pesquisa e obtenção não são mantidos, então todas as etapas rodam de novo e fazem chamadas ao modelo que contam no seu uso.",
       "resumeQueued": "Execução colocada na fila novamente a partir de {stage}",
       "newQueued": "Nova execução na fila"
+    },
+    "tools": {
+      "title": "Chamadas de ferramentas",
+      "emptyTitle": "Nenhuma chamada de ferramenta",
+      "emptyMessage": "Esta execução não usou busca agêntica.",
+      "tool": "Ferramenta",
+      "arguments": "Argumentos",
+      "result": "Resultado",
+      "duration": "Tempo",
+      "failed": "Falhou",
+      "characters": "{count, plural, one {# caractere} other {# caracteres}}"
     }
   },
   "oneTime": {
@@ -3332,6 +3359,32 @@
       "codeHelp": "Um código que você recebeu. Um código para o plano que você já tem começa quando o atual terminar.",
       "redeem": "Resgatar",
       "redeemed": "Código resgatado. Agora você tem {plan}."
+    },
+    "title": "Conta",
+    "usage": {
+      "summary": "Plano {plan}. Os limites mensais são redefinidos em {date}.",
+      "cost": "Orçamento de pesquisa neste mês",
+      "topics": "Temas",
+      "runsToday": "Execuções hoje",
+      "audio": "Minutos de áudio neste mês",
+      "noAudio": "Áudio não está incluído no seu plano.",
+      "schedule": "Os temas são executados no máximo a cada {minutes} minutos.",
+      "ofLimit": "{used} de {max}",
+      "noLimit": "{used} (sem limite)"
+    },
+    "export": {
+      "button": "Baixar meus dados",
+      "working": "Preparando...",
+      "help": "O download é um ZIP com seu perfil, temas, descobertas, previsões, sugestões, feedback e cada boletim em Markdown."
+    },
+    "delete": {
+      "button": "Excluir minha conta",
+      "title": "Excluir sua conta?",
+      "message": "Todas as sessões são encerradas agora. Sua conta e seus dados são excluídos após o período de carência; entrar antes disso os mantém.",
+      "typeEmail": "Digite seu e-mail para confirmar",
+      "mismatch": "O e-mail não corresponde à sua conta.",
+      "confirm": "Excluir minha conta",
+      "scheduled": "Sua conta será excluída em {date}. Entre antes disso para mantê-la."
     }
   },
   "email": {
@@ -3745,6 +3798,103 @@
     "empty": {
       "title": "Nenhuma fonte ainda",
       "message": "As fontes aparecem depois que uma execução pesquisa na web e obtém páginas para um dos seus temas."
+    }
+  },
+  "auth": {
+    "resend": "Enviar um novo link",
+    "resent": "Se esse endereço tiver uma conta não confirmada, um novo link está a caminho.",
+    "backToSignIn": "Voltar para entrar",
+    "haveAccount": "Já tem uma conta? Entre",
+    "passwordHelp": "Pelo menos {count} caracteres.",
+    "signup": {
+      "title": "Crie sua conta",
+      "subtitle": "Conte o que você quer acompanhar e acorde com um boletim feito para você.",
+      "closed": "O cadastro não está aberto neste servidor. Peça uma conta a um administrador.",
+      "displayName": "Seu nome",
+      "codeHelp": "Opcional. Um código promocional que você recebeu.",
+      "acceptTerms": "Aceito os",
+      "terms": "termos de serviço",
+      "and": "e a",
+      "privacy": "política de privacidade",
+      "confirmAge": "Tenho pelo menos {age} anos.",
+      "create": "Criar conta",
+      "creating": "Criando sua conta...",
+      "checkEmailTitle": "Verifique seu e-mail",
+      "checkEmail": "Enviamos um link para {email}. Abra-o para confirmar seu endereço e depois entre.",
+      "readyTitle": "Sua conta está pronta",
+      "ready": "Entre para criar seu primeiro tema."
+    },
+    "verify": {
+      "title": "Confirme seu e-mail",
+      "done": "Seu e-mail foi confirmado. Você já pode entrar.",
+      "failed": "Este link expirou ou já foi usado. Digite seu e-mail para receber um novo."
+    },
+    "forgot": {
+      "title": "Redefina sua senha",
+      "subtitle": "Digite seu e-mail e enviaremos um link para você escolher uma nova senha.",
+      "send": "Enviar link de redefinição",
+      "sent": "Se {email} tiver uma conta, um link de redefinição está a caminho. O link vale por uma hora."
+    },
+    "reset": {
+      "title": "Escolha uma nova senha",
+      "save": "Salvar nova senha",
+      "done": "Sua senha foi alterada e todas as outras sessões foram encerradas.",
+      "noToken": "Esta página precisa do link do seu e-mail de redefinição.",
+      "requestNew": "Pedir um novo link de redefinição"
+    }
+  },
+  "mcpServers": {
+    "about": "Registre servidores MCP remotos cujas ferramentas a pesquisa agêntica pode chamar. Descubra as ferramentas de um servidor, ative as que você confia e depois permita-as em um tema.",
+    "created": "Servidor registrado.",
+    "test": "Testar conexão",
+    "testOk": "Conectado. O servidor oferece {count} ferramentas.",
+    "testFailed": "Não foi possível conectar: {error}",
+    "discover": "Descobrir ferramentas",
+    "discovered": "{count} ferramentas salvas.",
+    "columns": {
+      "name": "Nome",
+      "transport": "Transporte",
+      "tools": "Ferramentas",
+      "discovered": "Última descoberta",
+      "status": "Status"
+    },
+    "status": {
+      "error": "Erro"
+    },
+    "transports": {
+      "StreamableHttp": "Streamable HTTP",
+      "Sse": "Eventos enviados pelo servidor"
+    },
+    "empty": {
+      "title": "Nenhum servidor MCP ainda",
+      "message": "Adicione um servidor para que a pesquisa agêntica use as ferramentas dele."
+    },
+    "form": {
+      "createTitle": "Adicionar um servidor MCP",
+      "editTitle": "Editar servidor MCP",
+      "url": "URL",
+      "urlHelp": "O endpoint http ou https do servidor. Servidores stdio locais não são suportados.",
+      "credential": "Credencial",
+      "credentialHelp": "Uma credencial armazenada enviada em cada requisição, se o servidor precisar.",
+      "noCredential": "Nenhuma",
+      "headerName": "Cabeçalho",
+      "headerPrefix": "Prefixo",
+      "headerPrefixHelp": "Texto antes do segredo, como \"Bearer \".",
+      "urlPlaceholder": "https://mcp.example.com/mcp"
+    },
+    "tools": {
+      "action": "Ferramentas",
+      "title": "Ferramentas",
+      "none": "Nenhuma ferramenta descoberta ainda. Use Descobrir ferramentas.",
+      "name": "Ferramenta",
+      "description": "Descrição",
+      "enabled": "Ativa",
+      "toggle": "Permitir {name}",
+      "help": "Somente ferramentas ativadas podem ser permitidas em um tema."
+    },
+    "delete": {
+      "title": "Remover este servidor MCP?",
+      "message": "Remover {name} e suas ferramentas? Os temas que as permitiam deixam de usá-las."
     }
   }
 }

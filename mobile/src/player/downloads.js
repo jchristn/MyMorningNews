@@ -33,7 +33,7 @@ export function createDownloads({ fs = { Directory, File, Paths }, storage = Asy
   }
 
   return {
-    /** Every downloaded episode, newest first: `{ id, title, uri, bytes, downloadedUtc }`. Missing files are dropped. */
+    /** Every downloaded episode, newest first: `{ id, title, uri, bytes, downloadedUtc, meta }`. Missing files are dropped. */
     async list() {
       const index = await readIndex();
       const items = [];
@@ -51,20 +51,36 @@ export function createDownloads({ fs = { Directory, File, Paths }, storage = Asy
       return items.sort((a, b) => String(b.downloadedUtc).localeCompare(String(a.downloadedUtc)));
     },
 
-    /** Local file URI for a downloaded episode, or null. */
-    async localUri(id) {
+    /**
+     * Local file URI for a downloaded episode, or null. With `mediaId`, a download of an older episode of the same
+     * briefing (audio was made again since) does not count.
+     */
+    async localUri(id, mediaId) {
       const index = await readIndex();
       const entry = index[id];
       if (!entry) return null;
+      if (mediaId && entry.meta && entry.meta.mediaId && entry.meta.mediaId !== mediaId) return null;
       return new fs.File(entry.uri).exists ? entry.uri : null;
     },
 
-    /** Download `url` (with auth headers) and record it. Resolves the stored entry. */
-    async download({ id, title, url, headers }) {
+    /** The stored entry for a download (`{ id, title, uri, bytes, downloadedUtc, meta }`), or null. */
+    async get(id) {
+      const index = await readIndex();
+      const entry = index[id];
+      if (!entry || !new fs.File(entry.uri).exists) return null;
+      return { ...entry, id };
+    },
+
+    /**
+     * Download `url` (with auth headers) and record it. `meta` is kept with the entry (chapters, duration, the episode
+     * ID) so the episode plays offline. Resolves the stored entry.
+     */
+    async download({ id, title, url, headers, meta }) {
       const target = new fs.File(folder(), safeName(id));
       if (target.exists) target.delete();
       const file = await fs.File.downloadFileAsync(url, target, { headers: headers || {}, idempotent: true });
       const entry = { title: title || '', uri: file.uri, bytes: file.size || 0, downloadedUtc: new Date(now()).toISOString() };
+      if (meta) entry.meta = meta;
       const index = await readIndex();
       index[id] = entry;
       await writeIndex(index);

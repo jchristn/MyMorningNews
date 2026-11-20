@@ -42,11 +42,11 @@ export function clampPosition(position, duration) {
   return duration > 0 ? Math.min(value, duration) : value;
 }
 
-/** Chapters sorted by start, each with an end (the next start, or the duration). */
+/** Chapters sorted by start, each with an end (the next start, or the duration) and the briefing section it reads, if any. */
 export function normalizeChapters(chapters, duration) {
   const list = (Array.isArray(chapters) ? chapters : [])
     .filter((c) => c && Number.isFinite(Number(c.startSeconds)))
-    .map((c) => ({ title: String(c.title || ''), startSeconds: Math.max(0, Number(c.startSeconds)) }))
+    .map((c) => (c.sectionId ? { title: String(c.title || ''), startSeconds: Math.max(0, Number(c.startSeconds)), sectionId: c.sectionId } : { title: String(c.title || ''), startSeconds: Math.max(0, Number(c.startSeconds)) }))
     .sort((a, b) => a.startSeconds - b.startSeconds);
   return list.map((c, i) => ({ ...c, endSeconds: i + 1 < list.length ? list[i + 1].startSeconds : duration > 0 ? duration : Infinity }));
 }

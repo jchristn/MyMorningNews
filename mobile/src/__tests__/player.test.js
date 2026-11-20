@@ -2,7 +2,7 @@ import { RATES, chapterIndexAt, clampRate, initialPlayerState, nextChapterStart,
 import { LOCK_SCREEN_OPTIONS, PROGRESS_INTERVAL_MS, PlayerService } from '@/player/PlayerService';
 import { COMPLETE_MARGIN_SECONDS, createProgressStore } from '@/player/progress';
 import { createDownloads } from '@/player/downloads';
-import { briefingTrack } from '@/player/tracks';
+import { downloadMeta, downloadedTrack, mediaChapters, mediaTrack, playingHeadingId } from '@/player/tracks';
 import { ApiClient } from '@/api/client';
 import { fakeServer } from './fakeServer';
 
@@ -306,6 +306,12 @@ describe('downloads', () => {
     await downloads.download({ id: 'b2', title: 'Two', url: 'http://x/media/2' });
     expect((await downloads.list()).map((d) => d.title).sort()).toEqual(['One', 'Two']);
     expect(await downloads.localUri('b/1')).toBe('file://docs/audio/b_1.mp3');
+    await downloads.download({ id: 'b3', title: 'Three', url: 'http://x/media/3', meta: { mediaId: 'med_3', chapters: [{ title: 'A', startSeconds: 0 }] } });
+    expect(await downloads.localUri('b3', 'med_3')).toBe('file://docs/audio/b3.mp3');
+    expect(await downloads.localUri('b3', 'med_newer')).toBeNull();
+    expect((await downloads.get('b3')).meta.chapters).toHaveLength(1);
+    expect(await downloads.get('missing')).toBeNull();
+    await downloads.remove('b3');
     expect(await downloads.usage()).toEqual({ count: 2, bytes: 2000, freeBytes: 5000 });
     files.delete('file://docs/audio/b2.mp3');
     expect((await downloads.list()).map((d) => d.id)).toEqual(['b/1']);
@@ -315,11 +321,51 @@ describe('downloads', () => {
 });
 
 describe('briefing tracks', () => {
-  it('streams media with the bearer token, or plays the downloaded file', () => {
+  const detail = {
+    media: { id: 'med_1', briefingId: 'b1', title: 'Morning', artifactId: 'art_mp3', durationSeconds: 300, status: 'Ready' },
+    chapters: [
+      { id: 'chp_2', title: 'Top of the news', startSeconds: 60, endSeconds: 300, sortOrder: 1, briefingSectionId: 'bsc_1' },
+      { id: 'chp_1', title: 'Introduction', startSeconds: 0, endSeconds: 60, sortOrder: 0 },
+    ],
+    audioPath: '/v1.0/api/artifacts/art_mp3/content',
+  };
+
+  it('streams the episode artifact with the bearer token, or plays the downloaded file', () => {
     const client = new ApiClient({ baseUrl: 'https://app.mymorningnews.ai' });
-    const briefing = { id: 'b1', title: 'Morning', mediaId: 'm1', chapters: [{ title: 'Top of the news', startSeconds: 0 }] };
-    expect(briefingTrack({ id: 'b2', title: 'No audio' }, { client })).toBeNull();
-    expect(briefingTrack(briefing, { client, token: 't' })).toMatchObject({ id: 'briefing.b1', briefingId: 'b1', uri: 'https://app.mymorningnews.ai/v1.0/api/media/m1', headers: { Authorization: 'Bearer t' }, chapters: [{ title: 'Top of the news', startSeconds: 0 }] });
-    expect(briefingTrack(briefing, { client, token: 't', localUri: 'file:///b1.mp3' })).toMatchObject({ uri: 'file:///b1.mp3', headers: undefined });
+    expect(mediaTrack({ media: { id: 'med_2' }, chapters: [] }, { briefingId: 'b2', client })).toBeNull();
+    expect(mediaTrack(detail, { briefingId: 'b1', client, token: 't', album: 'Morning News' })).toMatchObject({
+      id: 'briefing.b1',
+      briefingId: 'b1',
+      mediaId: 'med_1',
+      uri: 'https://app.mymorningnews.ai/v1.0/api/artifacts/art_mp3/content',
+      headers: { Authorization: 'Bearer t' },
+      durationSeconds: 300,
+      chapters: [
+        { title: 'Introduction', startSeconds: 0 },
+        { title: 'Top of the news', startSeconds: 60, sectionId: 'bsc_1' },
+      ],
+    });
+    expect(mediaTrack(detail, { briefingId: 'b1', client, token: 't', localUri: 'file:///b1.mp3' })).toMatchObject({ uri: 'file:///b1.mp3', headers: undefined });
+    const noPath = mediaTrack({ media: { id: 'med_3', artifactId: 'art_x' }, chapters: [] }, { briefingId: 'b3', client, token: 't' });
+    expect(noPath.uri).toBe('https://app.mymorningnews.ai/v1.0/api/artifacts/art_x/content');
+  });
+
+  it('keeps the chapters with a download so it plays offline, and maps chapters to sections', () => {
+    const client = new ApiClient({ baseUrl: 'https://app.mymorningnews.ai' });
+    const track = mediaTrack(detail, { briefingId: 'b1', client, token: 't' });
+    const entry = { id: 'b1', title: 'Morning', uri: 'file:///docs/audio/b1.mp3', meta: downloadMeta(track) };
+    expect(downloadedTrack(entry)).toMatchObject({ id: 'briefing.b1', mediaId: 'med_1', uri: 'file:///docs/audio/b1.mp3', chapters: track.chapters, durationSeconds: 300 });
+    expect(downloadedTrack(null)).toBeNull();
+    expect(mediaChapters(null)).toEqual([]);
+    expect(normalizeChapters(track.chapters, 300)[1]).toEqual({ title: 'Top of the news', startSeconds: 60, endSeconds: 300, sectionId: 'bsc_1' });
+    const sections = [{ id: 'bsc_1', heading: 'Top of the news' }];
+    const blocks = [
+      { type: 'heading', id: 'h1', text: 'Introduction' },
+      { type: 'heading', id: 'h2', text: 'Top of the news' },
+    ];
+    expect(playingHeadingId({ track, position: 10 }, 'b1', sections, blocks)).toBe('h1');
+    expect(playingHeadingId({ track, position: 90 }, 'b1', sections, blocks)).toBe('h2');
+    expect(playingHeadingId({ track, position: 90 }, 'other', sections, blocks)).toBeNull();
+    expect(playingHeadingId({ track: null, position: 0 }, 'b1', sections, blocks)).toBeNull();
   });
 });

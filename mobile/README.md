@@ -37,9 +37,14 @@ emulators, and free personal-team signing are in [docs/MOBILE_DEVICE_TESTING.md]
 | Client config | `GET /v1.0/api/client-config` (contract D, no auth): server version, sign-up and push switches, minimum app version, legal links, copyright. Defaults apply when it is missing. |
 | Profile and usage | `GET/PUT /v1.0/api/me`, `PUT /v1.0/api/me/password`, `GET /v1.0/api/usage/me` (cost, calls, tokens, by task or model, drawn with react-native-svg). |
 | Push | `POST /v1.0/api/devices` with the Expo push token, platform, name, and locale (contract C); `GET` lists devices, `DELETE /devices/{id}` removes one (also on sign-out), `POST /devices/{id}/test` sends a test. The permission prompt appears only from Account > Notifications. Taps route by `{ kind, briefingId \| topicId \| predictionId }`. Android channels: `briefings`, `predictions`, `account`. |
-| Links | `mymorningnews://briefings/{id}` and `https://app.mymorningnews.ai/briefings/{id}` (also `/dashboard/...`, topics, predictions, findings, suggestions, insights, account) map to screens in `src/lib/deepLinks.js`, applied by `src/app/+native-intent.js`. iOS associated domain `applinks:app.mymorningnews.ai`; Android `autoVerify` intent filters. |
+| Links | `mymorningnews://briefings/{id}` and `https://app.mymorningnews.ai/briefings/{id}` (also `/dashboard/...`, topics, predictions, findings, suggestions, insights, account, and `mymorningnews://redeem?code=...` for promotional codes) map to screens in `src/lib/deepLinks.js`, applied by `src/app/+native-intent.js`. iOS associated domain `applinks:app.mymorningnews.ai`; Android `autoVerify` intent filters. |
 | Research (Phases 4 to 7) | Topics with dimensions and constraints, the refinement wizard, one-time requests, schedules (with `POST /v1.0/api/schedules/preview`), runs with stages, queries, and results, findings with evidence, sources, predictions with reviews, suggestions, briefings (read, pin, regenerate, download `.md` and `.html`), and editions (edit, topics, compose, preview): `src/api/research.js`. Model-backed steps (wizard generation, request planning) answer `502 ModelError` without a model key; screens say so and offer the manual path (`ActionError` in `src/components/states.jsx`). |
-| Planned routes | Feedback, analytics, learned preferences, media, briefing progress, sign-up, password reset, account delete and export: called as plan section 24 describes, and degrade until their phase lands. |
+| Audio (Phase 8) | The briefing detail carries `audio` (the newest episode in any status) and the briefing names its ready episode in `mediaAssetId`. `GET /v1.0/api/media/{id}` gives the chapters and `audioPath`; audio streams from `GET /v1.0/api/artifacts/{id}/content` with the bearer token and HTTP Range. `POST /v1.0/api/briefings/{id}/audio` makes audio (409 `AudioInProgress`, `AudioDisabled`, `BriefingNotReady`); the reader polls while it is made. Listen lists `GET /v1.0/api/media?status=Ready`. Make actions and podcast feeds are hidden when client config has `audioEnabled: false`. |
+| Podcast feeds | `GET/POST/DELETE /v1.0/api/feed-tokens` (Account > Podcast feeds): the feed URL is shown once with Copy (`expo-clipboard`), Share, and Open in Podcasts (`podcast://` on iOS, `pcast://` on Android). |
+| Feedback (Phases 9 and 10) | `POST /v1.0/api/feedback` with `{ targetType, targetId, action, reason, channel: "Mobile" }` from inline chips on findings, predictions, suggestions, briefings, and the findings a briefing cites; the current rating comes from `GET /v1.0/api/feedback?targetType=&targetId=` (or one read per list); the why sheet adds a reason, changes, or retracts (`DELETE /v1.0/api/feedback/{id}`). `src/lib/feedback.js` holds the actions per target. |
+| Insights and learning (Phase 10) | `GET /v1.0/api/analytics/{relevance,accuracy,feedback,suggestions,reasons,quality}` with `from` and `to`, drawn with the hand-rolled charts in `src/charts/` (bars, trend line and columns, calibration diagram); feedback history with `PUT` and `DELETE /v1.0/api/feedback/{id}`; learned preferences with accept, reject, disable, enable, edit, delete, and create. |
+| Plans, codes, email | `GET /v1.0/api/account/plan` and `POST /v1.0/api/promo-codes/redeem` (409 `PromoCodeInvalid` with `details.reason`, each explained; `src/lib/promo.js`); `GET/PUT /v1.0/api/email-preferences`. |
+| Planned routes | Briefing progress, sign-up, password reset, account delete and export: called as plan section 24 describes, and degrade until their phase lands. |
 
 ## Audio player
 
@@ -62,7 +67,10 @@ shows as numbered skip icons. The config plugin adds `UIBackgroundModes: audio` 
 after about three minutes without it). Staying on `expo-audio` keeps the app inside the Expo SDK with no extra native
 module to keep in step. The spike results are recorded in "Verification" below.
 
-Until briefings with audio exist, the Listen tab shows an empty state. Development builds have a hidden **Developer
+The briefing reader makes, plays, and downloads a briefing's audio, lists its chapters (tap to play from one), and
+marks the section being read aloud (a chapter names its briefing section, or matches a heading by title). A download
+keeps the episode ID and chapters beside the file, so it plays offline from Listen > Downloads, and a remade episode is
+not mistaken for the downloaded one. Development builds also have a hidden **Developer
 player** (Listen > Developer player) that plays a bundled four-minute test tone (`assets/audio/test-tone.m4a`, four
 one-minute chapters, a beep every ten seconds; regenerate with `npm run assets:tone`). The tone is resolved to an
 empty module in release bundles (`metro.config.js`), so it never ships.
@@ -73,6 +81,13 @@ Phones use five tabs (Today, Listen, Topics, Insights, Account), each a stack. T
 wider show split views (the briefing, finding, prediction, request, topic, and edition lists beside their detail, and
 the Account menu beside the chosen section) and keep the mini player as a persistent bar above the tabs.
 
+- **Listen:** ready episodes (tap to play, or open the briefing), the full player, downloads that play offline, and a
+  link to the podcast feeds.
+- **Insights:** Relevance (tiles, precision over time, by topic, tier, dimension, and source, and evidence quality),
+  Accuracy (tiles and the calibration diagram), Feedback (volume, channels, themes, suggestion outcomes, and the history
+  with edit and retract), Learned preferences, and Your usage.
+- **Account:** profile, password, Plan and codes (with Redeem), usage, notifications, Email preferences, Podcast feeds,
+  language, appearance, app lock, server, about, export, and delete.
 - **Today:** the latest ready edition briefing, Compose now with status polling, recent topic run briefings, one-time
   requests (list, new, detail with questions, confirm, cancel, make recurring), and links to briefings, findings,
   predictions, and suggestions.
@@ -124,17 +139,18 @@ app calls arrives with its plan phase; see `parity.json` for the route list. Gap
 | Need | Why |
 | --- | --- |
 | `PUT /v1.0/api/briefings/{id}/progress` and `GET` of the saved position | Resume across devices (section 35.5). The app already sends `{ positionSeconds, completed }`. |
-| Briefing responses that name their audio | The app reads `mediaId` (or `audioMediaId`, or `audio.mediaId`), `audio.chapters` (`{ title, startSeconds }`), and `audio.durationSeconds`. |
-| `GET /v1.0/api/media/{id}` honoring `Authorization: Bearer` and `Range` | Streaming and seeking on iOS, and downloads. |
-| `POST /v1.0/api/feedback` accepting `channel: "mobile"` | Feedback attribution by channel (chart 11). |
 | `/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json` on `app.mymorningnews.ai` | Universal links (section 33.3) need the Apple team id and the Android signing certificate fingerprint. |
 | A distinct error code for unknown routes (for example `RouteNotFound`) | The app tells "not on this server yet" from "this item does not exist" by whether a 404 carries a `requestId` (the server's default handler omits it). An explicit code would make that robust. |
 | `minimumAppVersion` enforcement | The value arrives in client config; the app does not block old versions yet. |
-| Titles on briefing items (`items[].title`, or a `GET /v1.0/api/suggestions/{id}`) | The reader links to the findings, predictions, and suggestions a briefing cites, but items carry only type and ID, so the app reads each finding and prediction (up to 20) for its title, and suggestions have no read route. |
+| A `GET /v1.0/api/suggestions/{id}` | The briefing detail now carries `itemTitles` (the app uses it, and reads findings and predictions one by one only on older servers), but a cited suggestion still opens the suggestions list, since there is no read route. |
 | A "mine" filter on editions, briefings, and topics for administrators | Administrators list every user's editions; Today keeps the signed-in user's own by `userId` on the client. |
 | The request ID on a failed `POST /v1.0/api/requests` | Planning failures (502 ModelError) still save the request, but the error does not name it; the app finds it by listing the newest request with the same text. |
 | `editionName` and `topicName` on briefing list items, and a schedule summary on topics | Lists show the date and kind only; the dashboard columns (edition, schedule) need an extra read per row. |
-| One field name for briefing audio | Briefings carry `mediaAssetId`; the player reads `mediaId` (see the audio rows above). Phase 8 should settle the name. |
+| Feed URLs after creation | `GET /v1.0/api/feed-tokens` returns no URL (only a hash is kept), so a feed whose link was not copied must be revoked and created again. |
+| `planName` on upcoming plan periods | `GET /v1.0/api/account/plan` lists `upcoming` assignments with a `planId` only; the app shows the source and dates. |
+| Target titles on feedback items | The history shows the rating, reason, channel, and date, and opens the target, but cannot show the item's title without one read per row. |
+| `GET /v1.0/api/analytics/overview` | The dashboard Home panels (parity `/home`) need it; Today shows briefings only. |
+| Per-topic run email resubscribe | `email-preferences` reports `unsubscribedTopicIds` but `PUT` cannot turn one back on; the app only counts them. |
 
 ## Builds, updates, and stores
 

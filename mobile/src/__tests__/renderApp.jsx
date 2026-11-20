@@ -15,11 +15,37 @@ import { fakeServer, tokenResponse } from './fakeServer';
 
 export const SERVER = 'http://127.0.0.1:12100';
 
+/** A fake expo-audio player that records what the PlayerService asks of it. */
+export function fakeAudioPlayer() {
+  const player = {
+    listener: null,
+    sources: [],
+    addListener: jest.fn((event, fn) => {
+      player.listener = fn;
+      return { remove: jest.fn() };
+    }),
+    replace: jest.fn((source) => player.sources.push(source)),
+    setPlaybackRate: jest.fn(),
+    setActiveForLockScreen: jest.fn(),
+    clearLockScreenControls: jest.fn(),
+    play: jest.fn(),
+    pause: jest.fn(),
+    seekTo: jest.fn(async () => undefined),
+    remove: jest.fn(),
+  };
+  const createAudioPlayer = jest.fn((source) => {
+    player.sources.push(source);
+    return player;
+  });
+  return { player, createAudioPlayer };
+}
+
 /**
  * Render a screen signed in against a scripted fake server (`handlers` keyed by "METHOD /path"), inside every
- * provider the app wraps screens in. Resolves the render result plus `server` (its recorded calls).
+ * provider the app wraps screens in. Resolves the render result plus `server` (its recorded calls), the auth
+ * `controller`, and the player `service`. `options.createAudioPlayer` replaces the native player factory.
  */
-export async function renderSignedIn(ui, handlers = {}) {
+export async function renderSignedIn(ui, handlers = {}, options = {}) {
   const server = fakeServer({
     'POST /v1.0/token': () => ({ body: tokenResponse() }),
     'GET /v1.0/api/client-config': () => ({ body: { productName: 'My Morning News', serverVersion: '0.1.0-alpha', links: {}, copyright: '(c) 2026 Lattice AI LLC' } }),
@@ -27,7 +53,7 @@ export async function renderSignedIn(ui, handlers = {}) {
   });
   const controller = new AuthController({ serverUrl: SERVER, storage: memoryTokenStorage(), fetchImpl: server.fetchImpl });
   await controller.signIn({ email: 'admin@mymorningnews', password: 'password' });
-  const service = new PlayerService({ audio: { createAudioPlayer: jest.fn(), setAudioModeAsync: jest.fn(async () => undefined) } });
+  const service = new PlayerService({ audio: { createAudioPlayer: options.createAudioPlayer || jest.fn(), setAudioModeAsync: jest.fn(async () => undefined) } });
   const i18n = initI18n('en');
   const utils = await render(
     <I18nextProvider i18n={i18n}>
@@ -42,7 +68,7 @@ export async function renderSignedIn(ui, handlers = {}) {
       </PrefsProvider>
     </I18nextProvider>,
   );
-  return { ...utils, server, controller };
+  return { ...utils, server, controller, service };
 }
 
 /** A paged list response like the server's. */

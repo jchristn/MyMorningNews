@@ -17,12 +17,17 @@ export function itemDate(item) {
   return item.publishedUtc || item.createdUtc || item.dueUtc || item.lastUpdateUtc || null;
 }
 
-/** Audio for a briefing: `mediaId` (or `audioMediaId`), plus optional chapters. */
-export function briefingAudio(briefing) {
-  if (!briefing || typeof briefing !== 'object') return null;
-  const mediaId = briefing.mediaId || briefing.audioMediaId || (briefing.audio && briefing.audio.mediaId) || null;
-  if (!mediaId) return null;
-  const chapters = (briefing.audio && briefing.audio.chapters) || briefing.chapters || [];
-  const durationSeconds = (briefing.audio && briefing.audio.durationSeconds) || briefing.audioDurationSeconds || 0;
-  return { mediaId, chapters, durationSeconds };
+/** Episode statuses while audio is being made (MediaStatusEnum). */
+export const PENDING_AUDIO_STATUSES = Object.freeze(['Queued', 'Scripting', 'Synthesizing']);
+
+/**
+ * Audio for a briefing (Phase 8). A briefing names its ready episode in `mediaAssetId`; the briefing detail also
+ * carries `audio`, the newest episode in any status (so a remake in progress or a failure shows). Returns
+ * `{ mediaId, status, durationSeconds, errorMessage }`, or null when there is no audio at all.
+ */
+export function briefingAudio(briefing, episode) {
+  const media = episode && typeof episode === 'object' && episode.id ? episode : null;
+  if (media) return { mediaId: media.id, status: media.status || 'Ready', durationSeconds: Number(media.durationSeconds) || 0, errorMessage: media.errorMessage || null, readyMediaId: (briefing && briefing.mediaAssetId) || (media.status === 'Ready' ? media.id : null) };
+  if (!briefing || typeof briefing !== 'object' || !briefing.mediaAssetId) return null;
+  return { mediaId: briefing.mediaAssetId, status: 'Ready', durationSeconds: 0, errorMessage: null, readyMediaId: briefing.mediaAssetId };
 }

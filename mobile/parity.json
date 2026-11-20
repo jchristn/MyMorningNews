@@ -54,7 +54,7 @@
       "status": "planned",
       "phase": "Phase 10",
       "screen": "app/(app)/today/index.jsx",
-      "notes": "Today merges the dashboard Home and Today pages; the analytics overview and runs panels arrive with Phase 10."
+      "notes": "Today merges the dashboard Home and Today pages. The analytics overview and runs panels need GET /v1.0/api/analytics/overview, which the server does not have yet; the per-page analytics are under Insights."
     },
     {
       "route": "/today",
@@ -67,7 +67,7 @@
         "POST /v1.0/api/editions/{id}/compose",
         "GET /v1.0/api/briefings/{id}"
       ],
-      "notes": "The latest ready edition briefing, Compose now with status polling until the briefing is ready, recent topic run briefings, and the one-time request entry point. Per-item feedback arrives with Phase 10 and audio with Phase 8."
+      "notes": "The latest ready edition briefing, Compose now with status polling until the briefing is ready, recent topic run briefings, and the one-time request entry point. Audio and per-item feedback live in the briefing reader."
     },
     {
       "route": "/one-time",
@@ -186,9 +186,11 @@
       "status": "implemented",
       "screen": "app/(app)/today/findings/index.jsx",
       "api": [
-        "GET /v1.0/api/findings"
+        "GET /v1.0/api/findings",
+        "GET /v1.0/api/feedback",
+        "POST /v1.0/api/feedback"
       ],
-      "notes": "Ranked across topics with tier and minimum score filters; also per topic in the workspace."
+      "notes": "Ranked across topics with tier and minimum score filters; also per topic in the workspace. Each row has inline rating chips with the current rating (one feedback read per list)."
     },
     {
       "route": "/findings/:id",
@@ -197,9 +199,11 @@
       "screen": "app/(app)/today/findings/[findingId].jsx",
       "api": [
         "GET /v1.0/api/findings/{id}",
-        "POST /v1.0/api/feedback"
+        "GET /v1.0/api/feedback",
+        "POST /v1.0/api/feedback",
+        "DELETE /v1.0/api/feedback/{id}"
       ],
-      "notes": "Tier, score, why it matters, the score breakdown (SVG bars), and the verified evidence quotes with their sources. The feedback bar posts once Phase 10 adds the route."
+      "notes": "Tier, score, why it matters, the score breakdown (SVG bars), and the verified evidence quotes with their sources. Relevant, Somewhat, or Not relevant with the current rating selected, and the why sheet (reason, change, retract), on channel Mobile."
     },
     {
       "route": "/sources",
@@ -217,9 +221,11 @@
       "status": "implemented",
       "screen": "app/(app)/today/predictions/index.jsx",
       "api": [
-        "GET /v1.0/api/predictions"
+        "GET /v1.0/api/predictions",
+        "GET /v1.0/api/feedback",
+        "POST /v1.0/api/feedback"
       ],
-      "notes": "Due to grade (horizon passed or a proposed resolution), open, proposed, resolved, and all."
+      "notes": "Due to grade (horizon passed or a proposed resolution), open, proposed, resolved, and all, with inline Accurate, Partially, Inaccurate, and Too early ratings."
     },
     {
       "route": "/predictions/:id",
@@ -230,9 +236,11 @@
         "GET /v1.0/api/predictions/{id}",
         "POST /v1.0/api/predictions/{id}/resolve",
         "POST /v1.0/api/prediction-reviews/{id}/accept",
-        "POST /v1.0/api/prediction-reviews/{id}/reject"
+        "POST /v1.0/api/prediction-reviews/{id}/reject",
+        "GET /v1.0/api/feedback",
+        "POST /v1.0/api/feedback"
       ],
-      "notes": "Statement, confidence, horizon, rationale, the pipeline's proposed resolutions with Accept and Reject, and grading with a note."
+      "notes": "Statement, confidence, horizon, rationale, the pipeline's proposed resolutions with Accept and Reject, grading with a note, and the accuracy rating with the why sheet."
     },
     {
       "route": "/suggestions",
@@ -241,9 +249,11 @@
       "screen": "app/(app)/today/suggestions/index.jsx",
       "api": [
         "GET /v1.0/api/suggestions",
-        "PUT /v1.0/api/suggestions/{id}/status"
+        "PUT /v1.0/api/suggestions/{id}/status",
+        "GET /v1.0/api/feedback",
+        "POST /v1.0/api/feedback"
       ],
-      "notes": "By status, with Accept, Done, Snooze (1 day, 1 week, 1 month), Dismiss, and Reopen inline."
+      "notes": "By status, with Accept, Done, Snooze (1 day, 1 week, 1 month), Dismiss, and Reopen inline, and Useful or Not useful with a reason."
     },
     {
       "route": "/briefings",
@@ -265,10 +275,14 @@
         "GET /v1.0/api/briefings/{id}/download",
         "PUT /v1.0/api/briefings/{id}/pin",
         "POST /v1.0/api/briefings/{id}/regenerate",
+        "POST /v1.0/api/briefings/{id}/audio",
         "GET /v1.0/api/media/{id}",
+        "GET /v1.0/api/artifacts/{id}/content",
+        "GET /v1.0/api/feedback",
+        "POST /v1.0/api/feedback",
         "PUT /v1.0/api/briefings/{id}/progress"
       ],
-      "notes": "The reader renders Markdown with native components (no WebView or HTML), with section navigation, citation numbers that jump to Sources, links to the findings and predictions it cites, pin, share or save the .md and .html files, and regenerate expired files. Polls while composing. Audio and synced progress light up with Phase 8 and 16 (the player is built and verified with the bundled test tone)."
+      "notes": "The reader renders Markdown with native components (no WebView or HTML), with section navigation, citation numbers that jump to Sources, linked items with inline ratings on findings, pin, share or save the .md and .html files, and regenerate expired files. Audio: Make audio (409 AudioInProgress, AudioDisabled, BriefingNotReady explained; hidden when client config has audioEnabled false), progress while it is made, Listen streamed from the artifact with the bearer token and Range, Download for offline use with chapters, the chapter list with seek, and the section being read marked in the text. Feedback on the briefing with the why sheet."
     },
     {
       "route": "/editions",
@@ -288,6 +302,18 @@
       "notes": "List and edit (topics/editions/[editionId].jsx): settings, topics in order (none means all active topics), schedule, Compose now with polling, and Preview. Creating and duplicating editions and choosing templates and voices stay on the web."
     },
     {
+      "route": "/listen",
+      "group": "Briefings",
+      "status": "implemented",
+      "screen": "app/(app)/listen/index.jsx",
+      "api": [
+        "GET /v1.0/api/media",
+        "GET /v1.0/api/media/{id}",
+        "GET /v1.0/api/artifacts/{id}/content"
+      ],
+      "notes": "Ready episodes newest first (tap to play with chapters, or open the briefing), the full player (listen/player.jsx), downloads with offline playback and storage management (listen/downloads.jsx), and a link to the podcast feeds. Background audio and lock-screen controls through expo-audio."
+    },
+    {
       "route": "/templates",
       "group": "Briefings",
       "status": "not-applicable",
@@ -302,42 +328,56 @@
     {
       "route": "/insights/relevance",
       "group": "Insights",
-      "status": "planned",
-      "phase": "Phase 10",
+      "status": "implemented",
       "screen": "app/(app)/insights/relevance.jsx",
       "api": [
-        "GET /v1.0/api/analytics/relevance"
-      ]
+        "GET /v1.0/api/analytics/relevance",
+        "GET /v1.0/api/analytics/quality"
+      ],
+      "notes": "Precision, coverage, shown, and rated tiles; precision over time (chart 6) and by topic, tier, dimension, and source domain (charts 9 and 10) as react-native-svg charts; evidence quality (verified quote share by model, chart 29); 30, 90, or 365 days. Weight tuning proposals stay on the web."
     },
     {
       "route": "/insights/accuracy",
       "group": "Insights",
-      "status": "planned",
-      "phase": "Phase 10",
+      "status": "implemented",
       "screen": "app/(app)/insights/accuracy.jsx",
       "api": [
         "GET /v1.0/api/analytics/accuracy"
-      ]
+      ],
+      "notes": "Accuracy rate, mean Brier, agreement with the agent, due, open, resolved, and time to resolve tiles; the calibration reliability diagram (chart 15) with each bucket in words; accuracy by topic; a link to grade due predictions."
     },
     {
       "route": "/insights/feedback",
       "group": "Insights",
-      "status": "planned",
-      "phase": "Phase 10",
+      "status": "implemented",
       "screen": "app/(app)/insights/feedback.jsx",
       "api": [
-        "GET /v1.0/api/analytics/feedback"
-      ]
+        "GET /v1.0/api/analytics/feedback",
+        "GET /v1.0/api/analytics/reasons",
+        "GET /v1.0/api/analytics/suggestions",
+        "GET /v1.0/api/feedback",
+        "PUT /v1.0/api/feedback/{id}",
+        "POST /v1.0/api/feedback",
+        "DELETE /v1.0/api/feedback/{id}"
+      ],
+      "notes": "Volume, reasons, and email link tiles; feedback per day, by channel (chart 11), and by target; reason themes; suggestion outcomes (chart 19); and the history filtered by target type with edit (reason in place, or a new rating), retract, and open the item."
     },
     {
       "route": "/insights/preferences",
       "group": "Insights",
-      "status": "planned",
-      "phase": "Phase 10",
+      "status": "implemented",
       "screen": "app/(app)/insights/preferences.jsx",
       "api": [
-        "GET /v1.0/api/learned-preferences"
-      ]
+        "GET /v1.0/api/learned-preferences",
+        "POST /v1.0/api/learned-preferences",
+        "PUT /v1.0/api/learned-preferences/{id}",
+        "DELETE /v1.0/api/learned-preferences/{id}",
+        "POST /v1.0/api/learned-preferences/{id}/accept",
+        "POST /v1.0/api/learned-preferences/{id}/reject",
+        "POST /v1.0/api/learned-preferences/{id}/disable",
+        "POST /v1.0/api/learned-preferences/{id}/enable"
+      ],
+      "notes": "Proposed first, filtered by status; accept, reject, disable, enable, edit, delete; write your own with a kind and an optional topic."
     },
     {
       "route": "/insights/usage",
@@ -354,6 +394,12 @@
       "group": "Admin",
       "status": "not-applicable",
       "reason": "Platform cost by tenant is a global administrator page; operator and administrator pages stay on the web (plan section 35.3)."
+    },
+    {
+      "route": "/admin/promo-codes",
+      "group": "Admin",
+      "status": "not-applicable",
+      "reason": "Creating, generating, limiting, and revoking promotional codes is a global administrator page that stays on the web (plan sections 33.2 and 35.3); members redeem codes in Account > Plan and codes."
     },
     {
       "route": "/models",
@@ -483,9 +529,16 @@
         "GET /v1.0/api/me",
         "PUT /v1.0/api/me",
         "PUT /v1.0/api/me/password",
-        "POST /v1.0/api/devices"
+        "POST /v1.0/api/devices",
+        "GET /v1.0/api/account/plan",
+        "POST /v1.0/api/promo-codes/redeem",
+        "GET /v1.0/api/email-preferences",
+        "PUT /v1.0/api/email-preferences",
+        "GET /v1.0/api/feed-tokens",
+        "POST /v1.0/api/feed-tokens",
+        "DELETE /v1.0/api/feed-tokens/{id}"
       ],
-      "notes": "Profile, password, notifications, language, theme, and app lock work today. Email preferences (Phase 9) and podcast feed tokens (Phase 8) join this screen when their routes land."
+      "notes": "Profile, password, notifications, language, theme, and app lock, plus Plan and codes (account/plan.jsx: the effective plan, its limits, end date, and what starts later, and Redeem a code with friendly text for every PromoCodeInvalid reason; account/redeem.jsx opens from mymorningnews://redeem?code=), Email (account/email.jsx: run digests, briefings, and failed runs on or off), and Podcast feeds (account/podcast.jsx: create for all editions or one, the URL once with Copy, Share, and Open in Podcasts, revoke, delete revoked; hidden when audio is off)."
     },
     {
       "route": "/account/delete",

@@ -1,11 +1,12 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, RefreshControl, View } from 'react-native';
-import { Asset } from 'expo-asset';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { findingsApi, predictionsApi, briefingsApi } from '@/api/research';
 import { ButtonRow, ChipGroup } from '@/components/Chips';
 import { FeedbackBar } from '@/components/FeedbackBar';
+import { RatingControl, useFeedbackMap } from '@/components/feedback/RatingControl';
+import { BriefingAudio } from '@/components/player/BriefingAudio';
 import { Markdown } from '@/components/Markdown';
 import { ResourceView } from '@/components/states';
 import { Banner, Button, Card, ListRow, Screen, SectionHeader, T } from '@/components/ui';
@@ -14,74 +15,22 @@ import { BRIEFING_STATUS_TONES, PENDING_BRIEFING_STATUSES } from '@/lib/enums';
 import { formatDateTime } from '@/lib/format';
 import { parseBriefing } from '@/lib/markdown';
 import { usePlayer } from '@/player/PlayerContext';
-import { briefingTrack } from '@/player/tracks';
+import { playingHeadingId } from '@/player/tracks';
 import { useAuth } from '@/state/AuthContext';
 import { usePolling } from '@/state/usePolling';
 import { useResource } from '@/state/useResource';
 import { useTheme } from '@/theme/ThemeContext';
 import { spacing } from '@/theme/palette';
-import { briefingAudio } from '../common/items';
+import { PENDING_AUDIO_STATUSES } from '../common/items';
 import { DetailHeader } from '../common/DetailScreen';
 
-function artworkUri() {
-  try {
-    return Asset.fromModule(require('../../../assets/images/glyph.png')).uri;
-  } catch {
-    return undefined;
-  }
-}
-
-function AudioActions({ briefing }) {
-  const { t } = useTranslation();
-  const { auth, client } = useAuth();
-  const { service, downloads } = usePlayer();
-  const [busy, setBusy] = useState(null);
-  const [error, setError] = useState(null);
-  if (!briefingAudio(briefing)) return null;
-
-  const listen = async () => {
-    setBusy('listen');
-    setError(null);
-    try {
-      const localUri = await downloads.localUri(briefing.id);
-      const token = await auth.getAccessToken();
-      await service.load(briefingTrack(briefing, { client, token, localUri, artworkUrl: artworkUri() }));
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  const download = async () => {
-    setBusy('download');
-    setError(null);
-    try {
-      const token = await auth.getAccessToken();
-      const track = briefingTrack(briefing, { client, token });
-      await downloads.download({ id: briefing.id, title: track.title, url: track.uri, headers: track.headers });
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  return (
-    <View style={{ gap: spacing.sm }}>
-      <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-        <Button title={t('mobile.briefing.listen')} icon="play" busy={busy === 'listen'} onPress={() => void listen()} style={{ flex: 1 }} />
-        <Button title={t('mobile.briefing.download')} icon="download-outline" kind="secondary" busy={busy === 'download'} onPress={() => void download()} style={{ flex: 1 }} />
-      </View>
-      {error ? <Banner kind="danger">{error}</Banner> : null}
-    </View>
-  );
-}
-
-/** Titles for the items a briefing links to (findings and predictions are read one by one; at most `limit`). */
-export async function loadItemTitles(client, items, limit = 20) {
-  const wanted = (items || []).filter((i) => i.itemType === 'Finding' || i.itemType === 'Prediction').slice(0, limit);
-  const titles = {};
+/**
+ * Titles for the items a briefing links to. The detail carries them in `itemTitles` (item ID to title); servers that
+ * do not get the findings and predictions read one by one (at most `limit`).
+ */
+export async function loadItemTitles(client, items, limit = 20, known) {
+  const titles = { ...(known && typeof known === 'object' ? known : {}) };
+  const wanted = (items || []).filter((i) => (i.itemType === 'Finding' || i.itemType === 'Prediction') && !titles[i.itemId]).slice(0, limit);
   await Promise.all(
     wanted.map(async (item) => {
       try {
@@ -106,7 +55,8 @@ function LinkedItems({ detail }) {
   const { t } = useTranslation();
   const { client } = useAuth();
   const items = useMemo(() => (detail.items || []).slice().sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)), [detail.items]);
-  const titles = useResource(() => loadItemTitles(client, items), [client, items]);
+  const titles = useResource(() => loadItemTitles(client, items, 20, detail.itemTitles), [client, items, detail.itemTitles]);
+  const ratings = useFeedbackMap('Finding');
   if (items.length === 0) return null;
   const sections = (detail.sections || []).slice().sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
   const groups = sections.map((s) => ({ section: s, items: items.filter((i) => i.sectionId === s.id) })).filter((g) => g.items.length > 0);
@@ -122,7 +72,14 @@ function LinkedItems({ detail }) {
           {g.items.map((item) => {
             const title = (titles.data && titles.data[item.itemId]) || t('mobile.reader.itemTypes.' + item.itemType);
             const cited = item.citationNumber ? t('mobile.reader.citedAs', { number: item.citationNumber }) : '';
-            return <ListRow key={item.id} icon={icons[item.itemType] || 'document-outline'} title={title} detail={cited} onPress={() => router.push(itemHref(item))} testID={'item-' + item.itemId} />;
+            return (
+              <View key={item.id} style={{ gap: spacing.xs }}>
+                <ListRow icon={icons[item.itemType] || 'document-outline'} title={title} detail={cited} onPress={() => router.push(itemHref(item))} testID={'item-' + item.itemId} />
+                {item.itemType === 'Finding' && ratings.available ? (
+                  <RatingControl compact targetType="Finding" targetId={item.itemId} title={title} current={ratings.map[item.itemId] || null} onChange={(f) => ratings.set(item.itemId, f)} />
+                ) : null}
+              </View>
+            );
           })}
         </Card>
       ))}
@@ -198,9 +155,10 @@ function FileActions({ detail, onChanged }) {
 }
 
 /**
- * The briefing reader (plan section 21.3): title and status, audio, section navigation, the Markdown rendered with
- * native components, numbered citations that jump to the Sources section, the items it links to, pin, and share or
- * save the `.md` and `.html` files. A briefing that is still being composed polls until it is ready.
+ * The briefing reader (plan section 21.3): title and status, audio (make, listen, download, chapters), section
+ * navigation, the Markdown rendered with native components with the section being read aloud marked, numbered
+ * citations that jump to the Sources section, the items it links to with inline ratings on findings, pin, and share or
+ * save the `.md` and `.html` files. A briefing that is still being composed, or whose audio is being made, polls.
  */
 export function BriefingDetail({ id }) {
   const p = useTheme();
@@ -216,7 +174,9 @@ export function BriefingDetail({ id }) {
   const detail = resource.data;
   const briefing = detail && detail.briefing;
   const pending = Boolean(briefing && PENDING_BRIEFING_STATUSES.includes(briefing.status));
-  usePolling(resource.poll, pending);
+  const audioPending = Boolean(detail && detail.audio && PENDING_AUDIO_STATUSES.includes(detail.audio.status));
+  usePolling(resource.poll, pending || audioPending);
+  const { state: player } = usePlayer();
 
   const citationsHeadings = useMemo(() => ((detail && detail.sections) || []).filter((s) => s.source === 'citations').map((s) => s.heading), [detail]);
   const parsed = useMemo(
@@ -241,6 +201,7 @@ export function BriefingDetail({ id }) {
     setHighlight(null);
   };
 
+  const playingHeading = parsed && briefing ? playingHeadingId(player, briefing.id, detail.sections, parsed.blocks) : null;
   const navOptions = parsed ? parsed.outline.map((h) => ({ value: h.id, label: h.text, testID: 'nav-' + h.id })) : [];
 
   return (
@@ -274,7 +235,7 @@ export function BriefingDetail({ id }) {
                 </Banner>
               ) : null}
               {briefing.status === 'Failed' ? <Banner kind="danger" title={t('mobile.reader.failedTitle')}>{briefing.errorMessage || t('mobile.states.errorBody')}</Banner> : null}
-              <AudioActions briefing={{ ...briefing, editionName: detail.editionName }} />
+              <BriefingAudio detail={detail} onChanged={resource.setData} />
               <FileActions detail={detail} onChanged={resource.setData} />
               {navOptions.length > 1 ? (
                 <View style={{ gap: spacing.xs }}>
@@ -283,7 +244,7 @@ export function BriefingDetail({ id }) {
                 </View>
               ) : null}
               <View onLayout={(e) => (bodyY.current = e.nativeEvent.layout.y)}>
-                {parsed && parsed.blocks.length ? <Markdown blocks={parsed.blocks} onCite={onCite} onAnchor={(key, y) => (anchors.current[key] = y)} highlight={highlight} testID="briefing-body" /> : !pending ? <T variant="muted">{t('mobile.reader.empty')}</T> : null}
+                {parsed && parsed.blocks.length ? <Markdown blocks={parsed.blocks} onCite={onCite} onAnchor={(key, y) => (anchors.current[key] = y)} highlight={highlight} activeHeading={playingHeading} testID="briefing-body" /> : !pending ? <T variant="muted">{t('mobile.reader.empty')}</T> : null}
               </View>
               {highlight && parsed.sources[highlight.n] ? (
                 <Card testID="cited-source">
@@ -297,7 +258,7 @@ export function BriefingDetail({ id }) {
                 </Card>
               ) : null}
               <LinkedItems detail={detail} />
-              {briefing.status === 'Ready' ? <FeedbackBar targetType="Briefing" targetId={briefing.id} /> : null}
+              {briefing.status === 'Ready' ? <FeedbackBar targetType="Briefing" targetId={briefing.id} title={briefing.title} /> : null}
             </>
           )}
         </ResourceView>

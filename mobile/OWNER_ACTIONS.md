@@ -58,10 +58,10 @@ or tokens into this repository; they go into the consoles, EAS, or the password 
 ## Before public release
 
 14. **Decide whether the first public release waits for content.** Today and Topics now work against Phases 4 to 7
-    (briefings, topics, the wizard, requests, runs, findings, predictions, suggestions, editions); Insights, feedback,
-    and audio still show "This arrives in a later server update" until Phases 8 and 10 land. Apple Guideline 4.2 (minimum functionality)
-    and Google's equivalent will likely reject a build where most tabs are placeholders. Recommendation: TestFlight
-    and Play internal testing now, public submission after Phases 7, 8, and 14 (briefings, audio, account deletion).
+    (briefings, topics, the wizard, requests, runs, findings, predictions, suggestions, editions), and audio, feedback,
+    Insights, learned preferences, plans and codes, email preferences, and podcast feeds work against Phases 8 to 10.
+    Account deletion and export (Phase 14) are what still show "This arrives in a later server update"; both stores
+    require in-app deletion. Recommendation: TestFlight and Play internal testing now, public submission after Phase 14.
 15. **Account deletion route.** In-app deletion (`POST /v1.0/api/account/delete`, contract E) is required by both
     stores; until it ships, the app links to `https://mymorningnews.ai/delete-account.html`. Confirm that page works
     without the app and names the app and the developer (Google requirement).
@@ -92,4 +92,27 @@ or tokens into this repository; they go into the consoles, EAS, or the password 
     suggestions and the preview run in the wizard, the delivery step (recipients, template, model overrides), creating,
     duplicating, and deleting editions, choosing edition templates and voices, deleting and duplicating topics, cron,
     monthly, and every-N-weeks schedule editing, and retry from stage. Confirm, or ask for any of them in the app.
+
+## Audio, feedback, insights, plans (Phases 8 to 10 and section 33.2)
+
+24. **Check audio on devices.** On an iPhone and an Android phone, signed in to a server with the Kokoro TTS server
+    running: Make audio on a briefing, wait for it, Listen, lock the screen (title, artwork, play and pause, back 15,
+    forward 30 on the lock screen and in the Android media notification), switch apps for more than three minutes,
+    seek from the chapter list, and check that the section being read is marked in the reader. Then Download, turn on
+    airplane mode, and play it from Listen > Downloads. Jest covers the flow with a fake player; no device or
+    simulator was run for this change.
+25. **Podcast app handoff.** Create a feed in Account > Podcast feeds against the hosted HTTPS server and tap Open in
+    Podcasts on iOS (`podcast://`) and Android (`pcast://`; Pocket Casts, AntennaPod, or Podcast Addict must be
+    installed). Feeds on `http://127.0.0.1` or a LAN address show a warning, since podcast apps may fetch from their
+    own servers. Decide whether Android should name a specific app instead.
+26. **Promotional code links.** Decide where `https://app.mymorningnews.ai/redeem?code=...` links appear (email, the
+    website, social posts). The app maps it, and `mymorningnews://redeem?code=...`, to Account > Redeem a code with the
+    code filled in (the user still taps Redeem). Android has a `/redeem` intent filter; the
+    `apple-app-site-association` file from item 11 (the server does not publish one yet) must list `/redeem*` too.
+27. **Review the new screens** as part of item 17: Account > Plan and codes, Redeem a code, Email, Podcast feeds; the
+    briefing reader's audio panel and inline ratings; Listen; Insights > Relevance, Accuracy, Feedback (with the
+    history), and Learned preferences; and the rating chips and why sheet on findings, predictions, and suggestions.
+28. **QA promotional codes stay disabled.** The live contract test (`src/__tests__/live.test.js`) creates a one-use
+    `QA-MOBILE-...` code, redeems it as the demo user, then revokes the redemption and disables the code (codes with
+    history cannot be deleted). Delete or ignore those rows in `/admin/promo-codes` on shared servers.
 

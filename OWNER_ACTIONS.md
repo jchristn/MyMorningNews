@@ -23,8 +23,9 @@ Expo, Mailgun on latticetech.ai) are reused; only the app-specific items below a
 - [x] **Confirm the support address** `hello@latticetech.ai` (confirmed 2026-11-20).
 - [ ] **Website HTTPS:** in the `jchristn/mymorningnews.ai` repository, Settings, Pages, tick "Enforce HTTPS" once
   GitHub has issued the certificate for `www.mymorningnews.ai` as well.
-- [ ] **Decide the website's sign-up buttons** until the hosted service exists (Phase 14): keep them, point them at a
-  "Get notified" email link, or point them at GitHub for self-hosting.
+- [ ] **Decide the website's sign-up buttons** until the hosted service is live: keep them (they point at
+  `https://app.mymorningnews.ai/signup`, which works once the host is up), point them at a "Get notified" email
+  link, or point them at GitHub for self-hosting.
 
 ## Phase 8: Audio and podcasts
 
@@ -64,7 +65,14 @@ Expo, Mailgun on latticetech.ai) are reused; only the app-specific items below a
 - [ ] **Production secrets** in the host's `docker/.env`: a new signing key, a new admin API key, a new SearXNG
   secret, the Anthropic key, and the Mailgun key. Never reuse the development defaults.
 - [x] **Free-tier cap:** Free is $3 a month, 1 topic, daily schedules, 10 audio minutes, below Complimentary (decided 2026-11-20).
-- [ ] Optional: a **Cloudflare Turnstile** site key and secret for the sign-up form.
+- [ ] Optional: a **Cloudflare Turnstile** site key and secret for the sign-up form. Put them in the host's
+  `docker/.env` as `MYMORNINGNEWS_HOSTING_TURNSTILE_SITE_KEY` and `MYMORNINGNEWS_HOSTING_TURNSTILE_SECRET_KEY`.
+- [ ] **Universal links:** once Apple approves the business account, set `MYMORNINGNEWS_HOSTING_APPLE_TEAM_ID`. For
+  Android, copy the app signing SHA-256 fingerprint from Play Console (Setup, App signing) into
+  `hosting.androidCertificateFingerprints` in `docker/hosted/mymorningnews.json`.
+- [ ] **Start the hosted stack** by following [`docs/HOSTING.md`](docs/HOSTING.md). The server side of Phase 14 is
+  built and tested: sign-up, verification, password reset, deletion, export, plan caps, the platform key, and
+  private-network blocking. The hosted overlay turns them on.
 
 ## Phase 16: Mobile apps (iOS and Android, phone and tablet)
 

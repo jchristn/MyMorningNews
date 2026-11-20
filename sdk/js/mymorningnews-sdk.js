@@ -10,6 +10,8 @@
  * @module mymorningnews-sdk
  */
 
+import { createHash, createHmac, randomBytes } from 'node:crypto';
+
 /** SDK version. */
 export const SDK_VERSION = '0.1.0-alpha';
 
@@ -21,6 +23,9 @@ export const DEFAULT_TIMEOUT_MS = 30000;
 
 /** Run statuses after which a run no longer changes. */
 export const TERMINAL_RUN_STATUSES = Object.freeze(['Completed', 'PartiallySucceeded', 'Failed', 'Cancelled', 'Skipped']);
+
+/** Signed request algorithm name (the first line of the string to sign). */
+export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Type definitions for the main models. Property lists mirror the REST DTOs in src/MyMorningNews.Core.
@@ -35,6 +40,8 @@ export const TERMINAL_RUN_STATUSES = Object.freeze(['Completed', 'PartiallySucce
  * @property {string} [secretKey] Secret key sent as `x-secret-key`.
  * @property {string} [apiKey] Administration API key sent as `x-api-key`.
  * @property {string} [tenantId] Tenant sent as `x-tenant-guid` with access keys or the API key, and at login.
+ * @property {boolean} [signedRequests] Sign each request with the access key and secret (HMAC-SHA256) instead of
+ *   sending `x-secret-key`. Needs `accessKey`, `secretKey`, and `tenantId`. Default false.
  * @property {number} [timeoutMs] Per-request timeout. Default 30000. Minimum 1.
  * @property {typeof fetch} [fetch] Fetch implementation. Default `globalThis.fetch`.
  * @property {Record<string, string>} [headers] Extra headers sent on every request.
@@ -326,6 +333,8 @@ export const TERMINAL_RUN_STATUSES = Object.freeze(['Completed', 'PartiallySucce
  * @property {number} relevanceScore Relevance score (0 to 100).
  * @property {string} tier Tier (for example `MustRead`, `WorthALook`, `BelowThreshold`).
  * @property {boolean} isDuplicate Duplicate.
+ * @property {boolean} pinned Pinned by the user.
+ * @property {boolean} hidden Hidden by the user (left out of lists, briefings, and emails).
  * @property {string|null} publishedUtc Published.
  */
 
@@ -336,6 +345,75 @@ export const TERMINAL_RUN_STATUSES = Object.freeze(['Completed', 'PartiallySucce
  * @property {object[]} evidence Evidence with source URL, title, domain, and role.
  * @property {TopicDimension|null} dimension Dimension.
  * @property {string|null} topicName Topic name.
+ */
+
+/**
+ * One piece of evidence with its source.
+ * @typedef {object} EvidenceView
+ * @property {object} evidence Evidence (`id`, `sourceItemId`, `runId`, `quote`, `startOffset`, `endOffset`, `contextText`, `verified`, ...).
+ * @property {string|null} sourceUrl Source URL.
+ * @property {string|null} sourceTitle Source title.
+ * @property {string|null} sourceDomain Source domain.
+ * @property {string|null} sourcePublishedUtc Source published time.
+ * @property {string} role Role (`Supports` by default).
+ */
+
+/**
+ * A breakdown row in an analytics report.
+ * @typedef {object} BreakdownRow
+ * @property {string} key Key.
+ * @property {string|null} label Label.
+ * @property {number} count Count.
+ * @property {number} positive Positive count.
+ * @property {number|null} rate Rate.
+ * @property {number|null} value Value.
+ */
+
+/**
+ * Overview analytics report.
+ * @typedef {object} OverviewReport
+ * @property {string} fromUtc Window start.
+ * @property {string} toUtc Window end.
+ * @property {number} activeTopics Active topics.
+ * @property {number} runs Runs.
+ * @property {number} runsCompleted Completed runs.
+ * @property {number} runsPartiallySucceeded Partially succeeded runs.
+ * @property {number} runsFailed Failed runs.
+ * @property {number} findingsShown Findings shown.
+ * @property {number} findingsRated Findings rated.
+ * @property {number|null} relevancePrecision Relevance precision.
+ * @property {number} briefingsReady Ready briefings.
+ * @property {number} emailsSent Emails sent.
+ * @property {number} emailsFailed Emails failed.
+ * @property {number} predictionsOpen Open predictions.
+ * @property {number} predictionsResolved Resolved predictions.
+ * @property {number|null} predictionAccuracy Prediction accuracy.
+ * @property {number|null} meanBrier Mean Brier score.
+ * @property {number} feedbackTotal Feedback count.
+ * @property {number} feedbackWithReason Feedback with a reason.
+ * @property {number} suggestionsNew New suggestions.
+ * @property {number} suggestionsAccepted Accepted suggestions.
+ * @property {number|null} quoteFailureRate Quote verification failure rate.
+ * @property {number} modelCalls Model calls.
+ * @property {number} modelCostUsd Model cost.
+ */
+
+/**
+ * Email analytics report.
+ * @typedef {object} EmailReport
+ * @property {number} total Emails.
+ * @property {number} sent Sent.
+ * @property {number} failed Failed.
+ * @property {number} pending Pending.
+ * @property {number} skipped Skipped.
+ * @property {number|null} deliveryRate Delivery rate.
+ * @property {number|null} meanSecondsToSend Mean seconds from queue to send.
+ * @property {BreakdownRow[]} byTemplate By template.
+ * @property {BreakdownRow[]} byDay By day.
+ * @property {BreakdownRow[]} byStatus By status.
+ * @property {number} feedbackLinkOpens Feedback link opens.
+ * @property {number} feedbackLinkSubmits Feedback link submits.
+ * @property {number} unsubscribes Unsubscribes.
  */
 
 /**
@@ -387,7 +465,7 @@ export const TERMINAL_RUN_STATUSES = Object.freeze(['Completed', 'PartiallySucce
  * @property {string|null} accuracy Accuracy rating.
  * @property {string|null} usefulness Usefulness rating.
  * @property {string|null} reason Reason.
- * @property {string} channel Channel.
+ * @property {string} channel Channel (`Dashboard`, `Email`, `Mobile`, `Api`, or `Mcp`).
  * @property {boolean} isCurrent Current rating.
  */
 
@@ -764,6 +842,49 @@ function delay(ms, signal) {
         }
         signal?.addEventListener('abort', onAbort, { once: true });
     });
+}
+
+/**
+ * Build the string a signed request signs.
+ * @param {object} input Parts of the request.
+ * @param {string} input.method HTTP method (uppercased).
+ * @param {string} input.pathAndQuery Path and query exactly as sent, for example `/v1.0/api/topics?pageSize=1`.
+ * @param {string} input.tenantId Tenant sent in `x-tenant-guid`.
+ * @param {string} input.date Value of `x-date` (ISO 8601 UTC).
+ * @param {string} input.nonce Value of `x-nonce` (8 to 128 characters).
+ * @param {string|Uint8Array|null} [input.body] Body exactly as sent; empty when omitted.
+ * @returns {string} `MMN1-HMAC-SHA256\n{METHOD}\n{pathAndQuery}\n{tenant}\n{date}\n{nonce}\n{sha256 hex of body}`.
+ * @throws {TypeError} A required part is missing.
+ */
+export function stringToSign(input) {
+    requireValue(input, 'input');
+    const bodyHash = createHash('sha256').update(input.body ?? '').digest('hex');
+    return [
+        SIGNATURE_ALGORITHM,
+        String(requireValue(input.method, 'method')).toUpperCase(),
+        requireValue(input.pathAndQuery, 'pathAndQuery'),
+        requireValue(input.tenantId, 'tenantId'),
+        requireValue(input.date, 'date'),
+        requireValue(input.nonce, 'nonce'),
+        bodyHash
+    ].join('\n');
+}
+
+/**
+ * Compute a request signature: lowercase hex HMAC-SHA256 of {@link stringToSign}, keyed with the UTF-8 secret.
+ * @param {object} input Parts of the request, as for {@link stringToSign}, plus the secret.
+ * @param {string} input.secretKey Secret key.
+ * @returns {string} Signature for `x-signature`.
+ * @throws {TypeError} A required part is missing.
+ */
+export function signRequest(input) {
+    requireValue(input, 'input');
+    const secret = requireValue(input.secretKey, 'secretKey');
+    return createHmac('sha256', Buffer.from(String(secret), 'utf8')).update(stringToSign(input), 'utf8').digest('hex');
+}
+
+function signingDate(now = new Date()) {
+    return now.toISOString().replace(/\.\d{3}Z$/, 'Z');
 }
 
 /**
@@ -1453,6 +1574,16 @@ export class RunsResource extends ResourceGroup {
     }
 
     /**
+     * A run's model calls, oldest first unless `sortDirection` is given.
+     * @param {string} id Run.
+     * @param {ListOptions} [options] Paging options.
+     * @returns {Promise<EnumerationResult<LlmCall>>} Page.
+     */
+    llmCalls(id, options = {}) {
+        return this._req('GET', this._path(id, '/llm-calls'), { query: options });
+    }
+
+    /**
      * Render the run digest email without sending it.
      * @param {string} id Run.
      * @returns {Promise<object>} Rendered email.
@@ -1506,7 +1637,8 @@ export class RunsResource extends ResourceGroup {
  */
 export class FindingsResource extends ResourceGroup {
     /**
-     * List findings. Filters: `topicId`, `runId`, `tier`, `category`, `includeDuplicates`, `includeDryRun`, `minScore`, `dimensionId`, `includeBelowThreshold`.
+     * List findings. Filters: `topicId`, `runId`, `tier`, `category`, `includeDuplicates`, `includeDryRun`, `minScore`,
+     * `dimensionId`, `includeBelowThreshold`, `includeHidden`, `pinned`. Hidden findings are left out unless `includeHidden`.
      * @param {ListOptions & Record<string, any>} [options] Options.
      * @returns {Promise<EnumerationResult<Finding>>} Page.
      */
@@ -1518,6 +1650,86 @@ export class FindingsResource extends ResourceGroup {
      * Read a finding with its evidence and score breakdown.
      * @param {string} id Finding.
      * @returns {Promise<FindingDetail>} Detail.
+     */
+    get(id) {
+        return this._req('GET', this._path(id));
+    }
+
+    /**
+     * Pin or hide a finding. Hidden findings are left out of lists (unless `includeHidden`), briefings, and emails.
+     * @param {string} id Finding.
+     * @param {{ pinned?: boolean, hidden?: boolean }} body At least one of `pinned` and `hidden`.
+     * @returns {Promise<Finding>} Finding.
+     */
+    update(id, body) {
+        return this._req('PUT', this._path(id), { body: requireValue(body, 'body') });
+    }
+
+    /**
+     * Pin or unpin a finding.
+     * @param {string} id Finding.
+     * @param {boolean} [pinned] Default true.
+     * @returns {Promise<Finding>} Finding.
+     */
+    pin(id, pinned = true) {
+        return this.update(id, { pinned: pinned !== false });
+    }
+
+    /**
+     * Unpin a finding.
+     * @param {string} id Finding.
+     * @returns {Promise<Finding>} Finding.
+     */
+    unpin(id) {
+        return this.pin(id, false);
+    }
+
+    /**
+     * Hide or show a finding.
+     * @param {string} id Finding.
+     * @param {boolean} [hidden] Default true.
+     * @returns {Promise<Finding>} Finding.
+     */
+    hide(id, hidden = true) {
+        return this.update(id, { hidden: hidden !== false });
+    }
+
+    /**
+     * Show a hidden finding.
+     * @param {string} id Finding.
+     * @returns {Promise<Finding>} Finding.
+     */
+    unhide(id) {
+        return this.hide(id, false);
+    }
+
+    /**
+     * Delete a finding.
+     * @param {string} id Finding.
+     * @returns {Promise<null>} Resolves when deleted.
+     */
+    remove(id) {
+        return this._req('DELETE', this._path(id));
+    }
+
+    /**
+     * Read one piece of evidence with its source (same as `evidence.get`).
+     * @param {string} evidenceId Evidence.
+     * @returns {Promise<EvidenceView>} Evidence.
+     */
+    getEvidence(evidenceId) {
+        return this._client.evidence.get(evidenceId);
+    }
+}
+
+/**
+ * Evidence (read only, owner only).
+ */
+export class EvidenceResource extends ResourceGroup {
+    /**
+     * Read one piece of evidence with its source.
+     * @param {string} id Evidence.
+     * @returns {Promise<EvidenceView>} Evidence.
      */
     get(id) {
         return this._req('GET', this._path(id));
@@ -2357,12 +2569,30 @@ export class EmailResource extends ResourceGroup {
 export class AnalyticsResource extends ResourceGroup {
     /**
      * Read a named report.
-     * @param {'relevance'|'accuracy'|'feedback'|'reasons'|'suggestions'|'quality'} report Report.
+     * @param {'overview'|'relevance'|'accuracy'|'feedback'|'reasons'|'suggestions'|'quality'|'email'} report Report.
      * @param {{ topicId?: string, from?: string|Date, to?: string|Date, userId?: string, all?: boolean }} [options] Options.
      * @returns {Promise<object>} Report.
      */
     report(report, options = {}) {
         return this._req('GET', this._base + '/' + seg(report, 'report'), { query: options });
+    }
+
+    /**
+     * Overview analytics (runs, findings, briefings, email, predictions, feedback, suggestions, model cost).
+     * @param {object} [options] Options.
+     * @returns {Promise<OverviewReport>} Report.
+     */
+    overview(options = {}) {
+        return this.report('overview', options);
+    }
+
+    /**
+     * Email delivery and engagement analytics.
+     * @param {object} [options] Options.
+     * @returns {Promise<EmailReport>} Report.
+     */
+    email(options = {}) {
+        return this.report('email', options);
     }
 
     /**
@@ -2384,7 +2614,7 @@ export class AnalyticsResource extends ResourceGroup {
     }
 
     /**
-     * Feedback analytics.
+     * Feedback analytics (includes `byChannelDay`).
      * @param {object} [options] Options.
      * @returns {Promise<object>} Report.
      */
@@ -2785,11 +3015,12 @@ export class MyMorningNewsClient {
      */
     constructor(options = {}) {
         const {
-            baseUrl = DEFAULT_BASE_URL, token, accessKey, secretKey, apiKey, tenantId, timeoutMs, fetch: fetchImpl, headers
+            baseUrl = DEFAULT_BASE_URL, token, accessKey, secretKey, apiKey, tenantId, timeoutMs, fetch: fetchImpl, headers, signedRequests = false
         } = options;
         const f = fetchImpl ?? globalThis.fetch;
         if (typeof f !== 'function') throw new TypeError('No fetch implementation is available. Use Node 20 or later, or pass options.fetch.');
         if (accessKey && !secretKey) throw new TypeError('accessKey requires secretKey.');
+        if (signedRequests && !(accessKey && secretKey && tenantId)) throw new TypeError('signedRequests requires accessKey, secretKey, and tenantId.');
         /** @private */
         this._fetch = fetchImpl ? fetchImpl : (...args) => globalThis.fetch(...args);
         /** @type {string} Server base URL without a trailing slash. */
@@ -2809,6 +3040,8 @@ export class MyMorningNewsClient {
         this.timeoutMs = timeoutMs ?? DEFAULT_TIMEOUT_MS;
         /** @private */
         this._headers = { ...(headers ?? {}) };
+        /** @type {boolean} Sign requests with the access key instead of sending the secret. */
+        this.signedRequests = Boolean(signedRequests);
 
         /** @type {TopicsResource} */
         this.topics = new TopicsResource(this, '/v1.0/api/topics');
@@ -2822,6 +3055,8 @@ export class MyMorningNewsClient {
         this.runs = new RunsResource(this, '/v1.0/api/runs');
         /** @type {FindingsResource} */
         this.findings = new FindingsResource(this, '/v1.0/api/findings');
+        /** @type {EvidenceResource} */
+        this.evidence = new EvidenceResource(this, '/v1.0/api/evidence');
         /** @type {SourcesResource} */
         this.sources = new SourcesResource(this, '/v1.0/api/sources');
         /** @type {PredictionsResource} */
@@ -3050,13 +3285,13 @@ export class MyMorningNewsClient {
         const timeoutMs = options.timeoutMs !== undefined ? Math.max(1, Number(options.timeoutMs)) : this._timeoutMs;
         const url = this._url(path, query);
         const h = { Accept: raw ? '*/*' : 'application/json', ...this._headers };
-        if (auth) Object.assign(h, this._authHeaders());
-        if (headers) Object.assign(h, headers);
         let payload;
         if (body !== undefined && body !== null) {
             h['Content-Type'] = 'application/json';
             payload = JSON.stringify(body);
         }
+        if (auth) Object.assign(h, this._authHeaders(method, url, payload));
+        if (headers) Object.assign(h, headers);
         if (range) h.Range = formatRange(range);
 
         const controller = new AbortController();
@@ -3114,10 +3349,23 @@ export class MyMorningNewsClient {
     }
 
     /** @private */
-    _authHeaders() {
+    _authHeaders(method, url, payload) {
         const h = {};
         if (this.token) {
             h.Authorization = 'Bearer ' + this.token;
+            return h;
+        }
+        if (this.signedRequests && this.accessKey && this._secretKey && this.tenantId) {
+            const u = new URL(url);
+            const date = signingDate();
+            const nonce = randomBytes(16).toString('hex');
+            h['x-access-key'] = this.accessKey;
+            h['x-tenant-guid'] = this.tenantId;
+            h['x-date'] = date;
+            h['x-nonce'] = nonce;
+            h['x-signature'] = signRequest({
+                method, pathAndQuery: u.pathname + u.search, tenantId: this.tenantId, date, nonce, body: payload ?? '', secretKey: this._secretKey
+            });
             return h;
         }
         if (this.accessKey && this._secretKey) {

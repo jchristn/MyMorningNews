@@ -227,6 +227,11 @@ namespace Test.Shared.Suites
             RefinementStateResponse s = (await ta.Client.PostAsync("/v1.0/api/refinement-sessions", new { seedText = "Quantum networking" }, token).ConfigureAwait(false)).Json<RefinementStateResponse>();
             (await ta.Client.PostAsync("/v1.0/api/refinement-sessions/" + s.Session.Id + "/abandon", null, token).ConfigureAwait(false)).Expect(204, "abandon");
             (await ta.Client.GetAsync("/v1.0/api/topics/" + s.Topic.Id, token).ConfigureAwait(false)).Expect(404, "draft topic deleted");
+            Topic existing = (await ta.Client.PostAsync("/v1.0/api/topics", new { name = "Existing draft " + Guid.NewGuid().ToString("N").Substring(0, 6) }, token).ConfigureAwait(false)).Expect(201, "existing draft").Json<Topic>();
+            Assert.Equal(TopicStatusEnum.Draft, existing.Status, "created as a draft");
+            RefinementStateResponse again = (await ta.Client.PostAsync("/v1.0/api/topics/" + existing.Id + "/refine", null, token).ConfigureAwait(false)).Json<RefinementStateResponse>();
+            (await ta.Client.PostAsync("/v1.0/api/refinement-sessions/" + again.Session.Id + "/abandon", null, token).ConfigureAwait(false)).Expect(204, "abandon refining an existing topic");
+            (await ta.Client.GetAsync("/v1.0/api/topics/" + existing.Id, token).ConfigureAwait(false)).Expect(200, "an existing topic survives an abandoned refinement");
         }
 
         private static async Task RequestFlowAsync(CancellationToken token)

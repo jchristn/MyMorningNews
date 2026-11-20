@@ -41,6 +41,8 @@ namespace MyMorningNews.Core.Services
 
         #region Private-Members
 
+        private const string _ExistingTopicPrefix = "Refining the existing topic \"";
+
         private const int _MaxChildren = 500;
         private readonly DatabaseDriverBase _Database;
         private readonly PromptService _Prompts;
@@ -135,7 +137,7 @@ namespace MyMorningNews.Core.Services
                 Known = Clean(topic.Brief, 4000),
                 Step = RefinementStepEnum.Dimensions
             }, token).ConfigureAwait(false);
-            await AddMessageAsync(session, MessageRoleEnum.System, "Refining the existing topic \"" + topic.Name + "\".", null, token).ConfigureAwait(false);
+            await AddMessageAsync(session, MessageRoleEnum.System, _ExistingTopicPrefix + topic.Name + "\".", null, token).ConfigureAwait(false);
             return await GetStateAsync(tenantId, session.Id, token).ConfigureAwait(false);
         }
 
@@ -474,8 +476,15 @@ namespace MyMorningNews.Core.Services
             return await GetStateAsync(tenantId, sessionId, token).ConfigureAwait(false);
         }
 
+        private async Task<bool> RefinesExistingTopicAsync(RefinementSession session, CancellationToken token)
+        {
+            List<RefinementMessage> messages = (await _Database.RefinementMessages.EnumerateAsync(new RefinementMessageFilter { TenantId = session.TenantId, SessionId = session.Id, PageSize = 20 }, token).ConfigureAwait(false)).Items;
+            return messages.Any(m => m.Role == MessageRoleEnum.System && m.Content.StartsWith(_ExistingTopicPrefix, StringComparison.Ordinal));
+        }
+
         /// <summary>
-        /// Abandon a session. A Draft topic that was created for it is deleted.
+        /// Abandon a session. A Draft topic that was created for it is deleted; a topic that existed before the session
+        /// (refined again through the topic's refine route) is kept.
         /// </summary>
         /// <param name="tenantId">Tenant.</param>
         /// <param name="sessionId">Session.</param>
@@ -486,7 +495,7 @@ namespace MyMorningNews.Core.Services
             RefinementSession? session = await _Database.RefinementSessions.ReadAsync(tenantId, sessionId, token).ConfigureAwait(false);
             if (session == null || session.Status != RefinementStatusEnum.Active) return false;
             Topic? topic = await _Database.Topics.ReadAsync(tenantId, session.TopicId, token).ConfigureAwait(false);
-            if (topic != null && topic.Status == TopicStatusEnum.Draft && !topic.IsOneTime)
+            if (topic != null && topic.Status == TopicStatusEnum.Draft && !topic.IsOneTime && !await RefinesExistingTopicAsync(session, token).ConfigureAwait(false))
             {
                 await _Database.Topics.DeleteCascadeAsync(tenantId, topic.Id, token).ConfigureAwait(false);
                 return true;

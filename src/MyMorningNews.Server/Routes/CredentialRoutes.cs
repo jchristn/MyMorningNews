@@ -126,7 +126,7 @@ namespace MyMorningNews.Server.Routes
             if (req.ExpiresUtc.HasValue) credential.ExpiresUtc = req.ExpiresUtc;
             if (req.Active.HasValue) credential.Active = req.Active.Value;
             credential = await Server.Database.Credentials.UpdateAsync(credential, ctx.Token).ConfigureAwait(false);
-            await ChangedAsync(ctx, AuditEventTypeEnum.CredentialCreated, "Credential " + credential.Id + " updated.", 200, "credential_updated").ConfigureAwait(false);
+            await ChangedAsync(ctx, AuditEventTypeEnum.CredentialUpdated, "Credential " + credential.Id + " updated.", 200, "credential_updated").ConfigureAwait(false);
             await SendJsonAsync(ctx, 200, CredentialResponse.FromModel(credential)).ConfigureAwait(false);
         }
 
@@ -150,7 +150,7 @@ namespace MyMorningNews.Server.Routes
             }
 
             await Server.Database.Credentials.DeleteAsync(tenantId, id, ctx.Token).ConfigureAwait(false);
-            await ChangedAsync(ctx, AuditEventTypeEnum.CredentialRevoked, "Credential " + id + " deleted.", 204, "credential_rotated").ConfigureAwait(false);
+            await ChangedAsync(ctx, AuditEventTypeEnum.CredentialRevoked, "Credential " + id + " deleted.", 204, "credential_deleted").ConfigureAwait(false);
             await SendJsonAsync(ctx, 204, null).ConfigureAwait(false);
         }
 

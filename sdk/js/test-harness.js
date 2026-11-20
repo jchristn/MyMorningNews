@@ -15,7 +15,8 @@
  */
 
 import {
-    MyMorningNewsClient, MyMorningNewsError, TenantSelectionRequiredError, RunsResource, paginate, SDK_VERSION, DEFAULT_BASE_URL
+    MyMorningNewsClient, MyMorningNewsError, TenantSelectionRequiredError, RunsResource, paginate, SDK_VERSION, DEFAULT_BASE_URL,
+    signRequest, stringToSign, SIGNATURE_ALGORITHM
 } from './mymorningnews-sdk.js';
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -349,6 +350,85 @@ async function main() {
         await expectError(new MyMorningNewsClient({ baseUrl: OPTS.baseUrl, accessKey: created.credential.accessKey, secretKey: 'wrong-' + STAMP, tenantId: OPTS.tenant }).me(), 401);
     });
 
+    await run('signed requests: known vector (offline)', async () => {
+        const input = { method: 'GET', pathAndQuery: '/v1.0/api/topics?pageSize=1', tenantId: 'default', date: '2026-01-01T00:00:00Z', nonce: 'nonce-12345678', body: '' };
+        assertEqual(signRequest({ ...input, secretKey: 'secret_test' }), '230d17d0e29816b3bec0fd251a730c14a192f0994792062dbebb7512589aae24', 'known signature');
+        const lines = stringToSign(input).split('\n');
+        assertEqual(lines.length, 7, 'seven lines');
+        assertEqual(lines[0], SIGNATURE_ALGORITHM, 'algorithm line');
+        assertEqual(lines[6], 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', 'empty body hash');
+        assertEqual(signRequest({ ...input, method: 'get', secretKey: 'secret_test' }), signRequest({ ...input, secretKey: 'secret_test' }), 'method is uppercased');
+        assert(signRequest({ ...input, secretKey: 'secret_other' }) !== signRequest({ ...input, secretKey: 'secret_test' }), 'secret changes the signature');
+    });
+
+    await run('signed requests: client headers (offline)', async () => {
+        let threw = false;
+        try {
+            new MyMorningNewsClient({ accessKey: 'ak', secretKey: 'sk', signedRequests: true });
+        } catch (err) {
+            threw = err instanceof TypeError;
+        }
+        assert(threw, 'signedRequests without tenantId is a TypeError');
+        const seen = [];
+        const fake = new MyMorningNewsClient({
+            baseUrl: 'http://127.0.0.1:1', accessKey: 'ak_test', secretKey: 'secret_test', tenantId: 'default', signedRequests: true,
+            fetch: async (url, init) => {
+                seen.push({ url, init });
+                return new Response('{"items":[],"pageNumber":1,"pageSize":1,"totalCount":0,"totalPages":0,"durationMs":0}', { status: 200, headers: { 'content-type': 'application/json' } });
+            }
+        });
+        await fake.topics.list({ pageSize: 1, search: 'a b' });
+        await fake.schedules.preview({ intervalType: 'EveryNDays', intervalValue: 1 });
+        await fake.topics.list({ pageSize: 1 });
+        for (const { url, init } of seen) {
+            const h = init.headers;
+            assert(!('x-secret-key' in h), 'secret is not sent');
+            assertEqual(h['x-access-key'], 'ak_test', 'access key sent');
+            assertEqual(h['x-tenant-guid'], 'default', 'tenant sent');
+            assert(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(h['x-date']), 'x-date is ISO 8601 UTC');
+            assert(h['x-nonce'].length >= 8 && h['x-nonce'].length <= 128, 'nonce length');
+            const u = new URL(url);
+            const expected = signRequest({ method: init.method, pathAndQuery: u.pathname + u.search, tenantId: 'default', date: h['x-date'], nonce: h['x-nonce'], body: init.body ?? '', secretKey: 'secret_test' });
+            assertEqual(h['x-signature'], expected, 'signature over ' + init.method + ' ' + u.pathname + u.search);
+        }
+        assert(seen[0].init.headers['x-nonce'] !== seen[2].init.headers['x-nonce'], 'nonces are unique');
+    });
+
+    await run('signed requests: live credential', async () => {
+        if (!S.isAdmin) skip('signed-in user cannot create credentials');
+        const created = await client.request('POST', '/v1.0/tenants/' + encodeURIComponent(OPTS.tenant) + '/credentials', {
+            body: { userId: S.userId, name: name('signed-credential'), authMode: 'SignedRequest' }
+        });
+        const credId = created.credential.id;
+        const credPath = '/v1.0/tenants/' + encodeURIComponent(OPTS.tenant) + '/credentials/' + encodeURIComponent(credId);
+        onCleanup('signed credential', () => client.request('DELETE', credPath));
+        const accessKey = created.credential.accessKey;
+        const signed = new MyMorningNewsClient({ baseUrl: OPTS.baseUrl, accessKey, secretKey: created.secretKey, tenantId: OPTS.tenant, signedRequests: true });
+        assertEqual((await signed.me()).id, S.userId, 'signed GET acts as the user');
+        assertEqual((await signed.tokenDetails()).credentialId, credId, 'principal is the credential');
+        const page = await signed.topics.list({ pageSize: 1, search: 'SDK js signed' });
+        assertPage(page, 'signed GET with a query');
+        const preview = await signed.schedules.preview({ intervalType: 'EveryNDays', intervalValue: 1, timesOfDay: ['07:00'], previewCount: 2 });
+        assertEqual(preview.valid, true, 'signed POST with a body');
+
+        const path = '/v1.0/api/me';
+        const date = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+        const nonce = 'sdkjs-' + STAMP + '-replay';
+        const headers = {
+            'x-access-key': accessKey, 'x-tenant-guid': OPTS.tenant, 'x-date': date, 'x-nonce': nonce,
+            'x-signature': signRequest({ method: 'GET', pathAndQuery: path, tenantId: OPTS.tenant, date, nonce, body: '', secretKey: created.secretKey })
+        };
+        const raw = new MyMorningNewsClient({ baseUrl: OPTS.baseUrl });
+        assertEqual((await raw.request('GET', path, { headers, auth: false })).id, S.userId, 'hand-signed request accepted');
+        await expectError(raw.request('GET', path, { headers, auth: false }), 401, 'Unauthorized');
+        const tampered = { ...headers, 'x-nonce': nonce + '-2', 'x-signature': '0'.repeat(64) };
+        await expectError(raw.request('GET', path, { headers: tampered, auth: false }), 401, 'Unauthorized');
+        const wrongSecret = new MyMorningNewsClient({ baseUrl: OPTS.baseUrl, accessKey, secretKey: 'wrong-' + STAMP, tenantId: OPTS.tenant, signedRequests: true });
+        await expectError(wrongSecret.me(), 401, 'Unauthorized');
+        await client.request('DELETE', credPath);
+        await expectError(signed.me(), 401, 'Unauthorized');
+    });
+
     // ---- Topics ----------------------------------------------------------------------------------------------------
 
     await run('topics.create', async () => {
@@ -612,6 +692,26 @@ async function main() {
         assertEqual(waited.id, r.id, 'wait returns a finished run at once');
     });
 
+    await run('runs.llmCalls (paged, oldest first)', async () => {
+        await expectError(client.runs.llmCalls(bogus('run')), 404, 'NotFound');
+        const page = await client.runs.list({ pageSize: 20 });
+        let checked = 0;
+        for (const r of page.items) {
+            const calls = await client.runs.llmCalls(r.id, { pageSize: 50 });
+            assertPage(calls, 'runs.llmCalls');
+            assert(calls.items.every((c) => c.runId === r.id), 'calls belong to the run');
+            for (let i = 1; i < calls.items.length; i++) assert(calls.items[i - 1].createdUtc <= calls.items[i].createdUtc, 'oldest first');
+            if (calls.items.length > 1) {
+                const desc = await client.runs.llmCalls(r.id, { pageSize: 50, sortDirection: 'Descending' });
+                assert(desc.items[0].createdUtc >= desc.items[desc.items.length - 1].createdUtc, 'sortDirection honoured');
+                checked++;
+                break;
+            }
+        }
+        if (page.items.length === 0) skip('no runs');
+        verbose('runs with several model calls checked: ' + checked);
+    });
+
     await run('runs.wait times out with a typed error', async () => {
         let calls = 0;
         const fake = new MyMorningNewsClient({
@@ -647,6 +747,42 @@ async function main() {
             const d = await client.findings.get(page.items[0].id);
             assertEqual(d.finding.id, page.items[0].id, 'finding read back');
             assert(Array.isArray(d.evidence), 'evidence array');
+        }
+    });
+
+    await run('findings update, hide, pin, remove (missing finding)', async () => {
+        await expectError(client.findings.update(bogus('fnd'), { pinned: true }), 404, 'NotFound');
+        await expectError(client.findings.hide(bogus('fnd')), 404, 'NotFound');
+        await expectError(client.findings.remove(bogus('fnd')), 404, 'NotFound');
+        await expectError(client.evidence.get(bogus('evd')), 404, 'NotFound');
+        await expectError(client.findings.getEvidence(bogus('evd')), 404, 'NotFound');
+        const hidden = await client.findings.list({ includeHidden: true, pinned: true, includeBelowThreshold: true, pageSize: 5 });
+        assertPage(hidden, 'findings.list with includeHidden and pinned');
+        assert(hidden.items.every((f) => f.pinned === true), 'pinned filter applied');
+    });
+
+    await run('findings pin and hide on a real finding', async () => {
+        const page = await client.findings.list({ includeBelowThreshold: true, includeDryRun: true, pageSize: 1 });
+        if (page.items.length === 0) skip('no findings to edit');
+        const f = page.items[0];
+        const was = { pinned: Boolean(f.pinned), hidden: Boolean(f.hidden) };
+        try {
+            await expectError(client.findings.update(f.id, {}), 400, 'ValidationFailed');
+            assertEqual((await client.findings.pin(f.id)).pinned, true, 'pinned');
+            assertEqual((await client.findings.unpin(f.id)).pinned, false, 'unpinned');
+            assertEqual((await client.findings.hide(f.id)).hidden, true, 'hidden');
+            const def = await client.findings.list({ runId: f.runId, includeBelowThreshold: true, includeDryRun: true, pageSize: 200 });
+            assert(!def.items.some((x) => x.id === f.id), 'hidden finding left out by default');
+            const all = await client.findings.list({ runId: f.runId, includeBelowThreshold: true, includeDryRun: true, includeHidden: true, pageSize: 200 });
+            assert(all.items.some((x) => x.id === f.id), 'includeHidden lists it');
+            assertEqual((await client.findings.unhide(f.id)).hidden, false, 'shown again');
+            const d = await client.findings.get(f.id);
+            if (d.evidence.length > 0) {
+                const ev = await client.evidence.get(d.evidence[0].evidence.id);
+                assertEqual(ev.evidence.id, d.evidence[0].evidence.id, 'evidence read back');
+            }
+        } finally {
+            await client.findings.update(f.id, was).catch(() => null);
         }
     });
 
@@ -716,6 +852,15 @@ async function main() {
         const after = await client.feedback.list({ targetId: target.id, includeHistory: true });
         assert(!after.items.some((x) => x.id === f.id), 'feedback retracted');
         await expectError(client.feedback.update(f.id, { reason: 'gone' }), 404, 'NotFound');
+    });
+
+    await run('feedback channel Mcp', async () => {
+        const f = await client.feedback.submit({ targetType: 'Domain', targetId: 'sdk-js-mcp-' + STAMP + '.example.test', action: 'not-relevant', channel: 'Mcp' });
+        onCleanup('mcp feedback', () => client.feedback.remove(f.id));
+        assertEqual(f.channel, 'Mcp', 'channel saved');
+        const page = await client.feedback.list({ channel: 'Mcp', targetId: f.targetId });
+        assert(page.items.some((x) => x.id === f.id), 'listed by channel');
+        await client.feedback.remove(f.id);
     });
 
     await run('feedback without a rating or reason is a typed 400', async () => {
@@ -1013,6 +1158,20 @@ async function main() {
             assert(report && typeof report === 'object', r + ' report');
         }
         await expectError(client.analytics.relevance({ topicId: bogus('top') }), 404, 'NotFound');
+    });
+
+    await run('analytics overview, email, feedback byChannelDay', async () => {
+        const o = await client.analytics.overview({ from: new Date(Date.now() - 30 * 86400000) });
+        for (const k of ['activeTopics', 'runs', 'runsCompleted', 'findingsShown', 'briefingsReady', 'emailsSent', 'feedbackTotal', 'modelCalls', 'modelCostUsd']) {
+            assert(typeof o[k] === 'number', 'overview.' + k + ' is a number');
+        }
+        assert(typeof o.fromUtc === 'string' && typeof o.toUtc === 'string', 'overview window');
+        const e = await client.analytics.email();
+        for (const k of ['total', 'sent', 'failed', 'pending', 'skipped', 'unsubscribes']) assert(typeof e[k] === 'number', 'email.' + k + ' is a number');
+        assert(Array.isArray(e.byTemplate) && Array.isArray(e.byDay) && Array.isArray(e.byStatus), 'email breakdowns');
+        const fb = await client.analytics.feedback();
+        assert(Array.isArray(fb.byChannelDay), 'feedback.byChannelDay');
+        assert(typeof (await client.analytics.report('overview')) === 'object', 'report by name');
     });
 
     await run('usage.me, report, timeseries', async () => {

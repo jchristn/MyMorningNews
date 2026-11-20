@@ -126,6 +126,11 @@ namespace MyMorningNews.Sdk.Enums
         /// <summary>
         /// A plan or plan assignment changed.
         /// </summary>
-        PlanChanged
+        PlanChanged,
+
+        /// <summary>
+        /// A credential's name, scopes, or expiry changed.
+        /// </summary>
+        CredentialUpdated
     }
 }

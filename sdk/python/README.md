@@ -51,7 +51,7 @@ The default base URL is `http://127.0.0.1:12100`.
 - **Models.** Responses are dataclasses (`Topic`, `Run`, `Finding`, `Briefing`, and so on). Every field is optional. Dates are ISO 8601 UTC strings and enums are their string names. Each model keeps the full JSON in `model.raw`, and `model["camelCaseKey"]` or `model.get("snake_key")` reads fields this SDK version does not declare. `model.to_dict()` returns the camelCase JSON.
 - **Enums.** String enums such as `TopicStatus`, `RunStatus`, `FeedbackTargetType`, `RelevanceRating`, `IntervalType`, and `ModelProvider` are provided. Plain strings work everywhere too.
 - **Python keywords.** Filters named `from` and `all` are passed as `from_` and `all_`.
-- **Less common responses** (analytics reports, ranking recommendations, search tests, email previews, prompt lab results, settings) are returned as plain dicts with the server's camelCase keys. Each method's docstring says so.
+- **Less common responses** (most analytics reports, ranking recommendations, search tests, email previews, prompt lab results, settings) are returned as plain dicts with the server's camelCase keys. Each method's docstring says so.
 
 ## Authentication
 
@@ -68,10 +68,37 @@ client = MyMorningNewsClient(access_key="ak_...", secret_key="sk_...", tenant_id
 # Or reuse an existing bearer token.
 client = MyMorningNewsClient(token=saved_token)
 
+# Or sign every request with the secret instead of sending it (MMN1-HMAC-SHA256).
+client = MyMorningNewsClient(access_key="ak_...", secret_key="sk_...", tenant_id="default", signed_requests=True)
+
 client.token_details()   # TokenDetails: principal, tenant, admin flags, issued and expiry times
 client.validate_token()  # GET /v1.0/token
 client.refresh()         # new token; the old one is revoked
 client.logout()          # DELETE /v1.0/token, forgets the token
+```
+
+### Signed requests
+
+With `signed_requests=True` (which needs `access_key`, `secret_key`, and `tenant_id`), the client sends `x-access-key`, `x-tenant-guid`, `x-date` (ISO 8601 UTC), `x-nonce` (a fresh random value), and `x-signature` instead of `x-secret-key`. The signature is the lowercase hex HMAC-SHA256, keyed with the UTF-8 secret, of:
+
+```
+MMN1-HMAC-SHA256
+{METHOD}
+{path and query exactly as sent}
+{tenant}
+{x-date}
+{x-nonce}
+{lowercase hex SHA-256 of the body bytes}
+```
+
+The client prepares each request first and signs the exact path, query string, and body bytes that go on the wire. The server rejects a reused nonce or an `x-date` outside its allowed clock skew. A session token, when set, takes precedence over signing. The helpers `sign_request`, `string_to_sign`, and `body_sha256` are public if you need to sign requests yourself:
+
+```python
+from mymorningnews_sdk import sign_request
+
+sign_request("secret_test", "GET", "/v1.0/api/topics?pageSize=1", "default",
+             "2026-01-01T00:00:00Z", "nonce-12345678", b"")
+# 230d17d0e29816b3bec0fd251a730c14a192f0994792062dbebb7512589aae24
 ```
 
 When an email belongs to several tenants, `login` raises `TenantSelectionRequired`; its `tenants` list holds `TenantChoice(id, name)` entries to retry with.
@@ -219,6 +246,7 @@ client.schedules.list(owner_type="Topic", owner_id=tid)
 client.runs.list(topic_id=tid, status="Completed")
 client.runs.get(run_id); client.runs.stages(run_id); client.runs.queries(run_id)
 client.runs.results(run_id, disposition="Fetched")
+client.runs.llm_calls(run_id)          # paged, oldest first
 client.runs.email_preview(run_id); client.runs.cancel(run_id); client.runs.wait(run_id)
 ```
 
@@ -226,7 +254,12 @@ client.runs.email_preview(run_id); client.runs.cancel(run_id); client.runs.wait(
 
 ```python
 client.findings.list(topic_id=tid, tier="MustRead", min_score=70)
+client.findings.list(include_hidden=True, pinned=True)   # hidden findings are left out by default
 client.findings.get(finding_id).evidence
+client.findings.pin(finding_id); client.findings.hide(finding_id)
+client.findings.update(finding_id, pinned=False, hidden=False)
+client.findings.delete(finding_id)
+client.evidence.get(evidence_id)       # EvidenceView with source URL, title, and domain (owner only)
 client.sources.list(run_id=run_id); client.sources.get(source_id)
 client.predictions.resolve(prediction_id, "Accurate", note="Shipped in March")
 client.predictions.accept_review(review_id); client.predictions.reject_review(review_id)
@@ -239,7 +272,7 @@ client.suggestions.set_status(suggestion_id, "Snoozed", snoozed_until_utc="2026-
 from mymorningnews_sdk import FeedbackTargetType, RelevanceRating
 
 fb = client.feedback.submit(FeedbackTargetType.FINDING, finding_id, relevance=RelevanceRating.NOT_RELEVANT,
-                            reason="Press release, no data")
+                            reason="Press release, no data")      # channel defaults to Api; Dashboard, Email, Mobile, Mcp
 client.feedback.update(fb.id, reason="Press release with no numbers")
 client.feedback.list(topic_id=tid, include_history=True)
 client.feedback.delete(fb.id)
@@ -306,8 +339,11 @@ client.email.preferences(); client.email.set_preferences(run_emails=False)
 ### analytics, usage, llm_calls
 
 ```python
+client.analytics.overview()                            # OverviewReport
+client.analytics.email(from_="2026-11-01T00:00:00Z")   # EmailReport
+client.analytics.feedback().by_channel_day             # FeedbackReport
 client.analytics.relevance(topic_id=tid, from_="2026-11-01T00:00:00Z")
-client.analytics.accuracy(); client.analytics.feedback(); client.analytics.reasons()
+client.analytics.accuracy(); client.analytics.reasons()
 client.analytics.suggestions(); client.analytics.quality()
 client.usage.me(); client.usage.report(group_by="Model"); client.usage.timeseries(bucket_minutes=60)
 client.llm_calls.list(run_id=run_id); client.llm_calls.get(call_id)
@@ -349,7 +385,7 @@ client.request("GET", "/v1.0/api/audit", query={"page_size": 10})
 
 ## Test harness
 
-`test_harness.py` runs against a live server. It signs in as the admin user, creates its own data with names starting `SDK-python-`, exercises every resource group (create, read back, update, list contains it, delete, 404 after delete, and typed errors on bad requests), checks that the `demo@mymorningnews` user cannot see the admin's topic, and deletes everything it created. Cases that start research runs or call a paid model are skipped unless you pass `--with-run`.
+`test_harness.py` runs against a live server. It signs in as the admin user, creates its own data with names starting `SDK-python-`, exercises every resource group (create, read back, update, list contains it, delete, 404 after delete, and typed errors on bad requests), checks request signing against a known test vector offline and with a temporary credential on the live server (including replay and stale-date refusal), checks that the `demo@mymorningnews` user cannot see the admin's topic, and deletes everything it created. Cases that start research runs or call a paid model are skipped unless you pass `--with-run`.
 
 ```bash
 ./run-tests.sh                       # macOS and Linux

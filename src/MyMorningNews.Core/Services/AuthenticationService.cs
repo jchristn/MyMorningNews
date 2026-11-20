@@ -172,6 +172,8 @@ namespace MyMorningNews.Core.Services
                 user = await _Database.Users.ReadAsync(tenant.Id, credential.UserId, token).ConfigureAwait(false);
                 if (!credential.Active || (credential.ExpiresUtc.HasValue && credential.ExpiresUtc.Value < DateTime.UtcNow))
                     return LoginResult.Fail(401, AuthenticationOutcomeEnum.Inactive, "The credential is inactive or expired.");
+                if (credential.AuthMode == CredentialAuthModeEnum.SignedRequest)
+                    return LoginResult.Fail(401, AuthenticationOutcomeEnum.Invalid, "This credential signs each request; it cannot be exchanged for a session token.");
             }
 
             if (user == null || !user.Active) return LoginResult.Fail(401, AuthenticationOutcomeEnum.Inactive, "The account is inactive.");
@@ -556,6 +558,10 @@ namespace MyMorningNews.Core.Services
             Credential? credential = await FindCredentialAsync(tenant.Id, accessKey, token).ConfigureAwait(false);
             if (credential == null || !SecretHasher.FixedTimeEquals(_SecretProtector.Unprotect(credential.SecretKeyEncrypted), secretKey))
                 return AuthenticationContext.Fail(AuthenticationOutcomeEnum.Invalid, "Invalid credentials.", AuthSchemeEnum.AccessKeySecret);
+            if (credential.AuthMode == CredentialAuthModeEnum.SignedRequest)
+                return AuthenticationContext.Fail(AuthenticationOutcomeEnum.Invalid, "This credential must sign its requests (x-signature); it does not accept x-secret-key.", AuthSchemeEnum.AccessKeySecret);
+            if (credential.AuthMode == CredentialAuthModeEnum.SessionExchange)
+                return AuthenticationContext.Fail(AuthenticationOutcomeEnum.Invalid, "This credential must be exchanged for a session token at POST /v1.0/token.", AuthSchemeEnum.AccessKeySecret);
 
             return await CredentialContextAsync(tenant, credential, AuthSchemeEnum.AccessKeySecret, token).ConfigureAwait(false);
         }
@@ -587,6 +593,8 @@ namespace MyMorningNews.Core.Services
             if (!SecretHasher.FixedTimeEquals(expected, signature.ToLowerInvariant())) return AuthenticationContext.Fail(AuthenticationOutcomeEnum.Invalid, "Invalid credentials.", scheme);
             if (!_Nonces.TryUse(credential.Id + "|" + nonce, now, now.AddSeconds(skew * 2)))
                 return AuthenticationContext.Fail(AuthenticationOutcomeEnum.Invalid, "This nonce was already used.", scheme);
+            if (credential.AuthMode == CredentialAuthModeEnum.SessionExchange)
+                return AuthenticationContext.Fail(AuthenticationOutcomeEnum.Invalid, "This credential must be exchanged for a session token at POST /v1.0/token.", scheme);
 
             return await CredentialContextAsync(tenant, credential, scheme, token).ConfigureAwait(false);
         }

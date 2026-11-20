@@ -47,6 +47,7 @@ const client = new MyMorningNewsClient({
     secretKey: undefined,
     apiKey: undefined,                 // administration API key (x-api-key)
     tenantId: undefined,               // x-tenant-guid for access keys, the API key, and login
+    signedRequests: false,             // sign each request instead of sending the secret
     timeoutMs: 30000,                  // per request, minimum 1
     fetch: undefined,                  // custom fetch implementation
     headers: {}                        // extra headers on every request
@@ -74,6 +75,21 @@ Access keys can also be sent directly on every request instead of a token:
 const svc = new MyMorningNewsClient({ accessKey: 'ak_...', secretKey: '...', tenantId: 'default' });
 const me = await svc.me();
 ```
+
+### Signed requests
+
+With `signedRequests: true` (and `accessKey`, `secretKey`, `tenantId`), the client never sends the secret. Each request carries `x-access-key`, `x-tenant-guid`, `x-date` (ISO 8601 UTC), `x-nonce` (32 random hex characters, unique per request), and `x-signature`: the lowercase hex HMAC-SHA256, keyed with the UTF-8 secret, of
+
+```
+MMN1-HMAC-SHA256\n{METHOD}\n{path and query exactly as sent}\n{tenant}\n{x-date}\n{x-nonce}\n{lowercase hex SHA-256 of the body}
+```
+
+```js
+const signed = new MyMorningNewsClient({ accessKey: 'ak_...', secretKey: '...', tenantId: 'default', signedRequests: true });
+await signed.me();
+```
+
+The server rejects a reused nonce and an `x-date` outside its allowed clock skew. `signRequest(input)` and `stringToSign(input)` are exported for callers that sign requests themselves. Signing uses `node:crypto`.
 
 When an email exists in several tenants and no tenant is given, `login` throws `TenantSelectionRequiredError` with `tenants: [{ id, name }]`. Retry with `{ tenantId }`.
 
@@ -193,13 +209,19 @@ await client.schedules.update(s.id, { enabled: false });
 
 ### runs
 
-`list({ topicId, status, trigger })`, `get`, `start(topicId, { dryRun })`, `stages`, `queries`, `results(id, { disposition })`, `emailPreview`, `cancel`, `wait`, and `RunsResource.isTerminal(status)`.
+`list({ topicId, status, trigger })`, `get`, `start(topicId, { dryRun })`, `stages`, `queries`, `results(id, { disposition })`, `llmCalls(id, options)` (paged, oldest first), `emailPreview`, `cancel`, `wait`, and `RunsResource.isTerminal(status)`.
 
-### findings, sources
+### findings, evidence, sources
 
 ```js
 const top = await client.findings.list({ topicId, tier: 'MustRead', sortBy: 'RelevanceScore' });
 const detail = await client.findings.get(top.items[0].id); // with evidence
+await client.findings.pin(findingId); await client.findings.unpin(findingId);
+await client.findings.hide(findingId);                     // left out of lists, briefings, and emails
+await client.findings.list({ includeHidden: true, pinned: true });
+await client.findings.update(findingId, { pinned: true, hidden: false });
+await client.findings.remove(findingId);
+const ev = await client.evidence.get(evidenceId);           // owner only; also findings.getEvidence(id)
 const src = await client.sources.list({ runId });
 ```
 
@@ -215,6 +237,7 @@ await client.suggestions.setStatus(suggestionId, 'Snoozed', { snoozedUntilUtc: n
 
 ```js
 const f = await client.feedback.submit({ targetType: 'Finding', targetId: findingId, action: 'not-relevant', reason: 'Old news' });
+// channel: Dashboard, Email (recorded as Api when sent here), Mobile, Api, or Mcp
 await client.feedback.update(f.id, { reason: 'Covered last week' });
 await client.feedback.list({ topicId, includeHistory: true });
 await client.feedback.remove(f.id);
@@ -303,7 +326,8 @@ await client.email.updatePreferences({ runEmails: true, unsubscribeTopicIds: [to
 
 ```js
 await client.analytics.relevance({ topicId, from: new Date(Date.now() - 30 * 86400000) });
-// also accuracy, feedback, reasons, suggestions, quality, or analytics.report(name, options)
+// also overview, accuracy, feedback (with byChannelDay), reasons, suggestions, quality, email,
+// or analytics.report(name, options)
 await client.usage.me();
 await client.usage.report({ groupBy: 'Model' });
 await client.usage.timeseries({ bucketMinutes: 60 });
@@ -371,7 +395,7 @@ npm test                                         # same harness
 
 Cases that trigger real research runs or model calls (refinement generation, one-time requests, a dry run with `runs.wait`, the prompt lab, and briefing audio) are skipped unless `--with-run` is given, because the model endpoint of a live stack can cost money. The edition compose and preview cases run on an edition with no active topics, and the harness asserts that composing it made no model calls.
 
-The access key case creates and deletes a temporary credential through `client.request` against the control plane, so it needs an administrator.
+The access key and signed request cases create and delete temporary credentials through `client.request` against the control plane, so they need an administrator. The signed request cases also check a known signature vector offline, check a replayed nonce and a bad signature are rejected, and check that the credential stops working once deleted. Finding edit cases skip when the server has no findings; they restore each finding's pinned and hidden flags afterwards and never delete real findings.
 
 ## Requirements
 

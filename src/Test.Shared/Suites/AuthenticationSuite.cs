@@ -42,7 +42,7 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "InactiveUserRejected", "A deactivated user's session stops working", InactiveAsync),
                 Cases.Case(S, "AdminApiKey", "The administration key authenticates and wrong keys fail", AdminKeyAsync),
                 Cases.Case(S, "CredentialAuth", "Access key and secret authenticate; a wrong secret fails", CredentialAsync),
-                Cases.Case(S, "SignedRequests", "Signed requests authenticate without sending the secret; tampering, replay, and stale dates fail", SignedAsync)
+                Cases.Case(S, "SignedRequests", "Signed requests authenticate without sending the secret; tampering, replay, and stale dates fail; auth modes are enforced", SignedAsync)
             });
         }
 
@@ -220,6 +220,24 @@ namespace Test.Shared.Suites
             TokenDetailsResponse details = (await anon.SendAsync(HttpMethod.Get, "/v1.0/token/details", null, Sign("GET", "/v1.0/token/details", String.Empty, DateTime.UtcNow, "nonce-" + Guid.NewGuid().ToString("N")), token).ConfigureAwait(false))
                 .Expect(200, "details").Json<TokenDetailsResponse>();
             Assert.Equal("AccessKeySignature", details.Scheme?.ToString(), "scheme reported");
+
+            CredentialCreatedResponse signedOnly = (await admin.PostAsync("/v1.0/tenants/default/credentials", new { name = "suite-signed-only", authMode = "SignedRequest" }, token).ConfigureAwait(false))
+                .Expect(201, "signed-only credential").Json<CredentialCreatedResponse>();
+            key = signedOnly.Credential.AccessKey;
+            secret = signedOnly.SecretKey;
+            (await anon.SendAsync(HttpMethod.Get, path, null, Sign("GET", path, String.Empty, DateTime.UtcNow, "nonce-" + Guid.NewGuid().ToString("N")), token).ConfigureAwait(false)).Expect(200, "signed-only credential signs");
+            Dictionary<string, string> direct = new Dictionary<string, string> { { "x-access-key", key }, { "x-secret-key", secret }, { "x-tenant-guid", "default" } };
+            (await anon.SendAsync(HttpMethod.Get, path, null, direct, token).ConfigureAwait(false)).Expect(401, "signed-only credential refuses the secret on the wire");
+            (await anon.SendAsync(HttpMethod.Post, "/v1.0/token", null, direct, token).ConfigureAwait(false)).Expect(401, "signed-only credential cannot be exchanged");
+
+            CredentialCreatedResponse exchangeOnly = (await admin.PostAsync("/v1.0/tenants/default/credentials", new { name = "suite-exchange-only", authMode = "SessionExchange" }, token).ConfigureAwait(false))
+                .Expect(201, "exchange-only credential").Json<CredentialCreatedResponse>();
+            key = exchangeOnly.Credential.AccessKey;
+            secret = exchangeOnly.SecretKey;
+            direct = new Dictionary<string, string> { { "x-access-key", key }, { "x-secret-key", secret }, { "x-tenant-guid", "default" } };
+            (await anon.SendAsync(HttpMethod.Post, "/v1.0/token", null, direct, token).ConfigureAwait(false)).Expect(200, "exchange-only credential gets a session");
+            (await anon.SendAsync(HttpMethod.Get, path, null, direct, token).ConfigureAwait(false)).Expect(401, "exchange-only credential refuses per-request secrets");
+            (await anon.SendAsync(HttpMethod.Get, path, null, Sign("GET", path, String.Empty, DateTime.UtcNow, "nonce-" + Guid.NewGuid().ToString("N")), token).ConfigureAwait(false)).Expect(401, "exchange-only credential refuses signatures");
         }
     }
 }

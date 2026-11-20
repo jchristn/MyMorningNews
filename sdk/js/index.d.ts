@@ -9,6 +9,26 @@ export declare const DEFAULT_BASE_URL: string;
 export declare const DEFAULT_TIMEOUT_MS: number;
 /** Run statuses after which a run no longer changes. */
 export declare const TERMINAL_RUN_STATUSES: readonly RunStatus[];
+/** Signed request algorithm name (`MMN1-HMAC-SHA256`). */
+export declare const SIGNATURE_ALGORITHM: string;
+
+export interface SignatureInput {
+    method: string;
+    /** Path and query exactly as sent. */
+    pathAndQuery: string;
+    tenantId: string;
+    /** `x-date` value (ISO 8601 UTC). */
+    date: string;
+    /** `x-nonce` value (8 to 128 characters). */
+    nonce: string;
+    /** Body exactly as sent; empty when omitted. */
+    body?: string | Uint8Array | null;
+}
+
+/** The string a signed request signs. */
+export declare function stringToSign(input: SignatureInput): string;
+/** Lowercase hex HMAC-SHA256 of the string to sign, keyed with the UTF-8 secret. */
+export declare function signRequest(input: SignatureInput & { secretKey: string }): string;
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Options and shared shapes
@@ -27,6 +47,8 @@ export interface ClientOptions {
     apiKey?: string;
     /** Tenant sent as `x-tenant-guid` with access keys or the API key, and at login. */
     tenantId?: string;
+    /** Sign each request (HMAC-SHA256) instead of sending x-secret-key. Needs accessKey, secretKey, and tenantId. Default false. */
+    signedRequests?: boolean;
     /** Per-request timeout. Default 30000. Minimum 1. */
     timeoutMs?: number;
     /** Fetch implementation. Default `globalThis.fetch`. */
@@ -162,7 +184,8 @@ export type IntervalType = 'EveryNMinutes' | 'EveryNHours' | 'EveryNDays' | 'Eve
 export type ModelProvider = 'Anthropic' | 'OpenAi' | 'OpenAiCompatible' | 'Ollama' | 'Gemini' | 'XAi' | 'OllamaCloud';
 export type SearchProviderKind = 'Searxng' | 'Tavily' | 'YouCom' | 'Rss' | 'HackerNews' | 'Arxiv' | 'HostedModelWebSearch';
 export type PreferenceKind = 'Prefer' | 'Avoid' | 'PreferSource' | 'AvoidSource' | 'StyleNote';
-export type AnalyticsReport = 'relevance' | 'accuracy' | 'feedback' | 'reasons' | 'suggestions' | 'quality';
+export type AnalyticsReport = 'overview' | 'relevance' | 'accuracy' | 'feedback' | 'reasons' | 'suggestions' | 'quality' | 'email';
+export type FeedbackChannel = 'Dashboard' | 'Email' | 'Mobile' | 'Api' | 'Mcp';
 
 /** Fields every stored record carries. */
 export interface Record_ {
@@ -474,6 +497,80 @@ export interface Finding extends Record_ {
     userRating: string | null;
     publishedUtc: string | null;
     isDryRun: boolean;
+    pinned: boolean;
+    hidden: boolean;
+}
+
+export interface Evidence extends Record_ {
+    sourceItemId: string;
+    runId: string | null;
+    quote: string;
+    startOffset: number;
+    endOffset: number;
+    contextText: string | null;
+    quoteHash: string;
+    verified: boolean;
+}
+
+export interface EvidenceView {
+    evidence: Evidence;
+    sourceUrl: string | null;
+    sourceTitle: string | null;
+    sourceDomain: string | null;
+    sourcePublishedUtc: string | null;
+    role: string;
+}
+
+export interface BreakdownRow {
+    key: string;
+    label: string | null;
+    count: number;
+    positive: number;
+    rate: number | null;
+    value: number | null;
+}
+
+export interface OverviewReport {
+    fromUtc: string;
+    toUtc: string;
+    activeTopics: number;
+    runs: number;
+    runsCompleted: number;
+    runsPartiallySucceeded: number;
+    runsFailed: number;
+    findingsShown: number;
+    findingsRated: number;
+    relevancePrecision: number | null;
+    briefingsReady: number;
+    emailsSent: number;
+    emailsFailed: number;
+    predictionsOpen: number;
+    predictionsResolved: number;
+    predictionAccuracy: number | null;
+    meanBrier: number | null;
+    feedbackTotal: number;
+    feedbackWithReason: number;
+    suggestionsNew: number;
+    suggestionsAccepted: number;
+    quoteFailureRate: number | null;
+    modelCalls: number;
+    modelCostUsd: number;
+}
+
+export interface EmailReport {
+    total: number;
+    sent: number;
+    failed: number;
+    pending: number;
+    skipped: number;
+    deliveryRate: number | null;
+    meanSecondsToSend: number | null;
+    byTemplate: BreakdownRow[];
+    byDay: BreakdownRow[];
+    byStatus: BreakdownRow[];
+    feedbackLinkOpens: number;
+    feedbackLinkSubmits: number;
+    unsubscribes: number;
 }
 
 export interface FindingDetail {
@@ -538,7 +635,7 @@ export interface Feedback extends Record_ {
     accuracy: 'Accurate' | 'PartiallyAccurate' | 'Inaccurate' | 'TooEarly' | null;
     usefulness: 'Useful' | 'NotUseful' | null;
     reason: string | null;
-    channel: 'Dashboard' | 'Email' | 'Mobile' | 'Api';
+    channel: FeedbackChannel;
     emailMessageId: string | null;
     supersedesFeedbackId: string | null;
     isCurrent: boolean;
@@ -552,7 +649,7 @@ export interface FeedbackCreateRequest {
     accuracy?: 'Accurate' | 'PartiallyAccurate' | 'Inaccurate' | 'TooEarly';
     usefulness?: 'Useful' | 'NotUseful';
     reason?: string;
-    channel?: 'Dashboard' | 'Email' | 'Mobile' | 'Api';
+    channel?: FeedbackChannel;
 }
 
 export interface LearnedPreference extends Record_ {
@@ -1060,6 +1157,8 @@ export declare class RunsResource extends ResourceGroup {
     stages(id: string): Promise<RunStage[]>;
     queries(id: string): Promise<any[]>;
     results(id: string, options?: { disposition?: string }): Promise<any[]>;
+    /** Paged, oldest first unless sortDirection is given. */
+    llmCalls(id: string, options?: ListOptions): Promise<EnumerationResult<LlmCall>>;
     emailPreview(id: string): Promise<any>;
     cancel(id: string): Promise<Run>;
     /** Polls `GET /runs/{id}` until a terminal status. Rejects with code `Timeout`. */
@@ -1069,6 +1168,17 @@ export declare class RunsResource extends ResourceGroup {
 export declare class FindingsResource extends ResourceGroup {
     list(options?: ListOptions): Promise<EnumerationResult<Finding>>;
     get(id: string): Promise<FindingDetail>;
+    update(id: string, body: { pinned?: boolean; hidden?: boolean }): Promise<Finding>;
+    pin(id: string, pinned?: boolean): Promise<Finding>;
+    unpin(id: string): Promise<Finding>;
+    hide(id: string, hidden?: boolean): Promise<Finding>;
+    unhide(id: string): Promise<Finding>;
+    remove(id: string): Promise<null>;
+    getEvidence(evidenceId: string): Promise<EvidenceView>;
+}
+
+export declare class EvidenceResource extends ResourceGroup {
+    get(id: string): Promise<EvidenceView>;
 }
 
 export declare class SourcesResource extends ResourceGroup {
@@ -1192,6 +1302,8 @@ export interface AnalyticsOptions {
 
 export declare class AnalyticsResource extends ResourceGroup {
     report(report: AnalyticsReport, options?: AnalyticsOptions): Promise<any>;
+    overview(options?: AnalyticsOptions): Promise<OverviewReport>;
+    email(options?: AnalyticsOptions): Promise<EmailReport>;
     relevance(options?: AnalyticsOptions): Promise<any>;
     accuracy(options?: AnalyticsOptions): Promise<any>;
     feedback(options?: AnalyticsOptions): Promise<any>;
@@ -1332,6 +1444,7 @@ export declare class MyMorningNewsClient {
     token: string | null;
     accessKey: string | null;
     tenantId: string | null;
+    signedRequests: boolean;
     /** Minimum 1. */
     timeoutMs: number;
     readonly isAuthenticated: boolean;
@@ -1342,6 +1455,7 @@ export declare class MyMorningNewsClient {
     readonly schedules: SchedulesResource;
     readonly runs: RunsResource;
     readonly findings: FindingsResource;
+    readonly evidence: EvidenceResource;
     readonly sources: SourcesResource;
     readonly predictions: PredictionsResource;
     readonly suggestions: SuggestionsResource;

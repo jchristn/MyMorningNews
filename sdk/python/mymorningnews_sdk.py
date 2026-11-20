@@ -26,10 +26,13 @@ Example::
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 import json
 import re
 import time
 import urllib.parse
+import uuid
 from dataclasses import dataclass, field, fields as dataclass_fields
 from datetime import date, datetime, timezone
 from enum import Enum
@@ -170,6 +173,59 @@ def _merge(body: Optional[Mapping[str, Any]], fields_: Mapping[str, Any]) -> Dic
         if v is not None:
             merged[k] = v
     return merged
+
+
+# ---------------------------------------------------------------------------
+# Request signing (MMN1-HMAC-SHA256)
+# ---------------------------------------------------------------------------
+
+SIGNATURE_ALGORITHM = "MMN1-HMAC-SHA256"
+"""The request signing algorithm name; the first line of every string to sign."""
+
+
+def body_sha256(body: Optional[Union[bytes, str]]) -> str:
+    """Lowercase hex SHA-256 of a request body (an empty body hashes the empty string).
+
+    Args:
+        body: The exact bytes sent (a str is encoded as UTF-8), or None for no body.
+
+    Returns:
+        64 lowercase hex characters.
+    """
+    if body is None:
+        body = b""
+    if isinstance(body, str):
+        body = body.encode("utf-8")
+    return hashlib.sha256(body).hexdigest()
+
+
+def string_to_sign(method: str, path_and_query: str, tenant_id: str, date: str, nonce: str, body_hash: str) -> str:
+    """Build the string a signed request signs.
+
+    The lines are the algorithm, the upper-case method, the path and query exactly as sent, the tenant ID,
+    the ``x-date`` value, the ``x-nonce`` value, and the lowercase hex SHA-256 of the body, joined by newlines.
+    """
+    return "\n".join([SIGNATURE_ALGORITHM, method.upper(), path_and_query, tenant_id, date, nonce, body_hash.lower()])
+
+
+def sign_request(secret_key: str, method: str, path_and_query: str, tenant_id: str, date: str, nonce: str,
+                 body: Optional[Union[bytes, str]] = None) -> str:
+    """Compute the ``x-signature`` header for a request.
+
+    Args:
+        secret_key: The credential's secret key (the HMAC key, UTF-8).
+        method: HTTP method.
+        path_and_query: Path and query string exactly as they appear on the wire, for example ``/v1.0/api/topics?pageSize=1``.
+        tenant_id: The tenant, also sent as ``x-tenant-guid``.
+        date: The ``x-date`` value (ISO 8601 UTC).
+        nonce: The ``x-nonce`` value (8 to 128 characters, never reused).
+        body: The exact body bytes sent, or None.
+
+    Returns:
+        Lowercase hex HMAC-SHA256.
+    """
+    text = string_to_sign(method, path_and_query, tenant_id, date, nonce, body_sha256(body))
+    return hmac.new(secret_key.encode("utf-8"), text.encode("utf-8"), hashlib.sha256).hexdigest()
 
 
 # ---------------------------------------------------------------------------
@@ -721,6 +777,7 @@ class FeedbackChannel(str, Enum):
     EMAIL = "Email"
     MOBILE = "Mobile"
     API = "Api"
+    MCP = "Mcp"
 
 
 class SuggestionStatus(str, Enum):
@@ -1572,6 +1629,8 @@ class Finding(Model):
     active: Optional[bool] = None
     created_utc: Optional[str] = None
     last_update_utc: Optional[str] = None
+    pinned: Optional[bool] = None
+    hidden: Optional[bool] = None
 
 
 @dataclass
@@ -2392,6 +2451,79 @@ class VaultUsageItem(Model):
 
 
 @dataclass
+class BreakdownRow(Model):
+    """A rate for one group."""
+    key: Optional[str] = None
+    label: Optional[str] = None
+    count: Optional[int] = None
+    positive: Optional[int] = None
+    rate: Optional[float] = None
+    value: Optional[float] = None
+
+
+@dataclass
+class OverviewReport(Model):
+    """Headline numbers for a window: activity counts plus the key figures from the relevance, accuracy, feedback, suggestion, quality, and usage reports. Built for dashboards, the mobile home screen, and the MCP summary tool."""
+    from_utc: Optional[str] = None
+    to_utc: Optional[str] = None
+    active_topics: Optional[int] = None
+    runs: Optional[int] = None
+    runs_completed: Optional[int] = None
+    runs_partially_succeeded: Optional[int] = None
+    runs_failed: Optional[int] = None
+    findings_shown: Optional[int] = None
+    findings_rated: Optional[int] = None
+    relevance_precision: Optional[float] = None
+    briefings_ready: Optional[int] = None
+    emails_sent: Optional[int] = None
+    emails_failed: Optional[int] = None
+    predictions_open: Optional[int] = None
+    predictions_resolved: Optional[int] = None
+    prediction_accuracy: Optional[float] = None
+    mean_brier: Optional[float] = None
+    feedback_total: Optional[int] = None
+    feedback_with_reason: Optional[int] = None
+    suggestions_new: Optional[int] = None
+    suggestions_accepted: Optional[int] = None
+    quote_failure_rate: Optional[float] = None
+    model_calls: Optional[int] = None
+    model_cost_usd: Optional[float] = None
+
+
+@dataclass
+class EmailReport(Model):
+    """Email delivery for a window: totals, delivery time, a breakdown by template and day, feedback link use, and unsubscribes."""
+    _nested: ClassVar[Dict[str, str]] = {'by_template': 'BreakdownRow', 'by_day': 'BreakdownRow', 'by_status': 'BreakdownRow'}
+    total: Optional[int] = None
+    sent: Optional[int] = None
+    failed: Optional[int] = None
+    pending: Optional[int] = None
+    skipped: Optional[int] = None
+    delivery_rate: Optional[float] = None
+    mean_seconds_to_send: Optional[float] = None
+    by_template: Optional[List[BreakdownRow]] = None
+    by_day: Optional[List[BreakdownRow]] = None
+    by_status: Optional[List[BreakdownRow]] = None
+    feedback_link_opens: Optional[int] = None
+    feedback_link_submits: Optional[int] = None
+    unsubscribes: Optional[int] = None
+
+
+@dataclass
+class FeedbackReport(Model):
+    """Feedback volume and coverage (plan section 20)."""
+    _nested: ClassVar[Dict[str, str]] = {'by_channel': 'BreakdownRow', 'by_target_type': 'BreakdownRow', 'by_day': 'BreakdownRow', 'by_channel_day': 'BreakdownRow'}
+    total: Optional[int] = None
+    with_reason: Optional[int] = None
+    by_channel: Optional[List[BreakdownRow]] = None
+    by_target_type: Optional[List[BreakdownRow]] = None
+    by_day: Optional[List[BreakdownRow]] = None
+    by_channel_day: Optional[List[BreakdownRow]] = None
+    email_link_opens: Optional[int] = None
+    email_link_submits: Optional[int] = None
+
+
+@dataclass
 class Device(Model):
     """A mobile device registered for push notifications."""
     id: Optional[str] = None
@@ -2811,6 +2943,10 @@ class RunsResource(_Resource):
         """A run's search results with their dispositions, optionally filtered by ``disposition``."""
         return self._many(SearchResult, "GET", API + "/runs/" + _seg(run_id) + "/results", query={"disposition": disposition})
 
+    def llm_calls(self, run_id: str, **filters: Any) -> Page[LlmCall]:
+        """A run's model calls, oldest first (paging filters)."""
+        return self._page(LlmCall, API + "/runs/" + _seg(run_id) + "/llm-calls", filters)
+
     def email_preview(self, run_id: str) -> Dict[str, Any]:
         """Render the run digest email without sending it. May call a model for the lead paragraph.
 
@@ -2857,15 +2993,68 @@ class FindingsResource(_Resource):
     def list(self, **filters: Any) -> Page[Finding]:
         """List findings.
 
+        Hidden findings, duplicates, dry runs, and below-threshold findings are left out by default.
+
         Args:
             **filters: ``topic_id``, ``run_id``, ``tier``, ``category``, ``include_duplicates``, ``include_dry_run``,
-                ``min_score``, ``dimension_id``, ``include_below_threshold``, plus paging.
+                ``min_score``, ``dimension_id``, ``include_below_threshold``, ``include_hidden``, ``pinned``, plus paging.
         """
         return self._page(Finding, API + "/findings", filters)
 
     def get(self, finding_id: str) -> FindingDetail:
         """Read a finding with its evidence and dimension."""
         return self._one(FindingDetail, "GET", API + "/findings/" + _seg(finding_id))
+
+    def update(self, finding_id: str, pinned: Optional[bool] = None, hidden: Optional[bool] = None) -> Finding:
+        """Pin or hide a finding. Only the flags you pass change.
+
+        Hidden findings are left out of lists (unless ``include_hidden=True``), briefings, and emails.
+
+        Args:
+            finding_id: The finding.
+            pinned: True to keep it at the top of lists, False to unpin, None to leave as is.
+            hidden: True to hide it, False to show it again, None to leave as is.
+
+        Returns:
+            The updated :class:`Finding`.
+        """
+        return self._one(Finding, "PUT", API + "/findings/" + _seg(finding_id), body={"pinned": pinned, "hidden": hidden})
+
+    def pin(self, finding_id: str, pinned: bool = True) -> Finding:
+        """Pin (or unpin) a finding."""
+        return self.update(finding_id, pinned=pinned)
+
+    def unpin(self, finding_id: str) -> Finding:
+        """Unpin a finding."""
+        return self.update(finding_id, pinned=False)
+
+    def hide(self, finding_id: str, hidden: bool = True) -> Finding:
+        """Hide (or show) a finding."""
+        return self.update(finding_id, hidden=hidden)
+
+    def unhide(self, finding_id: str) -> Finding:
+        """Show a hidden finding again."""
+        return self.update(finding_id, hidden=False)
+
+    def delete(self, finding_id: str) -> None:
+        """Delete a finding and its evidence links (HTTP 204). Shared evidence and sources stay; ratings stay in history."""
+        self._json("DELETE", API + "/findings/" + _seg(finding_id))
+
+    def evidence(self, evidence_id: str) -> EvidenceView:
+        """Read one piece of evidence with its source. Same as :meth:`EvidenceResource.get`."""
+        return self._one(EvidenceView, "GET", API + "/evidence/" + _seg(evidence_id))
+
+
+class EvidenceResource(_Resource):
+    """Evidence under ``/v1.0/api/evidence`` (visible to its owner only)."""
+
+    def get(self, evidence_id: str) -> EvidenceView:
+        """Read one piece of evidence with its source URL, title, domain, and role.
+
+        Raises:
+            NotFoundError: The evidence does not exist or belongs to another user.
+        """
+        return self._one(EvidenceView, "GET", API + "/evidence/" + _seg(evidence_id))
 
 
 class SourcesResource(_Resource):
@@ -3317,8 +3506,18 @@ class AnalyticsResource(_Resource):
     """Analytics reports under ``/v1.0/api/analytics``.
 
     Every method accepts ``topic_id``, ``from_`` (sent as ``from``), ``to``, ``user_id``, and ``all_``
-    (sent as ``all``). Reports are returned as dicts; time series are gap-filled by the server.
+    (sent as ``all``). The default scope is the caller's data for the last 90 days; administrators can pass
+    ``user_id``, or ``all_=True`` for the tenant. ``overview``, ``feedback``, and ``email`` return typed reports;
+    the others return dicts. Time series are gap-filled by the server.
     """
+
+    def overview(self, **filters: Any) -> OverviewReport:
+        """Headline counts: topics, runs, findings, briefings, emails, predictions, feedback, suggestions, and model cost."""
+        return OverviewReport.from_dict(self._report("overview", filters))
+
+    def email(self, **filters: Any) -> EmailReport:
+        """Email delivery analytics: totals, delivery rate, breakdowns by template, day, and status, and link activity."""
+        return EmailReport.from_dict(self._report("email", filters))
 
     def _report(self, name: str, filters: Mapping[str, Any]) -> Dict[str, Any]:
         """GET one analytics report."""
@@ -3332,9 +3531,9 @@ class AnalyticsResource(_Resource):
         """Prediction accuracy analytics."""
         return self._report("accuracy", filters)
 
-    def feedback(self, **filters: Any) -> Dict[str, Any]:
-        """Feedback analytics."""
-        return self._report("feedback", filters)
+    def feedback(self, **filters: Any) -> FeedbackReport:
+        """Feedback analytics, with breakdowns by channel, target type, day, and channel per day."""
+        return FeedbackReport.from_dict(self._report("feedback", filters))
 
     def reasons(self, **filters: Any) -> Dict[str, Any]:
         """Feedback reason analytics."""
@@ -3665,6 +3864,7 @@ class MyMorningNewsClient:
         tenant_id: Optional[str] = None,
         timeout: float = DEFAULT_TIMEOUT,
         session: Optional[requests.Session] = None,
+        signed_requests: bool = False,
     ) -> None:
         """Create a client.
 
@@ -3676,6 +3876,12 @@ class MyMorningNewsClient:
             tenant_id: Tenant ID, sent as ``x-tenant-guid`` with access keys and used by :meth:`login`.
             timeout: Per-request timeout in seconds (default 30; minimum 1).
             session: Optional ``requests.Session`` to reuse. The client closes only sessions it created.
+            signed_requests: Sign each request with the access key's secret (MMN1-HMAC-SHA256) instead of
+                sending ``x-secret-key``. Needs ``access_key``, ``secret_key``, and ``tenant_id``; ignored while a
+                session token is set. Default False.
+
+        Raises:
+            ValueError: ``base_url`` is empty, or ``signed_requests`` is set without an access key, secret, and tenant.
         """
         if not base_url:
             raise ValueError("base_url is required.")
@@ -3687,6 +3893,9 @@ class MyMorningNewsClient:
         self.timeout = max(1.0, float(timeout))
         self._owns_session = session is None
         self._session = session or requests.Session()
+        self.signed_requests = bool(signed_requests)
+        if self.signed_requests and not (access_key and secret_key and tenant_id):
+            raise ValueError("signed_requests needs access_key, secret_key, and tenant_id.")
         self.last_login: Optional[TokenResponse] = None
 
         self.topics = TopicsResource(self)
@@ -3695,6 +3904,7 @@ class MyMorningNewsClient:
         self.schedules = SchedulesResource(self)
         self.runs = RunsResource(self)
         self.findings = FindingsResource(self)
+        self.evidence = EvidenceResource(self)
         self.sources = SourcesResource(self)
         self.predictions = PredictionsResource(self)
         self.suggestions = SuggestionsResource(self)
@@ -3738,7 +3948,7 @@ class MyMorningNewsClient:
 
     def __repr__(self) -> str:
         """Describe the client without revealing credentials."""
-        mode = "token" if self.token else ("access-key" if self.access_key else "anonymous")
+        mode = "token" if self.token else (("signed-access-key" if self.signed_requests else "access-key") if self.access_key else "anonymous")
         return "MyMorningNewsClient(base_url=%r, auth=%s, tenant_id=%r)" % (self.base_url, mode, self.tenant_id)
 
     # Transport
@@ -3750,10 +3960,30 @@ class MyMorningNewsClient:
             headers["Authorization"] = "Bearer " + self.token
         elif self.access_key and self.secret_key:
             headers["x-access-key"] = self.access_key
-            headers["x-secret-key"] = self.secret_key
+            if not self.signed_requests:
+                headers["x-secret-key"] = self.secret_key
             if self.tenant_id:
                 headers["x-tenant-guid"] = self.tenant_id
         return headers
+
+    def _signing(self, auth: bool) -> bool:
+        """True when the next request should carry a signature."""
+        return bool(auth and self.signed_requests and not self.token and self.access_key and self.secret_key and self.tenant_id)
+
+    def _sign(self, prepared: requests.PreparedRequest) -> None:
+        """Add x-date, x-nonce, and x-signature to a prepared request.
+
+        Signs ``prepared.path_url`` (the path and query exactly as requests sends them) and the exact body bytes.
+        """
+        date = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        nonce = uuid.uuid4().hex
+        body = prepared.body
+        if body is not None and not isinstance(body, (bytes, str)):
+            raise ValueError("Signed requests need an in-memory body.")
+        prepared.headers["x-date"] = date
+        prepared.headers["x-nonce"] = nonce
+        prepared.headers["x-signature"] = sign_request(self.secret_key or "", prepared.method or "GET", prepared.path_url,
+                                                       self.tenant_id or "", date, nonce, body)
 
     def request(
         self,
@@ -3798,7 +4028,11 @@ class MyMorningNewsClient:
             data = json.dumps(_wire_body(body)).encode("utf-8")
             send_headers["Content-Type"] = "application/json"
         try:
-            resp = self._session.request(method.upper(), url, params=_wire_query(query), data=data, headers=send_headers, timeout=self.timeout)
+            prepared = self._session.prepare_request(requests.Request(method.upper(), url, params=_wire_query(query), data=data, headers=send_headers))
+            if self._signing(auth):
+                self._sign(prepared)
+            env = self._session.merge_environment_settings(prepared.url, {}, None, None, None)
+            resp = self._session.send(prepared, timeout=self.timeout, **env)
         except requests.RequestException as ex:
             raise MyMorningNewsError("Could not reach " + self.base_url + ": " + str(ex), status=0, code="ConnectionError") from ex
         if resp.status_code >= 400:
@@ -3969,6 +4203,7 @@ __all__ = [
     "MyMorningNewsClient", "MyMorningNewsError", "BadRequestError", "AuthenticationError", "PermissionDeniedError",
     "NotFoundError", "ConflictError", "GoneError", "RangeNotSatisfiableError", "RateLimitError", "ServerError",
     "TenantSelectionRequired", "WaitTimeoutError", "Model", "Page", "Download", "iterate", "to_camel", "to_snake",
+    "sign_request", "string_to_sign", "body_sha256", "SIGNATURE_ALGORITHM",
     "DEFAULT_BASE_URL", "TERMINAL_RUN_STATUSES", "__version__",
 ]
 

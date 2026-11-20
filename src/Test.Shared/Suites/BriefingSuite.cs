@@ -168,6 +168,13 @@ namespace Test.Shared.Suites
             Assert.Equal(1, (await member.Client.GetAsync("/v1.0/api/briefing-templates?scope=mine", token).ConfigureAwait(false)).Json<EnumerationResult<BriefingTemplate>>().Items.Count, "scope mine");
             Assert.Equal(3, (await member.Client.GetAsync("/v1.0/api/briefing-templates?scope=shared", token).ConfigureAwait(false)).Json<EnumerationResult<BriefingTemplate>>().Items.Count, "scope shared");
             Assert.Equal(1, (await member.Client.GetAsync("/v1.0/api/briefing-templates?search=one-time", token).ConfigureAwait(false)).Json<EnumerationResult<BriefingTemplate>>().Items.Count, "search");
+            string other = mine.Replace("My Brief", "Front Matter Name");
+            TemplateDetailResponse named = (await member.Client.PostAsync("/v1.0/api/briefing-templates", new { content = other, name = "Given Name" }, token).ConfigureAwait(false)).Expect(201, "create with a name").Json<TemplateDetailResponse>();
+            TemplateDetailResponse kept = (await member.Client.PutAsync("/v1.0/api/briefing-templates/" + named.Template.Id, new { content = other.Replace("limit=3", "limit=5") }, token).ConfigureAwait(false)).Expect(200, "edit").Json<TemplateDetailResponse>();
+            Assert.Equal("Given Name", kept.Template.Name, "a given name survives edits that leave the front matter name alone");
+            TemplateDetailResponse renamed = (await member.Client.PutAsync("/v1.0/api/briefing-templates/" + named.Template.Id, new { content = other.Replace("Front Matter Name", "Newer Name") }, token).ConfigureAwait(false)).Expect(200, "rename").Json<TemplateDetailResponse>();
+            Assert.Equal("Newer Name", renamed.Template.Name, "changing the front matter name renames");
+            (await member.Client.DeleteAsync("/v1.0/api/briefing-templates/" + named.Template.Id, token).ConfigureAwait(false)).Expect(204, "delete the extra template");
             Assert.True(created.Title == "{{topic.name}}" && saved.Audio != null, "detail carries title and audio");
 
             (await member.Client.PutAsync("/v1.0/api/briefing-templates/" + morning.Id, new { content = mine }, token).ConfigureAwait(false)).Expect(403, "members cannot change shared templates");

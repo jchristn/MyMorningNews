@@ -199,8 +199,8 @@ namespace MyMorningNews.Server.Routes
                 return;
             }
 
-            await Server.Database.Users.DeleteAsync(tenantId, userId, ctx.Token).ConfigureAwait(false);
-            await ChangedAsync(ctx, "User " + userId + " deleted.", 204).ConfigureAwait(false);
+            await Server.Accounts.DeleteUserAsync(tenantId, userId, ctx.Token).ConfigureAwait(false);
+            await ChangedAsync(ctx, "User " + userId + " deleted with their topics, editions, briefings, and feedback.", 204).ConfigureAwait(false);
             await SendJsonAsync(ctx, 204, null).ConfigureAwait(false);
         }
 

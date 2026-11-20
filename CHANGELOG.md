@@ -6,6 +6,11 @@ All notable changes to this project are documented here. The project follows [Se
 
 ### Fixed
 
+- Deleting a user removed their topic rows through a database cascade but left the topics' runs, findings, briefings, and editions behind. User deletion now removes everything the user owns first (`AccountDataService`), which Phase 14 account deletion will reuse.
+- Credential auth modes are enforced: `SignedRequest` credentials refuse `x-secret-key` and session exchange, and `SessionExchange` credentials work only through `POST /v1.0/token`.
+- Abandoning a refinement of an existing Draft topic no longer deletes that topic.
+- Saving a briefing template keeps the name given at creation unless the front matter name changes.
+- Credential updates and deletions are audited under their own event and mutation names.
 - A member could read another member's fetched source by ID; sources are now visible only to members whose topics found them.
 - Deleting a topic now also removes its feedback, reason tags, learned preferences, learning checkpoints, email action tokens and suppressions, prompt overrides, and model assignments. Sent emails stay in the outbox with the topic cleared.
 - Feedback ratings are checked against the item type even without an action, and an action on a learned preference gets a clear message.
@@ -54,7 +59,8 @@ All notable changes to this project are documented here. The project follows [Se
 - Analytics overview (`GET /v1.0/api/analytics/overview`): active topics, runs by outcome, findings shown and rated, relevance precision, briefings, emails, predictions and accuracy, feedback, suggestions, quote failure rate, and model calls and cost in one call.
 - Email analytics (`GET /v1.0/api/analytics/email`): sent, failed, pending, and skipped counts, delivery rate, mean time to send, breakdowns by template, day, and status, feedback link use, and unsubscribes. The feedback report adds a split by day and channel.
 - Findings can be pinned and hidden (`PUT /v1.0/api/findings/{id}`) and deleted; hidden findings stay out of lists, briefings, and emails. `GET /v1.0/api/evidence/{id}` and `GET /v1.0/api/runs/{id}/llm-calls`.
-- JavaScript SDK (`sdk/js`, ES module with type declarations) and Python SDK (`sdk/python`), each with a harness that runs against a live server.
+- SDKs for C# (`sdk/csharp`, NuGet-ready `MyMorningNews.Sdk` for net8 and net10), JavaScript (`sdk/js`, ES module with type declarations), and Python (`sdk/python`), each with signed-request support and a harness that runs against a live server.
+- MCP server (`src/MyMorningNews.McpServer`, Voltaic): Streamable HTTP on `/mcp` (port 12105, compose profile `mcp`) and stdio, 26 tools, four Markdown resources, and two prompts, acting with the caller's own credentials.
 - Signed requests (`MMN1-HMAC-SHA256`): machine clients sign each request with the credential secret instead of sending it, with a clock skew window (`Auth.SignatureMaxSkewSeconds`, default 300) and nonce replay protection.
 - Scope guardrail on every model call and in every default prompt, so models stay on research and briefing tasks and treat fetched content as data.
 - Prompt templates: 19 defaults, renderer with list expansion, save-time variable validation, versions, rollback, reset, topic overrides, and a prompt lab.

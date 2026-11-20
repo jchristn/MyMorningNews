@@ -161,6 +161,11 @@ namespace MyMorningNews.Server
         public MyMorningNews.Core.Entitlements.PromoCodeService PromoCodes { get; set; } = null!;
 
         /// <summary>
+        /// Account data removal (user deletion).
+        /// </summary>
+        public AccountDataService Accounts { get; set; } = null!;
+
+        /// <summary>
         /// Instantiate.
         /// </summary>
         /// <param name="settingsService">Settings service.</param>

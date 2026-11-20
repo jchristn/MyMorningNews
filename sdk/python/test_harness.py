@@ -30,6 +30,8 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Tuple, Type
 
+import requests
+
 import mymorningnews_sdk as mmn
 from mymorningnews_sdk import (
     AuthenticationError,
@@ -150,6 +152,15 @@ def expect_error(error_type: Type[MyMorningNewsError], fn: Callable[[], Any], co
     except MyMorningNewsError as ex:
         raise AssertionError("expected " + error_type.__name__ + ", got " + type(ex).__name__ + ": " + str(ex))
     raise AssertionError("expected " + error_type.__name__ + " but the call succeeded")
+
+
+def expect_value_error(fn: Callable[[], Any]) -> None:
+    """Assert that ``fn`` raises ValueError."""
+    try:
+        fn()
+    except ValueError:
+        return
+    raise AssertionError("expected ValueError")
 
 
 def ids(items: Any) -> List[str]:
@@ -369,6 +380,54 @@ def t_access_key(h: Harness) -> str:
         check(exchanged.token_details().valid, "exchanged token works")
         exchanged.logout()
     return "credential exercised and scheduled for deletion"
+
+
+@case("Signing: known test vector (offline)")
+def t_sign_vector(h: Harness) -> None:
+    sig = mmn.sign_request("secret_test", "GET", "/v1.0/api/topics?pageSize=1", "default", "2026-01-01T00:00:00Z", "nonce-12345678", b"")
+    eq(sig, "230d17d0e29816b3bec0fd251a730c14a192f0994792062dbebb7512589aae24", "signature")
+    eq(mmn.body_sha256(None), mmn.body_sha256(b""), "no body hashes like an empty body")
+    text = mmn.string_to_sign("get", "/x", "t", "d", "n", "ABC")
+    eq(text, "MMN1-HMAC-SHA256\nGET\n/x\nt\nd\nn\nabc", "string to sign uppercases the method and lowercases the hash")
+    expect_value_error(lambda: MyMorningNewsClient(h.config.base_url, access_key="ak", signed_requests=True))
+
+
+@case("Signing: signed requests against the live server")
+def t_signed_live(h: Harness) -> str:
+    tenant, user_id = h.need("tenant", "user_id")
+    created = h.client.request("POST", "/v1.0/tenants/" + tenant + "/credentials",
+                               body={"user_id": user_id, "name": h.name("signed-key"), "auth_mode": "SignedRequest"})
+    cred = created.get("credential") or {}
+    cred_id = cred.get("id")
+    access, secret = cred.get("accessKey"), created.get("secretKey")
+    check(cred_id and access and secret, "credential, access key, and secret are returned")
+    h.on_cleanup("credential " + cred_id, lambda: h.client.request("DELETE", "/v1.0/tenants/" + tenant + "/credentials/" + cred_id))
+    with MyMorningNewsClient(h.config.base_url, access_key=access, secret_key=secret, tenant_id=tenant, signed_requests=True) as signed:
+        eq(signed.token_details().scheme, "AccessKeySignature", "server saw a signature, not a secret")
+        eq(signed.me().id, user_id, "GET with no query")
+        page = signed.topics.list(search=h.prefix + " a&b=c/d", page_size=1, sort_direction="Descending")
+        check(isinstance(page.items, list), "GET with an encoded query string")
+        t = signed.topics.create(name=h.name("signed-topic"), description="Signed POST with a JSON body: caf\u00e9")
+        h.on_cleanup("topic " + t.id, lambda: h.client.topics.delete(t.id))
+        eq(signed.topics.update(t.id, description="signed PUT").description, "signed PUT", "PUT with a body")
+        signed.topics.delete(t.id)
+        expect_error(NotFoundError, lambda: signed.topics.get(t.id))
+    with MyMorningNewsClient(h.config.base_url, access_key=access, secret_key="wrong-" + uuid.uuid4().hex, tenant_id=tenant, signed_requests=True) as bad:
+        expect_error(AuthenticationError, bad.me)
+    # Replaying the exact same signed headers must fail the second time (nonce reuse).
+    path = "/v1.0/api/me"
+    date = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    nonce = "harness-" + uuid.uuid4().hex
+    headers = {"x-access-key": access, "x-tenant-guid": tenant, "x-date": date, "x-nonce": nonce,
+               "x-signature": mmn.sign_request(secret, "GET", path, tenant, date, nonce, b"")}
+    first = requests.get(h.config.base_url + path, headers=headers, timeout=30)
+    eq(first.status_code, 200, "first use of a nonce")
+    second = requests.get(h.config.base_url + path, headers=headers, timeout=30)
+    eq(second.status_code, 401, "replayed nonce is refused")
+    stale = dict(headers, **{"x-nonce": "harness-" + uuid.uuid4().hex, "x-date": "2020-01-01T00:00:00Z"})
+    stale["x-signature"] = mmn.sign_request(secret, "GET", path, tenant, stale["x-date"], stale["x-nonce"], b"")
+    eq(requests.get(h.config.base_url + path, headers=stale, timeout=30).status_code, 401, "stale x-date is refused")
+    return "GET, POST, PUT, DELETE signed; bad secret, replay, and stale date refused"
 
 
 @case("Auth: cross-user client (demo user) signs in")
@@ -654,6 +713,11 @@ def t_runs(h: Harness) -> str:
     check(isinstance(h.client.runs.stages(r.id), list), "stages list")
     check(isinstance(h.client.runs.queries(r.id), list), "queries list")
     check(isinstance(h.client.runs.results(r.id), list), "results list")
+    calls = h.client.runs.llm_calls(r.id, page_size=50)
+    check(isinstance(calls, mmn.Page), "run model calls are paged")
+    eq(all(c.run_id == r.id for c in calls.items), True, "every call belongs to the run")
+    stamps = [c.created_utc or "" for c in calls.items]
+    eq(stamps, sorted(stamps), "oldest first")
     waited = h.client.runs.wait(r.id, timeout=10, interval=0.5)
     check(waited.status in mmn.TERMINAL_RUN_STATUSES, "wait returns a finished run at once")
     return r.id
@@ -663,6 +727,7 @@ def t_runs(h: Harness) -> str:
 def t_run_missing(h: Harness) -> None:
     h.need("tenant")
     expect_error(NotFoundError, lambda: h.client.runs.get("run_missing"), code="NotFound")
+    expect_error(NotFoundError, lambda: h.client.runs.llm_calls("run_missing"))
     expect_error(NotFoundError, lambda: h.client.topics.run("top_missing"))
 
 
@@ -675,6 +740,7 @@ def t_run_live(h: Harness) -> str:
     final = h.client.runs.wait(run.id, timeout=1800, interval=5)
     check(final.status in mmn.TERMINAL_RUN_STATUSES, "finished")
     check(len(h.client.runs.stages(run.id)) >= 1, "stages recorded")
+    check(h.client.runs.llm_calls(run.id).total_count >= 1, "model calls recorded for the run")
     h.client.findings.list(run_id=run.id, include_dry_run=True)
     h.client.runs.email_preview(run.id)
     h.client.topics.pause(tid)
@@ -692,6 +758,44 @@ def t_findings(h: Harness) -> str:
     eq(d.finding.id, page.items[0].id, "finding detail")
     check(isinstance(d.evidence, list), "evidence list")
     return "read " + page.items[0].id
+
+
+@case("Findings: pin, hide, include_hidden, delete")
+def t_findings_edit(h: Harness) -> str:
+    h.need("tenant")
+    expect_error(NotFoundError, lambda: h.client.findings.update("fnd_missing", pinned=True))
+    expect_error(NotFoundError, lambda: h.client.findings.delete("fnd_missing"))
+    check(isinstance(h.client.findings.list(include_hidden=True, pinned=True, page_size=5).items, list), "include_hidden and pinned filters")
+    mine = [f for f in h.client.findings.list(page_size=50, include_dry_run=True, include_hidden=True).items if f.user_id == h.state.get("user_id")]
+    if not mine:
+        raise Skip("no findings of my own to edit")
+    f = mine[0]
+    was_pinned, was_hidden = bool(f.pinned), bool(f.hidden)
+    try:
+        eq(h.client.findings.pin(f.id).pinned, True, "pinned")
+        check(f.id in ids(h.client.findings.list(pinned=True, include_dry_run=True, include_hidden=True, page_size=100)), "listed as pinned")
+        hidden = h.client.findings.hide(f.id)
+        eq(hidden.hidden, True, "hidden")
+        check(f.id not in ids(h.client.findings.list(include_dry_run=True, page_size=1000, run_id=f.run_id)), "hidden findings are left out by default")
+        check(f.id in ids(h.client.findings.list(include_dry_run=True, include_hidden=True, page_size=1000, run_id=f.run_id)), "include_hidden lists it")
+    finally:
+        h.client.findings.update(f.id, pinned=was_pinned, hidden=was_hidden)
+    return "edited and restored " + f.id + " (delete is not exercised on real data)"
+
+
+@case("Evidence: get and 404")
+def t_evidence(h: Harness) -> str:
+    h.need("tenant")
+    expect_error(NotFoundError, lambda: h.client.evidence.get("evd_missing"))
+    for f in h.client.findings.list(page_size=10, include_dry_run=True).items:
+        d = h.client.findings.get(f.id)
+        for view in d.evidence or []:
+            if view.evidence is not None and view.evidence.id:
+                e = h.client.evidence.get(view.evidence.id)
+                eq(e.evidence.id, view.evidence.id, "evidence")
+                eq(h.client.findings.evidence(view.evidence.id).evidence.id, view.evidence.id, "findings.evidence alias")
+                return "read " + view.evidence.id
+    return "no evidence to read"
 
 
 @case("Sources: list, get, 404")
@@ -768,6 +872,16 @@ def t_feedback(h: Harness) -> None:
     eq(u.reason, "SDK harness: edited reason.", "reason edited")
     h.client.feedback.delete(f.id)
     check(f.id not in ids(h.client.feedback.list(target_type="LearnedPreference", target_id=pid)), "retracted")
+
+
+@case("Feedback: Mcp channel")
+def t_feedback_mcp(h: Harness) -> None:
+    pid = h.need("preference")
+    f = h.client.feedback.submit("LearnedPreference", pid, relevance="SomewhatRelevant", channel=mmn.FeedbackChannel.MCP)
+    h.on_cleanup("feedback " + f.id, lambda: h.client.feedback.delete(f.id))
+    eq(f.channel, "Mcp", "channel")
+    check(f.id in ids(h.client.feedback.list(channel="Mcp", target_id=pid)), "listed by channel")
+    h.client.feedback.delete(f.id)
 
 
 @case("Feedback: no rating and no reason raises BadRequestError")
@@ -1019,7 +1133,26 @@ def t_analytics(h: Harness) -> None:
     for name, fn in (("relevance", a.relevance), ("accuracy", a.accuracy), ("feedback", a.feedback),
                      ("reasons", a.reasons), ("suggestions", a.suggestions), ("quality", a.quality)):
         r = fn(from_="2026-01-01T00:00:00Z")
-        check(isinstance(r, dict), name + " returns an object")
+        check(isinstance(r, (dict, mmn.Model)), name + " returns an object")
+    fb = a.feedback(from_="2026-01-01T00:00:00Z")
+    check(isinstance(fb, mmn.FeedbackReport) and isinstance(fb.by_channel_day, list), "feedback report with byChannelDay")
+
+
+@case("Analytics: overview and email reports")
+def t_analytics_new(h: Harness) -> None:
+    h.need("tenant")
+    o = h.client.analytics.overview()
+    check(isinstance(o, mmn.OverviewReport), "overview report")
+    check(isinstance(o.runs, int) and isinstance(o.active_topics, int) and o.from_utc and o.to_utc, "overview counts and window")
+    check((o.runs_completed or 0) <= (o.runs or 0), "completed runs do not exceed runs")
+    e = h.client.analytics.email(from_="2026-01-01T00:00:00Z")
+    check(isinstance(e, mmn.EmailReport), "email report")
+    check(isinstance(e.by_template, list) and isinstance(e.by_status, list) and isinstance(e.by_day, list), "breakdowns")
+    check((e.sent or 0) + (e.failed or 0) <= (e.total or 0), "sent plus failed do not exceed total")
+    if e.by_status:
+        check(isinstance(e.by_status[0], mmn.BreakdownRow), "breakdown rows are typed")
+    if h.state.get("is_admin"):
+        check(isinstance(h.client.analytics.overview(all_=True), mmn.OverviewReport), "tenant-wide overview for admins")
 
 
 @case("Usage: me, report, timeseries")

@@ -34,7 +34,8 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "FullRun", "A run searches, filters, fetches, extracts verified findings, scores, synthesizes, predicts, suggests, and reviews", FullRunAsync),
                 Cases.Case(S, "SecondRunDedupe", "A later run skips seen pages and marks a repeated finding as a duplicate", SecondRunAsync),
                 Cases.Case(S, "Failures", "A critical failure fails the run; an optional failure leaves it partially succeeded", FailuresAsync),
-                Cases.Case(S, "ResearchApi", "Findings, evidence, predictions, suggestions, and run details are served, private, and deleted with their topic", ApiAsync)
+                Cases.Case(S, "ResearchApi", "Findings, evidence, predictions, suggestions, and run details are served, private, and deleted with their topic", ApiAsync),
+                Cases.Case(S, "UserDelete", "Deleting a user removes their topics with all research, editions with schedules, briefings, and feedback", UserDeleteAsync)
             });
         }
 
@@ -259,6 +260,33 @@ namespace Test.Shared.Suites
             Assert.Equal(0L, await f.Server.Context.Database.LearnedPreferences.CountAsync(new LearnedPreferenceFilter { TenantId = f.Topic.TenantId, TopicId = f.Topic.Id }, token).ConfigureAwait(false), "preferences deleted with the topic");
             EnumerationResult<LlmCall> kept = (await f.User.Client.GetAsync("/v1.0/api/llm-calls?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<LlmCall>>();
             Assert.True(kept.Items.Count > 0, "model call records kept for cost accounting");
+        }
+
+        private static async Task UserDeleteAsync(CancellationToken token)
+        {
+            PipelineFixture f = await FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
+            Run run = await RunAsync(f, token).ConfigureAwait(false);
+            Finding finding = (await f.User.Client.GetAsync("/v1.0/api/findings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().Items.First();
+            (await f.User.Client.PostAsync("/v1.0/api/feedback", new { targetType = "Finding", targetId = finding.Id, relevance = "Relevant", reason = "Useful" }, token).ConfigureAwait(false)).Expect(201, "feedback");
+            (await f.User.Client.PostAsync("/v1.0/api/editions", new { name = "Doomed edition" }, token).ConfigureAwait(false)).Expect(201, "edition");
+            (await f.User.Client.PostAsync("/v1.0/api/feed-tokens", new { name = "doomed feed" }, token).ConfigureAwait(false)).Expect(201, "feed token");
+            string tenantId = f.Topic.TenantId;
+            string userId = f.User.User.Id;
+            MyMorningNewsServer server = f.Server;
+            Assert.True(await server.Context.Database.Editions.CountAsync(new EditionFilter { TenantId = tenantId, UserId = userId }, token).ConfigureAwait(false) >= 1, "editions before");
+
+            TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
+            (await admin.DeleteAsync("/v1.0/tenants/" + tenantId + "/users/" + userId, token).ConfigureAwait(false)).Expect(204, "delete user");
+            Assert.True(await server.Context.Database.Users.ReadAsync(tenantId, userId, token).ConfigureAwait(false) == null, "user gone");
+            Assert.Equal(0L, await server.Context.Database.Topics.CountAsync(new TopicFilter { TenantId = tenantId, UserId = userId }, token).ConfigureAwait(false), "topics gone");
+            Assert.True(await server.Context.Database.Runs.ReadAsync(tenantId, run.Id, token).ConfigureAwait(false) == null, "runs gone, not orphaned");
+            Assert.True(await server.Context.Database.Findings.ReadAsync(tenantId, finding.Id, token).ConfigureAwait(false) == null, "findings gone");
+            Assert.Equal(0L, await server.Context.Database.Briefings.CountAsync(new BriefingFilter { TenantId = tenantId, UserId = userId }, token).ConfigureAwait(false), "briefings gone");
+            Assert.Equal(0L, await server.Context.Database.Editions.CountAsync(new EditionFilter { TenantId = tenantId, UserId = userId }, token).ConfigureAwait(false), "editions gone");
+            Assert.Equal(0L, await server.Context.Database.Schedules.CountAsync(new ScheduleFilter { TenantId = tenantId }, token).ConfigureAwait(false), "schedules gone");
+            Assert.Equal(0L, await server.Context.Database.Feedback.CountAsync(new FeedbackFilter { TenantId = tenantId, UserId = userId }, token).ConfigureAwait(false), "feedback gone");
+            Assert.Equal(0L, await server.Context.Database.FeedTokens.CountAsync(new FeedTokenFilter { TenantId = tenantId, UserId = userId }, token).ConfigureAwait(false), "feed tokens gone");
+            Assert.Equal(0L, await server.Context.Database.Artifacts.CountAsync(new ArtifactFilter { TenantId = tenantId, UserId = userId }, token).ConfigureAwait(false), "stored files gone");
         }
     }
 }

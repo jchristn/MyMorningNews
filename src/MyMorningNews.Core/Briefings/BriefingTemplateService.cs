@@ -98,7 +98,8 @@ namespace MyMorningNews.Core.Briefings
         }
 
         /// <summary>
-        /// Save a new version. The name and description follow the front matter.
+        /// Save a new version. The description follows the front matter; the name follows it only when the front matter
+        /// name changed from the previous version, so a name given at creation survives ordinary edits.
         /// </summary>
         /// <param name="template">Template.</param>
         /// <param name="content">Markdown.</param>
@@ -111,7 +112,21 @@ namespace MyMorningNews.Core.Briefings
         {
             ArgumentNullException.ThrowIfNull(template);
             BriefingTemplateDefinition def = Validate(content);
-            if (!String.Equals(def.Name, template.Name, StringComparison.Ordinal) && !await NameTakenAsync(template.TenantId, template.UserId, def.Name, template.Id, token).ConfigureAwait(false))
+            string? previousName = null;
+            BriefingTemplateVersion? current = await CurrentVersionAsync(template, token).ConfigureAwait(false);
+            if (current != null)
+            {
+                try
+                {
+                    previousName = Validate(current.Content).Name;
+                }
+                catch (TemplateInvalidException)
+                {
+                }
+            }
+
+            bool renamedInFrontMatter = !String.Equals(def.Name, previousName, StringComparison.Ordinal);
+            if (renamedInFrontMatter && !String.Equals(def.Name, template.Name, StringComparison.Ordinal) && !await NameTakenAsync(template.TenantId, template.UserId, def.Name, template.Id, token).ConfigureAwait(false))
                 template.Name = def.Name;
             template.Description = def.Description;
             return await AddVersionAsync(template, content, changeNote, userId, true, token).ConfigureAwait(false);

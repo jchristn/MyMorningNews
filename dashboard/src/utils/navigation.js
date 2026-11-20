@@ -10,6 +10,7 @@ import {
   Compass,
   Cpu,
   FileText,
+  Gift,
   Globe,
   Headphones,
   Heart,
@@ -32,6 +33,7 @@ import {
   ShieldCheck,
   Target,
   Terminal,
+  TicketPercent,
   TrendingUp,
   User,
   Users,
@@ -108,7 +110,9 @@ export const NAV_GROUPS = [
       { path: 'admin/users', key: 'users', icon: Users, access: 'tenantAdmin' },
       { path: 'admin/credentials', key: 'credentials', icon: Key, access: 'tenantAdmin' },
       { path: 'admin/roles', key: 'roles', icon: Shield, access: 'tenantAdmin' },
-      { path: 'admin/usage', key: 'adminUsage', icon: ChartPie, access: 'admin' }
+      { path: 'admin/usage', key: 'adminUsage', icon: ChartPie, access: 'admin' },
+      { path: 'admin/plans', key: 'plans', icon: Gift, access: 'admin' },
+      { path: 'admin/promo-codes', key: 'promoCodes', icon: TicketPercent, access: 'admin' }
     ]
   },
   {

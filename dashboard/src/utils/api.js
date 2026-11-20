@@ -772,6 +772,139 @@ export class ApiClient {
     return this._requestBlob('GET', '/v1.0/api/briefing-templates/' + enc(id) + '/export');
   }
 
+  // Promotional codes and plans (plan section 33.2). Global administrators only; everyone else gets 403. List items
+  // and reads are PromoCodeStats: { code, planName, remaining, activeAssignments, revoked, lastRedeemedUtc }.
+  listPromoCodes(query) {
+    return this._request('GET', '/v1.0/api/admin/promo-codes', { query });
+  }
+  getPromoCode(id) {
+    return this._request('GET', '/v1.0/api/admin/promo-codes/' + enc(id));
+  }
+  createPromoCode(body) {
+    return this._request('POST', '/v1.0/api/admin/promo-codes', { body });
+  }
+  // Resolves to the created PromoCode rows (not stats), all sharing one batchId.
+  generatePromoCodes(body) {
+    return this._request('POST', '/v1.0/api/admin/promo-codes/generate', { body });
+  }
+  updatePromoCode(id, body) {
+    return this._request('PUT', '/v1.0/api/admin/promo-codes/' + enc(id), { body });
+  }
+  // 409 Conflict when the code has been used: disable it instead.
+  deletePromoCode(id) {
+    return this._request('DELETE', '/v1.0/api/admin/promo-codes/' + enc(id));
+  }
+  listPromoRedemptions(id) {
+    return this._request('GET', '/v1.0/api/admin/promo-codes/' + enc(id) + '/redemptions');
+  }
+  revokePromoRedemption(id, redemptionId) {
+    return this._request('POST', '/v1.0/api/admin/promo-codes/' + enc(id) + '/redemptions/' + enc(redemptionId) + '/revoke');
+  }
+  applyPromoCode(id, tenantId, userId) {
+    return this._request('POST', '/v1.0/api/admin/promo-codes/' + enc(id) + '/apply', { body: { tenantId, userId } });
+  }
+  // Plans resolve to [{ plan, features }] in sort order.
+  listPlans() {
+    return this._request('GET', '/v1.0/api/admin/plans');
+  }
+  createPlan(body) {
+    return this._request('POST', '/v1.0/api/admin/plans', { body });
+  }
+  // features: { key: value }; an empty value removes that key from the plan.
+  updatePlan(id, body) {
+    return this._request('PUT', '/v1.0/api/admin/plans/' + enc(id), { body });
+  }
+  listPlanAssignments(tenantId, userId) {
+    return this._request('GET', '/v1.0/api/admin/plan-assignments', { query: { tenantId, userId } });
+  }
+  grantPlan(body) {
+    return this._request('POST', '/v1.0/api/admin/plan-assignments', { body });
+  }
+  revokePlanAssignment(id, tenantId) {
+    return this._request('DELETE', '/v1.0/api/admin/plan-assignments/' + enc(id), { query: { tenantId } });
+  }
+  // My effective plan: { plan, features, assignment, endsUtc, upcoming }.
+  getMyPlan() {
+    return this._request('GET', '/v1.0/api/account/plan');
+  }
+  // Resolves to my new effective plan. 409 PromoCodeInvalid carries details.reason.
+  redeemPromoCode(code) {
+    return this._request('POST', '/v1.0/api/promo-codes/redeem', { body: { code } });
+  }
+  checkPromoCode(code) {
+    return this._request('GET', '/v1.0/public/promo-codes/' + enc(code));
+  }
+
+  // Email (Phase 9). Administrators see the whole outbox; members see email sent to them. List items omit bodies.
+  listEmailMessages(query) {
+    return this._request('GET', '/v1.0/api/email-messages', { query });
+  }
+  getEmailMessage(id) {
+    return this._request('GET', '/v1.0/api/email-messages/' + enc(id));
+  }
+  resendEmailMessage(id) {
+    return this._request('POST', '/v1.0/api/email-messages/' + enc(id) + '/resend');
+  }
+  deleteEmailMessage(id) {
+    return this._request('DELETE', '/v1.0/api/email-messages/' + enc(id));
+  }
+  sendTestEmail() {
+    return this._request('POST', '/v1.0/api/email/test');
+  }
+  getRunEmailPreview(runId) {
+    return this._request('GET', '/v1.0/api/runs/' + enc(runId) + '/email-preview');
+  }
+  getEmailPreferences() {
+    return this._request('GET', '/v1.0/api/email-preferences');
+  }
+  updateEmailPreferences(body) {
+    return this._request('PUT', '/v1.0/api/email-preferences', { body });
+  }
+
+  // Feedback and learning (Phase 10). action is one of relevant, somewhat, not-relevant, accurate, partially,
+  // inaccurate, too-early, useful, or not-useful.
+  giveFeedback({ targetType, targetId, action, reason }) {
+    return this._request('POST', '/v1.0/api/feedback', { body: { targetType, targetId, action, reason: reason || null, channel: 'Dashboard' } });
+  }
+  listFeedback(query) {
+    return this._request('GET', '/v1.0/api/feedback', { query });
+  }
+  editFeedback(id, reason) {
+    return this._request('PUT', '/v1.0/api/feedback/' + enc(id), { body: { reason: reason || null } });
+  }
+  retractFeedback(id) {
+    return this._request('DELETE', '/v1.0/api/feedback/' + enc(id));
+  }
+  listPreferences(query) {
+    return this._request('GET', '/v1.0/api/learned-preferences', { query });
+  }
+  getPreference(id) {
+    return this._request('GET', '/v1.0/api/learned-preferences/' + enc(id));
+  }
+  createPreference(body) {
+    return this._request('POST', '/v1.0/api/learned-preferences', { body });
+  }
+  updatePreference(id, body) {
+    return this._request('PUT', '/v1.0/api/learned-preferences/' + enc(id), { body });
+  }
+  deletePreference(id) {
+    return this._request('DELETE', '/v1.0/api/learned-preferences/' + enc(id));
+  }
+  // action: accept, reject, disable, or enable.
+  setPreferenceStatus(id, action) {
+    return this._request('POST', '/v1.0/api/learned-preferences/' + enc(id) + '/' + enc(action));
+  }
+  learnTopic(topicId) {
+    return this._request('POST', '/v1.0/api/topics/' + enc(topicId) + '/learn');
+  }
+  getRankingRecommendation(topicId) {
+    return this._request('GET', '/v1.0/api/topics/' + enc(topicId) + '/ranking-recommendation');
+  }
+  // report: relevance, accuracy, feedback, suggestions, reasons, or quality. query: { topicId, from, to, userId, all }.
+  getAnalytics(report, query) {
+    return this._request('GET', '/v1.0/api/analytics/' + enc(report), { query });
+  }
+
   // API Explorer: returns the raw Response so the explorer can show status, headers, timing, and streams.
   async executeExplorer({ method, path, query, headers, body, signal }) {
     const url = this.baseUrl + path + buildQuery(query);

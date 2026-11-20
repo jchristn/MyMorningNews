@@ -40,7 +40,9 @@ const VIEWS = {
   models: lazy(() => import('./views/ModelsView.jsx')),
   prompts: lazy(() => import('./views/PromptsView.jsx')),
   usage: lazy(() => import('./views/UsageView.jsx')),
-  adminUsage: lazy(() => import('./views/AdminUsageView.jsx'))
+  adminUsage: lazy(() => import('./views/AdminUsageView.jsx')),
+  plans: lazy(() => import('./views/PlansView.jsx')),
+  promoCodes: lazy(() => import('./views/PromoCodesView.jsx'))
 };
 
 function RouteElement({ route }) {

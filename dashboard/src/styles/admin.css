@@ -1,0 +1,96 @@
+/* Plans, promotional codes, and the account plan card. Tokens only. */
+.promo-usage {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 96px;
+}
+
+.promo-usage-text {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.promo-usage-track {
+  display: block;
+  width: 100%;
+  max-width: 140px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+.promo-usage-fill {
+  display: block;
+  height: 100%;
+  background: var(--color-primary);
+}
+
+.promo-usage-fill.high {
+  background: var(--color-warning);
+}
+
+.promo-usage-fill.full {
+  background: var(--color-danger);
+}
+
+.promo-batch-list {
+  width: 100%;
+  margin-top: 8px;
+  resize: vertical;
+}
+
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.plan-card h3 {
+  margin-top: 16px;
+}
+
+.plan-features .kv-row dt {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.plan-feature-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 12px;
+}
+
+.plan-feature-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.plan-upcoming {
+  margin: 0;
+  padding-inline-start: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.plan-redeem {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+@media (max-width: 640px) {
+  .plan-feature-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .plan-feature-row input:first-child {
+    grid-column: 1 / -1;
+  }
+}

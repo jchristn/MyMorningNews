@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Braces, CopyPlus, KeyRound, Pencil, Plus, ShieldCheck, Trash2 } from 'lucide-react';
+import { Braces, CopyPlus, Gift, KeyRound, Pencil, Plus, ShieldCheck, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../context/AppContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -18,6 +18,7 @@ import PasswordInput from '../components/PasswordInput.jsx';
 import PermissionsModal from '../components/PermissionsModal.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
 import TenantPicker, { useAdminTenant } from '../components/TenantPicker.jsx';
+import UserPlanModal from './plans/UserPlanModal.jsx';
 
 const EMPTY = { email: '', firstName: '', lastName: '', password: '', isAdmin: false, isTenantAdmin: false, timeZone: '', locale: '', active: true };
 
@@ -33,6 +34,7 @@ export default function UsersView() {
   const [json, setJson] = useState(null);
   const [deleting, setDeleting] = useState(null);
   const [perms, setPerms] = useState(null);
+  const [planUser, setPlanUser] = useState(null);
   const [refresh, setRefresh] = useState(0);
 
   const fetchPage = useCallback((q) => apiClient.listUsers(tenantId, pagedQuery(q)), [apiClient, tenantId]);
@@ -116,6 +118,7 @@ export default function UsersView() {
             { key: 'edit', label: t('common.edit'), icon: Pencil, onClick: () => open(r) },
             { key: 'dup', label: t('common.duplicate'), icon: CopyPlus, onClick: () => open(r, true) },
             { key: 'perms', label: t('users.effectivePermissions'), icon: ShieldCheck, onClick: () => setPerms(r) },
+            ...(isAdmin ? [{ key: 'plan', label: t('plans.userPanel.action'), icon: Gift, onClick: () => setPlanUser(r) }] : []),
             { key: 'reset', label: t('users.resetPassword'), icon: KeyRound, onClick: () => open(r) },
             { key: 'json', label: t('common.viewJson'), icon: Braces, onClick: () => setJson(r) },
             { key: 'delete', label: t('common.delete'), icon: Trash2, danger: true, disabled: r.isProtected || (identity && identity.userId === r.id), onClick: () => setDeleting(r) }
@@ -177,6 +180,7 @@ export default function UsersView() {
           </FormField>
         </div>
       </Modal>
+      {planUser ? <UserPlanModal tenantId={tenantId} user={planUser} onClose={() => setPlanUser(null)} /> : null}
       {perms ? <PermissionsModal tenantId={tenantId} principal={perms} kind="user" onClose={() => setPerms(null)} /> : null}
       <JsonViewerModal open={Boolean(json)} value={json} onClose={() => setJson(null)} />
       <ConfirmModal

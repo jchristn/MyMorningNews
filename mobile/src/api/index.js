@@ -17,7 +17,7 @@ export {
 } from './errors';
 export { routes } from './routes';
 export { authApi } from './auth';
-export { accountApi, serverApi, devicesApi } from './account';
+export { accountApi, serverApi, devicesApi, planApi, emailPreferencesApi, feedTokensApi } from './account';
 export {
   topicsApi,
   refinementApi,
@@ -31,5 +31,9 @@ export {
   briefingsApi,
   editionsApi,
   feedbackApi,
+  learningApi,
   insightsApi,
+  mediaApi,
+  ANALYTICS_REPORTS,
+  FEEDBACK_CHANNEL,
 } from './research';

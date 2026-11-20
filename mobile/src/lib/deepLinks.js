@@ -4,6 +4,7 @@
 //   https://app.mymorningnews.ai/briefings/{id}            universal links from email and the web
 //   https://app.mymorningnews.ai/dashboard/briefings/{id}  dashboard URLs (all routes live under /dashboard)
 //   /briefings/{id}                                        a path from the router
+//   mymorningnews://redeem?code=SPRING-2027                promotional codes (also /account/redeem?code=)
 // They map onto the app's routes. Anything unknown returns null and the caller falls back to Today.
 
 export const APP_HOST = 'app.mymorningnews.ai';
@@ -46,6 +47,32 @@ export function linkSegments(input) {
 
 const enc = encodeURIComponent;
 
+/** Query parameters of a link (`?a=1&b=2`, before any `#`), decoded. */
+export function linkQuery(input) {
+  const query = {};
+  if (!input || typeof input !== 'string') return query;
+  const q = input.split('#')[0].split('?')[1];
+  if (!q) return query;
+  for (const pair of q.split('&')) {
+    if (!pair) continue;
+    const [k, v = ''] = pair.split('=');
+    try {
+      query[decodeURIComponent(k)] = decodeURIComponent(v.replace(/\+/g, ' '));
+    } catch {
+      query[k] = v;
+    }
+  }
+  return query;
+}
+
+/** The Redeem screen, with the code from the link when it looks like one (letters, digits, and dashes, up to 40). */
+function redeemRoute(input) {
+  const code = String(linkQuery(input).code || '')
+    .trim()
+    .toUpperCase();
+  return /^[A-Z0-9-]{1,40}$/.test(code) ? '/account/redeem?code=' + enc(code) : '/account/redeem';
+}
+
 /** Tabs whose nested paths are app routes already (for example /today/briefings/{id}, /account/profile). */
 const APP_ROUTE_ROOTS = ['today', 'listen', 'account', 'insights'];
 
@@ -55,6 +82,7 @@ export function mapDeepLink(input) {
   if (!segments) return null;
   const [first, second, third] = segments;
   if (!first) return '/today';
+  if (first === 'redeem' || first === 'promo' || (first === 'account' && second === 'redeem')) return redeemRoute(input);
   // The app's own routes pass through unchanged.
   if (APP_ROUTE_ROOTS.includes(first) && second && first !== 'insights') return '/' + segments.map(enc).join('/');
   switch (first) {

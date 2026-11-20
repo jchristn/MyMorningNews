@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { listItems } from '@/api/client';
 import { suggestionsApi } from '@/api/research';
 import { ButtonRow, ChipGroup } from '@/components/Chips';
+import { RatingControl, useFeedbackMap } from '@/components/feedback/RatingControl';
 import { EmptyState, ResourceView } from '@/components/states';
 import { Banner, Button, ListRow, Screen, T } from '@/components/ui';
 import { SUGGESTION_PRIORITY_TONES, SUGGESTION_STATUS_TONES } from '@/lib/enums';
@@ -27,8 +28,11 @@ export function suggestionStatusBody(status, days, now = Date.now()) {
   return { status };
 }
 
-/** One suggestion with its actions: Accept, Snooze (1 day, 1 week, 1 month), Dismiss, and Done. */
-export function SuggestionCard({ suggestion, onChanged }) {
+/**
+ * One suggestion with its actions: Accept, Snooze (1 day, 1 week, 1 month), Dismiss, and Done, and, with `rating`
+ * (`{ current, onChange }`), Useful or Not useful with a reason.
+ */
+export function SuggestionCard({ suggestion, onChanged, rating }) {
   const { t, i18n } = useTranslation();
   const { client } = useAuth();
   const [busy, setBusy] = useState(null);
@@ -62,6 +66,7 @@ export function SuggestionCard({ suggestion, onChanged }) {
       {(s.findingIds || []).map((fid, i) => (
         <ListRow key={fid} icon="search-outline" title={t('mobile.suggestions.basedOn', { number: i + 1 })} onPress={() => router.push(findingHref(fid))} />
       ))}
+      {rating ? <RatingControl targetType="Suggestion" targetId={s.id} title={s.title} current={rating.current} onChange={rating.onChange} /> : null}
       {error ? <Banner kind="danger">{error}</Banner> : null}
       {open ? (
         <ButtonRow>
@@ -93,6 +98,7 @@ export function SuggestionsScreen({ topicId }) {
   const { t } = useTranslation();
   const { client } = useAuth();
   const [filter, setFilter] = useState('New');
+  const ratings = useFeedbackMap('Suggestion', topicId ? { topicId } : undefined);
   const resource = useResource(() => suggestionsApi.list(client, { pageNumber: 1, pageSize: 100, sortBy: 'createdUtc', sortDirection: 'Descending', status: filter === 'all' ? undefined : filter, topicId }), [client, filter, topicId]);
   const items = listItems(resource.data);
   const replace = (updated) =>
@@ -107,7 +113,7 @@ export function SuggestionsScreen({ topicId }) {
       <ResourceView resource={resource} feature={t('mobile.features.suggestions')} isEmpty={() => items.length === 0} empty={<EmptyState icon="bulb-outline" title={t('mobile.suggestions.emptyTitle')} body={t('mobile.suggestions.emptyBody')} />}>
         <View style={{ gap: spacing.sm }}>
           {items.map((s) => (
-            <SuggestionCard key={s.id} suggestion={s} onChanged={replace} />
+            <SuggestionCard key={s.id} suggestion={s} onChanged={replace} rating={ratings.available ? { current: ratings.map[s.id] || null, onChange: (fb) => ratings.set(s.id, fb) } : null} />
           ))}
         </View>
       </ResourceView>

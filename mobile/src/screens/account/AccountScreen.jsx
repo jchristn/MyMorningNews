@@ -10,20 +10,32 @@ import { useAuth } from '@/state/AuthContext';
 import { usePrefs } from '@/state/PrefsContext';
 import { useIsWide } from '@/state/useLayout';
 import { spacing } from '@/theme/palette';
+import { useServer } from '@/state/ServerContext';
 import { DeleteSection, ExportSection } from './DataSections';
+import { EmailSection } from './EmailSection';
 import { AboutSection, ServerSection } from './InfoSections';
 import { NotificationsSection } from './NotificationsSection';
 import { PasswordSection } from './PasswordSection';
+import { PlanSection, RedeemSection } from './PlanSections';
+import { PodcastSection } from './PodcastSection';
 import { AppearanceSection, LanguageSection, SecuritySection } from './PreferenceSections';
 import { ProfileSection } from './ProfileSection';
 import { useSignOut } from './useSignOut';
 
-/** Account sections, in menu order. Each has a route under /account and renders beside the menu on tablets. */
+/**
+ * Account sections, in menu order. Each has a route under /account and renders beside the menu on tablets. `hidden`
+ * sections have a route but no menu row (Redeem opens from Plan and from links); `requires: 'audio'` hides a row when
+ * the server has audio turned off.
+ */
 export const ACCOUNT_SECTIONS = [
   { key: 'profile', icon: 'person-outline', group: 'account', Component: ProfileSection },
   { key: 'password', icon: 'key-outline', group: 'account', Component: PasswordSection },
+  { key: 'plan', icon: 'ribbon-outline', group: 'account', Component: PlanSection },
+  { key: 'redeem', icon: 'gift-outline', group: 'account', Component: RedeemSection, hidden: true },
   { key: 'usage', icon: 'stats-chart-outline', group: 'account', Component: UsageScreen },
-  { key: 'notifications', icon: 'notifications-outline', group: 'app', Component: NotificationsSection },
+  { key: 'notifications', icon: 'notifications-outline', group: 'delivery', Component: NotificationsSection },
+  { key: 'email', icon: 'mail-outline', group: 'delivery', Component: EmailSection },
+  { key: 'podcast', icon: 'radio-outline', group: 'delivery', Component: PodcastSection, requires: 'audio' },
   { key: 'language', icon: 'language-outline', group: 'app', Component: LanguageSection },
   { key: 'appearance', icon: 'contrast-outline', group: 'app', Component: AppearanceSection },
   { key: 'security', icon: 'finger-print-outline', group: 'app', Component: SecuritySection },
@@ -33,13 +45,24 @@ export const ACCOUNT_SECTIONS = [
   { key: 'delete', icon: 'trash-outline', group: 'data', Component: DeleteSection, destructive: true },
 ];
 
-const GROUPS = ['account', 'app', 'data'];
+const GROUPS = ['account', 'delivery', 'app', 'data'];
 
-/** Account: profile, password, usage, notifications, language, theme, lock, server, about, export, delete, sign out. */
+/** Menu rows for the server's switches (client config). */
+export function visibleSections(config) {
+  const audio = !config || config.audioEnabled !== false;
+  return ACCOUNT_SECTIONS.filter((s) => !s.hidden && (s.requires !== 'audio' || audio));
+}
+
+/**
+ * Account: profile, password, plan and promotional codes, usage, notifications, email preferences, podcast feeds,
+ * language, theme, lock, server, about, export, delete, and sign out.
+ */
 export function AccountScreen() {
   const { t } = useTranslation();
   const { state } = useAuth();
   const { prefs } = usePrefs();
+  const { config } = useServer();
+  const sections = visibleSections(config);
   const wide = useIsWide();
   const signOut = useSignOut();
   const [selected, setSelected] = useState('profile');
@@ -59,7 +82,7 @@ export function AccountScreen() {
         <View key={group} style={{ gap: spacing.sm }}>
           <SectionHeader title={t('mobile.account.groups.' + group)} />
           <Card>
-            {ACCOUNT_SECTIONS.filter((s) => s.group === group).map((s) => (
+            {sections.filter((s) => s.group === group).map((s) => (
               <ListRow key={s.key} testID={'account-' + s.key} icon={s.icon} title={t('mobile.account.sections.' + s.key)} destructive={s.destructive} selected={wide && selected === s.key} onPress={() => open(s.key)} />
             ))}
           </Card>

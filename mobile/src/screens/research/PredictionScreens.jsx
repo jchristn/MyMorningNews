@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { predictionsApi } from '@/api/research';
 import { ButtonRow, ChipGroup } from '@/components/Chips';
 import { FeedbackBar } from '@/components/FeedbackBar';
+import { RatingControl, useFeedbackMap } from '@/components/feedback/RatingControl';
 import { Banner, Button, Card, Field, KeyValue, ListRow, SectionHeader, T } from '@/components/ui';
 import { PREDICTION_RESOLUTIONS, PREDICTION_STATUS_TONES, isPredictionDue } from '@/lib/enums';
 import { formatDate, formatDateTime, formatNumber } from '@/lib/format';
@@ -38,6 +39,7 @@ export function PredictionsScreen() {
   const { t, i18n } = useTranslation();
   const { client } = useAuth();
   const [filter, setFilter] = useState('due');
+  const ratings = useFeedbackMap('Prediction');
   return (
     <ResourceListScreen
       testID="predictions-screen"
@@ -51,7 +53,8 @@ export function PredictionsScreen() {
       renderDetail={(id, { onChanged }) => <PredictionDetail key={id} id={id} onChanged={onChanged} />}
       placeholder={t('mobile.predictions.select')}
       renderRow={(p, { selected, onPress }) => (
-        <ItemCard
+        <View style={{ gap: spacing.xs }}>
+          <ItemCard
           title={p.statement}
           selected={selected}
           onPress={onPress}
@@ -62,7 +65,9 @@ export function PredictionsScreen() {
             { label: t('mobile.predictions.confidence', { value: pct(p.confidence, i18n.language) }), tone: 'neutral' },
           ]}
           lines={[t('mobile.predictions.by', { date: formatDate(p.horizonUtc, i18n.language) })]}
-        />
+          />
+          {ratings.available ? <RatingControl compact targetType="Prediction" targetId={p.id} title={p.statement} current={ratings.map[p.id] || null} onChange={(fb) => ratings.set(p.id, fb)} /> : null}
+        </View>
       )}
     />
   );
@@ -182,7 +187,7 @@ export function PredictionDetail({ id, onChanged }) {
                 }}
               />
             </View>
-            <FeedbackBar targetType="Prediction" targetId={p.id} />
+            <FeedbackBar targetType="Prediction" targetId={p.id} title={p.statement} />
           </>
         );
       }}

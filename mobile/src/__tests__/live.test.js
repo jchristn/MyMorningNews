@@ -7,9 +7,11 @@
 import { AuthController } from '@/auth/AuthController';
 import { memoryTokenStorage } from '@/auth/tokens';
 import { ApiClient, listItems } from '@/api/client';
-import { accountApi, devicesApi, serverApi } from '@/api/account';
+import { accountApi, devicesApi, emailPreferencesApi, feedTokensApi, planApi, serverApi } from '@/api/account';
 import { authApi } from '@/api/auth';
-import { briefingsApi, editionsApi, findingsApi, predictionsApi, refinementApi, requestsApi, runsApi, schedulesApi, sourcesApi, suggestionsApi, topicsApi } from '@/api/research';
+import { ANALYTICS_REPORTS, briefingsApi, editionsApi, feedbackApi, findingsApi, insightsApi, learningApi, mediaApi, predictionsApi, refinementApi, requestsApi, runsApi, schedulesApi, sourcesApi, suggestionsApi, topicsApi } from '@/api/research';
+import { promoReason } from '@/lib/promo';
+import { mediaTrack } from '@/player/tracks';
 import { isItemNotFound, isModelError, isNotAvailable } from '@/api/errors';
 import { routes } from '@/api/routes';
 import { parseBriefing } from '@/lib/markdown';
@@ -17,6 +19,8 @@ import { parseBriefing } from '@/lib/markdown';
 const SERVER = process.env.MYMORNINGNEWS_LIVE_SERVER;
 const EMAIL = process.env.MYMORNINGNEWS_LIVE_EMAIL || 'admin@mymorningnews';
 const PASSWORD = process.env.MYMORNINGNEWS_LIVE_PASSWORD || 'password';
+// A member account for the plan, audio, and feedback checks (the seeded demo user by default).
+const MEMBER = process.env.MYMORNINGNEWS_LIVE_MEMBER_EMAIL || 'demo@mymorningnews';
 const live = SERVER ? describe : describe.skip;
 // The Jest preset replaces fetch with a stub, so live calls use a minimal fetch over node:http (status and text are
 // all the ApiClient reads).
@@ -157,6 +161,89 @@ live('live server contracts', () => {
     } finally {
       for (const step of cleanup) await step().catch(() => undefined);
       await auth.signOut();
+    }
+  });
+
+  it('plans and promotional codes: plan, every refusal reason path, redeem once, and clean up', async () => {
+    const admin = new AuthController({ serverUrl: SERVER, storage: memoryTokenStorage(), fetchImpl });
+    const member = new AuthController({ serverUrl: SERVER, storage: memoryTokenStorage(), fetchImpl });
+    await admin.signIn({ email: EMAIL, password: PASSWORD });
+    await member.signIn({ email: MEMBER, password: PASSWORD });
+    const a = admin.client;
+    const m = member.client;
+    const code = 'QA-MOBILE-' + Date.now().toString(36).toUpperCase();
+    let created = null;
+    try {
+      const before = await planApi.get(m);
+      expect(before).toMatchObject({ plan: expect.objectContaining({ name: expect.any(String) }), features: expect.any(Object), upcoming: expect.any(Array) });
+      expect(promoReason(await planApi.redeem(m, 'QA-NO-SUCH-CODE').catch((e) => e))).toBe('NotFound');
+      created = await a.post('/v1.0/api/admin/promo-codes', { code, durationDays: 7, maxRedemptions: 1 });
+      const plan = await planApi.redeem(m, code.toLowerCase());
+      expect(plan).toMatchObject({ plan: expect.objectContaining({ name: expect.any(String) }) });
+      expect(promoReason(await planApi.redeem(m, code).catch((e) => e))).toMatch(/AlreadyRedeemed|Exhausted/);
+    } finally {
+      if (created) {
+        const id = created.id || (created.code && created.code.id) || (created.promoCode && created.promoCode.id);
+        const redemptions = listItems(await a.get('/v1.0/api/admin/promo-codes/' + id + '/redemptions').catch(() => []));
+        for (const r of redemptions) await a.post('/v1.0/api/admin/promo-codes/' + id + '/redemptions/' + r.id + '/revoke', {}).catch(() => undefined);
+        if (redemptions.length) await a.put('/v1.0/api/admin/promo-codes/' + id, { enabled: false }).catch(() => undefined);
+        else await a.delete('/v1.0/api/admin/promo-codes/' + id).catch(() => undefined);
+      }
+      await admin.signOut();
+      await member.signOut();
+    }
+  });
+
+  it('audio, feeds, email preferences, feedback, learning, and analytics for a member', async () => {
+    const member = new AuthController({ serverUrl: SERVER, storage: memoryTokenStorage(), fetchImpl });
+    await member.signIn({ email: MEMBER, password: PASSWORD });
+    const c = member.client;
+    const cleanup = [];
+    try {
+      const config = await serverApi.clientConfig(c);
+      expect(typeof config.audioEnabled).toBe('boolean');
+      expect(typeof config.emailEnabled).toBe('boolean');
+
+      // Ready audio streams from the artifact with the bearer token and answers a Range request with 206.
+      const episodes = listItems(await mediaApi.list(c, { status: 'Ready', pageSize: 5 }));
+      if (episodes.length) {
+        const detail = await mediaApi.get(c, episodes[0].id);
+        expect(detail).toMatchObject({ media: expect.objectContaining({ id: episodes[0].id }), chapters: expect.any(Array), audioPath: expect.stringMatching(/^\/v1\.0\/api\/artifacts\/.+\/content$/) });
+        const track = mediaTrack(detail, { briefingId: episodes[0].briefingId, client: c, token: await member.getAccessToken() });
+        const ranged = await fetchImpl(track.uri, { headers: { ...track.headers, Range: 'bytes=0-15' } });
+        expect(ranged.status).toBe(206);
+        const brief = await briefingsApi.get(c, episodes[0].briefingId);
+        expect(brief.audio && brief.audio.id).toBeTruthy();
+      }
+
+      const feed = await feedTokensApi.create(c, { name: 'QA mobile live ' + Date.now() });
+      cleanup.unshift(() => feedTokensApi.revoke(c, feed.token.id, { purge: true }));
+      cleanup.unshift(() => feedTokensApi.revoke(c, feed.token.id));
+      expect(feed.feedUrl).toMatch(/\/v1\.0\/public\/feeds\/.+\/podcast\.xml$/);
+      expect((await feedTokensApi.list(c)).map((x) => x.id)).toContain(feed.token.id);
+
+      const prefs = await emailPreferencesApi.get(c);
+      expect(typeof prefs.runEmails).toBe('boolean');
+      await expect(emailPreferencesApi.update(c, { runEmails: prefs.runEmails })).resolves.toMatchObject({ runEmails: prefs.runEmails });
+
+      const briefing = listItems(await briefingsApi.list(c, { status: 'Ready', pageSize: 1 }))[0];
+      if (briefing) {
+        const saved = await feedbackApi.submit(c, { targetType: 'Briefing', targetId: briefing.id, action: 'relevant', reason: 'QA mobile live' });
+        cleanup.unshift(() => feedbackApi.retract(c, saved.id));
+        expect(saved).toMatchObject({ channel: 'Mobile', relevance: 'Relevant' });
+        expect(await feedbackApi.current(c, 'Briefing', briefing.id)).toMatchObject({ id: saved.id });
+        await expect(feedbackApi.update(c, saved.id, 'QA mobile live, edited')).resolves.toMatchObject({ reason: 'QA mobile live, edited' });
+      }
+
+      const pref = await learningApi.create(c, { statement: 'QA mobile live preference', kind: 'Avoid' });
+      cleanup.unshift(() => learningApi.remove(c, pref.id));
+      await expect(learningApi.act(c, pref.id, 'disable')).resolves.toMatchObject({ status: 'Disabled' });
+      await expect(learningApi.act(c, pref.id, 'enable')).resolves.toMatchObject({ status: 'Active' });
+
+      for (const name of ANALYTICS_REPORTS) await expect(insightsApi.analytics(c, name)).resolves.toEqual(expect.any(Object));
+    } finally {
+      for (const step of cleanup) await step().catch(() => undefined);
+      await member.signOut();
     }
   });
 });

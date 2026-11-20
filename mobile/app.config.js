@@ -127,6 +127,7 @@ module.exports = () => {
             { scheme: 'https', host: ASSOCIATED_DOMAIN, pathPrefix: '/findings' },
             { scheme: 'https', host: ASSOCIATED_DOMAIN, pathPrefix: '/suggestions' },
             { scheme: 'https', host: ASSOCIATED_DOMAIN, pathPrefix: '/dashboard' },
+            { scheme: 'https', host: ASSOCIATED_DOMAIN, pathPrefix: '/redeem' },
           ],
           category: ['BROWSABLE', 'DEFAULT'],
         },

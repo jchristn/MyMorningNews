@@ -6,6 +6,7 @@ import { findingsApi } from '@/api/research';
 import { HorizontalBarChart } from '@/charts/HorizontalBarChart';
 import { ChipGroup } from '@/components/Chips';
 import { FeedbackBar } from '@/components/FeedbackBar';
+import { RatingControl, useFeedbackMap } from '@/components/feedback/RatingControl';
 import { openLink } from '@/components/LegalFooter';
 import { Badge, Button, Card, KeyValue, SectionHeader, T } from '@/components/ui';
 import { EVIDENCE_ROLE_TONES, FINDING_TIERS, FINDING_TIER_TONES, SCORE_COMPONENTS } from '@/lib/enums';
@@ -26,10 +27,13 @@ export function findingsQuery({ tier, minScore, topicId, runId } = {}) {
   return { pageNumber: 1, pageSize: 50, sortBy: 'relevanceScore', sortDirection: 'Descending', tier: tier && tier !== 'all' ? tier : undefined, minScore: minScore > 0 ? minScore : undefined, topicId, runId };
 }
 
-/** One finding row: title, tier, score, category, and the summary. */
-export function FindingRow({ finding, onPress, selected }) {
+/**
+ * One finding row: title, tier, score, category, and the summary. With `rating` (`{ current, onChange }`) the inline
+ * rating chips sit under the card (outside its button, so screen readers reach each chip).
+ */
+export function FindingRow({ finding, onPress, selected, rating }) {
   const { t, i18n } = useTranslation();
-  return (
+  const card = (
     <ItemCard
       title={finding.title}
       onPress={onPress}
@@ -44,6 +48,13 @@ export function FindingRow({ finding, onPress, selected }) {
       lines={[finding.summary, formatDate(finding.publishedUtc || finding.createdUtc, i18n.language)]}
     />
   );
+  if (!rating) return card;
+  return (
+    <View style={{ gap: spacing.xs }}>
+      {card}
+      <RatingControl compact targetType="Finding" targetId={finding.id} title={finding.title} current={rating.current} onChange={rating.onChange} />
+    </View>
+  );
 }
 
 /** Findings across topics (or one topic or run), ranked, with tier and minimum score filters. */
@@ -52,6 +63,7 @@ export function FindingsList({ topicId, runId, testID = 'findings-screen', embed
   const { client } = useAuth();
   const [tier, setTier] = useState('all');
   const [minScore, setMinScore] = useState(0);
+  const ratings = useFeedbackMap('Finding', topicId ? { topicId } : undefined);
   const filters = (
     <View style={{ gap: spacing.sm }}>
       <ChipGroup scroll options={['all', ...FINDING_TIERS].map((v) => ({ value: v, label: v === 'all' ? t('mobile.findings.allTiers') : t('mobile.enums.tier.' + v), testID: 'tier-' + v }))} value={tier} onChange={setTier} accessibilityLabel={t('mobile.findings.tier')} />
@@ -69,7 +81,9 @@ export function FindingsList({ topicId, runId, testID = 'findings-screen', embed
       detailHref={hrefFor}
       renderDetail={embedded ? undefined : (id) => <FindingDetail key={id} id={id} />}
       placeholder={t('mobile.findings.select')}
-      renderRow={(f, { selected, onPress }) => <FindingRow finding={f} selected={selected} onPress={onPress} />}
+      renderRow={(f, { selected, onPress }) => (
+        <FindingRow finding={f} selected={selected} onPress={onPress} rating={ratings.available ? { current: ratings.map[f.id] || null, onChange: (fb) => ratings.set(f.id, fb) } : null} />
+      )}
     />
   );
 }
@@ -155,7 +169,7 @@ export function FindingDetail({ id }) {
             </Card>
             {f.runId ? <Button title={t('mobile.findings.openRun')} kind="secondary" icon="git-network-outline" onPress={() => router.push('/topics/runs/' + encodeURIComponent(f.runId))} /> : null}
             {f.isUpdateOfFindingId ? <Button title={t('mobile.findings.openEarlier')} kind="ghost" onPress={() => router.push(findingHref(f.isUpdateOfFindingId))} /> : null}
-            <FeedbackBar targetType="Finding" targetId={f.id} />
+            <FeedbackBar targetType="Finding" targetId={f.id} title={f.title} />
           </>
         );
       }}

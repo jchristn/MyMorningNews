@@ -4,27 +4,65 @@ import { Asset } from 'expo-asset';
 import { router, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { listItems } from '@/api/client';
-import { briefingsApi } from '@/api/research';
+import { mediaApi } from '@/api/research';
+import { artworkUri } from '@/components/player/BriefingAudio';
 import { PlayerPanel } from '@/components/player/PlayerPanel';
 import { EmptyState, ResourceView } from '@/components/states';
 import { Banner, Button, Card, IconButton, KeyValue, ListRow, Screen, SectionHeader, T } from '@/components/ui';
-import { formatBytes, formatDate } from '@/lib/format';
+import { formatBytes, formatClock, formatDate } from '@/lib/format';
 import { usePlayer } from '@/player/PlayerContext';
 import { testToneTrack } from '@/player/testTone';
+import { downloadedTrack, mediaTrack } from '@/player/tracks';
 import { useAuth } from '@/state/AuthContext';
 import { useResource } from '@/state/useResource';
 import { useTheme } from '@/theme/ThemeContext';
 import { spacing } from '@/theme/palette';
-import { briefingAudio, itemDate, itemTitle } from '../common/items';
+import { itemTitle } from '../common/items';
 
-/** Listen: what is playing, the episode list (briefings with audio), and downloads. */
+/** Plays an episode from the Listen list: the downloaded file when there is one, otherwise streamed with chapters. */
+export function useEpisodePlayer() {
+  const { auth, client } = useAuth();
+  const { service, downloads } = usePlayer();
+  return async (episode) => {
+    const briefingId = episode.briefingId || episode.id;
+    let track = null;
+    if (await downloads.localUri(briefingId, episode.id)) track = downloadedTrack(await downloads.get(briefingId), { artworkUrl: artworkUri() });
+    if (!track) {
+      const detail = await mediaApi.get(client, episode.id);
+      const token = await auth.getAccessToken();
+      track = mediaTrack(detail, { briefingId, client, token, artworkUrl: artworkUri() });
+    }
+    if (!track) throw new Error('This episode has no audio file.');
+    await service.load(track);
+  };
+}
+
+/**
+ * Listen: what is playing, the episode list (ready audio, `GET /v1.0/api/media?status=Ready`, newest first; tap to
+ * play, or open the briefing), downloads, and the podcast feeds.
+ */
 export function ListenScreen() {
   const p = useTheme();
   const { t, i18n } = useTranslation();
   const { client } = useAuth();
   const { state } = usePlayer();
-  const episodes = useResource(() => briefingsApi.list(client, { pageNumber: 1, pageSize: 50, sortBy: 'CreatedUtc', sortDirection: 'Descending', hasAudio: true }), [client]);
-  const items = listItems(episodes.data).filter((b) => briefingAudio(b));
+  const play = useEpisodePlayer();
+  const [error, setError] = useState(null);
+  const [busy, setBusy] = useState(null);
+  const episodes = useResource(() => mediaApi.list(client, { pageNumber: 1, pageSize: 50, sortBy: 'CreatedUtc', sortDirection: 'Descending', status: 'Ready' }), [client]);
+  const items = listItems(episodes.data).filter((m) => m.status === 'Ready' || !m.status);
+  const start = async (episode) => {
+    setBusy(episode.id);
+    setError(null);
+    try {
+      await play(episode);
+      router.push('/listen/player');
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(null);
+    }
+  };
   return (
     <Screen testID="listen-screen" refreshControl={<RefreshControl refreshing={episodes.refreshing} onRefresh={episodes.reload} tintColor={p.primary} />}>
       {state.track ? (
@@ -34,15 +72,34 @@ export function ListenScreen() {
         </Card>
       ) : null}
       <SectionHeader title={t('mobile.listen.episodes')} />
+      {error ? <Banner kind="danger">{error}</Banner> : null}
       <ResourceView resource={episodes} feature={t('mobile.features.audio')} isEmpty={() => items.length === 0} empty={<EmptyState icon="headset-outline" title={t('mobile.listen.emptyTitle')} body={t('mobile.listen.emptyBody')} />}>
         <Card>
-          {items.map((b) => (
-            <ListRow key={b.id} icon="play-circle-outline" title={itemTitle(b)} detail={itemDate(b) ? formatDate(itemDate(b), i18n.language) : undefined} onPress={() => router.push('/today/briefings/' + encodeURIComponent(b.id))} />
-          ))}
+          {items.map((m) => {
+            const when = m.completedUtc || m.createdUtc;
+            const detail = [when ? formatDate(when, i18n.language) : null, m.durationSeconds ? formatClock(m.durationSeconds) : null].filter(Boolean).join(' · ');
+            return (
+              <ListRow
+                key={m.id}
+                testID={'episode-' + m.id}
+                icon={busy === m.id ? 'hourglass-outline' : state.track && state.track.mediaId === m.id ? 'volume-high-outline' : 'play-circle-outline'}
+                title={itemTitle(m)}
+                detail={detail}
+                accessibilityHint={t('mobile.listen.playHint')}
+                onPress={() => void start(m)}
+                right={
+                  m.briefingId ? (
+                    <IconButton icon="document-text-outline" testID={'episode-open-' + m.id} accessibilityLabel={t('mobile.listen.openBriefing', { title: itemTitle(m) })} onPress={() => router.push('/today/briefings/' + encodeURIComponent(m.briefingId))} />
+                  ) : null
+                }
+              />
+            );
+          })}
         </Card>
       </ResourceView>
       <Card>
         <ListRow icon="download-outline" title={t('mobile.downloads.title')} detail={t('mobile.downloads.subtitle')} onPress={() => router.push('/listen/downloads')} />
+        <ListRow icon="radio-outline" title={t('mobile.listen.feeds')} detail={t('mobile.listen.feedsDetail')} onPress={() => router.push('/account/podcast')} testID="open-feeds" />
         {__DEV__ ? <ListRow icon="construct-outline" title={t('mobile.devPlayer.title')} detail={t('mobile.devPlayer.subtitle')} onPress={() => router.push('/listen/dev-player')} testID="open-dev-player" /> : null}
       </Card>
     </Screen>
@@ -59,7 +116,17 @@ export function PlayerScreen() {
 /** Offline downloads and storage management. */
 export function DownloadsScreen() {
   const { t, i18n } = useTranslation();
-  const { downloads } = usePlayer();
+  const { downloads, service } = usePlayer();
+  const [error, setError] = useState(null);
+  const playOffline = async (item) => {
+    setError(null);
+    try {
+      await service.load(downloadedTrack(item, { artworkUrl: artworkUri() }));
+      router.push('/listen/player');
+    } catch (e) {
+      setError(e.message);
+    }
+  };
   const [items, setItems] = useState(null);
   const [usage, setUsage] = useState(null);
   const refresh = useCallback(async () => {
@@ -78,6 +145,7 @@ export function DownloadsScreen() {
         <KeyValue label={t('mobile.downloads.used')} value={formatBytes(usage ? usage.bytes : 0, i18n.language)} />
         {usage && usage.freeBytes !== null ? <KeyValue label={t('mobile.downloads.free')} value={formatBytes(usage.freeBytes, i18n.language)} /> : null}
       </Card>
+      {error ? <Banner kind="danger">{error}</Banner> : null}
       {items && items.length === 0 ? <EmptyState icon="download-outline" title={t('mobile.downloads.emptyTitle')} body={t('mobile.downloads.emptyBody')} /> : null}
       {items && items.length > 0 ? (
         <>
@@ -85,8 +153,12 @@ export function DownloadsScreen() {
             {items.map((item) => (
               <ListRow
                 key={item.id}
+                testID={'download-' + item.id}
+                icon="play-circle-outline"
                 title={item.title || item.id}
                 detail={formatBytes(item.bytes, i18n.language)}
+                onPress={() => void playOffline(item)}
+                accessibilityHint={t('mobile.downloads.playHint')}
                 right={<IconButton icon="trash-outline" accessibilityLabel={t('mobile.downloads.removeOne', { title: item.title || item.id })} onPress={() => void downloads.remove(item.id).then(refresh)} />}
               />
             ))}

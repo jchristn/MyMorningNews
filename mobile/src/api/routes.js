@@ -1,6 +1,7 @@
 // Every path the app calls, in one place (plan section 24, plus the mobile contracts A to E in section 35.5 and
 // 33.1). Routes marked "planned" do not exist on the server yet; calls to them return 404 until their phase lands,
-// and screens show the "later server update" state. Topics through editions (Phases 4 to 7) are live.
+// and screens show the "later server update" state. Topics through feedback, learning, and analytics (Phases 4 to 10)
+// and plans with promotional codes (section 33.2) are live.
 const enc = encodeURIComponent;
 
 export const routes = {
@@ -80,11 +81,23 @@ export const routes = {
   editionTopics: (id) => '/v1.0/api/editions/' + enc(id) + '/topics',
   editionCompose: (id) => '/v1.0/api/editions/' + enc(id) + '/compose',
   editionPreview: (id) => '/v1.0/api/editions/' + enc(id) + '/preview',
-  // Media (planned, Phase 8)
+  // Audio and podcast feeds (Phase 8): episodes, their files (bearer auth and HTTP Range), and private feed tokens
+  mediaList: '/v1.0/api/media',
   media: (id) => '/v1.0/api/media/' + enc(id),
-  // Feedback and learning (planned, Phase 10)
+  briefingAudio: (id) => '/v1.0/api/briefings/' + enc(id) + '/audio',
+  artifactContent: (id) => '/v1.0/api/artifacts/' + enc(id) + '/content',
+  feedTokens: '/v1.0/api/feed-tokens',
+  feedToken: (id) => '/v1.0/api/feed-tokens/' + enc(id),
+  // Email preferences (Phase 9)
+  emailPreferences: '/v1.0/api/email-preferences',
+  // Feedback, learned preferences, and analytics (Phases 9 and 10)
   feedback: '/v1.0/api/feedback',
   feedbackItem: (id) => '/v1.0/api/feedback/' + enc(id),
   learnedPreferences: '/v1.0/api/learned-preferences',
+  learnedPreference: (id) => '/v1.0/api/learned-preferences/' + enc(id),
+  learnedPreferenceAction: (id, action) => '/v1.0/api/learned-preferences/' + enc(id) + '/' + action,
   analytics: (name) => '/v1.0/api/analytics/' + enc(name),
+  // Plans and promotional codes (plan section 33.2)
+  accountPlan: '/v1.0/api/account/plan',
+  promoRedeem: '/v1.0/api/promo-codes/redeem',
 };

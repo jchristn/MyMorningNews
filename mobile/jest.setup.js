@@ -38,7 +38,9 @@ jest.mock('expo-file-system', () => ({
   Paths: { document: {}, cache: {}, availableDiskSpace: 0 },
 }));
 
-jest.mock('expo-sharing', () => ({ isAvailableAsync: jest.fn(async () => false), shareAsync: jest.fn(async () => undefined) }));
+jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(async () => true), getStringAsync: jest.fn(async () => '') }));
+
+jest.mock('expo-sharing', () =>({ isAvailableAsync: jest.fn(async () => false), shareAsync: jest.fn(async () => undefined) }));
 
 jest.mock('expo-updates', () => ({ reloadAsync: jest.fn(async () => undefined), updateId: null, channel: null }));
 

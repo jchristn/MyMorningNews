@@ -1,8 +1,9 @@
 import { routes } from './routes';
 
 // Research and briefing routes from plan section 24. Topics, refinement, requests, schedules, runs, findings,
-// predictions, suggestions, sources, briefings, and editions are live (Phases 4 to 7); feedback and insights arrive in
-// Phase 10 and answer 404 until then, which screens show as "This arrives in a later server update".
+// predictions, suggestions, sources, briefings, and editions are live (Phases 4 to 7), as are audio (Phase 8) and
+// feedback, learned preferences, and analytics (Phases 9 and 10). An older server answers 404, which screens show as
+// "This arrives in a later server update".
 //
 // List calls take the shared list contract (pageNumber, pageSize, sortBy, sortDirection, search, fromUtc, toUtc, plus
 // typed filters) and return `{ items, pageNumber, pageSize, totalCount, totalPages }`. Detail reads return wrapper
@@ -132,7 +133,7 @@ export const suggestionsApi = {
 export const briefingsApi = {
   /** Filters: `kind` (Edition, Run, OneTime), `editionId`, `topicId`, `runId`, `status`, `pinned`. */
   list: (client, query) => client.get(routes.briefings, query),
-  /** `{ briefing, sections, items, files, filesExpired, editionName, topicName }` */
+  /** `{ briefing, sections, items, files, filesExpired, editionName, topicName, itemTitles, audio }`; audio is the newest episode in any status. */
   get: (client, id) => client.get(routes.briefing(id)),
   /** Absolute download URL for the `md` or `html` file (send the bearer token with it). */
   downloadUrl: (client, id, format) => client.url(routes.briefingDownload(id), { format }),
@@ -158,14 +159,66 @@ export const editionsApi = {
   preview: (client, id) => client.post(routes.editionPreview(id), {}, { timeoutMs: 180000 }),
 };
 
-/** Feedback (Phase 10): `{ targetType, targetId, rating, reason }`, the same API as the email feedback pages. */
+/** The channel the app reports on every rating (FeedbackChannelEnum `Mobile`, plan section 20). */
+export const FEEDBACK_CHANNEL = 'Mobile';
+
+/**
+ * Feedback (Phases 9 and 10), the same API as the email feedback pages. `submit()` takes `{ targetType, targetId,
+ * action, reason }` with an action from src/lib/feedback.js (relevant, somewhat, not-relevant, accurate, partially,
+ * inaccurate, too-early, useful, not-useful, done, snooze) and returns the saved Feedback; a newer rating on the same
+ * target supersedes the older one. `update()` edits the reason only; `retract()` deletes the rating (the earlier one,
+ * if any, becomes current again).
+ */
 export const feedbackApi = {
-  submit: (client, body) => client.post(routes.feedback, body),
+  submit: (client, { targetType, targetId, action, reason }) => client.post(routes.feedback, { targetType, targetId, action: action || undefined, reason: reason || undefined, channel: FEEDBACK_CHANNEL }),
+  /** Filters: `targetType`, `targetId`, `topicId`, `channel`, `includeHistory`. Current ratings only by default. */
   list: (client, query) => client.get(routes.feedback, query),
+  /** The current rating on one item, or null. */
+  current: async (client, targetType, targetId) => {
+    const result = await client.get(routes.feedback, { targetType, targetId, pageNumber: 1, pageSize: 5 });
+    const items = Array.isArray(result) ? result : (result && result.items) || [];
+    return items.find((f) => f.isCurrent !== false) || null;
+  },
+  update: (client, id, reason) => client.put(routes.feedbackItem(id), { reason: reason || '' }),
+  retract: (client, id) => client.delete(routes.feedbackItem(id)),
 };
 
-/** Insights (Phase 10). */
+/**
+ * Learned preferences (Phase 10, plan section 18). Statuses: Proposed, Active, Rejected, Disabled. Kinds: Prefer,
+ * Avoid, PreferSource, AvoidSource, StyleNote. Proposed ones can be accepted or rejected, Active ones disabled, and
+ * Disabled ones enabled. Your own (`create`) are Active at once.
+ */
+export const learningApi = {
+  /** Filters: `topicId`, `status`, `origin` (Distilled, User). */
+  list: (client, query) => client.get(routes.learnedPreferences, query),
+  /** `{ preference, support }` (support: the feedback it was learned from). */
+  get: (client, id) => client.get(routes.learnedPreference(id)),
+  /** `{ statement, kind?, topicId? }` */
+  create: (client, body) => client.post(routes.learnedPreferences, body),
+  update: (client, id, body) => client.put(routes.learnedPreference(id), body),
+  remove: (client, id) => client.delete(routes.learnedPreference(id)),
+  /** `accept`, `reject`, `disable`, or `enable`; returns the updated preference. */
+  act: (client, id, action) => client.post(routes.learnedPreferenceAction(id, action), {}),
+};
+
+/** The analytics reports (Phase 10). */
+export const ANALYTICS_REPORTS = ['relevance', 'accuracy', 'feedback', 'suggestions', 'reasons', 'quality'];
+
+/** Insights (Phase 10). Each report takes `{ topicId?, from?, to? }` and defaults to my data for the last 90 days. */
 export const insightsApi = {
   analytics: (client, name, query) => client.get(routes.analytics(name), query),
   learnedPreferences: (client, query) => client.get(routes.learnedPreferences, query),
+};
+
+/**
+ * Audio (Phase 8, plan section 22). `get()` is `{ media, chapters, audioPath, chaptersPath }`: the episode, its
+ * chapters (`{ title, startSeconds, endSeconds, briefingSectionId? }`), and the artifact paths that stream with the
+ * bearer token and HTTP Range. `make()` queues new audio for a ready briefing (202 with the episode); its 409 codes are
+ * AudioInProgress, AudioDisabled, and BriefingNotReady.
+ */
+export const mediaApi = {
+  /** Filters: `briefingId`, `editionId`, `status` (Queued, Scripting, Synthesizing, Ready, Failed), `kind`. */
+  list: (client, query) => client.get(routes.mediaList, query),
+  get: (client, id) => client.get(routes.media(id)),
+  make: (client, briefingId, voiceProfileId) => client.post(routes.briefingAudio(briefingId), voiceProfileId ? { voiceProfileId } : {}),
 };

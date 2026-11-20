@@ -123,6 +123,7 @@ namespace MyMorningNews.Server.Routes
             if (!String.IsNullOrWhiteSpace(req.Name)) credential.Name = req.Name.Trim();
             if (req.Scopes != null) credential.Scopes = req.Scopes.Select(s => s.Trim().ToLowerInvariant()).Where(s => s.Length > 0).Distinct().ToList();
             if (req.ResourceIds != null) credential.ResourceIds = req.ResourceIds;
+            if (req.AuthMode.HasValue) credential.AuthMode = req.AuthMode.Value;
             if (req.ExpiresUtc.HasValue) credential.ExpiresUtc = req.ExpiresUtc;
             if (req.Active.HasValue) credential.Active = req.Active.Value;
             credential = await Server.Database.Credentials.UpdateAsync(credential, ctx.Token).ConfigureAwait(false);

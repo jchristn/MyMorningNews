@@ -17,7 +17,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
         /// <summary>
         /// Case name.
         /// </summary>
-        public override string Name => "Runs list, get, stages, queries, results, email preview, wait";
+        public override string Name => "Runs list, get, stages, queries, results, email preview, wait, events, retry";
 
         /// <summary>
         /// Instantiate.
@@ -37,6 +37,8 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
         {
             MyMorningNewsClient c = context.RequireAdmin();
             await StepAsync(context, result, "GET unknown run (404)", () => Helpers.ExpectErrorAsync(() => c.Runs.GetAsync("run_missing", token), 404)).ConfigureAwait(false);
+            await StepAsync(context, result, "Events for an unknown run (404)", () => Helpers.ExpectErrorAsync(() => DrainAsync(c, "run_missing", token), 404)).ConfigureAwait(false);
+            await StepAsync(context, result, "Retry an unknown run (404)", () => Helpers.ExpectErrorAsync(() => c.Runs.RetryAsync("run_missing", "Predict", token), 404)).ConfigureAwait(false);
             EnumerationResult<Run> runs = await StepAsync(context, result, "GET runs", () => c.Runs.ListAsync(new RunListOptions { PageSize = 25 }, token)).ConfigureAwait(false);
             Run? finished = null;
             foreach (Run candidate in runs.Items.Where(r => RunsResource.IsTerminal(r.Status)))
@@ -64,6 +66,16 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             Helpers.NotEmpty(preview.Subject, "email preview subject");
             Run waited = await StepAsync(context, result, "WaitAsync on a finished run", () => c.Runs.WaitAsync(run.Id, TimeSpan.FromSeconds(10), null, token)).ConfigureAwait(false);
             Helpers.Equal(run.Status, waited.Status, "wait returns the terminal status");
+            List<RunEvent> events = await StepAsync(context, result, "Stream events of a finished run", () => DrainAsync(c, run.Id, token)).ConfigureAwait(false);
+            Helpers.True(events.Count(e => e.Event == "stage") == stages.Count && events.Last().Event == "done" && events.Last().AsRun()?.Id == run.Id, "stages replayed, then done with the run");
+            await StepAsync(context, result, "Retry from an unknown stage (400)", () => Helpers.ExpectErrorAsync(() => c.Runs.RetryAsync(run.Id, "Bogus", token), 400)).ConfigureAwait(false);
+        }
+
+        private static async Task<List<RunEvent>> DrainAsync(MyMorningNewsClient c, string runId, CancellationToken token)
+        {
+            List<RunEvent> events = new List<RunEvent>();
+            await foreach (RunEvent e in c.Runs.StreamEventsAsync(runId, token).ConfigureAwait(false)) events.Add(e);
+            return events;
         }
     }
 }

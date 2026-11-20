@@ -36,7 +36,7 @@ import uuid
 from dataclasses import dataclass, field, fields as dataclass_fields
 from datetime import date, datetime, timezone
 from enum import Enum
-from typing import Any, Callable, ClassVar, Dict, Generic, Iterator, List, Mapping, Optional, Sequence, Tuple, Type, TypeVar, Union
+from typing import Any, Callable, ClassVar, Dict, Generic, Iterable, Iterator, List, Mapping, Optional, Sequence, Tuple, Type, TypeVar, Union
 
 import requests
 
@@ -1531,6 +1531,7 @@ class Run(Model):
     active: Optional[bool] = None
     created_utc: Optional[str] = None
     last_update_utc: Optional[str] = None
+    resume_from_stage: Optional[str] = None
 
 
 @dataclass
@@ -2564,6 +2565,113 @@ class PromoCheck(Model):
 TERMINAL_RUN_STATUSES = frozenset({"Completed", "PartiallySucceeded", "Failed", "Cancelled", "Skipped"})
 """Run statuses after which a run never changes again."""
 
+RUN_STAGES: Tuple[str, ...] = (
+    "AssembleContext", "PlanQueries", "Search", "Filter", "Fetch", "Extract", "Embed", "Dedupe", "Score",
+    "Synthesize", "ReviewPredictions", "Predict", "Suggest", "ComposeBriefing", "Notify",
+)
+"""The research pipeline's stages, in order."""
+
+RESUMABLE_RUN_STAGES: Tuple[str, ...] = RUN_STAGES[RUN_STAGES.index("Synthesize"):]
+"""Stages :meth:`RunsResource.retry` can resume the same run from. Earlier stages start a new run."""
+
+
+# ---------------------------------------------------------------------------
+# Server-sent events
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class RunEvent:
+    """One server-sent event from :meth:`RunsResource.events`.
+
+    Attributes:
+        event: Event name: ``run`` (the run changed), ``stage`` (one stage changed), ``ping`` (keep-alive,
+            about every 15 seconds), ``done`` (the final run; the stream then closes), or ``timeout`` (the stream
+            reached its maximum length; reconnect to continue). An event without a name is ``message``.
+        id: The event's ``id`` field, or None when the event had none (``ping`` events have none).
+        data: The ``data`` field parsed as JSON, or the raw text when it is not JSON (None when empty).
+        raw_data: The ``data`` field as sent (several ``data`` lines are joined with a newline).
+        retry: The ``retry`` field in milliseconds, when sent.
+    """
+
+    event: str = "message"
+    id: Optional[str] = None
+    data: Any = None
+    raw_data: str = ""
+    retry: Optional[int] = None
+
+    @property
+    def is_final(self) -> bool:
+        """True for ``done`` and ``timeout``, after which the server closes the stream."""
+        return self.event in ("done", "timeout")
+
+    @property
+    def run(self) -> Optional[Run]:
+        """The :class:`Run` carried by a ``run`` or ``done`` event, or None."""
+        if self.event in ("run", "done") and isinstance(self.data, Mapping) and "id" in self.data:
+            return Run.from_dict(self.data)
+        return None
+
+    @property
+    def stage(self) -> Optional[RunStage]:
+        """The :class:`RunStage` carried by a ``stage`` event, or None."""
+        if self.event == "stage" and isinstance(self.data, Mapping):
+            return RunStage.from_dict(self.data)
+        return None
+
+
+def parse_sse(lines: Iterable[Union[str, bytes]]) -> Iterator[RunEvent]:
+    """Parse server-sent event lines into :class:`RunEvent` objects.
+
+    Follows the event-stream format: a blank line ends an event; lines starting with ``:`` are comments;
+    ``field: value`` drops one space after the colon; a field with no colon has an empty value; several
+    ``data`` lines join with a newline; an event without ``event`` is named ``message``; an event with no
+    ``data`` lines is not dispatched; a trailing ``\r`` is removed; and an unfinished event at the end of
+    the input is discarded.
+
+    Args:
+        lines: Lines without their line terminators (str or UTF-8 bytes).
+
+    Yields:
+        Each complete event.
+    """
+    name = ""
+    event_id: Optional[str] = None
+    data: List[str] = []
+    retry: Optional[int] = None
+    for raw in lines:
+        line = raw.decode("utf-8", errors="replace") if isinstance(raw, (bytes, bytearray)) else str(raw)
+        if line.endswith("\r"):
+            line = line[:-1]
+        if line == "":
+            if data:
+                text = "\n".join(data)
+                try:
+                    parsed: Any = json.loads(text) if text != "" else None
+                except ValueError:
+                    parsed = text
+                yield RunEvent(event=name or "message", id=event_id, data=parsed, raw_data=text, retry=retry)
+            name, event_id, data, retry = "", None, [], None
+            continue
+        if line.startswith(":"):
+            continue
+        if ":" in line:
+            fname, value = line.split(":", 1)
+            if value.startswith(" "):
+                value = value[1:]
+        else:
+            fname, value = line, ""
+        if fname == "event":
+            name = value
+        elif fname == "data":
+            data.append(value)
+        elif fname == "id":
+            if "\0" not in value:
+                event_id = value
+        elif fname == "retry":
+            if value.isdigit():
+                retry = int(value)
+
 
 # ---------------------------------------------------------------------------
 # Resource groups
@@ -2920,7 +3028,7 @@ class SchedulesResource(_Resource):
 class RunsResource(_Resource):
     """Research runs under ``/v1.0/api/runs``.
 
-    The server has no run event stream, so :meth:`wait` polls ``GET /runs/{id}``.
+    :meth:`events` streams progress as server-sent events; :meth:`wait` polls ``GET /runs/{id}`` instead.
     """
 
     def list(self, **filters: Any) -> Page[Run]:
@@ -2958,6 +3066,63 @@ class RunsResource(_Resource):
     def cancel(self, run_id: str) -> Run:
         """Cancel a queued or running run."""
         return self._one(Run, "POST", API + "/runs/" + _seg(run_id) + "/cancel")
+
+    def retry(self, run_id: str, from_stage: Optional[str] = None) -> Run:
+        """Retry a finished run (HTTP 202). This spends model tokens.
+
+        Args:
+            run_id: A finished run.
+            from_stage: ``Synthesize`` or a later stage (see :data:`RESUMABLE_RUN_STAGES`) reruns those stages on
+                the same run with its saved findings, and the returned run has ``resume_from_stage`` set. No stage,
+                or an earlier one, queues a new run of the topic.
+
+        Returns:
+            The queued :class:`Run` (the same run, or a new one).
+
+        Raises:
+            ConflictError: The run is not finished, or its topic no longer exists.
+            BadRequestError: ``from_stage`` is not a pipeline stage.
+            NotFoundError: The run does not exist or is not visible.
+        """
+        return self._one(Run, "POST", API + "/runs/" + _seg(run_id) + "/retry", query={"fromStage": from_stage})
+
+    def events(self, run_id: str, timeout: Optional[float] = None) -> Iterator[RunEvent]:
+        """Stream a run's progress as server-sent events.
+
+        The connection opens when this method is called, so a missing run raises :class:`NotFoundError` here,
+        not on the first ``next()``. The first events are every stage and the current run; afterwards ``stage``
+        and ``run`` events arrive on changes, ``ping`` keeps the connection alive, and the stream ends after a
+        ``done`` (finished) or ``timeout`` (server limit; call again to reconnect) event. Signed requests are
+        signed like any other request.
+
+        Args:
+            run_id: The run.
+            timeout: Optional maximum seconds to stream; the generator then stops quietly. None (default)
+                streams until the server ends the stream.
+
+        Returns:
+            A generator of :class:`RunEvent`. Close it (or leave the loop) to drop the connection.
+        """
+        read_timeout = max(self._client.timeout, 45.0)
+        resp = self._client.request("GET", API + "/runs/" + _seg(run_id) + "/events", headers={"Accept": "text/event-stream"},
+                                    raw=True, stream=True, timeout=(self._client.timeout, read_timeout))
+        deadline = None if timeout is None else time.monotonic() + max(0.0, float(timeout))
+        return self._event_stream(resp, deadline)
+
+    @staticmethod
+    def _event_stream(resp: requests.Response, deadline: Optional[float]) -> Iterator[RunEvent]:
+        """Yield parsed events from an open streaming response, closing it when done."""
+        try:
+            for ev in parse_sse(resp.iter_lines(delimiter=b"\n")):
+                yield ev
+                if ev.is_final:
+                    return
+                if deadline is not None and time.monotonic() >= deadline:
+                    return
+        except requests.RequestException as ex:
+            raise MyMorningNewsError("The event stream failed: " + str(ex), status=0, code="ConnectionError") from ex
+        finally:
+            resp.close()
 
     def wait(self, run_id: str, timeout: float = 900.0, interval: float = 3.0, on_poll: Optional[Callable[[Run], None]] = None) -> Run:
         """Poll a run until it reaches a terminal status.
@@ -3995,6 +4160,8 @@ class MyMorningNewsClient:
         raw: bool = False,
         auth: bool = True,
         form: Optional[Mapping[str, Any]] = None,
+        stream: bool = False,
+        timeout: Optional[Union[float, Tuple[float, float]]] = None,
     ) -> Any:
         """Send a request to any route. Resource methods are built on this.
 
@@ -4007,6 +4174,8 @@ class MyMorningNewsClient:
             raw: Return the ``requests.Response`` instead of decoded JSON.
             auth: Send the client's credentials (False for anonymous public routes).
             form: Form fields to send as ``application/x-www-form-urlencoded`` instead of JSON.
+            stream: Stream the response body (use with ``raw=True``; the caller closes the response).
+            timeout: Overrides the client timeout: seconds, or a ``(connect, read)`` tuple.
 
         Returns:
             Decoded JSON (None for an empty body or HTTP 204), or the response when ``raw`` is True.
@@ -4031,12 +4200,16 @@ class MyMorningNewsClient:
             prepared = self._session.prepare_request(requests.Request(method.upper(), url, params=_wire_query(query), data=data, headers=send_headers))
             if self._signing(auth):
                 self._sign(prepared)
-            env = self._session.merge_environment_settings(prepared.url, {}, None, None, None)
-            resp = self._session.send(prepared, timeout=self.timeout, **env)
+            env = self._session.merge_environment_settings(prepared.url, {}, stream, None, None)
+            resp = self._session.send(prepared, timeout=timeout if timeout is not None else self.timeout, **env)
         except requests.RequestException as ex:
             raise MyMorningNewsError("Could not reach " + self.base_url + ": " + str(ex), status=0, code="ConnectionError") from ex
         if resp.status_code >= 400:
-            raise _error_from_response(resp)
+            try:
+                raise _error_from_response(resp)
+            finally:
+                if stream:
+                    resp.close()
         if raw:
             return resp
         if resp.status_code == 204 or not resp.content:
@@ -4203,7 +4376,8 @@ __all__ = [
     "MyMorningNewsClient", "MyMorningNewsError", "BadRequestError", "AuthenticationError", "PermissionDeniedError",
     "NotFoundError", "ConflictError", "GoneError", "RangeNotSatisfiableError", "RateLimitError", "ServerError",
     "TenantSelectionRequired", "WaitTimeoutError", "Model", "Page", "Download", "iterate", "to_camel", "to_snake",
-    "sign_request", "string_to_sign", "body_sha256", "SIGNATURE_ALGORITHM",
+    "sign_request", "string_to_sign", "body_sha256", "SIGNATURE_ALGORITHM", "RunEvent", "parse_sse", "RUN_STAGES",
+    "RESUMABLE_RUN_STAGES",
     "DEFAULT_BASE_URL", "TERMINAL_RUN_STATUSES", "__version__",
 ]
 

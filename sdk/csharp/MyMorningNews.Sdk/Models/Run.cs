@@ -157,6 +157,11 @@ namespace MyMorningNews.Sdk.Models
         public DateTime LastUpdateUtc { get; set; }
 
         /// <summary>
+        /// When set, the next execution reruns the pipeline from this stage on the same run, reusing its saved findings and summary (POST /runs/{id}/retry). Cleared when execution starts. Null for a normal run.
+        /// </summary>
+        public string? ResumeFromStage { get; set; } = null;
+
+        /// <summary>
         /// Instantiate.
         /// </summary>
         public Run()

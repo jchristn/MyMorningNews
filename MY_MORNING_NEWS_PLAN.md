@@ -304,7 +304,7 @@ Startup from a clean checkout is `cd docker && docker compose up -d --build`, th
 
 - `compose.yaml`: the default stack (postgres, server, dashboard, searxng, prometheus, tempo, loki, grafana) plus profiles `tts` (Kokoro, large image; default once Phase 8 lands), `mcp` (Phase 11), and `ollama` (Linux hosts).
 - `.env.example`: every variable compose substitutes (Anthropic key, signing key, admin key, SearXNG secret, `MYMORNINGNEWS_STORAGE_*` for local or S3 storage, Expo push token), with the default credentials noted.
-- `server/` (Dockerfile, `mymorningnews.json` with explicit `storage` and `push` sections), `searxng/` (Dockerfile with static curl, `settings.yml` with JSON output), `tts/`, `ollama/`, `mcp/` (Dockerfiles with curl), `prometheus/`, `tempo/`, `loki/`, and `grafana/` (provisioning and dashboards).
+- `server/` (Dockerfile, `mymorningnews.json` with explicit `storage` and `push` sections; the image also carries Node.js 22 and npm, Claude Code, Codex, Gemini CLI, git, ripgrep, and Mux, with versions as build arguments, so agent tooling can run inside the container), `searxng/` (Dockerfile with static curl, `settings.yml` with JSON output), `tts/`, `ollama/`, `mcp/` (Dockerfiles with curl), `prometheus/`, `tempo/`, `loki/`, and `grafana/` (provisioning and dashboards).
 - `factory/`: `mymorningnews.json` (factory settings), `reset.sh` and `reset.bat` (confirmation, `--demo`, `--keep-ollama`, `--yes`), `compose.factory.yaml` (one-shot seeder), and `seed/` (`seed.sh`, `demo-user.json` for `demo@mymorningnews` / `password`, and `topics/*.json`, extended by each phase with demo topics, editions, requests, briefings, and feedback).
 - `hosted/`: the hosted overlay (Caddy on 80 and 443, `Caddyfile`, hosted `mymorningnews.json`, README; section 33.3).
 - `update.sh` and `update.bat`.
@@ -1454,9 +1454,10 @@ Exit: a topic scheduled for every 5 minutes enqueues runs on time across a conta
 ### Phase 6: Research pipeline, ranking, and evidence
 
 - [x] Stages 1 to 13 of section 16 (AssembleContext, PlanQueries with seed-query fallback, Search, Filter, Fetch with source reuse, Extract with verbatim quote verification, Embed, Dedupe with pgvector and dedupe-judge or word similarity fallback, Score with composite ranking and tiers, Synthesize, ReviewPredictions, Predict, Suggest), critical and non-critical failure handling (PartiallySucceeded), cancellation between stages, dry runs, per-run token and cost totals. Embeddings carry model and dimensions. Migration 7.
-- [ ] Run SSE progress stream and retry from a stage; Notify (Phase 9); MCP registry and agentic search mode (moved from Phase 5); prediction evidence links. (ComposeBriefing shipped in Phase 7 as stage 14.)
+- [x] Run SSE progress stream (`GET /runs/{id}/events`: run, stage, ping, done, timeout; polled from the database, so it works across instances) and retry from a stage (`POST /runs/{id}/retry?fromStage=`: Synthesize and later stages rerun in place on the same run with its saved findings, migration 14 `resumefromstage`; earlier stages or none queue a new run). Notify shipped in Phase 9. SDKs: C# `StreamEventsAsync` and `RetryAsync`, JS `runs.events`/`follow`/`retry`, Python `runs.events`/`retry`.
+- [ ] MCP registry and agentic search mode (moved from Phase 5); prediction evidence links. (ComposeBriefing shipped in Phase 7 as stage 14.)
 - [x] Dashboard: Runs drill-down (stage timeline, queries, results with dispositions, totals), Findings (score breakdown, evidence drawer), Predictions (reviews, resolve, calibration chart), Suggestions (accept, snooze, dismiss, complete), topic workspace tabs.
-- [ ] Dashboard: Sources page (the list endpoint now exists), live stage timeline over SSE, LLM calls per run, remaining charts 2 to 5 and 21 to 24.
+- [ ] Dashboard: Sources page (the list endpoint now exists), live stage timeline over SSE, remaining charts 2 to 5 and 21 to 24. (LLM calls per run shipped with Phase 11: the run detail Model calls tab.)
 - [x] Suites: Pipeline (quote verification, ranking, full run, second-run dedupe, failures, research API), which covers evidence, dedupe, ranking, predictions, and suggestions.
 
 Exit: a real run against SearXNG and Ollama produces ranked, evidence-backed findings, predictions, and suggestions, with every stage visible and replayable.

@@ -28,6 +28,33 @@ namespace MyMorningNews.Core.Pipeline
         /// </summary>
         public IReadOnlyList<IRunStage> Stages { get; }
 
+        /// <summary>
+        /// The first stage a finished run can be retried from in place. Earlier stages depend on search results and
+        /// fetched pages that are not kept in a resumable form, so retrying from them starts a new run instead.
+        /// </summary>
+        public const string FirstResumableStage = "Synthesize";
+
+        /// <summary>
+        /// The default stage names, in order.
+        /// </summary>
+        public static readonly IReadOnlyList<string> DefaultStageNames = new List<string>
+        {
+            "AssembleContext", "PlanQueries", "Search", "Filter", "Fetch", "Extract", "Embed", "Dedupe", "Score",
+            "Synthesize", "ReviewPredictions", "Predict", "Suggest", "ComposeBriefing", "Notify"
+        };
+
+        /// <summary>
+        /// Names of the stages a run can be retried from in place, in order.
+        /// </summary>
+        public IReadOnlyList<string> ResumableStages
+        {
+            get
+            {
+                int first = Stages.ToList().FindIndex(s => s.Name == FirstResumableStage);
+                return first < 0 ? new List<string>() : Stages.Skip(first).Select(s => s.Name).ToList();
+            }
+        }
+
         #endregion
 
         #region Private-Members
@@ -81,10 +108,12 @@ namespace MyMorningNews.Core.Pipeline
             RunContext ctx = new RunContext { Run = run, Topic = topic, NowUtc = DateTime.UtcNow };
             bool partial = false;
             List<string> failed = new List<string>();
+            int start = 0;
+            if (!String.IsNullOrEmpty(run.ResumeFromStage)) start = await PrepareResumeAsync(ctx, token).ConfigureAwait(false);
 
             try
             {
-                for (int i = 0; i < Stages.Count; i++)
+                for (int i = start; i < Stages.Count; i++)
                 {
                     IRunStage stage = Stages[i];
                     Run? latest = await _Services.Database.Runs.ReadAsync(run.TenantId, run.Id, token).ConfigureAwait(false);
@@ -150,6 +179,33 @@ namespace MyMorningNews.Core.Pipeline
         #endregion
 
         #region Private-Methods
+
+        private async Task<int> PrepareResumeAsync(RunContext ctx, CancellationToken token)
+        {
+            Run run = ctx.Run;
+            string from = run.ResumeFromStage!;
+            run.ResumeFromStage = null;
+            await _Services.Database.Runs.UpdateAsync(run, token).ConfigureAwait(false);
+            int start = Stages.ToList().FindIndex(s => s.Name == from);
+            if (start < 0 || !ResumableStages.Contains(from)) throw new InvalidOperationException("A run cannot be retried from " + from + ".");
+
+            IRunStage? assemble = Stages.FirstOrDefault(s => s.Name == "AssembleContext");
+            if (assemble != null) await assemble.ExecuteAsync(ctx, _Services, token).ConfigureAwait(false);
+            ctx.Findings = (await _Services.Database.Findings.EnumerateAsync(new FindingFilter { TenantId = run.TenantId, RunId = run.Id, IsDuplicate = false, PageSize = 1000 }, token).ConfigureAwait(false)).Items
+                .OrderBy(f => f.Rank <= 0 ? int.MaxValue : f.Rank).ToList();
+            int synthesize = Stages.ToList().FindIndex(s => s.Name == FirstResumableStage);
+            if (start > synthesize && !String.IsNullOrWhiteSpace(run.Summary))
+            {
+                string summary = run.Summary!;
+                int cut = summary.IndexOf("\n\nSome optional steps did not finish", StringComparison.Ordinal);
+                ctx.Summary = cut >= 0 ? summary.Substring(0, cut) : summary;
+            }
+
+            foreach (RunStage old in (await _Services.Database.RunStages.EnumerateAsync(new RunStageFilter { TenantId = run.TenantId, RunId = run.Id, PageSize = 100 }, token).ConfigureAwait(false)).Items.Where(s => s.SortOrder >= start))
+                await _Services.Database.RunStages.DeleteAsync(run.TenantId, old.Id, token).ConfigureAwait(false);
+            _Services.Logging.Info("[ResearchPipeline] retrying run " + run.Id + " from " + from);
+            return start;
+        }
 
         private async Task FinishStageAsync(RunStage row, Stopwatch sw, CancellationToken token)
         {

@@ -164,14 +164,26 @@ assert first_kb.partial and first_kb.total_bytes
 audio = client.briefings.download_audio(briefing_id)
 ```
 
-## Waiting for runs
+## Following runs
 
-The server has no run event stream, so `runs.wait` polls `GET /v1.0/api/runs/{id}` until the status is terminal (`Completed`, `PartiallySucceeded`, `Failed`, `Cancelled`, or `Skipped`). It raises `WaitTimeoutError` (with `last`) when time runs out.
+`runs.events(run_id, timeout=None)` streams `GET /v1.0/api/runs/{id}/events` (server-sent events) and yields `RunEvent(event, id, data, raw_data, retry)`, with `data` parsed as JSON. The first events are every stage and the current run. After that come `stage` (one `RunStage` changed; `ev.stage` gives it typed), `run` (the run changed; `ev.run`), `ping` (keep-alive about every 15 seconds), and finally `done` (the finished run, after which the stream closes) or `timeout` (the server's maximum stream length; call `events` again to reconnect). The connection opens when you call `events`, so a missing run raises `NotFoundError` right away. `timeout` caps how long the generator streams; leaving the loop closes the connection. Signed requests are signed like any other call. `parse_sse(lines)` is the parser on its own.
 
 ```python
 run = client.topics.run(topic_id)                  # spends model tokens
+for ev in client.runs.events(run.id):
+    if ev.event == "stage":
+        print(ev.stage.stage, ev.stage.status)
+    elif ev.event == "done":
+        print("finished:", ev.run.status)
+```
+
+`runs.wait` polls `GET /v1.0/api/runs/{id}` until the status is terminal (`Completed`, `PartiallySucceeded`, `Failed`, `Cancelled`, or `Skipped`) and raises `WaitTimeoutError` (with `last`) when time runs out:
+
+```python
 run = client.runs.wait(run.id, timeout=900, interval=3, on_poll=lambda r: print(r.status))
 ```
+
+`runs.retry(run_id, from_stage=None)` retries a finished run (HTTP 202; spends tokens). With `from_stage` set to `Synthesize` or a later stage (`RESUMABLE_RUN_STAGES`: `ReviewPredictions`, `Predict`, `Suggest`, `ComposeBriefing`, `Notify`) it returns the same run, queued, with `resume_from_stage` set. With no stage or an earlier one it returns a new run of the topic. An unfinished run raises `ConflictError`, and an unknown stage raises `BadRequestError`.
 
 ## Resource groups
 
@@ -247,6 +259,8 @@ client.runs.list(topic_id=tid, status="Completed")
 client.runs.get(run_id); client.runs.stages(run_id); client.runs.queries(run_id)
 client.runs.results(run_id, disposition="Fetched")
 client.runs.llm_calls(run_id)          # paged, oldest first
+client.runs.events(run_id)             # server-sent events generator
+client.runs.retry(run_id, from_stage="ComposeBriefing")
 client.runs.email_preview(run_id); client.runs.cancel(run_id); client.runs.wait(run_id)
 ```
 
@@ -385,7 +399,7 @@ client.request("GET", "/v1.0/api/audit", query={"page_size": 10})
 
 ## Test harness
 
-`test_harness.py` runs against a live server. It signs in as the admin user, creates its own data with names starting `SDK-python-`, exercises every resource group (create, read back, update, list contains it, delete, 404 after delete, and typed errors on bad requests), checks request signing against a known test vector offline and with a temporary credential on the live server (including replay and stale-date refusal), checks that the `demo@mymorningnews` user cannot see the admin's topic, and deletes everything it created. Cases that start research runs or call a paid model are skipped unless you pass `--with-run`.
+`test_harness.py` runs against a live server. It signs in as the admin user, creates its own data with names starting `SDK-python-`, exercises every resource group (create, read back, update, list contains it, delete, 404 after delete, and typed errors on bad requests), checks the server-sent event parser against canned lines, checks request signing against a known test vector offline and with a temporary credential on the live server (including replay and stale-date refusal), checks that the `demo@mymorningnews` user cannot see the admin's topic, and deletes everything it created. Cases that start research runs or call a paid model are skipped unless you pass `--with-run`.
 
 ```bash
 ./run-tests.sh                       # macOS and Linux

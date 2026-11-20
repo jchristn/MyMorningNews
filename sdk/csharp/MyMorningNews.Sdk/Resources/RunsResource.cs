@@ -3,7 +3,10 @@ namespace MyMorningNews.Sdk.Resources
     using System;
     using System.Collections.Generic;
     using System.Globalization;
+    using System.IO;
     using System.Net.Http;
+    using System.Runtime.CompilerServices;
+    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
     using MyMorningNews.Sdk.Enums;
@@ -127,6 +130,77 @@ namespace MyMorningNews.Sdk.Resources
         public Task<EnumerationResult<LlmCall>> ListLlmCallsAsync(string id, ListOptions? options = null, CancellationToken token = default)
         {
             return Client.SendAsync<EnumerationResult<LlmCall>>(HttpMethod.Get, "/v1.0/api/runs/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/llm-calls", (options ?? new ListOptions()).ToQuery(), null, token);
+        }
+
+        /// <summary>
+        /// Retry a finished run. From Synthesize or a later stage (ReviewPredictions, Predict, Suggest, ComposeBriefing,
+        /// Notify), the same run is queued to rerun those stages with its saved findings; with no stage or an earlier one,
+        /// a new run of the topic is queued. Either way this can make model calls.
+        /// </summary>
+        /// <param name="id">Run identifier.</param>
+        /// <param name="fromStage">Stage name, or null for a fresh run.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The queued run (the same run or a new one).</returns>
+        /// <exception cref="ArgumentNullException">id is null or empty.</exception>
+        /// <exception cref="MyMorningNewsException">The server returned an error (409 when the run is not finished, 400 for an unknown stage).</exception>
+        public Task<Run> RetryAsync(string id, string? fromStage = null, CancellationToken token = default)
+        {
+            Dictionary<string, string>? query = String.IsNullOrWhiteSpace(fromStage) ? null : new Dictionary<string, string> { { "fromStage", fromStage.Trim() } };
+            return Client.SendAsync<Run>(HttpMethod.Post, "/v1.0/api/runs/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/retry", query, null, token);
+        }
+
+        /// <summary>
+        /// Follow a run's progress as server-sent events: <c>run</c>, <c>stage</c>, <c>ping</c>, and finally <c>done</c>
+        /// (or <c>timeout</c>, after which you reconnect). Enumeration ends after a final event; cancel the token to stop
+        /// early and close the connection.
+        /// </summary>
+        /// <param name="id">Run identifier.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Events in order.</returns>
+        /// <exception cref="ArgumentNullException">id is null or empty.</exception>
+        /// <exception cref="MyMorningNewsException">The server returned an error when opening the stream.</exception>
+        public async IAsyncEnumerable<RunEvent> StreamEventsAsync(string id, [EnumeratorCancellation] CancellationToken token = default)
+        {
+            string path = "/v1.0/api/runs/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/events";
+            using (HttpResponseMessage response = await Client.OpenStreamAsync(path, token).ConfigureAwait(false))
+            using (Stream body = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false))
+            using (StreamReader reader = new StreamReader(body, Encoding.UTF8))
+            {
+                RunEvent? pending = null;
+                StringBuilder data = new StringBuilder();
+                while (true)
+                {
+                    string? line = await reader.ReadLineAsync(token).ConfigureAwait(false);
+                    if (line == null) yield break;
+                    if (line.Length == 0)
+                    {
+                        if (pending != null && data.Length > 0)
+                        {
+                            pending.Data = data.ToString();
+                            yield return pending;
+                            if (pending.IsFinal) yield break;
+                        }
+
+                        pending = null;
+                        data.Clear();
+                        continue;
+                    }
+
+                    if (line.StartsWith(":", StringComparison.Ordinal)) continue;
+                    int colon = line.IndexOf(':');
+                    string field = colon < 0 ? line : line.Substring(0, colon);
+                    string value = colon < 0 ? String.Empty : line.Substring(colon + 1);
+                    if (value.StartsWith(" ", StringComparison.Ordinal)) value = value.Substring(1);
+                    pending ??= new RunEvent();
+                    if (field == "event") pending.Event = value;
+                    else if (field == "id") pending.Id = value;
+                    else if (field == "data")
+                    {
+                        if (data.Length > 0) data.Append('\n');
+                        data.Append(value);
+                    }
+                }
+            }
         }
 
         /// <summary>

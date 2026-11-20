@@ -2,6 +2,7 @@ namespace MyMorningNews.Core.Requests
 {
     using System;
     using System.Collections.Generic;
+    using MyMorningNews.Core.Enums;
 
     /// <summary>
     /// Update a credential. Null properties are unchanged.
@@ -32,5 +33,10 @@ namespace MyMorningNews.Core.Requests
         /// Active.
         /// </summary>
         public bool? Active { get; set; } = null;
+
+        /// <summary>
+        /// New auth mode, or null to leave it.
+        /// </summary>
+        public CredentialAuthModeEnum? AuthMode { get; set; } = null;
     }
 }

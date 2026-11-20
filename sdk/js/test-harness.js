@@ -16,7 +16,7 @@
 
 import {
     MyMorningNewsClient, MyMorningNewsError, TenantSelectionRequiredError, RunsResource, paginate, SDK_VERSION, DEFAULT_BASE_URL,
-    signRequest, stringToSign, SIGNATURE_ALGORITHM
+    signRequest, stringToSign, SIGNATURE_ALGORITHM, parseServerSentEvents
 } from './mymorningnews-sdk.js';
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -726,12 +726,175 @@ async function main() {
         assert(calls >= 2, 'polled more than once');
     });
 
+    await run('SSE parser: canned stream (offline)', async () => {
+        const enc = new TextEncoder();
+        const stream = '\uFEFF: comment line\r\n'
+            + 'id: 1\r\nevent: run\r\ndata: {"id":"run_1","status":"Running"}\r\n\r\n'
+            + 'event: stage\ndata: {"stage":"Search",\ndata: "status":"Running"}\nid: 2\n\n'
+            + ':keep-alive\n\n'
+            + 'event: ping\rdata: {}\r\r'
+            + 'event: noData\n\n'
+            + 'data:plain text no space\n\n'
+            + 'event: note\ndata: caf\u00e9 \u2713\n\n'
+            + 'event: done\nid: 3\ndata: {"id":"run_1","status":"Completed"}';
+        const bytes = enc.encode(stream);
+        const sizes = [1, 2, 3, 5, 7, 11, 13];
+        const chunks = [];
+        for (let i = 0, k = 0; i < bytes.length; k++) {
+            const n = sizes[k % sizes.length];
+            chunks.push(bytes.slice(i, i + n));
+            i += n;
+        }
+        const crSplit = [];
+        const crIndex = stream.indexOf('\r\n');
+        crSplit.push(stream.slice(0, crIndex + 1), stream.slice(crIndex + 1));
+        async function* asAsync(list) {
+            for (const c of list) yield c;
+        }
+        for (const [label, input] of [['byte chunks', asAsync(chunks)], ['one string', [stream]], ['CR LF split', crSplit]]) {
+            const events = [];
+            for await (const ev of parseServerSentEvents(input)) events.push(ev);
+            assertEqual(events.map((e) => e.event).join(','), 'run,stage,ping,message,note,done', label + ': event order');
+            assertEqual(events[0].id, '1', label + ': id');
+            assertEqual(events[0].data.status, 'Running', label + ': JSON data');
+            assertEqual(events[1].raw, '{"stage":"Search",\n"status":"Running"}', label + ': multi-line data joined with a line feed');
+            assertEqual(events[1].data.stage, 'Search', label + ': multi-line JSON parsed');
+            assertEqual(events[1].id, '2', label + ': id after data');
+            assertEqual(events[2].id, '2', label + ': id carries over');
+            assertEqual(events[3].data, 'plain text no space', label + ': non-JSON data stays text');
+            assertEqual(events[4].data, 'caf\u00e9 \u2713', label + ': UTF-8 split across chunks');
+            assertEqual(events[5].data.status, 'Completed', label + ': last event without a trailing blank line');
+        }
+    });
+
+    await run('runs.events, follow (offline, fake stream)', async () => {
+        const sse = (text, chunkSize = 4) => new ReadableStream({
+            start(controller) {
+                const b = new TextEncoder().encode(text);
+                for (let i = 0; i < b.length; i += chunkSize) controller.enqueue(b.slice(i, i + chunkSize));
+                controller.close();
+            }
+        });
+        const seen = [];
+        let call = 0;
+        const fake = new MyMorningNewsClient({
+            baseUrl: 'http://127.0.0.1:1', token: 'test-token',
+            fetch: async (url, init) => {
+                seen.push({ url, init });
+                call++;
+                if (url.includes('/runs/run_missing/')) return new Response('{"error":"NotFound","message":"Run was not found.","requestId":"rqi_x"}', { status: 404, headers: { 'content-type': 'application/json' } });
+                if (url.includes('/runs/run_json/')) return new Response('{}', { status: 200, headers: { 'content-type': 'application/json', 'x-request-id': 'rqi_fake' } });
+                const body = call === 1 || url.includes('run_one')
+                    ? 'id: 1\nevent: stage\ndata: {"stage":"Plan","status":"Completed"}\n\nid: 2\nevent: run\ndata: {"id":"run_a","status":"Running"}\n\nevent: timeout\ndata: {"reconnect":true}\n\n'
+                    : 'event: ping\ndata: {}\n\nid: 3\nevent: done\ndata: {"id":"run_a","status":"Completed"}\n\n';
+                return new Response(sse(body), { status: 200, headers: { 'content-type': 'text/event-stream' } });
+            }
+        });
+        const evs = [];
+        for await (const ev of fake.runs.events('run_one')) evs.push(ev.event);
+        assertEqual(evs.join(','), 'stage,run,timeout', 'events streamed');
+        assertEqual(seen[0].init.headers.Accept, 'text/event-stream', 'Accept header');
+        assertEqual(seen[0].init.headers.Authorization, 'Bearer test-token', 'bearer token sent');
+        assert(seen[0].url.endsWith('/v1.0/api/runs/run_one/events'), 'events path');
+        call = 0;
+        const followed = [];
+        const final = await fake.runs.follow('run_a', (ev) => followed.push(ev.event));
+        assertEqual(final.status, 'Completed', 'follow returns the final run');
+        assertEqual(followed.join(','), 'stage,run,timeout,ping,done', 'follow reconnects after timeout');
+        await expectError((async () => {
+            for await (const _ of fake.runs.events('run_missing')) { /* none */ }
+        })(), 404, 'NotFound');
+        await expectError((async () => {
+            for await (const _ of fake.runs.events('run_json')) { /* none */ }
+        })(), 200, 'NotEventStream');
+        let brokeEarly = 0;
+        for await (const _ of fake.runs.events('run_one')) {
+            brokeEarly++;
+            break;
+        }
+        assertEqual(brokeEarly, 1, 'breaking out of the loop stops the stream');
+        const signedSeen = [];
+        const signed = new MyMorningNewsClient({
+            baseUrl: 'http://127.0.0.1:1', accessKey: 'ak_test', secretKey: 'secret_test', tenantId: 'default', signedRequests: true,
+            fetch: async (url, init) => {
+                signedSeen.push({ url, init });
+                return new Response(sse('event: done\ndata: {"id":"run_s","status":"Failed"}\n\n'), { status: 200, headers: { 'content-type': 'text/event-stream' } });
+            }
+        });
+        for await (const _ of signed.runs.events('run_s')) { /* drain */ }
+        const h = signedSeen[0].init.headers;
+        assert(!('x-secret-key' in h), 'signed stream sends no secret');
+        const u = new URL(signedSeen[0].url);
+        assertEqual(h['x-signature'], signRequest({ method: 'GET', pathAndQuery: u.pathname + u.search, tenantId: 'default', date: h['x-date'], nonce: h['x-nonce'], body: '', secretKey: 'secret_test' }), 'stream request signed');
+        const controller = new AbortController();
+        const slow = new MyMorningNewsClient({
+            baseUrl: 'http://127.0.0.1:1', token: 't',
+            fetch: async (url, init) => new Response(new ReadableStream({
+                start(c) {
+                    c.enqueue(new TextEncoder().encode('event: run\ndata: {"status":"Running"}\n\n'));
+                    init.signal.addEventListener('abort', () => c.error(Object.assign(new Error('aborted'), { name: 'AbortError' })));
+                }
+            }), { status: 200, headers: { 'content-type': 'text/event-stream' } })
+        });
+        const err = await expectError((async () => {
+            for await (const _ of slow.runs.events('run_x', { signal: controller.signal })) controller.abort();
+        })(), 0, 'Aborted');
+        assert(err.path.endsWith('/events'), 'abort error names the path');
+    });
+
+    await run('runs.events and retry (live 404, 409, 400, replay)', async () => {
+        let probe;
+        try {
+            for await (const _ of client.runs.events(bogus('run'))) { /* none expected */ }
+        } catch (err) {
+            probe = err;
+        }
+        assert(probe instanceof MyMorningNewsError, 'typed error for an unknown run');
+        if (probe.code === 'RouteNotFound') skip('server has no run events route yet (rebuild pending)');
+        assertEqual(probe.status, 404, 'events on an unknown run is 404');
+        assertEqual(probe.code, 'NotFound', 'NotFound code');
+        await expectError(client.runs.retry(bogus('run')), 404, 'NotFound');
+        await expectError(client.runs.retry(bogus('run'), { fromStage: 'Synthesize' }), 404, 'NotFound');
+        const all = (await client.runs.list({ pageSize: 100 })).items;
+        const unfinished = all.find((r) => !RunsResource.isTerminal(r.status));
+        if (unfinished) await expectError(client.runs.retry(unfinished.id), 409, 'Conflict');
+        else verbose('no unfinished run for the live 409 check');
+        const finished = all.find((r) => RunsResource.isTerminal(r.status));
+        if (!finished) skip('no finished run to replay or to check 400 on');
+        const topicExists = await client.topics.get(finished.topicId).then(() => true, () => false);
+        if (topicExists) await expectError(client.runs.retry(finished.id, { fromStage: 'NotAStage' }), 400, 'ValidationFailed');
+        else await expectError(client.runs.retry(finished.id, { fromStage: 'NotAStage' }), 409, 'Conflict');
+        const events = [];
+        const controller = new AbortController();
+        const guard = setTimeout(() => controller.abort(), 20000);
+        try {
+            for await (const ev of client.runs.events(finished.id, { signal: controller.signal })) events.push(ev);
+        } finally {
+            clearTimeout(guard);
+        }
+        assert(events.length >= 1, 'replay sent events');
+        const last = events[events.length - 1];
+        assertEqual(last.event, 'done', 'a finished run ends with done');
+        assertEqual(last.data.id, finished.id, 'done carries the run');
+        assert(events.slice(0, -1).every((e) => e.event === 'stage'), 'stages come before done');
+        const stages = await client.runs.stages(finished.id);
+        assertEqual(events.length - 1, stages.length, 'one stage event per stage');
+        const final = await client.runs.follow(finished.id);
+        assertEqual(final.id, finished.id, 'follow returns the finished run');
+    });
+
     await run('topics.run (dry run) and runs.wait', async () => {
         const t = await client.topics.create({ name: name('run-topic'), brief: 'Track notable releases of open source vector databases this week.', status: 'Active' });
         onCleanup('run topic', () => client.topics.remove(t.id));
         await client.topics.addDimension(t.id, { name: 'Releases', description: 'New versions and features' });
         const queued = await client.topics.dryRun(t.id);
         assert(queued.isDryRun, 'dry run');
+        const seenEvents = [];
+        const followed = await client.runs.follow(queued.id, (ev) => seenEvents.push(ev.event)).catch((err) => {
+            if (err instanceof MyMorningNewsError && err.code === 'RouteNotFound') return null;
+            throw err;
+        });
+        if (followed) assert(seenEvents.includes('done'), 'followed to done');
         const done = await client.runs.wait(queued.id, { timeoutMs: 15 * 60000, intervalMs: 5000 });
         assert(RunsResource.isTerminal(done.status), 'terminal');
         assert(Array.isArray(await client.runs.stages(done.id)), 'stages');

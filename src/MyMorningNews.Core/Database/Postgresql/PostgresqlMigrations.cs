@@ -188,6 +188,10 @@ namespace MyMorningNews.Core.Database.Postgresql
             {
                 "ALTER TABLE findings ADD COLUMN IF NOT EXISTS pinned BOOLEAN NOT NULL DEFAULT FALSE",
                 "ALTER TABLE findings ADD COLUMN IF NOT EXISTS hidden BOOLEAN NOT NULL DEFAULT FALSE"
+            }),
+            new SchemaMigration(14, "Retry a run from a stage", new List<string>
+            {
+                "ALTER TABLE runs ADD COLUMN IF NOT EXISTS resumefromstage VARCHAR(64)"
             })
         };
 

@@ -304,6 +304,16 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
  * @property {number} newFindingCount New findings.
  * @property {number} sourceCount Sources fetched.
  * @property {number|null} estimatedCostUsd Estimated cost.
+ * @property {string|null} resumeFromStage Stage a retried run resumes from, or null for a full run.
+ */
+
+/**
+ * A server-sent event from `runs.events`.
+ * @typedef {object} RunEvent
+ * @property {string} event Event type: `run`, `stage`, `ping`, `done`, or `timeout` (`message` when the server names none).
+ * @property {string|null} id Event ID, or null.
+ * @property {any} data Data parsed as JSON (the raw text when it is not JSON).
+ * @property {string} raw Raw data text.
  */
 
 /**
@@ -885,6 +895,85 @@ export function signRequest(input) {
 
 function signingDate(now = new Date()) {
     return now.toISOString().replace(/\.\d{3}Z$/, 'Z');
+}
+
+/**
+ * Parse a server-sent event stream (the `text/event-stream` format).
+ *
+ * Handles CRLF, LF, and CR line endings split across chunks, comment lines (starting with `:`), multi-line `data`
+ * fields (joined with a line feed), one optional space after the colon, and a final event without a trailing blank
+ * line. Events without data are not dispatched, as in the HTML specification.
+ *
+ * @param {AsyncIterable<Uint8Array|string>|Iterable<Uint8Array|string>} chunks Stream chunks.
+ * @returns {AsyncGenerator<RunEvent, void, unknown>} Parsed events.
+ * @throws {TypeError} chunks is not iterable.
+ */
+export async function* parseServerSentEvents(chunks) {
+    if (!chunks || (typeof chunks[Symbol.asyncIterator] !== 'function' && typeof chunks[Symbol.iterator] !== 'function')) {
+        throw new TypeError('chunks must be an iterable or async iterable.');
+    }
+    const decoder = new TextDecoder('utf-8');
+    let buffer = '';
+    let first = true;
+    let eventType = '';
+    let dataLines = [];
+    let lastId = null;
+
+    function* dispatchLine(line) {
+        if (line === '') {
+            if (dataLines.length > 0) {
+                const raw = dataLines.join('\n');
+                let data = raw;
+                try {
+                    data = JSON.parse(raw);
+                } catch {
+                    data = raw;
+                }
+                yield { event: eventType || 'message', id: lastId, data, raw };
+            }
+            eventType = '';
+            dataLines = [];
+            return;
+        }
+        if (line.startsWith(':')) return;
+        const colon = line.indexOf(':');
+        const field = colon < 0 ? line : line.slice(0, colon);
+        let value = colon < 0 ? '' : line.slice(colon + 1);
+        if (value.startsWith(' ')) value = value.slice(1);
+        if (field === 'event') eventType = value;
+        else if (field === 'data') dataLines.push(value);
+        else if (field === 'id') lastId = value.includes('\0') ? lastId : value;
+    }
+
+    function* drain(final) {
+        for (;;) {
+            const idx = buffer.search(/\r\n|\r|\n/);
+            if (idx < 0) break;
+            if (buffer[idx] === '\r' && idx === buffer.length - 1 && !final) break;
+            const sepLength = buffer[idx] === '\r' && buffer[idx + 1] === '\n' ? 2 : 1;
+            const line = buffer.slice(0, idx);
+            buffer = buffer.slice(idx + sepLength);
+            yield* dispatchLine(line);
+        }
+    }
+
+    for await (const chunk of chunks) {
+        let piece = typeof chunk === 'string' ? chunk : decoder.decode(chunk, { stream: true });
+        if (first && piece.length > 0) {
+            if (piece.charCodeAt(0) === 0xfeff) piece = piece.slice(1);
+            first = false;
+        }
+        buffer += piece;
+        yield* drain(false);
+    }
+    buffer += decoder.decode();
+    yield* drain(true);
+    if (buffer.length > 0) {
+        const rest = buffer;
+        buffer = '';
+        yield* dispatchLine(rest);
+    }
+    yield* dispatchLine('');
 }
 
 /**
@@ -1505,7 +1594,7 @@ export class SchedulesResource extends CrudResource {
 }
 
 /**
- * Research runs. The server has no run event stream, so `wait` polls `GET /runs/{id}`.
+ * Research runs. `events` streams progress as server-sent events; `wait` polls `GET /runs/{id}` instead.
  */
 export class RunsResource extends ResourceGroup {
     /**
@@ -1571,6 +1660,87 @@ export class RunsResource extends ResourceGroup {
      */
     results(id, options = {}) {
         return this._req('GET', this._path(id, '/results'), { query: { disposition: options.disposition } });
+    }
+
+    /**
+     * Retry a finished run (202). With `fromStage` set to Synthesize, ReviewPredictions, Predict, Suggest,
+     * ComposeBriefing, or Notify, the same run is queued again from that stage (`resumeFromStage` is set). Otherwise,
+     * or without `fromStage`, a new run of the topic is queued. 409 for a run that is not finished, 400 for an unknown
+     * stage. This performs real research and model calls.
+     * @param {string} id Run.
+     * @param {{ fromStage?: string }} [options] Stage to resume from.
+     * @returns {Promise<Run>} The queued run.
+     */
+    retry(id, options = {}) {
+        return this._req('POST', this._path(id, '/retry'), { query: { fromStage: options.fromStage } });
+    }
+
+    /**
+     * Stream a run's progress as server-sent events. The current run and all its stages come first, then `run` and
+     * `stage` events on every change, `ping` every 15 seconds, and `done` with the final run (the stream then ends).
+     * A `timeout` event means the stream reached its maximum length; call again to reconnect. Uses fetch streaming so
+     * the bearer token or request signature is sent. Break out of the loop, or abort the signal, to stop.
+     * @param {string} id Run.
+     * @param {{ signal?: AbortSignal, connectTimeoutMs?: number }} [options] Abort signal, and the time allowed for the
+     *   response headers (default: the client timeout).
+     * @returns {AsyncGenerator<RunEvent, void, unknown>} Events.
+     * @throws {MyMorningNewsError} Non-2xx response (for example 404 for an unknown run), or a response that is not an event stream.
+     */
+    async *events(id, options = {}) {
+        const path = this._path(id, '/events');
+        const { response, close } = await this._client._openStream('GET', path, options);
+        try {
+            const contentType = response.headers.get('content-type') ?? '';
+            if (!contentType.includes('text/event-stream')) {
+                const body = await response.text().catch(() => '');
+                throw new MyMorningNewsError('GET ' + path + ' did not return an event stream (content type ' + (contentType || 'none') + ').', {
+                    status: response.status, code: 'NotEventStream', body, method: 'GET', path, requestId: response.headers.get('x-request-id')
+                });
+            }
+            if (!response.body) return;
+            try {
+                yield* parseServerSentEvents(response.body);
+            } catch (err) {
+                if (err instanceof MyMorningNewsError) throw err;
+                const aborted = options.signal?.aborted || err?.name === 'AbortError';
+                throw new MyMorningNewsError('GET ' + path + (aborted ? ' was aborted.' : ' stream failed: ' + (err?.message ?? String(err))), {
+                    status: 0, code: aborted ? 'Aborted' : 'NetworkError', method: 'GET', path, cause: err
+                });
+            }
+        } finally {
+            close();
+        }
+    }
+
+    /**
+     * Follow a run until it finishes, reconnecting after `timeout` events.
+     * @param {string} id Run.
+     * @param {(event: RunEvent) => void} [onEvent] Called for every event, pings included.
+     * @param {{ signal?: AbortSignal, maxReconnects?: number }} [options] Abort signal, and reconnects allowed (default 20, minimum 0).
+     * @returns {Promise<Run>} The final run from the `done` event, or read with `get` when the stream ends without one.
+     * @throws {MyMorningNewsError} `code` `StreamEnded` when the reconnect budget runs out before the run finishes.
+     */
+    async follow(id, onEvent, options = {}) {
+        const maxReconnects = Math.max(0, Number.isInteger(options.maxReconnects) ? options.maxReconnects : 20);
+        for (let attempt = 0; attempt <= maxReconnects; attempt++) {
+            let reconnect = false;
+            for await (const ev of this.events(id, { signal: options.signal })) {
+                if (typeof onEvent === 'function') onEvent(ev);
+                if (ev.event === 'done') {
+                    if (ev.data && typeof ev.data === 'object' && ev.data.status) return ev.data;
+                    return this.get(id);
+                }
+                if (ev.event === 'timeout') {
+                    reconnect = true;
+                    break;
+                }
+            }
+            if (!reconnect) {
+                const run = await this.get(id);
+                if (RunsResource.isTerminal(run.status)) return run;
+            }
+        }
+        throw new MyMorningNewsError('Run ' + id + ' did not finish within ' + maxReconnects + ' reconnects.', { status: 0, code: 'StreamEnded', method: 'GET', path: this._path(id, '/events') });
     }
 
     /**
@@ -3283,16 +3453,7 @@ export class MyMorningNewsClient {
         requireValue(path, 'path');
         const { query, body, headers, auth = true, raw = false, range, signal, okStatuses } = options;
         const timeoutMs = options.timeoutMs !== undefined ? Math.max(1, Number(options.timeoutMs)) : this._timeoutMs;
-        const url = this._url(path, query);
-        const h = { Accept: raw ? '*/*' : 'application/json', ...this._headers };
-        let payload;
-        if (body !== undefined && body !== null) {
-            h['Content-Type'] = 'application/json';
-            payload = JSON.stringify(body);
-        }
-        if (auth) Object.assign(h, this._authHeaders(method, url, payload));
-        if (headers) Object.assign(h, headers);
-        if (range) h.Range = formatRange(range);
+        const { url, headers: h, payload } = this._prepare(method, path, { query, body, headers, auth, range, accept: raw ? '*/*' : 'application/json' });
 
         const controller = new AbortController();
         let timedOut = false;
@@ -3340,6 +3501,65 @@ export class MyMorningNewsClient {
             clearTimeout(timer);
             if (signal) signal.removeEventListener('abort', onAbort);
         }
+    }
+
+    /** @private */
+    _prepare(method, path, { query, body, headers, auth = true, range, accept }) {
+        const url = this._url(path, query);
+        const h = { Accept: accept, ...this._headers };
+        let payload;
+        if (body !== undefined && body !== null) {
+            h['Content-Type'] = 'application/json';
+            payload = JSON.stringify(body);
+        }
+        if (auth) Object.assign(h, this._authHeaders(method, url, payload));
+        if (headers) Object.assign(h, headers);
+        if (range) h.Range = formatRange(range);
+        return { url, headers: h, payload };
+    }
+
+    /**
+     * Open a streaming response. The connect timeout covers only the response headers.
+     * @private
+     */
+    async _openStream(method, path, options = {}) {
+        const { signal } = options;
+        const connectTimeoutMs = Number.isFinite(options.connectTimeoutMs) ? Math.max(1, options.connectTimeoutMs) : this._timeoutMs;
+        const { url, headers, payload } = this._prepare(method, path, { query: options.query, headers: options.headers, auth: options.auth ?? true, accept: 'text/event-stream' });
+        headers['Cache-Control'] = 'no-cache';
+        const controller = new AbortController();
+        let timedOut = false;
+        const timer = setTimeout(() => {
+            timedOut = true;
+            controller.abort();
+        }, connectTimeoutMs);
+        const onAbort = () => controller.abort(signal.reason);
+        if (signal) {
+            if (signal.aborted) controller.abort(signal.reason);
+            else signal.addEventListener('abort', onAbort, { once: true });
+        }
+        const close = () => {
+            clearTimeout(timer);
+            if (signal) signal.removeEventListener('abort', onAbort);
+            controller.abort();
+        };
+        let response;
+        try {
+            response = await this._fetch(url, { method: method.toUpperCase(), headers, body: payload, signal: controller.signal });
+        } catch (err) {
+            close();
+            throw this._transportError(err, timedOut, connectTimeoutMs, method, path);
+        } finally {
+            clearTimeout(timer);
+        }
+        if (!response.ok) {
+            try {
+                throw await this._errorFrom(response, method, path);
+            } finally {
+                close();
+            }
+        }
+        return { response, close };
     }
 
     /** @private */

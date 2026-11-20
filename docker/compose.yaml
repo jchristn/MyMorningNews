@@ -167,8 +167,9 @@ services:
       start_period: 20s
 
   ollama:
-    # Linux hosts only (--profile ollama). On macOS run Ollama natively; the server uses host.docker.internal:11434.
-    # Point MYMORNINGNEWS_OLLAMA_ENDPOINT at http://ollama:11434 when using this profile.
+    # Optional local Ollama (start with --profile ollama). It runs on any host, CPU only on macOS and Windows (Docker
+    # has no GPU there), so on a Mac a native Ollama is faster; the server reaches that at host.docker.internal:11434.
+    # To use this container instead, set MYMORNINGNEWS_OLLAMA_ENDPOINT=http://ollama:11434 in docker/.env.
     profiles: ["ollama"]
     build:
       context: ./ollama

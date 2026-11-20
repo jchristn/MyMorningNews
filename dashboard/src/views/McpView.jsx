@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { KeyRound, RotateCcw, ShieldAlert } from 'lucide-react';
@@ -31,10 +31,26 @@ Snippet.propTypes = { id: PropTypes.string.isRequired, title: PropTypes.string.i
 // per browser), an access key to create, and copyable commands. The page never shows the session token.
 export default function McpView() {
   const { t } = useTranslation();
-  const { serverUrl, tenantId, isTenantAdmin } = useAuth();
-  const suggested = suggestMcpUrl(serverUrl);
+  const { serverUrl, tenantId, isTenantAdmin, apiClient } = useAuth();
+  const [advertised, setAdvertised] = useState('');
+  const suggested = isHttpUrl(advertised) ? advertised : suggestMcpUrl(serverUrl);
   const [stored, setStored] = useLocalStorage('mymorningnews.mcp.url', '');
-  const [mcpUrl, setMcpUrl] = useState(() => stored || suggested);
+  const [edited, setMcpUrl] = useState(null);
+  const mcpUrl = edited ?? (stored || suggested);
+  // The server advertises its MCP endpoint in client config (Rest.McpPublicUrl); older servers do not.
+  useEffect(() => {
+    let live = true;
+    if (!apiClient) return undefined;
+    apiClient
+      .get('/v1.0/api/client-config')
+      .then((config) => {
+        if (live && config && typeof config.mcpUrl === 'string') setAdvertised(config.mcpUrl);
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [apiClient]);
   const change = (value) => {
     setMcpUrl(value);
     setStored(value === suggested ? '' : value);

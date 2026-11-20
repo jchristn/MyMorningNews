@@ -90,6 +90,40 @@ namespace MyMorningNews.Core.Settings
             set { _AppBaseUrl = String.IsNullOrWhiteSpace(value) ? throw new ArgumentNullException(nameof(AppBaseUrl)) : value.Trim().TrimEnd('/'); }
         }
 
+        /// <summary>
+        /// Public URL of the MCP server's Streamable HTTP endpoint, shown to users who connect an MCP client. Default
+        /// <c>http://127.0.0.1:12105/mcp</c>.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Value is null or empty.</exception>
+        [Setting(Description = "Public URL of the MCP server endpoint (shown in the app).", EnvironmentVariable = "MCP_PUBLIC_URL")]
+        public string McpPublicUrl
+        {
+            get { return _McpPublicUrl; }
+            set { _McpPublicUrl = String.IsNullOrWhiteSpace(value) ? throw new ArgumentNullException(nameof(McpPublicUrl)) : value.Trim(); }
+        }
+
+        /// <summary>
+        /// How often an event stream (for example run progress) checks for changes, in milliseconds. Default 1000.
+        /// Minimum 200, maximum 10000.
+        /// </summary>
+        [Setting(Description = "How often event streams check for changes (ms).", Minimum = 200, Maximum = 10000)]
+        public int EventStreamPollMs
+        {
+            get { return _EventStreamPollMs; }
+            set { _EventStreamPollMs = Math.Clamp(value, 200, 10000); }
+        }
+
+        /// <summary>
+        /// Longest an event stream stays open, in minutes; clients reconnect after it closes. Default 30. Minimum 1,
+        /// maximum 240.
+        /// </summary>
+        [Setting(Description = "Longest an event stream stays open (minutes).", Minimum = 1, Maximum = 240)]
+        public int EventStreamMaxMinutes
+        {
+            get { return _EventStreamMaxMinutes; }
+            set { _EventStreamMaxMinutes = Math.Clamp(value, 1, 240); }
+        }
+
         #endregion
 
         #region Private-Members
@@ -99,6 +133,9 @@ namespace MyMorningNews.Core.Settings
         private string _PublicBaseUrl = "http://127.0.0.1:12100";
         private string _AppBaseUrl = "http://127.0.0.1:12101";
         private string _CorsAllowedOrigins = "*";
+        private string _McpPublicUrl = "http://127.0.0.1:12105/mcp";
+        private int _EventStreamPollMs = 1000;
+        private int _EventStreamMaxMinutes = 30;
 
         #endregion
     }

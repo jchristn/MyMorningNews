@@ -52,5 +52,10 @@ namespace MyMorningNews.Core.Responses
         /// Copyright notice.
         /// </summary>
         public string Copyright { get; set; } = "(c) 2026 Lattice AI LLC";
+
+        /// <summary>
+        /// Public URL of the MCP server's Streamable HTTP endpoint.
+        /// </summary>
+        public string McpUrl { get; set; } = "http://127.0.0.1:12105/mcp";
     }
 }

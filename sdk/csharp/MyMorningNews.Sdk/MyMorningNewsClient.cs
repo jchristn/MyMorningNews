@@ -572,6 +572,47 @@ namespace MyMorningNews.Sdk
         }
 
         /// <summary>
+        /// Open a streaming GET (server-sent events) with the client's credentials. The client timeout applies only until
+        /// the response headers arrive. The caller disposes the response.
+        /// </summary>
+        /// <param name="path">Path.</param>
+        /// <param name="token">Cancellation token; cancel it to close the stream.</param>
+        /// <returns>Response positioned at the start of the stream.</returns>
+        /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
+        internal async Task<HttpResponseMessage> OpenStreamAsync(string path, CancellationToken token)
+        {
+            ArgumentNullException.ThrowIfNull(path);
+            ObjectDisposedException.ThrowIf(_Disposed, this);
+            Uri uri = new Uri(BaseUrl + path);
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, uri);
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
+            ApplyCredentials(request, uri, null);
+            HttpResponseMessage response;
+            using (CancellationTokenSource headers = CancellationTokenSource.CreateLinkedTokenSource(token))
+            {
+                headers.CancelAfter(_Timeout);
+                try
+                {
+                    response = await _Http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, headers.Token).ConfigureAwait(false);
+                }
+                finally
+                {
+                    request.Dispose();
+                }
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                using (response)
+                {
+                    throw await ToExceptionAsync(response, token).ConfigureAwait(false);
+                }
+            }
+
+            return response;
+        }
+
+        /// <summary>
         /// Escape a path segment.
         /// </summary>
         /// <param name="value">Segment.</param>

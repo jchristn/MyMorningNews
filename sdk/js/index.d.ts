@@ -456,7 +456,25 @@ export interface Run extends Record_ {
     inputTokens: number;
     outputTokens: number;
     estimatedCostUsd: number | null;
+    /** Stage a retried run resumes from, or null for a full run. */
+    resumeFromStage: string | null;
 }
+
+export type RunEventType = 'run' | 'stage' | 'ping' | 'done' | 'timeout' | 'message';
+
+/** A server-sent event. `data` is parsed JSON (Run for run and done, RunStage for stage), or the raw text. */
+export interface RunEvent<T = any> {
+    event: RunEventType | string;
+    id: string | null;
+    data: T;
+    raw: string;
+}
+
+/** Stages a retry can resume from; any other stage, or none, starts a new run. */
+export type ResumableStage = 'Synthesize' | 'ReviewPredictions' | 'Predict' | 'Suggest' | 'ComposeBriefing' | 'Notify';
+
+/** Parse a text/event-stream body (split chunks, CRLF/LF/CR, comments, multi-line data). */
+export declare function parseServerSentEvents(chunks: AsyncIterable<Uint8Array | string> | Iterable<Uint8Array | string>): AsyncGenerator<RunEvent, void, unknown>;
 
 export interface RunStage extends Record_ {
     runId: string;
@@ -1157,6 +1175,12 @@ export declare class RunsResource extends ResourceGroup {
     stages(id: string): Promise<RunStage[]>;
     queries(id: string): Promise<any[]>;
     results(id: string, options?: { disposition?: string }): Promise<any[]>;
+    /** 202 with the queued run. 409 when the run is not finished, 400 for an unknown stage. Real research and model calls. */
+    retry(id: string, options?: { fromStage?: ResumableStage | string }): Promise<Run>;
+    /** Server-sent events: the current run and stages first, then changes, pings, and done (or timeout). */
+    events(id: string, options?: { signal?: AbortSignal; connectTimeoutMs?: number }): AsyncGenerator<RunEvent, void, unknown>;
+    /** Follow until done, reconnecting after timeout events (default 20 reconnects). */
+    follow(id: string, onEvent?: (event: RunEvent) => void, options?: { signal?: AbortSignal; maxReconnects?: number }): Promise<Run>;
     /** Paged, oldest first unless sortDirection is given. */
     llmCalls(id: string, options?: ListOptions): Promise<EnumerationResult<LlmCall>>;
     emailPreview(id: string): Promise<any>;

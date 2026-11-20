@@ -86,7 +86,8 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.ContextSnapshotHash,
                 obj.Active,
                 DateTime.SpecifyKind(obj.CreatedUtc, DateTimeKind.Utc),
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
+                obj.ResumeFromStage).ConfigureAwait(false);
             return obj;
         }
 
@@ -140,7 +141,8 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.EstimatedCostUsd,
                 obj.ContextSnapshotHash,
                 obj.Active,
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
+                obj.ResumeFromStage).ConfigureAwait(false);
             if (affected < 1) throw new KeyNotFoundException("Run " + obj.Id + " was not found.");
             return obj;
         }
@@ -269,6 +271,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             obj.Active = reader.GetBoolean(26);
             obj.CreatedUtc = DateTime.SpecifyKind(reader.GetDateTime(27), DateTimeKind.Utc);
             obj.LastUpdateUtc = DateTime.SpecifyKind(reader.GetDateTime(28), DateTimeKind.Utc);
+            obj.ResumeFromStage = reader.IsDBNull(29) ? null : reader.GetString(29);
             return obj;
         }
 

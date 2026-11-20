@@ -145,13 +145,31 @@ const audio = await client.briefings.downloadAudio(briefingId, { range: { start:
 
 ## Runs
 
-The server has no run event stream, so `runs.wait(id, { timeoutMs, intervalMs, signal, onPoll })` polls `GET /v1.0/api/runs/{id}` until the run reaches `Completed`, `PartiallySucceeded`, `Failed`, `Cancelled`, or `Skipped`. It throws `MyMorningNewsError` with `code` `Timeout` (and the last run in `body`) when the time runs out.
+`runs.events(id, { signal })` streams a run's progress from `GET /v1.0/api/runs/{id}/events` (server-sent events). It uses fetch streaming rather than `EventSource`, so the bearer token or the request signature is sent. It yields `{ event, id, data, raw }`, with `data` parsed as JSON:
+
+| Event | Data |
+|-------|------|
+| `run` | The run, on every change. |
+| `stage` | One run stage, whenever it changes. |
+| `ping` | `{}`, every 15 seconds. |
+| `done` | The final run; the stream then ends. |
+| `timeout` | The stream reached its maximum length; call `events` again to reconnect. |
+
+The current run and all its stages come first, so a reconnect needs no event ID. Break out of the loop or abort the signal to stop; an abort throws `MyMorningNewsError` with `code` `Aborted`.
 
 ```js
 const queued = await client.topics.run(topicId, { dryRun: true }); // real research and model calls
-const done = await client.runs.wait(queued.id, { timeoutMs: 15 * 60000, intervalMs: 5000 });
-console.log(done.status, done.newFindingCount);
+for await (const ev of client.runs.events(queued.id)) {
+    if (ev.event === 'stage') console.log(ev.data.stage, ev.data.status);
+    if (ev.event === 'done') console.log('finished', ev.data.status);
+}
 ```
+
+`runs.follow(id, onEvent, { signal, maxReconnects })` does the same loop, reconnects after `timeout` (20 times by default), and resolves with the final run. `parseServerSentEvents(chunks)` is exported for other streams.
+
+`runs.wait(id, { timeoutMs, intervalMs, signal, onPoll })` polls `GET /v1.0/api/runs/{id}` instead, until the run reaches `Completed`, `PartiallySucceeded`, `Failed`, `Cancelled`, or `Skipped`. It throws `MyMorningNewsError` with `code` `Timeout` (and the last run in `body`) when the time runs out.
+
+`runs.retry(id, { fromStage })` retries a finished run (202). With `fromStage` set to `Synthesize`, `ReviewPredictions`, `Predict`, `Suggest`, `ComposeBriefing`, or `Notify`, the same run is queued again from that stage and `resumeFromStage` is set; otherwise a new run of the topic is queued. A run that is not finished gets 409, and an unknown stage gets 400. Retrying performs real research and model calls.
 
 ## Resource groups
 
@@ -209,7 +227,7 @@ await client.schedules.update(s.id, { enabled: false });
 
 ### runs
 
-`list({ topicId, status, trigger })`, `get`, `start(topicId, { dryRun })`, `stages`, `queries`, `results(id, { disposition })`, `llmCalls(id, options)` (paged, oldest first), `emailPreview`, `cancel`, `wait`, and `RunsResource.isTerminal(status)`.
+`list({ topicId, status, trigger })`, `get`, `start(topicId, { dryRun })`, `stages`, `queries`, `results(id, { disposition })`, `llmCalls(id, options)` (paged, oldest first), `emailPreview`, `cancel`, `retry(id, { fromStage })`, `events(id, { signal })`, `follow(id, onEvent)`, `wait`, and `RunsResource.isTerminal(status)`.
 
 ### findings, evidence, sources
 
@@ -395,7 +413,7 @@ npm test                                         # same harness
 
 Cases that trigger real research runs or model calls (refinement generation, one-time requests, a dry run with `runs.wait`, the prompt lab, and briefing audio) are skipped unless `--with-run` is given, because the model endpoint of a live stack can cost money. The edition compose and preview cases run on an edition with no active topics, and the harness asserts that composing it made no model calls.
 
-The access key and signed request cases create and delete temporary credentials through `client.request` against the control plane, so they need an administrator. The signed request cases also check a known signature vector offline, check a replayed nonce and a bad signature are rejected, and check that the credential stops working once deleted. Finding edit cases skip when the server has no findings; they restore each finding's pinned and hidden flags afterwards and never delete real findings.
+The access key and signed request cases create and delete temporary credentials through `client.request` against the control plane, so they need an administrator. The signed request cases also check a known signature vector offline, check a replayed nonce and a bad signature are rejected, and check that the credential stops working once deleted. The run stream cases parse a canned event stream offline (split chunks, CR and LF line endings, comments, multi-line data, UTF-8 split across chunks) and drive `events` and `follow` against a fake fetch; the live case checks 404, 409, and 400 without queuing anything and replays a finished run when one exists. It skips when the server does not have the events route yet. Finding edit cases skip when the server has no findings; they restore each finding's pinned and hidden flags afterwards and never delete real findings.
 
 ## Requirements
 

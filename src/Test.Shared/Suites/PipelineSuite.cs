@@ -2,7 +2,9 @@ namespace Test.Shared.Suites
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
+    using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
     using MyMorningNews.Core.Enums;
@@ -35,6 +37,8 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "SecondRunDedupe", "A later run skips seen pages and marks a repeated finding as a duplicate", SecondRunAsync),
                 Cases.Case(S, "Failures", "A critical failure fails the run; an optional failure leaves it partially succeeded", FailuresAsync),
                 Cases.Case(S, "ResearchApi", "Findings, evidence, predictions, suggestions, and run details are served, private, and deleted with their topic", ApiAsync),
+                Cases.Case(S, "RetryFromStage", "A partially failed run is retried from the failed stage on the same run; earlier stages start a new run", RetryAsync),
+                Cases.Case(S, "RunEvents", "The run event stream replays the current state, follows a live run stage by stage, and ends with done", RunEventsAsync),
                 Cases.Case(S, "UserDelete", "Deleting a user removes their topics with all research, editions with schedules, briefings, and feedback", UserDeleteAsync)
             });
         }
@@ -260,6 +264,88 @@ namespace Test.Shared.Suites
             Assert.Equal(0L, await f.Server.Context.Database.LearnedPreferences.CountAsync(new LearnedPreferenceFilter { TenantId = f.Topic.TenantId, TopicId = f.Topic.Id }, token).ConfigureAwait(false), "preferences deleted with the topic");
             EnumerationResult<LlmCall> kept = (await f.User.Client.GetAsync("/v1.0/api/llm-calls?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<LlmCall>>();
             Assert.True(kept.Items.Count > 0, "model call records kept for cost accounting");
+        }
+
+        private static async Task RetryAsync(CancellationToken token)
+        {
+            PipelineFixture f = await FixtureAsync("Track heat pump rebates. FAILPREDICT", "/pipeline", token).ConfigureAwait(false);
+            Run run = await RunAsync(f, token).ConfigureAwait(false);
+            Assert.Equal(RunStatusEnum.PartiallySucceeded, run.Status, "predict failed first");
+            List<RunStage> before = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages", token).ConfigureAwait(false)).Json<List<RunStage>>();
+            (await f.User.Client.PutAsync("/v1.0/api/topics/" + f.Topic.Id, new { brief = "Track heat pump rebates." }, token).ConfigureAwait(false)).Expect(200, "fix the brief");
+
+            (await f.User.Client.PostAsync("/v1.0/api/runs/" + run.Id + "/retry?fromStage=Bogus", null, token).ConfigureAwait(false)).Expect(400, "unknown stage");
+            Run queued = (await f.User.Client.PostAsync("/v1.0/api/runs/" + run.Id + "/retry?fromStage=predict", null, token).ConfigureAwait(false)).Expect(202, "retry in place").Json<Run>();
+            Assert.True(queued.Id == run.Id && queued.Status == RunStatusEnum.Queued && queued.ResumeFromStage == "Predict", "same run, queued from Predict");
+            (await f.User.Client.PostAsync("/v1.0/api/runs/" + run.Id + "/retry?fromStage=Predict", null, token).ConfigureAwait(false)).Expect(409, "not while queued");
+            TestUser other = await TestFixtures.CreateUserAsync(await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false), f.Topic.TenantId, false, token).ConfigureAwait(false);
+            (await other.Client.PostAsync("/v1.0/api/runs/" + run.Id + "/retry", null, token).ConfigureAwait(false)).Expect(404, "another member cannot retry it");
+
+            Run done = await RunWaiter.FinishAsync(f.Server, queued, token).ConfigureAwait(false);
+            Assert.True(done.Status == RunStatusEnum.Completed && done.ResumeFromStage == null && done.NewFindingCount == run.NewFindingCount, "completed: " + done.Status + " " + done.Summary);
+            List<RunStage> after = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages", token).ConfigureAwait(false)).Json<List<RunStage>>();
+            Assert.True(after.Count == 15 && after.All(x => x.Status == StageStatusEnum.Succeeded), "every stage succeeded: " + String.Join(",", after.Select(x => x.Stage + "=" + x.Status)));
+            Assert.True(after.Single(x => x.Stage == "Synthesize").Id == before.Single(x => x.Stage == "Synthesize").Id && after.Single(x => x.Stage == "Predict").Id != before.Single(x => x.Stage == "Predict").Id,
+                "earlier stages kept, later stages rerun");
+            Assert.True((await f.User.Client.GetAsync("/v1.0/api/predictions?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Prediction>>().Items.Any(x => x.RunId == run.Id), "predictions made on retry");
+            Assert.Equal(run.NewFindingCount, (await f.User.Client.GetAsync("/v1.0/api/findings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().TotalCount, "no new findings from a tail retry");
+
+            Run fresh = (await f.User.Client.PostAsync("/v1.0/api/runs/" + run.Id + "/retry?fromStage=Search", null, token).ConfigureAwait(false)).Expect(202, "retry from a research stage").Json<Run>();
+            Assert.True(fresh.Id != run.Id && fresh.TopicId == f.Topic.Id && fresh.Status == RunStatusEnum.Queued, "a new run of the topic");
+            await RunWaiter.FinishAsync(f.Server, fresh, token).ConfigureAwait(false);
+        }
+
+        private static async Task<List<string>> ReadEventsAsync(string url, string bearer, CancellationToken token, TaskCompletionSource<bool>? opened = null)
+        {
+            List<string> events = new List<string>();
+            using (HttpClient http = new HttpClient { Timeout = TimeSpan.FromSeconds(120) })
+            using (HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get, url))
+            {
+                req.Headers.TryAddWithoutValidation("Authorization", "Bearer " + bearer);
+                req.Headers.TryAddWithoutValidation("Accept", "text/event-stream");
+                using (HttpResponseMessage resp = await http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false))
+                {
+                    Assert.True(resp.IsSuccessStatusCode && resp.Content.Headers.ContentType?.MediaType == "text/event-stream", "event stream: " + (int)resp.StatusCode);
+                    using (Stream body = await resp.Content.ReadAsStreamAsync(token).ConfigureAwait(false))
+                    using (StreamReader reader = new StreamReader(body))
+                    {
+                        string? line;
+                        while ((line = await reader.ReadLineAsync(token).ConfigureAwait(false)) != null)
+                        {
+                            if (line.StartsWith("event:", StringComparison.Ordinal))
+                            {
+                                string name = line.Substring(6).Trim();
+                                events.Add(name);
+                                opened?.TrySetResult(true);
+                                if (name == "done") break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return events;
+        }
+
+        private static async Task RunEventsAsync(CancellationToken token)
+        {
+            PipelineFixture f = await FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
+            string baseUrl = await SharedTestServer.GetBaseUrlAsync(token).ConfigureAwait(false);
+            Run first = await RunAsync(f, token).ConfigureAwait(false);
+            List<string> replay = await ReadEventsAsync(baseUrl + "/v1.0/api/runs/" + first.Id + "/events", f.User.Client.Token!, token).ConfigureAwait(false);
+            Assert.True(replay.Count(e => e == "stage") == 15 && replay.Last() == "done" && !replay.Contains("run"), "a finished run replays its stages, then done: " + String.Join(",", replay));
+
+            Run queued = (await f.User.Client.PostAsync("/v1.0/api/topics/" + f.Topic.Id + "/run", null, token).ConfigureAwait(false)).Expect(202, "run now").Json<Run>();
+            TaskCompletionSource<bool> opened = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            Task<List<string>> live = ReadEventsAsync(baseUrl + "/v1.0/api/runs/" + queued.Id + "/events", f.User.Client.Token!, token, opened);
+            await Task.WhenAny(opened.Task, Task.Delay(10000, token)).ConfigureAwait(false);
+            Assert.True(opened.Task.IsCompleted, "stream opened while the run was queued");
+            await RunWaiter.FinishAsync(f.Server, queued, token).ConfigureAwait(false);
+            List<string> seen = await live.WaitAsync(TimeSpan.FromSeconds(60), token).ConfigureAwait(false);
+            Assert.True(seen.First() == "run" && seen.Count(e => e == "stage") >= 15 && seen.Last() == "done", "a live run streams run, stages, and done: " + String.Join(",", seen));
+
+            TestUser other = await TestFixtures.CreateUserAsync(await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false), f.Topic.TenantId, false, token).ConfigureAwait(false);
+            (await other.Client.GetAsync("/v1.0/api/runs/" + first.Id + "/events", token).ConfigureAwait(false)).Expect(404, "another member cannot follow it");
         }
 
         private static async Task UserDeleteAsync(CancellationToken token)

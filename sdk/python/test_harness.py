@@ -723,6 +723,120 @@ def t_runs(h: Harness) -> str:
     return r.id
 
 
+class _FakeStream:
+    """A stand-in for a streaming response, used by the offline SSE case."""
+
+    def __init__(self, lines: List[bytes]) -> None:
+        self.lines = lines
+        self.closed = False
+
+    def iter_lines(self, delimiter: Optional[bytes] = None) -> Any:
+        return iter(self.lines)
+
+    def close(self) -> None:
+        self.closed = True
+
+
+@case("SSE: parser handles comments, multi-line data, defaults (offline)")
+def t_sse_parser(h: Harness) -> None:
+    lines: List[Any] = [
+        ": connected",
+        "retry: 3000",
+        "id: 1",
+        "event: stage",
+        'data: {"stage":"Search",',
+        'data: "status":"Running"}',
+        "",
+        ": a comment between events",
+        "data: plain text",
+        "",
+        "event: ping",
+        "data:{}",
+        "",
+        "event: no-data",
+        "",
+        "",
+        b"id: 7\r",
+        b"event: done\r",
+        b'data: {"id":"run_x","status":"Completed"}\r',
+        b"\r",
+        "event: unfinished",
+        "data: {}",
+    ]
+    events = list(mmn.parse_sse(lines))
+    eq([e.event for e in events], ["stage", "message", "ping", "done"], "event names (no-data and unfinished events dropped)")
+    stage = events[0]
+    eq(stage.id, "1", "id")
+    eq(stage.retry, 3000, "retry")
+    eq(stage.raw_data, '{"stage":"Search",\n"status":"Running"}', "data lines joined with a newline")
+    eq(stage.data, {"stage": "Search", "status": "Running"}, "multi-line JSON parsed")
+    eq(stage.stage.stage if stage.stage else None, "Search", "typed RunStage")
+    eq(events[1].data, "plain text", "non-JSON data stays text")
+    eq(events[1].id, None, "no id on an event without one")
+    eq(events[2].data, {}, "no space after the colon")
+    done = events[3]
+    check(done.is_final and done.run is not None and done.run.status == "Completed", "done carries the final Run (CRLF lines)")
+    eq(done.id, "7", "id from CRLF line")
+    fake = _FakeStream([b"event: run", b'data: {"id":"r","status":"Running"}', b"", b"event: done", b'data: {"id":"r","status":"Failed"}', b"",
+                        b"event: run", b'data: {"id":"r"}', b""])
+    seen = [e.event for e in mmn.RunsResource._event_stream(fake, None)]  # type: ignore[arg-type]
+    eq(seen, ["run", "done"], "the stream stops after done")
+    check(fake.closed, "the response is closed")
+
+
+def _events_route_or_skip(h: Harness) -> None:
+    """Skip when the server predates the run events route."""
+    try:
+        h.client.runs.events("run_missing")
+    except NotFoundError as ex:
+        if ex.code == "RouteNotFound":
+            raise Skip("this server has no /runs/{id}/events route yet")
+        eq(ex.code, "NotFound", "missing run is a typed 404")
+        check(isinstance(ex.body, dict) and ex.body.get("requestId"), "JSON error body")
+        return
+    raise AssertionError("events on a missing run should raise NotFoundError")
+
+
+@case("Runs: events and retry return 404 JSON for a missing run")
+def t_run_events_404(h: Harness) -> None:
+    h.need("tenant")
+    _events_route_or_skip(h)
+    expect_error(NotFoundError, lambda: h.client.runs.retry("run_missing"), code="NotFound")
+    expect_error(NotFoundError, lambda: h.client.runs.retry("run_missing", from_stage="Notify"), code="NotFound")
+    if h.demo is not None:
+        expect_error(NotFoundError, lambda: h.demo.runs.events("run_missing"), code="NotFound")
+
+
+@case("Runs: retry an unfinished run raises ConflictError")
+def t_run_retry_409(h: Harness) -> str:
+    h.need("tenant")
+    _events_route_or_skip(h)
+    active = [r for r in h.client.runs.list(page_size=50).items if r.status not in mmn.TERMINAL_RUN_STATUSES]
+    if not active:
+        raise Skip("no queued or running run is visible (making one would start a paid run)")
+    ex = expect_error(ConflictError, lambda: h.client.runs.retry(active[0].id, from_stage="Notify"), code="Conflict")
+    check(active[0].status or "", "status known")
+    return ex.message
+
+
+@case("Runs: replay a finished run's events, retry with a bad stage")
+def t_run_events_replay(h: Harness) -> str:
+    h.need("tenant")
+    _events_route_or_skip(h)
+    done_runs = [r for r in h.client.runs.list(page_size=20).items if r.status in mmn.TERMINAL_RUN_STATUSES]
+    if not done_runs:
+        raise Skip("no finished run is visible")
+    r = done_runs[0]
+    events = list(h.client.runs.events(r.id, timeout=60))
+    check(events, "events received")
+    eq(events[-1].event, "done", "a finished run ends with done")
+    eq(events[-1].run.id if events[-1].run else None, r.id, "done carries the run")
+    eq(len([e for e in events if e.event == "stage"]), len(h.client.runs.stages(r.id)), "every stage is replayed")
+    # An unknown stage is rejected before anything is queued, so this spends nothing.
+    expect_error(BadRequestError, lambda: h.client.runs.retry(r.id, from_stage="NotAStage"), code="ValidationFailed")
+    return str(len(events)) + " events for " + r.id
+
+
 @case("Runs: 404 on a missing run")
 def t_run_missing(h: Harness) -> None:
     h.need("tenant")
@@ -741,6 +855,14 @@ def t_run_live(h: Harness) -> str:
     check(final.status in mmn.TERMINAL_RUN_STATUSES, "finished")
     check(len(h.client.runs.stages(run.id)) >= 1, "stages recorded")
     check(h.client.runs.llm_calls(run.id).total_count >= 1, "model calls recorded for the run")
+    replay = list(h.client.runs.events(run.id, timeout=120))
+    eq(replay[-1].event, "done", "finished run stream ends with done")
+    resumed = h.client.runs.retry(run.id, from_stage="Notify")
+    eq(resumed.id, run.id, "resuming keeps the same run")
+    eq(resumed.resume_from_stage, "Notify", "resumeFromStage")
+    streamed = [e.event for e in h.client.runs.events(run.id, timeout=600)]
+    eq(streamed[-1], "done", "live stream ends with done")
+    h.client.runs.wait(run.id, timeout=600, interval=5)
     h.client.findings.list(run_id=run.id, include_dry_run=True)
     h.client.runs.email_preview(run.id)
     h.client.topics.pause(tid)

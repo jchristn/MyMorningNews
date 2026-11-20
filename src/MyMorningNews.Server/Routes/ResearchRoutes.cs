@@ -146,7 +146,10 @@ namespace MyMorningNews.Server.Routes
             Evidence? e = await Server.Database.Evidence.ReadAsync(tenantId, Param(ctx, "id") ?? String.Empty, ctx.Token).ConfigureAwait(false);
             if (e == null || !await EvidenceVisibleAsync(ctx, e).ConfigureAwait(false)) { await SendNotFoundAsync(ctx, "Evidence").ConfigureAwait(false); return; }
             SourceItem? s = await Server.Database.SourceItems.ReadAsync(tenantId, e.SourceItemId, ctx.Token).ConfigureAwait(false);
-            await SendJsonAsync(ctx, 200, new EvidenceView { Evidence = e, SourceUrl = s?.CanonicalUrl, SourceTitle = s?.Title, SourceDomain = s?.Domain, SourcePublishedUtc = s?.PublishedUtc }).ConfigureAwait(false);
+            FindingEvidence? link = (await Server.Database.FindingEvidence.EnumerateAsync(new FindingEvidenceFilter { TenantId = tenantId, EvidenceId = e.Id, PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Items.FirstOrDefault();
+            EvidenceView view = new EvidenceView { Evidence = e, SourceUrl = s?.CanonicalUrl, SourceTitle = s?.Title, SourceDomain = s?.Domain, SourcePublishedUtc = s?.PublishedUtc };
+            if (link != null) view.Role = link.Role.ToString();
+            await SendJsonAsync(ctx, 200, view).ConfigureAwait(false);
         }
 
         private async Task RunCallsAsync(HttpContextBase ctx)

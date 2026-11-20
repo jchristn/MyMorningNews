@@ -364,7 +364,7 @@ namespace MyMorningNews.Server
             ctx.Response.ContentType = "application/json";
             // RouteNotFound (no such endpoint on this server version) is distinct from NotFound (the endpoint exists but the
             // record does not), so clients such as the mobile app can tell an older server from a missing item.
-            await ctx.Response.Send(Serializer.Serialize(new ErrorResponse { Error = "RouteNotFound", Message = "This server has no " + ctx.Request.Method + " " + ctx.Request.Url.RawWithoutQuery + " endpoint." }), ctx.Token).ConfigureAwait(false);
+            await ctx.Response.Send(Serializer.Serialize(new ErrorResponse { Error = "RouteNotFound", Message = "This server has no " + ctx.Request.Method + " " + ctx.Request.Url.RawWithoutQuery + " endpoint.", RequestId = (ctx.Metadata as RequestContext)?.RequestId }), ctx.Token).ConfigureAwait(false);
         }
 
         #endregion

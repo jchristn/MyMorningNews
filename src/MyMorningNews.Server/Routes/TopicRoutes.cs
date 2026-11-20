@@ -33,7 +33,7 @@ namespace MyMorningNews.Server.Routes
         public override void Register(Webserver webserver)
         {
             ArgumentNullException.ThrowIfNull(webserver);
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, B, ListAsync, null, openApiMetadata: Paged(Doc("List topics", "Topics", "Members see their own topics; tenant administrators see all unless userId is given.")
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, B, ListAsync, null, openApiMetadata: Paged(Doc("List topics", "Topics", "Members see their own topics; tenant administrators see all unless userId is given.").WithParameter(QueryParam("mine", typeof(bool)))
                 .WithParameter(QueryParam("status", typeof(TopicStatusEnum))).WithParameter(QueryParam("isOneTime", typeof(bool))).WithParameter(QueryParam("userId", typeof(string)))));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, B, CreateAsync, null, openApiMetadata: Doc("Create a topic without the wizard", "Topics").WithRequestBody(Body<TopicUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, B + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read a topic with dimensions, constraints, and recipients", "Topics"));

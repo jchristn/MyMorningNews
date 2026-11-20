@@ -379,7 +379,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 
 ## Route reference
 
-273 routes in 44 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
+292 routes in 45 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
 
 | Group | Routes | What it covers |
 |---|---|---|
@@ -404,7 +404,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [Refinement](#refinement) | 11 | The topic wizard. A session proposes dimensions, asks clarifying questions, drafts the brief and constraints, suggests sources, and then applies the topic. Generating steps call the configured model. |
 | [Requests](#requests) | 9 | One-time research requests: a report, podcast, or email summary produced once, now or at a set time. A request can later become a recurring topic. |
 | [Schedules](#schedules) | 6 | When topics, editions, and requests run. Interval, days-of-week, days-of-month, one-time, and cron schedules, each in a time zone. Preview validates a schedule and lists its next runs. |
-| [Runs](#runs) | 10 | Research runs and their stages, search queries, search results, and model calls. A run can be watched live over server-sent events, canceled, or retried from a later stage. |
+| [Runs](#runs) | 11 | Research runs and their stages, search queries, search results, and model calls. A run can be watched live over server-sent events, canceled, or retried from a later stage. |
 | [Search](#search) | 9 | Search providers (SearXNG, Tavily, You.com, RSS, Hacker News, arXiv, hosted model web search), per-topic provider choices, and test tools for queries and page fetches. |
 | [Findings](#findings) | 5 | Ranked results from runs, each backed by evidence. Findings can be pinned or hidden. |
 | [Sources](#sources) | 2 | Pages the pipeline fetched for your topics, with their extracted text. |
@@ -424,9 +424,10 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [Prompts](#prompts) | 9 | Prompt templates by key and scope, topic overrides, version history, rollback, reset, and the prompt lab. |
 | [Promotional codes](#promotional-codes) | 9 | Global administrators create, generate, and manage promotional codes that grant plans. |
 | [Plans](#plans) | 6 | Global administrators manage plans, their entitlement values, and per-user plan assignments. |
-| [Account](#account) | 2 | The signed-in user's plan and promotional code redemption. |
-| [Public](#public) | 9 | Routes reached from emails and podcast apps. They take no session; a token in the path is the credential. Feedback and unsubscribe pages are HTML forms. |
+| [Account](#account) | 10 | Sign-up, email verification, password reset, the signed-in user's plan, usage meter, data export, account deletion, and promotional code redemption. |
+| [Public](#public) | 11 | Routes reached from emails and podcast apps. They take no session; a token in the path is the credential. Feedback and unsubscribe pages are HTML forms. |
 | [OpenAPI](#openapi) | 2 | The OpenAPI 3 document and Swagger UI that Watson serves. They are not tagged in the document itself. |
+| [MCP servers](#mcp-servers) | 8 | Remote MCP tool servers that agentic research may call, their discovered tools, and the per-tool allow-list. |
 
 ## Health
 
@@ -1912,6 +1913,9 @@ curl -s "http://127.0.0.1:12100/v1.0/api/request-history?pageSize=10" \
 
 | Query parameter | Type | Notes |
 |---|---|---|
+| `fromUtc` | date-time (ISO 8601 UTC) |  |
+| `toUtc` | date-time (ISO 8601 UTC) |  |
+| `search` | string |  |
 | `tenantId` | string | Global administrators: another tenant. Ignored for everyone else. |
 | `userId` | string | Administrators: another user's records. Ignored for members. |
 | `method` | string | HTTP method. |
@@ -1921,8 +1925,10 @@ curl -s "http://127.0.0.1:12100/v1.0/api/request-history?pageSize=10" \
 | `statusClass` | string | `2xx`, `4xx`, `5xx`, and so on; sets the minimum and maximum status code. |
 | `pathContains` | string | Substring of the request path. |
 | `bucketMinutes` | integer | Bucket width in minutes for time series. |
-
-Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+| `pageNumber` | integer | Read by the handler; not declared in the OpenAPI document. |
+| `pageSize` | integer | Read by the handler; not declared in the OpenAPI document. |
+| `sortBy` | string | Read by the handler; not declared in the OpenAPI document. |
+| `sortDirection` | SortDirectionEnum | Read by the handler; not declared in the OpenAPI document. |
 
 | Status | Meaning |
 |---|---|
@@ -1944,22 +1950,22 @@ curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/request-history" \
 
 | Query parameter | Type | Notes |
 |---|---|---|
-| `bucketMinutes` | integer | Required. Bucket width in minutes. Read by the handler; not declared in the OpenAPI document. |
-| `tenantId` | string | Global administrators: another tenant. Ignored for everyone else. Read by the handler; not declared in the OpenAPI document. |
-| `userId` | string | Administrators: another user's records. Ignored for members. Read by the handler; not declared in the OpenAPI document. |
-| `method` | string | HTTP method. Read by the handler; not declared in the OpenAPI document. |
-| `statusCode` | integer | Exact status code. Read by the handler; not declared in the OpenAPI document. |
-| `minStatusCode` | integer | Lowest status code to include. Read by the handler; not declared in the OpenAPI document. |
-| `statusClass` | string | `2xx`, `4xx`, `5xx`, and so on; sets the minimum and maximum status code. Read by the handler; not declared in the OpenAPI document. |
-| `maxStatusCode` | integer | Highest status code to include. Read by the handler; not declared in the OpenAPI document. |
-| `pathContains` | string | Substring of the request path. Read by the handler; not declared in the OpenAPI document. |
+| `fromUtc` | date-time (ISO 8601 UTC) | Required. Start of the window (UTC). |
+| `toUtc` | date-time (ISO 8601 UTC) | Required. End of the window (UTC). |
+| `bucketMinutes` | integer | Required. Bucket width in minutes. |
+| `tenantId` | string | Global administrators: another tenant. Ignored for everyone else. |
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `method` | string | HTTP method. |
+| `pathContains` | string | Substring of the request path. |
+| `search` | string |  |
+| `statusCode` | integer | Exact status code. |
+| `statusClass` | integer | `2xx`, `4xx`, `5xx`, and so on; sets the minimum and maximum status code. |
+| `minStatusCode` | integer | Lowest status code to include. |
+| `maxStatusCode` | integer | Highest status code to include. |
 | `pageNumber` | integer | Read by the handler; not declared in the OpenAPI document. |
 | `pageSize` | integer | Read by the handler; not declared in the OpenAPI document. |
 | `sortBy` | string | Read by the handler; not declared in the OpenAPI document. |
 | `sortDirection` | SortDirectionEnum | Read by the handler; not declared in the OpenAPI document. |
-| `search` | string | Read by the handler; not declared in the OpenAPI document. |
-| `fromUtc` | date-time | Required. Start of the window (UTC). Read by the handler; not declared in the OpenAPI document. |
-| `toUtc` | date-time | Required. End of the window (UTC). Read by the handler; not declared in the OpenAPI document. |
 
 | Status | Meaning |
 |---|---|
@@ -2979,10 +2985,8 @@ curl -s "http://127.0.0.1:12100/v1.0/api/usage/timeseries" \
 
 | Query parameter | Type | Notes |
 |---|---|---|
-| `allTenants` | boolean | Ignored; this route always reports the caller in their tenant. |
 | `to` | date-time (ISO 8601 UTC) | End of the window (UTC). Default now. |
 | `from` | date-time (ISO 8601 UTC) | Start of the window (UTC). Default 30 days before to. |
-| `userId` | string | Ignored; this route always reports the caller. |
 | `topicId` | string | Only records for this topic. |
 | `modelEndpointId` | string | Only calls to this model endpoint. |
 | `includeDryRun` | boolean | Include dry runs and previews. |
@@ -2990,6 +2994,7 @@ curl -s "http://127.0.0.1:12100/v1.0/api/usage/timeseries" \
 | `bucketMinutes` | integer | Bucket width in minutes for time series. |
 | `groupBy` | enum (`User`, `Model`, `Task`, `Provider`, `Topic`, `PromptKey`, `Day`, `Tenant`) | Row grouping. Tenant needs allTenants=true. |
 | `task` | enum (`Refinement`, `QueryPlanning`, `Extraction`, `Scoring`, `Synthesis`, `Prediction`, `Suggestion`, `Composition`, `PodcastScript`, `FeedbackAnalysis`, `Embedding`) | Model task. |
+| `userId` | string | Ignored; this route always reports the caller. Read by the handler; not declared in the OpenAPI document. |
 
 | Status | Meaning |
 |---|---|
@@ -3149,10 +3154,10 @@ The things a reader follows. A topic has a research brief, weighted dimensions, 
 
 | Query parameter | Type | Notes |
 |---|---|---|
+| `mine` | boolean | Administrators: true lists only your own records. |
 | `status` | enum (`Draft`, `Active`, `Paused`, `Archived`) |  |
 | `isOneTime` | boolean | Only one-time request topics (true) or recurring topics (false). |
 | `userId` | string | Administrators: another user's records. Ignored for members. |
-| `mine` | boolean | Administrators: true lists only your own records. Read by the handler; not declared in the OpenAPI document. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -3820,10 +3825,10 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/refinement-sessions" \
 
 | Query parameter | Type | Notes |
 |---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
 | `status` | enum (`Active`, `Completed`, `Abandoned`) |  |
 | `topicId` | string | Only records for this topic. |
-| `userId` | string | Administrators: another user's records. Ignored for members. Read by the handler; not declared in the OpenAPI document. |
-| `mine` | boolean | Administrators: true lists only your own records. Read by the handler; not declared in the OpenAPI document. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -4162,9 +4167,9 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/requests" \
 
 | Query parameter | Type | Notes |
 |---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
 | `status` | enum (`Clarifying`, `Scheduled`, `Running`, `Completed`, `Failed`, `Cancelled`, `Declined`) |  |
-| `userId` | string | Administrators: another user's records. Ignored for members. Read by the handler; not declared in the OpenAPI document. |
-| `mine` | boolean | Administrators: true lists only your own records. Read by the handler; not declared in the OpenAPI document. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -4429,10 +4434,10 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/schedules/preview" \
 
 | Query parameter | Type | Notes |
 |---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
 | `ownerType` | enum (`Topic`, `Edition`, `Request`) | What owns the schedule. |
 | `ownerId` | string | The topic, edition, or request the schedule belongs to. |
-| `userId` | string | Administrators: another user's records. Ignored for members. Read by the handler; not declared in the OpenAPI document. |
-| `mine` | boolean | Administrators: true lists only your own records. Read by the handler; not declared in the OpenAPI document. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -4584,6 +4589,7 @@ Research runs and their stages, search queries, search results, and model calls.
 | Method | Path | Summary |
 |---|---|---|
 | GET | [`/v1.0/api/runs`](#get-v10apiruns) | List runs |
+| GET | [`/v1.0/api/runs/{id}/tool-calls`](#get-v10apirunsidtool-calls) | A run's agentic tool calls, in order |
 | GET | [`/v1.0/api/runs/{id}`](#get-v10apirunsid) | Read a run |
 | POST | [`/v1.0/api/runs/{id}/cancel`](#post-v10apirunsidcancel) | Cancel a queued or running run |
 | POST | [`/v1.0/api/runs/{id}/retry`](#post-v10apirunsidretry) | Retry a finished run |
@@ -4603,11 +4609,11 @@ Research runs and their stages, search queries, search results, and model calls.
 
 | Query parameter | Type | Notes |
 |---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
 | `topicId` | string | Only records for this topic. |
 | `status` | enum (`Queued`, `Running`, `Completed`, `PartiallySucceeded`, `Failed`, `Cancelled`, `Skipped`) |  |
 | `trigger` | enum (`Schedule`, `Manual`, `Request`, `Edition`, `Preview`) | What started the run. |
-| `userId` | string | Administrators: another user's records. Ignored for members. Read by the handler; not declared in the OpenAPI document. |
-| `mine` | boolean | Administrators: true lists only your own records. Read by the handler; not declared in the OpenAPI document. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -4620,6 +4626,29 @@ Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`,
 
 ```bash
 curl -s "http://127.0.0.1:12100/v1.0/api/runs?pageSize=10" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### GET /v1.0/api/runs/{id}/tool-calls
+
+**A run's agentic tool calls, in order.**
+
+- Auth: `Run:Read` (`RunRead`).
+- Response: array of [`RunToolCall`](#runtoolcall)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{runId}}` |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty/tool-calls" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -5161,6 +5190,8 @@ Ranked results from runs, each backed by evidence. Findings can be pinned or hid
 
 | Query parameter | Type | Notes |
 |---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
 | `topicId` | string | Only records for this topic. |
 | `runId` | string | Only records from this run. |
 | `tier` | enum (`MustRead`, `WorthALook`, `Fyi`, `BelowThreshold`) | Finding tier. BelowThreshold also returns below-threshold findings. |
@@ -5172,8 +5203,6 @@ Ranked results from runs, each backed by evidence. Findings can be pinned or hid
 | `includeBelowThreshold` | boolean | Include findings under the display threshold. |
 | `includeHidden` | boolean | Include findings you hid. |
 | `pinned` | boolean | Only pinned (true) or unpinned (false) records. |
-| `userId` | string | Administrators: another user's records. Ignored for members. Read by the handler; not declared in the OpenAPI document. |
-| `mine` | boolean | Administrators: true lists only your own records. Read by the handler; not declared in the OpenAPI document. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -5313,10 +5342,10 @@ Pages the pipeline fetched for your topics, with their extracted text.
 
 | Query parameter | Type | Notes |
 |---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
 | `topicId` | string | Only records for this topic. |
 | `runId` | string | Only records from this run. |
-| `userId` | string | Administrators: another user's records. Ignored for members. Read by the handler; not declared in the OpenAPI document. |
-| `mine` | boolean | Administrators: true lists only your own records. Read by the handler; not declared in the OpenAPI document. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -5377,11 +5406,11 @@ Forecasts the pipeline extracted, with confidence and a horizon. They are resolv
 
 | Query parameter | Type | Notes |
 |---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
 | `topicId` | string | Only records for this topic. |
 | `status` | enum (`Open`, `ProposedResolved`, `Accurate`, `PartiallyAccurate`, `Inaccurate`, `Unresolvable`, `Withdrawn`) |  |
 | `includeDryRun` | boolean | Include dry runs and previews. |
-| `userId` | string | Administrators: another user's records. Ignored for members. Read by the handler; not declared in the OpenAPI document. |
-| `mine` | boolean | Administrators: true lists only your own records. Read by the handler; not declared in the OpenAPI document. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -5522,12 +5551,12 @@ Things worth digging into next, with a status you move through (accept, snooze, 
 
 | Query parameter | Type | Notes |
 |---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
 | `topicId` | string | Only records for this topic. |
 | `status` | enum (`New`, `Accepted`, `Snoozed`, `Dismissed`, `Done`) |  |
 | `priority` | enum (`High`, `Medium`, `Low`) | Suggestion priority. |
 | `includeDryRun` | boolean | Include dry runs and previews. |
-| `userId` | string | Administrators: another user's records. Ignored for members. Read by the handler; not declared in the OpenAPI document. |
-| `mine` | boolean | Administrators: true lists only your own records. Read by the handler; not declared in the OpenAPI document. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -5623,6 +5652,8 @@ Composed briefings with sections and items, their Markdown and HTML files, pinni
 
 | Query parameter | Type | Notes |
 |---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
 | `kind` | enum (`Edition`, `Run`, `OneTime`) |  |
 | `editionId` | string | Only records for this edition. |
 | `topicId` | string | Only records for this topic. |
@@ -5630,8 +5661,6 @@ Composed briefings with sections and items, their Markdown and HTML files, pinni
 | `status` | enum (`Queued`, `Composing`, `Ready`, `Failed`) |  |
 | `pinned` | boolean | Only pinned (true) or unpinned (false) records. |
 | `includeDryRun` | boolean | Include dry runs and previews. |
-| `userId` | string | Administrators: another user's records. Ignored for members. Read by the handler; not declared in the OpenAPI document. |
-| `mine` | boolean | Administrators: true lists only your own records. Read by the handler; not declared in the OpenAPI document. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -5806,11 +5835,11 @@ Stored files: briefing Markdown and HTML, audio, and exports. Content streams wi
 
 | Query parameter | Type | Notes |
 |---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
 | `briefingId` | string | Only records for this briefing. |
 | `kind` | enum (`BriefingMarkdown`, `BriefingHtml`, `Audio`, `Chapters`, `Export`) |  |
 | `pinned` | boolean | Only pinned (true) or unpinned (false) records. |
-| `userId` | string | Administrators: another user's records. Ignored for members. Read by the handler; not declared in the OpenAPI document. |
-| `mine` | boolean | Administrators: true lists only your own records. Read by the handler; not declared in the OpenAPI document. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -5931,8 +5960,8 @@ Recurring briefings that gather several topics, with a template, audio and email
 
 | Query parameter | Type | Notes |
 |---|---|---|
-| `userId` | string | Administrators: another user's records. Ignored for members. Read by the handler; not declared in the OpenAPI document. |
-| `mine` | boolean | Administrators: true lists only your own records. Read by the handler; not declared in the OpenAPI document. |
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -6196,8 +6225,8 @@ Briefing templates in Markdown. Every save is a version; templates can be valida
 
 | Query parameter | Type | Notes |
 |---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
 | `scope` | string | `all` (default), `shared`, or `mine`. |
-| `userId` | string | Administrators: another user's records. Ignored for members. Read by the handler; not declared in the OpenAPI document. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -6479,12 +6508,12 @@ Audio episodes made from briefings, with chapters.
 
 | Query parameter | Type | Notes |
 |---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
 | `briefingId` | string | Only records for this briefing. |
 | `editionId` | string | Only records for this edition. |
 | `status` | enum (`Queued`, `Scripting`, `Synthesizing`, `Ready`, `Failed`) |  |
 | `kind` | enum (`BriefingAudio`, `PodcastEpisode`) |  |
-| `userId` | string | Administrators: another user's records. Ignored for members. Read by the handler; not declared in the OpenAPI document. |
-| `mine` | boolean | Administrators: true lists only your own records. Read by the handler; not declared in the OpenAPI document. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -6883,7 +6912,7 @@ The email outbox, test and preview sends, resends, and the signed-in user's emai
 | Query parameter | Type | Notes |
 |---|---|---|
 | `status` | enum (`Queued`, `Sending`, `Sent`, `Failed`, `Suppressed`, `Skipped`) |  |
-| `template` | enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`) | Email template. |
+| `template` | enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`) | Email template. |
 | `runId` | string | Only records from this run. |
 | `briefingId` | string | Only records for this briefing. |
 | `topicId` | string | Only records for this topic. |
@@ -7124,13 +7153,13 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/feedback" \
 
 | Query parameter | Type | Notes |
 |---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
 | `targetType` | enum (`Finding`, `Prediction`, `PredictionReview`, `Suggestion`, `SourceItem`, `Domain`, `Briefing`, `BriefingSection`, `LearnedPreference`) | The rated item's type. |
 | `targetId` | string | The rated item. |
 | `topicId` | string | Only records for this topic. |
 | `channel` | enum (`Dashboard`, `Email`, `Mobile`, `Api`, `Mcp`) | Where the feedback came from. |
 | `includeHistory` | boolean | Include superseded ratings, not only the current one. |
-| `userId` | string | Administrators: another user's records. Ignored for members. Read by the handler; not declared in the OpenAPI document. |
-| `mine` | boolean | Administrators: true lists only your own records. Read by the handler; not declared in the OpenAPI document. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -7230,11 +7259,11 @@ Preferences learned from feedback (or written by hand), their review flow, and r
 
 | Query parameter | Type | Notes |
 |---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
 | `topicId` | string | Only records for this topic. |
 | `status` | enum (`Proposed`, `Active`, `Rejected`, `Disabled`) |  |
 | `origin` | enum (`Distilled`, `User`) | Distilled from feedback, or written by a user. |
-| `userId` | string | Administrators: another user's records. Ignored for members. Read by the handler; not declared in the OpenAPI document. |
-| `mine` | boolean | Administrators: true lists only your own records. Read by the handler; not declared in the OpenAPI document. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -8504,12 +8533,215 @@ curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/admin/plan-assignments/pla_mw
 
 ## Account
 
-The signed-in user's plan and promotional code redemption.
+Sign-up, email verification, password reset, the signed-in user's plan, usage meter, data export, account deletion, and promotional code redemption.
 
 | Method | Path | Summary |
 |---|---|---|
+| POST | [`/v1.0/public/signup`](#post-v10publicsignup) | Sign up for the hosted service |
+| POST | [`/v1.0/public/verify-email`](#post-v10publicverify-email) | Verify an email address from the emailed link |
+| POST | [`/v1.0/public/verify-email/resend`](#post-v10publicverify-emailresend) | Send a new verification link |
+| POST | [`/v1.0/public/password/forgot`](#post-v10publicpasswordforgot) | Email a password reset link |
+| POST | [`/v1.0/public/password/reset`](#post-v10publicpasswordreset) | Set a new password from a reset link |
+| GET | [`/v1.0/api/account/usage`](#get-v10apiaccountusage) | My usage against my plan's limits |
+| GET | [`/v1.0/api/account/export`](#get-v10apiaccountexport) | Download my data (ZIP of JSON and Markdown) |
+| POST | [`/v1.0/api/account/delete`](#post-v10apiaccountdelete) | Delete my account |
 | POST | [`/v1.0/api/promo-codes/redeem`](#post-v10apipromo-codesredeem) | Redeem a promotional code |
 | GET | [`/v1.0/api/account/plan`](#get-v10apiaccountplan) | My plan and its limits |
+
+### POST /v1.0/public/signup
+
+**Sign up for the hosted service.** Creates a personal tenant and an unverified account, then emails a verification link. Always answers 202 with the same body, whether or not the email has an account. 404 when sign-up is closed.
+
+- Auth: None.
+- Response: `SignupResult`
+
+Request body: [`SignupRequest`](#signuprequest).
+
+```json
+{
+  "email": "new.reader@example.com",
+  "password": "a long passphrase",
+  "displayName": "New Reader",
+  "timeZone": "America/Chicago",
+  "locale": "en",
+  "acceptTerms": true,
+  "confirmAge": true,
+  "promoCode": "LAUNCH-2026",
+  "turnstileToken": ""
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 202 | Accepted (same body whether or not the email has an account) |
+| 400 | Bad Request: `BadRequest`, `VerificationFailed` |
+| 404 | Not Found: `SignupClosed` |
+| 429 | Too Many Requests: `QuotaExceeded` |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/public/signup" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/public/verify-email
+
+**Verify an email address from the emailed link.**
+
+- Auth: None.
+- Response: `VerifyResult`
+
+Request body: [`AccountTokenRequest`](#accounttokenrequest).
+
+```json
+{
+  "token": "mmn-link-token-from-the-email",
+  "password": "a new long passphrase"
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: BadRequest (expired, used, or unknown link) |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/public/verify-email" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/public/verify-email/resend
+
+**Send a new verification link.** Always 202.
+
+- Auth: None.
+- Response: `Message`
+
+Request body: [`AccountEmailRequest`](#accountemailrequest).
+
+```json
+{
+  "email": "new.reader@example.com"
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 202 | Accepted |
+| 429 | Too Many Requests: `QuotaExceeded` |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/public/verify-email/resend" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/public/password/forgot
+
+**Email a password reset link.** Always 202.
+
+- Auth: None.
+- Response: `Message`
+
+Request body: [`AccountEmailRequest`](#accountemailrequest).
+
+```json
+{
+  "email": "new.reader@example.com"
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 202 | Accepted |
+| 429 | Too Many Requests: `QuotaExceeded` |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/public/password/forgot" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/public/password/reset
+
+**Set a new password from a reset link.** Signs out every session and emails a confirmation.
+
+- Auth: None.
+- Response: `ResetResult`
+
+Request body: [`AccountTokenRequest`](#accounttokenrequest).
+
+```json
+{
+  "token": "mmn-link-token-from-the-email",
+  "password": "a new long passphrase"
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: BadRequest (weak password, or expired, used, or unknown link) |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/public/password/reset" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### GET /v1.0/api/account/usage
+
+**My usage against my plan's limits.**
+
+- Auth: Any authenticated principal (`UserSelfRead`).
+- Response: [`UsageMeter`](#usagemeter)
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: BadRequest (access keys are refused) |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/account/usage" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### GET /v1.0/api/account/export
+
+**Download my data (ZIP of JSON and Markdown).**
+
+- Auth: Any authenticated principal (`UserSelfRead`).
+- Response: `ZIP file`
+
+| Status | Meaning |
+|---|---|
+| 200 | OK (application/zip) |
+| 400 | Bad Request: BadRequest (access keys are refused) |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/account/export" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/account/delete
+
+**Delete my account.** Signs out every session and schedules the purge after Hosting.DeletionGraceDays (default 7); signing in again before then cancels it. Returns 202 with purgeAfterUtc.
+
+- Auth: Any authenticated principal (`UserSelfWrite`).
+- Response: `DeletionScheduled`
+
+| Status | Meaning |
+|---|---|
+| 202 | Accepted |
+| 400 | Bad Request: BadRequest (access keys are refused) |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 409 | Conflict: Conflict (protected account) |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/account/delete" \
+  -H "Authorization: Bearer $TOKEN"
+```
 
 ### POST /v1.0/api/promo-codes/redeem
 
@@ -8565,6 +8797,8 @@ Routes reached from emails and podcast apps. They take no session; a token in th
 
 | Method | Path | Summary |
 |---|---|---|
+| GET | [`/.well-known/apple-app-site-association`](#get-well-knownapple-app-site-association) | iOS universal links |
+| GET | [`/.well-known/assetlinks.json`](#get-well-knownassetlinksjson) | Android app links |
 | GET | [`/v1.0/public/feeds/{token}/podcast.xml`](#get-v10publicfeedstokenpodcastxml) | Private podcast feed (RSS 2.0 with iTunes tags) |
 | GET | [`/v1.0/public/feeds/{token}/episodes/{file}`](#get-v10publicfeedstokenepisodesfile) | Podcast episode audio (Range supported) |
 | GET | [`/v1.0/public/feeds/{token}/chapters/{file}`](#get-v10publicfeedstokenchaptersfile) | Podcast episode chapters (Podcasting 2.0 JSON) |
@@ -8574,6 +8808,38 @@ Routes reached from emails and podcast apps. They take no session; a token in th
 | GET | [`/v1.0/public/unsubscribe/{token}`](#get-v10publicunsubscribetoken) | Unsubscribe page |
 | POST | [`/v1.0/public/unsubscribe/{token}`](#post-v10publicunsubscribetoken) | Unsubscribe or undo (form post) |
 | GET | [`/v1.0/public/promo-codes/{code}`](#get-v10publicpromo-codescode) | Check a promotional code (sign-up page) |
+
+### GET /.well-known/apple-app-site-association
+
+**iOS universal links.** 404 until Hosting.AppleTeamId is set.
+
+- Auth: None.
+- Response: `AppleAppSiteAssociation`
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 404 | Not Found: `NotConfigured` |
+
+```bash
+curl -s "http://127.0.0.1:12100/.well-known/apple-app-site-association"
+```
+
+### GET /.well-known/assetlinks.json
+
+**Android app links.** 404 until Hosting.AndroidCertificateFingerprints is set.
+
+- Auth: None.
+- Response: `AssetLinks`
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 404 | Not Found: `NotConfigured` |
+
+```bash
+curl -s "http://127.0.0.1:12100/.well-known/assetlinks.json"
+```
 
 ### GET /v1.0/public/feeds/{token}/podcast.xml
 
@@ -8682,7 +8948,7 @@ curl -s "http://127.0.0.1:12100/v1.0/public/assets/logo.png" \
 
 | Query parameter | Type | Notes |
 |---|---|---|
-| `a` | string | Action to preselect, from the email link. Read by the handler; not declared in the OpenAPI document. |
+| `a` | string | Action to preselect, from the email link. |
 
 | Status | Meaning |
 |---|---|
@@ -8821,11 +9087,270 @@ curl -s "http://127.0.0.1:12100/openapi.json"
 curl -s "http://127.0.0.1:12100/swagger"
 ```
 
+## MCP servers
+
+Remote MCP tool servers that agentic research may call, their discovered tools, and the per-tool allow-list.
+
+| Method | Path | Summary |
+|---|---|---|
+| GET | [`/v1.0/api/mcp-servers`](#get-v10apimcp-servers) | List registered MCP servers |
+| POST | [`/v1.0/api/mcp-servers`](#post-v10apimcp-servers) | Register an MCP server |
+| GET | [`/v1.0/api/mcp-servers/{id}`](#get-v10apimcp-serversid) | Read an MCP server with its tools |
+| PUT | [`/v1.0/api/mcp-servers/{id}`](#put-v10apimcp-serversid) | Change an MCP server |
+| DELETE | [`/v1.0/api/mcp-servers/{id}`](#delete-v10apimcp-serversid) | Remove an MCP server and its tools |
+| POST | [`/v1.0/api/mcp-servers/{id}/test`](#post-v10apimcp-serversidtest) | Connect and list tools without saving them |
+| POST | [`/v1.0/api/mcp-servers/{id}/discover`](#post-v10apimcp-serversiddiscover) | Discover the server's tools and save them |
+| PUT | [`/v1.0/api/mcp-servers/{id}/tools/{toolId}`](#put-v10apimcp-serversidtoolstoolid) | Turn a tool on or off for agentic research |
+
+### GET /v1.0/api/mcp-servers
+
+**List registered MCP servers.**
+
+- Auth: `McpServer:Read` (`McpServerRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`McpServer`](#mcpserver)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `enabled` | boolean | Only enabled (true) or disabled (false) codes. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/mcp-servers?pageSize=10" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/mcp-servers
+
+**Register an MCP server.** Streamable HTTP or SSE URL; the credential comes from the vault and is sent in HeaderName with HeaderPrefix. stdio servers are not supported from the container.
+
+- Auth: `McpServer:Admin` (`McpServerWrite`).
+- Response: [`McpServer`](#mcpserver)
+
+Request body: [`McpServerUpsertRequest`](#mcpserverupsertrequest).
+
+```json
+{
+  "name": "Company wiki",
+  "url": "https://mcp.example.com/mcp",
+  "transport": "StreamableHttp",
+  "vaultCredentialId": "vlt_mwpf0312_Er2tY5uI8oPa1sDf4Gh",
+  "headerName": "Authorization",
+  "headerPrefix": "Bearer ",
+  "enabled": true
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 201 | Created |
+| 400 | Bad Request: `ValidationFailed`, `EgressBlocked` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/mcp-servers" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### GET /v1.0/api/mcp-servers/{id}
+
+**Read an MCP server with its tools.**
+
+- Auth: `McpServer:Read` (`McpServerRead`).
+- Response: [`McpServerDetailResponse`](#mcpserverdetailresponse)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{mcpServerId}}` |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/mcp-servers/mcp_mwpff31e_Qw8eRt5yUi2oP4aSd6F" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### PUT /v1.0/api/mcp-servers/{id}
+
+**Change an MCP server.**
+
+- Auth: `McpServer:Admin` (`McpServerWrite`).
+- Response: [`McpServer`](#mcpserver)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{mcpServerId}}` |
+
+Request body: [`McpServerUpsertRequest`](#mcpserverupsertrequest).
+
+```json
+{
+  "name": "Company wiki",
+  "url": "https://mcp.example.com/mcp",
+  "transport": "StreamableHttp",
+  "vaultCredentialId": "vlt_mwpf0312_Er2tY5uI8oPa1sDf4Gh",
+  "headerName": "Authorization",
+  "headerPrefix": "Bearer ",
+  "enabled": true
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed`, `EgressBlocked` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X PUT "http://127.0.0.1:12100/v1.0/api/mcp-servers/mcp_mwpff31e_Qw8eRt5yUi2oP4aSd6F" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### DELETE /v1.0/api/mcp-servers/{id}
+
+**Remove an MCP server and its tools.**
+
+- Auth: `McpServer:Admin` (`McpServerWrite`).
+- Response: No body
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{mcpServerId}}` |
+
+| Status | Meaning |
+|---|---|
+| 204 | No Content |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/mcp-servers/mcp_mwpff31e_Qw8eRt5yUi2oP4aSd6F" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/mcp-servers/{id}/test
+
+**Connect and list tools without saving them.**
+
+- Auth: `McpServer:Admin` (`McpServerWrite`).
+- Response: `McpTestResult`
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{mcpServerId}}` |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK (success false with the error when the server cannot be reached) |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/mcp-servers/mcp_mwpff31e_Qw8eRt5yUi2oP4aSd6F/test" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/mcp-servers/{id}/discover
+
+**Discover the server's tools and save them.** New tools start disabled; existing tools keep their setting; tools the server no longer lists are removed.
+
+- Auth: `McpServer:Admin` (`McpServerWrite`).
+- Response: [`McpServerDetailResponse`](#mcpserverdetailresponse)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{mcpServerId}}` |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 502 | Bad Gateway: `McpServerUnavailable` |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/mcp-servers/mcp_mwpff31e_Qw8eRt5yUi2oP4aSd6F/discover" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### PUT /v1.0/api/mcp-servers/{id}/tools/{toolId}
+
+**Turn a tool on or off for agentic research.**
+
+- Auth: `McpServer:Admin` (`McpServerWrite`).
+- Response: [`McpServerTool`](#mcpservertool)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{mcpServerId}}` |
+| `toolId` | string | `{{toolId}}` |
+
+Request body: [`McpToolUpdateRequest`](#mcptoolupdaterequest).
+
+```json
+{
+  "enabled": true
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X PUT "http://127.0.0.1:12100/v1.0/api/mcp-servers/mcp_mwpff31e_Qw8eRt5yUi2oP4aSd6F/tools/mct_mwpff31e_Zx9cVb7nMl3kJh5gF2D" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
 ## Data types
 
 Field names are camelCase on the wire. Enums travel as their names (`"Active"`, not a number). Null fields are left out of responses.
 
 ### Objects
+
+#### AccountEmailRequest
+
+A request that names an email address (resend verification, forgot password).
+
+Request body of [POST /v1.0/public/verify-email/resend](#post-v10publicverify-emailresend), [POST /v1.0/public/password/forgot](#post-v10publicpasswordforgot).
+
+| Field | Type | Description |
+|---|---|---|
+| `email` | string | Email address. |
+
+#### AccountTokenRequest
+
+A request carrying a link token (verify email), with a new password for resets.
+
+Request body of [POST /v1.0/public/verify-email](#post-v10publicverify-email), [POST /v1.0/public/password/reset](#post-v10publicpasswordreset).
+
+| Field | Type | Description |
+|---|---|---|
+| `token` | string | Token from the emailed link. |
+| `password` | string | New password (password reset only). |
 
 #### AccuracyReport
 
@@ -9142,6 +9667,10 @@ Returned by [GET /v1.0/api/client-config](#get-v10apiclient-config).
 | `links` | object (map of string) | Legal and support links keyed by privacy, terms, support, and deleteAccount. |
 | `copyright` | string | Copyright notice. |
 | `mcpUrl` | string | Public URL of the MCP server's Streamable HTTP endpoint. |
+| `turnstileSiteKey` | string | Cloudflare Turnstile site key for the sign-up form, or null when the check is off. |
+| `requireEmailVerification` | boolean | Whether sign-up requires email verification. |
+| `minimumAge` | integer | Minimum age to sign up. |
+| `termsVersion` | string | Current terms of service version. |
 
 Example:
 
@@ -10023,6 +10552,22 @@ Hosted service settings (plan section 33). Off for self-hosted installs.
 | `publicSignupEnabled` | boolean | Open public sign-up (Phase 14). Default false. |
 | `defaultPlanKey` | string | Plan key for users without an assignment. Default unlimited (self-hosted); the hosted profile uses free. |
 | `promoChecksPerMinute` | integer | Promotional code checks allowed per IP address per minute on the public route. Default 20, minimum 1, maximum 1000. |
+| `requireEmailVerification` | boolean | Require a verified email before a self-signed-up user can sign in. Default true (applies only when public sign-up is on). |
+| `turnstileSecretKey` | string | Cloudflare Turnstile secret key for the sign-up form. Empty turns the check off. Default empty. |
+| `turnstileSiteKey` | string | Cloudflare Turnstile site key (public), shown to the sign-up form. Default empty. |
+| `blockedEmailDomains` | array of string | Refuse sign-ups from these email domains (disposable mailboxes). Default a short list of well-known ones. |
+| `signupsPerIpPerHour` | integer | Sign-ups allowed per IP address per hour. Default 5, minimum 1, maximum 1000. |
+| `verificationHours` | integer | Hours a verification link stays valid. Default 48, minimum 1, maximum 720. |
+| `passwordResetMinutes` | integer | Minutes a password reset link stays valid. Default 60, minimum 5, maximum 1440. |
+| `deletionGraceDays` | integer | Days between an account deletion request and the purge of its data; signing in cancels it. Default 7, minimum 0, maximum 90. |
+| `restrictPrivateNetworks` | boolean | Refuse loopback, link-local, private, and metadata addresses for fetches, model endpoints, MCP servers, and search providers (server-side request forgery protection). Default false; the hosted profile turns it on. |
+| `usePlatformCredentials` | boolean | Give every new tenant (other than default) the operator's Anthropic key by reference instead of a copy in its own vault. Personal tenants created by sign-up always use it. Default false. |
+| `allowedPrivateHosts` | array of string | Host names the private network block allows anyway: the operator's own services on the Docker network. Matched case-insensitively against the host in the URL. Default searxng, tts, ollama. |
+| `termsVersion` | string | Current terms of service version; sign-up records the version the user accepted. Default 2026-11-20. |
+| `minimumAge` | integer | Minimum age to sign up, confirmed at sign-up. Default 18, minimum 13, maximum 21. |
+| `appleTeamId` | string | Apple Team ID for /.well-known/apple-app-site-association. Empty leaves the file out. Default empty. |
+| `mobileAppId` | string | Mobile bundle identifier (iOS) and application ID (Android). Default ai.latticetech.mymorningnews. |
+| `androidCertificateFingerprints` | array of string | SHA-256 signing certificate fingerprints for /.well-known/assetlinks.json (Play App Signing). Empty leaves the file out. |
 
 #### LearnedPreference
 
@@ -10122,6 +10667,86 @@ Logging settings.
 | `logDirectory` | string | Log directory. Default logs. |
 | `logFilename` | string | Log filename. Default mymorningnews.log. |
 | `minimumSeverity` | Severity | Minimum severity written. Default Info. |
+
+#### McpServer
+
+A remote MCP server registered by the tenant; its tools can be offered to agentic research.
+
+Returned by [GET /v1.0/api/mcp-servers](#get-v10apimcp-servers), [POST /v1.0/api/mcp-servers](#post-v10apimcp-servers), [PUT /v1.0/api/mcp-servers/{id}](#put-v10apimcp-serversid).
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Identifier (prefix mcs_). |
+| `tenantId` | string | Tenant identifier. |
+| `name` | string | Display name. |
+| `url` | string | Streamable HTTP or SSE endpoint URL. |
+| `transport` | [`McpTransportEnum`](#mcptransportenum) | Transport. |
+| `vaultCredentialId` | string | Vault credential whose value is sent in the auth header; null for none. May be null. |
+| `headerName` | string | Header that carries the credential. |
+| `headerPrefix` | string | Text placed before the credential value, for example "Bearer ". |
+| `enabled` | boolean | Whether its tools may be used. |
+| `toolCount` | integer | Tools found at the last discovery. |
+| `lastDiscoveredUtc` | date-time | Last successful discovery. May be null. |
+| `lastError` | string | Last connection or discovery error. May be null. |
+| `active` | boolean | Whether the record is active. |
+| `createdUtc` | date-time | UTC creation time. |
+| `lastUpdateUtc` | date-time | UTC time of the last update. |
+
+#### McpServerDetailResponse
+
+A registered MCP server with its discovered tools.
+
+Returned by [GET /v1.0/api/mcp-servers/{id}](#get-v10apimcp-serversid), [POST /v1.0/api/mcp-servers/{id}/discover](#post-v10apimcp-serversiddiscover).
+
+| Field | Type | Description |
+|---|---|---|
+| `server` | [`McpServer`](#mcpserver) | Server. |
+| `tools` | array of [`McpServerTool`](#mcpservertool) | Discovered tools, by name. |
+
+#### McpServerTool
+
+A tool discovered on a registered MCP server.
+
+Returned by [PUT /v1.0/api/mcp-servers/{id}/tools/{toolId}](#put-v10apimcp-serversidtoolstoolid).
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Identifier (prefix mct_). |
+| `tenantId` | string | Tenant identifier. |
+| `mcpServerId` | string | Server. |
+| `name` | string | Tool name as the server lists it. |
+| `description` | string | Tool description. May be null. |
+| `inputSchema` | string | JSON Schema of the tool arguments, as the server sent it. May be null. |
+| `enabled` | boolean | Offered to agentic research. |
+| `active` | boolean | Whether the record is active. |
+| `createdUtc` | date-time | UTC creation time. |
+| `lastUpdateUtc` | date-time | UTC time of the last update. |
+
+#### McpServerUpsertRequest
+
+Register or change an MCP server. On update, null properties are unchanged.
+
+Request body of [POST /v1.0/api/mcp-servers](#post-v10apimcp-servers), [PUT /v1.0/api/mcp-servers/{id}](#put-v10apimcp-serversid).
+
+| Field | Type | Description |
+|---|---|---|
+| `name` | string | Display name (required on create, at most 128 characters). |
+| `url` | string | Endpoint URL, http or https (required on create). |
+| `transport` | [`McpTransportEnum`](#mcptransportenum) | Transport. Default StreamableHttp. |
+| `vaultCredentialId` | string | Vault credential whose value is sent in the auth header. An empty string clears it. |
+| `headerName` | string | Header for the credential. Default Authorization. |
+| `headerPrefix` | string | Text placed before the credential value. Default "Bearer ". |
+| `enabled` | boolean | Whether its tools may be used. |
+
+#### McpToolUpdateRequest
+
+Turn an MCP server tool on or off for agentic research.
+
+Request body of [PUT /v1.0/api/mcp-servers/{id}/tools/{toolId}](#put-v10apimcp-serversidtoolstoolid).
+
+| Field | Type | Description |
+|---|---|---|
+| `enabled` | boolean | Offer the tool to agentic research. |
 
 #### MediaAsset
 
@@ -10454,6 +11079,7 @@ Research pipeline and model gateway limits.
 | `scopeGuardrail` | string | Scope guardrail prepended to the system prompt of every model call. It cannot be removed by editing prompt templates; administrators can change it here. |
 | `maxQueriesPerRun` | integer | Search queries planned per run. Default 8. Minimum 1, maximum 50. |
 | `maxResultsPerQuery` | integer | Results requested per query and provider. Default 10. Minimum 1, maximum 50. |
+| `maxToolCallsPerRun` | integer | Tool calls allowed in one agentic search (web_search, fetch_url, MCP tools). Default 20. Minimum 1, maximum 100. |
 | `maxFetchesPerRun` | integer | Pages fetched per run. Default 40. Minimum 1, maximum 500. |
 | `maxFindingsPerRun` | integer | Findings kept per run. Default 25. Minimum 1, maximum 200. |
 | `maxDocumentCharacters` | integer | Characters of a document sent to extraction. Default 24000. Minimum 2000, maximum 200000. |
@@ -11388,6 +12014,29 @@ Returned by [GET /v1.0/api/runs/{id}/stages](#get-v10apirunsidstages).
 | `createdUtc` | date-time | UTC creation time. |
 | `lastUpdateUtc` | date-time | UTC time of the last update. |
 
+#### RunToolCall
+
+One tool execution in an agentic research loop.
+
+Returned by [GET /v1.0/api/runs/{id}/tool-calls](#get-v10apirunsidtool-calls).
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Identifier (prefix rtc_). |
+| `tenantId` | string | Tenant identifier. |
+| `runId` | string | Run. |
+| `topicId` | string | Topic. |
+| `tool` | string | Tool name (web_search, fetch_url, or mcp:server:tool). |
+| `argumentsSummary` | string | Arguments, shortened. May be null. |
+| `succeeded` | boolean | Whether the tool returned without error. |
+| `errorMessage` | string | Error, when it failed. May be null. |
+| `resultCharacters` | integer | Characters returned to the model. |
+| `durationMs` | number | Duration in milliseconds. |
+| `sortOrder` | integer | Order within the run. |
+| `active` | boolean | Whether the record is active. |
+| `createdUtc` | date-time | UTC creation time. |
+| `lastUpdateUtc` | date-time | UTC time of the last update. |
+
 #### Schedule
 
 When research runs for a topic, an edition composes, or a one-time request runs. Times are computed in the schedule time zone.
@@ -11832,6 +12481,24 @@ Returned by [PUT /v1.0/api/settings](#put-v10apisettings).
 | `appliedLive` | array of string | Paths applied immediately. |
 | `pendingRestart` | array of string | Paths that take effect after a restart. |
 
+#### SignupRequest
+
+Public sign-up (POST /v1.0/public/signup).
+
+Request body of [POST /v1.0/public/signup](#post-v10publicsignup).
+
+| Field | Type | Description |
+|---|---|---|
+| `email` | string | Email address (required). |
+| `password` | string | Password, at least 8 characters (required). |
+| `displayName` | string | Display name. Defaults to the part of the email before @. |
+| `timeZone` | string | IANA time zone. Default UTC. |
+| `locale` | string | Locale, for example en or fr. Default en. |
+| `acceptTerms` | boolean | The terms of service were accepted (required true). |
+| `confirmAge` | boolean | The person confirms the minimum age (Hosting.MinimumAge, default 18) (required true). |
+| `promoCode` | string | Optional promotional code, redeemed for the new account. |
+| `turnstileToken` | string | Cloudflare Turnstile response, when the server requires it. |
+
 #### SourceAcceptRequest
 
 Accept suggested sources as topic constraints.
@@ -12103,6 +12770,8 @@ Returned by [GET /v1.0/tenants](#get-v10tenants), [POST /v1.0/tenants](#post-v10
 | `active` | boolean | Whether the record is active. |
 | `createdUtc` | date-time | UTC creation time. |
 | `lastUpdateUtc` | date-time | UTC time of the last update. |
+| `isPersonal` | boolean | A personal tenant created by public sign-up. Default false. |
+| `purgeAfterUtc` | date-time | When the tenant is purged after an account deletion, or null. |
 
 #### TenantUpsertRequest
 
@@ -12244,6 +12913,8 @@ Returned by [GET /v1.0/api/topics](#get-v10apitopics), [POST /v1.0/api/topics](#
 | `active` | boolean | Whether the record is active. |
 | `createdUtc` | date-time | UTC creation time. |
 | `lastUpdateUtc` | date-time | UTC time of the last update. |
+| `agenticSearch` | boolean | Agentic search: when the research model supports tools, it searches and reads pages itself (web_search, fetch_url, and allowed MCP tools) before the usual reading and verification. Opt-in, default false. |
+| `mcpToolIds` | array of string | MCP tool IDs (mct_...) this topic may use in agentic search. Empty allows every enabled tool. |
 
 Example:
 
@@ -12446,6 +13117,8 @@ Request body of [POST /v1.0/api/topics](#post-v10apitopics), [PUT /v1.0/api/topi
 | `weightNovelty` | number | Ranking weight override for the novelty component (0 to 1); a negative value clears the override. |
 | `weightSource` | number | Ranking weight override for the source component (0 to 1); a negative value clears the override. |
 | `weightRecency` | number | Ranking weight override for the recency component (0 to 1); a negative value clears the override. |
+| `agenticSearch` | boolean | Turn agentic search on or off for this topic (the research model searches and reads pages itself). |
+| `mcpToolIds` | array of string | MCP tool IDs (mct_...) agentic search may use; an empty list allows every enabled tool. Null leaves it. |
 | `seedQueries` | array of string | Seed search queries. |
 
 #### TtsSettings
@@ -12482,6 +13155,30 @@ Model usage in one time bucket.
 | `cachedInputTokens` | integer | Cached input tokens. |
 | `costUsd` | number | Cost in USD. |
 | `averageTimeToFirstTokenMs` | number | Average time to first token. |
+
+#### UsageMeter
+
+The usage meter for the current user (GET /v1.0/api/account/usage): month-to-date cost against the cap, and counts against the plan's other limits. A null limit means unlimited.
+
+Returned by [GET /v1.0/api/account/usage](#get-v10apiaccountusage).
+
+| Field | Type | Description |
+|---|---|---|
+| `planKey` | string | Plan key. |
+| `planName` | string | Plan name. |
+| `monthToDateCostUsd` | number | Model cost this calendar month (UTC), in USD. |
+| `monthlyCostCapUsd` | number | Monthly cost cap in USD, or null for unlimited. |
+| `costUsedFraction` | number | Share of the cost cap used, from 0 to 1, or null without a cap. |
+| `resetUtc` | date-time | When the monthly counters reset (the first day of next month, UTC). |
+| `topics` | integer | Topics owned now. |
+| `topicsMax` | integer | Topic limit, or null for unlimited. |
+| `runsToday` | integer | Runs started today (UTC). |
+| `runsDailyMax` | integer | Daily run limit, or null for unlimited. |
+| `scheduleMinIntervalMinutes` | integer | Shortest schedule interval allowed, in minutes, or null for no limit. |
+| `audioMinutes` | number | Audio minutes generated this month. |
+| `audioMinutesMax` | integer | Monthly audio minute limit, or null for unlimited. |
+| `audioEnabled` | boolean | Whether audio is included. |
+| `customEndpoints` | boolean | Whether the user may add their own model endpoints. |
 
 #### UsageReport
 
@@ -12974,6 +13671,11 @@ Email template.
 | `RunFailed` | A run failed (opted-in administrators). |
 | `PreferenceProposal` | Learned preference proposals. |
 | `Test` | Test email. |
+| `VerifyEmail` | Verify the email address after sign-up. |
+| `Welcome` | Welcome after verification. |
+| `PasswordReset` | Password reset link. |
+| `PasswordChanged` | The password was changed. |
+| `AccountDeletion` | Account deletion scheduled. |
 
 #### FeedbackChannelEnum
 
@@ -13077,6 +13779,15 @@ Which findings an edition covers.
 |---|---|
 | `SinceLastEdition` | Since the last composed edition, capped at the lookback hours. |
 | `FixedHours` | The last N hours. |
+
+#### McpTransportEnum
+
+MCP transport.
+
+| Value | Description |
+|---|---|
+| `StreamableHttp` | Streamable HTTP. |
+| `Sse` | HTTP with server-sent events (older servers). |
 
 #### MediaKindEnum
 

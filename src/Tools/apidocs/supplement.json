@@ -42,9 +42,10 @@
     "Prompts": "Prompt templates by key and scope, topic overrides, version history, rollback, reset, and the prompt lab.",
     "Promotional codes": "Global administrators create, generate, and manage promotional codes that grant plans.",
     "Plans": "Global administrators manage plans, their entitlement values, and per-user plan assignments.",
-    "Account": "The signed-in user's plan and promotional code redemption.",
+    "Account": "Sign-up, email verification, password reset, the signed-in user's plan, usage meter, data export, account deletion, and promotional code redemption.",
     "Public": "Routes reached from emails and podcast apps. They take no session; a token in the path is the credential. Feedback and unsubscribe pages are HTML forms.",
-    "OpenAPI": "The OpenAPI 3 document and Swagger UI that Watson serves. They are not tagged in the document itself."
+    "OpenAPI": "The OpenAPI 3 document and Swagger UI that Watson serves. They are not tagged in the document itself.",
+    "MCP servers": "Remote MCP tool servers that agentic research may call, their discovered tools, and the per-tool allow-list."
   },
   "pathVariables": {
     "/v1.0/api/vault/credentials/{id}": "vaultCredentialId",
@@ -65,7 +66,8 @@
     "/v1.0/public/assets/{name}": "assetName",
     "/v1.0/public/promo-codes/{code}": "promoCode",
     "/v1.0/tenants/{tenantId}/users/{userId}": "memberUserId",
-    "/v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes/{scopeId}": "scopeId"
+    "/v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes/{scopeId}": "scopeId",
+    "/v1.0/api/mcp-servers/{id}": "mcpServerId"
   },
   "parameters": {
     "active": "Only active (true) or inactive (false) records.",
@@ -217,7 +219,10 @@
     "assetName": "logo.png",
     "promoCode": "LAUNCH-2026",
     "email": "admin@mymorningnews",
-    "password": "password"
+    "password": "password",
+    "accountLinkToken": "mmn-link-token-from-the-email",
+    "mcpServerId": "mcp_mwpff31e_Qw8eRt5yUi2oP4aSd6F",
+    "toolId": "mct_mwpff31e_Zx9cVb7nMl3kJh5gF2D"
   },
   "routes": {
     "GET /v1.0/api/audit": {"response": "EnumerationResult<AuditRecord>", "status": {"200": "OK", "403": "Forbidden"}},
@@ -492,7 +497,26 @@
     "POST /v1.0/api/vault/credentials/{id}/reveal": {"response": "VaultRevealResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "Conflict", "429": "TooManyRequests"}},
     "GET /v1.0/api/vault/credentials/{id}/usage": {"response": "List<VaultUsageItem>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
     "GET /openapi.json": {"response": "application/json", "status": {"200": "OK"}, "notes": "The OpenAPI 3 document this reference is generated from."},
-    "GET /swagger": {"response": "text/html", "status": {"200": "OK"}, "notes": "Swagger UI over /openapi.json."}
+    "GET /swagger": {"response": "text/html", "status": {"200": "OK"}, "notes": "Swagger UI over /openapi.json."},
+    "POST /v1.0/public/signup": {"response": "SignupResult", "status": {"202": "Accepted (same body whether or not the email has an account)", "400": "BadRequest, VerificationFailed", "404": "SignupClosed", "429": "QuotaExceeded"}},
+    "POST /v1.0/public/verify-email": {"response": "VerifyResult", "status": {"200": "OK", "400": "BadRequest (expired, used, or unknown link)"}},
+    "POST /v1.0/public/verify-email/resend": {"response": "Message", "status": {"202": "Accepted", "429": "QuotaExceeded"}},
+    "POST /v1.0/public/password/forgot": {"response": "Message", "status": {"202": "Accepted", "429": "QuotaExceeded"}},
+    "POST /v1.0/public/password/reset": {"response": "ResetResult", "status": {"200": "OK", "400": "BadRequest (weak password, or expired, used, or unknown link)"}},
+    "GET /.well-known/apple-app-site-association": {"response": "AppleAppSiteAssociation", "status": {"200": "OK", "404": "NotConfigured"}},
+    "GET /.well-known/assetlinks.json": {"response": "AssetLinks", "status": {"200": "OK", "404": "NotConfigured"}},
+    "GET /v1.0/api/account/usage": {"response": "UsageMeter", "status": {"200": "OK", "400": "BadRequest (access keys are refused)", "403": "Forbidden"}},
+    "GET /v1.0/api/account/export": {"response": "ZIP file", "status": {"200": "OK (application/zip)", "400": "BadRequest (access keys are refused)", "403": "Forbidden"}},
+    "POST /v1.0/api/account/delete": {"response": "DeletionScheduled", "status": {"202": "Accepted", "400": "BadRequest (access keys are refused)", "403": "Forbidden", "409": "Conflict (protected account)"}},
+    "GET /v1.0/api/mcp-servers": {"response": "EnumerationResult<McpServer>", "status": {"200": "OK", "403": "Forbidden"}},
+    "POST /v1.0/api/mcp-servers": {"response": "McpServer", "status": {"201": "Created", "400": "ValidationFailed, EgressBlocked", "403": "Forbidden"}},
+    "GET /v1.0/api/mcp-servers/{id}": {"response": "McpServerDetailResponse", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
+    "PUT /v1.0/api/mcp-servers/{id}": {"response": "McpServer", "status": {"200": "OK", "400": "ValidationFailed, EgressBlocked", "403": "Forbidden", "404": "NotFound"}},
+    "DELETE /v1.0/api/mcp-servers/{id}": {"response": "none", "status": {"204": "No Content", "403": "Forbidden", "404": "NotFound"}},
+    "POST /v1.0/api/mcp-servers/{id}/test": {"response": "McpTestResult", "status": {"200": "OK (success false with the error when the server cannot be reached)", "403": "Forbidden", "404": "NotFound"}},
+    "POST /v1.0/api/mcp-servers/{id}/discover": {"response": "McpServerDetailResponse", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound", "502": "McpServerUnavailable"}},
+    "PUT /v1.0/api/mcp-servers/{id}/tools/{toolId}": {"response": "McpServerTool", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
+    "GET /v1.0/api/runs/{id}/tool-calls": {"response": "List<RunToolCall>", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}}
   },
   "routeBodies": {
     "PUT /v1.0/api/topics/{id}/search-providers": [
@@ -1124,6 +1148,36 @@
         "defaultPlanKey": "unlimited",
         "promoChecksPerMinute": 20
       }
+    },
+    "SignupRequest": {
+      "email": "new.reader@example.com",
+      "password": "a long passphrase",
+      "displayName": "New Reader",
+      "timeZone": "America/Chicago",
+      "locale": "en",
+      "acceptTerms": true,
+      "confirmAge": true,
+      "promoCode": "LAUNCH-2026",
+      "turnstileToken": ""
+    },
+    "AccountTokenRequest": {
+      "token": "{{accountLinkToken}}",
+      "password": "a new long passphrase"
+    },
+    "AccountEmailRequest": {
+      "email": "new.reader@example.com"
+    },
+    "McpServerUpsertRequest": {
+      "name": "Company wiki",
+      "url": "https://mcp.example.com/mcp",
+      "transport": "StreamableHttp",
+      "vaultCredentialId": "{{vaultCredentialId}}",
+      "headerName": "Authorization",
+      "headerPrefix": "Bearer ",
+      "enabled": true
+    },
+    "McpToolUpdateRequest": {
+      "enabled": true
     }
   },
   "examples": {

@@ -35,7 +35,7 @@ namespace MyMorningNews.Server.Routes
         public override void Register(Webserver webserver)
         {
             ArgumentNullException.ThrowIfNull(webserver);
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/media", ListAsync, null, openApiMetadata: Paged(Doc("List audio episodes", "Media")
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/media", ListAsync, null, openApiMetadata: Paged(Doc("List audio episodes", "Media").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))
                 .WithParameter(QueryParam("briefingId", typeof(string))).WithParameter(QueryParam("editionId", typeof(string))).WithParameter(QueryParam("status", typeof(MediaStatusEnum)))
                 .WithParameter(QueryParam("kind", typeof(MediaKindEnum)))));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/media/{id}", ReadAsync, null, openApiMetadata: Doc("Read an episode with its chapters", "Media"));

@@ -42,11 +42,11 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/feedback", CreateAsync, null, openApiMetadata: Doc("Give feedback on an item", "Feedback",
                 "Send an action (relevant, somewhat, not-relevant, accurate, partially, inaccurate, too-early, useful, not-useful, done, snooze) or explicit ratings, with an optional reason.")
                 .WithRequestBody(Body<FeedbackCreateRequest>()));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/feedback", ListAsync, null, openApiMetadata: Paged(Doc("List feedback", "Feedback", "Current ratings only unless includeHistory=true.")
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/feedback", ListAsync, null, openApiMetadata: Paged(Doc("List feedback", "Feedback", "Current ratings only unless includeHistory=true.").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))
                 .WithParameter(QueryParam("targetType", typeof(FeedbackTargetTypeEnum))).WithParameter(QueryParam("targetId", typeof(string))).WithParameter(QueryParam("topicId", typeof(string)))
                 .WithParameter(QueryParam("channel", typeof(FeedbackChannelEnum))).WithParameter(QueryParam("includeHistory", typeof(bool)))));
 
-            webserver.Routes.PreAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/public/feedback/{token}", FeedbackPageAsync, null, openApiMetadata: Doc("Email feedback page", "Public"));
+            webserver.Routes.PreAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/public/feedback/{token}", FeedbackPageAsync, null, openApiMetadata: Doc("Email feedback page", "Public").WithParameter(QueryParam("a", typeof(string))));
             webserver.Routes.PreAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/public/feedback/{token}", FeedbackSubmitAsync, null, openApiMetadata: Doc("Submit email feedback (form post)", "Public"));
             webserver.Routes.PreAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/public/unsubscribe/{token}", UnsubscribePageAsync, null, openApiMetadata: Doc("Unsubscribe page", "Public"));
             webserver.Routes.PreAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/public/unsubscribe/{token}", UnsubscribeSubmitAsync, null, openApiMetadata: Doc("Unsubscribe or undo (form post)", "Public"));

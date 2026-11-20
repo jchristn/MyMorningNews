@@ -34,7 +34,7 @@ namespace MyMorningNews.Server.Routes
         {
             ArgumentNullException.ThrowIfNull(webserver);
             const string b = "/v1.0/api/briefing-templates";
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, b, ListAsync, null, openApiMetadata: Paged(Doc("List briefing templates I can use", "Templates", "Shared tenant templates plus my own.")
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, b, ListAsync, null, openApiMetadata: Paged(Doc("List briefing templates I can use", "Templates", "Shared tenant templates plus my own.").WithParameter(QueryParam("userId", typeof(string)))
                 .WithParameter(QueryParam("scope", typeof(string)))));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b, CreateAsync, null, openApiMetadata: Doc("Create (import) a template from Markdown", "Templates").WithRequestBody(Body<TemplateCreateRequest>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b + "/validate", ValidateAsync, null, openApiMetadata: Doc("Validate template Markdown without saving", "Templates")

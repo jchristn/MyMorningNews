@@ -33,7 +33,7 @@ namespace MyMorningNews.Server.Routes
             ArgumentNullException.ThrowIfNull(webserver);
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, B, StartAsync, null, openApiMetadata: Doc("Start the wizard for a new topic", "Refinement",
                 "Creates the topic in Draft status and returns the session state.").WithRequestBody(Body<RefinementStartRequest>()));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, B, ListAsync, null, openApiMetadata: Paged(Doc("List my refinement sessions", "Refinement").WithParameter(QueryParam("status", typeof(RefinementStatusEnum))).WithParameter(QueryParam("topicId", typeof(string)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, B, ListAsync, null, openApiMetadata: Paged(Doc("List my refinement sessions", "Refinement").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool))).WithParameter(QueryParam("status", typeof(RefinementStatusEnum))).WithParameter(QueryParam("topicId", typeof(string)))));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, B + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read the session state", "Refinement"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, B + "/{id}/dimensions", DimensionsAsync, null, openApiMetadata: Doc("Propose dimensions (keeps locked and your own)", "Refinement").WithRequestBody(Body<RefinementGenerateRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, B + "/{id}/questions", QuestionsAsync, null, openApiMetadata: Doc("Ask the next round of questions", "Refinement").WithRequestBody(Body<RefinementGenerateRequest>()));

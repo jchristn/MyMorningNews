@@ -11,6 +11,8 @@ All notable changes to this project are documented here. The project follows [Se
 
 ### Fixed
 
+- OpenAPI declares the `userId` and `mine` filters on every list route that reads them, the request history summary and bulk delete filters, and the feedback page's `a` value; the bulk delete no longer advertises paging, and `GET /v1.0/api/usage/me` no longer lists values it ignores.
+
 - The MCP server bound its Prometheus endpoint to `*`, which Radiant rejects, so setting `MYMORNINGNEWS_MCP_PROMETHEUS_PORT` turned all MCP telemetry off. It now binds `MYMORNINGNEWS_MCP_PROMETHEUS_HOSTNAME` (default `127.0.0.1`, `mcp` in compose).
 - Deleting a user removed their topic rows through a database cascade but left the topics' runs, findings, briefings, and editions behind. User deletion now removes everything the user owns first (`AccountDataService`), which Phase 14 account deletion will reuse.
 - Credential auth modes are enforced: `SignedRequest` credentials refuse `x-secret-key` and session exchange, and `SessionExchange` credentials work only through `POST /v1.0/token`.

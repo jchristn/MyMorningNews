@@ -31,7 +31,7 @@ namespace MyMorningNews.Server.Routes
         public override void Register(Webserver webserver)
         {
             ArgumentNullException.ThrowIfNull(webserver);
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/runs", ListAsync, null, openApiMetadata: Paged(Doc("List runs", "Runs")
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/runs", ListAsync, null, openApiMetadata: Paged(Doc("List runs", "Runs").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))
                 .WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("status", typeof(RunStatusEnum))).WithParameter(QueryParam("trigger", typeof(RunTriggerEnum)))));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}", ReadAsync, null, openApiMetadata: Doc("Read a run", "Runs"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/api/runs/{id}/cancel", CancelAsync, null, openApiMetadata: Doc("Cancel a queued or running run", "Runs"));

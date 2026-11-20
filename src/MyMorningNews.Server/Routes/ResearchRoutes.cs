@@ -31,7 +31,7 @@ namespace MyMorningNews.Server.Routes
         {
             ArgumentNullException.ThrowIfNull(webserver);
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/findings", ListFindingsAsync, null, openApiMetadata: Paged(Doc("List findings", "Findings",
-                "Defaults: no duplicates, no dry runs, and no below-threshold findings unless tier=BelowThreshold, includeBelowThreshold=true, or includeDuplicates=true (duplicates are below threshold).").WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("runId", typeof(string)))
+                "Defaults: no duplicates, no dry runs, and no below-threshold findings unless tier=BelowThreshold, includeBelowThreshold=true, or includeDuplicates=true (duplicates are below threshold).").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool))).WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("runId", typeof(string)))
                 .WithParameter(QueryParam("tier", typeof(FindingTierEnum))).WithParameter(QueryParam("category", typeof(FindingCategoryEnum))).WithParameter(QueryParam("includeDuplicates", typeof(bool)))
                 .WithParameter(QueryParam("includeDryRun", typeof(bool))).WithParameter(QueryParam("minScore", typeof(int))).WithParameter(QueryParam("dimensionId", typeof(string)))
                 .WithParameter(QueryParam("includeBelowThreshold", typeof(bool))).WithParameter(QueryParam("includeHidden", typeof(bool))).WithParameter(QueryParam("pinned", typeof(bool)))));
@@ -46,20 +46,20 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}/queries", QueriesAsync, null, openApiMetadata: Doc("A run's search queries", "Runs"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}/results", ResultsAsync, null, openApiMetadata: Doc("A run's search results with dispositions", "Runs")
                 .WithParameter(QueryParam("disposition", typeof(SearchResultDispositionEnum))));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/predictions", ListPredictionsAsync, null, openApiMetadata: Paged(Doc("List predictions", "Predictions", "Sort by horizonUtc, createdUtc, confidence, status, or brierScore.")
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/predictions", ListPredictionsAsync, null, openApiMetadata: Paged(Doc("List predictions", "Predictions", "Sort by horizonUtc, createdUtc, confidence, status, or brierScore.").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))
                 .WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("status", typeof(PredictionStatusEnum))).WithParameter(QueryParam("includeDryRun", typeof(bool)))));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/predictions/{id}", ReadPredictionAsync, null, openApiMetadata: Doc("Read a prediction with its reviews", "Predictions"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/api/predictions/{id}/resolve", ResolveAsync, null, openApiMetadata: Doc("Resolve a prediction", "Predictions").WithRequestBody(Body<PredictionResolveRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/api/prediction-reviews/{id}/accept", AcceptReviewAsync, null, openApiMetadata: Doc("Accept a proposed resolution", "Predictions"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/api/prediction-reviews/{id}/reject", RejectReviewAsync, null, openApiMetadata: Doc("Reject a proposed resolution", "Predictions"));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/suggestions", ListSuggestionsAsync, null, openApiMetadata: Paged(Doc("List suggestions", "Suggestions", "Sort by createdUtc, priority, status, or title.")
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/suggestions", ListSuggestionsAsync, null, openApiMetadata: Paged(Doc("List suggestions", "Suggestions", "Sort by createdUtc, priority, status, or title.").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))
                 .WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("status", typeof(SuggestionStatusEnum))).WithParameter(QueryParam("priority", typeof(SuggestionPriorityEnum)))
                 .WithParameter(QueryParam("includeDryRun", typeof(bool)))));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/suggestions/{id}", ReadSuggestionAsync, null, openApiMetadata: Doc("Read a suggestion", "Suggestions"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/api/suggestions/{id}/status", SuggestionStatusAsync, null, openApiMetadata: Doc("Accept, snooze, dismiss, or complete a suggestion", "Suggestions")
                 .WithRequestBody(Body<SuggestionStatusRequest>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/sources", ListSourcesAsync, null, openApiMetadata: Paged(Doc("List fetched sources for my topics", "Sources",
-                "Newest first; content text is left out (read one source for it).").WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("runId", typeof(string)))));
+                "Newest first; content text is left out (read one source for it).").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool))).WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("runId", typeof(string)))));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/sources/{id}", ReadSourceAsync, null, openApiMetadata: Doc("Read a fetched source", "Sources"));
         }
 

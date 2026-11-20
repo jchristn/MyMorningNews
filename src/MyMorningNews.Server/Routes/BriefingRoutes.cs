@@ -32,7 +32,7 @@ namespace MyMorningNews.Server.Routes
         {
             ArgumentNullException.ThrowIfNull(webserver);
             const string b = "/v1.0/api/briefings";
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, b, ListAsync, null, openApiMetadata: Paged(Doc("List briefings", "Briefings", "Newest first. Dry runs and previews are excluded unless includeDryRun=true.")
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, b, ListAsync, null, openApiMetadata: Paged(Doc("List briefings", "Briefings", "Newest first. Dry runs and previews are excluded unless includeDryRun=true.").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))
                 .WithParameter(QueryParam("kind", typeof(BriefingKindEnum))).WithParameter(QueryParam("editionId", typeof(string))).WithParameter(QueryParam("topicId", typeof(string)))
                 .WithParameter(QueryParam("runId", typeof(string))).WithParameter(QueryParam("status", typeof(BriefingStatusEnum))).WithParameter(QueryParam("pinned", typeof(bool)))
                 .WithParameter(QueryParam("includeDryRun", typeof(bool)))));
@@ -45,7 +45,7 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, b + "/{id}", DeleteAsync, null, openApiMetadata: Doc("Delete a briefing and its files", "Briefings"));
 
             const string a = "/v1.0/api/artifacts";
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, a, ListArtifactsAsync, null, openApiMetadata: Paged(Doc("List stored files", "Artifacts")
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, a, ListArtifactsAsync, null, openApiMetadata: Paged(Doc("List stored files", "Artifacts").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))
                 .WithParameter(QueryParam("briefingId", typeof(string))).WithParameter(QueryParam("kind", typeof(ArtifactKindEnum))).WithParameter(QueryParam("pinned", typeof(bool)))));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, a + "/{id}", ReadArtifactAsync, null, openApiMetadata: Doc("Read stored file metadata", "Artifacts"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, a + "/{id}/content", ContentAsync, null, openApiMetadata: Doc("Stream a stored file", "Artifacts",

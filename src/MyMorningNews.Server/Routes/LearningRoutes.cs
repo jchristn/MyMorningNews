@@ -33,7 +33,7 @@ namespace MyMorningNews.Server.Routes
         {
             ArgumentNullException.ThrowIfNull(webserver);
             const string p = "/v1.0/api/learned-preferences";
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, p, ListAsync, null, openApiMetadata: Paged(Doc("List learned preferences", "Learning")
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, p, ListAsync, null, openApiMetadata: Paged(Doc("List learned preferences", "Learning").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))
                 .WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("status", typeof(PreferenceStatusEnum))).WithParameter(QueryParam("origin", typeof(PreferenceOriginEnum)))));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, p, CreateAsync, null, openApiMetadata: Doc("Write a preference (active at once)", "Learning").WithRequestBody(Body<PreferenceUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, p + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read a preference with its supporting feedback", "Learning"));

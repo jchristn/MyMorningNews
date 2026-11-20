@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import useFormat from '../../hooks/useFormat.js';
+import { FEEDBACK_CHANNELS } from '../../utils/enums.js';
 import ChartCard from '../../charts/ChartCard.jsx';
 import HorizontalBarChart from '../../charts/HorizontalBarChart.jsx';
 import StackedColumnChart from '../../charts/StackedColumnChart.jsx';
@@ -8,12 +9,15 @@ import ErrorState from '../../components/ErrorState.jsx';
 import KpiTile from '../../components/KpiTile.jsx';
 import PageHeader from '../../components/PageHeader.jsx';
 import FeedbackTable from './FeedbackTable.jsx';
-import { dayBuckets, reasonWeeks, suggestionOutcomes } from './insightsData.js';
+import { channelDays, dayBuckets, reasonWeeks, suggestionOutcomes } from './insightsData.js';
 import { ScopeBar, pctOrDash, useInsightsScope, useReport, useTopics } from './insightsParts.jsx';
 
 const SERIES = ['var(--chart-series-1)', 'var(--chart-series-2)', 'var(--chart-series-3)', 'var(--chart-series-5)', 'var(--chart-series-6)', 'var(--chart-series-7)'];
 
-// Review feedback over time: volume by day and channel, email link opens and submits, reason themes, suggestion
+// One stable color per feedback channel, so a channel keeps its color whichever channels appear.
+const CHANNEL_COLORS = { Dashboard: 'var(--chart-series-1)', Email: 'var(--chart-series-2)', Mobile: 'var(--chart-series-3)', Api: 'var(--chart-series-6)', Mcp: 'var(--chart-series-7)' };
+
+// Review feedback over time: volume by day, by channel, and by day and channel, email link opens and submits, reason themes, suggestion
 // outcomes, and every feedback item with edit and retract.
 export default function FeedbackView() {
   const { t } = useTranslation();
@@ -25,6 +29,7 @@ export default function FeedbackView() {
   const suggestions = useReport('suggestions', scope);
   const fb = feedback.data;
   const days = dayBuckets(fb && fb.byDay);
+  const byChannelDay = channelDays(fb && fb.byChannelDay, FEEDBACK_CHANNELS);
   const themes = reasonWeeks(reasons.data);
   const outcomes = suggestionOutcomes(suggestions.data);
   const submitRate = fb && fb.emailLinkOpens > 0 ? fb.emailLinkSubmits / fb.emailLinkOpens : null;
@@ -59,6 +64,23 @@ export default function FeedbackView() {
                 { key: 'withReason', label: t('insights.feedback.withReason'), color: 'var(--chart-series-2)', values: days.map((b) => b.row.positive || 0) },
                 { key: 'noReason', label: t('insights.feedback.withoutReason'), color: 'var(--chart-series-1)', values: days.map((b) => Math.max(0, (b.row.count || 0) - (b.row.positive || 0))) }
               ]}
+            />
+          )}
+        </ChartCard>
+        <ChartCard title={t('insights.feedback.byChannelDay')} subtitle={t('insights.feedback.byChannelDayHelp')} className="wide">
+          {byChannelDay.buckets.length === 0 || byChannelDay.series.length === 0 ? (
+            <div className="chart-empty">{t('insights.noData')}</div>
+          ) : (
+            <TimeChart
+              ariaLabel={t('insights.feedback.byChannelDay')}
+              bucketMinutes={1440}
+              buckets={byChannelDay.buckets}
+              series={byChannelDay.series.map((s, i) => ({
+                key: s.channel,
+                label: t('insights.feedback.channels.' + s.channel, { defaultValue: s.channel }),
+                color: CHANNEL_COLORS[s.channel] || SERIES[i % SERIES.length],
+                values: s.values
+              }))}
             />
           )}
         </ChartCard>

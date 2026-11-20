@@ -812,6 +812,19 @@ ol.chip-list {
   margin: 0 0 10px;
 }
 
+.home-overview .section-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+
+.home-overview h2 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+}
+
 .confirm-box {
   border: 1px solid var(--color-primary);
   border-radius: var(--radius-lg);

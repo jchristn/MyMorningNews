@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { BadgeCheck, ExternalLink } from 'lucide-react';
+import { BadgeCheck, ExternalLink, Eye, EyeOff, Pin, PinOff, Search, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext.jsx';
 import useFormat from '../../hooks/useFormat.js';
@@ -15,9 +15,12 @@ import ErrorState from '../../components/ErrorState.jsx';
 import KeyValueGrid from '../../components/KeyValueGrid.jsx';
 import LoadingState from '../../components/LoadingState.jsx';
 import StatusBadge from '../../components/StatusBadge.jsx';
+import EvidenceModal from './EvidenceModal.jsx';
 import { ScoreBadge, TierBadge, scoreComponents } from './findingParts.jsx';
+import useFindingActions from './useFindingActions.jsx';
 
-// Load one finding with its evidence, dimension, and topic name. Returns { detail, error, reload }.
+// Load one finding with its evidence, dimension, and topic name. Returns { detail, error, reload, setFinding }, where
+// setFinding replaces the finding after a pin or hide without reloading the evidence.
 export function useFindingDetail(findingId) {
   const { apiClient } = useAuth();
   const [detail, setDetail] = useState(null);
@@ -35,7 +38,8 @@ export function useFindingDetail(findingId) {
     setDetail(null);
     load();
   }, [load]);
-  return { detail, error, reload: load, clearError: () => setError(null) };
+  const setFinding = useCallback((finding) => setDetail((current) => (current ? { ...current, finding: { ...current.finding, ...finding } } : current)), []);
+  return { detail, error, reload: load, clearError: () => setError(null), setFinding };
 }
 
 function Section({ title, children }) {
@@ -51,13 +55,19 @@ function Section({ title, children }) {
 
 Section.propTypes = { title: PropTypes.string.isRequired, children: PropTypes.node };
 
-function EvidenceItem({ view }) {
+function EvidenceItem({ view, onOpen }) {
   const { t } = useTranslation();
   const e = view.evidence || {};
   const label = view.sourceTitle || view.sourceDomain || view.sourceUrl || t('findings.evidence.unknownSource');
   return (
     <li className="evidence-item">
-      <blockquote className="evidence-quote">{e.quote}</blockquote>
+      {e.id && onOpen ? (
+        <button type="button" className="evidence-quote-button" onClick={() => onOpen(view)} title={t('findings.evidence.open')}>
+          <blockquote className="evidence-quote">{e.quote}</blockquote>
+        </button>
+      ) : (
+        <blockquote className="evidence-quote">{e.quote}</blockquote>
+      )}
       <div className="evidence-meta">
         {view.role ? <StatusBadge tone={EVIDENCE_ROLE_TONES[view.role] || 'neutral'}>{t('enums.evidenceRole.' + view.role, { defaultValue: view.role })}</StatusBadge> : null}
         {e.verified ? (
@@ -76,24 +86,39 @@ function EvidenceItem({ view }) {
         )}
         {view.sourceDomain && view.sourceTitle ? <span className="muted small">{view.sourceDomain}</span> : null}
         {view.sourcePublishedUtc ? <DateCell value={view.sourcePublishedUtc} relative={false} /> : null}
+        {e.id && onOpen ? (
+          <button type="button" className="link-button small" onClick={() => onOpen(view)}>
+            <Search size={12} aria-hidden="true" /> {t('findings.evidence.open')}
+          </button>
+        ) : null}
       </div>
     </li>
   );
 }
 
-EvidenceItem.propTypes = { view: PropTypes.object.isRequired };
+EvidenceItem.propTypes = { view: PropTypes.object.isRequired, onOpen: PropTypes.func };
 
-// Everything about one finding: badges, summary, the score breakdown, rationale, evidence quotes with source links,
-// the dimension, and provenance.
-export default function FindingDetail({ detail }) {
+// Everything about one finding: badges, pin, hide, and delete, summary, the score breakdown, rationale, evidence
+// quotes with source links (each opens the quote in context), the dimension, and provenance. onChanged receives the
+// updated finding after a pin or hide; onDeleted runs after a delete.
+export default function FindingDetail({ detail, onChanged, onDeleted }) {
   const { t } = useTranslation();
   const f = useFormat();
   const finding = detail.finding;
   const dimension = detail.dimension;
   const evidence = detail.evidence || [];
+  const [openEvidence, setOpenEvidence] = useState(null);
+  const actions = useFindingActions({ onChanged, onDeleted });
+  const working = actions.busy === finding.id;
   return (
     <div className="stack" data-testid="finding-detail">
       <div className="result-grid">
+        {finding.pinned ? (
+          <StatusBadge tone="accent">
+            <Pin size={12} aria-hidden="true" /> {t('findings.pinnedBadge')}
+          </StatusBadge>
+        ) : null}
+        {finding.hidden ? <StatusBadge tone="neutral">{t('findings.hiddenBadge')}</StatusBadge> : null}
         <TierBadge tier={finding.tier} />
         <ScoreBadge finding={finding} />
         <StatusBadge>{t('enums.findingCategory.' + finding.category, { defaultValue: finding.category })}</StatusBadge>
@@ -102,6 +127,18 @@ export default function FindingDetail({ detail }) {
         {finding.isDryRun ? <StatusBadge tone="info">{t('runs.dryRun')}</StatusBadge> : null}
       </div>
       <h3 className="finding-title">{finding.title}</h3>
+      <div className="row-actions finding-actions" data-testid="finding-actions">
+        <button type="button" className="button secondary small" disabled={working} onClick={() => actions.togglePin(finding)}>
+          {finding.pinned ? <PinOff size={14} aria-hidden="true" /> : <Pin size={14} aria-hidden="true" />} {finding.pinned ? t('findings.actions.unpin') : t('findings.actions.pin')}
+        </button>
+        <button type="button" className="button secondary small" disabled={working} onClick={() => actions.toggleHidden(finding)}>
+          {finding.hidden ? <Eye size={14} aria-hidden="true" /> : <EyeOff size={14} aria-hidden="true" />} {finding.hidden ? t('findings.actions.unhide') : t('findings.actions.hide')}
+        </button>
+        <button type="button" className="button danger small" disabled={working} onClick={() => actions.requestDelete(finding)}>
+          <Trash2 size={14} aria-hidden="true" /> {t('common.delete')}
+        </button>
+      </div>
+      {finding.hidden ? <p className="muted small">{t('findings.hiddenHelp')}</p> : null}
       {finding.summary ? <p className="finding-summary">{finding.summary}</p> : null}
       <div className="feedback-row">
         <span className="muted small">{t('feedbackControl.isRelevant')}</span>
@@ -128,7 +165,7 @@ export default function FindingDetail({ detail }) {
         {evidence.length > 0 ? (
           <ol className="evidence-list">
             {evidence.map((v) => (
-              <EvidenceItem key={(v.evidence && v.evidence.id) || v.sourceUrl} view={v} />
+              <EvidenceItem key={(v.evidence && v.evidence.id) || v.sourceUrl} view={v} onOpen={setOpenEvidence} />
             ))}
           </ol>
         ) : (
@@ -161,22 +198,28 @@ export default function FindingDetail({ detail }) {
           { key: 'id', label: t('findings.columns.id'), value: <CopyableId value={finding.id} /> }
         ]}
       />
+      {actions.modals}
+      {openEvidence ? <EvidenceModal evidenceId={openEvidence.evidence.id} role={openEvidence.role || null} onClose={() => setOpenEvidence(null)} /> : null}
     </div>
   );
 }
 
-FindingDetail.propTypes = { detail: PropTypes.shape({ finding: PropTypes.object.isRequired, evidence: PropTypes.array, dimension: PropTypes.object, topicName: PropTypes.string }).isRequired };
+FindingDetail.propTypes = {
+  detail: PropTypes.shape({ finding: PropTypes.object.isRequired, evidence: PropTypes.array, dimension: PropTypes.object, topicName: PropTypes.string }).isRequired,
+  onChanged: PropTypes.func,
+  onDeleted: PropTypes.func
+};
 
-// Loading and error handling around FindingDetail for a drawer or page.
-export function FindingDetailBody({ findingId }) {
-  const { detail, error, reload, clearError } = useFindingDetail(findingId);
+// Loading and error handling around FindingDetail for a drawer or page. onDeleted runs after the finding is deleted.
+export function FindingDetailBody({ findingId, onDeleted }) {
+  const { detail, error, reload, clearError, setFinding } = useFindingDetail(findingId);
   return (
     <>
       <ErrorState error={error} inline onRetry={reload} onDismiss={clearError} />
       {!detail && !error ? <LoadingState /> : null}
-      {detail ? <FindingDetail detail={detail} /> : null}
+      {detail ? <FindingDetail detail={detail} onChanged={setFinding} onDeleted={onDeleted} /> : null}
     </>
   );
 }
 
-FindingDetailBody.propTypes = { findingId: PropTypes.string.isRequired };
+FindingDetailBody.propTypes = { findingId: PropTypes.string.isRequired, onDeleted: PropTypes.func };

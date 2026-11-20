@@ -598,6 +598,10 @@ export class ApiClient {
   listRunResults(id, disposition) {
     return this._request('GET', '/v1.0/api/runs/' + enc(id) + '/results', { query: { disposition } });
   }
+  // A run's model calls, paged and oldest first unless sortDirection says otherwise.
+  listRunLlmCalls(id, query) {
+    return this._request('GET', '/v1.0/api/runs/' + enc(id) + '/llm-calls', { query });
+  }
 
   // Findings with evidence, sources, predictions with reviews, and suggestions (Phase 6)
   listFindings(query) {
@@ -605,6 +609,24 @@ export class ApiClient {
   }
   getFinding(id) {
     return this._request('GET', '/v1.0/api/findings/' + enc(id));
+  }
+  // body: { pinned?, hidden? }. Hidden findings leave lists (unless includeHidden=true), briefings, and emails.
+  updateFinding(id, body) {
+    return this._request('PUT', '/v1.0/api/findings/' + enc(id), { body });
+  }
+  setFindingPinned(id, pinned) {
+    return this.updateFinding(id, { pinned: Boolean(pinned) });
+  }
+  setFindingHidden(id, hidden) {
+    return this.updateFinding(id, { hidden: Boolean(hidden) });
+  }
+  // Removes the finding and its evidence links (204). Shared evidence, sources, and rating history stay.
+  deleteFinding(id) {
+    return this._request('DELETE', '/v1.0/api/findings/' + enc(id));
+  }
+  // One piece of evidence with its source: { evidence, sourceUrl, sourceTitle, sourceDomain, sourcePublishedUtc, role }.
+  getEvidence(id) {
+    return this._request('GET', '/v1.0/api/evidence/' + enc(id));
   }
   getSource(id) {
     return this._request('GET', '/v1.0/api/sources/' + enc(id));
@@ -903,7 +925,7 @@ export class ApiClient {
   getRankingRecommendation(topicId) {
     return this._request('GET', '/v1.0/api/topics/' + enc(topicId) + '/ranking-recommendation');
   }
-  // report: relevance, accuracy, feedback, suggestions, reasons, or quality. query: { topicId, from, to, userId, all }.
+  // report: overview, relevance, accuracy, feedback, suggestions, reasons, quality, or email. query: { topicId, from, to, userId, all }.
   getAnalytics(report, query) {
     return this._request('GET', '/v1.0/api/analytics/' + enc(report), { query });
   }

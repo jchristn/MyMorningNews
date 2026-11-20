@@ -183,7 +183,10 @@
       "oneTimeRequests": "One-time requests",
       "listen": "Listen",
       "promoCodes": "Promotional codes",
-      "plans": "Plans"
+      "insightsOverview": "Overview",
+      "plans": "Plans",
+      "emailInsights": "Email delivery",
+      "mcp": "MCP client"
     }
   },
   "routes": {
@@ -303,6 +306,15 @@
     },
     "plans": {
       "summary": "Plans, their entitlement values, and who has which plan"
+    },
+    "insightsOverview": {
+      "summary": "Headline numbers across research, delivery, learning, and cost"
+    },
+    "emailInsights": {
+      "summary": "Email delivery, timing, and how readers use the links in each message"
+    },
+    "mcp": {
+      "summary": "Connect Claude Code or another MCP client to your research"
     }
   },
   "placeholder": {
@@ -397,6 +409,10 @@
     "request": {
       "title": "New request",
       "summary": "Ask for a one-time report, podcast, or email summary."
+    },
+    "overview": {
+      "title": "{count, plural, one {Last # day} other {Last # days}}",
+      "more": "Open Insights"
     }
   },
   "requests": {
@@ -749,13 +765,27 @@
       "owner": "Owner",
       "scopes": "Scopes",
       "secret": "Secret",
-      "status": "Status"
+      "status": "Status",
+      "authMode": "Auth mode"
     },
     "scopes": {
       "read": "Read",
       "write": "Write",
       "admin": "Admin"
-    }
+    },
+    "authModes": {
+      "DirectHeader": "Direct header",
+      "SignedRequest": "Signed requests",
+      "SessionExchange": "Session exchange",
+      "Hybrid": "Hybrid"
+    },
+    "authModeHelp": {
+      "DirectHeader": "The default. Accepts the access key and secret as headers, signed requests, and session exchange.",
+      "SignedRequest": "Accepts only HMAC-signed requests, so the secret never travels. Headers with the secret and session exchange are refused.",
+      "SessionExchange": "Works only through POST /v1.0/token to get a session token. Per-request secrets and signatures are refused.",
+      "Hybrid": "Accepts everything, the same as Direct header."
+    },
+    "authModeFixed": "Set when the credential is created; create a new credential to change it."
   },
   "rbac": {
     "tabs": {
@@ -2119,7 +2149,8 @@
         "stages": "Stages",
         "queries": "Queries",
         "results": "Results",
-        "details": "Details"
+        "details": "Details",
+        "calls": "Model calls"
       },
       "contextHash": "Context snapshot"
     },
@@ -2197,6 +2228,11 @@
       "text": "Extracted text",
       "truncated": "Showing the first {shown} of {total} characters.",
       "noText": "No text was extracted from this source."
+    },
+    "calls": {
+      "openCall": "Open in the model call log",
+      "emptyTitle": "No model calls",
+      "emptyMessage": "This run made no model calls, or its calls are still being recorded."
     }
   },
   "oneTime": {
@@ -2338,12 +2374,41 @@
       "verified": "Verified quote",
       "unverified": "Not verified",
       "emptyTitle": "No evidence",
-      "emptyMessage": "No verified quotes back this finding."
+      "emptyMessage": "No verified quotes back this finding.",
+      "open": "View in context",
+      "detailTitle": "Evidence",
+      "quote": "Quote",
+      "inContext": "Quote in context",
+      "unverifiedHelp": "This quote could not be matched against the fetched source text.",
+      "source": "Source",
+      "domain": "Domain",
+      "position": "Position in source",
+      "positionValue": "Characters {start} to {end}",
+      "sourceId": "Source ID"
     },
     "empty": {
       "title": "No findings yet",
       "message": "Findings appear after a run reads and ranks sources. Run a topic to get some.",
       "topicMessage": "Run this topic to find and rank sources."
+    },
+    "pinnedMarker": "Pinned",
+    "pinnedBadge": "Pinned",
+    "hiddenBadge": "Hidden",
+    "hiddenHelp": "Hidden findings are left out of lists, briefings, and emails. Unhide it to bring it back.",
+    "showHidden": "Show hidden",
+    "pinnedOnly": "Pinned only",
+    "actions": {
+      "pin": "Pin",
+      "unpin": "Unpin",
+      "hide": "Hide",
+      "unhide": "Unhide",
+      "pinned": "Finding pinned",
+      "unpinned": "Finding unpinned",
+      "hidden": "Finding hidden",
+      "unhidden": "Finding shown again",
+      "deleted": "Finding deleted",
+      "deleteTitle": "Delete finding",
+      "deleteMessage": "Delete \"{title}\"? Its evidence links are removed. Shared sources and your rating history stay."
     }
   },
   "predictions": {
@@ -3458,8 +3523,11 @@
         "Dashboard": "Dashboard",
         "Email": "Email",
         "Mobile": "Mobile app",
-        "Api": "API"
-      }
+        "Api": "API",
+        "Mcp": "MCP"
+      },
+      "byChannelDay": "Feedback by day and channel",
+      "byChannelDayHelp": "Ratings given per day, stacked by where they came from"
     },
     "reasons": {
       "title": "Reason themes",
@@ -3548,6 +3616,90 @@
       "recommended": "Recommended",
       "separation": "Separation",
       "help": "Separation is how far apart relevant and not relevant findings score on each component. Components that separate them better get more weight."
+    },
+    "overview": {
+      "window": "{from} to {to}",
+      "help": "Counts cover the selected range unless noted. Open predictions, new suggestions, and active topics are current totals.",
+      "activeTopics": "Active topics",
+      "runs": "Runs",
+      "runOutcomes": "{completed} completed, {partial} partial, {failed} failed",
+      "findingsShown": "Findings shown",
+      "findingsRated": "{count} rated",
+      "precision": "Relevance precision",
+      "precisionHelp": "Share of rated findings judged relevant",
+      "briefingsReady": "Briefings ready",
+      "emailsSent": "Emails sent",
+      "emailsFailed": "{count} failed",
+      "predictionsOpen": "Open predictions",
+      "predictionsResolved": "{count} resolved",
+      "accuracy": "Prediction accuracy",
+      "brier": "Mean Brier {value}",
+      "feedback": "Feedback",
+      "feedbackWithReason": "{count} with a reason",
+      "suggestionsNew": "New suggestions",
+      "suggestionsAccepted": "{count} accepted or done",
+      "quoteFailure": "Quote failure rate",
+      "quoteFailureHelp": "Quotes that failed verification",
+      "modelCost": "Model cost",
+      "modelCalls": "{count} model calls"
+    },
+    "email": {
+      "total": "Messages",
+      "pendingSkipped": "{pending} pending, {skipped} skipped",
+      "sent": "Sent",
+      "notSent": "Not sent",
+      "failed": "Failed",
+      "deliveryRate": "Delivery rate",
+      "deliveryRateHelp": "Sent out of finished messages",
+      "meanTimeToSend": "Mean time to send",
+      "meanTimeToSendHelp": "From queueing to sending",
+      "linkOpens": "Feedback link opens",
+      "linkSubmits": "Feedback link submits",
+      "unsubscribes": "Unsubscribes",
+      "byDay": "Messages by day",
+      "byDayHelp": "Messages queued per day, split by whether they were sent",
+      "byTemplate": "Delivery rate by template",
+      "byTemplateHelp": "Share of each template's messages that were sent",
+      "byStatus": "Messages by status"
+    }
+  },
+  "mcp": {
+    "tokenWarning": "Never paste your session token into an MCP client or a config file. Use an access key you can revoke. This page never shows your token.",
+    "about": {
+      "title": "About the MCP server",
+      "body": "The My Morning News MCP server lets Claude Code, Claude Desktop, an IDE, or your own agent list your topics, read briefings, dig into the evidence behind a finding, resolve predictions, act on suggestions, and give feedback with a reason.",
+      "privileges": "It has no privileges of its own. Every call goes to the REST API with your access key, so your roles and ownership apply exactly as they do here. Feedback given through it is recorded with the channel MCP."
+    },
+    "url": {
+      "label": "Streamable HTTP URL",
+      "help": "The MCP server runs as its own process, separate from the REST API. Change this if yours runs elsewhere; the commands below follow it.",
+      "invalid": "Enter an http or https URL.",
+      "reset": "Reset to the suggested URL"
+    },
+    "key": {
+      "title": "Create an access key",
+      "body": "Create an access key and secret for the MCP client, so you can revoke it later without changing your password. Copy the secret when it is created; it is shown only once.",
+      "authMode": "Choose the Direct header or Hybrid auth mode: a Streamable HTTP client sends the key and secret on every request, which Signed requests and Session exchange keys refuse.",
+      "create": "Create an access key",
+      "askAdmin": "Access keys are created by an administrator. Ask yours for an access key with the Direct header auth mode."
+    },
+    "connect": {
+      "title": "Connect a client",
+      "claudeHttp": "Claude Code over Streamable HTTP",
+      "claudeHttpHelp": "Replace the placeholders with your access key and secret, then run this in a terminal.",
+      "claudeStdio": "Claude Code over stdio",
+      "claudeStdioHelp": "Runs the MCP server from a source checkout. Replace the path and the placeholders.",
+      "desktop": "Claude Desktop and other clients",
+      "desktopHelp": "For clients that read an mcpServers JSON file. Replace the path and the placeholders.",
+      "run": "Start the MCP server",
+      "runHelp": "With the Docker stack running, this starts the MCP server on port 12105."
+    },
+    "try": {
+      "title": "Try it",
+      "topics": "List my My Morning News topics",
+      "briefing": "Read today's briefing",
+      "review": "Run the review_morning_briefing prompt",
+      "safety": "Findings and briefings contain text from web pages. Clients are told to treat it as data, never as instructions."
     }
   }
 }

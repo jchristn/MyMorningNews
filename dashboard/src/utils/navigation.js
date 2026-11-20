@@ -1,6 +1,7 @@
 import {
   Activity,
   BookOpen,
+  Bot,
   Building2,
   CalendarClock,
   ChartColumn,
@@ -19,9 +20,11 @@ import {
   Info,
   Key,
   KeyRound,
+  LayoutGrid,
   Lightbulb,
   ListChecks,
   Mail,
+  MailCheck,
   MessageSquare,
   Mic,
   Newspaper,
@@ -75,9 +78,11 @@ export const NAV_GROUPS = [
   {
     key: 'insights',
     items: [
+      { path: 'insights/overview', key: 'insightsOverview', icon: LayoutGrid, access: 'all' },
       { path: 'insights/relevance', key: 'relevance', icon: Target, access: 'all' },
       { path: 'insights/accuracy', key: 'accuracy', icon: ChartColumn, access: 'all' },
       { path: 'insights/feedback', key: 'feedback', icon: MessageSquare, access: 'all' },
+      { path: 'insights/email', key: 'emailInsights', icon: MailCheck, access: 'all' },
       { path: 'insights/preferences', key: 'preferences', icon: Heart, access: 'all' },
       { path: 'insights/usage', key: 'usage', icon: Coins, access: 'all' }
     ]
@@ -90,6 +95,7 @@ export const NAV_GROUPS = [
       { path: 'credentials-vault', key: 'vault', icon: KeyRound, access: 'all' },
       { path: 'search-providers', key: 'searchProviders', icon: Search, access: 'all', phase: 5 },
       { path: 'mcp-servers', key: 'mcpServers', icon: Plug, access: 'tenantAdmin', phase: 5 },
+      { path: 'mcp', key: 'mcp', icon: Bot, access: 'all' },
       { path: 'voices', key: 'voices', icon: Mic, access: 'all' },
       { path: 'email', key: 'email', icon: Mail, access: 'all' }
     ]

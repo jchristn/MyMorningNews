@@ -131,6 +131,54 @@
   vertical-align: -2px;
 }
 
+/* Pin marker, hidden findings, and evidence in context. */
+.finding-title-cell {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.pin-marker {
+  flex: none;
+  color: var(--color-accent);
+  align-self: center;
+}
+
+.finding-actions {
+  flex-wrap: wrap;
+}
+
+.evidence-quote-button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.evidence-quote-button:hover .evidence-quote,
+.evidence-quote-button:focus-visible .evidence-quote {
+  border-inline-start-color: var(--color-accent);
+}
+
+.evidence-context {
+  margin: 0;
+  line-height: var(--line-height-body);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.evidence-context mark {
+  background: var(--color-warning-soft);
+  color: inherit;
+  border-radius: var(--radius-sm);
+  padding: 0 2px;
+}
+
 .review-item {
   display: flex;
   flex-direction: column;

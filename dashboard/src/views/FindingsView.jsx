@@ -1,4 +1,4 @@
-import { Link, Route, Routes, useParams, useSearchParams } from 'react-router-dom';
+import { Link, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import PageHeader from '../components/PageHeader.jsx';
@@ -35,6 +35,7 @@ function FindingsList() {
 function FindingPage() {
   const { t } = useTranslation();
   const { id } = useParams();
+  const navigate = useNavigate();
   return (
     <div className="page">
       <Link to="/dashboard/findings" className="link-button small back-link">
@@ -42,7 +43,7 @@ function FindingPage() {
       </Link>
       <PageHeader title={t('findings.detail.title')} />
       <section className="panel">
-        <FindingDetailBody findingId={id} />
+        <FindingDetailBody findingId={id} onDeleted={() => navigate('/dashboard/findings', { replace: true })} />
       </section>
     </div>
   );

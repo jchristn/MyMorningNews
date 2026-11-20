@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Activity, Building2, CircleAlert, Gauge, History, Lightbulb, Send, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -13,7 +13,13 @@ import ErrorState from '../components/ErrorState.jsx';
 import KpiTile from '../components/KpiTile.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import StatusBadge, { methodTone, statusTone } from '../components/StatusBadge.jsx';
+import OverviewTiles from './insights/OverviewTiles.jsx';
+import { insightsQuery } from './insights/insightsData.js';
 import RequestForm from './requests/RequestForm.jsx';
+
+// Headline numbers Home shows from the Insights overview, for the last OVERVIEW_DAYS days.
+const OVERVIEW_KEYS = ['runs', 'findings', 'precision', 'briefings', 'feedback', 'cost'];
+const OVERVIEW_DAYS = 30;
 
 // Command center: what happened, what needs attention, and where to go next.
 export default function HomeView() {
@@ -28,6 +34,7 @@ export default function HomeView() {
   const [topicCount, setTopicCount] = useState(null);
   const [failures, setFailures] = useState(null);
   const [summary, setSummary] = useState(null);
+  const [overview, setOverview] = useState(null);
   const [errors, setErrors] = useState({});
   const [loadedAt, setLoadedAt] = useState(null);
 
@@ -37,6 +44,10 @@ export default function HomeView() {
     await Promise.all([
       apiClient.healthCheck().then(setHealth).catch((e) => (nextErrors.health = e)),
       apiClient.getServerInfo().then(setInfo).catch((e) => (nextErrors.info = e)),
+      apiClient
+        .getAnalytics('overview', insightsQuery({ days: OVERVIEW_DAYS }))
+        .then((r) => setOverview(r || false))
+        .catch(() => setOverview(false)),
       apiClient
         .listTopics({ isOneTime: false, pageSize: 1 })
         .then((r) => setTopicCount(r && typeof r.totalCount === 'number' ? r.totalCount : 0))
@@ -103,6 +114,18 @@ export default function HomeView() {
         ) : null}
         <KpiTile icon={Lightbulb} label={t('home.kpi.topics')} value={topicCount === null ? '...' : f.number(topicCount)} detail={t('home.kpi.recurring')} onClick={() => navigate('/dashboard/topics')} />
       </div>
+
+      {overview !== false ? (
+        <section className="stack home-overview" data-testid="home-overview">
+          <div className="section-heading">
+            <h2>{t('home.overview.title', { count: OVERVIEW_DAYS })}</h2>
+            <Link to="/dashboard/insights/overview" className="link-button small">
+              {t('home.overview.more')}
+            </Link>
+          </div>
+          <OverviewTiles report={overview} keys={OVERVIEW_KEYS} testId="home-overview-tiles" />
+        </section>
+      ) : null}
 
       <section className="panel home-request" data-testid="home-request">
         <h2>

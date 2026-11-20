@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { pagedQuery } from '../../utils/api.js';
+import { FEEDBACK_CHANNELS } from '../../utils/enums.js';
 import { ACTION_TONES, actionOf, targetPath } from '../../utils/feedback.js';
 import ConfirmModal from '../../components/ConfirmModal.jsx';
 import DataTable from '../../components/DataTable.jsx';
@@ -15,7 +16,6 @@ import JsonViewerModal from '../../components/JsonViewerModal.jsx';
 import StatusBadge from '../../components/StatusBadge.jsx';
 
 export const FEEDBACK_TARGET_TYPES = ['Finding', 'Prediction', 'PredictionReview', 'Suggestion', 'SourceItem', 'Domain', 'Briefing', 'BriefingSection', 'LearnedPreference'];
-export const FEEDBACK_CHANNELS = ['Dashboard', 'Email', 'Mobile', 'Api'];
 
 // Every feedback item with its reason, target, channel, and rating, with Edit why and Retract. Pass topicId to scope
 // to one topic.

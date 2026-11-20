@@ -10,10 +10,11 @@ import LoadingState from '../../components/LoadingState.jsx';
 import Modal from '../../components/Modal.jsx';
 import FindingDetail, { useFindingDetail } from './FindingDetail.jsx';
 
-// A finding in a side drawer, with links to its full page and its JSON.
-export default function FindingDetailDrawer({ findingId, onClose }) {
+// A finding in a side drawer, with links to its full page and its JSON. onChanged runs after a pin or hide;
+// onDeleted after a delete (the caller closes the drawer; without it the drawer closes itself).
+export default function FindingDetailDrawer({ findingId, onClose, onChanged, onDeleted }) {
   const { t } = useTranslation();
-  const { detail, error, reload, clearError } = useFindingDetail(findingId);
+  const { detail, error, reload, clearError, setFinding } = useFindingDetail(findingId);
   const [json, setJson] = useState(false);
   return (
     <Modal
@@ -37,7 +38,16 @@ export default function FindingDetailDrawer({ findingId, onClose }) {
     >
       <ErrorState error={error} inline onRetry={reload} onDismiss={clearError} />
       {!detail && !error ? <LoadingState /> : null}
-      {detail ? <FindingDetail detail={detail} /> : null}
+      {detail ? (
+        <FindingDetail
+          detail={detail}
+          onChanged={(finding) => {
+            setFinding(finding);
+            if (onChanged) onChanged(finding);
+          }}
+          onDeleted={onDeleted || onClose}
+        />
+      ) : null}
       <JsonViewerModal open={json && Boolean(detail)} value={detail} onClose={() => setJson(false)} />
     </Modal>
   );
@@ -45,5 +55,7 @@ export default function FindingDetailDrawer({ findingId, onClose }) {
 
 FindingDetailDrawer.propTypes = {
   findingId: PropTypes.string,
-  onClose: PropTypes.func.isRequired
+  onClose: PropTypes.func.isRequired,
+  onChanged: PropTypes.func,
+  onDeleted: PropTypes.func
 };

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Braces, Eye, X } from 'lucide-react';
+import { Braces, Eye, Pin, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { pagedQuery } from '../../utils/api.js';
@@ -13,9 +13,11 @@ import JsonViewerModal from '../../components/JsonViewerModal.jsx';
 import StatusBadge from '../../components/StatusBadge.jsx';
 import FindingDetailDrawer from './FindingDetailDrawer.jsx';
 import { ScoreBadge, TierBadge } from './findingParts.jsx';
+import useFindingActions from './useFindingActions.jsx';
 
 // Findings ranked by composite relevance with topic, tier, category, and minimum score filters, plus toggles for
-// duplicates and dry runs. Pass topicId to scope to one topic or runId to one run. Rows open a detail drawer.
+// duplicates, dry runs, hidden findings, and pinned only. Pass topicId to scope to one topic or runId to one run.
+// Rows open a detail drawer; row actions pin, hide, and delete.
 export default function FindingsTable({ topicId = null, runId = null, tableKey = 'findings', initialFindingId = null, onFindingClosed, onClearRun, initialIncludeDryRun = false }) {
   const { t } = useTranslation();
   const { apiClient } = useAuth();
@@ -24,6 +26,17 @@ export default function FindingsTable({ topicId = null, runId = null, tableKey =
   const [json, setJson] = useState(null);
   const [includeDuplicates, setIncludeDuplicates] = useState(false);
   const [includeDryRun, setIncludeDryRun] = useState(initialIncludeDryRun);
+  const [includeHidden, setIncludeHidden] = useState(false);
+  const [pinnedOnly, setPinnedOnly] = useState(false);
+  const [refresh, setRefresh] = useState(0);
+  const bump = () => setRefresh((n) => n + 1);
+  const actions = useFindingActions({
+    onChanged: bump,
+    onDeleted: (finding) => {
+      if (openId === finding.id) setOpenId(null);
+      bump();
+    }
+  });
 
   useEffect(() => {
     if (topicId) return undefined;
@@ -43,8 +56,15 @@ export default function FindingsTable({ topicId = null, runId = null, tableKey =
 
   const topicNames = useMemo(() => new Map(topics.map((x) => [x.id, x.name])), [topics]);
   const extraFilters = useMemo(
-    () => ({ topicId: topicId || undefined, runId: runId || undefined, includeDuplicates: includeDuplicates || undefined, includeDryRun: includeDryRun || undefined }),
-    [topicId, runId, includeDuplicates, includeDryRun]
+    () => ({
+      topicId: topicId || undefined,
+      runId: runId || undefined,
+      includeDuplicates: includeDuplicates || undefined,
+      includeDryRun: includeDryRun || undefined,
+      includeHidden: includeHidden || undefined,
+      pinned: pinnedOnly || undefined
+    }),
+    [topicId, runId, includeDuplicates, includeDryRun, includeHidden, pinnedOnly]
   );
   const fetchPage = useCallback((q) => apiClient.listFindings(pagedQuery(q)), [apiClient]);
   const [ratings, setRating] = useFeedbackMap('Finding', topicId);
@@ -57,10 +77,14 @@ export default function FindingsTable({ topicId = null, runId = null, tableKey =
       filter: { type: 'text', param: 'search', placeholder: t('findings.searchPlaceholder') },
       render: (r) => (
         <span className="date-cell finding-cell">
-          <strong>{r.title}</strong>
+          <strong className="finding-title-cell">
+            {r.pinned ? <Pin size={13} className="pin-marker" aria-label={t('findings.pinnedMarker')} role="img" /> : null}
+            {r.title}
+          </strong>
           {r.summary ? <span className="muted small finding-summary-cell">{r.summary}</span> : null}
-          {r.isDuplicate || r.isDryRun ? (
+          {r.isDuplicate || r.isDryRun || r.hidden ? (
             <span className="chip-list">
+              {r.hidden ? <StatusBadge tone="neutral">{t('findings.hiddenBadge')}</StatusBadge> : null}
               {r.isDuplicate ? <StatusBadge tone="warning">{t('findings.duplicate')}</StatusBadge> : null}
               {r.isDryRun ? <StatusBadge tone="info">{t('runs.dryRun')}</StatusBadge> : null}
             </span>
@@ -128,6 +152,14 @@ export default function FindingsTable({ topicId = null, runId = null, tableKey =
         <input type="checkbox" checked={includeDryRun} onChange={(e) => setIncludeDryRun(e.target.checked)} />
         {t('findings.includeDryRuns')}
       </label>
+      <label className="checkbox-row small">
+        <input type="checkbox" checked={includeHidden} onChange={(e) => setIncludeHidden(e.target.checked)} />
+        {t('findings.showHidden')}
+      </label>
+      <label className="checkbox-row small">
+        <input type="checkbox" checked={pinnedOnly} onChange={(e) => setPinnedOnly(e.target.checked)} />
+        {t('findings.pinnedOnly')}
+      </label>
     </span>
   );
 
@@ -139,23 +171,31 @@ export default function FindingsTable({ topicId = null, runId = null, tableKey =
         fetchPage={fetchPage}
         extraFilters={extraFilters}
         defaultSort={{ key: 'relevanceScore', direction: 'desc' }}
+        refreshSignal={refresh}
         onRowClick={(r) => setOpenId(r.id)}
         toolbar={toolbar}
-        rowActions={(r) => [
-          { key: 'view', label: t('common.view'), icon: Eye, onClick: () => setOpenId(r.id) },
-          { key: 'json', label: t('common.viewJson'), icon: Braces, onClick: () => setJson(r) }
-        ]}
+        rowActions={(r) => {
+          const [pin, hide, remove] = actions.actionsFor(r);
+          return [{ key: 'view', label: t('common.view'), icon: Eye, onClick: () => setOpenId(r.id) }, pin, hide, { key: 'json', label: t('common.viewJson'), icon: Braces, onClick: () => setJson(r) }, remove];
+        }}
         emptyTitle={t('findings.empty.title')}
         emptyMessage={topicId ? t('findings.empty.topicMessage') : t('findings.empty.message')}
       />
       <FindingDetailDrawer
         findingId={openId}
+        onChanged={bump}
+        onDeleted={() => {
+          setOpenId(null);
+          if (onFindingClosed) onFindingClosed();
+          bump();
+        }}
         onClose={() => {
           setOpenId(null);
           if (onFindingClosed) onFindingClosed();
         }}
       />
       <JsonViewerModal open={Boolean(json)} value={json} onClose={() => setJson(null)} />
+      {actions.modals}
     </>
   );
 }

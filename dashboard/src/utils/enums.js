@@ -72,6 +72,15 @@ export const FINDING_TIER_TONES = { MustRead: 'accent', WorthALook: 'success', F
 export const FINDING_CATEGORIES = ['News', 'Release', 'Research', 'Opinion', 'Tutorial', 'Data', 'Other'];
 export const EVIDENCE_ROLE_TONES = { Supports: 'success', Contradicts: 'danger', Context: 'neutral' };
 
+// CredentialAuthModeEnum: how an access key authenticates. DirectHeader (the default) and Hybrid accept everything.
+export const CREDENTIAL_AUTH_MODES = ['DirectHeader', 'SignedRequest', 'SessionExchange', 'Hybrid'];
+export const CREDENTIAL_AUTH_MODE_TONES = { DirectHeader: 'neutral', SignedRequest: 'accent', SessionExchange: 'info', Hybrid: 'neutral' };
+// Modes that accept x-access-key and x-secret-key on every request, which a Streamable HTTP MCP client sends.
+export const PER_REQUEST_AUTH_MODES = ['DirectHeader', 'Hybrid'];
+
+// FeedbackChannelEnum: where a rating came from.
+export const FEEDBACK_CHANNELS = ['Dashboard', 'Email', 'Mobile', 'Api', 'Mcp'];
+
 // Composite relevance components in display order, with the chart color for each.
 export const SCORE_COMPONENTS = [
   { key: 'llm', field: 'llmScore', color: 'var(--chart-series-1)' },

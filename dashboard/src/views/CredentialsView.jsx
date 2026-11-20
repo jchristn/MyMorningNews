@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useApp } from '../context/AppContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { pagedQuery } from '../utils/api.js';
+import { CREDENTIAL_AUTH_MODES, CREDENTIAL_AUTH_MODE_TONES } from '../utils/enums.js';
 import ConfirmModal from '../components/ConfirmModal.jsx';
 import CopyButton from '../components/CopyButton.jsx';
 import CopyableId from '../components/CopyableId.jsx';
@@ -19,6 +20,7 @@ import StatusBadge from '../components/StatusBadge.jsx';
 import TenantPicker, { useAdminTenant } from '../components/TenantPicker.jsx';
 
 const SCOPES = ['read', 'write', 'admin'];
+const DEFAULT_AUTH_MODE = 'DirectHeader';
 
 function toLocalInput(iso) {
   if (!iso) return '';
@@ -34,7 +36,7 @@ export default function CredentialsView() {
   const [tenantId, setTenantId] = useAdminTenant();
   const [users, setUsers] = useState([]);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: '', userId: '', scopes: [], expiresUtc: '', active: true });
+  const [form, setForm] = useState({ name: '', userId: '', authMode: DEFAULT_AUTH_MODE, scopes: [], expiresUtc: '', active: true });
   const [saveError, setSaveError] = useState(null);
   const [saving, setSaving] = useState(false);
   const [created, setCreated] = useState(null);
@@ -58,8 +60,8 @@ export default function CredentialsView() {
     setEditing(credential ? { mode: 'edit', id: credential.id } : { mode: 'create' });
     setForm(
       credential
-        ? { name: credential.name, userId: credential.userId, scopes: credential.scopes || [], expiresUtc: credential.expiresUtc || '', active: credential.active }
-        : { name: '', userId: identity && identity.tenantId === tenantId ? identity.userId : '', scopes: [], expiresUtc: '', active: true }
+        ? { name: credential.name, userId: credential.userId, authMode: credential.authMode || DEFAULT_AUTH_MODE, scopes: credential.scopes || [], expiresUtc: credential.expiresUtc || '', active: credential.active }
+        : { name: '', userId: identity && identity.tenantId === tenantId ? identity.userId : '', authMode: DEFAULT_AUTH_MODE, scopes: [], expiresUtc: '', active: true }
     );
   }
 
@@ -69,7 +71,7 @@ export default function CredentialsView() {
     try {
       const body = { name: form.name, scopes: form.scopes, expiresUtc: form.expiresUtc || null };
       if (editing.mode === 'create') {
-        const result = await apiClient.createCredential(tenantId, { ...body, userId: form.userId || undefined });
+        const result = await apiClient.createCredential(tenantId, { ...body, userId: form.userId || undefined, authMode: form.authMode || DEFAULT_AUTH_MODE });
         setCreated(result);
       } else {
         await apiClient.updateCredential(tenantId, editing.id, { ...body, active: form.active });
@@ -89,6 +91,14 @@ export default function CredentialsView() {
     { key: 'accessKey', header: t('credentials.columns.accessKey'), className: 'cell-id', render: (r) => <CopyableId value={r.accessKey} labelKey="credentials.copyAccessKey" /> },
     { key: 'secret', header: t('credentials.columns.secret'), render: (r) => <span className="mono muted">{r.secretKeyPreview}</span> },
     { key: 'userId', header: t('credentials.columns.owner'), render: (r) => userEmail(r.userId) },
+    {
+      key: 'authMode',
+      header: t('credentials.columns.authMode'),
+      render: (r) => {
+        const mode = r.authMode || DEFAULT_AUTH_MODE;
+        return <StatusBadge tone={CREDENTIAL_AUTH_MODE_TONES[mode] || 'neutral'}>{t('credentials.authModes.' + mode, { defaultValue: mode })}</StatusBadge>;
+      }
+    },
     { key: 'scopes', header: t('credentials.columns.scopes'), render: (r) => (r.scopes && r.scopes.length > 0 ? r.scopes.join(', ') : <span className="muted">{t('credentials.allScopes')}</span>) },
     { key: 'active', header: t('credentials.columns.status'), filter: { type: 'boolean', param: 'active' }, render: (r) => <StatusBadge tone={r.active ? 'success' : 'neutral'}>{r.active ? t('common.active') : t('common.inactive')}</StatusBadge> },
     { key: 'lastUsedUtc', header: t('credentials.columns.lastUsed'), render: (r) => <DateCell value={r.lastUsedUtc} /> },
@@ -148,6 +158,20 @@ export default function CredentialsView() {
               {users.map((u) => (
                 <option key={u.id} value={u.id}>
                   {u.email}
+                </option>
+              ))}
+            </select>
+          </FormField>
+          <FormField
+            id="cred-auth-mode"
+            label={t('credentials.columns.authMode')}
+            help={(editing && editing.mode === 'edit' ? t('credentials.authModeFixed') + ' ' : '') + t('credentials.authModeHelp.' + (form.authMode || DEFAULT_AUTH_MODE))}
+            wide
+          >
+            <select id="cred-auth-mode" value={form.authMode} onChange={(e) => setForm({ ...form, authMode: e.target.value })} disabled={editing && editing.mode === 'edit'}>
+              {CREDENTIAL_AUTH_MODES.map((mode) => (
+                <option key={mode} value={mode}>
+                  {t('credentials.authModes.' + mode)}
                 </option>
               ))}
             </select>

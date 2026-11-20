@@ -91,3 +91,21 @@ export function weightsApplied(topic, body) {
   if (!topic) return false;
   return Object.entries(body).every(([field, value]) => topic[field] !== undefined && topic[field] !== null && Math.abs(Number(topic[field]) - value) < 0.0005);
 }
+
+// FeedbackReport.byChannelDay (key is the day, label is the channel) as stacked TimeChart input: day buckets (oldest
+// first) and one series per channel, in the given order and then any other channel alphabetically.
+export function channelDays(rows, order = []) {
+  const valid = (rows || []).filter((r) => /^\d{4}-\d{2}-\d{2}$/.test(String(r.key)) && r.label);
+  const days = [...new Set(valid.map((r) => String(r.key)))].sort();
+  const seen = [...new Set(valid.map((r) => String(r.label)))];
+  const channels = [...order.filter((c) => seen.includes(c)), ...seen.filter((c) => !order.includes(c)).sort()];
+  const buckets = days.map((day) => {
+    const start = new Date(day + 'T00:00:00Z');
+    return { startUtc: start.toISOString(), endUtc: new Date(start.getTime() + DAY_MS).toISOString() };
+  });
+  const series = channels.map((channel) => ({
+    channel,
+    values: days.map((day) => valid.filter((r) => String(r.key) === day && String(r.label) === channel).reduce((sum, r) => sum + (r.count || 0), 0))
+  }));
+  return { buckets, series };
+}

@@ -44,6 +44,9 @@ const VIEWS = {
   plans: lazy(() => import('./views/PlansView.jsx')),
   promoCodes: lazy(() => import('./views/PromoCodesView.jsx')),
   email: lazy(() => import('./views/EmailView.jsx')),
+  mcp: lazy(() => import('./views/McpView.jsx')),
+  insightsOverview: lazy(() => import('./views/insights/OverviewView.jsx')),
+  emailInsights: lazy(() => import('./views/insights/EmailInsightsView.jsx')),
   relevance: lazy(() => import('./views/insights/RelevanceView.jsx')),
   accuracy: lazy(() => import('./views/insights/AccuracyView.jsx')),
   feedback: lazy(() => import('./views/insights/FeedbackView.jsx')),
@@ -90,6 +93,7 @@ export function AppRoutes() {
         {ALL_ROUTES.map((route) => (
           <Route key={route.path} path={route.path + '/*'} element={<RouteElement route={route} />} />
         ))}
+        <Route path="insights" element={<Navigate to="/dashboard/insights/overview" replace />} />
         <Route path="request-history" element={<Navigate to="/dashboard/requests" replace />} />
         <Route path="api-explorer" element={<Navigate to="/dashboard/explorer" replace />} />
         <Route path="admin/assignments" element={<Navigate to="/dashboard/admin/roles" replace />} />

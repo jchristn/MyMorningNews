@@ -17,13 +17,14 @@ import LoadingState from '../../components/LoadingState.jsx';
 import Modal from '../../components/Modal.jsx';
 import StatusBadge from '../../components/StatusBadge.jsx';
 import EmailPreviewModal from '../email/EmailPreviewModal.jsx';
+import RunModelCalls from './RunModelCalls.jsx';
 import RunStages from './RunStages.jsx';
 import { RunQueriesTable, RunResultsTable } from './RunSearchTables.jsx';
 import { failedStages, findingsLink, isActiveRun, runDurationMs } from './runParts.js';
 
-const TABS = ['stages', 'queries', 'results', 'details'];
+const TABS = ['stages', 'queries', 'results', 'calls', 'details'];
 
-// Everything about one run: totals, the stage timeline, queries, results with dispositions, and provenance. It
+// Everything about one run: totals, the stage timeline, queries, results with dispositions, model calls, and provenance. It
 // refreshes while the run is queued or running.
 export default function RunDetailDrawer({ runId, topicLabel, onClose, onChanged }) {
   const { t } = useTranslation();
@@ -148,6 +149,7 @@ export default function RunDetailDrawer({ runId, topicLabel, onClose, onChanged 
           {tab === 'stages' ? stages ? <RunStages stages={stages} /> : <LoadingState /> : null}
           {tab === 'queries' ? <RunQueriesTable runId={run.id} /> : null}
           {tab === 'results' ? <RunResultsTable runId={run.id} /> : null}
+          {tab === 'calls' ? <RunModelCalls runId={run.id} /> : null}
           {tab === 'details' ? (
             <KeyValueGrid
               rows={[

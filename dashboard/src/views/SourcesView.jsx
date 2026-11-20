@@ -9,10 +9,12 @@ import DataTable from '../components/DataTable.jsx';
 import DateCell from '../components/DateCell.jsx';
 import JsonViewerModal from '../components/JsonViewerModal.jsx';
 import PageHeader from '../components/PageHeader.jsx';
+import RunCharts from './runs/RunCharts.jsx';
 import SourceDetailDrawer from './sources/SourceDetailDrawer.jsx';
 
 // Every page the research fetched for the caller's topics, newest first, with search and topic filters. ?runId=
-// scopes to one run and ?source= opens a source in the drawer with its full text.
+// scopes to one run and ?source= opens a source in the drawer with its full text. Above the table: sources examined,
+// fetched, and used per run (chart 23), for the selected topic.
 export default function SourcesView() {
   const { t } = useTranslation();
   const { apiClient } = useAuth();
@@ -100,6 +102,7 @@ export default function SourcesView() {
   return (
     <div className="page">
       <PageHeader title={t('nav.items.sources')} summary={t('routes.sources.summary')} />
+      <RunCharts charts={['sources']} topicId={topicId} rangeStorage="mymorningnews.sources.runCharts" />
       <section className="panel">
         <DataTable
           key={runId || 'all'}

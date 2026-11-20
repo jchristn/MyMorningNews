@@ -3951,5 +3951,59 @@
       "none": "Aún no hay proveedores de búsqueda configurados.",
       "useDefaults": "Usar los predeterminados"
     }
+  },
+  "runCharts": {
+    "topic": "Tema",
+    "status": {
+      "title": "Ejecuciones a lo largo del tiempo por estado",
+      "help": "Ejecuciones de cada día, según cómo terminaron.",
+      "total": "Total de ejecuciones: {count, number}"
+    },
+    "stages": {
+      "title": "Duración de las ejecuciones por etapa",
+      "help": "Las barras muestran la mediana (p50); las líneas llegan al percentil 95 (p95).",
+      "pair": "{p50} / {p95}",
+      "p50": "Mediana (p50)",
+      "p95": "Percentil 95 (p95)",
+      "mean": "Media",
+      "max": "Más larga",
+      "count": "Etapas medidas",
+      "failed": "Fallidas"
+    },
+    "tiers": {
+      "title": "Hallazgos por ejecución y nivel",
+      "help": "Las ejecuciones más recientes del periodo, sin duplicados. Selecciona una ejecución para ver sus hallazgos."
+    },
+    "scores": {
+      "title": "Distribución de la puntuación de relevancia",
+      "help": "Hallazgos según su puntuación de relevancia compuesta, sin duplicados.",
+      "bucket": "{from, number} a {to, number}",
+      "findings": "Hallazgos"
+    },
+    "activity": {
+      "title": "Actividad por día y hora",
+      "help": "Ejecuciones iniciadas en cada hora de la semana, en {zone}."
+    },
+    "novelty": {
+      "title": "Tendencia de novedad",
+      "help": "Proporción de candidatos de cada ejecución que repetían hallazgos anteriores. Cuanto más baja, más novedad.",
+      "share": "Proporción de duplicados",
+      "duplicates": "Duplicados",
+      "newFindings": "Hallazgos nuevos"
+    },
+    "sources": {
+      "title": "Fuentes examinadas, descargadas y usadas",
+      "help": "Para las ejecuciones más recientes: resultados de búsqueda examinados, páginas descargadas y fuentes detrás de un hallazgo que se te mostró. Selecciona una ejecución para ver sus fuentes.",
+      "used": "Usada en un hallazgo",
+      "fetchedOnly": "Descargada, sin usar",
+      "examinedOnly": "Examinada, sin descargar",
+      "examined": "Examinadas",
+      "fetched": "Descargadas"
+    },
+    "providers": {
+      "title": "Rendimiento de los proveedores de búsqueda",
+      "help": "Proporción de los resultados de cada proveedor que llevaron a un hallazgo en el umbral de visualización o por encima.",
+      "label": "{provider} ({used} de {results})"
+    }
   }
 }

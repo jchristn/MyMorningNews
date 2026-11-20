@@ -4,7 +4,8 @@ import { useLocale } from '../i18n/index.js';
 import { formatNumber } from '../i18n/formatters.js';
 import ChartTooltip from './ChartTooltip.jsx';
 
-// Grid of cells shaded by value (for example activity by day and hour).
+// Grid of cells shaded by value (for example activity by day and hour). Every cell is a button with a tooltip on hover
+// and on keyboard focus.
 export default function HeatmapChart({ rows, columns, ariaLabel, formatValue, onCellClick }) {
   const { locale } = useLocale();
   const [tip, setTip] = useState(null);
@@ -37,6 +38,11 @@ export default function HeatmapChart({ rows, columns, ariaLabel, formatValue, on
                 aria-label={r.label + ', ' + columns[i].label + ': ' + fmt(v)}
                 onMouseMove={(e) => setTip({ x: e.clientX, y: e.clientY, title: r.label + ', ' + columns[i].label, lines: [{ label: '', value: fmt(v) }] })}
                 onMouseLeave={() => setTip(null)}
+                onFocus={(e) => {
+                  const box = e.currentTarget.getBoundingClientRect();
+                  setTip({ x: box.left + box.width / 2, y: box.top, title: r.label + ', ' + columns[i].label, lines: [{ label: '', value: fmt(v) }] });
+                }}
+                onBlur={() => setTip(null)}
                 onClick={() => onCellClick && onCellClick(r, columns[i], v)}
               />
             );

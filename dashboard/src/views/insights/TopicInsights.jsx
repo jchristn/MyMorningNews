@@ -11,6 +11,7 @@ import ErrorState from '../../components/ErrorState.jsx';
 import KpiTile from '../../components/KpiTile.jsx';
 import LoadingState from '../../components/LoadingState.jsx';
 import { WEIGHT_FIELDS, rateBars, weightsApplied, weightsBody } from './insightsData.js';
+import RunCharts from '../runs/RunCharts.jsx';
 import { RateChart, pctOrDash, useReport } from './insightsParts.jsx';
 
 // Suggested ranking weights from your ratings (GET /topics/{id}/ranking-recommendation), with Apply these weights,
@@ -121,7 +122,8 @@ export function RankingRecommendation({ topic, onTopicUpdated }) {
 
 RankingRecommendation.propTypes = { topic: PropTypes.object.isRequired, onTopicUpdated: PropTypes.func };
 
-// The topic Analytics tab: ranking recommendation, relevance and accuracy for this topic, and precision by dimension.
+// The topic Analytics tab: ranking recommendation, relevance and accuracy for this topic, precision by dimension, and
+// the run charts (findings per run by tier, activity by day and hour, and the novelty trend).
 export default function TopicInsights({ topic, onTopicUpdated }) {
   const { t } = useTranslation();
   const f = useFormat();
@@ -156,6 +158,7 @@ export default function TopicInsights({ topic, onTopicUpdated }) {
           <RateChart items={rateBars(r && r.byTier, (row) => t('enums.findingTier.' + row.key, { defaultValue: row.key }))} ariaLabel={t('insights.relevance.byTier')} loading={relevance.loading} />
         </ChartCard>
       </div>
+      <RunCharts charts={['tiers', 'novelty', 'activity']} topicId={topic.id} rangeStorage="mymorningnews.topic.runCharts" defaultRange="quarter" />
     </div>
   );
 }

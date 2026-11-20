@@ -27,6 +27,7 @@ All notable changes to this project are documented here. The project follows [Se
 
 ### Added
 
+- Run analytics (plan section 25.6, charts 2 to 5 and 21 to 24): `GET /v1.0/api/analytics/runs` reports runs by day and status, stage duration p50 and p95, findings per run by tier, duplicate share, sources examined, fetched, and used, the relevance score histogram, activity by day of week and hour in the caller's time zone, and search provider yield. The dashboard draws them on Home, Runs, Health, Findings, Relevance, the topic Analytics tab, Sources, and Search Providers.
 - Hosted accounts: public sign-up with a personal tenant (`POST /v1.0/public/signup`), email verification and resend, sign-in refused until verified, forgot and reset password, welcome, password changed, and deletion emails, optional Cloudflare Turnstile, per-address rate limits, and a disposable-domain block list.
 - Account deletion with a 7-day grace period (signing in cancels it) and a purge in the retention worker; `GET /v1.0/api/account/export` (ZIP of JSON and Markdown); `GET /v1.0/api/account/usage` (the usage meter).
 - Plan limits enforced as `402 CapReached` with key, limit, and reset time: the monthly model cost cap (before every model call and run), daily runs, topic count, the shortest schedule, audio minutes, and custom model endpoints. Scheduled runs over a limit are recorded as Skipped with the reason.

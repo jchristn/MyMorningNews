@@ -3951,5 +3951,59 @@
       "none": "Belum ada penyedia carian disediakan.",
       "useDefaults": "Guna lalai"
     }
+  },
+  "runCharts": {
+    "topic": "Topik",
+    "status": {
+      "title": "Larian dari semasa ke semasa mengikut status",
+      "help": "Larian setiap hari, mengikut cara ia berakhir.",
+      "total": "Jumlah larian: {count, number}"
+    },
+    "stages": {
+      "title": "Tempoh larian mengikut peringkat",
+      "help": "Bar menunjukkan median (p50); garis mencapai persentil ke-95 (p95).",
+      "pair": "{p50} / {p95}",
+      "p50": "Median (p50)",
+      "p95": "Persentil ke-95 (p95)",
+      "mean": "Purata",
+      "max": "Paling lama",
+      "count": "Peringkat diukur",
+      "failed": "Gagal"
+    },
+    "tiers": {
+      "title": "Dapatan setiap larian mengikut tahap",
+      "help": "Larian terkini dalam julat, tanpa pendua. Pilih larian untuk melihat dapatannya."
+    },
+    "scores": {
+      "title": "Taburan skor relevan",
+      "help": "Dapatan mengikut skor relevan komposit, tanpa pendua.",
+      "bucket": "{from, number} hingga {to, number}",
+      "findings": "Dapatan"
+    },
+    "activity": {
+      "title": "Aktiviti mengikut hari dan jam",
+      "help": "Larian yang bermula pada setiap jam dalam seminggu, dalam {zone}."
+    },
+    "novelty": {
+      "title": "Trend kebaharuan",
+      "help": "Bahagian calon setiap larian yang mengulangi dapatan terdahulu. Lebih rendah bermakna lebih baharu.",
+      "share": "Bahagian pendua",
+      "duplicates": "Pendua",
+      "newFindings": "Dapatan baharu"
+    },
+    "sources": {
+      "title": "Sumber yang diperiksa, diambil dan digunakan",
+      "help": "Untuk larian terkini: hasil carian yang diperiksa, halaman yang diambil dan sumber di sebalik dapatan yang ditunjukkan kepada anda. Pilih larian untuk melihat sumbernya.",
+      "used": "Digunakan dalam dapatan",
+      "fetchedOnly": "Diambil, tidak digunakan",
+      "examinedOnly": "Diperiksa, tidak diambil",
+      "examined": "Diperiksa",
+      "fetched": "Diambil"
+    },
+    "providers": {
+      "title": "Hasil penyedia carian",
+      "help": "Bahagian hasil setiap penyedia yang membawa kepada dapatan pada atau melebihi ambang paparan.",
+      "label": "{provider} ({used} daripada {results})"
+    }
   }
 }

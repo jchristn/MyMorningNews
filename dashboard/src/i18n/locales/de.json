@@ -3951,5 +3951,59 @@
       "none": "Es sind noch keine Suchanbieter eingerichtet.",
       "useDefaults": "Standardwerte verwenden"
     }
+  },
+  "runCharts": {
+    "topic": "Thema",
+    "status": {
+      "title": "Läufe im Zeitverlauf nach Status",
+      "help": "Läufe pro Tag, nach ihrem Ausgang.",
+      "total": "Läufe gesamt: {count, number}"
+    },
+    "stages": {
+      "title": "Laufdauer nach Phase",
+      "help": "Balken zeigen den Median (p50); Linien reichen bis zum 95. Perzentil (p95).",
+      "pair": "{p50} / {p95}",
+      "p50": "Median (p50)",
+      "p95": "95. Perzentil (p95)",
+      "mean": "Durchschnitt",
+      "max": "Längste",
+      "count": "Gemessene Phasen",
+      "failed": "Fehlgeschlagen"
+    },
+    "tiers": {
+      "title": "Erkenntnisse pro Lauf nach Stufe",
+      "help": "Die neuesten Läufe im Zeitraum, ohne Duplikate. Wählen Sie einen Lauf, um seine Erkenntnisse zu sehen."
+    },
+    "scores": {
+      "title": "Verteilung der Relevanzwerte",
+      "help": "Erkenntnisse nach zusammengesetztem Relevanzwert, ohne Duplikate.",
+      "bucket": "{from, number} bis {to, number}",
+      "findings": "Erkenntnisse"
+    },
+    "activity": {
+      "title": "Aktivität nach Tag und Stunde",
+      "help": "Gestartete Läufe in jeder Stunde der Woche, in {zone}."
+    },
+    "novelty": {
+      "title": "Neuheitstrend",
+      "help": "Anteil der Kandidaten jedes Laufs, die frühere Erkenntnisse wiederholten. Je niedriger, desto neuer.",
+      "share": "Duplikatanteil",
+      "duplicates": "Duplikate",
+      "newFindings": "Neue Erkenntnisse"
+    },
+    "sources": {
+      "title": "Geprüfte, abgerufene und verwendete Quellen",
+      "help": "Für die neuesten Läufe: geprüfte Suchergebnisse, abgerufene Seiten und Quellen hinter einer Erkenntnis, die Ihnen angezeigt wurde. Wählen Sie einen Lauf, um seine Quellen zu sehen.",
+      "used": "In einer Erkenntnis verwendet",
+      "fetchedOnly": "Abgerufen, nicht verwendet",
+      "examinedOnly": "Geprüft, nicht abgerufen",
+      "examined": "Geprüft",
+      "fetched": "Abgerufen"
+    },
+    "providers": {
+      "title": "Ertrag der Suchanbieter",
+      "help": "Anteil der Ergebnisse jedes Anbieters, die zu einer Erkenntnis auf oder über dem Anzeigeschwellenwert führten.",
+      "label": "{provider} ({used} von {results})"
+    }
   }
 }

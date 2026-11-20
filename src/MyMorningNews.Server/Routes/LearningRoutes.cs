@@ -6,6 +6,7 @@ namespace MyMorningNews.Server.Routes
     using System.Threading.Tasks;
     using MyMorningNews.Core.Analytics;
     using MyMorningNews.Core.Enums;
+    using MyMorningNews.Core.Helpers;
     using MyMorningNews.Core.Models;
     using MyMorningNews.Core.Requests;
     using MyMorningNews.Core.Responses;
@@ -59,6 +60,13 @@ namespace MyMorningNews.Server.Routes
                     .WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("from", typeof(DateTime))).WithParameter(QueryParam("to", typeof(DateTime)))
                     .WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("all", typeof(bool))));
             }
+
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, a2 + "runs", RunsReportAsync, null, openApiMetadata: Doc("Runs analytics", "Analytics",
+                "Runs by day and status, stage duration p50 and p95, findings by tier, duplicate share, and sources examined, fetched, and used per run, the relevance score histogram, "
+                + "runs by day of week and hour, and search provider yield. Dry runs are excluded. Days and hours use timeZone (IANA), else my profile's time zone, else UTC. "
+                + "Defaults: my data for the last 90 days. Administrators can pass userId or omit it with all=true for the tenant.")
+                .WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("from", typeof(DateTime))).WithParameter(QueryParam("to", typeof(DateTime)))
+                .WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("all", typeof(bool))).WithParameter(QueryParam("timeZone", typeof(string))));
         }
 
         private async Task ListAsync(HttpContextBase ctx)
@@ -219,21 +227,8 @@ namespace MyMorningNews.Server.Routes
 
         private async Task ReportAsync(HttpContextBase ctx, string report)
         {
-            if (!await AuthorizeAsync(ctx, RequestTypeEnum.AnalyticsRead).ConfigureAwait(false)) return;
-            string? tenantId = await RequireTenantAsync(ctx).ConfigureAwait(false);
-            if (tenantId == null) return;
-            RequestContext rc = Context(ctx);
-            bool admin = rc.IsAdmin || rc.IsTenantAdmin;
-            string? userId = admin ? (QueryBool(ctx, "all") == true ? null : Query(ctx, "userId") ?? rc.UserId) : rc.UserId;
-            string? topicId = Query(ctx, "topicId");
-            if (topicId != null)
-            {
-                Topic? topic = await Server.Database.Topics.ReadAsync(tenantId, topicId, ctx.Token).ConfigureAwait(false);
-                if (topic == null || !IsOwnerOrAdmin(ctx, topic.UserId)) { await SendNotFoundAsync(ctx, "Topic").ConfigureAwait(false); return; }
-            }
-
-            DateTime to = QueryDate(ctx, "to") ?? DateTime.UtcNow;
-            AnalyticsScope scope = new AnalyticsScope { TenantId = tenantId, UserId = userId, TopicId = topicId, FromUtc = QueryDate(ctx, "from") ?? to.AddDays(-90), ToUtc = to };
+            AnalyticsScope? scope = await ScopeAsync(ctx).ConfigureAwait(false);
+            if (scope == null) return;
             object result = report switch
             {
                 "overview" => await Server.Analytics.OverviewAsync(scope, ctx.Token).ConfigureAwait(false),
@@ -246,6 +241,42 @@ namespace MyMorningNews.Server.Routes
                 _ => await Server.Analytics.QualityAsync(scope, ctx.Token).ConfigureAwait(false)
             };
             await SendJsonAsync(ctx, 200, result).ConfigureAwait(false);
+        }
+
+        private async Task RunsReportAsync(HttpContextBase ctx)
+        {
+            AnalyticsScope? scope = await ScopeAsync(ctx).ConfigureAwait(false);
+            if (scope == null) return;
+            string? timeZone = Query(ctx, "timeZone");
+            string? invalid = TimeZoneHelper.Validate(timeZone);
+            if (invalid != null) { await SendErrorAsync(ctx, 400, "ValidationFailed", invalid).ConfigureAwait(false); return; }
+            string? callerId = Context(ctx).UserId;
+            if (String.IsNullOrWhiteSpace(timeZone) && callerId != null)
+            {
+                User? caller = await Server.Database.Users.ReadAsync(scope.TenantId, callerId, ctx.Token).ConfigureAwait(false);
+                timeZone = caller?.TimeZone;
+            }
+
+            await SendJsonAsync(ctx, 200, await Server.RunAnalytics.RunsAsync(scope, timeZone, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async Task<AnalyticsScope?> ScopeAsync(HttpContextBase ctx)
+        {
+            if (!await AuthorizeAsync(ctx, RequestTypeEnum.AnalyticsRead).ConfigureAwait(false)) return null;
+            string? tenantId = await RequireTenantAsync(ctx).ConfigureAwait(false);
+            if (tenantId == null) return null;
+            RequestContext rc = Context(ctx);
+            bool admin = rc.IsAdmin || rc.IsTenantAdmin;
+            string? userId = admin ? (QueryBool(ctx, "all") == true ? null : Query(ctx, "userId") ?? rc.UserId) : rc.UserId;
+            string? topicId = Query(ctx, "topicId");
+            if (topicId != null)
+            {
+                Topic? topic = await Server.Database.Topics.ReadAsync(tenantId, topicId, ctx.Token).ConfigureAwait(false);
+                if (topic == null || !IsOwnerOrAdmin(ctx, topic.UserId)) { await SendNotFoundAsync(ctx, "Topic").ConfigureAwait(false); return null; }
+            }
+
+            DateTime to = QueryDate(ctx, "to") ?? DateTime.UtcNow;
+            return new AnalyticsScope { TenantId = tenantId, UserId = userId, TopicId = topicId, FromUtc = QueryDate(ctx, "from") ?? to.AddDays(-90), ToUtc = to };
         }
 
         private async Task<string?> TopicAsync(HttpContextBase ctx, string tenantId, string userId, string? topicId)

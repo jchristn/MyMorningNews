@@ -2,18 +2,21 @@ namespace Test.Shared.Suites
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Net.Http;
     using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
     using MyMorningNews.Core.Analytics;
+    using MyMorningNews.Core.Database;
     using MyMorningNews.Core.Enums;
     using MyMorningNews.Core.Models;
     using MyMorningNews.Core.Models.Results;
     using MyMorningNews.Core.Pipeline;
     using MyMorningNews.Core.Requests;
     using MyMorningNews.Core.Responses;
+    using MyMorningNews.Server;
     using Test.Shared.Helpers;
     using Touchstone.Core;
 
@@ -40,7 +43,8 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "Preferences", "Preferences are written, edited, accepted, disabled, and kept private", PreferencesAsync),
                 Cases.Case(S, "EmailProposals", "Proposals appear in the next digest and Apply from email makes them active", EmailProposalsAsync),
                 Cases.Case(S, "FeedbackEdits", "Feedback reasons can be edited and a retraction restores the earlier rating", FeedbackEditsAsync),
-                Cases.Case(S, "Analytics", "Overview, relevance, accuracy, feedback, suggestions, reasons, quality, and ranking reports reflect the data", AnalyticsAsync)
+                Cases.Case(S, "Analytics", "Overview, relevance, accuracy, feedback, suggestions, reasons, quality, and ranking reports reflect the data", AnalyticsAsync),
+                Cases.Case(S, "RunsAnalytics", "The runs report counts runs by day, status, and hour, stage percentiles, tiers, duplicates, sources, scores, and provider yield, scoped to the caller", RunsAnalyticsAsync)
             });
         }
 
@@ -242,6 +246,130 @@ namespace Test.Shared.Suites
             TestUser other = await TestFixtures.CreateUserAsync(await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false), f.Topic.TenantId, false, token).ConfigureAwait(false);
             Assert.Equal(0, (await other.Client.GetAsync("/v1.0/api/analytics/relevance", token).ConfigureAwait(false)).Json<RelevanceReport>().Rated, "another member sees only their own");
             (await other.Client.GetAsync("/v1.0/api/analytics/relevance" + q, token).ConfigureAwait(false)).Expect(404, "not someone else's topic");
+        }
+
+        private static async Task RunsAnalyticsAsync(CancellationToken token)
+        {
+            TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
+            Tenant tenant = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
+            TestUser a = await TestFixtures.CreateUserAsync(admin, tenant.Id, false, token).ConfigureAwait(false);
+            TestUser b = await TestFixtures.CreateUserAsync(admin, tenant.Id, false, token).ConfigureAwait(false);
+            TestUser boss = await TestFixtures.CreateUserAsync(admin, tenant.Id, true, token).ConfigureAwait(false);
+            Topic topicA = (await a.Client.PostAsync("/v1.0/api/topics", new { name = "Runs A", brief = "Brief.", status = "Active" }, token).ConfigureAwait(false)).Expect(201, "topic a").Json<Topic>();
+            Topic topicB = (await b.Client.PostAsync("/v1.0/api/topics", new { name = "Runs B", brief = "Brief.", status = "Active" }, token).ConfigureAwait(false)).Expect(201, "topic b").Json<Topic>();
+            MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+            DatabaseDriverBase db = server.Context.Database;
+            string t = tenant.Id;
+
+            Run run1 = await db.Runs.CreateAsync(new Run { TenantId = t, TopicId = topicA.Id, UserId = a.User.Id, Status = RunStatusEnum.Completed, DurationMs = 1000, NewFindingCount = 3, DuplicateCount = 1, SourceCount = 3 }, token).ConfigureAwait(false);
+            Run run2 = await db.Runs.CreateAsync(new Run { TenantId = t, TopicId = topicA.Id, UserId = a.User.Id, Status = RunStatusEnum.Failed, DurationMs = 300 }, token).ConfigureAwait(false);
+            Run run3 = await db.Runs.CreateAsync(new Run { TenantId = t, TopicId = topicA.Id, UserId = a.User.Id, Status = RunStatusEnum.Completed, DurationMs = 800, NewFindingCount = 1, DuplicateCount = 3, SourceCount = 2 }, token).ConfigureAwait(false);
+            Run dry = await db.Runs.CreateAsync(new Run { TenantId = t, TopicId = topicA.Id, UserId = a.User.Id, Status = RunStatusEnum.Completed, IsDryRun = true }, token).ConfigureAwait(false);
+            Run runB = await db.Runs.CreateAsync(new Run { TenantId = t, TopicId = topicB.Id, UserId = b.User.Id, Status = RunStatusEnum.Completed }, token).ConfigureAwait(false);
+
+            await db.RunStages.CreateAsync(new RunStage { TenantId = t, RunId = run1.Id, Stage = "Search", Status = StageStatusEnum.Succeeded, DurationMs = 100, ItemsIn = 2, ItemsOut = 4, SortOrder = 2 }, token).ConfigureAwait(false);
+            await db.RunStages.CreateAsync(new RunStage { TenantId = t, RunId = run1.Id, Stage = "Fetch", Status = StageStatusEnum.Succeeded, DurationMs = 400, ItemsIn = 4, ItemsOut = 3, SortOrder = 4 }, token).ConfigureAwait(false);
+            await db.RunStages.CreateAsync(new RunStage { TenantId = t, RunId = run1.Id, Stage = "Notify", Status = StageStatusEnum.Skipped, SortOrder = 14 }, token).ConfigureAwait(false);
+            await db.RunStages.CreateAsync(new RunStage { TenantId = t, RunId = run2.Id, Stage = "Search", Status = StageStatusEnum.Failed, DurationMs = 300, SortOrder = 2 }, token).ConfigureAwait(false);
+            await db.RunStages.CreateAsync(new RunStage { TenantId = t, RunId = dry.Id, Stage = "Search", Status = StageStatusEnum.Succeeded, DurationMs = 9000, SortOrder = 2 }, token).ConfigureAwait(false);
+            await db.RunStages.CreateAsync(new RunStage { TenantId = t, RunId = runB.Id, Stage = "Search", Status = StageStatusEnum.Succeeded, DurationMs = 9000, SortOrder = 2 }, token).ConfigureAwait(false);
+
+            List<SourceItem> sources = new List<SourceItem>();
+            for (int i = 0; i < 3; i++)
+            {
+                string hash = Guid.NewGuid().ToString("N");
+                sources.Add(await db.SourceItems.CreateAsync(new SourceItem { TenantId = t, CanonicalUrl = "https://example.test/" + hash, CanonicalUrlHash = hash, Domain = "example.test" }, token).ConfigureAwait(false));
+            }
+
+            SearchQuery q1 = await db.SearchQueries.CreateAsync(new SearchQuery { TenantId = t, RunId = run1.Id, TopicId = topicA.Id, QueryText = "heat pumps" }, token).ConfigureAwait(false);
+            SearchQuery q3 = await db.SearchQueries.CreateAsync(new SearchQuery { TenantId = t, RunId = run3.Id, TopicId = topicA.Id, QueryText = "heat pumps" }, token).ConfigureAwait(false);
+            await ResultAsync(db, q1, "SearXNG", SearchResultDispositionEnum.Fetched, sources[0].Id, token).ConfigureAwait(false);
+            await ResultAsync(db, q1, "SearXNG", SearchResultDispositionEnum.Fetched, sources[1].Id, token).ConfigureAwait(false);
+            await ResultAsync(db, q1, "Rss", SearchResultDispositionEnum.Fetched, sources[0].Id, token).ConfigureAwait(false);
+            await ResultAsync(db, q1, "Rss", SearchResultDispositionEnum.FetchFailed, null, token).ConfigureAwait(false);
+            await ResultAsync(db, q3, "SearXNG", SearchResultDispositionEnum.Fetched, sources[2].Id, token).ConfigureAwait(false);
+            await ResultAsync(db, q3, "SearXNG", SearchResultDispositionEnum.SkippedSeen, null, token).ConfigureAwait(false);
+
+            await SeedFindingAsync(db, run1, sources[0].Id, FindingTierEnum.MustRead, 85, false, token).ConfigureAwait(false);
+            await SeedFindingAsync(db, run1, sources[0].Id, FindingTierEnum.WorthALook, 72, false, token).ConfigureAwait(false);
+            await SeedFindingAsync(db, run1, sources[1].Id, FindingTierEnum.Fyi, 55, false, token).ConfigureAwait(false);
+            await SeedFindingAsync(db, run1, sources[1].Id, FindingTierEnum.BelowThreshold, 20, false, token).ConfigureAwait(false);
+            await SeedFindingAsync(db, run1, sources[2].Id, FindingTierEnum.BelowThreshold, 0, true, token).ConfigureAwait(false);
+            await SeedFindingAsync(db, run3, sources[2].Id, FindingTierEnum.BelowThreshold, 35, false, token).ConfigureAwait(false);
+            await SeedFindingAsync(db, dry, sources[0].Id, FindingTierEnum.MustRead, 99, false, token).ConfigureAwait(false);
+
+            const string zone = "America/New_York";
+            DateTime to = DateTime.UtcNow.AddMinutes(1);
+            DateTime from = to.AddDays(-7);
+            string range = "from=" + Uri.EscapeDataString(from.ToString("o", CultureInfo.InvariantCulture)) + "&to=" + Uri.EscapeDataString(to.ToString("o", CultureInfo.InvariantCulture));
+            RunsReport r = (await a.Client.GetAsync("/v1.0/api/analytics/runs?" + range + "&timeZone=" + Uri.EscapeDataString(zone), token).ConfigureAwait(false)).Expect(200, "runs report").Json<RunsReport>();
+            Assert.True(r.TimeZone == zone && r.Total == 3 && r.ByStatus.Count == Enum.GetValues<RunStatusEnum>().Length && r.ByStatus["Completed"] == 2 && r.ByStatus["Failed"] == 1 && r.ByStatus["Queued"] == 0,
+                "totals by status, dry runs and other members excluded: " + r.Total);
+
+            TimeZoneInfo tz = TimeZoneInfo.FindSystemTimeZoneById(zone);
+            DateTime localNow = TimeZoneInfo.ConvertTimeFromUtc(run1.CreatedUtc, tz);
+            string today = localNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            int expectedDays = (TimeZoneInfo.ConvertTimeFromUtc(to, tz).Date - TimeZoneInfo.ConvertTimeFromUtc(from, tz).Date).Days + 1;
+            RunDayRow day = r.ByDay.Single(d => d.Day == today);
+            Assert.True(r.ByDay.Count == expectedDays && r.ByDay.Sum(d => d.Total) == 3 && day.Total == 3 && day.Counts["Completed"] == 2 && day.Counts["Failed"] == 1
+                && r.ByDay.All(d => d.Counts.Count == r.ByStatus.Count) && r.ByDay.Zip(r.ByDay.Skip(1), (x, y) => x.EndUtc == y.StartUtc).All(ok => ok),
+                "gap-filled local days: " + r.ByDay.Count + " of " + expectedDays);
+            ActivityCell cell = r.Activity.Single(c => c.DayOfWeek == (int)localNow.DayOfWeek && c.Hour == localNow.Hour);
+            Assert.True(r.Activity.Count == 168 && r.Activity.Sum(c => c.Count) == 3 && cell.Count >= 1, "activity by local day and hour");
+
+            StageDurationRow search = r.Stages.Single(s => s.Stage == "Search");
+            StageDurationRow fetch = r.Stages.Single(s => s.Stage == "Fetch");
+            Assert.True(r.Stages.Count == 2 && r.Stages[0].Stage == "Search" && search.Count == 2 && search.Failed == 1 && search.P50Ms == 200 && search.P95Ms == 290 && search.MeanMs == 200 && search.MaxMs == 300
+                && fetch.Count == 1 && fetch.P50Ms == 400 && fetch.P95Ms == 400, "stage percentiles: search p50 " + search.P50Ms + " p95 " + search.P95Ms);
+
+            Assert.True(r.Runs.Count == 3 && !r.RunsTruncated && r.Runs[0].RunId == run1.Id && r.Runs[2].RunId == run3.Id && r.Runs[0].TopicName == "Runs A", "runs oldest first");
+            RunPointRow p1 = r.Runs[0];
+            RunPointRow p2 = r.Runs[1];
+            RunPointRow p3 = r.Runs[2];
+            Assert.True(p1.Tiers["MustRead"] == 1 && p1.Tiers["WorthALook"] == 1 && p1.Tiers["Fyi"] == 1 && p1.Tiers["BelowThreshold"] == 1 && p3.Tiers["BelowThreshold"] == 1 && p2.Tiers.Values.Sum() == 0,
+                "findings by tier, duplicates excluded");
+            Assert.True(p1.DuplicateShare == 0.25 && p2.DuplicateShare == null && p3.DuplicateShare == 0.75 && p1.Duplicates == 1 && p1.NewFindings == 3, "duplicate share");
+            Assert.True(p1.Examined == 4 && p1.Fetched == 3 && p1.Used == 2 && p3.Examined == 2 && p3.Fetched == 2 && p3.Used == 0 && p2.Examined == 0,
+                "sources examined, fetched, and used: " + p1.Examined + "/" + p1.Fetched + "/" + p1.Used + ", " + p3.Examined + "/" + p3.Fetched + "/" + p3.Used);
+
+            Assert.True(r.ScoreHistogram.Count == 10 && r.ScoreHistogram.Sum(x => x.Count) == 5 && r.ScoreHistogram[8].Count == 1 && r.ScoreHistogram[7].Count == 1 && r.ScoreHistogram[5].Count == 1
+                && r.ScoreHistogram[3].Count == 1 && r.ScoreHistogram[2].Count == 1 && r.ScoreHistogram[9].Count == 0 && r.ScoreHistogram[9].Upper == 100, "relevance score histogram");
+
+            Assert.True(r.Providers.Count == 2 && r.Providers[0].Provider == "SearXNG" && r.Providers[1].Provider == "Rss", "providers by results");
+            ProviderYieldRow searx = r.Providers[0];
+            ProviderYieldRow rss = r.Providers[1];
+            Assert.True(searx.Results == 4 && searx.Fetched == 3 && searx.Used == 2 && searx.Findings == 3 && searx.Yield == 0.5
+                && rss.Results == 2 && rss.Fetched == 1 && rss.Used == 1 && rss.Findings == 2 && rss.Yield == 0.5,
+                "provider yield: " + searx.Results + "/" + searx.Used + "/" + searx.Findings + ", " + rss.Results + "/" + rss.Used + "/" + rss.Findings);
+
+            RunsReport topic = (await a.Client.GetAsync("/v1.0/api/analytics/runs?topicId=" + topicA.Id, token).ConfigureAwait(false)).Expect(200, "topic runs").Json<RunsReport>();
+            Assert.True(topic.Total == 3 && topic.TimeZone == "UTC" && topic.ByDay.Count >= 90, "topic scope with the UTC and 90-day defaults");
+            (await a.Client.GetAsync("/v1.0/api/analytics/runs?timeZone=Nowhere%2FCity", token).ConfigureAwait(false)).Expect(400, "unknown time zone");
+            Assert.Equal(1, (await b.Client.GetAsync("/v1.0/api/analytics/runs", token).ConfigureAwait(false)).Expect(200, "member b").Json<RunsReport>().Total, "another member sees only their own");
+            (await b.Client.GetAsync("/v1.0/api/analytics/runs?topicId=" + topicA.Id, token).ConfigureAwait(false)).Expect(404, "not someone else's topic");
+            Assert.Equal(0, (await boss.Client.GetAsync("/v1.0/api/analytics/runs", token).ConfigureAwait(false)).Json<RunsReport>().Total, "an administrator defaults to their own");
+            RunsReport all = (await boss.Client.GetAsync("/v1.0/api/analytics/runs?all=true", token).ConfigureAwait(false)).Expect(200, "tenant").Json<RunsReport>();
+            Assert.True(all.Total == 4 && all.Stages.Single(s => s.Stage == "Search").Count == 3, "an administrator sees the tenant with all=true");
+            Assert.Equal(3, (await boss.Client.GetAsync("/v1.0/api/analytics/runs?userId=" + a.User.Id, token).ConfigureAwait(false)).Json<RunsReport>().Total, "an administrator can pick a user");
+        }
+
+        private static async Task ResultAsync(DatabaseDriverBase db, SearchQuery query, string provider, SearchResultDispositionEnum disposition, string? sourceItemId, CancellationToken token)
+        {
+            string hash = Guid.NewGuid().ToString("N");
+            await db.SearchResults.CreateAsync(new SearchResult
+            {
+                TenantId = query.TenantId, SearchQueryId = query.Id, RunId = query.RunId, TopicId = query.TopicId, Url = "https://example.test/" + hash, CanonicalUrlHash = hash,
+                Provider = provider, Disposition = disposition, SourceItemId = sourceItemId
+            }, token).ConfigureAwait(false);
+        }
+
+        private static async Task SeedFindingAsync(DatabaseDriverBase db, Run run, string sourceItemId, FindingTierEnum tier, double score, bool duplicate, CancellationToken token)
+        {
+            await db.Findings.CreateAsync(new Finding
+            {
+                TenantId = run.TenantId, RunId = run.Id, TopicId = run.TopicId, UserId = run.UserId, SourceItemId = sourceItemId, Title = "Seeded " + tier + " " + score, Tier = tier, RelevanceScore = score,
+                IsDuplicate = duplicate, IsDryRun = run.IsDryRun
+            }, token).ConfigureAwait(false);
         }
     }
 }

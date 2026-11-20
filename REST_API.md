@@ -379,7 +379,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 
 ## Route reference
 
-292 routes in 45 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
+293 routes in 45 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
 
 | Group | Routes | What it covers |
 |---|---|---|
@@ -420,7 +420,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [Email](#email) | 8 | The email outbox, test and preview sends, resends, and the signed-in user's email preferences. |
 | [Feedback](#feedback) | 4 | Ratings and reasons on findings, predictions, suggestions, sources, domains, and briefings. Feedback drives learning and analytics. |
 | [Learning](#learning) | 11 | Preferences learned from feedback (or written by hand), their review flow, and ranking weight recommendations. |
-| [Analytics](#analytics) | 8 | Reports over relevance, accuracy, feedback, suggestions, reasons, quality, and email. Defaults to the caller's data for the last 90 days. |
+| [Analytics](#analytics) | 9 | Reports over relevance, accuracy, feedback, suggestions, reasons, quality, email, and runs. Defaults to the caller's data for the last 90 days. |
 | [Prompts](#prompts) | 9 | Prompt templates by key and scope, topic overrides, version history, rollback, reset, and the prompt lab. |
 | [Promotional codes](#promotional-codes) | 9 | Global administrators create, generate, and manage promotional codes that grant plans. |
 | [Plans](#plans) | 6 | Global administrators manage plans, their entitlement values, and per-user plan assignments. |
@@ -7543,7 +7543,7 @@ curl -s "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLmLdBrfbuN
 
 ## Analytics
 
-Reports over relevance, accuracy, feedback, suggestions, reasons, quality, and email. Defaults to the caller's data for the last 90 days.
+Reports over relevance, accuracy, feedback, suggestions, reasons, quality, email, and runs. Defaults to the caller's data for the last 90 days.
 
 | Method | Path | Summary |
 |---|---|---|
@@ -7555,6 +7555,7 @@ Reports over relevance, accuracy, feedback, suggestions, reasons, quality, and e
 | GET | [`/v1.0/api/analytics/reasons`](#get-v10apianalyticsreasons) | Reasons analytics |
 | GET | [`/v1.0/api/analytics/quality`](#get-v10apianalyticsquality) | Quality analytics |
 | GET | [`/v1.0/api/analytics/email`](#get-v10apianalyticsemail) | Email analytics |
+| GET | [`/v1.0/api/analytics/runs`](#get-v10apianalyticsruns) | Runs analytics |
 
 ### GET /v1.0/api/analytics/overview
 
@@ -7777,6 +7778,36 @@ curl -s "http://127.0.0.1:12100/v1.0/api/analytics/quality" \
 
 ```bash
 curl -s "http://127.0.0.1:12100/v1.0/api/analytics/email" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### GET /v1.0/api/analytics/runs
+
+**Runs analytics.** Runs by day and status, stage duration p50 and p95, findings by tier, duplicate share, and sources examined, fetched, and used per run, the relevance score histogram, runs by day of week and hour, and search provider yield. Dry runs are excluded. Days and hours use timeZone (IANA), else my profile's time zone, else UTC. Defaults: my data for the last 90 days. Administrators can pass userId or omit it with all=true for the tenant.
+
+- Auth: `Analytics:Read` (`AnalyticsRead`).
+- Response: [`RunsReport`](#runsreport)
+- Notes: Dry runs are excluded and days are gap-filled. Sources examined are the Search stage's items out, fetched are the Fetch stage's items out, and used are the distinct sources behind a non-duplicate finding at or above the display threshold. Provider yield is the share of a provider's results whose source produced such a finding in the same run. Stage percentiles interpolate linearly over finished (succeeded or failed) stage rows.
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `topicId` | string | Only records for this topic. |
+| `from` | date-time (ISO 8601 UTC) | Start of the window (UTC). Default 90 days before to. |
+| `to` | date-time (ISO 8601 UTC) | End of the window (UTC). Default now. |
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `all` | boolean | Administrators: true for the whole tenant instead of one user. |
+| `timeZone` | string | IANA time zone for the days and hours, for example America/New_York. Default: the caller's profile time zone, else UTC. An unknown name is refused with 400 ValidationFailed. |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired`, `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/analytics/runs" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -9393,6 +9424,16 @@ Returned by [GET /v1.0/api/analytics/accuracy](#get-v10apianalyticsaccuracy).
 | `agentAgreement` | number | Share of decided proposals the reader accepted. |
 | `calibration` | array of [`CalibrationBucket`](#calibrationbucket) | Five confidence buckets. |
 | `byTopic` | array of [`BreakdownRow`](#breakdownrow) | By topic (rate is accuracy, value is mean Brier). |
+
+#### ActivityCell
+
+Runs created at one hour of one day of the week, in the report's time zone.
+
+| Field | Type | Description |
+|---|---|---|
+| `dayOfWeek` | integer | Day of week, 0 (Sunday) to 6 (Saturday). |
+| `hour` | integer | Hour, 0 to 23. |
+| `count` | integer | Runs. |
 
 #### Artifact
 
@@ -11542,6 +11583,19 @@ Returned by [GET /v1.0/api/prompts/{id}/versions](#get-v10apipromptsidversions).
 | `createdUtc` | date-time | UTC creation time. |
 | `lastUpdateUtc` | date-time | UTC time of the last update. |
 
+#### ProviderYieldRow
+
+What one search provider's results turned into. A result is used when a non-duplicate finding at or above the display threshold in the same run came from the same source item. When two providers return the same page, both are credited.
+
+| Field | Type | Description |
+|---|---|---|
+| `provider` | string | Provider, as stored on the search result (unknown when missing). |
+| `results` | integer | Search results returned. |
+| `fetched` | integer | Results that were read (disposition Fetched). |
+| `used` | integer | Results that led to at least one finding. |
+| `findings` | integer | Distinct findings that came from this provider's results. |
+| `yield` | number | Used over results, from 0 to 1. Null when there are no results. |
+
 #### PushResult
 
 Outcome of a push send.
@@ -12013,6 +12067,59 @@ Returned by [GET /v1.0/api/runs](#get-v10apiruns), [GET /v1.0/api/runs/{id}](#ge
 | `lastUpdateUtc` | date-time | UTC time of the last update. |
 | `resumeFromStage` | string | When set, the next execution reruns the pipeline from this stage on the same run, reusing its saved findings and summary (POST /runs/{id}/retry). Cleared when execution starts. Null for a normal run. |
 
+#### RunDayRow
+
+Runs created on one day, by status.
+
+| Field | Type | Description |
+|---|---|---|
+| `day` | string | Day (yyyy-MM-dd) in the report's time zone. |
+| `startUtc` | date-time | The UTC instant the day starts. |
+| `endUtc` | date-time | The UTC instant the day ends (the next day's start). |
+| `total` | integer | Runs created on the day. |
+| `counts` | object (map of integer) | Runs by status. Every run status is present. |
+
+#### RunPointRow
+
+One run: its findings by tier, its duplicate share, and the sources it examined, fetched, and used.
+
+| Field | Type | Description |
+|---|---|---|
+| `runId` | string | Run. |
+| `topicId` | string | Topic. |
+| `topicName` | string | Topic name. Null when the topic is gone. |
+| `createdUtc` | date-time | When the run was created, UTC. |
+| `status` | [`RunStatusEnum`](#runstatusenum) | Status. |
+| `durationMs` | number | Total duration in milliseconds. |
+| `tiers` | object (map of integer) | Non-duplicate findings by tier. Every tier is present. |
+| `newFindings` | integer | New findings the run kept (Run.NewFindingCount). |
+| `duplicates` | integer | Candidates that repeated an earlier finding (Run.DuplicateCount). |
+| `duplicateShare` | number | Duplicates over duplicates plus new findings, from 0 to 1. Null when the run had neither. |
+| `examined` | integer | Search results examined: the Search stage's items out, or the run's stored search results when the stage row is missing. |
+| `fetched` | integer | Pages read: the Fetch stage's items out, or Run.SourceCount when the stage row is missing. |
+| `used` | integer | Distinct sources behind at least one non-duplicate finding at or above the display threshold. |
+
+#### RunsReport
+
+Research runs for a window (plan section 25.6, charts 2 to 5 and 21 to 24): runs by day and status, stage duration percentiles, findings by tier, duplicates, and sources per run, the relevance score distribution, activity by day of week and hour, and search provider yield. Dry runs are excluded. Days and hours are in TimeZone; every day and every day-and-hour cell is present, with zeros where nothing ran.
+
+Returned by [GET /v1.0/api/analytics/runs](#get-v10apianalyticsruns).
+
+| Field | Type | Description |
+|---|---|---|
+| `fromUtc` | date-time | Start of the window (inclusive), UTC. |
+| `toUtc` | date-time | End of the window (exclusive), UTC. |
+| `timeZone` | string | IANA time zone the days and hours are in. Defaults to UTC. |
+| `total` | integer | Runs created in the window. |
+| `byStatus` | object (map of integer) | Runs by status. Every run status is present. |
+| `byDay` | array of [`RunDayRow`](#rundayrow) | Runs per day by status, oldest first, gap-filled. |
+| `stages` | array of [`StageDurationRow`](#stagedurationrow) | Duration percentiles per stage, in pipeline order. |
+| `runs` | array of [`RunPointRow`](#runpointrow) | The most recent runs (at most 60 by default, see MaxRunPoints), oldest first: findings by tier, duplicate share, and sources examined, fetched, and used. |
+| `runsTruncated` | boolean | True when the window holds more runs than the runs list shows. |
+| `scoreHistogram` | array of [`ScoreBucket`](#scorebucket) | Non-duplicate findings created in the window, by relevance score in ten buckets of ten points (0 to 100). |
+| `activity` | array of [`ActivityCell`](#activitycell) | Runs by day of week and hour, 168 cells ordered Sunday first and then by hour. |
+| `providers` | array of [`ProviderYieldRow`](#provideryieldrow) | Search results and the findings they led to, per provider, most results first. |
+
 #### RunStage
 
 One stage of a research run (plan section 16).
@@ -12191,6 +12298,16 @@ Request body of [POST /v1.0/api/schedules/preview](#post-v10apischedulespreview)
 | `enabled` | boolean | Enabled. |
 | `missedRunPolicy` | [`MissedRunPolicyEnum`](#missedrunpolicyenum) | Missed run policy. |
 | `previewCount` | integer | How many upcoming runs to preview (1 to 20, default 5). |
+
+#### ScoreBucket
+
+Findings whose relevance score falls in one bucket. The lower bound is inclusive and the upper bound exclusive, except the last bucket, which includes 100.
+
+| Field | Type | Description |
+|---|---|---|
+| `lower` | integer | Lower bound, 0 to 90. |
+| `upper` | integer | Upper bound, 10 to 100. |
+| `count` | integer | Findings in the bucket. |
 
 #### SearchHit
 
@@ -12576,6 +12693,21 @@ Returned by [GET /v1.0/api/sources](#get-v10apisources), [GET /v1.0/api/sources/
 | `active` | boolean | Whether the record is active. |
 | `createdUtc` | date-time | UTC creation time. |
 | `lastUpdateUtc` | date-time | UTC time of the last update. |
+
+#### StageDurationRow
+
+How long one pipeline stage takes. Counts finished stage rows (succeeded or failed) of the runs in the window; percentiles interpolate linearly between the nearest ranks.
+
+| Field | Type | Description |
+|---|---|---|
+| `stage` | string | Stage name, for example Search. |
+| `sortOrder` | integer | Position in the pipeline (the stage's lowest sort order). |
+| `count` | integer | Finished stage rows measured. |
+| `failed` | integer | Stage rows that failed. |
+| `p50Ms` | number | Median duration in milliseconds. |
+| `p95Ms` | number | 95th percentile duration in milliseconds. |
+| `meanMs` | number | Mean duration in milliseconds. |
+| `maxMs` | number | Longest duration in milliseconds. |
 
 #### StorageSettings
 

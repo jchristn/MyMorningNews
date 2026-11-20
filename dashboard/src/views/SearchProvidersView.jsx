@@ -17,6 +17,7 @@ import JsonViewerModal from '../components/JsonViewerModal.jsx';
 import Modal from '../components/Modal.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
+import RunCharts from './runs/RunCharts.jsx';
 
 // Kinds a tenant can add. Hosted model web search is set on OpenAI, Azure, or xAI model endpoints instead.
 export const SEARCH_KINDS = ['Searxng', 'Tavily', 'YouCom', 'Rss', 'HackerNews', 'Arxiv'];
@@ -197,6 +198,7 @@ export default function SearchProvidersView() {
     <div className="page">
       <PageHeader title={t('nav.items.searchProviders')} summary={t('routes.searchProviders.summary')} />
       <div className="notice notice-info">{t('searchProviders.about')}</div>
+      <RunCharts charts={['providers']} tenantWide rangeStorage="mymorningnews.searchProviders.runCharts" />
       <section className="panel">
         <DataTable
           tableKey="searchProviders"

@@ -3951,5 +3951,59 @@
       "none": "Nenhum provedor de pesquisa configurado ainda.",
       "useDefaults": "Usar o padrão"
     }
+  },
+  "runCharts": {
+    "topic": "Tema",
+    "status": {
+      "title": "Execuções ao longo do tempo por status",
+      "help": "Execuções de cada dia, pela forma como terminaram.",
+      "total": "Total de execuções: {count, number}"
+    },
+    "stages": {
+      "title": "Duração das execuções por etapa",
+      "help": "As barras mostram a mediana (p50); as linhas chegam ao percentil 95 (p95).",
+      "pair": "{p50} / {p95}",
+      "p50": "Mediana (p50)",
+      "p95": "Percentil 95 (p95)",
+      "mean": "Média",
+      "max": "Mais longa",
+      "count": "Etapas medidas",
+      "failed": "Com falha"
+    },
+    "tiers": {
+      "title": "Descobertas por execução e nível",
+      "help": "As execuções mais recentes do período, sem duplicadas. Selecione uma execução para ver as descobertas dela."
+    },
+    "scores": {
+      "title": "Distribuição da pontuação de relevância",
+      "help": "Descobertas pela pontuação de relevância composta, sem duplicadas.",
+      "bucket": "{from, number} a {to, number}",
+      "findings": "Descobertas"
+    },
+    "activity": {
+      "title": "Atividade por dia e hora",
+      "help": "Execuções iniciadas em cada hora da semana, em {zone}."
+    },
+    "novelty": {
+      "title": "Tendência de novidade",
+      "help": "Parcela dos candidatos de cada execução que repetiam descobertas anteriores. Quanto menor, mais novidade.",
+      "share": "Parcela de duplicadas",
+      "duplicates": "Duplicadas",
+      "newFindings": "Novas descobertas"
+    },
+    "sources": {
+      "title": "Fontes examinadas, obtidas e usadas",
+      "help": "Para as execuções mais recentes: resultados de pesquisa examinados, páginas obtidas e fontes por trás de uma descoberta que você viu. Selecione uma execução para ver as fontes dela.",
+      "used": "Usada em uma descoberta",
+      "fetchedOnly": "Obtida, não usada",
+      "examinedOnly": "Examinada, não obtida",
+      "examined": "Examinadas",
+      "fetched": "Obtidas"
+    },
+    "providers": {
+      "title": "Rendimento dos provedores de pesquisa",
+      "help": "Parcela dos resultados de cada provedor que levaram a uma descoberta no limite de exibição ou acima dele.",
+      "label": "{provider} ({used} de {results})"
+    }
   }
 }

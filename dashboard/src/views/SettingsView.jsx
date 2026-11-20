@@ -11,6 +11,7 @@ import JsonViewerModal from '../components/JsonViewerModal.jsx';
 import LoadingState from '../components/LoadingState.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
+import SendTestEmailButton from './email/SendTestEmailButton.jsx';
 
 const MASK = '********';
 
@@ -188,6 +189,12 @@ export default function SettingsView() {
       {groups.map(([group, fields]) => (
         <fieldset className="panel settings-group" key={group}>
           <legend>{t('settings.groups.' + group, { defaultValue: group })}</legend>
+          {group === 'email' ? (
+            <div className="row-actions settings-group-actions">
+              <span className="muted small">{t('email.test.settingsHelp')}</span>
+              <SendTestEmailButton />
+            </div>
+          ) : null}
           <div className="form-grid">
             {fields.map((field) => (
               <FormField

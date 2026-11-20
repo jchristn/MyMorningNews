@@ -181,7 +181,9 @@
       "profile": "Profile",
       "adminUsage": "Platform usage",
       "oneTimeRequests": "One-time requests",
-      "listen": "Listen"
+      "listen": "Listen",
+      "promoCodes": "Promotional codes",
+      "plans": "Plans"
     }
   },
   "routes": {
@@ -295,6 +297,12 @@
     },
     "listen": {
       "summary": "Audio episodes of your briefings, ready to play"
+    },
+    "promoCodes": {
+      "summary": "Codes that give a plan for a number of days, with limits and usage"
+    },
+    "plans": {
+      "summary": "Plans, their entitlement values, and who has which plan"
     }
   },
   "placeholder": {
@@ -532,7 +540,15 @@
       "telemetry": "Telemetry",
       "pipeline": "Research pipeline",
       "diagnostics": "Diagnostics",
-      "models": "Models"
+      "models": "Models",
+      "push": "Push notifications",
+      "storage": "Storage",
+      "scheduler": "Scheduler",
+      "search": "Search",
+      "tts": "Text to speech",
+      "email": "Email",
+      "learning": "Learning",
+      "hosting": "Hosting"
     },
     "fields": {
       "rest_hostname": "Hostname",
@@ -2297,7 +2313,8 @@
       "topic": "Topic",
       "published": "Published",
       "found": "Found",
-      "id": "ID"
+      "id": "ID",
+      "rating": "Your rating"
     },
     "detail": {
       "title": "Finding",
@@ -2340,7 +2357,8 @@
       "brier": "Brier score",
       "topic": "Topic",
       "created": "Created",
-      "id": "ID"
+      "id": "ID",
+      "rating": "Your grade"
     },
     "actions": {
       "resolve": "Resolve",
@@ -2417,7 +2435,8 @@
       "priorityEffort": "Priority and effort",
       "topic": "Topic",
       "created": "Created",
-      "id": "ID"
+      "id": "ID",
+      "rating": "Your rating"
     },
     "actions": {
       "accept": "Accept",
@@ -2517,10 +2536,6 @@
       "files": "Files",
       "period": "Covers",
       "readMinutes": "{minutes} min read"
-    },
-    "slots": {
-      "feedbackTitle": "Feedback",
-      "feedbackMessage": "Rating this section arrives in Phase 10."
     },
     "delete": {
       "title": "Delete briefing",
@@ -2949,6 +2964,590 @@
       "overcast": "Overcast: tap the plus button, choose Add URL, and paste the URL.",
       "publicUrl": "Your phone has to reach the server. Set MYMORNINGNEWS_PUBLIC_BASE_URL to an address the phone can open (not 127.0.0.1), then create the feed again so its URL uses that address.",
       "loopback": "This URL points at 127.0.0.1, which only this computer can reach. Set MYMORNINGNEWS_PUBLIC_BASE_URL on the server so podcast apps on your phone can reach it."
+    }
+  },
+  "promo": {
+    "picker": {
+      "search": "Find a user",
+      "searchPlaceholder": "Email contains",
+      "user": "User",
+      "noUsers": "No users match.",
+      "choose": "Choose a user"
+    },
+    "validation": {
+      "codeRequired": "Enter a code.",
+      "codeFormat": "Use 4 to 40 letters, digits, and dashes, starting and ending with a letter or digit.",
+      "prefixFormat": "Use up to 16 letters and digits.",
+      "countRange": "Enter a whole number from 1 to {max, number}.",
+      "planRequired": "Choose a plan.",
+      "durationRange": "Enter a whole number of days from 0 (no end) to 3650.",
+      "maxRange": "Enter 0 (unlimited) or a whole number of redemptions.",
+      "maxBelowUsed": "This code has been used {used} times, so the limit cannot be lower than that.",
+      "perUserRange": "Enter a whole number from 1 to 100.",
+      "dateInvalid": "Enter a valid date and time.",
+      "expiresAfterStarts": "The expiry must be after the start."
+    },
+    "create": {
+      "title": "New promotional code",
+      "open": "New code"
+    },
+    "edit": {
+      "title": "Edit {code}"
+    },
+    "batch": {
+      "title": "Generate a batch of codes",
+      "open": "Generate batch",
+      "createdTitle": "{count, plural, one {# code created} other {# codes created}}",
+      "batchId": "Batch {id}",
+      "downloadCsv": "Download CSV",
+      "copyAll": "Copy all codes",
+      "codes": "Created codes",
+      "generate": "Generate"
+    },
+    "fields": {
+      "code": "Code",
+      "codeHelp": "Letters, digits, and dashes. Stored in upper case.",
+      "codeLocked": "A code cannot be renamed. Create a new one instead.",
+      "prefix": "Prefix",
+      "prefixHelp": "Optional, up to 16 letters and digits. Each code gets a random suffix.",
+      "count": "How many",
+      "countHelp": "1 to {max, number} codes.",
+      "plan": "Plan",
+      "noPlans": "No plans",
+      "description": "Description",
+      "duration": "Duration in days",
+      "durationHelp": "0 means the plan has no end.",
+      "maxRedemptions": "Total redemptions",
+      "maxHelp": "0 means unlimited.",
+      "maxUsedHelp": "0 means unlimited. Already used {used} times.",
+      "perUserLimit": "Per-user limit",
+      "perUserHelp": "How many times one person can redeem it.",
+      "starts": "Starts",
+      "startsHelp": "Leave empty to start now. Your local time.",
+      "expires": "Expires",
+      "expiresHelp": "Leave empty for no expiry. Your local time.",
+      "enabled": "Enabled",
+      "newAccountsOnly": "New accounts only",
+      "newAccountsOnlyHelp": "Only accounts signing up with the code can redeem it."
+    },
+    "status": {
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "notStarted": "Not started",
+      "expired": "Expired",
+      "exhausted": "Used up"
+    },
+    "usage": {
+      "usedOf": "{used} of {max}",
+      "usedUnlimited": "{used} of unlimited",
+      "unlimited": "Unlimited"
+    },
+    "duration": {
+      "days": "{count, plural, one {# day} other {# days}}",
+      "noEnd": "No end"
+    },
+    "reasons": {
+      "NotFound": "We could not find that code. Check the spelling and try again.",
+      "Disabled": "That code has been turned off.",
+      "NotStarted": "That code cannot be used yet.",
+      "Expired": "That code has expired.",
+      "Exhausted": "That code has been used as many times as allowed.",
+      "AlreadyRedeemed": "This account has already used that code.",
+      "NewAccountsOnly": "That code is only for new accounts."
+    },
+    "delete": {
+      "title": "Delete promotional code",
+      "message": "Delete {code}? This cannot be undone.",
+      "usedMessage": "{code} has been redeemed {count, plural, one {# time} other {# times}}, so it cannot be deleted. Disable it instead so its history stays.",
+      "disableInstead": "Disable instead",
+      "conflict": "This code has been used, so it cannot be deleted. Disable it instead."
+    },
+    "notify": {
+      "disabled": "{code} disabled",
+      "enabled": "{code} enabled",
+      "copied": "Copied {code}",
+      "generated": "{count, plural, one {# code generated} other {# codes generated}}",
+      "created": "{code} created"
+    },
+    "columns": {
+      "code": "Code",
+      "description": "Description",
+      "plan": "Plan",
+      "duration": "Duration",
+      "usage": "Used / max",
+      "remaining": "Remaining",
+      "activeSubscriptions": "Active subscriptions",
+      "status": "Status",
+      "batch": "Batch",
+      "expires": "Expires",
+      "lastRedeemed": "Last redeemed",
+      "created": "Created"
+    },
+    "filters": {
+      "search": "Code or description",
+      "enabledOnly": "Enabled",
+      "disabledOnly": "Disabled"
+    },
+    "actions": {
+      "disable": "Disable",
+      "enable": "Enable",
+      "copyCode": "Copy code"
+    },
+    "never": "Never",
+    "immediately": "Immediately",
+    "createdBy": "Created by",
+    "empty": {
+      "title": "No promotional codes yet",
+      "message": "Create a code, or generate a batch, to give people a plan."
+    },
+    "apply": {
+      "open": "Apply to a user",
+      "title": "Apply {code} to a user",
+      "help": "The user gets {plan} for {duration}. The code's limits still apply.",
+      "confirm": "Apply code",
+      "done": "{code} applied to {email}"
+    },
+    "redemptions": {
+      "title": "Redemptions",
+      "user": "User",
+      "tenant": "Tenant",
+      "channel": "Channel",
+      "date": "Redeemed",
+      "status": "Status",
+      "active": "Active",
+      "revoked": "Revoked",
+      "revokedOn": "Revoked {date}",
+      "userId": "User ID",
+      "revoke": "Revoke",
+      "revokeTitle": "Revoke redemption",
+      "revokeMessage": "Revoke {code} for {email}? Their plan from this code ends now.",
+      "revokedNotice": "Redemption revoked",
+      "empty": "Nobody has redeemed this code yet",
+      "emptyMessage": "Redemptions appear here with who, when, and from where."
+    },
+    "channels": {
+      "Signup": "Sign-up",
+      "Account": "Account",
+      "Admin": "Administrator",
+      "Api": "API"
+    },
+    "detail": {
+      "summary": "Usage, redemptions, and settings for this code",
+      "back": "All codes",
+      "settings": "Settings"
+    },
+    "kpi": {
+      "redemptions": "Redemptions",
+      "remaining": "Remaining",
+      "activeSubscriptions": "Active subscriptions",
+      "revoked": "Revoked",
+      "lastRedeemed": "Last redeemed",
+      "notYet": "Not yet"
+    },
+    "chart": {
+      "title": "Redemptions over time",
+      "subtitle": "Per day, by when each was redeemed",
+      "empty": "No redemptions yet."
+    }
+  },
+  "plans": {
+    "default": "Default",
+    "noFeatures": "No entitlement values.",
+    "validation": {
+      "key": "Use 2 to 63 lowercase letters, digits, and dashes.",
+      "name": "Enter a name.",
+      "duplicate": "The key {key} is listed twice."
+    },
+    "create": {
+      "title": "New plan",
+      "open": "New plan"
+    },
+    "edit": {
+      "title": "Edit {name}",
+      "open": "Edit {name}"
+    },
+    "fields": {
+      "key": "Key",
+      "keyHelp": "A stable identifier, such as team-pilot.",
+      "keyLocked": "A plan key cannot change.",
+      "name": "Name",
+      "description": "Description",
+      "features": "Entitlement values",
+      "featuresHelp": "Code checks these keys, not plan names. Use numbers, true or false, or unlimited. An empty value removes the key.",
+      "featureKey": "Entitlement key",
+      "featureValue": "Value for {key}",
+      "emptyRemoves": "Empty removes it",
+      "clearValue": "Clear {key}",
+      "addFeature": "Add a value"
+    },
+    "featureNames": {
+      "usage_monthlyCostUsd_max": "Monthly cost cap (USD)",
+      "topics_max": "Topics",
+      "schedule_minIntervalMinutes": "Shortest schedule interval (minutes)",
+      "runs_daily_max": "Runs per day",
+      "audio_enabled": "Audio",
+      "audio_monthlyMinutes_max": "Audio minutes per month",
+      "email_enabled": "Email",
+      "mobile_access": "Mobile app",
+      "endpoints_custom": "Own model endpoints",
+      "artifacts_pinned_max": "Pinned reports"
+    },
+    "assignments": {
+      "title": "A user's plans",
+      "help": "Pick a user to see every plan period they have, including ones that start later, and revoke one.",
+      "plan": "Plan",
+      "source": "Source",
+      "starts": "Starts",
+      "ends": "Ends",
+      "state": "State",
+      "note": "Note",
+      "revoke": "Revoke",
+      "revokeTitle": "Revoke plan",
+      "revokeMessage": "Revoke {plan} for this user? It ends now.",
+      "revoked": "Plan revoked",
+      "empty": "No plan assignments",
+      "emptyMessage": "This user is on the default plan."
+    },
+    "sources": {
+      "Default": "Default",
+      "Admin": "Administrator",
+      "Promo": "Promotional code",
+      "Billing": "Billing"
+    },
+    "states": {
+      "current": "Current",
+      "upcoming": "Upcoming",
+      "ended": "Ended",
+      "revoked": "Revoked"
+    },
+    "grant": {
+      "open": "Grant a plan",
+      "title": "Grant a plan",
+      "titleFor": "Grant a plan to {email}",
+      "confirm": "Grant",
+      "note": "Note",
+      "noteHelp": "Why this user gets the plan. Shown in the audit log.",
+      "done": "Plan granted to {email}"
+    },
+    "userPanel": {
+      "action": "Plan",
+      "title": "Plan for {email}"
+    }
+  },
+  "account": {
+    "plan": {
+      "title": "Plan",
+      "endsOn": "Your plan ends on {date}.",
+      "noEnd": "Your plan has no end date.",
+      "limits": "Limits",
+      "upcoming": "Starting later",
+      "anotherPlan": "Another plan",
+      "period": "from {from} to {to}",
+      "periodOpen": "from {from}, with no end",
+      "redeemTitle": "Redeem a code",
+      "code": "Promotional code",
+      "codeHelp": "A code you were given. A code for the plan you already have starts when the current one ends.",
+      "redeem": "Redeem",
+      "redeemed": "Code redeemed. You now have {plan}."
+    }
+  },
+  "email": {
+    "memberNotice": "You see the email sent to you. Administrators see every message.",
+    "resend": "Resend",
+    "resent": "Sent again to {recipient}",
+    "columns": {
+      "time": "Time",
+      "template": "Template",
+      "recipient": "Recipient",
+      "subject": "Subject",
+      "status": "Status",
+      "attempts": "Attempts",
+      "sent": "Sent",
+      "topic": "Topic",
+      "providerId": "Provider ID"
+    },
+    "statuses": {
+      "Queued": "Queued",
+      "Sending": "Sending",
+      "Sent": "Sent",
+      "Failed": "Failed",
+      "Suppressed": "Suppressed",
+      "Skipped": "Skipped"
+    },
+    "templates": {
+      "RunDigest": "Run digest",
+      "BriefingPublished": "Briefing published",
+      "RunFailed": "Run failed",
+      "PreferenceProposal": "Preference proposal",
+      "Test": "Test"
+    },
+    "chart": {
+      "title": "Messages per day by status",
+      "subtitle": "The last {days} days",
+      "empty": "No email in this window."
+    },
+    "empty": {
+      "title": "No email sent yet",
+      "message": "Email appears here after runs, briefings, and tests."
+    },
+    "delete": {
+      "title": "Delete email",
+      "message": "Delete \"{subject}\" to {recipient} from the outbox?"
+    },
+    "preview": {
+      "title": "Email",
+      "runButton": "Email preview",
+      "runTitle": "Run email preview",
+      "to": "To {recipient}",
+      "format": "Format",
+      "html": "Rendered",
+      "text": "Plain text",
+      "frame": "Rendered email",
+      "noHtml": "This message has no HTML body.",
+      "noText": "This message has no plain text body."
+    },
+    "test": {
+      "button": "Send test email",
+      "sent": "Test email queued for {recipient}",
+      "failed": "The test email could not be sent: {message}",
+      "settingsHelp": "Save your changes first, then send yourself a test."
+    }
+  },
+  "emailPrefs": {
+    "title": "Email preferences",
+    "address": "Email goes to {address}.",
+    "saved": "Email preferences saved",
+    "categories": {
+      "runEmails": "Run emails",
+      "briefingEmails": "Briefing emails",
+      "failureEmails": "Failure emails"
+    },
+    "help": {
+      "runEmails": "A digest after each run of your topics.",
+      "briefingEmails": "When an edition or run briefing is published.",
+      "failureEmails": "When a run fails."
+    },
+    "unsubscribedTitle": "Topics you unsubscribed from",
+    "noUnsubscribed": "You get run email for every topic that sends it.",
+    "resubscribeHelp": "To get run email for one of these again, use the link in its last email."
+  },
+  "feedbackControl": {
+    "rate": "Rate this",
+    "rateItem": "Rate {title}",
+    "rateType": "Rate this {type}",
+    "rateSection": "Rate the section {section}",
+    "sectionPrompt": "Was this section relevant?",
+    "isRelevant": "Was this relevant?",
+    "isAccurate": "How did this prediction do?",
+    "isUseful": "Was this useful?",
+    "why": "Why?",
+    "whyHelp": "Optional. Your reasons teach the research which items to keep or drop.",
+    "whyTitle": "Why this rating?",
+    "whyAdd": "Add why",
+    "whyEdit": "Edit why",
+    "ratedAs": "Rated {rating}",
+    "retract": "Retract rating",
+    "actions": {
+      "relevant": "Relevant",
+      "somewhat": "Somewhat",
+      "not-relevant": "Not relevant",
+      "accurate": "Accurate",
+      "partially": "Partially",
+      "inaccurate": "Inaccurate",
+      "too-early": "Too early",
+      "useful": "Useful",
+      "not-useful": "Not useful",
+      "none": "with no rating"
+    }
+  },
+  "insights": {
+    "noData": "No data for this range yet.",
+    "withCount": "{label} ({count})",
+    "scope": {
+      "days": "{count, plural, one {# day} other {# days}}",
+      "topic": "Topic",
+      "allTopics": "All topics",
+      "everyone": "Everyone in the tenant"
+    },
+    "topic": {
+      "last90": "Last 90 days"
+    },
+    "relevance": {
+      "precision": "Precision",
+      "precisionHelp": "Rated findings marked relevant or somewhat",
+      "coverage": "Coverage",
+      "coverageHelp": "Shown findings that got any rating",
+      "shown": "Findings shown",
+      "rated": "Findings rated",
+      "byDay": "Precision over time",
+      "byDayHelp": "Per day, from the ratings given that day",
+      "byTopic": "Precision by topic",
+      "byTier": "Precision by tier",
+      "byDomain": "Precision by source domain",
+      "byDomainHelp": "The 20 domains with the most ratings",
+      "byDimension": "Precision by dimension"
+    },
+    "quality": {
+      "failureRate": "Evidence verification failures",
+      "quotes": "{count, plural, one {# quote checked} other {# quotes checked}}",
+      "byModel": "Verification failure rate by model",
+      "byModelHelp": "Share of extracted quotes that did not match the stored source text"
+    },
+    "accuracy": {
+      "rate": "Accuracy rate",
+      "rateHelp": "Accurate plus half of partially accurate, over resolved",
+      "brier": "Mean Brier score",
+      "due": "Due for review",
+      "dueHelp": "Horizon passed with no resolution",
+      "resolved": "Resolved",
+      "ofTotal": "{open} open of {total}",
+      "unresolvable": "Unresolvable",
+      "agreement": "Agent agreement",
+      "agreementHelp": "{count, plural, one {Across # decided review} other {Across # decided reviews}}",
+      "latency": "Time to resolve",
+      "days": "{count, plural, one {# day} other {# days}}",
+      "calibration": "Calibration curve",
+      "calibrationHelp": "Stated confidence against how often predictions came true",
+      "byTopic": "Accuracy by topic",
+      "byTopicHelp": "Accuracy rate per topic over resolved predictions"
+    },
+    "feedback": {
+      "total": "Feedback items",
+      "withReason": "With a reason",
+      "withoutReason": "Without a reason",
+      "share": "{share} of all",
+      "emailOpens": "Email link opens",
+      "emailSubmits": "Email link submits",
+      "submitRate": "{rate} of opens",
+      "byDay": "Feedback volume by day",
+      "byDayHelp": "Ratings given per day, split by whether they carry a reason",
+      "byChannel": "Feedback by channel",
+      "byTarget": "Feedback by item type",
+      "listTitle": "Every feedback item",
+      "includeHistory": "Include superseded ratings",
+      "noReason": "No reason given",
+      "current": "Current",
+      "superseded": "Superseded",
+      "editWhy": "Edit why",
+      "saved": "Reason saved",
+      "retractTitle": "Retract this rating",
+      "retractMessage": "Retract this rating? An earlier rating on the same item, if any, becomes current again.",
+      "retracted": "Rating retracted",
+      "emptyTitle": "No feedback yet",
+      "emptyMessage": "Rate findings, predictions, and suggestions to teach the research what matters to you.",
+      "columns": {
+        "when": "When",
+        "target": "Item",
+        "rating": "Rating",
+        "reason": "Reason",
+        "channel": "Channel",
+        "current": "State"
+      },
+      "targetTypes": {
+        "Finding": "Finding",
+        "Prediction": "Prediction",
+        "PredictionReview": "Prediction review",
+        "Suggestion": "Suggestion",
+        "SourceItem": "Source",
+        "Domain": "Domain",
+        "Briefing": "Briefing",
+        "BriefingSection": "Briefing section",
+        "LearnedPreference": "Learned preference"
+      },
+      "channels": {
+        "Dashboard": "Dashboard",
+        "Email": "Email",
+        "Mobile": "Mobile app",
+        "Api": "API"
+      }
+    },
+    "reasons": {
+      "title": "Reason themes",
+      "help": "Themes tagged from your reasons, with the last 30 days in brackets",
+      "tagRecent": "{tag} [{recent}]",
+      "byWeek": "Reason themes by week"
+    },
+    "suggestions": {
+      "title": "Suggestion outcomes",
+      "decision": "Mean {days} days to a decision",
+      "outcomes": {
+        "new": "Still new ({share})",
+        "accepted": "Accepted ({share})",
+        "done": "Done ({share})",
+        "snoozed": "Snoozed ({share})",
+        "dismissed": "Dismissed ({share})"
+      }
+    },
+    "preferences": {
+      "statement": "Preference",
+      "statementHelp": "One plain sentence, such as: Skip vendor funding announcements.",
+      "kind": "Kind",
+      "origin": "Origin",
+      "confidence": "Confidence",
+      "supportCount": "Supporting feedback",
+      "decided": "Decided",
+      "allTopics": "Every topic",
+      "topicHelp": "Leave empty to apply it to every topic.",
+      "writeOwn": "Write your own",
+      "createTitle": "Write a preference",
+      "createHelp": "Preferences you write are active at once and are given to the research with your topics.",
+      "editTitle": "Edit preference",
+      "detailTitle": "Learned preference",
+      "supportTitle": "{count, plural, =0 {Supporting feedback} one {# supporting feedback item} other {# supporting feedback items}}",
+      "noSupport": "No feedback is linked to this preference.",
+      "learnFor": "Learn from",
+      "chooseTopic": "Choose a topic",
+      "learnNow": "Learn now",
+      "learning": "Learning...",
+      "learned": "{count, plural, =0 {Learning pass finished with no new proposals} one {# new proposal to review} other {# new proposals to review}}",
+      "emptyTitle": "No learned preferences yet",
+      "emptyMessage": "Proposals appear after you rate a few items with reasons, or write your own.",
+      "deleteTitle": "Delete preference",
+      "deleteMessage": "Delete \"{statement}\"? It stops shaping your research.",
+      "statuses": {
+        "Proposed": "Proposed",
+        "Active": "Active",
+        "Rejected": "Rejected",
+        "Disabled": "Disabled"
+      },
+      "origins": {
+        "Distilled": "Learned",
+        "User": "Written by you"
+      },
+      "kinds": {
+        "Prefer": "Prefer",
+        "Avoid": "Avoid",
+        "PreferSource": "Prefer a source",
+        "AvoidSource": "Avoid a source",
+        "StyleNote": "Style note"
+      },
+      "actions": {
+        "accept": "Accept",
+        "reject": "Reject",
+        "disable": "Disable",
+        "enable": "Enable"
+      },
+      "changed": {
+        "accept": "Preference accepted",
+        "reject": "Preference rejected",
+        "disable": "Preference disabled",
+        "enable": "Preference enabled"
+      }
+    },
+    "ranking": {
+      "title": "Ranking recommendation",
+      "rated": "{count, plural, one {From # rated finding} other {From # rated findings}}",
+      "apply": "Apply these weights",
+      "applyTitle": "Apply recommended weights",
+      "applyMessage": "Use the recommended ranking weights for {topic}? Future runs score findings with them.",
+      "applied": "Weights applied",
+      "notStored": "The server did not store the weights for this topic.",
+      "notEnough": "Rate more findings on this topic before the recommendation is reliable.",
+      "component": "Component",
+      "current": "Current",
+      "recommended": "Recommended",
+      "separation": "Separation",
+      "help": "Separation is how far apart relevant and not relevant findings score on each component. Components that separate them better get more weight."
     }
   }
 }

@@ -10,6 +10,7 @@ import ScoreBreakdownChart from '../../charts/ScoreBreakdownChart.jsx';
 import CopyableId from '../../components/CopyableId.jsx';
 import DateCell from '../../components/DateCell.jsx';
 import EmptyState from '../../components/EmptyState.jsx';
+import FeedbackControl from '../../components/FeedbackControl.jsx';
 import ErrorState from '../../components/ErrorState.jsx';
 import KeyValueGrid from '../../components/KeyValueGrid.jsx';
 import LoadingState from '../../components/LoadingState.jsx';
@@ -102,6 +103,10 @@ export default function FindingDetail({ detail }) {
       </div>
       <h3 className="finding-title">{finding.title}</h3>
       {finding.summary ? <p className="finding-summary">{finding.summary}</p> : null}
+      <div className="feedback-row">
+        <span className="muted small">{t('feedbackControl.isRelevant')}</span>
+        <FeedbackControl targetType="Finding" targetId={finding.id} />
+      </div>
       {finding.whyItMatters ? (
         <Section title={t('findings.detail.whyItMatters')}>
           <p className="finding-text">{finding.whyItMatters}</p>

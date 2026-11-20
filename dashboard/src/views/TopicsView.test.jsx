@@ -171,7 +171,10 @@ describe('Topic workspace', () => {
     await userEvent.click(screen.getByRole('tab', { name: /Suggestions/ }));
     await waitFor(() => expect(client.listSuggestions).toHaveBeenCalledWith(expect.objectContaining({ topicId: 'top_1' })));
     await userEvent.click(screen.getByRole('tab', { name: /Feedback/ }));
-    expect(screen.getByText('Arrives in Phase 10')).toBeInTheDocument();
+    expect(await screen.findByText('No feedback yet')).toBeInTheDocument();
+    await waitFor(() => expect(client.listFeedback).toHaveBeenCalledWith(expect.objectContaining({ topicId: 'top_1' })));
+    await userEvent.click(screen.getByRole('tab', { name: /^Models/ }));
+    expect(screen.getByText('Arrives in Phase 12')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('tab', { name: 'Runs' }));
     expect(await screen.findByText(/stages are not installed/)).toBeInTheDocument();
     expect(client.listRuns).toHaveBeenCalledWith(expect.objectContaining({ topicId: 'top_1' }));

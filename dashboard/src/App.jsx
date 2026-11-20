@@ -40,7 +40,14 @@ const VIEWS = {
   models: lazy(() => import('./views/ModelsView.jsx')),
   prompts: lazy(() => import('./views/PromptsView.jsx')),
   usage: lazy(() => import('./views/UsageView.jsx')),
-  adminUsage: lazy(() => import('./views/AdminUsageView.jsx'))
+  adminUsage: lazy(() => import('./views/AdminUsageView.jsx')),
+  plans: lazy(() => import('./views/PlansView.jsx')),
+  promoCodes: lazy(() => import('./views/PromoCodesView.jsx')),
+  email: lazy(() => import('./views/EmailView.jsx')),
+  relevance: lazy(() => import('./views/insights/RelevanceView.jsx')),
+  accuracy: lazy(() => import('./views/insights/AccuracyView.jsx')),
+  feedback: lazy(() => import('./views/insights/FeedbackView.jsx')),
+  preferences: lazy(() => import('./views/insights/PreferencesView.jsx'))
 };
 
 function RouteElement({ route }) {

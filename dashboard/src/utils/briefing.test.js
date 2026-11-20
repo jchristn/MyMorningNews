@@ -41,8 +41,8 @@ describe('briefing Markdown helpers', () => {
 
   it('builds item links and download names', () => {
     expect(itemHref({ itemType: 'Finding', itemId: 'fnd 1' })).toBe('/dashboard/findings/fnd%201');
-    expect(itemHref({ itemType: 'Prediction', itemId: 'prd_1' })).toBe('/dashboard/predictions?prediction=prd_1');
-    expect(itemHref({ itemType: 'Suggestion', itemId: 'sug_1' })).toBe('/dashboard/suggestions');
+    expect(itemHref({ itemType: 'Prediction', itemId: 'prd_1' })).toBe('/dashboard/predictions?id=prd_1');
+    expect(itemHref({ itemType: 'Suggestion', itemId: 'sug_1' })).toBe('/dashboard/suggestions?id=sug_1');
     expect(briefingFilename({ title: 'Morning News for Nov 19', composedUtc: '2026-11-19T06:30:00Z' }, 'html')).toBe('morning-news-for-nov-19-2026-11-19.html');
     expect(briefingFilename({}, 'md')).toBe('briefing.md');
   });

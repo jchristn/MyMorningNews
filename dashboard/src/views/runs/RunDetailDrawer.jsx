@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { Braces, CircleStop, ListChecks } from 'lucide-react';
+import { Braces, CircleStop, ListChecks, Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext.jsx';
 import useFormat from '../../hooks/useFormat.js';
@@ -16,6 +16,7 @@ import KpiTile from '../../components/KpiTile.jsx';
 import LoadingState from '../../components/LoadingState.jsx';
 import Modal from '../../components/Modal.jsx';
 import StatusBadge from '../../components/StatusBadge.jsx';
+import EmailPreviewModal from '../email/EmailPreviewModal.jsx';
 import RunStages from './RunStages.jsx';
 import { RunQueriesTable, RunResultsTable } from './RunSearchTables.jsx';
 import { failedStages, findingsLink, isActiveRun, runDurationMs } from './runParts.js';
@@ -33,6 +34,8 @@ export default function RunDetailDrawer({ runId, topicLabel, onClose, onChanged 
   const [error, setError] = useState(null);
   const [cancelling, setCancelling] = useState(false);
   const [json, setJson] = useState(false);
+  const [emailPreview, setEmailPreview] = useState(false);
+  const loadEmailPreview = useCallback(() => apiClient.getRunEmailPreview(runId), [apiClient, runId]);
   const [tab, setTab] = useState('stages');
 
   const load = useCallback(async () => {
@@ -86,6 +89,9 @@ export default function RunDetailDrawer({ runId, topicLabel, onClose, onChanged 
                 <CircleStop size={14} aria-hidden="true" /> {run.cancelRequested ? t('runs.cancelRequested') : t('runs.cancel')}
               </button>
             ) : null}
+            <button type="button" className="button secondary small" onClick={() => setEmailPreview(true)}>
+              <Mail size={14} aria-hidden="true" /> {t('email.preview.runButton')}
+            </button>
             <button type="button" className="icon-button" onClick={() => setJson(true)} aria-label={t('common.viewJson')} title={t('common.viewJson')}>
               <Braces size={16} aria-hidden="true" />
             </button>
@@ -160,6 +166,7 @@ export default function RunDetailDrawer({ runId, topicLabel, onClose, onChanged 
         </div>
       ) : null}
       <JsonViewerModal open={json && Boolean(run)} value={run} onClose={() => setJson(false)} />
+      {emailPreview && runId ? <EmailPreviewModal title={t('email.preview.runTitle')} load={loadEmailPreview} onClose={() => setEmailPreview(false)} /> : null}
     </Modal>
   );
 }

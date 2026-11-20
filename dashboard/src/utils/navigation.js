@@ -10,6 +10,7 @@ import {
   Compass,
   Cpu,
   FileText,
+  Gift,
   Globe,
   Headphones,
   Heart,
@@ -32,6 +33,7 @@ import {
   ShieldCheck,
   Target,
   Terminal,
+  TicketPercent,
   TrendingUp,
   User,
   Users,
@@ -73,10 +75,10 @@ export const NAV_GROUPS = [
   {
     key: 'insights',
     items: [
-      { path: 'insights/relevance', key: 'relevance', icon: Target, access: 'all', phase: 10 },
-      { path: 'insights/accuracy', key: 'accuracy', icon: ChartColumn, access: 'all', phase: 10 },
-      { path: 'insights/feedback', key: 'feedback', icon: MessageSquare, access: 'all', phase: 10 },
-      { path: 'insights/preferences', key: 'preferences', icon: Heart, access: 'all', phase: 10 },
+      { path: 'insights/relevance', key: 'relevance', icon: Target, access: 'all' },
+      { path: 'insights/accuracy', key: 'accuracy', icon: ChartColumn, access: 'all' },
+      { path: 'insights/feedback', key: 'feedback', icon: MessageSquare, access: 'all' },
+      { path: 'insights/preferences', key: 'preferences', icon: Heart, access: 'all' },
       { path: 'insights/usage', key: 'usage', icon: Coins, access: 'all' }
     ]
   },
@@ -89,7 +91,7 @@ export const NAV_GROUPS = [
       { path: 'search-providers', key: 'searchProviders', icon: Search, access: 'all', phase: 5 },
       { path: 'mcp-servers', key: 'mcpServers', icon: Plug, access: 'tenantAdmin', phase: 5 },
       { path: 'voices', key: 'voices', icon: Mic, access: 'all' },
-      { path: 'email', key: 'email', icon: Mail, access: 'all', phase: 9 }
+      { path: 'email', key: 'email', icon: Mail, access: 'all' }
     ]
   },
   {
@@ -108,7 +110,9 @@ export const NAV_GROUPS = [
       { path: 'admin/users', key: 'users', icon: Users, access: 'tenantAdmin' },
       { path: 'admin/credentials', key: 'credentials', icon: Key, access: 'tenantAdmin' },
       { path: 'admin/roles', key: 'roles', icon: Shield, access: 'tenantAdmin' },
-      { path: 'admin/usage', key: 'adminUsage', icon: ChartPie, access: 'admin' }
+      { path: 'admin/usage', key: 'adminUsage', icon: ChartPie, access: 'admin' },
+      { path: 'admin/plans', key: 'plans', icon: Gift, access: 'admin' },
+      { path: 'admin/promo-codes', key: 'promoCodes', icon: TicketPercent, access: 'admin' }
     ]
   },
   {

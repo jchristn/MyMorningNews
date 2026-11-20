@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
+import { useSearchParams } from 'react-router-dom';
 import { Headphones, Mic } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -65,6 +66,9 @@ export default function BriefingAudio({ briefing, compact = false, onSectionChan
   const [remaking, setRemaking] = useState(false);
   const briefingId = briefing.id;
   const briefingReady = briefing.status === 'Ready';
+  // ?listen=1 (the email "Listen" link) starts the episode as soon as it loads. Browsers may still require a tap.
+  const [params] = useSearchParams();
+  const listen = params.get('listen') === '1';
 
   const loadEpisodes = useCallback(async () => {
     try {
@@ -161,6 +165,7 @@ export default function BriefingAudio({ briefing, compact = false, onSectionChan
           compact={compact}
           onSectionChange={onSectionChange}
           apiRef={apiRef}
+          autoPlay={listen}
         />
       ) : null}
 

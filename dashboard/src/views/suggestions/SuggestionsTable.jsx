@@ -11,6 +11,7 @@ import { describeError } from '../../utils/errors.js';
 import CopyableId from '../../components/CopyableId.jsx';
 import DataTable from '../../components/DataTable.jsx';
 import DateCell from '../../components/DateCell.jsx';
+import FeedbackControl, { useFeedbackMap } from '../../components/FeedbackControl.jsx';
 import JsonViewerModal from '../../components/JsonViewerModal.jsx';
 import KeyValueGrid from '../../components/KeyValueGrid.jsx';
 import Modal from '../../components/Modal.jsx';
@@ -55,7 +56,7 @@ SuggestionStatus.propTypes = { suggestion: PropTypes.object.isRequired };
 
 // Suggestions to dig into, with a status filter, priority and effort badges, and Accept, Snooze, Dismiss, and
 // Complete actions. Pass topicId to scope to one topic.
-export default function SuggestionsTable({ topicId = null, tableKey = 'suggestions' }) {
+export default function SuggestionsTable({ topicId = null, tableKey = 'suggestions', initialSuggestionId = null, onSuggestionClosed }) {
   const { t } = useTranslation();
   const { apiClient } = useAuth();
   const { addNotification } = useApp();
@@ -81,6 +82,27 @@ export default function SuggestionsTable({ topicId = null, tableKey = 'suggestio
   const topicNames = useMemo(() => new Map(topics.map((x) => [x.id, x.name])), [topics]);
   const extraFilters = useMemo(() => ({ topicId: topicId || undefined }), [topicId]);
   const fetchPage = useCallback((q) => apiClient.listSuggestions(pagedQuery(q)), [apiClient]);
+  const [ratings, setRating] = useFeedbackMap('Suggestion', topicId);
+
+  // A deep link (?id=) opens that suggestion.
+  useEffect(() => {
+    if (!initialSuggestionId) return undefined;
+    let live = true;
+    apiClient
+      .getSuggestion(initialSuggestionId)
+      .then((sg) => live && sg && sg.id && setViewing(sg))
+      .catch((err) => live && addNotification(describeError(err, t).message, 'error', 8000));
+    return () => {
+      live = false;
+    };
+    // t and addNotification are stable for the life of the page.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiClient, initialSuggestionId]);
+
+  function closeViewing() {
+    setViewing(null);
+    if (onSuggestionClosed) onSuggestionClosed();
+  }
 
   async function setStatus(suggestion, status, snoozedUntilUtc) {
     const updated = await apiClient.setSuggestionStatus(suggestion.id, status, snoozedUntilUtc);
@@ -132,6 +154,12 @@ export default function SuggestionsTable({ topicId = null, tableKey = 'suggestio
             render: (r) => <span className="truncate">{topicNames.get(r.topicId) || r.topicId}</span>
           }
         ]),
+    {
+      key: 'rating',
+      header: t('suggestions.columns.rating'),
+      pinned: true,
+      render: (r) => (ratings ? <FeedbackControl targetType="Suggestion" targetId={r.id} current={ratings.get(r.id) || null} onChange={setRating} compact label={t('feedbackControl.rateItem', { title: r.title })} /> : null)
+    },
     { key: 'createdUtc', header: t('suggestions.columns.created'), sortKey: 'createdUtc', render: (r) => <DateCell value={r.createdUtc} /> },
     { key: 'id', header: t('suggestions.columns.id'), defaultHidden: true, className: 'cell-id', render: (r) => <CopyableId value={r.id} /> }
   ];
@@ -158,7 +186,7 @@ export default function SuggestionsTable({ topicId = null, tableKey = 'suggestio
         open={Boolean(viewing)}
         title={t('suggestions.detail.title')}
         subtitle={viewing ? <CopyableId value={viewing.id} /> : null}
-        onClose={() => setViewing(null)}
+        onClose={closeViewing}
         footer={
           viewing ? (
             <div className="row-actions" data-testid="suggestion-actions">
@@ -179,6 +207,10 @@ export default function SuggestionsTable({ topicId = null, tableKey = 'suggestio
               <SuggestionBadges suggestion={viewing} />
             </span>
             {viewing.description ? <p className="finding-text">{viewing.description}</p> : null}
+            <div className="feedback-row">
+              <span className="muted small">{t('feedbackControl.isUseful')}</span>
+              <FeedbackControl targetType="Suggestion" targetId={viewing.id} current={ratings ? ratings.get(viewing.id) || null : undefined} onChange={setRating} />
+            </div>
             {viewing.rationale ? (
               <section className="detail-section">
                 <div className="detail-section-header">
@@ -220,5 +252,7 @@ export default function SuggestionsTable({ topicId = null, tableKey = 'suggestio
 
 SuggestionsTable.propTypes = {
   topicId: PropTypes.string,
-  tableKey: PropTypes.string
+  tableKey: PropTypes.string,
+  initialSuggestionId: PropTypes.string,
+  onSuggestionClosed: PropTypes.func
 };

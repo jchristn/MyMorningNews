@@ -8,6 +8,7 @@ import { FINDING_CATEGORIES, FINDING_TIERS } from '../../utils/enums.js';
 import CopyableId from '../../components/CopyableId.jsx';
 import DataTable from '../../components/DataTable.jsx';
 import DateCell from '../../components/DateCell.jsx';
+import FeedbackControl, { useFeedbackMap } from '../../components/FeedbackControl.jsx';
 import JsonViewerModal from '../../components/JsonViewerModal.jsx';
 import StatusBadge from '../../components/StatusBadge.jsx';
 import FindingDetailDrawer from './FindingDetailDrawer.jsx';
@@ -46,6 +47,7 @@ export default function FindingsTable({ topicId = null, runId = null, tableKey =
     [topicId, runId, includeDuplicates, includeDryRun]
   );
   const fetchPage = useCallback((q) => apiClient.listFindings(pagedQuery(q)), [apiClient]);
+  const [ratings, setRating] = useFeedbackMap('Finding', topicId);
 
   const columns = [
     {
@@ -95,6 +97,12 @@ export default function FindingsTable({ topicId = null, runId = null, tableKey =
             render: (r) => <span className="truncate">{topicNames.get(r.topicId) || r.topicId}</span>
           }
         ]),
+    {
+      key: 'rating',
+      header: t('findings.columns.rating'),
+      pinned: true,
+      render: (r) => (ratings ? <FeedbackControl targetType="Finding" targetId={r.id} current={ratings.get(r.id) || null} onChange={setRating} compact label={t('feedbackControl.rateItem', { title: r.title })} /> : null)
+    },
     { key: 'publishedUtc', header: t('findings.columns.published'), sortKey: 'publishedUtc', render: (r) => <DateCell value={r.publishedUtc} /> },
     { key: 'createdUtc', header: t('findings.columns.found'), sortKey: 'createdUtc', defaultHidden: true, render: (r) => <DateCell value={r.createdUtc} /> },
     { key: 'id', header: t('findings.columns.id'), defaultHidden: true, className: 'cell-id', render: (r) => <CopyableId value={r.id} /> }

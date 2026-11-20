@@ -17,6 +17,9 @@ import PageHeader from '../../components/PageHeader.jsx';
 import { describeSchedule } from '../../components/ScheduleEditor.jsx';
 import StatusBadge from '../../components/StatusBadge.jsx';
 import FindingsTable from '../findings/FindingsTable.jsx';
+import FeedbackTable from '../insights/FeedbackTable.jsx';
+import PreferencesTable from '../insights/PreferencesTable.jsx';
+import TopicInsights from '../insights/TopicInsights.jsx';
 import PredictionsTable from '../predictions/PredictionsTable.jsx';
 import RunsTable from '../runs/RunsTable.jsx';
 import SuggestionsTable from '../suggestions/SuggestionsTable.jsx';
@@ -37,9 +40,9 @@ export const WORKSPACE_TABS = [
   { id: 'findings' },
   { id: 'predictions' },
   { id: 'suggestions' },
-  { id: 'feedback', phase: 10 },
-  { id: 'preferences', phase: 10 },
-  { id: 'analytics', phase: 10 },
+  { id: 'feedback' },
+  { id: 'preferences' },
+  { id: 'analytics' },
   { id: 'delivery' },
   { id: 'prompts', phase: 12 },
   { id: 'models', phase: 12 }
@@ -247,6 +250,12 @@ export default function TopicWorkspace() {
         {tab === 'predictions' ? <PredictionsTable topicId={topic.id} tableKey="topic-predictions" /> : null}
 
         {tab === 'suggestions' ? <SuggestionsTable topicId={topic.id} tableKey="topic-suggestions" /> : null}
+
+        {tab === 'feedback' ? <FeedbackTable topicId={topic.id} tableKey="topic-feedback" /> : null}
+
+        {tab === 'preferences' ? <PreferencesTable topicId={topic.id} topics={[topic]} tableKey="topic-preferences" /> : null}
+
+        {tab === 'analytics' ? <TopicInsights topic={topic} onTopicUpdated={setTopic} /> : null}
 
         {tab === 'delivery' ? <DeliverySettings topic={topic} recipients={detail.recipients || []} onTopicUpdated={setTopic} onRecipientsChanged={(recipients) => setDetail((x) => ({ ...x, recipients }))} /> : null}
 

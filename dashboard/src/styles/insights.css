@@ -1,0 +1,111 @@
+/* Feedback controls, Insights pages, learned preferences, and the ranking recommendation. Tokens only. */
+.feedback-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.feedback-control .segmented button {
+  white-space: nowrap;
+}
+
+.feedback-control.compact .segmented button {
+  padding: 2px 7px;
+  font-size: var(--font-size-xs);
+}
+
+.feedback-control .segmented button.active.tone-relevant,
+.feedback-control .segmented button.active.tone-accurate,
+.feedback-control .segmented button.active.tone-useful {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.feedback-control .segmented button.active.tone-somewhat,
+.feedback-control .segmented button.active.tone-partially {
+  background: var(--color-info-soft);
+  color: var(--color-info);
+}
+
+.feedback-control .segmented button.active.tone-not-relevant,
+.feedback-control .segmented button.active.tone-inaccurate,
+.feedback-control .segmented button.active.tone-not-useful {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.feedback-control .segmented button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.feedback-why {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-sm);
+}
+
+.feedback-why.has-reason {
+  color: var(--color-primary);
+}
+
+.feedback-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+
+.section-feedback {
+  margin: 4px 0 16px;
+}
+
+.briefing-items .feedback-control {
+  margin-inline-start: auto;
+}
+
+.feedback-reason {
+  display: block;
+  max-width: 48ch;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.insights-scope {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.preference-statement {
+  display: block;
+  max-width: 60ch;
+  overflow-wrap: anywhere;
+}
+
+.preference-support {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.preference-support li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+}
+
+.ranking-table td,
+.ranking-table th {
+  padding: 6px 10px;
+}

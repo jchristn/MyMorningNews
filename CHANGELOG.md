@@ -11,6 +11,7 @@ All notable changes to this project are documented here. The project follows [Se
 
 ### Fixed
 
+- The MCP server bound its Prometheus endpoint to `*`, which Radiant rejects, so setting `MYMORNINGNEWS_MCP_PROMETHEUS_PORT` turned all MCP telemetry off. It now binds `MYMORNINGNEWS_MCP_PROMETHEUS_HOSTNAME` (default `127.0.0.1`, `mcp` in compose).
 - Deleting a user removed their topic rows through a database cascade but left the topics' runs, findings, briefings, and editions behind. User deletion now removes everything the user owns first (`AccountDataService`), which Phase 14 account deletion will reuse.
 - Credential auth modes are enforced: `SignedRequest` credentials refuse `x-secret-key` and session exchange, and `SessionExchange` credentials work only through `POST /v1.0/token`.
 - Abandoning a refinement of an existing Draft topic no longer deletes that topic.
@@ -31,6 +32,8 @@ All notable changes to this project are documented here. The project follows [Se
 - Platform Anthropic credential by reference (`platform:anthropic`) for personal tenants and, optionally, every new tenant.
 - `/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json` for mobile universal links.
 - Hosted overlay settings (sign-up on, Free plan default, egress blocking, platform credentials) and `docs/HOSTING.md`.
+- Factory demo profile: `factory/reset.sh --demo` (and `reset.bat`) seeds `demo@mymorningnews` / `password` with two topics, three completed runs with findings, verified evidence, predictions, suggestions, Markdown briefings, feedback, and learned preferences, using no model calls and no API key.
+- Grafana dashboards for every domain: Research pipeline, Briefings and audio, Email, Learning and feedback, Workers, Auth and security, MCP, and Integrations, next to Overview, HTTP, and Models and cost. All have an `instance` variable and a shared dashboard menu. Prometheus scrapes the MCP server (`mcp:9465`), and the server exports the Npgsql meter (connection pool and query duration).
 - Implementation plan (`MY_MORNING_NEWS_PLAN.md`).
 - Repository scaffolding: solution, backend projects, test projects, React dashboard, Docker Compose stack, CI workflows.
 - Backend foundation: Watson 7 host with OpenAPI, CORS, request IDs, and typed error responses.

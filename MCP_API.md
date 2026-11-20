@@ -37,7 +37,8 @@ dotnet run --project src/MyMorningNews.McpServer -f net10.0 -- --describe
 | `--describe` | | | Print the definitions as JSON and exit. |
 | | `MYMORNINGNEWS_OTLP_ENDPOINT` | none | OTLP collector for the Voltaic meter and traces. |
 | | `MYMORNINGNEWS_MCP_TELEMETRY` | `true` | Set `false` to turn telemetry off. |
-| | `MYMORNINGNEWS_MCP_PROMETHEUS_PORT` | `0` (off) | Prometheus scrape port. |
+| | `MYMORNINGNEWS_MCP_PROMETHEUS_PORT` | `0` (off) | Prometheus scrape port (`9465` in the container, scraped by the compose Prometheus). |
+| | `MYMORNINGNEWS_MCP_PROMETHEUS_HOSTNAME` | `127.0.0.1` | Hostname the scrape endpoint binds and answers to. No wildcards; the container uses `mcp`. |
 
 ## Authentication
 

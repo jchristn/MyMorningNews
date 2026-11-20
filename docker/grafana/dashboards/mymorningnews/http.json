@@ -35,7 +35,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (http_route) (rate(http_server_request_duration_seconds_count{job=\"mymorningnews-server\"}[5m]))",
+          "expr": "sum by (http_route) (rate(http_server_request_duration_seconds_count{job=\"mymorningnews-server\",instance=~\"$instance\"}[5m]))",
           "legendFormat": "{{http_route}}"
         }
       ],
@@ -63,17 +63,17 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "histogram_quantile(0.50, sum by (le) (rate(http_server_request_duration_seconds_bucket{job=\"mymorningnews-server\"}[5m])))",
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(http_server_request_duration_seconds_bucket{job=\"mymorningnews-server\",instance=~\"$instance\"}[5m])))",
           "legendFormat": "p50"
         },
         {
           "refId": "B",
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket{job=\"mymorningnews-server\"}[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket{job=\"mymorningnews-server\",instance=~\"$instance\"}[5m])))",
           "legendFormat": "p95"
         },
         {
           "refId": "C",
-          "expr": "histogram_quantile(0.99, sum by (le) (rate(http_server_request_duration_seconds_bucket{job=\"mymorningnews-server\"}[5m])))",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(http_server_request_duration_seconds_bucket{job=\"mymorningnews-server\",instance=~\"$instance\"}[5m])))",
           "legendFormat": "p99"
         }
       ],
@@ -101,7 +101,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "topk(10, histogram_quantile(0.95, sum by (le, http_route) (rate(http_server_request_duration_seconds_bucket{job=\"mymorningnews-server\"}[5m]))))",
+          "expr": "topk(10, histogram_quantile(0.95, sum by (le, http_route) (rate(http_server_request_duration_seconds_bucket{job=\"mymorningnews-server\",instance=~\"$instance\"}[5m]))))",
           "legendFormat": "{{http_route}}"
         }
       ],
@@ -129,7 +129,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (http_response_status_code) (rate(http_server_request_duration_seconds_count{job=\"mymorningnews-server\"}[5m]))",
+          "expr": "sum by (http_response_status_code) (rate(http_server_request_duration_seconds_count{job=\"mymorningnews-server\",instance=~\"$instance\"}[5m]))",
           "legendFormat": "{{http_response_status_code}}"
         }
       ],
@@ -157,12 +157,12 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(http_server_active_requests{job=\"mymorningnews-server\"})",
+          "expr": "sum(http_server_active_requests{job=\"mymorningnews-server\",instance=~\"$instance\"})",
           "legendFormat": "active requests"
         },
         {
           "refId": "B",
-          "expr": "sum(watson_server_connections_active{job=\"mymorningnews-server\"})",
+          "expr": "sum(watson_server_connections_active{job=\"mymorningnews-server\",instance=~\"$instance\"})",
           "legendFormat": "connections"
         }
       ],
@@ -190,7 +190,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_response_body_size_bytes_bucket{job=\"mymorningnews-server\"}[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_response_body_size_bytes_bucket{job=\"mymorningnews-server\",instance=~\"$instance\"}[5m])))",
           "legendFormat": "p95"
         }
       ],
@@ -218,11 +218,58 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (matched) (rate(watson_route_matches_total{job=\"mymorningnews-server\"}[5m]))",
+          "expr": "sum by (matched) (rate(watson_route_matches_total{job=\"mymorningnews-server\",instance=~\"$instance\"}[5m]))",
           "legendFormat": "matched={{matched}}"
         }
       ],
       "id": 7
     }
-  ]
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "instance",
+        "label": "Instance",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "query": {
+          "query": "label_values(up{job=\"mymorningnews-server\"}, instance)",
+          "refId": "instance"
+        },
+        "definition": "label_values(up{job=\"mymorningnews-server\"}, instance)",
+        "refresh": 2,
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "sort": 1,
+        "hide": 0
+      }
+    ]
+  },
+  "links": [
+    {
+      "title": "My Morning News",
+      "type": "dashboards",
+      "tags": [
+        "mymorningnews"
+      ],
+      "asDropdown": true,
+      "includeVars": true,
+      "keepTime": true,
+      "icon": "external link"
+    }
+  ],
+  "graphTooltip": 1
 }

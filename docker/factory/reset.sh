@@ -5,7 +5,9 @@
 # Tempo, Loki, Grafana), restores docker/server/mymorningnews.json from factory/mymorningnews.json, and starts fresh.
 #
 # Usage: factory/reset.sh [--demo] [--keep-ollama] [--yes]
-#   --demo         start with the factory demo overlay (factory/compose.factory.yaml), which seeds a demo user and demo data
+#   --demo         start with the factory demo overlay (factory/compose.factory.yaml): a demo user (demo@mymorningnews /
+#                  password) with topics, completed runs, findings, evidence, predictions, suggestions, briefings, and
+#                  feedback, seeded without model calls or an API key
 #   --keep-ollama  keep the Ollama model volume (only relevant with --profile ollama) so models are not downloaded again
 #   --yes          skip the confirmation prompt (for scripted resets)
 set -euo pipefail
@@ -54,3 +56,6 @@ fi
 docker ps -a --filter name=mymorningnews
 echo
 echo "Done. Open http://127.0.0.1:12101 and sign in as admin@mymorningnews / password (tenant default)."
+if [ "$DEMO" = "1" ]; then
+  echo "Demo data: sign in as demo@mymorningnews / password. Seeder logs: docker logs mymorningnews-factory-seed-data"
+fi

@@ -58,13 +58,13 @@ namespace MyMorningNews.McpServer
                 radiant.Prometheus.Enable = settings.PrometheusPort > 0;
                 if (radiant.Prometheus.Enable)
                 {
-                    radiant.Prometheus.Hostname = "*";
+                    radiant.Prometheus.Hostname = settings.PrometheusHostname;
                     radiant.Prometheus.Port = settings.PrometheusPort;
                 }
 
                 radiant.DiagnosticCallback = message => log("[telemetry] " + message);
                 _Host = RadiantHost.Start(radiant);
-                log("[telemetry] started (otlp " + (radiant.Otlp.Enable ? settings.OtlpEndpoint : "off") + ", prometheus " + (radiant.Prometheus.Enable ? settings.PrometheusPort.ToString() : "off") + ")");
+                log("[telemetry] started (otlp " + (radiant.Otlp.Enable ? settings.OtlpEndpoint : "off") + ", prometheus " + (radiant.Prometheus.Enable ? settings.PrometheusHostname + ":" + settings.PrometheusPort.ToString() : "off") + ")");
             }
             catch (Exception ex)
             {

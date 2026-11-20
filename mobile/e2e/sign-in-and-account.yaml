@@ -3,7 +3,7 @@
 # from the git-ignored mobile/qa/ folder:
 #   cd mobile/qa && maestro test -e SERVER=http://127.0.0.1:12100 ../e2e/sign-in-and-account.yaml
 # Android emulator: SERVER=http://10.0.2.2:12100. Default local sign-in: admin@mymorningnews / password.
-appId: ai.mymorningnews.app
+appId: ai.latticetech.mymorningnews
 env:
   SERVER: http://127.0.0.1:12100
   EMAIL: admin@mymorningnews

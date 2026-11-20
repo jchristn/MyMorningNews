@@ -173,7 +173,7 @@ Store metadata, privacy answers, age rating, screenshots, review notes, and the 
 | Variable | Used for | When empty |
 | --- | --- | --- |
 | `MYMORNINGNEWS_MOBILE_EAS_PROJECT_ID` | `extra.eas.projectId` (push tokens) and the EAS Update URL | No push tokens, updates off |
-| `MYMORNINGNEWS_MOBILE_BUNDLE_ID` | iOS bundle id and Android package | `ai.mymorningnews.app` |
+| `MYMORNINGNEWS_MOBILE_BUNDLE_ID` | iOS bundle id and Android package | `ai.latticetech.mymorningnews` |
 | `MYMORNINGNEWS_MOBILE_EAS_OWNER` | Expo account | `joel-christner` |
 | `MYMORNINGNEWS_MOBILE_LOCAL_TEAM_ID` | Free personal Apple team for device testing (bundle id `<id>.dev`, no push or associated domains) | Normal signing |
 | `GOOGLE_SERVICES_JSON` | Firebase config for Android push (EAS file variable; local `./google-services.json` is git-ignored) | Android builds work without push |

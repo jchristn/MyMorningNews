@@ -26,18 +26,18 @@ or tokens into this repository; they go into the consoles, EAS, or the password 
 
 ## Before the first TestFlight and Play internal build
 
-5. **App Store Connect app record.** Create the app: name "My Morning News", bundle ID `ai.mymorningnews.app`
+5. **App Store Connect app record.** Create the app: name "My Morning News", bundle ID `ai.latticetech.mymorningnews`
    (register it in Certificates, Identifiers & Profiles with Push Notifications and Associated Domains enabled),
    SKU `mymorningnews-ios`, primary language English (U.S.). Record the **App Store Connect app ID (ascAppId)** and
    the **Apple ID email** used for submissions; put both into `eas.json` `submit.preview.ios` and
    `submit.production.ios` (replace the `REPLACE_WITH_...` placeholders).
 6. **APNs key.** Let `npx eas-cli@latest credentials` create (or upload) an APNs authentication key (.p8) for the
    team. Keep the .p8 out of Git (`mobile/*.p8` is ignored).
-7. **Google Play Console app.** Create the app "My Morning News" with package `ai.mymorningnews.app` under the
+7. **Google Play Console app.** Create the app "My Morning News" with package `ai.latticetech.mymorningnews` under the
    organization developer account. The very first AAB must be uploaded by hand (Testing > Internal testing > Create
    release) before `eas submit` can upload.
 8. **Firebase and FCM V1 for Android push.** Create a Firebase project, add the Android app
-   `ai.mymorningnews.app`, download `google-services.json` and upload it as the EAS file variable
+   `ai.latticetech.mymorningnews`, download `google-services.json` and upload it as the EAS file variable
    `GOOGLE_SERVICES_JSON` (local builds: `mobile/google-services.json`, git-ignored). Create an FCM V1 service
    account key and upload it in `npx eas-cli@latest credentials` (Android > Push notifications).
 9. **Play service account for submissions.** Create a Google Cloud service account with "Release apps to testing

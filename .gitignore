@@ -79,3 +79,6 @@ mobile/*.keystore
 mobile/*.p8
 mobile/**/private-key*.pem
 .run/
+
+# Private store submission details (names, phones, account IDs, reviewer password)
+*.local.md

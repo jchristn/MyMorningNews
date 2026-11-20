@@ -26,19 +26,29 @@ namespace MyMorningNews.Core.Entitlements
         {
             new PlanSeed("free", "Free", "The hosted service's free plan with monthly caps.", 1, new Dictionary<string, string>
             {
-                { "usage.monthlyCostUsd.max", "5.00" }, { "topics.max", "5" }, { "schedule.minIntervalMinutes", "360" }, { "runs.daily.max", "8" },
-                { "audio.enabled", "true" }, { "audio.monthlyMinutes.max", "120" }, { "email.enabled", "true" }, { "mobile.access", "true" }, { "endpoints.custom", "false" }, { "artifacts.pinned.max", "50" }
+                { "usage.monthlyCostUsd.max", "3.00" }, { "topics.max", "1" }, { "schedule.minIntervalMinutes", "1440" }, { "runs.daily.max", "2" },
+                { "audio.enabled", "true" }, { "audio.monthlyMinutes.max", "10" }, { "email.enabled", "true" }, { "mobile.access", "true" }, { "endpoints.custom", "false" }, { "artifacts.pinned.max", "50" }
             }),
-            new PlanSeed("complimentary", "Complimentary", "A free subscription with generous limits, given by promotional codes.", 2, new Dictionary<string, string>
+            new PlanSeed("complimentary", "Complimentary", "A free subscription given by promotional codes, a step up from Free.", 2, new Dictionary<string, string>
             {
-                { "usage.monthlyCostUsd.max", "30.00" }, { "topics.max", "25" }, { "schedule.minIntervalMinutes", "60" }, { "runs.daily.max", "48" },
-                { "audio.enabled", "true" }, { "audio.monthlyMinutes.max", "600" }, { "email.enabled", "true" }, { "mobile.access", "true" }, { "endpoints.custom", "false" }, { "artifacts.pinned.max", "200" }
+                { "usage.monthlyCostUsd.max", "10.00" }, { "topics.max", "2" }, { "schedule.minIntervalMinutes", "1440" }, { "runs.daily.max", "4" },
+                { "audio.enabled", "true" }, { "audio.monthlyMinutes.max", "30" }, { "email.enabled", "true" }, { "mobile.access", "true" }, { "endpoints.custom", "false" }, { "artifacts.pinned.max", "200" }
             }),
             new PlanSeed("unlimited", "Unlimited", "No caps. The default for self-hosted installs.", 3, new Dictionary<string, string>
             {
                 { "usage.monthlyCostUsd.max", "unlimited" }, { "topics.max", "unlimited" }, { "schedule.minIntervalMinutes", "5" }, { "runs.daily.max", "unlimited" },
                 { "audio.enabled", "true" }, { "audio.monthlyMinutes.max", "unlimited" }, { "email.enabled", "true" }, { "mobile.access", "true" }, { "endpoints.custom", "true" }, { "artifacts.pinned.max", "10000" }
             })
+        };
+
+        /// <summary>
+        /// Values earlier releases shipped for built-in plans, by plan key and feature key. A stored value that still
+        /// equals one of these was never edited, so startup moves it to the current default (owner decision 2026-11-20).
+        /// </summary>
+        public static readonly IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> ReplacedDefaults = new Dictionary<string, IReadOnlyDictionary<string, string>>(StringComparer.Ordinal)
+        {
+            { "free", new Dictionary<string, string>(StringComparer.Ordinal) { { "usage.monthlyCostUsd.max", "5.00" }, { "topics.max", "5" }, { "schedule.minIntervalMinutes", "360" }, { "runs.daily.max", "8" }, { "audio.monthlyMinutes.max", "120" } } },
+            { "complimentary", new Dictionary<string, string>(StringComparer.Ordinal) { { "usage.monthlyCostUsd.max", "30.00" }, { "topics.max", "25" }, { "schedule.minIntervalMinutes", "60" }, { "runs.daily.max", "48" }, { "audio.monthlyMinutes.max", "600" } } }
         };
 
         private readonly DatabaseDriverBase _Database;
@@ -58,7 +68,8 @@ namespace MyMorningNews.Core.Entitlements
 
         /// <summary>
         /// Create missing built-in plans and their missing feature values, and mark the configured default.
-        /// Existing values are never changed (administrators may have edited them).
+        /// Existing values are kept (administrators may have edited them), except values still equal to a default an
+        /// earlier release shipped (<see cref="ReplacedDefaults"/>), which move to the current default.
         /// </summary>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Plans created.</returns>
@@ -79,6 +90,14 @@ namespace MyMorningNews.Core.Entitlements
                 List<PlanFeature> have = (await _Database.PlanFeatures.EnumerateAsync(new PlanFeatureFilter { PlanId = plan.Id, PageSize = 500 }, token).ConfigureAwait(false)).Items;
                 foreach (KeyValuePair<string, string> kv in seed.Features.Where(kv => have.All(h => h.Key != kv.Key)))
                     await _Database.PlanFeatures.CreateAsync(new PlanFeature { PlanId = plan.Id, Key = kv.Key, Value = kv.Value }, token).ConfigureAwait(false);
+                if (ReplacedDefaults.TryGetValue(seed.Key, out IReadOnlyDictionary<string, string>? old))
+                {
+                    foreach (PlanFeature f in have.Where(h => old.TryGetValue(h.Key, out string? was) && was == h.Value && seed.Features.ContainsKey(h.Key) && seed.Features[h.Key] != h.Value))
+                    {
+                        f.Value = seed.Features[f.Key];
+                        await _Database.PlanFeatures.UpdateAsync(f, token).ConfigureAwait(false);
+                    }
+                }
             }
 
             foreach (Plan p in plans)

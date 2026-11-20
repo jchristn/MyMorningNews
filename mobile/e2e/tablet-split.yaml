@@ -1,7 +1,7 @@
 # Tablet layout (iPad or Android tablet): sign in, check the persistent mini player, and open Account sections beside
 # the menu. Run from mobile/qa/ against a tablet simulator or emulator:
 #   maestro --device <tablet id> test -e SERVER=http://127.0.0.1:12100 ../e2e/tablet-split.yaml
-appId: ai.mymorningnews.app
+appId: ai.latticetech.mymorningnews
 env:
   SERVER: http://127.0.0.1:12100
   EMAIL: admin@mymorningnews

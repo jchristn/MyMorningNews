@@ -19,10 +19,8 @@ Expo, Mailgun on latticetech.ai) are reused; only the app-specific items below a
 - [ ] **Anthropic API key** for the default model (`claude-opus-5-5`): set `MYMORNINGNEWS_ANTHROPIC_API_KEY` in
   `docker/.env`, or add it in the dashboard (Configuration, Stored credentials) and select it on the Anthropic
   endpoint. Without it, model calls fail with "needs an API key".
-- [ ] **Review the website legal pages** on https://mymorningnews.ai (`privacy.html`, `terms.html`). They are drafts
-  written for the alpha.
-- [ ] **Confirm the support address** `hello@latticetech.ai` for the website, store listings, and emails, or give
-  me a different one.
+- [x] **Review the website legal pages** (approved 2026-11-20; terms and privacy now say 18 and over).
+- [x] **Confirm the support address** `hello@latticetech.ai` (confirmed 2026-11-20).
 - [ ] **Website HTTPS:** in the `jchristn/mymorningnews.ai` repository, Settings, Pages, tick "Enforce HTTPS" once
   GitHub has issued the certificate for `www.mymorningnews.ai` as well.
 - [ ] **Decide the website's sign-up buttons** until the hosted service exists (Phase 14): keep them, point them at a
@@ -47,17 +45,17 @@ Expo, Mailgun on latticetech.ai) are reused; only the app-specific items below a
 
 ## Phase 11: SDKs and MCP server
 
-- [ ] **Package publishing (optional, when you want public packages):** decide whether to publish `MyMorningNews.Sdk` to
-  NuGet, `mymorningnews-sdk` to npm, and `mymorningnews-sdk` to PyPI, and under which accounts. Each needs an API key
-  stored as a GitHub Actions secret (never in chat). Until then the SDKs are used from the repository.
+- [x] **Package publishing:** publish all three (decided 2026-11-20).
+- [ ] **Registry secrets:** add the GitHub Actions secrets `NUGET_API_KEY`, `NPM_TOKEN`, and `PYPI_API_TOKEN` in the
+  repository settings (never in chat). The `Publish SDKs` workflow publishes only the registries whose secret exists.
 - [ ] **Try the MCP server with your own client:** run `cd docker && docker compose --profile mcp up -d`, then add it to
   Claude Code with the command in `MCP_API.md`, and tell me what felt missing or awkward in the tools.
-- [ ] **MCP registry listing (optional):** decide whether to list the server in public MCP registries once the hosted
-  service has a public `/mcp` endpoint (Phase 14).
+- [x] **MCP registry listing:** yes (decided 2026-11-20). `src/MyMorningNews.McpServer/server.json` is prepared.
+- [ ] **Submit the MCP registry listing** once `https://app.mymorningnews.ai/mcp` is public (Phase 14).
 
 ## Phase 14: Hosted service
 
-- [ ] **Promotional code policy:** confirm what the Complimentary plan should include (it allows $30 of model use a month, 25 topics, hourly schedules, and 600 audio minutes; change it in the admin Plans page or tell me) and the default length for new codes (30 days).
+- [x] **Promotional code policy:** Complimentary is $10 a month, 2 topics, daily schedules, 30 audio minutes; codes last 30 days by default (decided 2026-11-20).
 
 - [ ] **A host** for `app.mymorningnews.ai` (for example the existing AWS account, us-west-2), with Docker installed,
   ports 80 and 443 open, and DNS for `app.mymorningnews.ai` pointing at it.
@@ -65,8 +63,7 @@ Expo, Mailgun on latticetech.ai) are reused; only the app-specific items below a
   IAM role or access key limited to it, and set the `MYMORNINGNEWS_STORAGE_*` values in the host's `docker/.env`.
 - [ ] **Production secrets** in the host's `docker/.env`: a new signing key, a new admin API key, a new SearXNG
   secret, the Anthropic key, and the Mailgun key. Never reuse the development defaults.
-- [ ] **Free-tier cap**: confirm the default monthly cost cap per user (proposed $5.00) and the other Free plan
-  limits in plan section 33.2.
+- [x] **Free-tier cap:** Free is $3 a month, 1 topic, daily schedules, 10 audio minutes, below Complimentary (decided 2026-11-20).
 - [ ] Optional: a **Cloudflare Turnstile** site key and secret for the sign-up form.
 
 ## Phase 16: Mobile apps (iOS and Android, phone and tablet)
@@ -74,19 +71,19 @@ Expo, Mailgun on latticetech.ai) are reused; only the app-specific items below a
 The app foundation is built and runs on the iPhone and iPad simulators and an Android emulator. The full, ordered mobile
 checklist with exact commands is in [`mobile/OWNER_ACTIONS.md`](mobile/OWNER_ACTIONS.md). The short version:
 
-- [ ] **Fill out [`APP_STORE_SUBMISSION.md`](APP_STORE_SUBMISSION.md)** (repository root). Every field lists the store, the
-  console field name, its limits, and a proposed value; supply or confirm each `Owner:` line (57 of them). Needed before
-  the first TestFlight and Play internal builds.
+- [x] **Fill out [`APP_STORE_SUBMISSION.md`](APP_STORE_SUBMISSION.md):** done by interview 2026-11-20. Remaining fields wait on
+  Apple's business enrollment (Team ID, app record ID, submitting Apple ID), the hosted service, and the interface review.
+  Personal fields are in the git-ignored `mobile/store-private.local.md`.
 - [ ] **Publisher accounts:** confirm the Lattice AI LLC Apple Developer organization enrollment is complete and send
   me the Apple Team ID (not secret).
 - [ ] **EAS project:** from `mobile/`, `npx eas-cli@latest login` (account `joel-christner`), then `npx eas-cli@latest init`;
   send me the project ID (it goes in `MYMORNINGNEWS_MOBILE_EAS_PROJECT_ID`).
 - [ ] **Live update signing key:** from `mobile/`, `npm run updates-certificate`; commit only `certificate.pem` and keep
   the private key outside Git.
-- [ ] **App Store Connect app** for bundle ID `ai.mymorningnews.app`; fill the `eas.json` submit placeholders (Apple ID
+- [ ] **App Store Connect app** for bundle ID `ai.latticetech.mymorningnews`; fill the `eas.json` submit placeholders (Apple ID
   email, App Store Connect app ID, Team ID).
 - [ ] **APNs key** for iOS push, through `npx eas-cli@latest credentials`.
-- [ ] **Google Play Console app** with package `ai.mymorningnews.app`; upload the first build by hand.
+- [ ] **Google Play Console app** with package `ai.latticetech.mymorningnews`; upload the first build by hand.
 - [ ] **Firebase and FCM V1** for Android push: `google-services.json` as the EAS file variable `GOOGLE_SERVICES_JSON`,
   and the FCM V1 service account key in EAS credentials.
 - [ ] **Play service account** for automated submissions.
@@ -100,8 +97,8 @@ checklist with exact commands is in [`mobile/OWNER_ACTIONS.md`](mobile/OWNER_ACT
   start earlier.
 - [ ] **Play foreground service video:** Google Play requires a short video showing background audio playback for the
   media playback foreground service declaration.
-- [ ] **Interface review session** with me before any screenshots are captured for the stores, the website, or the
-  README.
+- [ ] **Interface review:** comment on the private review page I publish (decided 2026-11-20); screenshots for the
+  stores, the website, and the README wait for your approval there.
 
 ## Phase 17: Final documentation
 

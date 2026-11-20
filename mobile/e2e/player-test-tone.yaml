@@ -2,7 +2,7 @@
 # test tone, skip, change speed, jump chapters, set the sleep timer, then send the app to the background so the
 # lock screen and notification controls can be checked. Run from mobile/qa/:
 #   maestro test -e SERVER=http://127.0.0.1:12100 ../e2e/player-test-tone.yaml
-appId: ai.mymorningnews.app
+appId: ai.latticetech.mymorningnews
 env:
   SERVER: http://127.0.0.1:12100
   EMAIL: admin@mymorningnews

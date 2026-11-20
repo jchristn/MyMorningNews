@@ -8,8 +8,16 @@ values are drafts: **every proposed text needs the owner's approval** before sub
 Related: `mobile/OWNER_ACTIONS.md` (ordered owner tasks), `mobile/README.md` (builds and environment variables),
 plan sections 33.1 (sign-in, account deletion) and 35 (mobile app).
 
-Rules for this file: no passwords, keys, or tokens here (they go into the consoles or EAS). Values the app reads
-from code are marked with where they live, so a change is made in one place.
+Rules for this file: no passwords, keys, or tokens here (they go into the consoles or EAS). Personal and account
+fields (contact names and phones, developer address, account IDs, the reviewer password) live in the git-ignored
+`mobile/store-private.local.md`. Values the app reads from code are marked with where they live, so a change is made
+in one place.
+
+**Owner decisions recorded 2026-11-20 (plan Q24 to Q28):** Android first through Google Play internal testing (the
+Lattice AI Play account is ready); iOS follows when Apple approves the business enrollment. Bundle ID
+`ai.latticetech.mymorningnews`. Countries: United States, Canada, United Kingdom, Australia, New Zealand. Ages 18 and
+over. Category Productivity on both stores. Free, no in-app purchases. Drafted listing text and answers approved, to
+be re-checked against the release build at submission.
 
 **Legend.** Store: **A** Apple App Store Connect, **G** Google Play Console, **A+G** both.
 
@@ -22,9 +30,9 @@ from code are marked with where they live, so a change is made in one place.
 | 0.1 | **Minimum functionality (Apple 4.2, Google "Minimum functionality").** Today, Topics, and Insights show "This arrives in a later server update" until plan Phases 4 to 10 land. Use TestFlight and Play internal testing now; submit for public release after briefings (Phase 7), audio (Phase 8), and account deletion (Phase 14). | `[ ] Owner: confirm the release timing` |
 | 0.2 | **In-app account deletion (Apple 5.1.1(v), Google account deletion policy).** Account > Delete account calls `POST /v1.0/api/account/delete` (contract E, Phase 14). Until it exists the screen links to the web page, which is not enough for Apple review. | Blocked on Phase 14 |
 | 0.3 | **Hosted service live** at `https://app.mymorningnews.ai`, with the reviewer demo account (section 9). | `[ ] Owner: confirm` |
-| 0.4 | **Legal pages reviewed and live**: privacy, terms, support, account deletion (section 1). | `[ ] Owner: confirm` |
-| 0.5 | **Interface review done**, then screenshots captured (section 8). No screenshots before the review. | `[ ] Owner: confirm` |
-| 0.6 | **Every proposed text and answer in this file approved.** | `[ ] Owner: approve` |
+| 0.4 | **Legal pages reviewed and live**: privacy, terms, support, account deletion (section 1). | `[x]` Wording approved 2026-11-20 (support `hello@latticetech.ai`; terms set to 18 and over) |
+| 0.5 | **Interface review done**, then screenshots captured (section 8). No screenshots before the review. | `[ ] Owner: review the private review page` |
+| 0.6 | **Every proposed text and answer in this file approved.** | `[x]` Approved 2026-11-20; re-check at submission |
 | 0.7 | **`npm run parity:strict` passes** (nothing planned remains for the routes the release claims). | Run before submitting |
 
 ---
@@ -33,33 +41,33 @@ from code are marked with where they live, so a change is made in one place.
 
 | Store | Field | Format and limits | Proposed value | Owner |
 |---|---|---|---|---|
-| A+G | App name | 30 characters max on both | `My Morning News` (15). From `mobile/app.config.js` `name`. | `[ ] Owner: approve; check the name is free on both stores early` |
-| A | Subtitle | 30 characters | `Your research, briefed daily` (28) | `[ ] Owner: approve` |
-| A | Bundle ID | Reverse DNS, immutable after the first build | `ai.mymorningnews.app` (`MYMORNINGNEWS_MOBILE_BUNDLE_ID` overrides) | Register in the Apple Developer portal |
-| G | Package name | Immutable after the first upload | `ai.mymorningnews.app` | |
-| A | SKU | Internal, unique in the account | `mymorningnews-ios` | `[ ] Owner: confirm` |
+| A+G | App name | 30 characters max on both | `My Morning News` (15). From `mobile/app.config.js` `name`. | `[x]` Approved; check the name is free when creating each app record |
+| A | Subtitle | 30 characters | `Your research, briefed daily` (28) | `[x]` Approved |
+| A | Bundle ID | Reverse DNS, immutable after the first build | `ai.latticetech.mymorningnews` (`MYMORNINGNEWS_MOBILE_BUNDLE_ID` overrides) | `[x]` Decided; register in the Apple Developer portal after enrollment |
+| G | Package name | Immutable after the first upload | `ai.latticetech.mymorningnews` | `[x]` Decided |
+| A | SKU | Internal, unique in the account | `mymorningnews-ios` | `[x]` Approved |
 | A | Primary language | | English (U.S.) | |
 | G | Default language | | English (United States), en-US | |
-| A | Apple ID (app record) | Numeric, issued by App Store Connect | | `[ ] Owner: _______________ (goes into eas.json submit ascAppId)` |
-| A | Team ID | 10 characters | | `[ ] Owner: _______________ (eas.json appleTeamId, universal link file)` |
-| A | Apple ID email used to submit | | | `[ ] Owner: _______________ (eas.json appleId)` |
-| G | Developer account | Organization account | Lattice AI LLC | `[ ] Owner: confirm account ID _______________` |
-| A+G | D-U-N-S number | Organization enrollment | On file for Lattice AI LLC | `[ ] Owner: confirm` |
+| A | Apple ID (app record) | Numeric, issued by App Store Connect | | `[ ] Pending Apple enrollment` (record in `mobile/store-private.local.md`, then `eas.json` submit `ascAppId`) |
+| A | Team ID | 10 characters | | `[ ] Pending Apple enrollment` (`eas.json` `appleTeamId`, universal link file) |
+| A | Apple ID email used to submit | | | `[ ] Pending Apple enrollment` (`eas.json` `appleId`) |
+| G | Developer account | Organization account | Lattice AI LLC | `[x]` Ready; account ID in `mobile/store-private.local.md` |
+| A+G | D-U-N-S number | Organization enrollment | On file for Lattice AI LLC | `[ ] Pending Apple business enrollment` |
 | A+G | Version | Numbers only on the stores | `0.1.0` (`app.config.js` `version`); release label `0.1.0-alpha` in `extra.releaseVersion` | No change without owner approval |
 | A | Build number | String | `1` (`ios.buildNumber`) | |
 | G | Version code | Integer | `1` (`android.versionCode`) | |
-| A | Copyright | Year and holder | `2026 Lattice AI LLC` | `[ ] Owner: approve` |
+| A | Copyright | Year and holder | `2026 Lattice AI LLC` | `[x]` Approved |
 | A+G | Support URL | Public page with contact details | `https://mymorningnews.ai/support.html` | |
 | A | Marketing URL | Optional | `https://mymorningnews.ai` | |
 | A+G | Privacy policy URL | Required | `https://mymorningnews.ai/privacy.html` | |
 | A | User privacy choices URL | Optional | `https://mymorningnews.ai/privacy.html` | |
-| A+G | Terms of use | Apple: standard EULA or a custom one; link in the description | `https://mymorningnews.ai/terms.html` (keep Apple's standard EULA and link our terms in the description) | `[ ] Owner: confirm standard EULA` |
-| G | Account deletion URL | Required; must work without the app and name the app and developer | `https://mymorningnews.ai/delete-account.html` | `[ ] Owner: confirm the page names "My Morning News" and "Lattice AI LLC"` |
+| A+G | Terms of use | Apple: standard EULA or a custom one; link in the description | `https://mymorningnews.ai/terms.html` (keep Apple's standard EULA and link our terms in the description) | `[x]` Approved |
+| G | Account deletion URL | Required; must work without the app and name the app and developer | `https://mymorningnews.ai/delete-account.html` | `[x]` Checked: the page names My Morning News and Lattice AI LLC |
 | A+G | Contact email | Shown to users on Google Play; App Review contact on Apple | `hello@latticetech.ai` | |
-| G | Contact phone | Optional | | `[ ] Owner: _______________ or leave empty` |
+| G | Contact phone | Optional | Same as the Play account holder | `[x]` In `mobile/store-private.local.md` |
 | G | Website | | `https://mymorningnews.ai` | |
-| G | Developer address | Public for organizations | | `[ ] Owner: _______________` |
-| A | App Review contact | First name, last name, phone, email | Email `hello@latticetech.ai` | `[ ] Owner: name _______________ phone _______________` |
+| G | Developer address | Public for organizations | The address registered for Lattice AI LLC in Play Console | `[x]` Use the console address |
+| A | App Review contact | First name, last name, phone, email | Email `hello@latticetech.ai`; name and phone of the account holder | `[x]` Same as the account holder |
 
 ---
 
@@ -71,13 +79,13 @@ All text in this section is proposed. No em-dashes, no claims the app does not s
 
 > My Morning News researches the topics you care about on your schedule and briefs you with ranked findings, sources for every claim, and audio you can play anywhere.
 
-(164 characters) `[ ] Owner: approve`
+(164 characters) `[x]` Approved
 
 ### 2.2 Google short description (80 characters)
 
 > Tell it what you care about. Get a ranked, sourced briefing to read or hear.
 
-(76 characters) `[ ] Owner: approve`
+(76 characters) `[x]` Approved
 
 ### 2.3 Full description (Apple 4000, Google 4000 characters)
 
@@ -99,28 +107,28 @@ All text in this section is proposed. No em-dashes, no claims the app does not s
 > Free while in alpha, with a usage cap. Sign in with email and password. Terms of use:
 > https://mymorningnews.ai/terms.html. Privacy policy: https://mymorningnews.ai/privacy.html.
 
-`[ ] Owner: approve. Re-check each bullet against what the release build does (section 0.1); remove any line whose feature has not shipped.`
+`[x]` Approved. Re-check each bullet against what the release build does (section 0.1); remove any line whose feature has not shipped.
 
 ### 2.4 Apple keywords (100 characters, comma separated, no spaces needed)
 
 `news,briefing,research,podcast,daily,digest,summary,topics,curated,morning,audio,ai,predictions` (95)
-`[ ] Owner: approve`
+`[x]` Approved
 
 ### 2.5 What's new (Apple 4000; Google release notes 500 per language)
 
 First release: not shown on Apple for version 1. Google internal testing notes:
 > First test build of My Morning News for iPhone, iPad, and Android.
 
-`[ ] Owner: approve`
+`[x]` Approved
 
 ### 2.6 Categories and tags
 
 | Store | Field | Proposed value | Owner |
 |---|---|---|---|
-| A | Primary category | News | `[ ] Owner: approve` |
-| A | Secondary category | Productivity | `[ ] Owner: approve` |
-| G | App category | News & Magazines | `[ ] Owner: approve` |
-| G | Tags (up to 5) | News, Productivity, Podcasts, Research, Personalization (pick from Play's list) | `[ ] Owner: choose` |
+| A | Primary category | Productivity | `[x]` Decided 2026-11-20 |
+| A | Secondary category | News | `[x]` Decided |
+| G | App category | Productivity (no Play news app declaration) | `[x]` Decided |
+| G | Tags (up to 5) | Productivity, News, Podcasts, Research, Personalization (pick the closest from Play's list) | `[x]` Approved |
 
 ---
 
@@ -128,18 +136,18 @@ First release: not shown on Apple for version 1. Google internal testing notes:
 
 | Store | Field | Proposed value | Owner |
 |---|---|---|---|
-| A+G | Price | Free. No in-app purchases while the service is free (plan decision Q11). When billing arrives, digital plans bought in the app go through in-app purchase (Apple 3.1.1). | `[ ] Owner: confirm` |
-| A+G | Countries and regions | | `[ ] Owner: list _______________ (suggest: United States first, then all where the service is offered)` |
+| A+G | Price | Free. No in-app purchases while the service is free (plan decision Q11). When billing arrives, digital plans bought in the app go through in-app purchase (Apple 3.1.1). | `[x]` Confirmed |
+| A+G | Countries and regions | United States, Canada, United Kingdom, Australia, New Zealand | `[x]` Decided |
 | A | Pre-order | No | |
-| A | Distribution | Public on the App Store | `[ ] Owner: confirm` |
-| A | iPhone and iPad apps on Apple silicon Macs | Off until tested | `[ ] Owner: decide` |
-| A | Apple Vision Pro availability | Off until tested | `[ ] Owner: decide` |
-| A | Phased release for automatic updates | On (7 days) | `[ ] Owner: confirm` |
-| A | Version release | Manual release after approval | `[ ] Owner: confirm` |
-| G | Countries | Same list as Apple | `[ ] Owner: confirm` |
+| A | Distribution | Public on the App Store | `[x]` Confirmed |
+| A | iPhone and iPad apps on Apple silicon Macs | On | `[x]` Decided; test on a Mac before the first public release |
+| A | Apple Vision Pro availability | Off | `[x]` Decided |
+| A | Phased release for automatic updates | On (7 days) | `[x]` Confirmed |
+| A | Version release | Manual release after approval | `[x]` Confirmed |
+| G | Countries | Same list as Apple | `[x]` Confirmed |
 | G | Contains ads | No | |
-| A+G | Paid Applications Agreement, tax, banking | Not needed while free; needed before any in-app purchase | `[ ] Owner: status _______________` |
-| A | Content rights: "Does your app contain, show, or access third-party content?" | Yes. Briefings quote short excerpts from public web pages with a link to each source, as summaries for the user's own research. | `[ ] Owner: confirm and confirm you have the rights or a fair use basis` |
+| A+G | Paid Applications Agreement, tax, banking | Not needed while free; needed before any in-app purchase | `[x]` Not needed yet |
+| A | Content rights: "Does your app contain, show, or access third-party content?" | Yes. Briefings quote short excerpts from public web pages with a link to each source, as summaries for the user's own research. | `[x]` Approved 2026-11-20 (short quoted excerpts with links, for the user's own research) |
 
 ---
 
@@ -152,7 +160,7 @@ First release: not shown on Apple for version 1. Google internal testing notes:
 | Proprietary or non-standard encryption | None |
 | French encryption declaration | Not needed |
 
-`[ ] Owner: confirm`
+`[x]` Confirmed 2026-11-20
 
 ---
 
@@ -186,7 +194,7 @@ There is no user-to-user content, no chat between people, no ads, no gambling, a
 | Made for Kids | No | |
 | Expected result | 13+ | |
 
-`[ ] Owner: approve every answer; if App Store Connect proposes a lower tier, decide whether to keep it`
+`[x]` Approved 2026-11-20; if App Store Connect proposes a lower tier, keep the higher one
 
 ### 5.2 Google Play (IARC questionnaire, category "Reference, News, or Educational")
 
@@ -203,16 +211,16 @@ There is no user-to-user content, no chat between people, no ads, no gambling, a
 | Digital purchases | No |
 | Unrestricted internet | No |
 
-`[ ] Owner: approve`
+`[x]` Approved
 
 ### 5.3 Google Play target audience and declarations
 
 | Declaration | Proposed answer | Owner |
 |---|---|---|
-| Target age group | 13 and over (18 and over if the terms require adults) | `[ ] Owner: choose to match the terms of service` |
+| Target age group | 18 and over (matches the terms of service) | `[x]` Decided 2026-11-20 |
 | Appeals to children | No | |
 | Ads | No ads | |
-| News app | Yes: it aggregates and summarizes news for the user. Play's news requirements: sources are named and linked on every item, and the developer contact is on the support page. | `[ ] Owner: decide (declaring No while presenting news can trigger enforcement)` |
+| News app | No: listed as Productivity, a research assistant for the user's own topics. Sources are still named and linked on every item. If Play review classifies it as news, switch to Yes (the app already meets the news requirements). | `[x]` Decided 2026-11-20 |
 | Government app | No | |
 | Financial features | None | |
 | Health apps | None | |
@@ -248,7 +256,7 @@ Notes: time zone and language preferences are settings, not location. Topic text
 to the AI model provider the server uses (Anthropic by default) to do the research; that provider processes it on the
 operator's behalf and does not use it for its own purposes.
 
-`[ ] Owner: approve; re-check when crash reporting, purchases, or new data types are added`
+`[x]` Approved 2026-11-20; re-check when crash reporting, purchases, or new data types are added
 
 Privacy manifest: Expo SDK 58 merges the required-reason API declarations of its modules into `PrivacyInfo.xcprivacy`
 at build time. After the first EAS production build, check the generated manifest and add `ios.privacyManifests` to
@@ -278,7 +286,7 @@ at build time. After the first EAS production build, check the generated manifes
 | App info and performance > Crash logs, Diagnostics | No | | |
 | Location, Financial info, Health and fitness, Messages, Photos and videos, Audio, Files and docs, Calendar, Contacts, Web browsing | No | | |
 
-`[ ] Owner: approve`
+`[x]` Approved 2026-11-20
 
 ---
 
@@ -322,7 +330,7 @@ Create the demo account on the hosted service before submitting: a verified user
 briefings with audio, findings, and predictions. Put the credentials only into App Store Connect (App Review
 Information > Sign-in required) and Play Console (App content > App access).
 
-`[ ] Owner: demo email _______________ (password entered only in the consoles)`
+`[x]` Demo email `demo@mymorningnews.ai` (password in `mobile/store-private.local.md`, entered only in the consoles)
 
 Notes template (App Store Connect "Notes" and Play Console "App access" instructions):
 
@@ -347,7 +355,7 @@ people who run their own open-source My Morning News server; reviewers do not ne
 Contact: hello@latticetech.ai
 ```
 
-`[ ] Owner: approve`
+`[x]` Approved 2026-11-20
 
 Before each submission: sign in with the demo account on a release build against production and make sure it has
 fresh briefings with audio.

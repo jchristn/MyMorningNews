@@ -1,0 +1,45 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+  "name": "ai.mymorningnews/mymorningnews",
+  "title": "My Morning News",
+  "description": "Your research topics, briefings with verified evidence, predictions, suggestions, and feedback.",
+  "version": "0.1.0-alpha",
+  "websiteUrl": "https://mymorningnews.ai",
+  "repository": {
+    "url": "https://github.com/jchristn/MyMorningNews",
+    "source": "github",
+    "subfolder": "src/MyMorningNews.McpServer"
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://app.mymorningnews.ai/mcp",
+      "headers": [
+        {
+          "name": "Authorization",
+          "description": "Bearer <session token>, from POST /v1.0/token. Or send x-access-key, x-secret-key, and x-tenant-guid instead.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "x-access-key",
+          "description": "Access key of a My Morning News credential (with x-secret-key and x-tenant-guid).",
+          "isRequired": false,
+          "isSecret": false
+        },
+        {
+          "name": "x-secret-key",
+          "description": "Secret key of the credential.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "x-tenant-guid",
+          "description": "Tenant of the credential.",
+          "isRequired": false,
+          "isSecret": false
+        }
+      ]
+    }
+  ]
+}

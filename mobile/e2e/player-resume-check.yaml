@@ -1,6 +1,6 @@
 # Run right after player-test-tone.yaml (which leaves the app in the background with the tone playing): bring the
 # app back without restarting it and check that playback continued while it was in the background.
-appId: ai.mymorningnews.app
+appId: ai.latticetech.mymorningnews
 ---
 - launchApp:
     stopApp: false

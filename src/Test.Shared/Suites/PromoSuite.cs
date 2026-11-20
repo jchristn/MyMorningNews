@@ -65,7 +65,7 @@ namespace Test.Shared.Suites
             EffectivePlan before = (await a.Client.GetAsync("/v1.0/api/account/plan", token).ConfigureAwait(false)).Expect(200, "plan").Json<EffectivePlan>();
             Assert.True(before.Plan.Key == "unlimited" && before.Assignment == null, "self-hosted default plan");
             EffectivePlan after = (await a.Client.PostAsync("/v1.0/api/promo-codes/redeem", new { code = " " + code.ToLowerInvariant() + " " }, token).ConfigureAwait(false)).Expect(201, "redeem").Json<EffectivePlan>();
-            Assert.True(after.Plan.Key == "complimentary" && after.Assignment!.Source == PlanSourceEnum.Promo && after.EndsUtc > DateTime.UtcNow.AddDays(29.9) && after.Features["topics.max"] == "25", "free subscription for 30 days");
+            Assert.True(after.Plan.Key == "complimentary" && after.Assignment!.Source == PlanSourceEnum.Promo && after.EndsUtc > DateTime.UtcNow.AddDays(29.9) && after.Features["topics.max"] == "2", "free subscription for 30 days");
             TestResponse again = (await a.Client.PostAsync("/v1.0/api/promo-codes/redeem", new { code = code }, token).ConfigureAwait(false)).Expect(409, "once per user");
             Assert.True(again.Body.Contains("AlreadyRedeemed", StringComparison.Ordinal), "reason: " + again.Body);
             (await b.Client.PostAsync("/v1.0/api/promo-codes/redeem", new { code = code }, token).ConfigureAwait(false)).Expect(201, "second person");
@@ -157,8 +157,19 @@ namespace Test.Shared.Suites
             Tenant t = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
             TestUser u = await TestFixtures.CreateUserAsync(admin, t.Id, false, token).ConfigureAwait(false);
             List<PlanResponse> plans = (await admin.GetAsync("/v1.0/api/admin/plans", token).ConfigureAwait(false)).Expect(200, "plans").Json<List<PlanResponse>>();
-            Assert.True(plans.Select(p => p.Plan.Key).Take(3).SequenceEqual(new[] { "free", "complimentary", "unlimited" }) && plans.Single(p => p.Plan.Key == "unlimited").Plan.IsDefault && plans.Single(p => p.Plan.Key == "free").Features["topics.max"] == "5",
+            Assert.True(plans.Select(p => p.Plan.Key).Take(3).SequenceEqual(new[] { "free", "complimentary", "unlimited" }) && plans.Single(p => p.Plan.Key == "unlimited").Plan.IsDefault && plans.Single(p => p.Plan.Key == "free").Features["topics.max"] == "1",
                 "built-in plans with values");
+            MyMorningNews.Server.MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+            Plan free = plans.Single(p => p.Plan.Key == "free").Plan;
+            List<PlanFeature> freeFeatures = (await server.Context.Database.PlanFeatures.EnumerateAsync(new MyMorningNews.Core.Requests.PlanFeatureFilter { PlanId = free.Id, PageSize = 100 }, token).ConfigureAwait(false)).Items;
+            PlanFeature oldDefault = freeFeatures.Single(f => f.Key == "audio.monthlyMinutes.max");
+            PlanFeature untouched = freeFeatures.Single(f => f.Key == "artifacts.pinned.max");
+            oldDefault.Value = "120";
+            string keptValue = untouched.Value;
+            await server.Context.Database.PlanFeatures.UpdateAsync(oldDefault, token).ConfigureAwait(false);
+            await server.Context.Entitlements.EnsureDefaultsAsync(token).ConfigureAwait(false);
+            List<PlanFeature> after = (await server.Context.Database.PlanFeatures.EnumerateAsync(new MyMorningNews.Core.Requests.PlanFeatureFilter { PlanId = free.Id, PageSize = 100 }, token).ConfigureAwait(false)).Items;
+            Assert.True(after.Single(f => f.Key == "audio.monthlyMinutes.max").Value == "10" && after.Single(f => f.Key == "artifacts.pinned.max").Value == keptValue, "an old shipped default moves to the new one; other values stay");
             string key = "partner-" + Guid.NewGuid().ToString("N").Substring(0, 6);
             PlanResponse partner = (await admin.PostAsync("/v1.0/api/admin/plans", new { key = key, name = "Partner", features = new Dictionary<string, string> { { "topics.max", "12" }, { "audio.enabled", "false" } } }, token).ConfigureAwait(false))
                 .Expect(201, "create plan").Json<PlanResponse>();

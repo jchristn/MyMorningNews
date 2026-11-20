@@ -127,6 +127,10 @@ Try it: ask your client to "list my My Morning News topics", "read today's brief
 
 The MCP server runs its own Radiant host and exports the `Voltaic` meter and activity source (tool calls, durations, errors, sessions) to the same Tempo and Prometheus as the REST server. The REST calls it makes appear in the REST server's request history and traces under the caller's identity.
 
+## Registry listing
+
+`src/MyMorningNews.McpServer/server.json` describes the hosted server for the MCP registry (name `ai.mymorningnews/mymorningnews`, Streamable HTTP at `https://app.mymorningnews.ai/mcp`). It is submitted once the hosted service is public: validate it with the registry's `mcp-publisher validate`, prove the `mymorningnews.ai` domain, and publish. Keep its `version` in step with the server.
+
 ## Keeping this document current
 
 The reference below is generated from the code. After changing a tool, resource, or prompt, run:

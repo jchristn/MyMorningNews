@@ -1621,6 +1621,18 @@ Decided on 2026-11-19 (hosted service, website, and mobile):
 | Q14 | Website repository | `~/Websites/mymorningnews.ai`, remote `https://github.com/jchristn/mymorningnews.ai` (authorized 2026-11-19). Enabling GitHub Pages and DNS for `mymorningnews.ai` are owner actions. |
 | Q15 | App URL | `https://app.mymorningnews.ai` for the hosted dashboard and API (same origin through the reverse proxy). |
 | Q16 | Copyright holder | Every property carries "(c) 2026 Lattice AI LLC": `LICENSE.md`, assembly metadata, the dashboard sign-in page, email footers (section 23), the mobile app's About screen and store listings (section 35), and the website footer and legal pages (Lattice AI LLC is the operator). |
+| Q17 | Complimentary plan (promo codes) | $10 of model use a month, 2 topics, schedules no more often than daily, 30 audio minutes a month (2026-11-20). |
+| Q18 | Promo code default length | 30 days; admins override per code. |
+| Q19 | Agentic search | Opt-in per topic (off by default). |
+| Q20 | Interface review | A private review page of captured screens and listing text; nothing public until approved. |
+| Q21 | SDK packages | Publish all three (NuGet `MyMorningNews.Sdk`, npm `mymorningnews-sdk`, PyPI `mymorningnews-sdk`) through workflows that run only when the registry secrets exist. |
+| Q22 | MCP registry | List the server once the hosted `/mcp` endpoint is public; `server.json` prepared in the repository. |
+| Q23 | Support contact | `hello@latticetech.ai` on every property; the drafted legal wording is approved. |
+| Q24 | Mobile distribution | Google Play account ready (Lattice AI); Apple Developer Program enrollment for the business pending. Android first through Play internal testing; iOS follows. The paid store accounts are an exception to the desktop no-signing policy in INSTALLERS.md. |
+| Q25 | Bundle identifier | `ai.latticetech.mymorningnews` (iOS bundle ID and Android application ID), matching the other Lattice products. |
+| Q26 | Launch countries | United States, Canada, United Kingdom, Australia, New Zealand (apps and hosted service). |
+| Q27 | Minimum age | 18 and over (terms of service, store age ratings, sign-up). |
+| Q28 | Store listing | Category Productivity on both stores (Apple secondary News; no Play news declaration). Drafted listing text and privacy, data safety, and age answers approved, re-checked at submission. iPhone, iPad, and Apple silicon Macs; Vision Pro off; 7-day phased release; manual release. Free, no in-app purchases. EAS owner `joel-christner`. Reviewer demo account `demo@mymorningnews.ai`. Personal store fields live in the git-ignored `mobile/store-private.local.md`. |
 
 No open questions remain.
 
@@ -1796,7 +1808,7 @@ Everything a member can do on the web, the app can do. Operator and administrato
 ### 35.6 Tests, builds, and stores
 
 - **`npm run verify`** runs lint (including `lint:shared`), the i18n check, the parity check, the dependency audit check, Jest with `@testing-library/react-native`, and `expo export` for iOS and Android. `.github/workflows/mobile.yml` runs it on every push. `docs/MOBILE_DEVICE_TESTING.md` covers simulators, emulators, and physical devices against a local server (`http://<lan-ip>:12100`). Plain HTTP shows a warning.
-- **Builds:** EAS profiles `development` (dev client), `preview` (internal distribution), and `production`. Code-signed `expo-updates` follow TrellisKit (certificate generation, key rotation, `publish-update`). Identifiers: iOS bundle and Android application ID `ai.mymorningnews.app`, URL scheme `mymorningnews`.
+- **Builds:** EAS profiles `development` (dev client), `preview` (internal distribution), and `production`. Code-signed `expo-updates` follow TrellisKit (certificate generation, key rotation, `publish-update`). Identifiers: iOS bundle and Android application ID `ai.latticetech.mymorningnews`, URL scheme `mymorningnews`.
 - **Version.** The store version is `0.1.0` with incrementing build numbers, matching the product's `0.1.0-alpha` (stores do not accept the `-alpha` suffix). No version number changes without approval.
 - **`mobile/APP_STORE_SUBMISSION.md`**, modelled on BjjWithJoel's: app information, age rating, Apple privacy label and Google data safety answers (account email, usage data, no tracking, no ads), account deletion (in app and on the website), a reviewer demo account on the hosted service, a screenshot plan (6.9-inch and 6.5-inch iPhone, 13-inch iPad, Android phone and 10-inch tablet, both themes), and review notes. No in-app purchases while the service is free (decision Q11). When billing arrives, digital plans bought in the app go through in-app purchase per Guideline 3.1.1, sharing the entitlements model.
 - **Owner actions before the first store build:** an Apple Developer account and App Store Connect app, a Google Play Console app, an APNs key, an FCM V1 service account, the EAS project, and store listing copy review.
@@ -1805,7 +1817,7 @@ Everything a member can do on the web, the app can do. Operator and administrato
 
 `APP_STORE_SUBMISSION.md` at the repository root is the single source for store metadata. It covers, for the Apple App Store and Google Play:
 
-- **App record:** name, subtitle or short description, full description, promotional text, keywords, categories, bundle ID and package (`ai.mymorningnews.app`), SKU, primary language, and localizations.
+- **App record:** name, subtitle or short description, full description, promotional text, keywords, categories, bundle ID and package (`ai.latticetech.mymorningnews`), SKU, primary language, and localizations.
 - **People and URLs:** copyright (`2026 Lattice AI LLC`), developer and seller name, support URL, marketing URL, privacy policy URL, account deletion URL, and support email (`hello@latticetech.ai`).
 - **Ratings and declarations:** age rating questionnaires (Apple and IARC), target audience, ads (none), news app declaration, content rights, and export compliance (standard HTTPS only).
 - **Privacy:** the Apple privacy label and the Google Play data safety form, item by item.

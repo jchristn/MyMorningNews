@@ -35,7 +35,7 @@ Install the same build on a tablet simulator (Metro from step 1 keeps serving it
 ```bash
 xcrun simctl boot "iPad Pro 11-inch (M5)"
 xcrun simctl install "iPad Pro 11-inch (M5)" ~/Library/Developer/Xcode/DerivedData/MyMorningNews-*/Build/Products/Debug-iphonesimulator/MyMorningNews.app
-xcrun simctl launch "iPad Pro 11-inch (M5)" ai.mymorningnews.app
+xcrun simctl launch "iPad Pro 11-inch (M5)" ai.latticetech.mymorningnews
 ```
 
 Or run `npx expo run:ios --device "iPad Pro 11-inch (M5)" --port 12191` with Metro stopped. Windows 768 points and
@@ -73,7 +73,7 @@ anything else.
 Without the Lattice AI LLC Apple Developer team you can still install on your own device for seven days at a time:
 
 1. In Xcode > Settings > Accounts, add your Apple ID; note the personal team ID (Membership details).
-2. Build with the local team, which switches the bundle id to `ai.mymorningnews.app.dev` and drops the push and
+2. Build with the local team, which switches the bundle id to `ai.latticetech.mymorningnews.dev` and drops the push and
    associated domains entitlements that personal teams cannot sign:
 
    ```bash

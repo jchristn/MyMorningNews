@@ -43,11 +43,11 @@ describe('repository rules', () => {
   it('configures identity, background audio, links, and permissions', () => {
     const config = require('../../app.config.js')();
     expect(config).toMatchObject({ name: 'My Morning News', slug: 'mymorningnews', scheme: 'mymorningnews', orientation: 'default', userInterfaceStyle: 'automatic' });
-    expect(config.ios).toMatchObject({ bundleIdentifier: 'ai.mymorningnews.app', supportsTablet: true, associatedDomains: ['applinks:app.mymorningnews.ai'] });
+    expect(config.ios).toMatchObject({ bundleIdentifier: 'ai.latticetech.mymorningnews', supportsTablet: true, associatedDomains: ['applinks:app.mymorningnews.ai'] });
     expect(config.ios.infoPlist.UIBackgroundModes).toEqual(['audio', 'remote-notification']);
     expect(config.ios.infoPlist.NSAppTransportSecurity).toEqual({ NSAllowsLocalNetworking: true });
     expect(config.ios.infoPlist.NSFaceIDUsageDescription).toMatch(/Face ID/);
-    expect(config.android.package).toBe('ai.mymorningnews.app');
+    expect(config.android.package).toBe('ai.latticetech.mymorningnews');
     expect(config.android.permissions).toEqual(expect.arrayContaining(['android.permission.POST_NOTIFICATIONS', 'android.permission.USE_BIOMETRIC', 'android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK']));
     expect(config.android.intentFilters[0].data[0]).toMatchObject({ scheme: 'https', host: 'app.mymorningnews.ai' });
     expect(config.updates).toEqual({ enabled: false });

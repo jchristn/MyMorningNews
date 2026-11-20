@@ -49,6 +49,10 @@ Each accepts `--base-url`, `--email`, `--password`, `--tenant`, `--with-run`, an
 
 The `SDK harnesses` job in `.github/workflows/tests.yml` starts PostgreSQL and the server, seeds the demo member, and runs all three.
 
+## Publishing
+
+`.github/workflows/publish-sdks.yml` publishes all three when a tag such as `sdk-v0.1.0-alpha` is pushed (or when run by hand): NuGet `MyMorningNews.Sdk`, npm `mymorningnews-sdk` (dist tag `alpha`), and PyPI `mymorningnews-sdk`. Each registry is skipped until its repository secret exists: `NUGET_API_KEY`, `NPM_TOKEN`, `PYPI_API_TOKEN`. Versions change only with the owner's approval.
+
 ## Regenerating models
 
 The C# and Python models are generated from `src/MyMorningNews.Core`. After changing a model, request, response, or enum there, run:

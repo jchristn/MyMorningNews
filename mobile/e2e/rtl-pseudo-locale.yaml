@@ -1,6 +1,6 @@
 # Switch to the right-to-left pseudo-locale, restart, check the mirrored layout, and switch back. Assumes a signed-in
 # app. Run from mobile/qa/: maestro test ../e2e/rtl-pseudo-locale.yaml
-appId: ai.mymorningnews.app
+appId: ai.latticetech.mymorningnews
 ---
 - launchApp
 - tapOn: ".*Account.*"

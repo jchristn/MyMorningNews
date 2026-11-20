@@ -20,12 +20,13 @@ import Modal from '../../components/Modal.jsx';
 import StatusBadge from '../../components/StatusBadge.jsx';
 import EmailPreviewModal from '../email/EmailPreviewModal.jsx';
 import RunModelCalls from './RunModelCalls.jsx';
+import RunToolCalls from './RunToolCalls.jsx';
 import RunStages from './RunStages.jsx';
 import { RunQueriesTable, RunResultsTable } from './RunSearchTables.jsx';
 import { failedStages, findingsLink, isActiveRun, isFinishedRun, mergeStage, retryAction, runDurationMs, withAllStages } from './runParts.js';
 import useRunEvents from './useRunEvents.js';
 
-const TABS = ['stages', 'queries', 'results', 'calls', 'details'];
+const TABS = ['stages', 'queries', 'results', 'calls', 'tools', 'details'];
 
 // Everything about one run: totals, the stage timeline, queries, results with dispositions, model calls, and provenance.
 // While the run is queued or running it follows the run's server-sent events and shows every stage as a live
@@ -207,6 +208,7 @@ export default function RunDetailDrawer({ runId, topicLabel, onClose, onChanged,
           {tab === 'queries' ? <RunQueriesTable runId={run.id} /> : null}
           {tab === 'results' ? <RunResultsTable runId={run.id} /> : null}
           {tab === 'calls' ? <RunModelCalls runId={run.id} /> : null}
+          {tab === 'tools' ? <RunToolCalls runId={run.id} /> : null}
           {tab === 'details' ? (
             <KeyValueGrid
               rows={[

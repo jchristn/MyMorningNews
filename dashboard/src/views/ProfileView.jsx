@@ -10,6 +10,7 @@ import LoadingState from '../components/LoadingState.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import PasswordInput from '../components/PasswordInput.jsx';
 import LanguageSelector from '../i18n/LanguageSelector.jsx';
+import AccountCard from './profile/AccountCard.jsx';
 import EmailPreferences from './profile/EmailPreferences.jsx';
 import PlanCard from './profile/PlanCard.jsx';
 import PodcastFeeds from './profile/PodcastFeeds.jsx';
@@ -114,6 +115,7 @@ export default function ProfileView() {
         </form>
       </div>
       <PlanCard />
+      <AccountCard />
       <EmailPreferences />
       <PodcastFeeds />
     </div>

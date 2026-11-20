@@ -23,6 +23,7 @@ import TopicInsights from '../insights/TopicInsights.jsx';
 import PredictionsTable from '../predictions/PredictionsTable.jsx';
 import RunsTable from '../runs/RunsTable.jsx';
 import SuggestionsTable from '../suggestions/SuggestionsTable.jsx';
+import AgenticSearchSettings from './AgenticSearchSettings.jsx';
 import ConstraintEditor from './ConstraintEditor.jsx';
 import DeliverySettings from './DeliverySettings.jsx';
 import DimensionList from './DimensionList.jsx';
@@ -224,6 +225,7 @@ export default function TopicWorkspace() {
               onRemoved={(rid) => setDetail((x) => ({ ...x, constraints: x.constraints.filter((c) => c.id !== rid) }))}
             />
             <div className="notice notice-info">{t('topics.workspace.searchProvidersLater')}</div>
+            <AgenticSearchSettings topic={topic} onTopicUpdated={setTopic} />
           </div>
         ) : null}
 

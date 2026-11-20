@@ -11,10 +11,12 @@ export function describeError(error, t) {
     else if (status === 401) title = t('errors.unauthorized');
     else if (status === 403) title = t('errors.forbidden');
     else if (status === 404) title = t('errors.notFound');
+    else if (status === 402) title = t('errors.capReached');
     else if (status === 409) title = t('errors.conflict');
     else if (status === 429) title = t('errors.tooMany');
     else if (status >= 500) title = t('errors.server');
     const reason = error.body && error.body.reason ? error.body.reason : null;
+    if (status === 400 && error.code === 'EgressBlocked') title = t('errors.egressBlocked');
     return {
       title,
       message: reason || error.message || t('errors.generic'),

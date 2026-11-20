@@ -6,6 +6,10 @@ import { AuthProvider } from './context/AuthContext.jsx';
 import { ThemeProvider } from './context/ThemeContext.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import LoadingState from './components/LoadingState.jsx';
+import ForgotPasswordPage from './components/auth/ForgotPasswordPage.jsx';
+import ResetPasswordPage from './components/auth/ResetPasswordPage.jsx';
+import SignupPage from './components/auth/SignupPage.jsx';
+import VerifyEmailPage from './components/auth/VerifyEmailPage.jsx';
 import Login from './components/Login.jsx';
 import PhasePlaceholder from './components/PhasePlaceholder.jsx';
 import { PrivateRoute, PublicRoute, RequireAccess } from './components/ProtectedRoute.jsx';
@@ -46,6 +50,7 @@ const VIEWS = {
   promoCodes: lazy(() => import('./views/PromoCodesView.jsx')),
   email: lazy(() => import('./views/EmailView.jsx')),
   mcp: lazy(() => import('./views/McpView.jsx')),
+  mcpServers: lazy(() => import('./views/McpServersView.jsx')),
   insightsOverview: lazy(() => import('./views/insights/OverviewView.jsx')),
   emailInsights: lazy(() => import('./views/insights/EmailInsightsView.jsx')),
   relevance: lazy(() => import('./views/insights/RelevanceView.jsx')),
@@ -82,6 +87,25 @@ export function AppRoutes() {
           </PublicRoute>
         }
       />
+      <Route
+        path="/signup"
+        element={
+          <PublicRoute>
+            <SignupPage />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/forgot-password"
+        element={
+          <PublicRoute>
+            <ForgotPasswordPage />
+          </PublicRoute>
+        }
+      />
+      <Route path="/verify" element={<VerifyEmailPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/login" element={<Navigate to="/" replace />} />
       <Route
         path="/dashboard"
         element={

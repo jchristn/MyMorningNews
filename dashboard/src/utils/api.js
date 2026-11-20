@@ -4,6 +4,13 @@ import { createSseParser } from './sse.js';
 
 export const DEFAULT_SERVER_URL = 'http://127.0.0.1:12100';
 
+// The server to suggest: the page's own origin when the dashboard is served over HTTPS (the hosted service puts the
+// API and the dashboard on one origin), otherwise the local default.
+export function defaultServerUrl() {
+  if (typeof window !== 'undefined' && window.location && window.location.protocol === 'https:') return window.location.origin;
+  return DEFAULT_SERVER_URL;
+}
+
 export class ApiError extends Error {
   constructor(status, body, message) {
     super(message || (body && body.message) || 'HTTP ' + status);
@@ -144,8 +151,11 @@ export class ApiClient {
   }
 
   // Sessions
+  // Without a tenant, a single matching tenant signs in; several return 409 with the tenant list.
   login(email, password, tenantId) {
-    return this._request('POST', '/v1.0/token', { headers: { 'x-email': email, 'x-password': password, 'x-tenant-guid': tenantId } });
+    const headers = { 'x-email': email, 'x-password': password };
+    if (tenantId) headers['x-tenant-guid'] = tenantId;
+    return this._request('POST', '/v1.0/token', { headers });
   }
   validateToken() {
     return this._request('GET', '/v1.0/token');
@@ -923,6 +933,69 @@ export class ApiClient {
   }
   checkPromoCode(code) {
     return this._request('GET', '/v1.0/public/promo-codes/' + enc(code));
+  }
+
+  // Hosted accounts (Phase 14). The public routes answer the same way whether or not an account exists.
+  getClientConfig() {
+    return this._request('GET', '/v1.0/api/client-config');
+  }
+  signUp(body) {
+    return this._request('POST', '/v1.0/public/signup', { body });
+  }
+  verifyEmail(token) {
+    return this._request('POST', '/v1.0/public/verify-email', { body: { token } });
+  }
+  resendVerification(email) {
+    return this._request('POST', '/v1.0/public/verify-email/resend', { body: { email } });
+  }
+  forgotPassword(email) {
+    return this._request('POST', '/v1.0/public/password/forgot', { body: { email } });
+  }
+  resetPassword(token, password) {
+    return this._request('POST', '/v1.0/public/password/reset', { body: { token, password } });
+  }
+  // The usage meter: plan, month-to-date cost and cap, reset date, counts, and limits.
+  getAccountUsage() {
+    return this._request('GET', '/v1.0/api/account/usage');
+  }
+  // Resolves to { blob, filename, contentType, status } for the ZIP.
+  exportAccount() {
+    return this._requestBlob('GET', '/v1.0/api/account/export');
+  }
+  // Resolves to { purgeAfterUtc, message }; every session ends.
+  deleteAccount() {
+    return this._request('POST', '/v1.0/api/account/delete');
+  }
+
+  // MCP tool servers for agentic research.
+  listMcpServers(query) {
+    return this._request('GET', '/v1.0/api/mcp-servers', { query });
+  }
+  // Resolves to { server, tools }.
+  getMcpServer(id) {
+    return this._request('GET', '/v1.0/api/mcp-servers/' + enc(id));
+  }
+  createMcpServer(body) {
+    return this._request('POST', '/v1.0/api/mcp-servers', { body });
+  }
+  updateMcpServer(id, body) {
+    return this._request('PUT', '/v1.0/api/mcp-servers/' + enc(id), { body });
+  }
+  deleteMcpServer(id) {
+    return this._request('DELETE', '/v1.0/api/mcp-servers/' + enc(id));
+  }
+  // Resolves to { success, toolCount, tools } or { success: false, error }; nothing is saved.
+  testMcpServer(id) {
+    return this._request('POST', '/v1.0/api/mcp-servers/' + enc(id) + '/test');
+  }
+  discoverMcpServer(id) {
+    return this._request('POST', '/v1.0/api/mcp-servers/' + enc(id) + '/discover');
+  }
+  setMcpToolEnabled(id, toolId, enabled) {
+    return this._request('PUT', '/v1.0/api/mcp-servers/' + enc(id) + '/tools/' + enc(toolId), { body: { enabled } });
+  }
+  listRunToolCalls(id) {
+    return this._request('GET', '/v1.0/api/runs/' + enc(id) + '/tool-calls');
   }
 
   // Email (Phase 9). Administrators see the whole outbox; members see email sent to them. List items omit bodies.

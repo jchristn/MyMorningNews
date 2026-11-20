@@ -94,7 +94,7 @@ export const NAV_GROUPS = [
       { path: 'prompts', key: 'prompts', icon: WandSparkles, access: 'all' },
       { path: 'credentials-vault', key: 'vault', icon: KeyRound, access: 'all' },
       { path: 'search-providers', key: 'searchProviders', icon: Search, access: 'all', phase: 5 },
-      { path: 'mcp-servers', key: 'mcpServers', icon: Plug, access: 'tenantAdmin', phase: 5 },
+      { path: 'mcp-servers', key: 'mcpServers', icon: Plug, access: 'tenantAdmin' },
       { path: 'mcp', key: 'mcp', icon: Bot, access: 'all' },
       { path: 'voices', key: 'voices', icon: Mic, access: 'all' },
       { path: 'email', key: 'email', icon: Mail, access: 'all' }

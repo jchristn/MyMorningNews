@@ -1236,3 +1236,41 @@ table {
 [dir='rtl'] .nav-group-label svg.lucide-chevron-right {
   transform: scaleX(-1);
 }
+
+/* Usage meter (Account card): one labeled bar per plan limit. */
+.usage-meter {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.usage-bar-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.875rem;
+}
+
+.usage-bar-track {
+  display: block;
+  width: 100%;
+  height: 6px;
+  margin-top: 4px;
+}
+
+.usage-bar-bg {
+  fill: var(--color-surface-alt);
+}
+
+.usage-ok .usage-bar-fill {
+  fill: var(--color-primary);
+}
+
+.usage-warning .usage-bar-fill {
+  fill: var(--color-warning);
+}
+
+.usage-danger .usage-bar-fill {
+  fill: var(--color-danger);
+}

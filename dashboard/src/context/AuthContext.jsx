@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import i18next from '../i18n/index.js';
-import { ApiClient, DEFAULT_SERVER_URL } from '../utils/api.js';
+import { ApiClient, defaultServerUrl } from '../utils/api.js';
 import { intlLocale } from '../i18n/localeRegistry.js';
 
 export const STORAGE_KEYS = {
@@ -37,7 +37,7 @@ export function createClient(serverUrl, token) {
 
 // Session state: server URL, token, and the authenticated identity. Pages never parse or store credentials.
 export function AuthProvider({ children, clientFactory = createClient }) {
-  const [serverUrl, setServerUrl] = useState(() => read(STORAGE_KEYS.serverUrl) || DEFAULT_SERVER_URL);
+  const [serverUrl, setServerUrl] = useState(() => read(STORAGE_KEYS.serverUrl) || defaultServerUrl());
   const [token, setToken] = useState(() => read(STORAGE_KEYS.token));
   const [identity, setIdentity] = useState(null);
   const [isLoading, setIsLoading] = useState(Boolean(read(STORAGE_KEYS.token)));
@@ -86,14 +86,14 @@ export function AuthProvider({ children, clientFactory = createClient }) {
   }, [clearSession]);
 
   const login = useCallback(async (url, email, password, tenantId) => {
-    const base = String(url || DEFAULT_SERVER_URL).trim().replace(/\/+$/, '');
+    const base = String(url || defaultServerUrl()).trim().replace(/\/+$/, '');
     const anonymous = factory.current(base, null);
     const issued = await anonymous.login(email, password, tenantId);
     const authed = factory.current(base, issued.token);
     const details = await authed.getTokenDetails();
     write(STORAGE_KEYS.serverUrl, base);
     write(STORAGE_KEYS.token, issued.token);
-    write(STORAGE_KEYS.tenantId, tenantId);
+    write(STORAGE_KEYS.tenantId, issued.tenantId || tenantId || 'default');
     setServerUrl(base);
     setToken(issued.token);
     setIdentity(details);

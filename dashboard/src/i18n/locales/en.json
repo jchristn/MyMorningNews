@@ -47,7 +47,9 @@
     "requestId": "Request ID",
     "server": "The server reported an error.",
     "tooMany": "Too many requests. Wait a moment and try again.",
-    "unauthorized": "Your session is no longer valid. Sign in again."
+    "unauthorized": "Your session is no longer valid. Sign in again.",
+    "capReached": "Plan limit reached.",
+    "egressBlocked": "That address is on a private network, which this server does not allow."
   },
   "access": {
     "deniedTitle": "Access denied",
@@ -368,8 +370,14 @@
     "subtitle": "Sign in to your workspace",
     "tagline": "Research the topics you care about and wake up to a briefing that gets better every day.",
     "tenant": "Tenant",
-    "tenantHelp": "The tenant ID. Use default on a new install.",
-    "title": "Welcome back"
+    "title": "Welcome back",
+    "tenantOptionalHelp": "Optional. Leave it blank and we find your workspace from your email.",
+    "chooseTenant": "Workspace",
+    "chooseTenantHelp": "Your email belongs to more than one workspace. Choose one and sign in again.",
+    "unverifiedTitle": "Confirm your email first.",
+    "unverifiedMessage": "Open the link we sent you, or ask for a new one.",
+    "forgot": "Forgot your password?",
+    "createAccount": "Create an account"
   },
   "home": {
     "summary": "Here is what is happening on your server.",
@@ -1973,6 +1981,13 @@
       "brief": "Brief and audience",
       "sourcesHelp": "Feeds and seed pages are read on every run, alongside web search.",
       "searchProvidersLater": "Choosing search providers per topic arrives with the search providers page."
+    },
+    "agentic": {
+      "title": "Agentic search",
+      "help": "When on, the research model searches and reads pages itself and may call the tools you allow below. Everything it picks still goes through quote verification. Runs may cost more.",
+      "enable": "Use agentic search for this topic",
+      "tools": "Allowed MCP tools",
+      "noTools": "No MCP tools are switched on yet."
     }
   },
   "wizard": {
@@ -2151,7 +2166,8 @@
         "queries": "Queries",
         "results": "Results",
         "details": "Details",
-        "calls": "Model calls"
+        "calls": "Model calls",
+        "tools": "Tool calls"
       },
       "contextHash": "Context snapshot"
     },
@@ -2251,6 +2267,17 @@
       "newMessage": "Queue a new run of this topic from the start? Search and fetch results are not kept, so every stage runs again and makes model calls that count toward your usage.",
       "resumeQueued": "Run queued again from {stage}",
       "newQueued": "New run queued"
+    },
+    "tools": {
+      "title": "Tool calls",
+      "emptyTitle": "No tool calls",
+      "emptyMessage": "This run did not use agentic search.",
+      "tool": "Tool",
+      "arguments": "Arguments",
+      "result": "Result",
+      "duration": "Time",
+      "failed": "Failed",
+      "characters": "{count, plural, one {# character} other {# characters}}"
     }
   },
   "oneTime": {
@@ -3332,6 +3359,32 @@
       "codeHelp": "A code you were given. A code for the plan you already have starts when the current one ends.",
       "redeem": "Redeem",
       "redeemed": "Code redeemed. You now have {plan}."
+    },
+    "title": "Account",
+    "usage": {
+      "summary": "{plan} plan. Monthly limits reset on {date}.",
+      "cost": "Research budget this month",
+      "topics": "Topics",
+      "runsToday": "Runs today",
+      "audio": "Audio minutes this month",
+      "noAudio": "Audio is not included in your plan.",
+      "schedule": "Topics run at most every {minutes} minutes.",
+      "ofLimit": "{used} of {max}",
+      "noLimit": "{used} (no limit)"
+    },
+    "export": {
+      "button": "Download my data",
+      "working": "Preparing...",
+      "help": "The download is a ZIP with your profile, topics, findings, predictions, suggestions, feedback, and every briefing as Markdown."
+    },
+    "delete": {
+      "button": "Delete my account",
+      "title": "Delete your account?",
+      "message": "Every session signs out now. Your account and data are deleted after the grace period; signing in before then keeps them.",
+      "typeEmail": "Type your email to confirm",
+      "mismatch": "The email does not match your account.",
+      "confirm": "Delete my account",
+      "scheduled": "Your account will be deleted on {date}. Sign in before then to keep it."
     }
   },
   "email": {
@@ -3745,6 +3798,103 @@
     "empty": {
       "title": "No sources yet",
       "message": "Sources appear after a run searches the web and fetches pages for one of your topics."
+    }
+  },
+  "auth": {
+    "resend": "Send a new link",
+    "resent": "If that address has an unconfirmed account, a new link is on its way.",
+    "backToSignIn": "Back to sign in",
+    "haveAccount": "Already have an account? Sign in",
+    "passwordHelp": "At least {count} characters.",
+    "signup": {
+      "title": "Create your account",
+      "subtitle": "Tell us what you want to stay on top of, and wake up to a briefing built for you.",
+      "closed": "Sign-up is not open on this server. Ask an administrator for an account.",
+      "displayName": "Your name",
+      "codeHelp": "Optional. A promotional code you were given.",
+      "acceptTerms": "I accept the",
+      "terms": "terms of service",
+      "and": "and the",
+      "privacy": "privacy policy",
+      "confirmAge": "I am at least {age} years old.",
+      "create": "Create account",
+      "creating": "Creating your account...",
+      "checkEmailTitle": "Check your email",
+      "checkEmail": "We sent a link to {email}. Open it to confirm your address, then sign in.",
+      "readyTitle": "Your account is ready",
+      "ready": "Sign in to create your first topic."
+    },
+    "verify": {
+      "title": "Confirm your email",
+      "done": "Your email is confirmed. You can sign in now.",
+      "failed": "This link has expired or was already used. Enter your email to get a new one."
+    },
+    "forgot": {
+      "title": "Reset your password",
+      "subtitle": "Enter your email and we send you a link to choose a new password.",
+      "send": "Send reset link",
+      "sent": "If {email} has an account, a reset link is on its way. The link works for an hour."
+    },
+    "reset": {
+      "title": "Choose a new password",
+      "save": "Save new password",
+      "done": "Your password is changed and every other session is signed out.",
+      "noToken": "This page needs the link from your reset email.",
+      "requestNew": "Ask for a new reset link"
+    }
+  },
+  "mcpServers": {
+    "about": "Register remote MCP servers whose tools agentic research may call. Discover a server's tools, switch on the ones you trust, then allow them on a topic.",
+    "created": "Server registered.",
+    "test": "Test connection",
+    "testOk": "Connected. The server offers {count} tools.",
+    "testFailed": "Could not connect: {error}",
+    "discover": "Discover tools",
+    "discovered": "Saved {count} tools.",
+    "columns": {
+      "name": "Name",
+      "transport": "Transport",
+      "tools": "Tools",
+      "discovered": "Last discovered",
+      "status": "Status"
+    },
+    "status": {
+      "error": "Error"
+    },
+    "transports": {
+      "StreamableHttp": "Streamable HTTP",
+      "Sse": "Server-sent events"
+    },
+    "empty": {
+      "title": "No MCP servers yet",
+      "message": "Add a server to let agentic research use its tools."
+    },
+    "form": {
+      "createTitle": "Add an MCP server",
+      "editTitle": "Edit MCP server",
+      "url": "URL",
+      "urlHelp": "The server's http or https endpoint. Local stdio servers are not supported.",
+      "credential": "Credential",
+      "credentialHelp": "A vault credential sent with every request, if the server needs one.",
+      "noCredential": "None",
+      "headerName": "Header",
+      "headerPrefix": "Prefix",
+      "headerPrefixHelp": "Text before the secret, such as \"Bearer \".",
+      "urlPlaceholder": "https://mcp.example.com/mcp"
+    },
+    "tools": {
+      "action": "Tools",
+      "title": "Tools",
+      "none": "No tools discovered yet. Use Discover tools.",
+      "name": "Tool",
+      "description": "Description",
+      "enabled": "On",
+      "toggle": "Allow {name}",
+      "help": "Only tools that are on can be allowed on a topic."
+    },
+    "delete": {
+      "title": "Remove this MCP server?",
+      "message": "Remove {name} and its tools? Topics that allowed them stop using them."
     }
   }
 }

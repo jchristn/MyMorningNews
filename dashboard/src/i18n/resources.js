@@ -4,9 +4,10 @@ import { SUPPORTED_LOCALES } from './localeRegistry.js';
 
 export const NAMESPACE = 'translation';
 
-// Catalog loaders. English is bundled. Pseudo-locales are generated from English. Other locales load lazily; until
-// they are translated their catalogs are empty and i18next falls back to English key by key.
-// TODO(Phase 12): add translated catalogs for es, pt, fr, it, de, zh, ar, ru, ms, hi, and ja under ./locales.
+// Translated catalogs, one file per locale under ./locales. Vite splits each into its own chunk, loaded the first
+// time the locale is selected. English is bundled; the pseudo-locales are generated from English.
+const translated = import.meta.glob(['./locales/*.json', '!./locales/en.json'], { import: 'default' });
+
 const loaders = {
   en: async () => en,
   'qps-ploc': async () => buildExpansionPseudo(en),
@@ -14,7 +15,10 @@ const loaders = {
 };
 
 for (const locale of SUPPORTED_LOCALES) {
-  if (!loaders[locale.code]) loaders[locale.code] = async () => ({});
+  if (loaders[locale.code]) continue;
+  const load = translated['./locales/' + locale.code + '.json'];
+  // A locale without a catalog falls back to English key by key; `npm run i18n:verify` fails when one is missing.
+  loaders[locale.code] = load || (async () => ({}));
 }
 
 export async function loadCatalog(code) {

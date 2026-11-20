@@ -1,8 +1,8 @@
 /**
  * English source for the app's own strings (the `mobile.*` namespace). ICU message syntax, like the dashboard:
- * `{name}` placeholders and `{count, plural, one {...} other {...}}`. Every other locale has a subset of these keys
- * and falls back to English key by key. `npm run i18n:check` fails on a missing, orphan, or mismatched key and on
- * em-dashes.
+ * `{name}` placeholders and `{count, plural, one {...} other {...}}`. Every other locale has exactly these keys
+ * (docs/I18N.md). `npm run i18n:check` fails on a missing, orphan, untranslated, or mismatched key, on a plural that
+ * lacks a category its language needs, and on em-dashes.
  */
 export const en = {
   app: { name: 'My Morning News' },

@@ -1,0 +1,3750 @@
+{
+  "app": {
+    "name": "My Morning News"
+  },
+  "common": {
+    "active": "Активно",
+    "add": "Добавить",
+    "cancel": "Отмена",
+    "clearFilters": "Сбросить фильтры",
+    "close": "Закрыть",
+    "confirm": "Подтвердить",
+    "copied": "Скопировано",
+    "copy": "Копировать",
+    "copyId": "Копировать ID",
+    "copyUrl": "Копировать URL",
+    "created": "Создано",
+    "delete": "Удалить",
+    "dismiss": "Скрыть",
+    "duplicate": "Дублировать",
+    "edit": "Изменить",
+    "hidePassword": "Скрыть пароль",
+    "inactive": "Неактивно",
+    "language": "Язык",
+    "lastLoaded": "Последняя загрузка: {time}",
+    "loading": "Загрузка...",
+    "no": "Нет",
+    "none": "Нет",
+    "refresh": "Обновить",
+    "remove": "Убрать",
+    "retry": "Повторить",
+    "save": "Сохранить",
+    "saving": "Сохранение...",
+    "showPassword": "Показать пароль",
+    "status": "Статус",
+    "view": "Просмотр",
+    "viewJson": "Показать JSON",
+    "working": "Выполняется...",
+    "yes": "Да"
+  },
+  "errors": {
+    "badRequest": "Недопустимый запрос.",
+    "conflict": "Изменение конфликтует с существующими данными.",
+    "forbidden": "У вас нет прав на это действие.",
+    "generic": "Что-то пошло не так.",
+    "network": "Не удалось связаться с сервером. Проверьте URL сервера и убедитесь, что сервер запущен.",
+    "notFound": "Запрошенный элемент не найден.",
+    "requestId": "ID запроса",
+    "server": "Сервер сообщил об ошибке.",
+    "tooMany": "Слишком много запросов. Подождите немного и повторите попытку.",
+    "unauthorized": "Ваш сеанс больше не действителен. Войдите снова."
+  },
+  "access": {
+    "deniedTitle": "Доступ запрещен",
+    "deniedMessage": "Ваша роль не дает доступа к этой странице. Если он вам нужен, обратитесь к администратору."
+  },
+  "admin": {
+    "copyOf": "Копия: {name}",
+    "deleted": "Удалено",
+    "saved": "Сохранено",
+    "tenant": "Арендатор"
+  },
+  "roles": {
+    "credential": "Учетные данные API",
+    "globalAdmin": "Глобальный администратор",
+    "member": "Участник",
+    "none": "Вход не выполнен",
+    "tenantAdmin": "Администратор арендатора"
+  },
+  "theme": {
+    "dark": "Включить темную тему",
+    "light": "Включить светлую тему"
+  },
+  "json": {
+    "copy": "Копировать JSON",
+    "items": "{count, plural, one {# элемент} few {# элемента} many {# элементов} other {# элемента}}",
+    "keys": "{count, plural, one {# ключ} few {# ключа} many {# ключей} other {# ключа}}",
+    "raw": "Исходный",
+    "title": "JSON",
+    "tree": "Дерево",
+    "view": "Показать JSON"
+  },
+  "table": {
+    "actions": "Действия",
+    "any": "Любой",
+    "clearSelection": "Снять выделение",
+    "emptyTitle": "Здесь пока ничего нет",
+    "filterBy": "Фильтр: {column}",
+    "firstPage": "Первая страница",
+    "jumpToPage": "Страница",
+    "lastPage": "Последняя страница",
+    "nextPage": "Следующая страница",
+    "noMatchesMessage": "Нет записей, соответствующих текущим фильтрам. Сбросьте фильтры, чтобы увидеть все.",
+    "noMatchesTitle": "Совпадений нет",
+    "ofPages": "из {total}",
+    "pageSize": "Строк на странице",
+    "previousPage": "Предыдущая страница",
+    "selectAll": "Выбрать все строки на этой странице",
+    "selectColumns": "Столбцы",
+    "selectRow": "Выбрать строку",
+    "selected": "{count, plural, one {Выбран #} few {Выбрано #} many {Выбрано #} other {Выбрано #}}",
+    "showing": "{from}–{to} из {total}"
+  },
+  "charts": {
+    "avgDuration": "Средняя длительность",
+    "bucketAria": "{when}: запросов: {total}",
+    "failure": "Ошибка",
+    "range": "Период",
+    "requestActivity": "Активность запросов",
+    "success": "Успех",
+    "total": "Всего",
+    "ranges": {
+      "hour": "Последний час",
+      "day": "Последние сутки",
+      "week": "Последняя неделя",
+      "month": "Последний месяц",
+      "quarter": "Последний квартал"
+    },
+    "totals": {
+      "avg": "Среднее: {value}",
+      "failed": "Ошибок: {count}",
+      "success": "Успешно: {count}",
+      "total": "Всего: {count}"
+    },
+    "rank": "Место",
+    "share": "Доля"
+  },
+  "nav": {
+    "collapse": "Свернуть боковую панель",
+    "environment": "Локально",
+    "expand": "Развернуть боковую панель",
+    "label": "Основная навигация",
+    "open": "Открыть навигацию",
+    "phase": "Появится в фазе {phase}",
+    "phaseShort": "Ф{phase}",
+    "skip": "Перейти к содержимому",
+    "version": "v{version}",
+    "groups": {
+      "start": "Начало",
+      "research": "Исследования",
+      "briefings": "Сводки",
+      "insights": "Аналитика",
+      "configuration": "Конфигурация",
+      "observability": "Наблюдаемость",
+      "administration": "Администрирование",
+      "system": "Система"
+    },
+    "items": {
+      "home": "Главная",
+      "today": "Сегодня",
+      "topics": "Темы",
+      "runs": "Запуски",
+      "findings": "Находки",
+      "sources": "Источники",
+      "predictions": "Прогнозы",
+      "suggestions": "Предложения",
+      "briefings": "Сводки",
+      "editions": "Выпуски",
+      "templates": "Шаблоны",
+      "relevance": "Релевантность",
+      "accuracy": "Точность",
+      "feedback": "Отзывы",
+      "preferences": "Предпочтения",
+      "usage": "Использование",
+      "models": "Модели",
+      "prompts": "Промпты",
+      "vault": "Сохраненные учетные данные",
+      "searchProviders": "Поисковые провайдеры",
+      "mcpServers": "Серверы MCP",
+      "voices": "Голоса",
+      "email": "Почта",
+      "requests": "История запросов",
+      "explorer": "Обозреватель API",
+      "health": "Состояние",
+      "audit": "Аудит",
+      "tenants": "Арендаторы",
+      "users": "Пользователи",
+      "credentials": "Учетные данные",
+      "roles": "Роли и доступ",
+      "settings": "Настройки",
+      "serverInfo": "О сервере",
+      "profile": "Профиль",
+      "adminUsage": "Использование платформы",
+      "oneTimeRequests": "Разовые запросы",
+      "listen": "Слушать",
+      "promoCodes": "Промокоды",
+      "insightsOverview": "Обзор",
+      "plans": "Тарифы",
+      "emailInsights": "Доставка почты",
+      "mcp": "Клиент MCP"
+    }
+  },
+  "routes": {
+    "home": {
+      "summary": "Ваше рабочее пространство в одном взгляде"
+    },
+    "today": {
+      "summary": "Последний выпуск вашей сводки и недавние результаты исследований"
+    },
+    "topics": {
+      "summary": "Темы, которые вы хотите исследовать"
+    },
+    "runs": {
+      "summary": "Запуски исследований: в очереди, выполняемые и завершенные"
+    },
+    "findings": {
+      "summary": "Что нашли исследования"
+    },
+    "sources": {
+      "summary": "Источники, собранные исследованиями"
+    },
+    "predictions": {
+      "summary": "Прогнозы и то, как они сбылись"
+    },
+    "suggestions": {
+      "summary": "Что стоит изучить подробнее, по итогам ваших запусков"
+    },
+    "briefings": {
+      "summary": "Все сводки: выпуски, сводки запусков и разовые отчеты"
+    },
+    "editions": {
+      "summary": "Сводки по расписанию, каждая со своими темами, шаблоном и доставкой"
+    },
+    "templates": {
+      "summary": "Макеты Markdown, которые определяют содержание каждой сводки"
+    },
+    "relevance": {
+      "summary": "Насколько релевантными были находки"
+    },
+    "accuracy": {
+      "summary": "Насколько точными были прогнозы"
+    },
+    "feedback": {
+      "summary": "Оставленные вами отзывы"
+    },
+    "preferences": {
+      "summary": "Предпочтения, выявленные по отзывам"
+    },
+    "usage": {
+      "summary": "Сколько это стоит и кто пользуется больше всего?"
+    },
+    "models": {
+      "summary": "Конечные точки моделей, назначение ролей задачам и все вызовы моделей"
+    },
+    "prompts": {
+      "summary": "Версионируемые шаблоны промптов для каждого вызова модели"
+    },
+    "vault": {
+      "summary": "Ключи API и токены для моделей и внешних сервисов, зашифрованные при хранении"
+    },
+    "searchProviders": {
+      "summary": "Провайдеры веб-поиска"
+    },
+    "mcpServers": {
+      "summary": "Серверы Model Context Protocol"
+    },
+    "voices": {
+      "summary": "Голоса для аудиосводок"
+    },
+    "email": {
+      "summary": "Доставка почты"
+    },
+    "requests": {
+      "summary": "Все запросы API, обработанные сервером"
+    },
+    "explorer": {
+      "summary": "Попробуйте любую операцию API"
+    },
+    "health": {
+      "summary": "Состояние сервера и компонентов"
+    },
+    "audit": {
+      "summary": "События безопасности и изменений"
+    },
+    "tenants": {
+      "summary": "Изолированные рабочие пространства"
+    },
+    "users": {
+      "summary": "Люди, которые могут входить в систему"
+    },
+    "credentials": {
+      "summary": "Ключи API для скриптов и интеграций"
+    },
+    "roles": {
+      "summary": "Роли, разрешения и назначения"
+    },
+    "settings": {
+      "summary": "Конфигурация сервера"
+    },
+    "serverInfo": {
+      "summary": "Версия, среда выполнения и URL сервисов"
+    },
+    "profile": {
+      "summary": "Ваша учетная запись"
+    },
+    "adminUsage": {
+      "summary": "Затраты платформы по арендаторам, основа для решений о ценах"
+    },
+    "oneTimeRequests": {
+      "summary": "Разовые отчеты, подкасты и сводки по почте"
+    },
+    "listen": {
+      "summary": "Аудиовыпуски ваших сводок, готовые к прослушиванию"
+    },
+    "promoCodes": {
+      "summary": "Коды, дающие тариф на определенное число дней, с лимитами и статистикой использования"
+    },
+    "plans": {
+      "summary": "Тарифы, их значения прав доступа и у кого какой тариф"
+    },
+    "insightsOverview": {
+      "summary": "Ключевые показатели по исследованиям, доставке, обучению и затратам"
+    },
+    "emailInsights": {
+      "summary": "Доставка почты, время отправки и как читатели используют ссылки в каждом письме"
+    },
+    "mcp": {
+      "summary": "Подключите Claude Code или другой клиент MCP к вашим исследованиям"
+    }
+  },
+  "placeholder": {
+    "title": "Появится в фазе {phase}",
+    "message": "{feature}: запланировано на фазу {phase}. Навигация уже готова, чтобы вы видели, где это будет."
+  },
+  "topbar": {
+    "copyServerUrl": "Копировать URL сервера",
+    "health": "Состояние сервера: {state}",
+    "logout": "Выйти",
+    "repository": "Исходный код на GitHub",
+    "tenant": "Арендатор",
+    "tenantTitle": "ID арендатора: {tenant}"
+  },
+  "health": {
+    "autoRefresh": "Автообновление",
+    "checkedAt": "Проверено {time}",
+    "components": "Компоненты",
+    "off": "Выкл.",
+    "overall": "Общее",
+    "uptime": "Время работы",
+    "version": "Версия",
+    "states": {
+      "healthy": "Исправен",
+      "degraded": "Снижена работоспособность",
+      "unreachable": "Недоступен",
+      "unknown": "Проверка"
+    },
+    "status": {
+      "Healthy": "Исправен",
+      "Degraded": "Снижена работоспособность",
+      "Unhealthy": "Неисправен",
+      "Enabled": "Включено",
+      "Disabled": "Отключено"
+    },
+    "componentNames": {
+      "database": "База данных",
+      "requestHistory": "История запросов"
+    }
+  },
+  "login": {
+    "copyright": "© 2026 Lattice AI LLC",
+    "defaults": "Первый запуск? Войдите с адресом {email} и паролем {password} в арендаторе {tenant}, затем смените пароль.",
+    "email": "Эл. почта",
+    "password": "Пароль",
+    "serverUrl": "URL сервера",
+    "serverUrlHelp": "Адрес сервера My Morning News.",
+    "sessionExpired": "Срок действия сеанса истек. Войдите снова, чтобы продолжить.",
+    "signIn": "Войти",
+    "signingIn": "Вход...",
+    "subtitle": "Войдите в свое рабочее пространство",
+    "tagline": "Исследуйте важные для вас темы и просыпайтесь со сводкой, которая с каждым днем становится лучше.",
+    "tenant": "Арендатор",
+    "tenantHelp": "ID арендатора. При новой установке используйте default.",
+    "title": "С возвращением"
+  },
+  "home": {
+    "summary": "Вот что происходит на вашем сервере.",
+    "title": "Доброе утро, {name}",
+    "failures": {
+      "none": "Недавних сбоев нет",
+      "noneMessage": "Все запросы за этот период выполнены успешно.",
+      "title": "Недавние сбои"
+    },
+    "kpi": {
+      "average": "Средняя длительность",
+      "failureRate": "Доля сбоев",
+      "failures": "Ошибок: {count}",
+      "health": "Состояние",
+      "latency": "Задержка",
+      "requests": "Запросы",
+      "tenants": "Арендаторы",
+      "topics": "Темы",
+      "uptime": "Работает {value}",
+      "users": "Пользователи",
+      "recurring": "Регулярные темы"
+    },
+    "next": {
+      "explorer": "Попробуйте API в обозревателе",
+      "models": "Добавьте конечную точку модели (фаза 3)",
+      "password": "Смените пароль по умолчанию",
+      "title": "Следующие шаги",
+      "topic": "Создайте первую тему",
+      "topics": "Просмотрите свои темы"
+    },
+    "services": {
+      "credentials": "Учетные данные",
+      "none": "Внешние сервисы не настроены.",
+      "summary": "Инструменты, работающие вместе с сервером",
+      "title": "Внешние сервисы"
+    },
+    "request": {
+      "title": "Новый запрос",
+      "summary": "Закажите разовый отчет, подкаст или сводку по почте."
+    },
+    "overview": {
+      "title": "{count, plural, one {Последний # день} few {Последние # дня} many {Последние # дней} other {Последние # дня}}",
+      "more": "Открыть аналитику"
+    }
+  },
+  "requests": {
+    "anonymous": "Анонимно",
+    "bulk": {
+      "allFilters": "все запросы",
+      "button": "Удалить подходящие",
+      "confirm": "Удалить",
+      "done": "Удалено запросов: {count}",
+      "message": "Удалить запросы ({count}), соответствующие условию {filters}? Это действие нельзя отменить.",
+      "title": "Удалить подходящие запросы"
+    },
+    "columns": {
+      "completed": "Завершено",
+      "duration": "Длительность",
+      "id": "ID",
+      "method": "Метод",
+      "path": "Путь",
+      "principal": "Субъект",
+      "route": "Маршрут",
+      "sourceIp": "IP-адрес источника",
+      "status": "Статус",
+      "tenant": "Арендатор",
+      "time": "Время",
+      "url": "URL"
+    },
+    "delete": {
+      "done": "Запрос удален",
+      "message": "Удалить запись о {method} {path}?",
+      "title": "Удалить запрос"
+    },
+    "details": {
+      "metadata": "Метаданные",
+      "noBody": "Тело не было сохранено.",
+      "noHeaders": "Заголовки не были сохранены.",
+      "raw": "Исходная запись",
+      "requestBody": "Тело запроса",
+      "requestHeaders": "Заголовки запроса",
+      "responseBody": "Тело ответа",
+      "responseHeaders": "Заголовки ответа",
+      "title": "Сведения о запросе",
+      "truncated": "Обрезано до {size}"
+    },
+    "empty": {
+      "filtered": "Нет запросов, соответствующих этим фильтрам.",
+      "message": "Запросы появятся здесь, когда клиенты начнут обращаться к API.",
+      "title": "Запросов пока нет"
+    },
+    "filters": {
+      "from": "С",
+      "method": "Метод",
+      "path": "Путь",
+      "pathPlaceholder": "/v1.0/...",
+      "status": "Статус",
+      "statusPlaceholder": "200",
+      "tenant": "Арендатор",
+      "tenantPlaceholder": "ID арендатора",
+      "to": "По"
+    },
+    "kpi": {
+      "avgDuration": "Средняя длительность",
+      "failures": "Сбои",
+      "matchingFilters": "Соответствуют фильтрам",
+      "onThisPage": "На этой странице",
+      "retained": "Хранится",
+      "successRate": "Доля успешных",
+      "uniquePaths": "Уникальные пути"
+    }
+  },
+  "explorer": {
+    "authInherited": "Запросы используют токен вашего текущего сеанса.",
+    "body": "Тело запроса",
+    "cancel": "Отмена",
+    "confirmMessage": "Отправить {method} {url}? Эта операция может изменить или удалить данные.",
+    "confirmTitle": "Отправить запрос",
+    "copyResponse": "Копировать ответ",
+    "duration": "Длительность",
+    "emptyBody": "У ответа нет тела.",
+    "execute": "Отправить",
+    "format": "Форматировать",
+    "headers": "Заголовки",
+    "history": "{count, plural, one {Недавний запрос (#)} few {Недавние запросы (#)} many {Недавние запросы (#)} other {Недавние запросы (#)}}",
+    "invalidJson": "Недопустимый JSON: {message}",
+    "name": "Имя",
+    "noOperations": "Нет подходящих операций.",
+    "noResponse": "Ответа пока нет",
+    "noResponseMessage": "Отправьте запрос, чтобы увидеть ответ здесь.",
+    "pathParams": "Параметры пути",
+    "pickOperation": "Выберите операцию",
+    "pickOperationMessage": "Выберите операцию из списка, чтобы составить запрос.",
+    "queryParams": "Параметры запроса",
+    "running": "Отправка...",
+    "search": "Поиск операций",
+    "searchPlaceholder": "Фильтр по пути или имени",
+    "specMissing": "Не удалось загрузить документ OpenAPI.",
+    "status": "Статус",
+    "streaming": "Потоковая передача...",
+    "url": "URL",
+    "validJson": "Допустимый JSON",
+    "value": "Значение",
+    "tabs": {
+      "preview": "Предпросмотр",
+      "body": "Тело",
+      "headers": "Заголовки",
+      "status": "Статус",
+      "code": "Код"
+    },
+    "snippets": {
+      "curl": "curl",
+      "fetch": "JavaScript",
+      "csharp": "C#"
+    }
+  },
+  "settings": {
+    "discard": "Отменить изменения",
+    "environment": "Переменная окружения",
+    "live": "Применяется сразу",
+    "noChanges": "Нет изменений для сохранения",
+    "notSet": "Не задано",
+    "overridden": "Переопределено переменной {variable}",
+    "pendingRestart": "Перезапустите сервер, чтобы применить: {fields}",
+    "raw": "Исходные настройки",
+    "restart": "Перезапустить сервер",
+    "restartConfirm": "Перезапустить",
+    "restartHelp": "Сервер остановится и запустится снова. Выполняемые запросы могут завершиться ошибкой.",
+    "restartRequired": "Требуется перезапуск",
+    "restartTitle": "Перезапуск сервера",
+    "restarted": "Перезапуск запрошен",
+    "restarting": "Перезапуск...",
+    "saved": "Сохранено. Применено сразу: {live}, ожидают перезапуска: {restart}.",
+    "secretNotSet": "Значение не сохранено",
+    "secretSet": "Значение сохранено. Введите новое, чтобы заменить его.",
+    "set": "Задано",
+    "viewRaw": "Показать исходные",
+    "groups": {
+      "rest": "Веб-сервер",
+      "database": "База данных",
+      "logging": "Журналирование",
+      "auth": "Аутентификация",
+      "requestHistory": "История запросов",
+      "telemetry": "Телеметрия",
+      "pipeline": "Конвейер исследований",
+      "diagnostics": "Диагностика",
+      "models": "Модели",
+      "push": "Push-уведомления",
+      "storage": "Хранилище",
+      "scheduler": "Планировщик",
+      "search": "Поиск",
+      "tts": "Синтез речи",
+      "email": "Почта",
+      "learning": "Обучение",
+      "hosting": "Хостинг"
+    },
+    "fields": {
+      "rest_hostname": "Имя хоста",
+      "rest_port": "Порт",
+      "rest_ssl": "Использовать TLS",
+      "rest_corsAllowedOrigins": "Разрешенные источники CORS",
+      "database_type": "Тип базы данных",
+      "database_server": "Сервер",
+      "database_port": "Порт",
+      "database_databaseName": "Имя базы данных",
+      "database_username": "Имя пользователя",
+      "database_password": "Пароль",
+      "database_maxPoolSize": "Максимальный размер пула",
+      "database_commandTimeoutSeconds": "Тайм-аут команды (секунды)",
+      "logging_consoleLogging": "Журнал в консоль",
+      "logging_fileLogging": "Журнал в файл",
+      "logging_logDirectory": "Каталог журналов",
+      "logging_logFilename": "Имя файла журнала",
+      "logging_minimumSeverity": "Минимальный уровень важности",
+      "auth_signingKey": "Ключ подписи токенов",
+      "auth_sessionLifetimeMinutes": "Время жизни сеанса (минуты)",
+      "auth_adminApiKey": "Ключ API администратора",
+      "auth_loginRateLimitPerMinute": "Попыток входа в минуту",
+      "auth_allowRefresh": "Разрешить продление сеанса",
+      "requestHistory_enabled": "Записывать запросы",
+      "requestHistory_maxRequestBodyBytes": "Максимальное тело запроса (байты)",
+      "requestHistory_maxResponseBodyBytes": "Максимальное тело ответа (байты)",
+      "requestHistory_retentionDays": "Хранение (дни)",
+      "telemetry_enabled": "Включить телеметрию",
+      "telemetry_serviceName": "Имя сервиса",
+      "telemetry_otlpEndpoint": "Конечная точка OTLP",
+      "telemetry_lokiEndpoint": "Конечная точка Loki",
+      "telemetry_prometheusEnabled": "Публиковать метрики Prometheus",
+      "telemetry_prometheusHostname": "Имя хоста Prometheus",
+      "telemetry_prometheusPort": "Порт Prometheus",
+      "telemetry_grafanaUrl": "URL Grafana",
+      "telemetry_prometheusUrl": "URL Prometheus",
+      "telemetry_tempoUrl": "URL Tempo",
+      "telemetry_lokiUrl": "URL Loki",
+      "pipeline_maxConcurrentRuns": "Максимум одновременных запусков",
+      "pipeline_maxConcurrentModelCalls": "Максимум одновременных вызовов модели",
+      "pipeline_modelCallAttempts": "Попыток вызова модели",
+      "pipeline_structuredOutputRepairs": "Исправлений структурированного вывода",
+      "pipeline_runTimeoutMinutes": "Тайм-аут запуска (минуты)",
+      "diagnostics_captureLlmPayloads": "Сохранять содержимое вызовов модели",
+      "diagnostics_llmPayloadRetentionDays": "Хранение содержимого (дни)",
+      "diagnostics_maxPayloadCharacters": "Максимум символов содержимого",
+      "models_defaultChatModel": "Модель чата по умолчанию",
+      "models_defaultOllamaEndpoint": "Конечная точка Ollama по умолчанию",
+      "models_defaultEmbeddingModel": "Модель эмбеддингов по умолчанию"
+    }
+  },
+  "serverInfo": {
+    "apiBase": "Базовый URL API",
+    "database": "База данных",
+    "expires": "Истекает",
+    "health": "Конечная точка состояния",
+    "openapi": "Документ OpenAPI",
+    "os": "Операционная система",
+    "pendingRestart": "Настройки ожидают перезапуска.",
+    "principal": "Вход выполнен как",
+    "principalType": "Тип субъекта",
+    "product": "Продукт",
+    "repository": "Репозиторий",
+    "runtime": "Среда выполнения",
+    "schemaVersion": "Версия схемы {version}",
+    "server": "Сервер",
+    "session": "Сеанс",
+    "started": "Запущен",
+    "swagger": "Swagger UI",
+    "uptime": "Время работы",
+    "urls": "Полезные URL",
+    "vector": "Векторный поиск",
+    "version": "Версия"
+  },
+  "audit": {
+    "recordTitle": "Запись аудита",
+    "columns": {
+      "event": "Событие",
+      "path": "Путь",
+      "permission": "Разрешение",
+      "principal": "Субъект",
+      "reason": "Причина",
+      "result": "Результат",
+      "sourceIp": "IP-адрес источника",
+      "tenant": "Арендатор",
+      "time": "Время"
+    },
+    "empty": {
+      "message": "Здесь записываются входы, проверки разрешений и изменения.",
+      "title": "Событий аудита нет"
+    },
+    "events": {
+      "AuthSuccess": "Успешный вход",
+      "AuthFailure": "Неудачный вход",
+      "SessionIssued": "Сеанс выдан",
+      "SessionRefreshed": "Сеанс продлен",
+      "SessionRevoked": "Сеанс отозван",
+      "CredentialCreated": "Учетные данные созданы",
+      "CredentialUsed": "Учетные данные использованы",
+      "CredentialRevoked": "Учетные данные отозваны",
+      "AuthorizationDenied": "Доступ запрещен",
+      "AuthorizationBypass": "Обход администратором",
+      "RoleChanged": "Роль изменена",
+      "PermissionChanged": "Разрешение изменено",
+      "AssignmentChanged": "Назначение изменено",
+      "UserChanged": "Пользователь изменен",
+      "TenantChanged": "Арендатор изменен",
+      "SettingsChanged": "Настройки изменены",
+      "RestartRequested": "Запрошен перезапуск",
+      "CredentialRevealed": "Учетные данные раскрыты",
+      "VaultCredentialChanged": "Секрет хранилища изменен"
+    },
+    "authz": {
+      "Permitted": "Разрешено",
+      "DeniedExplicit": "Запрещено правилом",
+      "DeniedImplicit": "Запрещено (нет разрешения)",
+      "NotFound": "Не найдено",
+      "Conflict": "Конфликт"
+    }
+  },
+  "tenants": {
+    "create": "Создать арендатора",
+    "deleteMessage": "Удалить арендатора {name} и все его данные? Это действие нельзя отменить.",
+    "deleteTitle": "Удалить арендатора",
+    "description": "Описание",
+    "edit": "Изменить арендатора",
+    "empty": "Арендаторов нет",
+    "region": "Регион",
+    "timeZoneHelp": "Часовой пояс IANA, например Europe/Moscow.",
+    "columns": {
+      "created": "Создан",
+      "id": "ID",
+      "name": "Имя",
+      "protected": "Защищен",
+      "status": "Статус",
+      "timeZone": "Часовой пояс"
+    }
+  },
+  "users": {
+    "create": "Создать пользователя",
+    "deleteMessage": "Удалить пользователя {email}? Его сеансы и учетные данные перестанут работать.",
+    "deleteTitle": "Удалить пользователя",
+    "edit": "Изменить пользователя",
+    "effectivePermissions": "Действующие разрешения",
+    "empty": "Пользователей нет",
+    "firstName": "Имя",
+    "lastName": "Фамилия",
+    "locale": "Языковой стандарт",
+    "password": "Пароль",
+    "passwordHelp": "Не менее 8 символов.",
+    "resetHelp": "Оставьте пустым, чтобы сохранить текущий пароль.",
+    "resetPassword": "Сбросить пароль",
+    "timeZone": "Часовой пояс",
+    "columns": {
+      "created": "Создан",
+      "email": "Эл. почта",
+      "id": "ID",
+      "lastLogin": "Последний вход",
+      "name": "Имя",
+      "role": "Роль",
+      "status": "Статус",
+      "tenantAdmin": "Администратор арендатора"
+    },
+    "permissions": {
+      "allowed": "Разрешено",
+      "bypass": "Администраторы не проходят проверку разрешений. {reason}",
+      "denied": "Запрещено",
+      "grants": "{count, plural, one {На основе # разрешения} few {На основе # разрешений} many {На основе # разрешений} other {На основе # разрешения}}",
+      "resource": "Ресурс",
+      "title": "Действующие разрешения"
+    }
+  },
+  "credentials": {
+    "allScopes": "Все",
+    "copyAccessKey": "Копировать ключ доступа",
+    "copySecret": "Копировать секретный ключ",
+    "create": "Создать учетные данные",
+    "createdTitle": "Учетные данные созданы",
+    "deleteMessage": "Удалить учетные данные {name}? Все, что их использует, перестанет работать.",
+    "deleteTitle": "Удалить учетные данные",
+    "edit": "Изменить учетные данные",
+    "empty": "Учетных данных нет",
+    "emptyMessage": "Создайте учетные данные, чтобы вызывать API из скриптов и интеграций.",
+    "ownerHelp": "Учетные данные действуют с правами этого пользователя.",
+    "ownerSelf": "Я",
+    "scopesHelp": "Не отмечайте ничего, чтобы разрешить все, что может владелец.",
+    "secretKey": "Секретный ключ",
+    "secretOnce": "Скопируйте секретный ключ сейчас. Он показывается только один раз, и получить его позже нельзя.",
+    "stored": "Я сохранил секрет",
+    "tenantHeader": "ID арендатора",
+    "columns": {
+      "accessKey": "Ключ доступа",
+      "created": "Созданы",
+      "expires": "Истекают",
+      "lastUsed": "Последнее использование",
+      "name": "Имя",
+      "owner": "Владелец",
+      "scopes": "Области",
+      "secret": "Секрет",
+      "status": "Статус",
+      "authMode": "Режим аутентификации"
+    },
+    "scopes": {
+      "read": "Чтение",
+      "write": "Запись",
+      "admin": "Администрирование"
+    },
+    "authModes": {
+      "DirectHeader": "Прямой заголовок",
+      "SignedRequest": "Подписанные запросы",
+      "SessionExchange": "Обмен на сеанс",
+      "Hybrid": "Гибридный"
+    },
+    "authModeHelp": {
+      "DirectHeader": "По умолчанию. Принимает ключ доступа и секрет в заголовках, подписанные запросы и обмен на сеанс.",
+      "SignedRequest": "Принимает только запросы с подписью HMAC, поэтому секрет никогда не передается. Заголовки с секретом и обмен на сеанс отклоняются.",
+      "SessionExchange": "Работает только через POST /v1.0/token для получения токена сеанса. Секреты и подписи в отдельных запросах отклоняются.",
+      "Hybrid": "Принимает все, так же как прямой заголовок."
+    }
+  },
+  "rbac": {
+    "tabs": {
+      "roles": "Роли",
+      "permissions": "Разрешения",
+      "assignments": "Назначения"
+    },
+    "builtIn": {
+      "TenantAdmin": "Администратор арендатора",
+      "SecurityAdmin": "Администратор безопасности",
+      "Auditor": "Аудитор",
+      "TopicAdmin": "Администратор тем",
+      "Editor": "Редактор",
+      "Viewer": "Наблюдатель",
+      "TenantMember": "Участник арендатора",
+      "Custom": "Пользовательская"
+    },
+    "scopes": {
+      "Tenant": "Весь арендатор",
+      "Resource": "Один ресурс"
+    },
+    "permissionTypes": {
+      "Permit": "Разрешить",
+      "Deny": "Запретить"
+    },
+    "roles": {
+      "builtIn": "Встроенная",
+      "clone": "Клонировать",
+      "create": "Создать роль",
+      "custom": "Пользовательская",
+      "deleteMessage": "Удалить роль {name}? Пользователи с этой ролью потеряют ее разрешения.",
+      "deleteTitle": "Удалить роль",
+      "description": "Описание",
+      "edit": "Изменить роль",
+      "kind": "Вид",
+      "name": "Имя",
+      "noPermissions": "У этой роли нет разрешений.",
+      "noTenantPermissions": "У этого арендатора пока нет пользовательских разрешений. Создайте их на вкладке «Разрешения».",
+      "permissions": "Разрешения",
+      "scope": "Область"
+    },
+    "permissions": {
+      "create": "Создать разрешение",
+      "deleteMessage": "Удалить разрешение {name}? Роли, в которые оно входит, потеряют его.",
+      "deleteTitle": "Удалить разрешение",
+      "edit": "Изменить разрешение",
+      "name": "Имя",
+      "operations": "Операции",
+      "resources": "Ресурсы",
+      "type": "Тип"
+    },
+    "assignments": {
+      "assign": "Назначить",
+      "empty": "Назначений нет",
+      "emptyMessage": "Назначьте роль, чтобы дать этому пользователю ее разрешения.",
+      "pickRole": "Выберите роль",
+      "remove": "Убрать",
+      "removeMessage": "Убрать роль {role} у этого пользователя?",
+      "removeTitle": "Убрать назначение",
+      "resource": "ID ресурса",
+      "resourcePlaceholder": "ID ресурса",
+      "role": "Роль",
+      "user": "Пользователь"
+    },
+    "operations": {
+      "All": "Все",
+      "Create": "Создание",
+      "Read": "Чтение",
+      "Write": "Запись",
+      "Update": "Обновление",
+      "Delete": "Удаление",
+      "Execute": "Выполнение",
+      "Admin": "Администрирование"
+    },
+    "resources": {
+      "All": "Все",
+      "Tenant": "Арендатор",
+      "Admin": "Администрирование",
+      "User": "Пользователь",
+      "Credential": "Учетные данные",
+      "Session": "Сеанс",
+      "Role": "Роль",
+      "Permission": "Разрешение",
+      "Assignment": "Назначение",
+      "Audit": "Аудит",
+      "RequestHistory": "История запросов",
+      "Settings": "Настройки",
+      "Topic": "Тема",
+      "Schedule": "Расписание",
+      "RefinementSession": "Сеанс уточнения",
+      "Run": "Запуск",
+      "Finding": "Находка",
+      "Source": "Источник",
+      "Evidence": "Доказательства",
+      "Prediction": "Прогноз",
+      "Suggestion": "Предложение",
+      "Feedback": "Отзывы",
+      "LearnedPreference": "Выявленное предпочтение",
+      "Briefing": "Сводка",
+      "Edition": "Выпуск",
+      "Template": "Шаблон",
+      "Prompt": "Промпт",
+      "ModelEndpoint": "Конечная точка модели",
+      "SearchProvider": "Поисковый провайдер",
+      "Voice": "Голос",
+      "Media": "Медиа",
+      "EmailMessage": "Письмо",
+      "Analytics": "Аналитика"
+    }
+  },
+  "profile": {
+    "changePassword": "Сменить пароль",
+    "confirmPassword": "Подтвердите новый пароль",
+    "currentPassword": "Текущий пароль",
+    "details": "Сведения",
+    "emailHelp": "Чтобы изменить адрес эл. почты, обратитесь к администратору.",
+    "mismatch": "Пароли не совпадают.",
+    "newPassword": "Новый пароль",
+    "password": "Пароль",
+    "passwordChanged": "Пароль изменен",
+    "saved": "Профиль сохранен",
+    "timeZoneHelp": "Оставьте пустым, чтобы использовать часовой пояс браузера ({zone})."
+  },
+  "enums": {
+    "task": {
+      "Refinement": "Уточнение",
+      "QueryPlanning": "Планирование запросов",
+      "Extraction": "Извлечение",
+      "Scoring": "Оценка",
+      "Synthesis": "Синтез",
+      "Prediction": "Прогноз",
+      "Suggestion": "Предложение",
+      "Composition": "Составление",
+      "PodcastScript": "Сценарий подкаста",
+      "FeedbackAnalysis": "Анализ отзывов",
+      "Embedding": "Эмбеддинги"
+    },
+    "provider": {
+      "Anthropic": "Anthropic",
+      "OpenAi": "OpenAI",
+      "OpenAiCompatible": "Совместимый с OpenAI",
+      "Ollama": "Ollama",
+      "Gemini": "Gemini",
+      "XAi": "xAI",
+      "OllamaCloud": "Ollama Cloud"
+    },
+    "reasoningEffort": {
+      "None": "Нет",
+      "Minimal": "Минимальный",
+      "Low": "Низкий",
+      "Medium": "Средний",
+      "High": "Высокий",
+      "XHigh": "Очень высокий",
+      "Max": "Максимальный"
+    },
+    "vaultKind": {
+      "ApiKey": "Ключ API",
+      "BearerToken": "Bearer-токен",
+      "BasicAuth": "Базовая аутентификация",
+      "CustomHeader": "Пользовательский заголовок",
+      "ConnectionString": "Строка подключения"
+    },
+    "vaultProvider": {
+      "Anthropic": "Anthropic",
+      "OpenAi": "OpenAI",
+      "Gemini": "Gemini",
+      "XAi": "xAI",
+      "OllamaCloud": "Ollama Cloud",
+      "OpenAiCompatible": "Совместимый с OpenAI",
+      "Tavily": "Tavily",
+      "YouCom": "You.com",
+      "Mailgun": "Mailgun",
+      "ElevenLabs": "ElevenLabs",
+      "Mcp": "Сервер MCP",
+      "Custom": "Другой"
+    },
+    "intervalType": {
+      "EveryNMinutes": "Каждые N минут",
+      "EveryNHours": "Каждые N часов",
+      "EveryNDays": "Каждые N дней",
+      "EveryNWeeks": "Каждые N недель",
+      "DaysOfWeek": "По дням недели",
+      "DaysOfMonth": "По дням месяца",
+      "Once": "Один раз",
+      "Cron": "Cron (расширенный)",
+      "Manual": "Только вручную"
+    },
+    "missedRunPolicy": {
+      "Skip": "Пропустить",
+      "RunOnceOnRecovery": "Запустить один раз после восстановления"
+    },
+    "questionKind": {
+      "SingleChoice": "Один вариант",
+      "MultiChoice": "Несколько вариантов",
+      "Scale": "Шкала от 1 до 5",
+      "YesNo": "Да или нет",
+      "FreeText": "Свободный ответ"
+    },
+    "dimensionWeight": {
+      "High": "Высокий",
+      "Normal": "Обычный",
+      "Low": "Низкий",
+      "Exclude": "Исключить"
+    },
+    "constraintKind": {
+      "IncludeKeyword": "Включать ключевые слова",
+      "ExcludeKeyword": "Исключать ключевые слова",
+      "IncludeEntity": "Всегда включать",
+      "ExcludeEntity": "Всегда игнорировать",
+      "PreferredDomain": "Предпочтительные домены",
+      "BlockedDomain": "Заблокированные домены",
+      "TrackedQuestion": "Отслеживаемые вопросы",
+      "FeedUrl": "Ленты",
+      "SeedUrl": "Начальные страницы"
+    },
+    "topicStatus": {
+      "Draft": "Черновик",
+      "Active": "Активна",
+      "Paused": "Приостановлена",
+      "Archived": "В архиве"
+    },
+    "audienceLevel": {
+      "Beginner": "Новичок",
+      "Practitioner": "Практик",
+      "Expert": "Эксперт"
+    },
+    "horizon": {
+      "Days": "Дни",
+      "Weeks": "Недели",
+      "Months": "Месяцы",
+      "Years": "Годы"
+    },
+    "runStatus": {
+      "Queued": "В очереди",
+      "Running": "Выполняется",
+      "Completed": "Завершен",
+      "PartiallySucceeded": "Частично успешен",
+      "Failed": "Ошибка",
+      "Cancelled": "Отменен",
+      "Skipped": "Пропущен"
+    },
+    "runTrigger": {
+      "Schedule": "Расписание",
+      "Manual": "Запустить сейчас",
+      "Request": "Разовый запрос",
+      "Edition": "Выпуск",
+      "Preview": "Предпросмотр"
+    },
+    "requestStatus": {
+      "Clarifying": "Ждет вашего ответа",
+      "Scheduled": "Запланирован",
+      "Running": "Выполняется",
+      "Completed": "Завершен",
+      "Failed": "Ошибка",
+      "Cancelled": "Отменен",
+      "Declined": "Отклонен"
+    },
+    "deliverable": {
+      "Report": "Отчет",
+      "Podcast": "Подкаст",
+      "Email": "Письмо"
+    },
+    "deliverableLength": {
+      "Short": "Короткий",
+      "Standard": "Стандартный",
+      "Long": "Длинный"
+    },
+    "findingTier": {
+      "MustRead": "Обязательно к прочтению",
+      "WorthALook": "Стоит взглянуть",
+      "Fyi": "К сведению",
+      "BelowThreshold": "Ниже порога"
+    },
+    "findingCategory": {
+      "News": "Новости",
+      "Release": "Релиз",
+      "Research": "Исследование",
+      "Opinion": "Мнение",
+      "Tutorial": "Руководство",
+      "Data": "Данные",
+      "Other": "Другое"
+    },
+    "evidenceRole": {
+      "Supports": "Подтверждает",
+      "Contradicts": "Опровергает",
+      "Context": "Контекст"
+    },
+    "predictionStatus": {
+      "Open": "Открыт",
+      "ProposedResolved": "Предложено решение",
+      "Accurate": "Точный",
+      "PartiallyAccurate": "Частично точный",
+      "Inaccurate": "Неточный",
+      "Unresolvable": "Невозможно проверить",
+      "Withdrawn": "Отозван"
+    },
+    "suggestionStatus": {
+      "New": "Новое",
+      "Accepted": "Принято",
+      "Snoozed": "Отложено",
+      "Dismissed": "Отклонено",
+      "Done": "Выполнено"
+    },
+    "suggestionPriority": {
+      "High": "Высокий",
+      "Medium": "Средний",
+      "Low": "Низкий"
+    },
+    "suggestionEffort": {
+      "Minutes": "минуты",
+      "Hours": "часы",
+      "Days": "дни"
+    },
+    "stageStatus": {
+      "Pending": "Ожидает",
+      "Running": "Выполняется",
+      "Succeeded": "Успешно",
+      "Failed": "Ошибка",
+      "Skipped": "Пропущен"
+    },
+    "runStage": {
+      "AssembleContext": "Сбор контекста",
+      "PlanQueries": "Планирование запросов",
+      "Search": "Поиск",
+      "Filter": "Фильтрация",
+      "Fetch": "Загрузка",
+      "Extract": "Извлечение",
+      "Embed": "Эмбеддинги",
+      "Dedupe": "Удаление дубликатов",
+      "Score": "Оценка",
+      "Synthesize": "Синтез",
+      "ReviewPredictions": "Проверка прогнозов",
+      "Predict": "Прогнозирование",
+      "Suggest": "Предложения",
+      "ComposeBriefing": "Составление сводки",
+      "Notify": "Уведомление"
+    },
+    "searchDisposition": {
+      "Pending": "Ожидает",
+      "Fetched": "Загружено",
+      "SkippedSeen": "Уже встречалось",
+      "SkippedBlocked": "Заблокированный домен",
+      "SkippedRobots": "Заблокировано robots.txt",
+      "SkippedLimit": "Превышен лимит загрузки",
+      "SkippedDuplicate": "Дубликат",
+      "FetchFailed": "Ошибка загрузки"
+    },
+    "briefingKind": {
+      "Edition": "Выпуск",
+      "Run": "Сводка запуска",
+      "OneTime": "Разовый отчет"
+    },
+    "briefingStatus": {
+      "Queued": "В очереди",
+      "Composing": "Составляется",
+      "Ready": "Готова",
+      "Failed": "Ошибка"
+    },
+    "briefingItemType": {
+      "Finding": "Находка",
+      "Prediction": "Прогноз",
+      "Suggestion": "Предложение"
+    },
+    "lookbackMode": {
+      "SinceLastEdition": "С последнего выпуска",
+      "FixedHours": "Фиксированный период"
+    },
+    "artifactKind": {
+      "BriefingMarkdown": "Markdown",
+      "BriefingHtml": "Отчет HTML",
+      "Audio": "Аудио",
+      "Chapters": "Главы",
+      "Export": "Экспорт"
+    },
+    "mediaStatus": {
+      "Queued": "В очереди",
+      "Scripting": "Пишется сценарий",
+      "Synthesizing": "Синтез речи",
+      "Ready": "Готово",
+      "Failed": "Ошибка"
+    },
+    "mediaKind": {
+      "BriefingAudio": "Аудио сводки",
+      "PodcastEpisode": "Выпуск подкаста"
+    },
+    "ttsProvider": {
+      "OpenAiCompatibleSpeech": "Речь, совместимая с OpenAI",
+      "Disabled": "Отключено"
+    }
+  },
+  "vault": {
+    "adminOnly": "Изменять сохраненные учетные данные могут только администраторы.",
+    "memberNotice": "Вы видите, какие учетные данные сохранены. Добавлять, изменять, ротировать и раскрывать их может только администратор арендатора.",
+    "columns": {
+      "name": "Имя",
+      "kind": "Вид",
+      "provider": "Провайдер",
+      "secret": "Секрет",
+      "lastUsed": "Последнее использование",
+      "lastRevealed": "Последнее раскрытие",
+      "expires": "Истекает",
+      "status": "Статус",
+      "created": "Создано",
+      "id": "ID"
+    },
+    "fields": {
+      "headerName": "Имя заголовка",
+      "headerNameHelp": "Заголовок HTTP, в котором передается секрет, например X-Api-Key.",
+      "username": "Имя пользователя",
+      "secret": "Секрет",
+      "secretHelp": "Хранится в зашифрованном виде. После сохранения показываются только последние четыре символа.",
+      "expiresHelp": "Необязательно. Служит напоминанием: сервер не удаляет секреты с истекшим сроком.",
+      "description": "Описание"
+    },
+    "form": {
+      "createTitle": "Сохранить учетные данные",
+      "editTitle": "Изменить учетные данные",
+      "rotateHint": "Чтобы заменить сам секрет, используйте «Ротировать секрет»."
+    },
+    "empty": {
+      "title": "Нет сохраненных учетных данных",
+      "message": "Сохраните здесь ключи API и токены один раз, затем выбирайте их для конечных точек моделей, поисковых провайдеров, голосов и настроек почты."
+    },
+    "rotate": {
+      "action": "Ротировать секрет",
+      "title": "Ротация секрета",
+      "message": "Заменить секрет, сохраненный как {name}. Все, что использует эти учетные данные, получит новое значение при следующем вызове.",
+      "newSecret": "Новый секрет",
+      "confirm": "Ротировать",
+      "required": "Введите новый секрет.",
+      "done": "Секрет заменен"
+    },
+    "reveal": {
+      "action": "Раскрыть",
+      "actionAdminOnly": "Раскрыть (только администраторы)",
+      "confirmTitle": "Раскрыть секрет",
+      "confirmMessage": "Показать {name} в открытом виде? Секрет будет виден {seconds} с, затем снова скроется.",
+      "audited": "Раскрытия записываются в аудит: кто, какие учетные данные и откуда раскрыл.",
+      "confirm": "Раскрыть",
+      "shownTitle": "Секрет раскрыт",
+      "hidesIn": "{count, plural, one {Скроется через # секунду} few {Скроется через # секунды} many {Скроется через # секунд} other {Скроется через # секунды}}",
+      "hideNow": "Скрыть сейчас",
+      "copy": "Копировать секрет"
+    },
+    "usage": {
+      "action": "Где используется",
+      "title": "Где используются эти учетные данные",
+      "none": "Эти учетные данные пока нигде не используются.",
+      "types": {
+        "ModelEndpoint": "Конечная точка модели"
+      }
+    },
+    "delete": {
+      "title": "Удалить учетные данные",
+      "message": "Удалить {name}? Все, что их использует, перестанет работать, пока не получит другие учетные данные."
+    }
+  },
+  "models": {
+    "add": "Добавить модель",
+    "adminOnly": "Изменять конечные точки моделей могут только администраторы.",
+    "memberNotice": "Вы видите настроенные модели и назначения. Изменять или тестировать их может только администратор арендатора.",
+    "created": "Добавлено: {name}",
+    "unknown": "Не проверено",
+    "tabs": {
+      "endpoints": "Конечные точки",
+      "assignments": "Назначения",
+      "calls": "Вызовы моделей"
+    },
+    "columns": {
+      "name": "Имя",
+      "provider": "Провайдер",
+      "model": "Модель",
+      "embeddingModel": "Модель эмбеддингов",
+      "capabilities": "Возможности",
+      "price": "Цена за миллион токенов",
+      "priceValue": "{input} ввод, {output} вывод",
+      "noPrice": "Цена не задана",
+      "reasoningEffort": "Глубина рассуждений",
+      "credential": "Учетные данные",
+      "lastValidated": "Последняя проверка",
+      "status": "Статус",
+      "id": "ID"
+    },
+    "capabilities": {
+      "chat": "Чат",
+      "tools": "Инструменты",
+      "noTools": "Без инструментов",
+      "embeddings": "Эмбеддинги",
+      "embeddingsDims": "Эмбеддинги ({dims})"
+    },
+    "actions": {
+      "test": "Тест",
+      "validate": "Проверить",
+      "listModels": "Список моделей"
+    },
+    "empty": {
+      "title": "Добавьте первую модель",
+      "message": "Подключите провайдера моделей, например Anthropic, OpenAI или локальный сервер Ollama. Исследования, ранжирование и сводки работают через эти конечные точки."
+    },
+    "delete": {
+      "title": "Удалить конечную точку модели",
+      "message": "Удалить {name}? Назначенные ей роли задач перейдут на первую активную конечную точку, пока вы не назначите их заново."
+    },
+    "form": {
+      "createTitle": "Добавить конечную точку модели",
+      "editTitle": "Изменить конечную точку модели",
+      "duplicateTitle": "Дублировать конечную точку модели",
+      "endpoint": "Базовый URL",
+      "endpointRequired": "Базовый URL (обязательно)",
+      "endpointHelp": {
+        "Anthropic": "Оставьте пустым для API Anthropic.",
+        "OpenAi": "Оставьте пустым для API OpenAI.",
+        "OpenAiCompatible": "Обязательно. Сервер работает в Docker, поэтому для сервера на этом компьютере используйте host.docker.internal.",
+        "Ollama": "Сервер Ollama. Из контейнера Docker используйте host.docker.internal для Ollama на этом компьютере.",
+        "Gemini": "Оставьте пустым для API Gemini.",
+        "XAi": "Оставьте пустым для API xAI.",
+        "OllamaCloud": "Оставьте пустым для Ollama Cloud."
+      },
+      "apiKey": "Ключ API",
+      "keyModes": {
+        "new": "Ввести ключ",
+        "vault": "Использовать сохраненные учетные данные",
+        "none": "Без ключа"
+      },
+      "newKey": "Новый ключ API",
+      "newKeyHelp": "Сохраняется в хранилище учетных данных (в зашифрованном виде) и связывается с этой конечной точкой. Оставьте пустым, чтобы сохранить текущий ключ.",
+      "storedKey": "Сохраненные учетные данные",
+      "storedKeyHelp": "Ротируйте их на странице «Сохраненные учетные данные», и все использующие их конечные точки получат изменение.",
+      "pickCredential": "Выберите учетные данные",
+      "noKeyWarning": "Этому провайдеру обычно нужен ключ API. Без него вызовы будут завершаться ошибкой.",
+      "capabilities": "Обслуживает",
+      "toolsDetected": "Поддержка инструментов и размерность эмбеддингов определяются при запуске проверки.",
+      "embeddingDimensions": "Размерность эмбеддингов",
+      "embeddingDimensionsHelp": "Определяется проверкой.",
+      "notDetected": "Пока не определено",
+      "maxTokens": "Максимум токенов вывода",
+      "maxTokensHelp": "Около 16000 подходит для вызовов без потоковой передачи.",
+      "reasoningEffort": "Глубина рассуждений",
+      "reasoningEffortHelp": "Значение по умолчанию для этой конечной точки. Назначения ролей задач могут его переопределить.",
+      "providerDefault": "По умолчанию провайдера",
+      "temperature": "Температура",
+      "temperatureHelp": "Необязательная температура выборки.",
+      "temperatureAnthropic": "Не используется: текущие модели Anthropic не принимают температуру, поэтому она никогда не отправляется.",
+      "contextLength": "Длина контекста",
+      "timeoutMs": "Тайм-аут (мс)",
+      "timeoutHelp": "На один вызов, включая повторы.",
+      "modelsLoaded": "{count, plural, one {Доступна # модель; выберите ее из списка.} few {Доступно # модели; выберите одну из списка.} many {Доступно # моделей; выберите одну из списка.} other {Доступно # модели; выберите одну из списка.}}",
+      "pricing": "Цены",
+      "pricingHelp": "Доллары США за миллион токенов. Для локальных моделей оставьте пустым. Стоимость рассчитывается при записи каждого вызова, поэтому последующие изменения не меняют историю.",
+      "inputCost": "Ввод",
+      "outputCost": "Вывод",
+      "cachedInputCost": "Кэшированный ввод",
+      "cachedInputCostHelp": "Чтение из кэша. По умолчанию используется цена ввода.",
+      "cacheWriteCost": "Запись в кэш",
+      "cacheWriteCostHelp": "По умолчанию используется цена ввода.",
+      "errors": {
+        "name": "Укажите имя.",
+        "endpointRequired": "Для конечных точек, совместимых с OpenAI, нужен базовый URL.",
+        "endpointUrl": "Введите абсолютный URL, например http://host.docker.internal:8000/v1.",
+        "model": "Если конечная точка обслуживает чат, нужна модель чата.",
+        "embeddingModel": "Если конечная точка обслуживает эмбеддинги, нужна модель эмбеддингов.",
+        "capability": "Выберите чат, эмбеддинги или и то и другое.",
+        "credential": "Выберите сохраненные учетные данные.",
+        "number": "Введите число не меньше нуля."
+      }
+    },
+    "test": {
+      "title": "Тест модели",
+      "prompt": "Промпт",
+      "model": "Переопределение модели",
+      "modelHelp": "Необязательно. Оставьте пустым, чтобы использовать модель конечной точки.",
+      "run": "Отправить",
+      "running": "Ожидание ответа модели...",
+      "succeeded": "Успешно",
+      "failed": "Ошибка",
+      "tokens": "{input} ввод, {output} вывод",
+      "duration": "Заняло {value}",
+      "tools": "Инструменты: {value}",
+      "output": "Ответ"
+    },
+    "validate": {
+      "title": "Проверка конечной точки",
+      "running": "Проверка подключения, поддержки инструментов и эмбеддингов...",
+      "reachable": "Доступна",
+      "modelFound": "Модель найдена",
+      "supportsTools": "Поддерживает вызовы инструментов",
+      "embeddingDimensions": "Размерность эмбеддингов",
+      "validatedUtc": "Проверено"
+    },
+    "list": {
+      "title": "Доступные модели",
+      "filter": "Фильтр моделей",
+      "none": "Нет подходящих моделей.",
+      "name": "Модель",
+      "inputLimit": "Лимит ввода",
+      "outputLimit": "Лимит вывода",
+      "tools": "Инструменты",
+      "current": "Используется",
+      "use": "Использовать",
+      "used": "Теперь используется {model}"
+    },
+    "assignments": {
+      "intro": "Каждая задача конвейера выполняется на конечной точке, назначенной ее роли. Переопределение для темы важнее значения арендатора по умолчанию, а оно важнее первой активной конечной точки.",
+      "role": "Роль задачи",
+      "endpoint": "Конечная точка",
+      "modelOverride": "Переопределение модели",
+      "reasoningEffort": "Глубина рассуждений",
+      "endpointFor": "Конечная точка для роли {role}",
+      "modelOverrideFor": "Переопределение модели для роли {role}",
+      "effortFor": "Глубина рассуждений для роли {role}",
+      "pickEndpoint": "Выберите конечную точку",
+      "endpointDefault": "По умолчанию конечной точки",
+      "notApplicable": "Не используется",
+      "noTools": "Нет поддержки инструментов",
+      "noToolsHelp": "Эта модель не умеет вызывать инструменты, поэтому для структурированных результатов используется запасной вариант JSON, с которым некоторые модели справляются плохо.",
+      "undo": "Отменить изменения",
+      "saved": "Назначение для роли {role} сохранено",
+      "uses": {
+        "Refinement": "Аспекты, вопросы и контекст мастера",
+        "QueryPlanning": "Генерация поисковых запросов",
+        "Extraction": "Находки и доказательства из документов",
+        "Scoring": "Оценка релевантности",
+        "Synthesis": "Итоги запуска и тренды",
+        "Prediction": "Прогнозы и их проверка",
+        "Suggestion": "Предложения для изучения",
+        "Composition": "Markdown сводки",
+        "PodcastScript": "Аудиосценарий",
+        "FeedbackAnalysis": "Разметка причин и предпочтения",
+        "Embedding": "Векторы для удаления дубликатов и близости"
+      },
+      "overridesTitle": "Переопределения для тем",
+      "overridesIntro": "Тема может выполнять роль на другой конечной точке, чем задано для арендатора по умолчанию.",
+      "noOverrides": "Нет переопределений для тем.",
+      "topic": "Тема",
+      "topicId": "ID темы",
+      "topicIdHelp": "ID темы, для которой задается переопределение.",
+      "addOverride": "Добавить переопределение для темы",
+      "overrideAdded": "Переопределение для темы сохранено",
+      "deleteTitle": "Удалить переопределение для темы",
+      "deleteMessage": "Удалить переопределение роли {role} для темы {topic}? Тема вернется к значению арендатора по умолчанию."
+    },
+    "calls": {
+      "detailTitle": "Вызов модели",
+      "succeeded": "Успешно",
+      "failed": "Ошибка",
+      "dryRun": "Пробный запуск",
+      "system": "Система",
+      "tokensTitle": "{input} ввод, {output} вывод",
+      "payloadCleared": "Недоступно. Содержимое удаляется по истечении срока хранения.",
+      "openPrompt": "Открыть промпт {key}",
+      "columns": {
+        "time": "Время",
+        "task": "Задача",
+        "model": "Модель",
+        "promptKey": "Промпт",
+        "user": "Пользователь",
+        "tokens": "Токены",
+        "ttft": "Первый токен",
+        "duration": "Длительность",
+        "cost": "Стоимость",
+        "outcome": "Результат"
+      },
+      "filters": {
+        "task": "Задача",
+        "endpoint": "Конечная точка",
+        "outcome": "Результат",
+        "dryRun": "Пробные запуски",
+        "dryRunOnly": "Только пробные запуски",
+        "realOnly": "Без пробных запусков",
+        "from": "С",
+        "to": "По"
+      },
+      "empty": {
+        "title": "Вызовов моделей пока нет",
+        "message": "Здесь записывается каждый вызов модели с токенами, временем и стоимостью. Попробуйте «Тест» для конечной точки или запустите лабораторию промптов."
+      },
+      "sections": {
+        "attribution": "Атрибуция",
+        "tokens": "Токены",
+        "timing": "Время",
+        "outcome": "Результат и инструменты",
+        "cost": "Стоимость",
+        "prompt": "Промпт",
+        "response": "Ответ"
+      },
+      "fields": {
+        "provider": "Провайдер",
+        "endpoint": "Конечная точка",
+        "user": "Пользователь",
+        "topic": "Тема",
+        "run": "Запуск",
+        "refinementSession": "Сеанс уточнения",
+        "briefing": "Сводка",
+        "promptKey": "Ключ промпта",
+        "promptVersion": "Версия промпта",
+        "inputTokens": "Ввод (всего)",
+        "uncachedInputTokens": "Некэшированный ввод",
+        "cachedInputTokens": "Кэшированный ввод",
+        "cacheWriteTokens": "Запись в кэш",
+        "outputTokens": "Вывод",
+        "reasoningTokens": "Рассуждения",
+        "totalTokens": "Всего",
+        "duration": "Длительность",
+        "timeToFirstToken": "Время до первого токена",
+        "streamingDuration": "Длительность потоковой передачи",
+        "chunks": "Фрагменты",
+        "tokensPerSecond": "Токенов вывода в секунду",
+        "streamed": "Потоковая передача",
+        "attempts": "Попытки",
+        "statusCode": "Код статуса",
+        "finishReason": "Причина завершения",
+        "repairs": "Исправления структурированного вывода",
+        "toolCalls": "Вызовы инструментов",
+        "toolNames": "Вызванные инструменты",
+        "dryRun": "Пробный запуск",
+        "inputCost": "Стоимость ввода",
+        "outputCost": "Стоимость вывода",
+        "estimatedCost": "Общая стоимость"
+      }
+    }
+  },
+  "prompts": {
+    "guardrailNotice": "Сервер всегда ставит ограничитель области перед системным промптом каждого вызова модели. Изменение промпта не может его убрать.",
+    "searchPlaceholder": "Ключ или имя",
+    "filteredByKey": "Ключ: {key}",
+    "empty": "Промптов нет",
+    "open": "Открыть редактор",
+    "back": "Все промпты",
+    "versionLabel": "v{version}",
+    "current": "текущая",
+    "customized": "Изменен",
+    "default": "По умолчанию",
+    "noNote": "Без описания изменения",
+    "saved": "Новая версия сохранена",
+    "columns": {
+      "key": "Ключ",
+      "role": "Роль",
+      "scope": "Область",
+      "version": "Версия",
+      "customized": "Изменен",
+      "updated": "Обновлен"
+    },
+    "scope": {
+      "tenant": "Арендатор",
+      "topic": "Переопределение для темы",
+      "tenantOnly": "Только промпты арендатора"
+    },
+    "panels": {
+      "versions": "Версии",
+      "compare": "Сравнение",
+      "lab": "Лаборатория промптов"
+    },
+    "editor": {
+      "title": "Шаблон",
+      "panels": "Инструменты промптов",
+      "unsaved": "Несохраненные изменения",
+      "format": "Markdown с вводным блоком YAML (key, name, role, output, variables), затем раздел System и раздел User. Заполнители используют имена переменных, объявленные во вводном блоке.",
+      "missingUser": "В шаблоне нет заголовка раздела User. Добавьте строку ## User.",
+      "missingSystem": "В шаблоне нет заголовка раздела System. Ограничитель все равно отправляется как системный промпт.",
+      "invalid": "Сервер отклонил эту версию.",
+      "variables": "Объявленные переменные",
+      "noVariables": "Переменные не объявлены.",
+      "changeNote": "Описание изменения",
+      "changeNoteHelp": "Необязательно. Показывается в истории версий.",
+      "discard": "Отменить изменения",
+      "save": "Сохранить версию",
+      "fields": {
+        "content": "Шаблон",
+        "key": "Ключ",
+        "user": "Раздел User",
+        "variables": "Переменные"
+      }
+    },
+    "compareWithCurrent": "Сравнить v{version} с редактором",
+    "rollbackTo": "Откатить к v{version}",
+    "rollbackTitle": "Откат",
+    "rollbackMessage": "Сделать v{version} текущей версией? Будет создана новая версия с ее содержимым, поэтому ничего не потеряется.",
+    "rollbackConfirm": "Откатить",
+    "rolledBack": "Выполнен откат к v{version}",
+    "reset": "Сбросить к значению по умолчанию",
+    "resetTitle": "Сброс к значению по умолчанию",
+    "resetMessage": "Заменить этот промпт поставляемым вариантом по умолчанию? Будет создана новая версия, так что позже можно откатиться.",
+    "resetDone": "Сброшено к значению по умолчанию",
+    "deleteOverride": "Удалить переопределение",
+    "deleteTitle": "Удалить переопределение для темы",
+    "deleteMessage": "Удалить переопределение {key} для темы {topic}? Тема вернется к промпту арендатора.",
+    "diff": {
+      "from": "Из",
+      "to": "В",
+      "draft": "Редактор (не сохранено)",
+      "current": "Редактор",
+      "default": "Поставляемый по умолчанию",
+      "label": "Различия по строкам",
+      "added": "{count, plural, one {Добавлена # строка} few {Добавлено # строки} many {Добавлено # строк} other {Добавлено # строки}}",
+      "removed": "{count, plural, one {Удалена # строка} few {Удалено # строки} many {Удалено # строк} other {Удалено # строки}}",
+      "addedLine": "Добавлено",
+      "removedLine": "Удалено",
+      "showAll": "Показать неизмененные строки",
+      "skipped": "{count, plural, one {# неизмененная строка} few {# неизмененные строки} many {# неизмененных строк} other {# неизмененной строки}}",
+      "identical": "Две версии идентичны."
+    },
+    "override": {
+      "button": "Создать переопределение для темы",
+      "title": "Создание переопределения для темы",
+      "intro": "Переопределение для темы заменяет промпт арендатора только для одной темы. Оно создается как копия промпта арендатора.",
+      "pickKey": "Выберите промпт",
+      "topicId": "ID темы",
+      "topicIdHelp": "ID темы, которая должна использовать собственную версию этого промпта.",
+      "copyDraft": "Начать с несохраненного текста редактора",
+      "create": "Создать переопределение"
+    },
+    "lab": {
+      "intro": "Подставьте свои значения в промпт и запустите его на любой модели. Это пробные запуски: они записываются как вызовы моделей, но никогда не влияют на исследования.",
+      "endpoint": "Конечная точка",
+      "assigned": "Назначено роли {role}",
+      "model": "Переопределение модели",
+      "modelHelp": "Необязательно.",
+      "variables": "Переменные",
+      "noVariables": "Этот промпт не объявляет переменных.",
+      "useDraft": "Запустить несохраненный текст редактора",
+      "run": "Запустить",
+      "running": "Выполнение промпта...",
+      "cost": "Стоимость {value}",
+      "costUnknown": "недоступно",
+      "unknownVariables": "Не заполнено: {names}",
+      "guardrailNote": "Ниже показан системный промпт, который формирует шаблон. При вызове модели сервер добавляет перед ним ограничитель области.",
+      "renderedSystem": "Итоговый системный промпт",
+      "renderedUser": "Итоговый пользовательский промпт",
+      "output": "Вывод",
+      "emptySection": "Пусто.",
+      "loggedAs": "Записано как",
+      "openCall": "Открыть записанный вызов"
+    }
+  },
+  "usage": {
+    "noData": "В этом периоде нет вызовов моделей.",
+    "noToolCalls": "В этом периоде нет вызовов инструментов.",
+    "total": "Всего",
+    "exportCsv": "Экспорт CSV",
+    "window": "С {from} по {to}",
+    "kpi": {
+      "cost": "Стоимость",
+      "perCall": "{value} за вызов",
+      "calls": "Вызовы моделей",
+      "tokens": "Токены",
+      "tokensDetail": "{input} ввод, {output} вывод",
+      "failures": "Сбои",
+      "failureRate": "{value} вызовов",
+      "avgTtft": "Средний первый токен",
+      "p95Ttft": "Первый токен p95"
+    },
+    "filters": {
+      "task": "Задача",
+      "endpoint": "Конечная точка",
+      "user": "Пользователь",
+      "userPlaceholder": "ID пользователя",
+      "topic": "Тема",
+      "topicPlaceholder": "ID темы",
+      "includeDryRun": "Включая пробные запуски"
+    },
+    "groups": {
+      "User": "Пользователь",
+      "Model": "Модель",
+      "Task": "Задача",
+      "Provider": "Провайдер",
+      "Topic": "Тема",
+      "PromptKey": "Промпт",
+      "Day": "День",
+      "Tenant": "Арендатор"
+    },
+    "labels": {
+      "system": "Система",
+      "noTopic": "Без темы",
+      "none": "Нет",
+      "unknown": "Неизвестно"
+    },
+    "columns": {
+      "cost": "Стоимость",
+      "calls": "Вызовы",
+      "failures": "Сбои",
+      "tokens": "Токены",
+      "inputTokens": "Ввод",
+      "cachedInputTokens": "Кэшированный ввод",
+      "cacheWriteTokens": "Запись в кэш",
+      "outputTokens": "Вывод",
+      "reasoningTokens": "Рассуждения",
+      "toolCalls": "Вызовы инструментов",
+      "avgDuration": "Средняя длительность",
+      "avgTtft": "Средний первый токен",
+      "p95Ttft": "Первый токен p95"
+    },
+    "tokens": {
+      "uncachedInput": "Некэшированный ввод",
+      "cachedInput": "Кэшированный ввод",
+      "cacheWrite": "Запись в кэш",
+      "output": "Вывод",
+      "reasoning": "Рассуждения"
+    },
+    "series": {
+      "average": "Среднее",
+      "p95": "p95",
+      "toolCallsPerCall": "Вызовов инструментов на вызов"
+    },
+    "charts": {
+      "groupBy": "Группировать по",
+      "costOverTime": "Стоимость во времени",
+      "costOverTimeHelp": "Оценочная стоимость за интервал, рассчитанная при записи каждого вызова.",
+      "costByUser": "Стоимость по пользователям",
+      "costByUserHelp": "Топ-20 пользователей и их доля в стоимости. Выберите строку, чтобы отфильтровать страницу по этому пользователю.",
+      "costByModel": "Стоимость по моделям",
+      "costByTask": "Стоимость по задачам",
+      "costByTopic": "Стоимость по темам",
+      "ttftByModel": "Время до первого токена по моделям",
+      "ttftHelp": "Среднее и p95 для вызовов с потоковой передачей.",
+      "tokenMix": "Состав токенов по типам",
+      "tokenMixHelp": "Вывод не включает токены рассуждений, они показаны отдельно.",
+      "toolCalls": "Вызовы инструментов по задачам",
+      "toolCallsHelp": "Среднее число вызовов инструментов на вызов модели."
+    },
+    "breakdown": {
+      "title": "Детализация",
+      "help": "Все типы токенов, доля стоимости и время для выбранной группировки. Экспорт CSV скачивает именно эту таблицу."
+    },
+    "member": {
+      "notice": "Использование по всему арендатору доступно только администраторам и аудиторам. Здесь показано ваше собственное использование.",
+      "byTask": "Ваша стоимость по задачам"
+    },
+    "admin": {
+      "costByTenant": "Стоимость по арендаторам",
+      "costByTenantHelp": "Все арендаторы, упорядоченные по стоимости, с их долей в затратах платформы.",
+      "tenantTrend": "Стоимость по арендаторам во времени",
+      "tenantTrendHelp": "{count, plural, one {Период разбит на # интервал.} few {Период разбит на # интервала.} many {Период разбит на # интервалов.} other {Период разбит на # интервала.}} Крупнейшие арендаторы показаны стопкой, остальные объединены.",
+      "otherTenants": "Прочие арендаторы",
+      "platformTrend": "Затраты платформы во времени",
+      "costByModel": "Затраты платформы по моделям",
+      "breakdownHelp": "Все арендаторы с типами токенов, долей стоимости и временем. Экспорт CSV скачивает эту таблицу."
+    }
+  },
+  "markdown": {
+    "mode": "Режим редактора",
+    "write": "Редактировать",
+    "preview": "Предпросмотр",
+    "empty": "Пока нечего показать."
+  },
+  "schedule": {
+    "fields": {
+      "intervalType": "Повтор",
+      "every": "Каждые",
+      "everyHelp": "От {min} до {max}",
+      "minuteOffset": "На минуте",
+      "minuteOffsetHelp": "Минуты после начала часа, от 0 до 59",
+      "timeZone": "Часовой пояс",
+      "timeZoneHelp": "Время рассчитывается в этом поясе, с учетом перехода на летнее время",
+      "runOnce": "Запустить в",
+      "localTimeHelp": "Местное время в поясе {zone}",
+      "cron": "Выражение cron",
+      "cronHelp": "Пять полей: минута, час, день месяца, месяц, день недели",
+      "daysOfWeek": "Дни недели",
+      "daysOfMonth": "Дни месяца",
+      "timesOfDay": "Время суток",
+      "timeN": "Время {n}",
+      "start": "Начало",
+      "end": "Окончание",
+      "optionalLocal": "Необязательно, местное время в поясе {zone}",
+      "missedRunPolicy": "Если запуск пропущен",
+      "enabled": "Включено"
+    },
+    "units": {
+      "minutes": "минут",
+      "hours": "часов",
+      "days": "дней",
+      "weeks": "недель"
+    },
+    "presets": {
+      "weekdays": "Будни",
+      "weekends": "Выходные",
+      "everyDay": "Каждый день"
+    },
+    "lastDay": "Последний день",
+    "removeTime": "Удалить это время",
+    "addTime": "Добавить время",
+    "enabledOn": "Вкл.",
+    "enabledOff": "Выкл.",
+    "missedHelp": {
+      "Skip": "Запуски, пропущенные, пока сервер не работал, не выполняются.",
+      "RunOnceOnRecovery": "После возобновления работы сервера выполняется один догоняющий запуск."
+    },
+    "preview": {
+      "title": "Следующие 5 запусков",
+      "checking": "Проверка...",
+      "manual": "Эта тема запускается только по кнопке «Запустить сейчас».",
+      "none": "Предстоящих запусков нет. Проверьте даты начала и окончания."
+    },
+    "summary": {
+      "EveryNMinutes": "{count, plural, =1 {Каждую минуту} one {Каждую # минуту} few {Каждые # минуты} many {Каждые # минут} other {Каждые # минуты}}",
+      "EveryNHours": "{count, plural, =1 {Каждый час} one {Каждый # час} few {Каждые # часа} many {Каждые # часов} other {Каждые # часа}} в :{minute}",
+      "EveryNDays": "{count, plural, =1 {Каждый день} one {Каждый # день} few {Каждые # дня} many {Каждые # дней} other {Каждые # дня}} в {times}",
+      "EveryNWeeks": "{count, plural, =1 {Каждую неделю} one {Каждую # неделю} few {Каждые # недели} many {Каждые # недель} other {Каждые # недели}}: {days} в {times}",
+      "DaysOfWeek": "{days} в {times}",
+      "DaysOfMonth": "В день {days} в {times}",
+      "Once": "Один раз: {when}",
+      "Cron": "Cron {expression}",
+      "Manual": "Только при ручном запуске"
+    },
+    "saved": "Расписание сохранено",
+    "create": "Создать расписание",
+    "save": "Сохранить расписание",
+    "emptyTitle": "Расписания пока нет",
+    "emptyMessage": "Добавьте расписание, чтобы исследовать эту тему автоматически, или запускайте ее вручную.",
+    "add": "Добавить расписание",
+    "nextRun": "Следующий запуск",
+    "noNextRun": "Не запланирован",
+    "lastRun": "Последний запуск",
+    "enableFor": "Включить {name}",
+    "edit": "Изменить расписание",
+    "delete": "Удалить расписание",
+    "deleteTitle": "Удалить расписание",
+    "deleteMessage": "Удалить расписание «{name}»? Запуски, уже стоящие в очереди, не затрагиваются."
+  },
+  "questions": {
+    "pickOne": "Выберите хотя бы один вариант, напишите ответ или пропустите вопрос.",
+    "somethingElse": "Другое (необязательно)",
+    "scaleLow": "Совсем нет",
+    "scaleHigh": "Очень",
+    "save": "Сохранить ответ",
+    "why": "Почему я спрашиваю: {reason}",
+    "answered": "Есть ответ",
+    "skipped": "Пропущен",
+    "skip": "Пропустить",
+    "skippedHint": "Пропущен. Ответьте, чтобы вернуть его."
+  },
+  "dimensions": {
+    "emptyTitle": "Аспектов пока нет",
+    "emptyMessage": "Аспекты определяют, с каких сторон исследуется тема. Предложите их автоматически или добавьте свои.",
+    "locked": "Закреплен",
+    "yours": "Ваш",
+    "suggested": "Предложен",
+    "why": "Почему это может быть важно: {reason}",
+    "include": "Включить",
+    "exclude": "Исключить",
+    "weightFor": "Вес для {name}",
+    "unlock": "Открепить {name}",
+    "lock": "Закрепить {name}",
+    "unlockHint": "Открепите, чтобы повторная генерация могла его заменить",
+    "lockHint": "Закрепите, чтобы сохранить его при повторной генерации",
+    "edit": "Изменить {name}",
+    "delete": "Удалить {name}",
+    "add": "Добавить аспект",
+    "addTitle": "Добавление аспекта",
+    "editTitle": "Изменение аспекта",
+    "editHint": "Измененные аспекты становятся вашими и сохраняются при повторной генерации.",
+    "fields": {
+      "name": "Название",
+      "description": "Описание",
+      "rationale": "Почему это важно для вас",
+      "weight": "Вес",
+      "includeTerms": "Включаемые термины",
+      "excludeTerms": "Исключаемые термины",
+      "termsHelp": "Разделяйте термины запятыми"
+    },
+    "deleteTitle": "Удалить аспект",
+    "deleteMessage": "Удалить аспект «{name}»?"
+  },
+  "constraints": {
+    "count": "{count, plural, one {# элемент} few {# элемента} many {# элементов} other {# элемента}}",
+    "help": {
+      "IncludeKeyword": "Слова, повышающие релевантность результата.",
+      "ExcludeKeyword": "Слова, исключающие результат.",
+      "IncludeEntity": "Компании, продукты или люди, которых нужно всегда включать.",
+      "ExcludeEntity": "Компании, продукты или люди, которых нужно всегда игнорировать.",
+      "PreferredDomain": "Предпочтительные сайты, например example.com.",
+      "BlockedDomain": "Сайты, которые никогда не используются.",
+      "TrackedQuestion": "Открытые вопросы, которые нужно отслеживать со временем.",
+      "FeedUrl": "Ленты RSS или Atom, читаемые при каждом запуске.",
+      "SeedUrl": "Страницы, проверяемые при каждом запуске."
+    },
+    "value": "Значение",
+    "note": "Примечание",
+    "unlock": "Открепить {value}",
+    "lock": "Закрепить {value}",
+    "edit": "Изменить {value}",
+    "delete": "Удалить {value}",
+    "addTo": "Добавить в «{kind}»",
+    "placeholder": {
+      "IncludeKeyword": "Добавьте ключевое слово",
+      "ExcludeKeyword": "Добавьте исключаемое ключевое слово",
+      "IncludeEntity": "Добавьте компанию или продукт",
+      "ExcludeEntity": "Добавьте игнорируемую компанию или продукт",
+      "PreferredDomain": "Добавьте домен",
+      "BlockedDomain": "Добавьте блокируемый домен",
+      "TrackedQuestion": "Добавьте отслеживаемый вопрос",
+      "FeedUrl": "Добавьте URL ленты (https://...)",
+      "SeedUrl": "Добавьте URL страницы (https://...)"
+    }
+  },
+  "delivery": {
+    "saved": "Параметры доставки сохранены",
+    "emailOnRun": "Письмо после каждого запуска",
+    "emailOnRunHelp": "Сводка со ссылками на подробности и отзывы",
+    "emailWhenEmpty": "Письмо, когда ничего не найдено",
+    "emailWhenEmptyHelp": "Иначе пустые запуски не отправляют писем",
+    "maxFindings": "Находок в письме",
+    "maxFindingsHelp": "От 1 до 50",
+    "saveOptions": "Сохранить параметры доставки",
+    "recipients": "Получатели",
+    "recipientsHelp": "Все указанные здесь получают письмо после каждого запуска. По умолчанию получатель вы.",
+    "noRecipients": "Получателей пока нет.",
+    "you": "вы",
+    "removeRecipient": "Удалить {email}",
+    "addRecipient": "Адрес эл. почты получателя",
+    "emailPlaceholder": "name@example.com",
+    "addMe": "Добавить меня"
+  },
+  "topics": {
+    "actions": {
+      "dryRunQueued": "Пробный запуск для темы {name} поставлен в очередь",
+      "runQueued": "Запуск для темы {name} поставлен в очередь",
+      "continueRefining": "Продолжить уточнение",
+      "refine": "Уточнить снова",
+      "runNow": "Запустить сейчас",
+      "dryRun": "Пробный запуск",
+      "pause": "Приостановить",
+      "paused": "Тема {name} приостановлена",
+      "resume": "Возобновить",
+      "resumed": "Тема {name} возобновлена",
+      "archive": "В архив",
+      "archived": "Тема {name} перемещена в архив",
+      "duplicated": "Тема {name} скопирована как черновик"
+    },
+    "delete": {
+      "title": "Удалить тему",
+      "message": "Удалить «{name}» вместе с аспектами, ограничениями, расписаниями и запусками? Это действие нельзя отменить.",
+      "done": "Тема {name} удалена"
+    },
+    "bulk": {
+      "paused": "{count, plural, one {Приостановлена # тема} few {Приостановлено # темы} many {Приостановлено # тем} other {Приостановлено # темы}}",
+      "pause": "Приостановить",
+      "delete": "Удалить",
+      "deleteTitle": "Удалить темы",
+      "deleteMessage": "{count, plural, one {Удалить # тему и все, что к ней относится?} few {Удалить # темы и все, что к ним относится?} many {Удалить # тем и все, что к ним относится?} other {Удалить # темы и все, что к ним относится?}} Это действие нельзя отменить.",
+      "deleted": "{count, plural, one {Удалена # тема} few {Удалено # темы} many {Удалено # тем} other {Удалено # темы}}"
+    },
+    "columns": {
+      "name": "Название",
+      "status": "Статус",
+      "oneTime": "Вид",
+      "lastRun": "Последний запуск",
+      "lastRefined": "Последнее уточнение",
+      "created": "Создана",
+      "audience": "Аудитория",
+      "id": "ID"
+    },
+    "searchPlaceholder": "Поиск тем",
+    "oneTime": "Разовая",
+    "recurring": "Регулярная",
+    "new": "Новая тема",
+    "empty": {
+      "title": "Тем пока нет",
+      "message": "Опишите, за чем вы хотите следить, и мастер превратит это в план исследования.",
+      "action": "Расскажите, что вам важно"
+    },
+    "backToList": "Все темы",
+    "draftNoRun": "Завершите уточнение перед запуском или начните пробный запуск",
+    "draftNotice": "Эта тема является черновиком. Завершите ее уточнение, чтобы начать исследования по расписанию.",
+    "workspace": {
+      "tabsLabel": "Разделы темы",
+      "tabs": {
+        "overview": "Обзор",
+        "context": "Контекст",
+        "schedule": "Расписание",
+        "sources": "Источники",
+        "runs": "Запуски",
+        "findings": "Находки",
+        "predictions": "Прогнозы",
+        "suggestions": "Предложения",
+        "feedback": "Отзывы",
+        "preferences": "Предпочтения",
+        "analytics": "Аналитика",
+        "delivery": "Доставка",
+        "prompts": "Промпты",
+        "models": "Модели"
+      },
+      "dimensionCount": "Аспекты",
+      "noBrief": "Плана исследования пока нет. Уточните тему, чтобы составить его.",
+      "dimensions": "Аспекты",
+      "brief": "План и аудитория",
+      "sourcesHelp": "Ленты и начальные страницы читаются при каждом запуске вместе с веб-поиском.",
+      "searchProvidersLater": "Выбор поисковых провайдеров для темы появится вместе со страницей поисковых провайдеров."
+    }
+  },
+  "wizard": {
+    "railLabel": "Шаги мастера",
+    "steps": {
+      "Describe": "Описание",
+      "Dimensions": "Аспекты",
+      "Questions": "Вопросы",
+      "Context": "Контекст",
+      "Sources": "Источники",
+      "Delivery": "Доставка",
+      "Review": "Проверка"
+    },
+    "stepHelp": {
+      "Describe": "Расскажите, за чем вы хотите следить и зачем.",
+      "Dimensions": "Стороны темы, которые охватывает исследование. Оставляйте, взвешивайте, изменяйте, закрепляйте или добавляйте свои.",
+      "Questions": "Ответьте на то, что хотите, остальное пропустите. Каждый ответ уточняет исследование.",
+      "Context": "План исследования и ограничения, которым оно следует. Закрепленные элементы сохраняются при новом черновике.",
+      "Sources": "Ленты и страницы, читаемые при каждом запуске; каждая проверяется реальной загрузкой.",
+      "Delivery": "Когда выполняется исследование и кто получает письмо.",
+      "Review": "Все собрано. Посмотрите пробный запуск, затем примените."
+    },
+    "generating": {
+      "dimensions": "Подбираем аспекты...",
+      "questions": "Составляем вопросы...",
+      "context": "Составляем план исследования и ограничения...",
+      "sources": "Ищем источники и проверяем каждый...",
+      "request": "Планируем ваш запрос...",
+      "replan": "Планируем заново с учетом ваших ответов...",
+      "patience": "Прошло {seconds} с. Большим моделям может понадобиться минута."
+    },
+    "stopWaiting": "Перестать ждать",
+    "failure": {
+      "title": "Модели не удалось завершить этот шаг",
+      "refusedTitle": "Модель отказалась выполнять этот шаг",
+      "hint": "Повторите попытку или смените модель для уточнения.",
+      "changeModel": "Сменить модель уточнения"
+    },
+    "guidance": {
+      "label": "Указания для следующей попытки",
+      "placeholder": "Например: больше о локальных моделях, меньше о корпоративных закупках"
+    },
+    "regenerate": "Сгенерировать заново",
+    "describe": {
+      "existing": "Этот сеанс начат с описания ниже.",
+      "seedText": "За чем вы хотите следить?",
+      "seedHelp": "Одно предложение или абзац. Потом все можно уточнить.",
+      "seedPlaceholder": "Хочу узнать об инструментах ИИ для разработчиков",
+      "goal": "Зачем",
+      "depth": "Глубина",
+      "horizon": "Горизонт",
+      "horizonHelp": "Необязательно, например «ближайшие полгода»",
+      "known": "Что вы уже знаете",
+      "started": "Начат",
+      "optional": "Необязательно",
+      "notSaying": "Не указывать",
+      "goals": {
+        "work": "Рабочие решения",
+        "investing": "Инвестиции",
+        "curiosity": "Любопытство",
+        "hiring": "Найм",
+        "building": "Создание продукта"
+      },
+      "model": "Модель",
+      "modelHelp": "По умолчанию модель, назначенная для уточнения",
+      "defaultModel": "Назначение для уточнения (по умолчанию)",
+      "starting": "Запуск...",
+      "start": "Начать и подобрать аспекты",
+      "resumeTitle": "Продолжить с того же места"
+    },
+    "outOfScope": {
+      "title": "Это выходит за рамки того, что исследует My Morning News",
+      "rephrase": "Переформулировать"
+    },
+    "dimensions": {
+      "noneTitle": "Аспектов пока нет",
+      "noneMessage": "Подберите аспекты по вашему описанию или добавьте свои ниже.",
+      "propose": "Подобрать аспекты",
+      "intro": "{count, plural, one {# аспект} few {# аспекта} many {# аспектов} other {# аспекта}}, ваших или закрепленных: {kept}. Задайте вес «Исключить», чтобы не учитывать аспект.",
+      "regenerateHelp": "Повторная генерация заменяет предложенные аспекты и сохраняет закрепленные и ваши."
+    },
+    "questions": {
+      "sufficient": "Контекста должно быть достаточно. Можно переходить к плану исследования.",
+      "noneTitle": "Вопросов пока нет",
+      "noneMessage": "Модель задаст несколько вопросов с учетом оставленных вами аспектов.",
+      "ask": "Задать мне вопросы",
+      "progress": "Отвечено или пропущено: {done} из {total}",
+      "round": "Раунд {round}",
+      "moreLabel": "Есть пожелания к следующему раунду?",
+      "askMore": "Задать еще вопросы",
+      "moreHelp": "{left, plural, one {Доступен еще # раунд} few {Доступно еще # раунда} many {Доступно еще # раундов} other {Доступно еще # раунда}}",
+      "maxed": "Лимит: {max} раундов. Переходите к плану исследования."
+    },
+    "context": {
+      "name": "Название темы",
+      "audience": "Уровень аудитории",
+      "horizon": "Горизонт",
+      "novelty": "Предпочтение новизны: {value}",
+      "noveltyHelp": "Чем выше, тем больше новых событий и меньше справочной информации",
+      "brief": "План исследования",
+      "briefHelp": "Markdown. Исследование следует этому плану.",
+      "seedQueries": "Начальные запросы",
+      "seedQueriesHelp": "Один поисковый запрос на строку",
+      "saved": "Контекст сохранен",
+      "save": "Сохранить контекст",
+      "savedState": "Сохранено",
+      "noneTitle": "Плана исследования пока нет",
+      "noneMessage": "Составьте план, ограничения и начальные запросы на основе ваших аспектов и ответов.",
+      "draft": "Составить контекст",
+      "intro": "Изменяйте что угодно. Закрепленные и ваши ограничения сохраняются при новом черновике.",
+      "redraft": "Составить заново",
+      "constraints": "Ограничения"
+    },
+    "sources": {
+      "intro": "Предложенные ленты и начальные страницы загружаются в реальном времени. Зеленые ответили.",
+      "again": "Предложить снова",
+      "suggest": "Предложить источники",
+      "noneSuggested": "Модель не предложила ни одного источника. Добавьте свои ниже.",
+      "allAccepted": "Все предложения уже добавлены в тему.",
+      "select": "Выбрать {url}",
+      "unreachable": "Недоступен",
+      "accept": "{count, plural, =0 {Принять} one {Принять # источник} few {Принять # источника} many {Принять # источников} other {Принять # источника}}",
+      "noneTitle": "Источников пока нет",
+      "noneMessage": "Предложите источники, добавьте свои или пропустите этот шаг.",
+      "accepted": "В этой теме"
+    },
+    "delivery": {
+      "schedule": "Расписание исследования",
+      "scheduleHelp": "Расписание сохраняется, когда вы продолжаете.",
+      "email": "Электронная почта"
+    },
+    "review": {
+      "novelty": "Предпочтение новизны",
+      "noSchedule": "Без расписания (запуск вручную)",
+      "applied": "Тема применена, исследование идет.",
+      "openTopic": "Открыть тему",
+      "dimensions": "{count, plural, one {# аспект} few {# аспекта} many {# аспектов} other {# аспекта}}",
+      "constraintCount": "{kind}: {count}",
+      "preview": "Пробный запуск",
+      "previewHelp": "Пробный запуск не отправляет писем и не учитывается в истории.",
+      "apply": "Применить тему",
+      "appliedToast": "{name}: готово",
+      "previewQueued": "Пробный запуск поставлен в очередь. Следите за ним на вкладке «Запуски» темы."
+    },
+    "newTitle": "Новая тема",
+    "refineTitle": "Уточнение: {name}",
+    "refineTitleShort": "Уточнить тему",
+    "saveExit": "Сохранить и выйти",
+    "abandon": "Прервать",
+    "refineSummary": "Снова открыть мастер с текущим контекстом",
+    "refineStart": "Начать новый сеанс уточнения для «{name}». Аспекты и ограничения переносятся, и ничего не изменится, пока вы не примените изменения.",
+    "refineStartButton": "Начать уточнение",
+    "backToTopic": "Назад к теме",
+    "summary": "Каждый шаг сохраняется по ходу работы, поэтому можно выйти и продолжить позже.",
+    "back": "Назад",
+    "nextTo": "Далее: {step}",
+    "abandonTitle": "Прервать этот сеанс",
+    "abandonDraft": "Прервать мастер? Черновик темы и все его данные будут удалены.",
+    "abandonExisting": "Прервать этот сеанс уточнения? Тема сохранит изменения, которые вы уже сохранили.",
+    "abandoned": "Сеанс прерван"
+  },
+  "runs": {
+    "detail": {
+      "title": "Запуск",
+      "summary": "Сводные данные",
+      "cancelRequested": "Запрошена отмена",
+      "schedule": "Расписание",
+      "request": "Разовый запрос",
+      "worker": "Обработчик",
+      "partial": "Частично успешно: некритичный этап завершился ошибкой. Остальные этапы выполнены, их результаты сохранены.",
+      "partialWithStages": "Частично успешно: ошибка на этапах {stages}. Остальные этапы выполнены, их результаты сохранены.",
+      "viewFindings": "Показать находки ({count})",
+      "tabsLabel": "Разделы запуска",
+      "tabs": {
+        "stages": "Этапы",
+        "queries": "Запросы",
+        "results": "Результаты",
+        "details": "Подробности",
+        "calls": "Вызовы модели"
+      },
+      "contextHash": "Снимок контекста"
+    },
+    "cancelRequested": "Отмена...",
+    "cancel": "Отменить запуск",
+    "dryRun": "Пробный запуск",
+    "columns": {
+      "topic": "Тема",
+      "queued": "В очереди",
+      "started": "Начат",
+      "completed": "Завершен",
+      "status": "Статус",
+      "trigger": "Инициатор",
+      "duration": "Длительность",
+      "summary": "Сводные данные",
+      "id": "ID",
+      "findings": "Новые находки",
+      "findingsTitle": "Пропущено дубликатов: {duplicates}",
+      "sources": "Источники",
+      "cost": "Стоимость"
+    },
+    "cancelled": "Отмена запрошена",
+    "openTopic": "Открыть тему",
+    "empty": {
+      "title": "Запусков пока нет",
+      "message": "Запуски появляются, когда срабатывает расписание, начинается разовый запрос или вы нажимаете «Запустить сейчас».",
+      "topicMessage": "Нажмите «Запустить сейчас» или «Пробный запуск» либо добавьте расписание."
+    },
+    "totals": {
+      "sources": "Прочитано источников",
+      "newFindings": "Новые находки",
+      "duplicates": "Дубликаты",
+      "tokens": "Токены",
+      "tokenSplit": "{input} на входе, {output} на выходе",
+      "cost": "Оценочная стоимость"
+    },
+    "stages": {
+      "empty": "Для этого запуска этапы не записаны.",
+      "aria": "Хронология этапов, всего этапов: {count}",
+      "stage": "Этап",
+      "status": "Статус",
+      "duration": "Длительность",
+      "items": "Элементы",
+      "inOut": "{in} на входе, {out} на выходе",
+      "in": "Вход",
+      "out": "Выход"
+    },
+    "queries": {
+      "empty": "Этот запуск не отправлял поисковых запросов.",
+      "query": "Запрос",
+      "provider": "Поставщик",
+      "results": "Результаты",
+      "succeeded": "Успешно",
+      "failed": "Ошибка"
+    },
+    "results": {
+      "disposition": "Решение",
+      "filterDisposition": "Фильтровать результаты по решению",
+      "dispositionCount": "{disposition}: {count}",
+      "noMatches": "Нет результатов с таким решением.",
+      "empty": "У этого запуска нет результатов поиска.",
+      "rank": "Место",
+      "result": "Результат",
+      "viewSource": "Открыть источник"
+    },
+    "source": {
+      "title": "Источник",
+      "domain": "Домен",
+      "httpStatus": "Статус HTTP",
+      "contentType": "Тип содержимого",
+      "size": "Размер",
+      "published": "Опубликовано",
+      "fetched": "Загружено",
+      "timesSeen": "Встречался раз",
+      "text": "Извлеченный текст",
+      "truncated": "Показаны первые {shown} из {total} символов.",
+      "noText": "Из этого источника не удалось извлечь текст."
+    },
+    "calls": {
+      "openCall": "Открыть в журнале вызовов модели",
+      "emptyTitle": "Нет вызовов модели",
+      "emptyMessage": "Этот запуск не вызывал модель, или его вызовы еще записываются."
+    },
+    "live": {
+      "streaming": "В реальном времени",
+      "polling": "Обновление каждые несколько секунд"
+    },
+    "retry": {
+      "column": "Повтор",
+      "fromStage": "Повторить с этого этапа",
+      "fromStageAria": "Повторить с этого этапа ({stage})",
+      "runAgain": "Запустить снова",
+      "runAgainAria": "Запустить снова (ошибка на этапе {stage})",
+      "resumeTitle": "Повторить с этого этапа",
+      "resumeMessage": "Повторно выполнить этап {stage} и все последующие этапы этого запуска с сохраненными находками? Будут выполнены вызовы модели, которые учитываются в вашем использовании.",
+      "newTitle": "Запустить снова",
+      "newMessage": "Поставить в очередь новый запуск этой темы с самого начала? Результаты поиска и загрузки не сохраняются, поэтому все этапы выполнятся заново, а вызовы модели будут учтены в вашем использовании.",
+      "resumeQueued": "Запуск снова поставлен в очередь с этапа {stage}",
+      "newQueued": "Новый запуск поставлен в очередь"
+    }
+  },
+  "oneTime": {
+    "form": {
+      "failedHint": "Если планирование не удалось, запрос все равно сохранен, и его можно спланировать заново из списка.",
+      "openList": "Открыть запросы",
+      "text": "Что вам нужно?",
+      "textHelp": "Например: сделай подкаст об истории грузового контейнера.",
+      "placeholder": "Напиши отчет о субсидиях на тепловые насосы в Калифорнии",
+      "deliverables": "Результаты",
+      "length": "Объем",
+      "timing": "Когда",
+      "runNow": "Запустить сейчас",
+      "runAt": "Запустить один раз в",
+      "when": "Дата и время",
+      "recipients": "Получатели письма",
+      "recipientsHelp": "Через запятую. По умолчанию вы ({email}).",
+      "publishToFeed": "Опубликовать в моей ленте",
+      "publishToFeedHelp": "Также добавить подкаст в вашу личную ленту",
+      "justDoIt": "Просто сделать",
+      "justDoItHelp": "Пропустить уточняющие вопросы и сразу подтвердить план",
+      "submitNow": "Спланировать и запустить",
+      "submit": "Спланировать",
+      "moreOptions": "Дополнительные параметры"
+    },
+    "actions": {
+      "confirmed": "Запрос подтвержден",
+      "cancelled": "Запрос отменен",
+      "open": "Открыть",
+      "confirm": "Подтвердить",
+      "cancel": "Отменить запрос",
+      "convert": "Сделать регулярным",
+      "openTopic": "Открыть тему"
+    },
+    "convert": {
+      "title": "Сделать регулярной темой",
+      "message": "Превратить «{title}» в регулярную тему с ее описанием и аспектами? Затем можно задать расписание.",
+      "done": "Регулярная тема создана"
+    },
+    "delete": {
+      "title": "Удалить запрос",
+      "message": "Удалить «{title}» и его план?",
+      "done": "Запрос удален"
+    },
+    "columns": {
+      "title": "Запрос",
+      "status": "Статус",
+      "deliverables": "Результаты",
+      "length": "Объем",
+      "runAt": "Время запуска",
+      "created": "Создан",
+      "id": "ID"
+    },
+    "searchPlaceholder": "Поиск запросов",
+    "whenConfirmed": "После подтверждения",
+    "new": "Новый запрос",
+    "empty": {
+      "title": "Разовых запросов пока нет",
+      "message": "Отчет, подкаст или сводка по почте: запуск один раз сейчас или в выбранное время.",
+      "action": "Запросить что угодно один раз"
+    },
+    "backToList": "Все запросы",
+    "declined": {
+      "title": "Этот запрос выходит за рамки исследований My Morning News",
+      "rephrase": "Переформулировать"
+    },
+    "detail": {
+      "request": "Запрос",
+      "estimatedCost": "Оценочная стоимость",
+      "confirmed": "Подтвержден",
+      "completed": "Завершен",
+      "run": "Запуск",
+      "openRun": "Открыть запуск",
+      "confirmTitle": "Подтвердить и запустить",
+      "confirmAt": "Подтвердить на это время",
+      "confirmNow": "Подтвердить и запустить сейчас",
+      "needsPlan": "Перед подтверждением спланируйте запрос заново.",
+      "plan": "План",
+      "noPlanDeclined": "Для отклоненного запроса нет плана.",
+      "noPlan": "Плана пока нет.",
+      "dimensions": "Что будет охвачено",
+      "questions": "Уточняющие вопросы",
+      "questionsHelp": "Отвечено {answered} из {total}. Спланируйте заново, чтобы учесть ответы, или подтвердите как есть.",
+      "replan": "Спланировать заново с моими ответами"
+    },
+    "newTitle": "Новый запрос",
+    "newSummary": "Разовые отчеты, подкасты и сводки по почте"
+  },
+  "findings": {
+    "backToList": "Назад к находкам",
+    "openPage": "Открыть полную страницу",
+    "duplicate": "Дубликат",
+    "update": "Обновление",
+    "scoreAria": "Оценка релевантности {score}",
+    "searchPlaceholder": "Поиск по заголовкам и описаниям",
+    "minScore": "Минимум",
+    "runFilter": "Запуск {id}",
+    "clearRun": "Показать находки всех запусков",
+    "includeDuplicates": "Включая дубликаты",
+    "includeDryRuns": "Включая пробные запуски",
+    "components": {
+      "llm": "Оценка модели",
+      "feedback": "Отзывы",
+      "novelty": "Новизна",
+      "source": "Источник",
+      "recency": "Свежесть",
+      "composite": "Итог"
+    },
+    "columns": {
+      "title": "Находка",
+      "tier": "Уровень",
+      "score": "Оценка",
+      "category": "Категория",
+      "topic": "Тема",
+      "published": "Опубликовано",
+      "found": "Найдено",
+      "id": "ID",
+      "rating": "Ваша оценка"
+    },
+    "detail": {
+      "title": "Находка",
+      "whyItMatters": "Почему это важно",
+      "scoreBreakdown": "Составляющие оценки",
+      "scoreChartAria": "Составляющие оценки, итог {score}",
+      "scoreHelp": "Каждая составляющая оценивается от 0 до 100. Итог представляет собой их взвешенное среднее с весами ранжирования темы.",
+      "rationale": "Обоснование",
+      "noRationale": "Модель не обосновала эту оценку.",
+      "evidence": "Доказательства ({count})",
+      "dimension": "Аспект",
+      "noDimension": "Не привязано к аспекту.",
+      "run": "Запуск",
+      "confidence": "Уверенность",
+      "rank": "Место",
+      "duplicateOf": "Дубликат",
+      "updateOf": "Обновление"
+    },
+    "evidence": {
+      "unknownSource": "Неизвестный источник",
+      "verified": "Проверенная цитата",
+      "unverified": "Не проверено",
+      "emptyTitle": "Нет доказательств",
+      "emptyMessage": "Эту находку не подтверждает ни одна проверенная цитата.",
+      "open": "Показать в контексте",
+      "detailTitle": "Доказательство",
+      "quote": "Цитата",
+      "inContext": "Цитата в контексте",
+      "unverifiedHelp": "Эту цитату не удалось сопоставить с загруженным текстом источника.",
+      "source": "Источник",
+      "domain": "Домен",
+      "position": "Позиция в источнике",
+      "positionValue": "Символы с {start} по {end}",
+      "sourceId": "ID источника"
+    },
+    "empty": {
+      "title": "Находок пока нет",
+      "message": "Находки появляются после того, как запуск прочитает и ранжирует источники. Запустите тему, чтобы их получить.",
+      "topicMessage": "Запустите эту тему, чтобы найти и ранжировать источники."
+    },
+    "pinnedMarker": "Закреплено",
+    "pinnedBadge": "Закреплено",
+    "hiddenBadge": "Скрыто",
+    "hiddenHelp": "Скрытые находки не попадают в списки, сводки и письма. Покажите ее снова, чтобы вернуть.",
+    "showHidden": "Показать скрытые",
+    "pinnedOnly": "Только закрепленные",
+    "actions": {
+      "pin": "Закрепить",
+      "unpin": "Открепить",
+      "hide": "Скрыть",
+      "unhide": "Показать",
+      "pinned": "Находка закреплена",
+      "unpinned": "Находка откреплена",
+      "hidden": "Находка скрыта",
+      "unhidden": "Находка снова показана",
+      "deleted": "Находка удалена",
+      "deleteTitle": "Удалить находку",
+      "deleteMessage": "Удалить «{title}»? Ссылки на ее доказательства будут удалены. Общие источники и история ваших оценок сохранятся."
+    }
+  },
+  "predictions": {
+    "overdue": "Срок прошел",
+    "brierHelp": "Чем меньше, тем лучше: 0 означает идеальный результат, 0,25 соответствует подбрасыванию монеты.",
+    "columns": {
+      "statement": "Прогноз",
+      "status": "Статус",
+      "confidence": "Уверенность",
+      "horizon": "Горизонт",
+      "brier": "Оценка Брайера",
+      "topic": "Тема",
+      "created": "Создан",
+      "id": "ID",
+      "rating": "Ваша оценка"
+    },
+    "actions": {
+      "resolve": "Подвести итог",
+      "reresolve": "Подвести итог заново"
+    },
+    "resolvedBy": {
+      "User": "Вы",
+      "Agent": "Агент",
+      "AgentConfirmed": "Агент, подтверждено вами"
+    },
+    "detail": {
+      "title": "Прогноз",
+      "resolved": "Итог подведен",
+      "resolvedBy": "Итог подвел",
+      "note": "Примечание к итогу"
+    },
+    "reviews": {
+      "title": "Проверки ({count})",
+      "empty": "Проверок пока нет. Последующие запуски сверяют открытые прогнозы с новыми находками и предлагают здесь итог.",
+      "proposes": "Предлагает",
+      "confidence": "Уверенность {confidence}",
+      "finding": "Находка {id}",
+      "accept": "Принять",
+      "reject": "Отклонить",
+      "accepted": "Принято",
+      "rejected": "Отклонено",
+      "acceptedToast": "Итог принят",
+      "rejectedToast": "Итог отклонен"
+    },
+    "resolve": {
+      "title": "Подвести итог прогноза",
+      "submit": "Подвести итог",
+      "outcome": "Исход",
+      "outcomeHelp": "Исходы «точно», «частично точно» и «неточно» учитываются в точности и оценке Брайера.",
+      "note": "Примечание",
+      "notePlaceholder": "Что произошло, по возможности со ссылкой",
+      "notGraded": "Этот исход не оценивается, поэтому оценки Брайера нет.",
+      "brierPreview": "При уверенности {confidence} этот исход дает оценку Брайера {brier}.",
+      "done": "Итог прогноза подведен"
+    },
+    "kpis": {
+      "open": "Открытые",
+      "graded": "Оцененные",
+      "ofTotal": "из {total} прогнозов",
+      "accuracy": "Фактическая точность",
+      "accuracyHelp": "Частично точные считаются за половину.",
+      "brier": "Средняя оценка Брайера"
+    },
+    "calibration": {
+      "title": "Калибровка",
+      "subtitle": "Заявленная уверенность в сравнении с тем, как часто прогнозы сбывались",
+      "aria": "Калибровка оцененных прогнозов: {count}",
+      "xAxis": "Заявленная уверенность",
+      "count": "Прогнозы",
+      "meanConfidence": "Средняя уверенность",
+      "observed": "Фактическая точность",
+      "perfect": "Идеальная калибровка",
+      "bucket": "Уверенность от {from} до {to}",
+      "empty": "Оцените несколько прогнозов, чтобы увидеть калибровку."
+    },
+    "empty": {
+      "title": "Прогнозов пока нет",
+      "message": "Запуски делают прогнозы о том, куда движется тема. Здесь их можно отслеживать и оценивать."
+    }
+  },
+  "suggestions": {
+    "priority": "Приоритет: {priority}",
+    "effort": "Трудозатраты: {effort}",
+    "until": "до",
+    "changed": "Отмечено: {status}",
+    "columns": {
+      "title": "Предложение",
+      "status": "Статус",
+      "priorityEffort": "Приоритет и трудозатраты",
+      "topic": "Тема",
+      "created": "Создано",
+      "id": "ID",
+      "rating": "Ваша оценка"
+    },
+    "actions": {
+      "accept": "Принять",
+      "snooze": "Отложить",
+      "dismiss": "Отклонить",
+      "complete": "Выполнить"
+    },
+    "detail": {
+      "title": "Предложение",
+      "rationale": "Почему",
+      "statusChanged": "Статус изменен",
+      "findings": "Связанные находки"
+    },
+    "snooze": {
+      "title": "Отложить предложение",
+      "quick": "Быстрый выбор",
+      "tomorrow": "Завтра утром",
+      "nextWeek": "Через неделю",
+      "nextMonth": "Через месяц",
+      "until": "Отложить до",
+      "future": "Выберите время в будущем.",
+      "help": "В это время оно вернется в ваш список."
+    },
+    "empty": {
+      "title": "Предложений пока нет",
+      "message": "Запуски предлагают, что стоит изучить подробнее. Здесь их можно принять, отложить, отклонить или выполнить."
+    }
+  },
+  "briefings": {
+    "untitled": "Сводка без названия",
+    "dryRun": "Пробный запуск",
+    "searchPlaceholder": "Название",
+    "includeDryRun": "Включая пробные запуски",
+    "columns": {
+      "title": "Сводка",
+      "kind": "Вид",
+      "status": "Статус",
+      "edition": "Выпуск",
+      "topic": "Тема",
+      "items": "Элементы",
+      "pinned": "Закреплена",
+      "created": "Составлена",
+      "id": "ID"
+    },
+    "actions": {
+      "open": "Открыть"
+    },
+    "download": {
+      "md": "Скачать .md",
+      "html": "Скачать .html"
+    },
+    "pin": {
+      "pin": "Закрепить",
+      "unpin": "Открепить",
+      "pinNamed": "Закрепить {title}",
+      "unpinNamed": "Открепить {title}",
+      "pinned": "Закреплено. Ее файлы хранятся дольше срока хранения.",
+      "unpinned": "Откреплено. Ее файлы снова подчиняются сроку хранения.",
+      "cap": "Вы достигли лимита закреплений в этом рабочем пространстве. Сначала открепите другую сводку.",
+      "badge": "Закреплена"
+    },
+    "expired": {
+      "notice": "Срок хранения файла отчета истек. Создайте его заново, чтобы снова скачать.",
+      "title": "Срок хранения файла отчета истек.",
+      "message": "Файлы отчетов хранятся до 365 дней. Сводка и ее находки по-прежнему здесь, поэтому файлы можно создать заново.",
+      "regenerate": "Создать заново",
+      "regenerated": "Файлы отчета созданы заново"
+    },
+    "files": {
+      "expired": "Срок хранения файла истек",
+      "pinned": "Закреплен",
+      "expires": "Хранится до {date}",
+      "download": "Скачать {name}"
+    },
+    "progress": {
+      "Queued": "В очереди. Скоро будет составлена.",
+      "Composing": "Составляется.",
+      "researching": "Ожидание свежего исследования, не позднее {time}."
+    },
+    "reader": {
+      "back": "Все сводки",
+      "citation": "Источник {number}",
+      "outline": "Содержание",
+      "noItems": "В этой сводке не использовались находки, прогнозы или предложения.",
+      "otherItems": "Прочее",
+      "open": {
+        "Finding": "Открыть находку",
+        "Prediction": "Открыть прогноз",
+        "Suggestion": "Открыть предложения"
+      },
+      "noFiles": "Нет сохраненных файлов.",
+      "openRun": "Открыть запуск",
+      "stats": "Чтение {minutes} мин, слов: {words}, элементов: {items}",
+      "failed": "Не удалось составить сводку.",
+      "noContent": "В этой сводке нет содержимого.",
+      "items": "В этой сводке ({count})",
+      "files": "Файлы",
+      "period": "Период",
+      "readMinutes": "Чтение {minutes} мин"
+    },
+    "delete": {
+      "title": "Удалить сводку",
+      "message": "Удалить «{title}» и ее сохраненные файлы? Использованные в ней находки, прогнозы и предложения сохранятся.",
+      "done": "Сводка удалена"
+    },
+    "empty": {
+      "title": "Сводок пока нет",
+      "message": "Составьте выпуск, запустите тему или задайте разовый вопрос, чтобы получить сводку."
+    }
+  },
+  "today": {
+    "seeAll": "Показать все",
+    "composeNow": "Составить сейчас",
+    "composeQueued": "Сводка поставлена в очередь",
+    "composeReady": "Ваша сводка готова",
+    "composeFailed": "Не удалось составить сводку: {message}",
+    "composeConflict": "Сводка для этого выпуска уже готовится.",
+    "edition": "Выпуск",
+    "follow": "Следить за ходом",
+    "noEditions": "У вас пока нет выпусков.",
+    "createEdition": "Создать",
+    "empty": {
+      "title": "Сводки пока нет",
+      "message": "Составьте выпуск сейчас или дождитесь его расписания."
+    },
+    "openReader": "Открыть в режиме чтения",
+    "runs": "Сводки последних запусков",
+    "oneTime": "Разовые отчеты",
+    "noRuns": "Сводок запусков пока нет.",
+    "noOneTime": "Разовых отчетов пока нет."
+  },
+  "editions": {
+    "add": "Новый выпуск",
+    "back": "Все выпуски",
+    "newTitle": "Новый выпуск",
+    "newSummary": "Сводка по собственному расписанию по выбранным вами темам.",
+    "created": "Выпуск создан",
+    "saved": "Выпуск сохранен",
+    "deleted": "Выпуск удален",
+    "composeQueued": "Сводка поставлена в очередь",
+    "enabledOn": "Включен",
+    "enabledOff": "Отключен",
+    "preview": "Предпросмотр",
+    "previewing": "Составление предпросмотра...",
+    "previewTitle": "Предпросмотр: {name}",
+    "previewSubtitle": "Составлено по последним данным. Ничего не сохраняется и не отправляется.",
+    "previewFallbacks": "{count, plural, one {# раздел записан} few {# раздела записаны} many {# разделов записаны} other {# раздела записаны}} простым списком, потому что модель не ответила.",
+    "previewEmpty": "Предпросмотр пуст.",
+    "discard": "Отменить изменения",
+    "create": "Создать выпуск",
+    "save": "Сохранить выпуск",
+    "schedulesHelp": "Когда составляется этот выпуск. Если включено свежее исследование, оно начинается заранее перед каждым запланированным временем.",
+    "schedulesEmpty": "Добавьте расписание, чтобы этот выпуск составлялся автоматически, или составляйте его вручную.",
+    "deleteTitle": "Удалить выпуск",
+    "deleteMessage": "Удалить выпуск «{name}» и его расписания? Его сводки сохранятся.",
+    "viewBriefings": "Показать сводки",
+    "lookbackHours": "Последние {hours} ч",
+    "sections": {
+      "settings": "Настройки",
+      "topics": "Темы",
+      "schedules": "Расписания",
+      "briefings": "Сводки"
+    },
+    "columns": {
+      "name": "Выпуск",
+      "enabled": "Статус",
+      "delivery": "Доставка",
+      "lookback": "Охват",
+      "lastComposed": "Последнее составление",
+      "created": "Создан",
+      "id": "ID"
+    },
+    "badges": {
+      "email": "Почта",
+      "audio": "Аудио",
+      "fresh": "Свежее исследование ({minutes} мин)"
+    },
+    "empty": {
+      "title": "Нет выпусков",
+      "message": "Создайте выпуск, чтобы получать сводку по расписанию."
+    },
+    "form": {
+      "name": "Название",
+      "nameRequired": "Укажите название.",
+      "description": "Описание",
+      "template": "Шаблон",
+      "templateDefault": "Используется шаблон по умолчанию: {name}.",
+      "defaultName": "по умолчанию",
+      "useDefault": "Шаблон по умолчанию",
+      "sharedOption": "{name} (общий)",
+      "enabled": "Включен",
+      "enabledHelp": "Составляется по расписаниям. «Составить сейчас» работает в любом случае.",
+      "email": "Почта",
+      "emailHelp": "Отправлять сводку по почте, когда она готова.",
+      "audio": "Аудио",
+      "audioHelp": "Создавать аудиоверсию каждой сводки.",
+      "fresh": "Сначала свежее исследование",
+      "freshHelp": "Запускать исследование каждой темы перед составлением.",
+      "lead": "Время на исследование (минуты)",
+      "leadHelp": "Сколько ждать исследования: от {min} до {max} минут.",
+      "lookbackMode": "Охват",
+      "lookbackModeHelp": {
+        "SinceLastEdition": "Все, что появилось после последнего составленного выпуска.",
+        "FixedHours": "Фиксированный период, который заканчивается в момент составления выпуска."
+      },
+      "lookbackHours": "Период охвата (часы)",
+      "lookbackHoursHelp": "От {min} до {max} часов. Режим «с последнего выпуска» никогда не заглядывает дальше этого периода."
+    },
+    "topics": {
+      "mode": "Темы",
+      "modes": {
+        "all": "Все активные темы",
+        "chosen": "Выбрать темы"
+      },
+      "allHelp": "Охватывает все активные регулярные темы, включая добавленные позже.",
+      "covered": "Охваченные темы",
+      "noneActive": "У вас пока нет активных регулярных тем.",
+      "chosenHelp": "Только эти темы в этом порядке.",
+      "noneChosen": "Темы пока не выбраны.",
+      "chosen": "Выбранные темы",
+      "chooseOne": "Выберите хотя бы одну тему или охватите все активные темы.",
+      "moveUp": "Переместить {name} вверх",
+      "moveDown": "Переместить {name} вниз",
+      "remove": "Удалить {name}",
+      "addLabel": "Тема для добавления",
+      "pick": "Выберите тему",
+      "add": "Добавить",
+      "save": "Сохранить темы",
+      "saved": "Темы сохранены"
+    }
+  },
+  "templates": {
+    "add": "Новый шаблон",
+    "back": "Все шаблоны",
+    "open": "Открыть редактор",
+    "empty": "Нет шаблонов",
+    "searchPlaceholder": "Название или описание",
+    "saved": "Сохранена новая версия",
+    "created": "Шаблон создан",
+    "deleted": "Шаблон удален",
+    "export": "Экспорт .md",
+    "copy": "Создать копию",
+    "copyName": "{name} (копия)",
+    "reset": "Сбросить по умолчанию",
+    "resetTitle": "Сбросить шаблон",
+    "resetMessage": "Заменить содержимое стандартным шаблоном в виде новой версии? Предыдущие версии останутся в истории.",
+    "resetDone": "Сброшено по умолчанию",
+    "deleteTitle": "Удалить шаблон",
+    "deleteMessage": "Удалить шаблон «{name}» и его версии? Выпуски, которые его используют, перейдут на шаблон по умолчанию.",
+    "readOnly": "Изменять общие шаблоны могут только администраторы арендатора. Создайте копию, чтобы редактировать собственный шаблон.",
+    "scope": {
+      "shared": "Общие",
+      "mine": "Мои"
+    },
+    "badges": {
+      "editionDefault": "По умолчанию для выпусков",
+      "builtIn": "Встроенный"
+    },
+    "columns": {
+      "name": "Шаблон",
+      "scope": "Область",
+      "origin": "Происхождение",
+      "version": "Версия",
+      "updated": "Обновлен"
+    },
+    "import": {
+      "button": "Импорт .md",
+      "file": "Файл шаблона",
+      "tooLarge": "Этот файл слишком велик для шаблона."
+    },
+    "editor": {
+      "title": "Шаблон",
+      "panels": "Инструменты шаблона",
+      "valid": "Корректен",
+      "errors": "{count, plural, one {# ошибка} few {# ошибки} many {# ошибок} other {# ошибки}}",
+      "rejected": "Сервер отклонил эту версию.",
+      "format": "Markdown с front matter (name, description, tone, length, audience, citations, audio). Каждый заголовок второго уровня задает раздел. Комментарий mmn:section под ним выбирает данные (source, tier, status, group, limit, order, topic, dimension), а текст под заголовком говорит составителю, что писать."
+    },
+    "panels": {
+      "problems": "Проблемы",
+      "problemsCount": "Проблемы ({count})",
+      "outline": "Структура",
+      "preview": "Предпросмотр",
+      "versions": "Версии"
+    },
+    "problems": {
+      "none": "Проблем не найдено.",
+      "errors": "{count, plural, one {# ошибка} few {# ошибки} many {# ошибок} other {# ошибки}}",
+      "warnings": "{count, plural, one {# предупреждение} few {# предупреждения} many {# предупреждений} other {# предупреждения}}",
+      "checking": "Проверка...",
+      "jump": "Перейти к строке {line}",
+      "line": "Строка {line}",
+      "general": "Общие",
+      "warning": "Предупреждение",
+      "error": "Ошибка"
+    },
+    "outline": {
+      "pending": "Проверка...",
+      "name": "Название",
+      "title": "Заголовок",
+      "audio": "Аудио",
+      "audioOn": "Вкл.: {format}, около {minutes} мин",
+      "audioOff": "Выкл.",
+      "intro": "Вступление",
+      "noSections": "Разделов пока нет. Добавьте заголовок второго уровня.",
+      "jump": "Перейти к {heading} на строке {line}",
+      "source": "source={source}"
+    },
+    "preview": {
+      "help": "Составляет выбранный выпуск по последним данным с сохраненным шаблоном выпуска. Ничего не сохраняется и не отправляется.",
+      "noEditions": "Создайте выпуск, чтобы просмотреть шаблон.",
+      "edition": "Выпуск для предпросмотра",
+      "otherTemplate": "{name} использует другой шаблон, поэтому этот предпросмотр его не показывает.",
+      "unsaved": "Сохраните изменения, чтобы увидеть их в предпросмотре."
+    },
+    "versions": {
+      "none": "Версий пока нет.",
+      "rollbackMessage": "Восстановить версию {version} как новую версию? Текущее содержимое останется в истории."
+    },
+    "create": {
+      "titles": {
+        "new": "Новый шаблон",
+        "import": "Импорт шаблона",
+        "copy": "Создать копию"
+      },
+      "confirm": {
+        "new": "Создать",
+        "import": "Импортировать",
+        "copy": "Создать копию"
+      },
+      "contentHelp": {
+        "import": "Импортирует строки Markdown: {lines}.",
+        "copy": "Копирует строки из редактора ({lines}), включая несохраненные изменения."
+      },
+      "defaultName": "Моя сводка",
+      "name": "Название",
+      "nameHelp": "Оставьте пустым, чтобы использовать название из front matter.",
+      "startFrom": "Начать с",
+      "starter": "Небольшой начальный шаблон",
+      "copyOf": "Копия {name}",
+      "shared": "Поделиться со всеми в этом рабочем пространстве",
+      "invalid": "В шаблоне есть проблемы."
+    }
+  },
+  "audio": {
+    "panel": {
+      "label": "Аудио сводки",
+      "title": "Слушать",
+      "fromText": "Озвучено по тексту сводки",
+      "checking": "Проверка аудио..."
+    },
+    "player": {
+      "loading": "Загрузка аудио...",
+      "loadingSize": "Загрузка аудио ({size})...",
+      "play": "Воспроизвести",
+      "pause": "Пауза",
+      "back": "Назад на {seconds} с",
+      "forward": "Вперед на {seconds} с",
+      "seek": "Позиция воспроизведения",
+      "position": "{time} из {duration}",
+      "nowPlaying": "Сейчас звучит: {chapter}",
+      "speed": "Скорость воспроизведения",
+      "speedOption": "{speed}x",
+      "chapters": "Главы"
+    },
+    "progress": {
+      "Queued": "Аудио в очереди. Скоро будет готово.",
+      "Scripting": "Пишется текст для озвучивания.",
+      "Synthesizing": "Синтез речи. Длинные сводки занимают несколько минут."
+    },
+    "make": {
+      "action": "Создать аудио",
+      "again": "Создать аудио снова",
+      "remake": "Пересоздать аудио",
+      "voice": "Голос",
+      "defaultVoice": "Голос по умолчанию",
+      "voiceDefault": "{name} (по умолчанию)",
+      "queued": "Аудио поставлено в очередь",
+      "conflict": "Аудио не поставлено в очередь. Аудио для этой сводки уже создается, или аудио отключено на этом сервере. {message}"
+    },
+    "failed": "Не удалось создать аудио.",
+    "missingFile": "Аудиофайл недоступен. Создайте аудио снова, чтобы послушать.",
+    "none": "У этой сводки пока нет аудио.",
+    "listenFrom": "Слушать с раздела {section}"
+  },
+  "voices": {
+    "columns": {
+      "name": "Название",
+      "provider": "Поставщик",
+      "voice": "Голос",
+      "model": "Модель",
+      "speed": "Скорость",
+      "endpoint": "Конечная точка",
+      "credential": "Учетные данные",
+      "created": "Создан",
+      "id": "ID"
+    },
+    "default": "По умолчанию",
+    "secondaryShort": "Второй ведущий: {voice}",
+    "serverDefault": "По умолчанию на сервере",
+    "adminOnly": "Изменять голоса могут только администраторы арендатора.",
+    "memberNotice": "Вы можете просматривать и проверять голоса. Для создания, изменения и удаления нужен администратор арендатора.",
+    "twoHostHint": "Сценарии для двух ведущих чередуют строки HOST_A и HOST_B: HOST_A использует основной голос, а HOST_B использует второй голос (или снова основной, если второй не задан).",
+    "makeDefault": "Сделать голосом по умолчанию",
+    "defaultSet": "{name} теперь голос по умолчанию",
+    "empty": {
+      "title": "Голосов пока нет",
+      "message": "Пока вы не добавите голос, аудио использует настройки речи сервера."
+    },
+    "form": {
+      "createTitle": "Добавить голос",
+      "editTitle": "Изменить голос"
+    },
+    "fields": {
+      "endpointHelp": "Базовый URL речевого сервера, совместимого с OpenAI. Оставьте пустым, чтобы использовать значение сервера по умолчанию.",
+      "endpointPlaceholder": "По умолчанию на сервере",
+      "modelHelp": "Оставьте пустым для модели по умолчанию.",
+      "modelPlaceholder": "kokoro",
+      "voice": "Голос",
+      "voiceHelp": "Голос диктора и HOST_A в сценариях для двух ведущих.",
+      "voicePlaceholder": "af_heart",
+      "secondaryVoice": "Второй голос",
+      "secondaryVoiceHelp": "HOST_B в сценариях для двух ведущих. Оставьте пустым, чтобы использовать основной голос для обоих ведущих.",
+      "speedHelp": "От {min} до {max}.",
+      "credentialHelp": "Сохраненные учетные данные с ключом API, если речевому серверу он нужен.",
+      "isDefault": "Голос по умолчанию",
+      "isDefaultHelp": "Используется, когда выпуск или запрос не указывает голос."
+    },
+    "test": {
+      "action": "Проверить",
+      "title": "Проверка голоса",
+      "text": "Пример текста",
+      "textHelp": "Оставьте пустым, чтобы услышать короткое приветствие.",
+      "defaultText": "Доброе утро. Вот что изменилось в ваших темах.",
+      "speak": "Произнести",
+      "speaking": "Произносится...",
+      "ttsError": "Ошибка речевого сервиса: {message}"
+    },
+    "delete": {
+      "title": "Удалить голос",
+      "message": "Удалить голос «{name}»? Выпуски, которые его используют, перейдут на голос по умолчанию."
+    }
+  },
+  "listen": {
+    "untitled": "Эпизод без названия",
+    "columns": {
+      "title": "Эпизод",
+      "status": "Статус",
+      "kind": "Вид",
+      "duration": "Длительность",
+      "size": "Размер",
+      "segments": "Сегменты",
+      "script": "Сценарий",
+      "created": "Создан",
+      "completed": "Завершен",
+      "id": "ID"
+    },
+    "noValue": "Нет",
+    "scriptModel": "Написан моделью",
+    "scriptText": "Озвучен по тексту",
+    "actions": {
+      "play": "Воспроизвести",
+      "briefing": "Открыть сводку",
+      "remake": "Пересоздать аудио"
+    },
+    "empty": {
+      "title": "Аудио пока нет",
+      "message": "Создайте аудио из сводки или включите аудио для выпуска."
+    },
+    "delete": {
+      "title": "Удалить эпизод",
+      "message": "Удалить «{title}» и его аудиофайлы? Сводка сохранится.",
+      "done": "Эпизод удален"
+    }
+  },
+  "feeds": {
+    "title": "Ленты подкастов",
+    "summary": "Личные URL лент для приложений подкастов. Каждая лента содержит секрет, поэтому обращайтесь с ее URL как с паролем.",
+    "fields": {
+      "name": "Название",
+      "nameHelp": "Понятная вам метка, например приложение или устройство.",
+      "namePlaceholder": "Overcast на моем телефоне",
+      "edition": "Выпуск",
+      "editionHelp": "Ограничьте ленту одним выпуском или включите все ваше аудио."
+    },
+    "allAudio": "Все мое аудио",
+    "create": "Создать ленту",
+    "created": {
+      "title": "Лента создана",
+      "warning": "Этот URL приватный и показывается только один раз. Любой, у кого он есть, может слушать ваши сводки. Скопируйте его сейчас и отзовите ленту, если он утечет.",
+      "feedUrl": "URL ленты",
+      "copyUrl": "Скопировать URL ленты",
+      "secret": "Секрет",
+      "copySecret": "Скопировать секрет",
+      "done": "Я сохранил его"
+    },
+    "empty": {
+      "title": "Нет лент подкастов",
+      "message": "Создайте ленту, чтобы слушать сводки в приложении подкастов."
+    },
+    "columns": {
+      "name": "Название",
+      "prefix": "Токен",
+      "edition": "Выпуск",
+      "created": "Создана",
+      "lastUsed": "Последнее использование",
+      "status": "Статус",
+      "actions": "Действия"
+    },
+    "unnamed": "Лента без названия",
+    "prefix": "{prefix}...",
+    "neverUsed": "Никогда",
+    "revoked": "Отозвана",
+    "revoke": "Отозвать",
+    "revokeNamed": "Отозвать {name}",
+    "revokeConfirm": {
+      "title": "Отозвать ленту",
+      "message": "Отозвать «{name}»? Подписанные на нее приложения подкастов перестанут получать эпизоды. Это действие нельзя отменить.",
+      "done": "Лента отозвана"
+    },
+    "help": {
+      "title": "Как подписаться",
+      "step1": "Создайте ленту выше и скопируйте ее URL.",
+      "apple": "Apple Podcasts: откройте Медиатеку, выберите в меню «Подписаться на шоу по URL» и вставьте URL.",
+      "overcast": "Overcast: нажмите кнопку «плюс», выберите Add URL и вставьте URL.",
+      "publicUrl": "Телефон должен иметь доступ к серверу. Задайте в MYMORNINGNEWS_PUBLIC_BASE_URL адрес, который телефон может открыть (не 127.0.0.1), затем создайте ленту заново, чтобы ее URL использовал этот адрес.",
+      "loopback": "Этот URL указывает на 127.0.0.1, доступный только с этого компьютера. Задайте MYMORNINGNEWS_PUBLIC_BASE_URL на сервере, чтобы приложения подкастов на телефоне могли до него достучаться."
+    }
+  },
+  "promo": {
+    "picker": {
+      "search": "Найти пользователя",
+      "searchPlaceholder": "Email содержит",
+      "user": "Пользователь",
+      "noUsers": "Нет подходящих пользователей.",
+      "choose": "Выберите пользователя"
+    },
+    "validation": {
+      "codeRequired": "Введите код.",
+      "codeFormat": "Используйте от 4 до 40 букв, цифр и дефисов; код должен начинаться и заканчиваться буквой или цифрой.",
+      "prefixFormat": "Используйте не более 16 букв и цифр.",
+      "countRange": "Введите целое число от 1 до {max, number}.",
+      "planRequired": "Выберите тариф.",
+      "durationRange": "Введите целое число дней от 0 (без окончания) до 3650.",
+      "maxRange": "Введите 0 (без ограничений) или целое число активаций.",
+      "maxBelowUsed": "Этот код уже активирован столько раз: {used}, поэтому лимит не может быть ниже.",
+      "perUserRange": "Введите целое число от 1 до 100.",
+      "dateInvalid": "Введите корректные дату и время.",
+      "expiresAfterStarts": "Срок действия должен заканчиваться после начала."
+    },
+    "create": {
+      "title": "Новый промокод",
+      "open": "Новый код"
+    },
+    "edit": {
+      "title": "Изменить {code}"
+    },
+    "batch": {
+      "title": "Создать пакет кодов",
+      "open": "Создать пакет",
+      "createdTitle": "{count, plural, one {Создан # код} few {Создано # кода} many {Создано # кодов} other {Создано # кода}}",
+      "batchId": "Пакет {id}",
+      "downloadCsv": "Скачать CSV",
+      "copyAll": "Скопировать все коды",
+      "codes": "Созданные коды",
+      "generate": "Создать"
+    },
+    "fields": {
+      "code": "Код",
+      "codeHelp": "Буквы, цифры и дефисы. Хранится в верхнем регистре.",
+      "codeLocked": "Код нельзя переименовать. Вместо этого создайте новый.",
+      "prefix": "Префикс",
+      "prefixHelp": "Необязательно, не более 16 букв и цифр. Каждый код получает случайный суффикс.",
+      "count": "Количество",
+      "countHelp": "От 1 до {max, number} кодов.",
+      "plan": "Тариф",
+      "noPlans": "Нет тарифов",
+      "description": "Описание",
+      "duration": "Длительность в днях",
+      "durationHelp": "0 означает, что тариф бессрочный.",
+      "maxRedemptions": "Всего активаций",
+      "maxHelp": "0 означает без ограничений.",
+      "maxUsedHelp": "0 означает без ограничений. Уже активирован: {used}.",
+      "perUserLimit": "Лимит на пользователя",
+      "perUserHelp": "Сколько раз один человек может его активировать.",
+      "starts": "Начало",
+      "startsHelp": "Оставьте пустым, чтобы начать сейчас. Ваше местное время.",
+      "expires": "Окончание",
+      "expiresHelp": "Оставьте пустым, если срок не ограничен. Ваше местное время.",
+      "enabled": "Включен",
+      "newAccountsOnly": "Только новые аккаунты",
+      "newAccountsOnlyHelp": "Активировать код могут только аккаунты, зарегистрированные с ним."
+    },
+    "status": {
+      "enabled": "Включен",
+      "disabled": "Отключен",
+      "notStarted": "Еще не начался",
+      "expired": "Истек",
+      "exhausted": "Исчерпан"
+    },
+    "usage": {
+      "usedOf": "{used} из {max}",
+      "usedUnlimited": "{used} без ограничений",
+      "unlimited": "Без ограничений"
+    },
+    "duration": {
+      "days": "{count, plural, one {# день} few {# дня} many {# дней} other {# дня}}",
+      "noEnd": "Бессрочно"
+    },
+    "reasons": {
+      "NotFound": "Мы не нашли такой код. Проверьте написание и попробуйте снова.",
+      "Disabled": "Этот код отключен.",
+      "NotStarted": "Этот код пока нельзя использовать.",
+      "Expired": "Срок действия этого кода истек.",
+      "Exhausted": "Этот код уже использован максимально допустимое число раз.",
+      "AlreadyRedeemed": "Этот аккаунт уже использовал этот код.",
+      "NewAccountsOnly": "Этот код только для новых аккаунтов."
+    },
+    "delete": {
+      "title": "Удалить промокод",
+      "message": "Удалить {code}? Это действие нельзя отменить.",
+      "usedMessage": "{code} активирован {count, plural, one {# раз} few {# раза} many {# раз} other {# раза}}, поэтому его нельзя удалить. Отключите его, чтобы сохранить историю.",
+      "disableInstead": "Отключить вместо удаления",
+      "conflict": "Этот код уже использовался, поэтому его нельзя удалить. Отключите его."
+    },
+    "notify": {
+      "disabled": "{code} отключен",
+      "enabled": "{code} включен",
+      "copied": "{code} скопирован",
+      "generated": "{count, plural, one {Создан # код} few {Создано # кода} many {Создано # кодов} other {Создано # кода}}",
+      "created": "{code} создан"
+    },
+    "columns": {
+      "code": "Код",
+      "description": "Описание",
+      "plan": "Тариф",
+      "duration": "Длительность",
+      "usage": "Использовано / макс.",
+      "remaining": "Осталось",
+      "activeSubscriptions": "Активные подписки",
+      "status": "Статус",
+      "batch": "Пакет",
+      "expires": "Окончание",
+      "lastRedeemed": "Последняя активация",
+      "created": "Создан"
+    },
+    "filters": {
+      "search": "Код или описание",
+      "enabledOnly": "Включенные",
+      "disabledOnly": "Отключенные"
+    },
+    "actions": {
+      "disable": "Отключить",
+      "enable": "Включить",
+      "copyCode": "Скопировать код"
+    },
+    "never": "Никогда",
+    "immediately": "Сразу",
+    "createdBy": "Создал",
+    "empty": {
+      "title": "Промокодов пока нет",
+      "message": "Создайте код или пакет кодов, чтобы выдать людям тариф."
+    },
+    "apply": {
+      "open": "Применить к пользователю",
+      "title": "Применить {code} к пользователю",
+      "help": "Пользователь получит {plan} на срок {duration}. Ограничения кода продолжают действовать.",
+      "confirm": "Применить код",
+      "done": "{code} применен к {email}"
+    },
+    "redemptions": {
+      "title": "Активации",
+      "user": "Пользователь",
+      "tenant": "Арендатор",
+      "channel": "Канал",
+      "date": "Активирован",
+      "status": "Статус",
+      "active": "Активна",
+      "revoked": "Отозвана",
+      "revokedOn": "Отозвана {date}",
+      "userId": "ID пользователя",
+      "revoke": "Отозвать",
+      "revokeTitle": "Отозвать активацию",
+      "revokeMessage": "Отозвать {code} для {email}? Тариф, полученный по этому коду, закончится сейчас.",
+      "revokedNotice": "Активация отозвана",
+      "empty": "Этот код еще никто не активировал",
+      "emptyMessage": "Здесь появляются активации: кто, когда и откуда."
+    },
+    "channels": {
+      "Signup": "Регистрация",
+      "Account": "Аккаунт",
+      "Admin": "Администратор",
+      "Api": "API"
+    },
+    "detail": {
+      "summary": "Использование, активации и настройки этого кода",
+      "back": "Все коды",
+      "settings": "Настройки"
+    },
+    "kpi": {
+      "redemptions": "Активации",
+      "remaining": "Осталось",
+      "activeSubscriptions": "Активные подписки",
+      "revoked": "Отозвано",
+      "lastRedeemed": "Последняя активация",
+      "notYet": "Пока нет"
+    },
+    "chart": {
+      "title": "Активации во времени",
+      "subtitle": "По дням, по дате активации",
+      "empty": "Активаций пока нет."
+    }
+  },
+  "plans": {
+    "default": "По умолчанию",
+    "noFeatures": "Нет значений прав.",
+    "validation": {
+      "key": "Используйте от 2 до 63 строчных букв, цифр и дефисов.",
+      "name": "Введите название.",
+      "duplicate": "Ключ {key} указан дважды."
+    },
+    "create": {
+      "title": "Новый тариф",
+      "open": "Новый тариф"
+    },
+    "edit": {
+      "title": "Изменить {name}",
+      "open": "Изменить {name}"
+    },
+    "fields": {
+      "key": "Ключ",
+      "keyHelp": "Постоянный идентификатор, например team-pilot.",
+      "keyLocked": "Ключ тарифа нельзя изменить.",
+      "name": "Название",
+      "description": "Описание",
+      "features": "Значения прав",
+      "featuresHelp": "Код проверяет эти ключи, а не названия тарифов. Используйте числа, true или false либо unlimited. Пустое значение удаляет ключ.",
+      "featureKey": "Ключ права",
+      "featureValue": "Значение для {key}",
+      "emptyRemoves": "Пустое значение удаляет",
+      "clearValue": "Очистить {key}",
+      "addFeature": "Добавить значение"
+    },
+    "featureNames": {
+      "usage_monthlyCostUsd_max": "Лимит расходов в месяц (USD)",
+      "topics_max": "Темы",
+      "schedule_minIntervalMinutes": "Минимальный интервал расписания (минуты)",
+      "runs_daily_max": "Запусков в день",
+      "audio_enabled": "Аудио",
+      "audio_monthlyMinutes_max": "Минут аудио в месяц",
+      "email_enabled": "Почта",
+      "mobile_access": "Мобильное приложение",
+      "endpoints_custom": "Собственные конечные точки моделей",
+      "artifacts_pinned_max": "Закрепленные отчеты"
+    },
+    "assignments": {
+      "title": "Тарифы пользователя",
+      "help": "Выберите пользователя, чтобы увидеть все его периоды тарифов, включая начинающиеся позже, и отозвать один из них.",
+      "plan": "Тариф",
+      "source": "Источник",
+      "starts": "Начало",
+      "ends": "Окончание",
+      "state": "Состояние",
+      "note": "Примечание",
+      "revoke": "Отозвать",
+      "revokeTitle": "Отозвать тариф",
+      "revokeMessage": "Отозвать {plan} у этого пользователя? Он закончится сейчас.",
+      "revoked": "Тариф отозван",
+      "empty": "Нет назначенных тарифов",
+      "emptyMessage": "Этот пользователь на тарифе по умолчанию."
+    },
+    "sources": {
+      "Default": "По умолчанию",
+      "Admin": "Администратор",
+      "Promo": "Промокод",
+      "Billing": "Оплата"
+    },
+    "states": {
+      "current": "Текущий",
+      "upcoming": "Предстоящий",
+      "ended": "Завершен",
+      "revoked": "Отозван"
+    },
+    "grant": {
+      "open": "Выдать тариф",
+      "title": "Выдать тариф",
+      "titleFor": "Выдать тариф пользователю {email}",
+      "confirm": "Выдать",
+      "note": "Примечание",
+      "noteHelp": "Почему этот пользователь получает тариф. Отображается в журнале аудита.",
+      "done": "Тариф выдан пользователю {email}"
+    },
+    "userPanel": {
+      "action": "Тариф",
+      "title": "Тариф пользователя {email}"
+    }
+  },
+  "account": {
+    "plan": {
+      "title": "Тариф",
+      "endsOn": "Ваш тариф заканчивается {date}.",
+      "noEnd": "У вашего тарифа нет даты окончания.",
+      "limits": "Ограничения",
+      "upcoming": "Начнется позже",
+      "anotherPlan": "Другой тариф",
+      "period": "с {from} по {to}",
+      "periodOpen": "с {from}, без окончания",
+      "redeemTitle": "Активировать код",
+      "code": "Промокод",
+      "codeHelp": "Полученный вами код. Код для уже имеющегося тарифа начнет действовать, когда закончится текущий.",
+      "redeem": "Активировать",
+      "redeemed": "Код активирован. Теперь у вас {plan}."
+    }
+  },
+  "email": {
+    "memberNotice": "Вы видите письма, отправленные вам. Администраторы видят все сообщения.",
+    "resend": "Отправить повторно",
+    "resent": "Повторно отправлено: {recipient}",
+    "columns": {
+      "time": "Время",
+      "template": "Шаблон",
+      "recipient": "Получатель",
+      "subject": "Тема письма",
+      "status": "Статус",
+      "attempts": "Попытки",
+      "sent": "Отправлено",
+      "topic": "Тема",
+      "providerId": "ID у поставщика"
+    },
+    "statuses": {
+      "Queued": "В очереди",
+      "Sending": "Отправляется",
+      "Sent": "Отправлено",
+      "Failed": "Ошибка",
+      "Suppressed": "Подавлено",
+      "Skipped": "Пропущено"
+    },
+    "templates": {
+      "RunDigest": "Итоги запуска",
+      "BriefingPublished": "Сводка опубликована",
+      "RunFailed": "Запуск не удался",
+      "PreferenceProposal": "Предложение предпочтения",
+      "Test": "Тест"
+    },
+    "chart": {
+      "title": "Сообщения в день по статусам",
+      "subtitle": "Последние {days} дн.",
+      "empty": "В этом периоде писем нет."
+    },
+    "empty": {
+      "title": "Писем пока не отправлено",
+      "message": "Письма появляются здесь после запусков, сводок и тестов."
+    },
+    "delete": {
+      "title": "Удалить письмо",
+      "message": "Удалить «{subject}» для {recipient} из исходящих?"
+    },
+    "preview": {
+      "title": "Письмо",
+      "runButton": "Предпросмотр письма",
+      "runTitle": "Предпросмотр письма о запуске",
+      "to": "Кому: {recipient}",
+      "format": "Формат",
+      "html": "Оформленное",
+      "text": "Простой текст",
+      "frame": "Оформленное письмо",
+      "noHtml": "У этого сообщения нет HTML-версии.",
+      "noText": "У этого сообщения нет текстовой версии."
+    },
+    "test": {
+      "button": "Отправить тестовое письмо",
+      "sent": "Тестовое письмо поставлено в очередь для {recipient}",
+      "failed": "Не удалось отправить тестовое письмо: {message}",
+      "settingsHelp": "Сначала сохраните изменения, затем отправьте себе тест."
+    }
+  },
+  "emailPrefs": {
+    "title": "Настройки почты",
+    "address": "Письма приходят на {address}.",
+    "saved": "Настройки почты сохранены",
+    "categories": {
+      "runEmails": "Письма о запусках",
+      "briefingEmails": "Письма о сводках",
+      "failureEmails": "Письма об ошибках"
+    },
+    "help": {
+      "runEmails": "Итоги после каждого запуска ваших тем.",
+      "briefingEmails": "Когда публикуется сводка выпуска или запуска.",
+      "failureEmails": "Когда запуск завершается ошибкой."
+    },
+    "unsubscribedTitle": "Темы, от которых вы отписались",
+    "noUnsubscribed": "Вы получаете письма о запусках по всем темам, которые их отправляют.",
+    "resubscribeHelp": "Чтобы снова получать письма о запусках по одной из этих тем, воспользуйтесь ссылкой в ее последнем письме."
+  },
+  "feedbackControl": {
+    "rate": "Оценить",
+    "rateItem": "Оценить {title}",
+    "rateType": "Оценить: {type}",
+    "rateSection": "Оценить раздел {section}",
+    "sectionPrompt": "Был ли этот раздел полезен по теме?",
+    "isRelevant": "Это было релевантно?",
+    "isAccurate": "Насколько точным оказался этот прогноз?",
+    "isUseful": "Это было полезно?",
+    "why": "Почему?",
+    "whyHelp": "Необязательно. Ваши причины учат исследование, какие элементы оставлять, а какие отбрасывать.",
+    "whyTitle": "Почему такая оценка?",
+    "whyAdd": "Добавить причину",
+    "whyEdit": "Изменить причину",
+    "ratedAs": "Оценка: {rating}",
+    "retract": "Отозвать оценку",
+    "actions": {
+      "relevant": "Релевантно",
+      "somewhat": "Отчасти",
+      "not-relevant": "Нерелевантно",
+      "accurate": "Точно",
+      "partially": "Частично",
+      "inaccurate": "Неточно",
+      "too-early": "Слишком рано",
+      "useful": "Полезно",
+      "not-useful": "Бесполезно",
+      "none": "без оценки"
+    }
+  },
+  "insights": {
+    "noData": "Для этого периода пока нет данных.",
+    "withCount": "{label} ({count})",
+    "scope": {
+      "days": "{count, plural, one {# день} few {# дня} many {# дней} other {# дня}}",
+      "topic": "Тема",
+      "allTopics": "Все темы",
+      "everyone": "Все в арендаторе"
+    },
+    "topic": {
+      "last90": "Последние 90 дней"
+    },
+    "relevance": {
+      "precision": "Точность отбора",
+      "precisionHelp": "Оцененные находки, отмеченные как релевантные или отчасти релевантные",
+      "coverage": "Охват",
+      "coverageHelp": "Показанные находки, получившие хоть какую-то оценку",
+      "shown": "Показано находок",
+      "rated": "Оценено находок",
+      "byDay": "Точность отбора во времени",
+      "byDayHelp": "По дням, по оценкам, данным в этот день",
+      "byTopic": "Точность отбора по темам",
+      "byTier": "Точность отбора по уровням",
+      "byDomain": "Точность отбора по доменам источников",
+      "byDomainHelp": "20 доменов с наибольшим числом оценок",
+      "byDimension": "Точность отбора по аспектам"
+    },
+    "quality": {
+      "failureRate": "Ошибки проверки доказательств",
+      "quotes": "{count, plural, one {Проверена # цитата} few {Проверено # цитаты} many {Проверено # цитат} other {Проверено # цитаты}}",
+      "byModel": "Доля ошибок проверки по моделям",
+      "byModelHelp": "Доля извлеченных цитат, не совпавших с сохраненным текстом источника"
+    },
+    "accuracy": {
+      "rate": "Доля точных прогнозов",
+      "rateHelp": "Точные плюс половина частично точных от всех с подведенным итогом",
+      "brier": "Средняя оценка Брайера",
+      "due": "Ждут проверки",
+      "dueHelp": "Горизонт прошел, итог не подведен",
+      "resolved": "С подведенным итогом",
+      "ofTotal": "{open} открыто из {total}",
+      "unresolvable": "Неразрешимые",
+      "agreement": "Согласие с агентом",
+      "agreementHelp": "{count, plural, one {По # решенной проверке} few {По # решенным проверкам} many {По # решенным проверкам} other {По # решенной проверки}}",
+      "latency": "Время до итога",
+      "days": "{count, plural, one {# день} few {# дня} many {# дней} other {# дня}}",
+      "calibration": "Кривая калибровки",
+      "calibrationHelp": "Заявленная уверенность в сравнении с тем, как часто прогнозы сбывались",
+      "byTopic": "Точность по темам",
+      "byTopicHelp": "Доля точных прогнозов по каждой теме среди прогнозов с подведенным итогом"
+    },
+    "feedback": {
+      "total": "Отзывы",
+      "withReason": "С причиной",
+      "withoutReason": "Без причины",
+      "share": "{share} от всех",
+      "emailOpens": "Переходы по ссылкам из писем",
+      "emailSubmits": "Отправки по ссылкам из писем",
+      "submitRate": "{rate} от переходов",
+      "byDay": "Объем отзывов по дням",
+      "byDayHelp": "Оценки за день с разбивкой по наличию причины",
+      "byChannel": "Отзывы по каналам",
+      "byTarget": "Отзывы по типам элементов",
+      "listTitle": "Все отзывы",
+      "includeHistory": "Включая замененные оценки",
+      "noReason": "Причина не указана",
+      "current": "Текущая",
+      "superseded": "Заменена",
+      "editWhy": "Изменить причину",
+      "saved": "Причина сохранена",
+      "retractTitle": "Отозвать эту оценку",
+      "retractMessage": "Отозвать эту оценку? Предыдущая оценка того же элемента, если она есть, снова станет текущей.",
+      "retracted": "Оценка отозвана",
+      "emptyTitle": "Отзывов пока нет",
+      "emptyMessage": "Оценивайте находки, прогнозы и предложения, чтобы научить исследование тому, что для вас важно.",
+      "columns": {
+        "when": "Когда",
+        "target": "Элемент",
+        "rating": "Оценка",
+        "reason": "Причина",
+        "channel": "Канал",
+        "current": "Состояние"
+      },
+      "targetTypes": {
+        "Finding": "Находка",
+        "Prediction": "Прогноз",
+        "PredictionReview": "Проверка прогноза",
+        "Suggestion": "Предложение",
+        "SourceItem": "Источник",
+        "Domain": "Домен",
+        "Briefing": "Сводка",
+        "BriefingSection": "Раздел сводки",
+        "LearnedPreference": "Изученное предпочтение"
+      },
+      "channels": {
+        "Dashboard": "Панель управления",
+        "Email": "Почта",
+        "Mobile": "Мобильное приложение",
+        "Api": "API",
+        "Mcp": "MCP"
+      },
+      "byChannelDay": "Отзывы по дням и каналам",
+      "byChannelDayHelp": "Оценки за день по источнику поступления"
+    },
+    "reasons": {
+      "title": "Темы причин",
+      "help": "Темы, выделенные из ваших причин, в скобках последние 30 дней",
+      "tagRecent": "{tag} [{recent}]",
+      "byWeek": "Темы причин по неделям"
+    },
+    "suggestions": {
+      "title": "Итоги предложений",
+      "decision": "В среднем {days} дн. до решения",
+      "outcomes": {
+        "new": "Еще новые ({share})",
+        "accepted": "Приняты ({share})",
+        "done": "Выполнены ({share})",
+        "snoozed": "Отложены ({share})",
+        "dismissed": "Отклонены ({share})"
+      }
+    },
+    "preferences": {
+      "statement": "Предпочтение",
+      "statementHelp": "Одно простое предложение, например: Пропускать новости о финансировании поставщиков.",
+      "kind": "Вид",
+      "origin": "Происхождение",
+      "confidence": "Уверенность",
+      "supportCount": "Подтверждающие отзывы",
+      "decided": "Решено",
+      "allTopics": "Все темы",
+      "topicHelp": "Оставьте пустым, чтобы применить ко всем темам.",
+      "writeOwn": "Написать свое",
+      "createTitle": "Написать предпочтение",
+      "createHelp": "Написанные вами предпочтения сразу становятся активными и передаются исследованию вместе с вашими темами.",
+      "editTitle": "Изменить предпочтение",
+      "detailTitle": "Изученное предпочтение",
+      "supportTitle": "{count, plural, =0 {Подтверждающие отзывы} one {# подтверждающий отзыв} few {# подтверждающих отзыва} many {# подтверждающих отзывов} other {# подтверждающего отзыва}}",
+      "noSupport": "С этим предпочтением не связано ни одного отзыва.",
+      "learnFor": "Изучать по",
+      "chooseTopic": "Выберите тему",
+      "learnNow": "Изучить сейчас",
+      "learning": "Изучение...",
+      "learned": "{count, plural, =0 {Изучение завершено, новых предложений нет} one {# новое предложение на проверку} few {# новых предложения на проверку} many {# новых предложений на проверку} other {# нового предложения на проверку}}",
+      "emptyTitle": "Изученных предпочтений пока нет",
+      "emptyMessage": "Предложения появятся, когда вы оцените несколько элементов с указанием причин, или напишите свои.",
+      "deleteTitle": "Удалить предпочтение",
+      "deleteMessage": "Удалить «{statement}»? Оно перестанет влиять на ваше исследование.",
+      "statuses": {
+        "Proposed": "Предложено",
+        "Active": "Активно",
+        "Rejected": "Отклонено",
+        "Disabled": "Отключено"
+      },
+      "origins": {
+        "Distilled": "Изучено",
+        "User": "Написано вами"
+      },
+      "kinds": {
+        "Prefer": "Предпочитать",
+        "Avoid": "Избегать",
+        "PreferSource": "Предпочитать источник",
+        "AvoidSource": "Избегать источника",
+        "StyleNote": "Заметка о стиле"
+      },
+      "actions": {
+        "accept": "Принять",
+        "reject": "Отклонить",
+        "disable": "Отключить",
+        "enable": "Включить"
+      },
+      "changed": {
+        "accept": "Предпочтение принято",
+        "reject": "Предпочтение отклонено",
+        "disable": "Предпочтение отключено",
+        "enable": "Предпочтение включено"
+      }
+    },
+    "ranking": {
+      "title": "Рекомендация по ранжированию",
+      "rated": "{count, plural, one {По # оцененной находке} few {По # оцененным находкам} many {По # оцененным находкам} other {По # оцененной находки}}",
+      "apply": "Применить эти веса",
+      "applyTitle": "Применить рекомендованные веса",
+      "applyMessage": "Использовать рекомендованные веса ранжирования для {topic}? Будущие запуски будут оценивать находки с ними.",
+      "applied": "Веса применены",
+      "notStored": "Сервер не сохранил веса для этой темы.",
+      "notEnough": "Оцените больше находок по этой теме, чтобы рекомендация стала надежной.",
+      "component": "Составляющая",
+      "current": "Текущий",
+      "recommended": "Рекомендуемый",
+      "separation": "Разделение",
+      "help": "Разделение показывает, насколько различаются оценки релевантных и нерелевантных находок по каждой составляющей. Составляющие, которые разделяют их лучше, получают больший вес."
+    },
+    "overview": {
+      "window": "С {from} по {to}",
+      "help": "Значения относятся к выбранному периоду, если не указано иное. Открытые прогнозы, новые предложения и активные темы показаны как текущие итоги.",
+      "activeTopics": "Активные темы",
+      "runs": "Запуски",
+      "runOutcomes": "Завершено: {completed}, частично: {partial}, с ошибкой: {failed}",
+      "findingsShown": "Показано находок",
+      "findingsRated": "Оценено: {count}",
+      "precision": "Точность отбора",
+      "precisionHelp": "Доля оцененных находок, признанных релевантными",
+      "briefingsReady": "Готовые сводки",
+      "emailsSent": "Отправлено писем",
+      "emailsFailed": "С ошибкой: {count}",
+      "predictionsOpen": "Открытые прогнозы",
+      "predictionsResolved": "С подведенным итогом: {count}",
+      "accuracy": "Точность прогнозов",
+      "brier": "Средняя оценка Брайера {value}",
+      "feedback": "Отзывы",
+      "feedbackWithReason": "С причиной: {count}",
+      "suggestionsNew": "Новые предложения",
+      "suggestionsAccepted": "Принято или выполнено: {count}",
+      "quoteFailure": "Доля ошибок цитат",
+      "quoteFailureHelp": "Цитаты, не прошедшие проверку",
+      "modelCost": "Стоимость моделей",
+      "modelCalls": "Вызовов модели: {count}"
+    },
+    "email": {
+      "total": "Сообщения",
+      "pendingSkipped": "Ожидают: {pending}, пропущено: {skipped}",
+      "sent": "Отправлено",
+      "notSent": "Не отправлено",
+      "failed": "Ошибка",
+      "deliveryRate": "Доля доставки",
+      "deliveryRateHelp": "Отправленные среди завершенных сообщений",
+      "meanTimeToSend": "Среднее время отправки",
+      "meanTimeToSendHelp": "От постановки в очередь до отправки",
+      "linkOpens": "Переходы по ссылкам для отзыва",
+      "linkSubmits": "Отправки по ссылкам для отзыва",
+      "unsubscribes": "Отписки",
+      "byDay": "Сообщения по дням",
+      "byDayHelp": "Сообщения, поставленные в очередь за день, с разбивкой по факту отправки",
+      "byTemplate": "Доля доставки по шаблонам",
+      "byTemplateHelp": "Доля отправленных сообщений каждого шаблона",
+      "byStatus": "Сообщения по статусам"
+    }
+  },
+  "mcp": {
+    "tokenWarning": "Никогда не вставляйте токен сеанса в клиент MCP или файл конфигурации. Используйте ключ доступа, который можно отозвать. Эта страница никогда не показывает ваш токен.",
+    "about": {
+      "title": "О сервере MCP",
+      "body": "Сервер MCP My Morning News позволяет Claude Code, Claude Desktop, IDE или вашему собственному агенту просматривать ваши темы, читать сводки, изучать доказательства за находкой, подводить итоги прогнозов, работать с предложениями и оставлять отзывы с причиной.",
+      "privileges": "У него нет собственных привилегий. Каждый вызов идет в REST API с вашим ключом доступа, поэтому ваши роли и права владения действуют точно так же, как здесь. Отзывы, оставленные через него, записываются с каналом MCP."
+    },
+    "url": {
+      "label": "URL Streamable HTTP",
+      "help": "Сервер MCP работает как отдельный процесс, независимо от REST API. Измените адрес, если ваш сервер работает в другом месте; команды ниже обновятся.",
+      "invalid": "Введите URL с http или https.",
+      "reset": "Вернуть предложенный URL"
+    },
+    "key": {
+      "title": "Создайте ключ доступа",
+      "body": "Создайте ключ доступа и секрет для клиента MCP, чтобы позже отозвать их без смены пароля. Скопируйте секрет при создании: он показывается только один раз.",
+      "authMode": "Выберите режим аутентификации «Прямой заголовок» или «Гибридный»: клиент Streamable HTTP отправляет ключ и секрет в каждом запросе, а ключи с режимами «Подписанные запросы» и «Обмен на сеанс» это отклоняют.",
+      "create": "Создать ключ доступа",
+      "askAdmin": "Ключи доступа создает администратор. Попросите у него ключ доступа с режимом аутентификации «Прямой заголовок»."
+    },
+    "connect": {
+      "title": "Подключите клиент",
+      "claudeHttp": "Claude Code через Streamable HTTP",
+      "claudeHttpHelp": "Замените заполнители своим ключом доступа и секретом, затем выполните команду в терминале.",
+      "claudeStdio": "Claude Code через stdio",
+      "claudeStdioHelp": "Запускает сервер MCP из исходного кода. Замените путь и заполнители.",
+      "desktop": "Claude Desktop и другие клиенты",
+      "desktopHelp": "Для клиентов, читающих JSON-файл mcpServers. Замените путь и заполнители.",
+      "run": "Запустите сервер MCP",
+      "runHelp": "При запущенном стеке Docker эта команда запускает сервер MCP на порту 12105."
+    },
+    "try": {
+      "title": "Попробуйте",
+      "topics": "Покажи мои темы в My Morning News",
+      "briefing": "Прочитай сегодняшнюю сводку",
+      "review": "Выполни промпт review_morning_briefing",
+      "safety": "Находки и сводки содержат текст с веб-страниц. Клиентам указано считать его данными и никогда не выполнять как инструкции."
+    }
+  },
+  "sources": {
+    "searchPlaceholder": "Поиск по заголовкам и адресам",
+    "topic": "Тема",
+    "allTopics": "Все темы",
+    "clearRun": "Показать источники всех запусков",
+    "columns": {
+      "title": "Источник",
+      "domain": "Домен",
+      "published": "Опубликован",
+      "contentType": "Тип содержимого",
+      "firstRun": "Впервые в запуске",
+      "fetched": "Загружен",
+      "timesSeen": "Встречался раз",
+      "id": "ID"
+    },
+    "detail": {
+      "title": "Источник",
+      "open": "Открыть страницу",
+      "monospace": "Моноширинный",
+      "copyText": "Скопировать текст",
+      "characters": "{count, plural, one {{formatted} символ} few {{formatted} символа} many {{formatted} символов} other {{formatted} символа}}"
+    },
+    "empty": {
+      "title": "Источников пока нет",
+      "message": "Источники появляются после того, как запуск ищет в интернете и загружает страницы по одной из ваших тем."
+    }
+  }
+}

@@ -46,6 +46,22 @@ function argumentsOf(message) {
   return [...names].sort();
 }
 
+/** The option keys of every plural argument in a message, including nested ones. */
+function pluralCategoriesOf(message) {
+  const out = [];
+  const walk = (elements) => {
+    for (const el of elements) {
+      if (el.type === 6) out.push(Object.keys(el.options));
+      if (el.options) for (const option of Object.values(el.options)) walk(option.value);
+    }
+  };
+  walk(new IntlMessageFormat(message, 'en').getAst());
+  return out;
+}
+
+/** Locales with a translated catalog (every supported locale but English and the pseudo-locales). */
+const TRANSLATED = SUPPORTED_LOCALES.map((l) => l.code).filter((c) => c !== 'en' && !c.startsWith('qps'));
+
 describe('mobile i18n catalog', () => {
   const { literals, prefixes } = usage();
 
@@ -66,6 +82,23 @@ describe('mobile i18n catalog', () => {
 
   it.each(Object.keys(mobileCatalogs).filter((c) => c !== 'en' && !c.startsWith('qps')))('%s has no keys English lacks', (code) => {
     expect(flattenKeys(mobileCatalogs[code]).filter((k) => !enKeys.has('mobile.' + k))).toEqual([]);
+  });
+
+  it.each(TRANSLATED)('%s translates every English key', (code) => {
+    const keys = new Set(flattenKeys(mobileCatalogs[code]).map((k) => 'mobile.' + k));
+    expect([...enKeys].filter((k) => !keys.has(k))).toEqual([]);
+    for (const [key, value] of flattenEntries(mobileCatalogs[code])) expect([key, typeof value === 'string' && value.trim().length > 0]).toEqual([key, true]);
+  });
+
+  it.each(TRANSLATED)('%s spells out the plural categories its language needs', (code) => {
+    const rules = new Intl.PluralRules(code);
+    const needed = new Set(Array.from({ length: 201 }, (_, n) => rules.select(n)));
+    needed.add('other');
+    for (const [key, value] of flattenEntries(mobileCatalogs[code])) {
+      for (const categories of pluralCategoriesOf(value)) {
+        expect([key, [...needed].filter((c) => !categories.includes(c))]).toEqual([key, []]);
+      }
+    }
   });
 
   it('writes valid ICU messages in every catalog', () => {
@@ -99,14 +132,19 @@ describe('mobile i18n catalog', () => {
     expect(isRtl('en')).toBe(false);
   });
 
-  it('formats ICU plurals, falls back to English, and builds the pseudo-locales', async () => {
+  it('formats ICU plurals, switches to translated catalogs, and builds the pseudo-locales', async () => {
     const i18n = initI18n('en');
     expect(i18n.t('mobile.usage.lastDays', { count: 1 })).toBe('Last 1 day');
     expect(i18n.t('mobile.usage.lastDays', { count: 30 })).toBe('Last 30 days');
     expect(i18n.t('mobile.states.notAvailableFeature', { feature: 'Briefings' })).toBe('Briefings will be available after a later server update.');
     await i18n.changeLanguage('es');
     expect(i18n.t('mobile.tabs.today')).toBe('Hoy');
-    expect(i18n.t('mobile.signIn.submit')).toBe('Sign in');
+    expect(i18n.t('mobile.signIn.submit')).toBe(mobileCatalogs.es.signIn.submit);
+    expect(i18n.t('mobile.signIn.submit')).not.toBe(en.signIn.submit);
+    await i18n.changeLanguage('ru');
+    for (const count of [1, 3, 5, 21]) expect(i18n.t('mobile.usage.lastDays', { count })).toContain(String(count));
+    await i18n.changeLanguage('ar');
+    for (const count of [0, 1, 2, 3, 11, 100]) expect(i18n.t('mobile.usage.lastDays', { count })).not.toMatch(/\{|\}/);
     await i18n.changeLanguage('qps-ploc');
     expect(i18n.t('mobile.tabs.today')).toMatch(/^\[Ŧǿḓȧẏ~+\]$/);
     expect(i18n.t('mobile.usage.lastDays', { count: 2 })).toContain('2');

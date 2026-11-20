@@ -1,0 +1,3750 @@
+{
+  "app": {
+    "name": "My Morning News"
+  },
+  "common": {
+    "active": "सक्रिय",
+    "add": "जोड़ें",
+    "cancel": "रद्द करें",
+    "clearFilters": "फ़िल्टर हटाएँ",
+    "close": "बंद करें",
+    "confirm": "पुष्टि करें",
+    "copied": "कॉपी हो गया",
+    "copy": "कॉपी करें",
+    "copyId": "ID कॉपी करें",
+    "copyUrl": "URL कॉपी करें",
+    "created": "बनाया गया",
+    "delete": "हटाएँ",
+    "dismiss": "खारिज करें",
+    "duplicate": "प्रतिलिपि बनाएँ",
+    "edit": "संपादित करें",
+    "hidePassword": "पासवर्ड छिपाएँ",
+    "inactive": "निष्क्रिय",
+    "language": "भाषा",
+    "lastLoaded": "अंतिम बार लोड किया गया {time}",
+    "loading": "लोड हो रहा है...",
+    "no": "नहीं",
+    "none": "कोई नहीं",
+    "refresh": "रीफ़्रेश करें",
+    "remove": "हटाएँ",
+    "retry": "फिर से कोशिश करें",
+    "save": "सहेजें",
+    "saving": "सहेजा जा रहा है...",
+    "showPassword": "पासवर्ड दिखाएँ",
+    "status": "स्थिति",
+    "view": "देखें",
+    "viewJson": "JSON देखें",
+    "working": "काम जारी है...",
+    "yes": "हाँ"
+  },
+  "errors": {
+    "badRequest": "अनुरोध मान्य नहीं था।",
+    "conflict": "यह बदलाव मौजूदा डेटा से टकराता है।",
+    "forbidden": "आपको ऐसा करने की अनुमति नहीं है।",
+    "generic": "कुछ गलत हो गया।",
+    "network": "सर्वर तक नहीं पहुँचा जा सका। सर्वर URL जाँचें और देखें कि सर्वर चल रहा है।",
+    "notFound": "अनुरोधित आइटम नहीं मिला।",
+    "requestId": "अनुरोध ID",
+    "server": "सर्वर ने एक त्रुटि बताई।",
+    "tooMany": "बहुत अधिक अनुरोध। थोड़ी देर प्रतीक्षा करें और फिर से कोशिश करें।",
+    "unauthorized": "आपका सत्र अब मान्य नहीं है। फिर से साइन इन करें।"
+  },
+  "access": {
+    "deniedTitle": "पहुँच अस्वीकृत",
+    "deniedMessage": "आपकी भूमिका में इस पेज तक पहुँच शामिल नहीं है। ज़रूरत हो तो किसी व्यवस्थापक से कहें।"
+  },
+  "admin": {
+    "copyOf": "{name} की प्रतिलिपि",
+    "deleted": "हटाया गया",
+    "saved": "सहेजा गया",
+    "tenant": "टेनेंट"
+  },
+  "roles": {
+    "credential": "API क्रेडेंशियल",
+    "globalAdmin": "ग्लोबल व्यवस्थापक",
+    "member": "सदस्य",
+    "none": "साइन आउट",
+    "tenantAdmin": "टेनेंट व्यवस्थापक"
+  },
+  "theme": {
+    "dark": "डार्क थीम पर जाएँ",
+    "light": "लाइट थीम पर जाएँ"
+  },
+  "json": {
+    "copy": "JSON कॉपी करें",
+    "items": "{count, plural, one {# आइटम} other {# आइटम}}",
+    "keys": "{count, plural, one {# कुंजी} other {# कुंजियाँ}}",
+    "raw": "रॉ",
+    "title": "JSON",
+    "tree": "ट्री",
+    "view": "JSON देखें"
+  },
+  "table": {
+    "actions": "कार्रवाइयाँ",
+    "any": "कोई भी",
+    "clearSelection": "चयन हटाएँ",
+    "emptyTitle": "अभी यहाँ कुछ नहीं है",
+    "filterBy": "{column} से फ़िल्टर करें",
+    "firstPage": "पहला पेज",
+    "jumpToPage": "पेज",
+    "lastPage": "अंतिम पेज",
+    "nextPage": "अगला पेज",
+    "noMatchesMessage": "मौजूदा फ़िल्टर से कोई रिकॉर्ड मेल नहीं खाता। सब कुछ देखने के लिए फ़िल्टर हटाएँ।",
+    "noMatchesTitle": "कोई मिलान नहीं",
+    "ofPages": "{total} में से",
+    "pageSize": "प्रति पेज पंक्तियाँ",
+    "previousPage": "पिछला पेज",
+    "selectAll": "इस पेज की सभी पंक्तियाँ चुनें",
+    "selectColumns": "कॉलम",
+    "selectRow": "पंक्ति चुनें",
+    "selected": "{count, plural, one {# चयनित} other {# चयनित}}",
+    "showing": "{total} में से {from} से {to}"
+  },
+  "charts": {
+    "avgDuration": "औसत अवधि",
+    "bucketAria": "{when}: {total} अनुरोध",
+    "failure": "विफलता",
+    "range": "समय सीमा",
+    "requestActivity": "अनुरोध गतिविधि",
+    "success": "सफलता",
+    "total": "कुल",
+    "ranges": {
+      "hour": "पिछला घंटा",
+      "day": "पिछला दिन",
+      "week": "पिछला सप्ताह",
+      "month": "पिछला महीना",
+      "quarter": "पिछली तिमाही"
+    },
+    "totals": {
+      "avg": "औसत {value}",
+      "failed": "{count} विफल",
+      "success": "{count} सफल",
+      "total": "कुल {count}"
+    },
+    "rank": "रैंक",
+    "share": "हिस्सा"
+  },
+  "nav": {
+    "collapse": "साइडबार छोटा करें",
+    "environment": "लोकल",
+    "expand": "साइडबार बड़ा करें",
+    "label": "मुख्य नेविगेशन",
+    "open": "नेविगेशन खोलें",
+    "phase": "चरण {phase} में आएगा",
+    "phaseShort": "च{phase}",
+    "skip": "सामग्री पर जाएँ",
+    "version": "v{version}",
+    "groups": {
+      "start": "शुरुआत",
+      "research": "शोध",
+      "briefings": "ब्रीफ़िंग",
+      "insights": "इनसाइट्स",
+      "configuration": "कॉन्फ़िगरेशन",
+      "observability": "निगरानी",
+      "administration": "प्रशासन",
+      "system": "सिस्टम"
+    },
+    "items": {
+      "home": "होम",
+      "today": "आज",
+      "topics": "विषय",
+      "runs": "रन",
+      "findings": "निष्कर्ष",
+      "sources": "स्रोत",
+      "predictions": "पूर्वानुमान",
+      "suggestions": "सुझाव",
+      "briefings": "ब्रीफ़िंग",
+      "editions": "संस्करण",
+      "templates": "टेम्पलेट",
+      "relevance": "प्रासंगिकता",
+      "accuracy": "सटीकता",
+      "feedback": "फ़ीडबैक",
+      "preferences": "प्राथमिकताएँ",
+      "usage": "उपयोग",
+      "models": "मॉडल",
+      "prompts": "प्रॉम्प्ट",
+      "vault": "संग्रहीत क्रेडेंशियल",
+      "searchProviders": "खोज प्रदाता",
+      "mcpServers": "MCP सर्वर",
+      "voices": "आवाज़ें",
+      "email": "ईमेल",
+      "requests": "अनुरोध इतिहास",
+      "explorer": "API एक्सप्लोरर",
+      "health": "स्वास्थ्य",
+      "audit": "ऑडिट",
+      "tenants": "टेनेंट",
+      "users": "उपयोगकर्ता",
+      "credentials": "क्रेडेंशियल",
+      "roles": "भूमिकाएँ और पहुँच",
+      "settings": "सेटिंग्स",
+      "serverInfo": "सर्वर जानकारी",
+      "profile": "प्रोफ़ाइल",
+      "adminUsage": "प्लेटफ़ॉर्म उपयोग",
+      "oneTimeRequests": "एक बार के अनुरोध",
+      "listen": "सुनें",
+      "promoCodes": "प्रोमो कोड",
+      "insightsOverview": "अवलोकन",
+      "plans": "प्लान",
+      "emailInsights": "ईमेल डिलीवरी",
+      "mcp": "MCP क्लाइंट"
+    }
+  },
+  "routes": {
+    "home": {
+      "summary": "आपका वर्कस्पेस एक नज़र में"
+    },
+    "today": {
+      "summary": "आपकी ब्रीफ़िंग का नवीनतम संस्करण, और हाल में शोध से क्या मिला"
+    },
+    "topics": {
+      "summary": "वे विषय जिन पर आप शोध चाहते हैं"
+    },
+    "runs": {
+      "summary": "शोध रन: कतार में, चल रहे, और पूरे हुए"
+    },
+    "findings": {
+      "summary": "शोध में क्या मिला"
+    },
+    "sources": {
+      "summary": "शोध द्वारा जुटाए गए स्रोत"
+    },
+    "predictions": {
+      "summary": "पूर्वानुमान और उनका परिणाम"
+    },
+    "suggestions": {
+      "summary": "आपके रन से निकली, गहराई से देखने लायक बातें"
+    },
+    "briefings": {
+      "summary": "हर ब्रीफ़िंग: संस्करण, रन ब्रीफ़िंग, और एक बार की रिपोर्ट"
+    },
+    "editions": {
+      "summary": "शेड्यूल पर ब्रीफ़िंग, हर एक के अपने विषय, टेम्पलेट और डिलीवरी के साथ"
+    },
+    "templates": {
+      "summary": "Markdown लेआउट जो कंपोज़र को बताते हैं कि हर ब्रीफ़िंग में क्या हो"
+    },
+    "relevance": {
+      "summary": "निष्कर्ष कितने प्रासंगिक रहे हैं"
+    },
+    "accuracy": {
+      "summary": "पूर्वानुमान कितने सटीक रहे हैं"
+    },
+    "feedback": {
+      "summary": "आपके द्वारा दिया गया फ़ीडबैक"
+    },
+    "preferences": {
+      "summary": "फ़ीडबैक से सीखी गई प्राथमिकताएँ"
+    },
+    "usage": {
+      "summary": "इसकी लागत कितनी है, और सबसे ज़्यादा कौन उपयोग करता है?"
+    },
+    "models": {
+      "summary": "मॉडल एंडपॉइंट, कार्य भूमिका असाइनमेंट, और हर मॉडल कॉल"
+    },
+    "prompts": {
+      "summary": "हर मॉडल कॉल के लिए संस्करणित प्रॉम्प्ट टेम्पलेट"
+    },
+    "vault": {
+      "summary": "मॉडल और बाहरी सेवाओं के लिए API कुंजियाँ और टोकन, स्टोरेज में एन्क्रिप्टेड"
+    },
+    "searchProviders": {
+      "summary": "वेब खोज प्रदाता"
+    },
+    "mcpServers": {
+      "summary": "Model Context Protocol सर्वर"
+    },
+    "voices": {
+      "summary": "ऑडियो ब्रीफ़िंग के लिए आवाज़ें"
+    },
+    "email": {
+      "summary": "ईमेल डिलीवरी"
+    },
+    "requests": {
+      "summary": "सर्वर द्वारा संभाला गया हर API अनुरोध"
+    },
+    "explorer": {
+      "summary": "कोई भी API ऑपरेशन आज़माएँ"
+    },
+    "health": {
+      "summary": "सर्वर और घटकों का स्वास्थ्य"
+    },
+    "audit": {
+      "summary": "सुरक्षा और बदलाव से जुड़ी घटनाएँ"
+    },
+    "tenants": {
+      "summary": "अलग-थलग वर्कस्पेस"
+    },
+    "users": {
+      "summary": "वे लोग जो साइन इन कर सकते हैं"
+    },
+    "credentials": {
+      "summary": "स्क्रिप्ट और इंटीग्रेशन के लिए API कुंजियाँ"
+    },
+    "roles": {
+      "summary": "भूमिकाएँ, अनुमतियाँ, और असाइनमेंट"
+    },
+    "settings": {
+      "summary": "सर्वर कॉन्फ़िगरेशन"
+    },
+    "serverInfo": {
+      "summary": "संस्करण, रनटाइम, और सेवा URL"
+    },
+    "profile": {
+      "summary": "आपका खाता"
+    },
+    "adminUsage": {
+      "summary": "टेनेंट के अनुसार प्लेटफ़ॉर्म लागत, मूल्य निर्धारण के फ़ैसलों का आधार"
+    },
+    "oneTimeRequests": {
+      "summary": "एक बार की रिपोर्ट, पॉडकास्ट, और ईमेल सारांश"
+    },
+    "listen": {
+      "summary": "आपकी ब्रीफ़िंग के ऑडियो एपिसोड, चलाने के लिए तैयार"
+    },
+    "promoCodes": {
+      "summary": "ऐसे कोड जो कुछ दिनों के लिए एक प्लान देते हैं, सीमाओं और उपयोग के साथ"
+    },
+    "plans": {
+      "summary": "प्लान, उनके अधिकार मान, और किसके पास कौन-सा प्लान है"
+    },
+    "insightsOverview": {
+      "summary": "शोध, डिलीवरी, सीखने और लागत की मुख्य संख्याएँ"
+    },
+    "emailInsights": {
+      "summary": "ईमेल डिलीवरी, समय, और पाठक हर संदेश के लिंक का कैसे उपयोग करते हैं"
+    },
+    "mcp": {
+      "summary": "Claude Code या किसी अन्य MCP क्लाइंट को अपने शोध से जोड़ें"
+    }
+  },
+  "placeholder": {
+    "title": "चरण {phase} में आएगा",
+    "message": "{feature} चरण {phase} के लिए नियोजित है। नेविगेशन पहले से मौजूद है ताकि आप देख सकें कि यह कहाँ होगा।"
+  },
+  "topbar": {
+    "copyServerUrl": "सर्वर URL कॉपी करें",
+    "health": "सर्वर स्वास्थ्य: {state}",
+    "logout": "साइन आउट करें",
+    "repository": "GitHub पर स्रोत कोड",
+    "tenant": "टेनेंट",
+    "tenantTitle": "टेनेंट ID: {tenant}"
+  },
+  "health": {
+    "autoRefresh": "स्वतः रीफ़्रेश",
+    "checkedAt": "{time} पर जाँचा गया",
+    "components": "घटक",
+    "off": "बंद",
+    "overall": "समग्र",
+    "uptime": "अपटाइम",
+    "version": "संस्करण",
+    "states": {
+      "healthy": "स्वस्थ",
+      "degraded": "प्रभावित",
+      "unreachable": "पहुँच से बाहर",
+      "unknown": "जाँच हो रही है"
+    },
+    "status": {
+      "Healthy": "स्वस्थ",
+      "Degraded": "प्रभावित",
+      "Unhealthy": "अस्वस्थ",
+      "Enabled": "सक्षम",
+      "Disabled": "अक्षम"
+    },
+    "componentNames": {
+      "database": "डेटाबेस",
+      "requestHistory": "अनुरोध इतिहास"
+    }
+  },
+  "login": {
+    "copyright": "© 2026 Lattice AI LLC",
+    "defaults": "पहली बार? टेनेंट {tenant} में {email} और पासवर्ड {password} से साइन इन करें, फिर पासवर्ड बदलें।",
+    "email": "ईमेल",
+    "password": "पासवर्ड",
+    "serverUrl": "सर्वर URL",
+    "serverUrlHelp": "My Morning News सर्वर का पता।",
+    "sessionExpired": "आपका सत्र समाप्त हो गया। जारी रखने के लिए फिर से साइन इन करें।",
+    "signIn": "साइन इन करें",
+    "signingIn": "साइन इन हो रहा है...",
+    "subtitle": "अपने वर्कस्पेस में साइन इन करें",
+    "tagline": "जिन विषयों की आपको परवाह है उन पर शोध करें, और हर सुबह ऐसी ब्रीफ़िंग पाएँ जो रोज़ बेहतर होती जाए।",
+    "tenant": "टेनेंट",
+    "tenantHelp": "टेनेंट ID। नए इंस्टॉल पर default का उपयोग करें।",
+    "title": "फिर से स्वागत है"
+  },
+  "home": {
+    "summary": "आपके सर्वर पर यह चल रहा है।",
+    "title": "सुप्रभात, {name}",
+    "failures": {
+      "none": "हाल में कोई विफलता नहीं",
+      "noneMessage": "इस अवधि के सभी अनुरोध सफल रहे।",
+      "title": "हाल की विफलताएँ"
+    },
+    "kpi": {
+      "average": "औसत अवधि",
+      "failureRate": "विफलता दर",
+      "failures": "{count} विफल",
+      "health": "स्वास्थ्य",
+      "latency": "विलंबता",
+      "requests": "अनुरोध",
+      "tenants": "टेनेंट",
+      "topics": "विषय",
+      "uptime": "{value} से चालू",
+      "users": "उपयोगकर्ता",
+      "recurring": "आवर्ती विषय"
+    },
+    "next": {
+      "explorer": "एक्सप्लोरर में API आज़माएँ",
+      "models": "मॉडल एंडपॉइंट जोड़ें (चरण 3)",
+      "password": "डिफ़ॉल्ट पासवर्ड बदलें",
+      "title": "अगले कदम",
+      "topic": "अपना पहला विषय बनाएँ",
+      "topics": "अपने विषयों की समीक्षा करें"
+    },
+    "services": {
+      "credentials": "क्रेडेंशियल",
+      "none": "कोई बाहरी सेवा कॉन्फ़िगर नहीं है।",
+      "summary": "सर्वर के साथ चलने वाले टूल",
+      "title": "बाहरी सेवाएँ"
+    },
+    "request": {
+      "title": "नया अनुरोध",
+      "summary": "एक बार की रिपोर्ट, पॉडकास्ट, या ईमेल सारांश माँगें।"
+    },
+    "overview": {
+      "title": "{count, plural, one {पिछला # दिन} other {पिछले # दिन}}",
+      "more": "इनसाइट्स खोलें"
+    }
+  },
+  "requests": {
+    "anonymous": "अनाम",
+    "bulk": {
+      "allFilters": "सभी अनुरोध",
+      "button": "मेल खाने वाले हटाएँ",
+      "confirm": "हटाएँ",
+      "done": "{count} अनुरोध हटाए गए",
+      "message": "{filters} से मेल खाने वाले {count} अनुरोध हटाएँ? इसे पूर्ववत नहीं किया जा सकता।",
+      "title": "मेल खाने वाले अनुरोध हटाएँ"
+    },
+    "columns": {
+      "completed": "पूरा हुआ",
+      "duration": "अवधि",
+      "id": "ID",
+      "method": "मेथड",
+      "path": "पाथ",
+      "principal": "प्रिंसिपल",
+      "route": "रूट",
+      "sourceIp": "स्रोत IP",
+      "status": "स्थिति",
+      "tenant": "टेनेंट",
+      "time": "समय",
+      "url": "URL"
+    },
+    "delete": {
+      "done": "अनुरोध हटाया गया",
+      "message": "{method} {path} का रिकॉर्ड हटाएँ?",
+      "title": "अनुरोध हटाएँ"
+    },
+    "details": {
+      "metadata": "मेटाडेटा",
+      "noBody": "कोई बॉडी कैप्चर नहीं हुई।",
+      "noHeaders": "कोई हेडर कैप्चर नहीं हुआ।",
+      "raw": "रॉ रिकॉर्ड",
+      "requestBody": "अनुरोध बॉडी",
+      "requestHeaders": "अनुरोध हेडर",
+      "responseBody": "प्रतिक्रिया बॉडी",
+      "responseHeaders": "प्रतिक्रिया हेडर",
+      "title": "अनुरोध विवरण",
+      "truncated": "{size} पर काटा गया"
+    },
+    "empty": {
+      "filtered": "इन फ़िल्टर से कोई अनुरोध मेल नहीं खाता।",
+      "message": "क्लाइंट जब API को कॉल करते हैं तो अनुरोध यहाँ दिखते हैं।",
+      "title": "अभी कोई अनुरोध नहीं"
+    },
+    "filters": {
+      "from": "से",
+      "method": "मेथड",
+      "path": "पाथ",
+      "pathPlaceholder": "/v1.0/...",
+      "status": "स्थिति",
+      "statusPlaceholder": "200",
+      "tenant": "टेनेंट",
+      "tenantPlaceholder": "टेनेंट ID",
+      "to": "तक"
+    },
+    "kpi": {
+      "avgDuration": "औसत अवधि",
+      "failures": "विफलताएँ",
+      "matchingFilters": "फ़िल्टर से मेल खाते",
+      "onThisPage": "इस पेज पर",
+      "retained": "संग्रहीत",
+      "successRate": "सफलता दर",
+      "uniquePaths": "अद्वितीय पाथ"
+    }
+  },
+  "explorer": {
+    "authInherited": "अनुरोध आपके मौजूदा सत्र टोकन का उपयोग करते हैं।",
+    "body": "अनुरोध बॉडी",
+    "cancel": "रद्द करें",
+    "confirmMessage": "{method} {url} भेजें? यह ऑपरेशन डेटा बदल या हटा सकता है।",
+    "confirmTitle": "अनुरोध भेजें",
+    "copyResponse": "प्रतिक्रिया कॉपी करें",
+    "duration": "अवधि",
+    "emptyBody": "प्रतिक्रिया में कोई बॉडी नहीं है।",
+    "execute": "भेजें",
+    "format": "फ़ॉर्मैट करें",
+    "headers": "हेडर",
+    "history": "{count, plural, one {हाल का अनुरोध (#)} other {हाल के अनुरोध (#)}}",
+    "invalidJson": "अमान्य JSON: {message}",
+    "name": "नाम",
+    "noOperations": "कोई ऑपरेशन मेल नहीं खाता।",
+    "noResponse": "अभी कोई प्रतिक्रिया नहीं",
+    "noResponseMessage": "प्रतिक्रिया यहाँ देखने के लिए अनुरोध भेजें।",
+    "pathParams": "पाथ पैरामीटर",
+    "pickOperation": "कोई ऑपरेशन चुनें",
+    "pickOperationMessage": "अनुरोध बनाने के लिए सूची से एक ऑपरेशन चुनें।",
+    "queryParams": "क्वेरी पैरामीटर",
+    "running": "भेजा जा रहा है...",
+    "search": "ऑपरेशन खोजें",
+    "searchPlaceholder": "पाथ या नाम से फ़िल्टर करें",
+    "specMissing": "OpenAPI दस्तावेज़ लोड नहीं हो सका।",
+    "status": "स्थिति",
+    "streaming": "स्ट्रीम हो रहा है...",
+    "url": "URL",
+    "validJson": "मान्य JSON",
+    "value": "मान",
+    "tabs": {
+      "preview": "पूर्वावलोकन",
+      "body": "बॉडी",
+      "headers": "हेडर",
+      "status": "स्थिति",
+      "code": "कोड"
+    },
+    "snippets": {
+      "curl": "curl",
+      "fetch": "JavaScript",
+      "csharp": "C#"
+    }
+  },
+  "settings": {
+    "discard": "बदलाव छोड़ें",
+    "environment": "एनवायरनमेंट वेरिएबल",
+    "live": "तुरंत लागू होता है",
+    "noChanges": "सहेजने के लिए कोई बदलाव नहीं",
+    "notSet": "सेट नहीं",
+    "overridden": "{variable} द्वारा ओवरराइड किया गया",
+    "pendingRestart": "लागू करने के लिए सर्वर रीस्टार्ट करें: {fields}",
+    "raw": "रॉ सेटिंग्स",
+    "restart": "सर्वर रीस्टार्ट करें",
+    "restartConfirm": "रीस्टार्ट करें",
+    "restartHelp": "सर्वर रुकता है और फिर से शुरू होता है। चल रहे अनुरोध विफल हो सकते हैं।",
+    "restartRequired": "रीस्टार्ट आवश्यक",
+    "restartTitle": "सर्वर रीस्टार्ट करें",
+    "restarted": "रीस्टार्ट का अनुरोध किया गया",
+    "restarting": "रीस्टार्ट हो रहा है...",
+    "saved": "सहेजा गया। {live} तुरंत लागू, {restart} रीस्टार्ट की प्रतीक्षा में।",
+    "secretNotSet": "कोई मान संग्रहीत नहीं है",
+    "secretSet": "एक मान संग्रहीत है। उसे बदलने के लिए नया मान दर्ज करें।",
+    "set": "सेट",
+    "viewRaw": "रॉ देखें",
+    "groups": {
+      "rest": "वेब सर्वर",
+      "database": "डेटाबेस",
+      "logging": "लॉगिंग",
+      "auth": "प्रमाणीकरण",
+      "requestHistory": "अनुरोध इतिहास",
+      "telemetry": "टेलीमेट्री",
+      "pipeline": "शोध पाइपलाइन",
+      "diagnostics": "डायग्नोस्टिक्स",
+      "models": "मॉडल",
+      "push": "पुश सूचनाएँ",
+      "storage": "स्टोरेज",
+      "scheduler": "शेड्यूलर",
+      "search": "खोज",
+      "tts": "टेक्स्ट से वाणी",
+      "email": "ईमेल",
+      "learning": "सीखना",
+      "hosting": "होस्टिंग"
+    },
+    "fields": {
+      "rest_hostname": "होस्टनाम",
+      "rest_port": "पोर्ट",
+      "rest_ssl": "TLS का उपयोग करें",
+      "rest_corsAllowedOrigins": "CORS अनुमत ओरिजिन",
+      "database_type": "डेटाबेस प्रकार",
+      "database_server": "सर्वर",
+      "database_port": "पोर्ट",
+      "database_databaseName": "डेटाबेस नाम",
+      "database_username": "उपयोगकर्ता नाम",
+      "database_password": "पासवर्ड",
+      "database_maxPoolSize": "अधिकतम पूल आकार",
+      "database_commandTimeoutSeconds": "कमांड टाइमआउट (सेकंड)",
+      "logging_consoleLogging": "कंसोल पर लॉग करें",
+      "logging_fileLogging": "फ़ाइल में लॉग करें",
+      "logging_logDirectory": "लॉग डायरेक्टरी",
+      "logging_logFilename": "लॉग फ़ाइल नाम",
+      "logging_minimumSeverity": "न्यूनतम गंभीरता",
+      "auth_signingKey": "टोकन साइनिंग कुंजी",
+      "auth_sessionLifetimeMinutes": "सत्र अवधि (मिनट)",
+      "auth_adminApiKey": "व्यवस्थापक API कुंजी",
+      "auth_loginRateLimitPerMinute": "प्रति मिनट लॉगिन प्रयास",
+      "auth_allowRefresh": "सत्र रीफ़्रेश की अनुमति दें",
+      "requestHistory_enabled": "अनुरोध रिकॉर्ड करें",
+      "requestHistory_maxRequestBodyBytes": "अधिकतम अनुरोध बॉडी (बाइट)",
+      "requestHistory_maxResponseBodyBytes": "अधिकतम प्रतिक्रिया बॉडी (बाइट)",
+      "requestHistory_retentionDays": "प्रतिधारण (दिन)",
+      "telemetry_enabled": "टेलीमेट्री सक्षम करें",
+      "telemetry_serviceName": "सेवा नाम",
+      "telemetry_otlpEndpoint": "OTLP एंडपॉइंट",
+      "telemetry_lokiEndpoint": "Loki एंडपॉइंट",
+      "telemetry_prometheusEnabled": "Prometheus मेट्रिक्स उपलब्ध कराएँ",
+      "telemetry_prometheusHostname": "Prometheus होस्टनाम",
+      "telemetry_prometheusPort": "Prometheus पोर्ट",
+      "telemetry_grafanaUrl": "Grafana URL",
+      "telemetry_prometheusUrl": "Prometheus URL",
+      "telemetry_tempoUrl": "Tempo URL",
+      "telemetry_lokiUrl": "Loki URL",
+      "pipeline_maxConcurrentRuns": "अधिकतम समवर्ती रन",
+      "pipeline_maxConcurrentModelCalls": "अधिकतम समवर्ती मॉडल कॉल",
+      "pipeline_modelCallAttempts": "मॉडल कॉल प्रयास",
+      "pipeline_structuredOutputRepairs": "संरचित आउटपुट सुधार",
+      "pipeline_runTimeoutMinutes": "रन टाइमआउट (मिनट)",
+      "diagnostics_captureLlmPayloads": "मॉडल पेलोड कैप्चर करें",
+      "diagnostics_llmPayloadRetentionDays": "पेलोड प्रतिधारण (दिन)",
+      "diagnostics_maxPayloadCharacters": "अधिकतम पेलोड वर्ण",
+      "models_defaultChatModel": "डिफ़ॉल्ट चैट मॉडल",
+      "models_defaultOllamaEndpoint": "डिफ़ॉल्ट Ollama एंडपॉइंट",
+      "models_defaultEmbeddingModel": "डिफ़ॉल्ट एम्बेडिंग मॉडल"
+    }
+  },
+  "serverInfo": {
+    "apiBase": "API बेस URL",
+    "database": "डेटाबेस",
+    "expires": "समाप्ति",
+    "health": "स्वास्थ्य एंडपॉइंट",
+    "openapi": "OpenAPI दस्तावेज़",
+    "os": "ऑपरेटिंग सिस्टम",
+    "pendingRestart": "सेटिंग्स रीस्टार्ट की प्रतीक्षा में हैं।",
+    "principal": "इस रूप में साइन इन",
+    "principalType": "प्रिंसिपल प्रकार",
+    "product": "उत्पाद",
+    "repository": "रिपॉज़िटरी",
+    "runtime": "रनटाइम",
+    "schemaVersion": "स्कीमा संस्करण {version}",
+    "server": "सर्वर",
+    "session": "सत्र",
+    "started": "शुरू हुआ",
+    "swagger": "Swagger UI",
+    "uptime": "अपटाइम",
+    "urls": "उपयोगी URL",
+    "vector": "वेक्टर खोज",
+    "version": "संस्करण"
+  },
+  "audit": {
+    "recordTitle": "ऑडिट रिकॉर्ड",
+    "columns": {
+      "event": "घटना",
+      "path": "पाथ",
+      "permission": "अनुमति",
+      "principal": "प्रिंसिपल",
+      "reason": "कारण",
+      "result": "परिणाम",
+      "sourceIp": "स्रोत IP",
+      "tenant": "टेनेंट",
+      "time": "समय"
+    },
+    "empty": {
+      "message": "साइन इन, अनुमति जाँच, और बदलाव यहाँ रिकॉर्ड होते हैं।",
+      "title": "कोई ऑडिट घटना नहीं"
+    },
+    "events": {
+      "AuthSuccess": "साइन इन सफल",
+      "AuthFailure": "साइन इन विफल",
+      "SessionIssued": "सत्र जारी किया गया",
+      "SessionRefreshed": "सत्र रीफ़्रेश किया गया",
+      "SessionRevoked": "सत्र रद्द किया गया",
+      "CredentialCreated": "क्रेडेंशियल बनाया गया",
+      "CredentialUsed": "क्रेडेंशियल उपयोग किया गया",
+      "CredentialRevoked": "क्रेडेंशियल रद्द किया गया",
+      "AuthorizationDenied": "पहुँच अस्वीकृत",
+      "AuthorizationBypass": "व्यवस्थापक बायपास",
+      "RoleChanged": "भूमिका बदली गई",
+      "PermissionChanged": "अनुमति बदली गई",
+      "AssignmentChanged": "असाइनमेंट बदला गया",
+      "UserChanged": "उपयोगकर्ता बदला गया",
+      "TenantChanged": "टेनेंट बदला गया",
+      "SettingsChanged": "सेटिंग्स बदली गईं",
+      "RestartRequested": "रीस्टार्ट का अनुरोध किया गया",
+      "CredentialRevealed": "क्रेडेंशियल प्रकट किया गया",
+      "VaultCredentialChanged": "संग्रहीत सीक्रेट बदला गया"
+    },
+    "authz": {
+      "Permitted": "अनुमत",
+      "DeniedExplicit": "नियम द्वारा अस्वीकृत",
+      "DeniedImplicit": "अस्वीकृत (कोई अनुदान नहीं)",
+      "NotFound": "नहीं मिला",
+      "Conflict": "टकराव"
+    }
+  },
+  "tenants": {
+    "create": "टेनेंट बनाएँ",
+    "deleteMessage": "टेनेंट {name} और उसमें मौजूद सब कुछ हटाएँ? इसे पूर्ववत नहीं किया जा सकता।",
+    "deleteTitle": "टेनेंट हटाएँ",
+    "description": "विवरण",
+    "edit": "टेनेंट संपादित करें",
+    "empty": "कोई टेनेंट नहीं",
+    "region": "क्षेत्र",
+    "timeZoneHelp": "IANA समय क्षेत्र, जैसे America/New_York।",
+    "columns": {
+      "created": "बनाया गया",
+      "id": "ID",
+      "name": "नाम",
+      "protected": "सुरक्षित",
+      "status": "स्थिति",
+      "timeZone": "समय क्षेत्र"
+    }
+  },
+  "users": {
+    "create": "उपयोगकर्ता बनाएँ",
+    "deleteMessage": "उपयोगकर्ता {email} को हटाएँ? उनके सत्र और क्रेडेंशियल काम करना बंद कर देंगे।",
+    "deleteTitle": "उपयोगकर्ता हटाएँ",
+    "edit": "उपयोगकर्ता संपादित करें",
+    "effectivePermissions": "प्रभावी अनुमतियाँ",
+    "empty": "कोई उपयोगकर्ता नहीं",
+    "firstName": "पहला नाम",
+    "lastName": "उपनाम",
+    "locale": "लोकेल",
+    "password": "पासवर्ड",
+    "passwordHelp": "कम से कम 8 वर्ण।",
+    "resetHelp": "मौजूदा पासवर्ड रखने के लिए खाली छोड़ें।",
+    "resetPassword": "पासवर्ड रीसेट करें",
+    "timeZone": "समय क्षेत्र",
+    "columns": {
+      "created": "बनाया गया",
+      "email": "ईमेल",
+      "id": "ID",
+      "lastLogin": "अंतिम साइन इन",
+      "name": "नाम",
+      "role": "भूमिका",
+      "status": "स्थिति",
+      "tenantAdmin": "टेनेंट व्यवस्थापक"
+    },
+    "permissions": {
+      "allowed": "अनुमत",
+      "bypass": "व्यवस्थापक अनुमति जाँच को बायपास करते हैं। {reason}",
+      "denied": "अस्वीकृत",
+      "grants": "{count, plural, one {# अनुदान पर आधारित} other {# अनुदानों पर आधारित}}",
+      "resource": "संसाधन",
+      "title": "प्रभावी अनुमतियाँ"
+    }
+  },
+  "credentials": {
+    "allScopes": "सभी",
+    "copyAccessKey": "एक्सेस कुंजी कॉपी करें",
+    "copySecret": "सीक्रेट कुंजी कॉपी करें",
+    "create": "क्रेडेंशियल बनाएँ",
+    "createdTitle": "क्रेडेंशियल बनाया गया",
+    "deleteMessage": "क्रेडेंशियल {name} हटाएँ? इसका उपयोग करने वाली हर चीज़ काम करना बंद कर देगी।",
+    "deleteTitle": "क्रेडेंशियल हटाएँ",
+    "edit": "क्रेडेंशियल संपादित करें",
+    "empty": "कोई क्रेडेंशियल नहीं",
+    "emptyMessage": "स्क्रिप्ट और इंटीग्रेशन से API कॉल करने के लिए एक क्रेडेंशियल बनाएँ।",
+    "ownerHelp": "क्रेडेंशियल इस उपयोगकर्ता की अनुमतियों के साथ काम करता है।",
+    "ownerSelf": "मैं",
+    "scopesHelp": "मालिक जो कुछ कर सकता है उसकी अनुमति देने के लिए सभी को अनचेक छोड़ें।",
+    "secretKey": "सीक्रेट कुंजी",
+    "secretOnce": "सीक्रेट कुंजी अभी कॉपी करें। यह केवल एक बार दिखाई जाती है और बाद में प्राप्त नहीं की जा सकती।",
+    "stored": "मैंने सीक्रेट सहेज लिया है",
+    "tenantHeader": "टेनेंट ID",
+    "columns": {
+      "accessKey": "एक्सेस कुंजी",
+      "created": "बनाया गया",
+      "expires": "समाप्ति",
+      "lastUsed": "अंतिम उपयोग",
+      "name": "नाम",
+      "owner": "मालिक",
+      "scopes": "स्कोप",
+      "secret": "सीक्रेट",
+      "status": "स्थिति",
+      "authMode": "प्रमाणीकरण मोड"
+    },
+    "scopes": {
+      "read": "पढ़ना",
+      "write": "लिखना",
+      "admin": "व्यवस्थापक"
+    },
+    "authModes": {
+      "DirectHeader": "सीधा हेडर",
+      "SignedRequest": "हस्ताक्षरित अनुरोध",
+      "SessionExchange": "सत्र विनिमय",
+      "Hybrid": "हाइब्रिड"
+    },
+    "authModeHelp": {
+      "DirectHeader": "डिफ़ॉल्ट। एक्सेस कुंजी और सीक्रेट को हेडर के रूप में, हस्ताक्षरित अनुरोध, और सत्र विनिमय स्वीकार करता है।",
+      "SignedRequest": "केवल HMAC-हस्ताक्षरित अनुरोध स्वीकार करता है, ताकि सीक्रेट कभी भेजा न जाए। सीक्रेट वाले हेडर और सत्र विनिमय अस्वीकार किए जाते हैं।",
+      "SessionExchange": "सत्र टोकन पाने के लिए केवल POST /v1.0/token के माध्यम से काम करता है। प्रति-अनुरोध सीक्रेट और हस्ताक्षर अस्वीकार किए जाते हैं।",
+      "Hybrid": "सब कुछ स्वीकार करता है, सीधा हेडर की तरह।"
+    }
+  },
+  "rbac": {
+    "tabs": {
+      "roles": "भूमिकाएँ",
+      "permissions": "अनुमतियाँ",
+      "assignments": "असाइनमेंट"
+    },
+    "builtIn": {
+      "TenantAdmin": "टेनेंट व्यवस्थापक",
+      "SecurityAdmin": "सुरक्षा व्यवस्थापक",
+      "Auditor": "ऑडिटर",
+      "TopicAdmin": "विषय व्यवस्थापक",
+      "Editor": "संपादक",
+      "Viewer": "दर्शक",
+      "TenantMember": "टेनेंट सदस्य",
+      "Custom": "कस्टम"
+    },
+    "scopes": {
+      "Tenant": "पूरा टेनेंट",
+      "Resource": "एक संसाधन"
+    },
+    "permissionTypes": {
+      "Permit": "अनुमति दें",
+      "Deny": "अस्वीकार करें"
+    },
+    "roles": {
+      "builtIn": "अंतर्निहित",
+      "clone": "क्लोन करें",
+      "create": "भूमिका बनाएँ",
+      "custom": "कस्टम",
+      "deleteMessage": "भूमिका {name} हटाएँ? इससे जुड़े उपयोगकर्ता इसकी अनुमतियाँ खो देंगे।",
+      "deleteTitle": "भूमिका हटाएँ",
+      "description": "विवरण",
+      "edit": "भूमिका संपादित करें",
+      "kind": "प्रकार",
+      "name": "नाम",
+      "noPermissions": "इस भूमिका की कोई अनुमति नहीं है।",
+      "noTenantPermissions": "इस टेनेंट की अभी कोई कस्टम अनुमति नहीं है। उन्हें अनुमतियाँ टैब पर बनाएँ।",
+      "permissions": "अनुमतियाँ",
+      "scope": "स्कोप"
+    },
+    "permissions": {
+      "create": "अनुमति बनाएँ",
+      "deleteMessage": "अनुमति {name} हटाएँ? जिन भूमिकाओं में यह है, वे इसे खो देंगी।",
+      "deleteTitle": "अनुमति हटाएँ",
+      "edit": "अनुमति संपादित करें",
+      "name": "नाम",
+      "operations": "ऑपरेशन",
+      "resources": "संसाधन",
+      "type": "प्रकार"
+    },
+    "assignments": {
+      "assign": "असाइन करें",
+      "empty": "कोई असाइनमेंट नहीं",
+      "emptyMessage": "इस उपयोगकर्ता को अनुमतियाँ देने के लिए एक भूमिका असाइन करें।",
+      "pickRole": "एक भूमिका चुनें",
+      "remove": "हटाएँ",
+      "removeMessage": "इस उपयोगकर्ता से {role} भूमिका हटाएँ?",
+      "removeTitle": "असाइनमेंट हटाएँ",
+      "resource": "संसाधन ID",
+      "resourcePlaceholder": "संसाधन ID",
+      "role": "भूमिका",
+      "user": "उपयोगकर्ता"
+    },
+    "operations": {
+      "All": "सभी",
+      "Create": "बनाना",
+      "Read": "पढ़ना",
+      "Write": "लिखना",
+      "Update": "अपडेट करना",
+      "Delete": "हटाना",
+      "Execute": "चलाना",
+      "Admin": "व्यवस्थापक"
+    },
+    "resources": {
+      "All": "सभी",
+      "Tenant": "टेनेंट",
+      "Admin": "व्यवस्थापक",
+      "User": "उपयोगकर्ता",
+      "Credential": "क्रेडेंशियल",
+      "Session": "सत्र",
+      "Role": "भूमिका",
+      "Permission": "अनुमति",
+      "Assignment": "असाइनमेंट",
+      "Audit": "ऑडिट",
+      "RequestHistory": "अनुरोध इतिहास",
+      "Settings": "सेटिंग्स",
+      "Topic": "विषय",
+      "Schedule": "शेड्यूल",
+      "RefinementSession": "परिष्करण सत्र",
+      "Run": "रन",
+      "Finding": "निष्कर्ष",
+      "Source": "स्रोत",
+      "Evidence": "साक्ष्य",
+      "Prediction": "पूर्वानुमान",
+      "Suggestion": "सुझाव",
+      "Feedback": "फ़ीडबैक",
+      "LearnedPreference": "सीखी गई प्राथमिकता",
+      "Briefing": "ब्रीफ़िंग",
+      "Edition": "संस्करण",
+      "Template": "टेम्पलेट",
+      "Prompt": "प्रॉम्प्ट",
+      "ModelEndpoint": "मॉडल एंडपॉइंट",
+      "SearchProvider": "खोज प्रदाता",
+      "Voice": "आवाज़",
+      "Media": "मीडिया",
+      "EmailMessage": "ईमेल संदेश",
+      "Analytics": "एनालिटिक्स"
+    }
+  },
+  "profile": {
+    "changePassword": "पासवर्ड बदलें",
+    "confirmPassword": "नए पासवर्ड की पुष्टि करें",
+    "currentPassword": "मौजूदा पासवर्ड",
+    "details": "विवरण",
+    "emailHelp": "अपना ईमेल बदलने के लिए किसी व्यवस्थापक से कहें।",
+    "mismatch": "पासवर्ड मेल नहीं खाते।",
+    "newPassword": "नया पासवर्ड",
+    "password": "पासवर्ड",
+    "passwordChanged": "पासवर्ड बदल गया",
+    "saved": "प्रोफ़ाइल सहेजी गई",
+    "timeZoneHelp": "अपने ब्राउज़र का समय क्षेत्र ({zone}) उपयोग करने के लिए खाली छोड़ें।"
+  },
+  "enums": {
+    "task": {
+      "Refinement": "परिष्करण",
+      "QueryPlanning": "क्वेरी योजना",
+      "Extraction": "निष्कर्षण",
+      "Scoring": "स्कोरिंग",
+      "Synthesis": "संश्लेषण",
+      "Prediction": "पूर्वानुमान",
+      "Suggestion": "सुझाव",
+      "Composition": "रचना",
+      "PodcastScript": "पॉडकास्ट स्क्रिप्ट",
+      "FeedbackAnalysis": "फ़ीडबैक विश्लेषण",
+      "Embedding": "एम्बेडिंग"
+    },
+    "provider": {
+      "Anthropic": "Anthropic",
+      "OpenAi": "OpenAI",
+      "OpenAiCompatible": "OpenAI-संगत",
+      "Ollama": "Ollama",
+      "Gemini": "Gemini",
+      "XAi": "xAI",
+      "OllamaCloud": "Ollama Cloud"
+    },
+    "reasoningEffort": {
+      "None": "कोई नहीं",
+      "Minimal": "न्यूनतम",
+      "Low": "कम",
+      "Medium": "मध्यम",
+      "High": "उच्च",
+      "XHigh": "अतिरिक्त उच्च",
+      "Max": "अधिकतम"
+    },
+    "vaultKind": {
+      "ApiKey": "API कुंजी",
+      "BearerToken": "बेयरर टोकन",
+      "BasicAuth": "बेसिक प्रमाणीकरण",
+      "CustomHeader": "कस्टम हेडर",
+      "ConnectionString": "कनेक्शन स्ट्रिंग"
+    },
+    "vaultProvider": {
+      "Anthropic": "Anthropic",
+      "OpenAi": "OpenAI",
+      "Gemini": "Gemini",
+      "XAi": "xAI",
+      "OllamaCloud": "Ollama Cloud",
+      "OpenAiCompatible": "OpenAI-संगत",
+      "Tavily": "Tavily",
+      "YouCom": "You.com",
+      "Mailgun": "Mailgun",
+      "ElevenLabs": "ElevenLabs",
+      "Mcp": "MCP सर्वर",
+      "Custom": "कस्टम"
+    },
+    "intervalType": {
+      "EveryNMinutes": "हर N मिनट",
+      "EveryNHours": "हर N घंटे",
+      "EveryNDays": "हर N दिन",
+      "EveryNWeeks": "हर N सप्ताह",
+      "DaysOfWeek": "सप्ताह के दिनों पर",
+      "DaysOfMonth": "महीने के दिनों पर",
+      "Once": "एक बार",
+      "Cron": "Cron (उन्नत)",
+      "Manual": "केवल मैन्युअल"
+    },
+    "missedRunPolicy": {
+      "Skip": "छोड़ दें",
+      "RunOnceOnRecovery": "बहाली पर एक बार चलाएँ"
+    },
+    "questionKind": {
+      "SingleChoice": "एक चुनें",
+      "MultiChoice": "कोई भी चुनें",
+      "Scale": "1 से 5 का पैमाना",
+      "YesNo": "हाँ या नहीं",
+      "FreeText": "मुक्त पाठ"
+    },
+    "dimensionWeight": {
+      "High": "उच्च",
+      "Normal": "सामान्य",
+      "Low": "कम",
+      "Exclude": "बाहर रखें"
+    },
+    "constraintKind": {
+      "IncludeKeyword": "कीवर्ड शामिल करें",
+      "ExcludeKeyword": "कीवर्ड बाहर रखें",
+      "IncludeEntity": "हमेशा शामिल करें",
+      "ExcludeEntity": "हमेशा अनदेखा करें",
+      "PreferredDomain": "पसंदीदा डोमेन",
+      "BlockedDomain": "अवरुद्ध डोमेन",
+      "TrackedQuestion": "ट्रैक किए गए प्रश्न",
+      "FeedUrl": "फ़ीड",
+      "SeedUrl": "आरंभिक पेज"
+    },
+    "topicStatus": {
+      "Draft": "ड्राफ़्ट",
+      "Active": "सक्रिय",
+      "Paused": "रुका हुआ",
+      "Archived": "संग्रहीत"
+    },
+    "audienceLevel": {
+      "Beginner": "शुरुआती",
+      "Practitioner": "अभ्यासी",
+      "Expert": "विशेषज्ञ"
+    },
+    "horizon": {
+      "Days": "दिन",
+      "Weeks": "सप्ताह",
+      "Months": "महीने",
+      "Years": "वर्ष"
+    },
+    "runStatus": {
+      "Queued": "कतार में",
+      "Running": "चल रहा है",
+      "Completed": "पूरा हुआ",
+      "PartiallySucceeded": "आंशिक रूप से सफल",
+      "Failed": "विफल",
+      "Cancelled": "रद्द",
+      "Skipped": "छोड़ा गया"
+    },
+    "runTrigger": {
+      "Schedule": "शेड्यूल",
+      "Manual": "अभी चलाएँ",
+      "Request": "एक बार का अनुरोध",
+      "Edition": "संस्करण",
+      "Preview": "पूर्वावलोकन"
+    },
+    "requestStatus": {
+      "Clarifying": "आपकी प्रतीक्षा में",
+      "Scheduled": "शेड्यूल किया गया",
+      "Running": "चल रहा है",
+      "Completed": "पूरा हुआ",
+      "Failed": "विफल",
+      "Cancelled": "रद्द",
+      "Declined": "अस्वीकृत"
+    },
+    "deliverable": {
+      "Report": "रिपोर्ट",
+      "Podcast": "पॉडकास्ट",
+      "Email": "ईमेल"
+    },
+    "deliverableLength": {
+      "Short": "छोटा",
+      "Standard": "मानक",
+      "Long": "लंबा"
+    },
+    "findingTier": {
+      "MustRead": "ज़रूर पढ़ें",
+      "WorthALook": "देखने लायक",
+      "Fyi": "जानकारी के लिए",
+      "BelowThreshold": "सीमा से नीचे"
+    },
+    "findingCategory": {
+      "News": "समाचार",
+      "Release": "रिलीज़",
+      "Research": "शोध",
+      "Opinion": "राय",
+      "Tutorial": "ट्यूटोरियल",
+      "Data": "डेटा",
+      "Other": "अन्य"
+    },
+    "evidenceRole": {
+      "Supports": "समर्थन करता है",
+      "Contradicts": "खंडन करता है",
+      "Context": "संदर्भ"
+    },
+    "predictionStatus": {
+      "Open": "खुला",
+      "ProposedResolved": "समाधान प्रस्तावित",
+      "Accurate": "सटीक",
+      "PartiallyAccurate": "आंशिक रूप से सटीक",
+      "Inaccurate": "गलत",
+      "Unresolvable": "निर्धारित नहीं किया जा सकता",
+      "Withdrawn": "वापस लिया गया"
+    },
+    "suggestionStatus": {
+      "New": "नया",
+      "Accepted": "स्वीकृत",
+      "Snoozed": "स्थगित",
+      "Dismissed": "खारिज",
+      "Done": "पूरा"
+    },
+    "suggestionPriority": {
+      "High": "उच्च",
+      "Medium": "मध्यम",
+      "Low": "कम"
+    },
+    "suggestionEffort": {
+      "Minutes": "मिनट",
+      "Hours": "घंटे",
+      "Days": "दिन"
+    },
+    "stageStatus": {
+      "Pending": "लंबित",
+      "Running": "चल रहा है",
+      "Succeeded": "सफल",
+      "Failed": "विफल",
+      "Skipped": "छोड़ा गया"
+    },
+    "runStage": {
+      "AssembleContext": "संदर्भ जुटाना",
+      "PlanQueries": "क्वेरी की योजना",
+      "Search": "खोज",
+      "Filter": "फ़िल्टर",
+      "Fetch": "प्राप्त करना",
+      "Extract": "निष्कर्षण",
+      "Embed": "एम्बेड",
+      "Dedupe": "दोहराव हटाना",
+      "Score": "स्कोर",
+      "Synthesize": "संश्लेषण",
+      "ReviewPredictions": "पूर्वानुमानों की समीक्षा",
+      "Predict": "पूर्वानुमान",
+      "Suggest": "सुझाव",
+      "ComposeBriefing": "ब्रीफ़िंग तैयार करना",
+      "Notify": "सूचित करना"
+    },
+    "searchDisposition": {
+      "Pending": "लंबित",
+      "Fetched": "प्राप्त किया गया",
+      "SkippedSeen": "पहले देखा गया",
+      "SkippedBlocked": "अवरुद्ध डोमेन",
+      "SkippedRobots": "robots.txt द्वारा अवरुद्ध",
+      "SkippedLimit": "प्राप्ति सीमा से अधिक",
+      "SkippedDuplicate": "डुप्लिकेट",
+      "FetchFailed": "प्राप्ति विफल"
+    },
+    "briefingKind": {
+      "Edition": "संस्करण",
+      "Run": "रन ब्रीफ़िंग",
+      "OneTime": "एक बार की रिपोर्ट"
+    },
+    "briefingStatus": {
+      "Queued": "कतार में",
+      "Composing": "तैयार हो रही है",
+      "Ready": "तैयार",
+      "Failed": "विफल"
+    },
+    "briefingItemType": {
+      "Finding": "निष्कर्ष",
+      "Prediction": "पूर्वानुमान",
+      "Suggestion": "सुझाव"
+    },
+    "lookbackMode": {
+      "SinceLastEdition": "पिछले संस्करण के बाद से",
+      "FixedHours": "निश्चित अवधि"
+    },
+    "artifactKind": {
+      "BriefingMarkdown": "Markdown",
+      "BriefingHtml": "HTML रिपोर्ट",
+      "Audio": "ऑडियो",
+      "Chapters": "अध्याय",
+      "Export": "निर्यात"
+    },
+    "mediaStatus": {
+      "Queued": "कतार में",
+      "Scripting": "स्क्रिप्ट लिखी जा रही है",
+      "Synthesizing": "संश्लेषण हो रहा है",
+      "Ready": "तैयार",
+      "Failed": "विफल"
+    },
+    "mediaKind": {
+      "BriefingAudio": "ब्रीफ़िंग ऑडियो",
+      "PodcastEpisode": "पॉडकास्ट एपिसोड"
+    },
+    "ttsProvider": {
+      "OpenAiCompatibleSpeech": "OpenAI-संगत वाणी",
+      "Disabled": "अक्षम"
+    }
+  },
+  "vault": {
+    "adminOnly": "केवल व्यवस्थापक संग्रहीत क्रेडेंशियल बदल सकते हैं।",
+    "memberNotice": "आप देख सकते हैं कि कौन-से क्रेडेंशियल संग्रहीत हैं। उन्हें जोड़ने, बदलने, रोटेट करने और प्रकट करने के लिए टेनेंट व्यवस्थापक चाहिए।",
+    "columns": {
+      "name": "नाम",
+      "kind": "प्रकार",
+      "provider": "प्रदाता",
+      "secret": "सीक्रेट",
+      "lastUsed": "अंतिम उपयोग",
+      "lastRevealed": "अंतिम बार प्रकट",
+      "expires": "समाप्ति",
+      "status": "स्थिति",
+      "created": "बनाया गया",
+      "id": "ID"
+    },
+    "fields": {
+      "headerName": "हेडर नाम",
+      "headerNameHelp": "वह HTTP हेडर जिसमें सीक्रेट भेजा जाता है, जैसे X-Api-Key।",
+      "username": "उपयोगकर्ता नाम",
+      "secret": "सीक्रेट",
+      "secretHelp": "एन्क्रिप्ट करके संग्रहीत। सहेजने के बाद केवल अंतिम चार वर्ण दिखाए जाते हैं।",
+      "expiresHelp": "वैकल्पिक। रिमाइंडर के रूप में उपयोग होता है; सर्वर समाप्त सीक्रेट नहीं हटाता।",
+      "description": "विवरण"
+    },
+    "form": {
+      "createTitle": "क्रेडेंशियल संग्रहीत करें",
+      "editTitle": "क्रेडेंशियल संपादित करें",
+      "rotateHint": "सीक्रेट को ही बदलने के लिए सीक्रेट रोटेट करें का उपयोग करें।"
+    },
+    "empty": {
+      "title": "कोई संग्रहीत क्रेडेंशियल नहीं",
+      "message": "API कुंजियाँ और टोकन यहाँ एक बार संग्रहीत करें, फिर उन्हें मॉडल एंडपॉइंट, खोज प्रदाता, आवाज़ों और ईमेल सेटिंग्स में चुनें।"
+    },
+    "rotate": {
+      "action": "सीक्रेट रोटेट करें",
+      "title": "सीक्रेट रोटेट करें",
+      "message": "{name} के रूप में संग्रहीत सीक्रेट को बदलें। इस क्रेडेंशियल का उपयोग करने वाली हर चीज़ अपनी अगली कॉल पर नया मान ले लेगी।",
+      "newSecret": "नया सीक्रेट",
+      "confirm": "रोटेट करें",
+      "required": "नया सीक्रेट दर्ज करें।",
+      "done": "सीक्रेट रोटेट किया गया"
+    },
+    "reveal": {
+      "action": "प्रकट करें",
+      "actionAdminOnly": "प्रकट करें (केवल व्यवस्थापक)",
+      "confirmTitle": "सीक्रेट प्रकट करें",
+      "confirmMessage": "{name} का सादा पाठ दिखाएँ? यह {seconds} सेकंड के लिए दिखेगा और फिर छिप जाएगा।",
+      "audited": "प्रकट करने का ऑडिट होता है: किसने कौन-सा क्रेडेंशियल कहाँ से प्रकट किया, यह रिकॉर्ड होता है।",
+      "confirm": "प्रकट करें",
+      "shownTitle": "सीक्रेट प्रकट किया गया",
+      "hidesIn": "{count, plural, one {# सेकंड में छिप जाएगा} other {# सेकंड में छिप जाएगा}}",
+      "hideNow": "अभी छिपाएँ",
+      "copy": "सीक्रेट कॉपी करें"
+    },
+    "usage": {
+      "action": "कहाँ उपयोग हुआ",
+      "title": "यह क्रेडेंशियल कहाँ उपयोग होता है",
+      "none": "अभी कोई भी इस क्रेडेंशियल का उपयोग नहीं करता।",
+      "types": {
+        "ModelEndpoint": "मॉडल एंडपॉइंट"
+      }
+    },
+    "delete": {
+      "title": "क्रेडेंशियल हटाएँ",
+      "message": "{name} हटाएँ? इसका उपयोग करने वाली हर चीज़ तब तक काम नहीं करेगी जब तक उसे कोई दूसरा क्रेडेंशियल न दिया जाए।"
+    }
+  },
+  "models": {
+    "add": "मॉडल जोड़ें",
+    "adminOnly": "केवल व्यवस्थापक मॉडल एंडपॉइंट बदल सकते हैं।",
+    "memberNotice": "आप कॉन्फ़िगर किए गए मॉडल और असाइनमेंट देख सकते हैं। उन्हें बदलने या परखने के लिए टेनेंट व्यवस्थापक चाहिए।",
+    "created": "{name} जोड़ा गया",
+    "unknown": "जाँचा नहीं गया",
+    "tabs": {
+      "endpoints": "एंडपॉइंट",
+      "assignments": "असाइनमेंट",
+      "calls": "मॉडल कॉल"
+    },
+    "columns": {
+      "name": "नाम",
+      "provider": "प्रदाता",
+      "model": "मॉडल",
+      "embeddingModel": "एम्बेडिंग मॉडल",
+      "capabilities": "क्षमताएँ",
+      "price": "प्रति दस लाख टोकन मूल्य",
+      "priceValue": "{input} इनपुट, {output} आउटपुट",
+      "noPrice": "कोई मूल्य सेट नहीं",
+      "reasoningEffort": "रीज़निंग प्रयास",
+      "credential": "क्रेडेंशियल",
+      "lastValidated": "अंतिम सत्यापन",
+      "status": "स्थिति",
+      "id": "ID"
+    },
+    "capabilities": {
+      "chat": "चैट",
+      "tools": "टूल",
+      "noTools": "कोई टूल नहीं",
+      "embeddings": "एम्बेडिंग",
+      "embeddingsDims": "एम्बेडिंग ({dims})"
+    },
+    "actions": {
+      "test": "परखें",
+      "validate": "सत्यापित करें",
+      "listModels": "मॉडल सूची"
+    },
+    "empty": {
+      "title": "अपना पहला मॉडल जोड़ें",
+      "message": "Anthropic, OpenAI, या किसी लोकल Ollama सर्वर जैसे मॉडल प्रदाता को जोड़ें। शोध, रैंकिंग और ब्रीफ़िंग सभी इन्हीं एंडपॉइंट से चलते हैं।"
+    },
+    "delete": {
+      "title": "मॉडल एंडपॉइंट हटाएँ",
+      "message": "{name} हटाएँ? इसे असाइन की गई कार्य भूमिकाएँ तब तक पहले सक्रिय एंडपॉइंट पर चली जाएँगी जब तक आप उन्हें फिर से असाइन न करें।"
+    },
+    "form": {
+      "createTitle": "मॉडल एंडपॉइंट जोड़ें",
+      "editTitle": "मॉडल एंडपॉइंट संपादित करें",
+      "duplicateTitle": "मॉडल एंडपॉइंट की प्रतिलिपि बनाएँ",
+      "endpoint": "बेस URL",
+      "endpointRequired": "बेस URL (आवश्यक)",
+      "endpointHelp": {
+        "Anthropic": "Anthropic API के लिए खाली छोड़ें।",
+        "OpenAi": "OpenAI API के लिए खाली छोड़ें।",
+        "OpenAiCompatible": "आवश्यक। सर्वर Docker में चलता है, इसलिए इस मशीन पर चल रहे सर्वर के लिए host.docker.internal का उपयोग करें।",
+        "Ollama": "Ollama सर्वर। Docker कंटेनर से, इस मशीन पर चल रहे Ollama के लिए host.docker.internal का उपयोग करें।",
+        "Gemini": "Gemini API के लिए खाली छोड़ें।",
+        "XAi": "xAI API के लिए खाली छोड़ें।",
+        "OllamaCloud": "Ollama Cloud के लिए खाली छोड़ें।"
+      },
+      "apiKey": "API कुंजी",
+      "keyModes": {
+        "new": "कुंजी दर्ज करें",
+        "vault": "संग्रहीत क्रेडेंशियल का उपयोग करें",
+        "none": "कोई कुंजी नहीं"
+      },
+      "newKey": "नई API कुंजी",
+      "newKeyHelp": "क्रेडेंशियल वॉल्ट में (एन्क्रिप्ट करके) सहेजी जाती है और इस एंडपॉइंट से जोड़ी जाती है। मौजूदा कुंजी रखने के लिए खाली छोड़ें।",
+      "storedKey": "संग्रहीत क्रेडेंशियल",
+      "storedKeyHelp": "इसे संग्रहीत क्रेडेंशियल पेज पर रोटेट करें, और इसका उपयोग करने वाला हर एंडपॉइंट बदलाव ले लेगा।",
+      "pickCredential": "एक क्रेडेंशियल चुनें",
+      "noKeyWarning": "इस प्रदाता को आमतौर पर API कुंजी चाहिए। इसके बिना कॉल विफल होंगी।",
+      "capabilities": "उपलब्ध कराता है",
+      "toolsDetected": "सत्यापित करें चलाने पर टूल समर्थन और एम्बेडिंग आयाम पहचाने जाते हैं।",
+      "embeddingDimensions": "एम्बेडिंग आयाम",
+      "embeddingDimensionsHelp": "सत्यापित करें द्वारा पहचाना गया।",
+      "notDetected": "अभी पहचाना नहीं गया",
+      "maxTokens": "अधिकतम आउटपुट टोकन",
+      "maxTokensHelp": "बिना स्ट्रीमिंग वाली कॉल के लिए लगभग 16000 उपयुक्त है।",
+      "reasoningEffort": "रीज़निंग प्रयास",
+      "reasoningEffortHelp": "इस एंडपॉइंट का डिफ़ॉल्ट। कार्य भूमिका असाइनमेंट इसे ओवरराइड कर सकते हैं।",
+      "providerDefault": "प्रदाता डिफ़ॉल्ट",
+      "temperature": "टेम्परेचर",
+      "temperatureHelp": "वैकल्पिक सैंपलिंग टेम्परेचर।",
+      "temperatureAnthropic": "उपयोग नहीं होता: मौजूदा Anthropic मॉडल टेम्परेचर अस्वीकार करते हैं, इसलिए यह कभी नहीं भेजा जाता।",
+      "contextLength": "संदर्भ लंबाई",
+      "timeoutMs": "टाइमआउट (ms)",
+      "timeoutHelp": "प्रति कॉल, सभी पुनः प्रयासों सहित।",
+      "modelsLoaded": "{count, plural, one {# मॉडल उपलब्ध है; उसे सूची से चुनें।} other {# मॉडल उपलब्ध हैं; सूची से एक चुनें।}}",
+      "pricing": "मूल्य",
+      "pricingHelp": "प्रति दस लाख टोकन अमेरिकी डॉलर। लोकल मॉडल के लिए खाली छोड़ें। लागत हर कॉल के लॉग होते समय गिनी जाती है, इसलिए बाद के बदलाव इतिहास नहीं बदलते।",
+      "inputCost": "इनपुट",
+      "outputCost": "आउटपुट",
+      "cachedInputCost": "कैश्ड इनपुट",
+      "cachedInputCostHelp": "कैश रीड। न होने पर इनपुट मूल्य लागू होता है।",
+      "cacheWriteCost": "कैश राइट",
+      "cacheWriteCostHelp": "न होने पर इनपुट मूल्य लागू होता है।",
+      "errors": {
+        "name": "नाम आवश्यक है।",
+        "endpointRequired": "OpenAI-संगत एंडपॉइंट के लिए बेस URL चाहिए।",
+        "endpointUrl": "पूरा URL दर्ज करें, उदाहरण के लिए http://host.docker.internal:8000/v1.",
+        "model": "जब एंडपॉइंट चैट उपलब्ध कराता है तो चैट मॉडल आवश्यक है।",
+        "embeddingModel": "जब एंडपॉइंट एम्बेडिंग उपलब्ध कराता है तो एम्बेडिंग मॉडल आवश्यक है।",
+        "capability": "चैट, एम्बेडिंग, या दोनों चुनें।",
+        "credential": "एक संग्रहीत क्रेडेंशियल चुनें।",
+        "number": "शून्य या उससे अधिक संख्या दर्ज करें।"
+      }
+    },
+    "test": {
+      "title": "मॉडल परखें",
+      "prompt": "प्रॉम्प्ट",
+      "model": "मॉडल ओवरराइड",
+      "modelHelp": "वैकल्पिक। एंडपॉइंट मॉडल उपयोग करने के लिए खाली छोड़ें।",
+      "run": "भेजें",
+      "running": "मॉडल की प्रतीक्षा...",
+      "succeeded": "सफल",
+      "failed": "विफल",
+      "tokens": "{input} इनपुट, {output} आउटपुट",
+      "duration": "{value} लगे",
+      "tools": "टूल: {value}",
+      "output": "उत्तर"
+    },
+    "validate": {
+      "title": "एंडपॉइंट सत्यापित करें",
+      "running": "कनेक्टिविटी, टूल समर्थन, और एम्बेडिंग की जाँच हो रही है...",
+      "reachable": "पहुँच योग्य",
+      "modelFound": "मॉडल मिला",
+      "supportsTools": "टूल कॉल का समर्थन करता है",
+      "embeddingDimensions": "एम्बेडिंग आयाम",
+      "validatedUtc": "जाँचा गया"
+    },
+    "list": {
+      "title": "उपलब्ध मॉडल",
+      "filter": "मॉडल फ़िल्टर करें",
+      "none": "कोई मॉडल मेल नहीं खाता।",
+      "name": "मॉडल",
+      "inputLimit": "इनपुट सीमा",
+      "outputLimit": "आउटपुट सीमा",
+      "tools": "टूल",
+      "current": "उपयोग में",
+      "use": "उपयोग करें",
+      "used": "अब {model} का उपयोग हो रहा है"
+    },
+    "assignments": {
+      "intro": "हर पाइपलाइन कार्य उसकी भूमिका को असाइन किए गए एंडपॉइंट पर चलता है। विषय ओवरराइड टेनेंट डिफ़ॉल्ट पर, और टेनेंट डिफ़ॉल्ट पहले सक्रिय एंडपॉइंट पर प्राथमिकता पाता है।",
+      "role": "कार्य भूमिका",
+      "endpoint": "एंडपॉइंट",
+      "modelOverride": "मॉडल ओवरराइड",
+      "reasoningEffort": "रीज़निंग प्रयास",
+      "endpointFor": "{role} के लिए एंडपॉइंट",
+      "modelOverrideFor": "{role} के लिए मॉडल ओवरराइड",
+      "effortFor": "{role} के लिए रीज़निंग प्रयास",
+      "pickEndpoint": "एक एंडपॉइंट चुनें",
+      "endpointDefault": "एंडपॉइंट डिफ़ॉल्ट",
+      "notApplicable": "उपयोग नहीं होता",
+      "noTools": "टूल समर्थन नहीं",
+      "noToolsHelp": "यह मॉडल टूल कॉल नहीं कर सकता, इसलिए संरचित परिणाम JSON फ़ॉलबैक का उपयोग करते हैं, जिसे कुछ मॉडल ठीक से नहीं संभालते।",
+      "undo": "बदलाव पूर्ववत करें",
+      "saved": "{role} असाइनमेंट सहेजा गया",
+      "uses": {
+        "Refinement": "विज़ार्ड के आयाम, प्रश्न, और संदर्भ",
+        "QueryPlanning": "खोज क्वेरी बनाना",
+        "Extraction": "दस्तावेज़ों से निष्कर्ष और साक्ष्य",
+        "Scoring": "प्रासंगिकता का आकलन",
+        "Synthesis": "रन सारांश और रुझान",
+        "Prediction": "पूर्वानुमान और समीक्षाएँ",
+        "Suggestion": "गहराई से देखने के सुझाव",
+        "Composition": "ब्रीफ़िंग Markdown",
+        "PodcastScript": "ऑडियो स्क्रिप्ट",
+        "FeedbackAnalysis": "कारण टैगिंग और प्राथमिकताएँ",
+        "Embedding": "दोहराव हटाने और समानता के लिए वेक्टर"
+      },
+      "overridesTitle": "विषय ओवरराइड",
+      "overridesIntro": "कोई विषय किसी भूमिका को टेनेंट डिफ़ॉल्ट से अलग एंडपॉइंट पर चला सकता है।",
+      "noOverrides": "कोई विषय ओवरराइड नहीं।",
+      "topic": "विषय",
+      "topicId": "विषय ID",
+      "topicIdHelp": "उस विषय की ID जिसे ओवरराइड करना है।",
+      "addOverride": "विषय ओवरराइड जोड़ें",
+      "overrideAdded": "विषय ओवरराइड सहेजा गया",
+      "deleteTitle": "विषय ओवरराइड हटाएँ",
+      "deleteMessage": "विषय {topic} के लिए {role} ओवरराइड हटाएँ? विषय टेनेंट डिफ़ॉल्ट पर लौट जाएगा।"
+    },
+    "calls": {
+      "detailTitle": "मॉडल कॉल",
+      "succeeded": "सफल",
+      "failed": "विफल",
+      "dryRun": "ड्राई रन",
+      "system": "सिस्टम",
+      "tokensTitle": "{input} इनपुट, {output} आउटपुट",
+      "payloadCleared": "उपलब्ध नहीं। प्रतिधारण अवधि के बाद पेलोड हटा दिए जाते हैं।",
+      "openPrompt": "प्रॉम्प्ट {key} खोलें",
+      "columns": {
+        "time": "समय",
+        "task": "कार्य",
+        "model": "मॉडल",
+        "promptKey": "प्रॉम्प्ट",
+        "user": "उपयोगकर्ता",
+        "tokens": "टोकन",
+        "ttft": "पहला टोकन",
+        "duration": "अवधि",
+        "cost": "लागत",
+        "outcome": "परिणाम"
+      },
+      "filters": {
+        "task": "कार्य",
+        "endpoint": "एंडपॉइंट",
+        "outcome": "परिणाम",
+        "dryRun": "ड्राई रन",
+        "dryRunOnly": "केवल ड्राई रन",
+        "realOnly": "ड्राई रन छोड़कर",
+        "from": "से",
+        "to": "तक"
+      },
+      "empty": {
+        "title": "अभी कोई मॉडल कॉल नहीं",
+        "message": "हर मॉडल कॉल टोकन, समय और लागत के साथ यहाँ लॉग होती है। किसी एंडपॉइंट पर परखें आज़माएँ या प्रॉम्प्ट लैब चलाएँ।"
+      },
+      "sections": {
+        "attribution": "आरोपण",
+        "tokens": "टोकन",
+        "timing": "समय",
+        "outcome": "परिणाम और टूल",
+        "cost": "लागत",
+        "prompt": "प्रॉम्प्ट",
+        "response": "प्रतिक्रिया"
+      },
+      "fields": {
+        "provider": "प्रदाता",
+        "endpoint": "एंडपॉइंट",
+        "user": "उपयोगकर्ता",
+        "topic": "विषय",
+        "run": "रन",
+        "refinementSession": "परिष्करण सत्र",
+        "briefing": "ब्रीफ़िंग",
+        "promptKey": "प्रॉम्प्ट कुंजी",
+        "promptVersion": "प्रॉम्प्ट संस्करण",
+        "inputTokens": "इनपुट (सभी)",
+        "uncachedInputTokens": "बिना कैश इनपुट",
+        "cachedInputTokens": "कैश्ड इनपुट",
+        "cacheWriteTokens": "कैश राइट",
+        "outputTokens": "आउटपुट",
+        "reasoningTokens": "रीज़निंग",
+        "totalTokens": "कुल",
+        "duration": "अवधि",
+        "timeToFirstToken": "पहले टोकन तक समय",
+        "streamingDuration": "स्ट्रीमिंग अवधि",
+        "chunks": "खंड",
+        "tokensPerSecond": "प्रति सेकंड आउटपुट टोकन",
+        "streamed": "स्ट्रीम किया गया",
+        "attempts": "प्रयास",
+        "statusCode": "स्थिति कोड",
+        "finishReason": "समाप्ति का कारण",
+        "repairs": "संरचित आउटपुट सुधार",
+        "toolCalls": "टूल कॉल",
+        "toolNames": "कॉल किए गए टूल",
+        "dryRun": "ड्राई रन",
+        "inputCost": "इनपुट लागत",
+        "outputCost": "आउटपुट लागत",
+        "estimatedCost": "कुल लागत"
+      }
+    }
+  },
+  "prompts": {
+    "guardrailNotice": "सर्वर हर मॉडल कॉल के सिस्टम प्रॉम्प्ट से पहले हमेशा स्कोप गार्डरेल लगाता है। प्रॉम्प्ट संपादित करके इसे हटाया नहीं जा सकता।",
+    "searchPlaceholder": "कुंजी या नाम",
+    "filteredByKey": "कुंजी: {key}",
+    "empty": "कोई प्रॉम्प्ट नहीं",
+    "open": "एडिटर खोलें",
+    "back": "सभी प्रॉम्प्ट",
+    "versionLabel": "v{version}",
+    "current": "मौजूदा",
+    "customized": "अनुकूलित",
+    "default": "डिफ़ॉल्ट",
+    "noNote": "कोई बदलाव टिप्पणी नहीं",
+    "saved": "नया संस्करण सहेजा गया",
+    "columns": {
+      "key": "कुंजी",
+      "role": "भूमिका",
+      "scope": "स्कोप",
+      "version": "संस्करण",
+      "customized": "अनुकूलित",
+      "updated": "अपडेट किया गया"
+    },
+    "scope": {
+      "tenant": "टेनेंट",
+      "topic": "विषय ओवरराइड",
+      "tenantOnly": "केवल टेनेंट प्रॉम्प्ट"
+    },
+    "panels": {
+      "versions": "संस्करण",
+      "compare": "तुलना करें",
+      "lab": "प्रॉम्प्ट लैब"
+    },
+    "editor": {
+      "title": "टेम्पलेट",
+      "panels": "प्रॉम्प्ट टूल",
+      "unsaved": "बिना सहेजे बदलाव",
+      "format": "YAML फ़्रंट मैटर (key, name, role, output, variables) के साथ Markdown, फिर एक System अनुभाग और एक User अनुभाग। प्लेसहोल्डर फ़्रंट मैटर में घोषित वेरिएबल नामों का उपयोग करते हैं।",
+      "missingUser": "टेम्पलेट में User अनुभाग का शीर्षक नहीं है। ## User वाली एक पंक्ति जोड़ें।",
+      "missingSystem": "टेम्पलेट में System अनुभाग का शीर्षक नहीं है। गार्डरेल फिर भी सिस्टम प्रॉम्प्ट के रूप में भेजा जाता है।",
+      "invalid": "सर्वर ने यह संस्करण अस्वीकार कर दिया।",
+      "variables": "घोषित वेरिएबल",
+      "noVariables": "कोई वेरिएबल घोषित नहीं।",
+      "changeNote": "बदलाव टिप्पणी",
+      "changeNoteHelp": "वैकल्पिक। संस्करण इतिहास में दिखाई जाती है।",
+      "discard": "बदलाव छोड़ें",
+      "save": "संस्करण सहेजें",
+      "fields": {
+        "content": "टेम्पलेट",
+        "key": "कुंजी",
+        "user": "User अनुभाग",
+        "variables": "वेरिएबल"
+      }
+    },
+    "compareWithCurrent": "v{version} की एडिटर से तुलना करें",
+    "rollbackTo": "v{version} पर वापस जाएँ",
+    "rollbackTitle": "वापस जाएँ",
+    "rollbackMessage": "v{version} को मौजूदा संस्करण बनाएँ? इसकी सामग्री के साथ एक नया संस्करण बनता है, इसलिए कुछ नहीं खोता।",
+    "rollbackConfirm": "वापस जाएँ",
+    "rolledBack": "v{version} पर वापस लौटा गया",
+    "reset": "डिफ़ॉल्ट पर रीसेट करें",
+    "resetTitle": "डिफ़ॉल्ट पर रीसेट करें",
+    "resetMessage": "इस प्रॉम्प्ट को मूल डिफ़ॉल्ट से बदलें? एक नया संस्करण बनता है, इसलिए आप बाद में वापस जा सकते हैं।",
+    "resetDone": "डिफ़ॉल्ट पर रीसेट किया गया",
+    "deleteOverride": "ओवरराइड हटाएँ",
+    "deleteTitle": "विषय ओवरराइड हटाएँ",
+    "deleteMessage": "विषय {topic} के लिए {key} ओवरराइड हटाएँ? विषय टेनेंट प्रॉम्प्ट पर लौट जाएगा।",
+    "diff": {
+      "from": "से",
+      "to": "तक",
+      "draft": "एडिटर (बिना सहेजा)",
+      "current": "एडिटर",
+      "default": "मूल डिफ़ॉल्ट",
+      "label": "पंक्तियों के अंतर",
+      "added": "{count, plural, one {# पंक्ति जोड़ी गई} other {# पंक्तियाँ जोड़ी गईं}}",
+      "removed": "{count, plural, one {# पंक्ति हटाई गई} other {# पंक्तियाँ हटाई गईं}}",
+      "addedLine": "जोड़ी गई",
+      "removedLine": "हटाई गई",
+      "showAll": "अपरिवर्तित पंक्तियाँ दिखाएँ",
+      "skipped": "{count, plural, one {# अपरिवर्तित पंक्ति} other {# अपरिवर्तित पंक्तियाँ}}",
+      "identical": "दोनों संस्करण एक जैसे हैं।"
+    },
+    "override": {
+      "button": "विषय ओवरराइड बनाएँ",
+      "title": "विषय ओवरराइड बनाएँ",
+      "intro": "विषय ओवरराइड केवल एक विषय के लिए टेनेंट प्रॉम्प्ट की जगह लेता है। यह टेनेंट प्रॉम्प्ट की प्रतिलिपि के रूप में शुरू होता है।",
+      "pickKey": "एक प्रॉम्प्ट चुनें",
+      "topicId": "विषय ID",
+      "topicIdHelp": "उस विषय की ID जिसे इस प्रॉम्प्ट का अपना संस्करण उपयोग करना चाहिए।",
+      "copyDraft": "एडिटर के बिना सहेजे पाठ से शुरू करें",
+      "create": "ओवरराइड बनाएँ"
+    },
+    "lab": {
+      "intro": "अपने मानों के साथ प्रॉम्प्ट रेंडर करें और उसे किसी भी मॉडल पर चलाएँ। ये ड्राई रन होते हैं: इन्हें मॉडल कॉल के रूप में लॉग किया जाता है, लेकिन ये शोध को कभी प्रभावित नहीं करते।",
+      "endpoint": "एंडपॉइंट",
+      "assigned": "{role} को असाइन",
+      "model": "मॉडल ओवरराइड",
+      "modelHelp": "वैकल्पिक।",
+      "variables": "वेरिएबल",
+      "noVariables": "यह प्रॉम्प्ट कोई वेरिएबल घोषित नहीं करता।",
+      "useDraft": "एडिटर का बिना सहेजा पाठ चलाएँ",
+      "run": "चलाएँ",
+      "running": "प्रॉम्प्ट चल रहा है...",
+      "cost": "लागत {value}",
+      "costUnknown": "उपलब्ध नहीं",
+      "unknownVariables": "भरे नहीं गए: {names}",
+      "guardrailNote": "नीचे का रेंडर किया गया सिस्टम प्रॉम्प्ट वही है जो टेम्पलेट बनाता है। मॉडल को कॉल करते समय सर्वर इसके आगे स्कोप गार्डरेल जोड़ता है।",
+      "renderedSystem": "रेंडर किया गया सिस्टम प्रॉम्प्ट",
+      "renderedUser": "रेंडर किया गया उपयोगकर्ता प्रॉम्प्ट",
+      "output": "आउटपुट",
+      "emptySection": "खाली।",
+      "loggedAs": "इस रूप में लॉग किया गया",
+      "openCall": "लॉग की गई कॉल खोलें"
+    }
+  },
+  "usage": {
+    "noData": "इस अवधि में कोई मॉडल कॉल नहीं।",
+    "noToolCalls": "इस अवधि में कोई टूल कॉल नहीं।",
+    "total": "कुल",
+    "exportCsv": "CSV निर्यात करें",
+    "window": "{from} से {to} तक",
+    "kpi": {
+      "cost": "लागत",
+      "perCall": "प्रति कॉल {value}",
+      "calls": "मॉडल कॉल",
+      "tokens": "टोकन",
+      "tokensDetail": "{input} इनपुट, {output} आउटपुट",
+      "failures": "विफलताएँ",
+      "failureRate": "कॉल का {value}",
+      "avgTtft": "औसत पहला टोकन",
+      "p95Ttft": "p95 पहला टोकन"
+    },
+    "filters": {
+      "task": "कार्य",
+      "endpoint": "एंडपॉइंट",
+      "user": "उपयोगकर्ता",
+      "userPlaceholder": "उपयोगकर्ता ID",
+      "topic": "विषय",
+      "topicPlaceholder": "विषय ID",
+      "includeDryRun": "ड्राई रन शामिल करें"
+    },
+    "groups": {
+      "User": "उपयोगकर्ता",
+      "Model": "मॉडल",
+      "Task": "कार्य",
+      "Provider": "प्रदाता",
+      "Topic": "विषय",
+      "PromptKey": "प्रॉम्प्ट",
+      "Day": "दिन",
+      "Tenant": "टेनेंट"
+    },
+    "labels": {
+      "system": "सिस्टम",
+      "noTopic": "कोई विषय नहीं",
+      "none": "कोई नहीं",
+      "unknown": "अज्ञात"
+    },
+    "columns": {
+      "cost": "लागत",
+      "calls": "कॉल",
+      "failures": "विफलताएँ",
+      "tokens": "टोकन",
+      "inputTokens": "इनपुट",
+      "cachedInputTokens": "कैश्ड इनपुट",
+      "cacheWriteTokens": "कैश राइट",
+      "outputTokens": "आउटपुट",
+      "reasoningTokens": "रीज़निंग",
+      "toolCalls": "टूल कॉल",
+      "avgDuration": "औसत अवधि",
+      "avgTtft": "औसत पहला टोकन",
+      "p95Ttft": "p95 पहला टोकन"
+    },
+    "tokens": {
+      "uncachedInput": "बिना कैश इनपुट",
+      "cachedInput": "कैश्ड इनपुट",
+      "cacheWrite": "कैश राइट",
+      "output": "आउटपुट",
+      "reasoning": "रीज़निंग"
+    },
+    "series": {
+      "average": "औसत",
+      "p95": "p95",
+      "toolCallsPerCall": "प्रति कॉल टूल कॉल"
+    },
+    "charts": {
+      "groupBy": "इसके अनुसार समूह",
+      "costOverTime": "समय के साथ लागत",
+      "costOverTimeHelp": "प्रति अवधि अनुमानित लागत, हर कॉल के लॉग होते समय गिनी गई।",
+      "costByUser": "उपयोगकर्ता के अनुसार लागत",
+      "costByUserHelp": "शीर्ष 20 उपयोगकर्ता और लागत में उनका हिस्सा। पेज को उस उपयोगकर्ता तक फ़िल्टर करने के लिए कोई पंक्ति चुनें।",
+      "costByModel": "मॉडल के अनुसार लागत",
+      "costByTask": "कार्य के अनुसार लागत",
+      "costByTopic": "विषय के अनुसार लागत",
+      "ttftByModel": "मॉडल के अनुसार पहले टोकन तक समय",
+      "ttftHelp": "स्ट्रीम की गई कॉल के लिए औसत और p95।",
+      "tokenMix": "टोकन प्रकार का मिश्रण",
+      "tokenMixHelp": "आउटपुट में रीज़निंग टोकन शामिल नहीं हैं, जो अलग से दिखाए जाते हैं।",
+      "toolCalls": "कार्य के अनुसार टूल कॉल",
+      "toolCallsHelp": "प्रति मॉडल कॉल औसत टूल कॉल।"
+    },
+    "breakdown": {
+      "title": "विवरण",
+      "help": "चुने गए समूह के लिए हर टोकन प्रकार, लागत का हिस्सा, और समय। CSV निर्यात करें ठीक यही तालिका डाउनलोड करता है।"
+    },
+    "member": {
+      "notice": "पूरे टेनेंट का उपयोग केवल व्यवस्थापकों और ऑडिटरों के लिए है। यह आपका अपना उपयोग है।",
+      "byTask": "कार्य के अनुसार आपकी लागत"
+    },
+    "admin": {
+      "costByTenant": "टेनेंट के अनुसार लागत",
+      "costByTenantHelp": "हर टेनेंट लागत के अनुसार क्रमबद्ध, प्लेटफ़ॉर्म लागत में उसके हिस्से के साथ।",
+      "tenantTrend": "समय के साथ टेनेंट के अनुसार लागत",
+      "tenantTrendHelp": "{count, plural, one {अवधि को # खंड में बाँटा गया।} other {अवधि को # खंडों में बाँटा गया।}} शीर्ष टेनेंट स्टैक किए गए हैं; बाकी सभी एक समूह में हैं।",
+      "otherTenants": "अन्य टेनेंट",
+      "platformTrend": "समय के साथ प्लेटफ़ॉर्म लागत",
+      "costByModel": "मॉडल के अनुसार प्लेटफ़ॉर्म लागत",
+      "breakdownHelp": "हर टेनेंट, टोकन प्रकार, लागत के हिस्से और समय के साथ। CSV निर्यात करें यही तालिका डाउनलोड करता है।"
+    }
+  },
+  "markdown": {
+    "mode": "एडिटर मोड",
+    "write": "लिखें",
+    "preview": "पूर्वावलोकन",
+    "empty": "पूर्वावलोकन के लिए अभी कुछ नहीं है।"
+  },
+  "schedule": {
+    "fields": {
+      "intervalType": "दोहराव",
+      "every": "हर",
+      "everyHelp": "{min} से {max}",
+      "minuteOffset": "इस मिनट पर",
+      "minuteOffsetHelp": "घंटे के बाद के मिनट, 0 से 59",
+      "timeZone": "समय क्षेत्र",
+      "timeZoneHelp": "समय इसी क्षेत्र में गिना जाता है, डेलाइट सेविंग बदलावों सहित",
+      "runOnce": "इस समय चलाएँ",
+      "localTimeHelp": "{zone} में स्थानीय समय",
+      "cron": "Cron एक्सप्रेशन",
+      "cronHelp": "पाँच फ़ील्ड: मिनट, घंटा, महीने का दिन, महीना, सप्ताह का दिन",
+      "daysOfWeek": "सप्ताह के दिन",
+      "daysOfMonth": "महीने के दिन",
+      "timesOfDay": "दिन के समय",
+      "timeN": "समय {n}",
+      "start": "शुरू",
+      "end": "समाप्त",
+      "optionalLocal": "वैकल्पिक, {zone} में स्थानीय समय",
+      "missedRunPolicy": "यदि कोई रन छूट जाए",
+      "enabled": "सक्षम"
+    },
+    "units": {
+      "minutes": "मिनट",
+      "hours": "घंटे",
+      "days": "दिन",
+      "weeks": "सप्ताह"
+    },
+    "presets": {
+      "weekdays": "कार्यदिवस",
+      "weekends": "सप्ताहांत",
+      "everyDay": "हर दिन"
+    },
+    "lastDay": "अंतिम दिन",
+    "removeTime": "यह समय हटाएँ",
+    "addTime": "समय जोड़ें",
+    "enabledOn": "चालू",
+    "enabledOff": "बंद",
+    "missedHelp": {
+      "Skip": "सर्वर बंद रहने के दौरान छूटे रन छोड़ दिए जाते हैं।",
+      "RunOnceOnRecovery": "सर्वर वापस आने पर एक भरपाई रन होता है।"
+    },
+    "preview": {
+      "title": "अगले 5 रन",
+      "checking": "जाँच हो रही है...",
+      "manual": "यह विषय केवल तब चलता है जब आप अभी चलाएँ दबाते हैं।",
+      "none": "कोई आगामी रन नहीं। शुरू और समाप्ति तिथियाँ जाँचें।"
+    },
+    "summary": {
+      "EveryNMinutes": "{count, plural, one {हर मिनट} other {हर # मिनट}}",
+      "EveryNHours": "{count, plural, one {हर घंटे} other {हर # घंटे}} :{minute} पर",
+      "EveryNDays": "{count, plural, one {हर दिन} other {हर # दिन}} {times} बजे",
+      "EveryNWeeks": "{count, plural, one {हर सप्ताह} other {हर # सप्ताह}} {days} को {times} बजे",
+      "DaysOfWeek": "{days} को {times} बजे",
+      "DaysOfMonth": "दिन {days} को {times} बजे",
+      "Once": "एक बार {when} पर",
+      "Cron": "Cron {expression}",
+      "Manual": "केवल जब आप इसे चलाएँ"
+    },
+    "saved": "शेड्यूल सहेजा गया",
+    "create": "शेड्यूल बनाएँ",
+    "save": "शेड्यूल सहेजें",
+    "emptyTitle": "अभी कोई शेड्यूल नहीं",
+    "emptyMessage": "इस विषय पर स्वचालित रूप से शोध करने के लिए शेड्यूल जोड़ें, या इसे हाथ से चलाएँ।",
+    "add": "शेड्यूल जोड़ें",
+    "nextRun": "अगला रन",
+    "noNextRun": "शेड्यूल नहीं किया गया",
+    "lastRun": "पिछला रन",
+    "enableFor": "{name} सक्षम करें",
+    "edit": "शेड्यूल संपादित करें",
+    "delete": "शेड्यूल हटाएँ",
+    "deleteTitle": "शेड्यूल हटाएँ",
+    "deleteMessage": "शेड्यूल \"{name}\" हटाएँ? पहले से कतार में लगे रन प्रभावित नहीं होंगे।"
+  },
+  "questions": {
+    "pickOne": "कम से कम एक विकल्प चुनें, उत्तर लिखें, या प्रश्न छोड़ दें।",
+    "somethingElse": "कुछ और (वैकल्पिक)",
+    "scaleLow": "बिल्कुल नहीं",
+    "scaleHigh": "बहुत अधिक",
+    "save": "उत्तर सहेजें",
+    "why": "मैं क्यों पूछ रहा हूँ: {reason}",
+    "answered": "उत्तर दिया गया",
+    "skipped": "छोड़ा गया",
+    "skip": "छोड़ें",
+    "skippedHint": "छोड़ा गया। इसे वापस लाने के लिए उत्तर दें।"
+  },
+  "dimensions": {
+    "emptyTitle": "अभी कोई आयाम नहीं",
+    "emptyMessage": "आयाम वे पहलू हैं जिन्हें शोध कवर करता है। कुछ प्रस्तावित करवाएँ या अपने खुद के जोड़ें।",
+    "locked": "लॉक",
+    "yours": "आपका",
+    "suggested": "सुझाया गया",
+    "why": "यह क्यों मायने रख सकता है: {reason}",
+    "include": "शामिल करें",
+    "exclude": "बाहर रखें",
+    "weightFor": "{name} का भार",
+    "unlock": "{name} अनलॉक करें",
+    "lock": "{name} लॉक करें",
+    "unlockHint": "अनलॉक करें ताकि दोबारा बनाने पर इसे बदला जा सके",
+    "lockHint": "दोबारा बनाते समय इसे बनाए रखने के लिए लॉक करें",
+    "edit": "{name} संपादित करें",
+    "delete": "{name} हटाएँ",
+    "add": "आयाम जोड़ें",
+    "addTitle": "आयाम जोड़ें",
+    "editTitle": "आयाम संपादित करें",
+    "editHint": "संपादित आयाम आपके हो जाते हैं और दोबारा बनाने पर बने रहते हैं।",
+    "fields": {
+      "name": "नाम",
+      "description": "विवरण",
+      "rationale": "यह आपके लिए क्यों मायने रखता है",
+      "weight": "भार",
+      "includeTerms": "शामिल शब्द",
+      "excludeTerms": "बाहर रखे शब्द",
+      "termsHelp": "शब्दों को अल्पविराम से अलग करें"
+    },
+    "deleteTitle": "आयाम हटाएँ",
+    "deleteMessage": "आयाम \"{name}\" हटाएँ?"
+  },
+  "constraints": {
+    "count": "{count, plural, one {# आइटम} other {# आइटम}}",
+    "help": {
+      "IncludeKeyword": "ऐसे शब्द जो किसी परिणाम को अधिक प्रासंगिक बनाते हैं।",
+      "ExcludeKeyword": "ऐसे शब्द जो किसी परिणाम को बाहर कर देते हैं।",
+      "IncludeEntity": "कंपनियाँ, उत्पाद, या लोग जिन्हें हमेशा शामिल करना है।",
+      "ExcludeEntity": "कंपनियाँ, उत्पाद, या लोग जिन्हें हमेशा अनदेखा करना है।",
+      "PreferredDomain": "पसंद की जाने वाली साइटें, जैसे example.com।",
+      "BlockedDomain": "ऐसी साइटें जिनका कभी उपयोग नहीं करना है।",
+      "TrackedQuestion": "समय के साथ नज़र रखने वाले खुले प्रश्न।",
+      "FeedUrl": "हर रन में पढ़े जाने वाले RSS या Atom फ़ीड।",
+      "SeedUrl": "हर रन में जाँचे जाने वाले पेज।"
+    },
+    "value": "मान",
+    "note": "टिप्पणी",
+    "unlock": "{value} अनलॉक करें",
+    "lock": "{value} लॉक करें",
+    "edit": "{value} संपादित करें",
+    "delete": "{value} हटाएँ",
+    "addTo": "{kind} में जोड़ें",
+    "placeholder": {
+      "IncludeKeyword": "कीवर्ड जोड़ें",
+      "ExcludeKeyword": "बाहर रखने के लिए कीवर्ड जोड़ें",
+      "IncludeEntity": "कंपनी या उत्पाद जोड़ें",
+      "ExcludeEntity": "अनदेखा करने के लिए कंपनी या उत्पाद जोड़ें",
+      "PreferredDomain": "डोमेन जोड़ें",
+      "BlockedDomain": "अवरुद्ध करने के लिए डोमेन जोड़ें",
+      "TrackedQuestion": "ट्रैक करने के लिए प्रश्न जोड़ें",
+      "FeedUrl": "फ़ीड URL जोड़ें (https://...)",
+      "SeedUrl": "पेज URL जोड़ें (https://...)"
+    }
+  },
+  "delivery": {
+    "saved": "डिलीवरी विकल्प सहेजे गए",
+    "emailOnRun": "हर रन के बाद ईमेल",
+    "emailOnRunHelp": "विवरण और फ़ीडबैक लिंक के साथ एक सारांश",
+    "emailWhenEmpty": "कुछ न मिलने पर भी ईमेल",
+    "emailWhenEmptyHelp": "अन्यथा खाली रन कोई ईमेल नहीं भेजते",
+    "maxFindings": "प्रति ईमेल निष्कर्ष",
+    "maxFindingsHelp": "1 से 50",
+    "saveOptions": "डिलीवरी विकल्प सहेजें",
+    "recipients": "प्राप्तकर्ता",
+    "recipientsHelp": "यहाँ मौजूद हर व्यक्ति को हर रन के बाद ईमेल मिलता है। डिफ़ॉल्ट रूप से प्राप्तकर्ता आप हैं।",
+    "noRecipients": "अभी कोई प्राप्तकर्ता नहीं।",
+    "you": "आप",
+    "removeRecipient": "{email} हटाएँ",
+    "addRecipient": "प्राप्तकर्ता का ईमेल पता",
+    "emailPlaceholder": "name@example.com",
+    "addMe": "मुझे जोड़ें"
+  },
+  "topics": {
+    "actions": {
+      "dryRunQueued": "{name} के लिए ड्राई रन कतार में",
+      "runQueued": "{name} के लिए रन कतार में",
+      "continueRefining": "परिष्करण जारी रखें",
+      "refine": "फिर से परिष्कृत करें",
+      "runNow": "अभी चलाएँ",
+      "dryRun": "ड्राई रन",
+      "pause": "रोकें",
+      "paused": "{name} रोका गया",
+      "resume": "फिर से शुरू करें",
+      "resumed": "{name} फिर से शुरू हुआ",
+      "archive": "संग्रहीत करें",
+      "archived": "{name} संग्रहीत किया गया",
+      "duplicated": "{name} की प्रतिलिपि ड्राफ़्ट के रूप में बनाई गई"
+    },
+    "delete": {
+      "title": "विषय हटाएँ",
+      "message": "\"{name}\" को उसके आयामों, बाध्यताओं, शेड्यूल और रन के साथ हटाएँ? इसे पूर्ववत नहीं किया जा सकता।",
+      "done": "{name} हटाया गया"
+    },
+    "bulk": {
+      "paused": "{count, plural, one {# विषय रोका गया} other {# विषय रोके गए}}",
+      "pause": "रोकें",
+      "delete": "हटाएँ",
+      "deleteTitle": "विषय हटाएँ",
+      "deleteMessage": "{count, plural, one {# विषय और उसके अंतर्गत सब कुछ हटाएँ?} other {# विषय और उनके अंतर्गत सब कुछ हटाएँ?}} इसे पूर्ववत नहीं किया जा सकता।",
+      "deleted": "{count, plural, one {# विषय हटाया गया} other {# विषय हटाए गए}}"
+    },
+    "columns": {
+      "name": "नाम",
+      "status": "स्थिति",
+      "oneTime": "प्रकार",
+      "lastRun": "पिछला रन",
+      "lastRefined": "अंतिम परिष्करण",
+      "created": "बनाया गया",
+      "audience": "दर्शक",
+      "id": "ID"
+    },
+    "searchPlaceholder": "विषय खोजें",
+    "oneTime": "एक बार का",
+    "recurring": "आवर्ती",
+    "new": "नया विषय",
+    "empty": {
+      "title": "अभी कोई विषय नहीं",
+      "message": "बताएँ कि आप किस बारे में अपडेट रहना चाहते हैं, और विज़ार्ड उसे शोध योजना में बदल देगा।",
+      "action": "मुझे बताएँ कि आपकी किसमें रुचि है"
+    },
+    "backToList": "सभी विषय",
+    "draftNoRun": "चलाने से पहले परिष्करण पूरा करें, या ड्राई रन शुरू करें",
+    "draftNotice": "यह विषय ड्राफ़्ट है। शेड्यूल किया गया शोध शुरू करने के लिए इसका परिष्करण पूरा करें।",
+    "workspace": {
+      "tabsLabel": "विषय अनुभाग",
+      "tabs": {
+        "overview": "अवलोकन",
+        "context": "संदर्भ",
+        "schedule": "शेड्यूल",
+        "sources": "स्रोत",
+        "runs": "रन",
+        "findings": "निष्कर्ष",
+        "predictions": "पूर्वानुमान",
+        "suggestions": "सुझाव",
+        "feedback": "फ़ीडबैक",
+        "preferences": "प्राथमिकताएँ",
+        "analytics": "एनालिटिक्स",
+        "delivery": "डिलीवरी",
+        "prompts": "प्रॉम्प्ट",
+        "models": "मॉडल"
+      },
+      "dimensionCount": "आयाम",
+      "noBrief": "अभी कोई ब्रीफ़ नहीं। इसका ड्राफ़्ट बनाने के लिए विषय को परिष्कृत करें।",
+      "dimensions": "आयाम",
+      "brief": "ब्रीफ़ और दर्शक",
+      "sourcesHelp": "वेब खोज के साथ-साथ, फ़ीड और आरंभिक पेज हर रन में पढ़े जाते हैं।",
+      "searchProvidersLater": "हर विषय के लिए खोज प्रदाता चुनने की सुविधा खोज प्रदाता पेज के साथ आएगी।"
+    }
+  },
+  "wizard": {
+    "railLabel": "विज़ार्ड के चरण",
+    "steps": {
+      "Describe": "वर्णन",
+      "Dimensions": "आयाम",
+      "Questions": "प्रश्न",
+      "Context": "संदर्भ",
+      "Sources": "स्रोत",
+      "Delivery": "डिलीवरी",
+      "Review": "समीक्षा"
+    },
+    "stepHelp": {
+      "Describe": "बताएँ कि आप किस बारे में अपडेट रहना चाहते हैं और क्यों।",
+      "Dimensions": "वे पहलू जिन्हें शोध कवर करता है। रखें, भार दें, संपादित करें, लॉक करें, या अपने जोड़ें।",
+      "Questions": "जो चाहें उसका उत्तर दें और बाकी छोड़ दें। हर उत्तर शोध को और सटीक बनाता है।",
+      "Context": "वह ब्रीफ़ और बाध्यताएँ जिनका शोध पालन करता है। लॉक किए गए आइटम दोबारा ड्राफ़्ट करने पर बने रहते हैं।",
+      "Sources": "हर रन में पढ़े जाने वाले फ़ीड और पेज, हर एक को लाइव फ़ेच से जाँचा गया।",
+      "Delivery": "शोध कब चलता है और ईमेल किसे मिलता है।",
+      "Review": "सब कुछ दर्ज हो गया। ड्राई रन का पूर्वावलोकन करें, फिर लागू करें।"
+    },
+    "generating": {
+      "dimensions": "आयाम प्रस्तावित किए जा रहे हैं...",
+      "questions": "प्रश्न लिखे जा रहे हैं...",
+      "context": "ब्रीफ़ और बाध्यताओं का ड्राफ़्ट बन रहा है...",
+      "sources": "स्रोत खोजे और हर एक जाँचा जा रहा है...",
+      "request": "आपके अनुरोध की योजना बन रही है...",
+      "replan": "आपके उत्तरों के साथ फिर से योजना बन रही है...",
+      "patience": "अब तक {seconds} सेकंड। बड़े मॉडल को एक मिनट लग सकता है।"
+    },
+    "stopWaiting": "प्रतीक्षा रोकें",
+    "failure": {
+      "title": "मॉडल यह चरण पूरा नहीं कर सका",
+      "refusedTitle": "मॉडल ने यह चरण करने से मना कर दिया",
+      "hint": "फिर से कोशिश करें, या परिष्करण के लिए उपयोग होने वाला मॉडल बदलें।",
+      "changeModel": "परिष्करण मॉडल बदलें"
+    },
+    "guidance": {
+      "label": "अगले प्रयास के लिए मार्गदर्शन",
+      "placeholder": "उदाहरण: लोकल मॉडल के बारे में ज़्यादा, एंटरप्राइज़ खरीद के बारे में कम"
+    },
+    "regenerate": "दोबारा बनाएँ",
+    "describe": {
+      "existing": "यह सत्र नीचे दिए गए वर्णन से शुरू हुआ।",
+      "seedText": "आप किस बारे में अपडेट रहना चाहते हैं?",
+      "seedHelp": "एक वाक्य या एक अनुच्छेद। आप बाद में सब कुछ परिष्कृत कर सकते हैं।",
+      "seedPlaceholder": "मैं AI डेवलपर टूल के बारे में जानना चाहता हूँ",
+      "goal": "क्यों",
+      "depth": "गहराई",
+      "horizon": "समय सीमा",
+      "horizonHelp": "वैकल्पिक, उदाहरण के लिए \"अगले छह महीने\"",
+      "known": "आप पहले से क्या जानते हैं",
+      "started": "शुरू किया गया",
+      "optional": "वैकल्पिक",
+      "notSaying": "नहीं बताना",
+      "goals": {
+        "work": "काम के फ़ैसले",
+        "investing": "निवेश",
+        "curiosity": "जिज्ञासा",
+        "hiring": "भर्ती",
+        "building": "कुछ बनाना"
+      },
+      "model": "मॉडल",
+      "modelHelp": "डिफ़ॉल्ट रूप से परिष्करण असाइनमेंट",
+      "defaultModel": "परिष्करण असाइनमेंट (डिफ़ॉल्ट)",
+      "starting": "शुरू हो रहा है...",
+      "start": "शुरू करें और आयाम प्रस्तावित करें",
+      "resumeTitle": "जहाँ छोड़ा था वहीं से जारी रखें"
+    },
+    "outOfScope": {
+      "title": "यह My Morning News के शोध के दायरे से बाहर है",
+      "rephrase": "दूसरे शब्दों में लिखें"
+    },
+    "dimensions": {
+      "noneTitle": "अभी कोई आयाम नहीं",
+      "noneMessage": "अपने वर्णन से आयाम प्रस्तावित करवाएँ, या नीचे अपने जोड़ें।",
+      "propose": "आयाम प्रस्तावित करें",
+      "intro": "{count, plural, one {# आयाम} other {# आयाम}}, {kept} आपके रूप में रखे गए या लॉक। किसी को बाहर रखने के लिए उसका भार बाहर रखें पर सेट करें।",
+      "regenerateHelp": "दोबारा बनाने से सुझाए गए आयाम बदल जाते हैं, जबकि लॉक किए गए और आपके आयाम बने रहते हैं।"
+    },
+    "questions": {
+      "sufficient": "इतना संदर्भ पर्याप्त होना चाहिए। आप ब्रीफ़ पर आगे बढ़ सकते हैं।",
+      "noneTitle": "अभी कोई प्रश्न नहीं",
+      "noneMessage": "मॉडल आपके रखे गए आयामों के आधार पर कुछ प्रश्न पूछता है।",
+      "ask": "मुझसे प्रश्न पूछें",
+      "progress": "{total} में से {done} के उत्तर दिए या छोड़े गए",
+      "round": "दौर {round}",
+      "moreLabel": "अगले दौर के लिए कोई दिशा?",
+      "askMore": "मुझसे और पूछें",
+      "moreHelp": "{left, plural, one {# और दौर उपलब्ध} other {# और दौर उपलब्ध}}",
+      "maxed": "{max} दौर की सीमा है। ब्रीफ़ पर आगे बढ़ें।"
+    },
+    "context": {
+      "name": "विषय का नाम",
+      "audience": "दर्शक स्तर",
+      "horizon": "समय सीमा",
+      "novelty": "नवीनता प्राथमिकता: {value}",
+      "noveltyHelp": "अधिक मान पृष्ठभूमि की बजाय नए घटनाक्रमों को प्राथमिकता देता है",
+      "brief": "ब्रीफ़",
+      "briefHelp": "Markdown। शोध इस ब्रीफ़ का पालन करता है।",
+      "seedQueries": "आरंभिक क्वेरी",
+      "seedQueriesHelp": "प्रति पंक्ति एक खोज क्वेरी",
+      "saved": "संदर्भ सहेजा गया",
+      "save": "संदर्भ सहेजें",
+      "savedState": "सहेजा गया",
+      "noneTitle": "अभी कोई ब्रीफ़ नहीं",
+      "noneMessage": "अपने आयामों और उत्तरों से ब्रीफ़, बाध्यताओं और आरंभिक क्वेरी का ड्राफ़्ट बनाएँ।",
+      "draft": "संदर्भ का ड्राफ़्ट बनाएँ",
+      "intro": "कुछ भी संपादित करें। लॉक की गई बाध्यताएँ और आपकी अपनी बाध्यताएँ दोबारा ड्राफ़्ट करने पर बनी रहती हैं।",
+      "redraft": "दोबारा ड्राफ़्ट करें",
+      "constraints": "बाध्यताएँ"
+    },
+    "sources": {
+      "intro": "सुझाए गए फ़ीड और आरंभिक पेज लाइव फ़ेच किए जाते हैं। हरे वाले ने प्रतिक्रिया दी।",
+      "again": "फिर से सुझाएँ",
+      "suggest": "स्रोत सुझाएँ",
+      "noneSuggested": "मॉडल ने कोई स्रोत नहीं सुझाया। नीचे अपने जोड़ें।",
+      "allAccepted": "हर सुझाव पहले से विषय में है।",
+      "select": "{url} चुनें",
+      "unreachable": "पहुँच से बाहर",
+      "accept": "{count, plural, =0 {स्वीकार करें} one {# स्रोत स्वीकार करें} other {# स्रोत स्वीकार करें}}",
+      "noneTitle": "अभी कोई स्रोत नहीं",
+      "noneMessage": "स्रोत सुझाएँ, अपने जोड़ें, या यह चरण छोड़ दें।",
+      "accepted": "इस विषय पर"
+    },
+    "delivery": {
+      "schedule": "रिसर्च शेड्यूल",
+      "scheduleHelp": "आगे बढ़ने पर शेड्यूल सहेज लिया जाता है।",
+      "email": "ईमेल"
+    },
+    "review": {
+      "novelty": "नवीनता प्राथमिकता",
+      "noSchedule": "कोई शेड्यूल नहीं (मैन्युअल रूप से चलाएँ)",
+      "applied": "यह विषय लागू हो गया है और रिसर्च जारी है।",
+      "openTopic": "विषय खोलें",
+      "dimensions": "{count, plural, one {# आयाम} other {# आयाम}}",
+      "constraintCount": "{kind}: {count}",
+      "preview": "पूर्वावलोकन रन",
+      "previewHelp": "ड्राई रन कोई ईमेल नहीं भेजता और इतिहास में नहीं गिना जाता।",
+      "apply": "विषय लागू करें",
+      "appliedToast": "{name} तैयार है",
+      "previewQueued": "ड्राई रन कतार में है। इसे विषय के रन टैब पर देखें।"
+    },
+    "newTitle": "नया विषय",
+    "refineTitle": "{name} को परिष्कृत करें",
+    "refineTitleShort": "विषय परिष्कृत करें",
+    "saveExit": "सहेजें और बाहर निकलें",
+    "abandon": "छोड़ें",
+    "refineSummary": "मौजूदा संदर्भ से शुरू करते हुए विज़ार्ड फिर से खोलें",
+    "refineStart": "\"{name}\" के लिए नया परिष्करण सत्र शुरू करें। इसके आयाम और बाध्यताएँ साथ रहती हैं, और लागू करने तक कुछ नहीं बदलता।",
+    "refineStartButton": "परिष्करण शुरू करें",
+    "backToTopic": "विषय पर वापस जाएँ",
+    "summary": "हर चरण साथ-साथ सहेजा जाता है, इसलिए आप छोड़कर बाद में फिर से शुरू कर सकते हैं।",
+    "back": "वापस",
+    "nextTo": "अगला: {step}",
+    "abandonTitle": "यह सत्र छोड़ें",
+    "abandonDraft": "विज़ार्ड छोड़ें? ड्राफ़्ट विषय और उसकी सारी सामग्री हटा दी जाएगी।",
+    "abandonExisting": "यह परिष्करण सत्र छोड़ें? विषय में वे बदलाव बने रहेंगे जो आपने बीच में सहेजे थे।",
+    "abandoned": "सत्र छोड़ दिया गया"
+  },
+  "runs": {
+    "detail": {
+      "title": "रन",
+      "summary": "सारांश",
+      "cancelRequested": "रद्द करने का अनुरोध किया गया",
+      "schedule": "शेड्यूल",
+      "request": "एक बार का अनुरोध",
+      "worker": "वर्कर",
+      "partial": "आंशिक रूप से सफल: एक गैर-ज़रूरी चरण विफल हुआ। बाकी चरण पूरे हुए और उनके परिणाम रखे गए हैं।",
+      "partialWithStages": "आंशिक रूप से सफल: {stages} विफल हुए। बाकी चरण पूरे हुए और उनके परिणाम रखे गए हैं।",
+      "viewFindings": "निष्कर्ष देखें ({count})",
+      "tabsLabel": "रन के अनुभाग",
+      "tabs": {
+        "stages": "चरण",
+        "queries": "क्वेरी",
+        "results": "परिणाम",
+        "details": "विवरण",
+        "calls": "मॉडल कॉल"
+      },
+      "contextHash": "संदर्भ स्नैपशॉट"
+    },
+    "cancelRequested": "रद्द किया जा रहा है...",
+    "cancel": "रन रद्द करें",
+    "dryRun": "ड्राई रन",
+    "columns": {
+      "topic": "विषय",
+      "queued": "कतार में",
+      "started": "शुरू हुआ",
+      "completed": "पूरा हुआ",
+      "status": "स्थिति",
+      "trigger": "ट्रिगर",
+      "duration": "अवधि",
+      "summary": "सारांश",
+      "id": "ID",
+      "findings": "नए निष्कर्ष",
+      "findingsTitle": "{duplicates} डुप्लिकेट छोड़े गए",
+      "sources": "स्रोत",
+      "cost": "लागत"
+    },
+    "cancelled": "रद्द करने का अनुरोध किया गया",
+    "openTopic": "विषय खोलें",
+    "empty": {
+      "title": "अभी तक कोई रन नहीं",
+      "message": "रन तब दिखते हैं जब कोई शेड्यूल चलता है, कोई एक बार का अनुरोध शुरू होता है, या आप अभी चलाएँ दबाते हैं।",
+      "topicMessage": "अभी चलाएँ या ड्राई रन दबाएँ, या कोई शेड्यूल जोड़ें।"
+    },
+    "totals": {
+      "sources": "पढ़े गए स्रोत",
+      "newFindings": "नए निष्कर्ष",
+      "duplicates": "डुप्लिकेट",
+      "tokens": "टोकन",
+      "tokenSplit": "{input} इनपुट, {output} आउटपुट",
+      "cost": "अनुमानित लागत"
+    },
+    "stages": {
+      "empty": "इस रन के लिए कोई चरण दर्ज नहीं है।",
+      "aria": "{count} चरणों वाली चरण टाइमलाइन",
+      "stage": "चरण",
+      "status": "स्थिति",
+      "duration": "अवधि",
+      "items": "आइटम",
+      "inOut": "{in} इनपुट, {out} आउटपुट",
+      "in": "इनपुट",
+      "out": "आउटपुट"
+    },
+    "queries": {
+      "empty": "इस रन ने कोई सर्च क्वेरी नहीं भेजी।",
+      "query": "क्वेरी",
+      "provider": "प्रदाता",
+      "results": "परिणाम",
+      "succeeded": "सफल",
+      "failed": "विफल"
+    },
+    "results": {
+      "disposition": "निपटान",
+      "filterDisposition": "निपटान के अनुसार परिणाम फ़िल्टर करें",
+      "dispositionCount": "{disposition}: {count}",
+      "noMatches": "इस निपटान वाला कोई परिणाम नहीं।",
+      "empty": "इस रन में कोई सर्च परिणाम नहीं है।",
+      "rank": "रैंक",
+      "result": "परिणाम",
+      "viewSource": "स्रोत देखें"
+    },
+    "source": {
+      "title": "स्रोत",
+      "domain": "डोमेन",
+      "httpStatus": "HTTP स्थिति",
+      "contentType": "सामग्री प्रकार",
+      "size": "आकार",
+      "published": "प्रकाशित",
+      "fetched": "प्राप्त किया गया",
+      "timesSeen": "कितनी बार देखा गया",
+      "text": "निकाला गया टेक्स्ट",
+      "truncated": "{total} में से पहले {shown} अक्षर दिखाए जा रहे हैं।",
+      "noText": "इस स्रोत से कोई टेक्स्ट नहीं निकाला गया।"
+    },
+    "calls": {
+      "openCall": "मॉडल कॉल लॉग में खोलें",
+      "emptyTitle": "कोई मॉडल कॉल नहीं",
+      "emptyMessage": "इस रन ने कोई मॉडल कॉल नहीं किया, या इसके कॉल अभी दर्ज किए जा रहे हैं।"
+    },
+    "live": {
+      "streaming": "लाइव",
+      "polling": "हर कुछ सेकंड में रीफ़्रेश हो रहा है"
+    },
+    "retry": {
+      "column": "फिर से कोशिश",
+      "fromStage": "इस चरण से फिर से कोशिश करें",
+      "fromStageAria": "इस चरण से फिर से कोशिश करें ({stage})",
+      "runAgain": "फिर से चलाएँ",
+      "runAgainAria": "फिर से चलाएँ ({stage} विफल हुआ)",
+      "resumeTitle": "इस चरण से फिर से कोशिश करें",
+      "resumeMessage": "इस रन पर सहेजे गए निष्कर्षों का उपयोग करके {stage} और उसके बाद के हर चरण को फिर से चलाएँ? इससे मॉडल कॉल होते हैं जो आपके उपयोग में गिने जाते हैं।",
+      "newTitle": "फिर से चलाएँ",
+      "newMessage": "इस विषय का एक नया रन शुरुआत से कतार में डालें? सर्च और फ़ेच के परिणाम नहीं रखे जाते, इसलिए हर चरण फिर से चलता है और ऐसे मॉडल कॉल करता है जो आपके उपयोग में गिने जाते हैं।",
+      "resumeQueued": "रन {stage} से फिर से कतार में डाला गया",
+      "newQueued": "नया रन कतार में डाला गया"
+    }
+  },
+  "oneTime": {
+    "form": {
+      "failedHint": "अगर योजना बनाना विफल रहा, तब भी अनुरोध सहेजा गया है और आप सूची से इसकी योजना फिर से बना सकते हैं।",
+      "openList": "अनुरोध खोलें",
+      "text": "आप क्या चाहते हैं?",
+      "textHelp": "उदाहरण के लिए: शिपिंग कंटेनर के इतिहास पर मेरे लिए एक पॉडकास्ट बनाएँ।",
+      "placeholder": "कैलिफ़ोर्निया में हीट पंप छूट पर मेरे लिए एक रिपोर्ट लिखें",
+      "deliverables": "डिलिवरेबल",
+      "length": "लंबाई",
+      "timing": "कब",
+      "runNow": "अभी चलाएँ",
+      "runAt": "एक बार इस समय चलाएँ",
+      "when": "तारीख और समय",
+      "recipients": "ईमेल प्राप्तकर्ता",
+      "recipientsHelp": "अल्पविराम से अलग करें। डिफ़ॉल्ट रूप से आप ({email})।",
+      "publishToFeed": "मेरी फ़ीड पर प्रकाशित करें",
+      "publishToFeedHelp": "पॉडकास्ट को अपनी निजी फ़ीड में भी जोड़ें",
+      "justDoIt": "सीधे कर दें",
+      "justDoItHelp": "स्पष्टीकरण वाले प्रश्न छोड़ें और योजना की तुरंत पुष्टि करें",
+      "submitNow": "योजना बनाएँ और चलाएँ",
+      "submit": "योजना बनाएँ",
+      "moreOptions": "और विकल्प"
+    },
+    "actions": {
+      "confirmed": "अनुरोध की पुष्टि हो गई",
+      "cancelled": "अनुरोध रद्द हो गया",
+      "open": "खोलें",
+      "confirm": "पुष्टि करें",
+      "cancel": "अनुरोध रद्द करें",
+      "convert": "आवर्ती बनाएँ",
+      "openTopic": "विषय खोलें"
+    },
+    "convert": {
+      "title": "इसे आवर्ती विषय बनाएँ",
+      "message": "\"{title}\" को उसके ब्रीफ़ और आयामों के साथ आवर्ती विषय में बदलें? इसके बाद आप इसे शेड्यूल कर सकते हैं।",
+      "done": "आवर्ती विषय बनाया गया"
+    },
+    "delete": {
+      "title": "अनुरोध हटाएँ",
+      "message": "\"{title}\" और उसकी योजना हटाएँ?",
+      "done": "अनुरोध हटाया गया"
+    },
+    "columns": {
+      "title": "अनुरोध",
+      "status": "स्थिति",
+      "deliverables": "डिलिवरेबल",
+      "length": "लंबाई",
+      "runAt": "चलने का समय",
+      "created": "बनाया गया",
+      "id": "ID"
+    },
+    "searchPlaceholder": "अनुरोध खोजें",
+    "whenConfirmed": "पुष्टि होने पर",
+    "new": "नया अनुरोध",
+    "empty": {
+      "title": "अभी तक कोई एक बार का अनुरोध नहीं",
+      "message": "एक रिपोर्ट, पॉडकास्ट या ईमेल सारांश, जो अभी एक बार या आपके चुने समय पर चलता है।",
+      "action": "एक बार के लिए कुछ भी माँगें"
+    },
+    "backToList": "सभी अनुरोध",
+    "declined": {
+      "title": "यह अनुरोध My Morning News के रिसर्च दायरे से बाहर है",
+      "rephrase": "दूसरे शब्दों में लिखें"
+    },
+    "detail": {
+      "request": "अनुरोध",
+      "estimatedCost": "अनुमानित लागत",
+      "confirmed": "पुष्टि हुई",
+      "completed": "पूरा हुआ",
+      "run": "रन",
+      "openRun": "रन खोलें",
+      "confirmTitle": "पुष्टि करें और चलाएँ",
+      "confirmAt": "उस समय के लिए पुष्टि करें",
+      "confirmNow": "पुष्टि करें और अभी चलाएँ",
+      "needsPlan": "पुष्टि करने से पहले अनुरोध की योजना फिर से बनाएँ।",
+      "plan": "योजना",
+      "noPlanDeclined": "अस्वीकृत अनुरोध की कोई योजना नहीं होती।",
+      "noPlan": "अभी तक कोई योजना नहीं।",
+      "dimensions": "इसमें क्या शामिल होगा",
+      "questions": "स्पष्टीकरण वाले प्रश्न",
+      "questionsHelp": "{total} में से {answered} के उत्तर दिए गए। अपने उत्तरों का उपयोग करने के लिए फिर से योजना बनाएँ, या जैसा है वैसे ही पुष्टि करें।",
+      "replan": "मेरे उत्तरों के साथ फिर से योजना बनाएँ"
+    },
+    "newTitle": "नया अनुरोध",
+    "newSummary": "एक बार की रिपोर्ट, पॉडकास्ट और ईमेल सारांश"
+  },
+  "findings": {
+    "backToList": "निष्कर्षों पर वापस जाएँ",
+    "openPage": "पूरा पेज खोलें",
+    "duplicate": "डुप्लिकेट",
+    "update": "अपडेट",
+    "scoreAria": "प्रासंगिकता स्कोर {score}",
+    "searchPlaceholder": "शीर्षक और सारांश खोजें",
+    "minScore": "न्यूनतम",
+    "runFilter": "रन {id}",
+    "clearRun": "हर रन के निष्कर्ष दिखाएँ",
+    "includeDuplicates": "डुप्लिकेट शामिल करें",
+    "includeDryRuns": "ड्राई रन शामिल करें",
+    "components": {
+      "llm": "मॉडल का आकलन",
+      "feedback": "फ़ीडबैक",
+      "novelty": "नवीनता",
+      "source": "स्रोत",
+      "recency": "ताज़गी",
+      "composite": "संयुक्त"
+    },
+    "columns": {
+      "title": "निष्कर्ष",
+      "tier": "श्रेणी",
+      "score": "स्कोर",
+      "category": "वर्ग",
+      "topic": "विषय",
+      "published": "प्रकाशित",
+      "found": "मिला",
+      "id": "ID",
+      "rating": "आपकी रेटिंग"
+    },
+    "detail": {
+      "title": "निष्कर्ष",
+      "whyItMatters": "यह क्यों मायने रखता है",
+      "scoreBreakdown": "स्कोर का विवरण",
+      "scoreChartAria": "{score} के संयुक्त स्कोर के साथ स्कोर का विवरण",
+      "scoreHelp": "हर घटक 0 से 100 तक होता है। संयुक्त स्कोर विषय के रैंकिंग भार के अनुसार उनका भारित औसत है।",
+      "rationale": "तर्क",
+      "noRationale": "मॉडल ने इस स्कोर का कोई तर्क नहीं दिया।",
+      "evidence": "साक्ष्य ({count})",
+      "dimension": "आयाम",
+      "noDimension": "किसी आयाम से जुड़ा नहीं।",
+      "run": "रन",
+      "confidence": "विश्वास",
+      "rank": "रैंक",
+      "duplicateOf": "इसका डुप्लिकेट",
+      "updateOf": "इसका अपडेट"
+    },
+    "evidence": {
+      "unknownSource": "अज्ञात स्रोत",
+      "verified": "सत्यापित उद्धरण",
+      "unverified": "सत्यापित नहीं",
+      "emptyTitle": "कोई साक्ष्य नहीं",
+      "emptyMessage": "इस निष्कर्ष के समर्थन में कोई सत्यापित उद्धरण नहीं है।",
+      "open": "संदर्भ में देखें",
+      "detailTitle": "साक्ष्य",
+      "quote": "उद्धरण",
+      "inContext": "संदर्भ में उद्धरण",
+      "unverifiedHelp": "इस उद्धरण का मिलान प्राप्त स्रोत टेक्स्ट से नहीं हो सका।",
+      "source": "स्रोत",
+      "domain": "डोमेन",
+      "position": "स्रोत में स्थान",
+      "positionValue": "अक्षर {start} से {end} तक",
+      "sourceId": "स्रोत ID"
+    },
+    "empty": {
+      "title": "अभी तक कोई निष्कर्ष नहीं",
+      "message": "निष्कर्ष तब दिखते हैं जब कोई रन स्रोतों को पढ़कर रैंक करता है। कुछ पाने के लिए कोई विषय चलाएँ।",
+      "topicMessage": "स्रोत खोजने और रैंक करने के लिए यह विषय चलाएँ।"
+    },
+    "pinnedMarker": "पिन किया गया",
+    "pinnedBadge": "पिन किया गया",
+    "hiddenBadge": "छिपाया गया",
+    "hiddenHelp": "छिपाए गए निष्कर्ष सूचियों, ब्रीफ़िंग और ईमेल से बाहर रहते हैं। इसे वापस लाने के लिए दिखाएँ।",
+    "showHidden": "छिपाए गए दिखाएँ",
+    "pinnedOnly": "केवल पिन किए गए",
+    "actions": {
+      "pin": "पिन करें",
+      "unpin": "पिन हटाएँ",
+      "hide": "छिपाएँ",
+      "unhide": "दिखाएँ",
+      "pinned": "निष्कर्ष पिन किया गया",
+      "unpinned": "निष्कर्ष से पिन हटाया गया",
+      "hidden": "निष्कर्ष छिपाया गया",
+      "unhidden": "निष्कर्ष फिर से दिखाया गया",
+      "deleted": "निष्कर्ष हटाया गया",
+      "deleteTitle": "निष्कर्ष हटाएँ",
+      "deleteMessage": "\"{title}\" हटाएँ? इसके साक्ष्य लिंक हटा दिए जाएँगे। साझा स्रोत और आपकी रेटिंग का इतिहास बना रहेगा।"
+    }
+  },
+  "predictions": {
+    "overdue": "अवधि बीत चुकी है",
+    "brierHelp": "कम बेहतर है: 0 सटीक है और 0.25 सिक्का उछालने जैसा है।",
+    "columns": {
+      "statement": "पूर्वानुमान",
+      "status": "स्थिति",
+      "confidence": "विश्वास",
+      "horizon": "अवधि",
+      "brier": "Brier स्कोर",
+      "topic": "विषय",
+      "created": "बनाया गया",
+      "id": "ID",
+      "rating": "आपका ग्रेड"
+    },
+    "actions": {
+      "resolve": "निर्णय दें",
+      "reresolve": "फिर से निर्णय दें"
+    },
+    "resolvedBy": {
+      "User": "आप",
+      "Agent": "एजेंट",
+      "AgentConfirmed": "एजेंट, आपके द्वारा पुष्टि की गई"
+    },
+    "detail": {
+      "title": "पूर्वानुमान",
+      "resolved": "निर्णय हुआ",
+      "resolvedBy": "निर्णय किसने दिया",
+      "note": "निर्णय नोट"
+    },
+    "reviews": {
+      "title": "समीक्षाएँ ({count})",
+      "empty": "अभी तक कोई समीक्षा नहीं। बाद के रन खुले पूर्वानुमानों को नए निष्कर्षों से जाँचते हैं और यहाँ निर्णय का प्रस्ताव देते हैं।",
+      "proposes": "प्रस्ताव",
+      "confidence": "{confidence} विश्वास",
+      "finding": "निष्कर्ष {id}",
+      "accept": "स्वीकार करें",
+      "reject": "अस्वीकार करें",
+      "accepted": "स्वीकार किया गया",
+      "rejected": "अस्वीकार किया गया",
+      "acceptedToast": "निर्णय स्वीकार किया गया",
+      "rejectedToast": "निर्णय अस्वीकार किया गया"
+    },
+    "resolve": {
+      "title": "पूर्वानुमान पर निर्णय दें",
+      "submit": "निर्णय दें",
+      "outcome": "परिणाम",
+      "outcomeHelp": "सटीक, आंशिक रूप से सटीक और गलत परिणाम सटीकता और Brier स्कोर में गिने जाते हैं।",
+      "note": "नोट",
+      "notePlaceholder": "क्या हुआ, अगर लिंक हो तो उसके साथ",
+      "notGraded": "इस परिणाम का ग्रेड नहीं दिया जाता, इसलिए इसका कोई Brier स्कोर नहीं होता।",
+      "brierPreview": "{confidence} विश्वास पर इस परिणाम का Brier स्कोर {brier} है।",
+      "done": "पूर्वानुमान पर निर्णय हुआ"
+    },
+    "kpis": {
+      "open": "खुले",
+      "graded": "ग्रेड किए गए",
+      "ofTotal": "{total} पूर्वानुमानों में से",
+      "accuracy": "देखी गई सटीकता",
+      "accuracyHelp": "आंशिक रूप से सटीक को आधा गिना जाता है।",
+      "brier": "औसत Brier स्कोर"
+    },
+    "calibration": {
+      "title": "कैलिब्रेशन",
+      "subtitle": "बताया गया विश्वास बनाम पूर्वानुमान कितनी बार सच हुए",
+      "aria": "{count} ग्रेड किए गए पूर्वानुमानों का कैलिब्रेशन",
+      "xAxis": "बताया गया विश्वास",
+      "count": "पूर्वानुमान",
+      "meanConfidence": "औसत विश्वास",
+      "observed": "देखी गई सटीकता",
+      "perfect": "सटीक कैलिब्रेशन",
+      "bucket": "{from} से {to} विश्वास",
+      "empty": "कैलिब्रेशन देखने के लिए कुछ पूर्वानुमानों को ग्रेड दें।"
+    },
+    "empty": {
+      "title": "अभी तक कोई पूर्वानुमान नहीं",
+      "message": "रन इस बारे में पूर्वानुमान लगाते हैं कि कोई विषय किस दिशा में जा रहा है। वे यहाँ ट्रैक करने और ग्रेड देने के लिए दिखते हैं।"
+    }
+  },
+  "suggestions": {
+    "priority": "{priority} प्राथमिकता",
+    "effort": "{effort} लगता है",
+    "until": "तक",
+    "changed": "{status} चिह्नित किया गया",
+    "columns": {
+      "title": "सुझाव",
+      "status": "स्थिति",
+      "priorityEffort": "प्राथमिकता और प्रयास",
+      "topic": "विषय",
+      "created": "बनाया गया",
+      "id": "ID",
+      "rating": "आपकी रेटिंग"
+    },
+    "actions": {
+      "accept": "स्वीकार करें",
+      "snooze": "स्नूज़ करें",
+      "dismiss": "खारिज करें",
+      "complete": "पूरा करें"
+    },
+    "detail": {
+      "title": "सुझाव",
+      "rationale": "क्यों",
+      "statusChanged": "स्थिति बदली",
+      "findings": "संबंधित निष्कर्ष"
+    },
+    "snooze": {
+      "title": "सुझाव स्नूज़ करें",
+      "quick": "त्वरित विकल्प",
+      "tomorrow": "कल सुबह",
+      "nextWeek": "एक हफ़्ते में",
+      "nextMonth": "एक महीने में",
+      "until": "इस समय तक स्नूज़ करें",
+      "future": "भविष्य का कोई समय चुनें।",
+      "help": "यह इस समय आपकी सूची में वापस आ जाएगा।"
+    },
+    "empty": {
+      "title": "अभी तक कोई सुझाव नहीं",
+      "message": "रन ऐसी चीज़ें सुझाते हैं जिनमें गहराई से जाना फ़ायदेमंद हो। वे यहाँ स्वीकार करने, स्नूज़ करने, खारिज करने या पूरा करने के लिए दिखते हैं।"
+    }
+  },
+  "briefings": {
+    "untitled": "बिना शीर्षक की ब्रीफ़िंग",
+    "dryRun": "ड्राई रन",
+    "searchPlaceholder": "शीर्षक",
+    "includeDryRun": "ड्राई रन शामिल करें",
+    "columns": {
+      "title": "ब्रीफ़िंग",
+      "kind": "प्रकार",
+      "status": "स्थिति",
+      "edition": "संस्करण",
+      "topic": "विषय",
+      "items": "आइटम",
+      "pinned": "पिन किया गया",
+      "created": "तैयार की गई",
+      "id": "ID"
+    },
+    "actions": {
+      "open": "खोलें"
+    },
+    "download": {
+      "md": ".md डाउनलोड करें",
+      "html": ".html डाउनलोड करें"
+    },
+    "pin": {
+      "pin": "पिन करें",
+      "unpin": "पिन हटाएँ",
+      "pinNamed": "{title} पिन करें",
+      "unpinNamed": "{title} से पिन हटाएँ",
+      "pinned": "पिन किया गया। इसकी फ़ाइलें रिटेंशन अवधि के बाद भी रखी जाती हैं।",
+      "unpinned": "पिन हटाया गया। इसकी फ़ाइलें फिर से रिटेंशन अवधि का पालन करती हैं।",
+      "cap": "आप इस वर्कस्पेस की पिन सीमा तक पहुँच गए हैं। पहले किसी दूसरी ब्रीफ़िंग से पिन हटाएँ।",
+      "badge": "पिन किया गया"
+    },
+    "expired": {
+      "notice": "रिपोर्ट फ़ाइल की अवधि समाप्त हो गई है। इसे फिर से डाउनलोड करने के लिए दोबारा बनाएँ।",
+      "title": "रिपोर्ट फ़ाइल की अवधि समाप्त हो गई है।",
+      "message": "रिपोर्ट फ़ाइलें अधिकतम 365 दिनों तक रखी जाती हैं। ब्रीफ़िंग और उसके निष्कर्ष अभी भी यहाँ हैं, इसलिए फ़ाइलें दोबारा बनाई जा सकती हैं।",
+      "regenerate": "दोबारा बनाएँ",
+      "regenerated": "रिपोर्ट फ़ाइलें दोबारा बनाई गईं"
+    },
+    "files": {
+      "expired": "फ़ाइल की अवधि समाप्त",
+      "pinned": "पिन किया गया",
+      "expires": "{date} तक रखी जाएगी",
+      "download": "{name} डाउनलोड करें"
+    },
+    "progress": {
+      "Queued": "कतार में। यह जल्द ही तैयार की जाएगी।",
+      "Composing": "अभी तैयार की जा रही है।",
+      "researching": "नए रिसर्च की प्रतीक्षा है, अधिकतम {time} तक।"
+    },
+    "reader": {
+      "back": "सभी ब्रीफ़िंग",
+      "citation": "स्रोत {number}",
+      "outline": "रूपरेखा",
+      "noItems": "इस ब्रीफ़िंग में कोई निष्कर्ष, पूर्वानुमान या सुझाव उपयोग नहीं हुआ।",
+      "otherItems": "अन्य",
+      "open": {
+        "Finding": "निष्कर्ष खोलें",
+        "Prediction": "पूर्वानुमान खोलें",
+        "Suggestion": "सुझाव खोलें"
+      },
+      "noFiles": "कोई संग्रहीत फ़ाइल नहीं।",
+      "openRun": "रन खोलें",
+      "stats": "{minutes} मिनट में पढ़ें, {words} शब्द, {items} आइटम",
+      "failed": "तैयार करना विफल रहा।",
+      "noContent": "इस ब्रीफ़िंग में कोई सामग्री नहीं है।",
+      "items": "इस ब्रीफ़िंग में ({count})",
+      "files": "फ़ाइलें",
+      "period": "अवधि",
+      "readMinutes": "{minutes} मिनट में पढ़ें"
+    },
+    "delete": {
+      "title": "ब्रीफ़िंग हटाएँ",
+      "message": "\"{title}\" और इसकी संग्रहीत फ़ाइलें हटाएँ? इसमें उपयोग हुए निष्कर्ष, पूर्वानुमान और सुझाव बने रहेंगे।",
+      "done": "ब्रीफ़िंग हटाई गई"
+    },
+    "empty": {
+      "title": "अभी तक कोई ब्रीफ़िंग नहीं",
+      "message": "कोई संस्करण तैयार करें, कोई विषय चलाएँ, या ब्रीफ़िंग पाने के लिए एक बार का प्रश्न पूछें।"
+    }
+  },
+  "today": {
+    "seeAll": "सभी देखें",
+    "composeNow": "अभी तैयार करें",
+    "composeQueued": "ब्रीफ़िंग कतार में है",
+    "composeReady": "आपकी ब्रीफ़िंग तैयार है",
+    "composeFailed": "ब्रीफ़िंग विफल रही: {message}",
+    "composeConflict": "इस संस्करण की एक ब्रीफ़िंग पहले से तैयार हो रही है।",
+    "edition": "संस्करण",
+    "follow": "प्रगति देखें",
+    "noEditions": "आपके पास अभी तक कोई संस्करण नहीं है।",
+    "createEdition": "एक बनाएँ",
+    "empty": {
+      "title": "अभी तक कोई ब्रीफ़िंग नहीं",
+      "message": "अपना संस्करण अभी तैयार करें, या उसके शेड्यूल की प्रतीक्षा करें।"
+    },
+    "openReader": "रीडर में खोलें",
+    "runs": "हाल की रन ब्रीफ़िंग",
+    "oneTime": "एक बार की रिपोर्ट",
+    "noRuns": "अभी तक कोई रन ब्रीफ़िंग नहीं।",
+    "noOneTime": "अभी तक कोई एक बार की रिपोर्ट नहीं।"
+  },
+  "editions": {
+    "add": "नया संस्करण",
+    "back": "सभी संस्करण",
+    "newTitle": "नया संस्करण",
+    "newSummary": "आपके चुने विषयों पर, अपने ही शेड्यूल वाली एक ब्रीफ़िंग।",
+    "created": "संस्करण बनाया गया",
+    "saved": "संस्करण सहेजा गया",
+    "deleted": "संस्करण हटाया गया",
+    "composeQueued": "ब्रीफ़िंग कतार में है",
+    "enabledOn": "सक्षम",
+    "enabledOff": "अक्षम",
+    "preview": "पूर्वावलोकन",
+    "previewing": "पूर्वावलोकन तैयार हो रहा है...",
+    "previewTitle": "पूर्वावलोकन: {name}",
+    "previewSubtitle": "नवीनतम डेटा से तैयार किया गया। कुछ भी सहेजा या भेजा नहीं जाता।",
+    "previewFallbacks": "{count, plural, one {# अनुभाग} other {# अनुभाग}} सादी सूची के रूप में लिखे गए, क्योंकि किसी मॉडल ने उत्तर नहीं दिया।",
+    "previewEmpty": "पूर्वावलोकन खाली है।",
+    "discard": "बदलाव छोड़ें",
+    "create": "संस्करण बनाएँ",
+    "save": "संस्करण सहेजें",
+    "schedulesHelp": "यह संस्करण कब तैयार होता है। नया रिसर्च चालू होने पर, रिसर्च हर निर्धारित समय से पहले शुरू होता है।",
+    "schedulesEmpty": "इस संस्करण को अपने आप तैयार करने के लिए कोई शेड्यूल जोड़ें, या इसे मैन्युअल रूप से तैयार करें।",
+    "deleteTitle": "संस्करण हटाएँ",
+    "deleteMessage": "संस्करण \"{name}\" और इसके शेड्यूल हटाएँ? इसकी ब्रीफ़िंग बनी रहेंगी।",
+    "viewBriefings": "ब्रीफ़िंग देखें",
+    "lookbackHours": "पिछले {hours} घंटे",
+    "sections": {
+      "settings": "सेटिंग्स",
+      "topics": "विषय",
+      "schedules": "शेड्यूल",
+      "briefings": "ब्रीफ़िंग"
+    },
+    "columns": {
+      "name": "संस्करण",
+      "enabled": "स्थिति",
+      "delivery": "डिलीवरी",
+      "lookback": "पिछली अवधि",
+      "lastComposed": "पिछली बार तैयार",
+      "created": "बनाया गया",
+      "id": "ID"
+    },
+    "badges": {
+      "email": "ईमेल",
+      "audio": "ऑडियो",
+      "fresh": "नया रिसर्च ({minutes} मिनट)"
+    },
+    "empty": {
+      "title": "कोई संस्करण नहीं",
+      "message": "शेड्यूल पर ब्रीफ़िंग पाने के लिए एक संस्करण बनाएँ।"
+    },
+    "form": {
+      "name": "नाम",
+      "nameRequired": "नाम आवश्यक है।",
+      "description": "विवरण",
+      "template": "टेम्पलेट",
+      "templateDefault": "डिफ़ॉल्ट टेम्पलेट {name} का उपयोग करता है।",
+      "defaultName": "डिफ़ॉल्ट",
+      "useDefault": "डिफ़ॉल्ट टेम्पलेट",
+      "sharedOption": "{name} (साझा)",
+      "enabled": "सक्षम",
+      "enabledHelp": "अपने शेड्यूल पर तैयार होता है। अभी तैयार करें दोनों स्थितियों में काम करता है।",
+      "email": "ईमेल",
+      "emailHelp": "ब्रीफ़िंग तैयार होने पर उसे ईमेल करें।",
+      "audio": "ऑडियो",
+      "audioHelp": "हर ब्रीफ़िंग का ऑडियो संस्करण बनाएँ।",
+      "fresh": "पहले नया रिसर्च",
+      "freshHelp": "तैयार करने से पहले हर विषय का रिसर्च चलाएँ।",
+      "lead": "रिसर्च का अग्रिम समय (मिनट)",
+      "leadHelp": "रिसर्च के लिए कितनी देर प्रतीक्षा करनी है, {min} से {max} मिनट तक।",
+      "lookbackMode": "पिछली अवधि",
+      "lookbackModeHelp": {
+        "SinceLastEdition": "पिछला संस्करण तैयार होने के बाद से सब कुछ।",
+        "FixedHours": "एक निश्चित अवधि जो संस्करण तैयार होने पर समाप्त होती है।"
+      },
+      "lookbackHours": "पिछली अवधि (घंटे)",
+      "lookbackHoursHelp": "{min} से {max} घंटे तक। पिछले संस्करण के बाद से वाला विकल्प भी इससे पीछे नहीं देखता।"
+    },
+    "topics": {
+      "mode": "विषय",
+      "modes": {
+        "all": "सभी सक्रिय विषय",
+        "chosen": "विषय चुनें"
+      },
+      "allHelp": "हर सक्रिय आवर्ती विषय शामिल करता है, बाद में जोड़े गए विषयों सहित।",
+      "covered": "शामिल विषय",
+      "noneActive": "आपके पास अभी तक कोई सक्रिय आवर्ती विषय नहीं है।",
+      "chosenHelp": "केवल ये विषय, इसी क्रम में।",
+      "noneChosen": "अभी तक कोई विषय नहीं चुना गया।",
+      "chosen": "चुने गए विषय",
+      "chooseOne": "कम से कम एक विषय चुनें, या सभी सक्रिय विषय शामिल करें।",
+      "moveUp": "{name} को ऊपर ले जाएँ",
+      "moveDown": "{name} को नीचे ले जाएँ",
+      "remove": "{name} हटाएँ",
+      "addLabel": "जोड़ने के लिए विषय",
+      "pick": "एक विषय चुनें",
+      "add": "जोड़ें",
+      "save": "विषय सहेजें",
+      "saved": "विषय सहेजे गए"
+    }
+  },
+  "templates": {
+    "add": "नया टेम्पलेट",
+    "back": "सभी टेम्पलेट",
+    "open": "एडिटर खोलें",
+    "empty": "कोई टेम्पलेट नहीं",
+    "searchPlaceholder": "नाम या विवरण",
+    "saved": "नया संस्करण सहेजा गया",
+    "created": "टेम्पलेट बनाया गया",
+    "deleted": "टेम्पलेट हटाया गया",
+    "export": ".md निर्यात करें",
+    "copy": "प्रतिलिपि बनाएँ",
+    "copyName": "{name} (प्रतिलिपि)",
+    "reset": "डिफ़ॉल्ट पर रीसेट करें",
+    "resetTitle": "टेम्पलेट रीसेट करें",
+    "resetMessage": "सामग्री को नए संस्करण के रूप में मूल डिफ़ॉल्ट से बदलें? पुराने संस्करण इतिहास में बने रहेंगे।",
+    "resetDone": "डिफ़ॉल्ट पर रीसेट किया गया",
+    "deleteTitle": "टेम्पलेट हटाएँ",
+    "deleteMessage": "टेम्पलेट \"{name}\" और इसके संस्करण हटाएँ? इसका उपयोग करने वाले संस्करण डिफ़ॉल्ट टेम्पलेट पर लौट जाएँगे।",
+    "readOnly": "केवल टेनेंट व्यवस्थापक साझा टेम्पलेट बदल सकते हैं। अपना संपादित करने के लिए प्रतिलिपि बनाएँ।",
+    "scope": {
+      "shared": "साझा",
+      "mine": "मेरे"
+    },
+    "badges": {
+      "editionDefault": "संस्करण डिफ़ॉल्ट",
+      "builtIn": "अंतर्निहित"
+    },
+    "columns": {
+      "name": "टेम्पलेट",
+      "scope": "दायरा",
+      "origin": "उत्पत्ति",
+      "version": "संस्करण",
+      "updated": "अपडेट किया गया"
+    },
+    "import": {
+      "button": ".md आयात करें",
+      "file": "टेम्पलेट फ़ाइल",
+      "tooLarge": "यह फ़ाइल टेम्पलेट होने के लिए बहुत बड़ी है।"
+    },
+    "editor": {
+      "title": "टेम्पलेट",
+      "panels": "टेम्पलेट टूल",
+      "valid": "मान्य",
+      "errors": "{count, plural, one {# त्रुटि} other {# त्रुटियाँ}}",
+      "rejected": "सर्वर ने इस संस्करण को अस्वीकार कर दिया।",
+      "format": "फ़्रंट मैटर (name, description, tone, length, audience, citations, audio) वाला Markdown। हर लेवल-दो हेडिंग एक अनुभाग है। उसके नीचे एक mmn:section टिप्पणी डेटा चुनती है (source, tier, status, group, limit, order, topic, dimension), और हेडिंग के नीचे का टेक्स्ट कंपोज़र को बताता है कि क्या लिखना है।"
+    },
+    "panels": {
+      "problems": "समस्याएँ",
+      "problemsCount": "समस्याएँ ({count})",
+      "outline": "रूपरेखा",
+      "preview": "पूर्वावलोकन",
+      "versions": "संस्करण"
+    },
+    "problems": {
+      "none": "कोई समस्या नहीं मिली।",
+      "errors": "{count, plural, one {# त्रुटि} other {# त्रुटियाँ}}",
+      "warnings": "{count, plural, one {# चेतावनी} other {# चेतावनियाँ}}",
+      "checking": "जाँच हो रही है...",
+      "jump": "पंक्ति {line} पर जाएँ",
+      "line": "पंक्ति {line}",
+      "general": "सामान्य",
+      "warning": "चेतावनी",
+      "error": "त्रुटि"
+    },
+    "outline": {
+      "pending": "मान्य किया जा रहा है...",
+      "name": "नाम",
+      "title": "शीर्षक",
+      "audio": "ऑडियो",
+      "audioOn": "चालू: {format}, लगभग {minutes} मिनट",
+      "audioOff": "बंद",
+      "intro": "परिचय",
+      "noSections": "अभी तक कोई अनुभाग नहीं। एक लेवल-दो हेडिंग जोड़ें।",
+      "jump": "पंक्ति {line} पर {heading} पर जाएँ",
+      "source": "source={source}"
+    },
+    "preview": {
+      "help": "चुने गए संस्करण को उसके सहेजे गए टेम्पलेट के साथ नवीनतम डेटा से तैयार करता है। कुछ भी सहेजा या भेजा नहीं जाता।",
+      "noEditions": "किसी टेम्पलेट का पूर्वावलोकन करने के लिए एक संस्करण बनाएँ।",
+      "edition": "पूर्वावलोकन के लिए संस्करण",
+      "otherTemplate": "{name} किसी दूसरे टेम्पलेट का उपयोग करता है, इसलिए यह पूर्वावलोकन इस टेम्पलेट को नहीं दिखाता।",
+      "unsaved": "पूर्वावलोकन में बदलाव देखने के लिए उन्हें सहेजें।"
+    },
+    "versions": {
+      "none": "अभी तक कोई संस्करण नहीं।",
+      "rollbackMessage": "संस्करण {version} को नए संस्करण के रूप में बहाल करें? मौजूदा सामग्री इतिहास में बनी रहेगी।"
+    },
+    "create": {
+      "titles": {
+        "new": "नया टेम्पलेट",
+        "import": "टेम्पलेट आयात करें",
+        "copy": "प्रतिलिपि बनाएँ"
+      },
+      "confirm": {
+        "new": "बनाएँ",
+        "import": "आयात करें",
+        "copy": "प्रतिलिपि बनाएँ"
+      },
+      "contentHelp": {
+        "import": "Markdown की {lines} पंक्तियाँ आयात करता है।",
+        "copy": "एडिटर की {lines} पंक्तियों की प्रतिलिपि बनाता है, बिना सहेजे बदलावों सहित।"
+      },
+      "defaultName": "मेरी ब्रीफ़िंग",
+      "name": "नाम",
+      "nameHelp": "फ़्रंट मैटर वाले नाम का उपयोग करने के लिए खाली छोड़ें।",
+      "startFrom": "यहाँ से शुरू करें",
+      "starter": "एक छोटा शुरुआती टेम्पलेट",
+      "copyOf": "{name} की प्रतिलिपि",
+      "shared": "इस वर्कस्पेस में सभी के साथ साझा करें",
+      "invalid": "टेम्पलेट में समस्याएँ हैं।"
+    }
+  },
+  "audio": {
+    "panel": {
+      "label": "ब्रीफ़िंग ऑडियो",
+      "title": "सुनें",
+      "fromText": "ब्रीफ़िंग टेक्स्ट से पढ़ा गया",
+      "checking": "ऑडियो की जाँच हो रही है..."
+    },
+    "player": {
+      "loading": "ऑडियो लोड हो रहा है...",
+      "loadingSize": "ऑडियो लोड हो रहा है ({size})...",
+      "play": "चलाएँ",
+      "pause": "रोकें",
+      "back": "{seconds} सेकंड पीछे",
+      "forward": "{seconds} सेकंड आगे",
+      "seek": "प्लेबैक स्थिति",
+      "position": "{duration} में से {time}",
+      "nowPlaying": "अभी चल रहा है: {chapter}",
+      "speed": "प्लेबैक गति",
+      "speedOption": "{speed}x",
+      "chapters": "अध्याय"
+    },
+    "progress": {
+      "Queued": "ऑडियो कतार में है। यह जल्द ही बनाया जाएगा।",
+      "Scripting": "बोली जाने वाली स्क्रिप्ट लिखी जा रही है।",
+      "Synthesizing": "आवाज़ तैयार की जा रही है। लंबी ब्रीफ़िंग में कुछ मिनट लगते हैं।"
+    },
+    "make": {
+      "action": "ऑडियो बनाएँ",
+      "again": "फिर से ऑडियो बनाएँ",
+      "remake": "ऑडियो दोबारा बनाएँ",
+      "voice": "आवाज़",
+      "defaultVoice": "डिफ़ॉल्ट आवाज़",
+      "voiceDefault": "{name} (डिफ़ॉल्ट)",
+      "queued": "ऑडियो कतार में है",
+      "conflict": "ऑडियो कतार में नहीं डाला गया। इस ब्रीफ़िंग का ऑडियो पहले से बन रहा है, या इस सर्वर पर ऑडियो बंद है। {message}"
+    },
+    "failed": "ऑडियो बनाना विफल रहा।",
+    "missingFile": "ऑडियो फ़ाइल उपलब्ध नहीं है। सुनने के लिए फिर से ऑडियो बनाएँ।",
+    "none": "इस ब्रीफ़िंग में अभी तक ऑडियो नहीं है।",
+    "listenFrom": "{section} से सुनें"
+  },
+  "voices": {
+    "columns": {
+      "name": "नाम",
+      "provider": "प्रदाता",
+      "voice": "आवाज़",
+      "model": "मॉडल",
+      "speed": "गति",
+      "endpoint": "एंडपॉइंट",
+      "credential": "क्रेडेंशियल",
+      "created": "बनाया गया",
+      "id": "ID"
+    },
+    "default": "डिफ़ॉल्ट",
+    "secondaryShort": "दूसरा होस्ट: {voice}",
+    "serverDefault": "सर्वर डिफ़ॉल्ट",
+    "adminOnly": "केवल टेनेंट व्यवस्थापक आवाज़ें बदल सकते हैं।",
+    "memberNotice": "आप आवाज़ों की सूची देख सकते हैं और उनका परीक्षण कर सकते हैं। उन्हें बनाने, संपादित करने और हटाने के लिए टेनेंट व्यवस्थापक की आवश्यकता है।",
+    "twoHostHint": "दो-होस्ट स्क्रिप्ट में HOST_A और HOST_B की पंक्तियाँ बारी-बारी से आती हैं: HOST_A आवाज़ का उपयोग करता है, और HOST_B दूसरी आवाज़ का (या दूसरी आवाज़ सेट न होने पर वही आवाज़)।",
+    "makeDefault": "डिफ़ॉल्ट बनाएँ",
+    "defaultSet": "{name} अब डिफ़ॉल्ट आवाज़ है",
+    "empty": {
+      "title": "अभी तक कोई आवाज़ नहीं",
+      "message": "जब तक आप कोई आवाज़ नहीं जोड़ते, ऑडियो सर्वर की स्पीच सेटिंग्स का उपयोग करता है।"
+    },
+    "form": {
+      "createTitle": "आवाज़ जोड़ें",
+      "editTitle": "आवाज़ संपादित करें"
+    },
+    "fields": {
+      "endpointHelp": "OpenAI-संगत स्पीच सर्वर का बेस URL। सर्वर डिफ़ॉल्ट का उपयोग करने के लिए खाली छोड़ें।",
+      "endpointPlaceholder": "सर्वर डिफ़ॉल्ट",
+      "modelHelp": "डिफ़ॉल्ट मॉडल के लिए खाली छोड़ें।",
+      "modelPlaceholder": "kokoro",
+      "voice": "आवाज़",
+      "voiceHelp": "वाचक की आवाज़, और दो-होस्ट स्क्रिप्ट में HOST_A।",
+      "voicePlaceholder": "af_heart",
+      "secondaryVoice": "दूसरी आवाज़",
+      "secondaryVoiceHelp": "दो-होस्ट स्क्रिप्ट में HOST_B। दोनों होस्ट के लिए एक ही आवाज़ का उपयोग करने के लिए खाली छोड़ें।",
+      "speedHelp": "{min} से {max} तक।",
+      "credentialHelp": "API कुंजी वाला एक संग्रहीत क्रेडेंशियल, जब स्पीच सर्वर को इसकी आवश्यकता हो।",
+      "isDefault": "डिफ़ॉल्ट आवाज़",
+      "isDefaultHelp": "तब उपयोग होती है जब कोई संस्करण या अनुरोध किसी आवाज़ का नाम नहीं देता।"
+    },
+    "test": {
+      "action": "परीक्षण",
+      "title": "आवाज़ का परीक्षण करें",
+      "text": "नमूना टेक्स्ट",
+      "textHelp": "एक छोटा अभिवादन सुनने के लिए खाली छोड़ें।",
+      "defaultText": "सुप्रभात। आपके विषयों में यह सब बदला है।",
+      "speak": "बोलें",
+      "speaking": "बोल रहा है...",
+      "ttsError": "स्पीच सेवा विफल रही: {message}"
+    },
+    "delete": {
+      "title": "आवाज़ हटाएँ",
+      "message": "आवाज़ \"{name}\" हटाएँ? इसका उपयोग करने वाले संस्करण डिफ़ॉल्ट आवाज़ पर लौट जाएँगे।"
+    }
+  },
+  "listen": {
+    "untitled": "बिना शीर्षक का एपिसोड",
+    "columns": {
+      "title": "एपिसोड",
+      "status": "स्थिति",
+      "kind": "प्रकार",
+      "duration": "अवधि",
+      "size": "आकार",
+      "segments": "खंड",
+      "script": "स्क्रिप्ट",
+      "created": "बनाया गया",
+      "completed": "पूरा हुआ",
+      "id": "ID"
+    },
+    "noValue": "कोई नहीं",
+    "scriptModel": "मॉडल द्वारा लिखी गई",
+    "scriptText": "टेक्स्ट से पढ़ी गई",
+    "actions": {
+      "play": "चलाएँ",
+      "briefing": "ब्रीफ़िंग खोलें",
+      "remake": "ऑडियो दोबारा बनाएँ"
+    },
+    "empty": {
+      "title": "अभी तक कोई ऑडियो नहीं",
+      "message": "किसी ब्रीफ़िंग से ऑडियो बनाएँ, या किसी संस्करण के लिए ऑडियो चालू करें।"
+    },
+    "delete": {
+      "title": "एपिसोड हटाएँ",
+      "message": "\"{title}\" और इसकी ऑडियो फ़ाइलें हटाएँ? ब्रीफ़िंग बनी रहेगी।",
+      "done": "एपिसोड हटाया गया"
+    }
+  },
+  "feeds": {
+    "title": "पॉडकास्ट फ़ीड",
+    "summary": "पॉडकास्ट ऐप के लिए निजी फ़ीड URL। हर फ़ीड में एक सीक्रेट होता है, इसलिए इसके URL को पासवर्ड की तरह सुरक्षित रखें।",
+    "fields": {
+      "name": "नाम",
+      "nameHelp": "एक लेबल जिसे आप पहचान सकें, जैसे ऐप या डिवाइस।",
+      "namePlaceholder": "मेरे फ़ोन पर Overcast",
+      "edition": "संस्करण",
+      "editionHelp": "फ़ीड को एक संस्करण तक सीमित करें, या अपना सारा ऑडियो शामिल करें।"
+    },
+    "allAudio": "मेरा सारा ऑडियो",
+    "create": "फ़ीड बनाएँ",
+    "created": {
+      "title": "फ़ीड बनाई गई",
+      "warning": "यह URL निजी है और केवल एक बार दिखाया जाता है। जिसके पास भी यह है, वह आपकी ब्रीफ़िंग सुन सकता है। इसे अभी कॉपी करें, और लीक होने पर फ़ीड रद्द करें।",
+      "feedUrl": "फ़ीड URL",
+      "copyUrl": "फ़ीड URL कॉपी करें",
+      "secret": "सीक्रेट",
+      "copySecret": "सीक्रेट कॉपी करें",
+      "done": "मैंने इसे सहेज लिया है"
+    },
+    "empty": {
+      "title": "कोई पॉडकास्ट फ़ीड नहीं",
+      "message": "पॉडकास्ट ऐप में अपनी ब्रीफ़िंग सुनने के लिए एक फ़ीड बनाएँ।"
+    },
+    "columns": {
+      "name": "नाम",
+      "prefix": "टोकन",
+      "edition": "संस्करण",
+      "created": "बनाया गया",
+      "lastUsed": "पिछला उपयोग",
+      "status": "स्थिति",
+      "actions": "कार्रवाइयाँ"
+    },
+    "unnamed": "बिना नाम की फ़ीड",
+    "prefix": "{prefix}...",
+    "neverUsed": "कभी नहीं",
+    "revoked": "रद्द की गई",
+    "revoke": "रद्द करें",
+    "revokeNamed": "{name} रद्द करें",
+    "revokeConfirm": {
+      "title": "फ़ीड रद्द करें",
+      "message": "\"{name}\" रद्द करें? इसकी सदस्यता वाले पॉडकास्ट ऐप को एपिसोड मिलना बंद हो जाएगा। इसे पूर्ववत नहीं किया जा सकता।",
+      "done": "फ़ीड रद्द की गई"
+    },
+    "help": {
+      "title": "सदस्यता कैसे लें",
+      "step1": "ऊपर एक फ़ीड बनाएँ और उसका URL कॉपी करें।",
+      "apple": "Apple Podcasts: लाइब्रेरी खोलें, मेनू से URL द्वारा शो फ़ॉलो करें चुनें, और URL पेस्ट करें।",
+      "overcast": "Overcast: प्लस बटन टैप करें, URL जोड़ें चुनें, और URL पेस्ट करें।",
+      "publicUrl": "आपके फ़ोन को सर्वर तक पहुँचना होगा। MYMORNINGNEWS_PUBLIC_BASE_URL को ऐसे पते पर सेट करें जिसे फ़ोन खोल सके (127.0.0.1 नहीं), फिर फ़ीड दोबारा बनाएँ ताकि उसका URL उस पते का उपयोग करे।",
+      "loopback": "यह URL 127.0.0.1 की ओर इशारा करता है, जिस तक केवल यह कंप्यूटर पहुँच सकता है। सर्वर पर MYMORNINGNEWS_PUBLIC_BASE_URL सेट करें ताकि आपके फ़ोन के पॉडकास्ट ऐप उस तक पहुँच सकें।"
+    }
+  },
+  "promo": {
+    "picker": {
+      "search": "उपयोगकर्ता खोजें",
+      "searchPlaceholder": "ईमेल में शामिल है",
+      "user": "उपयोगकर्ता",
+      "noUsers": "कोई उपयोगकर्ता मेल नहीं खाता।",
+      "choose": "एक उपयोगकर्ता चुनें"
+    },
+    "validation": {
+      "codeRequired": "एक कोड दर्ज करें।",
+      "codeFormat": "4 से 40 अक्षर, अंक और डैश उपयोग करें, जो किसी अक्षर या अंक से शुरू और समाप्त हों।",
+      "prefixFormat": "अधिकतम 16 अक्षर और अंक उपयोग करें।",
+      "countRange": "1 से {max, number} तक की पूर्ण संख्या दर्ज करें।",
+      "planRequired": "एक प्लान चुनें।",
+      "durationRange": "0 (कोई अंत नहीं) से 3650 तक दिनों की पूर्ण संख्या दर्ज करें।",
+      "maxRange": "0 (असीमित) या रिडेम्पशन की पूर्ण संख्या दर्ज करें।",
+      "maxBelowUsed": "यह कोड {used} बार उपयोग हो चुका है, इसलिए सीमा इससे कम नहीं हो सकती।",
+      "perUserRange": "1 से 100 तक की पूर्ण संख्या दर्ज करें।",
+      "dateInvalid": "एक मान्य तारीख और समय दर्ज करें।",
+      "expiresAfterStarts": "समाप्ति शुरुआत के बाद होनी चाहिए।"
+    },
+    "create": {
+      "title": "नया प्रोमो कोड",
+      "open": "नया कोड"
+    },
+    "edit": {
+      "title": "{code} संपादित करें"
+    },
+    "batch": {
+      "title": "कोड का एक बैच बनाएँ",
+      "open": "बैच बनाएँ",
+      "createdTitle": "{count, plural, one {# कोड बनाया गया} other {# कोड बनाए गए}}",
+      "batchId": "बैच {id}",
+      "downloadCsv": "CSV डाउनलोड करें",
+      "copyAll": "सभी कोड कॉपी करें",
+      "codes": "बनाए गए कोड",
+      "generate": "बनाएँ"
+    },
+    "fields": {
+      "code": "कोड",
+      "codeHelp": "अक्षर, अंक और डैश। बड़े अक्षरों में संग्रहीत।",
+      "codeLocked": "कोड का नाम बदला नहीं जा सकता। इसके बजाय नया कोड बनाएँ।",
+      "prefix": "उपसर्ग",
+      "prefixHelp": "वैकल्पिक, अधिकतम 16 अक्षर और अंक। हर कोड को एक रैंडम प्रत्यय मिलता है।",
+      "count": "कितने",
+      "countHelp": "1 से {max, number} कोड।",
+      "plan": "प्लान",
+      "noPlans": "कोई प्लान नहीं",
+      "description": "विवरण",
+      "duration": "दिनों में अवधि",
+      "durationHelp": "0 का अर्थ है कि प्लान का कोई अंत नहीं है।",
+      "maxRedemptions": "कुल रिडेम्पशन",
+      "maxHelp": "0 का अर्थ है असीमित।",
+      "maxUsedHelp": "0 का अर्थ है असीमित। पहले ही {used} बार उपयोग हो चुका है।",
+      "perUserLimit": "प्रति उपयोगकर्ता सीमा",
+      "perUserHelp": "एक व्यक्ति इसे कितनी बार रिडीम कर सकता है।",
+      "starts": "शुरुआत",
+      "startsHelp": "अभी शुरू करने के लिए खाली छोड़ें। आपका स्थानीय समय।",
+      "expires": "समाप्ति",
+      "expiresHelp": "कोई समाप्ति न रखने के लिए खाली छोड़ें। आपका स्थानीय समय।",
+      "enabled": "सक्षम",
+      "newAccountsOnly": "केवल नए खाते",
+      "newAccountsOnlyHelp": "केवल इस कोड के साथ साइन अप करने वाले खाते इसे रिडीम कर सकते हैं।"
+    },
+    "status": {
+      "enabled": "सक्षम",
+      "disabled": "अक्षम",
+      "notStarted": "शुरू नहीं हुआ",
+      "expired": "समाप्त",
+      "exhausted": "पूरा उपयोग हो चुका"
+    },
+    "usage": {
+      "usedOf": "{max} में से {used}",
+      "usedUnlimited": "असीमित में से {used}",
+      "unlimited": "असीमित"
+    },
+    "duration": {
+      "days": "{count, plural, one {# दिन} other {# दिन}}",
+      "noEnd": "कोई अंत नहीं"
+    },
+    "reasons": {
+      "NotFound": "हमें वह कोड नहीं मिला। वर्तनी जाँचें और फिर से कोशिश करें।",
+      "Disabled": "वह कोड बंद कर दिया गया है।",
+      "NotStarted": "वह कोड अभी उपयोग नहीं किया जा सकता।",
+      "Expired": "वह कोड समाप्त हो गया है।",
+      "Exhausted": "वह कोड अनुमत संख्या जितनी बार उपयोग हो चुका है।",
+      "AlreadyRedeemed": "यह खाता पहले ही उस कोड का उपयोग कर चुका है।",
+      "NewAccountsOnly": "वह कोड केवल नए खातों के लिए है।"
+    },
+    "delete": {
+      "title": "प्रोमो कोड हटाएँ",
+      "message": "{code} हटाएँ? इसे पूर्ववत नहीं किया जा सकता।",
+      "usedMessage": "{code} {count, plural, one {# बार} other {# बार}} रिडीम हो चुका है, इसलिए इसे हटाया नहीं जा सकता। इसके बजाय इसे अक्षम करें ताकि इसका इतिहास बना रहे।",
+      "disableInstead": "इसके बजाय अक्षम करें",
+      "conflict": "यह कोड उपयोग हो चुका है, इसलिए इसे हटाया नहीं जा सकता। इसके बजाय इसे अक्षम करें।"
+    },
+    "notify": {
+      "disabled": "{code} अक्षम किया गया",
+      "enabled": "{code} सक्षम किया गया",
+      "copied": "{code} कॉपी किया गया",
+      "generated": "{count, plural, one {# कोड बनाया गया} other {# कोड बनाए गए}}",
+      "created": "{code} बनाया गया"
+    },
+    "columns": {
+      "code": "कोड",
+      "description": "विवरण",
+      "plan": "प्लान",
+      "duration": "अवधि",
+      "usage": "उपयोग / अधिकतम",
+      "remaining": "शेष",
+      "activeSubscriptions": "सक्रिय सदस्यताएँ",
+      "status": "स्थिति",
+      "batch": "बैच",
+      "expires": "समाप्ति",
+      "lastRedeemed": "पिछला रिडेम्पशन",
+      "created": "बनाया गया"
+    },
+    "filters": {
+      "search": "कोड या विवरण",
+      "enabledOnly": "सक्षम",
+      "disabledOnly": "अक्षम"
+    },
+    "actions": {
+      "disable": "अक्षम करें",
+      "enable": "सक्षम करें",
+      "copyCode": "कोड कॉपी करें"
+    },
+    "never": "कभी नहीं",
+    "immediately": "तुरंत",
+    "createdBy": "किसने बनाया",
+    "empty": {
+      "title": "अभी तक कोई प्रोमो कोड नहीं",
+      "message": "लोगों को प्लान देने के लिए एक कोड बनाएँ, या एक बैच बनाएँ।"
+    },
+    "apply": {
+      "open": "किसी उपयोगकर्ता पर लागू करें",
+      "title": "{code} को किसी उपयोगकर्ता पर लागू करें",
+      "help": "उपयोगकर्ता को {duration} के लिए {plan} मिलता है। कोड की सीमाएँ फिर भी लागू होती हैं।",
+      "confirm": "कोड लागू करें",
+      "done": "{code} को {email} पर लागू किया गया"
+    },
+    "redemptions": {
+      "title": "रिडेम्पशन",
+      "user": "उपयोगकर्ता",
+      "tenant": "टेनेंट",
+      "channel": "चैनल",
+      "date": "रिडीम किया गया",
+      "status": "स्थिति",
+      "active": "सक्रिय",
+      "revoked": "रद्द किया गया",
+      "revokedOn": "{date} को रद्द किया गया",
+      "userId": "उपयोगकर्ता ID",
+      "revoke": "रद्द करें",
+      "revokeTitle": "रिडेम्पशन रद्द करें",
+      "revokeMessage": "{email} के लिए {code} रद्द करें? इस कोड से मिला उनका प्लान अभी समाप्त हो जाएगा।",
+      "revokedNotice": "रिडेम्पशन रद्द किया गया",
+      "empty": "अभी तक किसी ने यह कोड रिडीम नहीं किया है",
+      "emptyMessage": "रिडेम्पशन यहाँ दिखते हैं, साथ में किसने, कब और कहाँ से।"
+    },
+    "channels": {
+      "Signup": "साइन अप",
+      "Account": "खाता",
+      "Admin": "व्यवस्थापक",
+      "Api": "API"
+    },
+    "detail": {
+      "summary": "इस कोड का उपयोग, रिडेम्पशन और सेटिंग्स",
+      "back": "सभी कोड",
+      "settings": "सेटिंग्स"
+    },
+    "kpi": {
+      "redemptions": "रिडेम्पशन",
+      "remaining": "शेष",
+      "activeSubscriptions": "सक्रिय सदस्यताएँ",
+      "revoked": "रद्द किए गए",
+      "lastRedeemed": "पिछला रिडेम्पशन",
+      "notYet": "अभी नहीं"
+    },
+    "chart": {
+      "title": "समय के साथ रिडेम्पशन",
+      "subtitle": "प्रति दिन, हर रिडेम्पशन के समय के अनुसार",
+      "empty": "अभी तक कोई रिडेम्पशन नहीं।"
+    }
+  },
+  "plans": {
+    "default": "डिफ़ॉल्ट",
+    "noFeatures": "कोई अधिकार मान नहीं।",
+    "validation": {
+      "key": "2 से 63 छोटे अक्षर, अंक और डैश उपयोग करें।",
+      "name": "एक नाम दर्ज करें।",
+      "duplicate": "कुंजी {key} दो बार सूचीबद्ध है।"
+    },
+    "create": {
+      "title": "नया प्लान",
+      "open": "नया प्लान"
+    },
+    "edit": {
+      "title": "{name} संपादित करें",
+      "open": "{name} संपादित करें"
+    },
+    "fields": {
+      "key": "कुंजी",
+      "keyHelp": "एक स्थायी पहचानकर्ता, जैसे team-pilot।",
+      "keyLocked": "प्लान की कुंजी बदली नहीं जा सकती।",
+      "name": "नाम",
+      "description": "विवरण",
+      "features": "अधिकार मान",
+      "featuresHelp": "कोड इन कुंजियों को जाँचता है, प्लान के नामों को नहीं। संख्याएँ, true या false, या unlimited उपयोग करें। खाली मान कुंजी को हटा देता है।",
+      "featureKey": "अधिकार कुंजी",
+      "featureValue": "{key} का मान",
+      "emptyRemoves": "खाली छोड़ने पर हट जाता है",
+      "clearValue": "{key} साफ़ करें",
+      "addFeature": "मान जोड़ें"
+    },
+    "featureNames": {
+      "usage_monthlyCostUsd_max": "मासिक लागत सीमा (USD)",
+      "topics_max": "विषय",
+      "schedule_minIntervalMinutes": "सबसे छोटा शेड्यूल अंतराल (मिनट)",
+      "runs_daily_max": "प्रति दिन रन",
+      "audio_enabled": "ऑडियो",
+      "audio_monthlyMinutes_max": "प्रति माह ऑडियो मिनट",
+      "email_enabled": "ईमेल",
+      "mobile_access": "मोबाइल ऐप",
+      "endpoints_custom": "अपने मॉडल एंडपॉइंट",
+      "artifacts_pinned_max": "पिन की गई रिपोर्ट"
+    },
+    "assignments": {
+      "title": "किसी उपयोगकर्ता के प्लान",
+      "help": "किसी उपयोगकर्ता की हर प्लान अवधि देखने के लिए उसे चुनें, बाद में शुरू होने वाली अवधियों सहित, और किसी एक को रद्द करें।",
+      "plan": "प्लान",
+      "source": "स्रोत",
+      "starts": "शुरुआत",
+      "ends": "समाप्ति",
+      "state": "अवस्था",
+      "note": "नोट",
+      "revoke": "रद्द करें",
+      "revokeTitle": "प्लान रद्द करें",
+      "revokeMessage": "इस उपयोगकर्ता के लिए {plan} रद्द करें? यह अभी समाप्त हो जाएगा।",
+      "revoked": "प्लान रद्द किया गया",
+      "empty": "कोई प्लान असाइनमेंट नहीं",
+      "emptyMessage": "यह उपयोगकर्ता डिफ़ॉल्ट प्लान पर है।"
+    },
+    "sources": {
+      "Default": "डिफ़ॉल्ट",
+      "Admin": "व्यवस्थापक",
+      "Promo": "प्रोमो कोड",
+      "Billing": "बिलिंग"
+    },
+    "states": {
+      "current": "मौजूदा",
+      "upcoming": "आगामी",
+      "ended": "समाप्त",
+      "revoked": "रद्द किया गया"
+    },
+    "grant": {
+      "open": "प्लान दें",
+      "title": "प्लान दें",
+      "titleFor": "{email} को प्लान दें",
+      "confirm": "दें",
+      "note": "नोट",
+      "noteHelp": "इस उपयोगकर्ता को प्लान क्यों मिल रहा है। ऑडिट लॉग में दिखाया जाता है।",
+      "done": "{email} को प्लान दिया गया"
+    },
+    "userPanel": {
+      "action": "प्लान",
+      "title": "{email} का प्लान"
+    }
+  },
+  "account": {
+    "plan": {
+      "title": "प्लान",
+      "endsOn": "आपका प्लान {date} को समाप्त होता है।",
+      "noEnd": "आपके प्लान की कोई समाप्ति तारीख नहीं है।",
+      "limits": "सीमाएँ",
+      "upcoming": "बाद में शुरू होने वाले",
+      "anotherPlan": "दूसरा प्लान",
+      "period": "{from} से {to} तक",
+      "periodOpen": "{from} से, बिना अंत के",
+      "redeemTitle": "कोड रिडीम करें",
+      "code": "प्रोमो कोड",
+      "codeHelp": "आपको दिया गया कोड। आपके मौजूदा प्लान का कोड मौजूदा प्लान समाप्त होने पर शुरू होता है।",
+      "redeem": "रिडीम करें",
+      "redeemed": "कोड रिडीम किया गया। अब आपके पास {plan} है।"
+    }
+  },
+  "email": {
+    "memberNotice": "आप अपने को भेजे गए ईमेल देखते हैं। व्यवस्थापक हर संदेश देखते हैं।",
+    "resend": "फिर से भेजें",
+    "resent": "{recipient} को फिर से भेजा गया",
+    "columns": {
+      "time": "समय",
+      "template": "टेम्पलेट",
+      "recipient": "प्राप्तकर्ता",
+      "subject": "विषय पंक्ति",
+      "status": "स्थिति",
+      "attempts": "प्रयास",
+      "sent": "भेजा गया",
+      "topic": "विषय",
+      "providerId": "प्रदाता ID"
+    },
+    "statuses": {
+      "Queued": "कतार में",
+      "Sending": "भेजा जा रहा है",
+      "Sent": "भेजा गया",
+      "Failed": "विफल",
+      "Suppressed": "रोका गया",
+      "Skipped": "छोड़ा गया"
+    },
+    "templates": {
+      "RunDigest": "रन डाइजेस्ट",
+      "BriefingPublished": "ब्रीफ़िंग प्रकाशित",
+      "RunFailed": "रन विफल",
+      "PreferenceProposal": "प्राथमिकता प्रस्ताव",
+      "Test": "परीक्षण"
+    },
+    "chart": {
+      "title": "स्थिति के अनुसार प्रति दिन संदेश",
+      "subtitle": "पिछले {days} दिन",
+      "empty": "इस अवधि में कोई ईमेल नहीं।"
+    },
+    "empty": {
+      "title": "अभी तक कोई ईमेल नहीं भेजा गया",
+      "message": "रन, ब्रीफ़िंग और परीक्षणों के बाद ईमेल यहाँ दिखते हैं।"
+    },
+    "delete": {
+      "title": "ईमेल हटाएँ",
+      "message": "{recipient} को भेजा गया \"{subject}\" आउटबॉक्स से हटाएँ?"
+    },
+    "preview": {
+      "title": "ईमेल",
+      "runButton": "ईमेल पूर्वावलोकन",
+      "runTitle": "रन ईमेल पूर्वावलोकन",
+      "to": "{recipient} को",
+      "format": "प्रारूप",
+      "html": "रेंडर किया गया",
+      "text": "सादा टेक्स्ट",
+      "frame": "रेंडर किया गया ईमेल",
+      "noHtml": "इस संदेश में HTML बॉडी नहीं है।",
+      "noText": "इस संदेश में सादे टेक्स्ट वाली बॉडी नहीं है।"
+    },
+    "test": {
+      "button": "परीक्षण ईमेल भेजें",
+      "sent": "{recipient} के लिए परीक्षण ईमेल कतार में है",
+      "failed": "परीक्षण ईमेल नहीं भेजा जा सका: {message}",
+      "settingsHelp": "पहले अपने बदलाव सहेजें, फिर खुद को एक परीक्षण ईमेल भेजें।"
+    }
+  },
+  "emailPrefs": {
+    "title": "ईमेल प्राथमिकताएँ",
+    "address": "ईमेल {address} पर जाता है।",
+    "saved": "ईमेल प्राथमिकताएँ सहेजी गईं",
+    "categories": {
+      "runEmails": "रन ईमेल",
+      "briefingEmails": "ब्रीफ़िंग ईमेल",
+      "failureEmails": "विफलता ईमेल"
+    },
+    "help": {
+      "runEmails": "आपके विषयों के हर रन के बाद एक डाइजेस्ट।",
+      "briefingEmails": "जब कोई संस्करण या रन ब्रीफ़िंग प्रकाशित होती है।",
+      "failureEmails": "जब कोई रन विफल होता है।"
+    },
+    "unsubscribedTitle": "जिन विषयों की सदस्यता आपने छोड़ी है",
+    "noUnsubscribed": "आपको रन ईमेल भेजने वाले हर विषय का रन ईमेल मिलता है।",
+    "resubscribeHelp": "इनमें से किसी का रन ईमेल फिर से पाने के लिए, उसके पिछले ईमेल में दिए लिंक का उपयोग करें।"
+  },
+  "feedbackControl": {
+    "rate": "इसे रेट करें",
+    "rateItem": "{title} को रेट करें",
+    "rateType": "इस {type} को रेट करें",
+    "rateSection": "अनुभाग {section} को रेट करें",
+    "sectionPrompt": "क्या यह अनुभाग प्रासंगिक था?",
+    "isRelevant": "क्या यह प्रासंगिक था?",
+    "isAccurate": "यह पूर्वानुमान कैसा रहा?",
+    "isUseful": "क्या यह उपयोगी था?",
+    "why": "क्यों?",
+    "whyHelp": "वैकल्पिक। आपके कारण रिसर्च को सिखाते हैं कि कौन से आइटम रखने हैं और कौन से छोड़ने हैं।",
+    "whyTitle": "यह रेटिंग क्यों?",
+    "whyAdd": "कारण जोड़ें",
+    "whyEdit": "कारण संपादित करें",
+    "ratedAs": "{rating} रेट किया गया",
+    "retract": "रेटिंग वापस लें",
+    "actions": {
+      "relevant": "प्रासंगिक",
+      "somewhat": "कुछ हद तक",
+      "not-relevant": "प्रासंगिक नहीं",
+      "accurate": "सटीक",
+      "partially": "आंशिक रूप से",
+      "inaccurate": "गलत",
+      "too-early": "अभी जल्दी है",
+      "useful": "उपयोगी",
+      "not-useful": "उपयोगी नहीं",
+      "none": "बिना रेटिंग के"
+    }
+  },
+  "insights": {
+    "noData": "इस अवधि के लिए अभी कोई डेटा नहीं।",
+    "withCount": "{label} ({count})",
+    "scope": {
+      "days": "{count, plural, one {# दिन} other {# दिन}}",
+      "topic": "विषय",
+      "allTopics": "सभी विषय",
+      "everyone": "टेनेंट में सभी"
+    },
+    "topic": {
+      "last90": "पिछले 90 दिन"
+    },
+    "relevance": {
+      "precision": "परिशुद्धता",
+      "precisionHelp": "रेट किए गए निष्कर्ष जिन्हें प्रासंगिक या कुछ हद तक प्रासंगिक चिह्नित किया गया",
+      "coverage": "कवरेज",
+      "coverageHelp": "दिखाए गए निष्कर्ष जिन्हें कोई भी रेटिंग मिली",
+      "shown": "दिखाए गए निष्कर्ष",
+      "rated": "रेट किए गए निष्कर्ष",
+      "byDay": "समय के साथ परिशुद्धता",
+      "byDayHelp": "प्रति दिन, उस दिन दी गई रेटिंग के आधार पर",
+      "byTopic": "विषय के अनुसार परिशुद्धता",
+      "byTier": "श्रेणी के अनुसार परिशुद्धता",
+      "byDomain": "स्रोत डोमेन के अनुसार परिशुद्धता",
+      "byDomainHelp": "सबसे अधिक रेटिंग वाले 20 डोमेन",
+      "byDimension": "आयाम के अनुसार परिशुद्धता"
+    },
+    "quality": {
+      "failureRate": "साक्ष्य सत्यापन विफलताएँ",
+      "quotes": "{count, plural, one {# उद्धरण जाँचा गया} other {# उद्धरण जाँचे गए}}",
+      "byModel": "मॉडल के अनुसार सत्यापन विफलता दर",
+      "byModelHelp": "निकाले गए उद्धरणों का वह हिस्सा जो संग्रहीत स्रोत टेक्स्ट से मेल नहीं खाया"
+    },
+    "accuracy": {
+      "rate": "सटीकता दर",
+      "rateHelp": "सटीक और आंशिक रूप से सटीक का आधा, निर्णय हुए पूर्वानुमानों में से",
+      "brier": "औसत Brier स्कोर",
+      "due": "समीक्षा के लिए बाकी",
+      "dueHelp": "अवधि बीत गई और कोई निर्णय नहीं हुआ",
+      "resolved": "निर्णय हुए",
+      "ofTotal": "{total} में से {open} खुले",
+      "unresolvable": "निर्णय संभव नहीं",
+      "agreement": "एजेंट से सहमति",
+      "agreementHelp": "{count, plural, one {# तय की गई समीक्षा में} other {# तय की गई समीक्षाओं में}}",
+      "latency": "निर्णय में लगा समय",
+      "days": "{count, plural, one {# दिन} other {# दिन}}",
+      "calibration": "कैलिब्रेशन वक्र",
+      "calibrationHelp": "बताया गया विश्वास बनाम पूर्वानुमान कितनी बार सच हुए",
+      "byTopic": "विषय के अनुसार सटीकता",
+      "byTopicHelp": "निर्णय हुए पूर्वानुमानों पर प्रति विषय सटीकता दर"
+    },
+    "feedback": {
+      "total": "फ़ीडबैक आइटम",
+      "withReason": "कारण के साथ",
+      "withoutReason": "बिना कारण के",
+      "share": "कुल का {share}",
+      "emailOpens": "ईमेल लिंक खोले गए",
+      "emailSubmits": "ईमेल लिंक से सबमिट",
+      "submitRate": "खोले गए में से {rate}",
+      "byDay": "दिन के अनुसार फ़ीडबैक की मात्रा",
+      "byDayHelp": "प्रति दिन दी गई रेटिंग, इस आधार पर बँटी हुई कि उनमें कारण है या नहीं",
+      "byChannel": "चैनल के अनुसार फ़ीडबैक",
+      "byTarget": "आइटम प्रकार के अनुसार फ़ीडबैक",
+      "listTitle": "हर फ़ीडबैक आइटम",
+      "includeHistory": "बदली गई रेटिंग शामिल करें",
+      "noReason": "कोई कारण नहीं दिया गया",
+      "current": "मौजूदा",
+      "superseded": "बदली गई",
+      "editWhy": "कारण संपादित करें",
+      "saved": "कारण सहेजा गया",
+      "retractTitle": "यह रेटिंग वापस लें",
+      "retractMessage": "यह रेटिंग वापस लें? उसी आइटम की कोई पुरानी रेटिंग हो, तो वह फिर से मौजूदा बन जाएगी।",
+      "retracted": "रेटिंग वापस ली गई",
+      "emptyTitle": "अभी तक कोई फ़ीडबैक नहीं",
+      "emptyMessage": "रिसर्च को यह सिखाने के लिए कि आपके लिए क्या मायने रखता है, निष्कर्षों, पूर्वानुमानों और सुझावों को रेट करें।",
+      "columns": {
+        "when": "कब",
+        "target": "आइटम",
+        "rating": "रेटिंग",
+        "reason": "कारण",
+        "channel": "चैनल",
+        "current": "अवस्था"
+      },
+      "targetTypes": {
+        "Finding": "निष्कर्ष",
+        "Prediction": "पूर्वानुमान",
+        "PredictionReview": "पूर्वानुमान समीक्षा",
+        "Suggestion": "सुझाव",
+        "SourceItem": "स्रोत",
+        "Domain": "डोमेन",
+        "Briefing": "ब्रीफ़िंग",
+        "BriefingSection": "ब्रीफ़िंग अनुभाग",
+        "LearnedPreference": "सीखी गई प्राथमिकता"
+      },
+      "channels": {
+        "Dashboard": "डैशबोर्ड",
+        "Email": "ईमेल",
+        "Mobile": "मोबाइल ऐप",
+        "Api": "API",
+        "Mcp": "MCP"
+      },
+      "byChannelDay": "दिन और चैनल के अनुसार फ़ीडबैक",
+      "byChannelDayHelp": "प्रति दिन दी गई रेटिंग, इस आधार पर स्टैक की गई कि वे कहाँ से आईं"
+    },
+    "reasons": {
+      "title": "कारणों के विषयवस्तु",
+      "help": "आपके कारणों से टैग की गई विषयवस्तु, कोष्ठक में पिछले 30 दिनों के साथ",
+      "tagRecent": "{tag} [{recent}]",
+      "byWeek": "सप्ताह के अनुसार कारणों की विषयवस्तु"
+    },
+    "suggestions": {
+      "title": "सुझावों के परिणाम",
+      "decision": "निर्णय तक औसतन {days} दिन",
+      "outcomes": {
+        "new": "अभी भी नए ({share})",
+        "accepted": "स्वीकार किए गए ({share})",
+        "done": "पूरे हुए ({share})",
+        "snoozed": "स्नूज़ किए गए ({share})",
+        "dismissed": "खारिज किए गए ({share})"
+      }
+    },
+    "preferences": {
+      "statement": "प्राथमिकता",
+      "statementHelp": "एक सरल वाक्य, जैसे: विक्रेताओं की फ़ंडिंग घोषणाएँ छोड़ें।",
+      "kind": "प्रकार",
+      "origin": "उत्पत्ति",
+      "confidence": "विश्वास",
+      "supportCount": "समर्थन करने वाला फ़ीडबैक",
+      "decided": "तय किया गया",
+      "allTopics": "हर विषय",
+      "topicHelp": "इसे हर विषय पर लागू करने के लिए खाली छोड़ें।",
+      "writeOwn": "अपनी लिखें",
+      "createTitle": "एक प्राथमिकता लिखें",
+      "createHelp": "आपकी लिखी प्राथमिकताएँ तुरंत सक्रिय हो जाती हैं और आपके विषयों के साथ रिसर्च को दी जाती हैं।",
+      "editTitle": "प्राथमिकता संपादित करें",
+      "detailTitle": "सीखी गई प्राथमिकता",
+      "supportTitle": "{count, plural, =0 {समर्थन करने वाला फ़ीडबैक} one {समर्थन करने वाला # फ़ीडबैक आइटम} other {समर्थन करने वाले # फ़ीडबैक आइटम}}",
+      "noSupport": "इस प्राथमिकता से कोई फ़ीडबैक जुड़ा नहीं है।",
+      "learnFor": "इससे सीखें",
+      "chooseTopic": "एक विषय चुनें",
+      "learnNow": "अभी सीखें",
+      "learning": "सीखा जा रहा है...",
+      "learned": "{count, plural, =0 {सीखने का चरण पूरा हुआ, कोई नया प्रस्ताव नहीं} one {समीक्षा के लिए # नया प्रस्ताव} other {समीक्षा के लिए # नए प्रस्ताव}}",
+      "emptyTitle": "अभी तक कोई सीखी गई प्राथमिकता नहीं",
+      "emptyMessage": "कुछ आइटम को कारणों के साथ रेट करने के बाद प्रस्ताव दिखते हैं, या आप अपनी प्राथमिकता लिख सकते हैं।",
+      "deleteTitle": "प्राथमिकता हटाएँ",
+      "deleteMessage": "\"{statement}\" हटाएँ? यह आपके रिसर्च को प्रभावित करना बंद कर देगी।",
+      "statuses": {
+        "Proposed": "प्रस्तावित",
+        "Active": "सक्रिय",
+        "Rejected": "अस्वीकृत",
+        "Disabled": "अक्षम"
+      },
+      "origins": {
+        "Distilled": "सीखी गई",
+        "User": "आपके द्वारा लिखी गई"
+      },
+      "kinds": {
+        "Prefer": "पसंद करें",
+        "Avoid": "टालें",
+        "PreferSource": "किसी स्रोत को पसंद करें",
+        "AvoidSource": "किसी स्रोत को टालें",
+        "StyleNote": "शैली नोट"
+      },
+      "actions": {
+        "accept": "स्वीकार करें",
+        "reject": "अस्वीकार करें",
+        "disable": "अक्षम करें",
+        "enable": "सक्षम करें"
+      },
+      "changed": {
+        "accept": "प्राथमिकता स्वीकार की गई",
+        "reject": "प्राथमिकता अस्वीकार की गई",
+        "disable": "प्राथमिकता अक्षम की गई",
+        "enable": "प्राथमिकता सक्षम की गई"
+      }
+    },
+    "ranking": {
+      "title": "रैंकिंग अनुशंसा",
+      "rated": "{count, plural, one {# रेट किए गए निष्कर्ष से} other {# रेट किए गए निष्कर्षों से}}",
+      "apply": "ये भार लागू करें",
+      "applyTitle": "अनुशंसित भार लागू करें",
+      "applyMessage": "{topic} के लिए अनुशंसित रैंकिंग भार उपयोग करें? भविष्य के रन इन्हीं से निष्कर्षों को स्कोर करेंगे।",
+      "applied": "भार लागू किए गए",
+      "notStored": "सर्वर ने इस विषय के लिए भार संग्रहीत नहीं किए।",
+      "notEnough": "अनुशंसा विश्वसनीय होने से पहले इस विषय पर और निष्कर्ष रेट करें।",
+      "component": "घटक",
+      "current": "मौजूदा",
+      "recommended": "अनुशंसित",
+      "separation": "पृथक्करण",
+      "help": "पृथक्करण बताता है कि हर घटक पर प्रासंगिक और अप्रासंगिक निष्कर्षों के स्कोर में कितना अंतर है। जो घटक उन्हें बेहतर ढंग से अलग करते हैं, उन्हें अधिक भार मिलता है।"
+    },
+    "overview": {
+      "window": "{from} से {to}",
+      "help": "जब तक अलग से न बताया जाए, गिनती चुनी गई अवधि की है। खुले पूर्वानुमान, नए सुझाव और सक्रिय विषय मौजूदा कुल हैं।",
+      "activeTopics": "सक्रिय विषय",
+      "runs": "रन",
+      "runOutcomes": "{completed} पूरे, {partial} आंशिक, {failed} विफल",
+      "findingsShown": "दिखाए गए निष्कर्ष",
+      "findingsRated": "{count} रेट किए गए",
+      "precision": "प्रासंगिकता परिशुद्धता",
+      "precisionHelp": "रेट किए गए निष्कर्षों का वह हिस्सा जिसे प्रासंगिक माना गया",
+      "briefingsReady": "तैयार ब्रीफ़िंग",
+      "emailsSent": "भेजे गए ईमेल",
+      "emailsFailed": "{count} विफल",
+      "predictionsOpen": "खुले पूर्वानुमान",
+      "predictionsResolved": "{count} पर निर्णय हुआ",
+      "accuracy": "पूर्वानुमान सटीकता",
+      "brier": "औसत Brier {value}",
+      "feedback": "फ़ीडबैक",
+      "feedbackWithReason": "{count} कारण के साथ",
+      "suggestionsNew": "नए सुझाव",
+      "suggestionsAccepted": "{count} स्वीकार किए गए या पूरे हुए",
+      "quoteFailure": "उद्धरण विफलता दर",
+      "quoteFailureHelp": "सत्यापन में विफल उद्धरण",
+      "modelCost": "मॉडल लागत",
+      "modelCalls": "{count} मॉडल कॉल"
+    },
+    "email": {
+      "total": "संदेश",
+      "pendingSkipped": "{pending} लंबित, {skipped} छोड़े गए",
+      "sent": "भेजे गए",
+      "notSent": "नहीं भेजे गए",
+      "failed": "विफल",
+      "deliveryRate": "डिलीवरी दर",
+      "deliveryRateHelp": "पूरे हुए संदेशों में से भेजे गए",
+      "meanTimeToSend": "भेजने का औसत समय",
+      "meanTimeToSendHelp": "कतार में डालने से भेजने तक",
+      "linkOpens": "फ़ीडबैक लिंक खोले गए",
+      "linkSubmits": "फ़ीडबैक लिंक से सबमिट",
+      "unsubscribes": "सदस्यता छोड़ना",
+      "byDay": "दिन के अनुसार संदेश",
+      "byDayHelp": "प्रति दिन कतार में डाले गए संदेश, इस आधार पर बँटे हुए कि वे भेजे गए या नहीं",
+      "byTemplate": "टेम्पलेट के अनुसार डिलीवरी दर",
+      "byTemplateHelp": "हर टेम्पलेट के संदेशों का वह हिस्सा जो भेजा गया",
+      "byStatus": "स्थिति के अनुसार संदेश"
+    }
+  },
+  "mcp": {
+    "tokenWarning": "अपना सत्र टोकन कभी भी किसी MCP क्लाइंट या कॉन्फ़िग फ़ाइल में पेस्ट न करें। ऐसी एक्सेस कुंजी का उपयोग करें जिसे आप रद्द कर सकें। यह पेज आपका टोकन कभी नहीं दिखाता।",
+    "about": {
+      "title": "MCP सर्वर के बारे में",
+      "body": "My Morning News MCP सर्वर Claude Code, Claude Desktop, किसी IDE या आपके अपने एजेंट को आपके विषयों की सूची देखने, ब्रीफ़िंग पढ़ने, किसी निष्कर्ष के पीछे के साक्ष्य की जाँच करने, पूर्वानुमानों पर निर्णय देने, सुझावों पर कार्रवाई करने और कारण के साथ फ़ीडबैक देने की सुविधा देता है।",
+      "privileges": "इसके अपने कोई विशेषाधिकार नहीं हैं। हर कॉल आपकी एक्सेस कुंजी के साथ REST API पर जाता है, इसलिए आपकी भूमिकाएँ और स्वामित्व ठीक वैसे ही लागू होते हैं जैसे यहाँ। इसके माध्यम से दिया गया फ़ीडबैक MCP चैनल के साथ दर्ज होता है।"
+    },
+    "url": {
+      "label": "Streamable HTTP URL",
+      "help": "MCP सर्वर REST API से अलग, अपनी प्रक्रिया के रूप में चलता है। अगर आपका सर्वर कहीं और चलता है तो इसे बदलें; नीचे के कमांड इसी के अनुसार बदलते हैं।",
+      "invalid": "एक http या https URL दर्ज करें।",
+      "reset": "सुझाए गए URL पर रीसेट करें"
+    },
+    "key": {
+      "title": "एक्सेस कुंजी बनाएँ",
+      "body": "MCP क्लाइंट के लिए एक्सेस कुंजी और सीक्रेट बनाएँ, ताकि आप बाद में पासवर्ड बदले बिना इसे रद्द कर सकें। बनते समय सीक्रेट कॉपी कर लें; यह केवल एक बार दिखाया जाता है।",
+      "authMode": "सीधा हेडर या हाइब्रिड प्रमाणीकरण मोड चुनें: Streamable HTTP क्लाइंट हर अनुरोध पर कुंजी और सीक्रेट भेजता है, जिसे हस्ताक्षरित अनुरोध और सत्र विनिमय वाली कुंजियाँ अस्वीकार करती हैं।",
+      "create": "एक्सेस कुंजी बनाएँ",
+      "askAdmin": "एक्सेस कुंजियाँ व्यवस्थापक बनाते हैं। अपने व्यवस्थापक से सीधा हेडर प्रमाणीकरण मोड वाली एक्सेस कुंजी माँगें।"
+    },
+    "connect": {
+      "title": "क्लाइंट कनेक्ट करें",
+      "claudeHttp": "Streamable HTTP पर Claude Code",
+      "claudeHttpHelp": "प्लेसहोल्डर को अपनी एक्सेस कुंजी और सीक्रेट से बदलें, फिर इसे टर्मिनल में चलाएँ।",
+      "claudeStdio": "stdio पर Claude Code",
+      "claudeStdioHelp": "सोर्स चेकआउट से MCP सर्वर चलाता है। पाथ और प्लेसहोल्डर बदलें।",
+      "desktop": "Claude Desktop और अन्य क्लाइंट",
+      "desktopHelp": "उन क्लाइंट के लिए जो mcpServers JSON फ़ाइल पढ़ते हैं। पाथ और प्लेसहोल्डर बदलें।",
+      "run": "MCP सर्वर शुरू करें",
+      "runHelp": "Docker स्टैक चलते समय, यह MCP सर्वर को पोर्ट 12105 पर शुरू करता है।"
+    },
+    "try": {
+      "title": "आज़माएँ",
+      "topics": "मेरे My Morning News विषयों की सूची दिखाएँ",
+      "briefing": "आज की ब्रीफ़िंग पढ़ें",
+      "review": "review_morning_briefing प्रॉम्प्ट चलाएँ",
+      "safety": "निष्कर्षों और ब्रीफ़िंग में वेब पेजों का टेक्स्ट होता है। क्लाइंट को इसे डेटा के रूप में मानने के लिए कहा जाता है, कभी निर्देशों के रूप में नहीं।"
+    }
+  },
+  "sources": {
+    "searchPlaceholder": "शीर्षक और पते खोजें",
+    "topic": "विषय",
+    "allTopics": "सभी विषय",
+    "clearRun": "हर रन के स्रोत दिखाएँ",
+    "columns": {
+      "title": "स्रोत",
+      "domain": "डोमेन",
+      "published": "प्रकाशित",
+      "contentType": "सामग्री प्रकार",
+      "firstRun": "पहली बार इस रन में देखा गया",
+      "fetched": "प्राप्त किया गया",
+      "timesSeen": "कितनी बार देखा गया",
+      "id": "ID"
+    },
+    "detail": {
+      "title": "स्रोत",
+      "open": "पेज खोलें",
+      "monospace": "मोनोस्पेस",
+      "copyText": "टेक्स्ट कॉपी करें",
+      "characters": "{count, plural, one {{formatted} अक्षर} other {{formatted} अक्षर}}"
+    },
+    "empty": {
+      "title": "अभी तक कोई स्रोत नहीं",
+      "message": "स्रोत तब दिखते हैं जब कोई रन आपके किसी विषय के लिए वेब खोजता है और पेज प्राप्त करता है।"
+    }
+  }
+}

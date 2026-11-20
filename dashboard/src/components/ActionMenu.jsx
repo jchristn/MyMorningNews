@@ -16,7 +16,9 @@ export default function ActionMenu({ actions }) {
     if (!open || !buttonRef.current) return;
     const rect = buttonRef.current.getBoundingClientRect();
     const width = 200;
-    const left = Math.max(8, Math.min(rect.right - width, window.innerWidth - width - 8));
+    // The menu lines up with the button's inline-end edge: its right edge in LTR, its left edge in RTL.
+    const rtl = document.documentElement.dir === 'rtl';
+    const left = Math.max(8, Math.min(rtl ? rect.left : rect.right - width, window.innerWidth - width - 8));
     const estimated = actions.length * 36 + 12;
     const top = rect.bottom + estimated > window.innerHeight ? Math.max(8, rect.top - estimated) : rect.bottom + 4;
     setPosition({ top, left });

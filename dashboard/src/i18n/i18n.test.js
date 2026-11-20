@@ -84,11 +84,29 @@ describe('i18n runtime', () => {
     expect(i18next.t('admin.copyOf', { name: 'Acme' })).toContain('Acme');
   });
 
-  it('falls back to English for untranslated catalogs', async () => {
+  it('loads translated catalogs lazily and sets the document language', async () => {
     await setActiveLocale('ja');
     expect(document.documentElement.lang).toBe('ja');
-    expect(i18next.t('common.save')).toBe(en.common.save);
+    expect(document.documentElement.dir).toBe('ltr');
+    expect(i18next.t('common.save')).not.toBe(en.common.save);
+    expect(i18next.t('admin.copyOf', { name: 'Acme' })).toContain('Acme');
+    await setActiveLocale('ar');
+    expect(document.documentElement.dir).toBe('rtl');
+    expect(i18next.t('common.save')).toMatch(/\p{Script=Arabic}/u);
     await initI18n('en');
     expect(i18next.language).toBe('en');
+  });
+
+  it('formats plurals in every translated locale', async () => {
+    for (const locale of SUPPORTED_LOCALES.filter((l) => l.code !== 'en' && !l.pseudo)) {
+      await setActiveLocale(locale.code);
+      for (const count of [0, 1, 2, 3, 5, 11, 21, 100]) {
+        const text = i18next.t('json.items', { count });
+        expect([locale.code, count, text.includes(new Intl.NumberFormat(locale.code).format(count)) || text.includes(String(count)) || count < 3]).toEqual([locale.code, count, true]);
+        expect(text).not.toMatch(/[{}]/);
+      }
+      expect(i18next.t('common.save')).not.toBe(en.common.save);
+    }
+    await setActiveLocale('en');
   });
 });

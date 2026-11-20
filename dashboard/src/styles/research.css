@@ -251,6 +251,10 @@ ol.chip-list {
   box-shadow: inset 3px 0 0 var(--color-success);
 }
 
+[dir='rtl'] .question-card.answered {
+  box-shadow: inset -3px 0 0 var(--color-success);
+}
+
 .question-header {
   display: flex;
   justify-content: space-between;
@@ -495,6 +499,10 @@ ol.chip-list {
 
 .constraint-item.locked {
   box-shadow: inset 2px 0 0 var(--color-accent);
+}
+
+[dir='rtl'] .constraint-item.locked {
+  box-shadow: inset -2px 0 0 var(--color-accent);
 }
 
 .constraint-item.editing {

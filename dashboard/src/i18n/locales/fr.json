@@ -4163,7 +4163,8 @@
       "missing": "{name} n’a pas de clé d’API, ses appels échouent donc.",
       "notFound": "{name} utilise un identifiant enregistré qui n’existe plus.",
       "inactive": "{name} utilise un identifiant enregistré qui est désactivé.",
-      "expired": "{name} utilise un identifiant enregistré qui a expiré."
+      "expired": "{name} utilise un identifiant enregistré qui a expiré.",
+      "platformMissing": "{name} utilise la clé de modèle de la plateforme, mais le serveur n’en a aucune de configurée (MYMORNINGNEWS_ANTHROPIC_API_KEY)."
     },
     "fix": "Ajouter une clé à {name}",
     "view": "Voir les points de terminaison de modèles",

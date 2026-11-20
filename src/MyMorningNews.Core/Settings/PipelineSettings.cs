@@ -198,6 +198,18 @@ namespace MyMorningNews.Core.Settings
         }
 
         /// <summary>
+        /// Without embeddings: the blended title and summary word overlap (Jaccard) at or above which an earlier finding
+        /// is shown to the model to judge whether the new one is a duplicate or an update of it. Default 0.35. Minimum 0.1,
+        /// maximum 0.8.
+        /// </summary>
+        [Setting(Description = "Text overlap at or above which a model judges duplicate or update when there are no embeddings.", Minimum = 0.1, Maximum = 0.8)]
+        public double TextUpdateSimilarity
+        {
+            get { return _TextUpdateSimilarity; }
+            set { _TextUpdateSimilarity = Math.Clamp(value, 0.1, 0.8); }
+        }
+
+        /// <summary>
         /// Similarity at or above which a model judges duplicate or update. Default 0.85. Minimum 0.5, maximum 1.0.
         /// </summary>
         [Setting(Description = "Similarity at or above which a model judges duplicate or update.", Minimum = 0.5, Maximum = 1.0)]
@@ -205,6 +217,17 @@ namespace MyMorningNews.Core.Settings
         {
             get { return _BorderlineSimilarity; }
             set { _BorderlineSimilarity = Math.Clamp(value, 0.5, 1.0); }
+        }
+
+        /// <summary>
+        /// Model score below which feedback, novelty, source, and recency can no longer lift a finding above the
+        /// model's own judgment (they are scaled in proportion). Default 50. Minimum 0 (off), maximum 100.
+        /// </summary>
+        [Setting(Description = "Model score below which other ranking components stop lifting a finding (0 turns it off).", Minimum = 0, Maximum = 100)]
+        public double RelevanceGateScore
+        {
+            get { return _RelevanceGateScore; }
+            set { _RelevanceGateScore = Math.Clamp(value, 0, 100); }
         }
 
         /// <summary>
@@ -274,6 +297,8 @@ namespace MyMorningNews.Core.Settings
         private int _DisplayThreshold = 40;
         private double _DuplicateSimilarity = 0.92;
         private double _BorderlineSimilarity = 0.85;
+        private double _RelevanceGateScore = 50;
+        private double _TextUpdateSimilarity = 0.35;
         private double _WeightLlm = 0.45;
         private double _WeightFeedback = 0.2;
         private double _WeightNovelty = 0.15;

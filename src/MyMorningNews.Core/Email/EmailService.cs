@@ -485,7 +485,7 @@ namespace MyMorningNews.Core.Email
             foreach (LearnedPreference p in c.Proposals)
             {
                 List<EmailLink> actions = await ActionsAsync(m, userId, FeedbackTargetTypeEnum.LearnedPreference, p.Id, topic.Id, EmailActions.Preference, issueTokens, token).ConfigureAwait(false);
-                b.Item(MyMorningNews.Core.Feedback.LearningService.Label(p.Kind) + " · from " + p.SupportCount + " ratings", p.Statement, app + "/dashboard/insights/preferences?id=" + p.Id,
+                b.Item(MyMorningNews.Core.Feedback.LearningService.Label(p.Kind) + " · from " + p.SupportCount + (p.SupportCount == 1 ? " rating" : " ratings"), p.Statement, app + "/dashboard/insights/preferences?id=" + p.Id,
                     new[] { "Apply it and future runs will follow it. Dismiss it and we will not suggest it again." }, Array.Empty<EmailLink>(), actions);
             }
 

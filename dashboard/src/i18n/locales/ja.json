@@ -4163,7 +4163,8 @@
       "missing": "{name} には API キーがないため、呼び出しが失敗します。",
       "notFound": "{name} は、すでに存在しない保存済み認証情報を使用しています。",
       "inactive": "{name} は、無効になっている保存済み認証情報を使用しています。",
-      "expired": "{name} は、期限切れの保存済み認証情報を使用しています。"
+      "expired": "{name} は、期限切れの保存済み認証情報を使用しています。",
+      "platformMissing": "{name} はプラットフォームのモデルキーを使いますが、サーバーにキーが設定されていません (MYMORNINGNEWS_ANTHROPIC_API_KEY)。"
     },
     "fix": "{name} にキーを追加",
     "view": "モデルエンドポイントを表示",

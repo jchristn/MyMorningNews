@@ -80,7 +80,25 @@ namespace MyMorningNews.Core.Pipeline.Stages
                     {
                         c.IsDuplicate = true;
                         c.DuplicateOfFindingId = prior.Id;
+                        continue;
                     }
+
+                    // A reworded follow-up shares the story's words without matching the title: let the model judge it
+                    // against the closest earlier finding, as the embeddings path does for borderline matches.
+                    double gate = services.Settings.Pipeline.TextUpdateSimilarity;
+                    Finding? closest = null;
+                    double closestSim = gate;
+                    foreach (Finding f in recent)
+                    {
+                        double sim = 0.5 * PipelineServices.WordSimilarity(c.Extracted.Title, f.Title) + 0.5 * PipelineServices.WordSimilarity(c.Extracted.Summary, f.Summary);
+                        if (sim >= closestSim)
+                        {
+                            closest = f;
+                            closestSim = sim;
+                        }
+                    }
+
+                    if (closest != null) await JudgeAsync(ctx, services, c, closest, token).ConfigureAwait(false);
                 }
             }
 

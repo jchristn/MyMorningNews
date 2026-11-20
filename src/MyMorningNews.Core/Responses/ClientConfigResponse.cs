@@ -77,5 +77,11 @@ namespace MyMorningNews.Core.Responses
         /// Current terms of service version.
         /// </summary>
         public string TermsVersion { get; set; } = String.Empty;
+
+        /// <summary>
+        /// Whether the server has the operator's platform model key (`MYMORNINGNEWS_ANTHROPIC_API_KEY`), so endpoints that
+        /// reference `platform:anthropic` can call the model. Never carries the key itself.
+        /// </summary>
+        public bool PlatformModelKeyConfigured { get; set; } = false;
     }
 }

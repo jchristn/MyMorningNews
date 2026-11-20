@@ -4163,7 +4163,8 @@
       "missing": "{name} tiada kunci API, jadi panggilan kepadanya gagal.",
       "notFound": "{name} menggunakan kelayakan tersimpan yang tidak lagi wujud.",
       "inactive": "{name} menggunakan kelayakan tersimpan yang telah dimatikan.",
-      "expired": "{name} menggunakan kelayakan tersimpan yang telah tamat tempoh."
+      "expired": "{name} menggunakan kelayakan tersimpan yang telah tamat tempoh.",
+      "platformMissing": "{name} menggunakan kunci model platform, tetapi pelayan tidak mempunyai kunci yang dikonfigurasikan (MYMORNINGNEWS_ANTHROPIC_API_KEY)."
     },
     "fix": "Tambah kunci pada {name}",
     "view": "Lihat titik akhir model",

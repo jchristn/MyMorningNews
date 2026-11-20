@@ -4163,7 +4163,8 @@
       "missing": "{name} hat keinen API-Schlüssel, daher schlagen Aufrufe fehl.",
       "notFound": "{name} verwendet gespeicherte Zugangsdaten, die nicht mehr existieren.",
       "inactive": "{name} verwendet gespeicherte Zugangsdaten, die deaktiviert sind.",
-      "expired": "{name} verwendet gespeicherte Zugangsdaten, die abgelaufen sind."
+      "expired": "{name} verwendet gespeicherte Zugangsdaten, die abgelaufen sind.",
+      "platformMissing": "{name} verwendet den Plattform-Modellschlüssel, aber auf dem Server ist keiner eingerichtet (MYMORNINGNEWS_ANTHROPIC_API_KEY)."
     },
     "fix": "Schlüssel zu {name} hinzufügen",
     "view": "Modellendpunkte anzeigen",

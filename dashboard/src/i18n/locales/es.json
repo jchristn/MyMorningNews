@@ -4163,7 +4163,8 @@
       "missing": "{name} no tiene clave de API, así que las llamadas a él fallan.",
       "notFound": "{name} usa una credencial guardada que ya no existe.",
       "inactive": "{name} usa una credencial guardada que está desactivada.",
-      "expired": "{name} usa una credencial guardada que caducó."
+      "expired": "{name} usa una credencial guardada que caducó.",
+      "platformMissing": "{name} usa la clave de modelo de la plataforma, pero el servidor no tiene ninguna configurada (MYMORNINGNEWS_ANTHROPIC_API_KEY)."
     },
     "fix": "Agregar una clave a {name}",
     "view": "Ver endpoints de modelos",

@@ -46,11 +46,12 @@ export function resolveChatEndpoint(endpoints, assignments, task) {
 // Why an endpoint's key cannot be used: 'missing' (no credential), 'notFound', 'inactive', or 'expired'; null when
 // the key looks usable or the provider needs none. credentials is the tenant's vault list (no secrets), or null when
 // it could not be read, in which case a stored reference is trusted.
-export function keyProblem(endpoint, credentials, now = new Date()) {
+// platformKeySet is the server's client-config flag; only an explicit false reports the platform key as missing.
+export function keyProblem(endpoint, credentials, now = new Date(), platformKeySet = undefined) {
   if (!endpoint || !KEY_REQUIRED_PROVIDERS.includes(endpoint.provider)) return null;
   const id = endpoint.credentialId;
   if (!id) return 'missing';
-  if (id === PLATFORM_CREDENTIAL_ID) return null;
+  if (id === PLATFORM_CREDENTIAL_ID) return platformKeySet === false ? 'platformMissing' : null;
   if (!Array.isArray(credentials)) return null;
   const credential = credentials.find((c) => c.id === id);
   if (!credential) return 'notFound';
@@ -61,12 +62,12 @@ export function keyProblem(endpoint, credentials, now = new Date()) {
 
 // The chat endpoints in use whose key is missing or unusable: [{ endpoint, problem, tasks }], one entry per endpoint.
 // Pass tasks to check only some roles (the wizard checks Refinement).
-export function modelKeyProblems({ endpoints, assignments, credentials, tasks = CHAT_TASKS, now = new Date() }) {
+export function modelKeyProblems({ endpoints, assignments, credentials, tasks = CHAT_TASKS, now = new Date(), platformKeySet = undefined }) {
   const found = new Map();
   for (const task of tasks) {
     const endpoint = resolveChatEndpoint(endpoints, assignments, task);
     if (!endpoint) continue;
-    const problem = keyProblem(endpoint, credentials, now);
+    const problem = keyProblem(endpoint, credentials, now, platformKeySet);
     if (!problem) continue;
     if (!found.has(endpoint.id)) found.set(endpoint.id, { endpoint, problem, tasks: [] });
     found.get(endpoint.id).tasks.push(task);

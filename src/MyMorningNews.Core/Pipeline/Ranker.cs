@@ -110,6 +110,23 @@ namespace MyMorningNews.Core.Pipeline
         }
 
         /// <summary>
+        /// Keep the non-model components from carrying a page the model judged weak (owner decision 2026-11-20, from
+        /// benchmark round 0). Below <paramref name="gateBelow"/>, the composite moves toward the model score in
+        /// proportion, and it never rises above what the composite was. At or above it, the composite is unchanged.
+        /// </summary>
+        /// <param name="composite">Weighted composite.</param>
+        /// <param name="llm">Model judgment, 0 to 100.</param>
+        /// <param name="gateBelow">Model score below which the gate applies, 0 to 100; 0 turns it off.</param>
+        /// <returns>0 to 100.</returns>
+        public static double Gate(double composite, double llm, double gateBelow)
+        {
+            if (gateBelow <= 0 || llm >= gateBelow) return composite;
+            double g = Math.Clamp(llm / gateBelow, 0, 1);
+            double gated = g * composite + (1 - g) * Math.Clamp(llm, 0, 100);
+            return Math.Round(Math.Clamp(Math.Min(composite, gated), 0, 100), 2);
+        }
+
+        /// <summary>
         /// Tier for a composite score.
         /// </summary>
         /// <param name="score">Composite score.</param>

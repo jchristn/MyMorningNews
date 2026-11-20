@@ -19,10 +19,14 @@ export function useModelKeyProblems({ tasks = CHAT_TASKS, refreshSignal = 0 } = 
     Promise.all([
       list(apiClient.listModelEndpoints({ pageSize: 1000 })),
       list(apiClient.listModelAssignments({ pageSize: 1000 })),
-      list(apiClient.listVaultCredentials({ pageSize: 1000 }))
-    ]).then(([endpoints, assignments, credentials]) => {
+      list(apiClient.listVaultCredentials({ pageSize: 1000 })),
+      Promise.resolve()
+        .then(() => apiClient.getClientConfig())
+        .catch(() => null)
+    ]).then(([endpoints, assignments, credentials, config]) => {
       if (!live) return;
-      setProblems(endpoints ? modelKeyProblems({ endpoints, assignments: assignments || [], credentials, tasks: taskKey.split(',') }) : null);
+      const platformKeySet = config && typeof config.platformModelKeyConfigured === 'boolean' ? config.platformModelKeyConfigured : undefined;
+      setProblems(endpoints ? modelKeyProblems({ endpoints, assignments: assignments || [], credentials, tasks: taskKey.split(','), platformKeySet }) : null);
     });
     return () => {
       live = false;

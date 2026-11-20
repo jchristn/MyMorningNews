@@ -6,6 +6,10 @@ All notable changes to this project are documented here. The project follows [Se
 
 ### Changed
 
+- Ranking: below a model score of 50 (`Pipeline.RelevanceGateScore`), feedback, novelty, source, and recency can no longer lift a finding above the model's own judgment, so pages the model judged weak are not carried over the display threshold (benchmark round 0).
+- Update detection without embeddings: a reworded follow-up that shares enough title and summary words with an earlier finding (`Pipeline.TextUpdateSimilarity`, default 0.35) is judged by the model as a duplicate, an update, or new.
+- Client config reports whether the platform model key is configured, and the dashboard warns when an endpoint relies on a missing one. The preference line in emails says "from 1 rating".
+
 - Free plan: $3 a month, 1 topic, daily schedules, 2 runs a day, 10 audio minutes. Complimentary: $10, 2 topics, daily, 4 runs, 30 audio minutes. Promotional codes last 30 days by default. Unedited stored values move to the new defaults at startup.
 - The Unlimited plan no longer sets a schedule floor; the server's scheduler minimum applies.
 

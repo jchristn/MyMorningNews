@@ -4163,7 +4163,8 @@
       "missing": "{name} 没有 API 密钥，因此对它的调用会失败。",
       "notFound": "{name} 使用的已存储凭据已不存在。",
       "inactive": "{name} 使用的已存储凭据已被停用。",
-      "expired": "{name} 使用的已存储凭据已过期。"
+      "expired": "{name} 使用的已存储凭据已过期。",
+      "platformMissing": "{name} 使用平台模型密钥，但服务器未配置该密钥（MYMORNINGNEWS_ANTHROPIC_API_KEY）。"
     },
     "fix": "为 {name} 添加密钥",
     "view": "查看模型端点",

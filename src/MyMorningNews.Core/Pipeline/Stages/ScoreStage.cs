@@ -84,6 +84,7 @@ namespace MyMorningNews.Core.Pipeline.Stages
                         double composite = Ranker.Composite(llm, feedback, novelty, source, recency,
                             ctx.Topic.WeightLlm ?? p.WeightLlm, ctx.Topic.WeightFeedback ?? p.WeightFeedback, ctx.Topic.WeightNovelty ?? p.WeightNovelty,
                             ctx.Topic.WeightSource ?? p.WeightSource, ctx.Topic.WeightRecency ?? p.WeightRecency);
+                        composite = Ranker.Gate(composite, llm, p.RelevanceGateScore);
                         Finding f = Build(ctx, c);
                         f.LlmScore = llm;
                         f.FeedbackScore = feedback;

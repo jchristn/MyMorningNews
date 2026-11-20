@@ -4163,7 +4163,8 @@
       "missing": "{name} has no API key, so calls to it fail.",
       "notFound": "{name} uses a stored credential that no longer exists.",
       "inactive": "{name} uses a stored credential that is turned off.",
-      "expired": "{name} uses a stored credential that has expired."
+      "expired": "{name} uses a stored credential that has expired.",
+      "platformMissing": "{name} uses the platform model key, but the server has none configured (MYMORNINGNEWS_ANTHROPIC_API_KEY)."
     },
     "fix": "Add a key to {name}",
     "view": "View model endpoints",

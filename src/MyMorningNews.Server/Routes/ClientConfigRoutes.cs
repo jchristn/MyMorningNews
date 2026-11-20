@@ -41,6 +41,7 @@ namespace MyMorningNews.Server.Routes
                 RequireEmailVerification = Server.SettingsService.Current.Hosting.RequireEmailVerification,
                 MinimumAge = Server.SettingsService.Current.Hosting.MinimumAge,
                 TermsVersion = Server.SettingsService.Current.Hosting.TermsVersion,
+                PlatformModelKeyConfigured = !String.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(MyMorningNews.Core.Constants.EnvironmentPrefix + "ANTHROPIC_API_KEY")),
                 PushEnabled = Server.SettingsService.Current.Push.Enabled,
                 AudioEnabled = Server.SettingsService.Current.Tts.Enabled,
                 EmailEnabled = Server.SettingsService.Current.Email.Enabled && Server.SettingsService.Current.Email.Provider != EmailProviderEnum.Disabled,

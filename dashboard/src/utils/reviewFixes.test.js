@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { greeting, hourIn, partOfDay } from './greeting.js';
-import { keyProblem, modelKeyProblems, resolveTaskEndpoint } from './modelKeys.js';
+import { PLATFORM_CREDENTIAL_ID, keyProblem, modelKeyProblems, resolveTaskEndpoint } from './modelKeys.js';
 import { coveringEditions, scheduleState } from './topicSchedule.js';
 import { featureValue } from '../views/plans/planParts.jsx';
 import { formatUsd } from '../i18n/formatters.js';
@@ -106,5 +106,14 @@ describe('plan values and currency', () => {
   it('prints a plain dollar sign in Arabic', () => {
     expect(formatUsd(0, 'ar')).not.toMatch(/US/);
     expect(formatUsd(0, 'ar')).toContain('$');
+  });
+});
+
+describe('platform model key', () => {
+  it('reports the platform key only when the server says it is missing', () => {
+    const endpoint = { id: 'mep_1', provider: 'Anthropic', credentialId: PLATFORM_CREDENTIAL_ID, active: true };
+    expect(keyProblem(endpoint, [], new Date(), undefined)).toBeNull();
+    expect(keyProblem(endpoint, [], new Date(), true)).toBeNull();
+    expect(keyProblem(endpoint, [], new Date(), false)).toBe('platformMissing');
   });
 });

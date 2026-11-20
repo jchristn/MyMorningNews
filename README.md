@@ -207,6 +207,14 @@ PostgreSQL with pgvector is the only supported database. The data layer keeps a 
 Not supported. The server depends on libraries that are not AOT-compatible (CrawlSharp with Playwright, TextChunker)
 and ships as a Linux container.
 
+## Benchmarks
+
+A black-box benchmark suite measures research quality (ranking, suppression, de-duplication, evidence verification),
+the full run-to-email-to-audio flow, resilience to failing dependencies, and API and run throughput, against an
+isolated stack with stubbed model, search, and speech services, so it makes no paid calls. A deterministic subset runs
+in CI as the "Benchmark gate". See [`benchmarks/README.md`](benchmarks/README.md) to run it,
+[`benchmarks/RESULTS.md`](benchmarks/RESULTS.md) for the numbers, and [`BENCHMARKING.md`](BENCHMARKING.md) for the plan.
+
 ## License
 
 MIT. See [LICENSE.md](LICENSE.md).

@@ -12544,6 +12544,7 @@ Search and fetch settings (plan sections 8.3 and 15).
 | `fetchTimeoutMs` | integer | Fetch timeout in milliseconds. Default 20000. Minimum 1000, maximum 120000. |
 | `perDomainDelayMs` | integer | Minimum delay between requests to one domain in milliseconds. Default 1500. Minimum 0, maximum 60000. |
 | `maxFetchBytes` | integer | Largest page fetched in bytes. Default 2097152 (2 MB). Minimum 65536, maximum 52428800. |
+| `maxAttempts` | integer | Attempts per search request, counting the first. A request that gets 408, 429, 500, 502, 503, or 504 is retried after the Retry-After delay (at most 5 seconds) or an exponential backoff from 500 ms. Default 3. Minimum 1 (no retry), maximum 6. |
 
 #### SearchTestRequest
 

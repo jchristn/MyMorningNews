@@ -1,0 +1,28 @@
+{
+  "id": "heat-pumps",
+  "description": "Residential heat pump incentives in fictional Harbor City, over two rounds: relevant stories, look-alike distractors, a blocked domain, a tracking-parameter alias, a syndicated copy, misquotes, an injected instruction, then repeats, updates, and a page seen before.",
+  "rounds": 2,
+  "topic": {
+    "name": "Harbor City heat pump incentives",
+    "brief": "Track residential heat pump rebates, tax credits, installer rules, and efficiency standards for homeowners and renters in Harbor City. I care about money available to households, eligibility changes, and application deadlines.",
+    "noveltyPreference": 50,
+    "seedQueries": ["Harbor City heat pump rebate", "heat pump tax credit eligibility"],
+    "dimensions": [
+      { "name": "Rebates", "weight": "High", "description": "Rebates and tax credits for households." },
+      { "name": "Eligibility", "weight": "Normal", "description": "Who qualifies and how to apply." },
+      { "name": "Installers", "weight": "Normal", "description": "Installer licensing, training, and capacity." },
+      { "name": "Efficiency standards", "weight": "Low", "description": "Minimum efficiency rules for new units." }
+    ],
+    "constraints": [
+      { "kind": "BlockedDomain", "value": "clickfarm.test" }
+    ]
+  },
+  "feedback": [
+    { "afterRound": 1, "item": "hp-tax-credit", "relevance": "Relevant", "reason": "Money for low income households is exactly what I follow." },
+    { "afterRound": 1, "item": "hp-geothermal-schools", "relevance": "NotRelevant", "reason": "School district projects are not my concern." }
+  ],
+  "probes": [
+    { "id": "cluster-tax-credit", "type": "cluster", "category": "dedupe", "round": 1, "items": ["hp-tax-credit", "hp-tax-credit-wire"], "note": "A syndicated copy on another site in the same run is one story." },
+    { "id": "order-feedback", "type": "order", "category": "feedback", "round": 2, "above": "hp-r2-tax-credit-claim", "below": "hp-r2-geothermal-district", "note": "After the reader liked the tax credit story and disliked the schools geothermal story, similar stories follow that preference." }
+  ]
+}

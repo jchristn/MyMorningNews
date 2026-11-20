@@ -212,7 +212,7 @@ MyMorningNews/
 |   |-- tests.yml                 backend suite on postgres service (every push, every PR)
 |   |-- dashboard.yml             lint, unit tests, i18n checks, build
 |   |-- mobile.yml                mobile verify (Phase 16)
-|   `-- benchmarks.yml            ci-gate (Phase 13)
+|   (tests.yml job "Benchmark gate" runs benchmarks/ci-gate.sh, Phase 13)
 |-- assets/
 |   |-- logo.png, glyph.png       (provided)
 |   |-- icon.png, favicon.ico     generated from glyph.png
@@ -1351,7 +1351,7 @@ Every case creates its own data in a fresh, uniquely named database (`mmn_test_<
 - **`tests.yml`** (every push, every branch, every PR). Job `Full suite (ubuntu-latest)` with a `pgvector/pgvector:pg17` service on `127.0.0.1:5432` (throwaway credentials). Steps: setup .NET 8 and 10, restore, build, `dotnet run --project src/Test.Automated -f net8.0 -- --provider postgresql --results results-net8.0.json`, the same for net10.0, `dotnet test src/Test.Xunit3`, and upload `results-*.json` with `if: always()`. There are no filters, tags, or `continue-on-error`. Job `Provider matrix (postgresql)` as the document describes.
 - **`tests.yml`, job `SDK harnesses`** (Phase 11 onward). Postgres service, server started with stub endpoints, then `./sdk/csharp/run-tests.sh`, `./sdk/js/run-tests.sh`, and `./sdk/python/run-tests.sh` (`shell: bash`), with results uploaded using `if: always()`.
 - **`dashboard.yml`.** `npm ci`, lint, Vitest, i18n verification, pseudo-locale smoke, and build.
-- **`benchmarks.yml`** (Phase 13). Brings up the bench stack and runs `ci-gate`.
+- **`tests.yml`, job `Benchmark gate`** (Phase 13). Brings up the bench stack, starts the server from the working tree, and runs `benchmarks/ci-gate.sh` (deterministic, stub-backed checks against committed baselines), uploading `benchmarks/.run/ci/` with `if: always()`.
 - **Required checks on `main`:** `Full suite (ubuntu-latest)`, `Provider matrix (postgresql)`, `Dashboard`, from Phase 11 `SDK harnesses`, and from Phase 13 `Benchmark gate`.
 
 ---
@@ -1527,7 +1527,7 @@ Exit: a clean checkout reaches a first briefing by following only the README.
 
 ### Phase 13: Benchmarks, simulated user testing, release readiness
 
-- [ ] Benchmark harness, datasets, isolated stack, CI gate, round 0 (bugs found are fixed first), `RESULTS.md`, `IMPROVEMENTS.md`.
+- [x] Benchmark harness, datasets, isolated stack, CI gate, round 0 (bugs found are fixed first), `RESULTS.md`, `IMPROVEMENTS.md`.
 - [ ] Simulated user testing session, report, your decisions, approved fixes verified on a fresh instance.
 - [ ] Final review against every document in section 3.
 
@@ -1686,6 +1686,7 @@ No open questions remain.
 | 2026-11-20 | 12 (part) | Grafana and demo | Grafana dashboards for every domain (Research pipeline, Briefings and audio, Email, Learning and feedback, Workers, Auth and security, MCP, Integrations) with an `instance` variable, validated through the Grafana API against live Prometheus. The server exports the Npgsql meter; the MCP server binds its Prometheus endpoint to a named host (the `*` binding turned its telemetry off) and Prometheus scrapes `mcp:9465`. `reset.sh --demo` seeds `demo@mymorningnews` with two topics, three completed runs, findings with verified evidence, predictions, suggestions, Markdown briefings, feedback, and learned preferences through the API plus `seed/demo.sql`, with no model calls; `reset.bat` matches `reset.sh`. Verified on a throwaway compose project, twice for idempotence. |
 | 2026-11-20 | 12 (part) | Translations done | Complete dashboard (2,888 keys) and mobile (1,114 keys) catalogs for es, pt, fr, it, de, zh, ar, ru, ms, hi, and ja, machine-translated and flagged for native review in `docs/I18N.md`. The dashboard loads each catalog lazily. The verifier now requires every locale to be complete and checks argument types, select options, per-locale plural categories, and protected product names, URLs, and route paths; the mobile i18n test checks the same. RTL QA: directional icons mirror, chart plots and code stay left to right, edge accents and the row action menu flip, and a Vitest suite renders the shell, a table, a form, and Insights in `ar` and `qps-rtl` and rejects physical left and right in stylesheets. The server-side email and public page catalog is not built yet (section 25.7). |
 | 2026-11-20 | 6 | Charts done | Charts 2 to 5 and 21 to 24 from a new runs report, `GET /v1.0/api/analytics/runs` (`RunAnalyticsService`): runs by day and status gap-filled in the caller's time zone (`timeZone`, else the profile, else UTC), stage p50 and p95 from finished stage rows, findings by tier, duplicate share, and sources examined (Search items out), fetched (Fetch items out), and used (distinct sources behind a shown finding) per run, the relevance score histogram, runs by day of week and hour, and search provider yield; members see their own runs and administrators the tenant with `all=true`. Dashboard `RunCharts` on Home, Runs, Health, Findings, Relevance, the topic Analytics tab, Sources, and Search Providers, with a shared week, month, or quarter range, keyboard tooltips (now on heatmap cells too), p95 whiskers on the stage timeline, click-through to the run's findings, sources, or detail, and translations in all 12 locales. 191 tests pass on net10; 435 dashboard tests. |
+| 2026-11-20 | 13 (benchmarks) | Done | Benchmark suite per `BENCHMARKING.md`: `src/Test.Benchmark` (assembly `MyMorningNews.Benchmark`, REST only) with validate, ingest, quality, e2e, load (closed and open loop, concurrent runs), resilience, compare (paired, significance-gated, with a deterministic mode for CI), history, and stub; an in-process stub for model, embeddings, search, pages, and speech, so default and CI runs make no paid calls (paid runs need `--paid` and a spend cap enforced by the harness and a server plan cap); isolated stack `mymorningnews-bench` on 125xx; synthetic (47 pages, 65 probes) and live (24 doc sections, 23 probes) datasets with negative probes; floor and reference arms. Round 0 found three defects, all fixed with regression tests: search was never retried on 429 or 5xx (`search.maxAttempts`), and pages fetched by a failed run or a dry run were treated as seen, losing their findings. Round 1: resilience 0.727 to 1.000; synthetic quality 0.855 (floor 0.537), live 0.995. CI gate is the `Benchmark gate` job in `tests.yml` (not a separate `benchmarks.yml`). 191 tests pass on net10. |
 
 ---
 

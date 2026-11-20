@@ -1,0 +1,67 @@
+{
+  "createdUtc": "2026-11-20T00:00:00.000Z",
+  "rest": {
+    "hostname": "127.0.0.1",
+    "port": 12500,
+    "ssl": false,
+    "corsAllowedOrigins": "*",
+    "publicBaseUrl": "http://127.0.0.1:12500",
+    "appBaseUrl": "http://127.0.0.1:12500"
+  },
+  "database": {
+    "type": "Postgresql",
+    "server": "127.0.0.1",
+    "port": 12502,
+    "databaseName": "mymorningnews_bench",
+    "username": "postgres",
+    "password": "bench-password-not-for-production"
+  },
+  "auth": {
+    "signingKey": "mymorningnews-benchmark-signing-key-not-for-production",
+    "adminApiKey": "mymorningnews-benchmark-admin-key-not-for-production",
+    "loginRateLimitPerMinute": 100000
+  },
+  "logging": {
+    "consoleLogging": false,
+    "fileLogging": true,
+    "logDirectory": "logs",
+    "logFilename": "bench-server.log"
+  },
+  "telemetry": {
+    "enabled": true,
+    "otlpEndpoint": "",
+    "lokiEndpoint": "",
+    "prometheusEnabled": true,
+    "prometheusHostname": "127.0.0.1",
+    "prometheusPort": 12509
+  },
+  "models": {
+    "defaultOllamaEndpoint": "http://127.0.0.1:12503/v1"
+  },
+  "search": {
+    "searxngUrl": "http://127.0.0.1:12503/search/unconfigured",
+    "hackerNewsUrl": "http://127.0.0.1:12503/hn",
+    "arxivUrl": "http://127.0.0.1:12503/arxiv",
+    "perDomainDelayMs": 0
+  },
+  "tts": {
+    "enabled": true,
+    "endpoint": "http://127.0.0.1:12503/v1"
+  },
+  "email": {
+    "enabled": true,
+    "provider": "File",
+    "fileDirectory": "email",
+    "deliveryIntervalSeconds": 2
+  },
+  "storage": {
+    "provider": "Local",
+    "localDirectory": "media"
+  },
+  "learning": {
+    "enabled": false
+  },
+  "push": {
+    "enabled": false
+  }
+}

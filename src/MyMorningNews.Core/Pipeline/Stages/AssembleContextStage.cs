@@ -15,7 +15,8 @@ namespace MyMorningNews.Core.Pipeline.Stages
 
     /// <summary>
     /// Stage 1: loads the topic context (dimensions, constraints, recent summaries, already seen URLs, open predictions) and
-    /// builds the prompt variables every later stage uses.
+    /// builds the prompt variables every later stage uses. A URL counts as seen only when a non-dry run that finished
+    /// (Completed or PartiallySucceeded) fetched it, so a failed, cancelled, or dry run never hides pages from later runs.
     /// </summary>
     public class AssembleContextStage : IRunStage
     {
@@ -46,7 +47,11 @@ namespace MyMorningNews.Core.Pipeline.Stages
                 .OrderByDescending(r => r.CompletedUtc).Take(5).Select(r => (r.CompletedUtc ?? r.QueuedUtc).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ": " + r.Summary).ToList();
 
             List<SearchResult> seen = (await services.Database.SearchResults.EnumerateAsync(new SearchResultFilter { TenantId = tenant, TopicId = ctx.Topic.Id, Disposition = SearchResultDispositionEnum.Fetched, PageSize = 1000 }, token).ConfigureAwait(false)).Items;
-            ctx.SeenUrlHashes = new HashSet<string>(seen.Where(r => r.RunId != ctx.Run.Id).Select(r => r.CanonicalUrlHash), StringComparer.Ordinal);
+            HashSet<string> finished = new HashSet<string>(StringComparer.Ordinal);
+            foreach (RunStatusEnum status in new[] { RunStatusEnum.Completed, RunStatusEnum.PartiallySucceeded })
+                foreach (Run r in (await services.Database.Runs.EnumerateAsync(new RunFilter { TenantId = tenant, TopicId = ctx.Topic.Id, Status = status, IsDryRun = false, PageSize = 1000 }, token).ConfigureAwait(false)).Items)
+                    finished.Add(r.Id);
+            ctx.SeenUrlHashes = new HashSet<string>(seen.Where(r => r.RunId != ctx.Run.Id && finished.Contains(r.RunId)).Select(r => r.CanonicalUrlHash), StringComparer.Ordinal);
 
             List<string> dims = ctx.Dimensions.Select(RefinementService.FormatDimension).ToList();
             List<string> constraints = ctx.Constraints.Where(c => c.Kind != ConstraintKindEnum.TrackedQuestion && c.Kind != ConstraintKindEnum.FeedUrl && c.Kind != ConstraintKindEnum.SeedUrl)

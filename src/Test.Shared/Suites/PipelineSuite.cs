@@ -35,6 +35,7 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "Ranker", "Recency, novelty, source, composite, and tiers follow the plan", RankerAsync, "fast"),
                 Cases.Case(S, "FullRun", "A run searches, filters, fetches, extracts verified findings, scores, synthesizes, predicts, suggests, and reviews", FullRunAsync),
                 Cases.Case(S, "SecondRunDedupe", "A later run skips seen pages and marks a repeated finding as a duplicate", SecondRunAsync),
+                Cases.Case(S, "SeenOnlyAfterFinishedRuns", "Pages fetched by a dry run or a failed run are not skipped as seen by the next run", SeenOnlyAfterFinishedRunsAsync),
                 Cases.Case(S, "Failures", "A critical failure fails the run; an optional failure leaves it partially succeeded", FailuresAsync),
                 Cases.Case(S, "ResearchApi", "Findings, evidence, predictions, suggestions, and run details are served, private, and deleted with their topic", ApiAsync),
                 Cases.Case(S, "AgenticSearch", "A topic with agentic search lets the model search and read with tools, logs each call, and extracts from its picks", AgenticAsync),
@@ -175,6 +176,30 @@ namespace Test.Shared.Suites
             Assert.True(third.Status == RunStatusEnum.Completed && third.DuplicateCount == 1 && third.NewFindingCount == 0, "same story on a new page is a duplicate (dup " + third.DuplicateCount + ", new " + third.NewFindingCount + ")");
             EnumerationResult<Finding> withDup = (await f.User.Client.GetAsync("/v1.0/api/findings?runId=" + third.Id + "&includeDuplicates=true", token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>();
             Assert.True(withDup.Items.Count == 1 && withDup.Items[0].IsDuplicate && withDup.Items[0].DuplicateOfFindingId != null, "duplicate saved and linked");
+        }
+
+        private static async Task SeenOnlyAfterFinishedRunsAsync(CancellationToken token)
+        {
+            PipelineFixture f = await FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
+            Run queued = (await f.User.Client.PostAsync("/v1.0/api/topics/" + f.Topic.Id + "/run?dryRun=true", null, token).ConfigureAwait(false)).Expect(202, "dry run").Json<Run>();
+            Run dry = await RunWaiter.FinishAsync(f.Server, queued, token).ConfigureAwait(false);
+            Assert.True(dry.Status == RunStatusEnum.Completed && dry.IsDryRun, "dry run: " + dry.Status + " " + dry.ErrorMessage);
+            Run real = await RunAsync(f, token).ConfigureAwait(false);
+            List<SearchResult> afterDry = (await f.User.Client.GetAsync("/v1.0/api/runs/" + real.Id + "/results", token).ConfigureAwait(false)).Json<List<SearchResult>>();
+            Assert.True(real.NewFindingCount == 2 && afterDry.Count(r => r.Disposition == SearchResultDispositionEnum.Fetched) == 2 && !afterDry.Any(r => r.Disposition == SearchResultDispositionEnum.SkippedSeen),
+                "a dry run does not use up pages (found by the benchmark suite): " + real.NewFindingCount + " new, " + String.Join(", ", afterDry.Select(r => r.Disposition)));
+
+            PipelineFixture g = await FixtureAsync("Track residential heat pump rebates. FAILEXTRACT", "/pipeline", token).ConfigureAwait(false);
+            Run failed = await RunAsync(g, token).ConfigureAwait(false);
+            Assert.True(failed.Status == RunStatusEnum.Failed && failed.ErrorMessage!.Contains("Extract", StringComparison.Ordinal), "extraction failure fails the run: " + failed.Status + " " + failed.ErrorMessage);
+            (await g.User.Client.PutAsync("/v1.0/api/topics/" + g.Topic.Id, new { brief = "Track residential heat pump rebates." }, token).ConfigureAwait(false)).Expect(200, "fix brief");
+            Run recovered = await RunAsync(g, token).ConfigureAwait(false);
+            List<SearchResult> afterFailure = (await g.User.Client.GetAsync("/v1.0/api/runs/" + recovered.Id + "/results", token).ConfigureAwait(false)).Json<List<SearchResult>>();
+            Assert.True(recovered.Status == RunStatusEnum.Completed && recovered.NewFindingCount == 2 && afterFailure.Count(r => r.Disposition == SearchResultDispositionEnum.Fetched) == 2,
+                "the run after a failure recovers its pages (found by the benchmark suite): " + recovered.Status + ", " + recovered.NewFindingCount + " new, " + String.Join(", ", afterFailure.Select(r => r.Disposition)));
+            Run third = await RunAsync(g, token).ConfigureAwait(false);
+            List<SearchResult> afterSuccess = (await g.User.Client.GetAsync("/v1.0/api/runs/" + third.Id + "/results", token).ConfigureAwait(false)).Json<List<SearchResult>>();
+            Assert.True(afterSuccess.Count(r => r.Disposition == SearchResultDispositionEnum.SkippedSeen) == 2, "pages from a completed run are still skipped as seen");
         }
 
         private static async Task FailuresAsync(CancellationToken token)

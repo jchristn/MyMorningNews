@@ -19,6 +19,8 @@ namespace Test.Shared.Helpers
     /// stub-error (always 400), stub-refusal (finish_reason refusal),
     /// stub-embed-N (embeddings of N dimensions, derived from each text), stub-research (shaped answers for every research prompt), stub-refine (shaped answers for every refinement prompt, detected from the prompt text).
     /// GET requests other than /models return an RSS document (200), or 404 when the path contains "missing" (for source checks).
+    /// GET .../flaky429/search answers 429 (Retry-After: 0) the first time each URL is seen, then the normal search results;
+    /// GET .../always503/search always answers 503 (search retry checks).
     /// Requests whose system prompt contains "JSON Schema" receive the JSON answer as fenced text. Streaming requests receive SSE chunks
     /// (text or tool-call argument deltas split in two) and a final chunk with usage including cached and reasoning tokens.
     /// Thread safety: safe for concurrent requests.
@@ -241,6 +243,15 @@ namespace Test.Shared.Helpers
                     return;
                 }
 
+                if (String.Equals(ctx.Request.HttpMethod, "GET", StringComparison.OrdinalIgnoreCase) && path.EndsWith("/search", StringComparison.Ordinal) &&
+                    (path.Contains("/always503/", StringComparison.Ordinal) || (path.Contains("/flaky429/", StringComparison.Ordinal) && _Seen.TryAdd("GET|" + ctx.Request.Url, 0))))
+                {
+                    bool limited = path.Contains("/flaky429/", StringComparison.Ordinal);
+                    ctx.Response.AddHeader("Retry-After", "0");
+                    await WriteAsync(ctx, limited ? 429 : 503, "{\"error\":\"" + (limited ? "rate limited" : "unavailable") + "\"}").ConfigureAwait(false);
+                    return;
+                }
+
                 if (String.Equals(ctx.Request.HttpMethod, "GET", StringComparison.OrdinalIgnoreCase) && !path.EndsWith("/models", StringComparison.Ordinal))
                 {
                     await WriteGetAsync(ctx, path).ConfigureAwait(false);
@@ -300,6 +311,12 @@ namespace Test.Shared.Helpers
                     string answer = model == "stub-repair" && !repairTurn ? "" : "ready";
                     bool toolTurn = tools && model != "stub-refusal";
                     string finish = model == "stub-refusal" ? "refusal" : toolTurn ? "tool_calls" : "stop";
+                    if (model == "stub-research" && body.Contains("Return up to 5 findings", StringComparison.Ordinal) && body.Contains("FAILEXTRACT", StringComparison.Ordinal))
+                    {
+                        await WriteAsync(ctx, 400, "{\"error\":{\"message\":\"extraction model rejected the request\"}}").ConfigureAwait(false);
+                        return;
+                    }
+
                     if (model == "stub-research" && body.Contains("Make 0 to 5 new predictions", StringComparison.Ordinal) && body.Contains("FAILPREDICT", StringComparison.Ordinal))
                     {
                         await WriteAsync(ctx, 400, "{\"error\":{\"message\":\"prediction model rejected the request\"}}").ConfigureAwait(false);

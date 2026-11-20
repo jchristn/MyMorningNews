@@ -1,0 +1,57 @@
+# Isolated benchmark stack (BENCHMARKING.md "The Isolated Stack"). Its own project name, so
+# `docker compose -f benchmarks/docker/compose.yaml down -v` can never touch the development stack (project
+# "mymorningnews", ports 12100 to 12120). Every port is in the 125xx block and bound to 127.0.0.1.
+#
+#   12500  server under test (run from the working tree by start-bench-server.sh/.bat, not in a container)
+#   12502  postgres (this file)
+#   12503  harness stub: model, search, corpus pages, robots, and TTS (hosted in-process by MyMorningNews.Benchmark)
+#   12509  server Prometheus exporter (/metrics), scraped by the harness for stage attribution
+#   12511  prometheus (profile "observability", optional)
+name: mymorningnews-bench
+
+services:
+  postgres:
+    # Same pin as docker/compose.yaml. Benchmarks measure what ships.
+    image: pgvector/pgvector:0.8.1-pg17
+    container_name: mymorningnews-bench-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: bench-password-not-for-production
+      POSTGRES_DB: mymorningnews_bench
+    ports:
+      - "127.0.0.1:12502:5432"
+    volumes:
+      - benchpg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d mymorningnews_bench"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  prometheus:
+    # Same Dockerfile and pin as docker/prometheus (prom/prometheus v3.5.4 plus curl), under a bench image name so a
+    # build here never retags the development image. Optional: the harness scrapes the server exporter directly.
+    profiles: ["observability"]
+    build:
+      context: ../../docker/prometheus
+    image: mymorningnews-bench/prometheus:local
+    container_name: mymorningnews-bench-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "127.0.0.1:12511:9090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./config/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
+      - benchprom:/prometheus
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9090/-/healthy"]
+      interval: 5s
+      timeout: 5s
+      retries: 2
+
+volumes:
+  benchpg:
+  benchprom:

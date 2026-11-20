@@ -1,0 +1,28 @@
+{
+  "id": "transit",
+  "description": "Electric ferries and buses in fictional Harbor City, over two rounds, with feedback after the first: relevant stories, a lightly weighted fare dimension, distractors, a blocked domain, a syndicated copy, a page whose only quote is invented, then an update, a reworded repeat, and a page seen before.",
+  "rounds": 2,
+  "topic": {
+    "name": "Harbor City electric ferries and buses",
+    "brief": "Follow Harbor City's plans to electrify its ferry fleet and bus routes: vessel and bus purchases, charging infrastructure, budgets, schedules, and service changes riders will notice.",
+    "noveltyPreference": 50,
+    "seedQueries": ["Harbor City electric ferry", "electric bus routes Harbor City"],
+    "dimensions": [
+      { "name": "Ferries", "weight": "High", "description": "Electric ferry purchases, deliveries, and service." },
+      { "name": "Buses", "weight": "Normal", "description": "Electric bus purchases and routes." },
+      { "name": "Charging", "weight": "Normal", "description": "Chargers for vessels and buses." },
+      { "name": "Fares", "weight": "Low", "description": "Fare changes." }
+    ],
+    "constraints": [
+      { "kind": "BlockedDomain", "value": "spamwire.test" }
+    ]
+  },
+  "feedback": [
+    { "afterRound": 1, "item": "tr-bus-routes", "relevance": "Relevant", "reason": "Route changes are what I need to plan around." },
+    { "afterRound": 1, "item": "tr-fare-rise", "relevance": "NotRelevant", "reason": "I do not follow fares." }
+  ],
+  "probes": [
+    { "id": "cluster-ferry-order", "type": "cluster", "category": "dedupe", "round": 1, "items": ["tr-ferry-order", "tr-ferry-order-wire"], "note": "A syndicated copy in the same run is one story." },
+    { "id": "order-feedback", "type": "order", "category": "feedback", "round": 2, "above": "tr-r2-depot-chargers", "below": "tr-r2-fare-cap", "note": "After the reader liked a bus route story and disliked a fare story, bus charging ranks above a fare proposal." }
+  ]
+}

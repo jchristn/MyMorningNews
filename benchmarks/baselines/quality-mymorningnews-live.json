@@ -1,0 +1,2409 @@
+{
+  "format": 1,
+  "kind": "quality",
+  "dataset": "mymorningnews-live",
+  "label": "ci",
+  "mode": "stub",
+  "arms": [
+    "default",
+    "llm-only",
+    "floor-search-order",
+    "reference-lexical"
+  ],
+  "provenance": {
+    "startUtc": "2026-11-20T21:52:58.363639Z",
+    "sutUrl": "http://127.0.0.1:12500",
+    "sutVersion": "0.1.0-alpha, schema 16, .NET 10.0.14",
+    "productCommit": "c6c0ffae25b825029006fe85cb579ba4133013ce-dirty",
+    "harnessVersion": "0.1.0-alpha",
+    "harnessCommit": "uncommitted-dirty",
+    "machine": "(scrubbed)",
+    "os": "macOS 26.6.0 Arm64",
+    "cpu": "Apple M5 Max, 18 logical cores",
+    "runtime": ".NET 10.0.14",
+    "images": {
+      "mymorningnews-bench-postgres": "pgvector/pgvector:0.8.1-pg17 sha256:3e8b3adfd27b5707128f60956f62a793c3c9326ea8cfaf0eab7adccb5d700b21 (pgvector/pgvector@sha256:3e8b3adfd27b5707128f60956f62a793c3c9326ea8cfaf0eab7adccb5d700b21)"
+    },
+    "services": {
+      "embeddings": "stub bench-hash-384",
+      "model": "stub bench-stub-chat (stub-2)",
+      "search, pages, speech": "stub on 127.0.0.1:12503"
+    },
+    "dataset": "mymorningnews-live",
+    "datasetSha256": "4193bbb551411598ff2ddee9c23898d47589f52b88b0f85473df72307bbbf192",
+    "commandLine": "MyMorningNews.Benchmark quality --label ci --output-dir \u003Crepo\u003E/benchmarks/.run/ci --scrub --dataset benchmarks/datasets/mymorningnews-live.json --reingest",
+    "httpClient": "SocketsHttpHandler, 256 connections per server, 120 s timeout, 2 min pooled lifetime"
+  },
+  "options": {
+    "admin-key": "(set)",
+    "arms": "default,llm-only",
+    "corpora": "",
+    "dataset": "benchmarks/datasets/mymorningnews-live.json",
+    "http-timeout-seconds": "120",
+    "label": "ci",
+    "max-connections": "256",
+    "metrics-url": "http://127.0.0.1:12509/metrics",
+    "no-reference": "false",
+    "output-dir": "\u003Crepo\u003E/benchmarks/.run/ci",
+    "paid": "false",
+    "reingest": "true",
+    "resamples": "2000",
+    "run-timeout-seconds": "300",
+    "scrub": "true",
+    "seed": "20261120",
+    "server": "http://127.0.0.1:12500",
+    "stub-port": "12503"
+  },
+  "incomplete": false,
+  "incompleteReasons": [],
+  "summaries": [
+    {
+      "arm": "default",
+      "group": "overall",
+      "metric": "score",
+      "value": {
+        "mean": 0.9946022571758056,
+        "low": 0.9838067715274168,
+        "high": 1,
+        "n": 23,
+        "indicative": false
+      }
+    },
+    {
+      "arm": "default",
+      "group": "positive",
+      "metric": "score",
+      "value": {
+        "mean": 0.98620576833817,
+        "low": 0.9586173050145095,
+        "high": 1,
+        "n": 9,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "negative",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 14,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:dedupe-precision",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:dedupe-precision",
+      "metric": "flagged",
+      "value": {
+        "mean": 0,
+        "low": 0,
+        "high": 0,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:guardrail",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:guardrail",
+      "metric": "requests",
+      "value": {
+        "mean": 33,
+        "low": 33,
+        "high": 33,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:ranking",
+      "metric": "score",
+      "value": {
+        "mean": 0.875851915043529,
+        "low": 0.875851915043529,
+        "high": 0.875851915043529,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:ranking",
+      "metric": "evidencePrecision",
+      "value": {
+        "mean": 0.5555555555555556,
+        "low": 0.5555555555555556,
+        "high": 0.5555555555555556,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:ranking",
+      "metric": "ndcg10",
+      "value": {
+        "mean": 0.875851915043529,
+        "low": 0.875851915043529,
+        "high": 0.875851915043529,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:ranking",
+      "metric": "p5",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:ranking",
+      "metric": "recall",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:ranking",
+      "metric": "shown",
+      "value": {
+        "mean": 6,
+        "low": 6,
+        "high": 6,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:ranking",
+      "metric": "shownPrecision",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:suppressed",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 14,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:surfaced",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 6,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "category:dedupe",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "category:relevance",
+      "metric": "score",
+      "value": {
+        "mean": 0.9940881864306442,
+        "low": 0.9822645592919327,
+        "high": 1,
+        "n": 21,
+        "indicative": false
+      }
+    },
+    {
+      "arm": "default",
+      "group": "category:scope",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "overall",
+      "metric": "score",
+      "value": {
+        "mean": 0.8539397504793346,
+        "low": 0.6956521739130435,
+        "high": 0.9843745330880302,
+        "n": 23,
+        "indicative": false
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "positive",
+      "metric": "score",
+      "value": {
+        "mean": 0.6267349178916328,
+        "low": 0.3333333333333333,
+        "high": 0.8888888888888888,
+        "n": 9,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "negative",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 14,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:dedupe-precision",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:dedupe-precision",
+      "metric": "flagged",
+      "value": {
+        "mean": 0,
+        "low": 0,
+        "high": 0,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:guardrail",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:guardrail",
+      "metric": "requests",
+      "value": {
+        "mean": 33,
+        "low": 33,
+        "high": 33,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:ranking",
+      "metric": "score",
+      "value": {
+        "mean": 0.6406142610246954,
+        "low": 0.6406142610246954,
+        "high": 0.6406142610246954,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:ranking",
+      "metric": "evidencePrecision",
+      "value": {
+        "mean": 0.5555555555555556,
+        "low": 0.5555555555555556,
+        "high": 0.5555555555555556,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:ranking",
+      "metric": "ndcg10",
+      "value": {
+        "mean": 0.6406142610246954,
+        "low": 0.6406142610246954,
+        "high": 0.6406142610246954,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:ranking",
+      "metric": "p5",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:ranking",
+      "metric": "recall",
+      "value": {
+        "mean": 0.5,
+        "low": 0.5,
+        "high": 0.5,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:ranking",
+      "metric": "shown",
+      "value": {
+        "mean": 3,
+        "low": 3,
+        "high": 3,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:ranking",
+      "metric": "shownPrecision",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:suppressed",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 14,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "type:surfaced",
+      "metric": "score",
+      "value": {
+        "mean": 0.5,
+        "low": 0.16666666666666666,
+        "high": 0.8333333333333334,
+        "n": 6,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "category:dedupe",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "category:relevance",
+      "metric": "score",
+      "value": {
+        "mean": 0.8400292505249854,
+        "low": 0.6800585010499709,
+        "high": 0.9657727867642566,
+        "n": 21,
+        "indicative": false
+      }
+    },
+    {
+      "arm": "llm-only",
+      "group": "category:scope",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "overall",
+      "metric": "score",
+      "value": {
+        "mean": 0.6962112114432122,
+        "low": 0.5057350209670216,
+        "high": 0.8686128990769004,
+        "n": 21,
+        "indicative": false
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "positive",
+      "metric": "score",
+      "value": {
+        "mean": 0.9457764914724934,
+        "low": 0.8373294744174803,
+        "high": 1,
+        "n": 7,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "negative",
+      "metric": "score",
+      "value": {
+        "mean": 0.5714285714285714,
+        "low": 0.35714285714285715,
+        "high": 0.8571428571428571,
+        "n": 14,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:ranking",
+      "metric": "score",
+      "value": {
+        "mean": 0.6204354403074542,
+        "low": 0.6204354403074542,
+        "high": 0.6204354403074542,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:ranking",
+      "metric": "ndcg10",
+      "value": {
+        "mean": 0.6204354403074542,
+        "low": 0.6204354403074542,
+        "high": 0.6204354403074542,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:ranking",
+      "metric": "p5",
+      "value": {
+        "mean": 0.6,
+        "low": 0.6,
+        "high": 0.6,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:ranking",
+      "metric": "recall",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:ranking",
+      "metric": "shown",
+      "value": {
+        "mean": 15,
+        "low": 15,
+        "high": 15,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:ranking",
+      "metric": "shownPrecision",
+      "value": {
+        "mean": 0.4,
+        "low": 0.4,
+        "high": 0.4,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:suppressed",
+      "metric": "score",
+      "value": {
+        "mean": 0.5714285714285714,
+        "low": 0.35714285714285715,
+        "high": 0.8571428571428571,
+        "n": 14,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "type:surfaced",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 6,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "floor-search-order",
+      "group": "category:relevance",
+      "metric": "score",
+      "value": {
+        "mean": 0.6962112114432122,
+        "low": 0.5057350209670216,
+        "high": 0.8686128990769004,
+        "n": 21,
+        "indicative": false
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "overall",
+      "metric": "score",
+      "value": {
+        "mean": 0.8400292505249854,
+        "low": 0.6800585010499709,
+        "high": 0.9657727867642566,
+        "n": 21,
+        "indicative": false
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "positive",
+      "metric": "score",
+      "value": {
+        "mean": 0.5200877515749565,
+        "low": 0.18303264600705585,
+        "high": 0.8571428571428571,
+        "n": 7,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "negative",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 14,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:ranking",
+      "metric": "score",
+      "value": {
+        "mean": 0.6406142610246954,
+        "low": 0.6406142610246954,
+        "high": 0.6406142610246954,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:ranking",
+      "metric": "ndcg10",
+      "value": {
+        "mean": 0.6406142610246954,
+        "low": 0.6406142610246954,
+        "high": 0.6406142610246954,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:ranking",
+      "metric": "p5",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:ranking",
+      "metric": "recall",
+      "value": {
+        "mean": 0.5,
+        "low": 0.5,
+        "high": 0.5,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:ranking",
+      "metric": "shown",
+      "value": {
+        "mean": 3,
+        "low": 3,
+        "high": 3,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:ranking",
+      "metric": "shownPrecision",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:suppressed",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 14,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "type:surfaced",
+      "metric": "score",
+      "value": {
+        "mean": 0.5,
+        "low": 0.16666666666666666,
+        "high": 0.8333333333333334,
+        "n": 6,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "reference-lexical",
+      "group": "category:relevance",
+      "metric": "score",
+      "value": {
+        "mean": 0.8400292505249854,
+        "low": 0.6800585010499709,
+        "high": 0.9657727867642566,
+        "n": 21,
+        "indicative": false
+      }
+    }
+  ],
+  "probes": [
+    {
+      "arm": "default",
+      "corpus": "hosted-service-docs",
+      "probeId": "surfaced-hosting-profile",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 4, Fyi, score 47.2",
+      "error": null,
+      "key": "default/hosted-service-docs/surfaced-hosting-profile"
+    },
+    {
+      "arm": "default",
+      "corpus": "hosted-service-docs",
+      "probeId": "surfaced-hosting-signup",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 2, WorthALook, score 69.3",
+      "error": null,
+      "key": "default/hosted-service-docs/surfaced-hosting-signup"
+    },
+    {
+      "arm": "default",
+      "corpus": "hosted-service-docs",
+      "probeId": "surfaced-hosting-plans",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 1, WorthALook, score 69.3",
+      "error": null,
+      "key": "default/hosted-service-docs/surfaced-hosting-plans"
+    },
+    {
+      "arm": "default",
+      "corpus": "hosted-service-docs",
+      "probeId": "surfaced-hosting-deletion",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 3, WorthALook, score 67.5",
+      "error": null,
+      "key": "default/hosted-service-docs/surfaced-hosting-deletion"
+    },
+    {
+      "arm": "default",
+      "corpus": "hosted-service-docs",
+      "probeId": "surfaced-hosting-credentials",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 5, Fyi, score 45.4",
+      "error": null,
+      "key": "default/hosted-service-docs/surfaced-hosting-credentials"
+    },
+    {
+      "arm": "default",
+      "corpus": "hosted-service-docs",
+      "probeId": "surfaced-hosting-private-network",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 6, Fyi, score 43.6",
+      "error": null,
+      "key": "default/hosted-service-docs/surfaced-hosting-private-network"
+    },
+    {
+      "arm": "default",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-locales",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: Fetched; no finding extracted.",
+      "error": null,
+      "key": "default/hosted-service-docs/suppressed-i18n-locales"
+    },
+    {
+      "arm": "default",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-catalogs",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "default/hosted-service-docs/suppressed-i18n-catalogs"
+    },
+    {
+      "arm": "default",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-message-format",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "default/hosted-service-docs/suppressed-i18n-message-format"
+    },
+    {
+      "arm": "default",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-adding-key",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "default/hosted-service-docs/suppressed-i18n-adding-key"
+    },
+    {
+      "arm": "default",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-adding-locale",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "default/hosted-service-docs/suppressed-i18n-adding-locale"
+    },
+    {
+      "arm": "default",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-verifiers",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "default/hosted-service-docs/suppressed-i18n-verifiers"
+    },
+    {
+      "arm": "default",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-pseudo",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "default/hosted-service-docs/suppressed-i18n-pseudo"
+    },
+    {
+      "arm": "default",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-rtl",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: Fetched; no finding extracted.",
+      "error": null,
+      "key": "default/hosted-service-docs/suppressed-i18n-rtl"
+    },
+    {
+      "arm": "default",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-terminology",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "default/hosted-service-docs/suppressed-i18n-terminology"
+    },
+    {
+      "arm": "default",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-mobile-prerequisites",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: Fetched; finding BelowThreshold 36.4",
+      "error": null,
+      "key": "default/hosted-service-docs/suppressed-mobile-prerequisites"
+    },
+    {
+      "arm": "default",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-mobile-ios",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: Fetched; no finding extracted.",
+      "error": null,
+      "key": "default/hosted-service-docs/suppressed-mobile-ios"
+    },
+    {
+      "arm": "default",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-mobile-android",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "default/hosted-service-docs/suppressed-mobile-android"
+    },
+    {
+      "arm": "default",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-mobile-devices",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: SkippedDuplicate, Fetched; finding BelowThreshold 38.7",
+      "error": null,
+      "key": "default/hosted-service-docs/suppressed-mobile-devices"
+    },
+    {
+      "arm": "default",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-mobile-limitations",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: SkippedDuplicate, Fetched; no finding extracted.",
+      "error": null,
+      "key": "default/hosted-service-docs/suppressed-mobile-limitations"
+    },
+    {
+      "arm": "default",
+      "corpus": "hosted-service-docs",
+      "probeId": "ranking-r1",
+      "type": "ranking",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 0.875851915043529,
+      "metrics": {
+        "evidencePrecision": 0.5555555555555556,
+        "ndcg10": 0.875851915043529,
+        "p5": 1,
+        "recall": 1,
+        "shown": 6,
+        "shownPrecision": 1
+      },
+      "latency": null,
+      "detail": "6 shown: hosting-plans(3), hosting-signup(3), hosting-deletion(3), hosting-profile(2), hosting-credentials(2), hosting-private-network(2)",
+      "error": null,
+      "key": "default/hosted-service-docs/ranking-r1"
+    },
+    {
+      "arm": "default",
+      "corpus": "hosted-service-docs",
+      "probeId": "dedupe-precision-r1",
+      "type": "dedupe-precision",
+      "category": "dedupe",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 0
+      },
+      "latency": null,
+      "detail": "No duplicates flagged",
+      "error": null,
+      "key": "default/hosted-service-docs/dedupe-precision-r1"
+    },
+    {
+      "arm": "default",
+      "corpus": "hosted-service-docs",
+      "probeId": "guardrail",
+      "type": "guardrail",
+      "category": "scope",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "requests": 33
+      },
+      "latency": null,
+      "detail": "33 of 33 model requests led with the scope guardrail",
+      "error": null,
+      "key": "default/hosted-service-docs/guardrail"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "hosted-service-docs",
+      "probeId": "surfaced-hosting-profile",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Results: Fetched; finding BelowThreshold 29.0",
+      "error": null,
+      "key": "llm-only/hosted-service-docs/surfaced-hosting-profile"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "hosted-service-docs",
+      "probeId": "surfaced-hosting-signup",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 2, WorthALook, score 78.0",
+      "error": null,
+      "key": "llm-only/hosted-service-docs/surfaced-hosting-signup"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "hosted-service-docs",
+      "probeId": "surfaced-hosting-plans",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 1, WorthALook, score 78.0",
+      "error": null,
+      "key": "llm-only/hosted-service-docs/surfaced-hosting-plans"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "hosted-service-docs",
+      "probeId": "surfaced-hosting-deletion",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 3, WorthALook, score 74.0",
+      "error": null,
+      "key": "llm-only/hosted-service-docs/surfaced-hosting-deletion"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "hosted-service-docs",
+      "probeId": "surfaced-hosting-credentials",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Results: Fetched; finding BelowThreshold 25.0",
+      "error": null,
+      "key": "llm-only/hosted-service-docs/surfaced-hosting-credentials"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "hosted-service-docs",
+      "probeId": "surfaced-hosting-private-network",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Results: SkippedDuplicate, Fetched; finding BelowThreshold 21.0",
+      "error": null,
+      "key": "llm-only/hosted-service-docs/surfaced-hosting-private-network"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-locales",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: Fetched; no finding extracted.",
+      "error": null,
+      "key": "llm-only/hosted-service-docs/suppressed-i18n-locales"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-catalogs",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "llm-only/hosted-service-docs/suppressed-i18n-catalogs"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-message-format",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "llm-only/hosted-service-docs/suppressed-i18n-message-format"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-adding-key",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "llm-only/hosted-service-docs/suppressed-i18n-adding-key"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-adding-locale",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "llm-only/hosted-service-docs/suppressed-i18n-adding-locale"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-verifiers",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "llm-only/hosted-service-docs/suppressed-i18n-verifiers"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-pseudo",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "llm-only/hosted-service-docs/suppressed-i18n-pseudo"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-rtl",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: Fetched; no finding extracted.",
+      "error": null,
+      "key": "llm-only/hosted-service-docs/suppressed-i18n-rtl"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-terminology",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "llm-only/hosted-service-docs/suppressed-i18n-terminology"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-mobile-prerequisites",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: Fetched; finding BelowThreshold 5.0",
+      "error": null,
+      "key": "llm-only/hosted-service-docs/suppressed-mobile-prerequisites"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-mobile-ios",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: Fetched; no finding extracted.",
+      "error": null,
+      "key": "llm-only/hosted-service-docs/suppressed-mobile-ios"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-mobile-android",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "llm-only/hosted-service-docs/suppressed-mobile-android"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-mobile-devices",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: SkippedDuplicate, Fetched; finding BelowThreshold 10.0",
+      "error": null,
+      "key": "llm-only/hosted-service-docs/suppressed-mobile-devices"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-mobile-limitations",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: SkippedDuplicate, Fetched; no finding extracted.",
+      "error": null,
+      "key": "llm-only/hosted-service-docs/suppressed-mobile-limitations"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "hosted-service-docs",
+      "probeId": "ranking-r1",
+      "type": "ranking",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 0.6406142610246954,
+      "metrics": {
+        "evidencePrecision": 0.5555555555555556,
+        "ndcg10": 0.6406142610246954,
+        "p5": 1,
+        "recall": 0.5,
+        "shown": 3,
+        "shownPrecision": 1
+      },
+      "latency": null,
+      "detail": "3 shown: hosting-plans(3), hosting-signup(3), hosting-deletion(3)",
+      "error": null,
+      "key": "llm-only/hosted-service-docs/ranking-r1"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "hosted-service-docs",
+      "probeId": "dedupe-precision-r1",
+      "type": "dedupe-precision",
+      "category": "dedupe",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "flagged": 0
+      },
+      "latency": null,
+      "detail": "No duplicates flagged",
+      "error": null,
+      "key": "llm-only/hosted-service-docs/dedupe-precision-r1"
+    },
+    {
+      "arm": "llm-only",
+      "corpus": "hosted-service-docs",
+      "probeId": "guardrail",
+      "type": "guardrail",
+      "category": "scope",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "requests": 33
+      },
+      "latency": null,
+      "detail": "33 of 33 model requests led with the scope guardrail",
+      "error": null,
+      "key": "llm-only/hosted-service-docs/guardrail"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "hosted-service-docs",
+      "probeId": "surfaced-hosting-profile",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 3, Fyi, score 50.0",
+      "error": null,
+      "key": "floor-search-order/hosted-service-docs/surfaced-hosting-profile"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "hosted-service-docs",
+      "probeId": "surfaced-hosting-signup",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 8, Fyi, score 50.0",
+      "error": null,
+      "key": "floor-search-order/hosted-service-docs/surfaced-hosting-signup"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "hosted-service-docs",
+      "probeId": "surfaced-hosting-plans",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 4, Fyi, score 50.0",
+      "error": null,
+      "key": "floor-search-order/hosted-service-docs/surfaced-hosting-plans"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "hosted-service-docs",
+      "probeId": "surfaced-hosting-deletion",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 9, Fyi, score 50.0",
+      "error": null,
+      "key": "floor-search-order/hosted-service-docs/surfaced-hosting-deletion"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "hosted-service-docs",
+      "probeId": "surfaced-hosting-credentials",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 15, Fyi, score 50.0",
+      "error": null,
+      "key": "floor-search-order/hosted-service-docs/surfaced-hosting-credentials"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "hosted-service-docs",
+      "probeId": "surfaced-hosting-private-network",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 5, Fyi, score 50.0",
+      "error": null,
+      "key": "floor-search-order/hosted-service-docs/surfaced-hosting-private-network"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-locales",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as Fyi at rank 1 (score 50.0, model 50.0)",
+      "error": null,
+      "key": "floor-search-order/hosted-service-docs/suppressed-i18n-locales"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-catalogs",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "floor-search-order/hosted-service-docs/suppressed-i18n-catalogs"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-message-format",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "floor-search-order/hosted-service-docs/suppressed-i18n-message-format"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-adding-key",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "floor-search-order/hosted-service-docs/suppressed-i18n-adding-key"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-adding-locale",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "floor-search-order/hosted-service-docs/suppressed-i18n-adding-locale"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-verifiers",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "floor-search-order/hosted-service-docs/suppressed-i18n-verifiers"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-pseudo",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "floor-search-order/hosted-service-docs/suppressed-i18n-pseudo"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-rtl",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as Fyi at rank 11 (score 50.0, model 50.0)",
+      "error": null,
+      "key": "floor-search-order/hosted-service-docs/suppressed-i18n-rtl"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-terminology",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "floor-search-order/hosted-service-docs/suppressed-i18n-terminology"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-mobile-prerequisites",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as Fyi at rank 12 (score 50.0, model 50.0)",
+      "error": null,
+      "key": "floor-search-order/hosted-service-docs/suppressed-mobile-prerequisites"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-mobile-ios",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as Fyi at rank 14 (score 50.0, model 50.0)",
+      "error": null,
+      "key": "floor-search-order/hosted-service-docs/suppressed-mobile-ios"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-mobile-android",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "floor-search-order/hosted-service-docs/suppressed-mobile-android"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-mobile-devices",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as Fyi at rank 13 (score 50.0, model 50.0)",
+      "error": null,
+      "key": "floor-search-order/hosted-service-docs/suppressed-mobile-devices"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-mobile-limitations",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown as Fyi at rank 7 (score 50.0, model 50.0)",
+      "error": null,
+      "key": "floor-search-order/hosted-service-docs/suppressed-mobile-limitations"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "hosted-service-docs",
+      "probeId": "ranking-r1",
+      "type": "ranking",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 0.6204354403074542,
+      "metrics": {
+        "ndcg10": 0.6204354403074542,
+        "p5": 0.6,
+        "recall": 1,
+        "shown": 15,
+        "shownPrecision": 0.4
+      },
+      "latency": null,
+      "detail": "15 shown: i18n-locales(0), hosting-before(1), hosting-profile(2), hosting-plans(3), hosting-private-network(2), hosting-operations(1), mobile-limitations(0), hosting-signup(3), hosting-deletion(3), hosting-steps(1)",
+      "error": null,
+      "key": "floor-search-order/hosted-service-docs/ranking-r1"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "hosted-service-docs",
+      "probeId": "dedupe-precision-r1",
+      "type": "dedupe-precision",
+      "category": "dedupe",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "The arm flags no duplicates.",
+      "error": null,
+      "key": "floor-search-order/hosted-service-docs/dedupe-precision-r1"
+    },
+    {
+      "arm": "floor-search-order",
+      "corpus": "hosted-service-docs",
+      "probeId": "guardrail",
+      "type": "guardrail",
+      "category": "scope",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Only measurable when the stub model receives the requests.",
+      "error": null,
+      "key": "floor-search-order/hosted-service-docs/guardrail"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "hosted-service-docs",
+      "probeId": "surfaced-hosting-profile",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Results: Fetched; finding BelowThreshold 35.0",
+      "error": null,
+      "key": "reference-lexical/hosted-service-docs/surfaced-hosting-profile"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "hosted-service-docs",
+      "probeId": "surfaced-hosting-signup",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 2, Fyi, score 53.0",
+      "error": null,
+      "key": "reference-lexical/hosted-service-docs/surfaced-hosting-signup"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "hosted-service-docs",
+      "probeId": "surfaced-hosting-plans",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 1, Fyi, score 54.0",
+      "error": null,
+      "key": "reference-lexical/hosted-service-docs/surfaced-hosting-plans"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "hosted-service-docs",
+      "probeId": "surfaced-hosting-deletion",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Shown: rank 3, Fyi, score 47.0",
+      "error": null,
+      "key": "reference-lexical/hosted-service-docs/surfaced-hosting-deletion"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "hosted-service-docs",
+      "probeId": "surfaced-hosting-credentials",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Results: Fetched; no finding extracted.",
+      "error": null,
+      "key": "reference-lexical/hosted-service-docs/surfaced-hosting-credentials"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "hosted-service-docs",
+      "probeId": "surfaced-hosting-private-network",
+      "type": "surfaced",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Results: Fetched; finding BelowThreshold 23.0",
+      "error": null,
+      "key": "reference-lexical/hosted-service-docs/surfaced-hosting-private-network"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-locales",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: Fetched; no finding extracted.",
+      "error": null,
+      "key": "reference-lexical/hosted-service-docs/suppressed-i18n-locales"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-catalogs",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "reference-lexical/hosted-service-docs/suppressed-i18n-catalogs"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-message-format",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "reference-lexical/hosted-service-docs/suppressed-i18n-message-format"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-adding-key",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "reference-lexical/hosted-service-docs/suppressed-i18n-adding-key"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-adding-locale",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "reference-lexical/hosted-service-docs/suppressed-i18n-adding-locale"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-verifiers",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "reference-lexical/hosted-service-docs/suppressed-i18n-verifiers"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-pseudo",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "reference-lexical/hosted-service-docs/suppressed-i18n-pseudo"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-rtl",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: Fetched; no finding extracted.",
+      "error": null,
+      "key": "reference-lexical/hosted-service-docs/suppressed-i18n-rtl"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-i18n-terminology",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "reference-lexical/hosted-service-docs/suppressed-i18n-terminology"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-mobile-prerequisites",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: Fetched; finding BelowThreshold 11.0",
+      "error": null,
+      "key": "reference-lexical/hosted-service-docs/suppressed-mobile-prerequisites"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-mobile-ios",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: Fetched; no finding extracted.",
+      "error": null,
+      "key": "reference-lexical/hosted-service-docs/suppressed-mobile-ios"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-mobile-android",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Search did not return it.",
+      "error": null,
+      "key": "reference-lexical/hosted-service-docs/suppressed-mobile-android"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-mobile-devices",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: Fetched; no finding extracted.",
+      "error": null,
+      "key": "reference-lexical/hosted-service-docs/suppressed-mobile-devices"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "hosted-service-docs",
+      "probeId": "suppressed-mobile-limitations",
+      "type": "suppressed",
+      "category": "relevance",
+      "round": 1,
+      "negative": true,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "Not shown. Results: Fetched; no finding extracted.",
+      "error": null,
+      "key": "reference-lexical/hosted-service-docs/suppressed-mobile-limitations"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "hosted-service-docs",
+      "probeId": "ranking-r1",
+      "type": "ranking",
+      "category": "relevance",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 0.6406142610246954,
+      "metrics": {
+        "ndcg10": 0.6406142610246954,
+        "p5": 1,
+        "recall": 0.5,
+        "shown": 3,
+        "shownPrecision": 1
+      },
+      "latency": null,
+      "detail": "3 shown: hosting-plans(3), hosting-signup(3), hosting-deletion(3)",
+      "error": null,
+      "key": "reference-lexical/hosted-service-docs/ranking-r1"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "hosted-service-docs",
+      "probeId": "dedupe-precision-r1",
+      "type": "dedupe-precision",
+      "category": "dedupe",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "The arm flags no duplicates.",
+      "error": null,
+      "key": "reference-lexical/hosted-service-docs/dedupe-precision-r1"
+    },
+    {
+      "arm": "reference-lexical",
+      "corpus": "hosted-service-docs",
+      "probeId": "guardrail",
+      "type": "guardrail",
+      "category": "scope",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": null,
+      "detail": "Only measurable when the stub model receives the requests.",
+      "error": null,
+      "key": "reference-lexical/hosted-service-docs/guardrail"
+    }
+  ],
+  "stages": [
+    {
+      "name": "Fetch",
+      "count": 2,
+      "totalSeconds": 0.3299,
+      "meanMs": 164.95
+    },
+    {
+      "name": "Score",
+      "count": 2,
+      "totalSeconds": 0.0987,
+      "meanMs": 49.35
+    },
+    {
+      "name": "Extract",
+      "count": 2,
+      "totalSeconds": 0.0925,
+      "meanMs": 46.25
+    },
+    {
+      "name": "ComposeBriefing",
+      "count": 2,
+      "totalSeconds": 0.0696,
+      "meanMs": 34.8
+    },
+    {
+      "name": "Notify",
+      "count": 2,
+      "totalSeconds": 0.0448,
+      "meanMs": 22.4
+    },
+    {
+      "name": "PlanQueries",
+      "count": 2,
+      "totalSeconds": 0.0362,
+      "meanMs": 18.1
+    },
+    {
+      "name": "Search",
+      "count": 2,
+      "totalSeconds": 0.0335,
+      "meanMs": 16.75
+    },
+    {
+      "name": "AssembleContext",
+      "count": 2,
+      "totalSeconds": 0.0222,
+      "meanMs": 11.1
+    },
+    {
+      "name": "Synthesize",
+      "count": 2,
+      "totalSeconds": 0.0167,
+      "meanMs": 8.35
+    },
+    {
+      "name": "Predict",
+      "count": 2,
+      "totalSeconds": 0.0166,
+      "meanMs": 8.3
+    },
+    {
+      "name": "Suggest",
+      "count": 2,
+      "totalSeconds": 0.0156,
+      "meanMs": 7.8
+    },
+    {
+      "name": "Filter",
+      "count": 2,
+      "totalSeconds": 0.0117,
+      "meanMs": 5.85
+    },
+    {
+      "name": "Dedupe",
+      "count": 2,
+      "totalSeconds": 0.0099,
+      "meanMs": 4.95
+    },
+    {
+      "name": "Embed",
+      "count": 2,
+      "totalSeconds": 0.0075,
+      "meanMs": 3.75
+    },
+    {
+      "name": "ReviewPredictions",
+      "count": 2,
+      "totalSeconds": 0.0026,
+      "meanMs": 1.3
+    }
+  ],
+  "notes": [
+    "Stub model: relevance is the cosine of feature-hashed word vectors (extract floor 0.08, score saturation 0.45); embeddings are 384-dimension feature hashes. Numbers measure the product\u0027s pipeline under that model, not a real model\u0027s judgment."
+  ],
+  "durationSeconds": 6.9
+}

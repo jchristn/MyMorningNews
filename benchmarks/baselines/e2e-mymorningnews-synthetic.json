@@ -1,0 +1,770 @@
+{
+  "format": 1,
+  "kind": "e2e",
+  "dataset": "mymorningnews-synthetic",
+  "label": "ci",
+  "mode": "stub",
+  "arms": [
+    "default"
+  ],
+  "provenance": {
+    "startUtc": "2026-11-20T21:55:09.222087Z",
+    "sutUrl": "http://127.0.0.1:12500",
+    "sutVersion": "0.1.0-alpha, schema 16, .NET 10.0.14",
+    "productCommit": "c6c0ffae25b825029006fe85cb579ba4133013ce-dirty",
+    "harnessVersion": "0.1.0-alpha",
+    "harnessCommit": "uncommitted-dirty",
+    "machine": "(scrubbed)",
+    "os": "macOS 26.6.0 Arm64",
+    "cpu": "Apple M5 Max, 18 logical cores",
+    "runtime": ".NET 10.0.14",
+    "images": {
+      "mymorningnews-bench-postgres": "pgvector/pgvector:0.8.1-pg17 sha256:3e8b3adfd27b5707128f60956f62a793c3c9326ea8cfaf0eab7adccb5d700b21 (pgvector/pgvector@sha256:3e8b3adfd27b5707128f60956f62a793c3c9326ea8cfaf0eab7adccb5d700b21)"
+    },
+    "services": {
+      "embeddings": "stub bench-hash-384",
+      "model": "stub bench-stub-chat (stub-2)",
+      "search, pages, speech": "stub on 127.0.0.1:12503"
+    },
+    "dataset": "mymorningnews-synthetic",
+    "datasetSha256": "67a12e73ce6d0fdf4cb8b26f1a6914139d1e53870d4a1495fd05f3392c087565",
+    "commandLine": "MyMorningNews.Benchmark e2e --label ci --output-dir \u003Crepo\u003E/benchmarks/.run/ci --scrub --repeat 1",
+    "httpClient": "SocketsHttpHandler, 256 connections per server, 120 s timeout, 2 min pooled lifetime"
+  },
+  "options": {
+    "admin-key": "(set)",
+    "corpus": "heat-pumps",
+    "dataset": "benchmarks/datasets/mymorningnews-synthetic.json",
+    "http-timeout-seconds": "120",
+    "label": "ci",
+    "max-connections": "256",
+    "metrics-url": "http://127.0.0.1:12509/metrics",
+    "no-audio": "false",
+    "output-dir": "\u003Crepo\u003E/benchmarks/.run/ci",
+    "paid": "false",
+    "repeat": "1",
+    "resamples": "2000",
+    "run-timeout-seconds": "300",
+    "scrub": "true",
+    "seed": "20261120",
+    "server": "http://127.0.0.1:12500",
+    "step-timeout-seconds": "120",
+    "stub-port": "12503"
+  },
+  "incomplete": false,
+  "incompleteReasons": [],
+  "summaries": [
+    {
+      "arm": "default",
+      "group": "overall",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "positive",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 5,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:audio",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:audio",
+      "metric": "readySeconds",
+      "value": {
+        "mean": 9.76,
+        "low": 9.76,
+        "high": 9.76,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:briefing",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:briefing",
+      "metric": "readySeconds",
+      "value": {
+        "mean": 2.11,
+        "low": 2.11,
+        "high": 2.11,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:email",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:email",
+      "metric": "sentSeconds",
+      "value": {
+        "mean": 3.65,
+        "low": 3.65,
+        "high": 3.65,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:feedback-link",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:run",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:run",
+      "metric": "runSeconds",
+      "value": {
+        "mean": 2.07,
+        "low": 2.07,
+        "high": 2.07,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:run",
+      "metric": "serverMs",
+      "value": {
+        "mean": 404.8,
+        "low": 404.8,
+        "high": 404.8,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:run",
+      "metric": "stage.AssembleContextMs",
+      "value": {
+        "mean": 11.5,
+        "low": 11.5,
+        "high": 11.5,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:run",
+      "metric": "stage.ComposeBriefingMs",
+      "value": {
+        "mean": 32.8,
+        "low": 32.8,
+        "high": 32.8,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:run",
+      "metric": "stage.DedupeMs",
+      "value": {
+        "mean": 4.8,
+        "low": 4.8,
+        "high": 4.8,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:run",
+      "metric": "stage.EmbedMs",
+      "value": {
+        "mean": 4.9,
+        "low": 4.9,
+        "high": 4.9,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:run",
+      "metric": "stage.ExtractMs",
+      "value": {
+        "mean": 42.5,
+        "low": 42.5,
+        "high": 42.5,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:run",
+      "metric": "stage.FetchMs",
+      "value": {
+        "mean": 135.9,
+        "low": 135.9,
+        "high": 135.9,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:run",
+      "metric": "stage.FilterMs",
+      "value": {
+        "mean": 7.3,
+        "low": 7.3,
+        "high": 7.3,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:run",
+      "metric": "stage.NotifyMs",
+      "value": {
+        "mean": 21.6,
+        "low": 21.6,
+        "high": 21.6,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:run",
+      "metric": "stage.PlanQueriesMs",
+      "value": {
+        "mean": 27.8,
+        "low": 27.8,
+        "high": 27.8,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:run",
+      "metric": "stage.PredictMs",
+      "value": {
+        "mean": 8.4,
+        "low": 8.4,
+        "high": 8.4,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:run",
+      "metric": "stage.ReviewPredictionsMs",
+      "value": {
+        "mean": 0.7,
+        "low": 0.7,
+        "high": 0.7,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:run",
+      "metric": "stage.ScoreMs",
+      "value": {
+        "mean": 43.9,
+        "low": 43.9,
+        "high": 43.9,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:run",
+      "metric": "stage.SearchMs",
+      "value": {
+        "mean": 18.9,
+        "low": 18.9,
+        "high": 18.9,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:run",
+      "metric": "stage.SuggestMs",
+      "value": {
+        "mean": 11.5,
+        "low": 11.5,
+        "high": 11.5,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "type:run",
+      "metric": "stage.SynthesizeMs",
+      "value": {
+        "mean": 7.1,
+        "low": 7.1,
+        "high": 7.1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "category:audio",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "category:briefing",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "category:email",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "category:feedback",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    },
+    {
+      "arm": "default",
+      "group": "category:research",
+      "metric": "score",
+      "value": {
+        "mean": 1,
+        "low": 1,
+        "high": 1,
+        "n": 1,
+        "indicative": true
+      }
+    }
+  ],
+  "probes": [
+    {
+      "arm": "default",
+      "corpus": "e2e",
+      "probeId": "repeat-1-run",
+      "type": "run",
+      "category": "research",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "runSeconds": 2.07,
+        "serverMs": 404.8,
+        "stage.AssembleContextMs": 11.5,
+        "stage.ComposeBriefingMs": 32.8,
+        "stage.DedupeMs": 4.8,
+        "stage.EmbedMs": 4.9,
+        "stage.ExtractMs": 42.5,
+        "stage.FetchMs": 135.9,
+        "stage.FilterMs": 7.3,
+        "stage.NotifyMs": 21.6,
+        "stage.PlanQueriesMs": 27.8,
+        "stage.PredictMs": 8.4,
+        "stage.ReviewPredictionsMs": 0.7,
+        "stage.ScoreMs": 43.9,
+        "stage.SearchMs": 18.9,
+        "stage.SuggestMs": 11.5,
+        "stage.SynthesizeMs": 7.1
+      },
+      "latency": null,
+      "detail": "Completed: 11 findings, 12 sources",
+      "error": null,
+      "key": "default/e2e/repeat-1-run"
+    },
+    {
+      "arm": "default",
+      "corpus": "e2e",
+      "probeId": "repeat-1-briefing",
+      "type": "briefing",
+      "category": "briefing",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "readySeconds": 2.11
+      },
+      "latency": null,
+      "detail": "Ready, 12 items, 0 model fallbacks",
+      "error": null,
+      "key": "default/e2e/repeat-1-briefing"
+    },
+    {
+      "arm": "default",
+      "corpus": "e2e",
+      "probeId": "repeat-1-email",
+      "type": "email",
+      "category": "email",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "sentSeconds": 3.65
+      },
+      "latency": null,
+      "detail": "Sent; open link yes, feedback links yes, unsubscribe yes",
+      "error": null,
+      "key": "default/e2e/repeat-1-email"
+    },
+    {
+      "arm": "default",
+      "corpus": "e2e",
+      "probeId": "repeat-1-audio",
+      "type": "audio",
+      "category": "audio",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {
+        "readySeconds": 9.76
+      },
+      "latency": null,
+      "detail": "Ready, 3492 bytes, 2 segments, audio/mpeg",
+      "error": null,
+      "key": "default/e2e/repeat-1-audio"
+    },
+    {
+      "arm": "default",
+      "corpus": "e2e",
+      "probeId": "repeat-1-feedback-link",
+      "type": "feedback-link",
+      "category": "feedback",
+      "round": 1,
+      "negative": false,
+      "applicable": true,
+      "score": 1,
+      "metrics": {},
+      "latency": null,
+      "detail": "page 200, submit 200 (relevant), 1 email feedback record(s)",
+      "error": null,
+      "key": "default/e2e/repeat-1-feedback-link"
+    },
+    {
+      "arm": "default",
+      "corpus": "e2e",
+      "probeId": "timing-flow",
+      "type": "timing",
+      "category": "latency",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": {
+        "count": 1,
+        "mean": 9783.74,
+        "p50": 9783.74,
+        "p90": 9783.74,
+        "p95": 9783.74,
+        "p99": 9783.74,
+        "max": 9783.74
+      },
+      "detail": "Submit to the last check, per repeat.",
+      "error": null,
+      "key": "default/e2e/timing-flow"
+    },
+    {
+      "arm": "default",
+      "corpus": "e2e",
+      "probeId": "timing-email",
+      "type": "timing",
+      "category": "latency",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": {
+        "count": 1,
+        "mean": 3651.83,
+        "p50": 3651.83,
+        "p90": 3651.83,
+        "p95": 3651.83,
+        "p99": 3651.83,
+        "max": 3651.83
+      },
+      "detail": "Submit to email sent.",
+      "error": null,
+      "key": "default/e2e/timing-email"
+    },
+    {
+      "arm": "default",
+      "corpus": "e2e",
+      "probeId": "timing-audio",
+      "type": "timing",
+      "category": "latency",
+      "round": 1,
+      "negative": false,
+      "applicable": false,
+      "score": 0,
+      "metrics": {},
+      "latency": {
+        "count": 1,
+        "mean": 9760.89,
+        "p50": 9760.89,
+        "p90": 9760.89,
+        "p95": 9760.89,
+        "p99": 9760.89,
+        "max": 9760.89
+      },
+      "detail": "Submit to audio ready.",
+      "error": null,
+      "key": "default/e2e/timing-audio"
+    }
+  ],
+  "stages": [
+    {
+      "name": "Fetch",
+      "count": 1,
+      "totalSeconds": 0.1367,
+      "meanMs": 136.7
+    },
+    {
+      "name": "Score",
+      "count": 1,
+      "totalSeconds": 0.0443,
+      "meanMs": 44.3
+    },
+    {
+      "name": "Extract",
+      "count": 1,
+      "totalSeconds": 0.043,
+      "meanMs": 43
+    },
+    {
+      "name": "ComposeBriefing",
+      "count": 1,
+      "totalSeconds": 0.0332,
+      "meanMs": 33.2
+    },
+    {
+      "name": "PlanQueries",
+      "count": 1,
+      "totalSeconds": 0.0286,
+      "meanMs": 28.6
+    },
+    {
+      "name": "Notify",
+      "count": 1,
+      "totalSeconds": 0.022,
+      "meanMs": 22
+    },
+    {
+      "name": "Search",
+      "count": 1,
+      "totalSeconds": 0.0195,
+      "meanMs": 19.5
+    },
+    {
+      "name": "Suggest",
+      "count": 1,
+      "totalSeconds": 0.0124,
+      "meanMs": 12.4
+    },
+    {
+      "name": "AssembleContext",
+      "count": 1,
+      "totalSeconds": 0.0122,
+      "meanMs": 12.2
+    },
+    {
+      "name": "Predict",
+      "count": 1,
+      "totalSeconds": 0.0089,
+      "meanMs": 8.9
+    },
+    {
+      "name": "Filter",
+      "count": 1,
+      "totalSeconds": 0.0078,
+      "meanMs": 7.8
+    },
+    {
+      "name": "Synthesize",
+      "count": 1,
+      "totalSeconds": 0.0075,
+      "meanMs": 7.5
+    },
+    {
+      "name": "Embed",
+      "count": 1,
+      "totalSeconds": 0.0056,
+      "meanMs": 5.6
+    },
+    {
+      "name": "Dedupe",
+      "count": 1,
+      "totalSeconds": 0.0054,
+      "meanMs": 5.4
+    },
+    {
+      "name": "ReviewPredictions",
+      "count": 1,
+      "totalSeconds": 0.0011,
+      "meanMs": 1.1
+    },
+    {
+      "name": "model:Extraction",
+      "count": 12,
+      "totalSeconds": 0.0466,
+      "meanMs": 3.88
+    },
+    {
+      "name": "model:QueryPlanning",
+      "count": 1,
+      "totalSeconds": 0.0207,
+      "meanMs": 20.7
+    },
+    {
+      "name": "model:Scoring",
+      "count": 11,
+      "totalSeconds": 0.0074,
+      "meanMs": 0.67
+    },
+    {
+      "name": "model:Embedding",
+      "count": 1,
+      "totalSeconds": 0.0039,
+      "meanMs": 3.9
+    },
+    {
+      "name": "model:Composition",
+      "count": 4,
+      "totalSeconds": 0.0032,
+      "meanMs": 0.8
+    },
+    {
+      "name": "model:Synthesis",
+      "count": 2,
+      "totalSeconds": 0.0029,
+      "meanMs": 1.45
+    },
+    {
+      "name": "model:Prediction",
+      "count": 1,
+      "totalSeconds": 0.002,
+      "meanMs": 2
+    },
+    {
+      "name": "model:PodcastScript",
+      "count": 1,
+      "totalSeconds": 0.0017,
+      "meanMs": 1.7
+    },
+    {
+      "name": "model:Suggestion",
+      "count": 1,
+      "totalSeconds": 0.0011,
+      "meanMs": 1.1
+    }
+  ],
+  "notes": [
+    "Timings include the server\u0027s worker poll intervals (run claim every Scheduler.RunPollSeconds, email delivery every Email.DeliveryIntervalSeconds), so they are an upper bound on pipeline latency. Each check is deterministic under stubs; timings are not, and are excluded from the CI gate."
+  ],
+  "durationSeconds": 12.8
+}

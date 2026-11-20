@@ -1,0 +1,14 @@
+{
+  "mymorningnews-synthetic": {
+    "note": "No published result exists: the corpus was written for this product. Anchors are the harness's own floor-search-order (no product) and reference-lexical (a plain pipeline) arms, reported in every quality report.",
+    "published": []
+  },
+  "mymorningnews-live": {
+    "note": "No published result exists: the corpus is a snapshot of this product's documentation with hand-assigned labels. See the floor and reference arms in the report.",
+    "published": []
+  },
+  "scenarios": {
+    "note": "Resilience scenarios have no published comparison.",
+    "published": []
+  }
+}

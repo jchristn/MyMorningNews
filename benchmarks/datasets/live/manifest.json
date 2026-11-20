@@ -1,0 +1,45 @@
+{
+  "snapshot": "2026-11-20",
+  "corpus": {
+    "id": "hosted-service-docs",
+    "description": "A frozen snapshot of the product's own operator documentation (docs/HOSTING.md, docs/I18N.md, docs/MOBILE_DEVICE_TESTING.md), one page per section, researched under a topic about running the hosted service. Relevance labels are hand-assigned by section and are good but not gold.",
+    "topic": {
+      "name": "My Morning News hosted service operations",
+      "brief": "Follow how My Morning News runs as a hosted public service: public sign-up and email verification, plans and cost caps, account deletion and data export, platform model credentials, and blocking requests to private networks.",
+      "noveltyPreference": 50,
+      "seedQueries": ["hosted sign-up verification", "plan cost cap"],
+      "dimensions": [
+        { "name": "Sign-up and accounts", "weight": "High", "description": "Public sign-up, email verification, password reset, and account deletion." },
+        { "name": "Plans and caps", "weight": "High", "description": "Plans, monthly cost caps, and limits." },
+        { "name": "Security", "weight": "Normal", "description": "Platform credentials and private network blocking." }
+      ],
+      "constraints": []
+    }
+  },
+  "sections": [
+    { "file": "docs/HOSTING.md", "heading": "What the hosted profile changes", "id": "hosting-profile", "relevance": 2 },
+    { "file": "docs/HOSTING.md", "heading": "Before you start", "id": "hosting-before", "relevance": 1 },
+    { "file": "docs/HOSTING.md", "heading": "Steps", "id": "hosting-steps", "relevance": 1 },
+    { "file": "docs/HOSTING.md", "heading": "Sign-up and accounts", "id": "hosting-signup", "relevance": 3 },
+    { "file": "docs/HOSTING.md", "heading": "Plans and caps", "id": "hosting-plans", "relevance": 3 },
+    { "file": "docs/HOSTING.md", "heading": "Account deletion and export", "id": "hosting-deletion", "relevance": 3 },
+    { "file": "docs/HOSTING.md", "heading": "Platform credentials", "id": "hosting-credentials", "relevance": 2 },
+    { "file": "docs/HOSTING.md", "heading": "Private network blocking", "id": "hosting-private-network", "relevance": 2 },
+    { "file": "docs/HOSTING.md", "heading": "Universal links", "id": "hosting-universal-links", "relevance": 1 },
+    { "file": "docs/HOSTING.md", "heading": "Operations", "id": "hosting-operations", "relevance": 1 },
+    { "file": "docs/I18N.md", "heading": "Locales", "id": "i18n-locales", "relevance": 0 },
+    { "file": "docs/I18N.md", "heading": "How the catalogs are organized", "id": "i18n-catalogs", "relevance": 0 },
+    { "file": "docs/I18N.md", "heading": "Message format", "id": "i18n-message-format", "relevance": 0 },
+    { "file": "docs/I18N.md", "heading": "Adding a key", "id": "i18n-adding-key", "relevance": 0 },
+    { "file": "docs/I18N.md", "heading": "Adding a locale", "id": "i18n-adding-locale", "relevance": 0 },
+    { "file": "docs/I18N.md", "heading": "Verifiers", "id": "i18n-verifiers", "relevance": 0 },
+    { "file": "docs/I18N.md", "heading": "Pseudo-locales and smoke tests", "id": "i18n-pseudo", "relevance": 0 },
+    { "file": "docs/I18N.md", "heading": "Right-to-left layout rules", "id": "i18n-rtl", "relevance": 0 },
+    { "file": "docs/I18N.md", "heading": "Terminology", "id": "i18n-terminology", "relevance": 0 },
+    { "file": "docs/MOBILE_DEVICE_TESTING.md", "heading": "Prerequisites", "id": "mobile-prerequisites", "relevance": 0 },
+    { "file": "docs/MOBILE_DEVICE_TESTING.md", "heading": "1. iOS simulator (iPhone)", "id": "mobile-ios", "relevance": 0 },
+    { "file": "docs/MOBILE_DEVICE_TESTING.md", "heading": "3. Android emulator (phone and tablet)", "id": "mobile-android", "relevance": 0 },
+    { "file": "docs/MOBILE_DEVICE_TESTING.md", "heading": "4. Physical devices on your network", "id": "mobile-devices", "relevance": 0 },
+    { "file": "docs/MOBILE_DEVICE_TESTING.md", "heading": "Known local limitations", "id": "mobile-limitations", "relevance": 0 }
+  ]
+}

@@ -35,6 +35,7 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "FeedParser", "RSS and Atom items parse with dates, links, and plain-text summaries", FeedParserAsync, "fast"),
                 Cases.Case(S, "Defaults", "New tenants get SearXNG and RSS by default plus Hacker News and arXiv", DefaultsAsync),
                 Cases.Case(S, "Searxng", "SearXNG results are de-duplicated, domain-filtered, and dated", SearxngAsync),
+                Cases.Case(S, "TransientRetry", "A rate-limited search is retried after Retry-After; a provider that stays down fails after the configured attempts", TransientRetryAsync),
                 Cases.Case(S, "KeylessSources", "Hacker News, arXiv, and topic feeds return matching items", KeylessAsync),
                 Cases.Case(S, "KeyedSources", "Tavily and You.com use vault keys and report bad keys as errors", KeyedAsync),
                 Cases.Case(S, "TopicProviders", "Topics choose providers or fall back to the tenant defaults", TopicProvidersAsync),
@@ -105,6 +106,19 @@ namespace Test.Shared.Suites
             SearchProvider down = await ProviderAsync(ta, "Searxng", "http://127.0.0.1:1", null, token).ConfigureAwait(false);
             SearchOutcome failed = (await ta.Client.PostAsync("/v1.0/api/search-providers/" + down.Id + "/test", null, token).ConfigureAwait(false)).Expect(200, "unreachable").Json<SearchOutcome>();
             Assert.True(!failed.Success && failed.Error != null, "failures reported, not thrown");
+        }
+
+        private static async Task TransientRetryAsync(CancellationToken token)
+        {
+            TestUser ta = await AdminAsync(token).ConfigureAwait(false);
+            string q = "retry " + Guid.NewGuid().ToString("N");
+            SearchProvider flaky = await ProviderAsync(ta, "Searxng", StubModelServer.Shared.BaseUrl + "/flaky429", null, token).ConfigureAwait(false);
+            SearchOutcome ok = (await ta.Client.PostAsync("/v1.0/api/search-providers/" + flaky.Id + "/test", new { query = q, maxResults = 10 }, token).ConfigureAwait(false)).Expect(200, "flaky").Json<SearchOutcome>();
+            Assert.True(ok.Success && ok.Hits.Count == 3, "a 429 is retried and the search succeeds (found by the benchmark suite): " + ok.Error);
+            SearchProvider down = await ProviderAsync(ta, "Searxng", StubModelServer.Shared.BaseUrl + "/always503", null, token).ConfigureAwait(false);
+            SearchOutcome failed = (await ta.Client.PostAsync("/v1.0/api/search-providers/" + down.Id + "/test", new { query = q }, token).ConfigureAwait(false)).Expect(200, "down").Json<SearchOutcome>();
+            Assert.True(!failed.Success && failed.Error != null && failed.Error.Contains("after 3 attempts", StringComparison.Ordinal), "gives up after the attempts: " + failed.Error);
+            Assert.True(HttpSearchSourceBase.IsTransient(429) && HttpSearchSourceBase.IsTransient(503) && !HttpSearchSourceBase.IsTransient(400) && !HttpSearchSourceBase.IsTransient(404), "transient statuses");
         }
 
         private static async Task KeylessAsync(CancellationToken token)

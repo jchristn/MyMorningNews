@@ -71,6 +71,10 @@ services:
       MYMORNINGNEWS_DB_DATABASE: mymorningnews
       MYMORNINGNEWS_DB_USERNAME: postgres
       MYMORNINGNEWS_DB_PASSWORD: password
+      # Optional keys for the agent CLIs in the image (claude, codex, gemini, mux). Blank leaves them unset.
+      ANTHROPIC_API_KEY: ${CLI_ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${CLI_OPENAI_API_KEY:-}
+      GEMINI_API_KEY: ${CLI_GEMINI_API_KEY:-}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
@@ -79,6 +83,8 @@ services:
       - ./server/mymorningnews.json:/app/config/mymorningnews.json
       - media:/data/media
       - emailout:/data/email
+      # Home directory for the agent CLIs, so sign-ins and settings (~/.claude, ~/.codex, ~/.gemini, ~/.mux) survive rebuilds.
+      - clihome:/root
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/v1.0/api/health"]
       interval: 5s
@@ -281,6 +287,7 @@ volumes:
   pgdata:
   media:
   emailout:
+  clihome:
   ollama:
   prometheus:
   tempo:

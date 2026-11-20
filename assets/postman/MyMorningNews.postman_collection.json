@@ -10652,7 +10652,7 @@
                 {
                   "key": "template",
                   "value": "RunDigest",
-                  "description": "enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`). Email template.",
+                  "description": "enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`, `CapReached`). Email template.",
                   "disabled": true
                 },
                 {

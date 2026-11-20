@@ -6912,7 +6912,7 @@ The email outbox, test and preview sends, resends, and the signed-in user's emai
 | Query parameter | Type | Notes |
 |---|---|---|
 | `status` | enum (`Queued`, `Sending`, `Sent`, `Failed`, `Suppressed`, `Skipped`) |  |
-| `template` | enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`) | Email template. |
+| `template` | enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`, `CapReached`) | Email template. |
 | `runId` | string | Only records from this run. |
 | `briefingId` | string | Only records for this briefing. |
 | `topicId` | string | Only records for this topic. |
@@ -10583,6 +10583,8 @@ Hosted service settings (plan section 33). Off for self-hosted installs.
 | `deletionGraceDays` | integer | Days between an account deletion request and the purge of its data; signing in cancels it. Default 7, minimum 0, maximum 90. |
 | `restrictPrivateNetworks` | boolean | Refuse loopback, link-local, private, and metadata addresses for fetches, model endpoints, MCP servers, and search providers (server-side request forgery protection). Default false; the hosted profile turns it on. |
 | `usePlatformCredentials` | boolean | Give every new tenant (other than default) the operator's Anthropic key by reference instead of a copy in its own vault. Personal tenants created by sign-up always use it. Default false. |
+| `requestsPerMinutePerIp` | integer | Requests per minute allowed from one IP address across the whole API, or 0 for no limit. Health checks are exempt. Default 0; the hosted profile uses 600. Maximum 100000. |
+| `trustForwardedFor` | boolean | Take the client address from the last X-Forwarded-For entry when the direct peer is a loopback or private address (the reverse proxy). Rate limits, audit, and sign-up checks then see the real client. Default false; the hosted profile turns it on behind Caddy, which replaces any client-supplied X-Forwarded-For. |
 | `allowedPrivateHosts` | array of string | Host names the private network block allows anyway: the operator's own services on the Docker network. Matched case-insensitively against the host in the URL. Default searxng, tts, ollama. |
 | `termsVersion` | string | Current terms of service version; sign-up records the version the user accepted. Default 2026-11-20. |
 | `minimumAge` | integer | Minimum age to sign up, confirmed at sign-up. Default 18, minimum 13, maximum 21. |
@@ -13697,6 +13699,7 @@ Email template.
 | `PasswordReset` | Password reset link. |
 | `PasswordChanged` | The password was changed. |
 | `AccountDeletion` | Account deletion scheduled. |
+| `CapReached` | A plan limit stopped a scheduled run (sent at most once per limit per month). |
 
 #### FeedbackChannelEnum
 

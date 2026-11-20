@@ -1,5 +1,7 @@
 import { isPredictionDue } from '@/lib/enums';
 import { briefingFileName, shareBriefingFile } from '@/lib/briefingFiles';
+import { applyFindingChanges, findingActions, findingListFlags, findingUpdate, performFindingAction } from '@/lib/findings';
+import { ApiClient } from '@/api/client';
 import { citationsUsed, isSafeUrl, parseBlocks, parseBriefing, parseInline, plainText } from '@/lib/markdown';
 import { isLocalDateTime, localToUtc, parseTimes, scheduleBody, scheduleForm, scheduleProblem, toggleDay, utcToLocal } from '@/lib/schedule';
 import { answerBody, canAskMore, initialStep, nextStep, previousStep, questionRounds, stepAvailable, upsertById } from '@/lib/wizard';
@@ -186,6 +188,8 @@ describe('screen helpers', () => {
     expect(predictionsQuery('due').status).toBeUndefined();
     expect(findingsQuery({ tier: 'all', minScore: 0 })).toMatchObject({ tier: undefined, minScore: undefined, sortBy: 'relevanceScore' });
     expect(findingsQuery({ tier: 'MustRead', minScore: 60, runId: 'run_1' })).toMatchObject({ tier: 'MustRead', minScore: 60, runId: 'run_1' });
+    expect(findingsQuery({ tier: 'all' })).toMatchObject({ pinned: undefined, includeHidden: undefined });
+    expect(findingsQuery({ tier: 'all', options: ['pinned', 'hidden'] })).toMatchObject({ pinned: true, includeHidden: true });
     expect(briefingQuery('pinned')).toMatchObject({ pinned: true });
     expect(briefingQuery('Run')).toMatchObject({ kind: 'Run' });
     expect(briefingQuery('all').kind).toBeUndefined();
@@ -225,6 +229,51 @@ describe('screen helpers', () => {
     expect(itemHref({ itemType: 'Finding', itemId: 'fnd_1' })).toBe('/today/findings/fnd_1');
     expect(itemHref({ itemType: 'Prediction', itemId: 'prd_1' })).toBe('/today/predictions/prd_1');
     expect(itemHref({ itemType: 'Suggestion', itemId: 'sug_1' })).toBe('/today/suggestions');
+  });
+});
+
+describe('finding pin, hide, and delete', () => {
+  it('offers pin or unpin, hide or unhide, and delete, with the update bodies', () => {
+    expect(findingActions({ pinned: false, hidden: false })).toEqual(['pin', 'hide', 'delete']);
+    expect(findingActions({ pinned: true, hidden: true })).toEqual(['unpin', 'unhide', 'delete']);
+    expect(findingActions(null)).toEqual(['pin', 'hide', 'delete']);
+    expect(['pin', 'unpin', 'hide', 'unhide', 'delete'].map(findingUpdate)).toEqual([{ pinned: true }, { pinned: false }, { hidden: true }, { hidden: false }, null]);
+    expect(findingListFlags([])).toEqual({ pinned: undefined, includeHidden: undefined });
+    expect(findingListFlags(['hidden'])).toEqual({ pinned: undefined, includeHidden: true });
+  });
+
+  it('applies local changes and drops what no longer matches the list options', () => {
+    const items = [
+      { id: 'a', pinned: false, hidden: false },
+      { id: 'b', pinned: true, hidden: false },
+      { id: 'c', pinned: false, hidden: false },
+    ];
+    const changes = { a: { hidden: true }, b: { pinned: false }, c: { deleted: true } };
+    expect(applyFindingChanges(items, changes, []).map((f) => f.id)).toEqual(['b']);
+    expect(applyFindingChanges(items, changes, ['hidden'])).toEqual([
+      { id: 'a', pinned: false, hidden: true },
+      { id: 'b', pinned: false, hidden: false },
+    ]);
+    expect(applyFindingChanges(items, { a: { pinned: true } }, ['pinned']).map((f) => f.id)).toEqual(['a', 'b']);
+    expect(applyFindingChanges(null, changes, [])).toEqual([]);
+  });
+
+  it('runs an action against the server and returns the change', async () => {
+    const calls = [];
+    const fetchImpl = async (url, init = {}) => {
+      calls.push({ method: init.method || 'GET', path: url.replace(/^https?:\/\/[^/]+/, ''), body: init.body ? JSON.parse(init.body) : undefined });
+      if (init.method === 'DELETE') return { status: 204, text: async () => '' };
+      return { status: 200, text: async () => JSON.stringify({ id: 'fnd_1', pinned: true, hidden: false }) };
+    };
+    const client = new ApiClient({ baseUrl: 'http://127.0.0.1:12100', getAccessToken: async () => 't', fetchImpl });
+    const finding = { id: 'fnd_1', pinned: false, hidden: false };
+    expect(await performFindingAction(client, finding, 'pin')).toEqual({ pinned: true, hidden: false });
+    expect(await performFindingAction(client, finding, 'delete')).toEqual({ deleted: true });
+    expect(calls).toEqual([
+      { method: 'PUT', path: '/v1.0/api/findings/fnd_1', body: { pinned: true } },
+      { method: 'DELETE', path: '/v1.0/api/findings/fnd_1', body: undefined },
+    ]);
+    await expect(performFindingAction(client, finding, 'archive')).rejects.toThrow('Unknown finding action: archive');
   });
 });
 

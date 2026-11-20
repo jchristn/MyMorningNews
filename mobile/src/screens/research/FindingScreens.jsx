@@ -8,8 +8,10 @@ import { ChipGroup } from '@/components/Chips';
 import { FeedbackBar } from '@/components/FeedbackBar';
 import { RatingControl, useFeedbackMap } from '@/components/feedback/RatingControl';
 import { openLink } from '@/components/LegalFooter';
-import { Badge, Button, Card, KeyValue, SectionHeader, T } from '@/components/ui';
+import { EmptyState } from '@/components/states';
+import { Badge, Banner, Button, Card, IconButton, KeyValue, SectionHeader, T } from '@/components/ui';
 import { EVIDENCE_ROLE_TONES, FINDING_TIERS, FINDING_TIER_TONES, SCORE_COMPONENTS } from '@/lib/enums';
+import { FINDING_LIST_OPTIONS, applyFindingChanges, findingListFlags } from '@/lib/findings';
 import { formatDate, formatDateTime, formatNumber } from '@/lib/format';
 import { isSafeUrl } from '@/lib/markdown';
 import { useAuth } from '@/state/AuthContext';
@@ -17,21 +19,31 @@ import { useTheme } from '@/theme/ThemeContext';
 import { radius, spacing } from '@/theme/palette';
 import { DetailHeader, DetailScreen, ItemCard } from '../common/DetailScreen';
 import { ResourceListScreen } from '../common/ResourceListScreen';
+import { FindingActionBar, FindingActionsSheet } from './FindingActions';
 
 export const findingHref = (id) => '/today/findings/' + encodeURIComponent(id);
 
 const MIN_SCORES = [0, 40, 60, 80];
 
-/** The findings query for the filters: tier (or all above the threshold), minimum score, and an optional topic or run. */
-export function findingsQuery({ tier, minScore, topicId, runId } = {}) {
-  return { pageNumber: 1, pageSize: 50, sortBy: 'relevanceScore', sortDirection: 'Descending', tier: tier && tier !== 'all' ? tier : undefined, minScore: minScore > 0 ? minScore : undefined, topicId, runId };
+/**
+ * The findings query for the filters: tier (or all above the threshold), minimum score, an optional topic or run, and
+ * the list options (`pinned` for Pinned only, `hidden` for Show hidden).
+ */
+export function findingsQuery({ tier, minScore, topicId, runId, options } = {}) {
+  return { pageNumber: 1, pageSize: 50, sortBy: 'relevanceScore', sortDirection: 'Descending', tier: tier && tier !== 'all' ? tier : undefined, minScore: minScore > 0 ? minScore : undefined, topicId, runId, ...findingListFlags(options) };
+}
+
+/** Pinned and Hidden badges for a finding. */
+function stateBadges(finding, t) {
+  return [finding.pinned ? { label: t('mobile.findings.pinned'), tone: 'primary' } : null, finding.hidden ? { label: t('mobile.findings.hidden'), tone: 'warning' } : null];
 }
 
 /**
- * One finding row: title, tier, score, category, and the summary. With `rating` (`{ current, onChange }`) the inline
- * rating chips sit under the card (outside its button, so screen readers reach each chip).
+ * One finding row: title, tier, score, category, pinned and hidden, and the summary. With `rating` (`{ current,
+ * onChange }`) the inline rating chips sit under the card (outside its button, so screen readers reach each chip); with
+ * `onMore` a More button beside them opens the actions menu (pin, hide, delete).
  */
-export function FindingRow({ finding, onPress, selected, rating }) {
+export function FindingRow({ finding, onPress, selected, rating, onMore }) {
   const { t, i18n } = useTranslation();
   const card = (
     <ItemCard
@@ -44,47 +56,79 @@ export function FindingRow({ finding, onPress, selected, rating }) {
         { label: t('mobile.enums.tier.' + finding.tier), tone: FINDING_TIER_TONES[finding.tier] || 'neutral' },
         { label: t('mobile.findings.score', { score: formatNumber(finding.relevanceScore, i18n.language, { maximumFractionDigits: 0 }) }), tone: 'neutral' },
         finding.category ? { label: t('mobile.enums.category.' + finding.category), tone: 'neutral' } : null,
+        ...stateBadges(finding, t),
       ]}
       lines={[finding.summary, formatDate(finding.publishedUtc || finding.createdUtc, i18n.language)]}
     />
   );
-  if (!rating) return card;
+  if (!rating && !onMore) return card;
   return (
     <View style={{ gap: spacing.xs }}>
       {card}
-      <RatingControl compact targetType="Finding" targetId={finding.id} title={finding.title} current={rating.current} onChange={rating.onChange} />
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
+        <View style={{ flex: 1 }}>{rating ? <RatingControl compact targetType="Finding" targetId={finding.id} title={finding.title} current={rating.current} onChange={rating.onChange} /> : null}</View>
+        {onMore ? <IconButton icon="ellipsis-horizontal" accessibilityLabel={t('mobile.findings.moreLabel', { title: finding.title })} onPress={onMore} testID={'finding-more-' + finding.id} /> : null}
+      </View>
     </View>
   );
 }
 
-/** Findings across topics (or one topic or run), ranked, with tier and minimum score filters. */
+/**
+ * Findings across topics (or one topic or run), ranked, with tier and minimum score filters and the Pinned only and
+ * Show hidden options. Each row's More button opens the actions menu; a change made there (or in the detail beside
+ * the list on tablets) applies to the list at once, without a reload.
+ */
 export function FindingsList({ topicId, runId, testID = 'findings-screen', embedded, hrefFor = findingHref }) {
   const { t } = useTranslation();
   const { client } = useAuth();
   const [tier, setTier] = useState('all');
   const [minScore, setMinScore] = useState(0);
+  const [options, setOptions] = useState([]);
+  const [changes, setChanges] = useState({});
+  const [menu, setMenu] = useState(null);
   const ratings = useFeedbackMap('Finding', topicId ? { topicId } : undefined);
+  const applyChange = (id, change) => setChanges((c) => ({ ...c, [id]: { ...(c[id] || {}), ...change } }));
   const filters = (
     <View style={{ gap: spacing.sm }}>
       <ChipGroup scroll options={['all', ...FINDING_TIERS].map((v) => ({ value: v, label: v === 'all' ? t('mobile.findings.allTiers') : t('mobile.enums.tier.' + v), testID: 'tier-' + v }))} value={tier} onChange={setTier} accessibilityLabel={t('mobile.findings.tier')} />
       <ChipGroup scroll options={MIN_SCORES.map((v) => ({ value: v, label: v === 0 ? t('mobile.findings.anyScore') : t('mobile.findings.minScore', { score: v }), testID: 'min-score-' + v }))} value={minScore} onChange={setMinScore} accessibilityLabel={t('mobile.findings.minScoreLabel')} />
+      <ChipGroup
+        multiple
+        options={FINDING_LIST_OPTIONS.map((v) => ({ value: v, label: t('mobile.findings.listOptions.' + v), icon: v === 'pinned' ? 'bookmark-outline' : 'eye-outline', testID: 'findings-option-' + v }))}
+        value={options}
+        onChange={(next) => {
+          setOptions(next);
+          setChanges({});
+        }}
+        accessibilityLabel={t('mobile.findings.listOptionsLabel')}
+      />
     </View>
   );
   return (
-    <ResourceListScreen
-      testID={testID}
-      load={() => findingsApi.list(client, findingsQuery({ tier, minScore, topicId, runId }))}
-      deps={[client, tier, minScore, topicId, runId]}
-      feature={t('mobile.features.findings')}
-      header={filters}
-      empty={{ icon: 'search-outline', title: t('mobile.findings.emptyTitle'), body: t('mobile.findings.emptyBody') }}
-      detailHref={hrefFor}
-      renderDetail={embedded ? undefined : (id) => <FindingDetail key={id} id={id} />}
-      placeholder={t('mobile.findings.select')}
-      renderRow={(f, { selected, onPress }) => (
-        <FindingRow finding={f} selected={selected} onPress={onPress} rating={ratings.available ? { current: ratings.map[f.id] || null, onChange: (fb) => ratings.set(f.id, fb) } : null} />
-      )}
-    />
+    <>
+      <ResourceListScreen
+        testID={testID}
+        load={() => findingsApi.list(client, findingsQuery({ tier, minScore, topicId, runId, options }))}
+        deps={[client, tier, minScore, topicId, runId, options.join(',')]}
+        feature={t('mobile.features.findings')}
+        header={filters}
+        filter={(items) => applyFindingChanges(items, changes, options)}
+        empty={options.includes('pinned') ? { icon: 'bookmark-outline', title: t('mobile.findings.emptyPinnedTitle'), body: t('mobile.findings.emptyPinnedBody') } : { icon: 'search-outline', title: t('mobile.findings.emptyTitle'), body: t('mobile.findings.emptyBody') }}
+        detailHref={hrefFor}
+        renderDetail={embedded ? undefined : (id) => <FindingDetail key={id} id={id} onChanged={(change) => applyChange(id, change)} />}
+        placeholder={t('mobile.findings.select')}
+        renderRow={(f, { selected, onPress }) => (
+          <FindingRow
+            finding={f}
+            selected={selected}
+            onPress={onPress}
+            rating={ratings.available ? { current: ratings.map[f.id] || null, onChange: (fb) => ratings.set(f.id, fb) } : null}
+            onMore={() => setMenu(f)}
+          />
+        )}
+      />
+      <FindingActionsSheet finding={menu} onDone={applyChange} onClose={() => setMenu(null)} />
+    </>
   );
 }
 
@@ -126,14 +170,36 @@ export function scoreRows(finding, t) {
   return SCORE_COMPONENTS.map((c) => ({ label: t('mobile.findings.components.' + c.key), value: Number(finding[c.field]) || 0 }));
 }
 
-/** A finding: tier and score, why it matters, the score breakdown, the evidence quotes with sources, and feedback. */
-export function FindingDetail({ id }) {
+/**
+ * A finding: tier and score, why it matters, the score breakdown, the evidence quotes with sources, pin, hide, and
+ * delete, and feedback. `onChanged(change)` tells a list beside it (tablets) about a pin, hide, or delete; on phones a
+ * delete goes back to the list.
+ */
+export function FindingDetail({ id, onChanged }) {
   const { t, i18n } = useTranslation();
   const { client } = useAuth();
+  const [deleted, setDeleted] = useState(false);
+  if (deleted) {
+    return (
+      <View testID="finding-deleted" style={{ flex: 1 }}>
+        <EmptyState icon="trash-outline" title={t('mobile.findings.deletedTitle')} body={t('mobile.findings.deletedBody')} />
+      </View>
+    );
+  }
   return (
     <DetailScreen testID="finding-detail" load={() => findingsApi.get(client, id)} deps={[client, id]} feature={t('mobile.features.findings')}>
-      {(detail) => {
+      {(detail, resource) => {
         const f = detail.finding;
+        const done = (change) => {
+          if (change.deleted) {
+            if (onChanged) onChanged(change);
+            if (!onChanged && router.canGoBack()) router.back();
+            else setDeleted(true);
+            return;
+          }
+          resource.setData((d) => ({ ...d, finding: { ...d.finding, ...change } }));
+          if (onChanged) onChanged(change);
+        };
         const score = formatNumber(f.relevanceScore, i18n.language, { maximumFractionDigits: 0 });
         const evidence = (detail.evidence || []).filter((v) => v && v.evidence && v.evidence.verified !== false);
         return (
@@ -146,8 +212,15 @@ export function FindingDetail({ id }) {
                 { label: t('mobile.findings.score', { score }), tone: 'neutral' },
                 f.category ? { label: t('mobile.enums.category.' + f.category), tone: 'neutral' } : null,
                 f.isDuplicate ? { label: t('mobile.findings.duplicate'), tone: 'warning' } : null,
+                ...stateBadges(f, t),
               ]}
             />
+            {f.hidden ? (
+              <Banner kind="warning" testID="finding-hidden-note">
+                {t('mobile.findings.hiddenNote')}
+              </Banner>
+            ) : null}
+            <FindingActionBar finding={f} onDone={done} />
             {f.summary ? <T selectable>{f.summary}</T> : null}
             {f.whyItMatters ? (
               <Card>

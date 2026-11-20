@@ -28,12 +28,64 @@ export const INSIGHT_PAGES = [
   { name: 'usage', icon: 'stats-chart-outline' },
 ];
 
-/** Insights menu (dashboard `/insights/*`). */
-export function InsightsScreen() {
+/**
+ * The overview tiles (`GET /v1.0/api/analytics/overview`): runs with completed and failed, findings shown with rated,
+ * relevance precision, prediction accuracy with resolved and open, and feedback with how much carried a reason.
+ */
+export function overviewTiles(report, t, f) {
+  const r = report || {};
+  return [
+    { key: 'runs', label: t('mobile.insights.overview.runs'), value: f.num(r.runs), detail: t('mobile.insights.overview.runsDetail', { completed: f.num(r.runsCompleted || 0), failed: f.num(r.runsFailed || 0) }) },
+    { key: 'findings', label: t('mobile.insights.overview.findings'), value: f.num(r.findingsShown), detail: t('mobile.insights.overview.findingsDetail', { rated: f.num(r.findingsRated || 0) }) },
+    { key: 'precision', label: t('mobile.insights.overview.precision'), value: f.pct(r.relevancePrecision), detail: t('mobile.insights.relevance.precisionHint') },
+    { key: 'accuracy', label: t('mobile.insights.overview.accuracy'), value: f.pct(r.predictionAccuracy), detail: t('mobile.insights.overview.accuracyDetail', { resolved: f.num(r.predictionsResolved || 0), open: f.num(r.predictionsOpen || 0) }) },
+    { key: 'feedback', label: t('mobile.insights.overview.feedback'), value: f.num(r.feedbackTotal), detail: t('mobile.insights.overview.feedbackDetail', { withReason: f.num(r.feedbackWithReason || 0) }) },
+  ];
+}
+
+/** The overview report for the last `days` days. */
+export function useOverview(days) {
+  const { client } = useAuth();
+  return useResource(() => insightsApi.overview(client, insightWindow(days)), [client, days]);
+}
+
+/**
+ * The compact overview on Today: the headline tiles for the last 30 days and a link to Insights. Shows nothing until
+ * there is data, and nothing on a server without the overview report.
+ */
+export function TodayOverview() {
   const { t } = useTranslation();
+  const f = useFormat();
+  const overview = useOverview(TODAY_OVERVIEW_DAYS);
+  if (overview.status !== 'ready' || isEmptyReport('overview', overview.data)) return null;
   return (
-    <Screen testID="insights-screen">
+    <View style={{ gap: spacing.sm }} testID="today-overview">
+      <SectionHeader title={t('mobile.today.overview')} />
+      <T variant="small">{t('mobile.usage.lastDays', { count: TODAY_OVERVIEW_DAYS })}</T>
+      <StatTiles testID="overview-tiles" tiles={overviewTiles(overview.data, t, f)} />
+      <Button title={t('mobile.today.seeInsights')} kind="ghost" icon="analytics-outline" onPress={() => router.push('/insights')} testID="today-insights" />
+    </View>
+  );
+}
+
+/** Days the Today overview covers. */
+export const TODAY_OVERVIEW_DAYS = 30;
+
+/** Insights menu (dashboard `/insights/*`), with the overview tiles for the chosen window above it. */
+export function InsightsScreen() {
+  const p = useTheme();
+  const { t } = useTranslation();
+  const f = useFormat();
+  const [days, setDays] = useState(90);
+  const overview = useOverview(days);
+  return (
+    <Screen testID="insights-screen" refreshControl={refresh(overview, p)}>
       <T variant="muted">{t('mobile.insights.intro')}</T>
+      <SectionHeader title={t('mobile.insights.overview.title')} />
+      <RangePicker days={days} onChange={setDays} />
+      <ResourceView resource={overview} feature={t('mobile.insights.overview.title')} isEmpty={(d) => isEmptyReport('overview', d)} empty={<EmptyState icon="analytics-outline" title={t('mobile.insights.emptyTitle')} body={t('mobile.insights.overview.empty')} />}>
+        {(data) => <StatTiles testID="overview-tiles" tiles={overviewTiles(data, t, f)} />}
+      </ResourceView>
       <Card>
         {INSIGHT_PAGES.map((page) => (
           <ListRow key={page.name} icon={page.icon} title={t('mobile.insights.' + page.name + '.title')} detail={t('mobile.insights.' + page.name + '.subtitle')} onPress={() => router.push('/insights/' + page.name)} />

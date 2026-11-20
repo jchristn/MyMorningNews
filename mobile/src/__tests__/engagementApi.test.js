@@ -59,6 +59,7 @@ describe('account, audio, feedback, learning, and analytics API', () => {
     ['learning.enable', (c) => learningApi.act(c, 'lpr_1', 'enable'), 'POST', '/v1.0/api/learned-preferences/lpr_1/enable', '', {}],
     ['analytics.relevance', (c) => insightsApi.analytics(c, 'relevance', { topicId: 'top_1' }), 'GET', '/v1.0/api/analytics/relevance', 'topicId=top_1', undefined],
     ['analytics.calibration', (c) => insightsApi.analytics(c, 'accuracy'), 'GET', '/v1.0/api/analytics/accuracy', '', undefined],
+    ['analytics.overview', (c) => insightsApi.overview(c, { from: '2026-10-20T00:00:00.000Z', to: '2026-11-19T00:00:00.000Z' }), 'GET', '/v1.0/api/analytics/overview', 'from=2026-10-20T00%3A00%3A00.000Z&to=2026-11-19T00%3A00%3A00.000Z', undefined],
   ])('%s', async (_name, call, method, path, query, body) => {
     const { client, last } = recorder();
     await call(client);
@@ -221,6 +222,8 @@ describe('insights helpers and chart math', () => {
     expect(isEmptyReport('relevance', { shown: 0, rated: 0 })).toBe(true);
     expect(isEmptyReport('accuracy', { total: 2 })).toBe(false);
     expect(isEmptyReport('quality', null)).toBe(true);
+    expect(isEmptyReport('overview', { runs: 0, findingsShown: 0, feedbackTotal: 0, predictionsOpen: 0, predictionsResolved: 0 })).toBe(true);
+    expect(isEmptyReport('overview', { runs: 0, predictionsOpen: 2 })).toBe(false);
   });
 
   it('lays out a series as a line with gaps and as columns', () => {

@@ -7,12 +7,13 @@ import { PlanSection, RedeemSection } from '@/screens/account/PlanSections';
 import { EmailSection } from '@/screens/account/EmailSection';
 import { PodcastSection } from '@/screens/account/PodcastSection';
 import { AccountScreen } from '@/screens/account/AccountScreen';
-import { AccuracyScreen, FeedbackInsightsScreen, PreferencesScreen, RelevanceScreen } from '@/screens/insights/InsightsScreens';
+import { AccuracyScreen, FeedbackInsightsScreen, InsightsScreen, PreferencesScreen, RelevanceScreen } from '@/screens/insights/InsightsScreens';
 import { DownloadsScreen, ListenScreen } from '@/screens/listen/ListenScreens';
 import { FindingDetail, FindingsScreen } from '@/screens/research/FindingScreens';
 import { PredictionsScreen } from '@/screens/research/PredictionScreens';
 import { SuggestionsScreen } from '@/screens/research/SuggestionsScreen';
 import { BriefingDetail } from '@/screens/today/BriefingDetail';
+import { TodayScreen } from '@/screens/today/TodayScreens';
 import { fakeAudioPlayer, page, renderSignedIn } from './renderApp';
 
 const NOW = '2026-11-19T22:41:36Z';
@@ -418,7 +419,47 @@ const RELEVANCE = {
   ],
 };
 
+const OVERVIEW = { runs: 12, runsCompleted: 10, runsPartiallySucceeded: 1, runsFailed: 1, findingsShown: 40, findingsRated: 10, relevancePrecision: 0.75, briefingsReady: 9, predictionsOpen: 3, predictionsResolved: 4, predictionAccuracy: 0.5, meanBrier: 0.2, feedbackTotal: 14, feedbackWithReason: 5 };
+
 describe('Insights', () => {
+  it('shows the overview tiles above the Insights menu for the chosen window', async () => {
+    const { server } = await renderSignedIn(<InsightsScreen />, { 'GET /v1.0/api/analytics/overview': () => ({ body: OVERVIEW }) });
+    await waitFor(() => expect(screen.getByTestId('overview-tiles')).toBeTruthy());
+    expect(screen.getByLabelText('Runs, 12, 10 completed, 1 failed')).toBeTruthy();
+    expect(screen.getByLabelText('Findings shown, 40, 10 rated')).toBeTruthy();
+    expect(screen.getByLabelText('Relevance precision, 75%, Rated findings you found relevant')).toBeTruthy();
+    expect(screen.getByLabelText('Prediction accuracy, 50%, 4 resolved, 3 open')).toBeTruthy();
+    expect(screen.getByLabelText('Feedback, 14, 5 with a reason')).toBeTruthy();
+    expect(server.calls.find((c) => c.key === 'GET /v1.0/api/analytics/overview').url).toMatch(/from=.*&to=/);
+    await fireEvent.press(screen.getByTestId('range-30'));
+    await waitFor(() => expect(server.count('GET /v1.0/api/analytics/overview')).toBe(2));
+  });
+
+  it('shows the overview empty, and says when the server has no overview yet', async () => {
+    await renderSignedIn(<InsightsScreen />, { 'GET /v1.0/api/analytics/overview': () => ({ body: { runs: 0, findingsShown: 0, feedbackTotal: 0, predictionsOpen: 0, predictionsResolved: 0 } }) });
+    await waitFor(() => expect(screen.getByText('The overview fills in after your first research runs.')).toBeTruthy());
+    screen.unmount();
+    await renderSignedIn(<InsightsScreen />, {});
+    await waitFor(() => expect(screen.getByText('Not on this server yet')).toBeTruthy());
+  });
+
+  it('shows the overview on Today with a link to Insights', async () => {
+    const { server } = await renderSignedIn(<TodayScreen />, {
+      'GET /v1.0/api/editions': () => page([]),
+      'GET /v1.0/api/briefings': () => page([]),
+      'GET /v1.0/api/analytics/overview': () => ({ body: OVERVIEW }),
+    });
+    await waitFor(() => expect(screen.getByTestId('today-overview')).toBeTruthy());
+    expect(screen.getByText('At a glance')).toBeTruthy();
+    expect(screen.getByLabelText('Prediction accuracy, 50%, 4 resolved, 3 open')).toBeTruthy();
+    const call = server.calls.find((c) => c.key === 'GET /v1.0/api/analytics/overview');
+    const from = Date.parse(decodeURIComponent(call.url.match(/from=([^&]+)/)[1]));
+    const to = Date.parse(decodeURIComponent(call.url.match(/to=([^&]+)/)[1]));
+    expect(Math.round((to - from) / 86400000)).toBe(30);
+    await fireEvent.press(screen.getByTestId('today-insights'));
+    expect(router.push).toHaveBeenCalledWith('/insights');
+  });
+
   it('shows relevance tiles, the precision trend, breakdowns, and evidence quality', async () => {
     const { server } = await renderSignedIn(<RelevanceScreen />, {
       'GET /v1.0/api/analytics/relevance': () => ({ body: RELEVANCE }),
@@ -481,10 +522,11 @@ describe('Insights', () => {
     let items = [
       { id: 'fbk_1', targetType: 'Finding', targetId: 'fnd_1', relevance: 'Relevant', reason: 'Exactly my stack', channel: 'Mobile', isCurrent: true, createdUtc: NOW },
       { id: 'fbk_2', targetType: 'Prediction', targetId: 'prd_1', accuracy: 'Inaccurate', channel: 'Email', isCurrent: true, createdUtc: NOW },
+      { id: 'fbk_3', targetType: 'Finding', targetId: 'fnd_2', relevance: 'Somewhat', channel: 'Mcp', isCurrent: true, createdUtc: NOW },
     ];
     const { server } = await renderSignedIn(<FeedbackInsightsScreen />, {
       'GET /v1.0/api/analytics/feedback': () => ({
-        body: { total: 2, withReason: 1, byChannel: [{ key: 'Mobile', count: 1 }, { key: 'Email', count: 1 }], byTargetType: [{ key: 'Finding', count: 1 }], byDay: [{ key: '2026-11-19', count: 2 }], emailLinkOpens: 3, emailLinkSubmits: 1 },
+        body: { total: 2, withReason: 1, byChannel: [{ key: 'Mobile', count: 1 }, { key: 'Email', count: 1 }, { key: 'Mcp', count: 1 }], byTargetType: [{ key: 'Finding', count: 1 }], byDay: [{ key: '2026-11-19', count: 2 }], emailLinkOpens: 3, emailLinkSubmits: 1 },
       }),
       'GET /v1.0/api/analytics/reasons': () => ({ body: { tags: [{ key: 'too basic', count: 3 }], byWeek: [] } }),
       'GET /v1.0/api/analytics/suggestions': () => ({ body: { total: 4, new: 1, accepted: 1, done: 1, dismissed: 1, snoozed: 0, meanDaysToDecision: 2.5, byPriority: [] } }),
@@ -499,11 +541,12 @@ describe('Insights', () => {
       },
     });
     await waitFor(() => expect(screen.getByTestId('feedback-tiles')).toBeTruthy());
-    expect(screen.getByLabelText(/^By channel\. This app: 1, Email: 1$/)).toBeTruthy();
+    expect(screen.getByLabelText(/^By channel\. This app: 1, Email: 1, MCP client: 1$/)).toBeTruthy();
     expect(screen.getByLabelText(/^Reason themes\. too basic: 3$/)).toBeTruthy();
     expect(screen.getByText('You decide in 2.5 days on average.')).toBeTruthy();
     await waitFor(() => expect(screen.getByTestId('history-fbk_1')).toBeTruthy());
     expect(screen.getByText('Exactly my stack')).toBeTruthy();
+    expect(screen.getAllByText('MCP client').length).toBeGreaterThanOrEqual(1);
     await fireEvent.press(screen.getByTestId('history-edit-fbk_1'));
     await waitFor(() => expect(screen.getByTestId('why-reason')).toBeTruthy());
     await fireEvent.changeText(screen.getByTestId('why-reason'), 'Exactly my stack, and timely');

@@ -67,6 +67,9 @@ describe('Today', () => {
     await fireEvent.press(screen.getByTestId('compose-open'));
     expect(router.push).toHaveBeenCalledWith('/today/briefings/brf_new');
     expect(server.count('GET /v1.0/api/briefings/brf_new')).toBeGreaterThanOrEqual(2);
+    // A server without the overview report (404) leaves the overview out.
+    expect(server.count('GET /v1.0/api/analytics/overview')).toBe(1);
+    expect(screen.queryByTestId('today-overview')).toBeNull();
     const latest = server.calls.find((c) => c.key === 'GET /v1.0/api/briefings' && c.url.includes('kind=Edition'));
     expect(latest.url).toMatch(/status=Ready/);
   });
@@ -154,6 +157,85 @@ describe('findings', () => {
     expect(screen.getByText('"Version 2 ships today."')).toBeTruthy();
     expect(screen.getByTestId('score-chart').props.accessibilityLabel).toContain('Model judgment: 90');
     expect(screen.getByText('You use it daily.')).toBeTruthy();
+  });
+
+  it('pins, hides, and deletes from the row menu, and filters to pinned or shows hidden', async () => {
+    const second = { ...finding, id: 'fnd_2', title: 'Second release', relevanceScore: 70 };
+    const { server } = await renderSignedIn(<FindingsScreen />, {
+      'GET /v1.0/api/findings': () => page([finding, second]),
+      'PUT /v1.0/api/findings/fnd_1': (call) => ({ body: { ...finding, pinned: false, hidden: false, ...call.body } }),
+      'DELETE /v1.0/api/findings/fnd_2': () => ({ status: 204 }),
+    });
+    await waitFor(() => expect(screen.getByTestId('finding-row-fnd_1')).toBeTruthy());
+    expect(screen.getByLabelText('More actions for Model release')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('finding-more-fnd_1'));
+    await waitFor(() => expect(screen.getByTestId('sheet-pin')).toBeTruthy());
+    await fireEvent.press(screen.getByTestId('sheet-pin'));
+    await waitFor(() => expect(screen.queryByTestId('sheet-pin')).toBeNull());
+    expect(screen.getAllByText('Pinned')).toHaveLength(1);
+    await fireEvent.press(screen.getByTestId('finding-more-fnd_1'));
+    await waitFor(() => expect(screen.getByTestId('sheet-unpin')).toBeTruthy());
+    await fireEvent.press(screen.getByTestId('sheet-hide'));
+    await waitFor(() => expect(screen.queryByTestId('finding-row-fnd_1')).toBeNull());
+    await fireEvent.press(screen.getByTestId('finding-more-fnd_2'));
+    await waitFor(() => expect(screen.getByTestId('sheet-delete')).toBeTruthy());
+    await fireEvent.press(screen.getByTestId('sheet-delete'));
+    expect(screen.getByText('Tap again to delete')).toBeTruthy();
+    expect(server.count('DELETE /v1.0/api/findings/fnd_2')).toBe(0);
+    await fireEvent.press(screen.getByTestId('sheet-delete'));
+    await waitFor(() => expect(screen.queryByTestId('finding-row-fnd_2')).toBeNull());
+    expect(server.count('DELETE /v1.0/api/findings/fnd_2')).toBe(1);
+    expect(server.calls.filter((c) => c.key === 'PUT /v1.0/api/findings/fnd_1').map((c) => c.body)).toEqual([{ pinned: true }, { hidden: true }]);
+    await fireEvent.press(screen.getByTestId('findings-option-hidden'));
+    await waitFor(() => expect(server.calls.some((c) => c.key === 'GET /v1.0/api/findings' && c.url.includes('includeHidden=true'))).toBe(true));
+    await waitFor(() => expect(screen.getByTestId('finding-row-fnd_1')).toBeTruthy());
+    await fireEvent.press(screen.getByTestId('findings-option-pinned'));
+    await waitFor(() => expect(server.calls.some((c) => c.key === 'GET /v1.0/api/findings' && c.url.includes('pinned=true') && c.url.includes('includeHidden=true'))).toBe(true));
+  });
+
+  it('pins, hides, and deletes a finding from its detail, deleting only after a confirmation', async () => {
+    let state = { ...finding, pinned: false, hidden: false };
+    const { server } = await renderSignedIn(<FindingDetail id="fnd_1" />, {
+      'GET /v1.0/api/findings/fnd_1': () => ({ body: { finding: state, evidence: [] } }),
+      'PUT /v1.0/api/findings/fnd_1': (call) => {
+        state = { ...state, ...call.body };
+        return { body: state };
+      },
+      'DELETE /v1.0/api/findings/fnd_1': () => ({ status: 204 }),
+    });
+    await waitFor(() => expect(screen.getByTestId('finding-pin')).toBeTruthy());
+    await fireEvent.press(screen.getByTestId('finding-pin'));
+    await waitFor(() => expect(screen.getByText('Unpin')).toBeTruthy());
+    expect(screen.getByText('Pinned')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('finding-hide'));
+    await waitFor(() => expect(screen.getByTestId('finding-hidden-note')).toBeTruthy());
+    expect(screen.getByText('Unhide')).toBeTruthy();
+    expect(screen.getByText('Unpin')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('finding-unhide'));
+    await waitFor(() => expect(screen.queryByTestId('finding-hidden-note')).toBeNull());
+    await fireEvent.press(screen.getByTestId('finding-delete'));
+    expect(screen.getByText('Tap again to delete')).toBeTruthy();
+    expect(screen.getByText(/Your ratings of it stay in your feedback history/)).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('finding-cancel-delete'));
+    expect(screen.queryByText('Tap again to delete')).toBeNull();
+    await fireEvent.press(screen.getByTestId('finding-delete'));
+    router.canGoBack.mockReturnValueOnce(true);
+    await fireEvent.press(screen.getByTestId('finding-delete'));
+    await waitFor(() => expect(router.back).toHaveBeenCalled());
+    expect(server.count('DELETE /v1.0/api/findings/fnd_1')).toBe(1);
+    expect(server.calls.filter((c) => c.key === 'PUT /v1.0/api/findings/fnd_1').map((c) => c.body)).toEqual([{ pinned: true }, { hidden: true }, { hidden: false }]);
+  });
+
+  it('says a finding was deleted when it cannot go back', async () => {
+    await renderSignedIn(<FindingDetail id="fnd_1" />, {
+      'GET /v1.0/api/findings/fnd_1': () => ({ body: { finding, evidence: [] } }),
+      'DELETE /v1.0/api/findings/fnd_1': () => ({ status: 204 }),
+    });
+    await waitFor(() => expect(screen.getByTestId('finding-delete')).toBeTruthy());
+    await fireEvent.press(screen.getByTestId('finding-delete'));
+    await fireEvent.press(screen.getByTestId('finding-delete'));
+    await waitFor(() => expect(screen.getByTestId('finding-deleted')).toBeTruthy());
+    expect(screen.getByText('Finding deleted')).toBeTruthy();
   });
 });
 

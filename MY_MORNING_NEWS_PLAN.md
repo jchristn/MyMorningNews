@@ -1457,7 +1457,8 @@ Exit: a topic scheduled for every 5 minutes enqueues runs on time across a conta
 - [x] Run SSE progress stream (`GET /runs/{id}/events`: run, stage, ping, done, timeout; polled from the database, so it works across instances) and retry from a stage (`POST /runs/{id}/retry?fromStage=`: Synthesize and later stages rerun in place on the same run with its saved findings, migration 14 `resumefromstage`; earlier stages or none queue a new run). Notify shipped in Phase 9. SDKs: C# `StreamEventsAsync` and `RetryAsync`, JS `runs.events`/`follow`/`retry`, Python `runs.events`/`retry`.
 - [ ] MCP registry and agentic search mode (moved from Phase 5); prediction evidence links. (ComposeBriefing shipped in Phase 7 as stage 14.)
 - [x] Dashboard: Runs drill-down (stage timeline, queries, results with dispositions, totals), Findings (score breakdown, evidence drawer), Predictions (reviews, resolve, calibration chart), Suggestions (accept, snooze, dismiss, complete), topic workspace tabs.
-- [ ] Dashboard: Sources page (the list endpoint now exists), live stage timeline over SSE, remaining charts 2 to 5 and 21 to 24. (LLM calls per run shipped with Phase 11: the run detail Model calls tab.)
+- [x] Dashboard: Sources page, live stage timeline over SSE with retry from a stage, and LLM calls per run (the run detail Model calls tab).
+- [ ] Dashboard: remaining charts 2 to 5 and 21 to 24.
 - [x] Suites: Pipeline (quote verification, ranking, full run, second-run dedupe, failures, research API), which covers evidence, dedupe, ranking, predictions, and suggestions.
 
 Exit: a real run against SearXNG and Ollama produces ranked, evidence-backed findings, predictions, and suggestions, with every stage visible and replayable.

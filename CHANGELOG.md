@@ -65,7 +65,7 @@ All notable changes to this project are documented here. The project follows [Se
 - Run progress as server-sent events (`GET /v1.0/api/runs/{id}/events`) and retry from a stage (`POST /v1.0/api/runs/{id}/retry?fromStage=`), in the API and all three SDKs.
 - The server image includes Node.js 22 with npm, Claude Code, Codex, Gemini CLI, git, ripgrep, and Mux (versions set by build arguments). Ollama remains available in compose with `--profile ollama`.
 - Client config reports the MCP endpoint (`Rest.McpPublicUrl`), and a credential's auth mode can be changed after creation.
-- Dashboard: pin, hide, and delete findings; evidence in context; a run's model calls; Insights overview and email delivery pages; credential auth modes; an MCP client page. Mobile: pin, hide, and delete findings, and an overview on Insights and Today.
+- Dashboard: a live stage timeline for running runs, retry from a stage, and a Sources page with full text. Also pin, hide, and delete findings; evidence in context; a run's model calls; Insights overview and email delivery pages; credential auth modes; an MCP client page. Mobile: pin, hide, and delete findings, and an overview on Insights and Today.
 - Signed requests (`MMN1-HMAC-SHA256`): machine clients sign each request with the credential secret instead of sending it, with a clock skew window (`Auth.SignatureMaxSkewSeconds`, default 300) and nonce replay protection.
 - Scope guardrail on every model call and in every default prompt, so models stay on research and briefing tasks and treat fetched content as data.
 - Prompt templates: 19 defaults, renderer with list expansion, save-time variable validation, versions, rollback, reset, topic overrides, and a prompt lab.

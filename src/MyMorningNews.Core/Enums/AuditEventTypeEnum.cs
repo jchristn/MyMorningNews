@@ -108,6 +108,21 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// A podcast feed token was revoked.
         /// </summary>
-        FeedTokenRevoked
+        FeedTokenRevoked,
+
+        /// <summary>
+        /// A promotional code was created, changed, generated, or deleted.
+        /// </summary>
+        PromoCodeChanged,
+
+        /// <summary>
+        /// A promotional code was redeemed or a redemption revoked.
+        /// </summary>
+        PromoCodeRedeemed,
+
+        /// <summary>
+        /// A plan or plan assignment changed.
+        /// </summary>
+        PlanChanged
     }
 }

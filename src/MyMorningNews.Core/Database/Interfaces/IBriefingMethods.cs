@@ -90,15 +90,17 @@ namespace MyMorningNews.Core.Database.Interfaces
         Task<long> CountAsync(BriefingFilter filter, CancellationToken token = default);
 
         /// <summary>
-        /// Claim queued briefings whose compose time has come, marking them Composing with a lock expiry.
+        /// Claim queued briefings whose compose time has come (earliest due first, so briefings put back to wait for
+        /// research do not starve the rest), marking them Composing with a lock expiry.
         /// Concurrent workers never claim the same briefing (FOR UPDATE SKIP LOCKED).
         /// </summary>
         /// <param name="nowUtc">Now.</param>
         /// <param name="lockedUntilUtc">Claim expiry.</param>
         /// <param name="limit">Maximum claims (1 to 50).</param>
+        /// <param name="tenantIds">Only these tenants, or null for any tenant.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Claimed briefings.</returns>
-        Task<List<Briefing>> ClaimQueuedAsync(DateTime nowUtc, DateTime lockedUntilUtc, int limit, CancellationToken token = default);
+        Task<List<Briefing>> ClaimQueuedAsync(DateTime nowUtc, DateTime lockedUntilUtc, int limit, IReadOnlyCollection<string>? tenantIds = null, CancellationToken token = default);
 
         /// <summary>
         /// Fail briefings whose composition claim expired (the worker stopped).

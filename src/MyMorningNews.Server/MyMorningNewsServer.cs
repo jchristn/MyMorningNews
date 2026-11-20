@@ -181,6 +181,10 @@ namespace MyMorningNews.Server
             MyMorningNews.Core.Feedback.LearningService learning = new MyMorningNews.Core.Feedback.LearningService(_Database, _Models, prompts, settings, _Logging);
             _Context.Learning = learning;
             _Context.Analytics = new MyMorningNews.Core.Analytics.AnalyticsService(_Database, settings);
+            _Context.Entitlements = new MyMorningNews.Core.Entitlements.EntitlementService(_Database, settings);
+            int plans = await _Context.Entitlements.EnsureDefaultsAsync(token).ConfigureAwait(false);
+            if (plans > 0) _Logging.Info(_Header + "seeded " + plans + " plans");
+            _Context.PromoCodes = new MyMorningNews.Core.Entitlements.PromoCodeService(_Database);
             PipelineServices pipelineServices = new PipelineServices(_Database, _Models, prompts, _Search!, _Fetch!, settings, _Logging) { Briefings = briefings, Email = email, Learning = learning };
             _Context.RunExecutor = new ResearchPipeline(pipelineServices);
 
@@ -322,6 +326,7 @@ namespace MyMorningNews.Server
                 new EmailRoutes(context),
                 new FeedbackRoutes(context),
                 new LearningRoutes(context),
+                new PromoRoutes(context),
                 new PromptRoutes(context)
             };
         }

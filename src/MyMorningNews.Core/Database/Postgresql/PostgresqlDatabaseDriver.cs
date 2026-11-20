@@ -116,6 +116,11 @@ namespace MyMorningNews.Core.Database.Postgresql
             LearnedPreferenceFeedback = new LearnedPreferenceFeedbackMethods(this);
             FeedbackReasonTags = new FeedbackReasonTagMethods(this);
             LearningCheckpoints = new LearningCheckpointMethods(this);
+            Plans = new PlanMethods(this);
+            PlanFeatures = new PlanFeatureMethods(this);
+            PlanAssignments = new PlanAssignmentMethods(this);
+            PromoCodes = new PromoCodeMethods(this);
+            PromoRedemptions = new PromoRedemptionMethods(this);
             Embeddings = new EmbeddingMethods(this);
         }
 

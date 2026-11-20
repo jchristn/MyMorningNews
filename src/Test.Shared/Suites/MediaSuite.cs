@@ -92,8 +92,7 @@ namespace Test.Shared.Suites
                 .Expect(201, "edition").Json<EditionResponse>();
             (await f.User.Client.PutAsync("/v1.0/api/editions/" + e.Edition.Id + "/topics", new { topicIds = new[] { f.Topic.Id } }, token).ConfigureAwait(false)).Expect(200, "topics");
             Briefing queued = (await f.User.Client.PostAsync("/v1.0/api/editions/" + e.Edition.Id + "/compose", null, token).ConfigureAwait(false)).Expect(202, "compose").Json<Briefing>();
-            await f.Server.Context.Briefings.ProcessQueuedAsync(DateTime.UtcNow, token).ConfigureAwait(false);
-            Briefing b = (await f.Server.Context.Database.Briefings.ReadAsync(queued.TenantId, queued.Id, token).ConfigureAwait(false))!;
+            Briefing b = await BriefingWaiter.FinishAsync(f.Server, queued.TenantId, queued.Id, token).ConfigureAwait(false);
             Assert.True(b.Status == BriefingStatusEnum.Ready, "briefing ready: " + b.ErrorMessage);
             return b;
         }
@@ -104,7 +103,7 @@ namespace Test.Shared.Suites
             System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
             while (sw.Elapsed < TimeSpan.FromSeconds(60))
             {
-                int done = await f.Server.Context.Audio.ProcessQueuedAsync(DateTime.UtcNow, token).ConfigureAwait(false);
+                int done = await f.Server.Context.Audio.ProcessQueuedAsync(DateTime.UtcNow, new[] { b.TenantId }, token).ConfigureAwait(false);
                 EnumerationResult<MediaAsset> list = (await f.User.Client.GetAsync("/v1.0/api/media?briefingId=" + b.Id, token).ConfigureAwait(false)).Json<EnumerationResult<MediaAsset>>();
                 MediaAsset? m = list.Items.OrderByDescending(x => x.CreatedUtc).FirstOrDefault();
                 if (m != null && (m.Status == MediaStatusEnum.Ready || m.Status == MediaStatusEnum.Failed)) return m;
@@ -175,7 +174,7 @@ namespace Test.Shared.Suites
             MediaAsset? m = null;
             for (int i = 0; i < 5; i++)
             {
-                await f.Server.Context.Audio.ProcessQueuedAsync(DateTime.UtcNow, token).ConfigureAwait(false);
+                await f.Server.Context.Audio.ProcessQueuedAsync(DateTime.UtcNow, new[] { queued.TenantId }, token).ConfigureAwait(false);
                 m = await f.Server.Context.Database.MediaAssets.ReadAsync(queued.TenantId, queued.Id, token).ConfigureAwait(false);
                 if (m!.Status == MediaStatusEnum.Failed) break;
             }

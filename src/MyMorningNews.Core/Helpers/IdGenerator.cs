@@ -587,6 +587,51 @@ namespace MyMorningNews.Core.Helpers
         }
 
         /// <summary>
+        /// Generate a Plan identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GeneratePlanId()
+        {
+            return Generate(IdPrefixes.Plan);
+        }
+
+        /// <summary>
+        /// Generate a PlanFeature identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GeneratePlanFeatureId()
+        {
+            return Generate(IdPrefixes.PlanFeature);
+        }
+
+        /// <summary>
+        /// Generate a PlanAssignment identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GeneratePlanAssignmentId()
+        {
+            return Generate(IdPrefixes.PlanAssignment);
+        }
+
+        /// <summary>
+        /// Generate a PromoCode identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GeneratePromoCodeId()
+        {
+            return Generate(IdPrefixes.PromoCode);
+        }
+
+        /// <summary>
+        /// Generate a PromoRedemption identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GeneratePromoRedemptionId()
+        {
+            return Generate(IdPrefixes.PromoRedemption);
+        }
+
+        /// <summary>
         /// Generate a RequestHistory identifier.
         /// </summary>
         /// <returns>Identifier.</returns>

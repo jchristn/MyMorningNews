@@ -163,10 +163,22 @@ namespace MyMorningNews.Core.Audio
         /// <param name="nowUtc">Now.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Episodes finished or failed in this pass.</returns>
-        public async Task<int> ProcessQueuedAsync(DateTime nowUtc, CancellationToken token = default)
+        public Task<int> ProcessQueuedAsync(DateTime nowUtc, CancellationToken token = default)
+        {
+            return ProcessQueuedAsync(nowUtc, null, token);
+        }
+
+        /// <summary>
+        /// One worker pass limited to some tenants (or any tenant).
+        /// </summary>
+        /// <param name="nowUtc">Now.</param>
+        /// <param name="tenantIds">Only these tenants, or null for any tenant.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Episodes finished or failed in this pass.</returns>
+        public async Task<int> ProcessQueuedAsync(DateTime nowUtc, IReadOnlyCollection<string>? tenantIds, CancellationToken token = default)
         {
             await _Database.MediaAssets.RecoverAbandonedAsync(nowUtc, _Settings.Tts.MaxAttempts, token).ConfigureAwait(false);
-            List<MediaAsset> claimed = await _Database.MediaAssets.ClaimQueuedAsync(nowUtc, nowUtc.AddMinutes(30), 2, token).ConfigureAwait(false);
+            List<MediaAsset> claimed = await _Database.MediaAssets.ClaimQueuedAsync(nowUtc, nowUtc.AddMinutes(30), 2, tenantIds, token).ConfigureAwait(false);
             int done = 0;
             foreach (MediaAsset m in claimed)
             {

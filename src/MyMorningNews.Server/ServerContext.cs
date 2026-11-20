@@ -151,6 +151,16 @@ namespace MyMorningNews.Server
         public MyMorningNews.Core.Analytics.AnalyticsService Analytics { get; set; } = null!;
 
         /// <summary>
+        /// Plans and plan assignments.
+        /// </summary>
+        public MyMorningNews.Core.Entitlements.EntitlementService Entitlements { get; set; } = null!;
+
+        /// <summary>
+        /// Promotional codes.
+        /// </summary>
+        public MyMorningNews.Core.Entitlements.PromoCodeService PromoCodes { get; set; } = null!;
+
+        /// <summary>
         /// Instantiate.
         /// </summary>
         /// <param name="settingsService">Settings service.</param>

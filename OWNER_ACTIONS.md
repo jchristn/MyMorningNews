@@ -47,6 +47,8 @@ Expo, Mailgun on latticetech.ai) are reused; only the app-specific items below a
 
 ## Phase 14: Hosted service
 
+- [ ] **Promotional code policy:** confirm what the Complimentary plan should include (it allows $30 of model use a month, 25 topics, hourly schedules, and 600 audio minutes; change it in the admin Plans page or tell me) and the default length for new codes (30 days).
+
 - [ ] **A host** for `app.mymorningnews.ai` (for example the existing AWS account, us-west-2), with Docker installed,
   ports 80 and 443 open, and DNS for `app.mymorningnews.ai` pointing at it.
 - [ ] **S3 bucket** for reports and audio (or keep local storage on the host volume). If S3: create the bucket and an

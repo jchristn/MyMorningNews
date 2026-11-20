@@ -257,7 +257,7 @@ namespace Test.Shared.Suites
                 .Expect(201, "edition").Json<EditionResponse>();
             (await f.User.Client.PutAsync("/v1.0/api/editions/" + e.Edition.Id + "/topics", new { topicIds = new[] { f.Topic.Id } }, token).ConfigureAwait(false)).Expect(200, "topics");
             Briefing queued = (await f.User.Client.PostAsync("/v1.0/api/editions/" + e.Edition.Id + "/compose", null, token).ConfigureAwait(false)).Expect(202, "compose").Json<Briefing>();
-            await f.Server.Context.Briefings.ProcessQueuedAsync(DateTime.UtcNow, token).ConfigureAwait(false);
+            await BriefingWaiter.FinishAsync(f.Server, queued.TenantId, queued.Id, token).ConfigureAwait(false);
             List<EmailMessage> mails = (await f.Server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = queued.TenantId, BriefingId = queued.Id, PageSize = 10 }, token).ConfigureAwait(false)).Items;
             Assert.True(mails.Count == 1 && mails[0].Template == EmailTemplateEnum.BriefingPublished && mails[0].Subject == "[My Morning News] " + (await f.Server.Context.Database.Briefings.ReadAsync(queued.TenantId, queued.Id, token).ConfigureAwait(false))!.Title,
                 "briefing email queued: " + String.Join(",", mails.Select(x => x.Subject)));

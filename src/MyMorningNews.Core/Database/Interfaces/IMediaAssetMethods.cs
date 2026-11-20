@@ -95,9 +95,10 @@ namespace MyMorningNews.Core.Database.Interfaces
         /// <param name="nowUtc">Now.</param>
         /// <param name="lockedUntilUtc">Claim expiry.</param>
         /// <param name="limit">Maximum claims (1 to 20).</param>
+        /// <param name="tenantIds">Only these tenants, or null for any tenant.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Claimed assets.</returns>
-        Task<List<MediaAsset>> ClaimQueuedAsync(DateTime nowUtc, DateTime lockedUntilUtc, int limit, CancellationToken token = default);
+        Task<List<MediaAsset>> ClaimQueuedAsync(DateTime nowUtc, DateTime lockedUntilUtc, int limit, IReadOnlyCollection<string>? tenantIds = null, CancellationToken token = default);
 
         /// <summary>
         /// Put back (or fail, after maxAttempts) audio whose claim expired while scripting or synthesizing.

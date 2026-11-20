@@ -170,6 +170,10 @@ namespace MyMorningNews.Server.Services
                     details = new Dictionary<string, string>(StringComparer.Ordinal);
                     foreach (TemplateProblem p in tie.Problems.Where(p => !p.IsWarning).Take(50)) details["line " + p.Line + (details.ContainsKey("line " + p.Line) ? " (" + details.Count + ")" : String.Empty)] = p.Message;
                     break;
+                case MyMorningNews.Core.Entitlements.PromoCodeException pce:
+                    status = 409; error = "PromoCodeInvalid"; message = pce.Message;
+                    details = new Dictionary<string, string>(StringComparer.Ordinal) { { "reason", pce.Reason } };
+                    break;
                 case JsonException:
                     status = 400; error = "BadRequest"; message = "The request body is not valid JSON."; break;
                 case ArgumentException ae:

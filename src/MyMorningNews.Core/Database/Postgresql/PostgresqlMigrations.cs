@@ -173,6 +173,16 @@ namespace MyMorningNews.Core.Database.Postgresql
                 new List<string>
                 {
                     "CREATE INDEX IF NOT EXISTS ix_feedback_topic_created ON feedback (tenantid, topicid, createdutc)"
+                })),
+            new SchemaMigration(12, "Plans, plan assignments, promotional codes, and redemptions", Concat(
+                PlanQueries.Schema,
+                PlanFeatureQueries.Schema,
+                PlanAssignmentQueries.Schema,
+                PromoCodeQueries.Schema,
+                PromoRedemptionQueries.Schema,
+                new List<string>
+                {
+                    "CREATE INDEX IF NOT EXISTS ix_planassignments_user ON planassignments (tenantid, userid, startsutc)"
                 }))
         };
 

@@ -45,6 +45,7 @@ All notable changes to this project are documented here. The project follows [Se
 - Audio: every edition (and any briefing you ask for) can become an episode with chapters, spoken by the bundled Kokoro voices or any OpenAI-compatible speech service, with a private podcast feed you can subscribe to in any podcast app.
 - Email: a digest after every run and an email for each edition, with links to every item and one-tap feedback (Relevant, Not relevant, Tell us why) that opens a short form, plus one-click unsubscribe per topic. Works out of the box by writing emails to files; set Mailgun keys to send for real.
 - Learning: your ratings and reasons shape what the next run ranks highly and what it searches for, recurring reasons turn into preferences you can apply with one click, and Insights reports show relevance, prediction accuracy and calibration, feedback, suggestions, and evidence quality.
+- Promotional codes: administrators can create codes that give a free subscription for a set number of days, cap how many people can use each one, generate batches, see who used them, and revoke them.
 - `OWNER_ACTIONS.md` with everything the owner needs to do, grouped by phase.
 - Scope guardrail on every model call and in every default prompt, so models stay on research and briefing tasks and treat fetched content as data.
 - Prompt templates: 19 defaults, renderer with list expansion, save-time variable validation, versions, rollback, reset, topic overrides, and a prompt lab.

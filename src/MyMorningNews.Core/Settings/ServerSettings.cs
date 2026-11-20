@@ -176,6 +176,16 @@ namespace MyMorningNews.Core.Settings
             set { _Learning = value ?? throw new ArgumentNullException(nameof(Learning)); }
         }
 
+        /// <summary>
+        /// Hosted service (sign-up, plans).
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Value is null.</exception>
+        public HostingSettings Hosting
+        {
+            get { return _Hosting; }
+            set { _Hosting = value ?? throw new ArgumentNullException(nameof(Hosting)); }
+        }
+
         #endregion
 
         #region Private-Members
@@ -196,6 +206,7 @@ namespace MyMorningNews.Core.Settings
         private TtsSettings _Tts = new TtsSettings();
         private EmailSettings _Email = new EmailSettings();
         private LearningSettings _Learning = new LearningSettings();
+        private HostingSettings _Hosting = new HostingSettings();
 
         #endregion
     }

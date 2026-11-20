@@ -191,6 +191,11 @@ namespace MyMorningNews.Core.Telemetry
         public static readonly Counter<long> EmailFeedbackClicks = Meter.CreateCounter<long>("mymorningnews.email.feedback.clicks", "{click}", "Email feedback link views and submissions.");
 
         /// <summary>
+        /// Promotional code redemptions by channel and outcome.
+        /// </summary>
+        public static readonly Counter<long> PromoRedemptions = Meter.CreateCounter<long>("mymorningnews.promo.redemptions", "{redemption}", "Promotional code redemptions by channel and outcome.");
+
+        /// <summary>
         /// Push notifications by outcome.
         /// </summary>
         public static readonly Counter<long> PushMessages = Meter.CreateCounter<long>("mymorningnews.push.messages", "{message}", "Push notifications by outcome.");

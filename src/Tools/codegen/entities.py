@@ -1103,6 +1103,77 @@ ENTITIES = [
             f('Proposed', 'int', doc='Preferences proposed in total.', default=0),
         ],
     },
+
+    # ------------------------------------------------------------------ Entitlements and promotional codes (plan section 33.2)
+    {
+        'name': 'Plan', 'table': 'plans', 'prefix': 'pln_', 'tenant': False,
+        'doc': 'A service plan. Code checks entitlement keys, never plan names, so billing is a later data change.',
+        'fields': [
+            f('Key', doc='Stable key such as free, unlimited, or complimentary.', required=True, length=64, unique=True, filter=True),
+            f('Name', doc='Display name.', required=True, length=128, search=True, sort=True),
+            f('Description', 'text', doc='Description.', nullable=True),
+            f('IsDefault', 'bool', doc='Plan for users without an assignment.', default=False, filter=True),
+            f('SortOrder', 'int', doc='Order in lists.', default=0, sort=True),
+        ],
+    },
+    {
+        'name': 'PlanFeature', 'table': 'planfeatures', 'prefix': 'plf_', 'tenant': False,
+        'doc': 'One entitlement value of a plan, such as topics.max = 5.',
+        'uniques': [['planid', 'key']],
+        'fields': [
+            f('PlanId', doc='Plan.', required=True, length=64, filter=True),
+            f('Key', doc='Entitlement key.', required=True, length=128, filter=True),
+            f('Value', doc='Value (number, true or false, or text).', required=True, length=256),
+        ],
+    },
+    {
+        'name': 'PlanAssignment', 'table': 'planassignments', 'prefix': 'pla_',
+        'doc': 'A plan given to a user for a period: by default, an administrator, a promotional code, or billing later.',
+        'fields': [
+            f('UserId', doc='User.', required=True, length=64, filter=True),
+            f('PlanId', doc='Plan.', required=True, length=64, filter=True),
+            f('Source', 'enum:PlanSourceEnum', doc='Where it came from.', default='Admin', filter=True),
+            f('PromoCodeId', doc='Promotional code, when redeemed from one.', nullable=True, length=64, filter=True),
+            f('StartsUtc', 'datetime', doc='Start.', required=True),
+            f('EndsUtc', 'datetime', doc='End, or null for no end.', nullable=True, sort=True),
+            f('RevokedUtc', 'datetime', doc='Revoked.', nullable=True),
+            f('Note', 'text', doc='Reason or note.', nullable=True),
+            f('GrantedByUserId', doc='Administrator who granted it.', nullable=True, length=64),
+        ],
+    },
+    {
+        # HAND-EDITED after generation: do not --force.
+        'name': 'PromoCode', 'table': 'promocodes', 'prefix': 'prc_', 'tenant': False,
+        'doc': 'A promotional code that gives a plan (a free subscription) for a number of days, with usage limits.',
+        'fields': [
+            f('Code', doc='Code people type, uppercase letters, digits, and dashes (4 to 40).', required=True, length=40, unique=True, filter=True, search=True),
+            f('Description', 'text', doc='What the code is for (campaign, partner).', nullable=True, search=True),
+            f('PlanId', doc='Plan the code gives.', required=True, length=64, filter=True),
+            f('DurationDays', 'int', doc='Days the plan lasts after redemption, or null for no end.', nullable=True),
+            f('MaxRedemptions', 'int', doc='Most redemptions in total, or null for unlimited.', nullable=True),
+            f('RedemptionCount', 'int', doc='Redemptions so far (revoked ones still count).', default=0, sort=True),
+            f('PerUserLimit', 'int', doc='Redemptions allowed per user (1 to 100).', default=1, clamp=(1, 100)),
+            f('StartsUtc', 'datetime', doc='Usable from, or null for now.', nullable=True),
+            f('ExpiresUtc', 'datetime', doc='Usable until, or null for no end.', nullable=True, sort=True),
+            f('Enabled', 'bool', doc='Can be redeemed.', default=True, filter=True),
+            f('NewAccountsOnly', 'bool', doc='Only at sign-up.', default=False),
+            f('BatchId', doc='Generated batch, for bulk codes.', nullable=True, length=64, filter=True),
+            f('CreatedByUserId', doc='Administrator who created it.', nullable=True, length=64),
+        ],
+    },
+    {
+        'name': 'PromoRedemption', 'table': 'promoredemptions', 'prefix': 'prr_',
+        'doc': 'One use of a promotional code.',
+        'fields': [
+            f('PromoCodeId', doc='Code.', required=True, length=64, filter=True),
+            f('Code', doc='Code as typed.', required=True, length=40, filter=True),
+            f('UserId', doc='User.', required=True, length=64, filter=True),
+            f('Email', doc='User email at redemption.', nullable=True, length=320, search=True),
+            f('PlanAssignmentId', doc='Plan assignment it created.', required=True, length=64),
+            f('Channel', 'enum:PromoChannelEnum', doc='Where it was redeemed.', default='Account', filter=True),
+            f('RevokedUtc', 'datetime', doc='Revoked by an administrator.', nullable=True),
+        ],
+    },
 ]
 
 # Prefixes for identifiers that are not codegen entities.
@@ -1150,6 +1221,8 @@ ENUMS = [
         ('AvoidSource', 'Avoid this source.'), ('StyleNote', 'How to write for the reader.')]),
     ('PreferenceStatusEnum', 'Learned preference status.', [('Proposed', 'Waiting for the reader.'), ('Active', 'In use.'), ('Rejected', 'Dismissed.'), ('Disabled', 'Turned off.')]),
     ('PreferenceOriginEnum', 'Where a preference came from.', [('Distilled', 'Distilled from feedback.'), ('User', 'Written by the reader.')]),
+    ('PlanSourceEnum', 'Where a plan assignment came from.', [('Default', 'The default plan.'), ('Admin', 'Granted by an administrator.'), ('Promo', 'A promotional code.'), ('Billing', 'A paid subscription (later).')]),
+    ('PromoChannelEnum', 'Where a promotional code was redeemed.', [('Signup', 'At sign-up.'), ('Account', 'From account settings or the app.'), ('Admin', 'Applied by an administrator.'), ('Api', 'Through the API.')]),
     ('DedupeVerdictEnum', 'Duplicate judgment.', [('Duplicate', 'Same thing.'), ('Update', 'Adds a material fact to an earlier finding.'), ('Different', 'Different.')]),
     ('IntervalTypeEnum', 'Schedule interval type.', [('EveryNMinutes', 'Every n minutes.'), ('EveryNHours', 'Every n hours.'), ('EveryNDays', 'Every n days at times of day.'),
         ('EveryNWeeks', 'Every n weeks on days of week at times of day.'), ('DaysOfWeek', 'On days of week at times of day.'), ('DaysOfMonth', 'On days of month at times of day.'),
@@ -1203,7 +1276,9 @@ ENUMS = [
         ('UserChanged', 'User created, updated, or deleted.'), ('TenantChanged', 'Tenant created, updated, or deleted.'),
         ('SettingsChanged', 'Server settings changed.'), ('RestartRequested', 'Server restart requested.'),
         ('CredentialRevealed', 'A stored vault credential was revealed.'), ('VaultCredentialChanged', 'A vault credential was created, rotated, or deleted.'),
-        ('FeedTokenCreated', 'A podcast feed token was created.'), ('FeedTokenRevoked', 'A podcast feed token was revoked.')]),
+        ('FeedTokenCreated', 'A podcast feed token was created.'), ('FeedTokenRevoked', 'A podcast feed token was revoked.'),
+        ('PromoCodeChanged', 'A promotional code was created, changed, generated, or deleted.'), ('PromoCodeRedeemed', 'A promotional code was redeemed or a redemption revoked.'),
+        ('PlanChanged', 'A plan or plan assignment changed.')]),
     ('ResourceTypeEnum', 'Resource types used by permissions.', [
         ('All', 'Wildcard.'), ('Tenant', 'Tenant.'), ('Admin', 'Administrative control plane.'), ('User', 'User.'), ('Credential', 'Credential.'),
         ('Session', 'Session.'), ('Role', 'Role.'), ('Permission', 'Permission.'), ('Assignment', 'Role assignment.'), ('Audit', 'Audit record.'),
@@ -1301,6 +1376,8 @@ ENUMS = [
         ('FeedbackRead', 'Read feedback.'), ('FeedbackWrite', 'Give feedback.'),
         ('PreferenceRead', 'Read learned preferences.'), ('PreferenceWrite', 'Write, accept, reject, or disable learned preferences.'),
         ('AnalyticsRead', 'Read relevance, accuracy, feedback, and suggestion analytics.'),
+        ('PromoCodeAdmin', 'Manage promotional codes, plans, and plan assignments (global administrators).'),
+        ('PromoCodeRedeem', 'Redeem a promotional code and read my plan.'),
         ('ResearchRequestRead', 'Read one-time requests.'), ('ResearchRequestWrite', 'Create, confirm, or convert one-time requests.'), ('ResearchRequestDelete', 'Delete one-time requests.'),
     ]),
 ]

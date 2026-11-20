@@ -189,11 +189,12 @@ namespace Test.Shared.Suites
             return (await f.User.Client.PutAsync("/v1.0/api/editions/" + e.Edition.Id + "/topics", new { topicIds = new[] { f.Topic.Id } }, token).ConfigureAwait(false)).Expect(200, "topics").Json<EditionResponse>();
         }
 
-        private static async Task<Briefing> ComposeNowAsync(PipelineFixture f, string editionId, CancellationToken token)
+        private static async Task<Briefing> ComposeNowAsync(PipelineFixture f, string editionId, CancellationToken token, bool wait = true)
         {
             Briefing queued = (await f.User.Client.PostAsync("/v1.0/api/editions/" + editionId + "/compose", null, token).ConfigureAwait(false)).Expect(202, "compose").Json<Briefing>();
             Assert.True(queued.Status == BriefingStatusEnum.Queued && queued.Kind == BriefingKindEnum.Edition, "queued");
-            await f.Server.Context.Briefings.ProcessQueuedAsync(DateTime.UtcNow, token).ConfigureAwait(false);
+            if (wait) return await BriefingWaiter.FinishAsync(f.Server, queued.TenantId, queued.Id, token).ConfigureAwait(false);
+            await f.Server.Context.Briefings.ProcessQueuedAsync(DateTime.UtcNow, new[] { queued.TenantId }, token).ConfigureAwait(false);
             return (await f.Server.Context.Database.Briefings.ReadAsync(queued.TenantId, queued.Id, token).ConfigureAwait(false))!;
         }
 
@@ -214,7 +215,8 @@ namespace Test.Shared.Suites
             (await f.User.Client.PostAsync("/v1.0/api/editions/" + e.Edition.Id + "/compose", null, token).ConfigureAwait(false)).Expect(202, "compose again after the first finished");
             TestResponse busy = (await f.User.Client.PostAsync("/v1.0/api/editions/" + e.Edition.Id + "/compose", null, token).ConfigureAwait(false)).Expect(409, "one at a time");
             Assert.True(busy.Body.Contains("\"briefingId\":\"brf_", StringComparison.Ordinal), "409 names the briefing on the way: " + busy.Body);
-            await f.Server.Context.Briefings.ProcessQueuedAsync(DateTime.UtcNow, token).ConfigureAwait(false);
+            string onTheWay = System.Text.RegularExpressions.Regex.Match(busy.Body, "\"briefingId\":\"(brf_[^\"]+)\"").Groups[1].Value;
+            await BriefingWaiter.FinishAsync(f.Server, e.Edition.TenantId, onTheWay, token).ConfigureAwait(false);
 
             string failing = "---\nname: Fallback Test\n---\n# {{edition.name}}\n\n## Highlights\n<!-- mmn:section source=findings tier=Fyi limit=5 -->\nFAILSECTION please.\n\n## Sources\n<!-- mmn:section source=citations -->\n";
             TemplateDetailResponse tpl = (await f.User.Client.PostAsync("/v1.0/api/briefing-templates", new { content = failing }, token).ConfigureAwait(false)).Expect(201, "template").Json<TemplateDetailResponse>();
@@ -241,16 +243,26 @@ namespace Test.Shared.Suites
         {
             PipelineFixture f = await PipelineSuite.FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
             EditionResponse e = await CreateEditionAsync(f, "Fresh Heat", true, null, token).ConfigureAwait(false);
-            Briefing waiting = await ComposeNowAsync(f, e.Edition.Id, token).ConfigureAwait(false);
+            Briefing waiting = await ComposeNowAsync(f, e.Edition.Id, token, false).ConfigureAwait(false);
             DateTime now = DateTime.UtcNow;
             Assert.True(waiting.Status == BriefingStatusEnum.Queued && waiting.ResearchDeadlineUtc > now.AddMinutes(30) && waiting.ComposeAfterUtc > now.AddSeconds(10), "put back to wait for research: " + waiting.Status + " " + waiting.ComposeAfterUtc);
             EnumerationResult<Run> runs = (await f.User.Client.GetAsync("/v1.0/api/runs?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Run>>();
             Assert.True(runs.Items.Count == 1 && runs.Items[0].Trigger == RunTriggerEnum.Edition && runs.Items[0].Status == RunStatusEnum.Queued, "fresh research queued");
             await RunWaiter.FinishAsync(f.Server, runs.Items[0], token).ConfigureAwait(false);
 
-            await f.Server.Context.Briefings.ProcessQueuedAsync(now.AddMinutes(1), token).ConfigureAwait(false);
-            Briefing done = (await f.Server.Context.Database.Briefings.ReadAsync(waiting.TenantId, waiting.Id, token).ConfigureAwait(false))!;
-            Assert.True(done.Status == BriefingStatusEnum.Ready && done.Markdown!.Contains("Heat pump rebates expand", StringComparison.Ordinal), "composed with the fresh findings: " + done.Status + " " + done.ErrorMessage);
+            // The briefing queue is shared with suites running in parallel; another pass may be composing it, so wait for a final status.
+            Briefing done = waiting;
+            for (int i = 0; i < 200; i++)
+            {
+                await f.Server.Context.Briefings.ProcessQueuedAsync(DateTime.UtcNow.AddMinutes(1), new[] { waiting.TenantId }, token).ConfigureAwait(false);
+                done = (await f.Server.Context.Database.Briefings.ReadAsync(waiting.TenantId, waiting.Id, token).ConfigureAwait(false))!;
+                if (done.Status == BriefingStatusEnum.Ready || done.Status == BriefingStatusEnum.Failed) break;
+                await Task.Delay(50, token).ConfigureAwait(false);
+            }
+
+            string diag = done.Status == BriefingStatusEnum.Ready ? String.Empty : " composeAfter " + done.ComposeAfterUtc?.ToString("o") + " deadline " + done.ResearchDeadlineUtc?.ToString("o") + " now " + DateTime.UtcNow.ToString("o") + " runs " +
+                String.Join(",", (await f.User.Client.GetAsync("/v1.0/api/runs?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Run>>().Items.Select(r => r.Trigger + ":" + r.Status));
+            Assert.True(done.Status == BriefingStatusEnum.Ready && done.Markdown!.Contains("Heat pump rebates expand", StringComparison.Ordinal), "composed with the fresh findings: " + done.Status + " " + done.ErrorMessage + diag);
         }
 
         private static async Task EditionScheduleAsync(CancellationToken token)
@@ -274,8 +286,7 @@ namespace Test.Shared.Suites
             Schedule next = (await server.Context.Database.Schedules.ReadAsync(t.Id, s.Id, token).ConfigureAwait(false))!;
             Assert.True(next.NextRunUtc > DateTime.UtcNow, "schedule advanced");
 
-            await server.Context.Briefings.ProcessQueuedAsync(DateTime.UtcNow, token).ConfigureAwait(false);
-            Briefing empty = (await server.Context.Database.Briefings.ReadAsync(t.Id, queued.Items[0].Id, token).ConfigureAwait(false))!;
+            Briefing empty = await BriefingWaiter.FinishAsync(server, t.Id, queued.Items[0].Id, token).ConfigureAwait(false);
             Assert.True(empty.Status == BriefingStatusEnum.Ready && empty.ItemCount == 0 && empty.Markdown!.Contains("Nothing new in this period", StringComparison.Ordinal), "an empty edition still arrives: " + empty.Markdown);
 
             Schedule created = (await u.Client.PostAsync("/v1.0/api/schedules", new { ownerType = "Edition", ownerId = mn.Edition.Id, intervalType = "EveryNHours", intervalValue = 12 }, token).ConfigureAwait(false))

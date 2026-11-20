@@ -347,6 +347,31 @@ namespace MyMorningNews.Core.Database
         public ILearningCheckpointMethods LearningCheckpoints { get; protected set; } = null!;
 
         /// <summary>
+        /// Service plans.
+        /// </summary>
+        public IPlanMethods Plans { get; protected set; } = null!;
+
+        /// <summary>
+        /// Plan entitlement values.
+        /// </summary>
+        public IPlanFeatureMethods PlanFeatures { get; protected set; } = null!;
+
+        /// <summary>
+        /// Plan assignments.
+        /// </summary>
+        public IPlanAssignmentMethods PlanAssignments { get; protected set; } = null!;
+
+        /// <summary>
+        /// Promotional codes.
+        /// </summary>
+        public IPromoCodeMethods PromoCodes { get; protected set; } = null!;
+
+        /// <summary>
+        /// Promotional code redemptions.
+        /// </summary>
+        public IPromoRedemptionMethods PromoRedemptions { get; protected set; } = null!;
+
+        /// <summary>
         /// Embedding vectors (pgvector).
         /// </summary>
         public IEmbeddingMethods Embeddings { get; protected set; } = null!;

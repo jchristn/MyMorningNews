@@ -311,6 +311,31 @@ namespace MyMorningNews.Core
         public const string LearningCheckpoint = "lcp_";
 
         /// <summary>
+        /// Prefix for Plan identifiers.
+        /// </summary>
+        public const string Plan = "pln_";
+
+        /// <summary>
+        /// Prefix for PlanFeature identifiers.
+        /// </summary>
+        public const string PlanFeature = "plf_";
+
+        /// <summary>
+        /// Prefix for PlanAssignment identifiers.
+        /// </summary>
+        public const string PlanAssignment = "pla_";
+
+        /// <summary>
+        /// Prefix for PromoCode identifiers.
+        /// </summary>
+        public const string PromoCode = "prc_";
+
+        /// <summary>
+        /// Prefix for PromoRedemption identifiers.
+        /// </summary>
+        public const string PromoRedemption = "prr_";
+
+        /// <summary>
         /// Prefix for request history entries.
         /// </summary>
         public const string RequestHistory = "req_";

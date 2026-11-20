@@ -199,10 +199,22 @@ namespace MyMorningNews.Core.Briefings
         /// <param name="nowUtc">Now.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Briefings composed or failed in this pass.</returns>
-        public async Task<int> ProcessQueuedAsync(DateTime nowUtc, CancellationToken token = default)
+        public Task<int> ProcessQueuedAsync(DateTime nowUtc, CancellationToken token = default)
+        {
+            return ProcessQueuedAsync(nowUtc, null, token);
+        }
+
+        /// <summary>
+        /// One queue pass limited to some tenants (or any tenant).
+        /// </summary>
+        /// <param name="nowUtc">Now.</param>
+        /// <param name="tenantIds">Only these tenants, or null for any tenant.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Briefings composed or failed in this pass.</returns>
+        public async Task<int> ProcessQueuedAsync(DateTime nowUtc, IReadOnlyCollection<string>? tenantIds, CancellationToken token = default)
         {
             await _Database.Briefings.FailAbandonedAsync(nowUtc, token).ConfigureAwait(false);
-            List<Briefing> claimed = await _Database.Briefings.ClaimQueuedAsync(nowUtc, nowUtc.AddMinutes(30), 5, token).ConfigureAwait(false);
+            List<Briefing> claimed = await _Database.Briefings.ClaimQueuedAsync(nowUtc, nowUtc.AddMinutes(30), 5, tenantIds, token).ConfigureAwait(false);
             int done = 0;
             foreach (Briefing b in claimed)
             {

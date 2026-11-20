@@ -468,6 +468,16 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// Read relevance, accuracy, feedback, and suggestion analytics.
         /// </summary>
-        AnalyticsRead
+        AnalyticsRead,
+
+        /// <summary>
+        /// Manage promotional codes, plans, and plan assignments (global administrators).
+        /// </summary>
+        PromoCodeAdmin,
+
+        /// <summary>
+        /// Redeem a promotional code and read my plan.
+        /// </summary>
+        PromoCodeRedeem
     }
 }

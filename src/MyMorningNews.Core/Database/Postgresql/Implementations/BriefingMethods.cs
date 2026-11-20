@@ -204,11 +204,15 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
         }
 
         /// <inheritdoc />
-        public async Task<List<Briefing>> ClaimQueuedAsync(DateTime nowUtc, DateTime lockedUntilUtc, int limit, CancellationToken token = default)
+        public async Task<List<Briefing>> ClaimQueuedAsync(DateTime nowUtc, DateTime lockedUntilUtc, int limit, IReadOnlyCollection<string>? tenantIds = null, CancellationToken token = default)
         {
+            bool scoped = tenantIds != null;
             string sql = "UPDATE briefings SET status = 'Composing', lockeduntilutc = $2, lastupdateutc = $1 WHERE id IN (SELECT id FROM briefings WHERE status = 'Queued' " +
-                "AND (composeafterutc IS NULL OR composeafterutc <= $1) ORDER BY createdutc FOR UPDATE SKIP LOCKED LIMIT $3) RETURNING " + BriefingQueries.Columns;
-            return await QueryAsync(sql, Map, token, DateTime.SpecifyKind(nowUtc, DateTimeKind.Utc), DateTime.SpecifyKind(lockedUntilUtc, DateTimeKind.Utc), Math.Clamp(limit, 1, 50)).ConfigureAwait(false);
+                "AND (composeafterutc IS NULL OR composeafterutc <= $1) " + (scoped ? "AND tenantid = ANY($4) " : String.Empty) +
+                "ORDER BY composeafterutc NULLS FIRST, createdutc FOR UPDATE SKIP LOCKED LIMIT $3) RETURNING " + BriefingQueries.Columns;
+            List<object?> args = new List<object?> { DateTime.SpecifyKind(nowUtc, DateTimeKind.Utc), DateTime.SpecifyKind(lockedUntilUtc, DateTimeKind.Utc), Math.Clamp(limit, 1, 50) };
+            if (scoped) args.Add(tenantIds!.ToArray());
+            return await QueryAsync(sql, Map, token, args.ToArray()).ConfigureAwait(false);
         }
 
         /// <inheritdoc />

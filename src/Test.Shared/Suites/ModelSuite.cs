@@ -431,7 +431,8 @@ namespace Test.Shared.Suites
             {
                 TenantId = e.TenantId, Task = ModelTaskEnum.QueryPlanning, ModelEndpointId = e.Id, UserPrompt = "no system prompt"
             }, token).ConfigureAwait(false);
-            List<string> sent = StubModelServer.Shared.Requests.Skip(before).ToList();
+            // Other suites share the stub server; keep only this test's two requests.
+            List<string> sent = StubModelServer.Shared.Requests.Skip(before).Where(b => b.Contains("Write me a Python web scraper", StringComparison.Ordinal) || b.Contains("no system prompt", StringComparison.Ordinal)).ToList();
             Assert.True(sent.Count >= 2, "requests captured");
             foreach (string body in sent)
             {

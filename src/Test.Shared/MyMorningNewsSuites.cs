@@ -35,7 +35,8 @@ namespace Test.Shared
                     BriefingSuite.Create(),
                     MediaSuite.Create(),
                     EmailSuite.Create(),
-                    LearningSuite.Create()
+                    LearningSuite.Create(),
+                    PromoSuite.Create()
                 };
             }
         }

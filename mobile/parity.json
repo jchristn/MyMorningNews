@@ -51,10 +51,14 @@
     {
       "route": "/home",
       "group": "Start",
-      "status": "planned",
-      "phase": "Phase 10",
+      "status": "implemented",
       "screen": "app/(app)/today/index.jsx",
-      "notes": "Today merges the dashboard Home and Today pages. The analytics overview and runs panels need GET /v1.0/api/analytics/overview, which the server does not have yet; the per-page analytics are under Insights."
+      "api": [
+        "GET /v1.0/api/analytics/overview",
+        "GET /v1.0/api/editions",
+        "GET /v1.0/api/briefings"
+      ],
+      "notes": "Today merges the dashboard Home and Today pages. At a glance shows the overview tiles for the last 30 days (runs with completed and failed, findings shown and rated, relevance precision, prediction accuracy with resolved and open, and feedback with how much carried a reason) and links to Insights; it stays out of the way on a server without the overview. Recent topic run briefings stand in for the runs panel."
     },
     {
       "route": "/today",
@@ -187,10 +191,12 @@
       "screen": "app/(app)/today/findings/index.jsx",
       "api": [
         "GET /v1.0/api/findings",
+        "PUT /v1.0/api/findings/{id}",
+        "DELETE /v1.0/api/findings/{id}",
         "GET /v1.0/api/feedback",
         "POST /v1.0/api/feedback"
       ],
-      "notes": "Ranked across topics with tier and minimum score filters; also per topic in the workspace. Each row has inline rating chips with the current rating (one feedback read per list)."
+      "notes": "Ranked across topics with tier and minimum score filters, Pinned only (pinned=true), and Show hidden (includeHidden=true); also per topic in the workspace. Rows show Pinned and Hidden badges. Each row has inline rating chips with the current rating (one feedback read per list) and a More button whose menu pins or unpins, hides or unhides, and deletes after a second tap to confirm; the change applies to the list at once (on tablets also from the detail beside it)."
     },
     {
       "route": "/findings/:id",
@@ -199,11 +205,13 @@
       "screen": "app/(app)/today/findings/[findingId].jsx",
       "api": [
         "GET /v1.0/api/findings/{id}",
+        "PUT /v1.0/api/findings/{id}",
+        "DELETE /v1.0/api/findings/{id}",
         "GET /v1.0/api/feedback",
         "POST /v1.0/api/feedback",
         "DELETE /v1.0/api/feedback/{id}"
       ],
-      "notes": "Tier, score, why it matters, the score breakdown (SVG bars), and the verified evidence quotes with their sources. Relevant, Somewhat, or Not relevant with the current rating selected, and the why sheet (reason, change, retract), on channel Mobile."
+      "notes": "Tier, score, Pinned and Hidden badges, why it matters, the score breakdown (SVG bars), and the verified evidence quotes, each with Open the source for its link (the detail carries the source, so GET /v1.0/api/evidence/{id} is not needed). Pin or Unpin, Hide or Unhide (a hidden finding says it is left out of lists, briefings, and emails), and Delete after a second tap to confirm (then back to the list). Relevant, Somewhat, or Not relevant with the current rating selected, and the why sheet (reason, change, retract), on channel Mobile."
     },
     {
       "route": "/sources",
@@ -360,7 +368,7 @@
         "POST /v1.0/api/feedback",
         "DELETE /v1.0/api/feedback/{id}"
       ],
-      "notes": "Volume, reasons, and email link tiles; feedback per day, by channel (chart 11), and by target; reason themes; suggestion outcomes (chart 19); and the history filtered by target type with edit (reason in place, or a new rating), retract, and open the item."
+      "notes": "Volume, reasons, and email link tiles; feedback per day, by channel (chart 11; Dashboard, Email, This app, API, and MCP client), and by target; reason themes; suggestion outcomes (chart 19); and the history filtered by target type with edit (reason in place, or a new rating), retract, and open the item."
     },
     {
       "route": "/insights/preferences",

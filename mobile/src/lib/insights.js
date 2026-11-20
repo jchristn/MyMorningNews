@@ -49,6 +49,8 @@ export const SUGGESTION_OUTCOMES = Object.freeze(['total', 'new', 'accepted', 'd
 export function isEmptyReport(name, report) {
   if (!report || typeof report !== 'object') return true;
   switch (name) {
+    case 'overview':
+      return !report.runs && !report.findingsShown && !report.feedbackTotal && !report.predictionsOpen && !report.predictionsResolved;
     case 'relevance':
       return !report.shown && !report.rated;
     case 'accuracy':

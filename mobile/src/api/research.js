@@ -94,12 +94,21 @@ export const runsApi = {
   results: (client, id, disposition) => client.get(routes.runResults(id), disposition ? { disposition } : undefined),
 };
 
-/** Findings with evidence (Phase 6). */
+/**
+ * Findings with evidence (Phase 6), pinned and hidden by their owner. Hidden findings are left out of lists (unless
+ * `includeHidden` is true), briefings, and emails. Deleting removes the finding and its evidence links (204); shared
+ * evidence and sources stay, and ratings of it stay in the feedback history.
+ */
 export const findingsApi = {
-  /** Filters: `topicId`, `runId`, `tier`, `minScore`, `category`, `dimensionId`. */
+  /** Filters: `topicId`, `runId`, `tier`, `minScore`, `category`, `dimensionId`, `includeHidden`, `pinned`. */
   list: (client, query) => client.get(routes.findings, query),
   /** `{ finding, evidence: [{ evidence, sourceUrl, sourceTitle, sourceDomain, sourcePublishedUtc, role }], dimension, topicName }` */
   get: (client, id) => client.get(routes.finding(id)),
+  /** FindingUpdateRequest `{ pinned?, hidden? }` (at least one); returns the updated Finding. */
+  update: (client, id, body) => client.put(routes.finding(id), body),
+  pin: (client, id, pinned) => client.put(routes.finding(id), { pinned: Boolean(pinned) }),
+  hide: (client, id, hidden) => client.put(routes.finding(id), { hidden: Boolean(hidden) }),
+  remove: (client, id) => client.delete(routes.finding(id)),
 };
 
 /** Fetched sources (Phase 6). */
@@ -202,11 +211,17 @@ export const learningApi = {
 };
 
 /** The analytics reports (Phase 10). */
-export const ANALYTICS_REPORTS = ['relevance', 'accuracy', 'feedback', 'suggestions', 'reasons', 'quality'];
+export const ANALYTICS_REPORTS = ['overview', 'relevance', 'accuracy', 'feedback', 'suggestions', 'reasons', 'quality'];
 
 /** Insights (Phase 10). Each report takes `{ topicId?, from?, to? }` and defaults to my data for the last 90 days. */
 export const insightsApi = {
   analytics: (client, name, query) => client.get(routes.analytics(name), query),
+  /**
+   * Headline numbers (OverviewReport): runs (with completed, partially succeeded, and failed), findings shown and
+   * rated, relevance precision, briefings, emails, predictions open and resolved with accuracy and mean Brier,
+   * feedback (with a reason), suggestions, quote failure rate, and model calls and cost. Rates are 0 to 1 or null.
+   */
+  overview: (client, query) => client.get(routes.analytics('overview'), query),
   learnedPreferences: (client, query) => client.get(routes.learnedPreferences, query),
 };
 

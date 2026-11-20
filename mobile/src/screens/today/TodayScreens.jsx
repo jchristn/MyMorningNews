@@ -15,6 +15,7 @@ import { useResource } from '@/state/useResource';
 import { useTheme } from '@/theme/ThemeContext';
 import { spacing } from '@/theme/palette';
 import { ItemCard } from '../common/DetailScreen';
+import { TodayOverview } from '../insights/InsightsScreens';
 import { ResourceListScreen } from '../common/ResourceListScreen';
 import { BriefingDetail } from './BriefingDetail';
 
@@ -99,8 +100,8 @@ export function ComposeStatus({ compose }) {
 }
 
 /**
- * Today (plan section 35.3): the latest ready edition briefing with Compose now and status polling, recent topic run
- * briefings, a new one-time request, and shortcuts to briefings, findings, predictions, suggestions, and requests.
+ * Today (plan section 35.3, and the dashboard Home): the latest ready edition briefing with Compose now and status
+ * polling, recent topic run briefings, the overview tiles for the last 30 days, a new one-time request, and shortcuts to briefings, findings, predictions, suggestions, and requests.
  */
 export function TodayScreen() {
   const p = useTheme();
@@ -156,6 +157,7 @@ export function TodayScreen() {
           </>
         )}
       </ResourceView>
+      <TodayOverview />
       <SectionHeader title={t('mobile.today.ask')} />
       <Card>
         <ListRow icon="sparkles-outline" title={t('mobile.requests.new')} detail={t('mobile.requests.newHint')} onPress={() => router.push('/today/new-request')} testID="today-new-request" />

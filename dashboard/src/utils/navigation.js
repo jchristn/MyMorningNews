@@ -93,7 +93,7 @@ export const NAV_GROUPS = [
       { path: 'models', key: 'models', icon: Cpu, access: 'all' },
       { path: 'prompts', key: 'prompts', icon: WandSparkles, access: 'all' },
       { path: 'credentials-vault', key: 'vault', icon: KeyRound, access: 'all' },
-      { path: 'search-providers', key: 'searchProviders', icon: Search, access: 'all', phase: 5 },
+      { path: 'search-providers', key: 'searchProviders', icon: Search, access: 'all' },
       { path: 'mcp-servers', key: 'mcpServers', icon: Plug, access: 'tenantAdmin' },
       { path: 'mcp', key: 'mcp', icon: Bot, access: 'all' },
       { path: 'voices', key: 'voices', icon: Mic, access: 'all' },

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
+import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext.jsx';
 import useClientConfig from '../../hooks/useClientConfig.js';
@@ -14,6 +15,47 @@ import TurnstileWidget from './TurnstileWidget.jsx';
 export const MIN_PASSWORD = 8;
 const TERMS_URL = 'https://mymorningnews.ai/terms.html';
 const PRIVACY_URL = 'https://mymorningnews.ai/privacy.html';
+
+const TERMS_MARK = '\u0001';
+const PRIVACY_MARK = '\u0002';
+
+// The consent sentence with its two links. The translated sentence carries markers where the links go, so each
+// language can order the words its own way.
+export function ConsentText({ sentence, terms, privacy }) {
+  const parts = [];
+  let text = '';
+  for (const ch of String(sentence)) {
+    if (ch === TERMS_MARK || ch === PRIVACY_MARK) {
+      if (text) parts.push(text);
+      parts.push(ch);
+      text = '';
+    } else {
+      text += ch;
+    }
+  }
+  if (text) parts.push(text);
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (part === TERMS_MARK)
+          return (
+            <a key={i} href={TERMS_URL} target="_blank" rel="noreferrer">
+              {terms}
+            </a>
+          );
+        if (part === PRIVACY_MARK)
+          return (
+            <a key={i} href={PRIVACY_URL} target="_blank" rel="noreferrer">
+              {privacy}
+            </a>
+          );
+        return part;
+      })}
+    </>
+  );
+}
+
+ConsentText.propTypes = { sentence: PropTypes.string.isRequired, terms: PropTypes.string.isRequired, privacy: PropTypes.string.isRequired };
 
 // Public sign-up (POST /v1.0/public/signup). The server answers the same way whether or not the email already has
 // an account, so the page always ends on "check your email" (or "sign in" when verification is off).
@@ -104,14 +146,7 @@ export default function SignupPage() {
         <label className="auth-check small" htmlFor="signup-terms">
           <input id="signup-terms" type="checkbox" checked={form.acceptTerms} onChange={set('acceptTerms')} />
           <span>
-            {t('auth.signup.acceptTerms')}{' '}
-            <a href={TERMS_URL} target="_blank" rel="noreferrer">
-              {t('auth.signup.terms')}
-            </a>{' '}
-            {t('auth.signup.and')}{' '}
-            <a href={PRIVACY_URL} target="_blank" rel="noreferrer">
-              {t('auth.signup.privacy')}
-            </a>
+            <ConsentText terms={t('auth.signup.termsLink')} privacy={t('auth.signup.privacyLink')} sentence={t('auth.signup.consent', { terms: TERMS_MARK, privacy: PRIVACY_MARK })} />
           </span>
         </label>
         <label className="auth-check small" htmlFor="signup-age">

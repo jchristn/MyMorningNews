@@ -28,6 +28,7 @@ import ConstraintEditor from './ConstraintEditor.jsx';
 import DeliverySettings from './DeliverySettings.jsx';
 import DimensionList from './DimensionList.jsx';
 import TopicSchedules from './TopicSchedules.jsx';
+import TopicSearchProviders from './TopicSearchProviders.jsx';
 import useTopicActions from './useTopicActions.jsx';
 import { TopicContextForm } from './wizard/ContentSteps.jsx';
 
@@ -224,7 +225,7 @@ export default function TopicWorkspace() {
               onUpserted={(c) => setDetail((x) => ({ ...x, constraints: upsert(x.constraints, c) }))}
               onRemoved={(rid) => setDetail((x) => ({ ...x, constraints: x.constraints.filter((c) => c.id !== rid) }))}
             />
-            <div className="notice notice-info">{t('topics.workspace.searchProvidersLater')}</div>
+            <TopicSearchProviders topicId={topic.id} />
             <AgenticSearchSettings topic={topic} onTopicUpdated={setTopic} />
           </div>
         ) : null}

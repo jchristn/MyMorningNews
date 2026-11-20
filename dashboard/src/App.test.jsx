@@ -80,9 +80,9 @@ describe('routing guards', () => {
     await waitFor(() => expect(location()).toBe('/dashboard/explorer'));
   });
 
-  it('shows the phase placeholder for routes that arrive later', async () => {
+  it('opens pages that used to be placeholders', async () => {
     renderApp('/dashboard/search-providers', fakeClient(), { signedIn: true });
-    expect(await screen.findByText('Arrives in Phase 5')).toBeInTheDocument();
+    expect(await screen.findByText('No search providers')).toBeInTheDocument();
   });
 
   it('blocks members from admin-only pages', async () => {

@@ -1979,8 +1979,7 @@
       "noBrief": "No brief yet. Refine the topic to draft one.",
       "dimensions": "Dimensions",
       "brief": "Brief and audience",
-      "sourcesHelp": "Feeds and seed pages are read on every run, alongside web search.",
-      "searchProvidersLater": "Choosing search providers per topic arrives with the search providers page."
+      "sourcesHelp": "Feeds and seed pages are read on every run, alongside web search."
     },
     "agentic": {
       "title": "Agentic search",
@@ -3812,17 +3811,16 @@
       "closed": "Sign-up is not open on this server. Ask an administrator for an account.",
       "displayName": "Your name",
       "codeHelp": "Optional. A promotional code you were given.",
-      "acceptTerms": "I accept the",
-      "terms": "terms of service",
-      "and": "and the",
-      "privacy": "privacy policy",
       "confirmAge": "I am at least {age} years old.",
       "create": "Create account",
       "creating": "Creating your account...",
       "checkEmailTitle": "Check your email",
       "checkEmail": "We sent a link to {email}. Open it to confirm your address, then sign in.",
       "readyTitle": "Your account is ready",
-      "ready": "Sign in to create your first topic."
+      "ready": "Sign in to create your first topic.",
+      "consent": "I accept the {terms} and the {privacy}.",
+      "termsLink": "terms of service",
+      "privacyLink": "privacy policy"
     },
     "verify": {
       "title": "Confirm your email",
@@ -3895,6 +3893,63 @@
     "delete": {
       "title": "Remove this MCP server?",
       "message": "Remove {name} and its tools? Topics that allowed them stop using them."
+    }
+  },
+  "searchProviders": {
+    "about": "Search providers are where research looks for pages. Default providers are used by every topic that has not chosen its own. Tavily and You.com need an API key in the vault.",
+    "never": "Never",
+    "columns": {
+      "name": "Name",
+      "kind": "Kind",
+      "default": "Default",
+      "lastTest": "Last test",
+      "status": "Status"
+    },
+    "kinds": {
+      "Searxng": "SearXNG",
+      "Tavily": "Tavily",
+      "YouCom": "You.com",
+      "Rss": "RSS feeds",
+      "HackerNews": "Hacker News",
+      "Arxiv": "arXiv",
+      "HostedModelWebSearch": "Hosted model web search"
+    },
+    "empty": {
+      "title": "No search providers",
+      "message": "Add a provider so research has somewhere to search."
+    },
+    "form": {
+      "createTitle": "Add a search provider",
+      "editTitle": "Edit search provider",
+      "endpoint": "Endpoint",
+      "endpointHelp": "The SearXNG base URL, such as http://searxng:8080 inside Docker.",
+      "credential": "API key",
+      "credentialHelp": "A vault credential holding the provider's API key.",
+      "maxResults": "Results per query",
+      "timeoutMs": "Timeout (ms)",
+      "defaultHelp": "Used by topics that have not chosen their own providers."
+    },
+    "test": {
+      "action": "Test",
+      "title": "Test a search provider",
+      "run": "Run test",
+      "query": "Query",
+      "feeds": "Feed URLs",
+      "feedsHelp": "One RSS or Atom feed URL per line.",
+      "ok": "Working",
+      "failed": "Failed",
+      "results": "Results",
+      "noResults": "No results came back."
+    },
+    "delete": {
+      "title": "Delete this search provider?",
+      "message": "Delete {name}? Topics that chose it stop using it."
+    },
+    "topic": {
+      "title": "Search providers",
+      "help": "Choose where this topic searches. Leave it on the defaults to follow the tenant's default providers.",
+      "none": "No search providers are set up yet.",
+      "useDefaults": "Use the defaults"
     }
   }
 }

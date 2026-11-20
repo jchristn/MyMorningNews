@@ -51,6 +51,7 @@ const VIEWS = {
   email: lazy(() => import('./views/EmailView.jsx')),
   mcp: lazy(() => import('./views/McpView.jsx')),
   mcpServers: lazy(() => import('./views/McpServersView.jsx')),
+  searchProviders: lazy(() => import('./views/SearchProvidersView.jsx')),
   insightsOverview: lazy(() => import('./views/insights/OverviewView.jsx')),
   emailInsights: lazy(() => import('./views/insights/EmailInsightsView.jsx')),
   relevance: lazy(() => import('./views/insights/RelevanceView.jsx')),

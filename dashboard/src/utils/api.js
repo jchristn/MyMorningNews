@@ -967,6 +967,31 @@ export class ApiClient {
     return this._request('POST', '/v1.0/api/account/delete');
   }
 
+  // Search providers (Phase 5) and the providers one topic uses (empty means the tenant defaults).
+  listSearchProviders(query) {
+    return this._request('GET', '/v1.0/api/search-providers', { query });
+  }
+  createSearchProvider(body) {
+    return this._request('POST', '/v1.0/api/search-providers', { body });
+  }
+  updateSearchProvider(id, body) {
+    return this._request('PUT', '/v1.0/api/search-providers/' + enc(id), { body });
+  }
+  deleteSearchProvider(id) {
+    return this._request('DELETE', '/v1.0/api/search-providers/' + enc(id));
+  }
+  // Resolves to { providerId, kind, success, error, durationMs, hits }.
+  testSearchProvider(id, body) {
+    return this._request('POST', '/v1.0/api/search-providers/' + enc(id) + '/test', { body: body || {} });
+  }
+  listTopicSearchProviders(topicId) {
+    return this._request('GET', '/v1.0/api/topics/' + enc(topicId) + '/search-providers');
+  }
+  // body: [{ searchProviderId, enabled, maxResults }]; an empty list goes back to the tenant defaults.
+  setTopicSearchProviders(topicId, body) {
+    return this._request('PUT', '/v1.0/api/topics/' + enc(topicId) + '/search-providers', { body });
+  }
+
   // MCP tool servers for agentic research.
   listMcpServers(query) {
     return this._request('GET', '/v1.0/api/mcp-servers', { query });

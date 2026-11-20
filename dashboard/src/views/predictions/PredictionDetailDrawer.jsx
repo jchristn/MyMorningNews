@@ -11,6 +11,7 @@ import { describeError } from '../../utils/errors.js';
 import CopyableId from '../../components/CopyableId.jsx';
 import DateCell from '../../components/DateCell.jsx';
 import ErrorState from '../../components/ErrorState.jsx';
+import FeedbackControl from '../../components/FeedbackControl.jsx';
 import JsonViewerModal from '../../components/JsonViewerModal.jsx';
 import KeyValueGrid from '../../components/KeyValueGrid.jsx';
 import LoadingState from '../../components/LoadingState.jsx';
@@ -148,6 +149,10 @@ export default function PredictionDetailDrawer({ predictionId, topicLabel, onClo
           </div>
           <h3 className="finding-title">{p.statement}</h3>
           {p.rationale ? <p className="finding-text">{p.rationale}</p> : null}
+          <div className="feedback-row">
+            <span className="muted small">{t('feedbackControl.isAccurate')}</span>
+            <FeedbackControl targetType="Prediction" targetId={p.id} />
+          </div>
           <KeyValueGrid
             rows={[
               { key: 'confidence', label: t('predictions.columns.confidence'), value: f.percent(p.confidence, 0) },

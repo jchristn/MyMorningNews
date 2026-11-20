@@ -9,6 +9,7 @@ import { PREDICTION_STATUSES } from '../../utils/enums.js';
 import CopyableId from '../../components/CopyableId.jsx';
 import DataTable from '../../components/DataTable.jsx';
 import DateCell from '../../components/DateCell.jsx';
+import FeedbackControl, { useFeedbackMap } from '../../components/FeedbackControl.jsx';
 import JsonViewerModal from '../../components/JsonViewerModal.jsx';
 import StatusBadge from '../../components/StatusBadge.jsx';
 import PredictionDetailDrawer, { PredictionStatusBadge, isOverdue } from './PredictionDetailDrawer.jsx';
@@ -47,6 +48,7 @@ export default function PredictionsTable({ topicId = null, tableKey = 'predictio
   const topicNames = useMemo(() => new Map(topics.map((x) => [x.id, x.name])), [topics]);
   const extraFilters = useMemo(() => ({ topicId: topicId || undefined }), [topicId]);
   const fetchPage = useCallback((q) => apiClient.listPredictions(pagedQuery(q)), [apiClient]);
+  const [ratings, setRating] = useFeedbackMap('Prediction', topicId);
 
   const columns = [
     {
@@ -89,6 +91,12 @@ export default function PredictionsTable({ topicId = null, tableKey = 'predictio
             render: (r) => <span className="truncate">{topicNames.get(r.topicId) || r.topicId}</span>
           }
         ]),
+    {
+      key: 'rating',
+      header: t('predictions.columns.rating'),
+      pinned: true,
+      render: (r) => (ratings ? <FeedbackControl targetType="Prediction" targetId={r.id} current={ratings.get(r.id) || null} onChange={setRating} compact label={t('feedbackControl.rateItem', { title: r.statement })} /> : null)
+    },
     { key: 'createdUtc', header: t('predictions.columns.created'), sortKey: 'createdUtc', defaultHidden: true, render: (r) => <DateCell value={r.createdUtc} /> },
     { key: 'id', header: t('predictions.columns.id'), defaultHidden: true, className: 'cell-id', render: (r) => <CopyableId value={r.id} /> }
   ];

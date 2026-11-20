@@ -49,10 +49,12 @@ describe('BriefingReader', () => {
     expect(cites[0]).toHaveAttribute('href', '#briefing-cite-1');
     expect(document.getElementById('briefing-cite-2')).toHaveTextContent('Evals improve');
     expect(screen.getByRole('link', { name: 'Open finding' })).toHaveAttribute('href', '/dashboard/findings/fnd_1');
-    expect(screen.getByRole('link', { name: 'Open prediction' })).toHaveAttribute('href', '/dashboard/predictions?prediction=prd_1');
+    expect(screen.getByRole('link', { name: 'Open prediction' })).toHaveAttribute('href', '/dashboard/predictions?id=prd_1');
     expect(screen.getByText('morning-news.html')).toBeInTheDocument();
     expect(document.querySelector('[data-slot="audio-player"]')).toBeInTheDocument();
-    expect(document.querySelectorAll('[data-slot="section-feedback"]').length).toBe(1);
+    expect(document.querySelectorAll('.section-feedback').length).toBe(1);
+    expect(screen.getByRole('group', { name: 'Rate the section Top of the news' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Rate this Finding' })).toBeInTheDocument();
   });
 
   it('never renders raw HTML from the Markdown', async () => {

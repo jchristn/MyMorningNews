@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Download, FileCode, FileText, MessageSquare, Pin, PinOff, Play, RefreshCw, Trash2 } from 'lucide-react';
+import { ArrowLeft, Download, FileCode, FileText, Pin, PinOff, Play, RefreshCw, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -10,6 +10,7 @@ import useInterval from '../../hooks/useInterval.js';
 import { citationAnchor, itemHref, matchSections, saveBlob, sectionAnchor, splitBriefingMarkdown } from '../../utils/briefing.js';
 import { ACTIVE_BRIEFING_STATUSES } from '../../utils/enums.js';
 import { describeError } from '../../utils/errors.js';
+import { FEEDBACK_ACTIONS } from '../../utils/feedback.js';
 import ConfirmModal from '../../components/ConfirmModal.jsx';
 import CopyableId from '../../components/CopyableId.jsx';
 import DateCell from '../../components/DateCell.jsx';
@@ -17,27 +18,13 @@ import EmptyState from '../../components/EmptyState.jsx';
 import ErrorState from '../../components/ErrorState.jsx';
 import LoadingState from '../../components/LoadingState.jsx';
 import PageHeader from '../../components/PageHeader.jsx';
+import FeedbackControl from '../../components/FeedbackControl.jsx';
 import StatusBadge from '../../components/StatusBadge.jsx';
 import BriefingAudio from './BriefingAudio.jsx';
 import BriefingMarkdown, { scrollToAnchor } from './BriefingMarkdown.jsx';
 import useBriefingActions, { BriefingKindBadge, BriefingStatusBadge } from './briefingParts.jsx';
 
 const POLL_MS = 3000;
-
-// Placeholder for features whose backend arrives later. Marked with data-slot so the later phase can find it.
-export function UpcomingSlot({ slot, icon: Icon, title, message, compact = false }) {
-  return (
-    <div className={'upcoming-slot' + (compact ? ' compact' : '')} data-slot={slot}>
-      <Icon size={compact ? 13 : 16} aria-hidden="true" />
-      <span>
-        <strong>{title}</strong>
-        {message ? <span className="muted small"> {message}</span> : null}
-      </span>
-    </div>
-  );
-}
-
-UpcomingSlot.propTypes = { slot: PropTypes.string.isRequired, icon: PropTypes.elementType.isRequired, title: PropTypes.string.isRequired, message: PropTypes.string, compact: PropTypes.bool };
 
 // The outline: one entry per section, with how many findings, predictions, and suggestions it carries. While audio
 // plays, the section being read is highlighted; sections with a chapter offer Listen from here.
@@ -84,6 +71,8 @@ Outline.propTypes = {
   chapterSections: PropTypes.instanceOf(Set),
   onListen: PropTypes.func
 };
+
+const FEEDBACK_TYPES = ['Finding', 'Prediction', 'Suggestion'];
 
 // Findings, predictions, and suggestions the briefing used, grouped by section, with links to each.
 function ItemList({ items, sections }) {
@@ -132,6 +121,7 @@ function ItemList({ items, sections }) {
                       {t('briefings.reader.open.' + item.itemType)}
                     </Link>
                   ) : null}
+                  {FEEDBACK_TYPES.includes(item.itemType) ? <FeedbackControl targetType={item.itemType} targetId={item.itemId} compact label={t('feedbackControl.rateType', { type: t('enums.briefingItemType.' + item.itemType) })} /> : null}
                 </li>
               );
             })}
@@ -386,7 +376,12 @@ export default function BriefingReader({ briefingId }) {
               sections={sections}
               currentSectionId={speakingSectionId}
               sectionExtra={(chunk) =>
-                chunk.section && chunk.section.source !== 'citations' ? <UpcomingSlot slot="section-feedback" compact icon={MessageSquare} title={t('briefings.slots.feedbackTitle')} message={t('briefings.slots.feedbackMessage')} /> : null
+                chunk.section && chunk.section.source !== 'citations' ? (
+                  <div className="feedback-row section-feedback">
+                    <span className="muted small">{t('feedbackControl.sectionPrompt')}</span>
+                    <FeedbackControl targetType="BriefingSection" targetId={chunk.section.id} actions={FEEDBACK_ACTIONS.Finding} compact label={t('feedbackControl.rateSection', { section: chunk.section.heading || '' })} />
+                  </div>
+                ) : null
               }
             />
           ) : (

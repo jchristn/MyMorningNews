@@ -627,6 +627,9 @@ export class ApiClient {
   listSuggestions(query) {
     return this._request('GET', '/v1.0/api/suggestions', { query });
   }
+  getSuggestion(id) {
+    return this._request('GET', '/v1.0/api/suggestions/' + enc(id));
+  }
   setSuggestionStatus(id, status, snoozedUntilUtc) {
     return this._request('PUT', '/v1.0/api/suggestions/' + enc(id) + '/status', { body: { status, snoozedUntilUtc: status === 'Snoozed' ? snoozedUntilUtc || null : null } });
   }

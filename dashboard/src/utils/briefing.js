@@ -112,9 +112,9 @@ export function itemHref(item) {
     case 'Finding':
       return '/dashboard/findings/' + id;
     case 'Prediction':
-      return '/dashboard/predictions?prediction=' + id;
+      return '/dashboard/predictions?id=' + id;
     case 'Suggestion':
-      return '/dashboard/suggestions';
+      return '/dashboard/suggestions?id=' + id;
     default:
       return null;
   }

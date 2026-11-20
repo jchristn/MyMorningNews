@@ -540,7 +540,15 @@
       "telemetry": "Telemetry",
       "pipeline": "Research pipeline",
       "diagnostics": "Diagnostics",
-      "models": "Models"
+      "models": "Models",
+      "push": "Push notifications",
+      "storage": "Storage",
+      "scheduler": "Scheduler",
+      "search": "Search",
+      "tts": "Text to speech",
+      "email": "Email",
+      "learning": "Learning",
+      "hosting": "Hosting"
     },
     "fields": {
       "rest_hostname": "Hostname",
@@ -2305,7 +2313,8 @@
       "topic": "Topic",
       "published": "Published",
       "found": "Found",
-      "id": "ID"
+      "id": "ID",
+      "rating": "Your rating"
     },
     "detail": {
       "title": "Finding",
@@ -2348,7 +2357,8 @@
       "brier": "Brier score",
       "topic": "Topic",
       "created": "Created",
-      "id": "ID"
+      "id": "ID",
+      "rating": "Your grade"
     },
     "actions": {
       "resolve": "Resolve",
@@ -2425,7 +2435,8 @@
       "priorityEffort": "Priority and effort",
       "topic": "Topic",
       "created": "Created",
-      "id": "ID"
+      "id": "ID",
+      "rating": "Your rating"
     },
     "actions": {
       "accept": "Accept",
@@ -2525,10 +2536,6 @@
       "files": "Files",
       "period": "Covers",
       "readMinutes": "{minutes} min read"
-    },
-    "slots": {
-      "feedbackTitle": "Feedback",
-      "feedbackMessage": "Rating this section arrives in Phase 10."
     },
     "delete": {
       "title": "Delete briefing",
@@ -3242,6 +3249,305 @@
       "codeHelp": "A code you were given. A code for the plan you already have starts when the current one ends.",
       "redeem": "Redeem",
       "redeemed": "Code redeemed. You now have {plan}."
+    }
+  },
+  "email": {
+    "memberNotice": "You see the email sent to you. Administrators see every message.",
+    "resend": "Resend",
+    "resent": "Sent again to {recipient}",
+    "columns": {
+      "time": "Time",
+      "template": "Template",
+      "recipient": "Recipient",
+      "subject": "Subject",
+      "status": "Status",
+      "attempts": "Attempts",
+      "sent": "Sent",
+      "topic": "Topic",
+      "providerId": "Provider ID"
+    },
+    "statuses": {
+      "Queued": "Queued",
+      "Sending": "Sending",
+      "Sent": "Sent",
+      "Failed": "Failed",
+      "Suppressed": "Suppressed",
+      "Skipped": "Skipped"
+    },
+    "templates": {
+      "RunDigest": "Run digest",
+      "BriefingPublished": "Briefing published",
+      "RunFailed": "Run failed",
+      "PreferenceProposal": "Preference proposal",
+      "Test": "Test"
+    },
+    "chart": {
+      "title": "Messages per day by status",
+      "subtitle": "The last {days} days",
+      "empty": "No email in this window."
+    },
+    "empty": {
+      "title": "No email sent yet",
+      "message": "Email appears here after runs, briefings, and tests."
+    },
+    "delete": {
+      "title": "Delete email",
+      "message": "Delete \"{subject}\" to {recipient} from the outbox?"
+    },
+    "preview": {
+      "title": "Email",
+      "runButton": "Email preview",
+      "runTitle": "Run email preview",
+      "to": "To {recipient}",
+      "format": "Format",
+      "html": "Rendered",
+      "text": "Plain text",
+      "frame": "Rendered email",
+      "noHtml": "This message has no HTML body.",
+      "noText": "This message has no plain text body."
+    },
+    "test": {
+      "button": "Send test email",
+      "sent": "Test email queued for {recipient}",
+      "failed": "The test email could not be sent: {message}",
+      "settingsHelp": "Save your changes first, then send yourself a test."
+    }
+  },
+  "emailPrefs": {
+    "title": "Email preferences",
+    "address": "Email goes to {address}.",
+    "saved": "Email preferences saved",
+    "categories": {
+      "runEmails": "Run emails",
+      "briefingEmails": "Briefing emails",
+      "failureEmails": "Failure emails"
+    },
+    "help": {
+      "runEmails": "A digest after each run of your topics.",
+      "briefingEmails": "When an edition or run briefing is published.",
+      "failureEmails": "When a run fails."
+    },
+    "unsubscribedTitle": "Topics you unsubscribed from",
+    "noUnsubscribed": "You get run email for every topic that sends it.",
+    "resubscribeHelp": "To get run email for one of these again, use the link in its last email."
+  },
+  "feedbackControl": {
+    "rate": "Rate this",
+    "rateItem": "Rate {title}",
+    "rateType": "Rate this {type}",
+    "rateSection": "Rate the section {section}",
+    "sectionPrompt": "Was this section relevant?",
+    "isRelevant": "Was this relevant?",
+    "isAccurate": "How did this prediction do?",
+    "isUseful": "Was this useful?",
+    "why": "Why?",
+    "whyHelp": "Optional. Your reasons teach the research which items to keep or drop.",
+    "whyTitle": "Why this rating?",
+    "whyAdd": "Add why",
+    "whyEdit": "Edit why",
+    "ratedAs": "Rated {rating}",
+    "retract": "Retract rating",
+    "actions": {
+      "relevant": "Relevant",
+      "somewhat": "Somewhat",
+      "not-relevant": "Not relevant",
+      "accurate": "Accurate",
+      "partially": "Partially",
+      "inaccurate": "Inaccurate",
+      "too-early": "Too early",
+      "useful": "Useful",
+      "not-useful": "Not useful",
+      "none": "with no rating"
+    }
+  },
+  "insights": {
+    "noData": "No data for this range yet.",
+    "withCount": "{label} ({count})",
+    "scope": {
+      "days": "{count, plural, one {# day} other {# days}}",
+      "topic": "Topic",
+      "allTopics": "All topics",
+      "everyone": "Everyone in the tenant"
+    },
+    "topic": {
+      "last90": "Last 90 days"
+    },
+    "relevance": {
+      "precision": "Precision",
+      "precisionHelp": "Rated findings marked relevant or somewhat",
+      "coverage": "Coverage",
+      "coverageHelp": "Shown findings that got any rating",
+      "shown": "Findings shown",
+      "rated": "Findings rated",
+      "byDay": "Precision over time",
+      "byDayHelp": "Per day, from the ratings given that day",
+      "byTopic": "Precision by topic",
+      "byTier": "Precision by tier",
+      "byDomain": "Precision by source domain",
+      "byDomainHelp": "The 20 domains with the most ratings",
+      "byDimension": "Precision by dimension"
+    },
+    "quality": {
+      "failureRate": "Evidence verification failures",
+      "quotes": "{count, plural, one {# quote checked} other {# quotes checked}}",
+      "byModel": "Verification failure rate by model",
+      "byModelHelp": "Share of extracted quotes that did not match the stored source text"
+    },
+    "accuracy": {
+      "rate": "Accuracy rate",
+      "rateHelp": "Accurate plus half of partially accurate, over resolved",
+      "brier": "Mean Brier score",
+      "due": "Due for review",
+      "dueHelp": "Horizon passed with no resolution",
+      "resolved": "Resolved",
+      "ofTotal": "{open} open of {total}",
+      "unresolvable": "Unresolvable",
+      "agreement": "Agent agreement",
+      "agreementHelp": "{count, plural, one {Across # decided review} other {Across # decided reviews}}",
+      "latency": "Time to resolve",
+      "days": "{count, plural, one {# day} other {# days}}",
+      "calibration": "Calibration curve",
+      "calibrationHelp": "Stated confidence against how often predictions came true",
+      "byTopic": "Accuracy by topic",
+      "byTopicHelp": "Accuracy rate per topic over resolved predictions"
+    },
+    "feedback": {
+      "total": "Feedback items",
+      "withReason": "With a reason",
+      "withoutReason": "Without a reason",
+      "share": "{share} of all",
+      "emailOpens": "Email link opens",
+      "emailSubmits": "Email link submits",
+      "submitRate": "{rate} of opens",
+      "byDay": "Feedback volume by day",
+      "byDayHelp": "Ratings given per day, split by whether they carry a reason",
+      "byChannel": "Feedback by channel",
+      "byTarget": "Feedback by item type",
+      "listTitle": "Every feedback item",
+      "includeHistory": "Include superseded ratings",
+      "noReason": "No reason given",
+      "current": "Current",
+      "superseded": "Superseded",
+      "editWhy": "Edit why",
+      "saved": "Reason saved",
+      "retractTitle": "Retract this rating",
+      "retractMessage": "Retract this rating? An earlier rating on the same item, if any, becomes current again.",
+      "retracted": "Rating retracted",
+      "emptyTitle": "No feedback yet",
+      "emptyMessage": "Rate findings, predictions, and suggestions to teach the research what matters to you.",
+      "columns": {
+        "when": "When",
+        "target": "Item",
+        "rating": "Rating",
+        "reason": "Reason",
+        "channel": "Channel",
+        "current": "State"
+      },
+      "targetTypes": {
+        "Finding": "Finding",
+        "Prediction": "Prediction",
+        "PredictionReview": "Prediction review",
+        "Suggestion": "Suggestion",
+        "SourceItem": "Source",
+        "Domain": "Domain",
+        "Briefing": "Briefing",
+        "BriefingSection": "Briefing section",
+        "LearnedPreference": "Learned preference"
+      },
+      "channels": {
+        "Dashboard": "Dashboard",
+        "Email": "Email",
+        "Mobile": "Mobile app",
+        "Api": "API"
+      }
+    },
+    "reasons": {
+      "title": "Reason themes",
+      "help": "Themes tagged from your reasons, with the last 30 days in brackets",
+      "tagRecent": "{tag} [{recent}]",
+      "byWeek": "Reason themes by week"
+    },
+    "suggestions": {
+      "title": "Suggestion outcomes",
+      "decision": "Mean {days} days to a decision",
+      "outcomes": {
+        "new": "Still new ({share})",
+        "accepted": "Accepted ({share})",
+        "done": "Done ({share})",
+        "snoozed": "Snoozed ({share})",
+        "dismissed": "Dismissed ({share})"
+      }
+    },
+    "preferences": {
+      "statement": "Preference",
+      "statementHelp": "One plain sentence, such as: Skip vendor funding announcements.",
+      "kind": "Kind",
+      "origin": "Origin",
+      "confidence": "Confidence",
+      "supportCount": "Supporting feedback",
+      "decided": "Decided",
+      "allTopics": "Every topic",
+      "topicHelp": "Leave empty to apply it to every topic.",
+      "writeOwn": "Write your own",
+      "createTitle": "Write a preference",
+      "createHelp": "Preferences you write are active at once and are given to the research with your topics.",
+      "editTitle": "Edit preference",
+      "detailTitle": "Learned preference",
+      "supportTitle": "{count, plural, =0 {Supporting feedback} one {# supporting feedback item} other {# supporting feedback items}}",
+      "noSupport": "No feedback is linked to this preference.",
+      "learnFor": "Learn from",
+      "chooseTopic": "Choose a topic",
+      "learnNow": "Learn now",
+      "learning": "Learning...",
+      "learned": "{count, plural, =0 {Learning pass finished with no new proposals} one {# new proposal to review} other {# new proposals to review}}",
+      "emptyTitle": "No learned preferences yet",
+      "emptyMessage": "Proposals appear after you rate a few items with reasons, or write your own.",
+      "deleteTitle": "Delete preference",
+      "deleteMessage": "Delete \"{statement}\"? It stops shaping your research.",
+      "statuses": {
+        "Proposed": "Proposed",
+        "Active": "Active",
+        "Rejected": "Rejected",
+        "Disabled": "Disabled"
+      },
+      "origins": {
+        "Distilled": "Learned",
+        "User": "Written by you"
+      },
+      "kinds": {
+        "Prefer": "Prefer",
+        "Avoid": "Avoid",
+        "PreferSource": "Prefer a source",
+        "AvoidSource": "Avoid a source",
+        "StyleNote": "Style note"
+      },
+      "actions": {
+        "accept": "Accept",
+        "reject": "Reject",
+        "disable": "Disable",
+        "enable": "Enable"
+      },
+      "changed": {
+        "accept": "Preference accepted",
+        "reject": "Preference rejected",
+        "disable": "Preference disabled",
+        "enable": "Preference enabled"
+      }
+    },
+    "ranking": {
+      "title": "Ranking recommendation",
+      "rated": "{count, plural, one {From # rated finding} other {From # rated findings}}",
+      "apply": "Apply these weights",
+      "applyTitle": "Apply recommended weights",
+      "applyMessage": "Use the recommended ranking weights for {topic}? Future runs score findings with them.",
+      "applied": "Weights applied",
+      "notStored": "The server did not store the weights for this topic.",
+      "notEnough": "Rate more findings on this topic before the recommendation is reliable.",
+      "component": "Component",
+      "current": "Current",
+      "recommended": "Recommended",
+      "separation": "Separation",
+      "help": "Separation is how far apart relevant and not relevant findings score on each component. Components that separate them better get more weight."
     }
   }
 }

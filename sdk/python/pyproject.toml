@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mymorningnews-sdk"
+version = "0.1.0a0"
+description = "Python SDK for the My Morning News REST API"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Lattice AI LLC" }]
+dependencies = ["requests>=2.31.0,<3"]
+keywords = ["my morning news", "research", "briefings", "sdk"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://mymorningnews.ai"
+Repository = "https://github.com/jchristn/MyMorningNews"
+
+[tool.setuptools]
+py-modules = ["mymorningnews_sdk"]

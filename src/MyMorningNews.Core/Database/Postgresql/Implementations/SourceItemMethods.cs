@@ -179,6 +179,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
         public async Task<EnumerationResult<SourceItem>> ListForTopicsAsync(string tenantId, string? userId, string? topicId, string? runId, string? search, int pageNumber, int pageSize, CancellationToken token = default)
         {
             if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            Stopwatch sw = Stopwatch.StartNew();
             List<object?> args = new List<object?> { tenantId };
             List<string> inner = new List<string> { "r.tenantid = $1", "r.sourceitemid IS NOT NULL" };
             if (!String.IsNullOrWhiteSpace(userId))
@@ -211,7 +212,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             List<SourceItem> items = await QueryAsync("SELECT " + cols + " FROM sourceitems s WHERE " + where + " ORDER BY s.createdutc DESC, s.id DESC LIMIT $" + (args.Count - 1) + " OFFSET $" + args.Count, Map, token, args.ToArray()).ConfigureAwait(false);
             foreach (SourceItem i in items) i.ContentText = null;
             long count = total.FirstOrDefault();
-            return new EnumerationResult<SourceItem> { Items = items, PageNumber = page, PageSize = size, TotalCount = count, TotalPages = Math.Max(1, (int)Math.Ceiling(count / (double)size)) };
+            return new EnumerationResult<SourceItem> { Items = items, PageNumber = page, PageSize = size, TotalCount = count, TotalPages = count == 0 ? 0 : (int)Math.Ceiling(count / (double)size), DurationMs = Math.Round(sw.Elapsed.TotalMilliseconds, 2) };
         }
 
         /// <summary>

@@ -210,6 +210,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 args.Add(filter.TopicId);
                 clauses.Add("topicid = $" + args.Count);
             }
+            if (filter.TenantOnly == true) clauses.Add("topicid IS NULL");
             if (filter.Role.HasValue)
             {
                 args.Add(filter.Role.Value.ToString());

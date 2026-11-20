@@ -40,7 +40,7 @@ namespace MyMorningNews.Server.Routes
             const string a = "/v1.0/api/admin/promo-codes";
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, a, ListAsync, null, openApiMetadata: Paged(Doc("List promotional codes with usage", "Promotional codes", "Global administrators only. status: active, disabled, notstarted, expired, or exhausted.")
                 .WithParameter(QueryParam("status", typeof(string)))
-                .WithParameter(QueryParam("enabled", typeof(bool))).WithParameter(QueryParam("planId", typeof(string))).WithParameter(QueryParam("batchId", typeof(string))).WithParameter(QueryParam("search", typeof(string)))));
+                .WithParameter(QueryParam("enabled", typeof(bool))).WithParameter(QueryParam("planId", typeof(string))).WithParameter(QueryParam("batchId", typeof(string)))));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, a, CreateAsync, null, openApiMetadata: Doc("Create a promotional code", "Promotional codes").WithRequestBody(Body<PromoCodeUpsertRequest>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, a + "/generate", GenerateAsync, null, openApiMetadata: Doc("Generate promotional codes in bulk", "Promotional codes").WithRequestBody(Body<PromoCodeGenerateRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, a + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read a promotional code with usage", "Promotional codes"));

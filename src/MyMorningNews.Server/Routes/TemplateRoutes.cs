@@ -2,6 +2,7 @@ namespace MyMorningNews.Server.Routes
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
@@ -34,7 +35,7 @@ namespace MyMorningNews.Server.Routes
             ArgumentNullException.ThrowIfNull(webserver);
             const string b = "/v1.0/api/briefing-templates";
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, b, ListAsync, null, openApiMetadata: Paged(Doc("List briefing templates I can use", "Templates", "Shared tenant templates plus my own.")
-                .WithParameter(QueryParam("scope", typeof(string))).WithParameter(QueryParam("search", typeof(string)))));
+                .WithParameter(QueryParam("scope", typeof(string)))));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b, CreateAsync, null, openApiMetadata: Doc("Create (import) a template from Markdown", "Templates").WithRequestBody(Body<TemplateCreateRequest>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b + "/validate", ValidateAsync, null, openApiMetadata: Doc("Validate template Markdown without saving", "Templates")
                 .WithRequestBody(Body<TemplateValidateRequest>()));
@@ -53,6 +54,7 @@ namespace MyMorningNews.Server.Routes
             if (!await AuthorizeAsync(ctx, RequestTypeEnum.TemplateRead).ConfigureAwait(false)) return;
             string? tenantId = await RequireTenantAsync(ctx).ConfigureAwait(false);
             if (tenantId == null) return;
+            Stopwatch sw = Stopwatch.StartNew();
             RequestContext rc = Context(ctx);
             BriefingTemplateFilter filter = new BriefingTemplateFilter { TenantId = tenantId, PageSize = 1000 };
             List<BriefingTemplate> all = (await Server.Database.BriefingTemplates.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false)).Items
@@ -73,7 +75,8 @@ namespace MyMorningNews.Server.Routes
                 PageNumber = paging.PageNumber,
                 PageSize = paging.PageSize,
                 TotalCount = all.Count,
-                TotalPages = Math.Max(1, (int)Math.Ceiling(all.Count / (double)paging.PageSize))
+                TotalPages = all.Count == 0 ? 0 : (int)Math.Ceiling(all.Count / (double)paging.PageSize),
+                DurationMs = Math.Round(sw.Elapsed.TotalMilliseconds, 2)
             }).ConfigureAwait(false);
         }
 

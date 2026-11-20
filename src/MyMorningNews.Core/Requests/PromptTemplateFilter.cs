@@ -29,6 +29,11 @@ namespace MyMorningNews.Core.Requests
         public bool? IsCustomized { get; set; } = null;
 
         /// <summary>
+        /// True for tenant prompts only (no topic overrides). Null or false for both.
+        /// </summary>
+        public bool? TenantOnly { get; set; } = null;
+
+        /// <summary>
         /// Match Active exactly when set.
         /// </summary>
         public bool? Active { get; set; } = null;

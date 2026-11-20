@@ -180,7 +180,7 @@ namespace MyMorningNews.Server.Services
                 case JsonException:
                     status = 400; error = "BadRequest"; message = "The request body is not valid JSON."; break;
                 case ArgumentException ae:
-                    status = 400; error = "ValidationFailed"; message = ae.Message; break;
+                    status = 400; error = "ValidationFailed"; message = ValidationMessage(ae); break;
                 case KeyNotFoundException knf:
                     status = 404; error = "NotFound"; message = String.IsNullOrWhiteSpace(knf.Message) || knf.Message.StartsWith("The given key", StringComparison.Ordinal) ? "The requested resource was not found." : knf.Message; break;
                 case ConflictException ce:
@@ -224,6 +224,18 @@ namespace MyMorningNews.Server.Services
             ctx.Response.Headers.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
             ctx.Response.Headers.Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Api-Key, X-Token, X-Email, X-Password, X-Tenant-Guid, X-Access-Key, X-Secret-Key, X-Date, X-Nonce, X-Signature, X-Request, Accept-Language, Range");
             ctx.Response.Headers.Set("Access-Control-Expose-Headers", "X-Request-Id, Content-Disposition, Content-Range, Accept-Ranges, Content-Length, ETag");
+        }
+
+        private static string ValidationMessage(ArgumentException ex)
+        {
+            string message = ex.Message;
+            if (!String.IsNullOrEmpty(ex.ParamName))
+            {
+                string suffix = " (Parameter '" + ex.ParamName + "')";
+                if (message.EndsWith(suffix, StringComparison.Ordinal)) message = message.Substring(0, message.Length - suffix.Length);
+            }
+
+            return message;
         }
 
         private static string? Trim(string? value, int max)

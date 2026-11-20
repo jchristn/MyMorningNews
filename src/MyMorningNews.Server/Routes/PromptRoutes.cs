@@ -49,10 +49,9 @@ namespace MyMorningNews.Server.Routes
             if (!await AuthorizeAsync(ctx, RequestTypeEnum.PromptRead).ConfigureAwait(false)) return;
             string? tenantId = await RequireTenantAsync(ctx).ConfigureAwait(false);
             if (tenantId == null) return;
-            PromptTemplateFilter filter = new PromptTemplateFilter { TenantId = tenantId, Key = Query(ctx, "key"), TopicId = Query(ctx, "topicId"), Role = QueryEnum<ModelTaskEnum>(ctx, "role"), IsCustomized = QueryBool(ctx, "isCustomized"), PageSize = 100, SortBy = "key", SortDirection = SortDirectionEnum.Ascending };
+            PromptTemplateFilter filter = new PromptTemplateFilter { TenantId = tenantId, Key = Query(ctx, "key"), TopicId = Query(ctx, "topicId"), Role = QueryEnum<ModelTaskEnum>(ctx, "role"), IsCustomized = QueryBool(ctx, "isCustomized"), TenantOnly = QueryBool(ctx, "tenantOnly"), PageSize = 100, SortBy = "key", SortDirection = SortDirectionEnum.Ascending };
             ApplyPaging(ctx, filter);
             EnumerationResult<PromptTemplate> page = await Server.Database.PromptTemplates.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false);
-            if (QueryBool(ctx, "tenantOnly") == true) page.Items = page.Items.Where(t => t.TopicId == null).ToList();
             await SendJsonAsync(ctx, 200, page).ConfigureAwait(false);
         }
 

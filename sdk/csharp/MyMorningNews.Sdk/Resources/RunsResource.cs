@@ -119,6 +119,20 @@ namespace MyMorningNews.Sdk.Resources
         }
 
         /// <summary>
+        /// A run's agentic tool calls (web_search, fetch_url, and MCP tools), in call order. Empty for runs without agentic
+        /// search.
+        /// </summary>
+        /// <param name="id">Run identifier.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The tool calls.</returns>
+        /// <exception cref="ArgumentNullException">id is null or empty.</exception>
+        /// <exception cref="MyMorningNewsException">The server returned an error (404 when the run is not found).</exception>
+        public Task<List<RunToolCall>> ListToolCallsAsync(string id, CancellationToken token = default)
+        {
+            return Client.SendAsync<List<RunToolCall>>(HttpMethod.Get, "/v1.0/api/runs/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/tool-calls", null, null, token);
+        }
+
+        /// <summary>
         /// A run's model calls, oldest first (payloads are left out).
         /// </summary>
         /// <param name="id">Identifier.</param>

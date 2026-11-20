@@ -168,6 +168,22 @@ export interface TenantChoice {
     name: string;
 }
 
+/** HTTP 402 `CapReached`: a plan limit was reached. */
+export declare class CapReachedError extends MyMorningNewsError {
+    constructor(message: string, info: ErrorInfo);
+    /** Limit key, for example `topics.max`, `runs.daily.max`, `usage.monthlyCostUsd.max`, `audio.enabled`, `endpoints.custom`. */
+    key: string | null;
+    /** The plan's value for the limit, for example `1` or `false`. */
+    limit: string | null;
+    /** When the limit resets, or null when it does not reset on a schedule. */
+    resetUtc: Date | null;
+}
+
+/** Raised by `login` for HTTP 403 `EmailNotVerified`: confirm the email address first. */
+export declare class EmailNotVerifiedError extends MyMorningNewsError {
+    constructor(message: string, info: ErrorInfo);
+}
+
 // ---------------------------------------------------------------------------------------------------------------------
 // Models
 // ---------------------------------------------------------------------------------------------------------------------
@@ -269,8 +285,103 @@ export interface Topic extends Record_ {
     weightRecency: number | null;
     seedQueries: string[];
     briefingTemplateId: string | null;
+    /** Agentic search: the research model searches and reads pages itself. Default false. */
+    agenticSearch: boolean;
+    /** MCP tool IDs (`mct_...`) allowed in agentic search. Empty allows every enabled tool. */
+    mcpToolIds: string[];
     lastRunUtc: string | null;
     lastRefinedUtc: string | null;
+}
+
+export type McpTransport = 'StreamableHttp' | 'Sse';
+
+export interface McpServer extends Record_ {
+    name: string;
+    url: string;
+    transport: McpTransport;
+    vaultCredentialId?: string | null;
+    headerName: string;
+    headerPrefix: string;
+    enabled: boolean;
+    toolCount: number;
+    lastDiscoveredUtc?: string | null;
+    lastError?: string | null;
+}
+
+export interface McpServerTool extends Record_ {
+    mcpServerId: string;
+    name: string;
+    description?: string | null;
+    /** JSON schema of the arguments, as text. */
+    inputSchema?: string | null;
+    /** New tools start disabled. */
+    enabled: boolean;
+}
+
+export interface McpServerDetail {
+    server: McpServer;
+    tools: McpServerTool[];
+}
+
+export interface McpServerUpsertRequest {
+    name?: string;
+    url?: string;
+    transport?: McpTransport;
+    /** Empty string removes the credential. */
+    vaultCredentialId?: string;
+    headerName?: string;
+    headerPrefix?: string;
+    enabled?: boolean;
+}
+
+export interface McpServerTestResult {
+    success: boolean;
+    toolCount?: number;
+    tools?: string[];
+    error?: string;
+}
+
+export interface RunToolCall extends Record_ {
+    runId: string;
+    topicId: string;
+    tool: string;
+    argumentsSummary?: string | null;
+    succeeded: boolean;
+    errorMessage?: string | null;
+    resultCharacters: number;
+    durationMs: number;
+    sortOrder: number;
+}
+
+/** A null or missing limit means unlimited. */
+export interface UsageMeter {
+    planKey: string;
+    planName: string;
+    monthToDateCostUsd: number;
+    monthlyCostCapUsd?: number | null;
+    costUsedFraction?: number | null;
+    resetUtc: string;
+    topics: number;
+    topicsMax?: number | null;
+    runsToday: number;
+    runsDailyMax?: number | null;
+    scheduleMinIntervalMinutes?: number | null;
+    audioMinutes: number;
+    audioMinutesMax?: number | null;
+    audioEnabled: boolean;
+    customEndpoints: boolean;
+}
+
+export interface SignupRequest {
+    email: string;
+    password: string;
+    acceptTerms: boolean;
+    confirmAge: boolean;
+    displayName?: string;
+    timeZone?: string;
+    locale?: string;
+    promoCode?: string;
+    turnstileToken?: string;
 }
 
 export interface TopicDimension extends Record_ {
@@ -327,6 +438,9 @@ export interface TopicUpsertRequest {
     weightNovelty?: number;
     weightSource?: number;
     weightRecency?: number;
+    agenticSearch?: boolean;
+    /** IDs that do not start with `mct_` are dropped. */
+    mcpToolIds?: string[];
     seedQueries?: string[];
 }
 
@@ -1183,6 +1297,8 @@ export declare class RunsResource extends ResourceGroup {
     follow(id: string, onEvent?: (event: RunEvent) => void, options?: { signal?: AbortSignal; maxReconnects?: number }): Promise<Run>;
     /** Paged, oldest first unless sortDirection is given. */
     llmCalls(id: string, options?: ListOptions): Promise<EnumerationResult<LlmCall>>;
+    /** Agentic tool calls in call order. 404 for an unknown run. */
+    toolCalls(id: string): Promise<RunToolCall[]>;
     emailPreview(id: string): Promise<any>;
     cancel(id: string): Promise<Run>;
     /** Polls `GET /runs/{id}` until a terminal status. Rejects with code `Timeout`. */
@@ -1443,6 +1559,31 @@ export declare class DevicesResource extends ResourceGroup {
 export declare class AccountResource extends ResourceGroup {
     plan(): Promise<EffectivePlan>;
     redeem(code: string): Promise<EffectivePlan>;
+    /** Needs a signed-in user, not an access key. */
+    usage(): Promise<UsageMeter>;
+    /** ZIP of JSON and Markdown. */
+    export(options?: { signal?: AbortSignal }): Promise<DownloadResult>;
+    /** 202; signing in again before `purgeAfterUtc` cancels it. 409 for administrators and protected accounts. */
+    delete(): Promise<{ purgeAfterUtc: string; message: string }>;
+    /** Public. Always 202 with the same body; 404 `SignupClosed` when sign-up is off. */
+    signup(body: SignupRequest): Promise<{ message: string; verificationRequired: boolean }>;
+    /** Public. 400 when the link is not valid, used, or expired. */
+    verifyEmail(token: string): Promise<{ verified: boolean; email: string }>;
+    /** Public. Always 202. */
+    resendVerification(email: string): Promise<{ message: string }>;
+    /** Public. Always 202. */
+    forgotPassword(email: string): Promise<{ message: string }>;
+    /** Public. Signs out every session. */
+    resetPassword(token: string, password: string): Promise<{ reset: boolean; email: string }>;
+}
+
+export declare class McpServersResource extends CrudResource<McpServer, McpServerDetail, McpServerUpsertRequest> {
+    list(options?: ListOptions & { enabled?: boolean }): Promise<EnumerationResult<McpServer>>;
+    /** HTTP 200 even when the connection fails (`success: false`). */
+    test(id: string): Promise<McpServerTestResult>;
+    /** New tools start disabled. 502 `McpServerUnavailable` when unreachable. */
+    discover(id: string): Promise<McpServerDetail>;
+    setToolEnabled(id: string, toolId: string, enabled: boolean): Promise<McpServerTool>;
 }
 
 export declare class SettingsResource extends ResourceGroup {
@@ -1503,6 +1644,7 @@ export declare class MyMorningNewsClient {
     readonly vault: VaultResource;
     readonly devices: DevicesResource;
     readonly account: AccountResource;
+    readonly mcpServers: McpServersResource;
     readonly settings: SettingsResource;
     readonly publicApi: PublicResource;
 

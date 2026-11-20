@@ -116,6 +116,22 @@ try {
 }
 ```
 
+Two codes have their own subclasses:
+
+| Class | When | Extra properties |
+|-------|------|------------------|
+| `CapReachedError` | 402 `CapReached`: a plan limit was hit (topics, daily runs, monthly model cost, audio minutes, custom endpoints, shortest schedule). | `key` (for example `topics.max`), `limit` (the plan's value as text), `resetUtc` (`Date` or `null`) |
+| `EmailNotVerifiedError` | 403 `EmailNotVerified` from `login`: a publicly signed-up account has not confirmed its email. | none; call `account.resendVerification` or `account.verifyEmail` |
+
+```js
+try {
+    await client.topics.create({ name: 'Another topic' });
+} catch (err) {
+    if (err instanceof CapReachedError) console.log('Limit ' + err.key + ' (' + err.limit + ') resets ' + (err.resetUtc ?? 'never'));
+    else throw err;
+}
+```
+
 ## Lists and pagination
 
 List methods take `pageNumber`, `pageSize`, `sortBy`, `sortDirection` (`Ascending` or `Descending`), `search`, `fromUtc`, `toUtc` (strings or `Date`), and the typed filters of each route. They return `{ items, pageNumber, pageSize, totalCount, totalPages, durationMs }`.
@@ -227,7 +243,7 @@ await client.schedules.update(s.id, { enabled: false });
 
 ### runs
 
-`list({ topicId, status, trigger })`, `get`, `start(topicId, { dryRun })`, `stages`, `queries`, `results(id, { disposition })`, `llmCalls(id, options)` (paged, oldest first), `emailPreview`, `cancel`, `retry(id, { fromStage })`, `events(id, { signal })`, `follow(id, onEvent)`, `wait`, and `RunsResource.isTerminal(status)`.
+`list({ topicId, status, trigger })`, `get`, `start(topicId, { dryRun })`, `stages`, `queries`, `results(id, { disposition })`, `llmCalls(id, options)` (paged, oldest first), `toolCalls(id)` (agentic tool calls in order), `emailPreview`, `cancel`, `retry(id, { fromStage })`, `events(id, { signal })`, `follow(id, onEvent)`, `wait`, and `RunsResource.isTerminal(status)`.
 
 ### findings, evidence, sources
 
@@ -387,6 +403,22 @@ await client.devices.remove(d.id);
 
 const plan = await client.account.plan();
 await client.account.redeem('WELCOME'); // 409 PromoCodeInvalid with details.reason when it cannot be redeemed
+const meter = await client.account.usage(); // { planKey, topics, topicsMax, runsToday, runsDailyMax, monthToDateCostUsd, resetUtc, ... }
+const zip = await client.account.export(); // DownloadResult with a ZIP of my data
+const { purgeAfterUtc } = await client.account.delete(); // 202; signing in again before then cancels it
+```
+
+The public account routes send no credentials: `account.signup({ email, password, acceptTerms, confirmAge, displayName, timeZone, promoCode })` (always 202 with `{ message, verificationRequired }`; 404 `SignupClosed` when sign-up is off), `account.verifyEmail(token)`, `account.resendVerification(email)`, `account.forgotPassword(email)`, and `account.resetPassword(token, password)`.
+
+### mcpServers
+
+The MCP server registry for agentic research: `list({ enabled })`, `get(id)` (`{ server, tools }`), `create({ name, url, transport, vaultCredentialId, headerName, headerPrefix, enabled })`, `update`, `remove`, `test(id)` (HTTP 200 with `success: false` when the server is unreachable), `discover(id)` (saves the tools; new tools start disabled; 502 `McpServerUnavailable` when unreachable), and `setToolEnabled(id, toolId, enabled)`. Topics take `agenticSearch` and `mcpToolIds` (IDs that do not start with `mct_` are dropped).
+
+```js
+const s = await client.mcpServers.create({ name: 'Docs', url: 'https://mcp.example.com/mcp' });
+const { tools } = await client.mcpServers.discover(s.id);
+await client.mcpServers.setToolEnabled(s.id, tools[0].id, true);
+await client.topics.update(topicId, { agenticSearch: true, mcpToolIds: [tools[0].id] });
 ```
 
 Control-plane administration (tenants, users, credentials, roles, permissions, assignments), promotional code and plan administration, audit, and request history are in the C# SDK only. `client.request(...)` can reach them when needed.
@@ -414,6 +446,8 @@ npm test                                         # same harness
 Cases that trigger real research runs or model calls (refinement generation, one-time requests, a dry run with `runs.wait`, the prompt lab, and briefing audio) are skipped unless `--with-run` is given, because the model endpoint of a live stack can cost money. The edition compose and preview cases run on an edition with no active topics, and the harness asserts that composing it made no model calls.
 
 The access key and signed request cases create and delete temporary credentials through `client.request` against the control plane, so they need an administrator. The signed request cases also check a known signature vector offline, check a replayed nonce and a bad signature are rejected, and check that the credential stops working once deleted. The run stream cases parse a canned event stream offline (split chunks, CR and LF line endings, comments, multi-line data, UTF-8 split across chunks) and drive `events` and `follow` against a fake fetch; the live case checks 404, 409, and 400 without queuing anything and replays a finished run when one exists. It skips when the server does not have the events route yet. Finding edit cases skip when the server has no findings; they restore each finding's pinned and hidden flags afterwards and never delete real findings.
+
+The plan limit case creates a user, grants it the Free plan, reads `account.usage`, downloads `account.export`, expects `CapReachedError` on the topic past the limit, and deletes then restores the account by signing in again. The sign-up case opens `Hosting.PublicSignupEnabled` through the settings API (and restores the original settings afterward, even on failure), signs up, expects `EmailNotVerifiedError` at sign-in, reads the verification and reset link tokens from the personal tenant's outbox with an access key it creates as the administrator, verifies, resets the password, and deletes the personal tenant. It skips when the setting is pinned by an environment variable. The MCP case runs a small fake MCP server on 127.0.0.1 (initialize and tools/list only; no tool is ever called) and skips the discovery part when the server cannot reach it, for example from a container.
 
 ## Requirements
 

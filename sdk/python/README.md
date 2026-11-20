@@ -1,6 +1,6 @@
 # My Morning News Python SDK
 
-A Python client for the My Morning News REST API. It covers topics and the refinement wizard, one-time research requests, schedules, runs, findings, sources, predictions, suggestions, feedback, learned preferences, editions, briefings, templates, prompts, audio, stored files, podcast feeds, email, analytics, usage, model endpoints, search providers, voices, the vault, devices, and the account plan.
+A Python client for the My Morning News REST API. It covers topics and the refinement wizard, one-time research requests, schedules, runs, findings, sources, predictions, suggestions, feedback, learned preferences, editions, briefings, templates, prompts, audio, stored files, podcast feeds, email, analytics, usage, model endpoints, search providers, voices, the vault, devices, the MCP server registry, and the account (plan, usage meter, data export, deletion, and the public sign-up, email verification, and password reset routes).
 
 - Single module: `mymorningnews_sdk.py`
 - Python 3.10 or later
@@ -113,7 +113,8 @@ Every non-2xx response raises a subclass of `MyMorningNewsError`:
 |--------|-----------|
 | 400 | `BadRequestError` (`BadRequest`, `ValidationFailed`) |
 | 401 | `AuthenticationError` |
-| 403 | `PermissionDeniedError` (adds `reason` and `required_permission`) |
+| 402 | `CapReachedError` for `CapReached` (adds `key`, `limit`, and `reset_utc`); `PlanLimitError`, its base class, for any other 402 |
+| 403 | `PermissionDeniedError` (adds `reason` and `required_permission`); `EmailNotVerifiedError`, a subclass, when `login` is refused because a signed-up account has not confirmed its email |
 | 404 | `NotFoundError` |
 | 409 | `ConflictError` (`TenantSelectionRequired` on login) |
 | 410 | `GoneError` (for example `ArtifactExpired`) |
@@ -135,6 +136,13 @@ try:
     client.topics.create(description="no name")
 except BadRequestError as ex:
     print(ex.code)   # ValidationFailed
+
+from mymorningnews_sdk import CapReachedError
+
+try:
+    client.topics.create(name="One topic too many")
+except CapReachedError as ex:
+    print(ex.key, ex.limit, ex.reset_utc)   # topics.max 1 None
 ```
 
 ## Pagination
@@ -259,6 +267,7 @@ client.runs.list(topic_id=tid, status="Completed")
 client.runs.get(run_id); client.runs.stages(run_id); client.runs.queries(run_id)
 client.runs.results(run_id, disposition="Fetched")
 client.runs.llm_calls(run_id)          # paged, oldest first
+client.runs.tool_calls(run_id)         # agentic tool calls (RunToolCall), in order
 client.runs.events(run_id)             # server-sent events generator
 client.runs.retry(run_id, from_stage="ComposeBriefing")
 client.runs.email_preview(run_id); client.runs.cancel(run_id); client.runs.wait(run_id)
@@ -389,6 +398,25 @@ d = client.devices.register("ExponentPushToken[...]", "ios", name="Phone")
 client.devices.test(d.id); client.devices.delete(d.id)
 
 client.account.plan(); client.account.redeem("SPRING-2026")
+meter = client.account.usage()          # UsageMeter: plan_key, topics, topics_max, runs_today, month_to_date_cost_usd, reset_utc, ...
+client.account.export().save("my-data.zip")
+client.account.delete()                 # {"purgeAfterUtc": ...}; signing in again before then cancels it
+
+# Public routes (no credentials are sent)
+anon.account.signup(email="me@example.com", password="a long passphrase", accept_terms=True, confirm_age=True)
+anon.account.verify_email(token); anon.account.resend_verification("me@example.com")
+anon.account.forgot_password("me@example.com"); anon.account.reset_password(token, "a new passphrase")
+```
+
+### mcp_servers
+
+```python
+s = client.mcp_servers.create(name="Docs", url="https://mcp.example.com/mcp", transport=McpTransport.STREAMABLE_HTTP)
+client.mcp_servers.test(s.id)                 # McpServerTestResult; success False (HTTP 200) when unreachable
+detail = client.mcp_servers.discover(s.id)    # McpServerDetail; new tools start disabled; ServerError 502 when unreachable
+client.mcp_servers.set_tool_enabled(s.id, detail.tools[0].id, True)
+client.topics.update(topic_id, agentic_search=True, mcp_tool_ids=[detail.tools[0].id])
+client.mcp_servers.list(enabled=True); client.mcp_servers.get(s.id); client.mcp_servers.delete(s.id)
 ```
 
 ### Any other route
@@ -400,6 +428,8 @@ client.request("GET", "/v1.0/api/audit", query={"page_size": 10})
 ## Test harness
 
 `test_harness.py` runs against a live server. It signs in as the admin user, creates its own data with names starting `SDK-python-`, exercises every resource group (create, read back, update, list contains it, delete, 404 after delete, and typed errors on bad requests), checks the server-sent event parser against canned lines, checks request signing against a known test vector offline and with a temporary credential on the live server (including replay and stale-date refusal), checks that the `demo@mymorningnews` user cannot see the admin's topic, and deletes everything it created. Cases that start research runs or call a paid model are skipped unless you pass `--with-run`.
+
+Three cases cover hosted accounts and the MCP registry. The plan limit case grants a new user the Free plan and checks the usage meter, the ZIP export, `CapReachedError` past the topic limit, and account deletion undone by signing in. The sign-up case opens `Hosting.PublicSignupEnabled` through the settings API and restores the original settings afterward, checks `EmailNotVerifiedError` at sign-in, reads the verification and reset links from the personal tenant's outbox through an access key the administrator creates, and deletes the personal tenant; it skips when an environment variable pins the setting. The MCP case runs a fake MCP server on 127.0.0.1 (it answers initialize and tools/list; no tool is called) and skips discovery when the server cannot reach it, for example from a container.
 
 ```bash
 ./run-tests.sh                       # macOS and Linux

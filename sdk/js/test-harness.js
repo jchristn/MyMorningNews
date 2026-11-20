@@ -14,9 +14,10 @@
  * (c) 2026 Lattice AI LLC. Released under the MIT license.
  */
 
+import { createServer } from 'node:http';
 import {
-    MyMorningNewsClient, MyMorningNewsError, TenantSelectionRequiredError, RunsResource, paginate, SDK_VERSION, DEFAULT_BASE_URL,
-    signRequest, stringToSign, SIGNATURE_ALGORITHM, parseServerSentEvents
+    MyMorningNewsClient, MyMorningNewsError, TenantSelectionRequiredError, CapReachedError, EmailNotVerifiedError, RunsResource, paginate,
+    SDK_VERSION, DEFAULT_BASE_URL, signRequest, stringToSign, SIGNATURE_ALGORITHM, parseServerSentEvents
 } from './mymorningnews-sdk.js';
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -184,6 +185,90 @@ async function poll(fn, until, timeoutMs, intervalMs = 1000) {
 }
 
 const text = (buf) => new TextDecoder('utf-8').decode(buf);
+
+/**
+ * Start a minimal Streamable HTTP MCP server on 127.0.0.1 for the registry cases. It answers initialize, ping, and
+ * tools/list with JSON, accepts notifications with 202, and lists two tools it never runs.
+ * @returns {Promise<{ url: string, toolNames: string[], requests: () => number, close: () => Promise<void> }>} Server.
+ */
+async function startFakeMcpServer() {
+    const toolNames = ['harness_echo', 'harness_time'];
+    let count = 0;
+    const server = createServer((req, res) => {
+        count++;
+        if (req.method === 'DELETE') {
+            res.writeHead(200).end();
+            return;
+        }
+        if (req.method !== 'POST') {
+            res.writeHead(405).end();
+            return;
+        }
+        let raw = '';
+        req.setEncoding('utf8');
+        req.on('data', (chunk) => { raw += chunk; });
+        req.on('end', () => {
+            let msg;
+            try {
+                msg = JSON.parse(raw);
+            } catch {
+                res.writeHead(400).end();
+                return;
+            }
+            if (msg.id === undefined || msg.id === null) {
+                res.writeHead(202).end();
+                return;
+            }
+            const reply = { jsonrpc: '2.0', id: msg.id };
+            const headers = { 'Content-Type': 'application/json' };
+            if (msg.method === 'initialize') {
+                reply.result = {
+                    protocolVersion: msg.params?.protocolVersion ?? '2025-11-25',
+                    capabilities: { tools: {} },
+                    serverInfo: { name: 'sdk-harness-fake', version: '1.0.0' }
+                };
+                headers['Mcp-Session-Id'] = 'js-' + STAMP;
+            } else if (msg.method === 'tools/list') {
+                reply.result = { tools: toolNames.map((n) => ({ name: n, description: 'Harness tool ' + n + '; never called.', inputSchema: { type: 'object', properties: {} } })) };
+            } else if (msg.method === 'ping') {
+                reply.result = {};
+            } else {
+                reply.error = { code: -32601, message: 'Method not found: ' + msg.method };
+            }
+            res.writeHead(200, headers).end(JSON.stringify(reply));
+        });
+    });
+    await new Promise((resolve, reject) => {
+        server.once('error', reject);
+        server.listen(0, '127.0.0.1', resolve);
+    });
+    const { port } = server.address();
+    return {
+        url: 'http://127.0.0.1:' + port + '/mcp',
+        toolNames,
+        requests: () => count,
+        close: () => new Promise((resolve) => {
+            server.closeAllConnections?.();
+            server.close(() => resolve());
+        })
+    };
+}
+
+/**
+ * Read the newest link token of a template from an outbox, through a client that can read that tenant's email.
+ * @param {MyMorningNewsClient} outbox Client.
+ * @param {string} template Email template.
+ * @returns {Promise<string>} Token.
+ */
+async function linkToken(outbox, template) {
+    const page = await outbox.email.list({ template, pageSize: 20 });
+    const latest = [...page.items].sort((a, b) => String(b.createdUtc).localeCompare(String(a.createdUtc)))[0];
+    assert(latest, 'a ' + template + ' email is in the outbox');
+    const full = await outbox.email.get(latest.id);
+    const m = /token=([A-Za-z0-9%_\-.~]+)/.exec(full.renderedText ?? '');
+    assert(m, 'the ' + template + ' email carries a link token');
+    return decodeURIComponent(m[1]);
+}
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Template content used by the template cases
@@ -1485,6 +1570,194 @@ async function main() {
         assert(p.features && typeof p.features === 'object', 'features');
         const err = await expectError(client.account.redeem('SDK-JS-NOPE-' + STAMP), 409, 'PromoCodeInvalid');
         assert(err.details && err.details.reason, 'reason in details');
+    });
+
+    await run('account usage, export, delete, and 402 CapReached (Free plan)', async () => {
+        if (!S.isAdmin) skip('needs an administrator to create a user and grant a plan');
+        const mine = await client.account.usage();
+        assert(typeof mine.planKey === 'string' && mine.planKey.length > 0, 'admin plan key');
+        await expectError(client.account.delete(), 409, 'Conflict');
+        const plans = await client.request('GET', '/v1.0/api/admin/plans');
+        const free = plans.find((p) => p.plan.key === 'free');
+        if (!free) skip('the server has no Free plan');
+        const tenant = OPTS.tenant;
+        const email = 'sdk-js-cap-' + STAMP + '@example.com';
+        const password = 'Harness-' + STAMP + '-pw';
+        const user = await client.request('POST', '/v1.0/tenants/' + encodeURIComponent(tenant) + '/users', {
+            body: { email, password, firstName: 'SDK', lastName: 'Harness', active: true }
+        });
+        const removeUser = async () => {
+            const eds = await client.editions.list({ userId: user.id, pageSize: 100 });
+            for (const e of eds.items.filter((x) => x.userId === user.id)) await client.editions.remove(e.id);
+            await client.request('DELETE', '/v1.0/tenants/' + encodeURIComponent(tenant) + '/users/' + encodeURIComponent(user.id));
+        };
+        onCleanup('cap user', removeUser);
+        const grant = await client.request('POST', '/v1.0/api/admin/plan-assignments', {
+            body: { tenantId: tenant, userId: user.id, planId: free.plan.id, durationDays: 1, note: 'SDK JS harness' }
+        });
+        onCleanup('cap plan assignment', () => client.request('DELETE', '/v1.0/api/admin/plan-assignments/' + encodeURIComponent(grant.id), { query: { tenantId: tenant } }));
+
+        const u = new MyMorningNewsClient({ baseUrl: OPTS.baseUrl });
+        await u.login(email, password, { tenantId: tenant });
+        const meter = await u.account.usage();
+        assertEqual(meter.planKey, 'free', 'plan key');
+        assert(typeof meter.topicsMax === 'number', 'the Free plan limits topics');
+        const zip = await u.account.export();
+        assertEqual(zip.contentType, 'application/zip', 'export content type');
+        const head = new Uint8Array(zip.data, 0, 2);
+        assert(head[0] === 0x50 && head[1] === 0x4b, 'ZIP signature');
+        const created = [];
+        try {
+            for (let i = meter.topics; i < meter.topicsMax; i++) created.push((await u.topics.create({ name: name('cap'), brief: 'Harness data; plan limit check.' })).id);
+            const err = await expectError(u.topics.create({ name: name('cap'), brief: 'Over the limit.' }), 402, 'CapReached');
+            assert(err instanceof CapReachedError, 'CapReached is a CapReachedError (got ' + err.name + ')');
+            assertEqual(err.key, 'topics.max', 'cap key');
+            assertEqual(err.limit, String(meter.topicsMax), 'cap limit');
+        } finally {
+            for (const id of created) await u.topics.remove(id);
+        }
+        const deletion = await u.account.delete();
+        assert(Date.parse(deletion.purgeAfterUtc) > Date.now(), 'purge is in the future');
+        await expectError(u.me(), 401);
+        await u.login(email, password, { tenantId: tenant });
+        assertEqual((await u.me()).id, user.id, 'signing in again keeps the account');
+        await u.logout();
+        await client.request('DELETE', '/v1.0/api/admin/plan-assignments/' + encodeURIComponent(grant.id), { query: { tenantId: tenant } });
+        await removeUser();
+    });
+
+    await run('public sign-up, EmailNotVerifiedError, verify, resend, forgot, reset', async () => {
+        if (!S.isAdmin) skip('needs an administrator to open sign-up through the settings API');
+        const current = await client.settings.get();
+        const original = JSON.parse(JSON.stringify(current.settings));
+        if (!current.settings.hosting) skip('the server has no hosting settings');
+        if ((current.fields ?? []).some((f) => f.path === 'hosting.publicSignupEnabled' && f.overriddenByEnvironment)) skip('Hosting.PublicSignupEnabled is set by the environment');
+        const anon = new MyMorningNewsClient({ baseUrl: OPTS.baseUrl });
+        const email = 'sdk-js-signup-' + STAMP + '@example.com';
+        const display = PREFIX + 'signup-' + STAMP;
+        const password = 'Harness signup ' + STAMP;
+        const body = { email, password, displayName: display, timeZone: 'UTC', acceptTerms: true, confirmAge: true };
+        const wasOpen = Boolean(current.settings.hosting.publicSignupEnabled);
+        if (!wasOpen) await expectError(anon.account.signup(body), 404, 'SignupClosed');
+
+        const restore = () => client.request('PUT', '/v1.0/api/settings', { body: original });
+        onCleanup('settings (sign-up)', restore);
+        const open = JSON.parse(JSON.stringify(current.settings));
+        Object.assign(open.hosting, { publicSignupEnabled: true, requireEmailVerification: true, signupsPerIpPerHour: 1000 });
+        const changed = await client.request('PUT', '/v1.0/api/settings', { body: open });
+        assert(changed.success, 'settings accepted');
+        try {
+            const first = await anon.account.signup(body);
+            assert(first.verificationRequired === true, 'verification required');
+            const again = await anon.account.signup(body);
+            assertEqual(again.message, first.message, 'same answer for an existing account');
+            await expectError(anon.account.signup({ ...body, email: 'x' + email, acceptTerms: false }), 400, 'ValidationFailed');
+            const blocked = await expectError(anon.login(email, password), 403, 'EmailNotVerified');
+            assert(blocked instanceof EmailNotVerifiedError, 'EmailNotVerified is an EmailNotVerifiedError (got ' + blocked.name + ')');
+            assertEqual(anon.token, null, 'no session after a refused sign-in');
+            assert((await anon.account.resendVerification(email)).message, 'resend message');
+            await anon.account.resendVerification('nobody-' + STAMP + '@example.com');
+            await anon.account.forgotPassword('nobody-' + STAMP + '@example.com');
+            await expectError(anon.account.verifyEmail('not-a-token'), 400, 'ValidationFailed');
+            await expectError(anon.account.resetPassword('not-a-token', 'a long new password'), 400, 'ValidationFailed');
+
+            const tenants = await client.request('GET', '/v1.0/tenants', { query: { pageSize: 1000 } });
+            const personal = tenants.items.find((t) => t.name === display + ' (personal)');
+            if (!personal) throw new Error('the personal tenant was not found');
+            onCleanup('personal tenant', () => client.request('DELETE', '/v1.0/tenants/' + encodeURIComponent(personal.id)));
+            assert(personal.isPersonal === true, 'personal tenant');
+            const users = await client.request('GET', '/v1.0/tenants/' + encodeURIComponent(personal.id) + '/users');
+            const signedUp = users.items.find((x) => x.email === email);
+            const key = await client.request('POST', '/v1.0/tenants/' + encodeURIComponent(personal.id) + '/credentials', {
+                body: { userId: signedUp.id, name: name('outbox'), authMode: 'Hybrid' }
+            });
+            const outbox = new MyMorningNewsClient({ baseUrl: OPTS.baseUrl, accessKey: key.credential.accessKey, secretKey: key.secretKey, tenantId: personal.id });
+
+            const verifyToken = await linkToken(outbox, 'VerifyEmail');
+            const verified = await anon.account.verifyEmail(verifyToken);
+            assert(verified.verified === true && verified.email === email, 'verified');
+            await expectError(anon.account.verifyEmail(verifyToken), 400);
+            const session = await anon.login(email, password);
+            assertEqual(session.tenantId, personal.id, 'signed in to the personal tenant');
+            const meter = await anon.account.usage();
+            assertEqual(meter.topics, 0, 'no topics yet');
+            await anon.logout();
+
+            await anon.account.forgotPassword(email);
+            const resetToken = await linkToken(outbox, 'PasswordReset');
+            await expectError(anon.account.resetPassword(resetToken, 'short'), 400);
+            const next = password + ' renewed';
+            const reset = await anon.account.resetPassword(resetToken, next);
+            assert(reset.reset === true, 'reset');
+            await expectError(anon.login(email, password), 401);
+            await anon.login(email, next);
+            await anon.logout();
+            await client.request('DELETE', '/v1.0/tenants/' + encodeURIComponent(personal.id));
+        } finally {
+            await restore();
+        }
+        if (!wasOpen) await expectError(anon.account.signup(body), 404, 'SignupClosed');
+    });
+
+    await run('mcpServers CRUD, test, discover, tools, agentic topic, run tool calls', async () => {
+        await expectError(client.mcpServers.create({ name: name('mcp') }), 400, 'ValidationFailed');
+        await expectError(client.mcpServers.create({ name: name('mcp'), url: 'ftp://127.0.0.1/mcp' }), 400, 'ValidationFailed');
+        await expectError(client.runs.toolCalls(bogus('run')), 404);
+        const runs = await client.runs.list({ pageSize: 1 });
+        if (runs.items.length > 0) {
+            const calls = await client.runs.toolCalls(runs.items[0].id);
+            assert(Array.isArray(calls) && calls.every((x) => x.runId === runs.items[0].id), 'tool calls belong to the run');
+        }
+
+        const dead = await client.mcpServers.create({ name: name('mcp-dead'), url: 'http://127.0.0.1:9/mcp', enabled: false });
+        onCleanup('mcp server (dead)', () => client.mcpServers.remove(dead.id));
+        assert(dead.id.startsWith('mcs_') && dead.enabled === false && dead.headerName === 'Authorization', 'created disabled with defaults');
+        const failed = await client.mcpServers.test(dead.id);
+        assert(failed.success === false && typeof failed.error === 'string', 'a failed test is success false');
+        await expectError(client.mcpServers.discover(dead.id), 502, 'McpServerUnavailable');
+        assert((await client.mcpServers.get(dead.id)).server.lastError, 'lastError is saved');
+        await expectError(client.mcpServers.setToolEnabled(dead.id, bogus('mct'), true), 404);
+        const disabled = await client.mcpServers.list({ enabled: false, pageSize: 100 });
+        assertPage(disabled, 'mcpServers.list');
+        assert(disabled.items.some((s) => s.id === dead.id), 'the disabled server is listed');
+        await client.mcpServers.remove(dead.id);
+        await expectError(client.mcpServers.get(dead.id), 404);
+
+        const fake = await startFakeMcpServer();
+        try {
+            const server = await client.mcpServers.create({ name: name('mcp'), url: fake.url, transport: 'StreamableHttp' });
+            onCleanup('mcp server', () => client.mcpServers.remove(server.id));
+            const renamed = await client.mcpServers.update(server.id, { name: server.name + '-renamed', headerPrefix: 'Token ' });
+            assert(renamed.name === server.name + '-renamed' && renamed.headerPrefix === 'Token ', 'updated');
+            await expectError(client.mcpServers.update(server.id, { name: ' ' }), 400, 'ValidationFailed');
+            const ok = await client.mcpServers.test(server.id);
+            if (!ok.success) skip('the server cannot reach the fake MCP server at ' + fake.url + ' (server in a container?): ' + ok.error);
+            assertEqual(ok.toolCount, fake.toolNames.length, 'tool count');
+            assertEqual((await client.mcpServers.get(server.id)).tools.length, 0, 'test saves nothing');
+            const found = await client.mcpServers.discover(server.id);
+            assertEqual(found.tools.length, fake.toolNames.length, 'discovered tools');
+            assert(found.server.lastDiscoveredUtc, 'lastDiscoveredUtc');
+            assert(found.tools.every((t) => t.enabled === false && t.id.startsWith('mct_')), 'new tools start disabled');
+            const echo = found.tools.find((t) => t.name === 'harness_echo');
+            assert((await client.mcpServers.setToolEnabled(server.id, echo.id, true)).enabled === true, 'tool enabled');
+            const again = await client.mcpServers.discover(server.id);
+            assert(again.tools.find((t) => t.name === 'harness_echo').enabled === true, 'rediscovery keeps the setting');
+
+            const topic = await client.topics.create({ name: name('agentic'), brief: 'Harness data for agentic fields; never run.', agenticSearch: true, mcpToolIds: [echo.id, 'not-a-tool-id'] });
+            onCleanup('agentic topic', () => client.topics.remove(topic.id));
+            assert(topic.agenticSearch === true, 'agenticSearch saved');
+            assert(topic.mcpToolIds.length === 1 && topic.mcpToolIds[0] === echo.id, 'mcpToolIds keeps only mct_ IDs');
+            const read = await client.topics.get(topic.id);
+            assert(read.topic.agenticSearch === true && read.topic.mcpToolIds.includes(echo.id), 'agentic fields read back');
+            const cleared = await client.topics.update(topic.id, { agenticSearch: false, mcpToolIds: [] });
+            assert(cleared.agenticSearch === false && cleared.mcpToolIds.length === 0, 'agentic fields cleared');
+            await client.topics.remove(topic.id);
+            await client.mcpServers.remove(server.id);
+            assert(fake.requests() > 0, 'the server talked to the fake MCP server');
+        } finally {
+            await fake.close();
+        }
+        await expectError(new MyMorningNewsClient({ baseUrl: OPTS.baseUrl }).mcpServers.list(), 401);
     });
 
     // ---- Topic delete and logout -----------------------------------------------------------------------------------

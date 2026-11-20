@@ -90,6 +90,24 @@ catch (MyMorningNewsException ex) when (ex.StatusCode == 404)
 | `Details` | String map, for example field errors for `ValidationFailed`, `reason` for `PromoCodeInvalid`, and `reason`, `requiredPermission`, `requestType` for 403 |
 | `ResponseBody` | Raw body |
 
+Two codes have their own subclasses of `MyMorningNewsException`:
+
+| Exception | When | Extra properties |
+|-----------|------|------------------|
+| `CapReachedException` | 402 `CapReached`: a plan limit was hit (topics, daily runs, monthly model cost, audio minutes, custom endpoints, shortest schedule) | `Key` (for example `topics.max`), `Limit` (the plan's value as text), `ResetUtc` (or null) |
+| `EmailNotVerifiedException` | 403 `EmailNotVerified` from `LoginAsync`: a publicly signed-up account has not confirmed its email | none; call `Account.ResendVerificationAsync` or `Account.VerifyEmailAsync` |
+
+```csharp
+try
+{
+    await client.Topics.CreateAsync(new TopicUpsertRequest { Name = "Another topic" });
+}
+catch (CapReachedException cap)
+{
+    Console.WriteLine("Plan limit " + cap.Key + " (" + cap.Limit + ") resets " + (cap.ResetUtc?.ToString("u") ?? "never"));
+}
+```
+
 Network failures surface as `HttpRequestException`, timeouts as `TimeoutException`.
 
 ## Pagination and filters
@@ -142,7 +160,7 @@ Unless noted, each group offers `ListAsync(options)`, `GetAsync(id)`, `CreateAsy
 | `Refinement` | `StartAsync`, `GetAsync`, `ListAsync`, `GenerateDimensionsAsync`, `GenerateQuestionsAsync`, `AnswerAsync`, `GenerateContextAsync`, `SuggestSourcesAsync`, `AcceptSourcesAsync`, `CompleteAsync`, `AbandonAsync` | `await client.Refinement.StartAsync(new RefinementStartRequest { SeedText = "..." });` |
 | `Requests` | One-time requests: `CreateAsync`, `ListAsync`, `GetAsync`, `AnswerAsync`, `ReplanAsync`, `ConfirmAsync`, `CancelAsync`, `ConvertAsync`, `DeleteAsync` | `await client.Requests.CancelAsync(id);` |
 | `Schedules` | `PreviewAsync` | `await client.Schedules.PreviewAsync(new ScheduleUpsertRequest { IntervalType = IntervalTypeEnum.Cron, CronExpression = "0 7 * * 1-5" });` |
-| `Runs` | `ListAsync`, `GetAsync`, `ListStagesAsync`, `ListQueriesAsync`, `ListResultsAsync(id, disposition)`, `ListLlmCallsAsync`, `GetEmailPreviewAsync`, `CancelAsync`, `WaitAsync` | `await client.Runs.ListStagesAsync(runId);` |
+| `Runs` | `ListAsync`, `GetAsync`, `ListStagesAsync`, `ListQueriesAsync`, `ListResultsAsync(id, disposition)`, `ListLlmCallsAsync`, `ListToolCallsAsync` (agentic tool calls in order), `GetEmailPreviewAsync`, `CancelAsync`, `WaitAsync` | `await client.Runs.ListToolCallsAsync(runId);` |
 | `Findings` | `ListAsync`, `GetAsync` (with evidence), `UpdateAsync` (pin or hide), `DeleteAsync`, `GetEvidenceAsync` | `await client.Findings.UpdateAsync(id, new FindingUpdateRequest { Pinned = true });` |
 | `Sources` | `ListAsync`, `GetAsync` | `await client.Sources.ListAsync(new SourceListOptions { RunId = runId });` |
 | `Predictions` | `ListAsync`, `GetAsync`, `ResolveAsync`, `AcceptReviewAsync`, `RejectReviewAsync` | `await client.Predictions.ResolveAsync(id, new PredictionResolveRequest { Status = PredictionStatusEnum.Accurate });` |
@@ -165,7 +183,8 @@ Unless noted, each group offers `ListAsync(options)`, `GetAsync(id)`, `CreateAsy
 | `Voices` | `TestAsync` (returns audio as `DownloadResult`) | `await client.Voices.TestAsync(id, new VoiceTestRequest { Text = "Hello." });` |
 | `Vault` | `RevealAsync` (audited), `GetUsageAsync` | `await client.Vault.GetUsageAsync(id);` |
 | `Devices` | `ListAsync`, `RegisterAsync`, `DeleteAsync`, `TestAsync` | `await client.Devices.RegisterAsync(new DeviceRegisterRequest { ExpoPushToken = "ExponentPushToken[...]", Platform = "ios" });` |
-| `Account` | `GetPlanAsync`, `RedeemAsync(code)`, `CheckPromoCodeAsync(code)` | `EffectivePlan plan = await client.Account.GetPlanAsync();` |
+| `Account` | `GetPlanAsync`, `RedeemAsync(code)`, `CheckPromoCodeAsync(code)`, `GetUsageAsync` (the usage meter), `ExportAsync` and `ExportToAsync` (ZIP of my data), `DeleteAsync` (202 with `PurgeAfterUtc`; signing in again cancels it). Public, sent without credentials: `SignUpAsync`, `VerifyEmailAsync(token)`, `ResendVerificationAsync(email)`, `ForgotPasswordAsync(email)`, `ResetPasswordAsync(token, password)` | `UsageMeter meter = await client.Account.GetUsageAsync();` |
+| `McpServers` | MCP server registry for agentic research: `ListAsync(McpServerListOptions { Enabled })`, `GetAsync` (with tools), `CreateAsync`, `UpdateAsync`, `DeleteAsync`, `TestAsync` (200 with `Success` false when unreachable), `DiscoverAsync` (new tools start disabled; 502 `McpServerUnavailable`), `SetToolEnabledAsync(id, toolId, enabled)` | `await client.McpServers.DiscoverAsync(id);` |
 | `Admin` | Sub-groups below | `await client.Admin.Users.ListAsync("default");` |
 
 `Admin` holds `Tenants`, `Users` (tenant ID first, plus `GetEffectivePermissionsAsync`), `Credentials` (create returns the secret once; `GetEffectivePermissionsAsync`), `Roles`, `Permissions` (no read by ID on the server), `Assignments` (`ListUserAssignmentsAsync`, `CreateUserAssignmentAsync`, `DeleteUserAssignmentAsync`, `ListCredentialScopesAsync`, `CreateCredentialScopeAsync`, `DeleteCredentialScopeAsync`), `PromoCodes` (`GenerateAsync`, `DeleteAsync(id, force)`, `ListRedemptionsAsync`, `RevokeRedemptionAsync`, `ApplyAsync`), `Plans` (`ListAsync`, `CreateAsync`, `UpdateAsync`), `PlanAssignments` (`ListAsync(tenantId, userId)`, `CreateAsync`, `DeleteAsync(id, tenantId)`), `Audit` (`DeleteOlderThanAsync`), `RequestHistory` (`DeleteManyAsync`, `GetSummaryAsync`), and `Settings` (`GetAsync`, `UpdateAsync(JsonObject)`, `RestartAsync`).
@@ -198,6 +217,6 @@ Arguments: `--base-url`, `--email`, `--password`, `--tenant`, `--with-run`, `--v
 
 The harness follows the SharpAI SDK test layout: `TestEnvironment` (settings), `ApiDetails` and `TestResult` (step and case records), `Helpers` (assertions and typed-error checks), `Fixtures` (shared setup), `CleanupRegistry` (deletes anything a failed case leaves behind), `Tests/TestBase`, and one class per case in `Tests/`. It prints `PASS`, `FAIL`, or `SKIP` with the case name and milliseconds, then a summary, and exits non-zero on any failure or failed cleanup. Every name it creates starts with `SDK-csharp-`, and it never prints tokens or secrets.
 
-There are 36 cases. Three run offline (the signed-request known vector, tolerant enums and JSON shape, list option formatting). The live cases cover health, login and logout, typed errors, topics and their children, cross-user isolation (the `demo@mymorningnews` member cannot see the administrator's topic), refinement, schedules, runs, findings, sources, predictions, suggestions, preferences and feedback, editions, briefings, templates, prompts, media and artifacts, feed tokens, email, analytics, usage, model endpoints and calls, search providers, voices, vault, devices, account, and administration (tenants, users, roles, permissions, assignments, credentials with access key login, promotional codes with limits and forced delete, plans, audit, request history, settings). Model endpoints, search providers, and voices point at an unreachable local address so nothing is billed. Cases for routes that a server may not have yet (signed requests, overview and email analytics, finding edits) skip cleanly. The three `--with-run` cases (a dry run with `WaitAsync`, the model-backed refinement steps, and a one-time request) skip by default.
+There are 39 cases. Three run offline (the signed-request known vector, tolerant enums and JSON shape, list option formatting). The live cases cover health, login and logout, typed errors, topics and their children, cross-user isolation (the `demo@mymorningnews` member cannot see the administrator's topic), refinement, schedules, runs, findings, sources, predictions, suggestions, preferences and feedback, editions, briefings, templates, prompts, media and artifacts, feed tokens, email, analytics, usage, model endpoints and calls, search providers, voices, vault, devices, account, plan limits (a new user on the Free plan reads the usage meter, exports a ZIP, gets `CapReachedException` on a second topic, and deletes and restores the account), public sign-up (opened through the settings API and restored afterward, with `EmailNotVerifiedException`, verification, resend, and password reset; the link tokens are read from the personal tenant's outbox with an administrator-made access key), the MCP server registry (against a fake MCP server the harness runs on 127.0.0.1, so it skips when the server cannot reach the harness host, for example from a container), agentic topic fields, run tool calls, and administration (tenants, users, roles, permissions, assignments, credentials with access key login, promotional codes with limits and forced delete, plans, audit, request history, settings). Model endpoints, search providers, and voices point at an unreachable local address so nothing is billed. Cases for routes that a server may not have yet (signed requests, overview and email analytics, finding edits) skip cleanly. The three `--with-run` cases (a dry run with `WaitAsync`, the model-backed refinement steps, and a one-time request) skip by default.
 
 (c) 2026 Lattice AI LLC

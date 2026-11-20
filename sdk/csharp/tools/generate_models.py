@@ -38,6 +38,7 @@ ROOTS = [
     "TemplateDetailResponse", "TemplateValidationResponse", "TenantChoice", "TenantSelectionResponse",
     "TokenDetailsResponse", "TokenResponse", "TopicDetailResponse", "UsageBucket", "UsageReport", "UsageRow",
     "UsageTimeseries", "UserResponse", "VaultCredentialResponse", "VaultRevealResponse", "VaultUsageItem",
+    "McpServerDetailResponse",
     # Models returned directly by routes.
     "Topic", "TopicDimension", "TopicConstraint", "TopicRecipient", "RefinementSession", "ResearchRequest", "Schedule",
     "Run", "RunStage", "SearchQuery", "SearchResult", "Finding", "Prediction", "PredictionReview", "Suggestion",
@@ -46,11 +47,11 @@ ROOTS = [
     "EmailMessage", "Feedback", "LearnedPreference", "PromptTemplate", "PromptTemplateVersion", "ModelEndpoint",
     "ModelAssignment", "LlmCall", "SearchProvider", "Device", "AuditRecord", "RequestHistoryEntry", "Tenant",
     "UserRole", "Permission", "UserRoleAssignment", "CredentialScopeAssignment", "PromoRedemption", "Plan",
-    "PlanAssignment",
+    "PlanAssignment", "McpServer", "McpServerTool", "RunToolCall",
     # Service results the routes serialize directly.
     "SearchOutcome", "FetchResult", "EffectivePlan", "FeedTokenCreated", "PromoCheck", "PromoCodeStats",
     "EmailPreview", "RelevanceReport", "AccuracyReport", "FeedbackReport", "SuggestionReport", "ReasonReport",
-    "QualityReport", "RankingRecommendation", "PushResult", "OverviewReport", "EmailReport",
+    "QualityReport", "RankingRecommendation", "PushResult", "OverviewReport", "EmailReport", "UsageMeter",
     # Request bodies.
     "AssignmentUpsertRequest", "AudioGenerateRequest", "FindingUpdateRequest", "BriefingPinRequest", "ConstraintUpsertRequest",
     "CredentialCreateRequest", "CredentialUpdateRequest", "DeviceRegisterRequest", "DimensionUpsertRequest",
@@ -66,7 +67,8 @@ ROOTS = [
     "SourceAcceptRequest", "SuggestionStatusRequest", "TemplateCreateRequest", "TemplateRollbackRequest",
     "TemplateSaveRequest", "TemplateValidateRequest", "TenantUpsertRequest", "TopicSearchProviderRequest",
     "TopicUpsertRequest", "UserCreateRequest", "UserUpdateRequest", "VaultCredentialUpsertRequest",
-    "VoiceProfileUpsertRequest", "VoiceTestRequest",
+    "VoiceProfileUpsertRequest", "VoiceTestRequest", "SignupRequest", "AccountTokenRequest", "AccountEmailRequest",
+    "McpServerUpsertRequest", "McpToolUpdateRequest",
     # Enums used as query filters (not always reachable from a body).
     "SortDirectionEnum", "TopicStatusEnum", "ConstraintKindEnum", "RefinementStatusEnum", "ResearchRequestStatusEnum",
     "ScheduleOwnerTypeEnum", "RunStatusEnum", "RunTriggerEnum", "FindingTierEnum", "FindingCategoryEnum",
@@ -74,7 +76,7 @@ ROOTS = [
     "BriefingKindEnum", "BriefingStatusEnum", "ArtifactKindEnum", "MediaStatusEnum", "MediaKindEnum",
     "EmailStatusEnum", "EmailTemplateEnum", "FeedbackTargetTypeEnum", "FeedbackChannelEnum", "PreferenceStatusEnum",
     "PreferenceOriginEnum", "ModelTaskEnum", "ModelProviderEnum", "SearchProviderKindEnum", "VaultCredentialKindEnum",
-    "VaultProviderEnum", "AuditEventTypeEnum", "PermissionTypeEnum", "UsageGroupByEnum",
+    "VaultProviderEnum", "AuditEventTypeEnum", "PermissionTypeEnum", "UsageGroupByEnum", "McpTransportEnum",
 ]
 
 # Server-only types mapped to something a client can hold.

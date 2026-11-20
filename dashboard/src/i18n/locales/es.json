@@ -1979,8 +1979,7 @@
       "noBrief": "Todavía no hay planteamiento. Refina el tema para redactar uno.",
       "dimensions": "Dimensiones",
       "brief": "Planteamiento y público",
-      "sourcesHelp": "Los feeds y las páginas semilla se leen en cada ejecución, junto con la búsqueda web.",
-      "searchProvidersLater": "La elección de proveedores de búsqueda por tema llegará con la página de proveedores de búsqueda."
+      "sourcesHelp": "Los feeds y las páginas semilla se leen en cada ejecución, junto con la búsqueda web."
     },
     "agentic": {
       "title": "Búsqueda agéntica",
@@ -3812,17 +3811,16 @@
       "closed": "El registro no está abierto en este servidor. Pide una cuenta a un administrador.",
       "displayName": "Tu nombre",
       "codeHelp": "Opcional. Un código promocional que te dieron.",
-      "acceptTerms": "Acepto los",
-      "terms": "términos del servicio",
-      "and": "y la",
-      "privacy": "política de privacidad",
       "confirmAge": "Tengo al menos {age} años.",
       "create": "Crear cuenta",
       "creating": "Creando tu cuenta...",
       "checkEmailTitle": "Revisa tu correo",
       "checkEmail": "Enviamos un enlace a {email}. Ábrelo para confirmar tu dirección y luego inicia sesión.",
       "readyTitle": "Tu cuenta está lista",
-      "ready": "Inicia sesión para crear tu primer tema."
+      "ready": "Inicia sesión para crear tu primer tema.",
+      "consent": "Acepto los {terms} y la {privacy}.",
+      "termsLink": "términos del servicio",
+      "privacyLink": "política de privacidad"
     },
     "verify": {
       "title": "Confirma tu correo",
@@ -3895,6 +3893,63 @@
     "delete": {
       "title": "¿Quitar este servidor MCP?",
       "message": "¿Quitar {name} y sus herramientas? Los temas que las permitían dejan de usarlas."
+    }
+  },
+  "searchProviders": {
+    "about": "Los proveedores de búsqueda son donde la investigación busca páginas. Los proveedores predeterminados los usa cada tema que no haya elegido los suyos. Tavily y You.com necesitan una clave de API en las credenciales guardadas.",
+    "never": "Nunca",
+    "columns": {
+      "name": "Nombre",
+      "kind": "Tipo",
+      "default": "Predeterminado",
+      "lastTest": "Última prueba",
+      "status": "Estado"
+    },
+    "kinds": {
+      "Searxng": "SearXNG",
+      "Tavily": "Tavily",
+      "YouCom": "You.com",
+      "Rss": "Feeds RSS",
+      "HackerNews": "Hacker News",
+      "Arxiv": "arXiv",
+      "HostedModelWebSearch": "Búsqueda web del modelo alojado"
+    },
+    "empty": {
+      "title": "No hay proveedores de búsqueda",
+      "message": "Agrega un proveedor para que la investigación tenga dónde buscar."
+    },
+    "form": {
+      "createTitle": "Agregar un proveedor de búsqueda",
+      "editTitle": "Editar proveedor de búsqueda",
+      "endpoint": "Endpoint",
+      "endpointHelp": "La URL base de SearXNG, como http://searxng:8080 dentro de Docker.",
+      "credential": "Clave de API",
+      "credentialHelp": "Una credencial guardada con la clave de API del proveedor.",
+      "maxResults": "Resultados por consulta",
+      "timeoutMs": "Tiempo de espera (ms)",
+      "defaultHelp": "Lo usan los temas que no han elegido sus propios proveedores."
+    },
+    "test": {
+      "action": "Probar",
+      "title": "Probar un proveedor de búsqueda",
+      "run": "Ejecutar prueba",
+      "query": "Consulta",
+      "feeds": "URL de feeds",
+      "feedsHelp": "Una URL de feed RSS o Atom por línea.",
+      "ok": "Funciona",
+      "failed": "Falló",
+      "results": "Resultados",
+      "noResults": "No se obtuvieron resultados."
+    },
+    "delete": {
+      "title": "¿Eliminar este proveedor de búsqueda?",
+      "message": "¿Eliminar {name}? Los temas que lo eligieron dejarán de usarlo."
+    },
+    "topic": {
+      "title": "Proveedores de búsqueda",
+      "help": "Elige dónde busca este tema. Déjalo en los predeterminados para seguir los proveedores predeterminados del inquilino.",
+      "none": "Aún no hay proveedores de búsqueda configurados.",
+      "useDefaults": "Usar los predeterminados"
     }
   }
 }

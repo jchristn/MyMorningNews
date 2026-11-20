@@ -1979,8 +1979,7 @@
       "noBrief": "Belum ada ringkasan. Halusi topik untuk mendrafnya.",
       "dimensions": "Dimensi",
       "brief": "Ringkasan dan khalayak",
-      "sourcesHelp": "Suapan dan halaman benih dibaca pada setiap larian, bersama carian web.",
-      "searchProvidersLater": "Pemilihan penyedia carian bagi setiap topik akan tiba bersama halaman penyedia carian."
+      "sourcesHelp": "Suapan dan halaman benih dibaca pada setiap larian, bersama carian web."
     },
     "agentic": {
       "title": "Carian agentik",
@@ -3812,17 +3811,16 @@
       "closed": "Pendaftaran tidak dibuka di pelayan ini. Minta akaun daripada pentadbir.",
       "displayName": "Nama anda",
       "codeHelp": "Pilihan. Kod promosi yang diberikan kepada anda.",
-      "acceptTerms": "Saya menerima",
-      "terms": "terma perkhidmatan",
-      "and": "dan",
-      "privacy": "dasar privasi",
       "confirmAge": "Saya berumur sekurang-kurangnya {age} tahun.",
       "create": "Cipta akaun",
       "creating": "Sedang mencipta akaun anda...",
       "checkEmailTitle": "Semak e-mel anda",
       "checkEmail": "Kami telah menghantar pautan ke {email}. Bukanya untuk mengesahkan alamat anda, kemudian log masuk.",
       "readyTitle": "Akaun anda sudah sedia",
-      "ready": "Log masuk untuk mencipta topik pertama anda."
+      "ready": "Log masuk untuk mencipta topik pertama anda.",
+      "consent": "Saya menerima {terms} dan {privacy}.",
+      "termsLink": "terma perkhidmatan",
+      "privacyLink": "dasar privasi"
     },
     "verify": {
       "title": "Sahkan e-mel anda",
@@ -3895,6 +3893,63 @@
     "delete": {
       "title": "Alih keluar pelayan MCP ini?",
       "message": "Alih keluar {name} dan alatnya? Topik yang membenarkannya akan berhenti menggunakannya."
+    }
+  },
+  "searchProviders": {
+    "about": "Penyedia carian ialah tempat penyelidikan mencari halaman. Penyedia lalai digunakan oleh setiap topik yang belum memilih penyedia sendiri. Tavily dan You.com memerlukan kunci API dalam kelayakan tersimpan.",
+    "never": "Tidak pernah",
+    "columns": {
+      "name": "Nama",
+      "kind": "Jenis",
+      "default": "Lalai",
+      "lastTest": "Ujian terakhir",
+      "status": "Status"
+    },
+    "kinds": {
+      "Searxng": "SearXNG",
+      "Tavily": "Tavily",
+      "YouCom": "You.com",
+      "Rss": "Suapan RSS",
+      "HackerNews": "Hacker News",
+      "Arxiv": "arXiv",
+      "HostedModelWebSearch": "Carian web model dihoskan"
+    },
+    "empty": {
+      "title": "Tiada penyedia carian",
+      "message": "Tambah penyedia supaya penyelidikan ada tempat untuk mencari."
+    },
+    "form": {
+      "createTitle": "Tambah penyedia carian",
+      "editTitle": "Edit penyedia carian",
+      "endpoint": "Titik akhir",
+      "endpointHelp": "URL asas SearXNG, seperti http://searxng:8080 dalam Docker.",
+      "credential": "Kunci API",
+      "credentialHelp": "Kelayakan tersimpan yang memegang kunci API penyedia.",
+      "maxResults": "Hasil setiap pertanyaan",
+      "timeoutMs": "Had masa (ms)",
+      "defaultHelp": "Digunakan oleh topik yang belum memilih penyedia sendiri."
+    },
+    "test": {
+      "action": "Uji",
+      "title": "Uji penyedia carian",
+      "run": "Jalankan ujian",
+      "query": "Pertanyaan",
+      "feeds": "URL suapan",
+      "feedsHelp": "Satu URL suapan RSS atau Atom setiap baris.",
+      "ok": "Berfungsi",
+      "failed": "Gagal",
+      "results": "Hasil",
+      "noResults": "Tiada hasil diterima."
+    },
+    "delete": {
+      "title": "Padam penyedia carian ini?",
+      "message": "Padam {name}? Topik yang memilihnya akan berhenti menggunakannya."
+    },
+    "topic": {
+      "title": "Penyedia carian",
+      "help": "Pilih tempat topik ini mencari. Biarkan pada lalai untuk mengikut penyedia lalai penyewa.",
+      "none": "Belum ada penyedia carian disediakan.",
+      "useDefaults": "Guna lalai"
     }
   }
 }

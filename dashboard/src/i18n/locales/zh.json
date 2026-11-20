@@ -1979,8 +1979,7 @@
       "noBrief": "暂无概要。细化主题即可起草。",
       "dimensions": "维度",
       "brief": "概要与受众",
-      "sourcesHelp": "每次运行除网络搜索外，还会读取订阅源和种子页面。",
-      "searchProvidersLater": "为每个主题选择搜索提供商的功能将随搜索提供商页面推出。"
+      "sourcesHelp": "每次运行除网络搜索外，还会读取订阅源和种子页面。"
     },
     "agentic": {
       "title": "智能体搜索",
@@ -3812,17 +3811,16 @@
       "closed": "此服务器未开放注册。请向管理员申请账户。",
       "displayName": "您的姓名",
       "codeHelp": "可选。您获得的优惠码。",
-      "acceptTerms": "我接受",
-      "terms": "服务条款",
-      "and": "和",
-      "privacy": "隐私政策",
       "confirmAge": "我已年满 {age} 岁。",
       "create": "创建账户",
       "creating": "正在创建您的账户...",
       "checkEmailTitle": "请查收电子邮件",
       "checkEmail": "我们已向 {email} 发送了一个链接。打开它确认您的地址，然后登录。",
       "readyTitle": "您的账户已就绪",
-      "ready": "登录以创建您的第一个主题。"
+      "ready": "登录以创建您的第一个主题。",
+      "consent": "我接受{terms}和{privacy}。",
+      "termsLink": "服务条款",
+      "privacyLink": "隐私政策"
     },
     "verify": {
       "title": "确认您的电子邮件",
@@ -3895,6 +3893,63 @@
     "delete": {
       "title": "要移除此 MCP 服务器吗？",
       "message": "要移除 {name} 及其工具吗？已允许这些工具的主题将停止使用它们。"
+    }
+  },
+  "searchProviders": {
+    "about": "搜索提供商是研究查找网页的来源。未自行选择提供商的主题都会使用默认提供商。Tavily 和 You.com 需要在已存储凭据中配置 API 密钥。",
+    "never": "从未",
+    "columns": {
+      "name": "名称",
+      "kind": "类型",
+      "default": "默认",
+      "lastTest": "上次测试",
+      "status": "状态"
+    },
+    "kinds": {
+      "Searxng": "SearXNG",
+      "Tavily": "Tavily",
+      "YouCom": "You.com",
+      "Rss": "RSS 订阅源",
+      "HackerNews": "Hacker News",
+      "Arxiv": "arXiv",
+      "HostedModelWebSearch": "托管模型网页搜索"
+    },
+    "empty": {
+      "title": "没有搜索提供商",
+      "message": "添加一个提供商，研究才有地方可以搜索。"
+    },
+    "form": {
+      "createTitle": "添加搜索提供商",
+      "editTitle": "编辑搜索提供商",
+      "endpoint": "端点",
+      "endpointHelp": "SearXNG 基础 URL，例如 Docker 内的 http://searxng:8080",
+      "credential": "API 密钥",
+      "credentialHelp": "保存提供商 API 密钥的已存储凭据。",
+      "maxResults": "每次查询的结果数",
+      "timeoutMs": "超时（毫秒）",
+      "defaultHelp": "供未自行选择提供商的主题使用。"
+    },
+    "test": {
+      "action": "测试",
+      "title": "测试搜索提供商",
+      "run": "运行测试",
+      "query": "查询",
+      "feeds": "订阅源 URL",
+      "feedsHelp": "每行一个 RSS 或 Atom 订阅源 URL。",
+      "ok": "正常",
+      "failed": "失败",
+      "results": "结果",
+      "noResults": "没有返回结果。"
+    },
+    "delete": {
+      "title": "删除此搜索提供商？",
+      "message": "删除 {name}？选择了它的主题将不再使用它。"
+    },
+    "topic": {
+      "title": "搜索提供商",
+      "help": "选择此主题的搜索来源。保留默认设置即可沿用租户的默认提供商。",
+      "none": "尚未设置任何搜索提供商。",
+      "useDefaults": "使用默认设置"
     }
   }
 }

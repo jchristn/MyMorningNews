@@ -1979,8 +1979,7 @@
       "noBrief": "Noch keine Kurzbeschreibung. Verfeinern Sie das Thema, um eine zu entwerfen.",
       "dimensions": "Dimensionen",
       "brief": "Kurzbeschreibung und Zielgruppe",
-      "sourcesHelp": "Feeds und Startseiten werden bei jedem Lauf zusätzlich zur Websuche gelesen.",
-      "searchProvidersLater": "Die Auswahl von Suchanbietern pro Thema kommt mit der Seite Suchanbieter."
+      "sourcesHelp": "Feeds und Startseiten werden bei jedem Lauf zusätzlich zur Websuche gelesen."
     },
     "agentic": {
       "title": "Agentische Suche",
@@ -3812,17 +3811,16 @@
       "closed": "Die Registrierung ist auf diesem Server nicht geöffnet. Bitten Sie einen Administrator um ein Konto.",
       "displayName": "Ihr Name",
       "codeHelp": "Optional. Ein Aktionscode, den Sie erhalten haben.",
-      "acceptTerms": "Ich akzeptiere die",
-      "terms": "Nutzungsbedingungen",
-      "and": "und die",
-      "privacy": "Datenschutzerklärung",
       "confirmAge": "Ich bin mindestens {age} Jahre alt.",
       "create": "Konto erstellen",
       "creating": "Ihr Konto wird erstellt...",
       "checkEmailTitle": "Prüfen Sie Ihre E-Mails",
       "checkEmail": "Wir haben einen Link an {email} gesendet. Öffnen Sie ihn, um Ihre Adresse zu bestätigen, und melden Sie sich dann an.",
       "readyTitle": "Ihr Konto ist bereit",
-      "ready": "Melden Sie sich an, um Ihr erstes Thema zu erstellen."
+      "ready": "Melden Sie sich an, um Ihr erstes Thema zu erstellen.",
+      "consent": "Ich akzeptiere die {terms} und die {privacy}.",
+      "termsLink": "Nutzungsbedingungen",
+      "privacyLink": "Datenschutzerklärung"
     },
     "verify": {
       "title": "E-Mail-Adresse bestätigen",
@@ -3895,6 +3893,63 @@
     "delete": {
       "title": "Diesen MCP-Server entfernen?",
       "message": "{name} und seine Tools entfernen? Themen, die sie freigegeben haben, verwenden sie dann nicht mehr."
+    }
+  },
+  "searchProviders": {
+    "about": "Suchanbieter sind die Quellen, in denen die Recherche nach Seiten sucht. Die Standardanbieter gelten für jedes Thema, das keine eigenen gewählt hat. Tavily und You.com brauchen einen API-Schlüssel in den gespeicherten Zugangsdaten.",
+    "never": "Nie",
+    "columns": {
+      "name": "Name",
+      "kind": "Art",
+      "default": "Standard",
+      "lastTest": "Letzter Test",
+      "status": "Status"
+    },
+    "kinds": {
+      "Searxng": "SearXNG",
+      "Tavily": "Tavily",
+      "YouCom": "You.com",
+      "Rss": "RSS-Feeds",
+      "HackerNews": "Hacker News",
+      "Arxiv": "arXiv",
+      "HostedModelWebSearch": "Websuche des gehosteten Modells"
+    },
+    "empty": {
+      "title": "Keine Suchanbieter",
+      "message": "Fügen Sie einen Anbieter hinzu, damit die Recherche eine Suchquelle hat."
+    },
+    "form": {
+      "createTitle": "Suchanbieter hinzufügen",
+      "editTitle": "Suchanbieter bearbeiten",
+      "endpoint": "Endpunkt",
+      "endpointHelp": "Die Basis-URL von SearXNG, etwa http://searxng:8080 innerhalb von Docker.",
+      "credential": "API-Schlüssel",
+      "credentialHelp": "Gespeicherte Zugangsdaten mit dem API-Schlüssel des Anbieters.",
+      "maxResults": "Ergebnisse pro Abfrage",
+      "timeoutMs": "Timeout (ms)",
+      "defaultHelp": "Gilt für Themen, die keine eigenen Anbieter gewählt haben."
+    },
+    "test": {
+      "action": "Testen",
+      "title": "Suchanbieter testen",
+      "run": "Test ausführen",
+      "query": "Abfrage",
+      "feeds": "Feed-URLs",
+      "feedsHelp": "Eine RSS- oder Atom-Feed-URL pro Zeile.",
+      "ok": "Funktioniert",
+      "failed": "Fehlgeschlagen",
+      "results": "Ergebnisse",
+      "noResults": "Keine Ergebnisse erhalten."
+    },
+    "delete": {
+      "title": "Diesen Suchanbieter löschen?",
+      "message": "{name} löschen? Themen, die ihn gewählt haben, verwenden ihn nicht mehr."
+    },
+    "topic": {
+      "title": "Suchanbieter",
+      "help": "Wählen Sie, wo dieses Thema sucht. Behalten Sie die Standardwerte, um den Standardanbietern des Mandanten zu folgen.",
+      "none": "Es sind noch keine Suchanbieter eingerichtet.",
+      "useDefaults": "Standardwerte verwenden"
     }
   }
 }

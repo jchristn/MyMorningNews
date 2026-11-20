@@ -1979,8 +1979,7 @@
       "noBrief": "Ancora nessuna descrizione. Perfeziona l’argomento per redigerne una.",
       "dimensions": "Dimensioni",
       "brief": "Descrizione e pubblico",
-      "sourcesHelp": "Feed e pagine iniziali vengono letti a ogni esecuzione, insieme alla ricerca web.",
-      "searchProvidersLater": "La scelta dei provider di ricerca per argomento arriverà con la pagina dei provider di ricerca."
+      "sourcesHelp": "Feed e pagine iniziali vengono letti a ogni esecuzione, insieme alla ricerca web."
     },
     "agentic": {
       "title": "Ricerca agentica",
@@ -3812,17 +3811,16 @@
       "closed": "La registrazione non è aperta su questo server. Chiedi un account a un amministratore.",
       "displayName": "Il tuo nome",
       "codeHelp": "Facoltativo. Un codice promozionale che hai ricevuto.",
-      "acceptTerms": "Accetto i",
-      "terms": "termini di servizio",
-      "and": "e la",
-      "privacy": "politica sulla privacy",
       "confirmAge": "Ho almeno {age} anni.",
       "create": "Crea account",
       "creating": "Creazione dell’account...",
       "checkEmailTitle": "Controlla la tua email",
       "checkEmail": "Abbiamo inviato un link a {email}. Aprilo per confermare il tuo indirizzo, poi accedi.",
       "readyTitle": "Il tuo account è pronto",
-      "ready": "Accedi per creare il tuo primo argomento."
+      "ready": "Accedi per creare il tuo primo argomento.",
+      "consent": "Accetto i {terms} e l’{privacy}.",
+      "termsLink": "termini di servizio",
+      "privacyLink": "informativa sulla privacy"
     },
     "verify": {
       "title": "Conferma la tua email",
@@ -3895,6 +3893,63 @@
     "delete": {
       "title": "Rimuovere questo server MCP?",
       "message": "Rimuovere {name} e i suoi strumenti? Gli argomenti che li consentivano smettono di usarli."
+    }
+  },
+  "searchProviders": {
+    "about": "I provider di ricerca sono i punti in cui la ricerca cerca le pagine. I provider predefiniti vengono usati da ogni argomento che non ha scelto i propri. Tavily e You.com richiedono una chiave API tra le credenziali salvate.",
+    "never": "Mai",
+    "columns": {
+      "name": "Nome",
+      "kind": "Tipo",
+      "default": "Predefinito",
+      "lastTest": "Ultimo test",
+      "status": "Stato"
+    },
+    "kinds": {
+      "Searxng": "SearXNG",
+      "Tavily": "Tavily",
+      "YouCom": "You.com",
+      "Rss": "Feed RSS",
+      "HackerNews": "Hacker News",
+      "Arxiv": "arXiv",
+      "HostedModelWebSearch": "Ricerca web del modello ospitato"
+    },
+    "empty": {
+      "title": "Nessun provider di ricerca",
+      "message": "Aggiungi un provider così la ricerca ha un posto dove cercare."
+    },
+    "form": {
+      "createTitle": "Aggiungi un provider di ricerca",
+      "editTitle": "Modifica provider di ricerca",
+      "endpoint": "Endpoint",
+      "endpointHelp": "L’URL di base di SearXNG, ad esempio http://searxng:8080 in Docker.",
+      "credential": "Chiave API",
+      "credentialHelp": "Una credenziale salvata che contiene la chiave API del provider.",
+      "maxResults": "Risultati per query",
+      "timeoutMs": "Timeout (ms)",
+      "defaultHelp": "Usato dagli argomenti che non hanno scelto i propri provider."
+    },
+    "test": {
+      "action": "Testa",
+      "title": "Testa un provider di ricerca",
+      "run": "Esegui test",
+      "query": "Query",
+      "feeds": "URL dei feed",
+      "feedsHelp": "Un URL di feed RSS o Atom per riga.",
+      "ok": "Funzionante",
+      "failed": "Non riuscito",
+      "results": "Risultati",
+      "noResults": "Nessun risultato restituito."
+    },
+    "delete": {
+      "title": "Eliminare questo provider di ricerca?",
+      "message": "Eliminare {name}? Gli argomenti che lo hanno scelto smettono di usarlo."
+    },
+    "topic": {
+      "title": "Provider di ricerca",
+      "help": "Scegli dove cerca questo argomento. Lascia i valori predefiniti per seguire i provider predefiniti del tenant.",
+      "none": "Nessun provider di ricerca configurato.",
+      "useDefaults": "Usa i predefiniti"
     }
   }
 }

@@ -1979,8 +1979,7 @@
       "noBrief": "概要はまだありません。トピックを絞り込んで作成してください。",
       "dimensions": "観点",
       "brief": "概要と対象読者",
-      "sourcesHelp": "フィードと起点ページは、Web 検索とあわせて実行のたびに読み込まれます。",
-      "searchProvidersLater": "トピックごとの検索プロバイダーの選択は、検索プロバイダーのページとともに提供されます。"
+      "sourcesHelp": "フィードと起点ページは、Web 検索とあわせて実行のたびに読み込まれます。"
     },
     "agentic": {
       "title": "エージェント検索",
@@ -3812,17 +3811,16 @@
       "closed": "このサーバーでは新規登録を受け付けていません。管理者にアカウントを依頼してください。",
       "displayName": "お名前",
       "codeHelp": "任意です。受け取ったプロモーションコードを入力します。",
-      "acceptTerms": "以下に同意します:",
-      "terms": "利用規約",
-      "and": "および",
-      "privacy": "プライバシーポリシー",
       "confirmAge": "{age} 歳以上です。",
       "create": "アカウントを作成",
       "creating": "アカウントを作成しています...",
       "checkEmailTitle": "メールを確認してください",
       "checkEmail": "{email} にリンクを送信しました。リンクを開いてアドレスを確認してから、サインインしてください。",
       "readyTitle": "アカウントの準備ができました",
-      "ready": "サインインして最初のトピックを作成しましょう。"
+      "ready": "サインインして最初のトピックを作成しましょう。",
+      "consent": "{terms}と{privacy}に同意します。",
+      "termsLink": "利用規約",
+      "privacyLink": "プライバシーポリシー"
     },
     "verify": {
       "title": "メールアドレスの確認",
@@ -3895,6 +3893,63 @@
     "delete": {
       "title": "この MCP サーバーを削除しますか？",
       "message": "{name} とそのツールを削除しますか？これらを許可していたトピックでは使用されなくなります。"
+    }
+  },
+  "searchProviders": {
+    "about": "検索プロバイダーは、リサーチがページを探す場所です。独自のプロバイダーを選んでいないトピックはすべてデフォルトのプロバイダーを使います。Tavily と You.com には保存済み認証情報の API キーが必要です。",
+    "never": "未実施",
+    "columns": {
+      "name": "名前",
+      "kind": "種類",
+      "default": "デフォルト",
+      "lastTest": "前回のテスト",
+      "status": "ステータス"
+    },
+    "kinds": {
+      "Searxng": "SearXNG",
+      "Tavily": "Tavily",
+      "YouCom": "You.com",
+      "Rss": "RSS フィード",
+      "HackerNews": "Hacker News",
+      "Arxiv": "arXiv",
+      "HostedModelWebSearch": "ホスト型モデルの Web 検索"
+    },
+    "empty": {
+      "title": "検索プロバイダーがありません",
+      "message": "リサーチの検索先となるプロバイダーを追加してください。"
+    },
+    "form": {
+      "createTitle": "検索プロバイダーを追加",
+      "editTitle": "検索プロバイダーを編集",
+      "endpoint": "エンドポイント",
+      "endpointHelp": "SearXNG のベース URL です。Docker 内なら http://searxng:8080 などです。",
+      "credential": "API キー",
+      "credentialHelp": "プロバイダーの API キーを保持する保存済み認証情報です。",
+      "maxResults": "クエリあたりの結果数",
+      "timeoutMs": "タイムアウト (ms)",
+      "defaultHelp": "独自のプロバイダーを選んでいないトピックで使われます。"
+    },
+    "test": {
+      "action": "テスト",
+      "title": "検索プロバイダーをテスト",
+      "run": "テストを実行",
+      "query": "クエリ",
+      "feeds": "フィード URL",
+      "feedsHelp": "RSS または Atom フィードの URL を 1 行に 1 つずつ入力します。",
+      "ok": "正常",
+      "failed": "失敗",
+      "results": "結果",
+      "noResults": "結果が返されませんでした。"
+    },
+    "delete": {
+      "title": "この検索プロバイダーを削除しますか？",
+      "message": "{name} を削除しますか？これを選んだトピックでは使われなくなります。"
+    },
+    "topic": {
+      "title": "検索プロバイダー",
+      "help": "このトピックの検索先を選びます。デフォルトのままにすると、テナントのデフォルトのプロバイダーに従います。",
+      "none": "検索プロバイダーはまだ設定されていません。",
+      "useDefaults": "デフォルトを使用"
     }
   }
 }

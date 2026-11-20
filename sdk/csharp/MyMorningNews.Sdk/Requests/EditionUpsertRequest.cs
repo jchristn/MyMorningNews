@@ -31,6 +31,11 @@ namespace MyMorningNews.Sdk.Requests
         public bool? AudioEnabled { get; set; } = null;
 
         /// <summary>
+        /// Push a notification to the owner's devices when the edition is ready.
+        /// </summary>
+        public bool? PushEnabled { get; set; } = null;
+
+        /// <summary>
         /// Email the briefing.
         /// </summary>
         public bool? EmailEnabled { get; set; } = null;

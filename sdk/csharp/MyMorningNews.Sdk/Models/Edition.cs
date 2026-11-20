@@ -102,6 +102,11 @@ namespace MyMorningNews.Sdk.Models
         public DateTime LastUpdateUtc { get; set; }
 
         /// <summary>
+        /// Send a push notification to the owner's devices when the edition is ready. Default true.
+        /// </summary>
+        public bool PushEnabled { get; set; } = true;
+
+        /// <summary>
         /// Instantiate.
         /// </summary>
         public Edition()

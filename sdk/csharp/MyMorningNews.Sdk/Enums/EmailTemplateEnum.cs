@@ -56,6 +56,11 @@ namespace MyMorningNews.Sdk.Enums
         /// <summary>
         /// Account deletion scheduled.
         /// </summary>
-        AccountDeletion
+        AccountDeletion,
+
+        /// <summary>
+        /// A plan limit stopped a scheduled run (sent at most once per limit per month).
+        /// </summary>
+        CapReached
     }
 }

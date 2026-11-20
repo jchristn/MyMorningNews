@@ -17,3 +17,5 @@ docker/media/
 docker/email/
 *.md
 !README.md
+**/.venv/
+**/__pycache__/

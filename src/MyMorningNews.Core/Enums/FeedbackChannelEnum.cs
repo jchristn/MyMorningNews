@@ -23,6 +23,11 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// API or SDK.
         /// </summary>
-        Api
+        Api,
+
+        /// <summary>
+        /// An MCP client, through the MyMorningNews MCP server.
+        /// </summary>
+        Mcp
     }
 }

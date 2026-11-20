@@ -13,4 +13,8 @@
     <PackageReference Include="Voltaic" Version="2.4.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\sdk\csharp\MyMorningNews.Sdk\MyMorningNews.Sdk.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -1218,7 +1218,7 @@ ENUMS = [
     ('RelevanceRatingEnum', 'Relevance rating.', [('Relevant', 'Relevant.'), ('SomewhatRelevant', 'Somewhat relevant.'), ('NotRelevant', 'Not relevant.')]),
     ('AccuracyRatingEnum', 'Accuracy rating.', [('Accurate', 'Came true.'), ('PartiallyAccurate', 'Partly came true.'), ('Inaccurate', 'Did not come true.'), ('TooEarly', 'Too early to tell.')]),
     ('UsefulnessRatingEnum', 'Usefulness rating.', [('Useful', 'Useful.'), ('NotUseful', 'Not useful.')]),
-    ('FeedbackChannelEnum', 'Where feedback came from.', [('Dashboard', 'Web app.'), ('Email', 'Email link.'), ('Mobile', 'Mobile app.'), ('Api', 'API or SDK.')]),
+    ('FeedbackChannelEnum', 'Where feedback came from.', [('Dashboard', 'Web app.'), ('Email', 'Email link.'), ('Mobile', 'Mobile app.'), ('Api', 'API or SDK.'), ('Mcp', 'An MCP client, through the MyMorningNews MCP server.')]),
     ('PreferenceKindEnum', 'Kind of learned preference.', [('Prefer', 'Prefer this kind of item.'), ('Avoid', 'Avoid this kind of item.'), ('PreferSource', 'Prefer this source.'),
         ('AvoidSource', 'Avoid this source.'), ('StyleNote', 'How to write for the reader.')]),
     ('PreferenceStatusEnum', 'Learned preference status.', [('Proposed', 'Waiting for the reader.'), ('Active', 'In use.'), ('Rejected', 'Dismissed.'), ('Disabled', 'Turned off.')]),

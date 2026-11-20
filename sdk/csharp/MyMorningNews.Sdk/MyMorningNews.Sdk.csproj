@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <RootNamespace>MyMorningNews.Sdk</RootNamespace>
+    <AssemblyName>MyMorningNews.Sdk</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <PackageId>MyMorningNews.Sdk</PackageId>
+    <Version>0.1.0-alpha</Version>
+    <Authors>Lattice AI LLC</Authors>
+    <Company>Lattice AI LLC</Company>
+    <Copyright>(c) 2026 Lattice AI LLC</Copyright>
+    <Title>My Morning News SDK for .NET</Title>
+    <Description>Client library for the My Morning News REST API: topics, refinement, runs, findings, predictions, suggestions, feedback, briefings, audio, analytics, and administration.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>mymorningnews;research;briefing;sdk</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

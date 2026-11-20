@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <RootNamespace>MyMorningNews.Sdk.TestHarness</RootNamespace>
+    <AssemblyName>MyMorningNews.Sdk.TestHarness</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <IsPackable>false</IsPackable>
+    <Version>0.1.0-alpha</Version>
+    <Authors>Lattice AI LLC</Authors>
+    <Company>Lattice AI LLC</Company>
+    <Copyright>(c) 2026 Lattice AI LLC</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MyMorningNews.Sdk\MyMorningNews.Sdk.csproj" />
+  </ItemGroup>
+
+</Project>

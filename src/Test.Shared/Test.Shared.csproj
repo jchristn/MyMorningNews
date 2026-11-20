@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\MyMorningNews.Core\MyMorningNews.Core.csproj" />
     <ProjectReference Include="..\MyMorningNews.Server\MyMorningNews.Server.csproj" />
+    <ProjectReference Include="..\MyMorningNews.McpServer\MyMorningNews.McpServer.csproj" />
   </ItemGroup>
 
 </Project>

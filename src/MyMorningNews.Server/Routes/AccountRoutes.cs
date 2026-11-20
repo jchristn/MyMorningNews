@@ -49,7 +49,7 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/account/usage", UsageAsync, null, openApiMetadata: Doc("My usage against my plan's limits", "Account"));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/account/export", ExportAsync, null, openApiMetadata: Doc("Download my data (ZIP of JSON and Markdown)", "Account"));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/account/delete", DeleteAsync, null, openApiMetadata: Doc("Delete my account", "Account",
-                "Signs out every session and schedules the purge after Hosting.DeletionGraceDays (default 7); signing in again before then cancels it. Returns 202 with purgeAfterUtc."));
+                "Signs out every session and schedules the purge after Hosting.DeletionGraceDays (default 7); signing in again before then cancels it. An optional password in the body must match. Returns 202 with purgeAfterUtc.").WithRequestBody(Body<AccountDeleteRequest>()));
         }
 
         private async Task SignupAsync(HttpContextBase ctx)
@@ -127,6 +127,13 @@ namespace MyMorningNews.Server.Routes
         {
             User? user = await SelfAsync(ctx, RequestTypeEnum.UserSelfWrite).ConfigureAwait(false);
             if (user == null) return;
+            AccountDeleteRequest req = (await ReadOptionalBodyAsync<AccountDeleteRequest>(ctx).ConfigureAwait(false)) ?? new AccountDeleteRequest();
+            if (!String.IsNullOrEmpty(req.Password) && !SecretHasher.VerifyPassword(req.Password, user.PasswordSha256))
+            {
+                await SendErrorAsync(ctx, 400, "PasswordIncorrect", "The password is not right.").ConfigureAwait(false);
+                return;
+            }
+
             DateTime purge = await Server.Account.RequestDeletionAsync(user, ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 202, new Dictionary<string, object?> { { "purgeAfterUtc", purge }, { "message", "Your account is scheduled for deletion. Sign in before then to keep it." } }).ConfigureAwait(false);
         }

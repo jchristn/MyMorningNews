@@ -10,6 +10,8 @@ export const accountApi = {
   usage: (client, { from, to, groupBy = 'Task' } = {}) => client.get(routes.usageMe, { from, to, groupBy }),
   deleteAccount: (client, body) => client.post(routes.accountDelete, body || {}),
   exportAccount: (client) => client.get(routes.accountExport),
+  /** The usage meter (Phase 14): `{ planName, monthToDateCostUsd, monthlyCostCapUsd, resetUtc, topics, topicsMax, runsToday, runsDailyMax, audioMinutes, audioMinutesMax, audioEnabled }`. Limits are null when unlimited. */
+  usageMeter: (client) => client.get(routes.accountUsage),
 };
 
 /** Server information: version from `GET /server-info` (existing) and client config (contract D, no auth). */

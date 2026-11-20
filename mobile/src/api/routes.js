@@ -23,6 +23,7 @@ export const routes = {
   // Account deletion and export (contract E, Phase 14)
   accountDelete: '/v1.0/api/account/delete',
   accountExport: '/v1.0/api/account/export',
+  accountUsage: '/v1.0/api/account/usage',
   // Devices (contract C)
   devices: '/v1.0/api/devices',
   device: (id) => '/v1.0/api/devices/' + enc(id),

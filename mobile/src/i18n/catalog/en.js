@@ -940,6 +940,16 @@ export const en = {
     period: '{from} to {to}',
     startsOn: 'Starts {date}',
   },
+  usage: {
+    title: 'This month',
+    cost: 'Research budget',
+    topics: 'Topics',
+    runsToday: 'Runs today',
+    audio: 'Audio minutes',
+    resets: 'Monthly limits reset on {date}.',
+    ofLimit: '{used} of {max}',
+    noLimit: '{used} (no limit)',
+  },
   promo: {
     title: 'Redeem a code',
     intro: 'Have a promotional code? Enter it to add its plan to your account.',

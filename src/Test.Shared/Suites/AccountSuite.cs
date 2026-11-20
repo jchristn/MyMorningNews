@@ -232,7 +232,8 @@ namespace Test.Shared.Suites
                 Assert.True(!kept.DeletionRequestedUtc.HasValue && !(await server.Context.Database.Tenants.ReadAsync(user.TenantId, token).ConfigureAwait(false))!.PurgeAfterUtc.HasValue, "sign-in cancels the deletion");
 
                 c = await ClientForAsync(user, Password, token).ConfigureAwait(false);
-                (await c.PostAsync("/v1.0/api/account/delete", null, token).ConfigureAwait(false)).Expect(202, "delete again");
+                (await c.PostAsync("/v1.0/api/account/delete", new { password = "not the password", confirm = true }, token).ConfigureAwait(false)).Expect(400, "a wrong password is refused");
+                (await c.PostAsync("/v1.0/api/account/delete", new { password = Password, confirm = true }, token).ConfigureAwait(false)).Expect(202, "delete again with the password");
                 int early = await server.Context.Account.PurgeDueAsync(DateTime.UtcNow, token).ConfigureAwait(false);
                 Assert.True(await server.Context.Database.Users.ReadAsync(user.TenantId, user.Id, token).ConfigureAwait(false) != null, "nothing purged during the grace period (" + early + ")");
                 await server.Context.Account.PurgeDueAsync(DateTime.UtcNow.AddDays(h.DeletionGraceDays + 1), token).ConfigureAwait(false);

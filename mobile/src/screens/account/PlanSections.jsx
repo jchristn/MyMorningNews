@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { RefreshControl, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { planApi } from '@/api/account';
+import { accountApi, planApi } from '@/api/account';
 import { ResourceView } from '@/components/states';
 import { Badge, Banner, Button, Card, Field, KeyValue, Screen, SectionHeader, T } from '@/components/ui';
 import { formatCost, formatDate, formatNumber } from '@/lib/format';
@@ -39,6 +39,35 @@ function PlanCard({ data }) {
         {data.endsUtc ? t('mobile.plan.endsOn', { date: formatDate(data.endsUtc, i18n.language) }) : t('mobile.plan.noEnd')}
       </T>
     </Card>
+  );
+}
+
+/** One usage row: "used of limit", or the count alone when the plan has no limit. */
+export function usageValue(used, max, format, t) {
+  const u = format(used);
+  return max === null || max === undefined ? t('mobile.usage.noLimit', { used: u }) : t('mobile.usage.ofLimit', { used: u, max: format(max) });
+}
+
+/** This month's usage against the plan (`GET /v1.0/api/account/usage`). Hidden when the server does not offer it. */
+export function UsageCard() {
+  const { t, i18n } = useTranslation();
+  const { client } = useAuth();
+  const resource = useResource(() => accountApi.usageMeter(client).catch(() => null), [client]);
+  const m = resource.data;
+  if (!m || !m.planKey) return null;
+  const cost = (v) => formatCost(Number(v) || 0, i18n.language);
+  const count = (v) => formatNumber(Number(v) || 0, i18n.language);
+  return (
+    <>
+      <SectionHeader title={t('mobile.usage.title')} />
+      <Card testID="plan-usage">
+        <KeyValue label={t('mobile.usage.cost')} value={usageValue(m.monthToDateCostUsd, m.monthlyCostCapUsd, cost, t)} />
+        <KeyValue label={t('mobile.usage.topics')} value={usageValue(m.topics, m.topicsMax, count, t)} />
+        <KeyValue label={t('mobile.usage.runsToday')} value={usageValue(m.runsToday, m.runsDailyMax, count, t)} />
+        {m.audioEnabled ? <KeyValue label={t('mobile.usage.audio')} value={usageValue(m.audioMinutes, m.audioMinutesMax, count, t)} /> : null}
+        <T variant="small">{t('mobile.usage.resets', { date: formatDate(m.resetUtc, i18n.language) })}</T>
+      </Card>
+    </>
   );
 }
 
@@ -119,6 +148,7 @@ export function PlanSection() {
         {(data) => (
           <>
             <PlanCard data={data} />
+            <UsageCard />
             <SectionHeader title={t('mobile.plan.limits')} />
             <Card testID="plan-features">
               {planFeatureRows(data.features).map((row) => (

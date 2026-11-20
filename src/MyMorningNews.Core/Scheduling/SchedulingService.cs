@@ -38,6 +38,12 @@ namespace MyMorningNews.Core.Scheduling
         public Func<string, string, CancellationToken, Task<int?>>? MinimumIntervalForUser { get; set; } = null;
 
         /// <summary>
+        /// Optional notice when a plan limit skips a scheduled run: tenant, user, the topic name, and the refusal. Errors
+        /// it throws are logged and ignored. Set by the server.
+        /// </summary>
+        public Func<string, string, string, Exceptions.CapReachedException, CancellationToken, Task>? OnCapReached { get; set; } = null;
+
+        /// <summary>
         /// Maximum schedules or requests claimed per tick. Default 100. Minimum 1, maximum 1000.
         /// </summary>
         public int ClaimBatchSize
@@ -301,6 +307,18 @@ namespace MyMorningNews.Core.Scheduling
                 {
                     await RecordSkippedAsync(topic, schedule, "CostCapReached: " + cap.Message, nowUtc, token).ConfigureAwait(false);
                     MyMorningNewsTelemetry.Increment(MyMorningNewsTelemetry.SchedulerClaims, "outcome", "skipped_cap");
+                    if (OnCapReached != null)
+                    {
+                        try
+                        {
+                            await OnCapReached(topic.TenantId, schedule.UserId, topic.Name, cap, token).ConfigureAwait(false);
+                        }
+                        catch (Exception ex) when (!(ex is OperationCanceledException))
+                        {
+                            _Logging.Warn(_Header + "cap notice failed: " + ex.Message);
+                        }
+                    }
+
                     return false;
                 }
             }

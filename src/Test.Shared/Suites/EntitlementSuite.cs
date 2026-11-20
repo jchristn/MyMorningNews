@@ -34,6 +34,7 @@ namespace Test.Shared.Suites
             {
                 Cases.Case(S, "TopicLimit", "The Free plan allows one topic; the second is refused with 402 CapReached", TopicLimitAsync),
                 Cases.Case(S, "CostCap", "Past the monthly cost cap, runs and model calls are refused until the reset", CostCapAsync),
+                Cases.Case(S, "ScheduledCap", "A scheduled run past the cap is skipped with the reason, and the owner hears about it once a month", ScheduledCapAsync),
                 Cases.Case(S, "DailyRuns", "The daily run limit counts today's runs", DailyRunsAsync),
                 Cases.Case(S, "ScheduleAndEndpoints", "The plan's shortest schedule and its endpoint rule apply", ScheduleAndEndpointsAsync),
                 Cases.Case(S, "Meter", "The usage meter reports the plan, spend, counts, and limits", MeterAsync)
@@ -107,6 +108,33 @@ namespace Test.Shared.Suites
             }
 
             Assert.True(refused, "the model gateway refuses calls past the cap");
+        }
+
+        private static async Task ScheduledCapAsync(CancellationToken token)
+        {
+            MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+            TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
+            TestUser u = await FreeUserAsync(admin, token).ConfigureAwait(false);
+            Topic topic = await TopicAsync(u, token).ConfigureAwait(false);
+            Schedule s = (await u.Client.PostAsync("/v1.0/api/schedules", new { ownerId = topic.Id, intervalType = "DaysOfWeek", daysOfWeekMask = 127, timesOfDay = new[] { "06:30" }, timeZone = "UTC" }, token).ConfigureAwait(false))
+                .Expect(201, "daily schedule").Json<Schedule>();
+            await server.Context.Database.LlmCalls.CreateAsync(new LlmCall
+            {
+                TenantId = u.User.TenantId, UserId = u.User.Id, TopicId = topic.Id, Task = ModelTaskEnum.Synthesis, Provider = "Anthropic", Model = "claude-opus-5-5", EstimatedCostUsd = 4m, CreatedUtc = DateTime.UtcNow
+            }, token).ConfigureAwait(false);
+            DateTime now = DateTime.UtcNow;
+            for (int i = 0; i < 2; i++)
+            {
+                Schedule due = (await server.Context.Database.Schedules.ReadAsync(s.TenantId, s.Id, token).ConfigureAwait(false))!;
+                due.NextRunUtc = now.AddMinutes(-1);
+                await server.Context.Database.Schedules.UpdateAsync(due, token).ConfigureAwait(false);
+                await server.Context.Scheduling.TickAsync(now, token).ConfigureAwait(false);
+            }
+
+            List<Run> runs = (await server.Context.Database.Runs.EnumerateAsync(new MyMorningNews.Core.Requests.RunFilter { TenantId = topic.TenantId, TopicId = topic.Id, PageSize = 10 }, token).ConfigureAwait(false)).Items;
+            Assert.True(runs.Count == 2 && runs.All(r => r.Status == RunStatusEnum.Skipped && r.SkippedReason!.StartsWith("CostCapReached", StringComparison.Ordinal)), "skipped with the reason: " + String.Join(" | ", runs.Select(r => r.Status + " " + r.SkippedReason)));
+            List<EmailMessage> mail = (await server.Context.Database.EmailMessages.EnumerateAsync(new MyMorningNews.Core.Requests.EmailMessageFilter { TenantId = topic.TenantId, PageSize = 50 }, token).ConfigureAwait(false)).Items;
+            Assert.Equal(1, mail.Count(m => m.Template == EmailTemplateEnum.CapReached), "one notice this month");
         }
 
         private static async Task DailyRunsAsync(CancellationToken token)

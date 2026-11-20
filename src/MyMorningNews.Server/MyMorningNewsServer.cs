@@ -202,6 +202,26 @@ namespace MyMorningNews.Server
                 long runsToday = await _Database.Runs.CountAsync(new MyMorningNews.Core.Requests.RunFilter { TenantId = tenantId, UserId = userId, IsDryRun = false, FromUtc = today }, t).ConfigureAwait(false);
                 await entitlements.CheckCountAsync(tenantId, userId, "runs.daily.max", runsToday, "runs a day", today.AddDays(1), t).ConfigureAwait(false);
             };
+            MyMorningNews.Core.Email.EmailService capEmail = email;
+            PushService? capPush = _Push;
+            scheduling.OnCapReached = async (tenantId, userId, topicName, cap, t) =>
+            {
+                MyMorningNews.Core.Models.User? owner = await _Database.Users.ReadAsync(tenantId, userId, t).ConfigureAwait(false);
+                if (owner == null) return;
+                string period = DateTime.UtcNow.ToString("yyyyMM", System.Globalization.CultureInfo.InvariantCulture);
+                MyMorningNews.Core.Models.EmailMessage? sent = await capEmail.SendAccountEmailAsync(owner, MyMorningNews.Core.Enums.EmailTemplateEnum.CapReached, "A scheduled run was skipped",
+                    new List<string> { cap.Message, "Your topic \"" + topicName + "\" will run again when the limit resets. You can see your usage in Account settings." },
+                    new MyMorningNews.Core.Email.EmailLink("See my usage", _Context.SettingsService.Current.Rest.AppBaseUrl + "/dashboard/profile"),
+                    "cap:" + owner.Id + ":" + cap.Key + ":" + period, t).ConfigureAwait(false);
+                if (sent == null || capPush == null) return;
+                await capPush.SendToUserAsync(tenantId, userId, new PushMessage
+                {
+                    Title = "Scheduled run skipped",
+                    Body = cap.Message,
+                    ChannelId = "account",
+                    Data = new Dictionary<string, string> { { "kind", "cap.reached" }, { "key", cap.Key } }
+                }, t).ConfigureAwait(false);
+            };
             scheduling.MinimumIntervalForUser = async (tenantId, userId, t) =>
             {
                 decimal? limit = MyMorningNews.Core.Entitlements.EntitlementService.Limit(await entitlements.GetEffectiveAsync(tenantId, userId, t).ConfigureAwait(false), "schedule.minIntervalMinutes");

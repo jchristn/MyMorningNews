@@ -72,7 +72,7 @@ namespace Test.Shared.Suites
             Assert.Equal(80.0, Ranker.Composite(80, 80, 80, 80, 80, 0.45, 0.2, 0.15, 0.1, 0.1), "uniform components");
             Assert.Equal(90.0, Ranker.Composite(90, 0, 0, 0, 0, 1, 0, 0, 0, 0), "single weight");
             double weak = Ranker.Composite(19, 50, 100, 50, 50, 0.45, 0.2, 0.15, 0.1, 0.1);
-            Assert.True(weak >= 40 && Ranker.Gate(weak, 19, 50) < 40, "the gate stops a weak model score being carried over the threshold (" + weak + " to " + Ranker.Gate(weak, 19, 50) + ")");
+            Assert.True(weak >= 40 && Ranker.Gate(weak, 19, 35) < 40, "the gate stops a weak model score being carried over the threshold (" + weak + " to " + Ranker.Gate(weak, 19, 35) + ")");
             Assert.Equal(weak, Ranker.Gate(weak, 19, 0), "gate off");
             Assert.Equal(72.5, Ranker.Gate(72.5, 60, 50), "unchanged at or above the gate");
             Assert.True(Ranker.Gate(30, 45, 50) == 30, "the gate never raises a score");

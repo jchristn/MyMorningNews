@@ -6,7 +6,7 @@ All notable changes to this project are documented here. The project follows [Se
 
 ### Changed
 
-- Ranking: below a model score of 50 (`Pipeline.RelevanceGateScore`), feedback, novelty, source, and recency can no longer lift a finding above the model's own judgment, so pages the model judged weak are not carried over the display threshold (benchmark round 0).
+- Ranking: `Pipeline.RelevanceGateScore` (off by default) stops feedback, novelty, source, and recency from lifting a finding the model scored below it. Under the benchmark stub, 50 empties the off-topic briefing but hides three relevant pages on the live dataset; a paid round decides the default.
 - Update detection without embeddings: a reworded follow-up that shares enough title and summary words with an earlier finding (`Pipeline.TextUpdateSimilarity`, default 0.35) is judged by the model as a duplicate, an update, or new.
 - Client config reports whether the platform model key is configured, and the dashboard warns when an endpoint relies on a missing one. The preference line in emails says "from 1 rating".
 

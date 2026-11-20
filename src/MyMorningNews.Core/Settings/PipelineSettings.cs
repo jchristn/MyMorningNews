@@ -221,7 +221,7 @@ namespace MyMorningNews.Core.Settings
 
         /// <summary>
         /// Model score below which feedback, novelty, source, and recency can no longer lift a finding above the
-        /// model's own judgment (they are scaled in proportion). Default 50. Minimum 0 (off), maximum 100.
+        /// model's own judgment (they are scaled in proportion). Default 0 (off) until a paid benchmark round settles it; 50 fixed the off-topic case under the stub. Minimum 0, maximum 100.
         /// </summary>
         [Setting(Description = "Model score below which other ranking components stop lifting a finding (0 turns it off).", Minimum = 0, Maximum = 100)]
         public double RelevanceGateScore
@@ -297,7 +297,7 @@ namespace MyMorningNews.Core.Settings
         private int _DisplayThreshold = 40;
         private double _DuplicateSimilarity = 0.92;
         private double _BorderlineSimilarity = 0.85;
-        private double _RelevanceGateScore = 50;
+        private double _RelevanceGateScore = 0;
         private double _TextUpdateSimilarity = 0.35;
         private double _WeightLlm = 0.45;
         private double _WeightFeedback = 0.2;

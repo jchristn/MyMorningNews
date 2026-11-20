@@ -132,8 +132,6 @@
     "expand": "Espandi barra laterale",
     "label": "Navigazione principale",
     "open": "Apri navigazione",
-    "phase": "Disponibile nella fase {phase}",
-    "phaseShort": "F{phase}",
     "skip": "Vai al contenuto",
     "version": "v{version}",
     "groups": {
@@ -319,10 +317,6 @@
       "summary": "Collega Claude Code o un altro client MCP alla tua ricerca"
     }
   },
-  "placeholder": {
-    "title": "Disponibile nella fase {phase}",
-    "message": "{feature} è prevista per la fase {phase}. La navigazione è già pronta, così puoi vedere dove si troverà."
-  },
   "topbar": {
     "copyServerUrl": "Copia URL del server",
     "health": "Stato del server: {state}",
@@ -381,7 +375,6 @@
   },
   "home": {
     "summary": "Ecco cosa sta succedendo sul tuo server.",
-    "title": "Buongiorno, {name}",
     "failures": {
       "none": "Nessun errore recente",
       "noneMessage": "Tutte le richieste in questo intervallo sono riuscite.",
@@ -402,7 +395,7 @@
     },
     "next": {
       "explorer": "Prova l’API nell’esploratore",
-      "models": "Aggiungi un endpoint di modello (fase 3)",
+      "models": "Configura un endpoint di modello",
       "password": "Cambia la password predefinita",
       "title": "Prossimi passi",
       "topic": "Crea il tuo primo argomento",
@@ -412,7 +405,13 @@
       "credentials": "Credenziali",
       "none": "Nessun servizio esterno configurato.",
       "summary": "Strumenti che funzionano accanto al server",
-      "title": "Servizi esterni"
+      "title": "Servizi esterni",
+      "descriptions": {
+        "grafana": "Dashboard per metriche, tracce e log.",
+        "prometheus": "Metriche.",
+        "tempo": "Tracce.",
+        "loki": "Log."
+      }
     },
     "request": {
       "title": "Nuova richiesta",
@@ -421,6 +420,14 @@
     "overview": {
       "title": "{count, plural, one {Ultimo giorno} other {Ultimi # giorni}}",
       "more": "Apri Analisi"
+    },
+    "greeting": {
+      "morning": "Buongiorno, {name}",
+      "morningPlain": "Buongiorno",
+      "afternoon": "Buon pomeriggio, {name}",
+      "afternoonPlain": "Buon pomeriggio",
+      "evening": "Buonasera, {name}",
+      "eveningPlain": "Buonasera"
     }
   },
   "requests": {
@@ -429,8 +436,8 @@
       "allFilters": "tutte le richieste",
       "button": "Elimina corrispondenti",
       "confirm": "Elimina",
-      "done": "{count} richieste eliminate",
-      "message": "Eliminare {count} richieste corrispondenti a {filters}? L’operazione non può essere annullata.",
+      "done": "{count, plural, one {# richiesta eliminata} many {# richieste eliminate} other {# richieste eliminate}}",
+      "message": "Eliminare {count, plural, one {# richiesta corrispondente} many {# richieste corrispondenti} other {# richieste corrispondenti}} a {filters}? L’operazione non può essere annullata.",
       "title": "Elimina richieste corrispondenti"
     },
     "columns": {
@@ -622,7 +629,115 @@
       "diagnostics_maxPayloadCharacters": "Caratteri massimi del payload",
       "models_defaultChatModel": "Modello di chat predefinito",
       "models_defaultOllamaEndpoint": "Endpoint Ollama predefinito",
-      "models_defaultEmbeddingModel": "Modello di embedding predefinito"
+      "models_defaultEmbeddingModel": "Modello di embedding predefinito",
+      "rest_publicBaseUrl": "URL pubblico del server",
+      "rest_appBaseUrl": "URL pubblico dell’app",
+      "rest_mcpPublicUrl": "URL MCP pubblico",
+      "rest_eventStreamPollMs": "Intervallo di polling del flusso di eventi (ms)",
+      "rest_eventStreamMaxMinutes": "Durata massima del flusso di eventi (minuti)",
+      "auth_signatureMaxSkewSeconds": "Scarto orario delle richieste firmate (secondi)",
+      "auth_refreshTokenLifetimeDays": "Durata del token di rinnovo (giorni)",
+      "pipeline_useStreaming": "Risposte dei modelli in streaming",
+      "pipeline_scopeGuardrail": "Protezione di ambito",
+      "pipeline_maxQueriesPerRun": "Query di ricerca per esecuzione",
+      "pipeline_maxResultsPerQuery": "Risultati per query",
+      "pipeline_maxToolCallsPerRun": "Chiamate agli strumenti per esecuzione",
+      "pipeline_maxFetchesPerRun": "Pagine recuperate per esecuzione",
+      "pipeline_maxFindingsPerRun": "Risultati conservati per esecuzione",
+      "pipeline_maxDocumentCharacters": "Caratteri del documento inviati all’estrazione",
+      "pipeline_maxParallelFetches": "Recuperi di pagine in parallelo",
+      "pipeline_dedupeLookbackDays": "Periodo di controllo dei duplicati (giorni)",
+      "pipeline_noveltyLookbackDays": "Periodo di controllo della novità (giorni)",
+      "pipeline_recencyHalfLifeHours": "Emivita della recenza (ore)",
+      "pipeline_displayThreshold": "Soglia di visualizzazione",
+      "pipeline_duplicateSimilarity": "Similarità dei duplicati",
+      "pipeline_borderlineSimilarity": "Similarità al limite",
+      "pipeline_weightLlm": "Peso: giudizio del modello",
+      "pipeline_weightFeedback": "Peso: feedback",
+      "pipeline_weightNovelty": "Peso: novità",
+      "pipeline_weightSource": "Peso: reputazione della fonte",
+      "pipeline_weightRecency": "Peso: recenza",
+      "diagnostics_auditRetentionDays": "Conservazione dell’audit (giorni)",
+      "push_enabled": "Invia notifiche push",
+      "push_expoPushUrl": "URL push di Expo",
+      "push_expoAccessToken": "Token di accesso di Expo",
+      "push_timeoutMs": "Timeout push (ms)",
+      "storage_provider": "Provider di archiviazione",
+      "storage_localDirectory": "Directory locale",
+      "storage_s3Bucket": "Bucket S3",
+      "storage_s3Region": "Regione S3",
+      "storage_s3Endpoint": "Endpoint S3",
+      "storage_s3AccessKey": "ID chiave di accesso S3",
+      "storage_s3SecretKey": "Chiave di accesso segreta S3",
+      "storage_s3Prefix": "Prefisso delle chiavi S3",
+      "storage_s3ForcePathStyle": "Indirizzamento S3 in stile percorso",
+      "storage_presignedUrlMinutes": "Durata degli URL prefirmati (minuti)",
+      "storage_artifactRetentionDays": "Conservazione di report e audio (giorni)",
+      "scheduler_enabled": "Esegui il pianificatore",
+      "scheduler_pollIntervalSeconds": "Intervallo di polling del pianificatore (secondi)",
+      "scheduler_minimumIntervalMinutes": "Intervallo di pianificazione minimo (minuti)",
+      "scheduler_missedRunGraceMinutes": "Tolleranza per esecuzioni mancate (minuti)",
+      "scheduler_runPollSeconds": "Intervallo di polling della coda di esecuzione (secondi)",
+      "search_searxngUrl": "URL di SearXNG",
+      "search_hackerNewsUrl": "URL dell’API di Hacker News",
+      "search_arxivUrl": "URL dell’API di arXiv",
+      "search_userAgent": "User agent",
+      "search_respectRobots": "Rispetta robots.txt",
+      "search_fetchTimeoutMs": "Timeout di recupero (ms)",
+      "search_perDomainDelayMs": "Ritardo per dominio (ms)",
+      "search_maxFetchBytes": "Pagina massima recuperata (byte)",
+      "tts_enabled": "Genera audio",
+      "tts_endpoint": "Endpoint vocale",
+      "tts_model": "Modello vocale",
+      "tts_voice": "Voce narrante",
+      "tts_secondaryVoice": "Seconda voce",
+      "tts_maxSegmentCharacters": "Caratteri per richiesta vocale",
+      "tts_maxParallelSegments": "Richieste vocali in parallelo",
+      "tts_timeoutSeconds": "Timeout della richiesta vocale (secondi)",
+      "tts_maxAttempts": "Tentativi per episodio",
+      "tts_ffmpegPath": "Percorso di ffmpeg",
+      "tts_bitrate": "Bitrate MP3",
+      "tts_normalizeLoudness": "Normalizza il volume",
+      "email_enabled": "Invia email",
+      "email_provider": "Provider email",
+      "email_fromAddress": "Indirizzo mittente",
+      "email_fromName": "Nome mittente",
+      "email_replyToAddress": "Indirizzo di risposta",
+      "email_subjectPrefix": "Prefisso dell’oggetto",
+      "email_mailgunDomain": "Dominio Mailgun",
+      "email_mailgunApiKey": "Chiave API Mailgun",
+      "email_mailgunBaseUrl": "URL dell’API Mailgun",
+      "email_fileDirectory": "Directory del provider file",
+      "email_actionTokenLifetimeDays": "Durata dei link email (giorni)",
+      "email_recordFeedbackOnClick": "Registra il feedback all’apertura di un link",
+      "email_deliveryMaxAttempts": "Tentativi di consegna",
+      "email_deliveryIntervalSeconds": "Intervallo di consegna (secondi)",
+      "email_messageRetentionDays": "Conservazione delle email inviate (giorni)",
+      "email_publicRequestsPerMinute": "Richieste alle pagine pubbliche al minuto",
+      "learning_enabled": "Impara dal feedback",
+      "learning_feedbackPerPass": "Feedback per ciclo di apprendimento",
+      "learning_autoApply": "Applica automaticamente le preferenze apprese",
+      "learning_intervalMinutes": "Intervallo di apprendimento (minuti)",
+      "learning_feedbackNeighbors": "Risultati valutati confrontati",
+      "hosting_publicSignupEnabled": "Apri la registrazione pubblica",
+      "hosting_defaultPlanKey": "Piano predefinito",
+      "hosting_promoChecksPerMinute": "Verifiche dei codici promozionali al minuto",
+      "hosting_requireEmailVerification": "Richiedi la verifica dell’email",
+      "hosting_turnstileSecretKey": "Chiave segreta Turnstile",
+      "hosting_turnstileSiteKey": "Chiave del sito Turnstile",
+      "hosting_signupsPerIpPerHour": "Registrazioni per IP all’ora",
+      "hosting_verificationHours": "Durata del link di verifica (ore)",
+      "hosting_passwordResetMinutes": "Durata del link di reimpostazione password (minuti)",
+      "hosting_deletionGraceDays": "Tolleranza per l’eliminazione dell’account (giorni)",
+      "hosting_restrictPrivateNetworks": "Blocca le reti private",
+      "hosting_usePlatformCredentials": "Usa la chiave del modello della piattaforma",
+      "hosting_requestsPerMinutePerIp": "Richieste API al minuto per IP",
+      "hosting_trustForwardedFor": "Considera attendibile X-Forwarded-For",
+      "hosting_allowedPrivateHosts": "Host privati consentiti",
+      "hosting_termsVersion": "Versione dei termini",
+      "hosting_minimumAge": "Età minima",
+      "hosting_appleTeamId": "Apple Team ID",
+      "hosting_mobileAppId": "ID dell’app mobile"
     }
   },
   "serverInfo": {
@@ -1987,6 +2102,33 @@
       "enable": "Usa la ricerca agentica per questo argomento",
       "tools": "Strumenti MCP consentiti",
       "noTools": "Nessuno strumento MCP è ancora attivo."
+    },
+    "schedule": {
+      "pausedItem": "{schedule} (in pausa)",
+      "viaEditions": "Ricercato per {editions}",
+      "paused": "In pausa"
+    },
+    "prompts": {
+      "add": "Personalizza un prompt",
+      "help": "Prompt che questo argomento usa al posto di quelli del tenant. Tutti gli altri prompt usano la versione del tenant.",
+      "emptyTitle": "Nessuna personalizzazione dei prompt",
+      "emptyMessage": "Questo argomento usa i prompt del tenant.",
+      "allPrompts": "Tutti i prompt"
+    },
+    "models": {
+      "help": "Il modello usato da ogni attività per questo argomento. Un’assegnazione per questo argomento prevale su quella del tenant.",
+      "task": "Attività",
+      "endpoint": "Endpoint",
+      "model": "Modello",
+      "source": "Impostato da",
+      "none": "Nessun endpoint",
+      "scope": {
+        "topic": "Questo argomento",
+        "tenant": "Predefinito del tenant",
+        "fallback": "Primo endpoint disponibile"
+      },
+      "change": "Modifica le assegnazioni nella pagina Modelli di IA",
+      "view": "Visualizza le assegnazioni nella pagina Modelli di IA"
     }
   },
   "wizard": {
@@ -2184,7 +2326,7 @@
       "summary": "Riepilogo",
       "id": "ID",
       "findings": "Nuovi risultati",
-      "findingsTitle": "{duplicates} duplicati ignorati",
+      "findingsTitle": "{duplicates, plural, one {# duplicato ignorato} many {# duplicati ignorati} other {# duplicati ignorati}}",
       "sources": "Fonti",
       "cost": "Costo"
     },
@@ -2201,7 +2343,11 @@
       "duplicates": "Duplicati",
       "tokens": "Token",
       "tokenSplit": "{input} in ingresso, {output} in uscita",
-      "cost": "Costo stimato"
+      "cost": "Costo stimato",
+      "modelUsage": "Utilizzo dei modelli",
+      "notRecorded": "Non registrato",
+      "notRecordedHelp": "Per questa esecuzione non è stata registrata alcuna chiamata ai modelli.",
+      "costPending": "Senza prezzo"
     },
     "stages": {
       "empty": "Nessuna fase registrata per questa esecuzione.",
@@ -2511,10 +2657,11 @@
     "kpis": {
       "open": "Aperte",
       "graded": "Valutate",
-      "ofTotal": "su {total} previsioni",
+      "ofTotal": "{total, plural, one {su # previsione} many {su # previsioni} other {su # previsioni}}",
       "accuracy": "Accuratezza osservata",
       "accuracyHelp": "Parzialmente accurata conta come metà.",
-      "brier": "Punteggio di Brier medio"
+      "brier": "Punteggio di Brier medio",
+      "proposed": "{count, plural, one {# in attesa del tuo giudizio} many {# in attesa del tuo giudizio} other {# in attesa del tuo giudizio}}"
     },
     "calibration": {
       "title": "Calibrazione",
@@ -2638,7 +2785,7 @@
       },
       "noFiles": "Nessun file archiviato.",
       "openRun": "Apri l’esecuzione",
-      "stats": "{minutes} min di lettura, {words} parole, {items} elementi",
+      "stats": "{minutes} min di lettura, {words, plural, one {# parola} many {# parole} other {# parole}}, {items, plural, one {# elemento} many {# elementi} other {# elementi}}",
       "failed": "Composizione non riuscita.",
       "noContent": "Questo briefing non ha contenuti.",
       "items": "In questo briefing ({count})",
@@ -3713,7 +3860,7 @@
       "quoteFailure": "Tasso di citazioni non verificate",
       "quoteFailureHelp": "Citazioni che non hanno superato la verifica",
       "modelCost": "Costo dei modelli",
-      "modelCalls": "{count} chiamate al modello"
+      "modelCalls": "{count, plural, one {# chiamata al modello} many {# chiamate al modello} other {# chiamate al modello}}"
     },
     "email": {
       "total": "Messaggi",
@@ -3753,7 +3900,8 @@
       "body": "Crea una chiave di accesso e un segreto per il client MCP, così potrai revocarli in seguito senza cambiare la password. Copia il segreto quando viene creato; viene mostrato una sola volta.",
       "authMode": "Scegli la modalità di autenticazione Intestazione diretta o Ibrida: un client Streamable HTTP invia la chiave e il segreto a ogni richiesta, cosa che le chiavi Richieste firmate e Scambio di sessione rifiutano.",
       "create": "Crea una chiave di accesso",
-      "askAdmin": "Le chiavi di accesso vengono create da un amministratore. Chiedi al tuo una chiave di accesso con la modalità di autenticazione Intestazione diretta."
+      "askAdmin": "Le chiavi di accesso vengono create da un amministratore. Chiedi al tuo una chiave di accesso con la modalità di autenticazione Intestazione diretta.",
+      "titleMember": "Ottieni una chiave di accesso"
     },
     "connect": {
       "title": "Collega un client",
@@ -3799,7 +3947,8 @@
     "empty": {
       "title": "Ancora nessuna fonte",
       "message": "Le fonti compaiono dopo che un’esecuzione cerca sul web e recupera pagine per uno dei tuoi argomenti."
-    }
+    },
+    "runLabel": "Esecuzione del {when}"
   },
   "auth": {
     "resend": "Invia un nuovo link",
@@ -3827,7 +3976,7 @@
     "verify": {
       "title": "Conferma la tua email",
       "done": "La tua email è confermata. Ora puoi accedere.",
-      "failed": "Questo link è scaduto o è già stato usato. Inserisci la tua email per riceverne uno nuovo."
+      "failed": "Questo link non è valido o è scaduto. Inserisci la tua email per riceverne uno nuovo."
     },
     "forgot": {
       "title": "Reimposta la password",
@@ -3847,10 +3996,10 @@
     "about": "Registra server MCP remoti i cui strumenti possono essere chiamati dalla ricerca agentica. Scopri gli strumenti di un server, attiva quelli di cui ti fidi, poi consentili su un argomento.",
     "created": "Server registrato.",
     "test": "Verifica connessione",
-    "testOk": "Connesso. Il server offre {count} strumenti.",
+    "testOk": "Connesso. Il server offre {count, plural, one {# strumento} many {# strumenti} other {# strumenti}}.",
     "testFailed": "Impossibile connettersi: {error}",
     "discover": "Scopri strumenti",
-    "discovered": "{count} strumenti salvati.",
+    "discovered": "{count, plural, one {# strumento salvato} many {# strumenti salvati} other {# strumenti salvati}}.",
     "columns": {
       "name": "Nome",
       "transport": "Trasporto",
@@ -4007,5 +4156,22 @@
       "help": "Quota dei risultati di ogni provider che hanno portato a un risultato pari o superiore alla soglia di visualizzazione.",
       "label": "{provider} ({used} su {results})"
     }
+  },
+  "modelKeys": {
+    "title": "L’endpoint del modello non ha una chiave API utilizzabile",
+    "problem": {
+      "missing": "{name} non ha una chiave API, quindi le chiamate non riescono.",
+      "notFound": "{name} usa una credenziale salvata che non esiste più.",
+      "inactive": "{name} usa una credenziale salvata disattivata.",
+      "expired": "{name} usa una credenziale salvata scaduta."
+    },
+    "fix": "Aggiungi una chiave a {name}",
+    "view": "Visualizza gli endpoint dei modelli",
+    "consequence": {
+      "general": "Il perfezionamento degli argomenti, le esecuzioni di ricerca e i briefing richiedono un modello funzionante, quindi non riescono finché il problema non viene risolto.",
+      "wizard": "La procedura guidata chiede al modello di proporre dimensioni e domande, quindi non riesce già al primo passaggio finché il problema non viene risolto."
+    },
+    "askAdmin": "Solo un amministratore del tenant può aggiungere una chiave. Chiedi al tuo di risolvere il problema.",
+    "badge": "Nessuna chiave API"
   }
 }

@@ -48,14 +48,13 @@ export default function Sidebar() {
                         <NavLink
                           key={item.path}
                           to={'/dashboard/' + item.path}
-                          className={({ isActive }) => 'nav-item' + (isActive ? ' active' : '') + (item.phase ? ' upcoming' : '')}
+                          className={({ isActive }) => 'nav-item' + (isActive ? ' active' : '')}
                           title={sidebarCollapsed ? label : undefined}
                           aria-label={sidebarCollapsed ? label : undefined}
                           onClick={() => setMobileNavOpen(false)}
                         >
                           <item.icon size={16} aria-hidden="true" />
                           {!sidebarCollapsed ? <span className="nav-item-label">{label}</span> : null}
-                          {!sidebarCollapsed && item.phase ? <span className="nav-phase" title={t('nav.phase', { phase: item.phase })}>{t('nav.phaseShort', { phase: item.phase })}</span> : null}
                         </NavLink>
                       );
                     })

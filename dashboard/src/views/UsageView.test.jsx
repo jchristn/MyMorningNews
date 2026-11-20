@@ -50,7 +50,7 @@ describe('UsageView', () => {
     expect(client.getUsageTimeseries.mock.calls[0][0].bucketMinutes).toBe(1440);
   });
 
-  it('falls back to the member view of their own usage when the tenant report is forbidden', async () => {
+  it('shows a member their own usage without requesting the tenant report', async () => {
     const client = renderRoute('/dashboard/insights/usage', {
       getTokenDetails: async () => MEMBER_DETAILS,
       getUsageReport: vi.fn(forbidden),
@@ -61,6 +61,8 @@ describe('UsageView', () => {
     expect(await screen.findByText(/This is your own usage/)).toBeInTheDocument();
     expect((await screen.findAllByText('Refinement')).length).toBeGreaterThan(0);
     await waitFor(() => expect(client.getMyUsage).toHaveBeenCalledWith(expect.objectContaining({ groupBy: 'Task' })));
+    expect(client.getUsageReport).not.toHaveBeenCalled();
+    expect(client.getUsageTimeseries).not.toHaveBeenCalled();
   });
 });
 

@@ -5,18 +5,23 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext.jsx';
 import useFormat from '../hooks/useFormat.js';
 import useLocalStorage from '../hooks/useLocalStorage.js';
+import { greeting } from '../utils/greeting.js';
 import RequestActivityChart from '../charts/RequestActivityChart.jsx';
 import CopyButton from '../components/CopyButton.jsx';
 import DateCell from '../components/DateCell.jsx';
 import EmptyState from '../components/EmptyState.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import KpiTile from '../components/KpiTile.jsx';
+import ModelKeyWarning from '../components/ModelKeyWarning.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import StatusBadge, { methodTone, statusTone } from '../components/StatusBadge.jsx';
 import OverviewTiles from './insights/OverviewTiles.jsx';
 import { insightsQuery } from './insights/insightsData.js';
 import RequestForm from './requests/RequestForm.jsx';
 import RunCharts from './runs/RunCharts.jsx';
+
+// Descriptions for the observability services the server lists, by service name. Others show the server's text.
+const SERVICE_DESCRIPTIONS = { grafana: 'grafana', prometheus: 'prometheus', tempo: 'tempo', loki: 'loki' };
 
 // Headline numbers Home shows from the Insights overview, for the last OVERVIEW_DAYS days.
 const OVERVIEW_KEYS = ['runs', 'findings', 'precision', 'briefings', 'feedback', 'cost'];
@@ -27,7 +32,7 @@ export default function HomeView() {
   const { t } = useTranslation();
   const f = useFormat();
   const navigate = useNavigate();
-  const { apiClient, identity, isTenantAdmin } = useAuth();
+  const { apiClient, identity, isTenantAdmin, profile, timeZone } = useAuth();
   const [rangeId, setRangeId] = useLocalStorage('mymorningnews.home.range', 'day');
   const [health, setHealth] = useState(null);
   const [info, setInfo] = useState(null);
@@ -73,12 +78,13 @@ export default function HomeView() {
     load();
   }, [load]);
 
+  const hello = greeting(profile, loadedAt || new Date(), timeZone);
   const failureRate = summary && summary.totalCount > 0 ? summary.totalFailure / summary.totalCount : 0;
 
   return (
     <div className="page">
       <PageHeader
-        title={t('home.title', { name: identity && identity.email ? identity.email.split('@')[0] : '' })}
+        title={t('home.greeting.' + hello.id, hello.values)}
         summary={t('home.summary')}
         meta={loadedAt ? <span className="muted small">{t('common.lastLoaded', { time: f.time(loadedAt) })}</span> : null}
         actions={
@@ -87,6 +93,8 @@ export default function HomeView() {
           </button>
         }
       />
+
+      <ModelKeyWarning />
 
       <div className="kpi-grid">
         <KpiTile
@@ -160,7 +168,6 @@ export default function HomeView() {
               <button type="button" className="link-button" onClick={() => navigate('/dashboard/models')}>
                 {t('home.next.models')}
               </button>
-              <span className="muted small">{t('nav.phase', { phase: 3 })}</span>
             </li>
             <li>
               <button type="button" className="link-button" onClick={() => navigate('/dashboard/profile')}>
@@ -208,14 +215,18 @@ export default function HomeView() {
             {info.externalServices.map((s) => (
               <div className="service-item" key={s.name}>
                 <strong>{s.name}</strong>
-                {s.description ? <span className="muted small">{s.description}</span> : null}
+                {s.description || SERVICE_DESCRIPTIONS[String(s.name).toLowerCase()] ? (
+                  <span className="muted small" dir="auto">
+                    {SERVICE_DESCRIPTIONS[String(s.name).toLowerCase()] ? t('home.services.descriptions.' + SERVICE_DESCRIPTIONS[String(s.name).toLowerCase()]) : s.description}
+                  </span>
+                ) : null}
                 <span className="service-url">
                   <a href={s.url} target="_blank" rel="noreferrer" className="mono truncate">
                     {s.url}
                   </a>
                   <CopyButton value={s.url} labelKey="common.copyUrl" />
                 </span>
-                {s.credentials ? (
+                {s.credentials && isTenantAdmin ? (
                   <span className="small">
                     {t('home.services.credentials')} <code>{s.credentials}</code>
                   </span>

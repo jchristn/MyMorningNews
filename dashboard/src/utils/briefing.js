@@ -62,16 +62,33 @@ export function linkCitations(markdown) {
     .join('\n');
 }
 
-// Parse a Sources section ("1. [Title](url), domain, date") into numbered entries. Lines that are not numbered list
-// items continue the previous entry. Returns [] when the body has no numbered items.
-export function parseSourceList(body) {
+// Split a Sources section ("1. [Title](url), domain, date") into numbered entries and any text after the list.
+// Indented or adjacent lines continue the previous entry; a blank line ends it, so a closing note after the list
+// (a footnote) stays its own paragraph in `trailing` instead of running into the last source.
+export function splitSourceList(body) {
   const entries = [];
+  const trailing = [];
+  let open = false;
   for (const line of String(body || '').split('\n')) {
     const m = /^\s*(\d{1,3})[.)]\s+(.*)$/.exec(line);
-    if (m) entries.push({ number: Number(m[1]), text: m[2].trim() });
-    else if (entries.length > 0 && line.trim()) entries[entries.length - 1].text += ' ' + line.trim();
+    if (m && trailing.length === 0) {
+      entries.push({ number: Number(m[1]), text: m[2].trim() });
+      open = true;
+    } else if (!line.trim()) {
+      open = false;
+      if (trailing.length > 0) trailing.push('');
+    } else if (open && entries.length > 0) {
+      entries[entries.length - 1].text += ' ' + line.trim();
+    } else if (entries.length > 0) {
+      trailing.push(line);
+    }
   }
-  return entries;
+  return { entries, trailing: trailing.join('\n').trim() };
+}
+
+// The numbered entries of a Sources section. Returns [] when the body has no numbered items.
+export function parseSourceList(body) {
+  return splitSourceList(body).entries;
 }
 
 // Match a split chunk to the stored section with the same heading (case-insensitive), else by position.

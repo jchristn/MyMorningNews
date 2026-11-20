@@ -74,8 +74,9 @@ Outline.propTypes = {
 
 const FEEDBACK_TYPES = ['Finding', 'Prediction', 'Suggestion'];
 
-// Findings, predictions, and suggestions the briefing used, grouped by section, with links to each.
-function ItemList({ items, sections }) {
+// Findings, predictions, and suggestions the briefing used, grouped by section, each by its title (the server sends
+// titles by item ID) with a link to it. An item without a title falls back to its ID.
+function ItemList({ items, sections, titles = {} }) {
   const { t } = useTranslation();
   const groups = useMemo(() => {
     const bySection = new Map();
@@ -115,12 +116,26 @@ function ItemList({ items, sections }) {
                       {'[' + item.citationNumber + ']'}
                     </a>
                   ) : null}
-                  <CopyableId value={item.itemId} />
-                  {href ? (
-                    <Link to={href} className="small">
-                      {t('briefings.reader.open.' + item.itemType)}
-                    </Link>
-                  ) : null}
+                  {titles[item.itemId] ? (
+                    href ? (
+                      <Link to={href} className="briefing-item-title" dir="auto" title={t('briefings.reader.open.' + item.itemType)}>
+                        {titles[item.itemId]}
+                      </Link>
+                    ) : (
+                      <span className="briefing-item-title" dir="auto">
+                        {titles[item.itemId]}
+                      </span>
+                    )
+                  ) : (
+                    <>
+                      <CopyableId value={item.itemId} />
+                      {href ? (
+                        <Link to={href} className="small">
+                          {t('briefings.reader.open.' + item.itemType)}
+                        </Link>
+                      ) : null}
+                    </>
+                  )}
                   {FEEDBACK_TYPES.includes(item.itemType) ? <FeedbackControl targetType={item.itemType} targetId={item.itemId} compact label={t('feedbackControl.rateType', { type: t('enums.briefingItemType.' + item.itemType) })} /> : null}
                 </li>
               );
@@ -132,7 +147,7 @@ function ItemList({ items, sections }) {
   );
 }
 
-ItemList.propTypes = { items: PropTypes.array.isRequired, sections: PropTypes.array.isRequired };
+ItemList.propTypes = { items: PropTypes.array.isRequired, sections: PropTypes.array.isRequired, titles: PropTypes.object };
 
 function FileList({ files, onDownload }) {
   const { t } = useTranslation();
@@ -290,7 +305,7 @@ export default function BriefingReader({ briefingId }) {
               </span>
             ))}
             {briefing.composedUtc ? <span className="muted small">{f.dateTime(briefing.composedUtc)}</span> : null}
-            {ready ? <span className="muted small">{t('briefings.reader.stats', { minutes: briefing.readMinutes || 0, words: f.number(briefing.wordCount || 0), items: briefing.itemCount || 0 })}</span> : null}
+            {ready ? <span className="muted small">{t('briefings.reader.stats', { minutes: briefing.readMinutes || 0, words: briefing.wordCount || 0, items: briefing.itemCount || 0 })}</span> : null}
           </div>
         }
         actions={
@@ -393,7 +408,7 @@ export default function BriefingReader({ briefingId }) {
       <div className="two-column">
         <section className="panel">
           <h2>{t('briefings.reader.items', { count: items.length })}</h2>
-          <ItemList items={items} sections={sections} />
+          <ItemList items={items} sections={sections} titles={detail.itemTitles || {}} />
         </section>
         <section className="panel">
           <h2>{t('briefings.reader.files')}</h2>

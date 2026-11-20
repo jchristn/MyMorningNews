@@ -6,7 +6,6 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { fieldErrors } from '../utils/errors.js';
 import ConfirmModal from '../components/ConfirmModal.jsx';
 import ErrorState from '../components/ErrorState.jsx';
-import FormField from '../components/FormField.jsx';
 import JsonViewerModal from '../components/JsonViewerModal.jsx';
 import LoadingState from '../components/LoadingState.jsx';
 import PageHeader from '../components/PageHeader.jsx';
@@ -14,6 +13,30 @@ import StatusBadge from '../components/StatusBadge.jsx';
 import SendTestEmailButton from './email/SendTestEmailButton.jsx';
 
 const MASK = '********';
+
+// String settings that hold prose (the scope guardrail) or tend to run long get a multi-line text area.
+const LONG_TEXT_PATHS = ['pipeline.scopeGuardrail'];
+const LONG_TEXT_LENGTH = 80;
+
+export function isLongText(field, value) {
+  if (field.type !== 'string' || field.secret) return false;
+  return LONG_TEXT_PATHS.includes(field.path) || String(value ?? '').length > LONG_TEXT_LENGTH;
+}
+
+function humanize(name) {
+  const words = String(name)
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/[._-]+/g, ' ')
+    .trim()
+    .toLowerCase();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+// The translated label for a setting. Every field the server lists has one under settings.fields; a field added on
+// the server before the dashboard knows it shows its humanized property name.
+export function settingLabel(t, field) {
+  return t('settings.fields.' + field.path.replace('.', '_'), { defaultValue: humanize(field.name || field.path) });
+}
 
 function getAt(obj, path) {
   return path.split('.').reduce((o, k) => (o ? o[k] : undefined), obj);
@@ -173,6 +196,9 @@ export default function SettingsView() {
         />
       );
     }
+    if (isLongText(field, getAt(data.settings, field.path))) {
+      return <textarea id={id} rows={field.path === 'pipeline.scopeGuardrail' ? 6 : 3} value={value ?? ''} onChange={(e) => change(e.target.value)} disabled={disabled} />;
+    }
     return <input id={id} type="text" value={value ?? ''} onChange={(e) => change(e.target.value)} disabled={disabled} />;
   }
 
@@ -214,25 +240,35 @@ export default function SettingsView() {
               <SendTestEmailButton />
             </div>
           ) : null}
-          <div className="form-grid">
-            {fields.map((field) => (
-              <FormField
-                key={field.path}
-                id={'setting-' + field.path}
-                label={t('settings.fields.' + field.path.replace('.', '_'), { defaultValue: field.name })}
-                help={field.overriddenByEnvironment ? t('settings.overridden', { variable: field.environmentVariable || '' }) : field.description}
-                error={errors[field.path]}
-                badges={
-                  <span className="field-badges">
-                    {field.restartRequired ? <StatusBadge tone="warning">{t('settings.restartRequired')}</StatusBadge> : <StatusBadge tone="success">{t('settings.live')}</StatusBadge>}
-                    {field.overriddenByEnvironment ? <StatusBadge tone="info">{t('settings.environment')}</StatusBadge> : null}
-                    {field.secret ? <StatusBadge tone="neutral">{field.isSet ? t('settings.set') : t('settings.notSet')}</StatusBadge> : null}
-                  </span>
-                }
-              >
-                {renderControl(field)}
-              </FormField>
-            ))}
+          <div className="form-grid settings-grid">
+            {fields.map((field) => {
+              const id = 'setting-' + field.path;
+              const error = errors[field.path];
+              return (
+                <div key={field.path} className={'form-field settings-field' + (isLongText(field, getAt(data.settings, field.path)) ? ' wide' : '') + (error ? ' has-error' : '')}>
+                  <label htmlFor={id} className="field-label">
+                    {settingLabel(t, field)}
+                  </label>
+                  {renderControl(field)}
+                  <div className="settings-meta">
+                    <span className="field-badges">
+                      {field.restartRequired ? <StatusBadge tone="warning">{t('settings.restartRequired')}</StatusBadge> : <StatusBadge tone="success">{t('settings.live')}</StatusBadge>}
+                      {field.overriddenByEnvironment ? <StatusBadge tone="info">{t('settings.environment')}</StatusBadge> : null}
+                      {field.secret ? <StatusBadge tone="neutral">{field.isSet ? t('settings.set') : t('settings.notSet')}</StatusBadge> : null}
+                    </span>
+                    {error ? (
+                      <span className="field-error" role="alert">
+                        {error}
+                      </span>
+                    ) : (
+                      <span className="field-help muted" dir="auto">
+                        {field.overriddenByEnvironment ? t('settings.overridden', { variable: field.environmentVariable || '' }) : field.description}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </fieldset>
       ))}

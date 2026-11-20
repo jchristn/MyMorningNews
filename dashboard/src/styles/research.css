@@ -28,14 +28,6 @@ ol.chip-list {
   display: block;
 }
 
-.tabs button.upcoming {
-  color: var(--color-text-muted);
-}
-
-.tabs button .nav-phase {
-  margin-inline-start: 6px;
-}
-
 .brief-box {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);

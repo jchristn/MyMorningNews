@@ -9,6 +9,7 @@ import { describeError } from '../../../utils/errors.js';
 import ConfirmModal from '../../../components/ConfirmModal.jsx';
 import ErrorState from '../../../components/ErrorState.jsx';
 import LoadingState from '../../../components/LoadingState.jsx';
+import ModelKeyWarning from '../../../components/ModelKeyWarning.jsx';
 import PageHeader from '../../../components/PageHeader.jsx';
 import StatusBadge from '../../../components/StatusBadge.jsx';
 import { TOPIC_STATUS_TONES } from '../../../utils/enums.js';
@@ -17,6 +18,9 @@ import DescribeStep from './DescribeStep.jsx';
 import { DeliveryStep, ReviewStep, SourcesStep } from './FinishSteps.jsx';
 import { FailurePanel, GenerationPanel, StepRail } from './WizardParts.jsx';
 import { advancePlan, initialWizardState, isCompleted, previousStep, stepAvailable, wizardReducer } from './wizardState.js';
+
+// The wizard's model calls all run under the Refinement task role.
+const WIZARD_TASKS = ['Refinement'];
 
 const STEP_GENERATION = { Dimensions: 'dimensions', Questions: 'questions', Context: 'context', Sources: 'sources' };
 
@@ -263,6 +267,7 @@ export default function RefinementWizard({ mode }) {
     return (
       <div className="page">
         <PageHeader title={t('wizard.refineTitle', { name: boot.topic ? boot.topic.name : '' })} summary={t('wizard.refineSummary')} />
+        <ModelKeyWarning tasks={WIZARD_TASKS} context="wizard" />
         <section className="panel stack">
           <ErrorState error={startError} inline onDismiss={() => setStartError(null)} />
           <p>{t('wizard.refineStart', { name: boot.topic ? boot.topic.name : '' })}</p>
@@ -300,6 +305,7 @@ export default function RefinementWizard({ mode }) {
         }
         actions={headerActions}
       />
+      {step === 'Describe' ? <ModelKeyWarning tasks={WIZARD_TASKS} context="wizard" /> : null}
       <div className="wizard-layout">
         <StepRail step={step} data={data} onSelect={(s) => dispatch({ type: 'goto', step: s })} disabled={busy} />
         <section className="panel wizard-panel" aria-labelledby="wizard-step-title">

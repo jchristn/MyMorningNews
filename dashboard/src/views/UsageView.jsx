@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext.jsx';
+import useCanReadCalls from '../hooks/useCanReadCalls.js';
 import useDebounce from '../hooks/useDebounce.js';
 import useFormat from '../hooks/useFormat.js';
 import useLocalStorage from '../hooks/useLocalStorage.js';
@@ -82,6 +83,8 @@ export default function UsageView() {
   const { t } = useTranslation();
   const f = useFormat();
   const { apiClient, isTenantAdmin, identity } = useAuth();
+  // Tenant-wide usage needs the accounting permission; members see their own usage without probing for it first.
+  const canReadUsage = useCanReadCalls();
   const { endpoints } = useModelEndpoints();
   const [rangeId, setRangeId] = useLocalStorage('mymorningnews.usage.range', 'month');
   const [filters, setFilters] = useState(EMPTY_FILTERS);
@@ -93,11 +96,11 @@ export default function UsageView() {
   const [series, setSeries] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [memberMode, setMemberMode] = useState(false);
+  const [memberMode, setMemberMode] = useState(!canReadUsage);
   const [users, setUsers] = useState([]);
   const requestId = useRef(0);
   const inFlight = useRef(new Set());
-  const memberRef = useRef(false);
+  const memberRef = useRef(!canReadUsage);
   const [memberTick, setMemberTick] = useState(0);
   const range =USAGE_RANGES[rangeId] ? rangeId : 'month';
 
@@ -132,7 +135,7 @@ export default function UsageView() {
     setError(null);
     const groups = Array.from(new Set([...BASE_GROUPS, breakdownGroup, mixGroup])).filter((g) => g !== 'Model');
     try {
-      // One request first doubles as the permission probe, so members see a single 403 rather than one per grouping.
+      // One request first, so a caller the role flags misjudge sees a single 403 rather than one per grouping.
       const model = await fetchGroup('Model', base);
       const [timeseries, ...results] = await Promise.all([apiClient.getUsageTimeseries({ ...base, bucketMinutes: r.bucketMinutes }), ...groups.map((g) => fetchGroup(g, base))]);
       if (id !== requestId.current) return;

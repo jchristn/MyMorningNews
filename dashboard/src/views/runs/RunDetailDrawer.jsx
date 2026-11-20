@@ -109,6 +109,9 @@ export default function RunDetailDrawer({ runId, topicLabel, onClose, onChanged,
   const duration = run && run.durationMs > 0 && !isActiveRun(run) ? run.durationMs : runDurationMs(run);
   const failed = failedStages(stages);
   const tokens = run ? (run.inputTokens || 0) + (run.outputTokens || 0) : 0;
+  const hasCost = Boolean(run) && run.estimatedCostUsd !== null && run.estimatedCostUsd !== undefined;
+  // A finished run that recorded no tokens and no cost made no accounted model calls (or predates accounting).
+  const usageUnrecorded = Boolean(run) && isFinishedRun(run) && tokens === 0 && (!hasCost || Number(run.estimatedCostUsd) === 0);
   return (
     <Modal
       open={Boolean(runId)}
@@ -170,8 +173,14 @@ export default function RunDetailDrawer({ runId, topicLabel, onClose, onChanged,
             <KpiTile label={t('runs.totals.sources')} value={f.number(run.sourceCount || 0)} />
             <KpiTile label={t('runs.totals.newFindings')} value={f.number(run.newFindingCount || 0)} tone={run.newFindingCount > 0 ? 'success' : 'neutral'} />
             <KpiTile label={t('runs.totals.duplicates')} value={f.number(run.duplicateCount || 0)} />
-            <KpiTile label={t('runs.totals.tokens')} value={f.compact(tokens)} detail={t('runs.totals.tokenSplit', { input: f.compact(run.inputTokens || 0), output: f.compact(run.outputTokens || 0) })} />
-            <KpiTile label={t('runs.totals.cost')} value={run.estimatedCostUsd === null || run.estimatedCostUsd === undefined ? '-' : f.usd(run.estimatedCostUsd)} />
+            {usageUnrecorded ? (
+              <KpiTile label={t('runs.totals.modelUsage')} value={t('runs.totals.notRecorded')} detail={t('runs.totals.notRecordedHelp')} />
+            ) : (
+              <>
+                <KpiTile label={t('runs.totals.tokens')} value={f.compact(tokens)} detail={t('runs.totals.tokenSplit', { input: f.compact(run.inputTokens || 0), output: f.compact(run.outputTokens || 0) })} />
+                <KpiTile label={t('runs.totals.cost')} value={hasCost ? f.usd(run.estimatedCostUsd) : t('runs.totals.costPending')} />
+              </>
+            )}
           </div>
           <div className="row-actions">
             <Link className="button secondary small" to={findingsLink(run)}>

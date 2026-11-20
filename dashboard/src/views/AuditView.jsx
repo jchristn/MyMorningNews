@@ -55,7 +55,7 @@ export default function AuditView() {
       filter: { type: 'select', param: 'eventType', options: AUDIT_EVENT_TYPES.map((v) => ({ value: v, label: t('audit.events.' + v) })) },
       render: (r) => <StatusBadge tone={eventTone(r.eventType)}>{t('audit.events.' + r.eventType, { defaultValue: r.eventType })}</StatusBadge>
     },
-    { key: 'principalId', header: t('audit.columns.principal'), filter: { type: 'text', param: 'principalId' }, render: (r) => <span className="mono truncate">{r.principalId || ''}</span> },
+    { key: 'principalId', header: t('audit.columns.principal'), filter: { type: 'text', param: 'principalId' }, render: (r) => <span className="mono truncate cell-id-short" title={r.principalId || ''}>{r.principalId || ''}</span> },
     { key: 'requiredPermission', header: t('audit.columns.permission'), render: (r) => <span className="mono">{r.requiredPermission || ''}</span> },
     {
       key: 'authorizationResult',
@@ -63,8 +63,8 @@ export default function AuditView() {
       filter: { type: 'select', param: 'authorizationResult', options: AUTHZ.map((v) => ({ value: v, label: t('audit.authz.' + v) })) },
       render: (r) => (r.authorizationResult ? t('audit.authz.' + r.authorizationResult, { defaultValue: r.authorizationResult }) : '')
     },
-    { key: 'path', header: t('audit.columns.path'), render: (r) => <span className="mono truncate">{(r.method ? r.method + ' ' : '') + (r.path || '')}</span> },
-    { key: 'reason', header: t('audit.columns.reason'), render: (r) => <span className="truncate" title={r.reason || ''}>{r.reason || r.description || ''}</span> },
+    { key: 'path', header: t('audit.columns.path'), render: (r) => <span className="mono truncate cell-path-short" title={(r.method ? r.method + ' ' : '') + (r.path || '')}>{(r.method ? r.method + ' ' : '') + (r.path || '')}</span> },
+    { key: 'reason', header: t('audit.columns.reason'), render: (r) => <span className="cell-text" title={r.reason || ''}>{r.reason || r.description || ''}</span> },
     { key: 'sourceIp', header: t('audit.columns.sourceIp'), defaultHidden: true, render: (r) => <span className="mono">{r.sourceIp || ''}</span> },
     { key: 'tenantId', header: t('audit.columns.tenant'), defaultHidden: true, render: (r) => <span className="mono">{r.tenantId || ''}</span> }
   ];

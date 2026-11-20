@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MEMBER_DETAILS } from '../../test/fakeClient.js';
 import { forbidden, page, renderRoute } from '../../test/renderRoute.jsx';
 import { RUN, TOPIC } from '../../test/researchFixtures.js';
 
@@ -63,6 +64,7 @@ describe('Run model calls', () => {
 
   it('shows the calls without links for a caller who cannot read the call log', async () => {
     renderRoute('/dashboard/runs?run=run_1', {
+      getTokenDetails: vi.fn(async () => MEMBER_DETAILS),
       listRuns: vi.fn(async () => page([RUN])),
       getRun: vi.fn(async () => RUN),
       listLlmCalls: vi.fn(forbidden),

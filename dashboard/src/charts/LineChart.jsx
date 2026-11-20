@@ -1,22 +1,23 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { useLocale } from '../i18n/index.js';
-import { formatDateTime, formatNumber } from '../i18n/formatters.js';
+import useFormat from '../hooks/useFormat.js';
+import { formatNumber } from '../i18n/formatters.js';
 import ChartTooltip from './ChartTooltip.jsx';
 import useChartWidth from './useChartWidth.js';
 
 const TOP = 10;
 const BOTTOM = 22;
 
-function bucketLabel(startUtc, bucketMinutes, locale) {
+function bucketLabel(startUtc, bucketMinutes, f) {
   const options = bucketMinutes >= 1440 ? { month: 'short', day: 'numeric' } : bucketMinutes >= 60 ? { month: 'short', day: 'numeric', hour: 'numeric' } : { hour: 'numeric', minute: '2-digit' };
-  return formatDateTime(startUtc, locale, options);
+  return f.dateTime(startUtc, options);
 }
 
 // Line chart over time buckets, one line per series. Every bucket is a focusable slot with a tooltip; click or Enter
 // drills down through onBucketClick.
 export default function LineChart({ buckets, series, bucketMinutes, height = 200, ariaLabel, formatValue, onBucketClick, area = true }) {
-  const { locale } = useLocale();
+  const f = useFormat();
+  const locale = f.locale;
   const [frameRef, width] = useChartWidth();
   const [tip, setTip] = useState(null);
   const [active, setActive] = useState(null);
@@ -38,7 +39,7 @@ export default function LineChart({ buckets, series, bucketMinutes, height = 200
     setTip({
       x: point.clientX,
       y: point.clientY,
-      title: formatDateTime(b.startUtc, locale, { dateStyle: 'medium', timeStyle: 'short' }),
+      title: f.dateTime(b.startUtc, { dateStyle: 'medium', timeStyle: 'short' }),
       lines: [...series.map((s) => ({ label: s.label, color: s.color, value: fmt(s.values[index] || 0) })), ...(b.extra || [])]
     });
   }
@@ -84,7 +85,7 @@ export default function LineChart({ buckets, series, bucketMinutes, height = 200
               height={plotHeight}
               fill="transparent"
               tabIndex={0}
-              aria-label={bucketLabel(b.startUtc, bucketMinutes, locale) + ': ' + series.map((s) => s.label + ' ' + fmt(s.values[index] || 0)).join(', ')}
+              aria-label={bucketLabel(b.startUtc, bucketMinutes, f) + ': ' + series.map((s) => s.label + ' ' + fmt(s.values[index] || 0)).join(', ')}
               style={{ cursor: onBucketClick ? 'pointer' : 'default' }}
               onMouseMove={(e) => show(e, index)}
               onMouseLeave={hide}
@@ -100,7 +101,7 @@ export default function LineChart({ buckets, series, bucketMinutes, height = 200
             />
             {index % labelEvery === 0 ? (
               <text fill="var(--color-text-muted)" fontSize="10" x={left + index * slot + 2} y={TOP + plotHeight + 14}>
-                {bucketLabel(b.startUtc, bucketMinutes, locale)}
+                {bucketLabel(b.startUtc, bucketMinutes, f)}
               </text>
             ) : null}
           </g>

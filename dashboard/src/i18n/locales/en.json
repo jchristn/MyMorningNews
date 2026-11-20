@@ -132,8 +132,6 @@
     "expand": "Expand sidebar",
     "label": "Main navigation",
     "open": "Open navigation",
-    "phase": "Arrives in Phase {phase}",
-    "phaseShort": "P{phase}",
     "skip": "Skip to content",
     "version": "v{version}",
     "groups": {
@@ -319,10 +317,6 @@
       "summary": "Connect Claude Code or another MCP client to your research"
     }
   },
-  "placeholder": {
-    "title": "Arrives in Phase {phase}",
-    "message": "{feature} is planned for Phase {phase}. The navigation is in place so you can see where it will live."
-  },
   "topbar": {
     "copyServerUrl": "Copy server URL",
     "health": "Server health: {state}",
@@ -381,7 +375,6 @@
   },
   "home": {
     "summary": "Here is what is happening on your server.",
-    "title": "Good morning, {name}",
     "failures": {
       "none": "No recent failures",
       "noneMessage": "Requests in this range all succeeded.",
@@ -402,7 +395,7 @@
     },
     "next": {
       "explorer": "Try the API in the explorer",
-      "models": "Add a model endpoint (Phase 3)",
+      "models": "Set up a model endpoint",
       "password": "Change the default password",
       "title": "Next steps",
       "topic": "Create your first topic",
@@ -412,7 +405,13 @@
       "credentials": "Credentials",
       "none": "No external services are configured.",
       "summary": "Tools that run alongside the server",
-      "title": "External services"
+      "title": "External services",
+      "descriptions": {
+        "grafana": "Dashboards for metrics, traces, and logs.",
+        "prometheus": "Metrics.",
+        "tempo": "Traces.",
+        "loki": "Logs."
+      }
     },
     "request": {
       "title": "New request",
@@ -421,6 +420,14 @@
     "overview": {
       "title": "{count, plural, one {Last # day} other {Last # days}}",
       "more": "Open Insights"
+    },
+    "greeting": {
+      "morning": "Good morning, {name}",
+      "morningPlain": "Good morning",
+      "afternoon": "Good afternoon, {name}",
+      "afternoonPlain": "Good afternoon",
+      "evening": "Good evening, {name}",
+      "eveningPlain": "Good evening"
     }
   },
   "requests": {
@@ -429,8 +436,8 @@
       "allFilters": "all requests",
       "button": "Delete matching",
       "confirm": "Delete",
-      "done": "Deleted {count} requests",
-      "message": "Delete {count} requests matching {filters}? This cannot be undone.",
+      "done": "{count, plural, one {Deleted # request} other {Deleted # requests}}",
+      "message": "Delete {count, plural, one {# request} other {# requests}} matching {filters}? This cannot be undone.",
       "title": "Delete matching requests"
     },
     "columns": {
@@ -622,7 +629,115 @@
       "diagnostics_maxPayloadCharacters": "Maximum payload characters",
       "models_defaultChatModel": "Default chat model",
       "models_defaultOllamaEndpoint": "Default Ollama endpoint",
-      "models_defaultEmbeddingModel": "Default embedding model"
+      "models_defaultEmbeddingModel": "Default embedding model",
+      "rest_publicBaseUrl": "Public server URL",
+      "rest_appBaseUrl": "Public app URL",
+      "rest_mcpPublicUrl": "Public MCP URL",
+      "rest_eventStreamPollMs": "Event stream poll interval (ms)",
+      "rest_eventStreamMaxMinutes": "Event stream maximum length (minutes)",
+      "auth_signatureMaxSkewSeconds": "Signed request clock skew (seconds)",
+      "auth_refreshTokenLifetimeDays": "Refresh token lifetime (days)",
+      "pipeline_useStreaming": "Stream model responses",
+      "pipeline_scopeGuardrail": "Scope guardrail",
+      "pipeline_maxQueriesPerRun": "Search queries per run",
+      "pipeline_maxResultsPerQuery": "Results per query",
+      "pipeline_maxToolCallsPerRun": "Tool calls per run",
+      "pipeline_maxFetchesPerRun": "Pages fetched per run",
+      "pipeline_maxFindingsPerRun": "Findings kept per run",
+      "pipeline_maxDocumentCharacters": "Document characters sent to extraction",
+      "pipeline_maxParallelFetches": "Parallel page fetches",
+      "pipeline_dedupeLookbackDays": "Duplicate lookback (days)",
+      "pipeline_noveltyLookbackDays": "Novelty lookback (days)",
+      "pipeline_recencyHalfLifeHours": "Recency half-life (hours)",
+      "pipeline_displayThreshold": "Display threshold",
+      "pipeline_duplicateSimilarity": "Duplicate similarity",
+      "pipeline_borderlineSimilarity": "Borderline similarity",
+      "pipeline_weightLlm": "Weight: model judgment",
+      "pipeline_weightFeedback": "Weight: feedback",
+      "pipeline_weightNovelty": "Weight: novelty",
+      "pipeline_weightSource": "Weight: source reputation",
+      "pipeline_weightRecency": "Weight: recency",
+      "diagnostics_auditRetentionDays": "Audit retention (days)",
+      "push_enabled": "Send push notifications",
+      "push_expoPushUrl": "Expo push URL",
+      "push_expoAccessToken": "Expo access token",
+      "push_timeoutMs": "Push timeout (ms)",
+      "storage_provider": "Storage provider",
+      "storage_localDirectory": "Local directory",
+      "storage_s3Bucket": "S3 bucket",
+      "storage_s3Region": "S3 region",
+      "storage_s3Endpoint": "S3 endpoint",
+      "storage_s3AccessKey": "S3 access key ID",
+      "storage_s3SecretKey": "S3 secret access key",
+      "storage_s3Prefix": "S3 key prefix",
+      "storage_s3ForcePathStyle": "S3 path-style addressing",
+      "storage_presignedUrlMinutes": "Presigned URL lifetime (minutes)",
+      "storage_artifactRetentionDays": "Report and audio retention (days)",
+      "scheduler_enabled": "Run the scheduler",
+      "scheduler_pollIntervalSeconds": "Scheduler poll interval (seconds)",
+      "scheduler_minimumIntervalMinutes": "Shortest schedule interval (minutes)",
+      "scheduler_missedRunGraceMinutes": "Missed run grace (minutes)",
+      "scheduler_runPollSeconds": "Run queue poll interval (seconds)",
+      "search_searxngUrl": "SearXNG URL",
+      "search_hackerNewsUrl": "Hacker News API URL",
+      "search_arxivUrl": "arXiv API URL",
+      "search_userAgent": "User agent",
+      "search_respectRobots": "Respect robots.txt",
+      "search_fetchTimeoutMs": "Fetch timeout (ms)",
+      "search_perDomainDelayMs": "Delay per domain (ms)",
+      "search_maxFetchBytes": "Largest page fetched (bytes)",
+      "tts_enabled": "Make audio",
+      "tts_endpoint": "Speech endpoint",
+      "tts_model": "Speech model",
+      "tts_voice": "Narrator voice",
+      "tts_secondaryVoice": "Second voice",
+      "tts_maxSegmentCharacters": "Characters per speech request",
+      "tts_maxParallelSegments": "Parallel speech requests",
+      "tts_timeoutSeconds": "Speech request timeout (seconds)",
+      "tts_maxAttempts": "Attempts per episode",
+      "tts_ffmpegPath": "ffmpeg path",
+      "tts_bitrate": "MP3 bitrate",
+      "tts_normalizeLoudness": "Normalize loudness",
+      "email_enabled": "Send email",
+      "email_provider": "Email provider",
+      "email_fromAddress": "From address",
+      "email_fromName": "From name",
+      "email_replyToAddress": "Reply-to address",
+      "email_subjectPrefix": "Subject prefix",
+      "email_mailgunDomain": "Mailgun domain",
+      "email_mailgunApiKey": "Mailgun API key",
+      "email_mailgunBaseUrl": "Mailgun API URL",
+      "email_fileDirectory": "File provider directory",
+      "email_actionTokenLifetimeDays": "Email link lifetime (days)",
+      "email_recordFeedbackOnClick": "Record feedback when a link opens",
+      "email_deliveryMaxAttempts": "Delivery attempts",
+      "email_deliveryIntervalSeconds": "Delivery interval (seconds)",
+      "email_messageRetentionDays": "Sent email retention (days)",
+      "email_publicRequestsPerMinute": "Public page requests per minute",
+      "learning_enabled": "Learn from feedback",
+      "learning_feedbackPerPass": "Feedback per learning pass",
+      "learning_autoApply": "Apply learned preferences automatically",
+      "learning_intervalMinutes": "Learning interval (minutes)",
+      "learning_feedbackNeighbors": "Rated findings compared",
+      "hosting_publicSignupEnabled": "Open public sign-up",
+      "hosting_defaultPlanKey": "Default plan",
+      "hosting_promoChecksPerMinute": "Promotional code checks per minute",
+      "hosting_requireEmailVerification": "Require email verification",
+      "hosting_turnstileSecretKey": "Turnstile secret key",
+      "hosting_turnstileSiteKey": "Turnstile site key",
+      "hosting_signupsPerIpPerHour": "Sign-ups per IP per hour",
+      "hosting_verificationHours": "Verification link lifetime (hours)",
+      "hosting_passwordResetMinutes": "Password reset link lifetime (minutes)",
+      "hosting_deletionGraceDays": "Account deletion grace (days)",
+      "hosting_restrictPrivateNetworks": "Block private networks",
+      "hosting_usePlatformCredentials": "Use the platform model key",
+      "hosting_requestsPerMinutePerIp": "API requests per minute per IP",
+      "hosting_trustForwardedFor": "Trust X-Forwarded-For",
+      "hosting_allowedPrivateHosts": "Allowed private hosts",
+      "hosting_termsVersion": "Terms version",
+      "hosting_minimumAge": "Minimum age",
+      "hosting_appleTeamId": "Apple Team ID",
+      "hosting_mobileAppId": "Mobile app ID"
     }
   },
   "serverInfo": {
@@ -1987,6 +2102,33 @@
       "enable": "Use agentic search for this topic",
       "tools": "Allowed MCP tools",
       "noTools": "No MCP tools are switched on yet."
+    },
+    "schedule": {
+      "pausedItem": "{schedule} (paused)",
+      "viaEditions": "Researched for {editions}",
+      "paused": "Paused"
+    },
+    "prompts": {
+      "add": "Override a prompt",
+      "help": "Prompts this topic uses in place of the tenant's. Every other prompt uses the tenant version.",
+      "emptyTitle": "No prompt overrides",
+      "emptyMessage": "This topic uses the tenant's prompts.",
+      "allPrompts": "All prompts"
+    },
+    "models": {
+      "help": "The model each task uses for this topic. An assignment for this topic overrides the tenant's.",
+      "task": "Task",
+      "endpoint": "Endpoint",
+      "model": "Model",
+      "source": "Set by",
+      "none": "No endpoint",
+      "scope": {
+        "topic": "This topic",
+        "tenant": "Tenant default",
+        "fallback": "First available endpoint"
+      },
+      "change": "Change assignments on the Models page",
+      "view": "View assignments on the Models page"
     }
   },
   "wizard": {
@@ -2184,7 +2326,7 @@
       "summary": "Summary",
       "id": "ID",
       "findings": "New findings",
-      "findingsTitle": "{duplicates} duplicates skipped",
+      "findingsTitle": "{duplicates, plural, one {# duplicate skipped} other {# duplicates skipped}}",
       "sources": "Sources",
       "cost": "Cost"
     },
@@ -2201,7 +2343,11 @@
       "duplicates": "Duplicates",
       "tokens": "Tokens",
       "tokenSplit": "{input} in, {output} out",
-      "cost": "Estimated cost"
+      "cost": "Estimated cost",
+      "modelUsage": "Model usage",
+      "notRecorded": "Not recorded",
+      "notRecordedHelp": "No model calls were recorded for this run.",
+      "costPending": "Not priced"
     },
     "stages": {
       "empty": "No stages recorded for this run.",
@@ -2511,10 +2657,11 @@
     "kpis": {
       "open": "Open",
       "graded": "Graded",
-      "ofTotal": "of {total} predictions",
+      "ofTotal": "{total, plural, one {of # prediction} other {of # predictions}}",
       "accuracy": "Observed accuracy",
       "accuracyHelp": "Partially accurate counts as half.",
-      "brier": "Mean Brier score"
+      "brier": "Mean Brier score",
+      "proposed": "{count, plural, one {# awaiting your grade} other {# awaiting your grade}}"
     },
     "calibration": {
       "title": "Calibration",
@@ -2638,7 +2785,7 @@
       },
       "noFiles": "No stored files.",
       "openRun": "Open the run",
-      "stats": "{minutes} min read, {words} words, {items} items",
+      "stats": "{minutes} min read, {words, plural, one {# word} other {# words}}, {items, plural, one {# item} other {# items}}",
       "failed": "Composition failed.",
       "noContent": "This briefing has no content.",
       "items": "In this briefing ({count})",
@@ -3713,7 +3860,7 @@
       "quoteFailure": "Quote failure rate",
       "quoteFailureHelp": "Quotes that failed verification",
       "modelCost": "Model cost",
-      "modelCalls": "{count} model calls"
+      "modelCalls": "{count, plural, one {# model call} other {# model calls}}"
     },
     "email": {
       "total": "Messages",
@@ -3753,7 +3900,8 @@
       "body": "Create an access key and secret for the MCP client, so you can revoke it later without changing your password. Copy the secret when it is created; it is shown only once.",
       "authMode": "Choose the Direct header or Hybrid auth mode: a Streamable HTTP client sends the key and secret on every request, which Signed requests and Session exchange keys refuse.",
       "create": "Create an access key",
-      "askAdmin": "Access keys are created by an administrator. Ask yours for an access key with the Direct header auth mode."
+      "askAdmin": "Access keys are created by an administrator. Ask yours for an access key with the Direct header auth mode.",
+      "titleMember": "Get an access key"
     },
     "connect": {
       "title": "Connect a client",
@@ -3799,7 +3947,8 @@
     "empty": {
       "title": "No sources yet",
       "message": "Sources appear after a run searches the web and fetches pages for one of your topics."
-    }
+    },
+    "runLabel": "Run of {when}"
   },
   "auth": {
     "resend": "Send a new link",
@@ -3827,7 +3976,7 @@
     "verify": {
       "title": "Confirm your email",
       "done": "Your email is confirmed. You can sign in now.",
-      "failed": "This link has expired or was already used. Enter your email to get a new one."
+      "failed": "This link is not valid or has expired. Enter your email to get a new one."
     },
     "forgot": {
       "title": "Reset your password",
@@ -3847,10 +3996,10 @@
     "about": "Register remote MCP servers whose tools agentic research may call. Discover a server's tools, switch on the ones you trust, then allow them on a topic.",
     "created": "Server registered.",
     "test": "Test connection",
-    "testOk": "Connected. The server offers {count} tools.",
+    "testOk": "Connected. The server offers {count, plural, one {# tool} other {# tools}}.",
     "testFailed": "Could not connect: {error}",
     "discover": "Discover tools",
-    "discovered": "Saved {count} tools.",
+    "discovered": "Saved {count, plural, one {# tool} other {# tools}}.",
     "columns": {
       "name": "Name",
       "transport": "Transport",
@@ -4007,5 +4156,22 @@
       "help": "Share of each provider's results that led to a finding at or above the display threshold.",
       "label": "{provider} ({used} of {results})"
     }
+  },
+  "modelKeys": {
+    "title": "The model endpoint has no usable API key",
+    "problem": {
+      "missing": "{name} has no API key, so calls to it fail.",
+      "notFound": "{name} uses a stored credential that no longer exists.",
+      "inactive": "{name} uses a stored credential that is turned off.",
+      "expired": "{name} uses a stored credential that has expired."
+    },
+    "fix": "Add a key to {name}",
+    "view": "View model endpoints",
+    "consequence": {
+      "general": "Topic refinement, research runs, and briefings need a working model, so they fail until this is fixed.",
+      "wizard": "The wizard asks the model to propose dimensions and questions, so it fails at the first step until this is fixed."
+    },
+    "askAdmin": "Only a tenant administrator can add a key. Ask yours to fix it.",
+    "badge": "No API key"
   }
 }

@@ -132,8 +132,6 @@
     "expand": "साइडबार बड़ा करें",
     "label": "मुख्य नेविगेशन",
     "open": "नेविगेशन खोलें",
-    "phase": "चरण {phase} में आएगा",
-    "phaseShort": "च{phase}",
     "skip": "सामग्री पर जाएँ",
     "version": "v{version}",
     "groups": {
@@ -319,10 +317,6 @@
       "summary": "Claude Code या किसी अन्य MCP क्लाइंट को अपने शोध से जोड़ें"
     }
   },
-  "placeholder": {
-    "title": "चरण {phase} में आएगा",
-    "message": "{feature} चरण {phase} के लिए नियोजित है। नेविगेशन पहले से मौजूद है ताकि आप देख सकें कि यह कहाँ होगा।"
-  },
   "topbar": {
     "copyServerUrl": "सर्वर URL कॉपी करें",
     "health": "सर्वर स्वास्थ्य: {state}",
@@ -381,7 +375,6 @@
   },
   "home": {
     "summary": "आपके सर्वर पर यह चल रहा है।",
-    "title": "सुप्रभात, {name}",
     "failures": {
       "none": "हाल में कोई विफलता नहीं",
       "noneMessage": "इस अवधि के सभी अनुरोध सफल रहे।",
@@ -402,7 +395,7 @@
     },
     "next": {
       "explorer": "एक्सप्लोरर में API आज़माएँ",
-      "models": "मॉडल एंडपॉइंट जोड़ें (चरण 3)",
+      "models": "मॉडल एंडपॉइंट सेट अप करें",
       "password": "डिफ़ॉल्ट पासवर्ड बदलें",
       "title": "अगले कदम",
       "topic": "अपना पहला विषय बनाएँ",
@@ -412,7 +405,13 @@
       "credentials": "क्रेडेंशियल",
       "none": "कोई बाहरी सेवा कॉन्फ़िगर नहीं है।",
       "summary": "सर्वर के साथ चलने वाले टूल",
-      "title": "बाहरी सेवाएँ"
+      "title": "बाहरी सेवाएँ",
+      "descriptions": {
+        "grafana": "मेट्रिक्स, ट्रेस और लॉग के लिए डैशबोर्ड।",
+        "prometheus": "मेट्रिक्स।",
+        "tempo": "ट्रेस।",
+        "loki": "लॉग।"
+      }
     },
     "request": {
       "title": "नया अनुरोध",
@@ -421,6 +420,14 @@
     "overview": {
       "title": "{count, plural, one {पिछला # दिन} other {पिछले # दिन}}",
       "more": "इनसाइट्स खोलें"
+    },
+    "greeting": {
+      "morning": "सुप्रभात, {name}",
+      "morningPlain": "सुप्रभात",
+      "afternoon": "शुभ दोपहर, {name}",
+      "afternoonPlain": "शुभ दोपहर",
+      "evening": "शुभ संध्या, {name}",
+      "eveningPlain": "शुभ संध्या"
     }
   },
   "requests": {
@@ -429,8 +436,8 @@
       "allFilters": "सभी अनुरोध",
       "button": "मेल खाने वाले हटाएँ",
       "confirm": "हटाएँ",
-      "done": "{count} अनुरोध हटाए गए",
-      "message": "{filters} से मेल खाने वाले {count} अनुरोध हटाएँ? इसे पूर्ववत नहीं किया जा सकता।",
+      "done": "{count, plural, one {# अनुरोध हटाया गया} other {# अनुरोध हटाए गए}}",
+      "message": "{filters} से मेल खाने वाले {count, plural, one {# अनुरोध} other {# अनुरोध}} हटाएँ? इसे पूर्ववत नहीं किया जा सकता।",
       "title": "मेल खाने वाले अनुरोध हटाएँ"
     },
     "columns": {
@@ -622,7 +629,115 @@
       "diagnostics_maxPayloadCharacters": "अधिकतम पेलोड वर्ण",
       "models_defaultChatModel": "डिफ़ॉल्ट चैट मॉडल",
       "models_defaultOllamaEndpoint": "डिफ़ॉल्ट Ollama एंडपॉइंट",
-      "models_defaultEmbeddingModel": "डिफ़ॉल्ट एम्बेडिंग मॉडल"
+      "models_defaultEmbeddingModel": "डिफ़ॉल्ट एम्बेडिंग मॉडल",
+      "rest_publicBaseUrl": "सार्वजनिक सर्वर URL",
+      "rest_appBaseUrl": "सार्वजनिक ऐप URL",
+      "rest_mcpPublicUrl": "सार्वजनिक MCP URL",
+      "rest_eventStreamPollMs": "इवेंट स्ट्रीम पोल अंतराल (ms)",
+      "rest_eventStreamMaxMinutes": "इवेंट स्ट्रीम की अधिकतम अवधि (मिनट)",
+      "auth_signatureMaxSkewSeconds": "हस्ताक्षरित अनुरोध घड़ी अंतर (सेकंड)",
+      "auth_refreshTokenLifetimeDays": "रीफ़्रेश टोकन अवधि (दिन)",
+      "pipeline_useStreaming": "मॉडल प्रतिक्रियाएँ स्ट्रीम करें",
+      "pipeline_scopeGuardrail": "दायरा गार्डरेल",
+      "pipeline_maxQueriesPerRun": "प्रति रन खोज क्वेरी",
+      "pipeline_maxResultsPerQuery": "प्रति क्वेरी परिणाम",
+      "pipeline_maxToolCallsPerRun": "प्रति रन टूल कॉल",
+      "pipeline_maxFetchesPerRun": "प्रति रन प्राप्त पेज",
+      "pipeline_maxFindingsPerRun": "प्रति रन रखे गए निष्कर्ष",
+      "pipeline_maxDocumentCharacters": "निष्कर्षण को भेजे गए दस्तावेज़ वर्ण",
+      "pipeline_maxParallelFetches": "समानांतर पेज प्राप्ति",
+      "pipeline_dedupeLookbackDays": "डुप्लिकेट जाँच अवधि (दिन)",
+      "pipeline_noveltyLookbackDays": "नवीनता जाँच अवधि (दिन)",
+      "pipeline_recencyHalfLifeHours": "ताज़गी अर्ध-आयु (घंटे)",
+      "pipeline_displayThreshold": "प्रदर्शन सीमा",
+      "pipeline_duplicateSimilarity": "डुप्लिकेट समानता",
+      "pipeline_borderlineSimilarity": "सीमांत समानता",
+      "pipeline_weightLlm": "भार: मॉडल का आकलन",
+      "pipeline_weightFeedback": "भार: फ़ीडबैक",
+      "pipeline_weightNovelty": "भार: नवीनता",
+      "pipeline_weightSource": "भार: स्रोत की प्रतिष्ठा",
+      "pipeline_weightRecency": "भार: ताज़गी",
+      "diagnostics_auditRetentionDays": "ऑडिट प्रतिधारण (दिन)",
+      "push_enabled": "पुश सूचनाएँ भेजें",
+      "push_expoPushUrl": "Expo पुश URL",
+      "push_expoAccessToken": "Expo एक्सेस टोकन",
+      "push_timeoutMs": "पुश टाइमआउट (ms)",
+      "storage_provider": "स्टोरेज प्रदाता",
+      "storage_localDirectory": "लोकल डायरेक्टरी",
+      "storage_s3Bucket": "S3 बकेट",
+      "storage_s3Region": "S3 क्षेत्र",
+      "storage_s3Endpoint": "S3 एंडपॉइंट",
+      "storage_s3AccessKey": "S3 एक्सेस कुंजी ID",
+      "storage_s3SecretKey": "S3 सीक्रेट एक्सेस कुंजी",
+      "storage_s3Prefix": "S3 कुंजी उपसर्ग",
+      "storage_s3ForcePathStyle": "S3 पाथ-स्टाइल एड्रेसिंग",
+      "storage_presignedUrlMinutes": "प्रीसाइन्ड URL अवधि (मिनट)",
+      "storage_artifactRetentionDays": "रिपोर्ट और ऑडियो प्रतिधारण (दिन)",
+      "scheduler_enabled": "शेड्यूलर चलाएँ",
+      "scheduler_pollIntervalSeconds": "शेड्यूलर पोल अंतराल (सेकंड)",
+      "scheduler_minimumIntervalMinutes": "सबसे छोटा शेड्यूल अंतराल (मिनट)",
+      "scheduler_missedRunGraceMinutes": "छूटे रन की छूट अवधि (मिनट)",
+      "scheduler_runPollSeconds": "रन कतार पोल अंतराल (सेकंड)",
+      "search_searxngUrl": "SearXNG URL",
+      "search_hackerNewsUrl": "Hacker News API URL",
+      "search_arxivUrl": "arXiv API URL",
+      "search_userAgent": "यूज़र एजेंट",
+      "search_respectRobots": "robots.txt का पालन करें",
+      "search_fetchTimeoutMs": "प्राप्ति टाइमआउट (ms)",
+      "search_perDomainDelayMs": "प्रति डोमेन विलंब (ms)",
+      "search_maxFetchBytes": "प्राप्त किया जाने वाला सबसे बड़ा पेज (बाइट)",
+      "tts_enabled": "ऑडियो बनाएँ",
+      "tts_endpoint": "स्पीच एंडपॉइंट",
+      "tts_model": "स्पीच मॉडल",
+      "tts_voice": "वाचक की आवाज़",
+      "tts_secondaryVoice": "दूसरी आवाज़",
+      "tts_maxSegmentCharacters": "प्रति स्पीच अनुरोध वर्ण",
+      "tts_maxParallelSegments": "समानांतर स्पीच अनुरोध",
+      "tts_timeoutSeconds": "स्पीच अनुरोध टाइमआउट (सेकंड)",
+      "tts_maxAttempts": "प्रति एपिसोड प्रयास",
+      "tts_ffmpegPath": "ffmpeg पाथ",
+      "tts_bitrate": "MP3 बिटरेट",
+      "tts_normalizeLoudness": "लाउडनेस सामान्य करें",
+      "email_enabled": "ईमेल भेजें",
+      "email_provider": "ईमेल प्रदाता",
+      "email_fromAddress": "प्रेषक पता",
+      "email_fromName": "प्रेषक नाम",
+      "email_replyToAddress": "जवाब देने का पता",
+      "email_subjectPrefix": "विषय-पंक्ति उपसर्ग",
+      "email_mailgunDomain": "Mailgun डोमेन",
+      "email_mailgunApiKey": "Mailgun API कुंजी",
+      "email_mailgunBaseUrl": "Mailgun API URL",
+      "email_fileDirectory": "फ़ाइल प्रदाता डायरेक्टरी",
+      "email_actionTokenLifetimeDays": "ईमेल लिंक अवधि (दिन)",
+      "email_recordFeedbackOnClick": "लिंक खुलने पर फ़ीडबैक रिकॉर्ड करें",
+      "email_deliveryMaxAttempts": "डिलीवरी प्रयास",
+      "email_deliveryIntervalSeconds": "डिलीवरी अंतराल (सेकंड)",
+      "email_messageRetentionDays": "भेजे गए ईमेल का प्रतिधारण (दिन)",
+      "email_publicRequestsPerMinute": "प्रति मिनट सार्वजनिक पेज अनुरोध",
+      "learning_enabled": "फ़ीडबैक से सीखें",
+      "learning_feedbackPerPass": "प्रति लर्निंग पास फ़ीडबैक",
+      "learning_autoApply": "सीखी गई प्राथमिकताएँ स्वतः लागू करें",
+      "learning_intervalMinutes": "सीखने का अंतराल (मिनट)",
+      "learning_feedbackNeighbors": "तुलना किए गए रेट किए गए निष्कर्ष",
+      "hosting_publicSignupEnabled": "सार्वजनिक साइन-अप खोलें",
+      "hosting_defaultPlanKey": "डिफ़ॉल्ट प्लान",
+      "hosting_promoChecksPerMinute": "प्रति मिनट प्रोमो कोड जाँच",
+      "hosting_requireEmailVerification": "ईमेल पुष्टि आवश्यक करें",
+      "hosting_turnstileSecretKey": "Turnstile सीक्रेट कुंजी",
+      "hosting_turnstileSiteKey": "Turnstile साइट कुंजी",
+      "hosting_signupsPerIpPerHour": "प्रति IP प्रति घंटा साइन-अप",
+      "hosting_verificationHours": "पुष्टि लिंक अवधि (घंटे)",
+      "hosting_passwordResetMinutes": "पासवर्ड रीसेट लिंक अवधि (मिनट)",
+      "hosting_deletionGraceDays": "खाता हटाने की छूट अवधि (दिन)",
+      "hosting_restrictPrivateNetworks": "निजी नेटवर्क ब्लॉक करें",
+      "hosting_usePlatformCredentials": "प्लेटफ़ॉर्म मॉडल कुंजी का उपयोग करें",
+      "hosting_requestsPerMinutePerIp": "प्रति IP प्रति मिनट API अनुरोध",
+      "hosting_trustForwardedFor": "X-Forwarded-For पर भरोसा करें",
+      "hosting_allowedPrivateHosts": "अनुमत निजी होस्ट",
+      "hosting_termsVersion": "शर्तों का वर्ज़न",
+      "hosting_minimumAge": "न्यूनतम आयु",
+      "hosting_appleTeamId": "Apple Team ID",
+      "hosting_mobileAppId": "मोबाइल ऐप ID"
     }
   },
   "serverInfo": {
@@ -1987,6 +2102,33 @@
       "enable": "इस विषय के लिए एजेंटिक खोज का उपयोग करें",
       "tools": "अनुमत MCP टूल",
       "noTools": "अभी कोई MCP टूल चालू नहीं है।"
+    },
+    "schedule": {
+      "pausedItem": "{schedule} (रुका हुआ)",
+      "viaEditions": "{editions} के लिए शोध किया गया",
+      "paused": "रुका हुआ"
+    },
+    "prompts": {
+      "add": "प्रॉम्प्ट ओवरराइड करें",
+      "help": "वे प्रॉम्प्ट जिन्हें यह विषय टेनेंट के प्रॉम्प्ट की जगह उपयोग करता है। बाकी सभी प्रॉम्प्ट के लिए टेनेंट वाला प्रॉम्प्ट उपयोग होता है।",
+      "emptyTitle": "कोई प्रॉम्प्ट ओवरराइड नहीं",
+      "emptyMessage": "यह विषय टेनेंट के प्रॉम्प्ट का उपयोग करता है।",
+      "allPrompts": "सभी प्रॉम्प्ट"
+    },
+    "models": {
+      "help": "इस विषय के लिए हर कार्य जिस मॉडल का उपयोग करता है। इस विषय का असाइनमेंट टेनेंट के असाइनमेंट को ओवरराइड करता है।",
+      "task": "कार्य",
+      "endpoint": "एंडपॉइंट",
+      "model": "मॉडल",
+      "source": "किसके द्वारा सेट",
+      "none": "कोई एंडपॉइंट नहीं",
+      "scope": {
+        "topic": "यह विषय",
+        "tenant": "टेनेंट डिफ़ॉल्ट",
+        "fallback": "पहला उपलब्ध एंडपॉइंट"
+      },
+      "change": "मॉडल पेज पर असाइनमेंट बदलें",
+      "view": "मॉडल पेज पर असाइनमेंट देखें"
     }
   },
   "wizard": {
@@ -2184,7 +2326,7 @@
       "summary": "सारांश",
       "id": "ID",
       "findings": "नए निष्कर्ष",
-      "findingsTitle": "{duplicates} डुप्लिकेट छोड़े गए",
+      "findingsTitle": "{duplicates, plural, one {# डुप्लिकेट छोड़ा गया} other {# डुप्लिकेट छोड़े गए}}",
       "sources": "स्रोत",
       "cost": "लागत"
     },
@@ -2201,7 +2343,11 @@
       "duplicates": "डुप्लिकेट",
       "tokens": "टोकन",
       "tokenSplit": "{input} इनपुट, {output} आउटपुट",
-      "cost": "अनुमानित लागत"
+      "cost": "अनुमानित लागत",
+      "modelUsage": "मॉडल उपयोग",
+      "notRecorded": "रिकॉर्ड नहीं किया गया",
+      "notRecordedHelp": "इस रन के लिए कोई मॉडल कॉल रिकॉर्ड नहीं की गई।",
+      "costPending": "मूल्य तय नहीं"
     },
     "stages": {
       "empty": "इस रन के लिए कोई चरण दर्ज नहीं है।",
@@ -2511,10 +2657,11 @@
     "kpis": {
       "open": "खुले",
       "graded": "ग्रेड किए गए",
-      "ofTotal": "{total} पूर्वानुमानों में से",
+      "ofTotal": "{total, plural, one {# पूर्वानुमान में से} other {# पूर्वानुमानों में से}}",
       "accuracy": "देखी गई सटीकता",
       "accuracyHelp": "आंशिक रूप से सटीक को आधा गिना जाता है।",
-      "brier": "औसत Brier स्कोर"
+      "brier": "औसत Brier स्कोर",
+      "proposed": "{count, plural, one {# आपके ग्रेड की प्रतीक्षा में} other {# आपके ग्रेड की प्रतीक्षा में}}"
     },
     "calibration": {
       "title": "कैलिब्रेशन",
@@ -2638,7 +2785,7 @@
       },
       "noFiles": "कोई संग्रहीत फ़ाइल नहीं।",
       "openRun": "रन खोलें",
-      "stats": "{minutes} मिनट में पढ़ें, {words} शब्द, {items} आइटम",
+      "stats": "{minutes} मिनट में पढ़ें, {words, plural, one {# शब्द} other {# शब्द}}, {items, plural, one {# आइटम} other {# आइटम}}",
       "failed": "तैयार करना विफल रहा।",
       "noContent": "इस ब्रीफ़िंग में कोई सामग्री नहीं है।",
       "items": "इस ब्रीफ़िंग में ({count})",
@@ -3713,7 +3860,7 @@
       "quoteFailure": "उद्धरण विफलता दर",
       "quoteFailureHelp": "सत्यापन में विफल उद्धरण",
       "modelCost": "मॉडल लागत",
-      "modelCalls": "{count} मॉडल कॉल"
+      "modelCalls": "{count, plural, one {# मॉडल कॉल} other {# मॉडल कॉल}}"
     },
     "email": {
       "total": "संदेश",
@@ -3753,7 +3900,8 @@
       "body": "MCP क्लाइंट के लिए एक्सेस कुंजी और सीक्रेट बनाएँ, ताकि आप बाद में पासवर्ड बदले बिना इसे रद्द कर सकें। बनते समय सीक्रेट कॉपी कर लें; यह केवल एक बार दिखाया जाता है।",
       "authMode": "सीधा हेडर या हाइब्रिड प्रमाणीकरण मोड चुनें: Streamable HTTP क्लाइंट हर अनुरोध पर कुंजी और सीक्रेट भेजता है, जिसे हस्ताक्षरित अनुरोध और सत्र विनिमय वाली कुंजियाँ अस्वीकार करती हैं।",
       "create": "एक्सेस कुंजी बनाएँ",
-      "askAdmin": "एक्सेस कुंजियाँ व्यवस्थापक बनाते हैं। अपने व्यवस्थापक से सीधा हेडर प्रमाणीकरण मोड वाली एक्सेस कुंजी माँगें।"
+      "askAdmin": "एक्सेस कुंजियाँ व्यवस्थापक बनाते हैं। अपने व्यवस्थापक से सीधा हेडर प्रमाणीकरण मोड वाली एक्सेस कुंजी माँगें।",
+      "titleMember": "एक्सेस कुंजी पाएँ"
     },
     "connect": {
       "title": "क्लाइंट कनेक्ट करें",
@@ -3799,7 +3947,8 @@
     "empty": {
       "title": "अभी तक कोई स्रोत नहीं",
       "message": "स्रोत तब दिखते हैं जब कोई रन आपके किसी विषय के लिए वेब खोजता है और पेज प्राप्त करता है।"
-    }
+    },
+    "runLabel": "{when} का रन"
   },
   "auth": {
     "resend": "नया लिंक भेजें",
@@ -3827,7 +3976,7 @@
     "verify": {
       "title": "अपने ईमेल की पुष्टि करें",
       "done": "आपके ईमेल की पुष्टि हो गई है। अब आप साइन इन कर सकते हैं।",
-      "failed": "यह लिंक समाप्त हो गया है या पहले ही उपयोग हो चुका है। नया लिंक पाने के लिए अपना ईमेल दर्ज करें।"
+      "failed": "यह लिंक मान्य नहीं है या समाप्त हो गया है। नया लिंक पाने के लिए अपना ईमेल दर्ज करें।"
     },
     "forgot": {
       "title": "अपना पासवर्ड रीसेट करें",
@@ -3847,10 +3996,10 @@
     "about": "ऐसे रिमोट MCP सर्वर रजिस्टर करें जिनके टूल एजेंटिक रिसर्च कॉल कर सके। किसी सर्वर के टूल खोजें, जिन पर आपको भरोसा है उन्हें चालू करें, फिर उन्हें किसी विषय पर अनुमति दें।",
     "created": "सर्वर रजिस्टर हो गया।",
     "test": "कनेक्शन जाँचें",
-    "testOk": "कनेक्ट हो गया। सर्वर {count} टूल देता है।",
+    "testOk": "कनेक्ट हो गया। सर्वर {count, plural, one {# टूल} other {# टूल}} देता है।",
     "testFailed": "कनेक्ट नहीं हो सका: {error}",
     "discover": "टूल खोजें",
-    "discovered": "{count} टूल सहेजे गए।",
+    "discovered": "{count, plural, one {# टूल सहेजा गया।} other {# टूल सहेजे गए।}}",
     "columns": {
       "name": "नाम",
       "transport": "ट्रांसपोर्ट",
@@ -4007,5 +4156,22 @@
       "help": "हर प्रदाता के परिणामों का वह हिस्सा जिससे प्रदर्शन सीमा पर या उससे ऊपर का निष्कर्ष मिला।",
       "label": "{provider} ({results} में से {used})"
     }
+  },
+  "modelKeys": {
+    "title": "मॉडल एंडपॉइंट के पास उपयोग योग्य API कुंजी नहीं है",
+    "problem": {
+      "missing": "{name} के पास API कुंजी नहीं है, इसलिए उसे की गई कॉल विफल होती हैं।",
+      "notFound": "{name} ऐसे संग्रहीत क्रेडेंशियल का उपयोग करता है जो अब मौजूद नहीं है।",
+      "inactive": "{name} ऐसे संग्रहीत क्रेडेंशियल का उपयोग करता है जो बंद है।",
+      "expired": "{name} ऐसे संग्रहीत क्रेडेंशियल का उपयोग करता है जिसकी अवधि समाप्त हो गई है।"
+    },
+    "fix": "{name} में कुंजी जोड़ें",
+    "view": "मॉडल एंडपॉइंट देखें",
+    "consequence": {
+      "general": "विषय परिष्करण, शोध रन और ब्रीफ़िंग के लिए काम करने वाला मॉडल चाहिए, इसलिए इसके ठीक होने तक वे विफल होंगे।",
+      "wizard": "विज़ार्ड मॉडल से आयाम और प्रश्न प्रस्तावित करने को कहता है, इसलिए इसके ठीक होने तक वह पहले ही चरण में विफल होगा।"
+    },
+    "askAdmin": "केवल टेनेंट व्यवस्थापक कुंजी जोड़ सकता है। अपने व्यवस्थापक से इसे ठीक करने को कहें।",
+    "badge": "API कुंजी नहीं"
   }
 }

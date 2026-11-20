@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MEMBER_DETAILS } from '../test/fakeClient.js';
 import { forbidden, page, renderRoute } from '../test/renderRoute.jsx';
 import { endpointBody, formFromEndpoint, validateEndpointForm } from './models/EndpointFormModal.jsx';
 import i18next from '../i18n/index.js';
@@ -85,11 +86,33 @@ describe('ModelsView', () => {
     expect(client.testModelEndpoint).toHaveBeenCalledWith('mdl_1', { prompt: 'Reply with the single word: ready', model: undefined });
   });
 
-  it('hides the model calls tab when the call log is forbidden', async () => {
-    const client = renderRoute('/dashboard/models', { listModelEndpoints: vi.fn(async () => page([ANTHROPIC])), listLlmCalls: vi.fn(forbidden) });
+  it('hides the model calls tab from a member without probing the call log', async () => {
+    const client = renderRoute('/dashboard/models', { getTokenDetails: vi.fn(async () => MEMBER_DETAILS), listModelEndpoints: vi.fn(async () => page([ANTHROPIC])), listLlmCalls: vi.fn(forbidden) });
     expect(await screen.findByRole('tab', { name: 'Assignments' })).toBeInTheDocument();
-    await waitFor(() => expect(client.listLlmCalls).toHaveBeenCalled());
     expect(screen.queryByRole('tab', { name: 'Model calls' })).not.toBeInTheDocument();
+    expect(client.listLlmCalls).not.toHaveBeenCalled();
+  });
+
+  it('warns when the chat endpoint has no API key and marks the row', async () => {
+    renderRoute('/dashboard/models', {
+      listModelEndpoints: vi.fn(async () => page([{ ...ANTHROPIC, credentialId: null }])),
+      listModelAssignments: vi.fn(async () => page([])),
+      listVaultCredentials: vi.fn(async () => page([]))
+    });
+    const warning = await screen.findByTestId('model-key-warning');
+    expect(within(warning).getByText(/has no API key/)).toBeInTheDocument();
+    expect(within(warning).getByRole('link', { name: /Add a key to/ })).toHaveAttribute('href', '/dashboard/models?endpoint=mdl_1');
+    expect(await screen.findByText('No API key')).toBeInTheDocument();
+  });
+
+  it('does not warn about an endpoint that uses the platform key', async () => {
+    renderRoute('/dashboard/models', {
+      listModelEndpoints: vi.fn(async () => page([{ ...ANTHROPIC, credentialId: 'platform:anthropic' }])),
+      listVaultCredentials: vi.fn(async () => page([]))
+    });
+    expect(await screen.findByRole('tab', { name: 'Assignments' })).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByTestId('model-key-warning')).toBeNull());
+    expect(screen.queryByText('No API key')).toBeNull();
   });
 
   it('shows one row per task role on the assignments tab and saves a change', async () => {

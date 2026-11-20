@@ -44,8 +44,12 @@ export default function PredictionInsights({ topicId = null, refreshSignal = 0 }
     <div className="stack prediction-insights">
       <ErrorState error={error} inline onRetry={load} onDismiss={() => setError(null)} />
       <div className="kpi-grid" data-testid="prediction-kpis">
-        <KpiTile label={t('predictions.kpis.open')} value={items ? f.number(summary.open) : '-'} />
-        <KpiTile label={t('predictions.kpis.graded')} value={items ? f.number(summary.graded) : '-'} detail={items ? t('predictions.kpis.ofTotal', { total: f.number(summary.total) }) : null} />
+        <KpiTile
+          label={t('predictions.kpis.open')}
+          value={items ? f.number(summary.open) : '-'}
+          detail={items && summary.proposed > 0 ? t('predictions.kpis.proposed', { count: summary.proposed }) : null}
+        />
+        <KpiTile label={t('predictions.kpis.graded')} value={items ? f.number(summary.graded) : '-'} detail={items ? t('predictions.kpis.ofTotal', { total: summary.total }) : null} />
         <KpiTile label={t('predictions.kpis.accuracy')} value={summary.accuracy === null ? '-' : pct(summary.accuracy)} detail={t('predictions.kpis.accuracyHelp')} />
         <KpiTile
           label={t('predictions.kpis.brier')}

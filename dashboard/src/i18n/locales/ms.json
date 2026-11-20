@@ -132,8 +132,6 @@
     "expand": "Kembangkan bar sisi",
     "label": "Navigasi utama",
     "open": "Buka navigasi",
-    "phase": "Tiba dalam Fasa {phase}",
-    "phaseShort": "F{phase}",
     "skip": "Langkau ke kandungan",
     "version": "v{version}",
     "groups": {
@@ -319,10 +317,6 @@
       "summary": "Sambungkan Claude Code atau klien MCP lain kepada penyelidikan anda"
     }
   },
-  "placeholder": {
-    "title": "Tiba dalam Fasa {phase}",
-    "message": "{feature} dirancang untuk Fasa {phase}. Navigasi sudah tersedia supaya anda dapat melihat di mana ia akan diletakkan."
-  },
   "topbar": {
     "copyServerUrl": "Salin URL pelayan",
     "health": "Kesihatan pelayan: {state}",
@@ -381,7 +375,6 @@
   },
   "home": {
     "summary": "Inilah yang sedang berlaku pada pelayan anda.",
-    "title": "Selamat pagi, {name}",
     "failures": {
       "none": "Tiada kegagalan terkini",
       "noneMessage": "Semua permintaan dalam julat ini berjaya.",
@@ -402,7 +395,7 @@
     },
     "next": {
       "explorer": "Cuba API dalam penjelajah",
-      "models": "Tambah titik akhir model (Fasa 3)",
+      "models": "Sediakan titik akhir model",
       "password": "Tukar kata laluan lalai",
       "title": "Langkah seterusnya",
       "topic": "Cipta topik pertama anda",
@@ -412,7 +405,13 @@
       "credentials": "Kelayakan",
       "none": "Tiada perkhidmatan luaran dikonfigurasi.",
       "summary": "Alat yang berjalan bersama pelayan",
-      "title": "Perkhidmatan luaran"
+      "title": "Perkhidmatan luaran",
+      "descriptions": {
+        "grafana": "Papan pemuka untuk metrik, jejak dan log.",
+        "prometheus": "Metrik.",
+        "tempo": "Jejak.",
+        "loki": "Log."
+      }
     },
     "request": {
       "title": "Permintaan baharu",
@@ -421,6 +420,14 @@
     "overview": {
       "title": "{count, plural, other {# hari lalu}}",
       "more": "Buka Analisis"
+    },
+    "greeting": {
+      "morning": "Selamat pagi, {name}",
+      "morningPlain": "Selamat pagi",
+      "afternoon": "Selamat petang, {name}",
+      "afternoonPlain": "Selamat petang",
+      "evening": "Selamat malam, {name}",
+      "eveningPlain": "Selamat malam"
     }
   },
   "requests": {
@@ -429,8 +436,8 @@
       "allFilters": "semua permintaan",
       "button": "Padam yang sepadan",
       "confirm": "Padam",
-      "done": "{count} permintaan dipadam",
-      "message": "Padam {count} permintaan yang sepadan dengan {filters}? Tindakan ini tidak boleh dibuat asal.",
+      "done": "{count, plural, other {# permintaan dipadam}}",
+      "message": "Padam {count, plural, other {# permintaan}} yang sepadan dengan {filters}? Tindakan ini tidak boleh dibuat asal.",
       "title": "Padam permintaan yang sepadan"
     },
     "columns": {
@@ -622,7 +629,115 @@
       "diagnostics_maxPayloadCharacters": "Aksara muatan maksimum",
       "models_defaultChatModel": "Model sembang lalai",
       "models_defaultOllamaEndpoint": "Titik akhir Ollama lalai",
-      "models_defaultEmbeddingModel": "Model pembenaman lalai"
+      "models_defaultEmbeddingModel": "Model pembenaman lalai",
+      "rest_publicBaseUrl": "URL pelayan awam",
+      "rest_appBaseUrl": "URL aplikasi awam",
+      "rest_mcpPublicUrl": "URL MCP awam",
+      "rest_eventStreamPollMs": "Selang tinjauan strim peristiwa (ms)",
+      "rest_eventStreamMaxMinutes": "Tempoh maksimum strim peristiwa (minit)",
+      "auth_signatureMaxSkewSeconds": "Sisihan jam permintaan bertandatangan (saat)",
+      "auth_refreshTokenLifetimeDays": "Jangka hayat token muat semula (hari)",
+      "pipeline_useStreaming": "Strim respons model",
+      "pipeline_scopeGuardrail": "Pagar skop",
+      "pipeline_maxQueriesPerRun": "Pertanyaan carian setiap larian",
+      "pipeline_maxResultsPerQuery": "Hasil setiap pertanyaan",
+      "pipeline_maxToolCallsPerRun": "Panggilan alat setiap larian",
+      "pipeline_maxFetchesPerRun": "Halaman diambil setiap larian",
+      "pipeline_maxFindingsPerRun": "Dapatan disimpan setiap larian",
+      "pipeline_maxDocumentCharacters": "Aksara dokumen dihantar untuk pengekstrakan",
+      "pipeline_maxParallelFetches": "Pengambilan halaman selari",
+      "pipeline_dedupeLookbackDays": "Imbas kembali pendua (hari)",
+      "pipeline_noveltyLookbackDays": "Imbas kembali kebaharuan (hari)",
+      "pipeline_recencyHalfLifeHours": "Separuh hayat kekinian (jam)",
+      "pipeline_displayThreshold": "Ambang paparan",
+      "pipeline_duplicateSimilarity": "Keserupaan pendua",
+      "pipeline_borderlineSimilarity": "Keserupaan sempadan",
+      "pipeline_weightLlm": "Pemberat: pertimbangan model",
+      "pipeline_weightFeedback": "Pemberat: maklum balas",
+      "pipeline_weightNovelty": "Pemberat: kebaharuan",
+      "pipeline_weightSource": "Pemberat: reputasi sumber",
+      "pipeline_weightRecency": "Pemberat: kekinian",
+      "diagnostics_auditRetentionDays": "Tempoh simpanan audit (hari)",
+      "push_enabled": "Hantar pemberitahuan tolak",
+      "push_expoPushUrl": "URL tolak Expo",
+      "push_expoAccessToken": "Token akses Expo",
+      "push_timeoutMs": "Had masa tolak (ms)",
+      "storage_provider": "Penyedia storan",
+      "storage_localDirectory": "Direktori setempat",
+      "storage_s3Bucket": "Baldi S3",
+      "storage_s3Region": "Rantau S3",
+      "storage_s3Endpoint": "Titik akhir S3",
+      "storage_s3AccessKey": "ID kunci akses S3",
+      "storage_s3SecretKey": "Kunci akses rahsia S3",
+      "storage_s3Prefix": "Awalan kunci S3",
+      "storage_s3ForcePathStyle": "Pengalamatan gaya laluan S3",
+      "storage_presignedUrlMinutes": "Jangka hayat URL pratandatangan (minit)",
+      "storage_artifactRetentionDays": "Tempoh simpanan laporan dan audio (hari)",
+      "scheduler_enabled": "Jalankan penjadual",
+      "scheduler_pollIntervalSeconds": "Selang tinjauan penjadual (saat)",
+      "scheduler_minimumIntervalMinutes": "Selang jadual terpendek (minit)",
+      "scheduler_missedRunGraceMinutes": "Tempoh tangguh larian terlepas (minit)",
+      "scheduler_runPollSeconds": "Selang tinjauan baris gilir larian (saat)",
+      "search_searxngUrl": "URL SearXNG",
+      "search_hackerNewsUrl": "URL API Hacker News",
+      "search_arxivUrl": "URL API arXiv",
+      "search_userAgent": "Ejen pengguna",
+      "search_respectRobots": "Patuhi robots.txt",
+      "search_fetchTimeoutMs": "Had masa pengambilan (ms)",
+      "search_perDomainDelayMs": "Lengah setiap domain (ms)",
+      "search_maxFetchBytes": "Saiz halaman terbesar diambil (bait)",
+      "tts_enabled": "Hasilkan audio",
+      "tts_endpoint": "Titik akhir pertuturan",
+      "tts_model": "Model pertuturan",
+      "tts_voice": "Suara pencerita",
+      "tts_secondaryVoice": "Suara kedua",
+      "tts_maxSegmentCharacters": "Aksara setiap permintaan pertuturan",
+      "tts_maxParallelSegments": "Permintaan pertuturan selari",
+      "tts_timeoutSeconds": "Had masa permintaan pertuturan (saat)",
+      "tts_maxAttempts": "Percubaan setiap episod",
+      "tts_ffmpegPath": "Laluan ffmpeg",
+      "tts_bitrate": "Kadar bit MP3",
+      "tts_normalizeLoudness": "Normalkan kelantangan",
+      "email_enabled": "Hantar e-mel",
+      "email_provider": "Penyedia e-mel",
+      "email_fromAddress": "Alamat pengirim",
+      "email_fromName": "Nama pengirim",
+      "email_replyToAddress": "Alamat balas",
+      "email_subjectPrefix": "Awalan subjek",
+      "email_mailgunDomain": "Domain Mailgun",
+      "email_mailgunApiKey": "Kunci API Mailgun",
+      "email_mailgunBaseUrl": "URL API Mailgun",
+      "email_fileDirectory": "Direktori penyedia fail",
+      "email_actionTokenLifetimeDays": "Jangka hayat pautan e-mel (hari)",
+      "email_recordFeedbackOnClick": "Rekod maklum balas apabila pautan dibuka",
+      "email_deliveryMaxAttempts": "Percubaan penghantaran",
+      "email_deliveryIntervalSeconds": "Selang penghantaran (saat)",
+      "email_messageRetentionDays": "Tempoh simpanan e-mel dihantar (hari)",
+      "email_publicRequestsPerMinute": "Permintaan halaman awam seminit",
+      "learning_enabled": "Belajar daripada maklum balas",
+      "learning_feedbackPerPass": "Maklum balas setiap pusingan pembelajaran",
+      "learning_autoApply": "Gunakan keutamaan yang dipelajari secara automatik",
+      "learning_intervalMinutes": "Selang pembelajaran (minit)",
+      "learning_feedbackNeighbors": "Dapatan dinilai yang dibandingkan",
+      "hosting_publicSignupEnabled": "Buka pendaftaran awam",
+      "hosting_defaultPlanKey": "Pelan lalai",
+      "hosting_promoChecksPerMinute": "Semakan kod promosi seminit",
+      "hosting_requireEmailVerification": "Wajibkan pengesahan e-mel",
+      "hosting_turnstileSecretKey": "Kunci rahsia Turnstile",
+      "hosting_turnstileSiteKey": "Kunci tapak Turnstile",
+      "hosting_signupsPerIpPerHour": "Pendaftaran setiap IP sejam",
+      "hosting_verificationHours": "Jangka hayat pautan pengesahan (jam)",
+      "hosting_passwordResetMinutes": "Jangka hayat pautan tetapan semula kata laluan (minit)",
+      "hosting_deletionGraceDays": "Tempoh tangguh pemadaman akaun (hari)",
+      "hosting_restrictPrivateNetworks": "Sekat rangkaian peribadi",
+      "hosting_usePlatformCredentials": "Gunakan kunci model platform",
+      "hosting_requestsPerMinutePerIp": "Permintaan API seminit setiap IP",
+      "hosting_trustForwardedFor": "Percayai X-Forwarded-For",
+      "hosting_allowedPrivateHosts": "Hos peribadi yang dibenarkan",
+      "hosting_termsVersion": "Versi terma",
+      "hosting_minimumAge": "Umur minimum",
+      "hosting_appleTeamId": "Apple Team ID",
+      "hosting_mobileAppId": "ID aplikasi mudah alih"
     }
   },
   "serverInfo": {
@@ -1987,6 +2102,33 @@
       "enable": "Gunakan carian agentik untuk topik ini",
       "tools": "Alat MCP yang dibenarkan",
       "noTools": "Belum ada alat MCP yang dihidupkan."
+    },
+    "schedule": {
+      "pausedItem": "{schedule} (dijeda)",
+      "viaEditions": "Diselidik untuk {editions}",
+      "paused": "Dijeda"
+    },
+    "prompts": {
+      "add": "Gantikan gesaan",
+      "help": "Gesaan yang digunakan oleh topik ini sebagai ganti gesaan penyewa. Setiap gesaan lain menggunakan versi penyewa.",
+      "emptyTitle": "Tiada penggantian gesaan",
+      "emptyMessage": "Topik ini menggunakan gesaan penyewa.",
+      "allPrompts": "Semua gesaan"
+    },
+    "models": {
+      "help": "Model yang digunakan oleh setiap tugas untuk topik ini. Tugasan untuk topik ini mengatasi tugasan penyewa.",
+      "task": "Tugas",
+      "endpoint": "Titik akhir",
+      "model": "Model",
+      "source": "Ditetapkan oleh",
+      "none": "Tiada titik akhir",
+      "scope": {
+        "topic": "Topik ini",
+        "tenant": "Lalai penyewa",
+        "fallback": "Titik akhir pertama yang tersedia"
+      },
+      "change": "Ubah tugasan pada halaman Model",
+      "view": "Lihat tugasan pada halaman Model"
     }
   },
   "wizard": {
@@ -2184,7 +2326,7 @@
       "summary": "Ringkasan",
       "id": "ID",
       "findings": "Dapatan baharu",
-      "findingsTitle": "{duplicates} pendua dilangkau",
+      "findingsTitle": "{duplicates, plural, other {# pendua dilangkau}}",
       "sources": "Sumber",
       "cost": "Kos"
     },
@@ -2201,7 +2343,11 @@
       "duplicates": "Pendua",
       "tokens": "Token",
       "tokenSplit": "{input} masuk, {output} keluar",
-      "cost": "Anggaran kos"
+      "cost": "Anggaran kos",
+      "modelUsage": "Penggunaan model",
+      "notRecorded": "Tidak direkodkan",
+      "notRecordedHelp": "Tiada panggilan model direkodkan untuk larian ini.",
+      "costPending": "Tiada harga"
     },
     "stages": {
       "empty": "Tiada peringkat direkodkan untuk larian ini.",
@@ -2511,10 +2657,11 @@
     "kpis": {
       "open": "Terbuka",
       "graded": "Digredkan",
-      "ofTotal": "daripada {total} ramalan",
+      "ofTotal": "{total, plural, other {daripada # ramalan}}",
       "accuracy": "Ketepatan diperhatikan",
       "accuracyHelp": "Separa tepat dikira sebagai separuh.",
-      "brier": "Purata skor Brier"
+      "brier": "Purata skor Brier",
+      "proposed": "{count, plural, other {# menunggu gred anda}}"
     },
     "calibration": {
       "title": "Kalibrasi",
@@ -2638,7 +2785,7 @@
       },
       "noFiles": "Tiada fail tersimpan.",
       "openRun": "Buka larian",
-      "stats": "{minutes} min bacaan, {words} perkataan, {items} item",
+      "stats": "{minutes} min bacaan, {words, plural, other {# perkataan}}, {items, plural, other {# item}}",
       "failed": "Penyusunan gagal.",
       "noContent": "Taklimat ini tiada kandungan.",
       "items": "Dalam taklimat ini ({count})",
@@ -3713,7 +3860,7 @@
       "quoteFailure": "Kadar kegagalan petikan",
       "quoteFailureHelp": "Petikan yang gagal pengesahan",
       "modelCost": "Kos model",
-      "modelCalls": "{count} panggilan model"
+      "modelCalls": "{count, plural, other {# panggilan model}}"
     },
     "email": {
       "total": "Mesej",
@@ -3753,7 +3900,8 @@
       "body": "Cipta kunci akses dan rahsia untuk klien MCP, supaya anda boleh membatalkannya kemudian tanpa menukar kata laluan anda. Salin rahsia semasa ia dicipta; ia hanya ditunjukkan sekali.",
       "authMode": "Pilih mod pengesahan Pengepala terus atau Hibrid: klien Streamable HTTP menghantar kunci dan rahsia pada setiap permintaan, yang ditolak oleh kunci Permintaan bertandatangan dan Pertukaran sesi.",
       "create": "Cipta kunci akses",
-      "askAdmin": "Kunci akses dicipta oleh pentadbir. Minta kunci akses dengan mod pengesahan Pengepala terus daripada pentadbir anda."
+      "askAdmin": "Kunci akses dicipta oleh pentadbir. Minta kunci akses dengan mod pengesahan Pengepala terus daripada pentadbir anda.",
+      "titleMember": "Dapatkan kunci akses"
     },
     "connect": {
       "title": "Sambungkan klien",
@@ -3799,7 +3947,8 @@
     "empty": {
       "title": "Belum ada sumber",
       "message": "Sumber muncul selepas larian mencari di web dan mengambil halaman untuk salah satu topik anda."
-    }
+    },
+    "runLabel": "Larian {when}"
   },
   "auth": {
     "resend": "Hantar pautan baharu",
@@ -3827,7 +3976,7 @@
     "verify": {
       "title": "Sahkan e-mel anda",
       "done": "E-mel anda telah disahkan. Anda boleh log masuk sekarang.",
-      "failed": "Pautan ini telah tamat tempoh atau sudah digunakan. Masukkan e-mel anda untuk mendapatkan pautan baharu."
+      "failed": "Pautan ini tidak sah atau telah tamat tempoh. Masukkan e-mel anda untuk mendapatkan pautan baharu."
     },
     "forgot": {
       "title": "Tetapkan semula kata laluan anda",
@@ -3847,10 +3996,10 @@
     "about": "Daftarkan pelayan MCP jauh yang alatnya boleh dipanggil oleh penyelidikan agentik. Temui alat pelayan, hidupkan yang anda percayai, kemudian benarkannya pada sesuatu topik.",
     "created": "Pelayan didaftarkan.",
     "test": "Uji sambungan",
-    "testOk": "Bersambung. Pelayan menawarkan {count} alat.",
+    "testOk": "Bersambung. Pelayan menawarkan {count, plural, other {# alat}}.",
     "testFailed": "Tidak dapat bersambung: {error}",
     "discover": "Temui alat",
-    "discovered": "{count} alat disimpan.",
+    "discovered": "{count, plural, other {# alat}} disimpan.",
     "columns": {
       "name": "Nama",
       "transport": "Pengangkutan",
@@ -4007,5 +4156,22 @@
       "help": "Bahagian hasil setiap penyedia yang membawa kepada dapatan pada atau melebihi ambang paparan.",
       "label": "{provider} ({used} daripada {results})"
     }
+  },
+  "modelKeys": {
+    "title": "Titik akhir model tiada kunci API yang boleh digunakan",
+    "problem": {
+      "missing": "{name} tiada kunci API, jadi panggilan kepadanya gagal.",
+      "notFound": "{name} menggunakan kelayakan tersimpan yang tidak lagi wujud.",
+      "inactive": "{name} menggunakan kelayakan tersimpan yang telah dimatikan.",
+      "expired": "{name} menggunakan kelayakan tersimpan yang telah tamat tempoh."
+    },
+    "fix": "Tambah kunci pada {name}",
+    "view": "Lihat titik akhir model",
+    "consequence": {
+      "general": "Penghalusan topik, larian penyelidikan dan taklimat memerlukan model yang berfungsi, jadi semuanya gagal sehingga masalah ini dibaiki.",
+      "wizard": "Wizard meminta model mencadangkan dimensi dan soalan, jadi ia gagal pada langkah pertama sehingga masalah ini dibaiki."
+    },
+    "askAdmin": "Hanya pentadbir penyewa boleh menambah kunci. Minta pentadbir anda membaikinya.",
+    "badge": "Tiada kunci API"
   }
 }

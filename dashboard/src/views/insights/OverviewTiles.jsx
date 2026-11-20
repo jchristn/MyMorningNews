@@ -89,7 +89,7 @@ export default function OverviewTiles({ report, keys = OVERVIEW_TILE_KEYS, testI
       icon: Coins,
       label: t('insights.overview.modelCost'),
       value: r ? f.usd(Number(r.modelCostUsd) || 0) : '...',
-      detail: r ? t('insights.overview.modelCalls', { count: f.number(r.modelCalls || 0) }) : null,
+      detail: r ? t('insights.overview.modelCalls', { count: r.modelCalls || 0 }) : null,
       onClick: go('insights/usage')
     }
   };

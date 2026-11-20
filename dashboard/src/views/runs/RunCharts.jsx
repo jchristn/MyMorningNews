@@ -43,10 +43,11 @@ export const RUN_CHARTS = {
   providers: { number: 24, wide: false }
 };
 
-// GET /v1.0/api/analytics/runs for a range id (or a number of days), a topic, and the whole tenant, in the browser's
-// time zone. Reloads when any of them change.
+// GET /v1.0/api/analytics/runs for a range id (or a number of days), a topic, and the whole tenant, in the user's
+// profile time zone (else the browser's). Reloads when any of them change.
 export function useRunsReport({ rangeId, days, topicId = '', everyone = false }) {
-  const { apiClient } = useAuth();
+  const { apiClient, timeZone: profileZone } = useAuth();
+  const zone = profileZone || browserTimeZone();
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -56,14 +57,14 @@ export function useRunsReport({ rangeId, days, topicId = '', everyone = false })
     setLoading(true);
     setError(null);
     try {
-      const result = await apiClient.getRunsAnalytics(runsQuery({ rangeId, days, topicId, everyone, timeZone: browserTimeZone() }));
+      const result = await apiClient.getRunsAnalytics(runsQuery({ rangeId, days, topicId, everyone, timeZone: zone }));
       if (id === requestId.current) setData(result || null);
     } catch (err) {
       if (id === requestId.current) setError(err);
     } finally {
       if (id === requestId.current) setLoading(false);
     }
-  }, [apiClient, rangeId, days, topicId, everyone]);
+  }, [apiClient, rangeId, days, topicId, everyone, zone]);
   useEffect(() => {
     load();
   }, [load]);
@@ -222,7 +223,7 @@ RunChartBody.propTypes = { id: PropTypes.oneOf(Object.keys(RUN_CHARTS)).isRequir
 // then show no range control of their own.
 export default function RunCharts({ charts, topicId = '', tenantWide = false, rangeStorage = 'mymorningnews.runCharts.range', defaultRange = 'month', scope = null }) {
   const { t } = useTranslation();
-  const { isTenantAdmin } = useAuth();
+  const { isTenantAdmin, timeZone } = useAuth();
   const [stored, setRangeId] = useLocalStorage(rangeStorage, defaultRange);
   const rangeId = RUN_RANGE_IDS.includes(stored) ? stored : defaultRange;
   const everyone = scope ? Boolean(scope.everyone) : Boolean(tenantWide && isTenantAdmin);
@@ -234,7 +235,7 @@ export default function RunCharts({ charts, topicId = '', tenantWide = false, ra
         <ChartCard
           key={id}
           title={t('runCharts.' + id + '.title')}
-          subtitle={id === 'activity' ? t('runCharts.activity.help', { zone: (report.data && report.data.timeZone) || browserTimeZone() || 'UTC' }) : t('runCharts.' + id + '.help')}
+          subtitle={id === 'activity' ? t('runCharts.activity.help', { zone: (report.data && report.data.timeZone) || timeZone || browserTimeZone() || 'UTC' }) : t('runCharts.' + id + '.help')}
           ranges={RUN_RANGE_IDS}
           rangeId={rangeId}
           onRangeChange={scope ? undefined : setRangeId}

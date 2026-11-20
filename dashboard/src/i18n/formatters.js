@@ -27,17 +27,27 @@ export function formatPercent(value, locale, digits = 1) {
   return formatNumber(value, locale, { style: 'percent', maximumFractionDigits: digits, minimumFractionDigits: 0 });
 }
 
-export function formatDate(value, locale, options = { dateStyle: 'medium' }) {
+export const DATE_DEFAULTS = { dateStyle: 'medium' };
+export const TIME_DEFAULTS = { timeStyle: 'medium' };
+export const DATE_TIME_DEFAULTS = { dateStyle: 'short', timeStyle: 'medium' };
+
+// Options with a time zone added when one is given and the caller did not choose one.
+export function withTimeZone(options, defaults, timeZone) {
+  const base = options || defaults;
+  return timeZone && !base.timeZone ? { ...base, timeZone } : base;
+}
+
+export function formatDate(value, locale, options = DATE_DEFAULTS) {
   const d = toDate(value);
   return d ? formatterFor('date', locale, options).format(d) : '';
 }
 
-export function formatTime(value, locale, options = { timeStyle: 'medium' }) {
+export function formatTime(value, locale, options = TIME_DEFAULTS) {
   const d = toDate(value);
   return d ? formatterFor('date', locale, options).format(d) : '';
 }
 
-export function formatDateTime(value, locale, options = { dateStyle: 'short', timeStyle: 'medium' }) {
+export function formatDateTime(value, locale, options = DATE_TIME_DEFAULTS) {
   const d = toDate(value);
   return d ? formatterFor('date', locale, options).format(d) : '';
 }
@@ -96,12 +106,15 @@ export function formatList(items, locale, type = 'conjunction') {
   return formatterFor('list', locale, { style: 'long', type }).format((items || []).map(String));
 }
 
-// US dollars. Model costs are often fractions of a cent, so small values keep up to four decimals.
+// US dollars with the plain $ sign in every locale (some locales would print US$ or $US). Model costs are often
+// fractions of a cent, so small values keep up to four decimals.
 export function formatUsd(value, locale) {
   if (value === null || value === undefined || value === '' || Number.isNaN(Number(value))) return '';
   const n = Number(value);
   const small = n !== 0 && Math.abs(n) < 1;
-  return formatNumber(n, locale, { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: small ? 4 : 2 });
+  const text = formatNumber(n, locale, { style: 'currency', currency: 'USD', currencyDisplay: 'narrowSymbol', minimumFractionDigits: 2, maximumFractionDigits: small ? 4 : 2 });
+  // Some locales (Arabic) keep "US$" even for the narrow symbol, which right-to-left text then shows as "$US".
+  return text.replace('US$', '$');
 }
 
 // Large counts (tokens) in compact form: 12.3K, 4.5M.

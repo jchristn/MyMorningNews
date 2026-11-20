@@ -15,6 +15,11 @@ export default function TopicSearchProviders({ topicId }) {
   const [chosen, setChosen] = useState(new Set());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  // The provider kind in parentheses after its name, left out when it would repeat the name ("arXiv (arXiv)").
+  const kindLabel = (p) => {
+    const kind = t('searchProviders.kinds.' + p.kind, { defaultValue: p.kind });
+    return String(kind).trim().toLowerCase() === String(p.name || '').trim().toLowerCase() ? null : kind;
+  };
 
   useEffect(() => {
     let live = true;
@@ -76,7 +81,8 @@ export default function TopicSearchProviders({ topicId }) {
             <label key={p.id} className="auth-check small" htmlFor={'topic-sp-' + p.id}>
               <input id={'topic-sp-' + p.id} type="checkbox" checked={chosen.has(p.id)} onChange={() => toggle(p.id)} />
               <span>
-                {p.name} <span className="muted">({t('searchProviders.kinds.' + p.kind, { defaultValue: p.kind })})</span>
+                {p.name}
+                {kindLabel(p) ? <span className="muted"> ({kindLabel(p)})</span> : null}
               </span>
             </label>
           ))}

@@ -44,7 +44,7 @@ import {
 } from 'lucide-react';
 
 // Navigation model and route metadata. Every route under /dashboard is listed here; the shell builds the sidebar,
-// titles, summaries, and placeholders from it. phase marks routes whose features arrive in a later plan phase.
+// titles and summaries from it.
 // access: all (any signed-in user), tenantAdmin (tenant or global administrators), admin (global administrators).
 export const NAV_GROUPS = [
   {

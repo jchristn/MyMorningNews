@@ -21,8 +21,9 @@ export function ScopeBadge({ template }) {
 
 ScopeBadge.propTypes = { template: PropTypes.object.isRequired };
 
-// Create a topic override of a prompt key, then open it in the editor.
-export function OverrideModal({ open, initialKey, content, onClose, onCreated }) {
+// Create a topic override of a prompt key, then open it in the editor. fixedTopicId creates it for that topic
+// without asking (the topic workspace's Prompts tab).
+export function OverrideModal({ open, initialKey, content, fixedTopicId = null, onClose, onCreated }) {
   const { t } = useTranslation();
   const { apiClient } = useAuth();
   const [keys, setKeys] = useState([]);
@@ -35,14 +36,14 @@ export function OverrideModal({ open, initialKey, content, onClose, onCreated })
   useEffect(() => {
     if (!open) return;
     setKey(initialKey || '');
-    setTopicId('');
+    setTopicId(fixedTopicId || '');
     setError(null);
     setCopyDraft(Boolean(content));
     apiClient
       .listPrompts({ tenantOnly: true, pageSize: 100, sortBy: 'key', sortDirection: 'Ascending' })
       .then((r) => setKeys(((r && r.items) || []).map((p) => p.key)))
       .catch(() => setKeys([]));
-  }, [open, initialKey, content, apiClient]);
+  }, [open, initialKey, content, fixedTopicId, apiClient]);
 
   async function create() {
     setBusy(true);
@@ -88,9 +89,11 @@ export function OverrideModal({ open, initialKey, content, onClose, onCreated })
             {key && !keys.includes(key) ? <option value={key}>{key}</option> : null}
           </select>
         </FormField>
-        <FormField id="ovr-topic-id" label={t('prompts.override.topicId')} help={t('prompts.override.topicIdHelp')}>
-          <input id="ovr-topic-id" className="mono" value={topicId} onChange={(e) => setTopicId(e.target.value)} autoComplete="off" />
-        </FormField>
+        {fixedTopicId ? null : (
+          <FormField id="ovr-topic-id" label={t('prompts.override.topicId')} help={t('prompts.override.topicIdHelp')}>
+            <input id="ovr-topic-id" className="mono" value={topicId} onChange={(e) => setTopicId(e.target.value)} autoComplete="off" />
+          </FormField>
+        )}
         {content ? (
           <label className="checkbox-row">
             <input type="checkbox" checked={copyDraft} onChange={(e) => setCopyDraft(e.target.checked)} />
@@ -106,6 +109,7 @@ OverrideModal.propTypes = {
   open: PropTypes.bool.isRequired,
   initialKey: PropTypes.string,
   content: PropTypes.string,
+  fixedTopicId: PropTypes.string,
   onClose: PropTypes.func.isRequired,
   onCreated: PropTypes.func.isRequired
 };

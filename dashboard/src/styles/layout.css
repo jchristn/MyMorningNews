@@ -127,22 +127,10 @@
   background: var(--color-primary);
 }
 
-.nav-item.upcoming .nav-item-label {
-  opacity: 0.75;
-}
-
 .nav-item-label {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.nav-phase {
-  font-size: 10px;
-  padding: 0 5px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--color-sidebar-muted);
 }
 
 .sidebar-footer {

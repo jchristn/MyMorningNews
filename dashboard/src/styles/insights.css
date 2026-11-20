@@ -109,3 +109,9 @@
 .ranking-table th {
   padding: 6px 10px;
 }
+
+/* In a table cell, a four-way grade control (accurate, partially, inaccurate, too early) folds into two rows. */
+.data-table .feedback-control.compact .segmented:has(> button:nth-child(4)) {
+  display: inline-grid;
+  grid-template-columns: repeat(2, auto);
+}

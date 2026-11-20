@@ -7,6 +7,7 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import useFormat from '../../hooks/useFormat.js';
 import { pagedQuery } from '../../utils/api.js';
 import { MODEL_PROVIDERS } from '../../utils/enums.js';
+import { keyProblem } from '../../utils/modelKeys.js';
 import ConfirmModal from '../../components/ConfirmModal.jsx';
 import CopyableId from '../../components/CopyableId.jsx';
 import DataTable from '../../components/DataTable.jsx';
@@ -44,6 +45,19 @@ export default function EndpointsTab({ canWrite, canExecute, focusId, onChanged 
   const [json, setJson] = useState(null);
   const [deleting, setDeleting] = useState(null);
   const [refresh, setRefresh] = useState(0);
+  const [credentials, setCredentials] = useState(null);
+
+  // The vault list (no secrets) tells which stored keys still resolve, so a row can say its key is missing.
+  useEffect(() => {
+    let live = true;
+    apiClient
+      .listVaultCredentials({ pageSize: 1000 })
+      .then((r) => live && setCredentials((r && r.items) || []))
+      .catch(() => live && setCredentials(null));
+    return () => {
+      live = false;
+    };
+  }, [apiClient, refresh]);
 
   const fetchPage = useCallback((q) => apiClient.listModelEndpoints(pagedQuery(q)), [apiClient]);
   const bump = useCallback(() => {
@@ -97,7 +111,24 @@ export default function EndpointsTab({ canWrite, canExecute, focusId, onChanged 
     { key: 'reasoningEffort', header: t('models.columns.reasoningEffort'), defaultHidden: true, render: (r) => (r.reasoningEffort ? t('enums.reasoningEffort.' + r.reasoningEffort) : '') },
     { key: 'credential', header: t('models.columns.credential'), defaultHidden: true, render: (r) => (r.credentialId ? <CopyableId value={r.credentialId} /> : <span className="muted">{t('common.none')}</span>) },
     { key: 'lastValidatedUtc', header: t('models.columns.lastValidated'), defaultHidden: true, render: (r) => <DateCell value={r.lastValidatedUtc} /> },
-    { key: 'active', header: t('models.columns.status'), filter: { type: 'boolean', param: 'active' }, render: (r) => <StatusBadge tone={r.active ? 'success' : 'neutral'}>{r.active ? t('common.active') : t('common.inactive')}</StatusBadge> },
+    {
+      key: 'active',
+      header: t('models.columns.status'),
+      filter: { type: 'boolean', param: 'active' },
+      render: (r) => {
+        const problem = r.active ? keyProblem(r, credentials) : null;
+        return (
+          <span className="row-actions">
+            <StatusBadge tone={r.active ? 'success' : 'neutral'}>{r.active ? t('common.active') : t('common.inactive')}</StatusBadge>
+            {problem ? (
+              <StatusBadge tone="danger" title={t('modelKeys.problem.' + problem, { name: r.name })}>
+                {t('modelKeys.badge')}
+              </StatusBadge>
+            ) : null}
+          </span>
+        );
+      }
+    },
     { key: 'id', header: t('models.columns.id'), defaultHidden: true, className: 'cell-id', render: (r) => <CopyableId value={r.id} /> }
   ];
 

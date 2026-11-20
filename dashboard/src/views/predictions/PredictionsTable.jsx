@@ -88,7 +88,7 @@ export default function PredictionsTable({ topicId = null, tableKey = 'predictio
             key: 'topicId',
             header: t('predictions.columns.topic'),
             filter: { type: 'select', param: 'topicId', options: topics.map((x) => ({ value: x.id, label: x.name })) },
-            render: (r) => <span className="truncate">{topicNames.get(r.topicId) || r.topicId}</span>
+            render: (r) => <span className="topic-cell">{topicNames.get(r.topicId) || r.topicId}</span>
           }
         ]),
     {

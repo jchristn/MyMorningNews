@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext.jsx';
 import useCanReadCalls from '../hooks/useCanReadCalls.js';
+import ModelKeyWarning from '../components/ModelKeyWarning.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import AssignmentsTab from './models/AssignmentsTab.jsx';
 import CallsTab from './models/CallsTab.jsx';
@@ -30,6 +31,7 @@ export default function ModelsView() {
   return (
     <div className="page">
       <PageHeader title={t('nav.items.models')} summary={t('routes.models.summary')} />
+      <ModelKeyWarning refreshSignal={changed} />
       {!isTenantAdmin ? <div className="notice notice-info">{t('models.memberNotice')}</div> : null}
       <section className="panel">
         <div className="tabs" role="tablist" aria-label={t('nav.items.models')}>

@@ -132,8 +132,6 @@
     "expand": "Seitenleiste ausklappen",
     "label": "Hauptnavigation",
     "open": "Navigation öffnen",
-    "phase": "Kommt in Phase {phase}",
-    "phaseShort": "P{phase}",
     "skip": "Zum Inhalt springen",
     "version": "v{version}",
     "groups": {
@@ -319,10 +317,6 @@
       "summary": "Claude Code oder einen anderen MCP-Client mit Ihrer Recherche verbinden"
     }
   },
-  "placeholder": {
-    "title": "Kommt in Phase {phase}",
-    "message": "{feature} ist für Phase {phase} geplant. Die Navigation ist bereits vorhanden, damit Sie sehen, wo es zu finden sein wird."
-  },
   "topbar": {
     "copyServerUrl": "Server-URL kopieren",
     "health": "Serverzustand: {state}",
@@ -381,7 +375,6 @@
   },
   "home": {
     "summary": "Das passiert gerade auf Ihrem Server.",
-    "title": "Guten Morgen, {name}",
     "failures": {
       "none": "Keine aktuellen Fehler",
       "noneMessage": "Alle Anfragen in diesem Zeitraum waren erfolgreich.",
@@ -402,7 +395,7 @@
     },
     "next": {
       "explorer": "API im Explorer ausprobieren",
-      "models": "Modellendpunkt hinzufügen (Phase 3)",
+      "models": "Modellendpunkt einrichten",
       "password": "Standardpasswort ändern",
       "title": "Nächste Schritte",
       "topic": "Erstes Thema erstellen",
@@ -412,7 +405,13 @@
       "credentials": "Zugangsdaten",
       "none": "Es sind keine externen Dienste konfiguriert.",
       "summary": "Werkzeuge, die neben dem Server laufen",
-      "title": "Externe Dienste"
+      "title": "Externe Dienste",
+      "descriptions": {
+        "grafana": "Dashboards für Metriken, Traces und Logs.",
+        "prometheus": "Metriken.",
+        "tempo": "Traces.",
+        "loki": "Logs."
+      }
     },
     "request": {
       "title": "Neue Anfrage",
@@ -421,6 +420,14 @@
     "overview": {
       "title": "{count, plural, one {Letzter Tag} other {Letzte # Tage}}",
       "more": "Analysen öffnen"
+    },
+    "greeting": {
+      "morning": "Guten Morgen, {name}",
+      "morningPlain": "Guten Morgen",
+      "afternoon": "Guten Tag, {name}",
+      "afternoonPlain": "Guten Tag",
+      "evening": "Guten Abend, {name}",
+      "eveningPlain": "Guten Abend"
     }
   },
   "requests": {
@@ -429,8 +436,8 @@
       "allFilters": "alle Anfragen",
       "button": "Treffer löschen",
       "confirm": "Löschen",
-      "done": "{count} Anfragen gelöscht",
-      "message": "{count} Anfragen löschen, die {filters} entsprechen? Dies kann nicht rückgängig gemacht werden.",
+      "done": "{count, plural, one {# Anfrage gelöscht} other {# Anfragen gelöscht}}",
+      "message": "{count, plural, one {# Anfrage löschen, die {filters} entspricht} other {# Anfragen löschen, die {filters} entsprechen}}? Dies kann nicht rückgängig gemacht werden.",
       "title": "Passende Anfragen löschen"
     },
     "columns": {
@@ -622,7 +629,115 @@
       "diagnostics_maxPayloadCharacters": "Maximale Payload-Zeichen",
       "models_defaultChatModel": "Standard-Chatmodell",
       "models_defaultOllamaEndpoint": "Standard-Ollama-Endpunkt",
-      "models_defaultEmbeddingModel": "Standard-Embedding-Modell"
+      "models_defaultEmbeddingModel": "Standard-Embedding-Modell",
+      "rest_publicBaseUrl": "Öffentliche Server-URL",
+      "rest_appBaseUrl": "Öffentliche App-URL",
+      "rest_mcpPublicUrl": "Öffentliche MCP-URL",
+      "rest_eventStreamPollMs": "Abfrageintervall des Ereignisstreams (ms)",
+      "rest_eventStreamMaxMinutes": "Maximale Dauer des Ereignisstreams (Minuten)",
+      "auth_signatureMaxSkewSeconds": "Zeitabweichung signierter Anfragen (Sekunden)",
+      "auth_refreshTokenLifetimeDays": "Gültigkeit des Refresh-Tokens (Tage)",
+      "pipeline_useStreaming": "Modellantworten streamen",
+      "pipeline_scopeGuardrail": "Themen-Leitplanke",
+      "pipeline_maxQueriesPerRun": "Suchanfragen pro Lauf",
+      "pipeline_maxResultsPerQuery": "Ergebnisse pro Suchanfrage",
+      "pipeline_maxToolCallsPerRun": "Tool-Aufrufe pro Lauf",
+      "pipeline_maxFetchesPerRun": "Abgerufene Seiten pro Lauf",
+      "pipeline_maxFindingsPerRun": "Behaltene Erkenntnisse pro Lauf",
+      "pipeline_maxDocumentCharacters": "An die Extraktion gesendete Dokumentzeichen",
+      "pipeline_maxParallelFetches": "Parallele Seitenabrufe",
+      "pipeline_dedupeLookbackDays": "Rückblick für Duplikate (Tage)",
+      "pipeline_noveltyLookbackDays": "Rückblick für Neuheit (Tage)",
+      "pipeline_recencyHalfLifeHours": "Halbwertszeit der Aktualität (Stunden)",
+      "pipeline_displayThreshold": "Anzeigeschwelle",
+      "pipeline_duplicateSimilarity": "Ähnlichkeit für Duplikate",
+      "pipeline_borderlineSimilarity": "Ähnlichkeit für Grenzfälle",
+      "pipeline_weightLlm": "Gewicht: Modellurteil",
+      "pipeline_weightFeedback": "Gewicht: Feedback",
+      "pipeline_weightNovelty": "Gewicht: Neuheit",
+      "pipeline_weightSource": "Gewicht: Quellenreputation",
+      "pipeline_weightRecency": "Gewicht: Aktualität",
+      "diagnostics_auditRetentionDays": "Audit-Aufbewahrung (Tage)",
+      "push_enabled": "Push-Benachrichtigungen senden",
+      "push_expoPushUrl": "Expo-Push-URL",
+      "push_expoAccessToken": "Expo-Zugriffstoken",
+      "push_timeoutMs": "Push-Timeout (ms)",
+      "storage_provider": "Speicheranbieter",
+      "storage_localDirectory": "Lokales Verzeichnis",
+      "storage_s3Bucket": "S3-Bucket",
+      "storage_s3Region": "S3-Region",
+      "storage_s3Endpoint": "S3-Endpunkt",
+      "storage_s3AccessKey": "S3-Zugriffsschlüssel-ID",
+      "storage_s3SecretKey": "Geheimer S3-Zugriffsschlüssel",
+      "storage_s3Prefix": "S3-Schlüsselpräfix",
+      "storage_s3ForcePathStyle": "S3-Adressierung im Pfadstil",
+      "storage_presignedUrlMinutes": "Gültigkeit vorsignierter URLs (Minuten)",
+      "storage_artifactRetentionDays": "Aufbewahrung von Berichten und Audio (Tage)",
+      "scheduler_enabled": "Planer ausführen",
+      "scheduler_pollIntervalSeconds": "Abfrageintervall des Planers (Sekunden)",
+      "scheduler_minimumIntervalMinutes": "Kürzestes Zeitplanintervall (Minuten)",
+      "scheduler_missedRunGraceMinutes": "Kulanzzeit für verpasste Läufe (Minuten)",
+      "scheduler_runPollSeconds": "Abfrageintervall der Laufwarteschlange (Sekunden)",
+      "search_searxngUrl": "SearXNG-URL",
+      "search_hackerNewsUrl": "URL der Hacker News API",
+      "search_arxivUrl": "URL der arXiv-API",
+      "search_userAgent": "User-Agent",
+      "search_respectRobots": "robots.txt beachten",
+      "search_fetchTimeoutMs": "Abruf-Timeout (ms)",
+      "search_perDomainDelayMs": "Verzögerung pro Domain (ms)",
+      "search_maxFetchBytes": "Größte abgerufene Seite (Bytes)",
+      "tts_enabled": "Audio erzeugen",
+      "tts_endpoint": "Sprachendpunkt",
+      "tts_model": "Sprachmodell",
+      "tts_voice": "Erzählerstimme",
+      "tts_secondaryVoice": "Zweite Stimme",
+      "tts_maxSegmentCharacters": "Zeichen pro Sprachanfrage",
+      "tts_maxParallelSegments": "Parallele Sprachanfragen",
+      "tts_timeoutSeconds": "Timeout der Sprachanfrage (Sekunden)",
+      "tts_maxAttempts": "Versuche pro Folge",
+      "tts_ffmpegPath": "ffmpeg-Pfad",
+      "tts_bitrate": "MP3-Bitrate",
+      "tts_normalizeLoudness": "Lautheit normalisieren",
+      "email_enabled": "E-Mail senden",
+      "email_provider": "E-Mail-Anbieter",
+      "email_fromAddress": "Absenderadresse",
+      "email_fromName": "Absendername",
+      "email_replyToAddress": "Antwortadresse",
+      "email_subjectPrefix": "Betreffpräfix",
+      "email_mailgunDomain": "Mailgun-Domain",
+      "email_mailgunApiKey": "Mailgun-API-Schlüssel",
+      "email_mailgunBaseUrl": "Mailgun-API-URL",
+      "email_fileDirectory": "Verzeichnis des Dateianbieters",
+      "email_actionTokenLifetimeDays": "Gültigkeit von E-Mail-Links (Tage)",
+      "email_recordFeedbackOnClick": "Feedback beim Öffnen eines Links erfassen",
+      "email_deliveryMaxAttempts": "Zustellversuche",
+      "email_deliveryIntervalSeconds": "Zustellintervall (Sekunden)",
+      "email_messageRetentionDays": "Aufbewahrung gesendeter E-Mails (Tage)",
+      "email_publicRequestsPerMinute": "Anfragen an öffentliche Seiten pro Minute",
+      "learning_enabled": "Aus Feedback lernen",
+      "learning_feedbackPerPass": "Feedback pro Lerndurchlauf",
+      "learning_autoApply": "Gelernte Präferenzen automatisch anwenden",
+      "learning_intervalMinutes": "Lernintervall (Minuten)",
+      "learning_feedbackNeighbors": "Verglichene bewertete Erkenntnisse",
+      "hosting_publicSignupEnabled": "Öffentliche Registrierung öffnen",
+      "hosting_defaultPlanKey": "Standardtarif",
+      "hosting_promoChecksPerMinute": "Aktionscode-Prüfungen pro Minute",
+      "hosting_requireEmailVerification": "E-Mail-Bestätigung verlangen",
+      "hosting_turnstileSecretKey": "Turnstile-Geheimschlüssel",
+      "hosting_turnstileSiteKey": "Turnstile-Websiteschlüssel",
+      "hosting_signupsPerIpPerHour": "Registrierungen pro IP und Stunde",
+      "hosting_verificationHours": "Gültigkeit des Bestätigungslinks (Stunden)",
+      "hosting_passwordResetMinutes": "Gültigkeit des Links zum Zurücksetzen des Passworts (Minuten)",
+      "hosting_deletionGraceDays": "Karenzzeit für Kontolöschung (Tage)",
+      "hosting_restrictPrivateNetworks": "Private Netzwerke blockieren",
+      "hosting_usePlatformCredentials": "Modellschlüssel der Plattform verwenden",
+      "hosting_requestsPerMinutePerIp": "API-Anfragen pro Minute und IP",
+      "hosting_trustForwardedFor": "X-Forwarded-For vertrauen",
+      "hosting_allowedPrivateHosts": "Zulässige private Hosts",
+      "hosting_termsVersion": "Version der Bedingungen",
+      "hosting_minimumAge": "Mindestalter",
+      "hosting_appleTeamId": "Apple Team ID",
+      "hosting_mobileAppId": "ID der mobilen App"
     }
   },
   "serverInfo": {
@@ -1987,6 +2102,33 @@
       "enable": "Agentische Suche für dieses Thema verwenden",
       "tools": "Zulässige MCP-Tools",
       "noTools": "Es sind noch keine MCP-Tools aktiviert."
+    },
+    "schedule": {
+      "pausedItem": "{schedule} (pausiert)",
+      "viaEditions": "Recherchiert für {editions}",
+      "paused": "Pausiert"
+    },
+    "prompts": {
+      "add": "Prompt überschreiben",
+      "help": "Prompts, die dieses Thema anstelle der Mandanten-Prompts verwendet. Alle anderen Prompts verwenden die Mandantenversion.",
+      "emptyTitle": "Keine Prompt-Überschreibungen",
+      "emptyMessage": "Dieses Thema verwendet die Prompts des Mandanten.",
+      "allPrompts": "Alle Prompts"
+    },
+    "models": {
+      "help": "Das Modell, das jede Aufgabe für dieses Thema verwendet. Eine Zuweisung für dieses Thema hat Vorrang vor der des Mandanten.",
+      "task": "Aufgabe",
+      "endpoint": "Endpunkt",
+      "model": "Modell",
+      "source": "Festgelegt durch",
+      "none": "Kein Endpunkt",
+      "scope": {
+        "topic": "Dieses Thema",
+        "tenant": "Mandantenstandard",
+        "fallback": "Erster verfügbarer Endpunkt"
+      },
+      "change": "Zuweisungen auf der Seite Modelle ändern",
+      "view": "Zuweisungen auf der Seite Modelle anzeigen"
     }
   },
   "wizard": {
@@ -2184,7 +2326,7 @@
       "summary": "Zusammenfassung",
       "id": "ID",
       "findings": "Neue Erkenntnisse",
-      "findingsTitle": "{duplicates} Duplikate übersprungen",
+      "findingsTitle": "{duplicates, plural, one {# Duplikat übersprungen} other {# Duplikate übersprungen}}",
       "sources": "Quellen",
       "cost": "Kosten"
     },
@@ -2201,7 +2343,11 @@
       "duplicates": "Duplikate",
       "tokens": "Tokens",
       "tokenSplit": "{input} ein, {output} aus",
-      "cost": "Geschätzte Kosten"
+      "cost": "Geschätzte Kosten",
+      "modelUsage": "Modellnutzung",
+      "notRecorded": "Nicht erfasst",
+      "notRecordedHelp": "Für diesen Lauf wurden keine Modellaufrufe erfasst.",
+      "costPending": "Ohne Preis"
     },
     "stages": {
       "empty": "Für diesen Lauf wurden keine Phasen aufgezeichnet.",
@@ -2511,10 +2657,11 @@
     "kpis": {
       "open": "Offen",
       "graded": "Bewertet",
-      "ofTotal": "von {total} Prognosen",
+      "ofTotal": "{total, plural, one {von # Prognose} other {von # Prognosen}}",
       "accuracy": "Beobachtete Genauigkeit",
       "accuracyHelp": "Teilweise zutreffend zählt zur Hälfte.",
-      "brier": "Mittlerer Brier-Score"
+      "brier": "Mittlerer Brier-Score",
+      "proposed": "{count, plural, one {# wartet auf Ihre Bewertung} other {# warten auf Ihre Bewertung}}"
     },
     "calibration": {
       "title": "Kalibrierung",
@@ -2638,7 +2785,7 @@
       },
       "noFiles": "Keine gespeicherten Dateien.",
       "openRun": "Lauf öffnen",
-      "stats": "{minutes} Min. Lesezeit, {words} Wörter, {items} Einträge",
+      "stats": "{minutes} Min. Lesezeit, {words, plural, one {# Wort} other {# Wörter}}, {items, plural, one {# Eintrag} other {# Einträge}}",
       "failed": "Die Erstellung ist fehlgeschlagen.",
       "noContent": "Dieses Briefing hat keinen Inhalt.",
       "items": "In diesem Briefing ({count})",
@@ -3713,7 +3860,7 @@
       "quoteFailure": "Fehlerquote bei Zitaten",
       "quoteFailureHelp": "Zitate, deren Prüfung fehlgeschlagen ist",
       "modelCost": "Modellkosten",
-      "modelCalls": "{count} Modellaufrufe"
+      "modelCalls": "{count, plural, one {# Modellaufruf} other {# Modellaufrufe}}"
     },
     "email": {
       "total": "Nachrichten",
@@ -3753,7 +3900,8 @@
       "body": "Erstellen Sie einen Zugriffsschlüssel und ein Geheimnis für den MCP-Client, damit Sie ihn später widerrufen können, ohne Ihr Passwort zu ändern. Kopieren Sie das Geheimnis bei der Erstellung; es wird nur einmal angezeigt.",
       "authMode": "Wählen Sie den Authentifizierungsmodus „Direkter Header“ oder „Hybrid“: Ein Streamable-HTTP-Client sendet Schlüssel und Geheimnis bei jeder Anfrage, was Schlüssel für signierte Anfragen und Sitzungsaustausch ablehnen.",
       "create": "Zugriffsschlüssel erstellen",
-      "askAdmin": "Zugriffsschlüssel werden von einem Administrator erstellt. Bitten Sie Ihren Administrator um einen Zugriffsschlüssel mit dem Authentifizierungsmodus „Direkter Header“."
+      "askAdmin": "Zugriffsschlüssel werden von einem Administrator erstellt. Bitten Sie Ihren Administrator um einen Zugriffsschlüssel mit dem Authentifizierungsmodus „Direkter Header“.",
+      "titleMember": "Zugriffsschlüssel anfordern"
     },
     "connect": {
       "title": "Client verbinden",
@@ -3799,7 +3947,8 @@
     "empty": {
       "title": "Noch keine Quellen",
       "message": "Quellen erscheinen, nachdem ein Lauf das Web durchsucht und Seiten für eines Ihrer Themen abgerufen hat."
-    }
+    },
+    "runLabel": "Lauf vom {when}"
   },
   "auth": {
     "resend": "Neuen Link senden",
@@ -3827,7 +3976,7 @@
     "verify": {
       "title": "E-Mail-Adresse bestätigen",
       "done": "Ihre E-Mail-Adresse ist bestätigt. Sie können sich jetzt anmelden.",
-      "failed": "Dieser Link ist abgelaufen oder wurde bereits verwendet. Geben Sie Ihre E-Mail-Adresse ein, um einen neuen zu erhalten."
+      "failed": "Dieser Link ist ungültig oder abgelaufen. Geben Sie Ihre E-Mail-Adresse ein, um einen neuen zu erhalten."
     },
     "forgot": {
       "title": "Passwort zurücksetzen",
@@ -3847,10 +3996,10 @@
     "about": "Registrieren Sie entfernte MCP-Server, deren Tools die agentische Recherche aufrufen darf. Ermitteln Sie die Tools eines Servers, aktivieren Sie die vertrauenswürdigen und geben Sie sie dann für ein Thema frei.",
     "created": "Server registriert.",
     "test": "Verbindung testen",
-    "testOk": "Verbunden. Der Server bietet {count} Tools an.",
+    "testOk": "Verbunden. Der Server bietet {count, plural, one {# Tool} other {# Tools}} an.",
     "testFailed": "Verbindung fehlgeschlagen: {error}",
     "discover": "Tools ermitteln",
-    "discovered": "{count} Tools gespeichert.",
+    "discovered": "{count, plural, one {# Tool gespeichert} other {# Tools gespeichert}}.",
     "columns": {
       "name": "Name",
       "transport": "Transport",
@@ -4007,5 +4156,22 @@
       "help": "Anteil der Ergebnisse jedes Anbieters, die zu einer Erkenntnis auf oder über dem Anzeigeschwellenwert führten.",
       "label": "{provider} ({used} von {results})"
     }
+  },
+  "modelKeys": {
+    "title": "Der Modellendpunkt hat keinen nutzbaren API-Schlüssel",
+    "problem": {
+      "missing": "{name} hat keinen API-Schlüssel, daher schlagen Aufrufe fehl.",
+      "notFound": "{name} verwendet gespeicherte Zugangsdaten, die nicht mehr existieren.",
+      "inactive": "{name} verwendet gespeicherte Zugangsdaten, die deaktiviert sind.",
+      "expired": "{name} verwendet gespeicherte Zugangsdaten, die abgelaufen sind."
+    },
+    "fix": "Schlüssel zu {name} hinzufügen",
+    "view": "Modellendpunkte anzeigen",
+    "consequence": {
+      "general": "Themenverfeinerung, Rechercheläufe und Briefings benötigen ein funktionierendes Modell und schlagen daher fehl, bis dies behoben ist.",
+      "wizard": "Der Assistent lässt das Modell Dimensionen und Fragen vorschlagen und schlägt daher schon im ersten Schritt fehl, bis dies behoben ist."
+    },
+    "askAdmin": "Nur ein Mandantenadministrator kann einen Schlüssel hinzufügen. Bitten Sie Ihren Administrator, das zu beheben.",
+    "badge": "Kein API-Schlüssel"
   }
 }

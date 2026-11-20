@@ -29,6 +29,17 @@ function write(key, value) {
   }
 }
 
+// An IANA time zone the browser can format in, or null (the browser's own zone is used).
+export function validTimeZone(zone) {
+  if (!zone || typeof zone !== 'string') return null;
+  try {
+    new Intl.DateTimeFormat('en', { timeZone: zone });
+    return zone;
+  } catch {
+    return null;
+  }
+}
+
 const localeGetter = () => intlLocale(i18next.resolvedLanguage || i18next.language || 'en');
 
 export function createClient(serverUrl, token) {
@@ -40,6 +51,7 @@ export function AuthProvider({ children, clientFactory = createClient }) {
   const [serverUrl, setServerUrl] = useState(() => read(STORAGE_KEYS.serverUrl) || defaultServerUrl());
   const [token, setToken] = useState(() => read(STORAGE_KEYS.token));
   const [identity, setIdentity] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(Boolean(read(STORAGE_KEYS.token)));
   const [sessionExpired, setSessionExpired] = useState(false);
   const factory = useRef(clientFactory);
@@ -50,7 +62,29 @@ export function AuthProvider({ children, clientFactory = createClient }) {
     write(STORAGE_KEYS.token, null);
     setToken(null);
     setIdentity(null);
+    setProfile(null);
   }, []);
+
+  // The signed-in user's profile (first name, time zone). Administration keys and access keys have none.
+  const refreshProfile = useCallback(async () => {
+    if (!identity || identity.principalType !== 'User' || !identity.userId || typeof apiClient.getMe !== 'function') {
+      setProfile(null);
+      return null;
+    }
+    try {
+      const me = await apiClient.getMe();
+      const next = me && typeof me === 'object' && !Array.isArray(me.items) ? me : null;
+      setProfile(next);
+      return next;
+    } catch {
+      setProfile(null);
+      return null;
+    }
+  }, [apiClient, identity]);
+
+  useEffect(() => {
+    refreshProfile();
+  }, [refreshProfile]);
 
   // Restore an existing session on mount.
   useEffect(() => {
@@ -119,6 +153,9 @@ export function AuthProvider({ children, clientFactory = createClient }) {
       serverUrl,
       token,
       identity,
+      profile,
+      refreshProfile,
+      timeZone: validTimeZone(profile && profile.timeZone),
       tenantId: identity ? identity.tenantId : read(STORAGE_KEYS.tenantId) || 'default',
       isAdmin: Boolean(identity && identity.isAdmin),
       isTenantAdmin: Boolean(identity && (identity.isTenantAdmin || identity.isAdmin)),
@@ -126,7 +163,7 @@ export function AuthProvider({ children, clientFactory = createClient }) {
       login,
       logout
     }),
-    [token, identity, isLoading, sessionExpired, apiClient, serverUrl, login, logout]
+    [token, identity, profile, refreshProfile, isLoading, sessionExpired, apiClient, serverUrl, login, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -136,6 +173,11 @@ AuthProvider.propTypes = {
   children: PropTypes.node,
   clientFactory: PropTypes.func
 };
+
+// The session when inside AuthProvider, else null. For shared hooks (formatting) that also render signed out.
+export function useOptionalAuth() {
+  return useContext(AuthContext);
+}
 
 export function useAuth() {
   const ctx = useContext(AuthContext);

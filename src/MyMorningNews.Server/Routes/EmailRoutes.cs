@@ -145,6 +145,13 @@ namespace MyMorningNews.Server.Routes
             if (req.RunEmails.HasValue) await Server.Email.SetSuppressedAsync(tenantId, address, EmailCategoryEnum.RunEmails, null, !req.RunEmails.Value, "preferences", ctx.Token).ConfigureAwait(false);
             if (req.BriefingEmails.HasValue) await Server.Email.SetSuppressedAsync(tenantId, address, EmailCategoryEnum.BriefingEmails, null, !req.BriefingEmails.Value, "preferences", ctx.Token).ConfigureAwait(false);
             if (req.FailureEmails.HasValue) await Server.Email.SetSuppressedAsync(tenantId, address, EmailCategoryEnum.FailureEmails, null, !req.FailureEmails.Value, "preferences", ctx.Token).ConfigureAwait(false);
+            foreach (string topicId in (req.ResubscribeTopicIds ?? new List<string>()).Where(t => !String.IsNullOrWhiteSpace(t)).Distinct())
+                await Server.Email.SetSuppressedAsync(tenantId, address, EmailCategoryEnum.RunEmails, topicId.Trim(), false, "preferences", ctx.Token).ConfigureAwait(false);
+            foreach (string topicId in (req.UnsubscribeTopicIds ?? new List<string>()).Where(t => !String.IsNullOrWhiteSpace(t)).Distinct())
+            {
+                Topic? t = await Server.Database.Topics.ReadAsync(tenantId, topicId.Trim(), ctx.Token).ConfigureAwait(false);
+                if (t != null) await Server.Email.SetSuppressedAsync(tenantId, address, EmailCategoryEnum.RunEmails, t.Id, true, "preferences", ctx.Token).ConfigureAwait(false);
+            }
             await SendJsonAsync(ctx, 200, await DescribeAsync(ctx, tenantId).ConfigureAwait(false)).ConfigureAwait(false);
         }
 

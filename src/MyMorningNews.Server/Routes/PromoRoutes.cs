@@ -38,13 +38,15 @@ namespace MyMorningNews.Server.Routes
         {
             ArgumentNullException.ThrowIfNull(webserver);
             const string a = "/v1.0/api/admin/promo-codes";
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, a, ListAsync, null, openApiMetadata: Paged(Doc("List promotional codes with usage", "Promotional codes", "Global administrators only.")
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, a, ListAsync, null, openApiMetadata: Paged(Doc("List promotional codes with usage", "Promotional codes", "Global administrators only. status: active, disabled, notstarted, expired, or exhausted.")
+                .WithParameter(QueryParam("status", typeof(string)))
                 .WithParameter(QueryParam("enabled", typeof(bool))).WithParameter(QueryParam("planId", typeof(string))).WithParameter(QueryParam("batchId", typeof(string))).WithParameter(QueryParam("search", typeof(string)))));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, a, CreateAsync, null, openApiMetadata: Doc("Create a promotional code", "Promotional codes").WithRequestBody(Body<PromoCodeUpsertRequest>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, a + "/generate", GenerateAsync, null, openApiMetadata: Doc("Generate promotional codes in bulk", "Promotional codes").WithRequestBody(Body<PromoCodeGenerateRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, a + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read a promotional code with usage", "Promotional codes"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, a + "/{id}", UpdateAsync, null, openApiMetadata: Doc("Update a promotional code (limits, dates, plan, on or off)", "Promotional codes").WithRequestBody(Body<PromoCodeUpsertRequest>()));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, a + "/{id}", DeleteAsync, null, openApiMetadata: Doc("Delete an unused promotional code (disable a used one instead)", "Promotional codes"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, a + "/{id}", DeleteAsync, null, openApiMetadata: Doc("Delete an unused promotional code (disable a used one instead)", "Promotional codes",
+                "force=true also revokes and removes its redemptions (for test codes); the plan assignments stay, revoked, for history.").WithParameter(QueryParam("force", typeof(bool))));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, a + "/{id}/redemptions", RedemptionsAsync, null, openApiMetadata: Doc("Who redeemed a code and when", "Promotional codes"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, a + "/{id}/redemptions/{redemptionId}/revoke", RevokeAsync, null, openApiMetadata: Doc("Revoke a redemption (ends its plan now)", "Promotional codes"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, a + "/{id}/apply", ApplyAsync, null, openApiMetadata: Doc("Redeem a code for a user", "Promotional codes").WithRequestBody(Body<PromoApplyRequest>()));
@@ -69,7 +71,22 @@ namespace MyMorningNews.Server.Routes
             if (!await AdminAsync(ctx).ConfigureAwait(false)) return;
             PromoCodeFilter filter = new PromoCodeFilter { Enabled = QueryBool(ctx, "enabled"), PlanId = Query(ctx, "planId"), BatchId = Query(ctx, "batchId"), Search = Query(ctx, "search") };
             ApplyPaging(ctx, filter);
-            EnumerationResult<PromoCode> page = await Server.Database.PromoCodes.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false);
+            string? status = Query(ctx, "status")?.Trim().ToLowerInvariant();
+            EnumerationResult<PromoCode> page;
+            if (String.IsNullOrEmpty(status))
+            {
+                page = await Server.Database.PromoCodes.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false);
+            }
+            else
+            {
+                int number = filter.PageNumber;
+                int size = filter.PageSize;
+                filter.PageNumber = 1;
+                filter.PageSize = 10000;
+                DateTime now = DateTime.UtcNow;
+                List<PromoCode> all = (await Server.Database.PromoCodes.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false)).Items.Where(c => StatusOf(c, now) == status).ToList();
+                page = new EnumerationResult<PromoCode> { Items = all.Skip((number - 1) * size).Take(size).ToList(), PageNumber = number, PageSize = size, TotalCount = all.Count, TotalPages = Math.Max(1, (int)Math.Ceiling(all.Count / (double)size)) };
+            }
             List<PromoCodeStats> stats = new List<PromoCodeStats>();
             foreach (PromoCode pc in page.Items) stats.Add(await Server.PromoCodes.StatsAsync(pc, ctx.Token).ConfigureAwait(false));
             await SendJsonAsync(ctx, 200, new EnumerationResult<PromoCodeStats> { Items = stats, PageNumber = page.PageNumber, PageSize = page.PageSize, TotalCount = page.TotalCount, TotalPages = page.TotalPages }).ConfigureAwait(false);
@@ -129,7 +146,14 @@ namespace MyMorningNews.Server.Routes
         {
             PromoCode? pc = await CodeAsync(ctx).ConfigureAwait(false);
             if (pc == null) return;
-            if (pc.RedemptionCount > 0) { await SendErrorAsync(ctx, 409, "Conflict", "This code has been used; disable it instead so its history stays.").ConfigureAwait(false); return; }
+            bool force = QueryBool(ctx, "force") == true;
+            if (pc.RedemptionCount > 0 && !force) { await SendErrorAsync(ctx, 409, "Conflict", "This code has been used; disable it instead so its history stays, or delete with force=true to revoke and remove its redemptions.").ConfigureAwait(false); return; }
+            foreach (PromoRedemption r in await Server.PromoCodes.RedemptionsAsync(pc, ctx.Token).ConfigureAwait(false))
+            {
+                await Server.PromoCodes.RevokeAsync(r, ctx.Token).ConfigureAwait(false);
+                await Server.Database.PromoRedemptions.DeleteAsync(r.TenantId, r.Id, ctx.Token).ConfigureAwait(false);
+            }
+
             await Server.Database.PromoCodes.DeleteAsync(pc.Id, ctx.Token).ConfigureAwait(false);
             await AuditAsync(ctx, AuditEventTypeEnum.PromoCodeChanged, 204, "Promotional code " + pc.Code + " deleted.").ConfigureAwait(false);
             await SendJsonAsync(ctx, 204, null).ConfigureAwait(false);
@@ -354,6 +378,15 @@ namespace MyMorningNews.Server.Routes
             Dictionary<string, string> features = (await Server.Database.PlanFeatures.EnumerateAsync(new PlanFeatureFilter { PlanId = p.Id, PageSize = 500 }, ctx.Token).ConfigureAwait(false)).Items
                 .ToDictionary(f => f.Key, f => f.Value, StringComparer.Ordinal);
             return new PlanResponse { Plan = p, Features = features };
+        }
+
+        private static string StatusOf(PromoCode c, DateTime now)
+        {
+            if (!c.Enabled) return "disabled";
+            if (c.StartsUtc.HasValue && c.StartsUtc > now) return "notstarted";
+            if (c.ExpiresUtc.HasValue && c.ExpiresUtc <= now) return "expired";
+            if (c.MaxRedemptions.HasValue && c.RedemptionCount >= c.MaxRedemptions.Value) return "exhausted";
+            return "active";
         }
 
         private async Task<PromoCode?> CodeAsync(HttpContextBase ctx)

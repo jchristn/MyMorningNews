@@ -70,6 +70,31 @@ namespace MyMorningNews.Core.Requests
         public int? DisplayThreshold { get; set; } = null;
 
         /// <summary>
+        /// Ranking weight override for the llm component (0 to 1); a negative value clears the override.
+        /// </summary>
+        public double? WeightLlm { get; set; } = null;
+
+        /// <summary>
+        /// Ranking weight override for the feedback component (0 to 1); a negative value clears the override.
+        /// </summary>
+        public double? WeightFeedback { get; set; } = null;
+
+        /// <summary>
+        /// Ranking weight override for the novelty component (0 to 1); a negative value clears the override.
+        /// </summary>
+        public double? WeightNovelty { get; set; } = null;
+
+        /// <summary>
+        /// Ranking weight override for the source component (0 to 1); a negative value clears the override.
+        /// </summary>
+        public double? WeightSource { get; set; } = null;
+
+        /// <summary>
+        /// Ranking weight override for the recency component (0 to 1); a negative value clears the override.
+        /// </summary>
+        public double? WeightRecency { get; set; } = null;
+
+        /// <summary>
         /// Seed search queries.
         /// </summary>
         public List<string>? SeedQueries { get; set; } = null;

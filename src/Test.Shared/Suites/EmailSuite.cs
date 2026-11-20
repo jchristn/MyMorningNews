@@ -170,6 +170,9 @@ namespace Test.Shared.Suites
             Assert.True(after.Count == 1 && after[0].Status == EmailStatusEnum.Suppressed, "next digest suppressed: " + String.Join(",", after.Select(a => a.Status)));
             EmailPreferencesResponse prefs = (await f.User.Client.GetAsync("/v1.0/api/email-preferences", token).ConfigureAwait(false)).Json<EmailPreferencesResponse>();
             Assert.True(prefs.RunEmails && prefs.UnsubscribedTopicIds.Contains(f.Topic.Id), "topic unsubscribe shows in preferences");
+            EmailPreferencesResponse viaApi = (await f.User.Client.PutAsync("/v1.0/api/email-preferences", new { resubscribeTopicIds = new[] { f.Topic.Id } }, token).ConfigureAwait(false)).Expect(200, "resubscribe topic").Json<EmailPreferencesResponse>();
+            Assert.True(!viaApi.UnsubscribedTopicIds.Contains(f.Topic.Id), "topic back on through preferences");
+            (await f.User.Client.PutAsync("/v1.0/api/email-preferences", new { unsubscribeTopicIds = new[] { f.Topic.Id } }, token).ConfigureAwait(false)).Expect(200, "unsubscribe topic");
             (await anon.SendAsync(HttpMethod.Post, url, "op=undo", new Dictionary<string, string>(), token).ConfigureAwait(false)).Expect(200, "undo");
             Assert.True(!await f.Server.Context.Email.IsSuppressedAsync(m.TenantId, m.Recipient, EmailCategoryEnum.RunEmails, f.Topic.Id, token).ConfigureAwait(false), "resubscribed");
         }

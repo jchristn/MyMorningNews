@@ -33,5 +33,10 @@ namespace MyMorningNews.Core.Entitlements
         /// Assignments that start later (stacked codes).
         /// </summary>
         public List<PlanAssignment> Upcoming { get; set; } = new List<PlanAssignment>();
+
+        /// <summary>
+        /// Plan names by plan ID for the current and upcoming assignments.
+        /// </summary>
+        public Dictionary<string, string> PlanNames { get; set; } = new Dictionary<string, string>(StringComparer.Ordinal);
     }
 }

@@ -231,6 +231,9 @@ namespace Test.Shared.Suites
             Assert.True(quality.Quotes == 4 && quality.Verified == 2 && quality.FailureRate == 0.5 && quality.ByModel.Single().Key == "stub-research", "quote verification by model: " + quality.Quotes + " " + quality.Verified);
             RankingRecommendation rr = (await f.User.Client.GetAsync("/v1.0/api/topics/" + f.Topic.Id + "/ranking-recommendation", token).ConfigureAwait(false)).Expect(200, "ranking").Json<RankingRecommendation>();
             Assert.True(!rr.Enough && rr.RatedFindings == 2 && rr.Current["llm"] == 0.45 && rr.Recommended["llm"] == 0.45, "not enough ratings yet");
+            Topic weighted = (await f.User.Client.PutAsync("/v1.0/api/topics/" + f.Topic.Id, new { weightLlm = 0.6, weightRecency = 2.0, weightNovelty = -1.0 }, token).ConfigureAwait(false)).Expect(200, "set weights").Json<Topic>();
+            Assert.True(weighted.WeightLlm == 0.6 && weighted.WeightRecency == 1.0 && weighted.WeightNovelty == null, "weights set, clamped, and cleared");
+            Assert.Equal(0.6, (await f.User.Client.GetAsync("/v1.0/api/topics/" + f.Topic.Id + "/ranking-recommendation", token).ConfigureAwait(false)).Json<RankingRecommendation>().Current["llm"], "recommendation reads the override");
 
             TestUser other = await TestFixtures.CreateUserAsync(await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false), f.Topic.TenantId, false, token).ConfigureAwait(false);
             Assert.Equal(0, (await other.Client.GetAsync("/v1.0/api/analytics/relevance", token).ConfigureAwait(false)).Json<RelevanceReport>().Rated, "another member sees only their own");

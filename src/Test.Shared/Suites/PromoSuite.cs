@@ -138,6 +138,7 @@ namespace Test.Shared.Suites
             Assert.Equal(PromoChannelEnum.Admin, applied.Channel, "applied by an administrator");
             Assert.Equal("complimentary", (await member.Client.GetAsync("/v1.0/api/account/plan", token).ConfigureAwait(false)).Json<EffectivePlan>().Plan.Key, "member has the plan");
             (await admin.DeleteAsync("/v1.0/api/admin/promo-codes/" + batch[0].Id, token).ConfigureAwait(false)).Expect(409, "used codes are disabled, not deleted");
+            Assert.True((await admin.GetAsync("/v1.0/api/admin/promo-codes?status=exhausted&batchId=" + batch[0].BatchId, token).ConfigureAwait(false)).Json<EnumerationResult<PromoCodeStats>>().Items.Single().Code.Id == batch[0].Id, "status filter");
             (await admin.PutAsync("/v1.0/api/admin/promo-codes/" + batch[0].Id, new { maxRedemptions = 0, enabled = false }, token).ConfigureAwait(false)).Expect(200, "unlimited and off");
             PromoRedemption revoked = (await admin.PostAsync("/v1.0/api/admin/promo-codes/" + batch[0].Id + "/redemptions/" + applied.Id + "/revoke", null, token).ConfigureAwait(false)).Expect(200, "revoke").Json<PromoRedemption>();
             Assert.True(revoked.RevokedUtc.HasValue, "revoked");
@@ -146,6 +147,8 @@ namespace Test.Shared.Suites
             Assert.True(stats.Revoked == 1 && stats.ActiveAssignments == 0 && stats.Code.RedemptionCount == 1 && stats.Remaining == null && !stats.Code.Enabled, "usage after revocation");
             (await admin.PutAsync("/v1.0/api/admin/promo-codes/" + batch[1].Id, new { code = "RENAMED" }, token).ConfigureAwait(false)).Expect(400, "codes cannot be renamed");
             (await admin.DeleteAsync("/v1.0/api/admin/promo-codes/" + batch[1].Id, token).ConfigureAwait(false)).Expect(204, "delete unused");
+            (await admin.DeleteAsync("/v1.0/api/admin/promo-codes/" + batch[0].Id + "?force=true", token).ConfigureAwait(false)).Expect(204, "force delete a used test code");
+            (await admin.GetAsync("/v1.0/api/admin/promo-codes/" + batch[0].Id, token).ConfigureAwait(false)).Expect(404, "gone");
         }
 
         private static async Task PlansAsync(CancellationToken token)
@@ -174,6 +177,7 @@ namespace Test.Shared.Suites
             PromoCodeStats two = await CreateCodeAsync(admin, new { code = Unique("SECOND"), durationDays = 20 }, token).ConfigureAwait(false);
             await u.Client.PostAsync("/v1.0/api/promo-codes/redeem", new { code = one.Code.Code }, token).ConfigureAwait(false);
             EffectivePlan stacked = (await u.Client.PostAsync("/v1.0/api/promo-codes/redeem", new { code = two.Code.Code }, token).ConfigureAwait(false)).Expect(201, "second code").Json<EffectivePlan>();
+            Assert.True(stacked.PlanNames[stacked.Upcoming[0].PlanId] == "Complimentary", "upcoming plan named");
             Assert.True(stacked.Upcoming.Count == 1 && Math.Abs((stacked.Upcoming[0].StartsUtc - stacked.EndsUtc!.Value).TotalSeconds) < 2 && Math.Abs((stacked.Upcoming[0].EndsUtc!.Value - stacked.EndsUtc.Value).TotalDays - 20) < 0.01,
                 "the second code starts when the first ends");
             List<PlanAssignment> history = (await admin.GetAsync("/v1.0/api/admin/plan-assignments?tenantId=" + t.Id + "&userId=" + u.User.Id, token).ConfigureAwait(false)).Expect(200, "history").Json<List<PlanAssignment>>();

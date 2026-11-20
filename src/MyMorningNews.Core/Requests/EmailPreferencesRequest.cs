@@ -1,6 +1,7 @@
 namespace MyMorningNews.Core.Requests
 {
     using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Change my email preferences. Null fields are unchanged.
@@ -21,5 +22,15 @@ namespace MyMorningNews.Core.Requests
         /// Run failure notices.
         /// </summary>
         public bool? FailureEmails { get; set; } = null;
+
+        /// <summary>
+        /// Topics whose run emails to turn back on.
+        /// </summary>
+        public List<string>? ResubscribeTopicIds { get; set; } = null;
+
+        /// <summary>
+        /// Topics whose run emails to turn off.
+        /// </summary>
+        public List<string>? UnsubscribeTopicIds { get; set; } = null;
     }
 }

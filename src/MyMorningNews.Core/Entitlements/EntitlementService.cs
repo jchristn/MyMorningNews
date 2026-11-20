@@ -115,7 +115,15 @@ namespace MyMorningNews.Core.Entitlements
 
             Dictionary<string, string> features = (await _Database.PlanFeatures.EnumerateAsync(new PlanFeatureFilter { PlanId = plan.Id, PageSize = 500 }, token).ConfigureAwait(false)).Items
                 .ToDictionary(f => f.Key, f => f.Value, StringComparer.Ordinal);
-            return new EffectivePlan { Plan = plan, Features = features, Assignment = current, EndsUtc = current?.EndsUtc, Upcoming = live.Where(a => a.StartsUtc > now).OrderBy(a => a.StartsUtc).ToList() };
+            EffectivePlan result = new EffectivePlan { Plan = plan, Features = features, Assignment = current, EndsUtc = current?.EndsUtc, Upcoming = live.Where(a => a.StartsUtc > now).OrderBy(a => a.StartsUtc).ToList() };
+            result.PlanNames[plan.Id] = plan.Name;
+            foreach (string id in result.Upcoming.Select(a => a.PlanId).Distinct().Where(id => !result.PlanNames.ContainsKey(id)))
+            {
+                Plan? p = await _Database.Plans.ReadAsync(id, token).ConfigureAwait(false);
+                if (p != null) result.PlanNames[id] = p.Name;
+            }
+
+            return result;
         }
 
         /// <summary>

@@ -435,6 +435,11 @@ namespace MyMorningNews.Server.Routes
             if (req.EmailWhenEmpty.HasValue) topic.EmailWhenEmpty = req.EmailWhenEmpty.Value;
             if (req.MaxEmailFindings.HasValue) topic.MaxEmailFindings = req.MaxEmailFindings.Value;
             if (req.DisplayThreshold.HasValue) topic.DisplayThreshold = Math.Clamp(req.DisplayThreshold.Value, 0, 100);
+            if (req.WeightLlm.HasValue) topic.WeightLlm = req.WeightLlm.Value < 0 ? null : Math.Clamp(req.WeightLlm.Value, 0, 1);
+            if (req.WeightFeedback.HasValue) topic.WeightFeedback = req.WeightFeedback.Value < 0 ? null : Math.Clamp(req.WeightFeedback.Value, 0, 1);
+            if (req.WeightNovelty.HasValue) topic.WeightNovelty = req.WeightNovelty.Value < 0 ? null : Math.Clamp(req.WeightNovelty.Value, 0, 1);
+            if (req.WeightSource.HasValue) topic.WeightSource = req.WeightSource.Value < 0 ? null : Math.Clamp(req.WeightSource.Value, 0, 1);
+            if (req.WeightRecency.HasValue) topic.WeightRecency = req.WeightRecency.Value < 0 ? null : Math.Clamp(req.WeightRecency.Value, 0, 1);
             if (req.SeedQueries != null) topic.SeedQueries = req.SeedQueries.Where(q => !String.IsNullOrWhiteSpace(q)).Select(q => q.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).Take(20).ToList();
         }
 

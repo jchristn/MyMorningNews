@@ -23,7 +23,7 @@ namespace MyMorningNews.Core.Services
             }
             set
             {
-                _LimitPerMinute = Math.Clamp(value, 1, 1000);
+                _LimitPerMinute = Math.Clamp(value, 1, 100000);
             }
         }
 
@@ -48,6 +48,8 @@ namespace MyMorningNews.Core.Services
         #region Private-Members
 
         private readonly ConcurrentDictionary<string, Queue<DateTime>> _Attempts = new ConcurrentDictionary<string, Queue<DateTime>>(StringComparer.OrdinalIgnoreCase);
+        private const int _PruneEvery = 1024;
+        private int _Calls = 0;
         private int _LimitPerMinute = 10;
         private int _WindowSeconds = 60;
 
@@ -77,6 +79,7 @@ namespace MyMorningNews.Core.Services
         {
             if (String.IsNullOrEmpty(key)) key = "anonymous";
             DateTime now = DateTime.UtcNow;
+            if (System.Threading.Interlocked.Increment(ref _Calls) % _PruneEvery == 0) Prune(now);
             Queue<DateTime> queue = _Attempts.GetOrAdd(key, k => new Queue<DateTime>());
             lock (queue)
             {
@@ -85,6 +88,38 @@ namespace MyMorningNews.Core.Services
                 queue.Enqueue(now);
                 return true;
             }
+        }
+
+        /// <summary>
+        /// Number of keys being tracked. Expired keys are removed every 1024 attempts, so memory stays bounded by the
+        /// keys seen within one window.
+        /// </summary>
+        public int TrackedKeys
+        {
+            get { return _Attempts.Count; }
+        }
+
+        /// <summary>
+        /// Remove keys with no attempt inside the window.
+        /// </summary>
+        /// <param name="nowUtc">Current time.</param>
+        /// <returns>Keys removed.</returns>
+        public int Prune(DateTime nowUtc)
+        {
+            int removed = 0;
+            foreach (KeyValuePair<string, Queue<DateTime>> pair in _Attempts)
+            {
+                bool stale;
+                lock (pair.Value)
+                {
+                    while (pair.Value.Count > 0 && (nowUtc - pair.Value.Peek()).TotalSeconds >= _WindowSeconds) pair.Value.Dequeue();
+                    stale = pair.Value.Count == 0;
+                }
+
+                if (stale && _Attempts.TryRemove(pair.Key, out Queue<DateTime>? _)) removed++;
+            }
+
+            return removed;
         }
 
         /// <summary>

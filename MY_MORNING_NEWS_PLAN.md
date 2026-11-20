@@ -1515,7 +1515,7 @@ Exit: each SDK harness passes against a fresh stack, and an MCP client can list 
 
 - [x] Signed-request credential auth (`MMN1-HMAC-SHA256`: x-access-key, x-tenant-guid, x-date, x-nonce, x-signature over method, path and query, tenant, date, nonce, and body hash; skew window and in-memory nonce replay cache). CORS allow-list setting (`Rest.CorsAllowedOrigins`, done in Phase 1).
 - [x] Retention for every table with a retention setting: request history, expired sessions, model call payloads, email messages, artifacts, plus expired refresh tokens and email action tokens, and audit records when `Diagnostics.AuditRetentionDays` is set (default keeps them).
-- [ ] Rate-limit tuning.
+- [x] Rate-limit tuning: limiters forget idle keys (memory stays bounded by one window), and `Hosting.RequestsPerMinutePerIp` caps API requests per address (600 on the hosted profile, health exempt).
 - [x] `REST_API.md` complete. The Postman collection covers every route with descriptions and variables.
 - [x] Complete translations for the 12 locales. RTL and expansion QA. (Dashboard and mobile catalogs, machine-translated and awaiting native review; `docs/I18N.md`. The server-side email and public page catalog of section 25.7 is not built yet.)
 - [x] Grafana dashboards for every domain. Factory seeded demo profile.

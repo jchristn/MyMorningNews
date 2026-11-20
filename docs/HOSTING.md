@@ -71,6 +71,12 @@ administrator account and change its password at once.
   `hosting.blockedEmailDomains` are refused. Users confirm they accept the terms (`hosting.termsVersion`) and are at
   least `hosting.minimumAge` (18).
 - A promotional code entered at sign-up is redeemed after the account is created.
+- Every API request counts against `hosting.requestsPerMinutePerIp` (600 on the hosted profile, off when 0); past
+  it the server answers 429 with `Retry-After: 60`. Health checks are exempt.
+- `hosting.trustForwardedFor` (on in the hosted profile) takes the client address from the last `X-Forwarded-For`
+  entry when the direct peer is on a private network, which is Caddy on the Docker network. Caddy replaces any
+  `X-Forwarded-For` a client sends, so the address cannot be forged through it. Leave it off when the server is
+  reachable without the proxy.
 
 ## Plans and caps
 

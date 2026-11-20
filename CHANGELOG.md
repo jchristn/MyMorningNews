@@ -33,6 +33,10 @@ All notable changes to this project are documented here. The project follows [Se
 - Private network blocking for fetches, model endpoints, MCP servers, and search providers (`Hosting.RestrictPrivateNetworks`), checked on save and on every connection, with `Hosting.AllowedPrivateHosts` for the stack's own services.
 - Platform Anthropic credential by reference (`platform:anthropic`) for personal tenants and, optionally, every new tenant.
 - `/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json` for mobile universal links.
+- `Hosting.RequestsPerMinutePerIp` (429 with Retry-After past it, health exempt) and `Hosting.TrustForwardedFor` for the client address behind the reverse proxy. Rate limiters now forget idle keys.
+- Search Providers page and the per-topic provider choice in the dashboard; MCP Servers page, the topic agentic search setting, and run tool calls.
+- Dashboard sign-up, email verification, forgot and reset password, sign-in without a tenant, the account usage meter, data export, and account deletion. Mobile shows the usage meter on the plan screen.
+- One email and push per limit per month when a plan limit skips a scheduled run.
 - Hosted overlay settings (sign-up on, Free plan default, egress blocking, platform credentials) and `docs/HOSTING.md`.
 - Factory demo profile: `factory/reset.sh --demo` (and `reset.bat`) seeds `demo@mymorningnews` / `password` with two topics, three completed runs with findings, verified evidence, predictions, suggestions, Markdown briefings, feedback, and learned preferences, using no model calls and no API key.
 - Grafana dashboards for every domain: Research pipeline, Briefings and audio, Email, Learning and feedback, Workers, Auth and security, MCP, and Integrations, next to Overview, HTTP, and Models and cost. All have an `instance` variable and a shared dashboard menu. Prometheus scrapes the MCP server (`mcp:9465`), and the server exports the Npgsql meter (connection pool and query duration).

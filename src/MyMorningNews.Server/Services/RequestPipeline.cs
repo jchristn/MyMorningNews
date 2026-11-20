@@ -30,6 +30,7 @@ namespace MyMorningNews.Server.Services
         private readonly ServerContext _Server;
         private readonly RequestHistoryCaptureService _Capture;
         private readonly string _Header = "[RequestPipeline] ";
+        private readonly MyMorningNews.Core.Services.LoginRateLimiter _PerIp = new MyMorningNews.Core.Services.LoginRateLimiter(600);
 
         #endregion
 
@@ -72,14 +73,14 @@ namespace MyMorningNews.Server.Services
         /// </summary>
         /// <param name="ctx">HTTP context.</param>
         /// <returns>Task.</returns>
-        public Task PreRoutingAsync(HttpContextBase ctx)
+        public async Task PreRoutingAsync(HttpContextBase ctx)
         {
             ArgumentNullException.ThrowIfNull(ctx);
             RequestContext rc = new RequestContext
             {
                 Method = ctx.Request.Method.ToString(),
                 Path = ctx.Request.Url.RawWithoutQuery ?? String.Empty,
-                SourceIp = ctx.Request.Source?.IpAddress,
+                SourceIp = ClientAddress(ctx),
                 UserAgent = ctx.Request.Useragent,
                 CorrelationId = Trim(ctx.Request.RetrieveHeaderValue("x-request"), 128),
                 Locale = Trim(ctx.Request.RetrieveHeaderValue("accept-language"), 64),
@@ -89,7 +90,19 @@ namespace MyMorningNews.Server.Services
             ctx.Metadata = rc;
             AddCorsHeaders(ctx);
             ctx.Response.Headers.Set("X-Request-Id", rc.RequestId);
-            return Task.CompletedTask;
+            int perIp = _Server.Settings.Hosting.RequestsPerMinutePerIp;
+            if (perIp > 0 && !String.Equals(rc.Path, MyMorningNews.Core.Constants.HealthPath, StringComparison.Ordinal))
+            {
+                _PerIp.LimitPerMinute = perIp;
+                if (!_PerIp.TryAcquire(rc.SourceIp ?? "unknown"))
+                {
+                    MyMorningNewsTelemetry.Increment(MyMorningNewsTelemetry.AuthRequests, "scheme", "ip", "result", "RateLimited");
+                    ctx.Response.StatusCode = 429;
+                    ctx.Response.ContentType = "application/json";
+                    ctx.Response.Headers.Set("Retry-After", "60");
+                    await ctx.Response.Send(Serializer.Serialize(new ErrorResponse { Error = "TooManyRequests", Message = "Too many requests from this address. Wait a minute and try again.", RequestId = rc.RequestId }), ctx.Token).ConfigureAwait(false);
+                }
+            }
         }
 
         /// <summary>
@@ -222,6 +235,17 @@ namespace MyMorningNews.Server.Services
         #endregion
 
         #region Private-Methods
+
+        private string? ClientAddress(HttpContextBase ctx)
+        {
+            string? peer = ctx.Request.Source?.IpAddress;
+            if (!_Server.Settings.Hosting.TrustForwardedFor || String.IsNullOrEmpty(peer)) return peer;
+            if (!System.Net.IPAddress.TryParse(peer, out System.Net.IPAddress? peerAddress) || !MyMorningNews.Core.Security.NetworkGuard.IsBlockedAddress(peerAddress)) return peer;
+            string? forwarded = ctx.Request.RetrieveHeaderValue("x-forwarded-for");
+            if (String.IsNullOrWhiteSpace(forwarded)) return peer;
+            string last = forwarded.Split(',').Select(x => x.Trim()).LastOrDefault(x => x.Length > 0) ?? String.Empty;
+            return System.Net.IPAddress.TryParse(last, out System.Net.IPAddress? client) ? client.ToString() : peer;
+        }
 
         private void AddCorsHeaders(HttpContextBase ctx)
         {

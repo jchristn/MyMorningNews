@@ -44,6 +44,8 @@
     "deletionGraceDays": 7,
     "restrictPrivateNetworks": true,
     "usePlatformCredentials": true,
-    "mobileAppId": "ai.latticetech.mymorningnews"
+    "mobileAppId": "ai.latticetech.mymorningnews",
+    "requestsPerMinutePerIp": 600,
+    "trustForwardedFor": true
   }
 }

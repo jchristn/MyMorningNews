@@ -43,6 +43,7 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "PasswordReset", "A reset link sets a new password once, signs out every session, and sends a confirmation", ResetAsync),
                 Cases.Case(S, "Deletion", "Deleting signs out, signing in within the grace period cancels it, and the purge removes the account and its personal tenant", DeletionAsync),
                 Cases.Case(S, "Export", "The export is a ZIP of the profile, topics, and briefings", ExportAsync),
+                Cases.Case(S, "RequestLimit", "The per-address request limit answers 429 with Retry-After, spares health checks, and the limiter forgets idle addresses", RequestLimitAsync),
                 Cases.Case(S, "UniversalLinks", "The iOS and Android link files appear once configured", LinksAsync)
             });
         }
@@ -278,6 +279,46 @@ namespace Test.Shared.Suites
                     }
                 }
             }
+        }
+
+        private static async Task RequestLimitAsync(CancellationToken token)
+        {
+            MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+            HostingSettings h = server.Context.Settings.Hosting;
+            int before = h.RequestsPerMinutePerIp;
+            TestApiClient anon = await SharedTestServer.AnonymousClientAsync(token).ConfigureAwait(false);
+            try
+            {
+                h.RequestsPerMinutePerIp = 5;
+                List<TestResponse> responses = new List<TestResponse>();
+                for (int i = 0; i < 8; i++) responses.Add(await anon.GetAsync("/v1.0/api/client-config", token).ConfigureAwait(false));
+                TestResponse? limited = responses.FirstOrDefault(r => r.StatusCode == 429);
+                Assert.True(limited != null && limited.Body.Contains("TooManyRequests", StringComparison.Ordinal) && limited.Headers.ContainsKey("Retry-After"), "429 with Retry-After: " + String.Join(",", responses.Select(r => r.StatusCode)));
+                (await anon.GetAsync(MyMorningNews.Core.Constants.HealthPath, token).ConfigureAwait(false)).Expect(200, "health is exempt");
+                h.TrustForwardedFor = true;
+                for (int i = 0; i < 8; i++)
+                {
+                    Dictionary<string, string> forwarded = new Dictionary<string, string> { { "x-forwarded-for", "198.51.100." + (10 + i) } };
+                    (await anon.SendAsync(HttpMethod.Get, "/v1.0/api/client-config", null, forwarded, token).ConfigureAwait(false)).Expect(200, "each client behind the proxy has its own budget");
+                }
+
+                Dictionary<string, string> spoof = new Dictionary<string, string> { { "x-forwarded-for", "203.0.113.7, 198.51.100.200" } };
+                for (int i = 0; i < 5; i++) await anon.SendAsync(HttpMethod.Get, "/v1.0/api/client-config", null, spoof, token).ConfigureAwait(false);
+                Dictionary<string, string> sameClient = new Dictionary<string, string> { { "x-forwarded-for", "198.51.100.200" } };
+                (await anon.SendAsync(HttpMethod.Get, "/v1.0/api/client-config", null, sameClient, token).ConfigureAwait(false)).Expect(429, "the address the proxy appended is the one counted");
+            }
+            finally
+            {
+                h.RequestsPerMinutePerIp = before;
+                h.TrustForwardedFor = false;
+            }
+
+            (await anon.GetAsync("/v1.0/api/client-config", token).ConfigureAwait(false)).Expect(200, "limit off again");
+            MyMorningNews.Core.Services.LoginRateLimiter limiter = new MyMorningNews.Core.Services.LoginRateLimiter(3) { WindowSeconds = 60 };
+            for (int i = 0; i < 50; i++) limiter.TryAcquire("ip-" + i);
+            Assert.Equal(50, limiter.TrackedKeys, "keys tracked within the window");
+            Assert.Equal(50, limiter.Prune(DateTime.UtcNow.AddSeconds(61)), "idle keys pruned");
+            Assert.Equal(0, limiter.TrackedKeys, "nothing left");
         }
 
         private static async Task LinksAsync(CancellationToken token)

@@ -8,6 +8,7 @@ namespace MyMorningNews.Core.Settings
     /// </summary>
     public class HostingSettings
     {
+        private int _RequestsPerMinutePerIp = 0;
         private List<string> _AllowedPrivateHosts = new List<string> { "searxng", "tts", "ollama" };
 
         /// <summary>
@@ -117,6 +118,25 @@ namespace MyMorningNews.Core.Settings
         /// </summary>
         [Setting(Description = "New tenants use the platform Anthropic key by reference.", EnvironmentVariable = "HOSTING_USE_PLATFORM_CREDENTIALS")]
         public bool UsePlatformCredentials { get; set; } = false;
+
+        /// <summary>
+        /// Requests per minute allowed from one IP address across the whole API, or 0 for no limit. Health checks are
+        /// exempt. Default 0; the hosted profile uses 600. Maximum 100000.
+        /// </summary>
+        [Setting(Description = "API requests per minute per IP address (0 turns the limit off).", EnvironmentVariable = "HOSTING_REQUESTS_PER_MINUTE_PER_IP")]
+        public int RequestsPerMinutePerIp
+        {
+            get { return _RequestsPerMinutePerIp; }
+            set { _RequestsPerMinutePerIp = Math.Clamp(value, 0, 100000); }
+        }
+
+        /// <summary>
+        /// Take the client address from the last X-Forwarded-For entry when the direct peer is a loopback or private
+        /// address (the reverse proxy). Rate limits, audit, and sign-up checks then see the real client. Default false;
+        /// the hosted profile turns it on behind Caddy, which replaces any client-supplied X-Forwarded-For.
+        /// </summary>
+        [Setting(Description = "Trust X-Forwarded-For from a proxy on a private network.", EnvironmentVariable = "HOSTING_TRUST_FORWARDED_FOR")]
+        public bool TrustForwardedFor { get; set; } = false;
 
         /// <summary>
         /// Host names the private network block allows anyway: the operator's own services on the Docker network.

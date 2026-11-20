@@ -36,7 +36,11 @@ namespace MyMorningNews.Server.Routes
             {
                 ProductName = Constants.ProductName,
                 ServerVersion = Constants.ProductVersion,
-                SignupEnabled = false,
+                SignupEnabled = Server.SettingsService.Current.Hosting.PublicSignupEnabled,
+                TurnstileSiteKey = String.IsNullOrWhiteSpace(Server.SettingsService.Current.Hosting.TurnstileSiteKey) || String.IsNullOrWhiteSpace(Server.SettingsService.Current.Hosting.TurnstileSecretKey) ? null : Server.SettingsService.Current.Hosting.TurnstileSiteKey,
+                RequireEmailVerification = Server.SettingsService.Current.Hosting.RequireEmailVerification,
+                MinimumAge = Server.SettingsService.Current.Hosting.MinimumAge,
+                TermsVersion = Server.SettingsService.Current.Hosting.TermsVersion,
                 PushEnabled = Server.SettingsService.Current.Push.Enabled,
                 AudioEnabled = Server.SettingsService.Current.Tts.Enabled,
                 EmailEnabled = Server.SettingsService.Current.Email.Enabled && Server.SettingsService.Current.Email.Provider != EmailProviderEnum.Disabled,

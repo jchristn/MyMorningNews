@@ -82,6 +82,8 @@ namespace MyMorningNews.Server.Routes
                 return;
             }
 
+            await CheckTopicLimitAsync(tenantId, rc.UserId, ctx.Token).ConfigureAwait(false);
+
             TopicUpsertRequest? req = await ReadBodyAsync<TopicUpsertRequest>(ctx).ConfigureAwait(false);
             if (req == null) return;
             if (String.IsNullOrWhiteSpace(req.Name))
@@ -165,6 +167,7 @@ namespace MyMorningNews.Server.Routes
             Topic? source = await OwnedTopicAsync(ctx).ConfigureAwait(false);
             if (source == null) return;
             RequestContext rc = Context(ctx);
+            await CheckTopicLimitAsync(source.TenantId, rc.UserId ?? source.UserId, ctx.Token).ConfigureAwait(false);
             Topic copy = await Server.Refinement.CreateTopicAsync(source.TenantId, rc.UserId ?? source.UserId, source.Name + " (copy)", source.Description, false, ctx.Token).ConfigureAwait(false);
             copy.Brief = source.Brief;
             copy.AudienceLevel = source.AudienceLevel;

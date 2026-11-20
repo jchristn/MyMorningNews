@@ -13,7 +13,7 @@ namespace MyMorningNews.Core.Services
         #region Public-Members
 
         /// <summary>
-        /// Attempts permitted per key per minute. Minimum 1, maximum 1000.
+        /// Attempts permitted per key per window (WindowSeconds, default one minute). Minimum 1, maximum 1000.
         /// </summary>
         public int LimitPerMinute
         {
@@ -27,12 +27,29 @@ namespace MyMorningNews.Core.Services
             }
         }
 
+        /// <summary>
+        /// Length of the counting window in seconds (the limit applies per window). Default 60 (per minute). Minimum 1,
+        /// maximum 86400.
+        /// </summary>
+        public int WindowSeconds
+        {
+            get
+            {
+                return _WindowSeconds;
+            }
+            set
+            {
+                _WindowSeconds = Math.Clamp(value, 1, 86400);
+            }
+        }
+
         #endregion
 
         #region Private-Members
 
         private readonly ConcurrentDictionary<string, Queue<DateTime>> _Attempts = new ConcurrentDictionary<string, Queue<DateTime>>(StringComparer.OrdinalIgnoreCase);
         private int _LimitPerMinute = 10;
+        private int _WindowSeconds = 60;
 
         #endregion
 
@@ -63,7 +80,7 @@ namespace MyMorningNews.Core.Services
             Queue<DateTime> queue = _Attempts.GetOrAdd(key, k => new Queue<DateTime>());
             lock (queue)
             {
-                while (queue.Count > 0 && (now - queue.Peek()).TotalSeconds >= 60) queue.Dequeue();
+                while (queue.Count > 0 && (now - queue.Peek()).TotalSeconds >= _WindowSeconds) queue.Dequeue();
                 if (queue.Count >= _LimitPerMinute) return false;
                 queue.Enqueue(now);
                 return true;

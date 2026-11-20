@@ -97,5 +97,13 @@ namespace MyMorningNews.Core.Database.Interfaces
         /// <returns>Matching users, at most 50.</returns>
         /// <exception cref="ArgumentNullException">email is null or empty.</exception>
         Task<List<User>> ReadAllByEmailAsync(string email, CancellationToken token = default);
+
+        /// <summary>
+        /// Users whose account deletion was requested at or before a time (their grace period has ended).
+        /// </summary>
+        /// <param name="requestedBeforeUtc">Cutoff.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Up to 200 users, oldest request first.</returns>
+        Task<List<User>> ListDeletionDueAsync(DateTime requestedBeforeUtc, CancellationToken token = default);
     }
 }

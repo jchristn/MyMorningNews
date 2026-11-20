@@ -56,7 +56,7 @@ namespace MyMorningNews.Core.Fetch
         {
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _Logging = logging ?? throw new ArgumentNullException(nameof(logging));
-            _Http = new HttpClient { Timeout = Timeout.InfiniteTimeSpan };
+            _Http = new HttpClient(Security.NetworkGuard.CreateHandler()) { Timeout = Timeout.InfiniteTimeSpan };
         }
 
         #endregion
@@ -91,6 +91,17 @@ namespace MyMorningNews.Core.Fetch
                 }
 
                 Uri uri = new Uri(url!);
+                try
+                {
+                    await Security.NetworkGuard.EnsureAllowedAsync(url, token).ConfigureAwait(false);
+                }
+                catch (Exceptions.EgressBlockedException ex)
+                {
+                    result.Disposition = FetchDispositionEnum.Blocked;
+                    result.Error = ex.Message;
+                    return result;
+                }
+
                 SearchSettings s = _Settings.Search;
                 if (s.RespectRobots && !await RobotsAllowAsync(uri, s, token).ConfigureAwait(false))
                 {

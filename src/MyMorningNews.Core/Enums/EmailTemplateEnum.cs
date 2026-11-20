@@ -28,6 +28,31 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// Test email.
         /// </summary>
-        Test
+        Test,
+
+        /// <summary>
+        /// Verify the email address after sign-up.
+        /// </summary>
+        VerifyEmail,
+
+        /// <summary>
+        /// Welcome after verification.
+        /// </summary>
+        Welcome,
+
+        /// <summary>
+        /// Password reset link.
+        /// </summary>
+        PasswordReset,
+
+        /// <summary>
+        /// The password was changed.
+        /// </summary>
+        PasswordChanged,
+
+        /// <summary>
+        /// Account deletion scheduled.
+        /// </summary>
+        AccountDeletion
     }
 }

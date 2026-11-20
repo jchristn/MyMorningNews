@@ -71,7 +71,12 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.LastLoginUtc.HasValue ? DateTime.SpecifyKind(obj.LastLoginUtc.Value, DateTimeKind.Utc) : null,
                 obj.Active,
                 DateTime.SpecifyKind(obj.CreatedUtc, DateTimeKind.Utc),
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
+                obj.SelfSignup,
+                obj.EmailVerifiedUtc.HasValue ? DateTime.SpecifyKind(obj.EmailVerifiedUtc.Value, DateTimeKind.Utc) : null,
+                obj.TermsVersion,
+                obj.TermsAcceptedUtc.HasValue ? DateTime.SpecifyKind(obj.TermsAcceptedUtc.Value, DateTimeKind.Utc) : null,
+                obj.DeletionRequestedUtc.HasValue ? DateTime.SpecifyKind(obj.DeletionRequestedUtc.Value, DateTimeKind.Utc) : null).ConfigureAwait(false);
             return obj;
         }
 
@@ -111,7 +116,12 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.Locale,
                 obj.LastLoginUtc.HasValue ? DateTime.SpecifyKind(obj.LastLoginUtc.Value, DateTimeKind.Utc) : null,
                 obj.Active,
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
+                obj.SelfSignup,
+                obj.EmailVerifiedUtc.HasValue ? DateTime.SpecifyKind(obj.EmailVerifiedUtc.Value, DateTimeKind.Utc) : null,
+                obj.TermsVersion,
+                obj.TermsAcceptedUtc.HasValue ? DateTime.SpecifyKind(obj.TermsAcceptedUtc.Value, DateTimeKind.Utc) : null,
+                obj.DeletionRequestedUtc.HasValue ? DateTime.SpecifyKind(obj.DeletionRequestedUtc.Value, DateTimeKind.Utc) : null).ConfigureAwait(false);
             if (affected < 1) throw new KeyNotFoundException("User " + obj.Id + " was not found.");
             return obj;
         }
@@ -179,6 +189,13 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             return await QueryAsync(sql, Map, token, email.Trim()).ConfigureAwait(false);
         }
 
+        /// <inheritdoc />
+        public async Task<List<User>> ListDeletionDueAsync(DateTime requestedBeforeUtc, CancellationToken token = default)
+        {
+            string sql = "SELECT " + UserQueries.Columns + " FROM users WHERE deletionrequestedutc IS NOT NULL AND deletionrequestedutc <= $1 ORDER BY deletionrequestedutc LIMIT 200";
+            return await QueryAsync(sql, Map, token, DateTime.SpecifyKind(requestedBeforeUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+        }
+
         private static string PrefixColumns(string alias)
         {
             return String.Join(", ", UserQueries.Columns.Split(',').Select(c => alias + "." + c.Trim()));
@@ -208,6 +225,11 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             obj.Active = reader.GetBoolean(12);
             obj.CreatedUtc = DateTime.SpecifyKind(reader.GetDateTime(13), DateTimeKind.Utc);
             obj.LastUpdateUtc = DateTime.SpecifyKind(reader.GetDateTime(14), DateTimeKind.Utc);
+            obj.SelfSignup = reader.GetBoolean(15);
+            obj.EmailVerifiedUtc = reader.IsDBNull(16) ? null : DateTime.SpecifyKind(reader.GetDateTime(16), DateTimeKind.Utc);
+            obj.TermsVersion = reader.IsDBNull(17) ? null : reader.GetString(17);
+            obj.TermsAcceptedUtc = reader.IsDBNull(18) ? null : DateTime.SpecifyKind(reader.GetDateTime(18), DateTimeKind.Utc);
+            obj.DeletionRequestedUtc = reader.IsDBNull(19) ? null : DateTime.SpecifyKind(reader.GetDateTime(19), DateTimeKind.Utc);
             return obj;
         }
 

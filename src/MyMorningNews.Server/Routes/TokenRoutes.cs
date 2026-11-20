@@ -60,7 +60,7 @@ namespace MyMorningNews.Server.Routes
 
             if (!result.Success)
             {
-                string error = result.StatusCode == 429 ? "TooManyRequests" : result.StatusCode == 400 ? "BadRequest" : "Unauthorized";
+                string error = result.StatusCode == 429 ? "TooManyRequests" : result.StatusCode == 400 ? "BadRequest" : result.StatusCode == 403 ? "EmailNotVerified" : "Unauthorized";
                 await SendErrorAsync(ctx, result.StatusCode, error, result.Message).ConfigureAwait(false);
                 return;
             }

@@ -4,7 +4,8 @@
     "hostname": "0.0.0.0",
     "port": 8000,
     "ssl": false,
-    "corsAllowedOrigins": "https://app.mymorningnews.ai"
+    "corsAllowedOrigins": "https://app.mymorningnews.ai",
+    "appBaseUrl": "https://app.mymorningnews.ai"
   },
   "storage": {
     "provider": "Local",
@@ -24,5 +25,25 @@
     "expoPushUrl": "https://exp.host/--/api/v2/push/send",
     "expoAccessToken": "",
     "timeoutMs": 10000
+  },
+  "hosting": {
+    "publicSignupEnabled": true,
+    "defaultPlanKey": "free",
+    "requireEmailVerification": true,
+    "blockedEmailDomains": [
+      "mailinator.com",
+      "guerrillamail.com",
+      "10minutemail.com",
+      "tempmail.com",
+      "yopmail.com",
+      "trashmail.com",
+      "sharklasers.com",
+      "getnada.com"
+    ],
+    "signupsPerIpPerHour": 5,
+    "deletionGraceDays": 7,
+    "restrictPrivateNetworks": true,
+    "usePlatformCredentials": true,
+    "mobileAppId": "ai.latticetech.mymorningnews"
   }
 }

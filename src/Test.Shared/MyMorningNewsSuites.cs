@@ -37,6 +37,9 @@ namespace Test.Shared
                     EmailSuite.Create(),
                     LearningSuite.Create(),
                     PromoSuite.Create(),
+                    AccountSuite.Create(),
+                    EntitlementSuite.Create(),
+                    EgressSuite.Create(),
                     McpSuite.Create()
                 };
             }

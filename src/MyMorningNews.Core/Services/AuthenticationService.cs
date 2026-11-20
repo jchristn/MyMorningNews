@@ -22,6 +22,21 @@ namespace MyMorningNews.Core.Services
     /// </summary>
     public class AuthenticationService
     {
+        #region Public-Members
+
+        /// <summary>
+        /// Optional check run after a password sign-in succeeds and before a session is issued. Returns a message to
+        /// refuse the sign-in with 403 (for example an unverified email), or null to allow it. Set by the server.
+        /// </summary>
+        public Func<User, CancellationToken, Task<string?>>? SignInGate { get; set; } = null;
+
+        /// <summary>
+        /// Optional action after a sign-in is allowed (for example cancelling a pending account deletion). Set by the server.
+        /// </summary>
+        public Func<User, CancellationToken, Task>? OnSignIn { get; set; } = null;
+
+        #endregion
+
         #region Private-Members
 
         private readonly DatabaseDriverBase _Database;
@@ -177,6 +192,13 @@ namespace MyMorningNews.Core.Services
             }
 
             if (user == null || !user.Active) return LoginResult.Fail(401, AuthenticationOutcomeEnum.Inactive, "The account is inactive.");
+            if (userLogin && SignInGate != null)
+            {
+                string? refusal = await SignInGate(user, token).ConfigureAwait(false);
+                if (refusal != null) return LoginResult.Fail(403, AuthenticationOutcomeEnum.Inactive, refusal);
+            }
+
+            if (OnSignIn != null) await OnSignIn(user, token).ConfigureAwait(false);
 
             _RateLimiter.Reset(limiterKey);
             LoginResult result = await IssueSessionAsync(tenant, user, credential, userLogin ? AuthSchemeEnum.PasswordHeaders : AuthSchemeEnum.AccessKeySecret, request.SourceIp, request.UserAgent, token).ConfigureAwait(false);

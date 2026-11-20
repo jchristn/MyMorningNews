@@ -185,6 +185,13 @@ namespace MyMorningNews.Server.Services
                     status = 404; error = "NotFound"; message = String.IsNullOrWhiteSpace(knf.Message) || knf.Message.StartsWith("The given key", StringComparison.Ordinal) ? "The requested resource was not found." : knf.Message; break;
                 case ConflictException ce:
                     status = 409; error = "Conflict"; message = ce.Message; break;
+                case EgressBlockedException ebe:
+                    status = 400; error = "EgressBlocked"; message = ebe.Message; break;
+                case CapReachedException cre:
+                    status = 402; error = "CapReached"; message = cre.Message;
+                    details = new Dictionary<string, string>(StringComparer.Ordinal) { { "key", cre.Key }, { "limit", cre.Limit } };
+                    if (cre.ResetUtc.HasValue) details["resetUtc"] = cre.ResetUtc.Value.ToString("o", System.Globalization.CultureInfo.InvariantCulture);
+                    break;
                 case ArtifactExpiredException aee:
                     status = 410; error = "ArtifactExpired"; message = aee.Message; break;
                 case QuotaExceededException qee:

@@ -160,6 +160,37 @@ namespace MyMorningNews.Core.Email
         }
 
         /// <summary>
+        /// Queue a transactional account email (verification, welcome, password reset, password changed, deletion). These
+        /// are never suppressed by email preferences.
+        /// </summary>
+        /// <param name="user">Recipient.</param>
+        /// <param name="template">Template kind.</param>
+        /// <param name="title">Heading and subject.</param>
+        /// <param name="paragraphs">Body paragraphs.</param>
+        /// <param name="button">Main action, or null.</param>
+        /// <param name="key">Idempotency key, unique per message.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Queued message, or null when one with the same key exists.</returns>
+        /// <exception cref="ArgumentNullException">An argument is null.</exception>
+        public async Task<EmailMessage?> SendAccountEmailAsync(User user, EmailTemplateEnum template, string title, IReadOnlyList<string> paragraphs, EmailLink? button, string key, CancellationToken token = default)
+        {
+            ArgumentNullException.ThrowIfNull(user);
+            ArgumentNullException.ThrowIfNull(title);
+            ArgumentNullException.ThrowIfNull(paragraphs);
+            ArgumentNullException.ThrowIfNull(key);
+            string recipient = Normalize(user.Email);
+            if (recipient.Length == 0) return null;
+            EmailMessage? m = await CreateAsync(user.TenantId, recipient, template, null, null, null, key, null, null, token).ConfigureAwait(false);
+            if (m == null) return null;
+            EmailBuilder b = new EmailBuilder().Preheader(paragraphs.FirstOrDefault()).Header(Logo(), title, null, button);
+            foreach (string p in paragraphs) b.Paragraph(p);
+            b.Footer(new List<EmailLink> { new EmailLink("Support", "https://mymorningnews.ai/support.html") }, "You get this email because of activity on your My Morning News account.");
+            string subject = Subject(title);
+            await FinishAsync(m, new EmailPreview { Recipient = recipient, Subject = subject, Html = b.Html(subject), Text = b.Text() }, token).ConfigureAwait(false);
+            return m;
+        }
+
+        /// <summary>
         /// Render the digest for a run exactly as it would be sent to its owner, with sample links. Nothing is saved.
         /// </summary>
         /// <param name="run">Run.</param>

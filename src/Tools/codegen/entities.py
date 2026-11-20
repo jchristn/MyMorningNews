@@ -1206,6 +1206,19 @@ ENTITIES = [
         ],
     },
     {
+        # Phase 14: email verification and password reset links (stored hashed).
+        'name': 'AccountToken', 'table': 'accounttokens', 'prefix': 'act_',
+        'doc': 'A single-use email verification or password reset token (only its SHA-256 hash is stored).',
+        'fields': [
+            f('UserId', doc='User.', required=True, length=64, filter=True),
+            f('Kind', 'enum:AccountTokenKindEnum', doc='What the token is for.', default='VerifyEmail', filter=True),
+            f('TokenHash', doc='SHA-256 of the token, hex.', required=True, length=64, filter=True),
+            f('ExpiresUtc', 'datetime', doc='Expiry.'),
+            f('UsedUtc', 'datetime', doc='When it was used, or null.', nullable=True),
+            f('SourceIp', doc='Requesting IP.', nullable=True, length=64),
+        ],
+    },
+    {
         'name': 'RunToolCall', 'table': 'runtoolcalls', 'prefix': 'rtc_',
         'doc': 'One tool execution in an agentic research loop.',
         'fields': [
@@ -1231,6 +1244,7 @@ EXTRA_PREFIXES = [
 ]
 
 ENUMS = [
+    ('AccountTokenKindEnum', 'What an account token is for.', [('VerifyEmail', 'Verify the email address.'), ('ResetPassword', 'Reset the password.')]),
     ('McpTransportEnum', 'MCP transport.', [('StreamableHttp', 'Streamable HTTP.'), ('Sse', 'HTTP with server-sent events (older servers).')]),
     ('StageStatusEnum', 'Run stage status.', [('Pending', 'Not started.'), ('Running', 'Running.'), ('Succeeded', 'Succeeded.'), ('Failed', 'Failed.'), ('Skipped', 'Skipped.')]),
     ('SearchResultDispositionEnum', 'What happened to a search result.', [('Pending', 'Not processed.'), ('Fetched', 'Fetched.'), ('SkippedSeen', 'Already seen in this topic.'),

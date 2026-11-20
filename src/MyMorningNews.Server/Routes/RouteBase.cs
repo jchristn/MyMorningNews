@@ -367,6 +367,20 @@ namespace MyMorningNews.Server.Routes
         }
 
         /// <summary>
+        /// Refuse with 402 CapReached when the user already has as many topics as the plan allows.
+        /// </summary>
+        /// <param name="tenantId">Tenant.</param>
+        /// <param name="userId">User.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="MyMorningNews.Core.Exceptions.CapReachedException">The topic limit is reached.</exception>
+        protected async Task CheckTopicLimitAsync(string tenantId, string userId, System.Threading.CancellationToken token)
+        {
+            long topics = await Server.Database.Topics.CountAsync(new TopicFilter { TenantId = tenantId, UserId = userId, IsOneTime = false }, token).ConfigureAwait(false);
+            await Server.Entitlements.CheckCountAsync(tenantId, userId, "topics.max", topics, "topics", null, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
         /// Tenant scope for ordinary data-plane routes: the caller's tenant. System administrators must bind a tenant with x-tenant-guid.
         /// Sends 400 and returns null when no tenant can be determined.
         /// </summary>

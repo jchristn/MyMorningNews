@@ -60,6 +60,10 @@ namespace MyMorningNews.Server.Routes
             if (!await AuthorizeAsync(ctx, RequestTypeEnum.ModelWrite).ConfigureAwait(false)) return;
             string? tenantId = await RequireTenantAsync(ctx).ConfigureAwait(false);
             if (tenantId == null) return;
+            MyMorningNews.Core.Security.RequestContext who = Context(ctx);
+            if (!who.IsAdmin && !String.IsNullOrEmpty(who.UserId)
+                && !MyMorningNews.Core.Entitlements.EntitlementService.Allowed(await Server.Entitlements.GetEffectiveAsync(tenantId, who.UserId, ctx.Token).ConfigureAwait(false), "endpoints.custom"))
+                throw new MyMorningNews.Core.Exceptions.CapReachedException("endpoints.custom", "false", null, "Your plan uses the platform models; adding your own model endpoints is not included.");
             ModelEndpointUpsertRequest? req = await ReadBodyAsync<ModelEndpointUpsertRequest>(ctx).ConfigureAwait(false);
             if (req == null) return;
             if (String.IsNullOrWhiteSpace(req.Name) || !req.Provider.HasValue)
@@ -118,12 +122,25 @@ namespace MyMorningNews.Server.Routes
 
         private async Task<string?> ApplyAsync(ModelEndpoint e, ModelEndpointUpsertRequest req, string tenantId, HttpContextBase ctx)
         {
+            bool platform = String.Equals(e.CredentialId, MyMorningNews.Core.Services.VaultService.PlatformAnthropicCredentialId, StringComparison.Ordinal);
+            bool admin = Context(ctx).IsAdmin;
+            if (String.Equals(req.CredentialId, MyMorningNews.Core.Services.VaultService.PlatformAnthropicCredentialId, StringComparison.Ordinal) && !platform && !admin)
+                return "The platform credential is assigned by the operator.";
+            if (platform && !admin)
+            {
+                bool moves = (req.Endpoint != null && !String.Equals(req.Endpoint.Trim(), e.Endpoint ?? String.Empty, StringComparison.Ordinal))
+                    || (req.Provider.HasValue && req.Provider.Value != e.Provider);
+                if (moves) return "This endpoint uses the platform credential, so its provider and URL cannot be changed. Add your own endpoint instead.";
+            }
+
             if (req.Endpoint != null) e.Endpoint = req.Endpoint.Trim().Length == 0 ? null : req.Endpoint.Trim();
             if (e.Endpoint != null && !Uri.TryCreate(e.Endpoint, UriKind.Absolute, out Uri? _)) return "Endpoint must be an absolute URL.";
+            if (e.Endpoint != null) await MyMorningNews.Core.Security.NetworkGuard.EnsureAllowedAsync(e.Endpoint, ctx.Token).ConfigureAwait(false);
             if (req.CredentialId != null)
             {
                 if (req.CredentialId.Length == 0) e.CredentialId = null;
-                else if (await Server.Database.VaultCredentials.ReadAsync(tenantId, req.CredentialId, ctx.Token).ConfigureAwait(false) == null) return "Vault credential " + req.CredentialId + " was not found.";
+                else if (!String.Equals(req.CredentialId, MyMorningNews.Core.Services.VaultService.PlatformAnthropicCredentialId, StringComparison.Ordinal)
+                    && await Server.Database.VaultCredentials.ReadAsync(tenantId, req.CredentialId, ctx.Token).ConfigureAwait(false) == null) return "Vault credential " + req.CredentialId + " was not found.";
                 else e.CredentialId = req.CredentialId;
             }
 

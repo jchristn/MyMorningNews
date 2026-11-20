@@ -203,6 +203,7 @@ namespace MyMorningNews.Server.Routes
                 string e = req.Endpoint.Trim();
                 if (e.Length > 0 && !(Uri.TryCreate(e, UriKind.Absolute, out Uri? u) && (u.Scheme == Uri.UriSchemeHttps || u.Scheme == Uri.UriSchemeHttp))) return "endpoint must be an absolute http or https URL.";
                 p.Endpoint = e.Length == 0 ? null : e;
+                if (p.Endpoint != null) await MyMorningNews.Core.Security.NetworkGuard.EnsureAllowedAsync(p.Endpoint, ctx.Token).ConfigureAwait(false);
             }
 
             if (req.CredentialId != null)

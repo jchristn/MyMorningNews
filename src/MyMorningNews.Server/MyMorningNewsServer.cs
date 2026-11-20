@@ -185,7 +185,28 @@ namespace MyMorningNews.Server
             int plans = await _Context.Entitlements.EnsureDefaultsAsync(token).ConfigureAwait(false);
             if (plans > 0) _Logging.Info(_Header + "seeded " + plans + " plans");
             _Context.PromoCodes = new MyMorningNews.Core.Entitlements.PromoCodeService(_Database);
+            MyMorningNews.Core.Security.NetworkGuard.IsEnabled = () => _Context.SettingsService.Current.Hosting.RestrictPrivateNetworks;
+            MyMorningNews.Core.Security.NetworkGuard.AllowedHosts = () => _Context.SettingsService.Current.Hosting.AllowedPrivateHosts;
+            tenantDefaults.UsePlatformCredentials = () => _Context.SettingsService.Current.Hosting.UsePlatformCredentials;
             _Context.Accounts = new AccountDataService(_Database, briefings, _Artifacts);
+            _Context.Account = new AccountService(_Database, settings, email, tenantDefaults, _Context.PromoCodes, _Context.Accounts);
+            MyMorningNews.Core.Entitlements.EntitlementService entitlements = _Context.Entitlements;
+            AccountService account = _Context.Account;
+            authentication.SignInGate = (user, t) => Task.FromResult(account.NeedsVerification(user) ? "Confirm your email address first: open the link we sent you, or ask for a new one." : (string?)null);
+            authentication.OnSignIn = async (user, t) => { await account.CancelDeletionAsync(user, t).ConfigureAwait(false); };
+            _Models.PreCallCheck = (req, t) => String.IsNullOrEmpty(req.UserId) ? Task.CompletedTask : entitlements.CheckCostAsync(req.TenantId, req.UserId, t);
+            scheduling.RunGate = async (tenantId, userId, t) =>
+            {
+                await entitlements.CheckCostAsync(tenantId, userId, t).ConfigureAwait(false);
+                DateTime today = DateTime.UtcNow.Date;
+                long runsToday = await _Database.Runs.CountAsync(new MyMorningNews.Core.Requests.RunFilter { TenantId = tenantId, UserId = userId, IsDryRun = false, FromUtc = today }, t).ConfigureAwait(false);
+                await entitlements.CheckCountAsync(tenantId, userId, "runs.daily.max", runsToday, "runs a day", today.AddDays(1), t).ConfigureAwait(false);
+            };
+            scheduling.MinimumIntervalForUser = async (tenantId, userId, t) =>
+            {
+                decimal? limit = MyMorningNews.Core.Entitlements.EntitlementService.Limit(await entitlements.GetEffectiveAsync(tenantId, userId, t).ConfigureAwait(false), "schedule.minIntervalMinutes");
+                return limit.HasValue ? (int)limit.Value : null;
+            };
             _Context.Mcp = new MyMorningNews.Core.Mcp.McpClientService(vault);
             PipelineServices pipelineServices = new PipelineServices(_Database, _Models, prompts, _Search!, _Fetch!, settings, _Logging) { Briefings = briefings, Email = email, Learning = learning, Mcp = _Context.Mcp };
             _Context.RunExecutor = new ResearchPipeline(pipelineServices);
@@ -311,6 +332,7 @@ namespace MyMorningNews.Server
                 new SettingsRoutes(context),
                 new VaultRoutes(context),
                 new McpServerRoutes(context),
+                new AccountRoutes(context),
                 new ModelRoutes(context),
                 new UsageRoutes(context),
                 new DeviceRoutes(context),

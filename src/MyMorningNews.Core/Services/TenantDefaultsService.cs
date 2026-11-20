@@ -27,6 +27,12 @@ namespace MyMorningNews.Core.Services
         /// </summary>
         public string AnthropicKeyVariable { get; set; } = Constants.EnvironmentPrefix + "ANTHROPIC_API_KEY";
 
+        /// <summary>
+        /// Whether every new tenant uses the platform Anthropic credential instead of a copy in its own vault (the hosted
+        /// service). Personal tenants created by sign-up always do. Default off. Set by the server.
+        /// </summary>
+        public Func<bool> UsePlatformCredentials { get; set; } = () => false;
+
         #endregion
 
         #region Public-Members
@@ -141,7 +147,13 @@ namespace MyMorningNews.Core.Services
 
             string? credentialId = null;
             string? key = Environment.GetEnvironmentVariable(AnthropicKeyVariable);
-            if (!String.IsNullOrWhiteSpace(key))
+            Tenant? tenant = await _Database.Tenants.ReadAsync(tenantId, token).ConfigureAwait(false);
+            bool platform = tenant != null && (tenant.IsPersonal || (UsePlatformCredentials() && tenant.Id != Constants.DefaultTenantId));
+            if (platform)
+            {
+                credentialId = VaultService.PlatformAnthropicCredentialId;
+            }
+            else if (!String.IsNullOrWhiteSpace(key))
             {
                 VaultCredential credential = await _Vault.CreateAsync(tenantId, null, new VaultCredentialUpsertRequest
                 {

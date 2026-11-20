@@ -54,7 +54,7 @@ namespace MyMorningNews.Core.Search
             _Vault = vault ?? throw new ArgumentNullException(nameof(vault));
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _Logging = logging ?? throw new ArgumentNullException(nameof(logging));
-            _Http = new HttpClient { Timeout = Timeout.InfiniteTimeSpan };
+            _Http = new HttpClient(Security.NetworkGuard.CreateHandler()) { Timeout = Timeout.InfiniteTimeSpan };
             _Sources = new Dictionary<SearchProviderKindEnum, ISearchSource>
             {
                 { SearchProviderKindEnum.Searxng, new SearxngSource(_Http, settings.Search) },

@@ -346,6 +346,11 @@ namespace MyMorningNews.Core
         public const string McpServerTool = "mct_";
 
         /// <summary>
+        /// Prefix for AccountToken identifiers.
+        /// </summary>
+        public const string AccountToken = "act_";
+
+        /// <summary>
         /// Prefix for RunToolCall identifiers.
         /// </summary>
         public const string RunToolCall = "rtc_";

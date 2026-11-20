@@ -113,6 +113,8 @@ namespace MyMorningNews.Server.Workers
                 int audit = _Server.Settings.Diagnostics.AuditRetentionDays > 0
                     ? await _Server.Database.AuditRecords.DeleteOlderThanAsync(null, DateTime.UtcNow.AddDays(-_Server.Settings.Diagnostics.AuditRetentionDays), token).ConfigureAwait(false)
                     : 0;
+                int purgedAccounts = await _Server.Account.PurgeDueAsync(DateTime.UtcNow, token).ConfigureAwait(false);
+                if (purgedAccounts > 0) _Server.Logging.Info("[RetentionWorker] purged " + purgedAccounts + " deleted accounts");
                 if (refresh > 0 || actionTokens > 0 || audit > 0)
                     _Server.Logging.Info("[RetentionWorker] pruned " + refresh + " refresh tokens, " + actionTokens + " email action tokens, and " + audit + " audit records");
                 if (emails > 0) _Server.Logging.Info("[RetentionWorker] pruned " + emails + " emails");

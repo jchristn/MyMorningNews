@@ -116,6 +116,13 @@ namespace MyMorningNews.Server.Routes
             if (!await AuthorizeAsync(ctx, RequestTypeEnum.VaultDelete, Param(ctx, "id")).ConfigureAwait(false)) return;
             VaultCredential? v = await LoadAsync(ctx).ConfigureAwait(false);
             if (v == null) return;
+            EnumerationResult<ModelEndpoint> users = await Server.Database.ModelEndpoints.EnumerateAsync(new ModelEndpointFilter { TenantId = v.TenantId, CredentialId = v.Id, PageSize = 1000 }, ctx.Token).ConfigureAwait(false);
+            foreach (ModelEndpoint e in users.Items)
+            {
+                e.CredentialId = null;
+                await Server.Database.ModelEndpoints.UpdateAsync(e, ctx.Token).ConfigureAwait(false);
+            }
+
             await Server.Database.VaultCredentials.DeleteAsync(v.TenantId, v.Id, ctx.Token).ConfigureAwait(false);
             await Server.Audit.RecordAsync(AuditEventTypeEnum.VaultCredentialChanged, Context(ctx), 204, "Vault credential " + v.Id + " deleted.", ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 204, null).ConfigureAwait(false);

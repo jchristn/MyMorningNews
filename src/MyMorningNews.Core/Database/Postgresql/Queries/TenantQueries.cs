@@ -15,7 +15,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Column list in model order.
         /// </summary>
-        public const string Columns = "id, name, description, region, timezone, isprotected, active, createdutc, lastupdateutc";
+        public const string Columns = "id, name, description, region, timezone, isprotected, active, createdutc, lastupdateutc, ispersonal, purgeafterutc";
 
         /// <summary>
         /// Schema statements: table and indexes. Idempotent.
@@ -39,12 +39,12 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Insert statement with positional parameters in column order.
         /// </summary>
-        public const string Insert = "INSERT INTO tenants (" + Columns + ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)";
+        public const string Insert = "INSERT INTO tenants (" + Columns + ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)";
 
         /// <summary>
         /// Update statement. $1 is id, then the mutable columns in model order.
         /// </summary>
-        public const string Update = "UPDATE tenants SET name = $2, description = $3, region = $4, timezone = $5, isprotected = $6, active = $7, lastupdateutc = $8 WHERE id = $1";
+        public const string Update = "UPDATE tenants SET name = $2, description = $3, region = $4, timezone = $5, isprotected = $6, active = $7, lastupdateutc = $8, ispersonal = $9, purgeafterutc = $10 WHERE id = $1";
 
         /// <summary>
         /// Select by identifier.

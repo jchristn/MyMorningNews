@@ -15,7 +15,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Column list in model order.
         /// </summary>
-        public const string Columns = "id, tenantid, firstname, lastname, email, passwordsha256, isadmin, istenantadmin, isprotected, timezone, locale, lastloginutc, active, createdutc, lastupdateutc";
+        public const string Columns = "id, tenantid, firstname, lastname, email, passwordsha256, isadmin, istenantadmin, isprotected, timezone, locale, lastloginutc, active, createdutc, lastupdateutc, selfsignup, emailverifiedutc, termsversion, termsacceptedutc, deletionrequestedutc";
 
         /// <summary>
         /// Schema statements: table and indexes. Idempotent.
@@ -47,12 +47,12 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Insert statement with positional parameters in column order.
         /// </summary>
-        public const string Insert = "INSERT INTO users (" + Columns + ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)";
+        public const string Insert = "INSERT INTO users (" + Columns + ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)";
 
         /// <summary>
         /// Update statement. $1 is id, $2 is tenantid, then the mutable columns in model order.
         /// </summary>
-        public const string Update = "UPDATE users SET firstname = $3, lastname = $4, email = $5, passwordsha256 = $6, isadmin = $7, istenantadmin = $8, isprotected = $9, timezone = $10, locale = $11, lastloginutc = $12, active = $13, lastupdateutc = $14 WHERE id = $1 AND tenantid = $2";
+        public const string Update = "UPDATE users SET firstname = $3, lastname = $4, email = $5, passwordsha256 = $6, isadmin = $7, istenantadmin = $8, isprotected = $9, timezone = $10, locale = $11, lastloginutc = $12, active = $13, lastupdateutc = $14, selfsignup = $15, emailverifiedutc = $16, termsversion = $17, termsacceptedutc = $18, deletionrequestedutc = $19 WHERE id = $1 AND tenantid = $2";
 
         /// <summary>
         /// Select by identifier within a tenant.

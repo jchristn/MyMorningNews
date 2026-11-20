@@ -387,6 +387,11 @@ namespace MyMorningNews.Core.Database
         public IRunToolCallMethods RunToolCalls { get; protected set; } = null!;
 
         /// <summary>
+        /// Email verification and password reset tokens.
+        /// </summary>
+        public IAccountTokenMethods AccountTokens { get; protected set; } = null!;
+
+        /// <summary>
         /// Embedding vectors (pgvector).
         /// </summary>
         public IEmbeddingMethods Embeddings { get; protected set; } = null!;

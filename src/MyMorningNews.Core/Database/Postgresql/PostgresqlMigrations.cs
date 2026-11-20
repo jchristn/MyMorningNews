@@ -202,6 +202,20 @@ namespace MyMorningNews.Core.Database.Postgresql
                     "ALTER TABLE topics ADD COLUMN IF NOT EXISTS agenticsearch BOOLEAN NOT NULL DEFAULT FALSE",
                     "ALTER TABLE topics ADD COLUMN IF NOT EXISTS mcptoolids TEXT[]",
                     "CREATE INDEX IF NOT EXISTS ix_runtoolcalls_run ON runtoolcalls (tenantid, runid, sortorder)"
+                })),
+            new SchemaMigration(16, "Public sign-up, email verification, password reset, and account deletion", Concat(
+                AccountTokenQueries.Schema,
+                new List<string>
+                {
+                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS selfsignup BOOLEAN NOT NULL DEFAULT FALSE",
+                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS emailverifiedutc TIMESTAMPTZ",
+                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS termsversion VARCHAR(32)",
+                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS termsacceptedutc TIMESTAMPTZ",
+                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS deletionrequestedutc TIMESTAMPTZ",
+                    "ALTER TABLE tenants ADD COLUMN IF NOT EXISTS ispersonal BOOLEAN NOT NULL DEFAULT FALSE",
+                    "ALTER TABLE tenants ADD COLUMN IF NOT EXISTS purgeafterutc TIMESTAMPTZ",
+                    "CREATE INDEX IF NOT EXISTS ix_accounttokens_hash ON accounttokens (tokenhash)",
+                    "ALTER TABLE modelendpoints DROP CONSTRAINT IF EXISTS modelendpoints_credentialid_fkey"
                 }))
         };
 

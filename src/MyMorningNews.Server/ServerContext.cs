@@ -166,6 +166,11 @@ namespace MyMorningNews.Server
         public AccountDataService Accounts { get; set; } = null!;
 
         /// <summary>
+        /// Hosted accounts: sign-up, verification, password reset, and deletion.
+        /// </summary>
+        public AccountService Account { get; set; } = null!;
+
+        /// <summary>
         /// Client for registered MCP servers.
         /// </summary>
         public MyMorningNews.Core.Mcp.McpClientService Mcp { get; set; } = null!;

@@ -57,5 +57,25 @@ namespace MyMorningNews.Core.Responses
         /// Public URL of the MCP server's Streamable HTTP endpoint.
         /// </summary>
         public string McpUrl { get; set; } = "http://127.0.0.1:12105/mcp";
+
+        /// <summary>
+        /// Cloudflare Turnstile site key for the sign-up form, or null when the check is off.
+        /// </summary>
+        public string? TurnstileSiteKey { get; set; } = null;
+
+        /// <summary>
+        /// Whether sign-up requires email verification.
+        /// </summary>
+        public bool RequireEmailVerification { get; set; } = true;
+
+        /// <summary>
+        /// Minimum age to sign up.
+        /// </summary>
+        public int MinimumAge { get; set; } = 18;
+
+        /// <summary>
+        /// Current terms of service version.
+        /// </summary>
+        public string TermsVersion { get; set; } = String.Empty;
     }
 }

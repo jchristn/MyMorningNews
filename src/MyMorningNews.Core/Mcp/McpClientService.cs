@@ -9,6 +9,7 @@ namespace MyMorningNews.Core.Mcp
     using System.Threading.Tasks;
     using MyMorningNews.Core.Exceptions;
     using MyMorningNews.Core.Models;
+    using MyMorningNews.Core.Security;
     using MyMorningNews.Core.Services;
     using Voltaic.Core;
     using Voltaic.Mcp;
@@ -149,6 +150,15 @@ namespace MyMorningNews.Core.Mcp
         {
             if (!Uri.TryCreate(server.Url, UriKind.Absolute, out Uri? uri) || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
                 throw new McpConnectionException("The MCP server URL must be an absolute http or https URL.");
+            try
+            {
+                await NetworkGuard.EnsureAllowedAsync(server.Url, token).ConfigureAwait(false);
+            }
+            catch (EgressBlockedException ex)
+            {
+                throw new McpConnectionException(ex.Message, ex);
+            }
+
             McpHttpClient client = new McpHttpClient();
             try
             {

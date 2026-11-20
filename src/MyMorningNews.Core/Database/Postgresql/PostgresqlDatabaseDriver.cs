@@ -124,6 +124,7 @@ namespace MyMorningNews.Core.Database.Postgresql
             McpServers = new McpServerMethods(this);
             McpServerTools = new McpServerToolMethods(this);
             RunToolCalls = new RunToolCallMethods(this);
+            AccountTokens = new AccountTokenMethods(this);
             Embeddings = new EmbeddingMethods(this);
         }
 

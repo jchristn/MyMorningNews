@@ -35,6 +35,12 @@ namespace MyMorningNews.Core.Services
         #region Public-Members
 
         /// <summary>
+        /// Optional check before every chat call (the plan's monthly cost cap). Throws
+        /// <see cref="Exceptions.CapReachedException"/> to refuse. Set by the server.
+        /// </summary>
+        public Func<ModelCallRequest, CancellationToken, Task>? PreCallCheck { get; set; } = null;
+
+        /// <summary>
         /// Name of the tool offered for structured output.
         /// </summary>
         public const string SubmitToolName = "submit_result";
@@ -138,6 +144,7 @@ namespace MyMorningNews.Core.Services
         public async Task<ModelCallResult> ChatAsync(ModelCallRequest request, CancellationToken token = default)
         {
             ArgumentNullException.ThrowIfNull(request);
+            if (PreCallCheck != null) await PreCallCheck(request, token).ConfigureAwait(false);
             ResolvedModel resolved = await ResolveAsync(request.TenantId, request.Task, request.TopicId, request.ModelEndpointId, request.Model, token).ConfigureAwait(false);
             List<ChatMessage> messages = BuildMessages(request.SystemPrompt, request.UserPrompt);
             CallState state = new CallState(request, resolved);
@@ -167,6 +174,7 @@ namespace MyMorningNews.Core.Services
         public async Task<StructuredCallResult<T>> ChatStructuredAsync<T>(ModelCallRequest request, CancellationToken token = default) where T : class, IStructuredResult
         {
             ArgumentNullException.ThrowIfNull(request);
+            if (PreCallCheck != null) await PreCallCheck(request, token).ConfigureAwait(false);
             ResolvedModel resolved = await ResolveAsync(request.TenantId, request.Task, request.TopicId, request.ModelEndpointId, request.Model, token).ConfigureAwait(false);
             Dictionary<string, object> schema = JsonSchemaBuilder.Build(typeof(T));
             bool useTools = resolved.Endpoint.SupportsTools != false;
@@ -259,6 +267,7 @@ namespace MyMorningNews.Core.Services
         public async Task<StructuredCallResult<T>> ChatAgenticAsync<T>(ModelCallRequest request, IReadOnlyList<AgentTool> tools, int maxToolCalls, CancellationToken token = default) where T : class, IStructuredResult
         {
             ArgumentNullException.ThrowIfNull(request);
+            if (PreCallCheck != null) await PreCallCheck(request, token).ConfigureAwait(false);
             ArgumentNullException.ThrowIfNull(tools);
             int budget = Math.Clamp(maxToolCalls, 0, 200);
             ResolvedModel resolved = await ResolveAsync(request.TenantId, request.Task, request.TopicId, request.ModelEndpointId, request.Model, token).ConfigureAwait(false);

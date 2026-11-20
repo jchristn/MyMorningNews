@@ -134,6 +134,31 @@ namespace MyMorningNews.Core.Models
         /// </summary>
         public DateTime LastUpdateUtc { get; set; } = DateTime.UtcNow;
 
+        /// <summary>
+        /// Created through public sign-up (plan section 33.1). Default false.
+        /// </summary>
+        public bool SelfSignup { get; set; } = false;
+
+        /// <summary>
+        /// When the email address was verified, or null.
+        /// </summary>
+        public DateTime? EmailVerifiedUtc { get; set; } = null;
+
+        /// <summary>
+        /// Terms of service version accepted at sign-up, or null.
+        /// </summary>
+        public string? TermsVersion { get; set; } = null;
+
+        /// <summary>
+        /// When the terms were accepted, or null.
+        /// </summary>
+        public DateTime? TermsAcceptedUtc { get; set; } = null;
+
+        /// <summary>
+        /// When account deletion was requested (purge follows the grace period), or null.
+        /// </summary>
+        public DateTime? DeletionRequestedUtc { get; set; } = null;
+
         #endregion
 
         #region Private-Members

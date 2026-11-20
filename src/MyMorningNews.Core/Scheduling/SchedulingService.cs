@@ -26,6 +26,18 @@ namespace MyMorningNews.Core.Scheduling
         #region Public-Members
 
         /// <summary>
+        /// Optional plan check before a run is queued (cost cap and daily run limit). Throws
+        /// <see cref="Exceptions.CapReachedException"/> to refuse. Set by the server.
+        /// </summary>
+        public Func<string, string, CancellationToken, Task>? RunGate { get; set; } = null;
+
+        /// <summary>
+        /// Optional plan lookup of the shortest schedule interval a user may use, in minutes, or null for no plan limit.
+        /// Set by the server.
+        /// </summary>
+        public Func<string, string, CancellationToken, Task<int?>>? MinimumIntervalForUser { get; set; } = null;
+
+        /// <summary>
         /// Maximum schedules or requests claimed per tick. Default 100. Minimum 1, maximum 1000.
         /// </summary>
         public int ClaimBatchSize
@@ -83,8 +95,23 @@ namespace MyMorningNews.Core.Scheduling
         public async Task<Schedule> SaveAsync(Schedule schedule, bool create, DateTime nowUtc, CancellationToken token = default)
         {
             ArgumentNullException.ThrowIfNull(schedule);
+            int? planMinimum = null;
+            if (MinimumIntervalForUser != null && !String.IsNullOrEmpty(schedule.UserId))
+                planMinimum = await MinimumIntervalForUser(schedule.TenantId, schedule.UserId, token).ConfigureAwait(false);
+            if (planMinimum.HasValue && schedule.IntervalType == IntervalTypeEnum.EveryNMinutes && schedule.IntervalValue < planMinimum.Value)
+                throw new ArgumentException(PlanIntervalMessage(planMinimum.Value), nameof(schedule));
+
             List<string> errors = ScheduleCalculator.Validate(schedule, _Settings.Scheduler.MinimumIntervalMinutes);
             if (errors.Count > 0) throw new ArgumentException(String.Join(" ", errors), nameof(schedule));
+            if (planMinimum.HasValue && schedule.Enabled)
+            {
+                List<DateTime> next = ScheduleCalculator.NextOccurrences(schedule, nowUtc, 30);
+                for (int i = 1; i < next.Count; i++)
+                {
+                    if ((next[i] - next[i - 1]).TotalMinutes < planMinimum.Value - 1)
+                        throw new ArgumentException(PlanIntervalMessage(planMinimum.Value), nameof(schedule));
+                }
+            }
             if (create) schedule.CreatedUtc = nowUtc;
             schedule.NextRunUtc = schedule.Enabled ? ScheduleCalculator.NextOccurrence(schedule, nowUtc) : null;
             schedule.LockedUntilUtc = null;
@@ -156,6 +183,7 @@ namespace MyMorningNews.Core.Scheduling
             if (topic.Status == TopicStatusEnum.Archived) throw new ConflictException("Archived topics do not run. Resume the topic first.");
             if (topic.Status == TopicStatusEnum.Draft && !dryRun) throw new ConflictException("Finish refining the topic before running it, or start a dry run.");
             if (await _Database.Runs.HasActiveRunAsync(topic.TenantId, topic.Id, token).ConfigureAwait(false)) throw new ConflictException("This topic already has a run queued or in progress.");
+            if (RunGate != null) await RunGate(topic.TenantId, userId, token).ConfigureAwait(false);
             return await EnqueueAsync(topic.TenantId, topic.Id, userId, RunTriggerEnum.Manual, null, null, dryRun, nowUtc, token).ConfigureAwait(false);
         }
 
@@ -218,6 +246,13 @@ namespace MyMorningNews.Core.Scheduling
 
         #region Private-Methods
 
+        private static string PlanIntervalMessage(int minutes)
+        {
+            string every = minutes % 1440 == 0 ? (minutes == 1440 ? "once a day" : "every " + (minutes / 1440) + " days")
+                : minutes % 60 == 0 ? "every " + (minutes / 60) + " hours" : "every " + minutes + " minutes";
+            return "Your plan runs a topic at most " + every + " (" + minutes + " minutes between runs). Choose a less frequent schedule.";
+        }
+
         private async Task<bool> FireAsync(Schedule schedule, DateTime nowUtc, CancellationToken token)
         {
             if (schedule.OwnerType == ScheduleOwnerTypeEnum.Edition && EditionTrigger != null)
@@ -254,6 +289,20 @@ namespace MyMorningNews.Core.Scheduling
                 await RecordSkippedAsync(topic, schedule, "The previous run was still active.", nowUtc, token).ConfigureAwait(false);
                 MyMorningNewsTelemetry.Increment(MyMorningNewsTelemetry.SchedulerClaims, "outcome", "skipped_active");
                 return false;
+            }
+
+            if (RunGate != null)
+            {
+                try
+                {
+                    await RunGate(topic.TenantId, schedule.UserId, token).ConfigureAwait(false);
+                }
+                catch (Exceptions.CapReachedException cap)
+                {
+                    await RecordSkippedAsync(topic, schedule, "CostCapReached: " + cap.Message, nowUtc, token).ConfigureAwait(false);
+                    MyMorningNewsTelemetry.Increment(MyMorningNewsTelemetry.SchedulerClaims, "outcome", "skipped_cap");
+                    return false;
+                }
             }
 
             await EnqueueAsync(topic.TenantId, topic.Id, schedule.UserId, RunTriggerEnum.Schedule, schedule.Id, null, false, nowUtc, token).ConfigureAwait(false);

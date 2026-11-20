@@ -114,6 +114,11 @@ namespace MyMorningNews.Server.Routes
             AudioGenerateRequest req = (await ReadOptionalBodyAsync<AudioGenerateRequest>(ctx).ConfigureAwait(false)) ?? new AudioGenerateRequest();
             if (!Server.Settings.Tts.Enabled) { await SendErrorAsync(ctx, 409, "AudioDisabled", "Audio is turned off on this server (tts.enabled).").ConfigureAwait(false); return; }
             if (b.Status != BriefingStatusEnum.Ready) { await SendErrorAsync(ctx, 409, "BriefingNotReady", "Audio is made from a ready briefing.").ConfigureAwait(false); return; }
+            MyMorningNews.Core.Entitlements.UsageMeter meter = await Server.Entitlements.MeterAsync(b.TenantId, b.UserId, ctx.Token).ConfigureAwait(false);
+            if (!meter.AudioEnabled) throw new MyMorningNews.Core.Exceptions.CapReachedException("audio.enabled", "false", null, "Audio is not included in the " + meter.PlanName + " plan.");
+            if (meter.AudioMinutesMax.HasValue && meter.AudioMinutes >= meter.AudioMinutesMax.Value)
+                throw new MyMorningNews.Core.Exceptions.CapReachedException("audio.monthlyMinutes.max", meter.AudioMinutesMax.Value.ToString(System.Globalization.CultureInfo.InvariantCulture), meter.ResetUtc,
+                    "You have used this month's " + meter.AudioMinutesMax.Value + " audio minutes. They reset on " + meter.ResetUtc.ToString("MMMM d", System.Globalization.CultureInfo.InvariantCulture) + ".");
             MediaAsset? busy = (await Server.Database.MediaAssets.EnumerateAsync(new MediaAssetFilter { TenantId = b.TenantId, BriefingId = b.Id, PageSize = 20 }, ctx.Token).ConfigureAwait(false)).Items
                 .FirstOrDefault(x => x.Status == MediaStatusEnum.Queued || x.Status == MediaStatusEnum.Scripting || x.Status == MediaStatusEnum.Synthesizing);
             if (busy != null)

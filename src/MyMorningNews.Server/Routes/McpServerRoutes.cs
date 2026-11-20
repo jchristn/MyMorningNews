@@ -200,6 +200,7 @@ namespace MyMorningNews.Server.Routes
                 return false;
             }
 
+            await MyMorningNews.Core.Security.NetworkGuard.EnsureAllowedAsync(server.Url, ctx.Token).ConfigureAwait(false);
             if (req.Transport.HasValue) server.Transport = req.Transport.Value;
             if (req.HeaderName != null) server.HeaderName = String.IsNullOrWhiteSpace(req.HeaderName) ? "Authorization" : req.HeaderName.Trim();
             if (req.HeaderPrefix != null) server.HeaderPrefix = req.HeaderPrefix;

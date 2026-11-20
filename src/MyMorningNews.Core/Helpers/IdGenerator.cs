@@ -650,6 +650,15 @@ namespace MyMorningNews.Core.Helpers
         }
 
         /// <summary>
+        /// Generate a AccountToken identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateAccountTokenId()
+        {
+            return Generate(IdPrefixes.AccountToken);
+        }
+
+        /// <summary>
         /// Generate a RunToolCall identifier.
         /// </summary>
         /// <returns>Identifier.</returns>

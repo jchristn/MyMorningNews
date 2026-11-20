@@ -18,6 +18,12 @@ namespace MyMorningNews.Core.Services
     /// </summary>
     public class VaultService
     {
+        /// <summary>
+        /// Credential reference for the operator's Anthropic key on the hosted service. It is resolved from the server
+        /// environment at call time, never stored in a tenant vault, and cannot be read or revealed by tenants.
+        /// </summary>
+        public const string PlatformAnthropicCredentialId = "platform:anthropic";
+
         #region Private-Members
 
         private readonly DatabaseDriverBase _Database;
@@ -133,6 +139,13 @@ namespace MyMorningNews.Core.Services
         public async Task<string?> ResolveAsync(string tenantId, string? credentialId, CancellationToken token = default)
         {
             if (String.IsNullOrEmpty(credentialId)) return null;
+            if (String.Equals(credentialId, PlatformAnthropicCredentialId, StringComparison.Ordinal))
+            {
+                string? platformKey = Environment.GetEnvironmentVariable(Constants.EnvironmentPrefix + "ANTHROPIC_API_KEY");
+                if (String.IsNullOrWhiteSpace(platformKey)) throw new VaultSecretUnavailableException("The platform model key is not configured on this server.");
+                return platformKey.Trim();
+            }
+
             VaultCredential? v = await _Database.VaultCredentials.ReadAsync(tenantId, credentialId, token).ConfigureAwait(false);
             if (v == null) throw new VaultSecretUnavailableException("Vault credential " + credentialId + " was not found.");
             if (!v.Active) throw new VaultSecretUnavailableException("Vault credential " + v.Name + " is inactive.");

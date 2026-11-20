@@ -39,7 +39,7 @@ namespace MyMorningNews.Core.Services
         /// <param name="logging">Logging module handed to PolyPrompt so its messages follow the server's severity and console settings.</param>
         public ModelClientFactory(HttpClient? http = null, LoggingModule? logging = null)
         {
-            _Http = http ?? new HttpClient { Timeout = System.Threading.Timeout.InfiniteTimeSpan };
+            _Http = http ?? new HttpClient(Security.NetworkGuard.CreateHandler()) { Timeout = System.Threading.Timeout.InfiniteTimeSpan };
             _Logging = logging;
         }
 

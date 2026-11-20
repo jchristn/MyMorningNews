@@ -4,6 +4,11 @@ All notable changes to this project are documented here. The project follows [Se
 
 ## [0.1.0-alpha] - Unreleased
 
+### Changed
+
+- Free plan: $3 a month, 1 topic, daily schedules, 2 runs a day, 10 audio minutes. Complimentary: $10, 2 topics, daily, 4 runs, 30 audio minutes. Promotional codes last 30 days by default. Unedited stored values move to the new defaults at startup.
+- The Unlimited plan no longer sets a schedule floor; the server's scheduler minimum applies.
+
 ### Fixed
 
 - Deleting a user removed their topic rows through a database cascade but left the topics' runs, findings, briefings, and editions behind. User deletion now removes everything the user owns first (`AccountDataService`), which Phase 14 account deletion will reuse.
@@ -19,6 +24,13 @@ All notable changes to this project are documented here. The project follows [Se
 
 ### Added
 
+- Hosted accounts: public sign-up with a personal tenant (`POST /v1.0/public/signup`), email verification and resend, sign-in refused until verified, forgot and reset password, welcome, password changed, and deletion emails, optional Cloudflare Turnstile, per-address rate limits, and a disposable-domain block list.
+- Account deletion with a 7-day grace period (signing in cancels it) and a purge in the retention worker; `GET /v1.0/api/account/export` (ZIP of JSON and Markdown); `GET /v1.0/api/account/usage` (the usage meter).
+- Plan limits enforced as `402 CapReached` with key, limit, and reset time: the monthly model cost cap (before every model call and run), daily runs, topic count, the shortest schedule, audio minutes, and custom model endpoints. Scheduled runs over a limit are recorded as Skipped with the reason.
+- Private network blocking for fetches, model endpoints, MCP servers, and search providers (`Hosting.RestrictPrivateNetworks`), checked on save and on every connection, with `Hosting.AllowedPrivateHosts` for the stack's own services.
+- Platform Anthropic credential by reference (`platform:anthropic`) for personal tenants and, optionally, every new tenant.
+- `/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json` for mobile universal links.
+- Hosted overlay settings (sign-up on, Free plan default, egress blocking, platform credentials) and `docs/HOSTING.md`.
 - Implementation plan (`MY_MORNING_NEWS_PLAN.md`).
 - Repository scaffolding: solution, backend projects, test projects, React dashboard, Docker Compose stack, CI workflows.
 - Backend foundation: Watson 7 host with OpenAPI, CORS, request IDs, and typed error responses.

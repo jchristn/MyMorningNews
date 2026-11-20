@@ -9,9 +9,10 @@ cp .env.example .env    # set real secrets: signing key, admin key, Anthropic ke
 docker compose -f compose.yaml -f hosted/compose.yaml up -d --build
 ```
 
-- `hosted/mymorningnews.json` is the server settings file for the hosted profile (CORS limited to the app origin).
-  Public sign-up, caps, and egress restrictions are switched on here when Phase 14 adds them.
+- `hosted/mymorningnews.json` is the server settings file for the hosted profile: CORS limited to the app origin,
+  public sign-up with email verification, the Free plan as the default, private-network blocking, platform
+  credentials by reference, and a short list of disposable email domains.
 - Set `MYMORNINGNEWS_APP_DOMAIN` and `MYMORNINGNEWS_ACME_EMAIL` in `.env` to change the domain or the certificate
   contact.
 - For artifact storage in S3, set the `MYMORNINGNEWS_STORAGE_*` variables in `.env`.
-- Full instructions: `docs/HOSTING.md` (Phase 14).
+- Full instructions: `docs/HOSTING.md`.

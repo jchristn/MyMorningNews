@@ -64,7 +64,9 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.IsProtected,
                 obj.Active,
                 DateTime.SpecifyKind(obj.CreatedUtc, DateTimeKind.Utc),
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
+                obj.IsPersonal,
+                obj.PurgeAfterUtc.HasValue ? DateTime.SpecifyKind(obj.PurgeAfterUtc.Value, DateTimeKind.Utc) : null).ConfigureAwait(false);
             return obj;
         }
 
@@ -89,7 +91,9 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.TimeZone,
                 obj.IsProtected,
                 obj.Active,
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
+                obj.IsPersonal,
+                obj.PurgeAfterUtc.HasValue ? DateTime.SpecifyKind(obj.PurgeAfterUtc.Value, DateTimeKind.Utc) : null).ConfigureAwait(false);
             if (affected < 1) throw new KeyNotFoundException("Tenant " + obj.Id + " was not found.");
             return obj;
         }
@@ -156,6 +160,8 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             obj.Active = reader.GetBoolean(6);
             obj.CreatedUtc = DateTime.SpecifyKind(reader.GetDateTime(7), DateTimeKind.Utc);
             obj.LastUpdateUtc = DateTime.SpecifyKind(reader.GetDateTime(8), DateTimeKind.Utc);
+            obj.IsPersonal = reader.GetBoolean(9);
+            obj.PurgeAfterUtc = reader.IsDBNull(10) ? null : DateTime.SpecifyKind(reader.GetDateTime(10), DateTimeKind.Utc);
             return obj;
         }
 

@@ -1,14 +1,18 @@
 namespace MyMorningNews.Core.Entitlements
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using MyMorningNews.Core.Database;
     using MyMorningNews.Core.Enums;
+    using MyMorningNews.Core.Exceptions;
     using MyMorningNews.Core.Models;
     using MyMorningNews.Core.Requests;
+    using MyMorningNews.Core.Responses;
     using MyMorningNews.Core.Settings;
 
     /// <summary>
@@ -36,7 +40,7 @@ namespace MyMorningNews.Core.Entitlements
             }),
             new PlanSeed("unlimited", "Unlimited", "No caps. The default for self-hosted installs.", 3, new Dictionary<string, string>
             {
-                { "usage.monthlyCostUsd.max", "unlimited" }, { "topics.max", "unlimited" }, { "schedule.minIntervalMinutes", "5" }, { "runs.daily.max", "unlimited" },
+                { "usage.monthlyCostUsd.max", "unlimited" }, { "topics.max", "unlimited" }, { "schedule.minIntervalMinutes", "unlimited" }, { "runs.daily.max", "unlimited" },
                 { "audio.enabled", "true" }, { "audio.monthlyMinutes.max", "unlimited" }, { "email.enabled", "true" }, { "mobile.access", "true" }, { "endpoints.custom", "true" }, { "artifacts.pinned.max", "10000" }
             })
         };
@@ -48,11 +52,13 @@ namespace MyMorningNews.Core.Entitlements
         public static readonly IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> ReplacedDefaults = new Dictionary<string, IReadOnlyDictionary<string, string>>(StringComparer.Ordinal)
         {
             { "free", new Dictionary<string, string>(StringComparer.Ordinal) { { "usage.monthlyCostUsd.max", "5.00" }, { "topics.max", "5" }, { "schedule.minIntervalMinutes", "360" }, { "runs.daily.max", "8" }, { "audio.monthlyMinutes.max", "120" } } },
-            { "complimentary", new Dictionary<string, string>(StringComparer.Ordinal) { { "usage.monthlyCostUsd.max", "30.00" }, { "topics.max", "25" }, { "schedule.minIntervalMinutes", "60" }, { "runs.daily.max", "48" }, { "audio.monthlyMinutes.max", "600" } } }
+            { "complimentary", new Dictionary<string, string>(StringComparer.Ordinal) { { "usage.monthlyCostUsd.max", "30.00" }, { "topics.max", "25" }, { "schedule.minIntervalMinutes", "60" }, { "runs.daily.max", "48" }, { "audio.monthlyMinutes.max", "600" } } },
+            { "unlimited", new Dictionary<string, string>(StringComparer.Ordinal) { { "schedule.minIntervalMinutes", "5" } } }
         };
 
         private readonly DatabaseDriverBase _Database;
         private readonly ServerSettings _Settings;
+        private readonly ConcurrentDictionary<string, CachedCost> _CostCache = new ConcurrentDictionary<string, CachedCost>(StringComparer.Ordinal);
 
         /// <summary>
         /// Instantiate.
@@ -109,6 +115,142 @@ namespace MyMorningNews.Core.Entitlements
             }
 
             return created;
+        }
+
+        /// <summary>
+        /// A numeric plan limit, or null when the plan does not limit it ("unlimited", empty, or missing).
+        /// </summary>
+        /// <param name="plan">Effective plan.</param>
+        /// <param name="key">Entitlement key.</param>
+        /// <returns>Limit or null.</returns>
+        /// <exception cref="ArgumentNullException">An argument is null.</exception>
+        public static decimal? Limit(EffectivePlan plan, string key)
+        {
+            ArgumentNullException.ThrowIfNull(plan);
+            ArgumentNullException.ThrowIfNull(key);
+            if (!plan.Features.TryGetValue(key, out string? raw) || String.IsNullOrWhiteSpace(raw)) return null;
+            if (String.Equals(raw.Trim(), "unlimited", StringComparison.OrdinalIgnoreCase)) return null;
+            return Decimal.TryParse(raw.Trim(), NumberStyles.Number, CultureInfo.InvariantCulture, out decimal v) ? v : null;
+        }
+
+        /// <summary>
+        /// A boolean plan feature; missing means allowed.
+        /// </summary>
+        /// <param name="plan">Effective plan.</param>
+        /// <param name="key">Entitlement key.</param>
+        /// <returns>True when allowed.</returns>
+        /// <exception cref="ArgumentNullException">An argument is null.</exception>
+        public static bool Allowed(EffectivePlan plan, string key)
+        {
+            ArgumentNullException.ThrowIfNull(plan);
+            ArgumentNullException.ThrowIfNull(key);
+            return !plan.Features.TryGetValue(key, out string? raw) || !String.Equals(raw?.Trim(), "false", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// The first day of next month (UTC): when monthly limits reset.
+        /// </summary>
+        /// <param name="nowUtc">Now.</param>
+        /// <returns>Reset time.</returns>
+        public static DateTime MonthlyReset(DateTime nowUtc)
+        {
+            DateTime start = new DateTime(nowUtc.Year, nowUtc.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            return start.AddMonths(1);
+        }
+
+        /// <summary>
+        /// Model cost attributed to the user this calendar month (UTC), cached for 30 seconds.
+        /// </summary>
+        /// <param name="tenantId">Tenant.</param>
+        /// <param name="userId">User.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Cost in USD.</returns>
+        public async Task<decimal> MonthToDateCostAsync(string tenantId, string userId, CancellationToken token = default)
+        {
+            string key = tenantId + "|" + userId;
+            DateTime now = DateTime.UtcNow;
+            if (_CostCache.TryGetValue(key, out CachedCost? c) && c.ExpiresUtc > now) return c.CostUsd;
+            DateTime start = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            UsageReport report = await _Database.UsageAnalytics.ReportAsync(new UsageReportFilter { TenantId = tenantId, UserId = userId, FromUtc = start, ToUtc = now.AddMinutes(1), Top = 1 }, token).ConfigureAwait(false);
+            _CostCache[key] = new CachedCost(report.Totals.CostUsd, now.AddSeconds(30));
+            return report.Totals.CostUsd;
+        }
+
+        /// <summary>
+        /// Refuse when the user's month-to-date model cost has reached the plan's cap.
+        /// </summary>
+        /// <param name="tenantId">Tenant.</param>
+        /// <param name="userId">User.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="CapReachedException">The cap is reached.</exception>
+        public async Task CheckCostAsync(string tenantId, string userId, CancellationToken token = default)
+        {
+            EffectivePlan plan = await GetEffectiveAsync(tenantId, userId, token).ConfigureAwait(false);
+            decimal? cap = Limit(plan, "usage.monthlyCostUsd.max");
+            if (cap == null) return;
+            decimal spent = await MonthToDateCostAsync(tenantId, userId, token).ConfigureAwait(false);
+            DateTime reset = MonthlyReset(DateTime.UtcNow);
+            if (spent >= cap.Value)
+                throw new CapReachedException("usage.monthlyCostUsd.max", cap.Value.ToString("0.00", CultureInfo.InvariantCulture), reset,
+                    "You have used this month's research budget ($" + cap.Value.ToString("0.00", CultureInfo.InvariantCulture) + ") on the " + plan.Plan.Name + " plan. It resets on " + reset.ToString("MMMM d", CultureInfo.InvariantCulture) + ".");
+        }
+
+        /// <summary>
+        /// Refuse when adding one more of something would pass a plan count limit.
+        /// </summary>
+        /// <param name="tenantId">Tenant.</param>
+        /// <param name="userId">User.</param>
+        /// <param name="key">Entitlement key (topics.max or runs.daily.max).</param>
+        /// <param name="current">Current count.</param>
+        /// <param name="what">What is limited, for the message (for example "topics").</param>
+        /// <param name="resetUtc">When the count resets, or null.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="CapReachedException">The limit is reached.</exception>
+        public async Task CheckCountAsync(string tenantId, string userId, string key, long current, string what, DateTime? resetUtc, CancellationToken token = default)
+        {
+            EffectivePlan plan = await GetEffectiveAsync(tenantId, userId, token).ConfigureAwait(false);
+            decimal? max = Limit(plan, key);
+            if (max == null || current < max.Value) return;
+            throw new CapReachedException(key, max.Value.ToString("0", CultureInfo.InvariantCulture), resetUtc,
+                "The " + plan.Plan.Name + " plan allows " + max.Value.ToString("0", CultureInfo.InvariantCulture) + " " + what + "." + (resetUtc.HasValue ? " It resets on " + resetUtc.Value.ToString("MMMM d, HH:mm 'UTC'", CultureInfo.InvariantCulture) + "." : String.Empty));
+        }
+
+        /// <summary>
+        /// The usage meter for a user.
+        /// </summary>
+        /// <param name="tenantId">Tenant.</param>
+        /// <param name="userId">User.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Meter.</returns>
+        public async Task<UsageMeter> MeterAsync(string tenantId, string userId, CancellationToken token = default)
+        {
+            DateTime now = DateTime.UtcNow;
+            DateTime monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            EffectivePlan plan = await GetEffectiveAsync(tenantId, userId, token).ConfigureAwait(false);
+            _CostCache.TryRemove(tenantId + "|" + userId, out CachedCost? _);
+            decimal spent = await MonthToDateCostAsync(tenantId, userId, token).ConfigureAwait(false);
+            decimal? cap = Limit(plan, "usage.monthlyCostUsd.max");
+            List<MediaAsset> audio = (await _Database.MediaAssets.EnumerateAsync(new MediaAssetFilter { TenantId = tenantId, UserId = userId, FromUtc = monthStart, PageSize = 5000 }, token).ConfigureAwait(false)).Items;
+            return new UsageMeter
+            {
+                PlanKey = plan.Plan.Key,
+                PlanName = plan.Plan.Name,
+                MonthToDateCostUsd = spent,
+                MonthlyCostCapUsd = cap,
+                CostUsedFraction = cap.HasValue && cap.Value > 0 ? Math.Round((double)(spent / cap.Value), 4) : null,
+                ResetUtc = MonthlyReset(now),
+                Topics = await _Database.Topics.CountAsync(new TopicFilter { TenantId = tenantId, UserId = userId, IsOneTime = false }, token).ConfigureAwait(false),
+                TopicsMax = (long?)Limit(plan, "topics.max"),
+                RunsToday = await _Database.Runs.CountAsync(new RunFilter { TenantId = tenantId, UserId = userId, IsDryRun = false, FromUtc = now.Date }, token).ConfigureAwait(false),
+                RunsDailyMax = (long?)Limit(plan, "runs.daily.max"),
+                ScheduleMinIntervalMinutes = (long?)Limit(plan, "schedule.minIntervalMinutes"),
+                AudioMinutes = Math.Round(audio.Sum(a => a.DurationSeconds) / 60.0, 1),
+                AudioMinutesMax = (long?)Limit(plan, "audio.monthlyMinutes.max"),
+                AudioEnabled = Allowed(plan, "audio.enabled"),
+                CustomEndpoints = Allowed(plan, "endpoints.custom")
+            };
         }
 
         /// <summary>

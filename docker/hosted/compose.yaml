@@ -6,6 +6,10 @@ services:
   server:
     volumes:
       - ./hosted/mymorningnews.json:/app/config/mymorningnews.json
+    environment:
+      MYMORNINGNEWS_HOSTING_TURNSTILE_SITE_KEY: ${MYMORNINGNEWS_HOSTING_TURNSTILE_SITE_KEY:-}
+      MYMORNINGNEWS_HOSTING_TURNSTILE_SECRET_KEY: ${MYMORNINGNEWS_HOSTING_TURNSTILE_SECRET_KEY:-}
+      MYMORNINGNEWS_HOSTING_APPLE_TEAM_ID: ${MYMORNINGNEWS_HOSTING_APPLE_TEAM_ID:-}
 
   caddy:
     image: caddy:2.11.8-alpine

@@ -21,6 +21,9 @@ A self-hosted research assistant that refines what you care about through an LLM
 | `server` | C# REST API on Watson 7, research pipeline, scheduler, email | 12100 |
 | `dashboard` | React dashboard served by nginx | 12101 |
 | `pgvector/pgvector` | PostgreSQL with pgvector | 12102 |
+| `searxng` | Private metasearch for research, no API key needed | 12103 |
+| `kokoro` | Local text-to-speech for audio briefings and the podcast feed | 12104 |
+| `mcp` | MCP server for Claude Code and other MCP clients (profile `mcp`) | 12105 |
 
 ## Getting started
 
@@ -30,8 +33,10 @@ cd MyMorningNews/docker
 docker compose up -d --build
 ```
 
-Open http://127.0.0.1:12101 and sign in with `admin@mymorningnews` / `password`, tenant `default`. Change these credentials before exposing the stack.
+Open http://127.0.0.1:12101 and sign in with `admin@mymorningnews` / `password` (tenant `default`, or leave it blank). Change these credentials before exposing the stack.
 
 ## License
 
 MIT
+
+(c) 2026 Lattice AI LLC

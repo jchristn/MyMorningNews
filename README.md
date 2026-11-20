@@ -4,98 +4,181 @@
 
 # My Morning News
 
-My Morning News is a self-hosted research assistant. You tell it what you care about, it asks you questions until it understands what to look for and what to ignore, and then scheduled research agents go out, read, rank, and summarize. You get a Markdown briefing, an audio version, and an email after every run with links to the details and one-click feedback. Everything it examined, everything it suggested, and every prediction it made is kept, so it can learn what you find relevant and keep score on what turned out to be true.
+My Morning News is a research assistant you run yourself. You describe something you want to stay on top of. It
+interviews you until it knows what to look for and what to skip. Then it researches on your schedule, ranks what it
+finds, backs every claim with a quote from the source, and sends you a briefing you can read, listen to, or get by
+email. Your feedback teaches it what you care about, and it keeps score on its own predictions.
 
-> **Status: early alpha (`0.1.0-alpha`).** The repository is being built phase by phase from [`MY_MORNING_NEWS_PLAN.md`](MY_MORNING_NEWS_PLAN.md). Section 32 of the plan shows current progress. Today the backend foundation is in place: sign-in, tenants, users, credentials, RBAC, audit, request history, runtime settings, OpenAPI, and the observability stack, plus the credential vault, model endpoints and assignments, the model gateway with full cost accounting, and editable prompts. The research features and the full dashboard arrive in the following phases.
+> **Status: alpha (`0.1.0-alpha`).** The self-hosted product is feature complete for its first release and covered by
+> automated tests. The hosted service at `app.mymorningnews.ai` and the iOS and Android store listings open once the
+> owner's launch steps are done ([`OWNER_ACTIONS.md`](OWNER_ACTIONS.md)). Progress is tracked in
+> [`MY_MORNING_NEWS_PLAN.md`](MY_MORNING_NEWS_PLAN.md), section 32.
 
-## What it will do
+## What it does
 
-- **Refine a topic with you.** Describe an interest in plain language ("I want to learn about AI developer tools"). The configured model proposes dimensions, asks clarifying questions in rounds, and drafts a brief with includes, excludes, and preferred sources that you edit.
-- **Research on your schedule.** Every n minutes, hours, days, or weeks, specific days of the week or month, once, or cron, each in your time zone.
-- **Rank and back up every result.** Findings get a 0 to 100 relevance score built from model judgment, your past feedback, novelty, source reputation, and recency. Every claim links to a verbatim quote from the source it came from.
-- **Look ahead.** Each run writes predictions with confidence and a horizon date, then grades them later. Suggestions tell you what to dig into next.
-- **Deliver it your way.** Briefing structure comes from a Markdown template you write. Output is Markdown, audio (local Kokoro TTS by default), a private podcast feed, and an email after every run.
-- **Learn from you.** Rate anything as relevant or not and say why. The system distills that into preferences you approve, and dozens of charts show how relevance and accuracy change over time.
-- **Use any model.** Model access goes through [PolyPrompt](https://github.com/jchristn/PolyPrompt): Anthropic (the default), OpenAI, OpenAI-compatible servers, Ollama, Gemini, xAI, and more, assignable per task.
-- **Self-host it or use the hosted service.** Run it yourself with Docker, or sign up at [mymorningnews.ai](https://mymorningnews.ai) (hosted service coming with a later phase). Apps for iPhone, iPad, and Android phones and tablets are planned.
-- **Multi-tenant with RBAC,** request history, audit, OpenAPI-driven API explorer, Grafana dashboards, SDKs, and an MCP server.
+- Refines a topic with you. Start from a sentence ("AI developer tools", "heat pump rebates in Colorado"). The
+  wizard proposes dimensions to weight, asks clarifying questions, drafts a brief with includes, excludes, and
+  preferred sources, and suggests feeds. You edit everything.
+- Researches on a schedule. Every n minutes, hours, or days, chosen days of the week or month, once, or cron, in
+  your time zone. A staged pipeline plans queries, searches, fetches pages, extracts and scores findings, removes
+  duplicates, writes predictions and suggestions, and composes a briefing. You can watch a run live and retry it from
+  any stage.
+- Backs up every result. Each finding has a 0 to 100 relevance score built from model judgment, your past
+  feedback, novelty, source reputation, and recency, and each claim links to a verbatim quote that was checked against
+  the page it came from.
+- Looks ahead. Runs make predictions with a confidence and a horizon date. When a prediction comes due you grade
+  it (or accept a proposed grade), and accuracy and calibration are charted over time. Suggestions point at what to
+  dig into next.
+- Delivers it your way. Briefings follow Markdown templates you can edit. Editions combine several topics on
+  their own schedule. Output is Markdown and HTML, audio from a local Kokoro voice (or any OpenAI-compatible speech
+  service), a private podcast feed, an email after every run with one-click feedback links, and push notifications
+  to the mobile app.
+- Learns from you. Rate anything and say why, on the web, in email, in the app, or through MCP. The system turns
+  feedback into preferences you approve, and the Insights pages chart relevance, accuracy, feedback, cost, and usage.
+- Uses the model you choose. Model access goes through [PolyPrompt](https://github.com/jchristn/PolyPrompt):
+  Anthropic (the default), OpenAI, Azure OpenAI, OpenAI-compatible servers, Ollama, Gemini, xAI, and more, assignable
+  per task. Topics can opt in to agentic search, where the model searches, reads, and calls the MCP tools you allow.
+- Runs for one person or many. Tenants, users, roles and permissions, access keys, signed requests, audit, request
+  history, plans with usage caps, promotional codes, and an optional public sign-up for a hosted service.
 
-## Models, web search, and credentials
+## Use cases
 
-The default chat model is Anthropic `claude-opus-5-5` (add your API key in the setup wizard or set `MYMORNINGNEWS_ANTHROPIC_API_KEY`). Any role can be reassigned to another provider through PolyPrompt.
+- Stay current on a field without reading everything yourself.
+- Get one morning briefing across several interests, to read over coffee or hear on the drive in.
+- Track forward-looking calls (prices, launches, policy changes) and see which ones came true.
+- Give a team a shared research feed with per-person preferences, or run it as a service for others.
 
-**Open models need a search service.** If you run an open model through Ollama or another OpenAI-compatible server, it can call tools but it cannot search the web on its own. Model-hosted search exists only on OpenAI, Azure OpenAI, and xAI endpoints. Give open models a search provider: the bundled SearXNG works without a key, and Tavily (recommended) or You.com work with an API key. Optionally, register MCP servers to expose more tools. The model must support tool calls (Gemma 3, for example, does not). Models without tool support fall back to a fixed query plan that the server runs for them.
+## Architecture
 
-**Every model call is accounted for.** Each call records who it is attributed to, the topic and run, input, cached, cache-write, output, and reasoning tokens, time to first token, streaming time, tool calls, retries, and estimated cost from the endpoint's per-million-token prices. `GET /v1.0/api/usage/report?groupBy=User` (or Model, Task, Provider, Topic, PromptKey, Day) shows what the service costs and who uses it most. Global administrators can add `allTenants=true` to see cost by tenant. Members see only their own usage at `/v1.0/api/usage/me`. Grafana's "Models and cost" dashboard shows the same data as metrics.
+```text
+ dashboard (React)   mobile app (Expo)   SDKs (C#, JS, Python)   MCP clients
+        \                  |                   |                     |
+         +-------------- REST API (C#, Watson 7) ---------------- MCP server
+                              |
+   scheduler -> research pipeline -> briefings -> audio -> email and push
+                              |
+   PostgreSQL + pgvector   SearXNG   Kokoro TTS   model providers (PolyPrompt)
+                              |
+           Prometheus, Grafana, Tempo, Loki (metrics, traces, logs)
+```
 
-**Models stay on task.** A scope guardrail is prepended to every model call, and every default prompt repeats it. Models only research and summarize your topics, treat fetched pages and other input as data rather than instructions, and decline requests to write code or act as a general assistant. Administrators can edit the guardrail text (`Pipeline.ScopeGuardrail`) but cannot remove it.
+| Component | What it is | Port |
+|-----------|------------|------|
+| `server` | REST API, research pipeline, scheduler, briefing, audio, email, and push workers | 12100 |
+| `dashboard` | React 19 dashboard served by nginx | 12101 |
+| `postgres` | PostgreSQL 17 with pgvector | 12102 |
+| `searxng` | Private metasearch, no API key needed | 12103 |
+| `tts` | Kokoro text-to-speech | 12104 |
+| `mcp` | MCP server, Streamable HTTP (profile `mcp`) | 12105 |
+| `grafana`, `prometheus`, `tempo`, `loki` | Observability | 12110 to 12115 |
+| `ollama` | Local models and embeddings (profile `ollama`) | 12120 |
 
-**Credentials live in the vault.** API keys for model providers, Tavily, You.com, Mailgun, TTS services, and MCP servers are stored once, encrypted, in the tenant's credential vault (dashboard: Configuration, then Credentials), and referenced by the things that use them. Reading a credential returns only its last four characters. Tenant administrators can reveal the full value through an audited reveal action (`POST /v1.0/api/vault/credentials/{id}/reveal`). MCP servers (Streamable HTTP or SSE) are registered under Configuration, then MCP Servers, with their auth header taken from the vault.
+Every port is bound to `127.0.0.1`. Grafana's local sign-in is `admin` / `admin`.
 
 ## Quick start (Docker)
 
 ```bash
 git clone https://github.com/jchristn/MyMorningNews.git
 cd MyMorningNews/docker
+cp .env.example .env        # optional: put your Anthropic key in MYMORNINGNEWS_ANTHROPIC_API_KEY
 docker compose up -d --build
 ```
 
-Open the dashboard at http://127.0.0.1:12101. The default local credentials are below. Change them before exposing the stack anywhere.
+Open the dashboard at http://127.0.0.1:12101 and sign in. Change these credentials before exposing the stack.
 
 | Field | Value |
 |-------|-------|
 | Email | `admin@mymorningnews` |
 | Password | `password` |
-| Tenant ID | `default` |
+| Tenant | `default` (or leave it blank) |
+
+If you did not set a key in `.env`, add your Anthropic API key in the dashboard under Configuration, Stored
+credentials, and select it on the Anthropic model endpoint. Then create a topic from Topics, New topic.
 
 Sign in through the API:
 
 ```bash
-curl -s -X POST http://127.0.0.1:12100/v1.0/token \
-  -H 'x-email: admin@mymorningnews' -H 'x-password: password' -H 'x-tenant-guid: default'
+curl -s -X POST http://127.0.0.1:12100/v1.0/token -H 'x-email: admin@mymorningnews' -H 'x-password: password'
 ```
 
-Send the returned token as `Authorization: Bearer <token>`. The full API is described at http://127.0.0.1:12100/openapi.json (Swagger UI at `/swagger`).
+Send the returned token as `Authorization: Bearer <token>`. The OpenAPI document is at
+http://127.0.0.1:12100/openapi.json and Swagger UI at `/swagger`. [`REST_API.md`](REST_API.md) describes every route,
+and [`assets/postman/`](assets/postman/) has a Postman collection.
 
-Useful helpers: `docker/update.sh` (or `.bat`) pulls and recreates the stack without touching data. `docker/factory/reset.sh` (or `.bat`) deletes all data and starts fresh; add `--demo` for a seeded demo account (`demo@mymorningnews` / `password`) with topics, completed runs, findings, evidence, predictions, briefings, and feedback, made without model calls or an API key.
+Helpers: `docker/update.sh` (or `.bat`) rebuilds and recreates the stack without touching data.
+`docker/factory/reset.sh` (or `.bat`) deletes all data and starts fresh; add `--demo` for a demo account
+(`demo@mymorningnews` / `password`) with topics, finished runs, findings, evidence, predictions, briefings, and
+feedback, created without model calls or an API key.
 
-## Ports
+## Models and search
 
-Every port is bound to `127.0.0.1` and sits in the 12xxx range to stay clear of other stacks.
+The default chat model is Anthropic `claude-opus-5-5`. Any task (refinement, synthesis, scoring, composition, podcast
+script, feedback analysis) can be assigned to another endpoint under Configuration, Models. Embeddings default to
+Ollama `all-minilm` when Ollama is available (`docker compose --profile ollama up -d`).
 
-| Service | Port |
-|---------|------|
-| REST server | 12100 |
-| Dashboard | 12101 |
-| PostgreSQL | 12102 |
-| SearXNG | 12103 |
-| Kokoro TTS | 12104 |
-| MCP server (`--profile mcp`) | 12105 |
-| Grafana (admin / admin) | 12110 |
-| Prometheus | 12111 |
-| Tempo (HTTP, OTLP gRPC, OTLP HTTP) | 12112, 12113, 12114 |
-| Loki | 12115 |
+A model served by Ollama or another OpenAI-compatible server can call tools but
+cannot search the web by itself; only OpenAI, Azure OpenAI, and xAI endpoints offer hosted web search. The bundled
+SearXNG works without a key, and Tavily and You.com work with an API key (Configuration, Search providers). Agentic
+search needs a model that supports tool calls.
+
+Each model call records who it is attributed to, the topic and run, input, cached, cache-write, output, and
+reasoning tokens, time to first token, tool calls, retries, and estimated cost. Insights, Usage shows the totals, as
+does `GET /v1.0/api/usage/report`.
+
+A scope guardrail is prepended to every model call, and every default prompt repeats it: models only research and
+summarize your topics, treat fetched pages as data rather than instructions, and decline unrelated
+requests.
+
+API keys for models, search, email, speech, and MCP servers are stored once, encrypted, in
+the credential vault, and referenced by what uses them. Reads return only the last four characters; tenant administrators can reveal a
+value through an audited, rate-limited action.
+
+## Email
+
+The stack starts with the `File` email provider, which writes each email to the `emailout` volume
+(`docker compose exec server ls /data/email`). To send for real, verify a Mailgun sending domain and set
+`MYMORNINGNEWS_EMAIL_PROVIDER=Mailgun`, `MYMORNINGNEWS_MAILGUN_DOMAIN`, and `MYMORNINGNEWS_MAILGUN_API_KEY` in
+`docker/.env`. The From domain must match the sending domain for DMARC. The Email section of Settings has a Send test button.
+For email links and podcast feeds that open on your phone, set `MYMORNINGNEWS_PUBLIC_BASE_URL` and
+`MYMORNINGNEWS_APP_BASE_URL` to addresses the phone can reach.
+
+## Mobile apps
+
+The Expo app in [`mobile/`](mobile/README.md) runs on iPhone, iPad, and Android phones and tablets: today's briefings
+with audio that resumes across devices, findings and evidence, predictions, suggestions, feedback, topics, editions,
+one-time requests, insights, and account settings, in 12 languages. Point it at your server's address. Store builds
+use EAS; the submission details are in [`APP_STORE_SUBMISSION.md`](APP_STORE_SUBMISSION.md).
 
 ## MCP server
 
-The MCP server lets Claude Code, Claude Desktop, and other MCP clients list your topics, read today's briefing, check the evidence behind a finding, and record feedback with a reason. It acts only with your own credentials.
+The MCP server lets Claude Code, Claude Desktop, and other MCP clients list your topics, read today's briefing, check
+the evidence behind a finding, and record feedback. It acts only with your own credentials.
 
 ```bash
 cd docker && docker compose --profile mcp up -d
 claude mcp add --transport http mymorningnews http://127.0.0.1:12105/mcp --header "Authorization: Bearer <session token>"
 ```
 
-A session token comes from `POST /v1.0/token` with `x-email` and `x-password`; for a long-lived connection, create an access key under Credentials instead. Stdio mode, every tool, the resources, the prompts, and client configuration snippets are in [`MCP_API.md`](MCP_API.md).
+For a long-lived connection, create an access key under Credentials. Stdio mode, every tool, the resources, and the
+prompts are in [`MCP_API.md`](MCP_API.md). Separately, topics can call tools on remote MCP servers you register under
+Configuration, MCP servers (Streamable HTTP).
 
 ## SDKs
 
-C#, JavaScript, and Python SDKs live in [`sdk/`](sdk/README.md). Each covers the API, supports signed requests, and ships a harness you can run against your own server.
+C#, JavaScript, and Python SDKs live in [`sdk/`](sdk/README.md). Each covers the whole API, supports signed requests
+and live run events, raises typed errors for plan limits, and ships a harness you can run against your own server.
+
+## Hosting a service
+
+The same code runs a public service with sign-up, email verification, plans with monthly cost caps, account deletion
+and export, a platform model key that tenants cannot read, and private-network blocking. Turn it on with the
+`docker/hosted` overlay; [`docs/HOSTING.md`](docs/HOSTING.md) walks through it.
 
 ## Building from source
 
 ```bash
 dotnet build src/MyMorningNews.sln
-cd dashboard && npm ci && npm run build
+cd dashboard && npm ci && npm run lint && npm test && npm run build
 ```
 
 Tests need PostgreSQL. With the Docker stack running:
@@ -105,14 +188,27 @@ MYMORNINGNEWS_TEST_DB="Host=127.0.0.1;Port=12102;Username=postgres;Password=pass
   dotnet run --project src/Test.Automated -f net10.0 -- --provider postgresql
 ```
 
+The same suites run under xUnit (`dotnet test src/Test.Xunit3`). The mobile app's checks are `cd mobile && npm run
+verify`.
+
+## Languages
+
+The dashboard and the mobile app are translated into English, Spanish, Portuguese, French, Italian, German, Chinese,
+Arabic (right to left), Russian, Malay, Hindi, and Japanese. The translations other than English are machine-made and
+waiting for native review ([`docs/I18N.md`](docs/I18N.md)).
+
 ## Database support
 
-PostgreSQL (with pgvector) is the only supported database. The data layer keeps a provider abstraction (`DatabaseDriverBase` and `DatabaseDriverFactory`), so another provider could be added later without changing services, but none is planned.
+PostgreSQL with pgvector is the only supported database. The data layer keeps a provider abstraction
+(`DatabaseDriverBase` and `DatabaseDriverFactory`), so another provider could be added without changing services.
 
 ## AOT support
 
-Not supported. The server depends on libraries that are not marked AOT-compatible (CrawlSharp with Playwright, TextChunker) and ships only as a Linux container, so the test suite runs on `ubuntu-latest` against a real PostgreSQL service and there is no `Test.Aot` project.
+Not supported. The server depends on libraries that are not AOT-compatible (CrawlSharp with Playwright, TextChunker)
+and ships as a Linux container.
 
 ## License
 
 MIT. See [LICENSE.md](LICENSE.md).
+
+(c) 2026 Lattice AI LLC

@@ -73,7 +73,8 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.LastComposedUtc.HasValue ? DateTime.SpecifyKind(obj.LastComposedUtc.Value, DateTimeKind.Utc) : null,
                 obj.Active,
                 DateTime.SpecifyKind(obj.CreatedUtc, DateTimeKind.Utc),
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
+                obj.PushEnabled).ConfigureAwait(false);
             return obj;
         }
 
@@ -116,7 +117,8 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.LookbackHours,
                 obj.LastComposedUtc.HasValue ? DateTime.SpecifyKind(obj.LastComposedUtc.Value, DateTimeKind.Utc) : null,
                 obj.Active,
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
+                obj.PushEnabled).ConfigureAwait(false);
             if (affected < 1) throw new KeyNotFoundException("Edition " + obj.Id + " was not found.");
             return obj;
         }
@@ -202,6 +204,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             obj.Active = reader.GetBoolean(15);
             obj.CreatedUtc = DateTime.SpecifyKind(reader.GetDateTime(16), DateTimeKind.Utc);
             obj.LastUpdateUtc = DateTime.SpecifyKind(reader.GetDateTime(17), DateTimeKind.Utc);
+            obj.PushEnabled = reader.GetBoolean(18);
             return obj;
         }
 

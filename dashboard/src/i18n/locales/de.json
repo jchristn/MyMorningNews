@@ -2752,7 +2752,9 @@
         "FixedHours": "Ein festes Zeitfenster, das endet, wenn die Ausgabe erstellt wird."
       },
       "lookbackHours": "Rückblickfenster (Stunden)",
-      "lookbackHoursHelp": "Von {min} bis {max} Stunden. „Seit der letzten Ausgabe“ blickt nie weiter zurück als dieser Wert."
+      "lookbackHoursHelp": "Von {min} bis {max} Stunden. „Seit der letzten Ausgabe“ blickt nie weiter zurück als dieser Wert.",
+      "push": "Push-Benachrichtigung",
+      "pushHelp": "Die mobile App auf deinen Geräten benachrichtigen, wenn diese Ausgabe fertig ist."
     },
     "topics": {
       "mode": "Themen",

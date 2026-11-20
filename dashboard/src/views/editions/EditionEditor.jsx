@@ -31,6 +31,7 @@ export function formFromEdition(e) {
     enabled: e ? e.enabled !== false : true,
     audioEnabled: e ? Boolean(e.audioEnabled) : false,
     emailEnabled: e ? e.emailEnabled !== false : true,
+    pushEnabled: e ? e.pushEnabled !== false : true,
     freshResearchBeforeCompose: e ? e.freshResearchBeforeCompose !== false : true,
     freshResearchLeadMinutes: e && e.freshResearchLeadMinutes ? e.freshResearchLeadMinutes : 45,
     lookbackMode: e && e.lookbackMode ? e.lookbackMode : 'SinceLastEdition',
@@ -47,6 +48,7 @@ export function editionBody(form, creating) {
     enabled: form.enabled,
     audioEnabled: form.audioEnabled,
     emailEnabled: form.emailEnabled,
+    pushEnabled: form.pushEnabled,
     freshResearchBeforeCompose: form.freshResearchBeforeCompose,
     freshResearchLeadMinutes: clamp(form.freshResearchLeadMinutes, EDITION_BOUNDS.leadMinutes),
     lookbackMode: form.lookbackMode,
@@ -252,6 +254,7 @@ export default function EditionEditor({ editionId = null }) {
         <div className="form-grid">
           <Toggle id="edition-enabled" label={t('editions.form.enabled')} help={t('editions.form.enabledHelp')} checked={form.enabled} onChange={set('enabled')} />
           <Toggle id="edition-email" label={t('editions.form.email')} help={t('editions.form.emailHelp')} checked={form.emailEnabled} onChange={set('emailEnabled')} />
+          <Toggle id="edition-push" label={t('editions.form.push')} help={t('editions.form.pushHelp')} checked={form.pushEnabled} onChange={set('pushEnabled')} />
           <Toggle id="edition-audio" label={t('editions.form.audio')} help={t('editions.form.audioHelp')} checked={form.audioEnabled} onChange={set('audioEnabled')} />
           <Toggle id="edition-fresh" label={t('editions.form.fresh')} help={t('editions.form.freshHelp')} checked={form.freshResearchBeforeCompose} onChange={set('freshResearchBeforeCompose')} />
           <FormField id="edition-lead" label={t('editions.form.lead')} help={t('editions.form.leadHelp', EDITION_BOUNDS.leadMinutes)}>

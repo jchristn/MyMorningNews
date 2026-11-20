@@ -356,6 +356,11 @@ namespace MyMorningNews.Core
         public const string RunToolCall = "rtc_";
 
         /// <summary>
+        /// Prefix for BriefingProgress identifiers.
+        /// </summary>
+        public const string BriefingProgress = "bpr_";
+
+        /// <summary>
         /// Prefix for request history entries.
         /// </summary>
         public const string RequestHistory = "req_";

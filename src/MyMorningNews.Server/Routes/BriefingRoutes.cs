@@ -39,6 +39,10 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read a briefing with its sections, items, and files", "Briefings"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}/download", DownloadAsync, null, openApiMetadata: Doc("Download a briefing as Markdown or HTML", "Briefings",
                 "format=md (default) or html. 410 ArtifactExpired when the file passed retention; regenerate to restore it.").WithParameter(QueryParam("format", typeof(string))));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}/progress", ProgressAsync, null, openApiMetadata: Doc("Where I stopped listening", "Briefings",
+                "The caller's position in seconds and whether they finished. Position 0 and completed false when nothing is saved."));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, b + "/{id}/progress", SaveProgressAsync, null, openApiMetadata: Doc("Save where I stopped listening", "Briefings",
+                "Used by the mobile player so listening resumes on any device.").WithRequestBody(Body<BriefingProgressRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, b + "/{id}/pin", PinAsync, null, openApiMetadata: Doc("Pin or unpin a briefing past the retention window", "Briefings")
                 .WithRequestBody(Body<BriefingPinRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/regenerate", RegenerateAsync, null, openApiMetadata: Doc("Store fresh Markdown and HTML files from the saved briefing", "Briefings"));
@@ -127,6 +131,51 @@ namespace MyMorningNews.Server.Routes
             }
 
             await SendArtifactAsync(ctx, Server.Artifacts, art, true).ConfigureAwait(false);
+        }
+
+        private async Task ProgressAsync(HttpContextBase ctx)
+        {
+            Briefing? br = await OwnedAsync(ctx, RequestTypeEnum.BriefingRead).ConfigureAwait(false);
+            if (br == null) return;
+            string? userId = Context(ctx).UserId;
+            if (String.IsNullOrEmpty(userId)) { await SendErrorAsync(ctx, 400, "BadRequest", "Listening progress belongs to a signed-in user.").ConfigureAwait(false); return; }
+            BriefingProgress? p = await FindProgressAsync(br, userId, ctx).ConfigureAwait(false);
+            await SendJsonAsync(ctx, 200, p ?? new BriefingProgress { TenantId = br.TenantId, UserId = userId, BriefingId = br.Id }).ConfigureAwait(false);
+        }
+
+        private async Task SaveProgressAsync(HttpContextBase ctx)
+        {
+            Briefing? br = await OwnedAsync(ctx, RequestTypeEnum.BriefingRead).ConfigureAwait(false);
+            if (br == null) return;
+            string? userId = Context(ctx).UserId;
+            if (String.IsNullOrEmpty(userId)) { await SendErrorAsync(ctx, 400, "BadRequest", "Listening progress belongs to a signed-in user.").ConfigureAwait(false); return; }
+            BriefingProgressRequest? req = await ReadBodyAsync<BriefingProgressRequest>(ctx).ConfigureAwait(false);
+            if (req == null) return;
+            if (Double.IsNaN(req.PositionSeconds) || req.PositionSeconds < 0) { await SendErrorAsync(ctx, 400, "ValidationFailed", "positionSeconds must be zero or more.").ConfigureAwait(false); return; }
+            BriefingProgress? p = await FindProgressAsync(br, userId, ctx).ConfigureAwait(false);
+            if (p == null)
+            {
+                p = new BriefingProgress { TenantId = br.TenantId, UserId = userId, BriefingId = br.Id, PositionSeconds = req.PositionSeconds, DurationSeconds = req.DurationSeconds, Completed = req.Completed };
+                try
+                {
+                    p = await Server.Database.BriefingProgress.CreateAsync(p, ctx.Token).ConfigureAwait(false);
+                }
+                catch (Npgsql.PostgresException pe) when (pe.SqlState == Npgsql.PostgresErrorCodes.UniqueViolation)
+                {
+                    p = (await FindProgressAsync(br, userId, ctx).ConfigureAwait(false))!;
+                }
+            }
+
+            p.PositionSeconds = req.PositionSeconds;
+            if (req.DurationSeconds.HasValue) p.DurationSeconds = req.DurationSeconds;
+            p.Completed = req.Completed;
+            p = await Server.Database.BriefingProgress.UpdateAsync(p, ctx.Token).ConfigureAwait(false);
+            await SendJsonAsync(ctx, 200, p).ConfigureAwait(false);
+        }
+
+        private async Task<BriefingProgress?> FindProgressAsync(Briefing br, string userId, HttpContextBase ctx)
+        {
+            return (await Server.Database.BriefingProgress.EnumerateAsync(new BriefingProgressFilter { TenantId = br.TenantId, UserId = userId, BriefingId = br.Id, PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Items.FirstOrDefault();
         }
 
         private async Task PinAsync(HttpContextBase ctx)

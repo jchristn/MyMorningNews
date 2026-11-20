@@ -177,6 +177,7 @@ namespace MyMorningNews.Server.Routes
             }
 
             if (req.AudioEnabled.HasValue) e.AudioEnabled = req.AudioEnabled.Value;
+            if (req.PushEnabled.HasValue) e.PushEnabled = req.PushEnabled.Value;
             if (req.EmailEnabled.HasValue) e.EmailEnabled = req.EmailEnabled.Value;
             if (req.Enabled.HasValue) e.Enabled = req.Enabled.Value;
             if (req.FreshResearchBeforeCompose.HasValue) e.FreshResearchBeforeCompose = req.FreshResearchBeforeCompose.Value;

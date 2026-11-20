@@ -2752,7 +2752,9 @@
         "FixedHours": "A fixed window that ends when the edition composes."
       },
       "lookbackHours": "Look-back window (hours)",
-      "lookbackHoursHelp": "From {min} to {max} hours. Since the last edition never looks further back than this."
+      "lookbackHoursHelp": "From {min} to {max} hours. Since the last edition never looks further back than this.",
+      "push": "Push notification",
+      "pushHelp": "Tell the mobile app on your devices when this edition is ready."
     },
     "topics": {
       "mode": "Topics",

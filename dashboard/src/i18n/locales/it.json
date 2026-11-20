@@ -2752,7 +2752,9 @@
         "FixedHours": "Una finestra fissa che termina quando l’edizione viene composta."
       },
       "lookbackHours": "Finestra considerata (ore)",
-      "lookbackHoursHelp": "Da {min} a {max} ore. L’opzione dall’ultima edizione non va mai più indietro di così."
+      "lookbackHoursHelp": "Da {min} a {max} ore. L’opzione dall’ultima edizione non va mai più indietro di così.",
+      "push": "Notifica push",
+      "pushHelp": "Avvisa l’app mobile sui tuoi dispositivi quando questa edizione è pronta."
     },
     "topics": {
       "mode": "Argomenti",

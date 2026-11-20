@@ -668,6 +668,15 @@ namespace MyMorningNews.Core.Helpers
         }
 
         /// <summary>
+        /// Generate a BriefingProgress identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateBriefingProgressId()
+        {
+            return Generate(IdPrefixes.BriefingProgress);
+        }
+
+        /// <summary>
         /// Generate a RequestHistory identifier.
         /// </summary>
         /// <returns>Identifier.</returns>

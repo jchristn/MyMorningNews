@@ -2752,7 +2752,9 @@
         "FixedHours": "Una ventana fija que termina cuando se redacta la edición."
       },
       "lookbackHours": "Ventana del periodo cubierto (horas)",
-      "lookbackHoursHelp": "De {min} a {max} horas. Desde la última edición nunca retrocede más que esto."
+      "lookbackHoursHelp": "De {min} a {max} horas. Desde la última edición nunca retrocede más que esto.",
+      "push": "Notificación push",
+      "pushHelp": "Avisa a la app móvil en tus dispositivos cuando esta edición esté lista."
     },
     "topics": {
       "mode": "Temas",

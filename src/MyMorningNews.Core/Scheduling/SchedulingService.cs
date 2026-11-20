@@ -44,6 +44,12 @@ namespace MyMorningNews.Core.Scheduling
         public Func<string, string, string, Exceptions.CapReachedException, CancellationToken, Task>? OnCapReached { get; set; } = null;
 
         /// <summary>
+        /// Optional notice when a run that is not a dry run ends Failed (for example a push to the owner). Errors it throws
+        /// are logged and ignored. Set by the server.
+        /// </summary>
+        public Func<Run, CancellationToken, Task>? OnRunFailed { get; set; } = null;
+
+        /// <summary>
         /// Maximum schedules or requests claimed per tick. Default 100. Minimum 1, maximum 1000.
         /// </summary>
         public int ClaimBatchSize
@@ -416,6 +422,17 @@ namespace MyMorningNews.Core.Scheduling
             run.Summary = result?.Summary;
             run.ErrorMessage = error;
             await _Database.Runs.UpdateAsync(run, CancellationToken.None).ConfigureAwait(false);
+            if (run.Status == RunStatusEnum.Failed && !run.IsDryRun && OnRunFailed != null)
+            {
+                try
+                {
+                    await OnRunFailed(run, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _Logging.Warn(_Header + "run failure notice failed: " + ex.Message);
+                }
+            }
 
             if (!run.IsDryRun)
             {

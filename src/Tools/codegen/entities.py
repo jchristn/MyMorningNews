@@ -1233,6 +1233,17 @@ ENTITIES = [
             f('SortOrder', 'int', doc='Order within the run.', default=0, sort=True),
         ],
     },
+    {
+        # Phase 16: listening position per user and briefing (PUT and GET /v1.0/api/briefings/{id}/progress).
+        'name': 'BriefingProgress', 'table': 'briefingprogress', 'prefix': 'bpr_', 'user': True,
+        'doc': 'Where a user stopped listening to a briefing, and whether they finished it.',
+        'fields': [
+            f('BriefingId', doc='Briefing.', required=True, length=64, filter=True, fk=('briefings', 'CASCADE')),
+            f('PositionSeconds', 'double', doc='Playback position in seconds.', default=0, clamp=(0, 86400)),
+            f('DurationSeconds', 'double', doc='Episode length in seconds when known.', nullable=True),
+            f('Completed', 'bool', doc='Whether the user finished listening.', default=False, filter=True),
+        ],
+    },
 ]
 
 # Prefixes for identifiers that are not codegen entities.

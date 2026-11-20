@@ -169,6 +169,11 @@ namespace MyMorningNews.Core.Models
         /// </summary>
         public DateTime LastUpdateUtc { get; set; } = DateTime.UtcNow;
 
+        /// <summary>
+        /// Send a push notification to the owner's devices when the edition is ready. Default true.
+        /// </summary>
+        public bool PushEnabled { get; set; } = true;
+
         #endregion
 
         #region Private-Members

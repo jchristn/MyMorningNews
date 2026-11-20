@@ -2752,7 +2752,9 @@
         "FixedHours": "Uma janela fixa que termina quando a edição é composta."
       },
       "lookbackHours": "Janela coberta (horas)",
-      "lookbackHoursHelp": "De {min} a {max} horas. A opção desde a última edição nunca volta mais do que isso."
+      "lookbackHoursHelp": "De {min} a {max} horas. A opção desde a última edição nunca volta mais do que isso.",
+      "push": "Notificação push",
+      "pushHelp": "Avisa o app no seu celular quando esta edição estiver pronta."
     },
     "topics": {
       "mode": "Temas",

@@ -222,6 +222,19 @@ namespace MyMorningNews.Server
                     Data = new Dictionary<string, string> { { "kind", "cap.reached" }, { "key", cap.Key } }
                 }, t).ConfigureAwait(false);
             };
+            briefings.Push = _Push;
+            scheduling.OnRunFailed = async (run, t) =>
+            {
+                if (capPush == null) return;
+                MyMorningNews.Core.Models.Topic? failedTopic = await _Database.Topics.ReadAsync(run.TenantId, run.TopicId, t).ConfigureAwait(false);
+                await capPush.SendToUserAsync(run.TenantId, run.UserId, new PushMessage
+                {
+                    Title = "A research run failed",
+                    Body = failedTopic != null ? failedTopic.Name : "One of your topics could not finish its research.",
+                    ChannelId = "account",
+                    Data = new Dictionary<string, string> { { "kind", "run.failed" }, { "topicId", run.TopicId }, { "runId", run.Id } }
+                }, t).ConfigureAwait(false);
+            };
             scheduling.MinimumIntervalForUser = async (tenantId, userId, t) =>
             {
                 decimal? limit = MyMorningNews.Core.Entitlements.EntitlementService.Limit(await entitlements.GetEffectiveAsync(tenantId, userId, t).ConfigureAwait(false), "schedule.minIntervalMinutes");

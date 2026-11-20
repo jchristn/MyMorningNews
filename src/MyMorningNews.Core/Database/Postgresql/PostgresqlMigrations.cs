@@ -216,6 +216,13 @@ namespace MyMorningNews.Core.Database.Postgresql
                     "ALTER TABLE tenants ADD COLUMN IF NOT EXISTS purgeafterutc TIMESTAMPTZ",
                     "CREATE INDEX IF NOT EXISTS ix_accounttokens_hash ON accounttokens (tokenhash)",
                     "ALTER TABLE modelendpoints DROP CONSTRAINT IF EXISTS modelendpoints_credentialid_fkey"
+                })),
+            new SchemaMigration(17, "Listening progress and the push channel per edition", Concat(
+                BriefingProgressQueries.Schema,
+                new List<string>
+                {
+                    "CREATE UNIQUE INDEX IF NOT EXISTS ux_briefingprogress_user ON briefingprogress (tenantid, userid, briefingid)",
+                    "ALTER TABLE editions ADD COLUMN IF NOT EXISTS pushenabled BOOLEAN NOT NULL DEFAULT TRUE"
                 }))
         };
 

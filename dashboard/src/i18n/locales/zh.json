@@ -2752,7 +2752,9 @@
         "FixedHours": "在期刊撰写时结束的固定时间窗口。"
       },
       "lookbackHours": "回溯窗口（小时）",
-      "lookbackHoursHelp": "{min} 到 {max} 小时。“自上一期以来”也不会超出此范围。"
+      "lookbackHoursHelp": "{min} 到 {max} 小时。“自上一期以来”也不会超出此范围。",
+      "push": "推送通知",
+      "pushHelp": "此版本准备好时，通知你设备上的移动应用。"
     },
     "topics": {
       "mode": "主题",

@@ -392,6 +392,11 @@ namespace MyMorningNews.Core.Database
         public IAccountTokenMethods AccountTokens { get; protected set; } = null!;
 
         /// <summary>
+        /// Listening progress per user and briefing.
+        /// </summary>
+        public IBriefingProgressMethods BriefingProgress { get; protected set; } = null!;
+
+        /// <summary>
         /// Embedding vectors (pgvector).
         /// </summary>
         public IEmbeddingMethods Embeddings { get; protected set; } = null!;

@@ -1430,11 +1430,11 @@ Exit: you can register Ollama and an API model, assign roles, edit a prompt, and
 ### Phase 4: Topics and the refinement wizard
 
 - [x] One-time requests (section 13.1), backend: `researchrequests` table (`rrq_`) and `/v1.0/api/requests` (create with planning, answer, replan, confirm now or at a time, cancel, convert to recurring, delete), `refinement.quick` prompt (seeded into existing tenants automatically), deliverables Report, Podcast, and Email.
-- [ ] One-time requests, clients: web `/one-time` pages and the mobile Requests screens. The run itself is picked up by Phase 5 and 6.
+- [x] One-time requests, clients: web `/one-time` pages and the mobile Requests screens. The run itself is picked up by Phase 5 and 6.
 
 - [x] Topic, dimension, constraint, and recipient models, routes, and cascades (owner or tenant administrator access, unique slugs, duplicate, pause, resume, archive).
 - [x] Refinement sessions, all wizard steps (dimensions with lock and regenerate, question rounds with follow-up, context, sources with live checks, accept, apply), resume, abandon, refine again, out-of-scope detection, and failures stored for the failure panel. The topic exists in Draft from the start, so all state is relational. Steps return the full state synchronously; SSE progress streaming moves to Phase 6 with run streaming.
-- [ ] Dashboard: Topics table, wizard (step rail, guidance, regenerate, lock, failure panel), Topic workspace Overview and Context tabs.
+- [x] Dashboard: Topics table, wizard (step rail, guidance, regenerate, lock, failure panel), Topic workspace Overview and Context tabs.
 - [x] Suites: Topics suite (10 cases) covering topics, ownership, duplicate, the full wizard, resume, out of scope, model failure, abandon, and one-time requests.
 
 Exit: "I want to learn about AI developer tools" produces dimensions, at least two rounds of questions, and a reviewable context, persisted and resumable.
@@ -1445,7 +1445,7 @@ Exit: "I want to learn about AI developer tools" produces dimensions, at least t
 - [x] MCP server registry (Voltaic client, discovery, tool toggles) and the agentic search mode for tool-capable models (`web_search`, `fetch_url`, MCP tools; capped and logged). Shipped with Phase 12 (see Phase 6).
 - [x] Search providers: SearXNG (bundled, default), Tavily and You.com through Mux.Search with vault keys, RSS and Atom from topic feeds, Hacker News (Algolia), arXiv; per-topic provider choice with tenant defaults seeded; provider test API; failures reported per provider. Hosted model web search is configured on model endpoints (Phase 6).
 - [x] `FetchService`: robots.txt checked first (cached per origin, longest-match allow and disallow), per-domain delay, CrawlSharp single-page download, HTML and PDF to Markdown with DocConverter after main-content extraction, size, type, block, and HTTP dispositions; `UrlCanonicalizer` (tracking parameters, ordering, ports, fragments, www-insensitive hash). Verified live: SearXNG results and real page fetches.
-- [ ] Dashboard: `ScheduleEditor` with next-runs preview, Search Providers page, topic Schedule and Sources tabs.
+- [x] Dashboard: `ScheduleEditor` with next-runs preview, Search Providers page, topic Schedule and Sources tabs.
 - [x] Schedules suite (8 cases: intervals, daylight saving, validation, API, scheduler tick, execution, run API, due requests).
 - [x] Search suite (8 cases: canonicalization, feed parsing, defaults, SearXNG, keyless sources, keyed sources, topic providers, fetch).
 
@@ -1470,7 +1470,7 @@ Exit: a real run against SearXNG and Ollama produces ranked, evidence-backed fin
 
 - [x] Template format, validator, directives, versioning, import and export, default templates (Morning News, Run Briefing, One-time Report).
 - [x] `BriefingComposer`, editions, the edition schedule, fresh-research lead, single-run briefings, one-time reports, HTML export. Sections whose model call fails are written as plain lists, so a briefing always arrives. An edition with no listed topics covers all active recurring topics. Morning News (daily 06:30 local) is seeded for every user.
-- [ ] Dashboard: Today, Briefings reader with inline feedback, Editions, Templates editor with live preview.
+- [x] Dashboard: Today, Briefings reader with inline feedback, Editions, Templates editor with live preview.
 - [x] Suites: Briefings (template format, safe Markdown, run briefing, templates API, edition compose with fallback, fresh research, edition schedule, pin and regenerate), Storage (local and S3 stores, retention, HTTP ranges).
 
 Exit: "Morning News" composes on schedule from the template you wrote, with citations that resolve.
@@ -1478,7 +1478,7 @@ Exit: "Morning News" composes on schedule from the template you wrote, with cita
 ### Phase 8: Audio and podcast
 
 - [x] Kokoro TTS container (with curl, now in the default stack), `ITtsProvider` (OpenAI-compatible speech), `MediaWorker`, `podcast.script` with a fallback that speaks the briefing text when no model is available, sentence-boundary segmenting by speaker, WAV joining with exact durations, ffmpeg loudness normalization and MP3 encoding (WAV when ffmpeg is missing), chapters aligned to briefing sections (Podcasting 2.0 JSON), Range serving, voices with a test sample, feed tokens (hashed, audited, revocable), podcast RSS with iTunes tags and public artwork. Audio is queued for editions with audio on, run briefings whose template turns audio on, and one-time requests with the Podcast deliverable. Migration 9.
-- [ ] Dashboard: audio player with chapters and synced section highlighting, Voices page, feed-token management in Profile.
+- [x] Dashboard: audio player with chapters and synced section highlighting, Voices page, feed-token management in Profile.
 - [x] Suites: Media (script, WAV, edition audio, script fallback, failure and retries, voices, feed).
 
 Exit: a briefing produces a playable MP3 with chapters, and a podcast app can subscribe to the private feed.
@@ -1489,7 +1489,7 @@ Exit: a briefing produces a playable MP3 with chapters, and a podcast app can su
 - [x] Layout and templates on HtmlPageBuilder (run digest, briefing published, test; run failed is defined and waits for the opt-in setting), `EmailBuilder` blocks (header, paragraph, Markdown, section, item card with source chips and feedback row, footer) with a matching text rendering, safe Markdown shared with briefings.
 - [x] Action tokens (hashed, expiring, bound to one item and its actions, invalid once the user or tenant is inactive), public feedback and unsubscribe landing pages (no JavaScript, rate limited, uniform for bad links, a GET never records unless `Email.RecordFeedbackOnClick`), suppressions and preferences, the feedback table with history (grading a prediction resolves it; Done and Snooze act on suggestions).
 - [x] Pipeline `Notify` stage (stage 15) and edition and one-time briefing email.
-- [ ] Dashboard: Email outbox and preview, Settings Email section with Send test, topic Delivery tab, Profile email preferences, charts 33 and 34.
+- [x] Dashboard: Email outbox and preview, Settings Email section with Send test, topic Delivery tab, Profile email preferences, charts 33 and 34.
 - [x] Suites: Email (builder, run digest, feedback links, unsubscribe, Mailgun delivery and retries, API, briefing email).
 
 Exit: every run sends a digest (File provider by default, Mailgun when configured). Each finding, prediction, and suggestion has working detail and feedback links, and feedback submitted from the email shows up in the dashboard with its reason.
@@ -1566,7 +1566,7 @@ Depends on Phases 8 (audio), 10 (feedback and analytics), and 14 (sign-up and ca
 - [x] Spike: `expo-audio` passed on iOS (lock-screen metadata and remote controls registered, playback continued in the background) and Android (media session and media-playback foreground service). Kept `expo-audio`. Physically locking the device and viewing the Android notification shade remain on the device testing checklist.
 - [ ] Dashboard refactor: host-agnostic `src/shared/` (API client with injected storage, base URL, and `onUnauthorized`; i18n catalog; formatters and chart math), plus `lint:shared`.
 - [x] Backend contracts built early (2026-11-19): rotating mobile refresh tokens with reuse detection, tenant-less sign-in, devices with idempotent registration and test push, `PushService` with Expo ticket handling and pruning of unregistered devices, `Push` settings, public client config. Migration 4. Mobile suite (6 cases).
-- [ ] Backend, remaining: `PushWorker` and the Push delivery channel per edition, HTTP range requests on media with bearer authentication, briefing progress (`PUT` and `GET /v1.0/api/briefings/{id}/progress`), audio fields on briefings (`mediaId`, chapters, duration), feedback `channel: "mobile"`, and the universal link association files (section 35.5). Suites: MediaRanges, Progress.
+- [x] Backend: push delivery per edition (`Edition.PushEnabled`, default on) for briefing ready, run failed, and cap reached, sent by the workers when the event happens (no separate PushWorker; dead tokens are pruned from receipts); HTTP range requests on media with bearer authentication; briefing progress (`PUT` and `GET /v1.0/api/briefings/{id}/progress`, migration 17); audio on briefing detail; feedback `channel: "Mobile"`; universal link files. Predictions-due pushes are not sent yet. Mobile suite cases Progress and Push.Events.
 - [x] Unknown endpoints return `RouteNotFound` (distinct from `NotFound` for missing records), so the app can tell an older server from a missing item.
 - [x] App foundation (2026-11-19): sign-in with server choice, tenant picker, rotating refresh tokens in the Keychain and Keystore, biometric lock; Account (profile, password, usage chart, notifications and devices, language, theme, server, About); the player (speed, skip, chapters, sleep timer, downloads, local resume); push registration and notification routing; deep and universal links; screens for Today, Topics, Insights, and one-time requests wired to the planned routes (they show "later server update" until each phase lands).
 - [ ] App, remaining as each backend phase lands: briefing reader with audio, findings and evidence, predictions, suggestions, feedback everywhere (Phases 6 to 10), the topic workspace and wizard beyond the first step, one-time request creation, editions, offline feedback queue and connection banner, `minimumAppVersion` enforcement, full translations (Phase 12).

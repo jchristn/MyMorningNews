@@ -2752,7 +2752,9 @@
         "FixedHours": "Une fenêtre fixe qui se termine au moment de la composition de l’édition."
       },
       "lookbackHours": "Fenêtre de couverture (heures)",
-      "lookbackHoursHelp": "De {min} à {max} heures. Le mode Depuis la dernière édition ne remonte jamais plus loin que cette durée."
+      "lookbackHoursHelp": "De {min} à {max} heures. Le mode Depuis la dernière édition ne remonte jamais plus loin que cette durée.",
+      "push": "Notification push",
+      "pushHelp": "Prévenir l’application mobile sur vos appareils quand cette édition est prête."
     },
     "topics": {
       "mode": "Sujets",

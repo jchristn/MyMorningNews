@@ -49,6 +49,12 @@ namespace MyMorningNews.Core.Briefings
         /// </summary>
         public Email.EmailService? Email { get; set; } = null;
 
+        /// <summary>
+        /// Push service; when set, ready edition briefings with push on notify the owner's devices. The payload carries
+        /// the briefing ID and the edition name, never briefing content.
+        /// </summary>
+        public Services.PushService? Push { get; set; } = null;
+
         #endregion
 
         #region Private-Members
@@ -471,6 +477,25 @@ namespace MyMorningNews.Core.Briefings
                 await _Database.Editions.UpdateAsync(edition, token).ConfigureAwait(false);
                 if (edition.AudioEnabled) await QueueAudioAsync(composed, MediaKindEnum.BriefingAudio, edition.VoiceProfileId, token).ConfigureAwait(false);
                 if (edition.EmailEnabled && Email != null) await Email.QueueBriefingAsync(composed, null, token).ConfigureAwait(false);
+                if (edition.PushEnabled && Push != null) await PushReadyAsync(composed, edition, token).ConfigureAwait(false);
+            }
+        }
+
+        private async Task PushReadyAsync(Briefing composed, Edition edition, CancellationToken token)
+        {
+            try
+            {
+                await Push!.SendToUserAsync(edition.TenantId, edition.UserId, new Services.PushMessage
+                {
+                    Title = edition.Name,
+                    Body = "Your briefing is ready.",
+                    ChannelId = "briefings",
+                    Data = new Dictionary<string, string> { { "kind", "briefing.ready" }, { "briefingId", composed.Id }, { "editionName", edition.Name } }
+                }, token).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (!(ex is OperationCanceledException))
+            {
+                _Logging.Warn("[BriefingService] push for briefing " + composed.Id + " failed: " + ex.Message);
             }
         }
 

@@ -2752,7 +2752,9 @@
         "FixedHours": "Tetingkap tetap yang berakhir apabila edisi disusun."
       },
       "lookbackHours": "Tetingkap liputan (jam)",
-      "lookbackHoursHelp": "Dari {min} hingga {max} jam. Pilihan sejak edisi terakhir tidak akan melihat lebih jauh daripada ini."
+      "lookbackHoursHelp": "Dari {min} hingga {max} jam. Pilihan sejak edisi terakhir tidak akan melihat lebih jauh daripada ini.",
+      "push": "Pemberitahuan tolak",
+      "pushHelp": "Beritahu aplikasi mudah alih pada peranti anda apabila edisi ini sedia."
     },
     "topics": {
       "mode": "Topik",

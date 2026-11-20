@@ -3,8 +3,10 @@ namespace Test.Shared.Suites
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
+    using MyMorningNews.Core.Enums;
     using MyMorningNews.Core.Models;
     using MyMorningNews.Core.Requests;
     using MyMorningNews.Core.Responses;
@@ -33,6 +35,8 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "Refresh.Logout", "Logout revokes the refresh token", RefreshLogoutAsync),
                 Cases.Case(S, "Devices.Lifecycle", "Devices register idempotently, are private to their owner, and are removed", DevicesAsync),
                 Cases.Case(S, "Devices.Push", "Push sends through Expo and prunes unregistered devices", PushAsync),
+                Cases.Case(S, "Progress", "Listening progress saves per user and briefing, resumes, and stays private", ProgressAsync),
+                Cases.Case(S, "Push.Events", "A failed run pushes its topic ID to the owner, and editions keep a push switch", PushEventsAsync),
                 Cases.Case(S, "ClientConfig", "Client config is public and carries links and the copyright", ClientConfigAsync, "fast")
             });
         }
@@ -164,6 +168,49 @@ namespace Test.Shared.Suites
             PushResult off = await server.Context.Push.SendToUserAsync(t.Id, user.User.Id, new PushMessage { Title = "x", Body = "y" }, token).ConfigureAwait(false);
             server.Context.SettingsService.Current.Push.Enabled = true;
             Assert.Equal(0, off.Accepted, "disabled push sends nothing");
+        }
+
+        private static async Task ProgressAsync(CancellationToken token)
+        {
+            MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+            TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
+            Tenant t = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
+            TestUser owner = await TestFixtures.CreateUserAsync(admin, t.Id, false, token).ConfigureAwait(false);
+            TestUser other = await TestFixtures.CreateUserAsync(admin, t.Id, false, token).ConfigureAwait(false);
+            Briefing b = await server.Context.Database.Briefings.CreateAsync(new Briefing { TenantId = t.Id, UserId = owner.User.Id, Kind = BriefingKindEnum.OneTime, Title = "Progress briefing", Status = BriefingStatusEnum.Ready }, token).ConfigureAwait(false);
+            string path = "/v1.0/api/briefings/" + b.Id + "/progress";
+            BriefingProgress empty = (await owner.Client.GetAsync(path, token).ConfigureAwait(false)).Expect(200, "nothing saved").Json<BriefingProgress>();
+            Assert.True(empty.PositionSeconds == 0 && !empty.Completed, "starts at zero");
+            (await owner.Client.PutAsync(path, new { positionSeconds = -5 }, token).ConfigureAwait(false)).Expect(400, "negative position");
+            (await owner.Client.PutAsync(path, new { positionSeconds = 42.5, durationSeconds = 600, completed = false }, token).ConfigureAwait(false)).Expect(200, "save");
+            BriefingProgress saved = (await owner.Client.PutAsync(path, new { positionSeconds = 120, completed = false }, token).ConfigureAwait(false)).Expect(200, "update").Json<BriefingProgress>();
+            Assert.True(saved.PositionSeconds == 120 && saved.DurationSeconds == 600, "updated in place, duration kept");
+            BriefingProgress read = (await owner.Client.GetAsync(path, token).ConfigureAwait(false)).Expect(200, "read").Json<BriefingProgress>();
+            Assert.True(read.PositionSeconds == 120 && read.Id == saved.Id, "resumes where it stopped");
+            Assert.Equal(1L, await server.Context.Database.BriefingProgress.CountAsync(new MyMorningNews.Core.Requests.BriefingProgressFilter { TenantId = t.Id, BriefingId = b.Id }, token).ConfigureAwait(false), "one row per user and briefing");
+            (await other.Client.GetAsync(path, token).ConfigureAwait(false)).Expect(404, "another member cannot see it");
+        }
+
+        private static async Task PushEventsAsync(CancellationToken token)
+        {
+            MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+            server.Context.SettingsService.Current.Push.ExpoPushUrl = StubModelServer.Shared.BaseUrl + "/push/send";
+            TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
+            Tenant t = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
+            TestUser user = await TestFixtures.CreateUserAsync(admin, t.Id, false, token).ConfigureAwait(false);
+            await user.Client.PostAsync("/v1.0/api/devices", new DeviceRegisterRequest { ExpoPushToken = "ExponentPushToken[live-" + Guid.NewGuid().ToString("N").Substring(0, 8) + "]", Platform = "android" }, token).ConfigureAwait(false);
+            Topic topic = (await user.Client.PostAsync("/v1.0/api/topics", new { name = "Push topic" }, token).ConfigureAwait(false)).Expect(201, "topic").Json<Topic>();
+            int before = StubModelServer.Shared.PushRequests.Count;
+            Assert.True(server.Context.Scheduling.OnRunFailed != null, "the server wires run failure notices");
+            await server.Context.Scheduling.OnRunFailed!(new Run { Id = "run_test", TenantId = t.Id, TopicId = topic.Id, UserId = user.User.Id, Status = RunStatusEnum.Failed }, token).ConfigureAwait(false);
+            string sent = StubModelServer.Shared.PushRequests.Skip(before).First();
+            Assert.True(sent.Contains("\"kind\":\"run.failed\"", StringComparison.Ordinal) && sent.Contains(topic.Id, StringComparison.Ordinal), "run failure push: " + sent);
+
+            Edition e = (await user.Client.PostAsync("/v1.0/api/editions", new { name = "Morning" }, token).ConfigureAwait(false)).Expect(201, "edition").Json<System.Text.Json.JsonElement>().GetProperty("edition").Deserialize<Edition>(MyMorningNews.Core.Serialization.Serializer.Options)!;
+            Assert.True(e.PushEnabled, "push on by default");
+            (await user.Client.PutAsync("/v1.0/api/editions/" + e.Id, new { pushEnabled = false }, token).ConfigureAwait(false)).Expect(200, "turn push off");
+            Edition off = (await server.Context.Database.Editions.ReadAsync(t.Id, e.Id, token).ConfigureAwait(false))!;
+            Assert.True(!off.PushEnabled, "push switch saved");
         }
 
         private static async Task ClientConfigAsync(CancellationToken token)

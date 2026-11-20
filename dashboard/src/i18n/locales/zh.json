@@ -47,7 +47,9 @@
     "requestId": "请求 ID",
     "server": "服务器报告了一个错误。",
     "tooMany": "请求过多。请稍候再试。",
-    "unauthorized": "您的会话已失效。请重新登录。"
+    "unauthorized": "您的会话已失效。请重新登录。",
+    "capReached": "已达到套餐限制。",
+    "egressBlocked": "该地址位于私有网络中，此服务器不允许访问。"
   },
   "access": {
     "deniedTitle": "拒绝访问",
@@ -368,8 +370,14 @@
     "subtitle": "登录您的工作区",
     "tagline": "研究您关心的主题，每天醒来都能看到一份越来越好的简报。",
     "tenant": "租户",
-    "tenantHelp": "租户 ID。新安装请使用 default。",
-    "title": "欢迎回来"
+    "title": "欢迎回来",
+    "tenantOptionalHelp": "可选。留空时，我们会根据您的电子邮件查找工作区。",
+    "chooseTenant": "工作区",
+    "chooseTenantHelp": "您的电子邮件属于多个工作区。请选择一个后重新登录。",
+    "unverifiedTitle": "请先确认您的电子邮件。",
+    "unverifiedMessage": "打开我们发送给您的链接，或申请一个新链接。",
+    "forgot": "忘记密码？",
+    "createAccount": "创建账户"
   },
   "home": {
     "summary": "以下是您服务器上的最新动态。",
@@ -1973,6 +1981,13 @@
       "brief": "概要与受众",
       "sourcesHelp": "每次运行除网络搜索外，还会读取订阅源和种子页面。",
       "searchProvidersLater": "为每个主题选择搜索提供商的功能将随搜索提供商页面推出。"
+    },
+    "agentic": {
+      "title": "智能体搜索",
+      "help": "开启后，研究模型会自行搜索和阅读网页，并可调用您在下方允许的工具。它选取的所有内容仍需经过引文验证。运行成本可能更高。",
+      "enable": "为此主题使用智能体搜索",
+      "tools": "允许的 MCP 工具",
+      "noTools": "尚未开启任何 MCP 工具。"
     }
   },
   "wizard": {
@@ -2151,7 +2166,8 @@
         "queries": "查询",
         "results": "结果",
         "details": "详情",
-        "calls": "模型调用"
+        "calls": "模型调用",
+        "tools": "工具调用"
       },
       "contextHash": "上下文快照"
     },
@@ -2251,6 +2267,17 @@
       "newMessage": "从头为此主题排队一次新运行？搜索和抓取结果不会保留，因此每个阶段都会重新运行，并产生计入你用量的模型调用。",
       "resumeQueued": "已从 {stage} 重新排队运行",
       "newQueued": "新运行已排队"
+    },
+    "tools": {
+      "title": "工具调用",
+      "emptyTitle": "无工具调用",
+      "emptyMessage": "此次运行未使用智能体搜索。",
+      "tool": "工具",
+      "arguments": "参数",
+      "result": "结果",
+      "duration": "用时",
+      "failed": "失败",
+      "characters": "{count, plural, other {# 个字符}}"
     }
   },
   "oneTime": {
@@ -3332,6 +3359,32 @@
       "codeHelp": "你获得的优惠码。若优惠码对应你当前已有的套餐，则会在当前套餐结束后开始。",
       "redeem": "兑换",
       "redeemed": "优惠码已兑换。你现在拥有 {plan}。"
+    },
+    "title": "账户",
+    "usage": {
+      "summary": "{plan} 套餐。每月限制将于 {date} 重置。",
+      "cost": "本月研究预算",
+      "topics": "主题",
+      "runsToday": "今日运行",
+      "audio": "本月音频分钟数",
+      "noAudio": "您的套餐不包含音频。",
+      "schedule": "主题最多每 {minutes} 分钟运行一次。",
+      "ofLimit": "{used} / {max}",
+      "noLimit": "{used}（无限制）"
+    },
+    "export": {
+      "button": "下载我的数据",
+      "working": "正在准备...",
+      "help": "下载内容为 ZIP 文件，包含您的个人资料、主题、发现、预测、建议、反馈，以及每份 Markdown 格式的简报。"
+    },
+    "delete": {
+      "button": "删除我的账户",
+      "title": "要删除您的账户吗？",
+      "message": "所有会话将立即退出登录。宽限期结束后，您的账户和数据将被删除；在此之前登录即可保留。",
+      "typeEmail": "输入您的电子邮件以确认",
+      "mismatch": "该电子邮件与您的账户不匹配。",
+      "confirm": "删除我的账户",
+      "scheduled": "您的账户将于 {date} 删除。在此之前登录即可保留。"
     }
   },
   "email": {
@@ -3745,6 +3798,103 @@
     "empty": {
       "title": "暂无来源",
       "message": "运行为你的某个主题搜索网络并抓取页面后，来源会显示在这里。"
+    }
+  },
+  "auth": {
+    "resend": "发送新链接",
+    "resent": "如果该地址有未确认的账户，新链接正在发送中。",
+    "backToSignIn": "返回登录",
+    "haveAccount": "已有账户？登录",
+    "passwordHelp": "至少 {count} 个字符。",
+    "signup": {
+      "title": "创建您的账户",
+      "subtitle": "告诉我们您想持续关注什么，每天醒来就能看到为您定制的简报。",
+      "closed": "此服务器未开放注册。请向管理员申请账户。",
+      "displayName": "您的姓名",
+      "codeHelp": "可选。您获得的优惠码。",
+      "acceptTerms": "我接受",
+      "terms": "服务条款",
+      "and": "和",
+      "privacy": "隐私政策",
+      "confirmAge": "我已年满 {age} 岁。",
+      "create": "创建账户",
+      "creating": "正在创建您的账户...",
+      "checkEmailTitle": "请查收电子邮件",
+      "checkEmail": "我们已向 {email} 发送了一个链接。打开它确认您的地址，然后登录。",
+      "readyTitle": "您的账户已就绪",
+      "ready": "登录以创建您的第一个主题。"
+    },
+    "verify": {
+      "title": "确认您的电子邮件",
+      "done": "您的电子邮件已确认。现在可以登录了。",
+      "failed": "此链接已过期或已被使用。请输入您的电子邮件以获取新链接。"
+    },
+    "forgot": {
+      "title": "重置密码",
+      "subtitle": "输入您的电子邮件，我们会发送一个链接，供您设置新密码。",
+      "send": "发送重置链接",
+      "sent": "如果 {email} 有账户，重置链接正在发送中。该链接在一小时内有效。"
+    },
+    "reset": {
+      "title": "设置新密码",
+      "save": "保存新密码",
+      "done": "您的密码已更改，其他所有会话均已退出登录。",
+      "noToken": "此页面需要使用重置邮件中的链接。",
+      "requestNew": "申请新的重置链接"
+    }
+  },
+  "mcpServers": {
+    "about": "注册远程 MCP 服务器，供智能体研究调用其工具。先发现服务器的工具，开启您信任的工具，然后在主题中允许使用它们。",
+    "created": "服务器已注册。",
+    "test": "测试连接",
+    "testOk": "已连接。该服务器提供 {count} 个工具。",
+    "testFailed": "无法连接：{error}",
+    "discover": "发现工具",
+    "discovered": "已保存 {count} 个工具。",
+    "columns": {
+      "name": "名称",
+      "transport": "传输方式",
+      "tools": "工具",
+      "discovered": "上次发现",
+      "status": "状态"
+    },
+    "status": {
+      "error": "错误"
+    },
+    "transports": {
+      "StreamableHttp": "Streamable HTTP",
+      "Sse": "服务器发送事件 (SSE)"
+    },
+    "empty": {
+      "title": "尚无 MCP 服务器",
+      "message": "添加服务器，让智能体研究使用其工具。"
+    },
+    "form": {
+      "createTitle": "添加 MCP 服务器",
+      "editTitle": "编辑 MCP 服务器",
+      "url": "URL",
+      "urlHelp": "服务器的 http 或 https 端点。不支持本地 stdio 服务器。",
+      "credential": "凭据",
+      "credentialHelp": "如果服务器需要，每次请求都会附带的保管库凭据。",
+      "noCredential": "无",
+      "headerName": "标头",
+      "headerPrefix": "前缀",
+      "headerPrefixHelp": "密钥前面的文本，例如“Bearer ”。",
+      "urlPlaceholder": "https://mcp.example.com/mcp"
+    },
+    "tools": {
+      "action": "工具",
+      "title": "工具",
+      "none": "尚未发现任何工具。请使用“发现工具”。",
+      "name": "工具",
+      "description": "描述",
+      "enabled": "开启",
+      "toggle": "允许 {name}",
+      "help": "只有已开启的工具才能在主题中被允许使用。"
+    },
+    "delete": {
+      "title": "要移除此 MCP 服务器吗？",
+      "message": "要移除 {name} 及其工具吗？已允许这些工具的主题将停止使用它们。"
     }
   }
 }

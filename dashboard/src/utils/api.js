@@ -1092,6 +1092,10 @@ export class ApiClient {
   getAnalytics(report, query) {
     return this._request('GET', '/v1.0/api/analytics/' + enc(report), { query });
   }
+  // Runs report (charts 2 to 5 and 21 to 24). query: { topicId, from, to, userId, all, timeZone }.
+  getRunsAnalytics(query) {
+    return this._request('GET', '/v1.0/api/analytics/runs', { query });
+  }
 
   // API Explorer: returns the raw Response so the explorer can show status, headers, timing, and streams.
   async executeExplorer({ method, path, query, headers, body, signal }) {

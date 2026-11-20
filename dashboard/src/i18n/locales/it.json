@@ -3953,5 +3953,59 @@
       "none": "Nessun provider di ricerca configurato.",
       "useDefaults": "Usa i predefiniti"
     }
+  },
+  "runCharts": {
+    "topic": "Argomento",
+    "status": {
+      "title": "Esecuzioni nel tempo per stato",
+      "help": "Esecuzioni di ogni giorno, in base a come sono terminate.",
+      "total": "Esecuzioni totali: {count, number}"
+    },
+    "stages": {
+      "title": "Durata delle esecuzioni per fase",
+      "help": "Le barre mostrano la mediana (p50); le linee arrivano al 95° percentile (p95).",
+      "pair": "{p50} / {p95}",
+      "p50": "Mediana (p50)",
+      "p95": "95° percentile (p95)",
+      "mean": "Media",
+      "max": "Più lunga",
+      "count": "Fasi misurate",
+      "failed": "Non riuscite"
+    },
+    "tiers": {
+      "title": "Risultati per esecuzione e livello",
+      "help": "Le esecuzioni più recenti del periodo, esclusi i duplicati. Seleziona un'esecuzione per vederne i risultati."
+    },
+    "scores": {
+      "title": "Distribuzione del punteggio di pertinenza",
+      "help": "Risultati per punteggio di pertinenza composito, esclusi i duplicati.",
+      "bucket": "Da {from, number} a {to, number}",
+      "findings": "Risultati"
+    },
+    "activity": {
+      "title": "Attività per giorno e ora",
+      "help": "Esecuzioni avviate in ogni ora della settimana, in {zone}."
+    },
+    "novelty": {
+      "title": "Andamento della novità",
+      "help": "Quota dei candidati di ogni esecuzione che ripetevano risultati precedenti. Più è bassa, maggiore è la novità.",
+      "share": "Quota di duplicati",
+      "duplicates": "Duplicati",
+      "newFindings": "Nuovi risultati"
+    },
+    "sources": {
+      "title": "Fonti esaminate, recuperate e usate",
+      "help": "Per le esecuzioni più recenti: risultati di ricerca esaminati, pagine recuperate e fonti alla base di un risultato che ti è stato mostrato. Seleziona un'esecuzione per vederne le fonti.",
+      "used": "Usata in un risultato",
+      "fetchedOnly": "Recuperata, non usata",
+      "examinedOnly": "Esaminata, non recuperata",
+      "examined": "Esaminate",
+      "fetched": "Recuperate"
+    },
+    "providers": {
+      "title": "Resa dei provider di ricerca",
+      "help": "Quota dei risultati di ogni provider che hanno portato a un risultato pari o superiore alla soglia di visualizzazione.",
+      "label": "{provider} ({used} su {results})"
+    }
   }
 }

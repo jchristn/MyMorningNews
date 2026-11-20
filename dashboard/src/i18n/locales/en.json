@@ -3953,5 +3953,59 @@
       "none": "No search providers are set up yet.",
       "useDefaults": "Use the defaults"
     }
+  },
+  "runCharts": {
+    "topic": "Topic",
+    "status": {
+      "title": "Runs over time by status",
+      "help": "Runs each day, by how they ended.",
+      "total": "Total runs: {count, number}"
+    },
+    "stages": {
+      "title": "Run duration by stage",
+      "help": "Bars show the median (p50); lines reach the 95th percentile (p95).",
+      "pair": "{p50} / {p95}",
+      "p50": "Median (p50)",
+      "p95": "95th percentile (p95)",
+      "mean": "Mean",
+      "max": "Longest",
+      "count": "Stages measured",
+      "failed": "Failed"
+    },
+    "tiers": {
+      "title": "Findings per run by tier",
+      "help": "The latest runs in the range, duplicates left out. Select a run to see its findings."
+    },
+    "scores": {
+      "title": "Relevance score distribution",
+      "help": "Findings by composite relevance score, duplicates left out.",
+      "bucket": "{from, number} to {to, number}",
+      "findings": "Findings"
+    },
+    "activity": {
+      "title": "Activity by day and hour",
+      "help": "Runs started in each hour of the week, in {zone}."
+    },
+    "novelty": {
+      "title": "Novelty trend",
+      "help": "Share of each run's candidates that repeated earlier findings. Lower is more novel.",
+      "share": "Duplicate share",
+      "duplicates": "Duplicates",
+      "newFindings": "New findings"
+    },
+    "sources": {
+      "title": "Sources examined, fetched, and used",
+      "help": "For the latest runs: search results examined, pages fetched, and sources behind a finding you were shown. Select a run to see its sources.",
+      "used": "Used in a finding",
+      "fetchedOnly": "Fetched, not used",
+      "examinedOnly": "Examined, not fetched",
+      "examined": "Examined",
+      "fetched": "Fetched"
+    },
+    "providers": {
+      "title": "Search provider yield",
+      "help": "Share of each provider's results that led to a finding at or above the display threshold.",
+      "label": "{provider} ({used} of {results})"
+    }
   }
 }

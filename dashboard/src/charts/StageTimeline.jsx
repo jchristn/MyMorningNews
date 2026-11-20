@@ -10,7 +10,9 @@ const BOTTOM = 18;
 
 // Run stages as a timeline: one row per stage, each bar placed at the stage's offset from the run start and sized by
 // its duration, colored by status. The duration is written beside every bar and each row is focusable with a
-// tooltip, so color is never the only signal. items: [{ key, label, offsetMs, durationMs, color, durationText, lines }].
+// tooltip, so color is never the only signal. items: [{ key, label, offsetMs, durationMs, whiskerMs, color, durationText,
+// lines }]. whiskerMs (optional) draws a line from the bar's end out to offsetMs + whiskerMs, for example a p95 beside a
+// p50 bar.
 export default function StageTimeline({ items, ariaLabel, formatDuration }) {
   const [frameRef, width] = useChartWidth(560);
   const [tip, setTip] = useState(null);
@@ -18,7 +20,7 @@ export default function StageTimeline({ items, ariaLabel, formatDuration }) {
   const labelWidth = Math.min(150, Math.max(90, Math.max(0, ...items.map((s) => s.label.length)) * 7 + 12));
   const valueWidth = 64;
   const plotWidth = Math.max(60, width - labelWidth - valueWidth - 8);
-  const span = Math.max(1, ...items.map((s) => (s.offsetMs || 0) + (s.durationMs || 0)));
+  const span = Math.max(1, ...items.map((s) => (s.offsetMs || 0) + Math.max(s.durationMs || 0, s.whiskerMs || 0)));
   const height = TOP + items.length * ROW + BOTTOM;
   const x = (ms) => labelWidth + (Math.max(0, ms) / span) * plotWidth;
 
@@ -67,6 +69,12 @@ export default function StageTimeline({ items, ariaLabel, formatDuration }) {
                 {item.label}
               </text>
               <rect x={barX} y={y + (ROW - BAR) / 2} width={barWidth} height={BAR} rx="3" fill={item.color} />
+              {item.whiskerMs > (item.durationMs || 0) ? (
+                <g data-whisker={item.key} stroke={item.color} strokeWidth="1.5">
+                  <line x1={barX + barWidth} x2={x((item.offsetMs || 0) + item.whiskerMs)} y1={y + ROW / 2} y2={y + ROW / 2} />
+                  <line x1={x((item.offsetMs || 0) + item.whiskerMs)} x2={x((item.offsetMs || 0) + item.whiskerMs)} y1={y + ROW / 2 - BAR / 2} y2={y + ROW / 2 + BAR / 2} />
+                </g>
+              ) : null}
               <text x={labelWidth + plotWidth + 8} y={y + ROW / 2 + 4} fontSize="11" fill="var(--color-text)">
                 {item.durationText}
               </text>
@@ -86,6 +94,7 @@ StageTimeline.propTypes = {
       label: PropTypes.string.isRequired,
       offsetMs: PropTypes.number,
       durationMs: PropTypes.number,
+      whiskerMs: PropTypes.number,
       color: PropTypes.string.isRequired,
       durationText: PropTypes.string,
       lines: PropTypes.arrayOf(PropTypes.shape({ label: PropTypes.string, value: PropTypes.string, color: PropTypes.string }))

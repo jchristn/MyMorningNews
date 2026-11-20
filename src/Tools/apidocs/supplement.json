@@ -38,7 +38,7 @@
     "Email": "The email outbox, test and preview sends, resends, and the signed-in user's email preferences.",
     "Feedback": "Ratings and reasons on findings, predictions, suggestions, sources, domains, and briefings. Feedback drives learning and analytics.",
     "Learning": "Preferences learned from feedback (or written by hand), their review flow, and ranking weight recommendations.",
-    "Analytics": "Reports over relevance, accuracy, feedback, suggestions, reasons, quality, and email. Defaults to the caller's data for the last 90 days.",
+    "Analytics": "Reports over relevance, accuracy, feedback, suggestions, reasons, quality, email, and runs. Defaults to the caller's data for the last 90 days.",
     "Prompts": "Prompt templates by key and scope, topic overrides, version history, rollback, reset, and the prompt lab.",
     "Promotional codes": "Global administrators create, generate, and manage promotional codes that grant plans.",
     "Plans": "Global administrators manage plans, their entitlement values, and per-user plan assignments.",
@@ -163,7 +163,9 @@
     "GET /v1.0/api/analytics/suggestions:from": "Start of the window (UTC). Default 90 days before to.",
     "GET /v1.0/api/analytics/reasons:from": "Start of the window (UTC). Default 90 days before to.",
     "GET /v1.0/api/analytics/quality:from": "Start of the window (UTC). Default 90 days before to.",
-    "GET /v1.0/api/analytics/email:from": "Start of the window (UTC). Default 90 days before to."
+    "GET /v1.0/api/analytics/email:from": "Start of the window (UTC). Default 90 days before to.",
+    "GET /v1.0/api/analytics/runs:from": "Start of the window (UTC). Default 90 days before to.",
+    "GET /v1.0/api/analytics/runs:timeZone": "IANA time zone for the days and hours, for example America/New_York. Default: the caller's profile time zone, else UTC. An unknown name is refused with 400 ValidationFailed."
   },
   "samples": {
     "tenantId": "default",
@@ -293,6 +295,7 @@
     "GET /v1.0/api/analytics/reasons": {"response": "ReasonReport", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
     "GET /v1.0/api/analytics/quality": {"response": "QualityReport", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
     "GET /v1.0/api/analytics/email": {"response": "EmailReport", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
+    "GET /v1.0/api/analytics/runs": {"response": "RunsReport", "status": {"200": "OK", "400": "TenantRequired, ValidationFailed", "403": "Forbidden", "404": "NotFound"}, "notes": "Dry runs are excluded and days are gap-filled. Sources examined are the Search stage's items out, fetched are the Fetch stage's items out, and used are the distinct sources behind a non-duplicate finding at or above the display threshold. Provider yield is the share of a provider's results whose source produced such a finding in the same run. Stage percentiles interpolate linearly over finished (succeeded or failed) stage rows."},
     "GET /v1.0/api/media": {"response": "EnumerationResult<MediaAsset>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
     "GET /v1.0/api/media/{id}": {"response": "MediaDetailResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
     "DELETE /v1.0/api/media/{id}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},

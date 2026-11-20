@@ -16,6 +16,7 @@ import StatusBadge, { methodTone, statusTone } from '../components/StatusBadge.j
 import OverviewTiles from './insights/OverviewTiles.jsx';
 import { insightsQuery } from './insights/insightsData.js';
 import RequestForm from './requests/RequestForm.jsx';
+import RunCharts from './runs/RunCharts.jsx';
 
 // Headline numbers Home shows from the Insights overview, for the last OVERVIEW_DAYS days.
 const OVERVIEW_KEYS = ['runs', 'findings', 'precision', 'briefings', 'feedback', 'cost'];
@@ -126,6 +127,8 @@ export default function HomeView() {
           <OverviewTiles report={overview} keys={OVERVIEW_KEYS} testId="home-overview-tiles" />
         </section>
       ) : null}
+
+      <RunCharts charts={['status', 'activity']} rangeStorage="mymorningnews.home.runCharts" />
 
       <section className="panel home-request" data-testid="home-request">
         <h2>

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import PageHeader from '../components/PageHeader.jsx';
 import { FindingDetailBody } from './findings/FindingDetail.jsx';
 import FindingsTable from './findings/FindingsTable.jsx';
+import RunCharts from './runs/RunCharts.jsx';
 
 // Ranked findings across topics. ?runId= scopes to one run, ?finding= opens a drawer, and /findings/:id is the full page.
 function FindingsList() {
@@ -18,6 +19,7 @@ function FindingsList() {
   return (
     <div className="page">
       <PageHeader title={t('nav.items.findings')} summary={t('routes.findings.summary')} />
+      <RunCharts charts={['tiers', 'scores']} rangeStorage="mymorningnews.findings.runCharts" />
       <section className="panel">
         <FindingsTable
           key={runId || 'all'}

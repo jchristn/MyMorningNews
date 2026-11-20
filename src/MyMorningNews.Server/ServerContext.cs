@@ -151,6 +151,11 @@ namespace MyMorningNews.Server
         public MyMorningNews.Core.Analytics.AnalyticsService Analytics { get; set; } = null!;
 
         /// <summary>
+        /// Run analytics: runs by status, stage durations, findings and sources per run, and provider yield.
+        /// </summary>
+        public MyMorningNews.Core.Analytics.RunAnalyticsService RunAnalytics { get; set; } = null!;
+
+        /// <summary>
         /// Plans and plan assignments.
         /// </summary>
         public MyMorningNews.Core.Entitlements.EntitlementService Entitlements { get; set; } = null!;

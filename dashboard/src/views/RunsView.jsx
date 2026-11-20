@@ -1,16 +1,18 @@
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageHeader from '../components/PageHeader.jsx';
+import RunCharts from './runs/RunCharts.jsx';
 import RunsTable from './runs/RunsTable.jsx';
 
 // Every run the caller can see, with topic, status, and trigger filters and a detail drawer. ?id= (the email link)
-// or ?run= opens one.
+// or ?run= opens one. Above the table: runs by day and status, and stage durations (charts 2 and 3).
 export default function RunsView() {
   const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
   return (
     <div className="page">
       <PageHeader title={t('nav.items.runs')} summary={t('routes.runs.summary')} />
+      <RunCharts charts={['status', 'stages']} tenantWide rangeStorage="mymorningnews.runs.charts" />
       <section className="panel">
         <RunsTable initialRunId={params.get('id') || params.get('run')} onRunClosed={() => (params.get('id') || params.get('run')) && setParams({}, { replace: true })} />
       </section>

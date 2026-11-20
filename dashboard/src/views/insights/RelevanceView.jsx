@@ -5,11 +5,13 @@ import LineChart from '../../charts/LineChart.jsx';
 import ErrorState from '../../components/ErrorState.jsx';
 import KpiTile from '../../components/KpiTile.jsx';
 import PageHeader from '../../components/PageHeader.jsx';
+import RunCharts from '../runs/RunCharts.jsx';
 import { dayBuckets, failureBars, rateBars } from './insightsData.js';
 import { RateChart, ScopeBar, pctOrDash, useInsightsScope, useReport, useTopics } from './insightsParts.jsx';
 
 // Is ranking working? Relevance precision (share of rated findings marked relevant or somewhat) and coverage
-// (share of shown findings rated), broken down by topic, tier, domain, and dimension, plus evidence quality.
+// (share of shown findings rated), broken down by topic, tier, domain, and dimension, plus evidence quality and the
+// relevance score distribution.
 export default function RelevanceView() {
   const { t } = useTranslation();
   const f = useFormat();
@@ -68,6 +70,7 @@ export default function RelevanceView() {
           <RateChart items={failureBars(q && q.byModel)} ariaLabel={t('insights.quality.byModel')} loading={quality.loading} color="var(--chart-series-5)" />
         </ChartCard>
       </div>
+      <RunCharts charts={['scores']} scope={scope} />
     </div>
   );
 }

@@ -9,6 +9,7 @@ import KpiTile from '../components/KpiTile.jsx';
 import LoadingState from '../components/LoadingState.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
+import RunCharts from './runs/RunCharts.jsx';
 
 const INTERVALS = [0, 5000, 15000, 60000];
 
@@ -93,6 +94,7 @@ export default function HealthView() {
           </section>
         </>
       ) : null}
+      <RunCharts charts={['stages']} tenantWide rangeStorage="mymorningnews.health.runCharts" />
     </div>
   );
 }

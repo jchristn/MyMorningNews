@@ -3953,5 +3953,59 @@
       "none": "Aucun fournisseur de recherche n’est encore configuré.",
       "useDefaults": "Utiliser les valeurs par défaut"
     }
+  },
+  "runCharts": {
+    "topic": "Sujet",
+    "status": {
+      "title": "Exécutions dans le temps par statut",
+      "help": "Exécutions de chaque jour, selon leur issue.",
+      "total": "Total des exécutions : {count, number}"
+    },
+    "stages": {
+      "title": "Durée des exécutions par étape",
+      "help": "Les barres montrent la médiane (p50) ; les lignes vont jusqu'au 95e centile (p95).",
+      "pair": "{p50} / {p95}",
+      "p50": "Médiane (p50)",
+      "p95": "95e centile (p95)",
+      "mean": "Moyenne",
+      "max": "Plus longue",
+      "count": "Étapes mesurées",
+      "failed": "Échouées"
+    },
+    "tiers": {
+      "title": "Constats par exécution et par niveau",
+      "help": "Les exécutions les plus récentes de la période, sans les doublons. Sélectionnez une exécution pour voir ses constats."
+    },
+    "scores": {
+      "title": "Répartition du score de pertinence",
+      "help": "Constats selon leur score de pertinence composite, sans les doublons.",
+      "bucket": "{from, number} à {to, number}",
+      "findings": "Constats"
+    },
+    "activity": {
+      "title": "Activité par jour et par heure",
+      "help": "Exécutions lancées à chaque heure de la semaine, en {zone}."
+    },
+    "novelty": {
+      "title": "Tendance de nouveauté",
+      "help": "Part des candidats de chaque exécution qui répétaient des constats antérieurs. Plus elle est basse, plus c'est nouveau.",
+      "share": "Part de doublons",
+      "duplicates": "Doublons",
+      "newFindings": "Nouveaux constats"
+    },
+    "sources": {
+      "title": "Sources examinées, récupérées et utilisées",
+      "help": "Pour les exécutions les plus récentes : résultats de recherche examinés, pages récupérées et sources à l'origine d'un constat qui vous a été présenté. Sélectionnez une exécution pour voir ses sources.",
+      "used": "Utilisée dans un constat",
+      "fetchedOnly": "Récupérée, non utilisée",
+      "examinedOnly": "Examinée, non récupérée",
+      "examined": "Examinées",
+      "fetched": "Récupérées"
+    },
+    "providers": {
+      "title": "Rendement des fournisseurs de recherche",
+      "help": "Part des résultats de chaque fournisseur qui ont mené à un constat au niveau du seuil d'affichage ou au-dessus.",
+      "label": "{provider} ({used} sur {results})"
+    }
   }
 }

@@ -86,7 +86,7 @@ namespace MyMorningNews.Core.Email
                 if (run.IsDryRun) return 0;
                 Topic? topic = await _Database.Topics.ReadAsync(run.TenantId, run.TopicId, token).ConfigureAwait(false);
                 if (topic == null || !topic.EmailOnRun) return 0;
-                DigestContent content = await DigestAsync(run, topic, token).ConfigureAwait(false);
+                DigestContent content = await DigestAsync(run, topic, true, token).ConfigureAwait(false);
                 if (content.Findings.Count == 0 && !topic.EmailWhenEmpty) return 0;
                 int queued = 0;
                 foreach (string recipient in await RecipientsAsync(topic, token).ConfigureAwait(false))
@@ -191,17 +191,20 @@ namespace MyMorningNews.Core.Email
         }
 
         /// <summary>
-        /// Render the digest for a run exactly as it would be sent to its owner, with sample links. Nothing is saved.
+        /// Render the digest for a run as it would be sent to its owner, with sample links. Nothing is saved. The lead
+        /// paragraph comes from the stored run summary unless <paramref name="summarize"/> is true, in which case it is
+        /// written by the model as in a real send (one model call).
         /// </summary>
         /// <param name="run">Run.</param>
+        /// <param name="summarize">Write the lead with the model. Default false (no model call).</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Preview.</returns>
         /// <exception cref="KeyNotFoundException">The topic is gone.</exception>
-        public async Task<EmailPreview> PreviewRunDigestAsync(Run run, CancellationToken token = default)
+        public async Task<EmailPreview> PreviewRunDigestAsync(Run run, bool summarize = false, CancellationToken token = default)
         {
             ArgumentNullException.ThrowIfNull(run);
             Topic topic = await _Database.Topics.ReadAsync(run.TenantId, run.TopicId, token).ConfigureAwait(false) ?? throw new KeyNotFoundException("The run's topic no longer exists.");
-            DigestContent content = await DigestAsync(run, topic, token).ConfigureAwait(false);
+            DigestContent content = await DigestAsync(run, topic, summarize, token).ConfigureAwait(false);
             User? owner = await _Database.Users.ReadAsync(run.TenantId, topic.UserId, token).ConfigureAwait(false);
             EmailMessage sample = new EmailMessage { TenantId = run.TenantId, Recipient = Normalize(owner?.Email ?? "preview@example.test"), Template = EmailTemplateEnum.RunDigest, Subject = "preview", IdempotencyKey = "preview" };
             return await RenderDigestAsync(run, topic, content, sample, topic.UserId, false, token).ConfigureAwait(false);
@@ -371,7 +374,7 @@ namespace MyMorningNews.Core.Email
             await _Database.EmailMessages.UpdateAsync(m, token).ConfigureAwait(false);
         }
 
-        private async Task<DigestContent> DigestAsync(Run run, Topic topic, CancellationToken token)
+        private async Task<DigestContent> DigestAsync(Run run, Topic topic, bool writeLead, CancellationToken token)
         {
             DigestContent c = new DigestContent();
             c.Findings = (await _Database.Findings.EnumerateAsync(new FindingFilter { TenantId = run.TenantId, RunId = run.Id, IsDuplicate = false, Hidden = false, ExcludeTier = FindingTierEnum.BelowThreshold, PageSize = 200 }, token).ConfigureAwait(false)).Items
@@ -396,13 +399,18 @@ namespace MyMorningNews.Core.Email
 
             c.Proposals = (await _Database.LearnedPreferences.EnumerateAsync(new LearnedPreferenceFilter { TenantId = run.TenantId, UserId = topic.UserId, Status = PreferenceStatusEnum.Proposed, PageSize = 20 }, token).ConfigureAwait(false)).Items
                 .Where(p => p.TopicId == null || p.TopicId == topic.Id).OrderByDescending(p => p.Confidence).Take(3).ToList();
-            c.Lead = await LeadAsync(run, topic, c, token).ConfigureAwait(false);
+            c.Lead = writeLead ? await LeadAsync(run, topic, c, token).ConfigureAwait(false) : FallbackLead(run, c);
             return c;
+        }
+
+        private static string FallbackLead(Run run, DigestContent c)
+        {
+            return FirstParagraph(run.Summary) ?? (c.Findings.Count == 0 ? "Nothing new this run." : c.Findings.Count + (c.Findings.Count == 1 ? " new finding." : " new findings."));
         }
 
         private async Task<string> LeadAsync(Run run, Topic topic, DigestContent c, CancellationToken token)
         {
-            string fallback = FirstParagraph(run.Summary) ?? (c.Findings.Count == 0 ? "Nothing new this run." : c.Findings.Count + " new findings.");
+            string fallback = FallbackLead(run, c);
             if (c.Findings.Count == 0) return fallback;
             try
             {

@@ -12,6 +12,7 @@ namespace MyMorningNews.Server.Workers
     /// </summary>
     public class SchedulerWorker
     {
+        private DateTime _LastNoticeUtc = DateTime.MinValue;
         private readonly ServerContext _Server;
 
         /// <summary>
@@ -59,6 +60,12 @@ namespace MyMorningNews.Server.Workers
             {
                 int queued = await _Server.Scheduling.TickAsync(DateTime.UtcNow, token).ConfigureAwait(false);
                 if (queued > 0) _Server.Logging.Debug("[SchedulerWorker] queued " + queued + " runs");
+                if ((DateTime.UtcNow - _LastNoticeUtc).TotalMinutes >= 15)
+                {
+                    _LastNoticeUtc = DateTime.UtcNow;
+                    int noticed = await _Server.PredictionNotices.NotifyDueAsync(DateTime.UtcNow, token).ConfigureAwait(false);
+                    if (noticed > 0) _Server.Logging.Info("[SchedulerWorker] sent due notices for " + noticed + " predictions");
+                }
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested)
             {

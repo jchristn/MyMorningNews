@@ -77,7 +77,8 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.IsDryRun,
                 obj.Active,
                 DateTime.SpecifyKind(obj.CreatedUtc, DateTimeKind.Utc),
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
+                obj.DueNotifiedUtc.HasValue ? DateTime.SpecifyKind(obj.DueNotifiedUtc.Value, DateTimeKind.Utc) : null).ConfigureAwait(false);
             return obj;
         }
 
@@ -121,7 +122,8 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.BrierScore,
                 obj.IsDryRun,
                 obj.Active,
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
+                obj.DueNotifiedUtc.HasValue ? DateTime.SpecifyKind(obj.DueNotifiedUtc.Value, DateTimeKind.Utc) : null).ConfigureAwait(false);
             if (affected < 1) throw new KeyNotFoundException("Prediction " + obj.Id + " was not found.");
             return obj;
         }
@@ -180,6 +182,13 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             return counts.FirstOrDefault();
         }
 
+        /// <inheritdoc />
+        public async Task<List<Prediction>> ListDueForNoticeAsync(DateTime nowUtc, CancellationToken token = default)
+        {
+            string sql = "SELECT " + PredictionQueries.Columns + " FROM predictions WHERE status = 'Open' AND isdryrun = FALSE AND active = TRUE AND duenotifiedutc IS NULL AND horizonutc <= $1 ORDER BY horizonutc LIMIT 200";
+            return await QueryAsync(sql, Map, token, DateTime.SpecifyKind(nowUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+        }
+
         /// <summary>
         /// Map a data reader row (columns in <see cref="PredictionQueries.Columns"/> order) to a model.
         /// </summary>
@@ -208,6 +217,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             obj.Active = reader.GetBoolean(16);
             obj.CreatedUtc = DateTime.SpecifyKind(reader.GetDateTime(17), DateTimeKind.Utc);
             obj.LastUpdateUtc = DateTime.SpecifyKind(reader.GetDateTime(18), DateTimeKind.Utc);
+            obj.DueNotifiedUtc = (reader.IsDBNull(19) ? (DateTime?)null : DateTime.SpecifyKind(reader.GetDateTime(19), DateTimeKind.Utc));
             return obj;
         }
 

@@ -190,6 +190,7 @@ namespace MyMorningNews.Server
             MyMorningNews.Core.Security.NetworkGuard.AllowedHosts = () => _Context.SettingsService.Current.Hosting.AllowedPrivateHosts;
             tenantDefaults.UsePlatformCredentials = () => _Context.SettingsService.Current.Hosting.UsePlatformCredentials;
             _Context.Accounts = new AccountDataService(_Database, briefings, _Artifacts);
+            _Context.PredictionNotices = new PredictionNoticeService(_Database, _Push!, _Logging);
             _Context.Account = new AccountService(_Database, settings, email, tenantDefaults, _Context.PromoCodes, _Context.Accounts);
             MyMorningNews.Core.Entitlements.EntitlementService entitlements = _Context.Entitlements;
             AccountService account = _Context.Account;

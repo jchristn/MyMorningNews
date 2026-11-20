@@ -223,7 +223,12 @@ namespace MyMorningNews.Core.Database.Postgresql
                 {
                     "CREATE UNIQUE INDEX IF NOT EXISTS ux_briefingprogress_user ON briefingprogress (tenantid, userid, briefingid)",
                     "ALTER TABLE editions ADD COLUMN IF NOT EXISTS pushenabled BOOLEAN NOT NULL DEFAULT TRUE"
-                }))
+                })),
+            new SchemaMigration(18, "Prediction due notices", new List<string>
+            {
+                "ALTER TABLE predictions ADD COLUMN IF NOT EXISTS duenotifiedutc TIMESTAMPTZ",
+                "CREATE INDEX IF NOT EXISTS ix_predictions_due ON predictions (horizonutc) WHERE status = 'Open' AND duenotifiedutc IS NULL"
+            })
         };
 
         private static List<string> Concat(params IReadOnlyList<string>[] parts)

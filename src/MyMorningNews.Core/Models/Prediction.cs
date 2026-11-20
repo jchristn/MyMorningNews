@@ -178,6 +178,11 @@ namespace MyMorningNews.Core.Models
         /// </summary>
         public DateTime LastUpdateUtc { get; set; } = DateTime.UtcNow;
 
+        /// <summary>
+        /// When the owner was told the prediction is due for review, or null.
+        /// </summary>
+        public DateTime? DueNotifiedUtc { get; set; } = null;
+
         #endregion
 
         #region Private-Members

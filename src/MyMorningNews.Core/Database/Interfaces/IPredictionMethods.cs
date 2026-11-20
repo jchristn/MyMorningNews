@@ -1,5 +1,6 @@
 namespace MyMorningNews.Core.Database.Interfaces
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
@@ -87,5 +88,14 @@ namespace MyMorningNews.Core.Database.Interfaces
         /// <param name="token">Cancellation token.</param>
         /// <returns>Count.</returns>
         Task<long> CountAsync(PredictionFilter filter, CancellationToken token = default);
+
+        /// <summary>
+        /// Open, non-dry-run predictions whose horizon has passed and whose owner has not been told yet, oldest first,
+        /// across all tenants. At most 200.
+        /// </summary>
+        /// <param name="nowUtc">Current time.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Predictions.</returns>
+        Task<List<Prediction>> ListDueForNoticeAsync(DateTime nowUtc, CancellationToken token = default);
     }
 }

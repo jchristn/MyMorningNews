@@ -277,7 +277,16 @@ namespace MyMorningNews.Server.Services
             if (data.Length == 0) return;
             int take = Math.Min(data.Length, max);
             truncated = data.Length > max;
-            body = Encoding.UTF8.GetString(data, 0, take);
+            if (LooksBinary(data, take))
+            {
+                body = "[binary, " + data.Length + " bytes]";
+                truncated = false;
+            }
+            else
+            {
+                body = Encoding.UTF8.GetString(data, 0, take);
+            }
+
             if (request)
             {
                 entry.RequestBody = body;
@@ -288,6 +297,20 @@ namespace MyMorningNews.Server.Services
                 entry.ResponseBody = body;
                 entry.ResponseBodyTruncated = truncated;
             }
+        }
+
+        private static bool LooksBinary(byte[] data, int length)
+        {
+            int scan = Math.Min(length, 8192);
+            int control = 0;
+            for (int i = 0; i < scan; i++)
+            {
+                byte b = data[i];
+                if (b == 0) return true;
+                if (b < 0x09 || (b > 0x0D && b < 0x20)) control++;
+            }
+
+            return scan > 0 && control * 10 > scan;
         }
 
         #endregion

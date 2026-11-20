@@ -235,7 +235,9 @@ namespace Test.Shared.Suites
 
             EmailMessage test = (await f.User.Client.PostAsync("/v1.0/api/email/test", null, token).ConfigureAwait(false)).Expect(202, "test email").Json<EmailMessage>();
             Assert.True(test.Template == EmailTemplateEnum.Test && test.Recipient == EmailService.Normalize(f.User.User.Email), "test to me");
+            long summariesBefore = await f.Server.Context.Database.LlmCalls.CountAsync(new LlmCallFilter { TenantId = run.TenantId, RunId = run.Id, PromptKey = "email.run-summary" }, token).ConfigureAwait(false);
             EmailPreview preview = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/email-preview", token).ConfigureAwait(false)).Expect(200, "preview").Json<EmailPreview>();
+            Assert.Equal(summariesBefore, await f.Server.Context.Database.LlmCalls.CountAsync(new LlmCallFilter { TenantId = run.TenantId, RunId = run.Id, PromptKey = "email.run-summary" }, token).ConfigureAwait(false), "a preview makes no model call");
             Assert.True(preview.Subject.Contains(f.Topic.Name, StringComparison.Ordinal) && preview.Html.Contains("/v1.0/public/feedback/preview", StringComparison.Ordinal), "preview with sample links");
             Assert.Equal(1, (await f.User.Client.GetAsync("/v1.0/api/email-messages?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<EmailMessage>>().Items.Count, "preview saved nothing");
 

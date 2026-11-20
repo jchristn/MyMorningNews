@@ -7140,7 +7140,7 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/email-messages/eml_mwpfbecf_Op6
 
 ### GET /v1.0/api/runs/{id}/email-preview
 
-**Render a run digest without sending it.**
+**Render a run digest without sending it.** The lead paragraph comes from the stored run summary. Pass summarize=true to have the model write it as a real send would (one model call).
 
 - Auth: `Run:Read` (`RunRead`).
 - Response: [`EmailPreview`](#emailpreview)
@@ -7148,6 +7148,10 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/email-messages/eml_mwpfbecf_Op6
 | Path parameter | Type | Postman variable |
 |---|---|---|
 | `id` | string | `{{runId}}` |
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `summarize` | boolean |  |
 
 | Status | Meaning |
 |---|---|
@@ -11358,6 +11362,7 @@ Returned by [GET /v1.0/api/predictions](#get-v10apipredictions), [POST /v1.0/api
 | `active` | boolean | Whether the record is active. |
 | `createdUtc` | date-time | UTC creation time. |
 | `lastUpdateUtc` | date-time | UTC time of the last update. |
+| `dueNotifiedUtc` | date-time | When the owner was told the prediction is due for review, or null. |
 
 #### PredictionDetailResponse
 

@@ -206,6 +206,20 @@ namespace Test.Shared.Suites
             string sent = StubModelServer.Shared.PushRequests.Skip(before).First();
             Assert.True(sent.Contains("\"kind\":\"run.failed\"", StringComparison.Ordinal) && sent.Contains(topic.Id, StringComparison.Ordinal), "run failure push: " + sent);
 
+            Run pastRun = await server.Context.Database.Runs.CreateAsync(new Run { TenantId = t.Id, TopicId = topic.Id, UserId = user.User.Id, Trigger = RunTriggerEnum.Manual, Status = RunStatusEnum.Completed }, token).ConfigureAwait(false);
+            Prediction due = await server.Context.Database.Predictions.CreateAsync(new Prediction
+            {
+                TenantId = t.Id, RunId = pastRun.Id, TopicId = topic.Id, UserId = user.User.Id, Statement = "Prices fall by spring.", Confidence = 0.6, HorizonUtc = DateTime.UtcNow.AddDays(-1), Status = PredictionStatusEnum.Open
+            }, token).ConfigureAwait(false);
+            int beforeDue = StubModelServer.Shared.PushRequests.Count;
+            await server.Context.PredictionNotices.NotifyDueAsync(DateTime.UtcNow, token).ConfigureAwait(false);
+            List<string> duePushes = StubModelServer.Shared.PushRequests.Skip(beforeDue).Where(x => x.Contains(due.Id, StringComparison.Ordinal)).ToList();
+            Assert.True(duePushes.Count == 1 && duePushes[0].Contains("\"kind\":\"prediction.due\"", StringComparison.Ordinal) && !duePushes[0].Contains("Prices fall", StringComparison.Ordinal), "one due push with the ID and no statement");
+            Assert.True((await server.Context.Database.Predictions.ReadAsync(t.Id, due.Id, token).ConfigureAwait(false))!.DueNotifiedUtc.HasValue, "marked noticed");
+            int afterDue = StubModelServer.Shared.PushRequests.Count;
+            await server.Context.PredictionNotices.NotifyDueAsync(DateTime.UtcNow, token).ConfigureAwait(false);
+            Assert.True(!StubModelServer.Shared.PushRequests.Skip(afterDue).Any(x => x.Contains(due.Id, StringComparison.Ordinal)), "never twice");
+
             Edition e = (await user.Client.PostAsync("/v1.0/api/editions", new { name = "Morning" }, token).ConfigureAwait(false)).Expect(201, "edition").Json<System.Text.Json.JsonElement>().GetProperty("edition").Deserialize<Edition>(MyMorningNews.Core.Serialization.Serializer.Options)!;
             Assert.True(e.PushEnabled, "push on by default");
             (await user.Client.PutAsync("/v1.0/api/editions/" + e.Id, new { pushEnabled = false }, token).ConfigureAwait(false)).Expect(200, "turn push off");

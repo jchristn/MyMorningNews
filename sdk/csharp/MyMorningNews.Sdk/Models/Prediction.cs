@@ -107,6 +107,11 @@ namespace MyMorningNews.Sdk.Models
         public DateTime LastUpdateUtc { get; set; }
 
         /// <summary>
+        /// When the owner was told the prediction is due for review, or null.
+        /// </summary>
+        public DateTime? DueNotifiedUtc { get; set; } = null;
+
+        /// <summary>
         /// Instantiate.
         /// </summary>
         public Prediction()

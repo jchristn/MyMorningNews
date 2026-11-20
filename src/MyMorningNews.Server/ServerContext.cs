@@ -176,6 +176,11 @@ namespace MyMorningNews.Server
         public AccountService Account { get; set; } = null!;
 
         /// <summary>
+        /// Pushes for predictions that have come due.
+        /// </summary>
+        public PredictionNoticeService PredictionNotices { get; set; } = null!;
+
+        /// <summary>
         /// Client for registered MCP servers.
         /// </summary>
         public MyMorningNews.Core.Mcp.McpClientService Mcp { get; set; } = null!;

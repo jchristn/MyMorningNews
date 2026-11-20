@@ -11,6 +11,9 @@ All notable changes to this project are documented here. The project follows [Se
 
 ### Fixed
 
+- The run email preview no longer calls a model for its lead paragraph (it uses the stored run summary); pass `summarize=true` to preview the model-written lead.
+- Request history stores binary bodies as a placeholder instead of failing on bytes PostgreSQL text cannot hold.
+
 - Settings: an unchanged round trip no longer reports list settings as changed, and list settings are described as `list` (the dashboard edits them as comma-separated values).
 - MCP servers: the unsupported SSE transport is refused instead of silently using Streamable HTTP; topics refuse tool IDs that are not tools in the tenant; deleting a server removes its tools from topics' allow-lists; a server that stops responding mid-call reports a connection failure (502) instead of 500; tool lookups honor cancellation.
 
@@ -41,6 +44,7 @@ All notable changes to this project are documented here. The project follows [Se
 - `Hosting.RequestsPerMinutePerIp` (429 with Retry-After past it, health exempt) and `Hosting.TrustForwardedFor` for the client address behind the reverse proxy. Rate limiters now forget idle keys.
 - Search Providers page and the per-topic provider choice in the dashboard; MCP Servers page, the topic agentic search setting, and run tool calls.
 - Dashboard sign-up, email verification, forgot and reset password, sign-in without a tenant, the account usage meter, data export, and account deletion. Mobile shows the usage meter on the plan screen.
+- A push when a prediction reaches its horizon and is due for review (once per prediction; migration 18).
 - Listening progress per user and briefing (`PUT` and `GET /v1.0/api/briefings/{id}/progress`, migration 17) and a push switch per edition; pushes for ready editions and failed runs.
 - One email and push per limit per month when a plan limit skips a scheduled run.
 - Hosted overlay settings (sign-up on, Free plan default, egress blocking, platform credentials) and `docs/HOSTING.md`.

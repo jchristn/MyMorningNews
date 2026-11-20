@@ -39,7 +39,8 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/resend", ResendAsync, null, openApiMetadata: Doc("Send an email again", "Email"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, b + "/{id}", DeleteAsync, null, openApiMetadata: Doc("Delete an email from the outbox", "Email"));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/email/test", TestAsync, null, openApiMetadata: Doc("Send a test email to me", "Email"));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}/email-preview", PreviewAsync, null, openApiMetadata: Doc("Render a run digest without sending it", "Email"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}/email-preview", PreviewAsync, null, openApiMetadata: Doc("Render a run digest without sending it", "Email",
+                "The lead paragraph comes from the stored run summary. Pass summarize=true to have the model write it as a real send would (one model call).").WithParameter(QueryParam("summarize", typeof(bool))));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/email-preferences", PreferencesAsync, null, openApiMetadata: Doc("My email preferences", "Email"));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.PUT, "/v1.0/api/email-preferences", UpdatePreferencesAsync, null, openApiMetadata: Doc("Change my email preferences", "Email")
                 .WithRequestBody(Body<EmailPreferencesRequest>()));
@@ -122,7 +123,7 @@ namespace MyMorningNews.Server.Routes
             if (tenantId == null) return;
             Run? run = await Server.Database.Runs.ReadAsync(tenantId, Param(ctx, "id") ?? String.Empty, ctx.Token).ConfigureAwait(false);
             if (run == null || !IsOwnerOrAdmin(ctx, run.UserId)) { await SendNotFoundAsync(ctx, "Run").ConfigureAwait(false); return; }
-            await SendJsonAsync(ctx, 200, await Server.Email.PreviewRunDigestAsync(run, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
+            await SendJsonAsync(ctx, 200, await Server.Email.PreviewRunDigestAsync(run, QueryBool(ctx, "summarize") == true, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         private async Task PreferencesAsync(HttpContextBase ctx)

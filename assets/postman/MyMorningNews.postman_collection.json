@@ -11029,6 +11029,14 @@
                 ":id",
                 "email-preview"
               ],
+              "query": [
+                {
+                  "key": "summarize",
+                  "value": "true",
+                  "description": "boolean.",
+                  "disabled": true
+                }
+              ],
               "variable": [
                 {
                   "key": "id",
@@ -11037,7 +11045,7 @@
                 }
               ]
             },
-            "description": "**Render a run digest without sending it.**\n\n- Auth: `Run:Read` (`RunRead`).\n- Response: EmailPreview\n- Status: 200 OK; 400 TenantRequired; 401 Unauthorized; 403 Forbidden; 404 NotFound\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#get-v10apirunsidemail-preview)"
+            "description": "**Render a run digest without sending it.** The lead paragraph comes from the stored run summary. Pass summarize=true to have the model write it as a real send would (one model call).\n\n- Auth: `Run:Read` (`RunRead`).\n- Response: EmailPreview\n- Status: 200 OK; 400 TenantRequired; 401 Unauthorized; 403 Forbidden; 404 NotFound\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#get-v10apirunsidemail-preview)"
           }
         }
       ]

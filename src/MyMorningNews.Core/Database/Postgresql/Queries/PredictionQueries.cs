@@ -15,7 +15,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Column list in model order.
         /// </summary>
-        public const string Columns = "id, tenantid, runid, topicid, userid, dimensionid, statement, rationale, confidence, horizonutc, status, resolvedutc, resolvedby, resolutionnote, brierscore, isdryrun, active, createdutc, lastupdateutc";
+        public const string Columns = "id, tenantid, runid, topicid, userid, dimensionid, statement, rationale, confidence, horizonutc, status, resolvedutc, resolvedby, resolutionnote, brierscore, isdryrun, active, createdutc, lastupdateutc, duenotifiedutc";
 
         /// <summary>
         /// Schema statements: table and indexes. Idempotent.
@@ -50,12 +50,12 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Insert statement with positional parameters in column order.
         /// </summary>
-        public const string Insert = "INSERT INTO predictions (" + Columns + ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)";
+        public const string Insert = "INSERT INTO predictions (" + Columns + ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)";
 
         /// <summary>
         /// Update statement. $1 is id, $2 is tenantid, then the mutable columns in model order.
         /// </summary>
-        public const string Update = "UPDATE predictions SET runid = $3, topicid = $4, userid = $5, dimensionid = $6, statement = $7, rationale = $8, confidence = $9, horizonutc = $10, status = $11, resolvedutc = $12, resolvedby = $13, resolutionnote = $14, brierscore = $15, isdryrun = $16, active = $17, lastupdateutc = $18 WHERE id = $1 AND tenantid = $2";
+        public const string Update = "UPDATE predictions SET runid = $3, topicid = $4, userid = $5, dimensionid = $6, statement = $7, rationale = $8, confidence = $9, horizonutc = $10, status = $11, resolvedutc = $12, resolvedby = $13, resolutionnote = $14, brierscore = $15, isdryrun = $16, active = $17, lastupdateutc = $18, duenotifiedutc = $19 WHERE id = $1 AND tenantid = $2";
 
         /// <summary>
         /// Select by identifier within a tenant.

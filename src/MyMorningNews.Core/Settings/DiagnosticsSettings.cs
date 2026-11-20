@@ -26,6 +26,16 @@ namespace MyMorningNews.Core.Settings
         }
 
         /// <summary>
+        /// Days to keep audit records, or 0 to keep them forever. Default 0. Minimum 0, maximum 3650.
+        /// </summary>
+        [Setting(Description = "Days to keep audit records (0 keeps them forever).", Minimum = 0, Maximum = 3650)]
+        public int AuditRetentionDays
+        {
+            get { return _AuditRetentionDays; }
+            set { _AuditRetentionDays = Math.Clamp(value, 0, 3650); }
+        }
+
+        /// <summary>
         /// Maximum characters of prompt or response stored per call. Default 200000. Minimum 1000, maximum 5000000.
         /// </summary>
         [Setting(Description = "Maximum characters stored per prompt or response.", Minimum = 1000, Maximum = 5000000)]
@@ -39,6 +49,7 @@ namespace MyMorningNews.Core.Settings
 
         #region Private-Members
 
+        private int _AuditRetentionDays = 0;
         private int _LlmPayloadRetentionDays = 14;
         private int _MaxPayloadCharacters = 200000;
 

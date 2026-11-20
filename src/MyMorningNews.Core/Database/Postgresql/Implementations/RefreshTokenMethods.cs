@@ -202,6 +202,13 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 token, sessionId, DateTime.UtcNow, reason).ConfigureAwait(false);
         }
 
+        /// <inheritdoc />
+        public async Task<int> DeleteExpiredAsync(DateTime olderThanUtc, CancellationToken token = default)
+        {
+            DateTime cutoff = DateTime.SpecifyKind(olderThanUtc, DateTimeKind.Utc);
+            return await ExecuteAsync("DELETE FROM refreshtokens WHERE expiresutc < $1 OR (revokedutc IS NOT NULL AND revokedutc < $1) OR (usedutc IS NOT NULL AND usedutc < $1)", token, cutoff).ConfigureAwait(false);
+        }
+
         /// <summary>
         /// Map a data reader row (columns in <see cref="RefreshTokenQueries.Columns"/> order) to a model.
         /// </summary>

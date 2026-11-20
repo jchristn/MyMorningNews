@@ -29,6 +29,7 @@ namespace Test.Shared.Suites
             return new TestSuiteDescriptor(S, "Health, OpenAPI, request history, audit, and settings", new[]
             {
                 Cases.Case(S, "Health", "Health reports Healthy with the database component", HealthAsync, "smoke", "fast"),
+                Cases.Case(S, "Retention", "The retention worker prunes expired refresh tokens and email action tokens, and audit records only when configured", RetentionAsync),
                 Cases.Case(S, "OpenApi", "OpenAPI documents the control-plane and observability routes", OpenApiAsync, "smoke"),
                 Cases.Case(S, "CorsPreflight", "OPTIONS preflight returns CORS headers", CorsAsync),
                 Cases.Case(S, "RequestIdHeader", "Responses carry X-Request-Id", RequestIdAsync),
@@ -38,6 +39,36 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "SettingsMaskedAndUpdated", "Settings mask secrets and apply live updates", SettingsAsync),
                 Cases.Case(S, "ServerInfo", "Server info lists bundled tools", ServerInfoAsync)
             });
+        }
+
+        private static async Task RetentionAsync(CancellationToken token)
+        {
+            MyMorningNews.Server.MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+            TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
+            Tenant t = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
+            TestUser u = await TestFixtures.CreateUserAsync(admin, t.Id, false, token).ConfigureAwait(false);
+            DateTime old = DateTime.UtcNow.AddDays(-60);
+            RefreshToken stale = await server.Context.Database.RefreshTokens.CreateAsync(new RefreshToken
+            {
+                TenantId = t.Id, UserId = u.User.Id, FamilyId = "fam_" + Guid.NewGuid().ToString("N"), TokenHash = Guid.NewGuid().ToString("N"), Client = "mobile", ExpiresUtc = old
+            }, token).ConfigureAwait(false);
+            RefreshToken live = await server.Context.Database.RefreshTokens.CreateAsync(new RefreshToken
+            {
+                TenantId = t.Id, UserId = u.User.Id, FamilyId = "fam_" + Guid.NewGuid().ToString("N"), TokenHash = Guid.NewGuid().ToString("N"), Client = "mobile", ExpiresUtc = DateTime.UtcNow.AddDays(30)
+            }, token).ConfigureAwait(false);
+            EmailActionToken expired = await server.Context.Database.EmailActionTokens.CreateAsync(new EmailActionToken
+            {
+                TenantId = t.Id, UserId = u.User.Id, EmailMessageId = "eml_seed", Kind = MyMorningNews.Core.Enums.ActionTokenKindEnum.Feedback, TargetType = MyMorningNews.Core.Enums.FeedbackTargetTypeEnum.Finding,
+                TargetId = "fnd_seed", Recipient = "someone@example.test", TokenHash = Guid.NewGuid().ToString("N"), ExpiresUtc = old
+            }, token).ConfigureAwait(false);
+            AuditRecord ancient = await server.Context.Database.AuditRecords.CreateAsync(new AuditRecord { TenantId = t.Id, Description = "Retention check" }, token).ConfigureAwait(false);
+
+            MyMorningNews.Server.Workers.RetentionWorker worker = new MyMorningNews.Server.Workers.RetentionWorker(server.Context);
+            await worker.RunOnceAsync(token).ConfigureAwait(false);
+            Assert.True(await server.Context.Database.RefreshTokens.ReadAsync(t.Id, stale.Id, token).ConfigureAwait(false) == null, "expired refresh token pruned");
+            Assert.True(await server.Context.Database.RefreshTokens.ReadAsync(t.Id, live.Id, token).ConfigureAwait(false) != null, "live refresh token kept");
+            Assert.True(await server.Context.Database.EmailActionTokens.ReadAsync(t.Id, expired.Id, token).ConfigureAwait(false) == null, "expired email action token pruned");
+            Assert.True(await server.Context.Database.AuditRecords.ReadAsync(t.Id, ancient.Id, token).ConfigureAwait(false) != null, "audit kept forever by default");
         }
 
         private static async Task HealthAsync(CancellationToken token)

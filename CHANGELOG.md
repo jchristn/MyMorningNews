@@ -61,6 +61,7 @@ All notable changes to this project are documented here. The project follows [Se
 - Findings can be pinned and hidden (`PUT /v1.0/api/findings/{id}`) and deleted; hidden findings stay out of lists, briefings, and emails. `GET /v1.0/api/evidence/{id}` and `GET /v1.0/api/runs/{id}/llm-calls`.
 - SDKs for C# (`sdk/csharp`, NuGet-ready `MyMorningNews.Sdk` for net8 and net10), JavaScript (`sdk/js`, ES module with type declarations), and Python (`sdk/python`), each with signed-request support and a harness that runs against a live server.
 - MCP server (`src/MyMorningNews.McpServer`, Voltaic): Streamable HTTP on `/mcp` (port 12105, compose profile `mcp`) and stdio, 26 tools, four Markdown resources, and two prompts, acting with the caller's own credentials.
+- The retention worker also prunes expired refresh tokens and email action tokens, and audit records when `Diagnostics.AuditRetentionDays` is set (0, the default, keeps them).
 - Run progress as server-sent events (`GET /v1.0/api/runs/{id}/events`) and retry from a stage (`POST /v1.0/api/runs/{id}/retry?fromStage=`), in the API and all three SDKs.
 - The server image includes Node.js 22 with npm, Claude Code, Codex, Gemini CLI, git, ripgrep, and Mux (versions set by build arguments). Ollama remains available in compose with `--profile ollama`.
 - Client config reports the MCP endpoint (`Rest.McpPublicUrl`), and a credential's auth mode can be changed after creation.

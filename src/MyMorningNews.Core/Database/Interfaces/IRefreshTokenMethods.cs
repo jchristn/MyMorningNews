@@ -1,5 +1,6 @@
 namespace MyMorningNews.Core.Database.Interfaces
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
@@ -121,5 +122,13 @@ namespace MyMorningNews.Core.Database.Interfaces
         /// <param name="token">Cancellation token.</param>
         /// <returns>Tokens revoked.</returns>
         Task<int> RevokeBySessionAsync(string sessionId, string reason, CancellationToken token = default);
+
+        /// <summary>
+        /// Delete refresh tokens that expired, or were used or revoked, before a cutoff.
+        /// </summary>
+        /// <param name="olderThanUtc">Cutoff.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Rows deleted.</returns>
+        Task<int> DeleteExpiredAsync(DateTime olderThanUtc, CancellationToken token = default);
     }
 }

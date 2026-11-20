@@ -108,6 +108,13 @@ namespace MyMorningNews.Server.Workers
                 int sessions = await _Server.Database.AuthSessions.DeleteExpiredAsync(DateTime.UtcNow.AddDays(-ExpiredSessionRetentionDays), token).ConfigureAwait(false);
                 int payloads = await _Server.Database.LlmCalls.ClearPayloadsAsync(DateTime.UtcNow.AddDays(-_Server.Settings.Diagnostics.LlmPayloadRetentionDays), token).ConfigureAwait(false);
                 int emails = await _Server.Database.EmailMessages.PruneAsync(DateTime.UtcNow.AddDays(-_Server.Settings.Email.MessageRetentionDays), token).ConfigureAwait(false);
+                int refresh = await _Server.Database.RefreshTokens.DeleteExpiredAsync(DateTime.UtcNow.AddDays(-ExpiredSessionRetentionDays), token).ConfigureAwait(false);
+                int actionTokens = await _Server.Database.EmailActionTokens.DeleteExpiredAsync(DateTime.UtcNow.AddDays(-ExpiredSessionRetentionDays), token).ConfigureAwait(false);
+                int audit = _Server.Settings.Diagnostics.AuditRetentionDays > 0
+                    ? await _Server.Database.AuditRecords.DeleteOlderThanAsync(null, DateTime.UtcNow.AddDays(-_Server.Settings.Diagnostics.AuditRetentionDays), token).ConfigureAwait(false)
+                    : 0;
+                if (refresh > 0 || actionTokens > 0 || audit > 0)
+                    _Server.Logging.Info("[RetentionWorker] pruned " + refresh + " refresh tokens, " + actionTokens + " email action tokens, and " + audit + " audit records");
                 if (emails > 0) _Server.Logging.Info("[RetentionWorker] pruned " + emails + " emails");
                 int artifacts = 0;
                 int batch;

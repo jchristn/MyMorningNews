@@ -184,6 +184,13 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             return rows.FirstOrDefault();
         }
 
+        /// <inheritdoc />
+        public async Task<int> DeleteExpiredAsync(DateTime olderThanUtc, CancellationToken token = default)
+        {
+            DateTime cutoff = DateTime.SpecifyKind(olderThanUtc, DateTimeKind.Utc);
+            return await ExecuteAsync("DELETE FROM emailactiontokens WHERE expiresutc < $1 OR (revokedutc IS NOT NULL AND revokedutc < $1)", token, cutoff).ConfigureAwait(false);
+        }
+
         /// <summary>
         /// Map a data reader row (columns in <see cref="EmailActionTokenQueries.Columns"/> order) to a model.
         /// </summary>

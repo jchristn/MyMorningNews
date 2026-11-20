@@ -96,5 +96,13 @@ namespace MyMorningNews.Core.Database.Interfaces
         /// <param name="token">Cancellation token.</param>
         /// <returns>Token, or null.</returns>
         Task<EmailActionToken?> ReadByHashAsync(string tokenHash, CancellationToken token = default);
+
+        /// <summary>
+        /// Delete email action tokens that expired or were revoked before a cutoff. Feedback recorded through them stays.
+        /// </summary>
+        /// <param name="olderThanUtc">Cutoff.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Rows deleted.</returns>
+        Task<int> DeleteExpiredAsync(DateTime olderThanUtc, CancellationToken token = default);
     }
 }

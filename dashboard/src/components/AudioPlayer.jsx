@@ -89,7 +89,7 @@ ProgressBar.propTypes = {
 // highlights the chapter playing and seeks on click. onSectionChange receives the briefingSectionId of the chapter
 // playing (or null) whenever it changes, so a reader can highlight that section. apiRef receives
 // { seekTo(seconds), seekToSection(sectionId), play(), pause() }. compact hides the chapter list.
-export default function AudioPlayer({ artifactId, chapters = [], durationSeconds = 0, bytes = 0, title = '', compact = false, onSectionChange = null, apiRef = null }) {
+export default function AudioPlayer({ artifactId, chapters = [], durationSeconds = 0, bytes = 0, title = '', compact = false, onSectionChange = null, apiRef = null, autoPlay = false }) {
   const { t } = useTranslation();
   const f = useFormat();
   const { apiClient } = useAuth();
@@ -101,7 +101,7 @@ export default function AudioPlayer({ artifactId, chapters = [], durationSeconds
   const [mediaDuration, setMediaDuration] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
-  const pendingPlay = useRef(false);
+  const pendingPlay = useRef(Boolean(autoPlay));
 
   useEffect(() => {
     if (!artifactId) return undefined;
@@ -294,5 +294,6 @@ AudioPlayer.propTypes = {
   title: PropTypes.string,
   compact: PropTypes.bool,
   onSectionChange: PropTypes.func,
-  apiRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({ current: PropTypes.any })])
+  apiRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({ current: PropTypes.any })]),
+  autoPlay: PropTypes.bool
 };

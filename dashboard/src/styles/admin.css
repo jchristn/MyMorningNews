@@ -1,4 +1,4 @@
-/* Plans, promotional codes, and the account plan card. Tokens only. */
+/* Plans, promotional codes, the account plan card, and email surfaces. Tokens only. */
 .promo-usage {
   display: inline-flex;
   flex-direction: column;
@@ -93,4 +93,28 @@
   .plan-feature-row input:first-child {
     grid-column: 1 / -1;
   }
+}
+
+.email-preview-frame {
+  width: 100%;
+  min-height: 60vh;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 6px);
+  background: var(--color-surface);
+}
+
+.email-preview-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 60vh;
+  overflow: auto;
+  padding: 12px;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 6px);
+}
+
+.settings-group-actions {
+  justify-content: space-between;
+  margin-bottom: 12px;
 }

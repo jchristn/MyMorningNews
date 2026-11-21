@@ -2,8 +2,8 @@
  * Expo app configuration for the My Morning News mobile app (plan section 35).
  *
  * MAINTAINER: before the first store build
- *   - MYMORNINGNEWS_MOBILE_EAS_PROJECT_ID: the EAS project id (`npx eas-cli@latest init`). No project exists yet, so
- *     the default below is an empty placeholder: push tokens and EAS Update stay off until it is set.
+ *   - MYMORNINGNEWS_MOBILE_EAS_PROJECT_ID: overrides the EAS project id (default: the project created with
+ *     `npx eas-cli@latest init`, @joel-christner/mymorningnews).
  *   - MYMORNINGNEWS_MOBILE_BUNDLE_ID: iOS bundle identifier and Android application id (default ai.latticetech.mymorningnews).
  *   - MYMORNINGNEWS_MOBILE_EAS_OWNER: the Expo account that owns the project (default joel-christner).
  *   - GOOGLE_SERVICES_JSON: path to google-services.json for Android push through FCM. EAS builds read it from the
@@ -28,9 +28,9 @@ function env(name) {
 }
 
 const BUNDLE_ID = env('MYMORNINGNEWS_MOBILE_BUNDLE_ID') || 'ai.latticetech.mymorningnews';
-// PLACEHOLDER: no EAS project exists yet. Set MYMORNINGNEWS_MOBILE_EAS_PROJECT_ID (or paste the id here) after
-// `npx eas-cli@latest init`.
-const EAS_PROJECT_ID = env('MYMORNINGNEWS_MOBILE_EAS_PROJECT_ID') || '';
+// EAS project @joel-christner/mymorningnews (created 2026-11-21 with `eas init`). The id is not a secret;
+// MYMORNINGNEWS_MOBILE_EAS_PROJECT_ID overrides it for a fork.
+const EAS_PROJECT_ID = env('MYMORNINGNEWS_MOBILE_EAS_PROJECT_ID') || 'd2070f2d-77b5-4f8f-8961-7fb5d00b6410';
 const EAS_OWNER = env('MYMORNINGNEWS_MOBILE_EAS_OWNER') || 'joel-christner';
 const LOCAL_GOOGLE_SERVICES = path.join(__dirname, 'google-services.json');
 const GOOGLE_SERVICES_JSON = env('GOOGLE_SERVICES_JSON') || (fs.existsSync(LOCAL_GOOGLE_SERVICES) ? './google-services.json' : '');

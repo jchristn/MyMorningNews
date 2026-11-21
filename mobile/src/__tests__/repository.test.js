@@ -50,6 +50,13 @@ describe('repository rules', () => {
     expect(config.android.package).toBe('ai.latticetech.mymorningnews');
     expect(config.android.permissions).toEqual(expect.arrayContaining(['android.permission.POST_NOTIFICATIONS', 'android.permission.USE_BIOMETRIC', 'android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK']));
     expect(config.android.intentFilters[0].data[0]).toMatchObject({ scheme: 'https', host: 'app.mymorningnews.ai' });
-    expect(config.updates).toEqual({ enabled: false });
+    // The EAS project exists and the signing certificate is committed, so updates are on and must be code signed.
+    expect(config.extra.eas.projectId).toBe('d2070f2d-77b5-4f8f-8961-7fb5d00b6410');
+    expect(config.updates).toMatchObject({
+      enabled: true,
+      url: 'https://u.expo.dev/d2070f2d-77b5-4f8f-8961-7fb5d00b6410',
+      codeSigningCertificate: './updates/certificate.pem',
+      codeSigningMetadata: { keyid: 'main', alg: 'rsa-v1_5-sha256' }
+    });
   });
 });

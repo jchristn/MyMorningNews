@@ -67,15 +67,20 @@ function main() {
   }
   fs.mkdirSync(args.keyDir, { recursive: true, mode: 0o700 });
   fs.mkdirSync(certificateDir, { recursive: true });
+  // expo-updates needs empty output directories, and updates/ holds a README, so generate into fresh temporary
+  // directories and move the results into place.
+  const certificateTemp = fs.mkdtempSync(path.join(os.tmpdir(), 'mmn-updates-cert-'));
+  const keyTemp = fs.mkdtempSync(path.join(os.tmpdir(), 'mmn-updates-key-'));
+  fs.chmodSync(keyTemp, 0o700);
   const result = childProcess.spawnSync(
     'npx',
     [
       'expo-updates',
       'codesigning:generate',
       '--key-output-directory',
-      args.keyDir,
+      keyTemp,
       '--certificate-output-directory',
-      certificateDir,
+      certificateTemp,
       '--certificate-validity-duration-years',
       String(args.years),
       '--certificate-common-name',
@@ -83,8 +88,18 @@ function main() {
     ],
     { cwd: projectRoot, stdio: 'inherit' },
   );
-  if (result.status !== 0) throw new Error('expo-updates codesigning:generate failed.');
-  for (const name of fs.readdirSync(args.keyDir)) fs.chmodSync(path.join(args.keyDir, name), 0o600);
+  if (result.status !== 0) {
+    fs.rmSync(certificateTemp, { recursive: true, force: true });
+    fs.rmSync(keyTemp, { recursive: true, force: true });
+    throw new Error('expo-updates codesigning:generate failed.');
+  }
+  fs.copyFileSync(path.join(certificateTemp, 'certificate.pem'), certificate);
+  for (const name of fs.readdirSync(keyTemp)) {
+    fs.copyFileSync(path.join(keyTemp, name), path.join(args.keyDir, name));
+    fs.chmodSync(path.join(args.keyDir, name), 0o600);
+  }
+  fs.rmSync(certificateTemp, { recursive: true, force: true });
+  fs.rmSync(keyTemp, { recursive: true, force: true });
   process.stdout.write('\nCertificate: ' + path.relative(process.cwd(), certificate) + ' (commit it)\n');
   process.stdout.write('Private key: ' + privateKey + ' (never commit it; back it up in the password manager)\n');
 }

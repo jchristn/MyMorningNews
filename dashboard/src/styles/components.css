@@ -484,6 +484,11 @@ legend {
   box-shadow: var(--shadow-sm);
 }
 
+.workspace-views {
+  margin: -4px 0 14px;
+  flex-wrap: wrap;
+}
+
 .tabs {
   display: flex;
   flex-wrap: wrap;

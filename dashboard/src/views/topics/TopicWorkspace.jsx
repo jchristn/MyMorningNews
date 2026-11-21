@@ -36,7 +36,7 @@ import TopicSearchProviders from './TopicSearchProviders.jsx';
 import useTopicActions from './useTopicActions.jsx';
 import { TopicContextForm } from './wizard/ContentSteps.jsx';
 
-// Workspace tabs from the plan, in order.
+// Workspace views, in order. The ?tab= value names a view, so links to a view (?tab=findings) keep working.
 export const WORKSPACE_TABS = [
   { id: 'overview' },
   { id: 'context' },
@@ -53,6 +53,20 @@ export const WORKSPACE_TABS = [
   { id: 'prompts' },
   { id: 'models' }
 ];
+
+// The five tabs, each with its views (the first opens when the tab is chosen). A tab with several views shows a small
+// switch between them.
+export const WORKSPACE_GROUPS = [
+  { id: 'overview', views: ['overview'] },
+  { id: 'runs', views: ['runs'] },
+  { id: 'results', views: ['findings', 'predictions', 'suggestions'] },
+  { id: 'insights', views: ['analytics', 'feedback', 'preferences'] },
+  { id: 'settings', views: ['context', 'schedule', 'sources', 'delivery', 'prompts', 'models'] }
+];
+
+export function groupOf(view) {
+  return WORKSPACE_GROUPS.find((g) => g.views.includes(view)) || WORKSPACE_GROUPS[0];
+}
 
 // Editions are few per user; at most this many are read to find the ones that research a topic.
 const MAX_EDITIONS = 20;
@@ -77,6 +91,7 @@ export default function TopicWorkspace() {
   const [openRunId, setOpenRunId] = useState(null);
   const requested = params.get('tab') || 'overview';
   const tab = WORKSPACE_TABS.some((x) => x.id === requested) ? requested : 'overview';
+  const group = groupOf(tab);
 
   const load = useCallback(async () => {
     setError(null);
@@ -195,12 +210,21 @@ export default function TopicWorkspace() {
       ) : null}
       <section className="panel">
         <div className="tabs" role="tablist" aria-label={t('topics.workspace.tabsLabel')}>
-          {WORKSPACE_TABS.map((x) => (
-            <button type="button" role="tab" key={x.id} aria-selected={tab === x.id} className={tab === x.id ? 'active' : ''} onClick={() => select(x.id)}>
-              {t('topics.workspace.tabs.' + x.id)}
+          {WORKSPACE_GROUPS.map((g) => (
+            <button type="button" role="tab" key={g.id} aria-selected={group.id === g.id} className={group.id === g.id ? 'active' : ''} onClick={() => select(g.views[0])}>
+              {t('topics.workspace.groups.' + g.id)}
             </button>
           ))}
         </div>
+        {group.views.length > 1 ? (
+          <div className="segmented workspace-views" role="tablist" aria-label={t('topics.workspace.viewsLabel', { group: t('topics.workspace.groups.' + group.id) })}>
+            {group.views.map((v) => (
+              <button type="button" role="tab" key={v} aria-selected={tab === v} className={tab === v ? 'active' : ''} onClick={() => select(v)}>
+                {t('topics.workspace.tabs.' + v)}
+              </button>
+            ))}
+          </div>
+        ) : null}
         <ErrorState error={error} inline onRetry={load} onDismiss={() => setError(null)} />
 
         {tab === 'overview' ? (

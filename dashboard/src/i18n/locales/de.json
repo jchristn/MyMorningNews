@@ -2140,7 +2140,15 @@
       "noBrief": "Noch keine Kurzbeschreibung. Verfeinern Sie das Thema, um eine zu entwerfen.",
       "dimensions": "Dimensionen",
       "brief": "Kurzbeschreibung und Zielgruppe",
-      "sourcesHelp": "Feeds und Startseiten werden bei jedem Lauf zusätzlich zur Websuche gelesen."
+      "sourcesHelp": "Feeds und Startseiten werden bei jedem Lauf zusätzlich zur Websuche gelesen.",
+      "groups": {
+        "overview": "Übersicht",
+        "runs": "Läufe",
+        "results": "Ergebnisse",
+        "insights": "Einblicke",
+        "settings": "Einstellungen"
+      },
+      "viewsLabel": "Ansichten in {group}"
     },
     "agentic": {
       "title": "Agentische Suche",

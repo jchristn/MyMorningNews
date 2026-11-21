@@ -148,7 +148,10 @@ describe('Topic workspace', () => {
     expect(await screen.findByRole('heading', { name: 'AI developer tools', level: 1 })).toBeInTheDocument();
     expect(screen.getByText('Weekdays at 07:00')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'What to track' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /Findings/ })).toBeInTheDocument();
+    // Five tabs; a tab's views appear only once it is chosen.
+    const tabs = screen.getByRole('tablist', { name: 'Topic sections' });
+    expect(within(tabs).getAllByRole('tab').map((x) => x.textContent)).toEqual(['Overview', 'Runs', 'Results', 'Insights', 'Settings']);
+    expect(screen.queryByRole('tab', { name: 'Findings' })).toBeNull();
   });
 
   it('edits context, shows the research tabs, the topic prompts and models, and lists the topic runs', async () => {
@@ -163,6 +166,10 @@ describe('Topic workspace', () => {
     await userEvent.click(within(group).getByRole('button', { name: 'Add' }));
     await waitFor(() => expect(client.createTopicConstraint).toHaveBeenCalledWith('top_1', { kind: 'ExcludeKeyword', value: 'webinar' }));
     expect(await within(group).findByText('webinar')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Settings' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'Context' })).toHaveAttribute('aria-selected', 'true');
+    await userEvent.click(screen.getByRole('tab', { name: 'Results' }));
+    expect(screen.getByRole('tab', { name: 'Findings' })).toHaveAttribute('aria-selected', 'true');
     await userEvent.click(screen.getByRole('tab', { name: /Predictions/ }));
     await waitFor(() => expect(client.listPredictions).toHaveBeenCalledWith(expect.objectContaining({ topicId: 'top_1' })));
     expect(await screen.findByText('No predictions yet')).toBeInTheDocument();
@@ -170,9 +177,11 @@ describe('Topic workspace', () => {
     await waitFor(() => expect(client.listFindings).toHaveBeenCalledWith(expect.objectContaining({ topicId: 'top_1', sortBy: 'relevanceScore' })));
     await userEvent.click(screen.getByRole('tab', { name: /Suggestions/ }));
     await waitFor(() => expect(client.listSuggestions).toHaveBeenCalledWith(expect.objectContaining({ topicId: 'top_1' })));
+    await userEvent.click(screen.getByRole('tab', { name: 'Insights' }));
     await userEvent.click(screen.getByRole('tab', { name: /Feedback/ }));
     expect(await screen.findByText('No feedback yet')).toBeInTheDocument();
     await waitFor(() => expect(client.listFeedback).toHaveBeenCalledWith(expect.objectContaining({ topicId: 'top_1' })));
+    await userEvent.click(screen.getByRole('tab', { name: 'Settings' }));
     await userEvent.click(screen.getByRole('tab', { name: /^Models/ }));
     expect(await screen.findByTestId('topic-models')).toBeInTheDocument();
     expect(screen.queryByText(/Arrives in Phase/)).toBeNull();

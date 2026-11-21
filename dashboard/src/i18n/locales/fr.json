@@ -2140,7 +2140,15 @@
       "noBrief": "Pas encore de cahier des charges. Affinez le sujet pour en rédiger un.",
       "dimensions": "Dimensions",
       "brief": "Cahier des charges et public",
-      "sourcesHelp": "Les flux et pages de départ sont lus à chaque exécution, en plus de la recherche web."
+      "sourcesHelp": "Les flux et pages de départ sont lus à chaque exécution, en plus de la recherche web.",
+      "groups": {
+        "overview": "Vue d’ensemble",
+        "runs": "Exécutions",
+        "results": "Résultats",
+        "insights": "Analyses",
+        "settings": "Paramètres"
+      },
+      "viewsLabel": "Vues de {group}"
     },
     "agentic": {
       "title": "Recherche agentique",

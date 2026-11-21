@@ -2140,7 +2140,15 @@
       "noBrief": "Nenhum resumo ainda. Refine o tema para criar um rascunho.",
       "dimensions": "Dimensões",
       "brief": "Resumo e público",
-      "sourcesHelp": "Feeds e páginas iniciais são lidos em toda execução, junto com a pesquisa na web."
+      "sourcesHelp": "Feeds e páginas iniciais são lidos em toda execução, junto com a pesquisa na web.",
+      "groups": {
+        "overview": "Visão geral",
+        "runs": "Execuções",
+        "results": "Resultados",
+        "insights": "Análises",
+        "settings": "Ajustes"
+      },
+      "viewsLabel": "Vistas de {group}"
     },
     "agentic": {
       "title": "Busca agêntica",

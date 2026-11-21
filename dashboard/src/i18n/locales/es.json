@@ -2140,7 +2140,15 @@
       "noBrief": "Todavía no hay planteamiento. Refina el tema para redactar uno.",
       "dimensions": "Dimensiones",
       "brief": "Planteamiento y público",
-      "sourcesHelp": "Los feeds y las páginas semilla se leen en cada ejecución, junto con la búsqueda web."
+      "sourcesHelp": "Los feeds y las páginas semilla se leen en cada ejecución, junto con la búsqueda web.",
+      "groups": {
+        "overview": "Resumen",
+        "runs": "Ejecuciones",
+        "results": "Resultados",
+        "insights": "Análisis",
+        "settings": "Ajustes"
+      },
+      "viewsLabel": "Vistas de {group}"
     },
     "agentic": {
       "title": "Búsqueda agéntica",

@@ -2140,7 +2140,15 @@
       "noBrief": "Belum ada ringkasan. Halusi topik untuk mendrafnya.",
       "dimensions": "Dimensi",
       "brief": "Ringkasan dan khalayak",
-      "sourcesHelp": "Suapan dan halaman benih dibaca pada setiap larian, bersama carian web."
+      "sourcesHelp": "Suapan dan halaman benih dibaca pada setiap larian, bersama carian web.",
+      "groups": {
+        "overview": "Gambaran keseluruhan",
+        "runs": "Larian",
+        "results": "Hasil",
+        "insights": "Cerapan",
+        "settings": "Tetapan"
+      },
+      "viewsLabel": "Paparan {group}"
     },
     "agentic": {
       "title": "Carian agentik",

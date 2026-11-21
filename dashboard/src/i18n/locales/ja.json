@@ -2140,7 +2140,15 @@
       "noBrief": "概要はまだありません。トピックを絞り込んで作成してください。",
       "dimensions": "観点",
       "brief": "概要と対象読者",
-      "sourcesHelp": "フィードと起点ページは、Web 検索とあわせて実行のたびに読み込まれます。"
+      "sourcesHelp": "フィードと起点ページは、Web 検索とあわせて実行のたびに読み込まれます。",
+      "groups": {
+        "overview": "概要",
+        "runs": "実行",
+        "results": "結果",
+        "insights": "インサイト",
+        "settings": "設定"
+      },
+      "viewsLabel": "{group} の表示"
     },
     "agentic": {
       "title": "エージェント検索",

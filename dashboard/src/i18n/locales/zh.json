@@ -2140,7 +2140,15 @@
       "noBrief": "暂无概要。细化主题即可起草。",
       "dimensions": "维度",
       "brief": "概要与受众",
-      "sourcesHelp": "每次运行除网络搜索外，还会读取订阅源和种子页面。"
+      "sourcesHelp": "每次运行除网络搜索外，还会读取订阅源和种子页面。",
+      "groups": {
+        "overview": "概览",
+        "runs": "运行",
+        "results": "结果",
+        "insights": "洞察",
+        "settings": "设置"
+      },
+      "viewsLabel": "{group}视图"
     },
     "agentic": {
       "title": "智能体搜索",

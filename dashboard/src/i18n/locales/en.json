@@ -2140,7 +2140,15 @@
       "noBrief": "No brief yet. Refine the topic to draft one.",
       "dimensions": "Dimensions",
       "brief": "Brief and audience",
-      "sourcesHelp": "Feeds and seed pages are read on every run, alongside web search."
+      "sourcesHelp": "Feeds and seed pages are read on every run, alongside web search.",
+      "groups": {
+        "overview": "Overview",
+        "runs": "Runs",
+        "results": "Results",
+        "insights": "Insights",
+        "settings": "Settings"
+      },
+      "viewsLabel": "{group} views"
     },
     "agentic": {
       "title": "Agentic search",

@@ -2140,7 +2140,15 @@
       "noBrief": "Ancora nessuna descrizione. Perfeziona l’argomento per redigerne una.",
       "dimensions": "Dimensioni",
       "brief": "Descrizione e pubblico",
-      "sourcesHelp": "Feed e pagine iniziali vengono letti a ogni esecuzione, insieme alla ricerca web."
+      "sourcesHelp": "Feed e pagine iniziali vengono letti a ogni esecuzione, insieme alla ricerca web.",
+      "groups": {
+        "overview": "Panoramica",
+        "runs": "Esecuzioni",
+        "results": "Risultati",
+        "insights": "Approfondimenti",
+        "settings": "Impostazioni"
+      },
+      "viewsLabel": "Viste di {group}"
     },
     "agentic": {
       "title": "Ricerca agentica",

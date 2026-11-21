@@ -65,7 +65,7 @@ export default function Topbar({ title, summary, onRefresh }) {
       </div>
       <div className="topbar-context">
         <span className="context-chip chip-server mono" title={serverUrl}>
-          <span className="truncate">{serverUrl}</span>
+          <span className="chip-server-url">{serverUrl}</span>
           <CopyButton value={serverUrl} labelKey="topbar.copyServerUrl" size={12} />
         </span>
         <span className="context-chip chip-tenant" title={t('topbar.tenantTitle', { tenant: identity ? identity.tenantId : '' })}>

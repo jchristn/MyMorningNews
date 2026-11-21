@@ -113,7 +113,8 @@ export const NAV_GROUPS = [
     key: 'administration',
     items: [
       { path: 'admin/tenants', key: 'tenants', icon: Building2, access: 'tenantAdmin' },
-      { path: 'admin/users', key: 'users', icon: Users, access: 'tenantAdmin' },
+      // Members see the user directory read-only; only administrators add, edit, or delete users.
+      { path: 'admin/users', key: 'users', icon: Users, access: 'all' },
       { path: 'admin/credentials', key: 'credentials', icon: Key, access: 'tenantAdmin' },
       { path: 'admin/roles', key: 'roles', icon: Shield, access: 'tenantAdmin' },
       { path: 'admin/usage', key: 'adminUsage', icon: ChartPie, access: 'admin' },

@@ -22,9 +22,12 @@ import UserPlanModal from './plans/UserPlanModal.jsx';
 
 const EMPTY = { email: '', firstName: '', lastName: '', password: '', isAdmin: false, isTenantAdmin: false, timeZone: '', locale: '', active: true };
 
+// The user directory. Members see it read-only (the list and each record); administrators also add, edit, duplicate,
+// reset passwords, review effective permissions, and delete.
 export default function UsersView() {
   const { t } = useTranslation();
-  const { apiClient, isAdmin, identity } = useAuth();
+  const { apiClient, isAdmin, isTenantAdmin, identity } = useAuth();
+  const canWrite = isTenantAdmin;
   const { addNotification } = useApp();
   const [tenantId, setTenantId] = useAdminTenant();
   const [editing, setEditing] = useState(null);
@@ -101,6 +104,11 @@ export default function UsersView() {
   return (
     <div className="page">
       <PageHeader title={t('nav.items.users')} summary={t('routes.users.summary')} actions={<TenantPicker value={tenantId} onChange={setTenantId} />} />
+      {!canWrite ? (
+        <div className="notice notice-info" data-testid="users-read-only">
+          {t('users.readOnly')}
+        </div>
+      ) : null}
       <section className="panel">
         <DataTable
           key={tenantId}
@@ -108,21 +116,27 @@ export default function UsersView() {
           columns={columns}
           fetchPage={fetchPage}
           refreshSignal={refresh}
-          onRowClick={(r) => open(r)}
+          onRowClick={(r) => (canWrite ? open(r) : setJson(r))}
           toolbar={
-            <button type="button" className="button primary small" onClick={() => open(null)}>
-              <Plus size={14} aria-hidden="true" /> {t('common.add')}
-            </button>
+            canWrite ? (
+              <button type="button" className="button primary small" onClick={() => open(null)}>
+                <Plus size={14} aria-hidden="true" /> {t('common.add')}
+              </button>
+            ) : null
           }
-          rowActions={(r) => [
-            { key: 'edit', label: t('common.edit'), icon: Pencil, onClick: () => open(r) },
-            { key: 'dup', label: t('common.duplicate'), icon: CopyPlus, onClick: () => open(r, true) },
-            { key: 'perms', label: t('users.effectivePermissions'), icon: ShieldCheck, onClick: () => setPerms(r) },
-            ...(isAdmin ? [{ key: 'plan', label: t('plans.userPanel.action'), icon: Gift, onClick: () => setPlanUser(r) }] : []),
-            { key: 'reset', label: t('users.resetPassword'), icon: KeyRound, onClick: () => open(r) },
-            { key: 'json', label: t('common.viewJson'), icon: Braces, onClick: () => setJson(r) },
-            { key: 'delete', label: t('common.delete'), icon: Trash2, danger: true, disabled: r.isProtected || (identity && identity.userId === r.id), onClick: () => setDeleting(r) }
-          ]}
+          rowActions={(r) =>
+            canWrite
+              ? [
+                { key: 'edit', label: t('common.edit'), icon: Pencil, onClick: () => open(r) },
+                { key: 'dup', label: t('common.duplicate'), icon: CopyPlus, onClick: () => open(r, true) },
+                { key: 'perms', label: t('users.effectivePermissions'), icon: ShieldCheck, onClick: () => setPerms(r) },
+                ...(isAdmin ? [{ key: 'plan', label: t('plans.userPanel.action'), icon: Gift, onClick: () => setPlanUser(r) }] : []),
+                { key: 'reset', label: t('users.resetPassword'), icon: KeyRound, onClick: () => open(r) },
+                { key: 'json', label: t('common.viewJson'), icon: Braces, onClick: () => setJson(r) },
+                { key: 'delete', label: t('common.delete'), icon: Trash2, danger: true, disabled: r.isProtected || (identity && identity.userId === r.id), onClick: () => setDeleting(r) }
+                ]
+              : [{ key: 'json', label: t('common.viewJson'), icon: Braces, onClick: () => setJson(r) }]
+          }
           emptyTitle={t('users.empty')}
         />
       </section>

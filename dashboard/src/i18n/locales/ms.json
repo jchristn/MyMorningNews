@@ -859,7 +859,8 @@
       "grants": "{count, plural, other {Berdasarkan # pemberian}}",
       "resource": "Sumber",
       "title": "Kebenaran berkesan"
-    }
+    },
+    "readOnly": "Anda boleh melihat siapa yang berada dalam ruang kerja ini. Hanya pentadbir boleh menambah, mengubah atau mengalih keluar pengguna."
   },
   "credentials": {
     "allScopes": "Semua",
@@ -1542,12 +1543,20 @@
       "overridesIntro": "Sesuatu topik boleh menjalankan peranan pada titik akhir yang berbeza daripada lalai penyewa.",
       "noOverrides": "Tiada penggantian topik.",
       "topic": "Topik",
-      "topicId": "ID topik",
-      "topicIdHelp": "ID topik yang hendak diganti.",
       "addOverride": "Tambah penggantian topik",
       "overrideAdded": "Penggantian topik disimpan",
       "deleteTitle": "Alih keluar penggantian topik",
-      "deleteMessage": "Alih keluar penggantian {role} untuk topik {topic}? Topik itu kembali kepada lalai penyewa."
+      "deleteMessage": "Alih keluar penggantian {role} untuk topik {topic}? Topik itu kembali kepada lalai penyewa.",
+      "pickTopic": "Pilih topik",
+      "topicHelp": "Topik yang menjalankan peranan ini pada titik akhir yang berbeza.",
+      "bulkLabel": "Gunakan satu titik akhir untuk setiap tugas",
+      "bulkApply": "Gunakan pada semua tugas",
+      "bulkTitle": "Gunakan satu titik akhir untuk setiap tugas",
+      "bulkMessage": "Tetapkan {name} kepada {count, plural, other {semua # tugas}} yang boleh dilayaninya? Setiap tugas mengekalkan usaha penaakulannya, dan penggantian model pada tugas tersebut dikosongkan.",
+      "bulkDone": "{name} kini melayani {count, plural, other {# tugas}}",
+      "saveAll": "Simpan semua perubahan ({count})",
+      "savedAll": "{count, plural, other {# tugasan disimpan}}",
+      "savedSome": "{saved} daripada {total} tugasan disimpan. Cuba yang selebihnya sekali lagi."
     },
     "calls": {
       "detailTitle": "Panggilan model",
@@ -2240,7 +2249,8 @@
       "draft": "Draf konteks",
       "intro": "Sunting apa-apa sahaja. Kekangan yang dikunci dan milik anda kekal selepas draf semula.",
       "redraft": "Draf semula",
-      "constraints": "Kekangan"
+      "constraints": "Kekangan",
+      "nextNeedsBrief": "Tulis atau draf ringkasan untuk meneruskan."
     },
     "sources": {
       "intro": "Suapan dan halaman benih yang dicadangkan diambil secara langsung. Yang hijau telah memberi respons.",
@@ -2268,10 +2278,10 @@
       "dimensions": "{count, plural, other {# dimensi}}",
       "constraintCount": "{kind}: {count}",
       "preview": "Larian pratonton",
-      "previewHelp": "Larian percubaan tidak menghantar e-mel dan tidak dikira dalam sejarah.",
+      "previewHelp": "Larian percubaan tidak menghantar e-mel, dan dapatannya tidak dimasukkan dalam senarai dapatan anda. Ia tetap dipaparkan dalam Larian, ditanda sebagai larian percubaan.",
       "apply": "Gunakan topik",
       "appliedToast": "{name} sudah sedia",
-      "previewQueued": "Larian percubaan dibariskan. Ikutinya dalam tab Larian topik."
+      "previewStarting": "Memulakan larian percubaan..."
     },
     "newTitle": "Topik baharu",
     "refineTitle": "Perhalusi {name}",
@@ -2398,7 +2408,19 @@
     },
     "live": {
       "streaming": "Langsung",
-      "polling": "Menyegar semula setiap beberapa saat"
+      "polling": "Menyegar semula setiap beberapa saat",
+      "queued": "Dalam baris gilir. Ia bermula apabila pekerja bebas.",
+      "running": "Sedang berjalan.",
+      "runningStage": "Sedang berjalan: {stage}.",
+      "completed": "Selesai dengan {count, plural, other {# dapatan baharu}}.",
+      "partial": "Selesai dengan amaran dan {count, plural, other {# dapatan baharu}}. Buka larian untuk melihat peringkat mana yang gagal.",
+      "failed": "Larian gagal. Bukanya untuk melihat peringkat mana yang gagal dan sebabnya.",
+      "failedReason": "Larian gagal: {reason}",
+      "skipped": "Larian dilangkau.",
+      "skippedReason": "Larian dilangkau: {reason}",
+      "cancelled": "Larian dibatalkan.",
+      "unreadable": "Kemajuan larian tidak dapat dibaca. Buka larian untuk menyemaknya.",
+      "openRun": "Buka larian"
     },
     "retry": {
       "column": "Cuba semula",
@@ -2863,7 +2885,8 @@
       "lookback": "Tempoh liputan",
       "lastComposed": "Terakhir disusun",
       "created": "Dicipta",
-      "id": "ID"
+      "id": "ID",
+      "owner": "Pemilik"
     },
     "badges": {
       "email": "E-mel",
@@ -2924,6 +2947,12 @@
       "add": "Tambah",
       "save": "Simpan topik",
       "saved": "Topik disimpan"
+    },
+    "ownerYou": "Anda",
+    "scope": {
+      "label": "Tunjukkan edisi",
+      "mine": "Milik saya",
+      "all": "Milik semua"
     }
   },
   "templates": {
@@ -3528,11 +3557,21 @@
     "delete": {
       "button": "Padam akaun saya",
       "title": "Padam akaun anda?",
-      "message": "Semua sesi dilog keluar sekarang. Akaun dan data anda dipadamkan selepas tempoh tangguh; log masuk sebelum itu akan mengekalkannya.",
+      "message": "Semua sesi dilog keluar sekarang. Selepas tempoh tangguh, akaun anda dan semua datanya (topik, taklimat, dapatan, maklum balas dan audio) dipadamkan secara kekal. Halaman seterusnya dan e-mel pengesahan memberikan tarikhnya. Log masuk sebelum itu dan pemadaman dibatalkan.",
       "typeEmail": "Taip e-mel anda untuk mengesahkan",
       "mismatch": "E-mel tidak sepadan dengan akaun anda.",
       "confirm": "Padam akaun saya",
-      "scheduled": "Akaun anda akan dipadamkan pada {date}. Log masuk sebelum itu untuk mengekalkannya."
+      "scheduled": "Akaun anda akan dipadamkan pada {date}. Log masuk sebelum itu untuk mengekalkannya.",
+      "messageDated": "Semua sesi dilog keluar sekarang. Pada {date}, akaun anda dan semua datanya (topik, taklimat, dapatan, maklum balas dan audio) dipadamkan secara kekal. Log masuk sebelum itu dan pemadaman dibatalkan.",
+      "cancelledTitle": "Pemadaman akaun anda dibatalkan.",
+      "cancelledMessage": "Dengan log masuk, akaun anda dan semua datanya dikekalkan."
+    },
+    "deleted": {
+      "title": "Akaun anda dijadualkan untuk dipadamkan",
+      "noDate": "Akaun anda akan dipadamkan apabila tempoh tangguh tamat. E-mel pengesahan memberikan tarikhnya. Log masuk sebelum itu untuk mengekalkannya.",
+      "signedOut": "Anda telah dilog keluar pada semua peranti, dan kami telah menghantar e-mel pengesahan kepada anda.",
+      "howToCancel": "Ubah fikiran? Log masuk sebelum tarikh itu dan pemadaman dibatalkan. Data anda kekal seperti sedia ada.",
+      "signIn": "Log masuk untuk mengekalkan akaun saya"
     }
   },
   "email": {
@@ -3976,7 +4015,8 @@
     "verify": {
       "title": "Sahkan e-mel anda",
       "done": "E-mel anda telah disahkan. Anda boleh log masuk sekarang.",
-      "failed": "Pautan ini tidak sah atau telah tamat tempoh. Masukkan e-mel anda untuk mendapatkan pautan baharu."
+      "failed": "Pautan ini tidak sah atau telah tamat tempoh. Masukkan e-mel anda untuk mendapatkan pautan baharu.",
+      "used": "Pautan ini telah digunakan. Jika e-mel anda telah disahkan, log masuk."
     },
     "forgot": {
       "title": "Tetapkan semula kata laluan anda",
@@ -4164,7 +4204,8 @@
       "notFound": "{name} menggunakan kelayakan tersimpan yang tidak lagi wujud.",
       "inactive": "{name} menggunakan kelayakan tersimpan yang telah dimatikan.",
       "expired": "{name} menggunakan kelayakan tersimpan yang telah tamat tempoh.",
-      "platformMissing": "{name} menggunakan kunci model platform, tetapi pelayan tidak mempunyai kunci yang dikonfigurasikan (MYMORNINGNEWS_ANTHROPIC_API_KEY)."
+      "platformMissing": "{name} menggunakan kunci model platform, tetapi pelayan tidak mempunyai kunci yang dikonfigurasikan (MYMORNINGNEWS_ANTHROPIC_API_KEY).",
+      "platformMissingUser": "{name} menggunakan kunci model kongsi pelayan ini, dan pengendali pelayan belum menyediakannya."
     },
     "fix": "Tambah kunci pada {name}",
     "view": "Lihat titik akhir model",
@@ -4173,6 +4214,7 @@
       "wizard": "Wizard meminta model mencadangkan dimensi dan soalan, jadi ia gagal pada langkah pertama sehingga masalah ini dibaiki."
     },
     "askAdmin": "Hanya pentadbir penyewa boleh menambah kunci. Minta pentadbir anda membaikinya.",
-    "badge": "Tiada kunci API"
+    "badge": "Tiada kunci API",
+    "fixOwnKey": "Gunakan kunci API anda sendiri untuk {name}"
   }
 }

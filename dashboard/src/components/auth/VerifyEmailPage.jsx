@@ -6,8 +6,8 @@ import FormField from '../FormField.jsx';
 import LoadingState from '../LoadingState.jsx';
 import AuthShell from './AuthShell.jsx';
 
-// The link from the verification email (/verify?token=...). A link that does not work (never valid, used, or expired;
-// the server does not say which) offers to send a new one.
+// The link from the verification email (/verify?token=...). A link already used (error code LinkUsed) points to
+// sign-in, since the address is most likely confirmed. Any other failure (never valid, expired) offers a new link.
 export default function VerifyEmailPage() {
   const { t } = useTranslation();
   const { apiClient } = useAuth();
@@ -27,7 +27,7 @@ export default function VerifyEmailPage() {
         if (r && r.email) setEmail(r.email);
         setState('verified');
       })
-      .catch(() => setState('failed'));
+      .catch((err) => setState(err && err.code === 'LinkUsed' ? 'used' : 'failed'));
   }, [apiClient, token]);
 
   async function resend(e) {
@@ -44,9 +44,11 @@ export default function VerifyEmailPage() {
   return (
     <AuthShell title={title}>
       <h1>{title}</h1>
-      {state === 'verified' ? (
+      {state === 'verified' || state === 'used' ? (
         <>
-          <div className="notice notice-info">{t('auth.verify.done')}</div>
+          <div className="notice notice-info" data-testid={'verify-' + state}>
+            {state === 'used' ? t('auth.verify.used') : t('auth.verify.done')}
+          </div>
           <Link to="/" className="button primary block">
             {t('login.signIn')}
           </Link>

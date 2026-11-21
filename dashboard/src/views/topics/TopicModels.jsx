@@ -81,7 +81,7 @@ export default function TopicModels({ topicId }) {
         </table>
       </div>
       <p className="small">
-        <Link to="/dashboard/models?tab=assignments">{isTenantAdmin ? t('topics.models.change') : t('topics.models.view')}</Link>
+        <Link to={'/dashboard/models?tab=assignments' + (isTenantAdmin ? '&topic=' + encodeURIComponent(topicId) : '')}>{isTenantAdmin ? t('topics.models.change') : t('topics.models.view')}</Link>
       </p>
     </div>
   );

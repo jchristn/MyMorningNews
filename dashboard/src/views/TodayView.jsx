@@ -99,7 +99,7 @@ export default function TodayView() {
     setError(null);
     try {
       await Promise.all([
-        apiClient.listEditions({ pageSize: 100, sortBy: 'name', sortDirection: 'Ascending' }).then((r) => setEditions((r && r.items) || [])),
+        apiClient.listEditions({ pageSize: 100, sortBy: 'name', sortDirection: 'Ascending', mine: true }).then((r) => setEditions((r && r.items) || [])),
         loadLatest(),
         loadPending(),
         apiClient.listBriefings({ kind: 'Run', pageSize: 5, ...NEWEST }).then((r) => setRuns((r && r.items) || [])),

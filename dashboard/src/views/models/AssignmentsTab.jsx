@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Plus, RotateCcw, Save, Trash2, TriangleAlert } from 'lucide-react';
+import { CopyCheck, Plus, RotateCcw, Save, Trash2, TriangleAlert } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -73,7 +73,41 @@ EffortSelect.propTypes = { id: PropTypes.string, value: PropTypes.string.isRequi
 
 const EMPTY_OVERRIDE = { task: 'Synthesis', topicId: '', modelEndpointId: '', modelOverride: '', reasoningEffort: '' };
 
-export default function AssignmentsTab({ endpoints, canWrite }) {
+// The tasks one endpoint can serve: every chat task when it supports chat, and Embedding when it supports embeddings.
+export function tasksForEndpoint(endpoint) {
+  if (!endpoint) return [];
+  return MODEL_TASKS.filter((task) => (task === 'Embedding' ? endpoint.supportsEmbeddings : endpoint.supportsChat));
+}
+
+// The assignment bodies that move every task an endpoint can serve onto it. Each task keeps its reasoning effort;
+// its model override is cleared, since that model name belonged to the previous endpoint.
+export function bulkAssignments(endpoint, defaults) {
+  return tasksForEndpoint(endpoint).map((task) => ({
+    task,
+    modelEndpointId: endpoint.id,
+    modelOverride: null,
+    reasoningEffort: task === 'Embedding' ? null : (defaults[task] && defaults[task].reasoningEffort) || null
+  }));
+}
+
+function TopicSelect({ id, topics, value, onChange }) {
+  const { t } = useTranslation();
+  return (
+    <select id={id} value={value} onChange={(e) => onChange(e.target.value)}>
+      <option value="">{t('models.assignments.pickTopic')}</option>
+      {topics.map((topic) => (
+        <option key={topic.id} value={topic.id}>
+          {topic.name}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+TopicSelect.propTypes = { id: PropTypes.string, topics: PropTypes.array.isRequired, value: PropTypes.string.isRequired, onChange: PropTypes.func.isRequired };
+
+// initialTopicId (from ?topic=, the topic page's link) preselects that topic for a new override.
+export default function AssignmentsTab({ endpoints, canWrite, initialTopicId }) {
   const { t } = useTranslation();
   const { apiClient } = useAuth();
   const { addNotification } = useApp();
@@ -82,10 +116,26 @@ export default function AssignmentsTab({ endpoints, canWrite }) {
   const [drafts, setDrafts] = useState({});
   const [rowErrors, setRowErrors] = useState({});
   const [saving, setSaving] = useState(null);
-  const [override, setOverride] = useState(EMPTY_OVERRIDE);
+  const [override, setOverride] = useState(() => ({ ...EMPTY_OVERRIDE, topicId: initialTopicId || '' }));
   const [overrideError, setOverrideError] = useState(null);
   const [addingOverride, setAddingOverride] = useState(false);
   const [deleting, setDeleting] = useState(null);
+  const [topics, setTopics] = useState([]);
+  const [bulkEndpointId, setBulkEndpointId] = useState('');
+  const [bulkConfirm, setBulkConfirm] = useState(false);
+  const [savingAll, setSavingAll] = useState(false);
+
+  useEffect(() => {
+    let live = true;
+    Promise.resolve()
+      .then(() => apiClient.listTopics({ pageSize: 1000, sortBy: 'name', sortDirection: 'Ascending' }))
+      .then((r) => live && setTopics((r && r.items) || []))
+      .catch(() => live && setTopics([]));
+    return () => {
+      live = false;
+    };
+  }, [apiClient]);
+  const topicName = (topicId) => (topics.find((x) => x.id === topicId) || {}).name || null;
 
   const load = useCallback(async () => {
     try {
@@ -131,13 +181,51 @@ export default function AssignmentsTab({ endpoints, canWrite }) {
     }
   }
 
+  // Save every role whose draft differs from what is stored, one request each, then reload once.
+  async function saveAll(tasks) {
+    setSavingAll(true);
+    let failed = 0;
+    for (const task of tasks) {
+      const draft = drafts[task];
+      try {
+        await apiClient.upsertModelAssignment({ task, modelEndpointId: draft.modelEndpointId, modelOverride: draft.modelOverride.trim() || null, reasoningEffort: draft.reasoningEffort || null });
+        setRowErrors((e) => ({ ...e, [task]: null }));
+      } catch (err) {
+        failed++;
+        setRowErrors((e) => ({ ...e, [task]: err }));
+      }
+    }
+    setSavingAll(false);
+    if (failed === 0) addNotification(t('models.assignments.savedAll', { count: tasks.length }), 'success');
+    else addNotification(t('models.assignments.savedSome', { saved: tasks.length - failed, total: tasks.length }), 'warning', 8000);
+    await load();
+  }
+
+  // Move every task the chosen endpoint can serve onto it.
+  async function applyBulk() {
+    const endpoint = endpoints.find((e) => e.id === bulkEndpointId);
+    const bodies = bulkAssignments(endpoint, defaults);
+    let failed = 0;
+    for (const body of bodies) {
+      try {
+        await apiClient.upsertModelAssignment(body);
+      } catch {
+        failed++;
+      }
+    }
+    await load();
+    if (failed > 0) throw new Error(t('models.assignments.savedSome', { saved: bodies.length - failed, total: bodies.length }));
+    addNotification(t('models.assignments.bulkDone', { name: endpoint.name, count: bodies.length }), 'success');
+    setBulkEndpointId('');
+  }
+
   async function addOverride() {
     setAddingOverride(true);
     setOverrideError(null);
     try {
       await apiClient.upsertModelAssignment({
         task: override.task,
-        topicId: override.topicId.trim(),
+        topicId: override.topicId,
         modelEndpointId: override.modelEndpointId,
         modelOverride: override.modelOverride.trim() || null,
         reasoningEffort: override.reasoningEffort || null
@@ -155,6 +243,10 @@ export default function AssignmentsTab({ endpoints, canWrite }) {
   if (error && !assignments) return <ErrorState error={error} onRetry={load} />;
   if (!assignments) return <LoadingState />;
 
+  const dirtyTasks = MODEL_TASKS.filter((task) => drafts[task] && drafts[task].modelEndpointId && !sameDraft(drafts[task], draftFrom(defaults[task])));
+  const bulkEndpoint = endpoints.find((e) => e.id === bulkEndpointId) || null;
+  const bulkCandidates = endpoints.filter((e) => e.supportsChat || e.supportsEmbeddings);
+
   const toolWarning = (task, endpointId) => {
     const e = endpoints.find((x) => x.id === endpointId);
     return STRUCTURED_TASKS.includes(task) && e && e.supportsTools === false;
@@ -163,6 +255,27 @@ export default function AssignmentsTab({ endpoints, canWrite }) {
   return (
     <div className="stack">
       <p className="muted">{t('models.assignments.intro')}</p>
+      {canWrite ? (
+        <div className="toolbar-row assign-bulk" data-testid="assign-bulk">
+          <label className="inline-field">
+            <span>{t('models.assignments.bulkLabel')}</span>
+            <select value={bulkEndpointId} onChange={(e) => setBulkEndpointId(e.target.value)}>
+              <option value="">{t('models.assignments.pickEndpoint')}</option>
+              {bulkCandidates.map((e) => (
+                <option key={e.id} value={e.id}>
+                  {e.name + (e.active ? '' : ' (' + t('common.inactive') + ')')}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button type="button" className="button secondary small" disabled={!bulkEndpoint || savingAll} onClick={() => setBulkConfirm(true)}>
+            <CopyCheck size={14} aria-hidden="true" /> {t('models.assignments.bulkApply')}
+          </button>
+          <button type="button" className="button primary small" disabled={dirtyTasks.length === 0 || savingAll || saving !== null} onClick={() => saveAll(dirtyTasks)} data-testid="assign-save-all">
+            <Save size={14} aria-hidden="true" /> {savingAll ? t('common.saving') : t('models.assignments.saveAll', { count: dirtyTasks.length })}
+          </button>
+        </div>
+      ) : null}
       <div className="table-scroll">
         <table className="assign-table">
           <thead>
@@ -260,7 +373,14 @@ export default function AssignmentsTab({ endpoints, canWrite }) {
               {overrides.map((a) => (
                 <tr key={a.id}>
                   <td>
-                    <CopyableId value={a.topicId} />
+                    {topicName(a.topicId) ? (
+                      <span className="stack-tight">
+                        <span>{topicName(a.topicId)}</span>
+                        <CopyableId value={a.topicId} />
+                      </span>
+                    ) : (
+                      <CopyableId value={a.topicId} />
+                    )}
                   </td>
                   <td>{t('enums.task.' + a.task)}</td>
                   <td>{endpointName(endpoints, a.modelEndpointId)}</td>
@@ -285,8 +405,8 @@ export default function AssignmentsTab({ endpoints, canWrite }) {
           <legend className="field-label">{t('models.assignments.addOverride')}</legend>
           <ErrorState error={overrideError} inline onDismiss={() => setOverrideError(null)} />
           <div className="form-grid">
-            <FormField id="ovr-topic" label={t('models.assignments.topicId')} help={t('models.assignments.topicIdHelp')}>
-              <input id="ovr-topic" className="mono" value={override.topicId} onChange={(e) => setOverride({ ...override, topicId: e.target.value })} autoComplete="off" />
+            <FormField id="ovr-topic" label={t('models.assignments.topic')} help={t('models.assignments.topicHelp')}>
+              <TopicSelect id="ovr-topic" topics={topics} value={override.topicId} onChange={(v) => setOverride({ ...override, topicId: v })} />
             </FormField>
             <FormField id="ovr-task" label={t('models.assignments.role')}>
               <select id="ovr-task" value={override.task} onChange={(e) => setOverride({ ...override, task: e.target.value, modelEndpointId: '' })}>
@@ -310,7 +430,7 @@ export default function AssignmentsTab({ endpoints, canWrite }) {
             ) : null}
           </div>
           <div className="form-actions">
-            <button type="button" className="button secondary" onClick={addOverride} disabled={addingOverride || !override.topicId.trim() || !override.modelEndpointId}>
+            <button type="button" className="button secondary" onClick={addOverride} disabled={addingOverride || !override.topicId || !override.modelEndpointId}>
               <Plus size={14} aria-hidden="true" /> {addingOverride ? t('common.working') : t('models.assignments.addOverride')}
             </button>
           </div>
@@ -318,9 +438,17 @@ export default function AssignmentsTab({ endpoints, canWrite }) {
       ) : null}
 
       <ConfirmModal
+        open={bulkConfirm && Boolean(bulkEndpoint)}
+        title={t('models.assignments.bulkTitle')}
+        message={bulkEndpoint ? t('models.assignments.bulkMessage', { name: bulkEndpoint.name, count: tasksForEndpoint(bulkEndpoint).length }) : ''}
+        confirmLabel={t('models.assignments.bulkApply')}
+        onClose={() => setBulkConfirm(false)}
+        onConfirm={applyBulk}
+      />
+      <ConfirmModal
         open={Boolean(deleting)}
         title={t('models.assignments.deleteTitle')}
-        message={deleting ? t('models.assignments.deleteMessage', { role: t('enums.task.' + deleting.task), topic: deleting.topicId }) : ''}
+        message={deleting ? t('models.assignments.deleteMessage', { role: t('enums.task.' + deleting.task), topic: topicName(deleting.topicId) || deleting.topicId }) : ''}
         confirmLabel={t('common.delete')}
         danger
         onClose={() => setDeleting(null)}
@@ -336,5 +464,6 @@ export default function AssignmentsTab({ endpoints, canWrite }) {
 
 AssignmentsTab.propTypes = {
   endpoints: PropTypes.array.isRequired,
-  canWrite: PropTypes.bool
+  canWrite: PropTypes.bool,
+  initialTopicId: PropTypes.string
 };

@@ -651,6 +651,12 @@ ol.chip-list {
   flex-wrap: wrap;
 }
 
+/* Why Next is not available yet, beside the button. */
+.wizard-next-hint {
+  margin-inline-start: auto;
+  align-self: center;
+}
+
 .generation-panel,
 .failure-panel {
   display: flex;

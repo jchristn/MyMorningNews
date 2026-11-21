@@ -6,6 +6,7 @@ import { AuthProvider } from './context/AuthContext.jsx';
 import { ThemeProvider } from './context/ThemeContext.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import LoadingState from './components/LoadingState.jsx';
+import AccountDeletedPage from './components/auth/AccountDeletedPage.jsx';
 import ForgotPasswordPage from './components/auth/ForgotPasswordPage.jsx';
 import ResetPasswordPage from './components/auth/ResetPasswordPage.jsx';
 import SignupPage from './components/auth/SignupPage.jsx';
@@ -103,6 +104,7 @@ export function AppRoutes() {
       />
       <Route path="/verify" element={<VerifyEmailPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/account-deleted" element={<AccountDeletedPage />} />
       <Route path="/login" element={<Navigate to="/" replace />} />
       <Route
         path="/dashboard"

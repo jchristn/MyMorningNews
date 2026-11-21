@@ -859,7 +859,8 @@
       "grants": "{count, plural, other {基于 # 项授权}}",
       "resource": "资源",
       "title": "有效权限"
-    }
+    },
+    "readOnly": "您可以查看此工作区中的成员。只有管理员可以添加、更改或删除用户。"
   },
   "credentials": {
     "allScopes": "全部",
@@ -1542,12 +1543,20 @@
       "overridesIntro": "主题可以在与租户默认值不同的端点上运行某个角色。",
       "noOverrides": "没有主题覆盖。",
       "topic": "主题",
-      "topicId": "主题 ID",
-      "topicIdHelp": "要覆盖的主题的 ID。",
       "addOverride": "添加主题覆盖",
       "overrideAdded": "主题覆盖已保存",
       "deleteTitle": "移除主题覆盖",
-      "deleteMessage": "移除主题 {topic} 的 {role} 覆盖？该主题将恢复使用租户默认值。"
+      "deleteMessage": "移除主题 {topic} 的 {role} 覆盖？该主题将恢复使用租户默认值。",
+      "pickTopic": "选择主题",
+      "topicHelp": "在其他端点上运行此角色的主题。",
+      "bulkLabel": "所有任务使用同一个端点",
+      "bulkApply": "应用到所有任务",
+      "bulkTitle": "所有任务使用同一个端点",
+      "bulkMessage": "将 {name} 分配给它可以处理的{count, plural, other {全部 # 个任务}}？每个任务保留其推理强度，这些任务的模型覆盖将被清除。",
+      "bulkDone": "{name} 现在处理{count, plural, other { # 个任务}}",
+      "saveAll": "保存所有更改（{count}）",
+      "savedAll": "{count, plural, other {已保存 # 项分配}}",
+      "savedSome": "已保存 {saved}/{total} 项分配。请重试其余项。"
     },
     "calls": {
       "detailTitle": "模型调用",
@@ -2240,7 +2249,8 @@
       "draft": "起草上下文",
       "intro": "任何内容都可编辑。已锁定的约束和您自己的约束在重新起草时会保留。",
       "redraft": "重新起草",
-      "constraints": "约束"
+      "constraints": "约束",
+      "nextNeedsBrief": "请撰写或起草概要后继续。"
     },
     "sources": {
       "intro": "建议的订阅源和种子页面会实时抓取。绿色表示已响应。",
@@ -2268,10 +2278,10 @@
       "dimensions": "{count, plural, other {# 个维度}}",
       "constraintCount": "{kind}：{count}",
       "preview": "预览运行",
-      "previewHelp": "试运行不会发送邮件，也不计入历史记录。",
+      "previewHelp": "试运行不会发送邮件，其发现也不会出现在您的发现列表中。它仍会显示在运行列表中，并标记为试运行。",
       "apply": "应用主题",
       "appliedToast": "{name} 已就绪",
-      "previewQueued": "试运行已排队。可在主题的“运行”标签页中查看进度。"
+      "previewStarting": "正在启动试运行..."
     },
     "newTitle": "新建主题",
     "refineTitle": "细化 {name}",
@@ -2398,7 +2408,19 @@
     },
     "live": {
       "streaming": "实时",
-      "polling": "每隔几秒刷新"
+      "polling": "每隔几秒刷新",
+      "queued": "已排队。有空闲的工作进程时开始。",
+      "running": "正在运行。",
+      "runningStage": "正在运行：{stage}。",
+      "completed": "已完成，{count, plural, other {新增 # 条发现}}。",
+      "partial": "已完成但有警告，{count, plural, other {新增 # 条发现}}。打开运行查看哪个阶段失败。",
+      "failed": "运行失败。打开它查看哪个阶段失败以及原因。",
+      "failedReason": "运行失败：{reason}",
+      "skipped": "运行已跳过。",
+      "skippedReason": "运行已跳过：{reason}",
+      "cancelled": "运行已取消。",
+      "unreadable": "无法读取运行进度。打开运行进行查看。",
+      "openRun": "打开运行"
     },
     "retry": {
       "column": "重试",
@@ -2863,7 +2885,8 @@
       "lookback": "回溯范围",
       "lastComposed": "上次撰写",
       "created": "创建时间",
-      "id": "ID"
+      "id": "ID",
+      "owner": "所有者"
     },
     "badges": {
       "email": "邮件",
@@ -2924,6 +2947,12 @@
       "add": "添加",
       "save": "保存主题",
       "saved": "主题已保存"
+    },
+    "ownerYou": "您",
+    "scope": {
+      "label": "显示期刊",
+      "mine": "我的",
+      "all": "所有人的"
     }
   },
   "templates": {
@@ -3528,11 +3557,21 @@
     "delete": {
       "button": "删除我的账户",
       "title": "要删除您的账户吗？",
-      "message": "所有会话将立即退出登录。宽限期结束后，您的账户和数据将被删除；在此之前登录即可保留。",
+      "message": "所有会话将立即退出登录。宽限期结束后，您的账户及其所有数据（主题、简报、发现、反馈和音频）将被永久删除。下一页和确认邮件会告诉您具体日期。在此之前登录即可取消删除。",
       "typeEmail": "输入您的电子邮件以确认",
       "mismatch": "该电子邮件与您的账户不匹配。",
       "confirm": "删除我的账户",
-      "scheduled": "您的账户将于 {date} 删除。在此之前登录即可保留。"
+      "scheduled": "您的账户将于 {date} 删除。在此之前登录即可保留。",
+      "messageDated": "所有会话将立即退出登录。{date}，您的账户及其所有数据（主题、简报、发现、反馈和音频）将被永久删除。在此之前登录即可取消删除。",
+      "cancelledTitle": "您的账户删除已取消。",
+      "cancelledMessage": "登录后，您的账户及其所有数据都已保留。"
+    },
+    "deleted": {
+      "title": "您的账户已安排删除",
+      "noDate": "宽限期结束时您的账户将被删除。确认邮件中有具体日期。在此之前登录即可保留。",
+      "signedOut": "您已在所有设备上退出登录，我们已向您发送确认邮件。",
+      "howToCancel": "改变主意了？在该日期之前登录即可取消删除，您的数据保持不变。",
+      "signIn": "登录以保留我的账户"
     }
   },
   "email": {
@@ -3976,7 +4015,8 @@
     "verify": {
       "title": "确认您的电子邮件",
       "done": "您的电子邮件已确认。现在可以登录了。",
-      "failed": "此链接无效或已过期。请输入您的电子邮件以获取新链接。"
+      "failed": "此链接无效或已过期。请输入您的电子邮件以获取新链接。",
+      "used": "此链接已被使用。如果您的电子邮件已确认，请登录。"
     },
     "forgot": {
       "title": "重置密码",
@@ -4164,7 +4204,8 @@
       "notFound": "{name} 使用的已存储凭据已不存在。",
       "inactive": "{name} 使用的已存储凭据已被停用。",
       "expired": "{name} 使用的已存储凭据已过期。",
-      "platformMissing": "{name} 使用平台模型密钥，但服务器未配置该密钥（MYMORNINGNEWS_ANTHROPIC_API_KEY）。"
+      "platformMissing": "{name} 使用平台模型密钥，但服务器未配置该密钥（MYMORNINGNEWS_ANTHROPIC_API_KEY）。",
+      "platformMissingUser": "{name} 使用此服务器的共享模型密钥，但服务器运营者尚未设置。"
     },
     "fix": "为 {name} 添加密钥",
     "view": "查看模型端点",
@@ -4173,6 +4214,7 @@
       "wizard": "向导会请模型提出维度和问题，因此在修复之前它会在第一步失败。"
     },
     "askAdmin": "只有租户管理员可以添加密钥。请联系您的管理员进行修复。",
-    "badge": "无 API 密钥"
+    "badge": "无 API 密钥",
+    "fixOwnKey": "为 {name} 使用您自己的 API 密钥"
   }
 }

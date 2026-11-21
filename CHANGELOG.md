@@ -15,6 +15,19 @@ All notable changes to this project are documented here. The project follows [Se
 
 ### Fixed
 
+- Dashboard, from the 2026-11-20 user testing session:
+  - Home shows External services (Grafana, Prometheus, Tempo, Loki) and their credentials only to global administrators, and never on a personal tenant or a customer tenant of a server with public sign-up (UT-005). Next steps offers "Set up a model endpoint" to administrators only and "Change the default password" to the seeded administrator only.
+  - The wizard's Preview run follows the dry run on the Review step: queued, the running stage, then the result with its new findings, or the reason it failed or could not start. The note under the button no longer claims a dry run stays out of history (UT-008).
+  - Run now and Dry run on a topic follow the run on the page over its event stream (polling when the stream is unavailable), link to it, and refresh the topic's last run and runs list when it ends (UT-009).
+  - The wizard's Context step: Next saves the typed brief and settings instead of staying disabled until Save context, and says what it needs when there is no brief yet (UT-010).
+  - A sign-up user whose tenant relies on a missing platform model key is told the server's shared key is not set up and offered to use their own key, instead of seeing the operator's environment variable (UT-011).
+  - Account deletion gives the deletion date before confirming when the server reports its grace period, lands on a signed-out page with the date and how to cancel instead of "Your session expired", and the next sign-in from that browser says the deletion was cancelled (UT-012).
+  - Editions start with your own; administrators can switch to everyone's, with an Owner column. Today offers only your own editions (UT-013).
+  - Members see the Users page read-only: no add, edit, duplicate, password, permission, or delete controls (UT-017).
+  - Model assignments: one action moves every task an endpoint can serve onto it, one button saves every changed row, and topic overrides pick the topic by name (preselected from the topic's Models tab) instead of a typed ID (UT-022).
+  - A verification link that was already used (`LinkUsed`) says so and points to sign-in; other failures keep the general message (UT-027).
+  - Server info shows runtime, operating system, database, schema, and pending-restart details to global administrators only (UT-033).
+  - The Audit table fits beside its pinned row menu at common desktop widths, and the pinned menu casts a shadow when columns pass beneath it. The run activity heatmap fits a phone-width card instead of scrolling inside it.
 - The run email preview no longer calls a model for its lead paragraph (it uses the stored run summary); pass `summarize=true` to preview the model-written lead.
 - Request history stores binary bodies as a placeholder instead of failing on bytes PostgreSQL text cannot hold.
 

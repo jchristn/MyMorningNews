@@ -42,7 +42,7 @@ export default function ModelsView() {
           ))}
         </div>
         {tab === 'endpoints' ? <EndpointsTab canWrite={isTenantAdmin} canExecute={isTenantAdmin} focusId={params.get('endpoint')} onChanged={onChanged} /> : null}
-        {tab === 'assignments' ? <AssignmentsTab endpoints={endpoints} canWrite={isTenantAdmin} /> : null}
+        {tab === 'assignments' ? <AssignmentsTab endpoints={endpoints} canWrite={isTenantAdmin} initialTopicId={params.get('topic')} /> : null}
         {tab === 'calls' ? <CallsTab endpoints={endpoints} initialCallId={params.get('call')} onCallClosed={() => params.get('call') && setParams({ tab: 'calls' }, { replace: true })} /> : null}
       </section>
     </div>

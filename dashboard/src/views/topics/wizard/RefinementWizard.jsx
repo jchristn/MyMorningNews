@@ -5,7 +5,6 @@ import { ArrowLeft, ArrowRight, LogOut, Trash2, WandSparkles } from 'lucide-reac
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../../../context/AppContext.jsx';
 import { useAuth } from '../../../context/AuthContext.jsx';
-import { describeError } from '../../../utils/errors.js';
 import ConfirmModal from '../../../components/ConfirmModal.jsx';
 import ErrorState from '../../../components/ErrorState.jsx';
 import LoadingState from '../../../components/LoadingState.jsx';
@@ -43,11 +42,15 @@ export default function RefinementWizard({ mode }) {
   const [actionError, setActionError] = useState(null);
   const [abandoning, setAbandoning] = useState(false);
   const [hideStoredError, setHideStoredError] = useState(false);
+  const [previewState, setPreview] = useState({ starting: false, error: null, run: null });
   const controllerRef = useRef(null);
   const startedRef = useRef(false);
   const autoRef = useRef(null);
   const scheduleRef = useRef(null);
   const optionsRef = useRef(null);
+  const contextRef = useRef(null);
+  const [draftBrief, setDraftBrief] = useState(false);
+  const onContextDraft = useCallback((form) => setDraftBrief(Boolean(form.brief && form.brief.trim())), []);
   const sessionId = params.get('session');
   const setParamsRef = useRef(setParams);
   const data = state.data;
@@ -193,7 +196,19 @@ export default function RefinementWizard({ mode }) {
       }
       return;
     }
-    const plan = advancePlan(state.step, data, state.sources);
+    let current = data;
+    // Next on Context saves the brief and its settings first, so nothing typed is lost.
+    if (state.step === 'Context' && contextRef.current && contextRef.current.dirty) {
+      setApplying(true);
+      try {
+        const saved = await contextRef.current.save();
+        if (!saved) return;
+        current = { ...data, topic: saved };
+      } finally {
+        setApplying(false);
+      }
+    }
+    const plan = advancePlan(state.step, current, state.sources);
     if (plan.generate) generate(plan.generate, undefined, plan.to);
     else dispatch({ type: 'goto', step: plan.to });
   }
@@ -213,13 +228,15 @@ export default function RefinementWizard({ mode }) {
     }
   }
 
+  // A dry run of the topic as it stands, followed on the Review step until it ends.
   async function preview() {
     setActionError(null);
+    setPreview((p) => ({ ...p, starting: true, error: null }));
     try {
-      await apiClient.runTopic(data.topic.id, { dryRun: true });
-      addNotification(t('wizard.review.previewQueued'), 'success', 8000);
+      const queued = await apiClient.runTopic(data.topic.id, { dryRun: true });
+      setPreview({ starting: false, error: null, run: queued && queued.id ? queued : null });
     } catch (err) {
-      addNotification(describeError(err, t).message, 'error', 8000);
+      setPreview((p) => ({ ...p, starting: false, error: err }));
     }
   }
 
@@ -289,7 +306,9 @@ export default function RefinementWizard({ mode }) {
   const storedError = data && data.session.lastError && !state.failure && !state.generating && !hideStoredError ? data.session.lastError : null;
   const failure = state.failure;
   // Next needs dimensions before questions and a brief before sources; generation steps fill in the rest.
-  const nextDisabled = busy || !data || (step === 'Dimensions' && (data.dimensions || []).length === 0) || (step !== 'Dimensions' && step !== 'Questions' && !stepAvailable('Sources', data));
+  // On Context, a brief typed but not saved yet counts: Next saves it.
+  const needsBrief = Boolean(data) && step !== 'Dimensions' && step !== 'Questions' && !stepAvailable('Sources', data) && !(step === 'Context' && draftBrief);
+  const nextDisabled = busy || !data || (step === 'Dimensions' && (data.dimensions || []).length === 0) || needsBrief;
 
   return (
     <div className="page wizard-page">
@@ -333,17 +352,22 @@ export default function RefinementWizard({ mode }) {
           {step === 'Questions' && data ? (
             <QuestionsStep data={data} dispatch={dispatch} busy={busy} onAsk={(g) => generate('questions', g)} onAnswer={(qid, body) => apiClient.answerQuestion(data.session.id, qid, body)} />
           ) : null}
-          {step === 'Context' && data ? <ContextStep data={data} dispatch={dispatch} busy={busy} onDraft={() => generate('context')} /> : null}
+          {step === 'Context' && data ? <ContextStep data={data} dispatch={dispatch} busy={busy} onDraft={() => generate('context')} controlRef={contextRef} onDraftChange={onContextDraft} /> : null}
           {step === 'Sources' && data ? <SourcesStep data={data} sources={state.sources} dispatch={dispatch} busy={busy} sessionId={data.session.id} onSuggest={() => generate('sources')} /> : null}
           {step === 'Delivery' && data ? (
             <DeliveryStep data={data} recipients={recipients} onRecipientsChanged={setRecipients} dispatch={dispatch} scheduleRef={scheduleRef} optionsRef={optionsRef} busy={busy} />
           ) : null}
-          {step === 'Review' && data ? <ReviewStep data={data} recipients={recipients} onApply={apply} onPreview={preview} busy={busy} applied={isCompleted(data)} /> : null}
+          {step === 'Review' && data ? <ReviewStep data={data} recipients={recipients} onApply={apply} onPreview={preview} preview={previewState} onPreviewDismiss={() => setPreview({ starting: false, error: null, run: null })} busy={busy} applied={isCompleted(data)} /> : null}
           {data && step !== 'Review' && step !== 'Describe' ? (
             <footer className="wizard-footer">
               <button type="button" className="button secondary" disabled={busy || previousStep(step) === step} onClick={() => dispatch({ type: 'goto', step: previousStep(step) })}>
                 <ArrowLeft size={14} aria-hidden="true" /> {t('wizard.back')}
               </button>
+              {step === 'Context' && needsBrief ? (
+                <span className="muted small wizard-next-hint" data-testid="wizard-next-hint">
+                  {t('wizard.context.nextNeedsBrief')}
+                </span>
+              ) : null}
               <button type="button" className="button primary" disabled={nextDisabled} onClick={next} data-testid="wizard-next">
                 {t('wizard.nextTo', { step: t('wizard.steps.' + advancePlan(step, data, state.sources).to) })} <ArrowRight size={14} aria-hidden="true" />
               </button>

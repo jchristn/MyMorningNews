@@ -859,7 +859,8 @@
       "grants": "{count, plural, one {Com base em # concessão} other {Com base em # concessões}}",
       "resource": "Recurso",
       "title": "Permissões efetivas"
-    }
+    },
+    "readOnly": "Você pode ver quem está neste espaço de trabalho. Somente um administrador pode adicionar, alterar ou remover usuários."
   },
   "credentials": {
     "allScopes": "Todos",
@@ -1542,12 +1543,20 @@
       "overridesIntro": "Um tema pode executar uma função em um endpoint diferente do padrão do locatário.",
       "noOverrides": "Nenhuma substituição por tema.",
       "topic": "Tema",
-      "topicId": "ID do tema",
-      "topicIdHelp": "O ID do tema a substituir.",
       "addOverride": "Adicionar substituição por tema",
       "overrideAdded": "Substituição por tema salva",
       "deleteTitle": "Remover substituição por tema",
-      "deleteMessage": "Remover a substituição de {role} para o tema {topic}? O tema volta ao padrão do locatário."
+      "deleteMessage": "Remover a substituição de {role} para o tema {topic}? O tema volta ao padrão do locatário.",
+      "pickTopic": "Escolha um tema",
+      "topicHelp": "O tema que executa esta função em outro endpoint.",
+      "bulkLabel": "Usar um endpoint para todas as tarefas",
+      "bulkApply": "Aplicar a todas as tarefas",
+      "bulkTitle": "Usar um endpoint para todas as tarefas",
+      "bulkMessage": "Atribuir {name} {count, plural, one {à # tarefa} other {às # tarefas}} que ele pode atender? Cada tarefa mantém seu esforço de raciocínio, e as substituições de modelo dessas tarefas são removidas.",
+      "bulkDone": "{name} agora atende {count, plural, one {# tarefa} other {# tarefas}}",
+      "saveAll": "Salvar todas as alterações ({count})",
+      "savedAll": "{count, plural, one {# atribuição salva} other {# atribuições salvas}}",
+      "savedSome": "{saved} de {total} atribuições salvas. Tente as restantes novamente."
     },
     "calls": {
       "detailTitle": "Chamada de modelo",
@@ -2240,7 +2249,8 @@
       "draft": "Redigir o contexto",
       "intro": "Edite o que quiser. Restrições bloqueadas e as suas sobrevivem a uma nova versão.",
       "redraft": "Redigir de novo",
-      "constraints": "Restrições"
+      "constraints": "Restrições",
+      "nextNeedsBrief": "Escreva ou gere um resumo para continuar."
     },
     "sources": {
       "intro": "Feeds e páginas iniciais sugeridos são buscados ao vivo. Os verdes responderam.",
@@ -2268,10 +2278,10 @@
       "dimensions": "{count, plural, one {# dimensão} other {# dimensões}}",
       "constraintCount": "{kind}: {count}",
       "preview": "Execução de prévia",
-      "previewHelp": "Uma execução de teste não envia e-mail e não conta no histórico.",
+      "previewHelp": "Uma execução de teste não envia e-mail, e suas descobertas ficam fora da sua lista de descobertas. Ela ainda aparece em Execuções, marcada como execução de teste.",
       "apply": "Aplicar tema",
       "appliedToast": "{name} está pronto",
-      "previewQueued": "Execução de teste na fila. Acompanhe na aba Execuções do tema."
+      "previewStarting": "Iniciando a execução de teste..."
     },
     "newTitle": "Novo tema",
     "refineTitle": "Refinar {name}",
@@ -2398,7 +2408,19 @@
     },
     "live": {
       "streaming": "Ao vivo",
-      "polling": "Atualizando a cada poucos segundos"
+      "polling": "Atualizando a cada poucos segundos",
+      "queued": "Na fila. Começa quando houver um worker livre.",
+      "running": "Em execução.",
+      "runningStage": "Em execução: {stage}.",
+      "completed": "Concluída com {count, plural, one {# nova descoberta} other {# novas descobertas}}.",
+      "partial": "Concluída com avisos e {count, plural, one {# nova descoberta} other {# novas descobertas}}. Abra a execução para ver qual etapa falhou.",
+      "failed": "A execução falhou. Abra-a para ver qual etapa falhou e por quê.",
+      "failedReason": "A execução falhou: {reason}",
+      "skipped": "A execução foi ignorada.",
+      "skippedReason": "A execução foi ignorada: {reason}",
+      "cancelled": "A execução foi cancelada.",
+      "unreadable": "Não foi possível ler o progresso da execução. Abra a execução para verificar.",
+      "openRun": "Abrir a execução"
     },
     "retry": {
       "column": "Repetir",
@@ -2863,7 +2885,8 @@
       "lookback": "Período coberto",
       "lastComposed": "Última composição",
       "created": "Criada",
-      "id": "ID"
+      "id": "ID",
+      "owner": "Proprietário"
     },
     "badges": {
       "email": "E-mail",
@@ -2924,6 +2947,12 @@
       "add": "Adicionar",
       "save": "Salvar temas",
       "saved": "Temas salvos"
+    },
+    "ownerYou": "Você",
+    "scope": {
+      "label": "Mostrar edições",
+      "mine": "Minhas",
+      "all": "De todos"
     }
   },
   "templates": {
@@ -3528,11 +3557,21 @@
     "delete": {
       "button": "Excluir minha conta",
       "title": "Excluir sua conta?",
-      "message": "Todas as sessões são encerradas agora. Sua conta e seus dados são excluídos após o período de carência; entrar antes disso os mantém.",
+      "message": "Todas as sessões são encerradas agora. Após um período de carência, sua conta e todos os seus dados (temas, briefings, descobertas, feedback e áudio) são excluídos para sempre. A próxima página e um e-mail de confirmação informam a data. Entre antes disso e a exclusão é cancelada.",
       "typeEmail": "Digite seu e-mail para confirmar",
       "mismatch": "O e-mail não corresponde à sua conta.",
       "confirm": "Excluir minha conta",
-      "scheduled": "Sua conta será excluída em {date}. Entre antes disso para mantê-la."
+      "scheduled": "Sua conta será excluída em {date}. Entre antes disso para mantê-la.",
+      "messageDated": "Todas as sessões são encerradas agora. Em {date}, sua conta e todos os seus dados (temas, briefings, descobertas, feedback e áudio) são excluídos para sempre. Entre antes disso e a exclusão é cancelada.",
+      "cancelledTitle": "A exclusão da sua conta foi cancelada.",
+      "cancelledMessage": "Ao entrar, você manteve sua conta e todos os seus dados."
+    },
+    "deleted": {
+      "title": "Sua conta está programada para exclusão",
+      "noDate": "Sua conta será excluída quando o período de carência terminar. O e-mail de confirmação informa a data. Entre antes disso para mantê-la.",
+      "signedOut": "Você saiu em todos os dispositivos, e enviamos um e-mail de confirmação.",
+      "howToCancel": "Mudou de ideia? Entre antes dessa data e a exclusão é cancelada. Seus dados ficam como estavam.",
+      "signIn": "Entrar para manter minha conta"
     }
   },
   "email": {
@@ -3976,7 +4015,8 @@
     "verify": {
       "title": "Confirme seu e-mail",
       "done": "Seu e-mail foi confirmado. Você já pode entrar.",
-      "failed": "Este link não é válido ou expirou. Digite seu e-mail para receber um novo."
+      "failed": "Este link não é válido ou expirou. Digite seu e-mail para receber um novo.",
+      "used": "Este link já foi usado. Se seu e-mail estiver confirmado, entre."
     },
     "forgot": {
       "title": "Redefina sua senha",
@@ -4164,7 +4204,8 @@
       "notFound": "{name} usa uma credencial armazenada que não existe mais.",
       "inactive": "{name} usa uma credencial armazenada que está desativada.",
       "expired": "{name} usa uma credencial armazenada que expirou.",
-      "platformMissing": "{name} usa a chave de modelo da plataforma, mas o servidor não tem nenhuma configurada (MYMORNINGNEWS_ANTHROPIC_API_KEY)."
+      "platformMissing": "{name} usa a chave de modelo da plataforma, mas o servidor não tem nenhuma configurada (MYMORNINGNEWS_ANTHROPIC_API_KEY).",
+      "platformMissingUser": "{name} usa a chave de modelo compartilhada deste servidor, e o operador do servidor não configurou nenhuma."
     },
     "fix": "Adicionar uma chave a {name}",
     "view": "Ver endpoints de modelo",
@@ -4173,6 +4214,7 @@
       "wizard": "O assistente pede ao modelo que proponha dimensões e perguntas, então ele falha na primeira etapa até que isso seja corrigido."
     },
     "askAdmin": "Somente um administrador do locatário pode adicionar uma chave. Peça ao seu para corrigir isso.",
-    "badge": "Sem chave de API"
+    "badge": "Sem chave de API",
+    "fixOwnKey": "Usar sua própria chave de API para {name}"
   }
 }

@@ -21,6 +21,7 @@ import FeedbackTable from '../insights/FeedbackTable.jsx';
 import PreferencesTable from '../insights/PreferencesTable.jsx';
 import TopicInsights from '../insights/TopicInsights.jsx';
 import PredictionsTable from '../predictions/PredictionsTable.jsx';
+import LiveRunNotice from '../runs/LiveRunNotice.jsx';
 import RunsTable from '../runs/RunsTable.jsx';
 import SuggestionsTable from '../suggestions/SuggestionsTable.jsx';
 import AgenticSearchSettings from './AgenticSearchSettings.jsx';
@@ -71,6 +72,7 @@ export default function TopicWorkspace() {
   const [schedules, setSchedules] = useState([]);
   const [editions, setEditions] = useState([]);
   const [runsRefresh, setRunsRefresh] = useState(0);
+  const [liveRun, setLiveRun] = useState(null);
   const requested = params.get('tab') || 'overview';
   const tab = WORKSPACE_TABS.some((x) => x.id === requested) ? requested : 'overview';
 
@@ -109,6 +111,16 @@ export default function TopicWorkspace() {
     },
     onDeleted: () => navigate('/dashboard/topics')
   });
+
+  // Run now and Dry run follow the queued run on the page until it ends, then refresh the topic and its runs.
+  const startRun = async (dryRun) => {
+    const queued = await run(detail.topic, dryRun);
+    if (queued && queued.id) setLiveRun(queued);
+  };
+  const runFinished = useCallback(() => {
+    load();
+    setRunsRefresh((n) => n + 1);
+  }, [load]);
 
   if (error && !detail) {
     return (
@@ -158,10 +170,10 @@ export default function TopicWorkspace() {
         }
         actions={
           <>
-            <button type="button" className="button primary" disabled={isDraft || topic.status === 'Archived'} title={isDraft ? t('topics.draftNoRun') : undefined} onClick={() => run(topic, false)}>
+            <button type="button" className="button primary" disabled={isDraft || topic.status === 'Archived'} title={isDraft ? t('topics.draftNoRun') : undefined} onClick={() => startRun(false)}>
               <Play size={14} aria-hidden="true" /> {t('topics.actions.runNow')}
             </button>
-            <button type="button" className="button secondary" disabled={topic.status === 'Archived'} onClick={() => run(topic, true)}>
+            <button type="button" className="button secondary" disabled={topic.status === 'Archived'} onClick={() => startRun(true)}>
               <FlaskConical size={14} aria-hidden="true" /> {t('topics.actions.dryRun')}
             </button>
             {!topic.isOneTime ? (
@@ -173,6 +185,7 @@ export default function TopicWorkspace() {
           </>
         }
       />
+      {liveRun ? <LiveRunNotice key={liveRun.id} runId={liveRun.id} initialRun={liveRun} onFinished={runFinished} onDismiss={() => setLiveRun(null)} /> : null}
       {isDraft ? (
         <div className="notice notice-info">
           {t('topics.draftNotice')} <Link to={'/dashboard/topics/' + encodeURIComponent(topic.id) + '/refine'}>{t('topics.actions.continueRefining')}</Link>
@@ -270,10 +283,10 @@ export default function TopicWorkspace() {
             refreshSignal={runsRefresh}
             toolbar={
               <>
-                <button type="button" className="button primary small" disabled={isDraft || topic.status === 'Archived'} onClick={() => run(topic, false)}>
+                <button type="button" className="button primary small" disabled={isDraft || topic.status === 'Archived'} onClick={() => startRun(false)}>
                   <Play size={14} aria-hidden="true" /> {t('topics.actions.runNow')}
                 </button>
-                <button type="button" className="button secondary small" disabled={topic.status === 'Archived'} onClick={() => run(topic, true)}>
+                <button type="button" className="button secondary small" disabled={topic.status === 'Archived'} onClick={() => startRun(true)}>
                   <FlaskConical size={14} aria-hidden="true" /> {t('topics.actions.dryRun')}
                 </button>
               </>

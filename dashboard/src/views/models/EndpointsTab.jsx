@@ -7,7 +7,10 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import useFormat from '../../hooks/useFormat.js';
 import { pagedQuery } from '../../utils/api.js';
 import { MODEL_PROVIDERS } from '../../utils/enums.js';
-import { keyProblem } from '../../utils/modelKeys.js';
+import { effectiveAuthMethod } from '../../utils/modelAuth.js';
+import { PLATFORM_CREDENTIAL_ID, keyProblem } from '../../utils/modelKeys.js';
+import { methodLabel } from '../../components/modelSignIn/signInCatalog.js';
+import { problemBadgeKey, problemMessageKey } from '../../components/ModelKeyWarning.jsx';
 import ConfirmModal from '../../components/ConfirmModal.jsx';
 import CopyableId from '../../components/CopyableId.jsx';
 import DataTable from '../../components/DataTable.jsx';
@@ -96,6 +99,7 @@ export default function EndpointsTab({ canWrite, canExecute, focusId, onChanged 
       )
     },
     { key: 'provider', header: t('models.columns.provider'), filter: { type: 'select', param: 'provider', options: MODEL_PROVIDERS.map((p) => ({ value: p, label: t('enums.provider.' + p) })) }, render: (r) => t('enums.provider.' + r.provider) },
+    { key: 'signIn', header: t('models.columns.signIn'), render: (r) => (r.credentialId === PLATFORM_CREDENTIAL_ID ? t('setup.connected.platformKey') : methodLabel(t, r.provider, effectiveAuthMethod(r))) },
     {
       key: 'model',
       header: t('models.columns.model'),
@@ -117,12 +121,13 @@ export default function EndpointsTab({ canWrite, canExecute, focusId, onChanged 
       filter: { type: 'boolean', param: 'active' },
       render: (r) => {
         const problem = r.active ? keyProblem(r, credentials) : null;
+        const method = effectiveAuthMethod(r);
         return (
           <span className="row-actions">
             <StatusBadge tone={r.active ? 'success' : 'neutral'}>{r.active ? t('common.active') : t('common.inactive')}</StatusBadge>
             {problem ? (
-              <StatusBadge tone="danger" title={t('modelKeys.problem.' + problem, { name: r.name })}>
-                {t('modelKeys.badge')}
+              <StatusBadge tone="danger" title={t(problemMessageKey(problem, true, method), { name: r.name })}>
+                {t(problemBadgeKey(method))}
               </StatusBadge>
             ) : null}
           </span>

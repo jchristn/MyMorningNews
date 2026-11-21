@@ -1058,7 +1058,11 @@
       "Ollama": "Ollama",
       "Gemini": "Gemini",
       "XAi": "xAI",
-      "OllamaCloud": "Ollama Cloud"
+      "OllamaCloud": "Ollama Cloud",
+      "ClaudeCode": "Claude Code",
+      "Codex": "Codex",
+      "GeminiCli": "Gemini CLI",
+      "Mux": "Mux"
     },
     "reasoningEffort": {
       "None": "无",
@@ -1074,7 +1078,8 @@
       "BearerToken": "Bearer 令牌",
       "BasicAuth": "基本认证",
       "CustomHeader": "自定义标头",
-      "ConnectionString": "连接字符串"
+      "ConnectionString": "连接字符串",
+      "SignInFile": "登录文件"
     },
     "vaultProvider": {
       "Anthropic": "Anthropic",
@@ -1302,6 +1307,13 @@
     "ttsProvider": {
       "OpenAiCompatibleSpeech": "OpenAI 兼容语音",
       "Disabled": "已禁用"
+    },
+    "authMethod": {
+      "ApiKey": "API 密钥",
+      "AccessToken": "访问令牌",
+      "AuthFile": "登录文件",
+      "ServerSignIn": "已在服务器上登录",
+      "None": "无密钥"
     }
   },
   "vault": {
@@ -1395,7 +1407,8 @@
       "credential": "凭据",
       "lastValidated": "上次验证",
       "status": "状态",
-      "id": "ID"
+      "id": "ID",
+      "signIn": "登录方式"
     },
     "capabilities": {
       "chat": "聊天",
@@ -1432,18 +1445,16 @@
         "XAi": "留空则使用 xAI API。",
         "OllamaCloud": "留空则使用 Ollama Cloud。"
       },
-      "apiKey": "API 密钥",
       "keyModes": {
-        "new": "输入密钥",
+        "new": "新增一个",
         "vault": "使用已存储的凭据",
-        "none": "无密钥"
+        "none": "未设置"
       },
-      "newKey": "新 API 密钥",
-      "newKeyHelp": "保存到凭据保管库（加密）并关联到此端点。留空则保留当前密钥。",
+      "newKeyHelp": "加密保存到凭据保管库并关联到此端点。留空则保留当前的值。",
       "storedKey": "已存储的凭据",
       "storedKeyHelp": "在“已存储凭据”页面轮换它后，所有使用它的端点都会获得更新。",
       "pickCredential": "选择凭据",
-      "noKeyWarning": "此提供商通常需要 API 密钥。没有密钥时调用会失败。",
+      "noKeyWarning": "设置之前，对此端点的调用都会失败。",
       "capabilities": "提供",
       "toolsDetected": "运行“验证”时会检测工具支持和嵌入维度。",
       "embeddingDimensions": "嵌入维度",
@@ -1478,7 +1489,11 @@
         "capability": "请选择聊天、嵌入或两者。",
         "credential": "请选择已存储的凭据。",
         "number": "请输入零或更大的数字。"
-      }
+      },
+      "signIn": "登录方式",
+      "secretSource": "机密信息来源",
+      "howTo": "获取方法",
+      "cliNotice": "此方式会在服务器上运行提供商的命令行工具。它只回答聊天提示，因此没有 URL、工具调用或嵌入。"
     },
     "test": {
       "title": "测试模型",
@@ -4203,31 +4218,31 @@
     }
   },
   "modelKeys": {
-    "title": "模型端点没有可用的 API 密钥",
+    "title": "模型端点缺少密钥或登录信息",
     "problem": {
       "missing": "{name} 没有 API 密钥，因此对它的调用会失败。",
       "notFound": "{name} 使用的已存储凭据已不存在。",
       "inactive": "{name} 使用的已存储凭据已被停用。",
       "expired": "{name} 使用的已存储凭据已过期。",
       "platformMissing": "{name} 使用平台模型密钥，但服务器未配置该密钥（MYMORNINGNEWS_ANTHROPIC_API_KEY）。",
-      "platformMissingUser": "{name} 使用此服务器的共享模型密钥，但服务器运营者尚未设置。"
+      "platformMissingUser": "{name} 使用此服务器的共享模型密钥，但服务器运营者尚未设置。",
+      "missingToken": "{name} 没有订阅令牌，因此对它的调用会失败。",
+      "missingFile": "{name} 没有登录文件，因此对它的调用会失败。"
     },
     "fix": "为 {name} 添加密钥",
     "view": "查看模型端点",
     "consequence": {
-      "general": "主题细化、研究运行和简报都需要可用的模型，因此在修复之前它们都会失败。",
-      "wizard": "向导会请模型提出维度和问题，因此在修复之前它会在第一步失败。"
+      "general": "主题细化、研究运行和简报都需要可用的模型，因此在修复之前它们都会失败。"
     },
     "askAdmin": "只有租户管理员可以添加密钥。请联系您的管理员进行修复。",
     "badge": "无 API 密钥",
-    "fixOwnKey": "为 {name} 使用您自己的 API 密钥"
+    "fixOwnKey": "为 {name} 使用您自己的 API 密钥",
+    "badgeToken": "无令牌",
+    "badgeFile": "无登录文件",
+    "fixSignIn": "更新 {name} 的登录信息"
   },
   "setup": {
-    "summary": "添加并验证 My Morning News 所需的内容：一个模型 API 密钥和一个可用的搜索提供商。",
-    "intro": {
-      "title": "请先完成设置。",
-      "message": "在下方所有必需检查都就绪之前，主题、研究运行和简报都处于锁定状态。"
-    },
+    "summary": "在任何人创建主题之前，此工作区需要一个 AI 模型和网络搜索。",
     "blockedNotice": "由于设置尚未完成，一项操作已被阻止。",
     "verifyAll": "全部验证",
     "verifying": "正在通过实时调用进行检查，可能需要几秒钟。",
@@ -4244,48 +4259,21 @@
       "Email": "电子邮件"
     },
     "check": {
-      "title": "{kind}：{name}",
-      "providerModel": "{provider}，模型 {model}",
-      "provider": "提供商：{provider}",
-      "tasks": "用于 {tasks}",
-      "verified": "上次验证：{time}",
-      "platformKey": "此端点使用服务的共享模型密钥，由服务器运营方管理，因此无需在此输入密钥。",
-      "verify": "验证",
-      "retry": "重试",
-      "openSearch": "打开搜索提供商",
-      "openEndpoint": "在模型页面打开 {name}",
-      "openModels": "打开模型页面"
-    },
-    "key": {
-      "label": "{name} 的 API 密钥",
-      "help": "加密保存在已存储凭据中，关联到此端点，并通过实时调用进行检查。",
-      "save": "保存并验证",
-      "saving": "正在保存密钥并通过实时调用检查，可能需要几秒钟。"
+      "title": "{kind}：{name}"
     },
     "required": {
-      "heading": "必需",
-      "none": "服务器未报告任何必需检查。",
       "open": "完成设置",
       "askAdmin": "需要管理员完成设置后才能使用此功能。"
     },
-    "optional": {
-      "heading": "可选",
-      "note": "可选检查从不阻止研究。它们会开启语义匹配和电子邮件发送等附加功能。"
-    },
-    "help": {
-      "title": "其他设置方式",
-      "env": "自托管安装也可以在 docker/.env 中将密钥设置为 MYMORNINGNEWS_ANTHROPIC_API_KEY，然后重启服务器。",
-      "models": "在模型页面使用其他模型提供商"
-    },
     "ready": {
       "title": "一切就绪",
-      "message": "所有必需检查均已通过。现在可以创建主题并运行研究了。",
-      "newTopic": "创建主题",
-      "topics": "前往主题"
+      "message": "AI 模型和网络搜索均可正常工作。创建一个主题即可获得您的第一份简报。",
+      "newTopic": "创建您的第一个主题",
+      "home": "前往首页"
     },
     "gate": {
       "title": "此工作区尚未就绪",
-      "message": "需要管理员添加并验证模型 API 密钥后，任何人才能使用 My Morning News。",
+      "message": "需要管理员连接 AI 模型和网络搜索后，任何人才能使用 My Morning News。",
       "askAdmin": "请让管理员在控制台中打开“设置”，然后在这里重新检查。",
       "checkAgain": "重新检查",
       "checking": "正在检查",
@@ -4299,6 +4287,176 @@
     "nav": {
       "callout": "完成设置",
       "blocked": "完成设置后即可打开{name}"
+    },
+    "title": "设置 My Morning News",
+    "copyCommand": "复制命令",
+    "newTab": "（在新标签页中打开）",
+    "progress": {
+      "label": "设置进度",
+      "step": "第 {number} 步",
+      "model": "AI 模型",
+      "search": "网络搜索",
+      "done": "已完成",
+      "todo": "待完成",
+      "attention": "需要处理"
+    },
+    "model": {
+      "heading": "连接 AI 模型",
+      "intro": "My Morning News 用它来规划研究、阅读来源并撰写您的简报。请选择您希望的付费方式。",
+      "providerLegend": "选择提供商",
+      "groups": {
+        "AgentCli": {
+          "title": "使用您的 AI 订阅",
+          "note": "在服务器上运行提供商的命令行工具，使用您已付费的套餐。"
+        },
+        "Api": {
+          "title": "使用 API 密钥",
+          "note": "API 密钥由提供商按用量计费。"
+        },
+        "SelfHosted": {
+          "title": "运行您自己的模型",
+          "note": "连接您自己运行的模型服务器，例如 Ollama。"
+        }
+      },
+      "recommended": "推荐",
+      "notInstalled": "此服务器上未安装",
+      "unavailable": "此服务器上不可用",
+      "methodLegend": "使用哪种方式登录？",
+      "stepsTitle": "如何连接 {provider}",
+      "connect": "连接并测试",
+      "connecting": "正在测试",
+      "testing": "正在测试连接。这会发送一条简短的提示，使用 CLI 时最多可能需要一分钟。",
+      "turnedOff": "已在此服务器上关闭"
+    },
+    "providers": {
+      "geminiName": "Google Gemini",
+      "compatibleName": "OpenAI 兼容服务器",
+      "ClaudeCode": "Claude Pro 或 Max",
+      "Codex": "ChatGPT Plus、Pro 或 Business",
+      "GeminiCli": "Google 账号",
+      "Mux": "您的 Mux 端点",
+      "Anthropic": "Claude 模型",
+      "OpenAi": "GPT 模型",
+      "Gemini": "Gemini 模型",
+      "XAi": "Grok 模型",
+      "OllamaCloud": "由 Ollama 托管的开放模型",
+      "Ollama": "您自己的电脑或服务器上的模型",
+      "OpenAiCompatible": "vLLM、LM Studio、llama.cpp 等"
+    },
+    "method": {
+      "subscriptionToken": "订阅令牌",
+      "anthropicKey": "Anthropic API 密钥",
+      "openAiKey": "OpenAI API 密钥",
+      "geminiKey": "Gemini API 密钥",
+      "chatGptFile": "ChatGPT 登录文件（{file}）",
+      "googleFile": "Google 登录文件（{file}）",
+      "muxFile": "Mux 配置（{file}）",
+      "serverSignIn": "已在服务器上登录",
+      "serverConfigured": "已在服务器上配置",
+      "noKey": "无需密钥",
+      "apiKey": "API 密钥"
+    },
+    "steps": {
+      "runAnywhere": "在任意一台安装了 {app} 的电脑上运行：",
+      "finishBrowser": "在打开的浏览器窗口中完成登录。",
+      "copyToken": "复制它输出的令牌（以 {prefix} 开头），然后粘贴到下方。",
+      "tokenNote": "该令牌使用您的 Claude 订阅，因此不会另外按用量计费。",
+      "openKeys": "打开提供商的 API 密钥页面并登录：",
+      "createKey": "创建一个密钥，复制后粘贴到下方。",
+      "codexLogin": "在您的电脑上运行此命令，并使用 ChatGPT 登录：",
+      "geminiLogin": "在您的电脑上运行此命令，然后选择“使用 Google 账号登录”：",
+      "chooseFile": "在下方的框中选择它保存的文件。文件位于：",
+      "muxChoose": "在下方的框中选择您的 Mux 端点文件。它通常位于：",
+      "windows": "在 Windows 上：",
+      "fileWarning": "此文件会以您的身份登录。它以加密方式存储，并且仅供此服务器使用。",
+      "muxWarning": "此文件可能包含您的提供商密钥。它以加密方式存储，并且仅供此服务器使用。",
+      "hiddenFolder": "以点开头的文件夹是隐藏的。在 Mac 上，可在文件选择器中按 Command+Shift+句点（.）显示它们，也可以改为粘贴文件内容。",
+      "install": "还没有安装？使用以下命令安装：",
+      "serverOpen": "在运行 My Morning News 的电脑上，打开终端并运行：",
+      "serverClaudeLogin": "输入 /login 并完成登录。",
+      "serverCodexLogin": "打开它显示的链接，输入代码，然后使用 ChatGPT 登录。",
+      "serverGeminiLogin": "选择“使用 Google 账号登录”，然后打开它显示的链接并按提示操作。",
+      "serverMuxConfigure": "输入 /endpoint，选择 Add，然后保存要使用的端点。Mux 会将其写入 {file}。",
+      "serverReturn": "回到此处，点击“连接并测试”。",
+      "ollamaAddress": "输入服务器访问 Ollama 所用的地址。在 macOS 或 Windows 上通过 Docker 运行时，通常是 {url}。",
+      "ollamaModel": "输入您已拉取的模型名称。此命令会列出这些模型：",
+      "compatAddress": "输入该服务器的基础 URL。它通常以 /v1 结尾。",
+      "compatModel": "输入该服务器提供的模型名称。",
+      "selfKey": "粘贴您的服务器要求的密钥。"
+    },
+    "field": {
+      "token": "来自 claude setup-token 的令牌",
+      "file": "登录文件（{file}）",
+      "apiKey": "API 密钥",
+      "keepStored": "留空则保留已存储的值。",
+      "drop": "将 {file} 拖放到此处，或",
+      "chooseFile": "选择文件",
+      "replace": "替换",
+      "fileHelp": "文件在您的浏览器中读取，并且只发送到此服务器。其内容永远不会显示。",
+      "pasteInstead": "改为粘贴内容",
+      "chooseInstead": "改为选择文件",
+      "pasteLabel": "{file} 的内容",
+      "fileReadError": "无法读取该文件。请重试，或改为粘贴其内容。",
+      "fileTooLarge": "该文件大于 64 KB，因此不是登录文件。",
+      "required": {
+        "AccessToken": "请粘贴 claude setup-token 生成的令牌。",
+        "ApiKey": "请粘贴 API 密钥。",
+        "AuthFile": "请选择文件，或粘贴其内容。"
+      },
+      "model": "模型",
+      "modelRequired": "请输入要使用的模型。",
+      "modelHelpRequired": "与 {provider} 列出的完全一致的模型 ID。",
+      "modelHelpDefault": "除非您想使用其他模型，否则请保持不变。",
+      "modelHelpCli": "留空则使用 CLI 的默认模型。",
+      "cliDefault": "CLI 的默认模型",
+      "advanced": "高级",
+      "advancedSummary": "模型：{model}",
+      "baseUrl": "服务器地址",
+      "baseUrlHelp": "My Morning News 服务器访问它所用的地址。",
+      "baseUrlHelpOllama": "在 macOS 或 Windows 上通过 Docker 运行时，通常是 {url}。",
+      "baseUrlInvalid": "请输入以 http:// 或 https:// 开头的地址。"
+    },
+    "result": {
+      "success": "已连接。{provider} 回答了测试提示。",
+      "failed": "测试未通过",
+      "noAnswer": "模型没有回答测试提示。",
+      "keptPrevious": "新的登录未通过测试，因此 My Morning News 继续使用 {provider}。"
+    },
+    "hint": {
+      "token": "如果令牌被拒绝，请再次运行 {command} 并粘贴新令牌。",
+      "file": "如果登录被拒绝，请再次运行 {command} 并选择新的 {file}。",
+      "muxFile": "请检查 {file} 中的端点，然后重新选择该文件。",
+      "server": "请在服务器容器内登录，然后重试：",
+      "apiKey": "请检查密钥是否正确，以及该账户是否已设置付款方式或仍有余额。",
+      "selfHosted": "请检查服务器是否正在运行、此地址能否访问到它，以及模型名称是否正确。"
+    },
+    "connected": {
+      "provider": "提供商",
+      "method": "登录方式",
+      "model": "模型",
+      "verified": "上次验证：{time}",
+      "change": "更改",
+      "fix": "修复",
+      "testAgain": "再次测试",
+      "openModels": "在模型页面打开",
+      "platformKey": "服务器运营方提供的共享密钥"
+    },
+    "search": {
+      "heading": "网络搜索",
+      "ready": "网络搜索可用（{provider}）。",
+      "intro": "研究会在网络上搜索新的来源。内置的 SearXNG 搜索会自动检查。",
+      "open": "打开搜索提供商"
+    },
+    "extras": {
+      "title": "可选附加功能",
+      "count": "已开启 {ready} 项，共 {count} 项",
+      "note": "这些功能从不阻止研究。您可以随时设置。",
+      "what": {
+        "Embeddings": "按含义查找重复的报道，而不仅仅是匹配字词。",
+        "Email": "每次运行后发送简报邮件，附带详情和反馈链接。"
+      },
+      "openModels": "打开模型",
+      "openSettings": "打开设置"
     }
   }
 }

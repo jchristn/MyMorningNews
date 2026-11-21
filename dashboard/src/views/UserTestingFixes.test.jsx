@@ -243,8 +243,8 @@ describe('UT-011: sign-up users hear about a missing platform key in terms they 
     expect(problemMessageKey('missing', false)).toBe('modelKeys.problem.missing');
   });
 
-  it('warns a sign-up user on Home and offers to use their own key', async () => {
-    renderRoute('/dashboard/home', {
+  it('warns a sign-up user on the Models page and offers to use their own key', async () => {
+    renderRoute('/dashboard/models', {
       getTokenDetails: vi.fn(async () => PERSONAL_ADMIN),
       getClientConfig: vi.fn(async () => ({ signupEnabled: true, platformModelKeyConfigured: false })),
       listModelEndpoints: vi.fn(async () => page([{ id: 'mdl_1', name: 'Anthropic', provider: 'Anthropic', credentialId: 'platform:anthropic', supportsChat: true, active: true }])),

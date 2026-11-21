@@ -273,7 +273,11 @@ def render_route(o, supplement, catalog, slugs):
     parts += ["| Status | Meaning |", "|---|---|"]
     for code in sorted(codes):
         parts.append("| {0} | {1} |".format(code, esc(status_meaning(code, codes[code]))))
-    parts += ["", "```bash", curl(o, supplement, catalog), "```", ""]
+    parts.append("")
+    response = supplement.get("routeExamples", {}).get(o.key)
+    if response is not None:
+        parts += ["Response example:", "", "```json", json.dumps(response, indent=2, ensure_ascii=False), "```", ""]
+    parts += ["```bash", curl(o, supplement, catalog), "```", ""]
     return parts
 
 

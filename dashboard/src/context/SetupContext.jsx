@@ -66,8 +66,18 @@ export function SetupProvider({ children }) {
   // Administrators only: live calls for every check. Resolves to the new status; rejects with the API error.
   const verify = useCallback(async () => apply(await apiClient.verifySetup()), [apiClient, apply]);
 
-  // Administrators only: store, attach, and verify a model key. Resolves to the new status; rejects with the API error.
-  const saveModelKey = useCallback(async (modelEndpointId, apiKey) => apply(await apiClient.setSetupModelKey(modelEndpointId, apiKey)), [apiClient, apply]);
+  // Administrators only: connect the chat model (test the new sign-in with one prompt, which can take up to a minute
+  // for a CLI, and switch every chat task to it only when it passes). Resolves to the new status plus the server's
+  // connection result ({ modelEndpointId, succeeded, keptPrevious, message }, or null); rejects with the API error
+  // (400 with details.field for a bad secret, model, or URL).
+  const connect = useCallback(
+    async (body) => {
+      const raw = await apiClient.connectSetup(body);
+      const next = apply(raw);
+      return { ...next, connection: raw && raw.connection && typeof raw.connection === 'object' ? raw.connection : null };
+    },
+    [apiClient, apply]
+  );
 
   useEffect(() => {
     refresh();
@@ -95,9 +105,9 @@ export function SetupProvider({ children }) {
       dismissBlocked: () => setBlockedMessage(null),
       refresh,
       verify,
-      saveModelKey
+      connect
     }),
-    [status, error, loading, checkedAt, blockedMessage, refresh, verify, saveModelKey]
+    [status, error, loading, checkedAt, blockedMessage, refresh, verify, connect]
   );
 
   return <SetupContext.Provider value={value}>{children}</SetupContext.Provider>;

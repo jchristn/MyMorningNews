@@ -218,6 +218,9 @@ class Builder(object):
         return item
 
     def example(self, o):
+        route = self.sup.get("routeExamples", {}).get(o.key)
+        if route is not None:
+            return route
         if not isinstance(o.response, str):
             return None
         return self.sup.get("examples", {}).get(o.response)

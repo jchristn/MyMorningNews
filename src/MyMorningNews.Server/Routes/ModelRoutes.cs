@@ -113,6 +113,7 @@ namespace MyMorningNews.Server.Routes
             string? credential = e.CredentialId;
             string? model = e.Model;
             string? embeddingModel = e.EmbeddingModel;
+            ModelAuthMethodEnum? authMethod = e.AuthMethod;
             if (req.Provider.HasValue) e.Provider = req.Provider.Value;
             string? error = await ApplyAsync(e, req, e.TenantId, ctx).ConfigureAwait(false);
             if (error != null)
@@ -125,7 +126,8 @@ namespace MyMorningNews.Server.Routes
                 || !String.Equals(endpoint, e.Endpoint, StringComparison.Ordinal)
                 || !String.Equals(credential, e.CredentialId, StringComparison.Ordinal)
                 || !String.Equals(model, e.Model, StringComparison.Ordinal)
-                || !String.Equals(embeddingModel, e.EmbeddingModel, StringComparison.Ordinal))
+                || !String.Equals(embeddingModel, e.EmbeddingModel, StringComparison.Ordinal)
+                || authMethod != e.AuthMethod)
             {
                 e.LastValidationSucceeded = null;
             }
@@ -147,7 +149,20 @@ namespace MyMorningNews.Server.Routes
                 if (moves) return "This endpoint uses the platform credential, so its provider and URL cannot be changed. Add your own endpoint instead.";
             }
 
+            bool cli = AgentCliService.IsAgentCli(e.Provider);
+            if (cli && !Server.Models.AgentClis.Allowed()) return "Agent CLIs are turned off on this server (Models.AllowAgentClis). Use a provider API key instead.";
+            if (req.AuthMethod.HasValue)
+            {
+                if (!ModelCredentials.Accepts(e.Provider, req.AuthMethod.Value)) return e.Provider + " cannot sign in with " + AgentCliService.Describe(req.AuthMethod.Value, e.Provider) + ".";
+                e.AuthMethod = req.AuthMethod.Value;
+            }
+            else if (e.AuthMethod.HasValue && !ModelCredentials.Accepts(e.Provider, e.AuthMethod.Value))
+            {
+                e.AuthMethod = null;
+            }
+
             if (req.Endpoint != null) e.Endpoint = req.Endpoint.Trim().Length == 0 ? null : req.Endpoint.Trim();
+            if (cli) e.Endpoint = null;
             if (e.Endpoint != null && !Uri.TryCreate(e.Endpoint, UriKind.Absolute, out Uri? _)) return "Endpoint must be an absolute URL.";
             if (e.Endpoint != null) await MyMorningNews.Core.Security.NetworkGuard.EnsureAllowedAsync(e.Endpoint, ctx.Token).ConfigureAwait(false);
             if (req.CredentialId != null)
@@ -160,12 +175,16 @@ namespace MyMorningNews.Server.Routes
 
             if (!String.IsNullOrEmpty(req.ApiKey))
             {
+                ModelAuthMethodEnum method = AgentCliService.EffectiveMethod(e);
+                if (!AgentCliService.NeedsSecret(method)) method = ModelAuthMethodEnum.ApiKey;
+                string? bad = ModelCredentials.Check(e.Provider, method, req.ApiKey);
+                if (bad != null) return bad;
                 VaultCredential created = await Server.Vault.CreateAsync(tenantId, Context(ctx).UserId, new VaultCredentialUpsertRequest
                 {
-                    Name = e.Name + " key " + DateTime.UtcNow.ToString("yyyyMMdd") + "-" + Guid.NewGuid().ToString("N").Substring(0, 6),
-                    Kind = VaultCredentialKindEnum.ApiKey,
-                    Provider = ProviderFor(e.Provider),
-                    Secret = req.ApiKey
+                    Name = e.Name + (method == ModelAuthMethodEnum.AuthFile ? " sign-in file " : method == ModelAuthMethodEnum.AccessToken ? " token " : " key ") + DateTime.UtcNow.ToString("yyyyMMdd") + "-" + Guid.NewGuid().ToString("N").Substring(0, 6),
+                    Kind = ModelCredentials.KindFor(method),
+                    Provider = ModelCredentials.VaultProviderFor(e.Provider),
+                    Secret = req.ApiKey.Trim()
                 }, ctx.Token).ConfigureAwait(false);
                 e.CredentialId = created.Id;
             }
@@ -185,24 +204,17 @@ namespace MyMorningNews.Server.Routes
             if (req.CachedInputCostPerMTok.HasValue) e.CachedInputCostPerMTok = req.CachedInputCostPerMTok;
             if (req.CacheWriteCostPerMTok.HasValue) e.CacheWriteCostPerMTok = req.CacheWriteCostPerMTok;
             if (req.Active.HasValue) e.Active = req.Active.Value;
+            if (cli)
+            {
+                e.SupportsTools = false;
+                e.SupportsEmbeddings = false;
+                e.Temperature = null;
+            }
+
             if (e.Provider == ModelProviderEnum.OpenAiCompatible && String.IsNullOrEmpty(e.Endpoint)) return "OpenAI-compatible endpoints need a base URL.";
-            if (e.SupportsChat && String.IsNullOrEmpty(e.Model)) return "A chat model is required when the endpoint serves chat.";
+            if (e.SupportsChat && !cli && String.IsNullOrEmpty(e.Model)) return "A chat model is required when the endpoint serves chat.";
             if (e.SupportsEmbeddings && String.IsNullOrEmpty(e.EmbeddingModel)) return "An embedding model is required when the endpoint serves embeddings.";
             return null;
-        }
-
-        private static VaultProviderEnum ProviderFor(ModelProviderEnum provider)
-        {
-            switch (provider)
-            {
-                case ModelProviderEnum.Anthropic: return VaultProviderEnum.Anthropic;
-                case ModelProviderEnum.OpenAi: return VaultProviderEnum.OpenAi;
-                case ModelProviderEnum.Gemini: return VaultProviderEnum.Gemini;
-                case ModelProviderEnum.XAi: return VaultProviderEnum.XAi;
-                case ModelProviderEnum.OllamaCloud: return VaultProviderEnum.OllamaCloud;
-                case ModelProviderEnum.OpenAiCompatible: return VaultProviderEnum.OpenAiCompatible;
-                default: return VaultProviderEnum.Custom;
-            }
         }
 
         private async Task DeleteAsync(HttpContextBase ctx)
@@ -211,6 +223,7 @@ namespace MyMorningNews.Server.Routes
             ModelEndpoint? e = await LoadAsync(ctx).ConfigureAwait(false);
             if (e == null) return;
             await Server.Database.ModelEndpoints.DeleteAsync(e.TenantId, e.Id, ctx.Token).ConfigureAwait(false);
+            Server.Models.AgentClis.DeleteHome(e.TenantId, e.Id);
             await SendJsonAsync(ctx, 204, null).ConfigureAwait(false);
         }
 

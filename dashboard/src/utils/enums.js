@@ -1,5 +1,31 @@
 // Stable server enum codes. Display labels come from the i18n catalog under enums.<name>.<code>.
-export const MODEL_PROVIDERS = ['Anthropic', 'OpenAi', 'OpenAiCompatible', 'Ollama', 'Gemini', 'XAi', 'OllamaCloud'];
+export const MODEL_PROVIDERS = ['Anthropic', 'OpenAi', 'OpenAiCompatible', 'Ollama', 'Gemini', 'XAi', 'OllamaCloud', 'ClaudeCode', 'Codex', 'GeminiCli', 'Mux'];
+
+// Providers that run an agent CLI on the server (Claude Code, Codex, Gemini CLI, Mux). They have no URL, no tool
+// calls, and no embeddings, and can sign in with a subscription token or sign-in file instead of an API key.
+export const AGENT_CLI_PROVIDERS = ['ClaudeCode', 'Codex', 'GeminiCli', 'Mux'];
+
+// ModelAuthMethodEnum: how an endpoint signs in to its provider.
+export const MODEL_AUTH_METHODS = ['ApiKey', 'AccessToken', 'AuthFile', 'ServerSignIn', 'None'];
+
+// The sign-in methods each provider accepts, recommended first. Mirrors AgentCliService.MethodsFor on the server.
+export const AUTH_METHODS_FOR = {
+  ClaudeCode: ['AccessToken', 'ApiKey', 'ServerSignIn'],
+  Codex: ['AuthFile', 'ApiKey', 'ServerSignIn'],
+  GeminiCli: ['AuthFile', 'ApiKey', 'ServerSignIn'],
+  Mux: ['AuthFile', 'ServerSignIn'],
+  Ollama: ['None', 'ApiKey'],
+  OpenAiCompatible: ['ApiKey', 'None']
+};
+
+// The file an AuthFile sign-in is read from, by provider.
+export const AUTH_FILE_NAMES = { Codex: 'auth.json', GeminiCli: 'oauth_creds.json', Mux: 'endpoints.json' };
+
+// Methods that need a stored secret: an API key, a subscription token, or a sign-in file's contents.
+export const SECRET_AUTH_METHODS = ['ApiKey', 'AccessToken', 'AuthFile'];
+
+// The vault kind each secret method stores its secret as (ModelCredentials.KindFor on the server).
+export const VAULT_KIND_FOR_METHOD = { ApiKey: 'ApiKey', AccessToken: 'BearerToken', AuthFile: 'SignInFile' };
 
 export const MODEL_TASKS = ['Refinement', 'QueryPlanning', 'Extraction', 'Scoring', 'Synthesis', 'Prediction', 'Suggestion', 'Composition', 'PodcastScript', 'FeedbackAnalysis', 'Embedding'];
 
@@ -8,7 +34,7 @@ export const STRUCTURED_TASKS = ['Refinement', 'QueryPlanning', 'Extraction', 'S
 
 export const REASONING_EFFORTS = ['None', 'Minimal', 'Low', 'Medium', 'High', 'XHigh', 'Max'];
 
-export const VAULT_KINDS = ['ApiKey', 'BearerToken', 'BasicAuth', 'CustomHeader', 'ConnectionString'];
+export const VAULT_KINDS = ['ApiKey', 'BearerToken', 'BasicAuth', 'CustomHeader', 'ConnectionString', 'SignInFile'];
 
 export const VAULT_PROVIDERS = ['Anthropic', 'OpenAi', 'Gemini', 'XAi', 'OllamaCloud', 'OpenAiCompatible', 'Tavily', 'YouCom', 'Mailgun', 'ElevenLabs', 'Mcp', 'Custom'];
 
@@ -25,8 +51,6 @@ export const PROVIDER_URL_EXAMPLES = {
   OllamaCloud: 'https://ollama.com'
 };
 
-// Providers that take an API key. Local Ollama does not.
-export const PROVIDERS_WITH_KEYS = ['Anthropic', 'OpenAi', 'OpenAiCompatible', 'Gemini', 'XAi', 'OllamaCloud'];
 
 // The vault provider a model provider's key is filed under.
 export const VAULT_PROVIDER_FOR = {
@@ -36,7 +60,11 @@ export const VAULT_PROVIDER_FOR = {
   Gemini: 'Gemini',
   XAi: 'XAi',
   OllamaCloud: 'OllamaCloud',
-  Ollama: 'Custom'
+  Ollama: 'Custom',
+  ClaudeCode: 'Anthropic',
+  Codex: 'OpenAi',
+  GeminiCli: 'Gemini',
+  Mux: 'Custom'
 };
 
 // Topics, refinement, requests, schedules, and runs (Phases 4 and 5).

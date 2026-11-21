@@ -387,7 +387,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 
 ## Route reference
 
-298 routes in 46 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
+300 routes in 46 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
 
 | Group | Routes | What it covers |
 |---|---|---|
@@ -405,8 +405,8 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [Request History](#request-history) | 5 | Captured REST requests with headers and bodies, for troubleshooting. Retention is set by RequestHistory.RetentionDays. |
 | [Settings](#settings) | 4 | Server settings. Secrets come back masked as ******** and a masked or empty secret is left unchanged on update. Some settings take effect only after a restart. |
 | [Vault](#vault) | 7 | Encrypted storage for API keys and tokens that model endpoints, search providers, and voices use. Lists and reads never include the secret; reveal is rate limited and audited. |
-| [Models](#models) | 13 | Model endpoints (Anthropic, OpenAI, Ollama, and compatible servers), task role assignments, and the accounting record of every model call. |
-| [Setup](#setup) | 3 | What the workspace still needs before people can use it (a chat model with a working key, and web search; embeddings and email are optional) and live checks that prove it. Until every required check is Ready, refinement sessions and research requests answer 409 SetupRequired. Verify and model-key are for administrators. |
+| [Models](#models) | 13 | Model endpoints (Anthropic, OpenAI, Gemini, xAI, Ollama, compatible servers, and the agent CLIs in the server image: Claude Code, Codex, Gemini CLI, and Mux), task role assignments, and the accounting record of every model call. |
+| [Setup](#setup) | 5 | What the workspace still needs before people can use it (a chat model with a working key, and web search; embeddings and email are optional) and live checks that prove it. Until every required check is Ready, refinement sessions and research requests answer 409 SetupRequired. Options lists the model providers and how each signs in; connect stores the sign-in and points the chat tasks at the endpoint. Verify, options, connect, and model-key are for administrators. |
 | [Usage](#usage) | 3 | Model usage and cost, grouped or bucketed over time. Members see their own; administrators can see the tenant, and global administrators every tenant. |
 | [Devices](#devices) | 4 | Push notification devices registered by the mobile app for the signed-in user. |
 | [Topics](#topics) | 21 | The things a reader follows. A topic has a research brief, weighted dimensions, constraints (keywords, domains, feeds, tracked questions), and email recipients. |
@@ -2326,7 +2326,7 @@ Encrypted storage for API keys and tokens that model endpoints, search providers
 | Query parameter | Type | Notes |
 |---|---|---|
 | `active` | boolean | Only active (true) or inactive (false) records. |
-| `kind` | enum (`ApiKey`, `BearerToken`, `BasicAuth`, `CustomHeader`, `ConnectionString`) |  |
+| `kind` | enum (`ApiKey`, `BearerToken`, `BasicAuth`, `CustomHeader`, `ConnectionString`, `SignInFile`) |  |
 | `provider` | enum (`Anthropic`, `OpenAi`, `Gemini`, `XAi`, `OllamaCloud`, `OpenAiCompatible`, `Tavily`, `YouCom`, `Mailgun`, `ElevenLabs`, `Mcp`, `Custom`) |  |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
@@ -2514,7 +2514,7 @@ curl -s "http://127.0.0.1:12100/v1.0/api/vault/credentials/vlt_mwpf0312_Er2tY5uI
 
 ## Models
 
-Model endpoints (Anthropic, OpenAI, Ollama, and compatible servers), task role assignments, and the accounting record of every model call.
+Model endpoints (Anthropic, OpenAI, Gemini, xAI, Ollama, compatible servers, and the agent CLIs in the server image: Claude Code, Codex, Gemini CLI, and Mux), task role assignments, and the accounting record of every model call.
 
 | Method | Path | Summary |
 |---|---|---|
@@ -2544,7 +2544,7 @@ Model endpoints (Anthropic, OpenAI, Ollama, and compatible servers), task role a
 | `active` | boolean | Only active (true) or inactive (false) records. |
 | `supportsChat` | boolean | Only endpoints that serve chat. |
 | `supportsEmbeddings` | boolean | Only endpoints that serve embeddings. |
-| `provider` | enum (`Anthropic`, `OpenAi`, `OpenAiCompatible`, `Ollama`, `Gemini`, `XAi`, `OllamaCloud`) |  |
+| `provider` | enum (`Anthropic`, `OpenAi`, `OpenAiCompatible`, `Ollama`, `Gemini`, `XAi`, `OllamaCloud`, `ClaudeCode`, `Codex`, `GeminiCli`, `Mux`) |  |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -2912,12 +2912,14 @@ curl -s "http://127.0.0.1:12100/v1.0/api/llm-calls/llm_mwpfe1fc_Qw8eR1tY4uIo7pAs
 
 ## Setup
 
-What the workspace still needs before people can use it (a chat model with a working key, and web search; embeddings and email are optional) and live checks that prove it. Until every required check is Ready, refinement sessions and research requests answer 409 SetupRequired. Verify and model-key are for administrators.
+What the workspace still needs before people can use it (a chat model with a working key, and web search; embeddings and email are optional) and live checks that prove it. Until every required check is Ready, refinement sessions and research requests answer 409 SetupRequired. Options lists the model providers and how each signs in; connect stores the sign-in and points the chat tasks at the endpoint. Verify, options, connect, and model-key are for administrators.
 
 | Method | Path | Summary |
 |---|---|---|
 | GET | [`/v1.0/api/setup`](#get-v10apisetup) | Workspace setup status |
 | POST | [`/v1.0/api/setup/verify`](#post-v10apisetupverify) | Re-check setup with live calls |
+| GET | [`/v1.0/api/setup/options`](#get-v10apisetupoptions) | Model providers and sign-in methods |
+| POST | [`/v1.0/api/setup/connect`](#post-v10apisetupconnect) | Connect the workspace's chat model |
 | POST | [`/v1.0/api/setup/model-key`](#post-v10apisetupmodel-key) | Store and verify a model API key |
 
 ### GET /v1.0/api/setup
@@ -2958,6 +2960,118 @@ curl -s "http://127.0.0.1:12100/v1.0/api/setup" \
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/setup/verify" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### GET /v1.0/api/setup/options
+
+**Model providers and sign-in methods.** Administrators only. Hosted APIs (API key), agent CLIs in the server image (Claude Code with a claude setup-token token, an Anthropic API key, or the server's sign-in; Codex with auth.json, an OpenAI API key, or the server's sign-in; Gemini CLI with oauth_creds.json, a Gemini API key, or the server's sign-in; Mux with endpoints.json), and self-hosted servers, with whether each is installed and allowed.
+
+- Auth: Any authenticated principal.
+- Response: [`SetupOptionsResponse`](#setupoptionsresponse)
+- Notes: Makes no provider calls. Lists the hosted APIs (`Api`: Anthropic, OpenAI, Gemini, xAI, Ollama Cloud), the agent CLIs in the server image (`AgentCli`: Claude Code, Codex, Gemini CLI, Mux), and self-hosted servers (`SelfHosted`: Ollama, OpenAI-compatible), with their sign-in methods, recommended first; Anthropic is the recommended provider. For an agent CLI, `installed` says whether the executable is in the server image and `available` is false (with `unavailableReason`) when it is missing or when `Models.AllowAgentClis` is off (`turnedOff` true), as on the hosted service. The example shows four of the eleven providers.
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden: Administrators only |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/setup/options" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/setup/connect
+
+**Connect the workspace's chat model.** Administrators only. Stores the secret for the chosen sign-in method encrypted in the vault, points every chat task at the endpoint, and verifies it with a live call. The secret is never returned.
+
+- Auth: Any authenticated principal.
+- Response: [`SetupStatusResponse`](#setupstatusresponse)
+- Notes: `authMethod` defaults to the provider's recommended method. `secret` is an API key, a token from `claude setup-token` (Claude Code), or the contents of a sign-in file (Codex `~/.codex/auth.json`, Gemini CLI `~/.gemini/oauth_creds.json`, Mux `~/.mux/endpoints.json`); it is not needed for `ServerSignIn` and `None`, or when the endpoint already has one for the same method. Reuses the workspace's endpoint for the provider (or `modelEndpointId`), or creates one; stores the secret encrypted in the vault; checks it with a live call; and assigns every chat task to the endpoint. When the workspace already has a working model, the new sign-in is tested first and the working one is kept if the test fails. `connection` on the returned status reports the outcome: `succeeded`, `keptPrevious` (true when the working model stayed in use), and `message` (the test result or the provider's error). The secret is never returned. 400 `ValidationFailed`, with `details.field` naming the request field (`provider`, `authMethod`, `secret`, `model`, or `baseUrl`), for a missing provider, model, or secret, a method the provider does not accept, a secret that does not look right (such as an Anthropic API key sent as a setup-token token), or an agent CLI that is turned off or not installed.
+
+Request body: [`SetupConnectRequest`](#setupconnectrequest).
+
+```json
+{
+  "provider": "ClaudeCode",
+  "authMethod": "AccessToken",
+  "secret": "sk-ant-oat01-EXAMPLE-not-a-real-token"
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `BadRequest`, `ValidationFailed`, `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden: Administrators only |
+| 404 | Not Found |
+
+Response example:
+
+```json
+{
+  "ready": true,
+  "canConfigure": true,
+  "checks": [
+    {
+      "key": "model:mdl_mwq5c1d2_Pq8rSt3uVw6xYz9AbC2dEf",
+      "kind": "Model",
+      "required": true,
+      "state": "Ready",
+      "message": "The CLI answered in 4210 ms. Structured results use JSON replies.",
+      "resourceId": "mdl_mwq5c1d2_Pq8rSt3uVw6xYz9AbC2dEf",
+      "resourceName": "Claude Code",
+      "provider": "ClaudeCode",
+      "model": "claude-opus-5-5",
+      "tasks": [
+        "Refinement",
+        "QueryPlanning",
+        "Extraction",
+        "Scoring",
+        "Synthesis",
+        "Prediction",
+        "Suggestion",
+        "Composition",
+        "PodcastScript",
+        "FeedbackAnalysis"
+      ],
+      "authMethod": "AccessToken",
+      "needsApiKey": true,
+      "hasApiKey": true,
+      "usesPlatformKey": false,
+      "verifiedUtc": "2026-11-20T20:14:31.512094Z"
+    },
+    {
+      "key": "search",
+      "kind": "Search",
+      "required": true,
+      "state": "Ready",
+      "resourceId": "spv_mwpee2c4_Rt5yU8iO1pAs4dFg7Hj",
+      "resourceName": "SearXNG",
+      "provider": "Searxng",
+      "tasks": [],
+      "needsApiKey": false,
+      "hasApiKey": false,
+      "usesPlatformKey": false,
+      "verifiedUtc": "2026-11-20T20:02:05.276221Z"
+    }
+  ],
+  "checkedUtc": "2026-11-20T20:14:31.530117Z",
+  "connection": {
+    "modelEndpointId": "mdl_mwq5c1d2_Pq8rSt3uVw6xYz9AbC2dEf",
+    "succeeded": true,
+    "keptPrevious": false,
+    "message": "The CLI answered in 4210 ms. Structured results use JSON replies."
+  }
+}
+```
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/setup/connect" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### POST /v1.0/api/setup/model-key
@@ -11144,6 +11258,7 @@ Returned by [GET /v1.0/api/model-endpoints](#get-v10apimodel-endpoints), [POST /
 | `createdUtc` | date-time | UTC creation time. |
 | `lastUpdateUtc` | date-time | UTC time of the last update. |
 | `lastValidationSucceeded` | boolean | Whether the endpoint last proved it works: true after a successful validation or model call, false after a failed validation, null when never checked or after its connection settings changed. |
+| `authMethod` | [`ModelAuthMethodEnum`](#modelauthmethodenum) | How the endpoint signs in. Null means the provider's usual method: an API key for hosted APIs, none for Ollama and OpenAI-compatible servers without a key, and the server's own sign-in for agent CLIs. |
 
 #### ModelEndpointUpsertRequest
 
@@ -11157,7 +11272,8 @@ Request body of [POST /v1.0/api/model-endpoints](#post-v10apimodel-endpoints), [
 | `provider` | [`ModelProviderEnum`](#modelproviderenum) | Provider. |
 | `endpoint` | string | Base URL; empty uses the provider default. |
 | `credentialId` | string | Vault credential for the API key; empty string clears it. |
-| `apiKey` | string | Convenience: create a vault credential from this key and reference it. |
+| `apiKey` | string | Convenience: store this secret in the vault and reference it. It is the API key, the access token (claude setup-token), or the sign-in file contents (Codex auth.json, Gemini CLI oauth_creds.json, Mux endpoints.json), depending on AuthMethod. |
+| `authMethod` | [`ModelAuthMethodEnum`](#modelauthmethodenum) | How the endpoint signs in. Null keeps the current method (or the provider's usual one on create). |
 | `model` | string | Chat model. |
 | `embeddingModel` | string | Embedding model. |
 | `supportsChat` | boolean | Serves chat. |
@@ -11196,6 +11312,12 @@ Defaults used when seeding a tenant's model endpoints. Existing endpoints are ne
 | `defaultChatModel` | string | Default chat model for the seeded Anthropic endpoint. Default claude-opus-5-5. |
 | `defaultOllamaEndpoint` | string | Ollama base URL for the seeded embedding endpoint. Default http://host.docker.internal:11434. |
 | `defaultEmbeddingModel` | string | Embedding model for the seeded Ollama endpoint. Default all-minilm (384 dimensions). |
+| `allowAgentClis` | boolean | Whether model endpoints may use agent CLIs (Claude Code, Codex, Gemini CLI, Mux) running inside the server. Default true. Turn it off on a shared or hosted server: the CLIs run as the server's own user, with read-only tools in a private, empty folder per endpoint. |
+| `cliHomeDirectory` | string | Folder that holds a private home folder for each agent CLI endpoint (its sign-in file and an empty working folder). Default .mymorningnews/cli under the server user's home, which the Docker stack keeps in the clihome volume. |
+| `claudeCodeExecutable` | string | Claude Code executable, a name on PATH or a full path. Default claude. |
+| `codexExecutable` | string | Codex executable, a name on PATH or a full path. Default codex. |
+| `geminiCliExecutable` | string | Gemini CLI executable, a name on PATH or a full path. Default gemini. |
+| `muxExecutable` | string | Mux executable, a name on PATH or a full path. Default mux. |
 
 #### ModelTestRequest
 
@@ -12826,6 +12948,17 @@ Returned by [PUT /v1.0/api/settings](#put-v10apisettings).
 | `appliedLive` | array of string | Paths applied immediately. |
 | `pendingRestart` | array of string | Paths that take effect after a restart. |
 
+#### SetupAuthOption
+
+One way a provider can sign in, as offered on the Setup page.
+
+| Field | Type | Description |
+|---|---|---|
+| `method` | [`ModelAuthMethodEnum`](#modelauthmethodenum) | Method. |
+| `input` | string | What the user supplies: Text (a key or token), File (a sign-in file's contents), or None. |
+| `fileName` | string | File name the CLI keeps the sign-in in, for File inputs (auth.json, oauth_creds.json, endpoints.json). |
+| `recommended` | boolean | Whether this is the suggested method for the provider. |
+
 #### SetupCheck
 
 One thing the workspace needs before people can use it, and whether it is ready.
@@ -12841,11 +12974,39 @@ One thing the workspace needs before people can use it, and whether it is ready.
 | `resourceName` | string | Model endpoint or search provider name. |
 | `provider` | string | Provider name (a ModelProviderEnum or SearchProviderKindEnum value). |
 | `model` | string | Model name, for model and embedding checks. |
+| `baseUrl` | string | Server address, for Ollama and OpenAI-compatible model checks shown to administrators. Null otherwise. |
 | `tasks` | array of [`ModelTaskEnum`](#modeltaskenum) | Tasks the endpoint serves, for model checks. |
-| `needsApiKey` | boolean | Whether the provider requires an API key. |
+| `authMethod` | [`ModelAuthMethodEnum`](#modelauthmethodenum) | How the endpoint signs in, for model checks. |
+| `needsApiKey` | boolean | Whether the sign-in method needs a stored secret (an API key, a token, or a sign-in file). |
 | `hasApiKey` | boolean | Whether a key is stored or supplied by the platform. |
 | `usesPlatformKey` | boolean | Whether the endpoint uses the hosted service's key, which users never enter. |
 | `verifiedUtc` | date-time | When the resource was last checked (UTC), or null. |
+
+#### SetupConnectionResult
+
+Outcome of a Setup page connection attempt.
+
+| Field | Type | Description |
+|---|---|---|
+| `modelEndpointId` | string | Endpoint that was connected or tried. |
+| `succeeded` | boolean | Whether the live test prompt succeeded. |
+| `keptPrevious` | boolean | Whether a working model was kept because the new one failed its test. The workspace keeps using it. |
+| `message` | string | The test's result in plain language (the provider's error text on failure). |
+
+#### SetupConnectRequest
+
+Connect the workspace's chat model: choose a provider and how it signs in, then verify it with a live call.
+
+Request body of [POST /v1.0/api/setup/connect](#post-v10apisetupconnect).
+
+| Field | Type | Description |
+|---|---|---|
+| `provider` | [`ModelProviderEnum`](#modelproviderenum) | Provider. Required. |
+| `authMethod` | [`ModelAuthMethodEnum`](#modelauthmethodenum) | Sign-in method. Null uses the provider's recommended method. |
+| `secret` | string | The API key, the access token (claude setup-token), or the sign-in file's contents (auth.json, oauth_creds.json, endpoints.json). Required unless the method is ServerSignIn or None, or the endpoint already has one stored for the same method. Stored encrypted and never returned. |
+| `model` | string | Model. Null uses the provider's default (an agent CLI's own default when it has one). |
+| `baseUrl` | string | Base URL for Ollama and OpenAI-compatible servers. |
+| `modelEndpointId` | string | Endpoint to change. Null reuses the workspace's endpoint for the same provider, or creates one. |
 
 #### SetupModelKeyRequest
 
@@ -12858,11 +13019,144 @@ Request body of [POST /v1.0/api/setup/model-key](#post-v10apisetupmodel-key).
 | `modelEndpointId` | string | Model endpoint. Required. |
 | `apiKey` | string | API key. Required; stored encrypted in the vault and never returned. |
 
+#### SetupOptionsResponse
+
+Model providers the Setup page can connect on this server.
+
+Returned by [GET /v1.0/api/setup/options](#get-v10apisetupoptions).
+
+| Field | Type | Description |
+|---|---|---|
+| `providers` | array of [`SetupProviderOption`](#setupprovideroption) | Providers, recommended first within each group. |
+| `serverContainer` | string | Name of the server container, for sign-in commands such as docker exec -it {container} claude. |
+
+Example:
+
+```json
+{
+  "providers": [
+    {
+      "provider": "Anthropic",
+      "group": "Api",
+      "available": true,
+      "installed": true,
+      "turnedOff": false,
+      "recommended": true,
+      "defaultModel": "claude-opus-5-5",
+      "needsBaseUrl": false,
+      "methods": [
+        {
+          "method": "ApiKey",
+          "input": "Text",
+          "recommended": true
+        }
+      ]
+    },
+    {
+      "provider": "ClaudeCode",
+      "group": "AgentCli",
+      "available": true,
+      "installed": true,
+      "turnedOff": false,
+      "recommended": false,
+      "defaultModel": "claude-opus-5-5",
+      "needsBaseUrl": false,
+      "methods": [
+        {
+          "method": "AccessToken",
+          "input": "Text",
+          "recommended": true
+        },
+        {
+          "method": "ApiKey",
+          "input": "Text",
+          "recommended": false
+        },
+        {
+          "method": "ServerSignIn",
+          "input": "None",
+          "recommended": false
+        }
+      ]
+    },
+    {
+      "provider": "Codex",
+      "group": "AgentCli",
+      "available": true,
+      "installed": true,
+      "turnedOff": false,
+      "recommended": false,
+      "defaultModel": "default",
+      "needsBaseUrl": false,
+      "methods": [
+        {
+          "method": "AuthFile",
+          "input": "File",
+          "fileName": "auth.json",
+          "recommended": true
+        },
+        {
+          "method": "ApiKey",
+          "input": "Text",
+          "recommended": false
+        },
+        {
+          "method": "ServerSignIn",
+          "input": "None",
+          "recommended": false
+        }
+      ]
+    },
+    {
+      "provider": "Ollama",
+      "group": "SelfHosted",
+      "available": true,
+      "installed": true,
+      "turnedOff": false,
+      "recommended": false,
+      "needsBaseUrl": true,
+      "defaultBaseUrl": "http://host.docker.internal:11434",
+      "methods": [
+        {
+          "method": "None",
+          "input": "None",
+          "recommended": true
+        },
+        {
+          "method": "ApiKey",
+          "input": "Text",
+          "recommended": false
+        }
+      ]
+    }
+  ],
+  "serverContainer": "mymorningnews-server"
+}
+```
+
+#### SetupProviderOption
+
+A model provider the Setup page can connect, with the ways it can sign in.
+
+| Field | Type | Description |
+|---|---|---|
+| `provider` | [`ModelProviderEnum`](#modelproviderenum) | Provider. |
+| `group` | [`SetupProviderGroupEnum`](#setupprovidergroupenum) | Group for display. |
+| `available` | boolean | Whether the provider can be used on this server now (for agent CLIs: allowed and installed). |
+| `installed` | boolean | For agent CLIs: whether the executable is installed in the server. Always true for other providers. |
+| `turnedOff` | boolean | For agent CLIs: whether the server's operator turned agent CLIs off (Models.AllowAgentClis). |
+| `unavailableReason` | string | Why the provider is unavailable, when it is. |
+| `recommended` | boolean | Whether this is the suggested provider. |
+| `defaultModel` | string | Model filled in by default; "default" lets an agent CLI choose; null means the user must name one. |
+| `needsBaseUrl` | boolean | Whether a base URL is asked for (Ollama and OpenAI-compatible servers). |
+| `defaultBaseUrl` | string | Base URL filled in by default. |
+| `methods` | array of [`SetupAuthOption`](#setupauthoption) | Sign-in methods, recommended first. |
+
 #### SetupStatusResponse
 
 Whether the workspace has everything it needs, checked with live calls.
 
-Returned by [GET /v1.0/api/setup](#get-v10apisetup), [POST /v1.0/api/setup/verify](#post-v10apisetupverify), [POST /v1.0/api/setup/model-key](#post-v10apisetupmodel-key).
+Returned by [GET /v1.0/api/setup](#get-v10apisetup), [POST /v1.0/api/setup/verify](#post-v10apisetupverify), [POST /v1.0/api/setup/connect](#post-v10apisetupconnect), [POST /v1.0/api/setup/model-key](#post-v10apisetupmodel-key).
 
 | Field | Type | Description |
 |---|---|---|
@@ -12870,6 +13164,7 @@ Returned by [GET /v1.0/api/setup](#get-v10apisetup), [POST /v1.0/api/setup/verif
 | `canConfigure` | boolean | Whether the caller can change the configuration (a global or tenant administrator). |
 | `checks` | array of [`SetupCheck`](#setupcheck) | Checks, required ones first. |
 | `checkedUtc` | date-time | When the status was computed (UTC). |
+| `connection` | [`SetupConnectionResult`](#setupconnectionresult) | Result of the connection attempt, on responses to POST /v1.0/api/setup/connect. Null otherwise. |
 
 Example:
 
@@ -12900,6 +13195,7 @@ Example:
         "PodcastScript",
         "FeedbackAnalysis"
       ],
+      "authMethod": "ApiKey",
       "needsApiKey": true,
       "hasApiKey": false,
       "usesPlatformKey": false
@@ -14314,6 +14610,18 @@ Handling of runs missed while the server was down.
 | `Skip` | Skip missed runs. |
 | `RunOnceOnRecovery` | Run once on recovery. |
 
+#### ModelAuthMethodEnum
+
+How a model endpoint signs in to its provider.
+
+| Value | Description |
+|---|---|
+| `ApiKey` | A provider API key stored in the vault. |
+| `AccessToken` | A long-lived access token stored in the vault, such as the subscription token from claude setup-token. |
+| `AuthFile` | A sign-in file stored in the vault and written to a private folder for each run, such as Codex's auth.json, Gemini CLI's oauth_creds.json, or Mux's endpoints.json. |
+| `ServerSignIn` | The sign-in already on the server, made with the CLI's own login command inside the server container. |
+| `None` | No credentials, such as a local Ollama server. |
+
 #### ModelProviderEnum
 
 Model provider reached through PolyPrompt.
@@ -14327,6 +14635,10 @@ Model provider reached through PolyPrompt.
 | `Gemini` | Google Gemini. |
 | `XAi` | xAI. |
 | `OllamaCloud` | Ollama Cloud. |
+| `ClaudeCode` | Claude Code CLI (claude), signed in with a subscription token from claude setup-token, an Anthropic API key, or the sign-in already on the server. |
+| `Codex` | OpenAI Codex CLI (codex), signed in with the auth.json from a ChatGPT sign-in, an OpenAI API key, or the sign-in already on the server. |
+| `GeminiCli` | Google Gemini CLI (gemini), signed in with the oauth_creds.json from a Google sign-in, a Gemini API key, or the sign-in already on the server. |
+| `Mux` | Mux CLI (mux), configured by its endpoints.json or the configuration already on the server. |
 
 #### ModelTaskEnum
 
@@ -14671,6 +14983,16 @@ State of a setup check.
 | `Unverified` | Configured but not yet proven to work. |
 | `Failed` | The last check failed. |
 
+#### SetupProviderGroupEnum
+
+How a model provider is reached, for grouping choices on the Setup page.
+
+| Value | Description |
+|---|---|
+| `Api` | A hosted model API used with an API key. |
+| `AgentCli` | An agent CLI in the server image, used with a subscription sign-in or an API key. |
+| `SelfHosted` | A model server you run yourself, such as Ollama. |
+
 #### StageStatusEnum
 
 Run stage status.
@@ -14779,6 +15101,7 @@ Kind of stored secret.
 | `BasicAuth` | Username and password. |
 | `CustomHeader` | Value for a named custom header. |
 | `ConnectionString` | Connection string. |
+| `SignInFile` | Contents of a sign-in file, such as Codex's auth.json or Gemini CLI's oauth_creds.json. |
 
 #### VaultProviderEnum
 

@@ -19,21 +19,20 @@ describe('Home', () => {
     expect(screen.queryByText(/Phase 3/)).toBeNull();
   });
 
-  it('warns that the model endpoint has no key and hides external services from members', async () => {
+  it('leaves model problems to the setup gate and hides external services from members', async () => {
     renderRoute('/dashboard/home', {
       getTokenDetails: vi.fn(async () => MEMBER_DETAILS),
       getServerInfo: vi.fn(async () => SERVER_INFO),
       listModelEndpoints: vi.fn(async () => page([NO_KEY])),
       listVaultCredentials: vi.fn(async () => page([]))
     });
-    const warning = await screen.findByTestId('model-key-warning');
-    expect(within(warning).getByText(/Anthropic has no API key/)).toBeInTheDocument();
-    expect(within(warning).getByText(/Ask yours to fix it/)).toBeInTheDocument();
+    // Home opens only once setup is ready, so it does not repeat a key warning.
     // External services are the operator's: members do not see them at all (UT-005).
     await waitFor(() => expect(screen.getByText('Try the API in the explorer')).toBeInTheDocument());
     expect(screen.queryByTestId('external-services')).toBeNull();
     expect(screen.queryByText('Dashboards for metrics, traces, and logs.')).toBeNull();
     expect(screen.queryByText('admin / admin')).toBeNull();
+    expect(screen.queryByTestId('model-key-warning')).toBeNull();
   });
 
   it('shows service credentials to administrators', async () => {
@@ -43,20 +42,11 @@ describe('Home', () => {
 });
 
 describe('Topic wizard', () => {
-  it('warns at the first step when the refinement model has no key', async () => {
-    renderRoute('/dashboard/topics/new', { listModelEndpoints: vi.fn(async () => page([NO_KEY])), listVaultCredentials: vi.fn(async () => page([])) });
-    const warning = await screen.findByTestId('model-key-warning');
-    expect(within(warning).getByText(/fails at the first step/)).toBeInTheDocument();
-    expect(within(warning).getByRole('link', { name: 'Add a key to Anthropic' })).toHaveAttribute('href', '/dashboard/models?endpoint=mdl_1');
-  });
-
-  it('does not warn when the key is stored in the vault', async () => {
-    renderRoute('/dashboard/topics/new', {
-      listModelEndpoints: vi.fn(async () => page([{ ...NO_KEY, credentialId: 'vlt_1' }])),
-      listVaultCredentials: vi.fn(async () => page([{ id: 'vlt_1', name: 'Anthropic API key', active: true }]))
-    });
+  it('does not repeat a key warning the setup gate already covers', async () => {
+    const client = renderRoute('/dashboard/topics/new', { listModelEndpoints: vi.fn(async () => page([NO_KEY])), listVaultCredentials: vi.fn(async () => page([])) });
     expect(await screen.findByRole('heading', { level: 2 })).toBeInTheDocument();
-    await waitFor(() => expect(screen.queryByTestId('model-key-warning')).toBeNull());
+    expect(screen.queryByTestId('model-key-warning')).toBeNull();
+    expect(client.listVaultCredentials).not.toHaveBeenCalled();
   });
 });
 

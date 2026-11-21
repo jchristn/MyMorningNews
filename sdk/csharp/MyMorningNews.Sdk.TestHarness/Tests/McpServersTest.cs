@@ -12,8 +12,9 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
 
     /// <summary>
     /// MCP server registry: validation, create, read, list, update, test and discover against a fake MCP server the harness
-    /// runs on 127.0.0.1, turn a tool on, use it on an agentic topic, an unreachable server (test fails softly, discover is a
-    /// typed 502), a missing tool (404), run tool calls, and delete.
+    /// runs on 127.0.0.1, turn a tool on, use the discovered tool on an agentic topic, a topic refused with 400 for an unknown
+    /// tool ID (checked before discovery, so it runs even when the server cannot reach the fake), an unreachable server
+    /// (test fails softly, discover is a typed 502), a missing tool (404), run tool calls, and delete.
     /// </summary>
     public class McpServersTest : TestBase
     {
@@ -71,6 +72,16 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             context.Cleanup.Remove("mcp:" + dead.Id);
             await StepAsync(context, result, "GET deleted mcp server (404)", () => Helpers.ExpectErrorAsync(() => c.McpServers.GetAsync(dead.Id, token), 404)).ConfigureAwait(false);
 
+            string unknownTool = "mct_missing_" + Helpers.Unique();
+            MyMorningNewsException refused = await StepAsync(context, result, "POST topic with an unknown MCP tool ID (400)", () => Helpers.ExpectErrorAsync(() => c.Topics.CreateAsync(new TopicUpsertRequest
+            {
+                Name = context.Name("agentic-bad"),
+                Brief = "Harness data; refused before it is saved.",
+                AgenticSearch = true,
+                McpToolIds = new List<string> { unknownTool }
+            }, token), 400, "ValidationFailed")).ConfigureAwait(false);
+            Helpers.True(refused.Message.Contains(unknownTool, StringComparison.Ordinal), "the refusal names the unknown tool");
+
             using (FakeMcpServer fake = new FakeMcpServer())
             {
                 McpServer server = await StepAsync(context, result, "POST mcp-servers (fake)", () => c.McpServers.CreateAsync(new McpServerUpsertRequest
@@ -118,13 +129,14 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
                         Name = context.Name("agentic"),
                         Brief = "Harness data for agentic search fields; never run.",
                         AgenticSearch = true,
-                        McpToolIds = new List<string> { echo.Id, "not-a-tool-id" }
+                        McpToolIds = new List<string> { echo.Id, echo.Id }
                     }, token).ConfigureAwait(false);
                     context.Cleanup.Add("topic:" + t.Id, ct => c.Topics.DeleteAsync(t.Id, ct));
                     return t;
                 }).ConfigureAwait(false);
                 Helpers.True(topic.AgenticSearch, "agenticSearch saved");
-                Helpers.True(topic.McpToolIds.Count == 1 && topic.McpToolIds[0] == echo.Id, "mcpToolIds keeps only mct_ IDs");
+                Helpers.True(topic.McpToolIds.Count == 1 && topic.McpToolIds[0] == echo.Id, "mcpToolIds keeps the discovered tool once");
+                await StepAsync(context, result, "PUT topic with an unknown MCP tool ID (400)", () => Helpers.ExpectErrorAsync(() => c.Topics.UpdateAsync(topic.Id, new TopicUpsertRequest { McpToolIds = new List<string> { echo.Id, unknownTool } }, token), 400, "ValidationFailed")).ConfigureAwait(false);
                 TopicDetailResponse detail = await StepAsync(context, result, "GET topic (agentic fields)", () => c.Topics.GetAsync(topic.Id, token)).ConfigureAwait(false);
                 Helpers.True(detail.Topic.AgenticSearch && detail.Topic.McpToolIds.Contains(echo.Id), "agentic fields read back");
                 Topic cleared = await StepAsync(context, result, "PUT topic clears mcpToolIds", () => c.Topics.UpdateAsync(topic.Id, new TopicUpsertRequest { AgenticSearch = false, McpToolIds = new List<string>() }, token)).ConfigureAwait(false);

@@ -27,5 +27,10 @@ namespace MyMorningNews.Core.Responses
         /// When the status was computed (UTC).
         /// </summary>
         public DateTime CheckedUtc { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Result of the connection attempt, on responses to POST /v1.0/api/setup/connect. Null otherwise.
+        /// </summary>
+        public SetupConnectionResult? Connection { get; set; } = null;
     }
 }

@@ -32,6 +32,11 @@ namespace MyMorningNews.Sdk.Models
         public DateTime CheckedUtc { get; set; }
 
         /// <summary>
+        /// Result of the connection attempt, on responses to POST /v1.0/api/setup/connect. Null otherwise.
+        /// </summary>
+        public SetupConnectionResult? Connection { get; set; } = null;
+
+        /// <summary>
         /// Instantiate.
         /// </summary>
         public SetupStatusResponse()

@@ -1058,7 +1058,11 @@
       "Ollama": "Ollama",
       "Gemini": "Gemini",
       "XAi": "xAI",
-      "OllamaCloud": "Ollama Cloud"
+      "OllamaCloud": "Ollama Cloud",
+      "ClaudeCode": "Claude Code",
+      "Codex": "Codex",
+      "GeminiCli": "Gemini CLI",
+      "Mux": "Mux"
     },
     "reasoningEffort": {
       "None": "Nessuno",
@@ -1074,7 +1078,8 @@
       "BearerToken": "Token bearer",
       "BasicAuth": "Autenticazione di base",
       "CustomHeader": "Intestazione personalizzata",
-      "ConnectionString": "Stringa di connessione"
+      "ConnectionString": "Stringa di connessione",
+      "SignInFile": "File di accesso"
     },
     "vaultProvider": {
       "Anthropic": "Anthropic",
@@ -1302,6 +1307,13 @@
     "ttsProvider": {
       "OpenAiCompatibleSpeech": "Sintesi vocale compatibile con OpenAI",
       "Disabled": "Disabilitato"
+    },
+    "authMethod": {
+      "ApiKey": "Chiave API",
+      "AccessToken": "Token di accesso",
+      "AuthFile": "File di accesso",
+      "ServerSignIn": "Accesso eseguito sul server",
+      "None": "Nessuna chiave"
     }
   },
   "vault": {
@@ -1395,7 +1407,8 @@
       "credential": "Credenziale",
       "lastValidated": "Ultima convalida",
       "status": "Stato",
-      "id": "ID"
+      "id": "ID",
+      "signIn": "Accesso"
     },
     "capabilities": {
       "chat": "Chat",
@@ -1432,18 +1445,16 @@
         "XAi": "Lascia vuoto per l’API di xAI.",
         "OllamaCloud": "Lascia vuoto per Ollama Cloud."
       },
-      "apiKey": "Chiave API",
       "keyModes": {
-        "new": "Inserisci una chiave",
+        "new": "Aggiungine uno nuovo",
         "vault": "Usa una credenziale salvata",
-        "none": "Nessuna chiave"
+        "none": "Non impostato"
       },
-      "newKey": "Nuova chiave API",
-      "newKeyHelp": "Salvata nel vault delle credenziali (cifrata) e collegata a questo endpoint. Lascia vuoto per mantenere la chiave attuale.",
+      "newKeyHelp": "Salvato cifrato nel vault delle credenziali e collegato a questo endpoint. Lascia vuoto per mantenere quello attuale.",
       "storedKey": "Credenziale salvata",
       "storedKeyHelp": "Ruotala nella pagina Credenziali salvate e ogni endpoint che la usa riceve la modifica.",
       "pickCredential": "Scegli una credenziale",
-      "noKeyWarning": "Questo provider di solito richiede una chiave API. Senza, le chiamate non riusciranno.",
+      "noKeyWarning": "Le chiamate a questo endpoint non riescono finché non ne ha uno.",
       "capabilities": "Fornisce",
       "toolsDetected": "Il supporto degli strumenti e le dimensioni degli embedding vengono rilevati quando esegui Convalida.",
       "embeddingDimensions": "Dimensioni degli embedding",
@@ -1478,7 +1489,11 @@
         "capability": "Scegli chat, embedding o entrambi.",
         "credential": "Scegli una credenziale salvata.",
         "number": "Inserisci un numero pari o superiore a zero."
-      }
+      },
+      "signIn": "Accesso",
+      "secretSource": "Da dove proviene il segreto",
+      "howTo": "Come ottenerlo",
+      "cliNotice": "Esegue lo strumento da riga di comando del provider sul server. Risponde solo ai prompt di chat, quindi non ha URL, chiamate agli strumenti né embedding."
     },
     "test": {
       "title": "Testa modello",
@@ -4203,31 +4218,31 @@
     }
   },
   "modelKeys": {
-    "title": "L’endpoint del modello non ha una chiave API utilizzabile",
+    "title": "A un endpoint di modello manca la chiave o l’accesso",
     "problem": {
       "missing": "{name} non ha una chiave API, quindi le chiamate non riescono.",
       "notFound": "{name} usa una credenziale salvata che non esiste più.",
       "inactive": "{name} usa una credenziale salvata disattivata.",
       "expired": "{name} usa una credenziale salvata scaduta.",
       "platformMissing": "{name} usa la chiave del modello della piattaforma, ma il server non ne ha nessuna configurata (MYMORNINGNEWS_ANTHROPIC_API_KEY).",
-      "platformMissingUser": "{name} usa la chiave del modello condivisa di questo server, e l’operatore del server non ne ha configurata nessuna."
+      "platformMissingUser": "{name} usa la chiave del modello condivisa di questo server, e l’operatore del server non ne ha configurata nessuna.",
+      "missingToken": "{name} non ha un token di abbonamento, quindi le chiamate non riescono.",
+      "missingFile": "{name} non ha un file di accesso, quindi le chiamate non riescono."
     },
     "fix": "Aggiungi una chiave a {name}",
     "view": "Visualizza gli endpoint dei modelli",
     "consequence": {
-      "general": "Il perfezionamento degli argomenti, le esecuzioni di ricerca e i briefing richiedono un modello funzionante, quindi non riescono finché il problema non viene risolto.",
-      "wizard": "La procedura guidata chiede al modello di proporre dimensioni e domande, quindi non riesce già al primo passaggio finché il problema non viene risolto."
+      "general": "Il perfezionamento degli argomenti, le esecuzioni di ricerca e i briefing richiedono un modello funzionante, quindi non riescono finché il problema non viene risolto."
     },
     "askAdmin": "Solo un amministratore del tenant può aggiungere una chiave. Chiedi al tuo di risolvere il problema.",
     "badge": "Nessuna chiave API",
-    "fixOwnKey": "Usa la tua chiave API per {name}"
+    "fixOwnKey": "Usa la tua chiave API per {name}",
+    "badgeToken": "Nessun token",
+    "badgeFile": "Nessun file di accesso",
+    "fixSignIn": "Aggiorna l’accesso per {name}"
   },
   "setup": {
-    "summary": "Aggiungi e verifica ciò che serve a My Morning News: una chiave API del modello e un provider di ricerca funzionante.",
-    "intro": {
-      "title": "Completa prima la configurazione.",
-      "message": "Argomenti, ricerche e riepiloghi restano bloccati finché tutti i controlli obbligatori qui sotto non sono pronti."
-    },
+    "summary": "Prima che chiunque possa creare argomenti, questo spazio di lavoro ha bisogno di un modello di IA e della ricerca web.",
     "blockedNotice": "Un’azione è stata bloccata perché la configurazione non è completa.",
     "verifyAll": "Verifica tutto",
     "verifying": "Verifica con chiamate reali in corso. Può richiedere alcuni secondi.",
@@ -4244,48 +4259,21 @@
       "Email": "Email"
     },
     "check": {
-      "title": "{kind}: {name}",
-      "providerModel": "{provider}, modello {model}",
-      "provider": "Provider: {provider}",
-      "tasks": "Usato per {tasks}",
-      "verified": "Ultima verifica: {time}",
-      "platformKey": "Questo endpoint usa la chiave del modello condivisa del servizio, gestita dall’operatore del server, quindi qui non c’è alcuna chiave da inserire.",
-      "verify": "Verifica",
-      "retry": "Riprova",
-      "openSearch": "Apri i provider di ricerca",
-      "openEndpoint": "Apri {name} nella pagina Modelli di IA",
-      "openModels": "Apri la pagina Modelli di IA"
-    },
-    "key": {
-      "label": "Chiave API per {name}",
-      "help": "Salvata cifrata nelle tue credenziali salvate, collegata a questo endpoint e verificata con una chiamata reale.",
-      "save": "Salva e verifica",
-      "saving": "Salvataggio della chiave e verifica con una chiamata reale. Può richiedere alcuni secondi."
+      "title": "{kind}: {name}"
     },
     "required": {
-      "heading": "Obbligatori",
-      "none": "Il server non ha segnalato controlli obbligatori.",
       "open": "Completa la configurazione",
       "askAdmin": "Un amministratore deve completare la configurazione perché funzioni."
     },
-    "optional": {
-      "heading": "Facoltativi",
-      "note": "I controlli facoltativi non bloccano mai la ricerca. Attivano funzioni extra come la corrispondenza semantica e l’invio via email."
-    },
-    "help": {
-      "title": "Altri modi per configurarlo",
-      "env": "Nelle installazioni self-hosted puoi anche inserire la chiave in docker/.env come MYMORNINGNEWS_ANTHROPIC_API_KEY e riavviare il server.",
-      "models": "Usa un altro provider di modelli nella pagina Modelli di IA"
-    },
     "ready": {
       "title": "Tutto pronto",
-      "message": "Tutti i controlli obbligatori sono stati superati. Ora puoi creare argomenti ed eseguire ricerche.",
-      "newTopic": "Crea un argomento",
-      "topics": "Vai agli argomenti"
+      "message": "Il modello di IA e la ricerca web funzionano entrambi. Crea un argomento per ricevere il tuo primo briefing.",
+      "newTopic": "Crea il tuo primo argomento",
+      "home": "Vai alla Home"
     },
     "gate": {
       "title": "Questo spazio di lavoro non è pronto",
-      "message": "Un amministratore deve aggiungere e verificare la chiave API del modello prima che chiunque possa usare My Morning News.",
+      "message": "Un amministratore deve collegare un modello di IA e la ricerca web prima che chiunque possa usare My Morning News.",
       "askAdmin": "Chiedi al tuo amministratore di aprire Configurazione nella dashboard, poi controlla di nuovo qui.",
       "checkAgain": "Controlla di nuovo",
       "checking": "Controllo in corso",
@@ -4299,6 +4287,176 @@
     "nav": {
       "callout": "Completa la configurazione",
       "blocked": "{name} si apre al termine della configurazione"
+    },
+    "title": "Configura My Morning News",
+    "copyCommand": "Copia comando",
+    "newTab": "(si apre in una nuova scheda)",
+    "progress": {
+      "label": "Avanzamento della configurazione",
+      "step": "Passaggio {number}",
+      "model": "Modello di IA",
+      "search": "Ricerca web",
+      "done": "Fatto",
+      "todo": "Da fare",
+      "attention": "Richiede attenzione"
+    },
+    "model": {
+      "heading": "Collega un modello di IA",
+      "intro": "My Morning News lo usa per pianificare le ricerche, leggere le fonti e scrivere i tuoi briefing. Scegli come vuoi pagarlo.",
+      "providerLegend": "Scegli un provider",
+      "groups": {
+        "AgentCli": {
+          "title": "Usa il tuo abbonamento IA",
+          "note": "Esegue sul server lo strumento da riga di comando del provider con il piano che già paghi."
+        },
+        "Api": {
+          "title": "Usa una chiave API",
+          "note": "Le chiavi API vengono fatturate a consumo dal provider."
+        },
+        "SelfHosted": {
+          "title": "Esegui il tuo modello",
+          "note": "Collega un server di modelli che gestisci tu, come Ollama."
+        }
+      },
+      "recommended": "Consigliato",
+      "notInstalled": "Non installato su questo server",
+      "unavailable": "Non disponibile su questo server",
+      "methodLegend": "Come deve accedere?",
+      "stepsTitle": "Come collegare {provider}",
+      "connect": "Collega e verifica",
+      "connecting": "Verifica in corso",
+      "testing": "Verifica della connessione in corso. Viene inviato un breve prompt e, con una CLI, può richiedere fino a un minuto.",
+      "turnedOff": "Disattivato su questo server"
+    },
+    "providers": {
+      "geminiName": "Google Gemini",
+      "compatibleName": "Server compatibile con OpenAI",
+      "ClaudeCode": "Claude Pro o Max",
+      "Codex": "ChatGPT Plus, Pro o Business",
+      "GeminiCli": "Account Google",
+      "Mux": "I tuoi endpoint Mux",
+      "Anthropic": "Modelli Claude",
+      "OpenAi": "Modelli GPT",
+      "Gemini": "Modelli Gemini",
+      "XAi": "Modelli Grok",
+      "OllamaCloud": "Modelli aperti ospitati da Ollama",
+      "Ollama": "Modelli sul tuo computer o server",
+      "OpenAiCompatible": "vLLM, LM Studio, llama.cpp e altri"
+    },
+    "method": {
+      "subscriptionToken": "Token di abbonamento",
+      "anthropicKey": "Chiave API di Anthropic",
+      "openAiKey": "Chiave API di OpenAI",
+      "geminiKey": "Chiave API di Gemini",
+      "chatGptFile": "File di accesso di ChatGPT ({file})",
+      "googleFile": "File di accesso di Google ({file})",
+      "muxFile": "Configurazione di Mux ({file})",
+      "serverSignIn": "Accesso già eseguito sul server",
+      "serverConfigured": "Già configurato sul server",
+      "noKey": "Nessuna chiave necessaria",
+      "apiKey": "Chiave API"
+    },
+    "steps": {
+      "runAnywhere": "Su un qualsiasi computer con {app} installato, esegui:",
+      "finishBrowser": "Completa l’accesso nella finestra del browser che si apre.",
+      "copyToken": "Copia il token che viene mostrato (inizia con {prefix}) e incollalo qui sotto.",
+      "tokenNote": "Il token usa il tuo abbonamento Claude, quindi non c’è una fattura separata a consumo.",
+      "openKeys": "Apri la pagina delle chiavi API del provider e accedi:",
+      "createKey": "Crea una chiave, copiala e incollala qui sotto.",
+      "codexLogin": "Sul tuo computer, esegui questo comando e accedi con ChatGPT:",
+      "geminiLogin": "Sul tuo computer, esegui questo comando e scegli Accedi con Google:",
+      "chooseFile": "Scegli nel riquadro qui sotto il file che ha salvato. Si trova qui:",
+      "muxChoose": "Scegli nel riquadro qui sotto il file degli endpoint Mux. Di solito si trova qui:",
+      "windows": "Su Windows:",
+      "fileWarning": "Questo file accede a tuo nome. Viene conservato cifrato e usato solo da questo server.",
+      "muxWarning": "Questo file può contenere le chiavi dei tuoi provider. Viene conservato cifrato e usato solo da questo server.",
+      "hiddenFolder": "Le cartelle che iniziano con un punto sono nascoste. Su un Mac, premi Comando+Maiusc+Punto nella finestra di selezione dei file per mostrarle, oppure incolla il contenuto.",
+      "install": "Non è ancora installato? Installalo con:",
+      "serverOpen": "Sul computer che esegue My Morning News, apri un terminale ed esegui:",
+      "serverClaudeLogin": "Digita /login e completa l’accesso.",
+      "serverCodexLogin": "Apri il link mostrato, inserisci il codice e accedi con ChatGPT.",
+      "serverGeminiLogin": "Scegli Accedi con Google e segui il link mostrato.",
+      "serverMuxConfigure": "Digita /endpoint, scegli Add e salva l’endpoint da usare. Mux lo scrive in {file}.",
+      "serverReturn": "Torna qui e fai clic su Collega e verifica.",
+      "ollamaAddress": "Inserisci l’indirizzo che il server usa per raggiungere Ollama. Da Docker su macOS o Windows, di solito è {url}.",
+      "ollamaModel": "Inserisci il nome di un modello che hai scaricato. Questo comando li elenca:",
+      "compatAddress": "Inserisci l’URL di base del server. Di solito termina con /v1.",
+      "compatModel": "Inserisci il nome del modello servito dal server.",
+      "selfKey": "Incolla la chiave che il tuo server si aspetta."
+    },
+    "field": {
+      "token": "Token da claude setup-token",
+      "file": "File di accesso ({file})",
+      "apiKey": "Chiave API",
+      "keepStored": "Lascia vuoto per mantenere quello già salvato.",
+      "drop": "Trascina qui {file}, oppure",
+      "chooseFile": "Scegli file",
+      "replace": "Sostituisci",
+      "fileHelp": "Il file viene letto nel tuo browser e inviato solo a questo server. Il suo contenuto non viene mai mostrato.",
+      "pasteInstead": "Incolla invece il contenuto",
+      "chooseInstead": "Scegli invece un file",
+      "pasteLabel": "Contenuto di {file}",
+      "fileReadError": "Impossibile leggere il file. Riprova oppure incollane il contenuto.",
+      "fileTooLarge": "Il file supera i 64 KB, quindi non è un file di accesso.",
+      "required": {
+        "AccessToken": "Incolla il token ottenuto con claude setup-token.",
+        "ApiKey": "Incolla la chiave API.",
+        "AuthFile": "Scegli il file o incollane il contenuto."
+      },
+      "model": "Modello",
+      "modelRequired": "Inserisci il modello da usare.",
+      "modelHelpRequired": "L’ID del modello esattamente come lo indica {provider}.",
+      "modelHelpDefault": "Lascia questo valore com’è, a meno che tu non voglia un modello diverso.",
+      "modelHelpCli": "Lascia vuoto per usare il modello predefinito della CLI.",
+      "cliDefault": "Il modello predefinito della CLI",
+      "advanced": "Avanzate",
+      "advancedSummary": "Modello: {model}",
+      "baseUrl": "Indirizzo del server",
+      "baseUrlHelp": "L’indirizzo che il server My Morning News usa per raggiungerlo.",
+      "baseUrlHelpOllama": "Da Docker su macOS o Windows, di solito è {url}.",
+      "baseUrlInvalid": "Inserisci un indirizzo che inizia con http:// o https://."
+    },
+    "result": {
+      "success": "Collegato. {provider} ha risposto al prompt di prova.",
+      "failed": "La verifica non è riuscita",
+      "noAnswer": "Il modello non ha risposto al prompt di prova.",
+      "keptPrevious": "Il nuovo accesso non ha superato la verifica, quindi My Morning News continua a usare {provider}."
+    },
+    "hint": {
+      "token": "Se il token è stato rifiutato, esegui di nuovo {command} e incolla il nuovo token.",
+      "file": "Se l’accesso è stato rifiutato, esegui di nuovo {command} e scegli il nuovo {file}.",
+      "muxFile": "Controlla gli endpoint in {file} e scegli di nuovo il file.",
+      "server": "Accedi all’interno del container del server, poi riprova:",
+      "apiKey": "Verifica che la chiave sia corretta e che l’account abbia la fatturazione configurata o credito residuo.",
+      "selfHosted": "Verifica che il server sia in esecuzione, che questo indirizzo lo raggiunga e che il nome del modello sia corretto."
+    },
+    "connected": {
+      "provider": "Provider",
+      "method": "Accesso",
+      "model": "Modello",
+      "verified": "Verificato {time}",
+      "change": "Cambia",
+      "fix": "Correggi",
+      "testAgain": "Verifica di nuovo",
+      "openModels": "Apri nella pagina Modelli di IA",
+      "platformKey": "Chiave condivisa dell’operatore del server"
+    },
+    "search": {
+      "heading": "Ricerca web",
+      "ready": "La ricerca web funziona ({provider}).",
+      "intro": "La ricerca cerca nuove fonti sul web. La ricerca SearXNG inclusa viene verificata automaticamente.",
+      "open": "Apri Provider di ricerca"
+    },
+    "extras": {
+      "title": "Extra facoltativi",
+      "count": "{ready} di {count} attivati",
+      "note": "Non bloccano mai la ricerca. Configurali quando vuoi.",
+      "what": {
+        "Embeddings": "Trova le notizie ripetute in base al significato, non solo alle parole corrispondenti.",
+        "Email": "Invia un’email con il briefing dopo ogni esecuzione, con link ai dettagli e per il feedback."
+      },
+      "openModels": "Apri Modelli di IA",
+      "openSettings": "Apri Impostazioni"
     }
   }
 }

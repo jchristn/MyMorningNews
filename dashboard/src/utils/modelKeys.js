@@ -1,15 +1,13 @@
-// Which chat endpoints the tenant's research would use, and whether each has an API key it can resolve. Mirrors the
+// Which chat endpoints the tenant's research would use, and whether each has the secret its sign-in method needs (an
+// API key, a subscription token, or a sign-in file). Mirrors the
 // server's ModelGateway.ResolveAsync: a tenant-wide active assignment for the task wins when its endpoint is active,
 // else the oldest active endpoint that supports chat. Pure functions so they are tested without rendering.
 
 import { MODEL_TASKS } from './enums.js';
+import { effectiveAuthMethod, needsSecret } from './modelAuth.js';
 
 // The platform key reference. The server resolves it from its own environment, so the dashboard treats it as set.
 export const PLATFORM_CREDENTIAL_ID = 'platform:anthropic';
-
-// Hosted providers that refuse calls without a key. OpenAI-compatible servers are often local and keyless, and
-// Ollama needs none.
-export const KEY_REQUIRED_PROVIDERS = ['Anthropic', 'OpenAi', 'Gemini', 'XAi', 'OllamaCloud'];
 
 export const CHAT_TASKS = MODEL_TASKS.filter((task) => task !== 'Embedding');
 
@@ -43,12 +41,13 @@ export function resolveChatEndpoint(endpoints, assignments, task) {
   return resolveTaskEndpoint(endpoints, assignments, task, null).endpoint;
 }
 
-// Why an endpoint's key cannot be used: 'missing' (no credential), 'notFound', 'inactive', or 'expired'; null when
-// the key looks usable or the provider needs none. credentials is the tenant's vault list (no secrets), or null when
-// it could not be read, in which case a stored reference is trusted.
-// platformKeySet is the server's client-config flag; only an explicit false reports the platform key as missing.
+// Why an endpoint's secret cannot be used: 'missing' (no credential), 'notFound', 'inactive', or 'expired'; null when
+// it looks usable or the sign-in method needs none (a sign-in on the server, or a keyless local server). credentials
+// is the tenant's vault list (no secrets), or null when it could not be read, in which case a stored reference is
+// trusted. platformKeySet is the server's client-config flag; only an explicit false reports the platform key as
+// missing.
 export function keyProblem(endpoint, credentials, now = new Date(), platformKeySet = undefined) {
-  if (!endpoint || !KEY_REQUIRED_PROVIDERS.includes(endpoint.provider)) return null;
+  if (!endpoint || !needsSecret(effectiveAuthMethod(endpoint))) return null;
   const id = endpoint.credentialId;
   if (!id) return 'missing';
   if (id === PLATFORM_CREDENTIAL_ID) return platformKeySet === false ? 'platformMissing' : null;
@@ -62,7 +61,14 @@ export function keyProblem(endpoint, credentials, now = new Date(), platformKeyS
 
 // The chat endpoints in use whose key is missing or unusable: [{ endpoint, problem, tasks }], one entry per endpoint.
 // Pass tasks to check only some roles (the wizard checks Refinement).
-export function modelKeyProblems({ endpoints, assignments, credentials, tasks = CHAT_TASKS, now = new Date(), platformKeySet = undefined }) {
+export function modelKeyProblems({
+  endpoints,
+  assignments,
+  credentials,
+  tasks = CHAT_TASKS,
+  now = new Date(),
+  platformKeySet = undefined
+}) {
   const found = new Map();
   for (const task of tasks) {
     const endpoint = resolveChatEndpoint(endpoints, assignments, task);

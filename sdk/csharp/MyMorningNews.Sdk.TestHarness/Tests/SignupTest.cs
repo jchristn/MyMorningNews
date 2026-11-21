@@ -16,7 +16,9 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
     /// turns Hosting.PublicSignupEnabled (and email verification) on through the settings API as the administrator and
     /// restores the original settings afterward. It signs up, checks the typed EmailNotVerifiedException at sign-in, reads
     /// the verification and reset links from the personal tenant's outbox through an administrator-made access key,
-    /// verifies, resets the password, and deletes the personal tenant.
+    /// verifies, resets the password, and deletes the personal tenant. Bad links answer 400 with the link code: LinkInvalid for
+    /// a token the server never issued or one issued for the other purpose, LinkUsed for a link used before; a weak
+    /// password is ValidationFailed.
     /// </summary>
     public class SignupTest : TestBase
     {
@@ -85,8 +87,8 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
                     Helpers.NotEmpty(resend.Message, "resend message");
                     await StepAsync(context, result, "POST public/verify-email/resend for nobody (202)", () => anon.Account.ResendVerificationAsync("nobody-" + unique + "@example.com", token)).ConfigureAwait(false);
                     await StepAsync(context, result, "POST public/password/forgot for nobody (202)", () => anon.Account.ForgotPasswordAsync("nobody-" + unique + "@example.com", token)).ConfigureAwait(false);
-                    await StepAsync(context, result, "POST public/verify-email bad token (400)", () => Helpers.ExpectErrorAsync(() => anon.Account.VerifyEmailAsync("not-a-token", token), 400, "ValidationFailed")).ConfigureAwait(false);
-                    await StepAsync(context, result, "POST public/password/reset bad token (400)", () => Helpers.ExpectErrorAsync(() => anon.Account.ResetPasswordAsync("not-a-token", "a long new password", token), 400, "ValidationFailed")).ConfigureAwait(false);
+                    await StepAsync(context, result, "POST public/verify-email bad token (400 LinkInvalid)", () => Helpers.ExpectErrorAsync(() => anon.Account.VerifyEmailAsync("not-a-token", token), 400, "LinkInvalid")).ConfigureAwait(false);
+                    await StepAsync(context, result, "POST public/password/reset bad token (400 LinkInvalid)", () => Helpers.ExpectErrorAsync(() => anon.Account.ResetPasswordAsync("not-a-token", "a long new password", token), 400, "LinkInvalid")).ConfigureAwait(false);
 
                     EnumerationResult<Tenant> tenants = await StepAsync(context, result, "GET tenants (find the personal tenant)", () => c.Admin.Tenants.ListAsync(new TenantListOptions { PageSize = 1000 }, token)).ConfigureAwait(false);
                     Tenant? personal = tenants.Items.FirstOrDefault(t => t.Name == display + " (personal)");
@@ -111,7 +113,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
                         EmailVerifiedResponse verified = await StepAsync(context, result, "POST public/verify-email", () => anon.Account.VerifyEmailAsync(verifyToken, token)).ConfigureAwait(false);
                         Helpers.True(verified.Verified, "verified");
                         Helpers.Equal(email, verified.Email, "verified email");
-                        await StepAsync(context, result, "POST public/verify-email again (400)", () => Helpers.ExpectErrorAsync(() => anon.Account.VerifyEmailAsync(verifyToken, token), 400)).ConfigureAwait(false);
+                        await StepAsync(context, result, "POST public/verify-email again (400 LinkUsed)", () => Helpers.ExpectErrorAsync(() => anon.Account.VerifyEmailAsync(verifyToken, token), 400, "LinkUsed")).ConfigureAwait(false);
 
                         TokenResponse session = await StepAsync(context, result, "login after verifying", () => anon.LoginAsync(email, password, null, token)).ConfigureAwait(false);
                         Helpers.Equal(tid, session.TenantId, "signed in to the personal tenant");
@@ -123,10 +125,12 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
                         AccountMessageResponse forgot = await StepAsync(context, result, "POST public/password/forgot (202)", () => anon.Account.ForgotPasswordAsync(email, token)).ConfigureAwait(false);
                         Helpers.NotEmpty(forgot.Message, "forgot message");
                         string resetToken = await StepAsync(context, result, "read the reset link", () => LinkTokenAsync(outbox, EmailTemplateEnum.PasswordReset, token)).ConfigureAwait(false);
-                        await StepAsync(context, result, "POST public/password/reset weak password (400)", () => Helpers.ExpectErrorAsync(() => anon.Account.ResetPasswordAsync(resetToken, "short", token), 400)).ConfigureAwait(false);
+                        await StepAsync(context, result, "POST public/password/reset with the verification link (400 LinkInvalid)", () => Helpers.ExpectErrorAsync(() => anon.Account.ResetPasswordAsync(verifyToken, "a long new password", token), 400, "LinkInvalid")).ConfigureAwait(false);
+                        await StepAsync(context, result, "POST public/password/reset weak password (400 ValidationFailed)", () => Helpers.ExpectErrorAsync(() => anon.Account.ResetPasswordAsync(resetToken, "short", token), 400, "ValidationFailed")).ConfigureAwait(false);
                         string newPassword = password + " renewed";
                         PasswordResetResponse reset = await StepAsync(context, result, "POST public/password/reset", () => anon.Account.ResetPasswordAsync(resetToken, newPassword, token)).ConfigureAwait(false);
                         Helpers.True(reset.Reset, "reset");
+                        await StepAsync(context, result, "POST public/password/reset again (400 LinkUsed)", () => Helpers.ExpectErrorAsync(() => anon.Account.ResetPasswordAsync(resetToken, newPassword + " again", token), 400, "LinkUsed")).ConfigureAwait(false);
                         await StepAsync(context, result, "login with the old password (401)", () => Helpers.ExpectErrorAsync(() => anon.LoginAsync(email, password, null, token), 401)).ConfigureAwait(false);
                         await StepAsync(context, result, "login with the new password", () => anon.LoginAsync(email, newPassword, null, token)).ConfigureAwait(false);
                         await anon.LogoutAsync(token).ConfigureAwait(false);

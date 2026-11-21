@@ -82,7 +82,8 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.Active,
                 DateTime.SpecifyKind(obj.CreatedUtc, DateTimeKind.Utc),
                 DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
-                obj.LastValidationSucceeded).ConfigureAwait(false);
+                obj.LastValidationSucceeded,
+                (object?)obj.AuthMethod?.ToString()).ConfigureAwait(false);
             return obj;
         }
 
@@ -134,7 +135,8 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.LastValidationResult,
                 obj.Active,
                 DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
-                obj.LastValidationSucceeded).ConfigureAwait(false);
+                obj.LastValidationSucceeded,
+                (object?)obj.AuthMethod?.ToString()).ConfigureAwait(false);
             if (affected < 1) throw new KeyNotFoundException("ModelEndpoint " + obj.Id + " was not found.");
             return obj;
         }
@@ -229,6 +231,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             obj.CreatedUtc = DateTime.SpecifyKind(reader.GetDateTime(24), DateTimeKind.Utc);
             obj.LastUpdateUtc = DateTime.SpecifyKind(reader.GetDateTime(25), DateTimeKind.Utc);
             obj.LastValidationSucceeded = (reader.IsDBNull(26) ? (bool?)null : reader.GetBoolean(26));
+            obj.AuthMethod = (reader.IsDBNull(27) ? null : Enum.Parse<ModelAuthMethodEnum>(reader.GetString(27)));
             return obj;
         }
 

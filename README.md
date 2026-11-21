@@ -36,8 +36,9 @@ email. Your feedback teaches it what you care about, and it keeps score on its o
 - Learns from you. Rate anything and say why, on the web, in email, in the app, or through MCP. The system turns
   feedback into preferences you approve, and the Insights pages chart relevance, accuracy, feedback, cost, and usage.
 - Uses the model you choose. Model access goes through [PolyPrompt](https://github.com/jchristn/PolyPrompt):
-  Anthropic (the default), OpenAI, OpenAI-compatible servers, Ollama, Ollama Cloud, Gemini, and xAI, assignable
-  per task. Topics can opt in to agentic search, where the model searches, reads, and calls the MCP tools you allow.
+  Anthropic (the default), OpenAI, OpenAI-compatible servers, Ollama, Ollama Cloud, Gemini, and xAI, plus the agent
+  CLIs Claude Code, Codex, Gemini CLI, and Mux running in the server, assignable per task. Topics can opt in to
+  agentic search, where the model searches, reads, and calls the MCP tools you allow.
 - Runs for one person or many. Tenants, users, roles and permissions, access keys, signed requests, audit, request
   history, plans with usage caps, promotional codes, and an optional public sign-up for a hosted service.
 
@@ -92,11 +93,20 @@ Open the dashboard at http://127.0.0.1:12101 and sign in. Change these credentia
 | Password | `password` |
 | Tenant | `default` (or leave it blank) |
 
-After you sign in, the dashboard shows the Setup page until the workspace has what it needs: a chat model whose key
-passed a live test call, and a web search provider that answered a test query (the bundled SearXNG passes on its own).
-Paste your Anthropic API key there and it is stored encrypted and checked on the spot. If you set
-`MYMORNINGNEWS_ANTHROPIC_API_KEY` in `.env` before the first start, the Setup page checks that key instead. People
-who are not administrators see a notice until an administrator finishes. Then create a topic from Topics, New topic.
+After you sign in, the dashboard shows the Setup page until the workspace has what it needs: a chat model that
+answered a live test prompt, and a web search provider that answered a test query (the bundled SearXNG passes on its
+own). The Setup page lets you connect the chat model in one of three ways:
+
+- Your AI subscription, through an agent CLI in the server: Claude Code with a token from `claude setup-token`, Codex
+  with the `auth.json` that `codex login` writes, Gemini CLI with the sign-in file from your Google sign-in
+  (`~/.gemini/oauth_creds.json`), or Mux.
+- An API key for Anthropic, OpenAI, Google Gemini, xAI, or Ollama Cloud.
+- Your own model server: Ollama or any OpenAI-compatible server.
+
+Keys, tokens, and sign-in files are stored encrypted, and the page tests each choice with a live prompt right away.
+If you set `MYMORNINGNEWS_ANTHROPIC_API_KEY` in `.env` before the first start, the Setup page checks that key instead.
+People who are not administrators see a notice until an administrator finishes. Then create a topic from Topics, New
+topic.
 
 Sign in through the API:
 
@@ -118,6 +128,15 @@ feedback, created without model calls or an API key.
 The default chat model is Anthropic `claude-opus-5-5`. Any task (refinement, synthesis, scoring, composition, podcast
 script, feedback analysis) can be assigned to another endpoint under Configuration, Models. Embeddings default to
 Ollama `all-minilm` when Ollama is available (`docker compose --profile ollama up -d`).
+
+A chat endpoint can also be an agent CLI that runs inside the server container: Claude Code, Codex, Gemini CLI, or
+Mux, signed in with your subscription or an API key. Each CLI endpoint gets its own home folder under
+`Models.CliHomeDirectory` (the `clihome` volume in Docker) and runs in the CLI's most restricted permission mode in an
+empty working folder, so it cannot read or change anything else on the server. The sign-in file is written there
+only when the stored copy changes, so tokens the CLI refreshes are kept. CLI endpoints make no tool calls, so a topic
+with agentic search falls back to the fixed query plan when its model is a CLI. They answer structured requests in
+JSON and do not provide embeddings. Set `MYMORNINGNEWS_MODELS_ALLOW_AGENT_CLIS=false` to turn them off; the hosted
+overlay does.
 
 A model served by Ollama or another OpenAI-compatible server can call tools but
 cannot search the web by itself; only OpenAI and xAI endpoints offer hosted web search. The bundled

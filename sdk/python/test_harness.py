@@ -1394,6 +1394,57 @@ def t_setup_offline(h: Harness) -> None:
     offline = MyMorningNewsClient("http://127.0.0.1:1")
     expect_value_error(lambda: offline.setup.set_model_key("mdl_x", ""))
     expect_value_error(lambda: offline.setup.set_model_key("", "sk-test"))
+    expect_value_error(lambda: offline.setup.connect(""))
+
+    opts = mmn.SetupOptions.from_dict({"serverContainer": "mymorningnews-server", "providers": [
+        {"provider": "ClaudeCode", "group": "AgentCli", "available": False, "installed": True, "turnedOff": True, "unavailableReason": "turned off",
+         "recommended": False, "defaultModel": "claude-opus-5-5", "needsBaseUrl": False,
+         "methods": [{"method": "AccessToken", "input": "Text", "recommended": True},
+                     {"method": "ApiKey", "input": "Text", "recommended": False},
+                     {"method": "ServerSignIn", "input": "None", "recommended": False}]},
+        {"provider": "Codex", "group": "AgentCli", "available": True, "installed": True, "recommended": False, "defaultModel": "default",
+         "needsBaseUrl": False, "methods": [{"method": "AuthFile", "input": "File", "fileName": "auth.json", "recommended": True}]}]})
+    eq(opts.server_container, "mymorningnews-server", "server_container")
+    check(isinstance(opts.providers[0], mmn.SetupProviderOption), "providers are SetupProviderOption models")
+    check(isinstance(opts.providers[0].methods[0], mmn.SetupAuthOption), "methods are SetupAuthOption models")
+    eq(opts.providers[0].group, mmn.SetupProviderGroup.AGENT_CLI.value, "group")
+    eq(opts.providers[0].methods[0].method, mmn.ModelAuthMethod.ACCESS_TOKEN.value, "first method")
+    eq(opts.providers[0].unavailable_reason, "turned off", "unavailable_reason")
+    eq(opts.providers[0].turned_off, True, "turned_off")
+    eq(opts.providers[0].recommended, False, "Claude Code is not the recommended provider")
+    tried = mmn.SetupStatus.from_dict({"ready": True, "canConfigure": True, "checks": [
+        {"key": "model:mdl_x", "kind": "Model", "required": True, "state": "Ready", "provider": "Ollama", "baseUrl": "http://127.0.0.1:12120", "authMethod": "None"}],
+        "connection": {"modelEndpointId": "mdl_y", "succeeded": False, "keptPrevious": True, "message": "401 Unauthorized"}})
+    eq(tried.checks[0].base_url, "http://127.0.0.1:12120", "check base_url")
+    check(isinstance(tried.connection, mmn.SetupConnectionResult), "connection is a SetupConnectionResult")
+    check(tried.connection.succeeded is False and tried.connection.kept_previous is True, "failed test kept the working model")
+    eq(tried.connection.model_endpoint_id, "mdl_y", "tried endpoint")
+    check(mmn.SetupStatus.from_dict({"ready": False, "checks": []}).connection is None, "connection is None outside connect")
+    eq(opts.providers[1].methods[0].file_name, "auth.json", "file_name")
+
+    class _Capture(requests.Session):
+        def __init__(self) -> None:
+            super().__init__()
+            self.seen: List[requests.PreparedRequest] = []
+
+        def send(self, request: requests.PreparedRequest, **kwargs: Any) -> requests.Response:  # type: ignore[override]
+            self.seen.append(request)
+            r = requests.Response()
+            r.status_code = 200
+            r.headers["Content-Type"] = "application/json"
+            r._content = json.dumps({"ready": False, "canConfigure": True, "checks": [], "checkedUtc": "2026-01-01T00:00:00Z"}).encode("utf-8")
+            return r
+
+    cap = _Capture()
+    fake = MyMorningNewsClient("http://127.0.0.1:1", token="test-token", session=cap)
+    fake.setup.options()
+    fake.setup.connect(mmn.ModelProvider.CLAUDE_CODE, auth_method=mmn.ModelAuthMethod.ACCESS_TOKEN, secret="sk-ant-oat01-test")
+    eq(cap.seen[0].method, "GET", "options method")
+    check(str(cap.seen[0].url).endswith("/v1.0/api/setup/options"), "options path")
+    eq(cap.seen[1].method, "POST", "connect method")
+    check(str(cap.seen[1].url).endswith("/v1.0/api/setup/connect"), "connect path")
+    sent = json.loads(cap.seen[1].body or b"{}")
+    eq(sent, {"provider": "ClaudeCode", "authMethod": "AccessToken", "secret": "sk-ant-oat01-test"}, "connect body is camelCase and drops unset values")
 
 
 @case("Setup: status, set_model_key (unreachable endpoint), 403 for a plain user")
@@ -1448,10 +1499,43 @@ def t_setup(h: Harness) -> None:
         eq(u.setup.status().can_configure, False, "a plain user cannot configure")
         expect_error(mmn.PermissionDeniedError, u.setup.verify)
         expect_error(mmn.PermissionDeniedError, lambda: u.setup.set_model_key(e.id, "sk-harness"))
+        expect_error(mmn.PermissionDeniedError, u.setup.options)
+        expect_error(mmn.PermissionDeniedError, lambda: u.setup.connect(mmn.ModelProvider.ANTHROPIC, mmn.ModelAuthMethod.API_KEY, "sk-harness"))
         u.logout()
     remove_user()
     remove_endpoint_and_key()
     keep["credential"] = None
+
+
+@case("Setup: options list Claude Code with a token first; connect refuses bad requests without changes")
+def t_setup_options(h: Harness) -> None:
+    if not h.state.get("is_admin"):
+        raise Skip("needs an administrator")
+    opts = h.client.setup.options()
+    check(opts.providers, "options list providers")
+    check(opts.server_container, "options name the server container")
+    cc = next((p for p in opts.providers if p.provider == mmn.ModelProvider.CLAUDE_CODE.value), None)
+    check(cc is not None, "Claude Code is offered")
+    eq(cc.group, mmn.SetupProviderGroup.AGENT_CLI.value, "Claude Code is an agent CLI")
+    check(cc.methods, "Claude Code has sign-in methods")
+    eq(cc.methods[0].method, mmn.ModelAuthMethod.ACCESS_TOKEN.value, "Claude Code lists AccessToken first")
+    eq(cc.methods[0].recommended, True, "the first method is recommended")
+    if not cc.available:
+        check(cc.unavailable_reason, "an unavailable CLI says why")
+    check(isinstance(cc.turned_off, bool), "turned_off is reported")
+    if cc.turned_off:
+        eq(cc.available, False, "a turned-off CLI is unavailable")
+    anthropic = next((p for p in opts.providers if p.provider == mmn.ModelProvider.ANTHROPIC.value), None)
+    check(anthropic is not None and anthropic.group == mmn.SetupProviderGroup.API.value, "Anthropic is a hosted API")
+    check(any(m.method == mmn.ModelAuthMethod.API_KEY.value for m in anthropic.methods), "Anthropic signs in with an API key")
+    eq(anthropic.recommended, True, "Anthropic is the recommended provider")
+    check(h.client.setup.status().connection is None, "GET setup carries no connection result")
+    # Both are refused before anything is stored: an API key pasted as a setup-token token, and an unknown endpoint.
+    bad = expect_error(mmn.BadRequestError, lambda: h.client.setup.connect(mmn.ModelProvider.CLAUDE_CODE, mmn.ModelAuthMethod.ACCESS_TOKEN, "sk-ant-api03-harness"),
+                       code="ValidationFailed")
+    eq((bad.details or {}).get("field"), "secret" if cc.available else "provider", "details.field names the bad field")
+    expect_error(NotFoundError, lambda: h.client.setup.connect(mmn.ModelProvider.ANTHROPIC, mmn.ModelAuthMethod.API_KEY, "sk-harness",
+                                                               model_endpoint_id="mdl_missing"))
 
 
 @case("Model endpoints: delete, then 404")
@@ -1729,8 +1813,9 @@ def t_signup(h: Harness) -> None:
             check(anon.account.resend_verification(email).get("message"), "resend message")
             anon.account.resend_verification("nobody-" + unique + "@example.com")
             anon.account.forgot_password("nobody-" + unique + "@example.com")
-            expect_error(BadRequestError, lambda: anon.account.verify_email("not-a-token"), code="ValidationFailed")
-            expect_error(BadRequestError, lambda: anon.account.reset_password("not-a-token", "a long new password"), code="ValidationFailed")
+            # A token the server never issued is LinkInvalid on both link routes.
+            expect_error(BadRequestError, lambda: anon.account.verify_email("not-a-token"), code="LinkInvalid")
+            expect_error(BadRequestError, lambda: anon.account.reset_password("not-a-token", "a long new password"), code="LinkInvalid")
 
             tenants = h.client.request("GET", "/v1.0/tenants", query={"page_size": 1000})
             personal = next((t for t in tenants["items"] if t["name"] == display + " (personal)"), None)
@@ -1745,16 +1830,18 @@ def t_signup(h: Harness) -> None:
                 verify_token = _link_token(outbox, "VerifyEmail")
                 verified = anon.account.verify_email(verify_token)
                 check(verified.get("verified") is True and verified.get("email") == email, "verified")
-                expect_error(BadRequestError, lambda: anon.account.verify_email(verify_token))
+                expect_error(BadRequestError, lambda: anon.account.verify_email(verify_token), code="LinkUsed")
                 session = anon.login(email, password)
                 eq(session.tenant_id, pid, "signed in to the personal tenant")
                 eq(anon.account.usage().topics, 0, "no topics yet")
                 anon.logout()
                 anon.account.forgot_password(email)
                 reset_token = _link_token(outbox, "PasswordReset")
-                expect_error(BadRequestError, lambda: anon.account.reset_password(reset_token, "short"))
+                expect_error(BadRequestError, lambda: anon.account.reset_password(verify_token, "a long new password"), code="LinkInvalid")
+                expect_error(BadRequestError, lambda: anon.account.reset_password(reset_token, "short"), code="ValidationFailed")
                 renewed = password + " renewed"
                 check(anon.account.reset_password(reset_token, renewed).get("reset") is True, "reset")
+                expect_error(BadRequestError, lambda: anon.account.reset_password(reset_token, renewed + " again"), code="LinkUsed")
                 expect_error(AuthenticationError, lambda: anon.login(email, password))
                 anon.login(email, renewed)
                 anon.logout()
@@ -1790,6 +1877,13 @@ def t_mcp_servers(h: Harness) -> str:
     c.mcp_servers.delete(dead.id)
     expect_error(NotFoundError, lambda: c.mcp_servers.get(dead.id))
 
+    # Topics refuse tool IDs that are not tools of an MCP server in the tenant. Checked before discovery, so it runs
+    # even when the server cannot reach the fake MCP server.
+    unknown_tool = "mct_missing_" + uuid.uuid4().hex[:12]
+    refused = expect_error(BadRequestError, lambda: c.topics.create(name=h.name("agentic-bad"), brief="Harness data; refused before it is saved.",
+                                                                   agentic_search=True, mcp_tool_ids=[unknown_tool]), code="ValidationFailed")
+    check(unknown_tool in refused.message, "the refusal names the unknown tool")
+
     fake, url = _start_fake_mcp()
     try:
         server = c.mcp_servers.create(name=h.name("mcp"), url=url, transport=mmn.McpTransport.STREAMABLE_HTTP)
@@ -1811,10 +1905,11 @@ def t_mcp_servers(h: Harness) -> str:
         again = c.mcp_servers.discover(server.id)
         check(next(t for t in again.tools if t.name == "harness_echo").enabled is True, "rediscovery keeps the setting")
 
-        topic = c.topics.create(name=h.name("agentic"), brief="Harness data for agentic fields; never run.", agentic_search=True, mcp_tool_ids=[echo.id, "not-a-tool-id"])
+        topic = c.topics.create(name=h.name("agentic"), brief="Harness data for agentic fields; never run.", agentic_search=True, mcp_tool_ids=[echo.id, echo.id])
         h.on_cleanup("agentic topic", lambda: c.topics.delete(topic.id))
         check(topic.agentic_search is True, "agenticSearch saved")
-        eq(topic.mcp_tool_ids, [echo.id], "mcpToolIds keeps only mct_ IDs")
+        eq(topic.mcp_tool_ids, [echo.id], "mcpToolIds keeps the discovered tool once")
+        expect_error(BadRequestError, lambda: c.topics.update(topic.id, mcp_tool_ids=[echo.id, unknown_tool]), code="ValidationFailed")
         read = c.topics.get(topic.id).topic
         check(read.agentic_search is True and echo.id in read.mcp_tool_ids, "agentic fields read back")
         cleared = c.topics.update(topic.id, agentic_search=False, mcp_tool_ids=[])

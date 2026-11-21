@@ -206,6 +206,17 @@ export class ApiClient {
     return this._request('POST', '/v1.0/api/setup/model-key', { body: { modelEndpointId, apiKey } });
   }
 
+  // Administrators: the providers and sign-in methods the Setup page offers, and the server container's name.
+  getSetupOptions() {
+    return this._request('GET', '/v1.0/api/setup/options');
+  }
+
+  // Administrators: store the secret, point every chat task at the provider's endpoint, and run a live test prompt.
+  // Resolves to the new setup status (the model check is Failed when the test did not pass).
+  connectSetup(body) {
+    return this._request('POST', '/v1.0/api/setup/connect', { body });
+  }
+
   // Profile
   getMe() {
     return this._request('GET', '/v1.0/api/me');

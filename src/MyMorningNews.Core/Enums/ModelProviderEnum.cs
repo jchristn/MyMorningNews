@@ -38,6 +38,29 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// Ollama Cloud.
         /// </summary>
-        OllamaCloud
+        OllamaCloud,
+
+        /// <summary>
+        /// Claude Code CLI (claude), signed in with a subscription token from claude setup-token, an Anthropic API key, or
+        /// the sign-in already on the server.
+        /// </summary>
+        ClaudeCode,
+
+        /// <summary>
+        /// OpenAI Codex CLI (codex), signed in with the auth.json from a ChatGPT sign-in, an OpenAI API key, or the sign-in
+        /// already on the server.
+        /// </summary>
+        Codex,
+
+        /// <summary>
+        /// Google Gemini CLI (gemini), signed in with the oauth_creds.json from a Google sign-in, a Gemini API key, or the
+        /// sign-in already on the server.
+        /// </summary>
+        GeminiCli,
+
+        /// <summary>
+        /// Mux CLI (mux), configured by its endpoints.json or the configuration already on the server.
+        /// </summary>
+        Mux
     }
 }

@@ -961,7 +961,8 @@ class PreferenceStatus(str, Enum):
 
 
 class ModelProvider(str, Enum):
-    """Model provider reached through PolyPrompt."""
+    """Model provider: a hosted API or self-hosted server reached through PolyPrompt, or an agent CLI in the
+    server image (``CLAUDE_CODE``, ``CODEX``, ``GEMINI_CLI``, ``MUX``)."""
 
     ANTHROPIC = "Anthropic"
     OPEN_AI = "OpenAi"
@@ -970,6 +971,20 @@ class ModelProvider(str, Enum):
     GEMINI = "Gemini"
     X_AI = "XAi"
     OLLAMA_CLOUD = "OllamaCloud"
+    CLAUDE_CODE = "ClaudeCode"
+    CODEX = "Codex"
+    GEMINI_CLI = "GeminiCli"
+    MUX = "Mux"
+
+
+class ModelAuthMethod(str, Enum):
+    """How a model endpoint signs in to its provider."""
+
+    API_KEY = "ApiKey"
+    ACCESS_TOKEN = "AccessToken"
+    AUTH_FILE = "AuthFile"
+    SERVER_SIGN_IN = "ServerSignIn"
+    NONE = "None"
 
 
 class ModelTask(str, Enum):
@@ -1020,6 +1035,7 @@ class VaultCredentialKind(str, Enum):
     BASIC_AUTH = "BasicAuth"
     CUSTOM_HEADER = "CustomHeader"
     CONNECTION_STRING = "ConnectionString"
+    SIGN_IN_FILE = "SignInFile"
 
 
 class VaultProvider(str, Enum):
@@ -1199,6 +1215,14 @@ class SetupCheckState(str, Enum):
     MISSING = "Missing"
     UNVERIFIED = "Unverified"
     FAILED = "Failed"
+
+
+class SetupProviderGroup(str, Enum):
+    """How a model provider is reached, for grouping choices on the Setup page."""
+
+    API = "Api"
+    AGENT_CLI = "AgentCli"
+    SELF_HOSTED = "SelfHosted"
 
 
 # ---------------------------------------------------------------------------
@@ -2503,7 +2527,9 @@ class ModelEndpoint(Model):
     """A model provider endpoint reached through PolyPrompt.
 
     ``last_validation_succeeded`` is True after a successful validation or model call, False after a failed
-    validation, and None when never checked or after its connection settings changed.
+    validation, and None when never checked or after its connection settings changed. ``auth_method`` is a
+    :class:`ModelAuthMethod` name; None means the provider's usual method (an API key for hosted APIs, none for
+    Ollama and OpenAI-compatible servers without a key, and the server's own sign-in for agent CLIs).
     """
     id: Optional[str] = None
     tenant_id: Optional[str] = None
@@ -2529,6 +2555,7 @@ class ModelEndpoint(Model):
     last_validated_utc: Optional[str] = None
     last_validation_result: Optional[str] = None
     last_validation_succeeded: Optional[bool] = None
+    auth_method: Optional[str] = None
     active: Optional[bool] = None
     created_utc: Optional[str] = None
     last_update_utc: Optional[str] = None
@@ -2567,7 +2594,10 @@ class SetupCheck(Model):
     """One thing the workspace needs before people can use it, and whether it is ready.
 
     ``key`` is stable: ``model:{endpointId}`` (or ``model:none``), ``search``, ``embeddings``, or ``email``.
-    ``kind`` is a :class:`SetupCheckKind` name and ``state`` a :class:`SetupCheckState` name.
+    ``kind`` is a :class:`SetupCheckKind` name and ``state`` a :class:`SetupCheckState` name. For model checks,
+    ``auth_method`` is a :class:`ModelAuthMethod` name and ``needs_api_key`` tells whether that method needs a
+    stored secret (an API key, a token, or a sign-in file). ``base_url`` is the server address for Ollama and
+    OpenAI-compatible model checks shown to administrators, and None otherwise.
     """
     key: Optional[str] = None
     kind: Optional[str] = None
@@ -2578,11 +2608,27 @@ class SetupCheck(Model):
     resource_name: Optional[str] = None
     provider: Optional[str] = None
     model: Optional[str] = None
+    base_url: Optional[str] = None
     tasks: Optional[List[str]] = None
+    auth_method: Optional[str] = None
     needs_api_key: Optional[bool] = None
     has_api_key: Optional[bool] = None
     uses_platform_key: Optional[bool] = None
     verified_utc: Optional[str] = None
+
+
+@dataclass
+class SetupConnectionResult(Model):
+    """Outcome of a Setup page connection attempt.
+
+    ``succeeded`` tells whether the live test prompt worked. ``kept_previous`` is True when a working model was
+    kept because the new one failed its test; the workspace keeps using it. ``message`` is the test's result in
+    plain language (the provider's error text on failure).
+    """
+    model_endpoint_id: Optional[str] = None
+    succeeded: Optional[bool] = None
+    kept_previous: Optional[bool] = None
+    message: Optional[str] = None
 
 
 @dataclass
@@ -2591,12 +2637,65 @@ class SetupStatus(Model):
 
     ``ready`` is True when every required check is ready; ``can_configure`` tells whether the caller (a
     global or tenant administrator) can change the configuration. Checks come required ones first.
+    ``connection`` is the result of the attempt on responses to :meth:`SetupResource.connect`, and None
+    otherwise.
     """
-    _nested: ClassVar[Dict[str, str]] = {'checks': 'SetupCheck'}
+    _nested: ClassVar[Dict[str, str]] = {'checks': 'SetupCheck', 'connection': 'SetupConnectionResult'}
     ready: Optional[bool] = None
     can_configure: Optional[bool] = None
     checks: Optional[List[SetupCheck]] = None
     checked_utc: Optional[str] = None
+    connection: Optional[SetupConnectionResult] = None
+
+
+@dataclass
+class SetupAuthOption(Model):
+    """One way a provider can sign in, as offered on the Setup page.
+
+    ``method`` is a :class:`ModelAuthMethod` name. ``input`` is what the user supplies: ``Text`` (a key or
+    token), ``File`` (a sign-in file's contents, named by ``file_name``: ``auth.json``, ``oauth_creds.json``,
+    or ``endpoints.json``), or ``None``.
+    """
+    method: Optional[str] = None
+    input: Optional[str] = None
+    file_name: Optional[str] = None
+    recommended: Optional[bool] = None
+
+
+@dataclass
+class SetupProviderOption(Model):
+    """A model provider the Setup page can connect, with the ways it can sign in (recommended first).
+
+    ``group`` is a :class:`SetupProviderGroup` name. ``available`` tells whether the provider can be used on
+    this server now (for agent CLIs: allowed and installed), with ``unavailable_reason`` when it cannot;
+    ``turned_off`` is True for agent CLIs when the operator turned them off (``Models.AllowAgentClis``).
+    ``default_model`` is the model filled in by default (``default`` lets an agent CLI choose; None means the
+    user must name one). ``needs_base_url`` is True for Ollama and OpenAI-compatible servers.
+    """
+    _nested: ClassVar[Dict[str, str]] = {'methods': 'SetupAuthOption'}
+    provider: Optional[str] = None
+    group: Optional[str] = None
+    available: Optional[bool] = None
+    installed: Optional[bool] = None
+    turned_off: Optional[bool] = None
+    unavailable_reason: Optional[str] = None
+    recommended: Optional[bool] = None
+    default_model: Optional[str] = None
+    needs_base_url: Optional[bool] = None
+    default_base_url: Optional[str] = None
+    methods: Optional[List[SetupAuthOption]] = None
+
+
+@dataclass
+class SetupOptions(Model):
+    """Model providers the Setup page can connect on this server, recommended first within each group.
+
+    ``server_container`` names the server container, for sign-in commands such as
+    ``docker exec -it {container} claude``.
+    """
+    _nested: ClassVar[Dict[str, str]] = {'providers': 'SetupProviderOption'}
+    providers: Optional[List[SetupProviderOption]] = None
+    server_container: Optional[str] = None
 
 
 @dataclass
@@ -4275,8 +4374,9 @@ class AccountResource(_Resource):
 
 class SetupResource(_Resource):
     """Workspace setup under ``/v1.0/api/setup``: whether the workspace has a chat model with a working key
-    and web search, live checks that prove it, and storing a model API key. Until ``ready`` is True,
-    refinement sessions and research requests raise :class:`SetupRequiredError`."""
+    and web search, live checks that prove it, the model providers and sign-in methods the server offers,
+    connecting one, and storing a model API key. Until ``ready`` is True, refinement sessions and research
+    requests raise :class:`SetupRequiredError`."""
 
     def status(self) -> SetupStatus:
         """The workspace setup status (``ready``, ``can_configure``, and the checks)."""
@@ -4289,6 +4389,63 @@ class SetupResource(_Resource):
         and one embedding request, so it contacts the providers.
         """
         return self._one(SetupStatus, "POST", API + "/setup/verify")
+
+    def options(self) -> SetupOptions:
+        """Model providers and sign-in methods the Setup page can connect on this server. Administrators only
+        (PermissionDeniedError otherwise).
+
+        Lists hosted APIs (API key), agent CLIs in the server image (Claude Code, Codex, Gemini CLI, Mux), and
+        self-hosted servers, each with whether it is installed and allowed and its sign-in methods,
+        recommended first.
+        """
+        return self._one(SetupOptions, "GET", API + "/setup/options")
+
+    def connect(self, provider: Union[str, ModelProvider], auth_method: Optional[Union[str, ModelAuthMethod]] = None,
+                secret: Optional[str] = None, model: Optional[str] = None, base_url: Optional[str] = None,
+                model_endpoint_id: Optional[str] = None) -> SetupStatus:
+        """Connect the workspace's chat model and verify it with a live call. Administrators only.
+
+        Stores the secret for the chosen sign-in method encrypted in the vault, tests it with a live call, and
+        points every chat task at the endpoint. When the workspace already has a working model, the new sign-in
+        is tested first and the working one is kept if the test fails. ``connection`` on the result says what
+        happened (``succeeded``, ``kept_previous``, ``message``). The secret is never returned.
+
+        Args:
+            provider: A :class:`ModelProvider` (name or member).
+            auth_method: A :class:`ModelAuthMethod`; None uses the provider's recommended method.
+            secret: The API key, the access token (``claude setup-token``), or the sign-in file's contents
+                (``auth.json``, ``oauth_creds.json``, ``endpoints.json``). Required unless the method is
+                ``ServerSignIn`` or ``None``, or the endpoint already has one stored for the same method.
+            model: The model; None uses the provider's default (an agent CLI's own default when it has one).
+            base_url: Base URL for Ollama and OpenAI-compatible servers.
+            model_endpoint_id: Endpoint to change; None reuses the workspace's endpoint for the same provider,
+                or creates one.
+
+        Returns:
+            The :class:`SetupStatus` after the endpoint was checked.
+
+        Raises:
+            ValueError: ``provider`` is empty.
+            BadRequestError: The server rejected a value (400 ``ValidationFailed``, with ``details["field"]`` set
+                to ``provider``, ``authMethod``, ``secret``, ``model``, or ``baseUrl``), for example a missing
+                secret, a method the provider does not accept, or an agent CLI that is not allowed or not installed.
+            PermissionDeniedError: The caller is not an administrator.
+            NotFoundError: The named endpoint does not exist.
+        """
+        if not provider:
+            raise ValueError("provider is required.")
+        body: Dict[str, Any] = {"provider": provider}
+        if auth_method is not None:
+            body["authMethod"] = auth_method
+        if secret is not None:
+            body["secret"] = secret
+        if model is not None:
+            body["model"] = model
+        if base_url is not None:
+            body["baseUrl"] = base_url
+        if model_endpoint_id is not None:
+            body["modelEndpointId"] = model_endpoint_id
+        return self._one(SetupStatus, "POST", API + "/setup/connect", body=body)
 
     def set_model_key(self, model_endpoint_id: str, api_key: str) -> SetupStatus:
         """Store an API key for a model endpoint and verify it with a live call. Administrators only.

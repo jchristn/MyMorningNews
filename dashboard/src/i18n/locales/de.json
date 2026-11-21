@@ -1058,7 +1058,11 @@
       "Ollama": "Ollama",
       "Gemini": "Gemini",
       "XAi": "xAI",
-      "OllamaCloud": "Ollama Cloud"
+      "OllamaCloud": "Ollama Cloud",
+      "ClaudeCode": "Claude Code",
+      "Codex": "Codex",
+      "GeminiCli": "Gemini CLI",
+      "Mux": "Mux"
     },
     "reasoningEffort": {
       "None": "Keine",
@@ -1074,7 +1078,8 @@
       "BearerToken": "Bearer-Token",
       "BasicAuth": "Basic Auth",
       "CustomHeader": "Benutzerdefinierter Header",
-      "ConnectionString": "Verbindungszeichenfolge"
+      "ConnectionString": "Verbindungszeichenfolge",
+      "SignInFile": "Anmeldedatei"
     },
     "vaultProvider": {
       "Anthropic": "Anthropic",
@@ -1302,6 +1307,13 @@
     "ttsProvider": {
       "OpenAiCompatibleSpeech": "OpenAI-kompatible Sprachausgabe",
       "Disabled": "Deaktiviert"
+    },
+    "authMethod": {
+      "ApiKey": "API-Schlüssel",
+      "AccessToken": "Zugriffstoken",
+      "AuthFile": "Anmeldedatei",
+      "ServerSignIn": "Auf dem Server angemeldet",
+      "None": "Kein Schlüssel"
     }
   },
   "vault": {
@@ -1395,7 +1407,8 @@
       "credential": "Zugangsdaten",
       "lastValidated": "Zuletzt validiert",
       "status": "Status",
-      "id": "ID"
+      "id": "ID",
+      "signIn": "Anmeldung"
     },
     "capabilities": {
       "chat": "Chat",
@@ -1432,18 +1445,16 @@
         "XAi": "Für die xAI-API leer lassen.",
         "OllamaCloud": "Für Ollama Cloud leer lassen."
       },
-      "apiKey": "API-Schlüssel",
       "keyModes": {
-        "new": "Schlüssel eingeben",
+        "new": "Neu hinzufügen",
         "vault": "Gespeicherte Zugangsdaten verwenden",
-        "none": "Kein Schlüssel"
+        "none": "Nicht festgelegt"
       },
-      "newKey": "Neuer API-Schlüssel",
-      "newKeyHelp": "Wird im Zugangsdatentresor (verschlüsselt) gespeichert und mit diesem Endpunkt verknüpft. Leer lassen, um den aktuellen Schlüssel beizubehalten.",
+      "newKeyHelp": "Wird verschlüsselt im Zugangsdatentresor gespeichert und mit diesem Endpunkt verknüpft. Leer lassen, um den aktuellen Wert beizubehalten.",
       "storedKey": "Gespeicherte Zugangsdaten",
       "storedKeyHelp": "Rotieren Sie sie auf der Seite Gespeicherte Zugangsdaten, dann übernimmt jeder Endpunkt, der sie verwendet, die Änderung.",
       "pickCredential": "Zugangsdaten auswählen",
-      "noKeyWarning": "Dieser Anbieter benötigt normalerweise einen API-Schlüssel. Ohne ihn schlagen Aufrufe fehl.",
+      "noKeyWarning": "Aufrufe an diesen Endpunkt schlagen fehl, bis er einen hat.",
       "capabilities": "Stellt bereit",
       "toolsDetected": "Werkzeugunterstützung und Embedding-Dimensionen werden beim Validieren erkannt.",
       "embeddingDimensions": "Embedding-Dimensionen",
@@ -1478,7 +1489,11 @@
         "capability": "Wählen Sie Chat, Embeddings oder beides.",
         "credential": "Wählen Sie gespeicherte Zugangsdaten.",
         "number": "Geben Sie eine Zahl von null oder mehr ein."
-      }
+      },
+      "signIn": "Anmeldung",
+      "secretSource": "Herkunft des Geheimnisses",
+      "howTo": "So erhalten Sie es",
+      "cliNotice": "Hiermit wird das Befehlszeilentool des Anbieters auf dem Server ausgeführt. Es beantwortet nur Chat-Prompts und hat daher keine URL, keine Werkzeugaufrufe und keine Embeddings."
     },
     "test": {
       "title": "Modell testen",
@@ -4203,31 +4218,31 @@
     }
   },
   "modelKeys": {
-    "title": "Der Modellendpunkt hat keinen nutzbaren API-Schlüssel",
+    "title": "Einem Modellendpunkt fehlt der Schlüssel oder die Anmeldung",
     "problem": {
       "missing": "{name} hat keinen API-Schlüssel, daher schlagen Aufrufe fehl.",
       "notFound": "{name} verwendet gespeicherte Zugangsdaten, die nicht mehr existieren.",
       "inactive": "{name} verwendet gespeicherte Zugangsdaten, die deaktiviert sind.",
       "expired": "{name} verwendet gespeicherte Zugangsdaten, die abgelaufen sind.",
       "platformMissing": "{name} verwendet den Plattform-Modellschlüssel, aber auf dem Server ist keiner eingerichtet (MYMORNINGNEWS_ANTHROPIC_API_KEY).",
-      "platformMissingUser": "{name} verwendet den gemeinsamen Modellschlüssel dieses Servers, und der Serverbetreiber hat noch keinen eingerichtet."
+      "platformMissingUser": "{name} verwendet den gemeinsamen Modellschlüssel dieses Servers, und der Serverbetreiber hat noch keinen eingerichtet.",
+      "missingToken": "{name} hat kein Abonnement-Token, daher schlagen Aufrufe fehl.",
+      "missingFile": "{name} hat keine Anmeldedatei, daher schlagen Aufrufe fehl."
     },
     "fix": "Schlüssel zu {name} hinzufügen",
     "view": "Modellendpunkte anzeigen",
     "consequence": {
-      "general": "Themenverfeinerung, Rechercheläufe und Briefings benötigen ein funktionierendes Modell und schlagen daher fehl, bis dies behoben ist.",
-      "wizard": "Der Assistent lässt das Modell Dimensionen und Fragen vorschlagen und schlägt daher schon im ersten Schritt fehl, bis dies behoben ist."
+      "general": "Themenverfeinerung, Rechercheläufe und Briefings benötigen ein funktionierendes Modell und schlagen daher fehl, bis dies behoben ist."
     },
     "askAdmin": "Nur ein Mandantenadministrator kann einen Schlüssel hinzufügen. Bitten Sie Ihren Administrator, das zu beheben.",
     "badge": "Kein API-Schlüssel",
-    "fixOwnKey": "Eigenen API-Schlüssel für {name} verwenden"
+    "fixOwnKey": "Eigenen API-Schlüssel für {name} verwenden",
+    "badgeToken": "Kein Token",
+    "badgeFile": "Keine Anmeldedatei",
+    "fixSignIn": "Anmeldung für {name} aktualisieren"
   },
   "setup": {
-    "summary": "Hinterlegen und prüfen Sie, was My Morning News braucht: einen API-Schlüssel für das Modell und einen funktionierenden Suchanbieter.",
-    "intro": {
-      "title": "Schließen Sie zuerst die Einrichtung ab.",
-      "message": "Themen, Recherchen und Briefings bleiben gesperrt, bis jede erforderliche Prüfung unten bereit ist."
-    },
+    "summary": "Bevor jemand Themen erstellen kann, benötigt dieser Arbeitsbereich ein KI-Modell und eine Websuche.",
     "blockedNotice": "Eine Aktion wurde gestoppt, weil die Einrichtung nicht abgeschlossen ist.",
     "verifyAll": "Alles prüfen",
     "verifying": "Prüfung mit Live-Aufrufen. Das kann einige Sekunden dauern.",
@@ -4244,48 +4259,21 @@
       "Email": "E-Mail"
     },
     "check": {
-      "title": "{kind}: {name}",
-      "providerModel": "{provider}, Modell {model}",
-      "provider": "Anbieter: {provider}",
-      "tasks": "Verwendet für {tasks}",
-      "verified": "Zuletzt geprüft: {time}",
-      "platformKey": "Dieser Endpunkt nutzt den gemeinsamen Modellschlüssel des Dienstes, den der Serverbetreiber verwaltet. Hier ist daher kein Schlüssel einzugeben.",
-      "verify": "Prüfen",
-      "retry": "Erneut versuchen",
-      "openSearch": "Suchanbieter öffnen",
-      "openEndpoint": "{name} auf der Seite Modelle öffnen",
-      "openModels": "Seite Modelle öffnen"
-    },
-    "key": {
-      "label": "API-Schlüssel für {name}",
-      "help": "Wird verschlüsselt bei Ihren gespeicherten Zugangsdaten abgelegt, diesem Endpunkt zugeordnet und mit einem Live-Aufruf geprüft.",
-      "save": "Speichern und prüfen",
-      "saving": "Der Schlüssel wird gespeichert und mit einem Live-Aufruf geprüft. Das kann einige Sekunden dauern."
+      "title": "{kind}: {name}"
     },
     "required": {
-      "heading": "Erforderlich",
-      "none": "Der Server hat keine erforderlichen Prüfungen gemeldet.",
       "open": "Einrichtung abschließen",
       "askAdmin": "Ein Administrator muss die Einrichtung abschließen, damit das funktioniert."
     },
-    "optional": {
-      "heading": "Optional",
-      "note": "Optionale Prüfungen blockieren die Recherche nie. Sie schalten Extras wie semantischen Abgleich und E-Mail-Versand frei."
-    },
-    "help": {
-      "title": "Weitere Möglichkeiten der Einrichtung",
-      "env": "Bei selbst gehosteten Installationen können Sie den Schlüssel auch in docker/.env als MYMORNINGNEWS_ANTHROPIC_API_KEY eintragen und den Server neu starten.",
-      "models": "Einen anderen Modellanbieter auf der Seite Modelle verwenden"
-    },
     "ready": {
       "title": "Alles bereit",
-      "message": "Alle erforderlichen Prüfungen waren erfolgreich. Sie können jetzt Themen anlegen und Recherchen starten.",
-      "newTopic": "Thema anlegen",
-      "topics": "Zu den Themen"
+      "message": "KI-Modell und Websuche funktionieren beide. Erstellen Sie ein Thema, um Ihr erstes Briefing zu erhalten.",
+      "newTopic": "Erstes Thema erstellen",
+      "home": "Zur Startseite"
     },
     "gate": {
       "title": "Dieser Arbeitsbereich ist nicht bereit",
-      "message": "Ein Administrator muss den API-Schlüssel für das Modell hinzufügen und prüfen, bevor jemand My Morning News nutzen kann.",
+      "message": "Ein Administrator muss ein KI-Modell und eine Websuche verbinden, bevor jemand My Morning News nutzen kann.",
       "askAdmin": "Bitten Sie Ihren Administrator, im Dashboard die Einrichtung zu öffnen, und prüfen Sie dann hier erneut.",
       "checkAgain": "Erneut prüfen",
       "checking": "Wird geprüft",
@@ -4299,6 +4287,176 @@
     "nav": {
       "callout": "Einrichtung abschließen",
       "blocked": "{name} ist nach Abschluss der Einrichtung verfügbar"
+    },
+    "title": "My Morning News einrichten",
+    "copyCommand": "Befehl kopieren",
+    "newTab": "(öffnet sich in einem neuen Tab)",
+    "progress": {
+      "label": "Fortschritt der Einrichtung",
+      "step": "Schritt {number}",
+      "model": "KI-Modell",
+      "search": "Websuche",
+      "done": "Erledigt",
+      "todo": "Offen",
+      "attention": "Handlungsbedarf"
+    },
+    "model": {
+      "heading": "KI-Modell verbinden",
+      "intro": "My Morning News nutzt es, um Recherchen zu planen, Quellen zu lesen und Ihre Briefings zu schreiben. Wählen Sie, wie Sie dafür bezahlen möchten.",
+      "providerLegend": "Anbieter auswählen",
+      "groups": {
+        "AgentCli": {
+          "title": "KI-Abonnement nutzen",
+          "note": "Führt das Befehlszeilentool des Anbieters auf dem Server mit dem Tarif aus, den Sie bereits bezahlen."
+        },
+        "Api": {
+          "title": "API-Schlüssel verwenden",
+          "note": "API-Schlüssel werden vom Anbieter nach Nutzung abgerechnet."
+        },
+        "SelfHosted": {
+          "title": "Eigenes Modell betreiben",
+          "note": "Verbinden Sie einen Modellserver, den Sie selbst betreiben, etwa Ollama."
+        }
+      },
+      "recommended": "Empfohlen",
+      "notInstalled": "Auf diesem Server nicht installiert",
+      "unavailable": "Auf diesem Server nicht verfügbar",
+      "methodLegend": "Wie soll die Anmeldung erfolgen?",
+      "stepsTitle": "So verbinden Sie {provider}",
+      "connect": "Verbinden und testen",
+      "connecting": "Wird getestet",
+      "testing": "Die Verbindung wird getestet. Dabei wird ein kurzer Prompt gesendet, was bei einer CLI bis zu einer Minute dauern kann.",
+      "turnedOff": "Auf diesem Server deaktiviert"
+    },
+    "providers": {
+      "geminiName": "Google Gemini",
+      "compatibleName": "OpenAI-kompatibler Server",
+      "ClaudeCode": "Claude Pro oder Max",
+      "Codex": "ChatGPT Plus, Pro oder Business",
+      "GeminiCli": "Google-Konto",
+      "Mux": "Ihre Mux-Endpunkte",
+      "Anthropic": "Claude-Modelle",
+      "OpenAi": "GPT-Modelle",
+      "Gemini": "Gemini-Modelle",
+      "XAi": "Grok-Modelle",
+      "OllamaCloud": "Offene Modelle, gehostet von Ollama",
+      "Ollama": "Modelle auf Ihrem eigenen Computer oder Server",
+      "OpenAiCompatible": "vLLM, LM Studio, llama.cpp und andere"
+    },
+    "method": {
+      "subscriptionToken": "Abonnement-Token",
+      "anthropicKey": "Anthropic-API-Schlüssel",
+      "openAiKey": "OpenAI-API-Schlüssel",
+      "geminiKey": "Gemini-API-Schlüssel",
+      "chatGptFile": "ChatGPT-Anmeldedatei ({file})",
+      "googleFile": "Google-Anmeldedatei ({file})",
+      "muxFile": "Mux-Konfiguration ({file})",
+      "serverSignIn": "Bereits auf dem Server angemeldet",
+      "serverConfigured": "Bereits auf dem Server konfiguriert",
+      "noKey": "Kein Schlüssel nötig",
+      "apiKey": "API-Schlüssel"
+    },
+    "steps": {
+      "runAnywhere": "Führen Sie auf einem beliebigen Computer, auf dem {app} installiert ist, Folgendes aus:",
+      "finishBrowser": "Schließen Sie die Anmeldung im sich öffnenden Browserfenster ab.",
+      "copyToken": "Kopieren Sie das ausgegebene Token (es beginnt mit {prefix}) und fügen Sie es unten ein.",
+      "tokenNote": "Das Token nutzt Ihr Claude-Abonnement, daher gibt es keine separate nutzungsbasierte Abrechnung.",
+      "openKeys": "Öffnen Sie die Seite mit den API-Schlüsseln des Anbieters und melden Sie sich an:",
+      "createKey": "Erstellen Sie einen Schlüssel, kopieren Sie ihn und fügen Sie ihn unten ein.",
+      "codexLogin": "Führen Sie auf Ihrem Computer diesen Befehl aus und melden Sie sich mit ChatGPT an:",
+      "geminiLogin": "Führen Sie auf Ihrem Computer diesen Befehl aus und wählen Sie Über Google anmelden:",
+      "chooseFile": "Wählen Sie die gespeicherte Datei im Feld unten aus. Sie befindet sich hier:",
+      "muxChoose": "Wählen Sie Ihre Mux-Endpunktdatei im Feld unten aus. Sie befindet sich normalerweise hier:",
+      "windows": "Unter Windows:",
+      "fileWarning": "Mit dieser Datei erfolgt die Anmeldung in Ihrem Namen. Sie wird verschlüsselt gespeichert und nur von diesem Server verwendet.",
+      "muxWarning": "Diese Datei kann Ihre Anbieterschlüssel enthalten. Sie wird verschlüsselt gespeichert und nur von diesem Server verwendet.",
+      "hiddenFolder": "Ordner, die mit einem Punkt beginnen, sind ausgeblendet. Drücken Sie auf einem Mac im Dateiauswahldialog Befehl+Umschalt+Punkt, um sie anzuzeigen, oder fügen Sie stattdessen den Inhalt ein.",
+      "install": "Noch nicht installiert? Installieren Sie es mit:",
+      "serverOpen": "Öffnen Sie auf dem Computer, auf dem My Morning News läuft, ein Terminal und führen Sie Folgendes aus:",
+      "serverClaudeLogin": "Geben Sie /login ein und schließen Sie die Anmeldung ab.",
+      "serverCodexLogin": "Öffnen Sie den angezeigten Link, geben Sie den Code ein und melden Sie sich mit ChatGPT an.",
+      "serverGeminiLogin": "Wählen Sie Über Google anmelden und folgen Sie dem angezeigten Link.",
+      "serverMuxConfigure": "Geben Sie /endpoint ein, wählen Sie Add und speichern Sie den gewünschten Endpunkt. Mux schreibt ihn nach {file}.",
+      "serverReturn": "Kehren Sie hierher zurück und klicken Sie auf Verbinden und testen.",
+      "ollamaAddress": "Geben Sie die Adresse ein, über die der Server Ollama erreicht. Aus Docker unter macOS oder Windows ist das normalerweise {url}.",
+      "ollamaModel": "Geben Sie den Namen eines Modells ein, das Sie heruntergeladen haben. Dieser Befehl listet sie auf:",
+      "compatAddress": "Geben Sie die Basis-URL des Servers ein. Sie endet normalerweise auf /v1.",
+      "compatModel": "Geben Sie den Namen des Modells ein, das der Server bereitstellt.",
+      "selfKey": "Fügen Sie den Schlüssel ein, den Ihr Server erwartet."
+    },
+    "field": {
+      "token": "Token aus claude setup-token",
+      "file": "Anmeldedatei ({file})",
+      "apiKey": "API-Schlüssel",
+      "keepStored": "Lassen Sie das Feld leer, um den bereits gespeicherten Wert beizubehalten.",
+      "drop": "{file} hier ablegen oder",
+      "chooseFile": "Datei auswählen",
+      "replace": "Ersetzen",
+      "fileHelp": "Die Datei wird in Ihrem Browser gelesen und nur an diesen Server gesendet. Ihr Inhalt wird nie angezeigt.",
+      "pasteInstead": "Stattdessen Inhalt einfügen",
+      "chooseInstead": "Stattdessen Datei auswählen",
+      "pasteLabel": "Inhalt von {file}",
+      "fileReadError": "Die Datei konnte nicht gelesen werden. Versuchen Sie es erneut oder fügen Sie stattdessen den Inhalt ein.",
+      "fileTooLarge": "Die Datei ist größer als 64 KB und daher keine Anmeldedatei.",
+      "required": {
+        "AccessToken": "Fügen Sie das Token aus claude setup-token ein.",
+        "ApiKey": "Fügen Sie den API-Schlüssel ein.",
+        "AuthFile": "Wählen Sie die Datei aus oder fügen Sie ihren Inhalt ein."
+      },
+      "model": "Modell",
+      "modelRequired": "Geben Sie das zu verwendende Modell ein.",
+      "modelHelpRequired": "Die Modell-ID genau so, wie {provider} sie angibt.",
+      "modelHelpDefault": "Lassen Sie den Wert unverändert, es sei denn, Sie möchten ein anderes Modell.",
+      "modelHelpCli": "Leer lassen, um das Standardmodell der CLI zu verwenden.",
+      "cliDefault": "Standardmodell der CLI",
+      "advanced": "Erweitert",
+      "advancedSummary": "Modell: {model}",
+      "baseUrl": "Serveradresse",
+      "baseUrlHelp": "Die Adresse, über die der My Morning News-Server ihn erreicht.",
+      "baseUrlHelpOllama": "Aus Docker unter macOS oder Windows ist das normalerweise {url}.",
+      "baseUrlInvalid": "Geben Sie eine Adresse ein, die mit http:// oder https:// beginnt."
+    },
+    "result": {
+      "success": "Verbunden. {provider} hat auf den Test-Prompt geantwortet.",
+      "failed": "Der Test ist fehlgeschlagen",
+      "noAnswer": "Das Modell hat nicht auf den Test-Prompt geantwortet.",
+      "keptPrevious": "Die neue Anmeldung hat den Test nicht bestanden, daher verwendet My Morning News weiterhin {provider}."
+    },
+    "hint": {
+      "token": "Wenn das Token abgelehnt wurde, führen Sie {command} erneut aus und fügen Sie das neue Token ein.",
+      "file": "Wenn die Anmeldung abgelehnt wurde, führen Sie {command} erneut aus und wählen Sie die neue Datei {file} aus.",
+      "muxFile": "Prüfen Sie die Endpunkte in {file} und wählen Sie die Datei erneut aus.",
+      "server": "Melden Sie sich im Server-Container an und versuchen Sie es dann erneut:",
+      "apiKey": "Prüfen Sie, ob der Schlüssel stimmt und ob für das Konto eine Abrechnung eingerichtet ist oder noch Guthaben vorhanden ist.",
+      "selfHosted": "Prüfen Sie, ob der Server läuft, ob er unter dieser Adresse erreichbar ist und ob der Modellname stimmt."
+    },
+    "connected": {
+      "provider": "Anbieter",
+      "method": "Anmeldung",
+      "model": "Modell",
+      "verified": "Geprüft {time}",
+      "change": "Ändern",
+      "fix": "Beheben",
+      "testAgain": "Erneut testen",
+      "openModels": "Auf der Seite Modelle öffnen",
+      "platformKey": "Gemeinsamer Schlüssel des Serverbetreibers"
+    },
+    "search": {
+      "heading": "Websuche",
+      "ready": "Die Websuche funktioniert ({provider}).",
+      "intro": "Die Recherche durchsucht das Web nach neuen Quellen. Die mitgelieferte SearXNG-Suche wird automatisch geprüft.",
+      "open": "Suchanbieter öffnen"
+    },
+    "extras": {
+      "title": "Optionale Extras",
+      "count": "{ready} von {count} aktiviert",
+      "note": "Diese blockieren die Recherche nie. Richten Sie sie ein, wann immer Sie möchten.",
+      "what": {
+        "Embeddings": "Erkennt wiederholte Meldungen anhand ihrer Bedeutung, nicht nur anhand übereinstimmender Wörter.",
+        "Email": "Sendet nach jedem Lauf eine Briefing-E-Mail mit Links zu Details und Feedback."
+      },
+      "openModels": "Modelle öffnen",
+      "openSettings": "Einstellungen öffnen"
     }
   }
 }

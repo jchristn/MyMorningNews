@@ -204,7 +204,12 @@ export type FeedbackTargetType = 'Finding' | 'Prediction' | 'PredictionReview' |
 export type ConstraintKind = 'IncludeKeyword' | 'ExcludeKeyword' | 'IncludeEntity' | 'ExcludeEntity' | 'PreferredDomain' | 'BlockedDomain' | 'TrackedQuestion' | 'FeedUrl' | 'SeedUrl';
 export type DimensionWeight = 'Exclude' | 'Low' | 'Normal' | 'High';
 export type IntervalType = 'EveryNMinutes' | 'EveryNHours' | 'EveryNDays' | 'EveryNWeeks' | 'DaysOfWeek' | 'DaysOfMonth' | 'Once' | 'Cron' | 'Manual';
-export type ModelProvider = 'Anthropic' | 'OpenAi' | 'OpenAiCompatible' | 'Ollama' | 'Gemini' | 'XAi' | 'OllamaCloud';
+/** Hosted APIs, self-hosted servers, and the agent CLIs in the server image (`ClaudeCode`, `Codex`, `GeminiCli`, `Mux`). */
+export type ModelProvider = 'Anthropic' | 'OpenAi' | 'OpenAiCompatible' | 'Ollama' | 'Gemini' | 'XAi' | 'OllamaCloud' | 'ClaudeCode' | 'Codex' | 'GeminiCli' | 'Mux';
+/** How a model endpoint signs in: an API key, an access token (`claude setup-token`), a sign-in file, the server's own sign-in, or nothing. */
+export type ModelAuthMethod = 'ApiKey' | 'AccessToken' | 'AuthFile' | 'ServerSignIn' | 'None';
+/** How a provider is reached, for grouping choices on the Setup page. */
+export type SetupProviderGroup = 'Api' | 'AgentCli' | 'SelfHosted';
 export type SearchProviderKind = 'Searxng' | 'Tavily' | 'YouCom' | 'Rss' | 'HackerNews' | 'Arxiv' | 'HostedModelWebSearch';
 export type PreferenceKind = 'Prefer' | 'Avoid' | 'PreferSource' | 'AvoidSource' | 'StyleNote';
 export type AnalyticsReport = 'overview' | 'relevance' | 'accuracy' | 'feedback' | 'reasons' | 'suggestions' | 'quality' | 'email';
@@ -399,8 +404,13 @@ export interface SetupCheck {
     resourceName?: string | null;
     provider?: string | null;
     model?: string | null;
+    /** Server address, for Ollama and OpenAI-compatible model checks shown to administrators. Null otherwise. */
+    baseUrl?: string | null;
     /** Tasks the endpoint serves, for model checks. */
     tasks: string[];
+    /** How the endpoint signs in, for model checks. */
+    authMethod?: ModelAuthMethod | null;
+    /** Whether the sign-in method needs a stored secret (an API key, a token, or a sign-in file). */
     needsApiKey: boolean;
     hasApiKey: boolean;
     /** Whether the endpoint uses the hosted service's key, which users never enter. */
@@ -417,6 +427,77 @@ export interface SetupStatusResponse {
     /** Checks, required ones first. */
     checks: SetupCheck[];
     checkedUtc: string;
+    /** Result of the connection attempt, on responses to `setup.connect`. Null otherwise. */
+    connection?: SetupConnectionResult | null;
+}
+
+/** Outcome of a Setup page connection attempt. */
+export interface SetupConnectionResult {
+    /** Endpoint that was connected or tried. */
+    modelEndpointId?: string | null;
+    /** Whether the live test prompt succeeded. */
+    succeeded: boolean;
+    /** Whether a working model was kept because the new one failed its test. The workspace keeps using it. */
+    keptPrevious: boolean;
+    /** The test's result in plain language (the provider's error text on failure). */
+    message?: string | null;
+}
+
+/** One way a provider can sign in, as offered on the Setup page. */
+export interface SetupAuthOption {
+    method: ModelAuthMethod;
+    /** What the user supplies: a key or token, a sign-in file's contents, or nothing. */
+    input: 'Text' | 'File' | 'None';
+    /** File name the CLI keeps the sign-in in, for File inputs (`auth.json`, `oauth_creds.json`, `endpoints.json`). */
+    fileName?: string | null;
+    /** Whether this is the suggested method for the provider. */
+    recommended: boolean;
+}
+
+/** A model provider the Setup page can connect, with the ways it can sign in. */
+export interface SetupProviderOption {
+    provider: ModelProvider;
+    group: SetupProviderGroup;
+    /** Whether the provider can be used on this server now (for agent CLIs: allowed and installed). */
+    available: boolean;
+    /** For agent CLIs: whether the executable is installed in the server. Always true for other providers. */
+    installed: boolean;
+    /** For agent CLIs: whether the server's operator turned agent CLIs off (`Models.AllowAgentClis`). */
+    turnedOff: boolean;
+    /** Why the provider is unavailable, when it is. */
+    unavailableReason?: string | null;
+    /** Whether this is the suggested provider. */
+    recommended: boolean;
+    /** Model filled in by default; `default` lets an agent CLI choose; null means the user must name one. */
+    defaultModel?: string | null;
+    /** Whether a base URL is asked for (Ollama and OpenAI-compatible servers). */
+    needsBaseUrl: boolean;
+    defaultBaseUrl?: string | null;
+    /** Sign-in methods, recommended first. */
+    methods: SetupAuthOption[];
+}
+
+/** Model providers the Setup page can connect on this server. */
+export interface SetupOptionsResponse {
+    /** Providers, recommended first within each group. */
+    providers: SetupProviderOption[];
+    /** Name of the server container, for sign-in commands such as `docker exec -it {container} claude`. */
+    serverContainer: string;
+}
+
+/** Connect the workspace's chat model: choose a provider and how it signs in, then verify it with a live call. */
+export interface SetupConnectRequest {
+    provider: ModelProvider;
+    /** Omitted uses the provider's recommended method. */
+    authMethod?: ModelAuthMethod;
+    /** The API key, the access token (`claude setup-token`), or the sign-in file's contents. Required unless the method is `ServerSignIn` or `None`, or the endpoint already has one stored for the same method. Never returned. */
+    secret?: string;
+    /** Omitted uses the provider's default (an agent CLI's own default when it has one). */
+    model?: string;
+    /** Base URL for Ollama and OpenAI-compatible servers. */
+    baseUrl?: string;
+    /** Endpoint to change. Omitted reuses the workspace's endpoint for the same provider, or creates one. */
+    modelEndpointId?: string;
 }
 
 export interface SignupRequest {
@@ -1033,6 +1114,8 @@ export interface ModelEndpoint extends Record_ {
     lastValidationResult: string | null;
     /** True after a successful validation or model call, false after a failed validation, null when never checked or after its connection settings changed. */
     lastValidationSucceeded: boolean | null;
+    /** How the endpoint signs in. Null means the provider's usual method: an API key for hosted APIs, none for Ollama and OpenAI-compatible servers without a key, and the server's own sign-in for agent CLIs. */
+    authMethod?: ModelAuthMethod | null;
 }
 
 export interface ModelValidation {
@@ -1145,7 +1228,7 @@ export interface EmailPreferencesRequest {
 
 export interface VaultCredential extends Record_ {
     name: string;
-    kind: 'ApiKey' | 'BearerToken' | 'BasicAuth' | 'CustomHeader' | 'ConnectionString';
+    kind: 'ApiKey' | 'BearerToken' | 'BasicAuth' | 'CustomHeader' | 'ConnectionString' | 'SignInFile';
     provider: string;
     headerName: string | null;
     username: string | null;
@@ -1159,7 +1242,7 @@ export interface VaultCredential extends Record_ {
 
 export interface VaultCredentialUpsertRequest {
     name?: string;
-    kind?: 'ApiKey' | 'BearerToken' | 'BasicAuth' | 'CustomHeader' | 'ConnectionString';
+    kind?: 'ApiKey' | 'BearerToken' | 'BasicAuth' | 'CustomHeader' | 'ConnectionString' | 'SignInFile';
     provider?: string;
     headerName?: string;
     username?: string;
@@ -1549,7 +1632,10 @@ export interface ModelEndpointUpsertRequest {
     provider?: ModelProvider;
     endpoint?: string;
     credentialId?: string;
+    /** Stored in the vault and referenced: the API key, the access token (`claude setup-token`), or the sign-in file contents, depending on `authMethod`. */
     apiKey?: string;
+    /** Omitted keeps the current method (or the provider's usual one on create). */
+    authMethod?: ModelAuthMethod;
     model?: string;
     embeddingModel?: string;
     supportsChat?: boolean;
@@ -1650,6 +1736,10 @@ export declare class SetupResource extends ResourceGroup {
     verify(): Promise<SetupStatusResponse>;
     /** Administrators only (403 otherwise). Stores the key in the vault, attaches it to the endpoint, and checks it live; 404 for an unknown endpoint. */
     setModelKey(modelEndpointId: string, apiKey: string): Promise<SetupStatusResponse>;
+    /** Administrators only (403 otherwise). Providers and sign-in methods the server offers, with whether each agent CLI is installed and allowed. */
+    options(): Promise<SetupOptionsResponse>;
+    /** Administrators only (403 otherwise). Stores the secret for the chosen method, tests it live, and points every chat task at the endpoint; a working model is kept when the new one fails (`connection.keptPrevious`). 400 `ValidationFailed` with `details.field` for a bad request or an unavailable CLI, 404 for an unknown endpoint. */
+    connect(request: SetupConnectRequest): Promise<SetupStatusResponse>;
 }
 
 export declare class McpServersResource extends CrudResource<McpServer, McpServerDetail, McpServerUpsertRequest> {

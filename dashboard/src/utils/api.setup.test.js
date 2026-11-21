@@ -30,6 +30,14 @@ describe('setup API', () => {
     expect(call(fetch, 2)).toMatchObject({ url: '/v1.0/api/setup/model-key', method: 'POST', body: { modelEndpointId: 'mep_1', apiKey: 'sk-test' } });
   });
 
+  it('reads the setup options and connects a model', async () => {
+    const { api, fetch } = client({ ready: true, canConfigure: true, checks: [] });
+    await api.getSetupOptions();
+    await api.connectSetup({ provider: 'ClaudeCode', authMethod: 'AccessToken', secret: 'sk-ant-oat01-x' });
+    expect(call(fetch, 0)).toMatchObject({ url: '/v1.0/api/setup/options', method: 'GET', body: undefined });
+    expect(call(fetch, 1)).toMatchObject({ url: '/v1.0/api/setup/connect', method: 'POST', body: { provider: 'ClaudeCode', authMethod: 'AccessToken', secret: 'sk-ant-oat01-x' } });
+  });
+
   it('announces a SetupRequired refusal and still rejects with the error', async () => {
     const listener = vi.fn();
     window.addEventListener(SETUP_REQUIRED_EVENT, listener);

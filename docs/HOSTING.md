@@ -15,6 +15,7 @@ allow private network targets.
 | `hosting.requireEmailVerification` | true | true |
 | `hosting.restrictPrivateNetworks` | false | true |
 | `hosting.usePlatformCredentials` | false | true |
+| `models.allowAgentClis` | true | false (set by `MYMORNINGNEWS_MODELS_ALLOW_AGENT_CLIS` in `hosted/compose.yaml`) |
 | `rest.corsAllowedOrigins` | dashboard on 127.0.0.1 | `https://app.mymorningnews.ai` |
 | TLS | none (127.0.0.1 only) | Caddy on 80 and 443 with automatic certificates |
 
@@ -23,7 +24,8 @@ changed in the dashboard under Server settings (saved back to that file), by edi
 server (`docker compose -f compose.yaml -f hosted/compose.yaml restart server`), or with the `MYMORNINGNEWS_HOSTING_*`
 environment variables. An environment variable reaches the server only when the compose file passes it: the hosted
 overlay passes the Turnstile and Apple ones listed below, and the base `docker/compose.yaml` passes none, so add any
-other one to the server's `environment:` list first.
+other one to the server's `environment:` list first. The overlay also sets `MYMORNINGNEWS_MODELS_ALLOW_AGENT_CLIS`
+to `false` (see [Agent CLIs](#agent-clis)).
 
 ## Before you start
 
@@ -120,6 +122,19 @@ endpoints, and an endpoint that uses it cannot be pointed at a different provide
 refuses it with 400 because there is nothing to enter. When the platform key is missing, the model check reads
 Missing ("The hosted service's model key is not configured"), so the topic wizard and one-time requests answer 409
 `SetupRequired` until the operator sets `MYMORNINGNEWS_ANTHROPIC_API_KEY`.
+
+## Agent CLIs
+
+A self-hosted server can run Claude Code, Codex, Gemini CLI, and Mux inside the server container as model endpoints,
+so a workspace can use an AI subscription instead of an API key. The hosted overlay turns this off
+(`MYMORNINGNEWS_MODELS_ALLOW_AGENT_CLIS: "false"`):
+
+- The CLIs run as the server's own user. Each endpoint gets a private home folder and an empty working folder, in
+  the CLI's most restricted permission mode, but a shared service should not run tenant-chosen programs at all.
+- The "Already signed in on the server" method would let any tenant administrator use the operator's own sign-in.
+
+With the setting off, `GET /v1.0/api/setup/options` lists the CLIs with `available` false and a reason, and
+`POST /v1.0/api/setup/connect` refuses them with 400. Hosted tenants use the platform key or a provider API key.
 
 ## Private network blocking
 

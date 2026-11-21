@@ -115,8 +115,167 @@ namespace MyMorningNews.Core.Services
         }
 
         /// <summary>
-        /// Store an API key for an endpoint (rotating the endpoint's own credential when it has one), then verify the
-        /// endpoint with a live call.
+        /// Model providers the Setup page can connect on this server, with their sign-in methods.
+        /// </summary>
+        /// <returns>Options.</returns>
+        public SetupOptionsResponse GetOptions()
+        {
+            SetupOptionsResponse options = new SetupOptionsResponse();
+            string chat = _Settings().Models.DefaultChatModel;
+            options.Providers.Add(Option(ModelProviderEnum.Anthropic, SetupProviderGroupEnum.Api, true, chat, false, null));
+            options.Providers.Add(Option(ModelProviderEnum.OpenAi, SetupProviderGroupEnum.Api, false, null, false, null));
+            options.Providers.Add(Option(ModelProviderEnum.Gemini, SetupProviderGroupEnum.Api, false, null, false, null));
+            options.Providers.Add(Option(ModelProviderEnum.XAi, SetupProviderGroupEnum.Api, false, null, false, null));
+            options.Providers.Add(Option(ModelProviderEnum.OllamaCloud, SetupProviderGroupEnum.Api, false, null, false, null));
+            options.Providers.Add(Option(ModelProviderEnum.ClaudeCode, SetupProviderGroupEnum.AgentCli, false, chat, false, null));
+            options.Providers.Add(Option(ModelProviderEnum.Codex, SetupProviderGroupEnum.AgentCli, false, AgentCliService.DefaultModel, false, null));
+            options.Providers.Add(Option(ModelProviderEnum.GeminiCli, SetupProviderGroupEnum.AgentCli, false, AgentCliService.DefaultModel, false, null));
+            options.Providers.Add(Option(ModelProviderEnum.Mux, SetupProviderGroupEnum.AgentCli, false, AgentCliService.DefaultModel, false, null));
+            options.Providers.Add(Option(ModelProviderEnum.Ollama, SetupProviderGroupEnum.SelfHosted, false, null, true, _Settings().Models.DefaultOllamaEndpoint));
+            options.Providers.Add(Option(ModelProviderEnum.OpenAiCompatible, SetupProviderGroupEnum.SelfHosted, false, null, true, null));
+            return options;
+        }
+
+        /// <summary>
+        /// Connect the workspace's chat model in one step: store the secret for the chosen sign-in method (rotating the
+        /// endpoint's own credential when it has one), point every chat task at the endpoint, and verify it with a live
+        /// call. The returned status reports the result on the endpoint's model check.
+        /// </summary>
+        /// <param name="tenantId">Tenant.</param>
+        /// <param name="userId">Administrator, when known.</param>
+        /// <param name="req">Request.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Status after the check.</returns>
+        /// <exception cref="ArgumentNullException">tenantId or req is null.</exception>
+        /// <exception cref="ArgumentException">The request is incomplete, the provider is unavailable, or the secret does not look right.</exception>
+        /// <exception cref="KeyNotFoundException">The named endpoint does not exist.</exception>
+        public async Task<SetupStatusResponse> ConnectAsync(string tenantId, string? userId, SetupConnectRequest req, CancellationToken token = default)
+        {
+            if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            ArgumentNullException.ThrowIfNull(req);
+            if (!req.Provider.HasValue) throw new FieldValidationException("provider", "Choose a provider.");
+            ModelProviderEnum provider = req.Provider.Value;
+            SetupProviderOption option = GetOptions().Providers.FirstOrDefault(o => o.Provider == provider)
+                ?? throw new FieldValidationException("provider", provider + " cannot be set up here. Use the Models page.");
+            if (!option.Available) throw new FieldValidationException("provider", option.UnavailableReason ?? provider + " is not available on this server.");
+            ModelAuthMethodEnum method = req.AuthMethod ?? option.Methods[0].Method;
+            if (!ModelCredentials.Accepts(provider, method)) throw new FieldValidationException("authMethod", provider + " cannot sign in with " + AgentCliService.Describe(method, provider) + ".");
+
+            ModelEndpoint? endpoint = null;
+            if (!String.IsNullOrWhiteSpace(req.ModelEndpointId))
+            {
+                endpoint = await _Database.ModelEndpoints.ReadAsync(tenantId, req.ModelEndpointId, token).ConfigureAwait(false);
+                if (endpoint == null) throw new KeyNotFoundException("Model endpoint " + req.ModelEndpointId + " was not found.");
+                if (IsPlatform(endpoint)) throw new ArgumentException("This endpoint uses the hosted service's key, so there is nothing to enter.");
+            }
+            else
+            {
+                EnumerationResult<ModelEndpoint> same = await _Database.ModelEndpoints.EnumerateAsync(new ModelEndpointFilter
+                {
+                    TenantId = tenantId, Provider = provider, PageSize = 100, SortBy = "createdUtc", SortDirection = SortDirectionEnum.Ascending
+                }, token).ConfigureAwait(false);
+                endpoint = same.Items.FirstOrDefault(e => e.SupportsChat && !IsPlatform(e));
+            }
+
+            bool create = endpoint == null;
+            bool workingBefore = await ChatModelWorksAsync(tenantId, token).ConfigureAwait(false);
+            ModelEndpoint? previous = create ? null : await _Database.ModelEndpoints.ReadAsync(tenantId, endpoint!.Id, token).ConfigureAwait(false);
+            endpoint ??= new ModelEndpoint
+            {
+                TenantId = tenantId,
+                Name = await FreeEndpointNameAsync(tenantId, Label(provider), token).ConfigureAwait(false),
+                Provider = provider,
+                SupportsChat = true
+            };
+            if (endpoint.Provider != provider) throw new ArgumentException("Endpoint " + endpoint.Name + " uses " + endpoint.Provider + ", not " + provider + ".");
+
+            string secret = (req.Secret ?? String.Empty).Trim();
+            bool needsSecret = AgentCliService.NeedsSecret(method);
+            bool reuse = needsSecret && secret.Length == 0 && !create && endpoint.AuthMethod == method && await HasKeyAsync(tenantId, endpoint, token).ConfigureAwait(false);
+            if (needsSecret && !reuse)
+            {
+                string? bad = ModelCredentials.Check(provider, method, secret);
+                if (bad != null) throw new FieldValidationException("secret", bad);
+            }
+
+            string? model = String.IsNullOrWhiteSpace(req.Model) ? (endpoint.Model ?? option.DefaultModel) : req.Model.Trim();
+            if (AgentCliService.IsAgentCli(provider) && String.Equals(model, AgentCliService.DefaultModel, StringComparison.OrdinalIgnoreCase)) model = null;
+            if (String.IsNullOrWhiteSpace(model) && !AgentCliService.IsAgentCli(provider)) throw new FieldValidationException("model", "Name the model to use, for example one listed in the provider's console.");
+
+            if (option.NeedsBaseUrl)
+            {
+                string url = String.IsNullOrWhiteSpace(req.BaseUrl) ? (endpoint.Endpoint ?? option.DefaultBaseUrl ?? String.Empty) : req.BaseUrl.Trim();
+                if (!Uri.TryCreate(url, UriKind.Absolute, out Uri? parsed) || (parsed.Scheme != Uri.UriSchemeHttp && parsed.Scheme != Uri.UriSchemeHttps))
+                    throw new FieldValidationException("baseUrl", "Enter the server's address, such as http://host.docker.internal:11434.");
+                await Security.NetworkGuard.EnsureAllowedAsync(url, token).ConfigureAwait(false);
+                endpoint.Endpoint = url;
+            }
+            else if (AgentCliService.IsAgentCli(provider))
+            {
+                endpoint.Endpoint = null;
+            }
+
+            endpoint.AuthMethod = method;
+            endpoint.Model = model;
+            endpoint.SupportsChat = true;
+            endpoint.Active = true;
+            if (AgentCliService.IsAgentCli(provider))
+            {
+                endpoint.SupportsTools = false;
+                endpoint.SupportsEmbeddings = false;
+                endpoint.Temperature = null;
+            }
+
+            if (provider == ModelProviderEnum.Anthropic || provider == ModelProviderEnum.ClaudeCode) endpoint.Temperature = null;
+            endpoint.LastValidationSucceeded = null;
+            endpoint = create
+                ? await _Database.ModelEndpoints.CreateAsync(endpoint, token).ConfigureAwait(false)
+                : await _Database.ModelEndpoints.UpdateAsync(endpoint, token).ConfigureAwait(false);
+
+            // While a working model exists, a change is tried on a new credential so a failed test can be undone.
+            bool safeChange = workingBefore && previous != null;
+            string? oldCredentialId = previous?.CredentialId;
+            string? newCredentialId = null;
+            if (needsSecret && !reuse) newCredentialId = await StoreSecretAsync(tenantId, userId, endpoint, method, secret, !safeChange, token).ConfigureAwait(false);
+            if (!needsSecret && !String.IsNullOrEmpty(endpoint.CredentialId) && method != ModelAuthMethodEnum.None)
+            {
+                endpoint.CredentialId = null;
+                endpoint = await _Database.ModelEndpoints.UpdateAsync(endpoint, token).ConfigureAwait(false);
+            }
+
+            if (!workingBefore) await AssignChatTasksAsync(tenantId, endpoint.Id, token).ConfigureAwait(false);
+            ModelValidationResponse test = await _Models.ValidateAsync(endpoint, token).ConfigureAwait(false);
+            SetupConnectionResult connection = new SetupConnectionResult
+            {
+                ModelEndpointId = endpoint.Id,
+                Succeeded = test.Succeeded,
+                Message = String.Join(" ", test.Messages)
+            };
+
+            if (test.Succeeded)
+            {
+                if (workingBefore) await AssignChatTasksAsync(tenantId, endpoint.Id, token).ConfigureAwait(false);
+                if (newCredentialId != null && !String.IsNullOrEmpty(oldCredentialId) && !String.Equals(oldCredentialId, newCredentialId, StringComparison.Ordinal))
+                    await DeleteIfUnusedAsync(tenantId, oldCredentialId, token).ConfigureAwait(false);
+            }
+            else if (workingBefore)
+            {
+                connection.KeptPrevious = true;
+                if (previous != null) await _Database.ModelEndpoints.UpdateAsync(previous, token).ConfigureAwait(false);
+                if (newCredentialId != null && !String.Equals(oldCredentialId, newCredentialId, StringComparison.Ordinal))
+                    await DeleteIfUnusedAsync(tenantId, newCredentialId, token).ConfigureAwait(false);
+            }
+
+            _Logging.Info(_Header + (test.Succeeded ? "connected " : "could not connect ") + provider + " (" + method + ") as endpoint " + endpoint.Id + " in tenant " + tenantId
+                + (connection.KeptPrevious ? "; kept the working model" : String.Empty));
+            SetupStatusResponse status = await BuildAsync(tenantId, true, false, token).ConfigureAwait(false);
+            status.Connection = connection;
+            return status;
+        }
+
+        /// <summary>
+        /// Store an API key for an endpoint and verify it. Kept for clients of the first Setup API; new clients use
+        /// <see cref="ConnectAsync"/>.
         /// </summary>
         /// <param name="tenantId">Tenant.</param>
         /// <param name="userId">Administrator storing the key, when known.</param>
@@ -131,34 +290,18 @@ namespace MyMorningNews.Core.Services
             if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));
             ArgumentNullException.ThrowIfNull(req);
             if (String.IsNullOrWhiteSpace(req.ModelEndpointId)) throw new ArgumentException("modelEndpointId is required.");
-            string key = (req.ApiKey ?? String.Empty).Trim();
-            if (key.Length == 0) throw new ArgumentException("apiKey is required.");
+            if (String.IsNullOrWhiteSpace(req.ApiKey)) throw new ArgumentException("apiKey is required.");
             ModelEndpoint? endpoint = await _Database.ModelEndpoints.ReadAsync(tenantId, req.ModelEndpointId, token).ConfigureAwait(false);
             if (endpoint == null) throw new KeyNotFoundException("Model endpoint " + req.ModelEndpointId + " was not found.");
             if (IsPlatform(endpoint)) throw new ArgumentException("This endpoint uses the hosted service's key, so there is nothing to enter.");
-
-            VaultCredential? existing = null;
-            if (!String.IsNullOrEmpty(endpoint.CredentialId))
-                existing = await _Database.VaultCredentials.ReadAsync(tenantId, endpoint.CredentialId, token).ConfigureAwait(false);
-            if (existing != null)
-            {
-                await _Vault.UpdateAsync(existing, new VaultCredentialUpsertRequest { Secret = key, Active = true }, token).ConfigureAwait(false);
-            }
-            else
-            {
-                VaultCredential created = await _Vault.CreateAsync(tenantId, userId, new VaultCredentialUpsertRequest
-                {
-                    Name = await FreeCredentialNameAsync(tenantId, endpoint.Name + " API key", token).ConfigureAwait(false),
-                    Kind = VaultCredentialKindEnum.ApiKey,
-                    Provider = VaultProviderFor(endpoint.Provider),
-                    Secret = key,
-                    Description = "Added on the Setup page."
-                }, token).ConfigureAwait(false);
-                endpoint.CredentialId = created.Id;
-            }
-
+            ModelAuthMethodEnum method = AgentCliService.EffectiveMethod(endpoint);
+            if (!AgentCliService.NeedsSecret(method)) method = ModelAuthMethodEnum.ApiKey;
+            string? bad = ModelCredentials.Check(endpoint.Provider, method, req.ApiKey);
+            if (bad != null) throw new ArgumentException(bad);
+            endpoint.AuthMethod = method;
             endpoint.LastValidationSucceeded = null;
             endpoint = await _Database.ModelEndpoints.UpdateAsync(endpoint, token).ConfigureAwait(false);
+            await StoreSecretAsync(tenantId, userId, endpoint, method, req.ApiKey.Trim(), true, token).ConfigureAwait(false);
             await _Models.ValidateAsync(endpoint, token).ConfigureAwait(false);
             _Logging.Info(_Header + "stored a key for endpoint " + endpoint.Id + " in tenant " + tenantId);
             return await BuildAsync(tenantId, true, false, token).ConfigureAwait(false);
@@ -274,6 +417,7 @@ namespace MyMorningNews.Core.Services
                 status.Checks.Add(EmailCheck());
             }
 
+            if (!canConfigure) foreach (SetupCheck c in status.Checks) c.BaseUrl = null;
             status.Ready = status.Checks.Where(c => c.Required).All(c => c.State == SetupCheckStateEnum.Ready);
             status.CheckedUtc = DateTime.UtcNow;
             return status;
@@ -290,10 +434,29 @@ namespace MyMorningNews.Core.Services
                 ResourceName = endpoint.Name,
                 Provider = endpoint.Provider.ToString(),
                 Model = model,
-                NeedsApiKey = NeedsKey(endpoint.Provider),
+                AuthMethod = AgentCliService.EffectiveMethod(endpoint),
+                BaseUrl = endpoint.Provider == ModelProviderEnum.Ollama || endpoint.Provider == ModelProviderEnum.OpenAiCompatible ? endpoint.Endpoint : null,
+                NeedsApiKey = AgentCliService.NeedsSecret(AgentCliService.EffectiveMethod(endpoint)),
                 UsesPlatformKey = IsPlatform(endpoint),
                 VerifiedUtc = endpoint.LastValidatedUtc
             };
+
+            if (AgentCliService.IsAgentCli(endpoint.Provider))
+            {
+                if (!_Models.AgentClis.Allowed())
+                {
+                    check.State = SetupCheckStateEnum.Failed;
+                    check.Message = "Agent CLIs are turned off on this server, so " + endpoint.Name + " cannot run. Choose a provider API key instead.";
+                    return check;
+                }
+
+                if (!_Models.AgentClis.IsInstalled(endpoint.Provider))
+                {
+                    check.State = SetupCheckStateEnum.Missing;
+                    check.Message = "The " + Label(endpoint.Provider) + " CLI (" + _Models.AgentClis.ExecutableFor(endpoint.Provider) + ") is not installed on the server.";
+                    return check;
+                }
+            }
 
             check.HasApiKey = await HasKeyAsync(tenantId, endpoint, token).ConfigureAwait(false);
             if (check.NeedsApiKey && !check.HasApiKey)
@@ -301,7 +464,7 @@ namespace MyMorningNews.Core.Services
                 check.State = SetupCheckStateEnum.Missing;
                 check.Message = check.UsesPlatformKey
                     ? "The hosted service's model key is not configured. The operator needs to set it."
-                    : endpoint.Name + " needs an API key.";
+                    : endpoint.Name + " needs " + AgentCliService.Describe(check.AuthMethod ?? ModelAuthMethodEnum.ApiKey, endpoint.Provider) + ".";
                 return check;
             }
 
@@ -468,7 +631,7 @@ namespace MyMorningNews.Core.Services
             check.ResourceName = e.Name;
             check.Provider = e.Provider.ToString();
             check.Model = resolved.Model;
-            check.NeedsApiKey = NeedsKey(e.Provider);
+            check.NeedsApiKey = AgentCliService.NeedsSecret(AgentCliService.EffectiveMethod(e));
             check.HasApiKey = await HasKeyAsync(tenantId, e, token).ConfigureAwait(false);
             if (live) await _Models.ValidateAsync(e, token).ConfigureAwait(false);
             check.VerifiedUtc = e.LastValidatedUtc;
@@ -547,15 +710,6 @@ namespace MyMorningNews.Core.Services
             return String.Equals(endpoint.CredentialId, VaultService.PlatformAnthropicCredentialId, StringComparison.Ordinal);
         }
 
-        private static bool NeedsKey(ModelProviderEnum provider)
-        {
-            return provider == ModelProviderEnum.Anthropic
-                || provider == ModelProviderEnum.OpenAi
-                || provider == ModelProviderEnum.Gemini
-                || provider == ModelProviderEnum.XAi
-                || provider == ModelProviderEnum.OllamaCloud;
-        }
-
         private static bool IsWebSearch(SearchProviderKindEnum kind)
         {
             return kind == SearchProviderKindEnum.Searxng
@@ -564,17 +718,141 @@ namespace MyMorningNews.Core.Services
                 || kind == SearchProviderKindEnum.HostedModelWebSearch;
         }
 
-        private static VaultProviderEnum VaultProviderFor(ModelProviderEnum provider)
+        private SetupProviderOption Option(ModelProviderEnum provider, SetupProviderGroupEnum group, bool recommended, string? defaultModel, bool needsBaseUrl, string? defaultBaseUrl)
+        {
+            SetupProviderOption option = new SetupProviderOption
+            {
+                Provider = provider,
+                Group = group,
+                Recommended = recommended,
+                DefaultModel = defaultModel,
+                NeedsBaseUrl = needsBaseUrl,
+                DefaultBaseUrl = defaultBaseUrl
+            };
+            IReadOnlyList<ModelAuthMethodEnum> methods = AgentCliService.MethodsFor(provider);
+            for (int i = 0; i < methods.Count; i++)
+            {
+                ModelAuthMethodEnum m = methods[i];
+                option.Methods.Add(new SetupAuthOption
+                {
+                    Method = m,
+                    Input = m == ModelAuthMethodEnum.AuthFile ? "File" : AgentCliService.NeedsSecret(m) ? "Text" : "None",
+                    FileName = m == ModelAuthMethodEnum.AuthFile ? AgentCliService.AuthFileName(provider) : null,
+                    Recommended = i == 0
+                });
+            }
+
+            if (AgentCliService.IsAgentCli(provider))
+            {
+                option.Installed = _Models.AgentClis.IsInstalled(provider);
+                if (!_Models.AgentClis.Allowed())
+                {
+                    option.Available = false;
+                    option.TurnedOff = true;
+                    option.UnavailableReason = "Agent CLIs are turned off on this server (Models.AllowAgentClis).";
+                }
+                else if (!option.Installed)
+                {
+                    option.Available = false;
+                    option.UnavailableReason = "The " + Label(provider) + " CLI (" + _Models.AgentClis.ExecutableFor(provider) + ") is not installed on the server.";
+                }
+            }
+
+            return option;
+        }
+
+        private async Task<string> StoreSecretAsync(string tenantId, string? userId, ModelEndpoint endpoint, ModelAuthMethodEnum method, string secret, bool rotate, CancellationToken token)
+        {
+            VaultCredential? existing = null;
+            if (rotate && !String.IsNullOrEmpty(endpoint.CredentialId) && !IsPlatform(endpoint))
+                existing = await _Database.VaultCredentials.ReadAsync(tenantId, endpoint.CredentialId, token).ConfigureAwait(false);
+            if (existing != null && existing.Kind == ModelCredentials.KindFor(method))
+            {
+                await _Vault.UpdateAsync(existing, new VaultCredentialUpsertRequest { Secret = secret, Active = true }, token).ConfigureAwait(false);
+                return existing.Id;
+            }
+
+            string suffix = method == ModelAuthMethodEnum.AuthFile ? " " + (AgentCliService.AuthFileName(endpoint.Provider) ?? "sign-in file")
+                : method == ModelAuthMethodEnum.AccessToken ? " token" : " API key";
+            VaultCredential created = await _Vault.CreateAsync(tenantId, userId, new VaultCredentialUpsertRequest
+            {
+                Name = await FreeCredentialNameAsync(tenantId, endpoint.Name + suffix, token).ConfigureAwait(false),
+                Kind = ModelCredentials.KindFor(method),
+                Provider = ModelCredentials.VaultProviderFor(endpoint.Provider),
+                Secret = secret,
+                Description = "Added on the Setup page."
+            }, token).ConfigureAwait(false);
+            endpoint.CredentialId = created.Id;
+            await _Database.ModelEndpoints.UpdateAsync(endpoint, token).ConfigureAwait(false);
+            return created.Id;
+        }
+
+        private async Task<bool> ChatModelWorksAsync(string tenantId, CancellationToken token)
+        {
+            foreach (ModelTaskEnum task in ChatTasks)
+            {
+                try
+                {
+                    ResolvedModel resolved = await _Models.ResolveAsync(tenantId, task, null, null, null, token).ConfigureAwait(false);
+                    if (resolved.Endpoint.LastValidationSucceeded != true) return false;
+                }
+                catch (ModelCallException)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private async Task DeleteIfUnusedAsync(string tenantId, string credentialId, CancellationToken token)
+        {
+            if (String.Equals(credentialId, VaultService.PlatformAnthropicCredentialId, StringComparison.Ordinal)) return;
+            EnumerationResult<ModelEndpoint> users = await _Database.ModelEndpoints.EnumerateAsync(new ModelEndpointFilter { TenantId = tenantId, CredentialId = credentialId, PageSize = 1 }, token).ConfigureAwait(false);
+            if (users.Items.Count > 0) return;
+            await _Database.VaultCredentials.DeleteAsync(tenantId, credentialId, token).ConfigureAwait(false);
+        }
+
+        private async Task AssignChatTasksAsync(string tenantId, string endpointId, CancellationToken token)
+        {
+            foreach (ModelTaskEnum task in ChatTasks)
+            {
+                EnumerationResult<ModelAssignment> existing = await _Database.ModelAssignments.EnumerateAsync(new ModelAssignmentFilter { TenantId = tenantId, Task = task, PageSize = 100 }, token).ConfigureAwait(false);
+                ModelAssignment? a = existing.Items.FirstOrDefault(x => x.TopicId == null);
+                if (a == null)
+                {
+                    await _Database.ModelAssignments.CreateAsync(new ModelAssignment { TenantId = tenantId, Task = task, ModelEndpointId = endpointId }, token).ConfigureAwait(false);
+                }
+                else if (!String.Equals(a.ModelEndpointId, endpointId, StringComparison.Ordinal) || !a.Active || a.ModelOverride != null)
+                {
+                    a.ModelEndpointId = endpointId;
+                    a.ModelOverride = null;
+                    a.Active = true;
+                    await _Database.ModelAssignments.UpdateAsync(a, token).ConfigureAwait(false);
+                }
+            }
+        }
+
+        private async Task<string> FreeEndpointNameAsync(string tenantId, string name, CancellationToken token)
+        {
+            EnumerationResult<ModelEndpoint> all = await _Database.ModelEndpoints.EnumerateAsync(new ModelEndpointFilter { TenantId = tenantId, PageSize = 1000 }, token).ConfigureAwait(false);
+            string candidate = name;
+            for (int i = 2; all.Items.Any(e => String.Equals(e.Name, candidate, StringComparison.OrdinalIgnoreCase)); i++) candidate = name + " " + i;
+            return candidate;
+        }
+
+        private static string Label(ModelProviderEnum provider)
         {
             switch (provider)
             {
-                case ModelProviderEnum.Anthropic: return VaultProviderEnum.Anthropic;
-                case ModelProviderEnum.OpenAi: return VaultProviderEnum.OpenAi;
-                case ModelProviderEnum.Gemini: return VaultProviderEnum.Gemini;
-                case ModelProviderEnum.XAi: return VaultProviderEnum.XAi;
-                case ModelProviderEnum.OllamaCloud: return VaultProviderEnum.OllamaCloud;
-                case ModelProviderEnum.OpenAiCompatible: return VaultProviderEnum.OpenAiCompatible;
-                default: return VaultProviderEnum.Custom;
+                case ModelProviderEnum.OpenAi: return "OpenAI";
+                case ModelProviderEnum.Gemini: return "Google Gemini";
+                case ModelProviderEnum.XAi: return "xAI";
+                case ModelProviderEnum.OllamaCloud: return "Ollama Cloud";
+                case ModelProviderEnum.ClaudeCode: return "Claude Code";
+                case ModelProviderEnum.GeminiCli: return "Gemini CLI";
+                case ModelProviderEnum.OpenAiCompatible: return "OpenAI-compatible server";
+                default: return provider.ToString();
             }
         }
 

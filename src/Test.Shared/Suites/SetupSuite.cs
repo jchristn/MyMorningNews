@@ -2,12 +2,15 @@ namespace Test.Shared.Suites
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using MyMorningNews.Core.Enums;
     using MyMorningNews.Core.Models;
     using MyMorningNews.Core.Responses;
+    using MyMorningNews.Core.Settings;
+    using MyMorningNews.Server;
     using Test.Shared.Helpers;
     using Touchstone.Core;
 
@@ -28,7 +31,11 @@ namespace Test.Shared.Suites
             {
                 Cases.Case(S, "Missing", "A new workspace reports its missing model key, members cannot configure it, and the wizard and requests are refused", MissingAsync),
                 Cases.Case(S, "KeyFailed", "A stored key is kept in the vault, rotated in place, and a key that fails its live check blocks the wizard", KeyFailedAsync),
-                Cases.Case(S, "Ready", "Working models and search verify with live calls, a successful call counts as proof, and edits clear it", ReadyAsync)
+                Cases.Case(S, "Ready", "Working models and search verify with live calls, a successful call counts as proof, and edits clear it", ReadyAsync),
+                Cases.Case(S, "Options", "Administrators see every provider with its sign-in methods, including agent CLIs and their sign-in files", OptionsAsync),
+                Cases.Case(S, "ClaudeCodeToken", "Claude Code connects with a claude setup-token token in a private home, a rejected token is reported, and an API key pasted as a token is caught", ClaudeCodeTokenAsync),
+                Cases.Case(S, "CodexAuthFile", "Codex connects with a pasted auth.json written privately once, a refreshed file is kept, and deleting the endpoint removes it", CodexAuthFileAsync),
+                Cases.Case(S, "AgentClisOff", "With agent CLIs turned off they are offered as unavailable and cannot be connected", AgentClisOffAsync)
             });
         }
 
@@ -136,6 +143,153 @@ namespace Test.Shared.Suites
             (await ta.Client.PutAsync("/v1.0/api/model-endpoints/" + e.Id, new { model = "stub-research" }, token).ConfigureAwait(false)).Expect(200, "change model");
             SetupStatusResponse changed = await StatusAsync(ta, token).ConfigureAwait(false);
             Assert.True(!changed.Ready && changed.Checks.Single(c => c.Kind == SetupCheckKindEnum.Model).State == SetupCheckStateEnum.Unverified, "changing the model needs a new check");
+        }
+        private const string FakeClaude = "#!/bin/sh\ncat > /dev/null\nif [ \"$CLAUDE_CODE_OAUTH_TOKEN\" = \"sk-ant-oat01-good\" ] && [ -z \"$ANTHROPIC_API_KEY\" ] && [ \"$HOME\" != \"$REAL_HOME\" ]; then\n  echo '{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"result\":\"ready\",\"session_id\":\"s1\",\"usage\":{\"input_tokens\":5,\"output_tokens\":1}}'\n  exit 0\nfi\necho '{\"type\":\"result\",\"subtype\":\"error\",\"is_error\":true,\"result\":\"Invalid API key. Please run /login\"}'\nexit 1\n";
+
+        private const string FakeCodex = "#!/bin/sh\ncat > /dev/null\nif [ -f \"$CODEX_HOME/auth.json\" ] && grep -q refresh_token \"$CODEX_HOME/auth.json\" && [ -z \"$OPENAI_API_KEY\" ]; then\n  echo '{\"type\":\"thread.started\",\"thread_id\":\"t1\"}'\n  echo '{\"type\":\"item.completed\",\"item\":{\"id\":\"i1\",\"type\":\"agent_message\",\"text\":\"ready\"}}'\n  echo '{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":5,\"output_tokens\":1}}'\n  exit 0\nfi\necho '{\"type\":\"turn.failed\",\"error\":{\"message\":\"401 Unauthorized: not logged in\"}}'\nexit 1\n";
+
+        private static string WriteScript(string folder, string name, string body)
+        {
+            Directory.CreateDirectory(folder);
+            string path = Path.Combine(folder, name);
+            File.WriteAllText(path, body);
+            if (!OperatingSystem.IsWindows()) File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+            return path;
+        }
+
+        private static async Task WithFakeClisAsync(Func<MyMorningNewsServer, string, Task> body, CancellationToken token)
+        {
+            MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+            ModelSettings models = server.Context.Settings.Models;
+            string root = Path.Combine(Path.GetTempPath(), "mmn-cli-" + Guid.NewGuid().ToString("N").Substring(0, 8));
+            string claude = models.ClaudeCodeExecutable;
+            string codex = models.CodexExecutable;
+            string home = models.CliHomeDirectory;
+            bool allowed = models.AllowAgentClis;
+            Environment.SetEnvironmentVariable("REAL_HOME", Environment.GetEnvironmentVariable("HOME"));
+            try
+            {
+                models.ClaudeCodeExecutable = WriteScript(Path.Combine(root, "bin"), "claude", FakeClaude);
+                models.CodexExecutable = WriteScript(Path.Combine(root, "bin"), "codex", FakeCodex);
+                models.CliHomeDirectory = Path.Combine(root, "homes");
+                models.AllowAgentClis = true;
+                await body(server, models.CliHomeDirectory).ConfigureAwait(false);
+            }
+            finally
+            {
+                models.ClaudeCodeExecutable = claude;
+                models.CodexExecutable = codex;
+                models.CliHomeDirectory = home;
+                models.AllowAgentClis = allowed;
+                try { Directory.Delete(root, true); } catch (IOException) { }
+            }
+        }
+
+        private static async Task OptionsAsync(CancellationToken token)
+        {
+            TestUser[] users = await WorkspaceAsync(token).ConfigureAwait(false);
+            SetupOptionsResponse o = (await users[0].Client.GetAsync("/v1.0/api/setup/options", token).ConfigureAwait(false)).Expect(200, "options").Json<SetupOptionsResponse>();
+            SetupProviderOption cc = o.Providers.Single(p => p.Provider == ModelProviderEnum.ClaudeCode);
+            Assert.True(cc.Group == SetupProviderGroupEnum.AgentCli && cc.Methods.Select(m => m.Method).SequenceEqual(new[] { ModelAuthMethodEnum.AccessToken, ModelAuthMethodEnum.ApiKey, ModelAuthMethodEnum.ServerSignIn }),
+                "Claude Code: token, key, or server sign-in");
+            SetupProviderOption cx = o.Providers.Single(p => p.Provider == ModelProviderEnum.Codex);
+            Assert.True(cx.Methods[0].Method == ModelAuthMethodEnum.AuthFile && cx.Methods[0].Input == "File" && cx.Methods[0].FileName == "auth.json", "Codex takes auth.json first");
+            Assert.Equal("oauth_creds.json", o.Providers.Single(p => p.Provider == ModelProviderEnum.GeminiCli).Methods[0].FileName, "Gemini CLI sign-in file");
+            Assert.True(o.Providers.Single(p => p.Provider == ModelProviderEnum.Anthropic).Recommended, "the Anthropic API is recommended");
+            Assert.True(o.Providers.Single(p => p.Provider == ModelProviderEnum.Ollama).NeedsBaseUrl, "Ollama asks for an address");
+            (await users[1].Client.GetAsync("/v1.0/api/setup/options", token).ConfigureAwait(false)).Expect(403, "members cannot see options");
+        }
+
+        private static async Task ClaudeCodeTokenAsync(CancellationToken token)
+        {
+            if (OperatingSystem.IsWindows()) return;
+            await WithFakeClisAsync(async (server, homes) =>
+            {
+                TestUser ta = (await WorkspaceAsync(token).ConfigureAwait(false))[0];
+                ErrorResponse wrongKind = (await ta.Client.PostAsync("/v1.0/api/setup/connect", new { provider = "ClaudeCode", authMethod = "AccessToken", secret = "sk-ant-api03-abc" }, token).ConfigureAwait(false))
+                    .Expect(400, "an API key pasted as a token").Json<ErrorResponse>();
+                Assert.True(wrongKind.Message.Contains("Anthropic API key", StringComparison.Ordinal) && wrongKind.Details != null && wrongKind.Details["field"] == "secret", "caught, on the secret field: " + wrongKind.Message);
+
+                SetupStatusResponse rejected = (await ta.Client.PostAsync("/v1.0/api/setup/connect", new { provider = "ClaudeCode", authMethod = "AccessToken", secret = "sk-ant-oat01-bad" }, token).ConfigureAwait(false))
+                    .Expect(200, "bad token").Json<SetupStatusResponse>();
+                SetupCheck failed = rejected.Checks.Single(c => c.Kind == SetupCheckKindEnum.Model);
+                Assert.True(failed.Provider == "ClaudeCode" && failed.State == SetupCheckStateEnum.Failed && failed.Message!.Contains("not signed in", StringComparison.Ordinal),
+                    "every chat task now uses Claude Code and its rejection is shown: " + failed.State + " " + failed.Message);
+
+                SetupStatusResponse good = (await ta.Client.PostAsync("/v1.0/api/setup/connect", new { provider = "ClaudeCode", authMethod = "AccessToken", secret = "sk-ant-oat01-good" }, token).ConfigureAwait(false))
+                    .Expect(200, "good token").Json<SetupStatusResponse>();
+                SetupCheck ok = good.Checks.Single(c => c.Kind == SetupCheckKindEnum.Model);
+                Assert.True(ok.State == SetupCheckStateEnum.Ready && ok.AuthMethod == ModelAuthMethodEnum.AccessToken && ok.ResourceId == failed.ResourceId, "the same endpoint is fixed in place: " + ok.State + " " + ok.Message);
+                List<VaultCredentialResponse> creds = (await ta.Client.GetAsync("/v1.0/api/vault/credentials", token).ConfigureAwait(false)).Expect(200, "credentials").Json<EnumerationResult<VaultCredentialResponse>>().Items;
+                Assert.True(creds.Count(c => c.Name == "Claude Code token") == 1 && creds.Single(c => c.Name == "Claude Code token").Kind == VaultCredentialKindEnum.BearerToken, "one token credential, rotated in place");
+                ModelEndpoint e = (await ta.Client.GetAsync("/v1.0/api/model-endpoints/" + ok.ResourceId, token).ConfigureAwait(false)).Expect(200, "endpoint").Json<ModelEndpoint>();
+                Assert.True(e.SupportsTools == false && !e.SupportsEmbeddings && e.Endpoint == null, "agent CLIs answer in JSON, without tools or embeddings");
+                Assert.True(Directory.Exists(Path.Combine(homes, ta.User.TenantId, e.Id)), "a private home for the endpoint");
+                (await ta.Client.PostAsync("/v1.0/api/refinement-sessions", new { seedText = "Heat pump rebates" }, token).ConfigureAwait(false)).Expect(201, "the wizard opens");
+
+                // Changing a working sign-in to one that fails keeps the working one.
+                SetupStatusResponse change = (await ta.Client.PostAsync("/v1.0/api/setup/connect", new { provider = "ClaudeCode", authMethod = "AccessToken", secret = "sk-ant-oat01-revoked" }, token).ConfigureAwait(false))
+                    .Expect(200, "failed change").Json<SetupStatusResponse>();
+                Assert.True(change.Connection != null && !change.Connection.Succeeded && change.Connection.KeptPrevious && change.Ready, "the failed change is reported and the working token is kept");
+                Assert.Equal(SetupCheckStateEnum.Ready, change.Checks.Single(c => c.Kind == SetupCheckKindEnum.Model).State, "still ready");
+                creds = (await ta.Client.GetAsync("/v1.0/api/vault/credentials", token).ConfigureAwait(false)).Expect(200, "credentials").Json<EnumerationResult<VaultCredentialResponse>>().Items;
+                Assert.True(creds.Count(c => c.Kind == VaultCredentialKindEnum.BearerToken) == 1 && creds.Single(c => c.Kind == VaultCredentialKindEnum.BearerToken).SecretPreview.EndsWith("good", StringComparison.Ordinal),
+                    "the rejected token was not kept");
+                (await ta.Client.PostAsync("/v1.0/api/model-endpoints/" + ok.ResourceId + "/test", new { }, token).ConfigureAwait(false)).Expect(200, "the working token still answers");
+
+                // Switching to another provider that fails also keeps the working one.
+                SetupStatusResponse other = (await ta.Client.PostAsync("/v1.0/api/setup/connect", new { provider = "Codex", authMethod = "AuthFile", secret = "{\"auth_mode\":\"chatgpt\",\"tokens\":{}}" }, token).ConfigureAwait(false))
+                    .Expect(200, "failed switch").Json<SetupStatusResponse>();
+                Assert.True(other.Connection!.KeptPrevious && other.Ready && other.Checks.Single(c => c.Kind == SetupCheckKindEnum.Model).Provider == "ClaudeCode", "the workspace keeps Claude Code");
+            }, token).ConfigureAwait(false);
+        }
+
+        private static async Task CodexAuthFileAsync(CancellationToken token)
+        {
+            if (OperatingSystem.IsWindows()) return;
+            await WithFakeClisAsync(async (server, homes) =>
+            {
+                TestUser ta = (await WorkspaceAsync(token).ConfigureAwait(false))[0];
+                (await ta.Client.PostAsync("/v1.0/api/setup/connect", new { provider = "Codex", authMethod = "AuthFile", secret = "not json" }, token).ConfigureAwait(false)).Expect(400, "not a file");
+                (await ta.Client.PostAsync("/v1.0/api/setup/connect", new { provider = "Codex", authMethod = "AuthFile", secret = "{\"other\":1}" }, token).ConfigureAwait(false)).Expect(400, "no sign-in in it");
+                string auth = "{\"auth_mode\":\"chatgpt\",\"tokens\":{\"access_token\":\"a\",\"refresh_token\":\"r\"}}";
+                SetupStatusResponse s = (await ta.Client.PostAsync("/v1.0/api/setup/connect", new { provider = "Codex", authMethod = "AuthFile", secret = auth }, token).ConfigureAwait(false))
+                    .Expect(200, "connect").Json<SetupStatusResponse>();
+                SetupCheck model = s.Checks.Single(c => c.Kind == SetupCheckKindEnum.Model);
+                Assert.True(model.State == SetupCheckStateEnum.Ready && model.Provider == "Codex", "Codex ready: " + model.State + " " + model.Message);
+                string file = Path.Combine(homes, ta.User.TenantId, model.ResourceId!, ".codex", "auth.json");
+                Assert.True(File.Exists(file) && File.ReadAllText(file) == auth, "auth.json written to the endpoint's private home");
+                if (!OperatingSystem.IsWindows())
+                    Assert.True((File.GetUnixFileMode(file) & (UnixFileMode.GroupRead | UnixFileMode.OtherRead)) == 0, "only the server user can read it");
+
+                string refreshed = "{\"auth_mode\":\"chatgpt\",\"tokens\":{\"access_token\":\"a2\",\"refresh_token\":\"r2\"}}";
+                File.WriteAllText(file, refreshed);
+                (await ta.Client.PostAsync("/v1.0/api/model-endpoints/" + model.ResourceId + "/test", new { }, token).ConfigureAwait(false)).Expect(200, "another call");
+                Assert.Equal(refreshed, File.ReadAllText(file), "a file the CLI refreshed is not overwritten by the stored copy");
+
+                (await ta.Client.DeleteAsync("/v1.0/api/model-endpoints/" + model.ResourceId, token).ConfigureAwait(false)).Expect(204, "delete endpoint");
+                Assert.True(!Directory.Exists(Path.Combine(homes, ta.User.TenantId, model.ResourceId!)), "deleting the endpoint removes its sign-in");
+            }, token).ConfigureAwait(false);
+        }
+
+        private static async Task AgentClisOffAsync(CancellationToken token)
+        {
+            MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+            bool allowed = server.Context.Settings.Models.AllowAgentClis;
+            try
+            {
+                server.Context.Settings.Models.AllowAgentClis = false;
+                TestUser ta = (await WorkspaceAsync(token).ConfigureAwait(false))[0];
+                SetupOptionsResponse o = (await ta.Client.GetAsync("/v1.0/api/setup/options", token).ConfigureAwait(false)).Expect(200, "options").Json<SetupOptionsResponse>();
+                Assert.True(o.Providers.Where(p => p.Group == SetupProviderGroupEnum.AgentCli).All(p => !p.Available && p.UnavailableReason != null), "agent CLIs are shown as unavailable");
+                Assert.True(o.Providers.Where(p => p.Group == SetupProviderGroupEnum.Api).All(p => p.Available), "APIs stay available");
+                (await ta.Client.PostAsync("/v1.0/api/setup/connect", new { provider = "ClaudeCode", authMethod = "ServerSignIn" }, token).ConfigureAwait(false)).Expect(400, "cannot connect");
+                (await ta.Client.PostAsync("/v1.0/api/model-endpoints", new { name = "cc", provider = "ClaudeCode", authMethod = "ServerSignIn" }, token).ConfigureAwait(false)).Expect(400, "nor add one on the Models page");
+            }
+            finally
+            {
+                server.Context.Settings.Models.AllowAgentClis = allowed;
+            }
         }
     }
 }

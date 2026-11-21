@@ -1058,7 +1058,11 @@
       "Ollama": "Ollama",
       "Gemini": "Gemini",
       "XAi": "xAI",
-      "OllamaCloud": "Ollama Cloud"
+      "OllamaCloud": "Ollama Cloud",
+      "ClaudeCode": "Claude Code",
+      "Codex": "Codex",
+      "GeminiCli": "Gemini CLI",
+      "Mux": "Mux"
     },
     "reasoningEffort": {
       "None": "なし",
@@ -1074,7 +1078,8 @@
       "BearerToken": "Bearer トークン",
       "BasicAuth": "Basic 認証",
       "CustomHeader": "カスタムヘッダー",
-      "ConnectionString": "接続文字列"
+      "ConnectionString": "接続文字列",
+      "SignInFile": "サインインファイル"
     },
     "vaultProvider": {
       "Anthropic": "Anthropic",
@@ -1302,6 +1307,13 @@
     "ttsProvider": {
       "OpenAiCompatibleSpeech": "OpenAI 互換の音声合成",
       "Disabled": "無効"
+    },
+    "authMethod": {
+      "ApiKey": "API キー",
+      "AccessToken": "アクセストークン",
+      "AuthFile": "サインインファイル",
+      "ServerSignIn": "サーバーでサインイン済み",
+      "None": "キーなし"
     }
   },
   "vault": {
@@ -1395,7 +1407,8 @@
       "credential": "認証情報",
       "lastValidated": "最終検証",
       "status": "ステータス",
-      "id": "ID"
+      "id": "ID",
+      "signIn": "サインイン"
     },
     "capabilities": {
       "chat": "チャット",
@@ -1432,18 +1445,16 @@
         "XAi": "xAI API を使う場合は空欄のままにします。",
         "OllamaCloud": "Ollama Cloud を使う場合は空欄のままにします。"
       },
-      "apiKey": "API キー",
       "keyModes": {
-        "new": "キーを入力",
+        "new": "新しく追加",
         "vault": "保存済み認証情報を使用",
-        "none": "キーなし"
+        "none": "未設定"
       },
-      "newKey": "新しい API キー",
-      "newKeyHelp": "認証情報保管庫に (暗号化して) 保存され、このエンドポイントに紐付けられます。現在のキーを維持する場合は空欄のままにします。",
+      "newKeyHelp": "認証情報保管庫に暗号化して保存され、このエンドポイントに紐付けられます。現在のものを維持する場合は空欄のままにします。",
       "storedKey": "保存済み認証情報",
       "storedKeyHelp": "[保存済み認証情報] ページでローテーションすると、それを使うすべてのエンドポイントに変更が反映されます。",
       "pickCredential": "認証情報を選択",
-      "noKeyWarning": "このプロバイダーには通常 API キーが必要です。キーがないと呼び出しは失敗します。",
+      "noKeyWarning": "設定するまで、このエンドポイントへの呼び出しは失敗します。",
       "capabilities": "提供機能",
       "toolsDetected": "ツールの対応状況と埋め込みの次元数は、[検証] を実行すると検出されます。",
       "embeddingDimensions": "埋め込みの次元数",
@@ -1478,7 +1489,11 @@
         "capability": "チャット、埋め込み、またはその両方を選択してください。",
         "credential": "保存済み認証情報を選択してください。",
         "number": "0 以上の数値を入力してください。"
-      }
+      },
+      "signIn": "サインイン",
+      "secretSource": "シークレットの取得元",
+      "howTo": "取得方法",
+      "cliNotice": "プロバイダーのコマンドラインツールをサーバー上で実行します。チャットのプロンプトにのみ応答するため、URL、ツール呼び出し、埋め込みはありません。"
     },
     "test": {
       "title": "モデルをテスト",
@@ -4203,31 +4218,31 @@
     }
   },
   "modelKeys": {
-    "title": "モデルエンドポイントに使用できる API キーがありません",
+    "title": "モデルエンドポイントにキーまたはサインインがありません",
     "problem": {
       "missing": "{name} には API キーがないため、呼び出しが失敗します。",
       "notFound": "{name} は、すでに存在しない保存済み認証情報を使用しています。",
       "inactive": "{name} は、無効になっている保存済み認証情報を使用しています。",
       "expired": "{name} は、期限切れの保存済み認証情報を使用しています。",
       "platformMissing": "{name} はプラットフォームのモデルキーを使いますが、サーバーにキーが設定されていません (MYMORNINGNEWS_ANTHROPIC_API_KEY)。",
-      "platformMissingUser": "{name} はこのサーバーの共有モデルキーを使いますが、サーバーの運用者がまだ設定していません。"
+      "platformMissingUser": "{name} はこのサーバーの共有モデルキーを使いますが、サーバーの運用者がまだ設定していません。",
+      "missingToken": "{name} にはサブスクリプショントークンがないため、呼び出しが失敗します。",
+      "missingFile": "{name} にはサインインファイルがないため、呼び出しが失敗します。"
     },
     "fix": "{name} にキーを追加",
     "view": "モデルエンドポイントを表示",
     "consequence": {
-      "general": "トピックの絞り込み、リサーチの実行、ブリーフィングには動作するモデルが必要なため、これを修正するまで失敗します。",
-      "wizard": "ウィザードはモデルに観点と質問の提案を求めるため、これを修正するまで最初のステップで失敗します。"
+      "general": "トピックの絞り込み、リサーチの実行、ブリーフィングには動作するモデルが必要なため、これを修正するまで失敗します。"
     },
     "askAdmin": "キーを追加できるのはテナント管理者のみです。管理者に修正を依頼してください。",
     "badge": "API キーなし",
-    "fixOwnKey": "{name} に自分の API キーを使う"
+    "fixOwnKey": "{name} に自分の API キーを使う",
+    "badgeToken": "トークンなし",
+    "badgeFile": "サインインファイルなし",
+    "fixSignIn": "{name} のサインインを更新"
   },
   "setup": {
-    "summary": "My Morning News に必要なもの (モデルの API キーと動作する検索プロバイダー) を追加して検証します。",
-    "intro": {
-      "title": "まずセットアップを完了してください。",
-      "message": "下の必須チェックがすべて準備完了になるまで、トピック、リサーチの実行、ブリーフィングはロックされたままです。"
-    },
+    "summary": "トピックを作成できるようにするには、まずこのワークスペースに AI モデルと Web 検索が必要です。",
     "blockedNotice": "セットアップが完了していないため、操作が停止されました。",
     "verifyAll": "すべて検証",
     "verifying": "ライブ呼び出しで確認しています。数秒かかることがあります。",
@@ -4244,48 +4259,21 @@
       "Email": "メール"
     },
     "check": {
-      "title": "{kind}: {name}",
-      "providerModel": "{provider}、モデル {model}",
-      "provider": "プロバイダー: {provider}",
-      "tasks": "用途: {tasks}",
-      "verified": "最終検証: {time}",
-      "platformKey": "このエンドポイントはサービス共有のモデルキーを使います。キーはサーバー運用者が管理しているため、ここで入力する必要はありません。",
-      "verify": "検証",
-      "retry": "再試行",
-      "openSearch": "検索プロバイダーを開く",
-      "openEndpoint": "モデルページで {name} を開く",
-      "openModels": "モデルページを開く"
-    },
-    "key": {
-      "label": "{name} の API キー",
-      "help": "保存済み認証情報と一緒に暗号化して保存し、このエンドポイントに関連付けて、ライブ呼び出しで確認します。",
-      "save": "保存して検証",
-      "saving": "キーを保存し、ライブ呼び出しで確認しています。数秒かかることがあります。"
+      "title": "{kind}: {name}"
     },
     "required": {
-      "heading": "必須",
-      "none": "サーバーから必須チェックは報告されていません。",
       "open": "セットアップを完了",
       "askAdmin": "これを使うには、管理者がセットアップを完了する必要があります。"
     },
-    "optional": {
-      "heading": "任意",
-      "note": "任意のチェックがリサーチを止めることはありません。意味的なマッチングやメール配信などの追加機能を有効にします。"
-    },
-    "help": {
-      "title": "その他の設定方法",
-      "env": "セルフホスト環境では、docker/.env に MYMORNINGNEWS_ANTHROPIC_API_KEY としてキーを設定し、サーバーを再起動する方法もあります。",
-      "models": "モデルページで別のモデルプロバイダーを使う"
-    },
     "ready": {
       "title": "準備ができました",
-      "message": "必須チェックはすべて合格しました。トピックを作成してリサーチを実行できます。",
-      "newTopic": "トピックを作成",
-      "topics": "トピックへ移動"
+      "message": "AI モデルと Web 検索はどちらも動作しています。トピックを作成して、最初のブリーフィングを受け取りましょう。",
+      "newTopic": "最初のトピックを作成",
+      "home": "ホームへ移動"
     },
     "gate": {
       "title": "このワークスペースは準備ができていません",
-      "message": "My Morning News を使うには、まず管理者がモデルの API キーを追加して検証する必要があります。",
+      "message": "My Morning News を使うには、まず管理者が AI モデルと Web 検索を接続する必要があります。",
       "askAdmin": "ダッシュボードでセットアップを開くよう管理者に依頼し、その後ここで再確認してください。",
       "checkAgain": "再確認",
       "checking": "確認中",
@@ -4299,6 +4287,176 @@
     "nav": {
       "callout": "セットアップを完了",
       "blocked": "{name} はセットアップ完了後に開けます"
+    },
+    "title": "My Morning News のセットアップ",
+    "copyCommand": "コマンドをコピー",
+    "newTab": "(新しいタブで開きます)",
+    "progress": {
+      "label": "セットアップの進捗",
+      "step": "ステップ {number}",
+      "model": "AI モデル",
+      "search": "Web 検索",
+      "done": "完了",
+      "todo": "未完了",
+      "attention": "要対応"
+    },
+    "model": {
+      "heading": "AI モデルを接続",
+      "intro": "My Morning News はこれを使って、リサーチの計画、ソースの読み込み、ブリーフィングの作成を行います。支払い方法を選んでください。",
+      "providerLegend": "プロバイダーを選択",
+      "groups": {
+        "AgentCli": {
+          "title": "AI サブスクリプションを使う",
+          "note": "すでに契約しているプランで、プロバイダーのコマンドラインツールをサーバー上で実行します。"
+        },
+        "Api": {
+          "title": "API キーを使う",
+          "note": "API キーは、プロバイダーから使用量に応じて課金されます。"
+        },
+        "SelfHosted": {
+          "title": "自分のモデルを実行",
+          "note": "Ollama など、自分で運用しているモデルサーバーに接続します。"
+        }
+      },
+      "recommended": "おすすめ",
+      "notInstalled": "このサーバーにはインストールされていません",
+      "unavailable": "このサーバーでは利用できません",
+      "methodLegend": "どの方法でサインインしますか?",
+      "stepsTitle": "{provider} の接続方法",
+      "connect": "接続してテスト",
+      "connecting": "テスト中",
+      "testing": "接続をテストしています。短いプロンプトを 1 つ送信します。CLI の場合は最大 1 分ほどかかることがあります。",
+      "turnedOff": "このサーバーではオフになっています"
+    },
+    "providers": {
+      "geminiName": "Google Gemini",
+      "compatibleName": "OpenAI 互換サーバー",
+      "ClaudeCode": "Claude Pro または Max",
+      "Codex": "ChatGPT Plus、Pro、または Business",
+      "GeminiCli": "Google アカウント",
+      "Mux": "Mux のエンドポイント",
+      "Anthropic": "Claude モデル",
+      "OpenAi": "GPT モデル",
+      "Gemini": "Gemini モデル",
+      "XAi": "Grok モデル",
+      "OllamaCloud": "Ollama がホストするオープンモデル",
+      "Ollama": "自分のコンピューターやサーバー上のモデル",
+      "OpenAiCompatible": "vLLM、LM Studio、llama.cpp など"
+    },
+    "method": {
+      "subscriptionToken": "サブスクリプショントークン",
+      "anthropicKey": "Anthropic API キー",
+      "openAiKey": "OpenAI API キー",
+      "geminiKey": "Gemini API キー",
+      "chatGptFile": "ChatGPT のサインインファイル ({file})",
+      "googleFile": "Google のサインインファイル ({file})",
+      "muxFile": "Mux の設定 ({file})",
+      "serverSignIn": "サーバーでサインイン済み",
+      "serverConfigured": "サーバーで設定済み",
+      "noKey": "キー不要",
+      "apiKey": "API キー"
+    },
+    "steps": {
+      "runAnywhere": "{app} がインストールされているコンピューターで、次のコマンドを実行します:",
+      "finishBrowser": "開いたブラウザーウィンドウでサインインを完了します。",
+      "copyToken": "表示されたトークン ({prefix} で始まります) をコピーし、下に貼り付けます。",
+      "tokenNote": "このトークンは Claude のサブスクリプションを使うため、使用量に応じた別途の請求はありません。",
+      "openKeys": "プロバイダーの API キーのページを開いてサインインします:",
+      "createKey": "キーを作成してコピーし、下に貼り付けます。",
+      "codexLogin": "お使いのコンピューターでこのコマンドを実行し、ChatGPT でサインインします:",
+      "geminiLogin": "お使いのコンピューターでこのコマンドを実行し、「Google でログイン」を選びます:",
+      "chooseFile": "保存されたファイルを下のボックスで選択します。ファイルの場所は次のとおりです:",
+      "muxChoose": "Mux のエンドポイントファイルを下のボックスで選択します。通常は次の場所にあります:",
+      "windows": "Windows の場合:",
+      "fileWarning": "このファイルを使うと、あなたとしてサインインできます。暗号化して保存され、このサーバーでのみ使用されます。",
+      "muxWarning": "このファイルには、プロバイダーのキーが含まれていることがあります。暗号化して保存され、このサーバーでのみ使用されます。",
+      "hiddenFolder": "ドットで始まるフォルダーは非表示になっています。Mac では、ファイル選択画面で Command+Shift+ピリオド を押すと表示されます。または、代わりに内容を貼り付けてください。",
+      "install": "まだインストールしていない場合は、次のコマンドでインストールします:",
+      "serverOpen": "My Morning News を実行しているコンピューターでターミナルを開き、次のコマンドを実行します:",
+      "serverClaudeLogin": "/login と入力して、サインインを完了します。",
+      "serverCodexLogin": "表示されたリンクを開いてコードを入力し、ChatGPT でサインインします。",
+      "serverGeminiLogin": "「Google でログイン」を選び、表示されたリンクの指示に従います。",
+      "serverMuxConfigure": "/endpoint と入力し、Add を選んで、使用するエンドポイントを保存してください。Mux はそれを {file} に書き込みます。",
+      "serverReturn": "ここに戻り、「接続してテスト」をクリックします。",
+      "ollamaAddress": "サーバーが Ollama に接続するためのアドレスを入力します。macOS または Windows の Docker からの場合、通常は {url} です。",
+      "ollamaModel": "取得 (pull) 済みのモデル名を入力します。次のコマンドで一覧を表示できます:",
+      "compatAddress": "サーバーのベース URL を入力します。通常は /v1 で終わります。",
+      "compatModel": "サーバーが提供しているモデル名を入力します。",
+      "selfKey": "サーバーが要求するキーを貼り付けます。"
+    },
+    "field": {
+      "token": "claude setup-token のトークン",
+      "file": "サインインファイル ({file})",
+      "apiKey": "API キー",
+      "keepStored": "保存済みのものを維持する場合は空欄のままにします。",
+      "drop": "{file} をここにドロップするか、",
+      "chooseFile": "ファイルを選択",
+      "replace": "置き換え",
+      "fileHelp": "ファイルはブラウザー内で読み込まれ、このサーバーにのみ送信されます。内容が表示されることはありません。",
+      "pasteInstead": "代わりに内容を貼り付ける",
+      "chooseInstead": "代わりにファイルを選択する",
+      "pasteLabel": "{file} の内容",
+      "fileReadError": "ファイルを読み込めませんでした。もう一度お試しいただくか、代わりに内容を貼り付けてください。",
+      "fileTooLarge": "このファイルは 64 KB を超えているため、サインインファイルではありません。",
+      "required": {
+        "AccessToken": "claude setup-token で取得したトークンを貼り付けてください。",
+        "ApiKey": "API キーを貼り付けてください。",
+        "AuthFile": "ファイルを選択するか、内容を貼り付けてください。"
+      },
+      "model": "モデル",
+      "modelRequired": "使用するモデルを入力してください。",
+      "modelHelpRequired": "{provider} に表示されているとおりのモデル ID です。",
+      "modelHelpDefault": "別のモデルを使う場合を除き、このままにしてください。",
+      "modelHelpCli": "CLI のデフォルトモデルを使う場合は空欄のままにします。",
+      "cliDefault": "CLI のデフォルトモデル",
+      "advanced": "詳細設定",
+      "advancedSummary": "モデル: {model}",
+      "baseUrl": "サーバーのアドレス",
+      "baseUrlHelp": "My Morning News サーバーが接続に使うアドレスです。",
+      "baseUrlHelpOllama": "macOS または Windows の Docker からの場合、通常は {url} です。",
+      "baseUrlInvalid": "http:// または https:// で始まるアドレスを入力してください。"
+    },
+    "result": {
+      "success": "接続しました。{provider} がテストプロンプトに応答しました。",
+      "failed": "テストに合格しませんでした",
+      "noAnswer": "モデルがテストプロンプトに応答しませんでした。",
+      "keptPrevious": "新しいサインインはテストに合格しなかったため、My Morning News は引き続き {provider} を使用しています。"
+    },
+    "hint": {
+      "token": "トークンが拒否された場合は、もう一度 {command} を実行し、新しいトークンを貼り付けてください。",
+      "file": "サインインが拒否された場合は、もう一度 {command} を実行し、新しい {file} を選択してください。",
+      "muxFile": "{file} のエンドポイントを確認し、もう一度ファイルを選択してください。",
+      "server": "サーバーのコンテナー内でサインインしてから、もう一度お試しください:",
+      "apiKey": "キーが正しいこと、およびアカウントで支払い設定が済んでいるか、クレジットが残っていることを確認してください。",
+      "selfHosted": "サーバーが動作していること、このアドレスでサーバーに接続できること、モデル名が正しいことを確認してください。"
+    },
+    "connected": {
+      "provider": "プロバイダー",
+      "method": "サインイン",
+      "model": "モデル",
+      "verified": "最終検証: {time}",
+      "change": "変更",
+      "fix": "修正",
+      "testAgain": "再テスト",
+      "openModels": "モデルページで開く",
+      "platformKey": "サーバー運用者の共有キー"
+    },
+    "search": {
+      "heading": "Web 検索",
+      "ready": "Web 検索は動作しています ({provider})。",
+      "intro": "リサーチでは Web を検索して新しいソースを探します。同梱の SearXNG 検索は自動的に確認されます。",
+      "open": "検索プロバイダーを開く"
+    },
+    "extras": {
+      "title": "オプションの追加機能",
+      "count": "{count} 件中 {ready} 件がオン",
+      "note": "これらがリサーチを止めることはありません。いつでも設定できます。",
+      "what": {
+        "Embeddings": "単語の一致だけでなく、意味に基づいて重複した記事を見つけます。",
+        "Email": "実行のたびに、詳細とフィードバックのリンクを含むブリーフィングメールを送信します。"
+      },
+      "openModels": "モデルを開く",
+      "openSettings": "設定を開く"
     }
   }
 }

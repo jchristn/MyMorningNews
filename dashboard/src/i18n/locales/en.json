@@ -1058,7 +1058,11 @@
       "Ollama": "Ollama",
       "Gemini": "Gemini",
       "XAi": "xAI",
-      "OllamaCloud": "Ollama Cloud"
+      "OllamaCloud": "Ollama Cloud",
+      "ClaudeCode": "Claude Code",
+      "Codex": "Codex",
+      "GeminiCli": "Gemini CLI",
+      "Mux": "Mux"
     },
     "reasoningEffort": {
       "None": "None",
@@ -1074,7 +1078,8 @@
       "BearerToken": "Bearer token",
       "BasicAuth": "Basic auth",
       "CustomHeader": "Custom header",
-      "ConnectionString": "Connection string"
+      "ConnectionString": "Connection string",
+      "SignInFile": "Sign-in file"
     },
     "vaultProvider": {
       "Anthropic": "Anthropic",
@@ -1302,6 +1307,13 @@
     "ttsProvider": {
       "OpenAiCompatibleSpeech": "OpenAI-compatible speech",
       "Disabled": "Disabled"
+    },
+    "authMethod": {
+      "ApiKey": "API key",
+      "AccessToken": "Access token",
+      "AuthFile": "Sign-in file",
+      "ServerSignIn": "Signed in on the server",
+      "None": "No key"
     }
   },
   "vault": {
@@ -1395,7 +1407,8 @@
       "credential": "Credential",
       "lastValidated": "Last validated",
       "status": "Status",
-      "id": "ID"
+      "id": "ID",
+      "signIn": "Sign-in"
     },
     "capabilities": {
       "chat": "Chat",
@@ -1432,18 +1445,16 @@
         "XAi": "Leave empty for the xAI API.",
         "OllamaCloud": "Leave empty for Ollama Cloud."
       },
-      "apiKey": "API key",
       "keyModes": {
-        "new": "Enter a key",
+        "new": "Add a new one",
         "vault": "Use a stored credential",
-        "none": "No key"
+        "none": "Not set"
       },
-      "newKey": "New API key",
-      "newKeyHelp": "Saved to the credential vault (encrypted) and linked to this endpoint. Leave empty to keep the current key.",
+      "newKeyHelp": "Saved encrypted in the credential vault and linked to this endpoint. Leave empty to keep the current one.",
       "storedKey": "Stored credential",
       "storedKeyHelp": "Rotate it on the Stored credentials page and every endpoint that uses it picks up the change.",
       "pickCredential": "Choose a credential",
-      "noKeyWarning": "This provider normally needs an API key. Calls will fail without one.",
+      "noKeyWarning": "Calls to this endpoint fail until it has one.",
       "capabilities": "Serves",
       "toolsDetected": "Tool support and embedding dimensions are detected when you run Validate.",
       "embeddingDimensions": "Embedding dimensions",
@@ -1478,7 +1489,11 @@
         "capability": "Choose chat, embeddings, or both.",
         "credential": "Choose a stored credential.",
         "number": "Enter a number of zero or more."
-      }
+      },
+      "signIn": "Sign-in",
+      "secretSource": "Where the secret comes from",
+      "howTo": "How to get it",
+      "cliNotice": "This runs the provider's command-line tool on the server. It answers chat prompts only, so it has no URL, tool calls, or embeddings."
     },
     "test": {
       "title": "Test model",
@@ -4203,31 +4218,31 @@
     }
   },
   "modelKeys": {
-    "title": "The model endpoint has no usable API key",
+    "title": "A model endpoint is missing its key or sign-in",
     "problem": {
       "missing": "{name} has no API key, so calls to it fail.",
       "notFound": "{name} uses a stored credential that no longer exists.",
       "inactive": "{name} uses a stored credential that is turned off.",
       "expired": "{name} uses a stored credential that has expired.",
       "platformMissing": "{name} uses the platform model key, but the server has none configured (MYMORNINGNEWS_ANTHROPIC_API_KEY).",
-      "platformMissingUser": "{name} uses this server's shared model key, and the server operator has not set one up."
+      "platformMissingUser": "{name} uses this server's shared model key, and the server operator has not set one up.",
+      "missingToken": "{name} has no subscription token, so calls to it fail.",
+      "missingFile": "{name} has no sign-in file, so calls to it fail."
     },
     "fix": "Add a key to {name}",
     "view": "View model endpoints",
     "consequence": {
-      "general": "Topic refinement, research runs, and briefings need a working model, so they fail until this is fixed.",
-      "wizard": "The wizard asks the model to propose dimensions and questions, so it fails at the first step until this is fixed."
+      "general": "Topic refinement, research runs, and briefings need a working model, so they fail until this is fixed."
     },
     "askAdmin": "Only a tenant administrator can add a key. Ask yours to fix it.",
     "badge": "No API key",
-    "fixOwnKey": "Use your own API key for {name}"
+    "fixOwnKey": "Use your own API key for {name}",
+    "badgeToken": "No token",
+    "badgeFile": "No sign-in file",
+    "fixSignIn": "Update the sign-in for {name}"
   },
   "setup": {
-    "summary": "Add and verify what My Morning News needs: a model API key and a working search provider.",
-    "intro": {
-      "title": "Finish setup first.",
-      "message": "Topics, research runs, and briefings stay locked until every required check below is ready."
-    },
+    "summary": "Before anyone can create topics, this workspace needs an AI model and web search.",
     "blockedNotice": "An action was stopped because setup is not finished.",
     "verifyAll": "Verify all",
     "verifying": "Checking with live calls. This can take several seconds.",
@@ -4244,48 +4259,21 @@
       "Email": "Email"
     },
     "check": {
-      "title": "{kind}: {name}",
-      "providerModel": "{provider}, model {model}",
-      "provider": "Provider: {provider}",
-      "tasks": "Used for {tasks}",
-      "verified": "Last verified {time}",
-      "platformKey": "This endpoint uses the service's shared model key, which the server operator manages, so there is no key to enter here.",
-      "verify": "Verify",
-      "retry": "Try again",
-      "openSearch": "Open search providers",
-      "openEndpoint": "Open {name} on the Models page",
-      "openModels": "Open the Models page"
-    },
-    "key": {
-      "label": "API key for {name}",
-      "help": "Stored encrypted with your stored credentials, attached to this endpoint, and checked with a live call.",
-      "save": "Save and verify",
-      "saving": "Saving the key and checking it with a live call. This can take several seconds."
+      "title": "{kind}: {name}"
     },
     "required": {
-      "heading": "Required",
-      "none": "The server reported no required checks.",
       "open": "Finish setup",
       "askAdmin": "An administrator needs to finish setup before this works."
     },
-    "optional": {
-      "heading": "Optional",
-      "note": "Optional checks never block research. They turn on extras such as semantic matching and email delivery."
-    },
-    "help": {
-      "title": "Other ways to set it up",
-      "env": "Self-hosted installs can also put the key in docker/.env as MYMORNINGNEWS_ANTHROPIC_API_KEY and restart the server.",
-      "models": "Use a different model provider on the Models page"
-    },
     "ready": {
       "title": "You're ready",
-      "message": "Every required check passed. You can create topics and run research now.",
-      "newTopic": "Create a topic",
-      "topics": "Go to topics"
+      "message": "The AI model and web search both work. Create a topic to get your first briefing.",
+      "newTopic": "Create your first topic",
+      "home": "Go to Home"
     },
     "gate": {
       "title": "This workspace is not ready",
-      "message": "An administrator needs to add and verify the model API key before anyone can use My Morning News.",
+      "message": "An administrator needs to connect an AI model and web search before anyone can use My Morning News.",
       "askAdmin": "Ask your administrator to open Setup in the dashboard, then check again here.",
       "checkAgain": "Check again",
       "checking": "Checking",
@@ -4299,6 +4287,176 @@
     "nav": {
       "callout": "Finish setup",
       "blocked": "{name} opens after setup is finished"
+    },
+    "title": "Set up My Morning News",
+    "copyCommand": "Copy command",
+    "newTab": "(opens in a new tab)",
+    "progress": {
+      "label": "Setup progress",
+      "step": "Step {number}",
+      "model": "AI model",
+      "search": "Web search",
+      "done": "Done",
+      "todo": "To do",
+      "attention": "Needs attention"
+    },
+    "model": {
+      "heading": "Connect an AI model",
+      "intro": "My Morning News uses it to plan research, read sources, and write your briefings. Pick the way you want to pay for it.",
+      "providerLegend": "Choose a provider",
+      "groups": {
+        "AgentCli": {
+          "title": "Use your AI subscription",
+          "note": "Runs the provider's command-line tool on the server with the plan you already pay for."
+        },
+        "Api": {
+          "title": "Use an API key",
+          "note": "API keys are billed per use by the provider."
+        },
+        "SelfHosted": {
+          "title": "Run your own model",
+          "note": "Connect a model server you run yourself, such as Ollama."
+        }
+      },
+      "recommended": "Recommended",
+      "notInstalled": "Not installed on this server",
+      "unavailable": "Not available on this server",
+      "methodLegend": "How should it sign in?",
+      "stepsTitle": "How to connect {provider}",
+      "connect": "Connect and test",
+      "connecting": "Testing",
+      "testing": "Testing the connection. This sends one short prompt and can take up to a minute for a CLI.",
+      "turnedOff": "Turned off on this server"
+    },
+    "providers": {
+      "geminiName": "Google Gemini",
+      "compatibleName": "OpenAI-compatible server",
+      "ClaudeCode": "Claude Pro or Max",
+      "Codex": "ChatGPT Plus, Pro, or Business",
+      "GeminiCli": "Google account",
+      "Mux": "Your Mux endpoints",
+      "Anthropic": "Claude models",
+      "OpenAi": "GPT models",
+      "Gemini": "Gemini models",
+      "XAi": "Grok models",
+      "OllamaCloud": "Open models hosted by Ollama",
+      "Ollama": "Models on your own computer or server",
+      "OpenAiCompatible": "vLLM, LM Studio, llama.cpp, and others"
+    },
+    "method": {
+      "subscriptionToken": "Subscription token",
+      "anthropicKey": "Anthropic API key",
+      "openAiKey": "OpenAI API key",
+      "geminiKey": "Gemini API key",
+      "chatGptFile": "ChatGPT sign-in file ({file})",
+      "googleFile": "Google sign-in file ({file})",
+      "muxFile": "Mux configuration ({file})",
+      "serverSignIn": "Already signed in on the server",
+      "serverConfigured": "Already configured on the server",
+      "noKey": "No key needed",
+      "apiKey": "API key"
+    },
+    "steps": {
+      "runAnywhere": "On any computer with {app} installed, run:",
+      "finishBrowser": "Finish the sign-in in the browser window that opens.",
+      "copyToken": "Copy the token it prints (it starts with {prefix}) and paste it below.",
+      "tokenNote": "The token uses your Claude subscription, so there is no separate per-use bill.",
+      "openKeys": "Open the provider's API keys page and sign in:",
+      "createKey": "Create a key, copy it, and paste it below.",
+      "codexLogin": "On your computer, run this command and sign in with ChatGPT:",
+      "geminiLogin": "On your computer, run this command and choose Sign in with Google:",
+      "chooseFile": "Choose the file it saved in the box below. It is here:",
+      "muxChoose": "Choose your Mux endpoints file in the box below. It is usually here:",
+      "windows": "On Windows:",
+      "fileWarning": "This file signs in as you. It is stored encrypted and only used by this server.",
+      "muxWarning": "This file can contain your provider keys. It is stored encrypted and only used by this server.",
+      "hiddenFolder": "Folders that start with a dot are hidden. On a Mac, press Command+Shift+Period in the file picker to show them, or paste the contents instead.",
+      "install": "Not installed yet? Install it with:",
+      "serverOpen": "On the computer that runs My Morning News, open a terminal and run:",
+      "serverClaudeLogin": "Type /login and finish the sign-in.",
+      "serverCodexLogin": "Open the link it shows, enter the code, and sign in with ChatGPT.",
+      "serverGeminiLogin": "Choose Sign in with Google and follow the link it shows.",
+      "serverMuxConfigure": "Type /endpoint, choose Add, and save the endpoint you want to use. Mux writes it to {file}.",
+      "serverReturn": "Come back here and click Connect and test.",
+      "ollamaAddress": "Enter the address the server uses to reach Ollama. From Docker on macOS or Windows, that is usually {url}.",
+      "ollamaModel": "Enter the name of a model you have pulled. This command lists them:",
+      "compatAddress": "Enter the server's base URL. It usually ends in /v1.",
+      "compatModel": "Enter the model name the server serves.",
+      "selfKey": "Paste the key your server expects."
+    },
+    "field": {
+      "token": "Token from claude setup-token",
+      "file": "Sign-in file ({file})",
+      "apiKey": "API key",
+      "keepStored": "Leave this empty to keep the one already stored.",
+      "drop": "Drop {file} here, or",
+      "chooseFile": "Choose file",
+      "replace": "Replace",
+      "fileHelp": "The file is read in your browser and sent only to this server. Its contents are never shown.",
+      "pasteInstead": "Paste the contents instead",
+      "chooseInstead": "Choose a file instead",
+      "pasteLabel": "Contents of {file}",
+      "fileReadError": "That file could not be read. Try again, or paste its contents instead.",
+      "fileTooLarge": "That file is larger than 64 KB, so it is not a sign-in file.",
+      "required": {
+        "AccessToken": "Paste the token from claude setup-token.",
+        "ApiKey": "Paste the API key.",
+        "AuthFile": "Choose the file, or paste its contents."
+      },
+      "model": "Model",
+      "modelRequired": "Enter the model to use.",
+      "modelHelpRequired": "The model ID exactly as {provider} lists it.",
+      "modelHelpDefault": "Leave this as it is unless you want a different model.",
+      "modelHelpCli": "Leave empty to use the CLI's default model.",
+      "cliDefault": "The CLI's default model",
+      "advanced": "Advanced",
+      "advancedSummary": "Model: {model}",
+      "baseUrl": "Server address",
+      "baseUrlHelp": "The address the My Morning News server uses to reach it.",
+      "baseUrlHelpOllama": "From Docker on macOS or Windows, this is usually {url}.",
+      "baseUrlInvalid": "Enter an address that starts with http:// or https://."
+    },
+    "result": {
+      "success": "Connected. {provider} answered the test prompt.",
+      "failed": "The test did not pass",
+      "noAnswer": "The model did not answer the test prompt.",
+      "keptPrevious": "The new sign-in failed its test, so My Morning News kept using {provider}."
+    },
+    "hint": {
+      "token": "If the token was rejected, run {command} again and paste the new token.",
+      "file": "If the sign-in was rejected, run {command} again and choose the new {file}.",
+      "muxFile": "Check the endpoints in {file} and choose the file again.",
+      "server": "Sign in inside the server container, then try again:",
+      "apiKey": "Check that the key is right and that the account has billing set up or credit left.",
+      "selfHosted": "Check that the server is running, that this address reaches it, and that the model name is right."
+    },
+    "connected": {
+      "provider": "Provider",
+      "method": "Sign-in",
+      "model": "Model",
+      "verified": "Verified {time}",
+      "change": "Change",
+      "fix": "Fix",
+      "testAgain": "Test again",
+      "openModels": "Open on the Models page",
+      "platformKey": "Shared key from the server operator"
+    },
+    "search": {
+      "heading": "Web search",
+      "ready": "Web search works ({provider}).",
+      "intro": "Research searches the web for new sources. The bundled SearXNG search is checked automatically.",
+      "open": "Open search providers"
+    },
+    "extras": {
+      "title": "Optional extras",
+      "count": "{ready} of {count} turned on",
+      "note": "These never block research. Set them up whenever you like.",
+      "what": {
+        "Embeddings": "Finds repeated stories by meaning, not only by matching words.",
+        "Email": "Sends a briefing email after every run, with detail and feedback links."
+      },
+      "openModels": "Open Models",
+      "openSettings": "Open Settings"
     }
   }
 }

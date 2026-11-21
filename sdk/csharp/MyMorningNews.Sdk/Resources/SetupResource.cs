@@ -9,8 +9,8 @@ namespace MyMorningNews.Sdk.Resources
 
     /// <summary>
     /// Workspace setup: whether the workspace has a chat model with a working key and web search, live checks that prove
-    /// it, and storing a model API key. Until Ready is true, refinement sessions and research requests fail with
-    /// SetupRequiredException (409 SetupRequired).
+    /// it, the model providers and sign-in methods the server offers, connecting one, and storing a model API key. Until
+    /// Ready is true, refinement sessions and research requests fail with SetupRequiredException (409 SetupRequired).
     /// Thread safety: stateless; safe to share.
     /// </summary>
     public class SetupResource : ResourceBase
@@ -46,6 +46,40 @@ namespace MyMorningNews.Sdk.Resources
         public Task<SetupStatusResponse> VerifyAsync(CancellationToken token = default)
         {
             return Client.SendAsync<SetupStatusResponse>(HttpMethod.Post, "/v1.0/api/setup/verify", null, null, token);
+        }
+
+        /// <summary>
+        /// Model providers and sign-in methods the Setup page can connect on this server (administrators only, 403
+        /// otherwise): hosted APIs (API key), agent CLIs in the server image (Claude Code, Codex, Gemini CLI, Mux), and
+        /// self-hosted servers, each with whether it is installed and allowed and its sign-in methods, recommended first.
+        /// </summary>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The SetupOptionsResponse.</returns>
+        /// <exception cref="MyMorningNewsException">The server returned an error, for example 403 for a non-administrator.</exception>
+        public Task<SetupOptionsResponse> GetOptionsAsync(CancellationToken token = default)
+        {
+            return Client.SendAsync<SetupOptionsResponse>(HttpMethod.Get, "/v1.0/api/setup/options", null, null, token);
+        }
+
+        /// <summary>
+        /// Connect the workspace's chat model (administrators only, 403 otherwise). Stores the secret for the chosen sign-in
+        /// method (an API key, a claude setup-token token, or a sign-in file's contents) encrypted in the vault, tests it
+        /// with a live call, and points every chat task at the endpoint. When the workspace already has a working model, the
+        /// new sign-in is tested first and the working one is kept if the test fails; Connection on the result says what
+        /// happened (Succeeded, KeptPrevious, Message). The secret is never returned. 400 ValidationFailed, with
+        /// Details["field"] set to provider, authMethod, secret, model, or baseUrl, for a missing provider or secret, a
+        /// method the provider does not accept, or an agent CLI that is not allowed or not installed; 404 when the named
+        /// endpoint does not exist.
+        /// </summary>
+        /// <param name="request">Provider, sign-in method, secret, and optional model, base URL, and endpoint.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The SetupStatusResponse after the endpoint was checked.</returns>
+        /// <exception cref="ArgumentNullException">request is null.</exception>
+        /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
+        public Task<SetupStatusResponse> ConnectAsync(SetupConnectRequest request, CancellationToken token = default)
+        {
+            ArgumentNullException.ThrowIfNull(request);
+            return Client.SendAsync<SetupStatusResponse>(HttpMethod.Post, "/v1.0/api/setup/connect", null, request, token);
         }
 
         /// <summary>

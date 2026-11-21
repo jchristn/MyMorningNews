@@ -31,9 +31,14 @@ namespace MyMorningNews.Sdk.Requests
         public string? CredentialId { get; set; } = null;
 
         /// <summary>
-        /// Convenience: create a vault credential from this key and reference it.
+        /// Convenience: store this secret in the vault and reference it. It is the API key, the access token (claude setup-token), or the sign-in file contents (Codex auth.json, Gemini CLI oauth_creds.json, Mux endpoints.json), depending on AuthMethod.
         /// </summary>
         public string? ApiKey { get; set; } = null;
+
+        /// <summary>
+        /// How the endpoint signs in. Null keeps the current method (or the provider's usual one on create).
+        /// </summary>
+        public ModelAuthMethodEnum? AuthMethod { get; set; } = null;
 
         /// <summary>
         /// Chat model.

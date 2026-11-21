@@ -13,7 +13,6 @@ import DateCell from '../components/DateCell.jsx';
 import EmptyState from '../components/EmptyState.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import KpiTile from '../components/KpiTile.jsx';
-import ModelKeyWarning from '../components/ModelKeyWarning.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import StatusBadge, { methodTone, statusTone } from '../components/StatusBadge.jsx';
 import OverviewTiles from './insights/OverviewTiles.jsx';
@@ -123,8 +122,6 @@ export default function HomeView() {
           </button>
         }
       />
-
-      <ModelKeyWarning />
 
       <div className="kpi-grid">
         <KpiTile

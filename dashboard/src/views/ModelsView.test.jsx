@@ -3,7 +3,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MEMBER_DETAILS } from '../test/fakeClient.js';
 import { forbidden, page, renderRoute } from '../test/renderRoute.jsx';
-import { endpointBody, formFromEndpoint, validateEndpointForm } from './models/EndpointFormModal.jsx';
+import { endpointBody, formFromEndpoint, validateEndpointForm, withProvider } from './models/EndpointFormModal.jsx';
 import i18next from '../i18n/index.js';
 
 const ANTHROPIC = {
@@ -145,7 +145,95 @@ describe('ModelsView', () => {
   });
 });
 
+describe('agent CLI endpoints on the Models page', () => {
+  const CODEX = { ...ANTHROPIC, id: 'mdl_2', name: 'Codex', provider: 'Codex', authMethod: 'ServerSignIn', model: null, supportsTools: false, credentialId: null, endpoint: null };
+
+  it('creates a Claude Code endpoint with a subscription token and hides the URL, tools, and embeddings', async () => {
+    const client = renderRoute('/dashboard/models', {
+      listModelEndpoints: vi.fn(async () => page([ANTHROPIC])),
+      createModelEndpoint: vi.fn(async (b) => ({ id: 'mdl_9', ...b }))
+    });
+    await userEvent.click((await screen.findAllByRole('button', { name: /Add model/ }))[0]);
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByLabelText('Base URL')).toBeInTheDocument();
+    await userEvent.selectOptions(within(dialog).getByLabelText('Provider'), 'ClaudeCode');
+    expect(within(dialog).queryByLabelText('Base URL')).not.toBeInTheDocument();
+    expect(within(dialog).queryByText('Serves')).not.toBeInTheDocument();
+    expect(within(dialog).queryByLabelText('Embedding model')).not.toBeInTheDocument();
+    expect(within(dialog).getByText(/answers chat prompts only/)).toBeInTheDocument();
+    expect(within(dialog).getByRole('radio', { name: 'Subscription token' })).toBeChecked();
+    await userEvent.type(within(dialog).getByLabelText('Name'), 'My Claude');
+    await userEvent.type(within(dialog).getByLabelText('Token from claude setup-token'), 'sk-ant-oat01-xyz');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(client.createModelEndpoint).toHaveBeenCalled());
+    const body = client.createModelEndpoint.mock.calls[0][0];
+    expect(body).toMatchObject({ name: 'My Claude', provider: 'ClaudeCode', authMethod: 'AccessToken', apiKey: 'sk-ant-oat01-xyz', endpoint: '', supportsChat: true, supportsEmbeddings: false, model: '' });
+    expect(body.temperature).toBeUndefined();
+  });
+
+  it('shows the sign-in method in the list and edits a CLI signed in on the server without a secret', async () => {
+    const client = renderRoute('/dashboard/models', {
+      listModelEndpoints: vi.fn(async () => page([CODEX])),
+      listVaultCredentials: vi.fn(async () => page([])),
+      updateModelEndpoint: vi.fn(async (id, b) => ({ ...CODEX, ...b }))
+    });
+    const row = (await screen.findByText('Codex', { selector: 'strong' })).closest('tr');
+    expect(within(row).getByText('Already signed in on the server')).toBeInTheDocument();
+    expect(within(row).queryByText('No API key')).toBeNull();
+    await userEvent.click(within(row).getByText('Codex', { selector: 'strong' }));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByRole('radio', { name: 'Already signed in on the server' })).toBeChecked();
+    expect(within(dialog).queryByRole('radio', { name: 'Add a new one' })).not.toBeInTheDocument();
+    await userEvent.click(within(dialog).getByText('How to get it'));
+    expect(within(dialog).getByText('docker exec -it mymorningnews-server codex login --device-auth')).toBeInTheDocument();
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(client.updateModelEndpoint).toHaveBeenCalledWith('mdl_2', expect.objectContaining({ provider: 'Codex', authMethod: 'ServerSignIn', credentialId: '' })));
+  });
+
+  it('marks a CLI endpoint whose sign-in file is missing', async () => {
+    renderRoute('/dashboard/models', {
+      listModelEndpoints: vi.fn(async () => page([{ ...CODEX, authMethod: 'AuthFile' }])),
+      listModelAssignments: vi.fn(async () => page([])),
+      listVaultCredentials: vi.fn(async () => page([]))
+    });
+    expect(await screen.findByText('No sign-in file')).toBeInTheDocument();
+    const warning = await screen.findByTestId('model-key-warning');
+    expect(within(warning).getByText('Codex has no sign-in file, so calls to it fail.')).toBeInTheDocument();
+    expect(within(warning).getByRole('link', { name: 'Update the sign-in for Codex' })).toHaveAttribute('href', '/dashboard/models?endpoint=mdl_2');
+  });
+
+  it('sends a sign-in file read in the browser as the endpoint secret', async () => {
+    const client = renderRoute('/dashboard/models', {
+      listModelEndpoints: vi.fn(async () => page([ANTHROPIC])),
+      createModelEndpoint: vi.fn(async (b) => ({ id: 'mdl_9', ...b }))
+    });
+    await userEvent.click((await screen.findAllByRole('button', { name: /Add model/ }))[0]);
+    const dialog = await screen.findByRole('dialog');
+    await userEvent.selectOptions(within(dialog).getByLabelText('Provider'), 'GeminiCli');
+    expect(within(dialog).getByRole('radio', { name: 'Google sign-in file (oauth_creds.json)' })).toBeChecked();
+    await userEvent.type(within(dialog).getByLabelText('Name'), 'Gemini CLI');
+    const contents = '{"refresh_token":"r"}';
+    await userEvent.upload(within(dialog).getByTestId('ep-apikey-file'), new File([contents], 'oauth_creds.json', { type: 'application/json' }));
+    expect(await within(dialog).findByText('oauth_creds.json')).toBeInTheDocument();
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(client.createModelEndpoint).toHaveBeenCalledWith(expect.objectContaining({ provider: 'GeminiCli', authMethod: 'AuthFile', apiKey: contents })));
+  });
+});
+
 describe('endpoint form', () => {
+  it('switches the sign-in method with the provider and does not require a model for a CLI', () => {
+    const t = i18next.t.bind(i18next);
+    const cli = withProvider({ ...formFromEndpoint(null), name: 'C', temperature: '0.4', supportsEmbeddings: true, embeddingModel: 'x' }, 'Codex');
+    expect(cli.authMethod).toBe('AuthFile');
+    expect(cli.supportsEmbeddings).toBe(false);
+    expect(cli.temperature).toBe('');
+    expect(validateEndpointForm(cli, t)).toEqual({});
+    expect(withProvider(cli, 'Ollama').authMethod).toBe('None');
+    expect(withProvider({ ...cli, authMethod: 'ApiKey' }, 'OpenAiCompatible').authMethod).toBe('ApiKey');
+    expect(endpointBody({ ...cli, authMethod: 'ServerSignIn', apiKey: 'ignored' })).toMatchObject({ authMethod: 'ServerSignIn', credentialId: '', supportsEmbeddings: false });
+    expect(endpointBody({ ...cli, authMethod: 'ServerSignIn', apiKey: 'ignored' }).apiKey).toBeUndefined();
+  });
+
   const t = i18next.t.bind(i18next);
 
   it('never sends temperature for Anthropic and sends a new key as apiKey', () => {

@@ -1497,6 +1497,7 @@ async function main() {
             baseUrl: 'http://127.0.0.1:1', token: 'test-token',
             fetch: async (url, init) => {
                 seen.push({ url, init });
+                if (url.endsWith('/setup/connect')) return new Response(JSON.stringify({ ...status, connection: { modelEndpointId: 'mdl_y', succeeded: false, keptPrevious: true, message: '401 Unauthorized' } }), { status: 200, headers: { 'content-type': 'application/json' } });
                 if (url.includes('/refinement-sessions')) return new Response('{"error":"SetupRequired","message":"Add a key on the Setup page.","requestId":"rqi_s","details":{"check":"model:mdl_x"}}', { status: 409, headers: { 'content-type': 'application/json' } });
                 return new Response(JSON.stringify(status), { status: 200, headers: { 'content-type': 'application/json' } });
             }
@@ -1518,6 +1519,23 @@ async function main() {
             threw = e instanceof TypeError;
         }
         assert(threw, 'setModelKey requires an API key');
+        await fake.setup.options();
+        const tried = await fake.setup.connect({ provider: 'ClaudeCode', authMethod: 'AccessToken', secret: 'sk-ant-oat01-test' });
+        assert(tried.connection && tried.connection.succeeded === false && tried.connection.keptPrevious === true, 'connect result carries the connection outcome');
+        assertEqual(seen[3].init.method, 'GET', 'options method');
+        assert(seen[3].url.endsWith('/v1.0/api/setup/options'), 'options path');
+        assertEqual(seen[4].init.method, 'POST', 'connect method');
+        assert(seen[4].url.endsWith('/v1.0/api/setup/connect'), 'connect path');
+        const connectBody = JSON.parse(seen[4].init.body);
+        assertEqual(connectBody.provider, 'ClaudeCode', 'connect body provider');
+        assertEqual(connectBody.authMethod, 'AccessToken', 'connect body method');
+        threw = false;
+        try {
+            fake.setup.connect({ authMethod: 'ApiKey', secret: 'sk-test' });
+        } catch (e) {
+            threw = e instanceof TypeError;
+        }
+        assert(threw, 'connect requires a provider');
         const err = await expectError(fake.refinement.start({ seedText: 'x' }), 409, 'SetupRequired');
         assert(err instanceof SetupRequiredError, 'SetupRequired is a SetupRequiredError (got ' + err.name + ')');
         assertEqual(err.check, 'model:mdl_x', 'setup check key');
@@ -1568,11 +1586,38 @@ async function main() {
         assertEqual((await u.setup.status()).canConfigure, false, 'a plain user cannot configure');
         await expectError(u.setup.verify(), 403);
         await expectError(u.setup.setModelKey(e.id, 'sk-harness'), 403);
+        await expectError(u.setup.options(), 403);
+        await expectError(u.setup.connect({ provider: 'Anthropic', authMethod: 'ApiKey', secret: 'sk-harness' }), 403);
         await u.logout();
         await removeUser();
         await client.modelEndpoints.remove(e.id);
         await client.vault.remove(credentialId);
         credentialId = null;
+    });
+
+    await run('setup.options lists Claude Code with a token first; connect refuses bad requests without changes', async () => {
+        if (!S.isAdmin) skip('needs an administrator');
+        const opts = await client.setup.options();
+        assert(Array.isArray(opts.providers) && opts.providers.length > 0, 'options list providers');
+        assert(typeof opts.serverContainer === 'string' && opts.serverContainer.length > 0, 'options name the server container');
+        const cc = opts.providers.find((p) => p.provider === 'ClaudeCode');
+        assert(cc, 'Claude Code is offered');
+        assertEqual(cc.group, 'AgentCli', 'Claude Code is an agent CLI');
+        assert(Array.isArray(cc.methods) && cc.methods.length > 0, 'Claude Code has sign-in methods');
+        assertEqual(cc.methods[0].method, 'AccessToken', 'Claude Code lists AccessToken first');
+        assertEqual(cc.methods[0].recommended, true, 'the first method is recommended');
+        if (!cc.available) assert(typeof cc.unavailableReason === 'string' && cc.unavailableReason.length > 0, 'an unavailable CLI says why');
+        assert(typeof cc.turnedOff === 'boolean', 'turnedOff is reported');
+        if (cc.turnedOff) assertEqual(cc.available, false, 'a turned-off CLI is unavailable');
+        const anthropic = opts.providers.find((p) => p.provider === 'Anthropic');
+        assert(anthropic && anthropic.group === 'Api', 'Anthropic is a hosted API');
+        assert(anthropic.methods.some((m) => m.method === 'ApiKey'), 'Anthropic signs in with an API key');
+        assertEqual(anthropic.recommended, true, 'Anthropic is the recommended provider');
+        assertEqual((await client.setup.status()).connection ?? null, null, 'GET setup carries no connection result');
+        // Both are refused before anything is stored: an API key pasted as a setup-token token, and an unknown endpoint.
+        const badToken = await expectError(client.setup.connect({ provider: 'ClaudeCode', authMethod: 'AccessToken', secret: 'sk-ant-api03-harness' }), 400, 'ValidationFailed');
+        assertEqual(badToken.details && badToken.details.field, cc.available ? 'secret' : 'provider', 'details.field names the bad field');
+        await expectError(client.setup.connect({ provider: 'Anthropic', authMethod: 'ApiKey', secret: 'sk-harness', modelEndpointId: 'mdl_missing' }), 404);
     });
 
     await run('modelEndpoints.remove then get is a typed 404', async () => {
@@ -1756,8 +1801,9 @@ async function main() {
             assert((await anon.account.resendVerification(email)).message, 'resend message');
             await anon.account.resendVerification('nobody-' + STAMP + '@example.com');
             await anon.account.forgotPassword('nobody-' + STAMP + '@example.com');
-            await expectError(anon.account.verifyEmail('not-a-token'), 400, 'ValidationFailed');
-            await expectError(anon.account.resetPassword('not-a-token', 'a long new password'), 400, 'ValidationFailed');
+            // A token the server never issued is LinkInvalid on both link routes.
+            await expectError(anon.account.verifyEmail('not-a-token'), 400, 'LinkInvalid');
+            await expectError(anon.account.resetPassword('not-a-token', 'a long new password'), 400, 'LinkInvalid');
 
             const tenants = await client.request('GET', '/v1.0/tenants', { query: { pageSize: 1000 } });
             const personal = tenants.items.find((t) => t.name === display + ' (personal)');
@@ -1774,7 +1820,7 @@ async function main() {
             const verifyToken = await linkToken(outbox, 'VerifyEmail');
             const verified = await anon.account.verifyEmail(verifyToken);
             assert(verified.verified === true && verified.email === email, 'verified');
-            await expectError(anon.account.verifyEmail(verifyToken), 400);
+            await expectError(anon.account.verifyEmail(verifyToken), 400, 'LinkUsed');
             const session = await anon.login(email, password);
             assertEqual(session.tenantId, personal.id, 'signed in to the personal tenant');
             const meter = await anon.account.usage();
@@ -1783,10 +1829,12 @@ async function main() {
 
             await anon.account.forgotPassword(email);
             const resetToken = await linkToken(outbox, 'PasswordReset');
-            await expectError(anon.account.resetPassword(resetToken, 'short'), 400);
+            await expectError(anon.account.resetPassword(verifyToken, 'a long new password'), 400, 'LinkInvalid');
+            await expectError(anon.account.resetPassword(resetToken, 'short'), 400, 'ValidationFailed');
             const next = password + ' renewed';
             const reset = await anon.account.resetPassword(resetToken, next);
             assert(reset.reset === true, 'reset');
+            await expectError(anon.account.resetPassword(resetToken, next + ' again'), 400, 'LinkUsed');
             await expectError(anon.login(email, password), 401);
             await anon.login(email, next);
             await anon.logout();
@@ -1821,6 +1869,12 @@ async function main() {
         await client.mcpServers.remove(dead.id);
         await expectError(client.mcpServers.get(dead.id), 404);
 
+        // Topics refuse tool IDs that are not tools of an MCP server in the tenant. Checked before discovery, so it runs
+        // even when the server cannot reach the fake MCP server.
+        const unknownTool = bogus('mct');
+        const refused = await expectError(client.topics.create({ name: name('agentic-bad'), brief: 'Harness data; refused before it is saved.', agenticSearch: true, mcpToolIds: [unknownTool] }), 400, 'ValidationFailed');
+        assert(refused.message.includes(unknownTool), 'the refusal names the unknown tool');
+
         const fake = await startFakeMcpServer();
         try {
             const server = await client.mcpServers.create({ name: name('mcp'), url: fake.url, transport: 'StreamableHttp' });
@@ -1841,10 +1895,11 @@ async function main() {
             const again = await client.mcpServers.discover(server.id);
             assert(again.tools.find((t) => t.name === 'harness_echo').enabled === true, 'rediscovery keeps the setting');
 
-            const topic = await client.topics.create({ name: name('agentic'), brief: 'Harness data for agentic fields; never run.', agenticSearch: true, mcpToolIds: [echo.id, 'not-a-tool-id'] });
+            const topic = await client.topics.create({ name: name('agentic'), brief: 'Harness data for agentic fields; never run.', agenticSearch: true, mcpToolIds: [echo.id, echo.id] });
             onCleanup('agentic topic', () => client.topics.remove(topic.id));
             assert(topic.agenticSearch === true, 'agenticSearch saved');
-            assert(topic.mcpToolIds.length === 1 && topic.mcpToolIds[0] === echo.id, 'mcpToolIds keeps only mct_ IDs');
+            assert(topic.mcpToolIds.length === 1 && topic.mcpToolIds[0] === echo.id, 'mcpToolIds keeps the discovered tool once');
+            await expectError(client.topics.update(topic.id, { mcpToolIds: [echo.id, unknownTool] }), 400, 'ValidationFailed');
             const read = await client.topics.get(topic.id);
             assert(read.topic.agenticSearch === true && read.topic.mcpToolIds.includes(echo.id), 'agentic fields read back');
             const cleared = await client.topics.update(topic.id, { agenticSearch: false, mcpToolIds: [] });

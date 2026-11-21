@@ -3,12 +3,16 @@ import PropTypes from 'prop-types';
 import { ListTree } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { MODEL_PROVIDERS, PROVIDER_URL_EXAMPLES, PROVIDERS_WITH_KEYS, REASONING_EFFORTS } from '../../utils/enums.js';
+import { MODEL_PROVIDERS, PROVIDER_URL_EXAMPLES, REASONING_EFFORTS, VAULT_KIND_FOR_METHOD } from '../../utils/enums.js';
+import { authMethodsFor, effectiveAuthMethod, isAgentCli, needsSecret } from '../../utils/modelAuth.js';
+import SecretInput from '../../components/modelSignIn/SecretInput.jsx';
+import SignInMethodPicker from '../../components/modelSignIn/SignInMethodPicker.jsx';
+import SignInSteps from '../../components/modelSignIn/SignInSteps.jsx';
+import { DEFAULT_SERVER_CONTAINER } from '../../components/modelSignIn/signInCatalog.js';
 import CopyableId from '../../components/CopyableId.jsx';
 import ErrorState from '../../components/ErrorState.jsx';
 import FormField from '../../components/FormField.jsx';
 import Modal from '../../components/Modal.jsx';
-import PasswordInput from '../../components/PasswordInput.jsx';
 
 const NUMBER_FIELDS = ['maxTokens', 'contextLength', 'timeoutMs', 'temperature', 'inputCostPerMTok', 'outputCostPerMTok', 'cachedInputCostPerMTok', 'cacheWriteCostPerMTok'];
 
@@ -21,6 +25,7 @@ export function formFromEndpoint(endpoint, copyName) {
   return {
     name: copyName || e.name || '',
     provider: e.provider || 'Anthropic',
+    authMethod: endpoint ? effectiveAuthMethod(e) : 'ApiKey',
     endpoint: e.endpoint || '',
     keyMode: e.credentialId ? 'vault' : endpoint ? 'none' : 'new',
     credentialId: e.credentialId || '',
@@ -42,40 +47,54 @@ export function formFromEndpoint(endpoint, copyName) {
   };
 }
 
+// The form after choosing a provider: its recommended sign-in method, and for an agent CLI chat only, with no URL.
+export function withProvider(form, provider) {
+  const methods = authMethodsFor(provider);
+  const next = { ...form, provider, authMethod: methods[0], apiKey: '', temperature: provider === 'Anthropic' || isAgentCli(provider) ? '' : form.temperature };
+  if (isAgentCli(provider)) return { ...next, endpoint: '', supportsChat: true, supportsEmbeddings: false, embeddingModel: '' };
+  return next;
+}
+
 // Client-side checks mirroring the server's rules, keyed by field.
 export function validateEndpointForm(form, t) {
   const errors = {};
+  const cli = isAgentCli(form.provider);
   if (!form.name.trim()) errors.name = t('models.form.errors.name');
   if (form.provider === 'OpenAiCompatible' && !form.endpoint.trim()) errors.endpoint = t('models.form.errors.endpointRequired');
-  if (form.endpoint.trim() && !/^[a-z][a-z0-9+.-]*:\/\/\S+$/i.test(form.endpoint.trim())) errors.endpoint = t('models.form.errors.endpointUrl');
-  if (form.supportsChat && !form.model.trim()) errors.model = t('models.form.errors.model');
-  if (form.supportsEmbeddings && !form.embeddingModel.trim()) errors.embeddingModel = t('models.form.errors.embeddingModel');
+  if (!cli && form.endpoint.trim() && !/^[a-z][a-z0-9+.-]*:\/\/\S+$/i.test(form.endpoint.trim())) errors.endpoint = t('models.form.errors.endpointUrl');
+  if (form.supportsChat && !cli && !form.model.trim()) errors.model = t('models.form.errors.model');
+  if (form.supportsEmbeddings && !cli && !form.embeddingModel.trim()) errors.embeddingModel = t('models.form.errors.embeddingModel');
   if (!form.supportsChat && !form.supportsEmbeddings) errors.supportsChat = t('models.form.errors.capability');
-  if (form.keyMode === 'vault' && !form.credentialId) errors.credentialId = t('models.form.errors.credential');
+  if (needsSecret(form.authMethod) && form.keyMode === 'vault' && !form.credentialId) errors.credentialId = t('models.form.errors.credential');
   for (const key of NUMBER_FIELDS) {
     if (form[key] !== '' && (Number.isNaN(Number(form[key])) || Number(form[key]) < 0)) errors[key] = t('models.form.errors.number');
   }
   return errors;
 }
 
-// The request body for create and update. Empty optional fields are omitted so the server keeps its value.
+// The request body for create and update. Empty optional fields are omitted so the server keeps its value. An agent
+// CLI endpoint has no URL, no embeddings, and no temperature; apiKey carries whatever secret the sign-in method needs
+// (an API key, a subscription token, or a sign-in file's contents).
 export function endpointBody(form) {
+  const cli = isAgentCli(form.provider);
   const body = {
     name: form.name.trim(),
     provider: form.provider,
-    endpoint: form.endpoint.trim(),
+    authMethod: form.authMethod,
+    endpoint: cli ? '' : form.endpoint.trim(),
     model: form.model.trim(),
-    embeddingModel: form.embeddingModel.trim(),
-    supportsChat: form.supportsChat,
-    supportsEmbeddings: form.supportsEmbeddings,
+    embeddingModel: cli ? '' : form.embeddingModel.trim(),
+    supportsChat: cli ? true : form.supportsChat,
+    supportsEmbeddings: cli ? false : form.supportsEmbeddings,
     active: form.active
   };
   if (form.reasoningEffort) body.reasoningEffort = form.reasoningEffort;
   for (const key of NUMBER_FIELDS) {
-    if (key === 'temperature' && form.provider === 'Anthropic') continue;
+    if (key === 'temperature' && (form.provider === 'Anthropic' || cli)) continue;
     if (form[key] !== '') body[key] = Number(form[key]);
   }
-  if (form.keyMode === 'new' && form.apiKey) body.apiKey = form.apiKey;
+  if (!needsSecret(form.authMethod)) body.credentialId = '';
+  else if (form.keyMode === 'new' && form.apiKey.trim()) body.apiKey = form.apiKey.trim();
   else if (form.keyMode === 'vault') body.credentialId = form.credentialId;
   else if (form.keyMode === 'none') body.credentialId = '';
   return body;
@@ -92,6 +111,7 @@ export default function EndpointFormModal({ state, onClose, onSaved }) {
   const [modelOptions, setModelOptions] = useState(null);
   const [modelsError, setModelsError] = useState(null);
   const [loadingModels, setLoadingModels] = useState(false);
+  const [setupOptions, setSetupOptions] = useState(null);
   const open = Boolean(state);
   const isEdit = Boolean(state && state.mode === 'edit');
 
@@ -106,12 +126,29 @@ export default function EndpointFormModal({ state, onClose, onSaved }) {
       .listVaultCredentials({ pageSize: 1000, sortBy: 'name', sortDirection: 'Ascending' })
       .then((r) => setCredentials(r.items || []))
       .catch(() => setCredentials([]));
+    // Which CLIs the server can run, and its container name for the sign-in commands. Optional: the editor works
+    // without it.
+    Promise.resolve()
+      .then(() => apiClient.getSetupOptions())
+      .then((r) => setSetupOptions(r && Array.isArray(r.providers) ? r : null))
+      .catch(() => setSetupOptions(null));
   }, [state, apiClient, t]);
 
   const errors = touched ? validateEndpointForm(form, t) : {};
   const set = (patch) => setForm((f) => ({ ...f, ...patch }));
-  const anthropic = form.provider === 'Anthropic';
-  const needsKey = PROVIDERS_WITH_KEYS.includes(form.provider);
+  const cli = isAgentCli(form.provider);
+  const noTemperature = form.provider === 'Anthropic' || cli;
+  const methods = authMethodsFor(form.provider);
+  const secretMethod = needsSecret(form.authMethod);
+  // Stored credentials of the kind the method stores (an API key, a bearer token, or a sign-in file).
+  const wantedKind = VAULT_KIND_FOR_METHOD[form.authMethod];
+  const usableCredentials = credentials.filter((c) => !wantedKind || !c.kind || c.kind === wantedKind || c.id === form.credentialId);
+  const providerOption = setupOptions ? setupOptions.providers.find((o) => o.provider === form.provider) : null;
+  const unavailable =
+    providerOption && providerOption.available === false
+      ? providerOption.unavailableReason || (providerOption.turnedOff ? t('setup.model.turnedOff') : t('setup.model.notInstalled'))
+      : null;
+  const container = setupOptions && setupOptions.serverContainer ? setupOptions.serverContainer : DEFAULT_SERVER_CONTAINER;
 
   async function browseModels() {
     if (!state || !state.endpoint) return;
@@ -174,7 +211,7 @@ export default function EndpointFormModal({ state, onClose, onSaved }) {
             <input id="ep-name" value={form.name} onChange={(e) => set({ name: e.target.value })} autoComplete="off" required />
           </FormField>
           <FormField id="ep-provider" label={t('models.columns.provider')}>
-            <select id="ep-provider" value={form.provider} onChange={(e) => set({ provider: e.target.value, temperature: e.target.value === 'Anthropic' ? '' : form.temperature })}>
+            <select id="ep-provider" value={form.provider} onChange={(e) => setForm((f) => withProvider(f, e.target.value))}>
               {MODEL_PROVIDERS.map((p) => (
                 <option key={p} value={p}>
                   {t('enums.provider.' + p)}
@@ -182,36 +219,45 @@ export default function EndpointFormModal({ state, onClose, onSaved }) {
               ))}
             </select>
           </FormField>
-          <FormField
-            id="ep-endpoint"
-            label={form.provider === 'OpenAiCompatible' ? t('models.form.endpointRequired') : t('models.form.endpoint')}
-            help={t('models.form.endpointHelp.' + form.provider)}
-            error={errors.endpoint}
-            wide
-          >
-            <input id="ep-endpoint" type="url" className="mono" value={form.endpoint} onChange={(e) => set({ endpoint: e.target.value })} placeholder={PROVIDER_URL_EXAMPLES[form.provider]} autoComplete="off" />
-          </FormField>
-        </div>
-
-        <fieldset className="form-field wide">
-          <legend className="field-label">{t('models.form.apiKey')}</legend>
-          <div className="segmented" role="radiogroup" aria-label={t('models.form.apiKey')}>
-            {['new', 'vault', 'none'].map((mode) => (
-              <button type="button" role="radio" key={mode} aria-checked={form.keyMode === mode} className={form.keyMode === mode ? 'active' : ''} onClick={() => set({ keyMode: mode })}>
-                {t('models.form.keyModes.' + mode)}
-              </button>
-            ))}
-          </div>
-          {form.keyMode === 'new' ? (
-            <FormField id="ep-apikey" label={t('models.form.newKey')} help={t('models.form.newKeyHelp')}>
-              <PasswordInput id="ep-apikey" value={form.apiKey} onChange={(v) => set({ apiKey: v })} autoComplete="new-password" />
+          {cli ? null : (
+            <FormField
+              id="ep-endpoint"
+              label={form.provider === 'OpenAiCompatible' ? t('models.form.endpointRequired') : t('models.form.endpoint')}
+              help={t('models.form.endpointHelp.' + form.provider)}
+              error={errors.endpoint}
+              wide
+            >
+              <input id="ep-endpoint" type="url" className="mono" value={form.endpoint} onChange={(e) => set({ endpoint: e.target.value })} placeholder={PROVIDER_URL_EXAMPLES[form.provider]} autoComplete="off" />
             </FormField>
+          )}
+        </div>
+        {cli ? <div className="notice notice-info small">{t('models.form.cliNotice')}</div> : null}
+        {unavailable ? (
+          <div className="notice notice-warning small" role="alert">
+            {unavailable}
+          </div>
+        ) : null}
+
+        <fieldset className="form-field wide endpoint-signin">
+          <legend className="field-label">{t('models.form.signIn')}</legend>
+          {methods.length > 1 ? <SignInMethodPicker name="ep-method" provider={form.provider} methods={methods} value={form.authMethod} onChange={(m) => set({ authMethod: m, apiKey: '' })} /> : null}
+          {secretMethod ? (
+            <div className="segmented" role="radiogroup" aria-label={t('models.form.secretSource')}>
+              {['new', 'vault', 'none'].map((mode) => (
+                <button type="button" role="radio" key={mode} aria-checked={form.keyMode === mode} className={form.keyMode === mode ? 'active' : ''} onClick={() => set({ keyMode: mode })}>
+                  {t('models.form.keyModes.' + mode)}
+                </button>
+              ))}
+            </div>
           ) : null}
-          {form.keyMode === 'vault' ? (
+          {secretMethod && form.keyMode === 'new' ? (
+            <SecretInput key={form.provider + ':' + form.authMethod} id="ep-apikey" provider={form.provider} method={form.authMethod} value={form.apiKey} onChange={(v) => set({ apiKey: v })} help={t('models.form.newKeyHelp')} />
+          ) : null}
+          {secretMethod && form.keyMode === 'vault' ? (
             <FormField id="ep-credential" label={t('models.form.storedKey')} help={t('models.form.storedKeyHelp')} error={errors.credentialId}>
               <select id="ep-credential" value={form.credentialId} onChange={(e) => set({ credentialId: e.target.value })}>
                 <option value="">{t('models.form.pickCredential')}</option>
-                {credentials.map((c) => (
+                {usableCredentials.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name + ' (' + c.secretPreview + ')'}
                   </option>
@@ -220,33 +266,41 @@ export default function EndpointFormModal({ state, onClose, onSaved }) {
               </select>
             </FormField>
           ) : null}
-          {form.keyMode === 'none' && needsKey ? <span className="field-help muted">{t('models.form.noKeyWarning')}</span> : null}
+          {secretMethod && form.keyMode === 'none' ? <span className="field-help muted">{t('models.form.noKeyWarning')}</span> : null}
+          {form.authMethod !== 'None' ? (
+            <details className="endpoint-signin-help">
+              <summary>{t('models.form.howTo')}</summary>
+              <SignInSteps provider={form.provider} method={form.authMethod} container={container} />
+            </details>
+          ) : null}
         </fieldset>
 
-        <fieldset className="form-field wide">
-          <legend className="field-label">{t('models.form.capabilities')}</legend>
-          <div className="checkbox-group">
-            <label className="checkbox-row">
-              <input type="checkbox" checked={form.supportsChat} onChange={(e) => set({ supportsChat: e.target.checked })} />
-              <span>{t('models.capabilities.chat')}</span>
-            </label>
-            <label className="checkbox-row">
-              <input type="checkbox" checked={form.supportsEmbeddings} onChange={(e) => set({ supportsEmbeddings: e.target.checked })} />
-              <span>{t('models.capabilities.embeddings')}</span>
-            </label>
-          </div>
-          {errors.supportsChat ? (
-            <span className="field-error" role="alert">
-              {errors.supportsChat}
-            </span>
-          ) : (
-            <span className="field-help muted">{t('models.form.toolsDetected')}</span>
-          )}
-        </fieldset>
+        {cli ? null : (
+          <fieldset className="form-field wide">
+            <legend className="field-label">{t('models.form.capabilities')}</legend>
+            <div className="checkbox-group">
+              <label className="checkbox-row">
+                <input type="checkbox" checked={form.supportsChat} onChange={(e) => set({ supportsChat: e.target.checked })} />
+                <span>{t('models.capabilities.chat')}</span>
+              </label>
+              <label className="checkbox-row">
+                <input type="checkbox" checked={form.supportsEmbeddings} onChange={(e) => set({ supportsEmbeddings: e.target.checked })} />
+                <span>{t('models.capabilities.embeddings')}</span>
+              </label>
+            </div>
+            {errors.supportsChat ? (
+              <span className="field-error" role="alert">
+                {errors.supportsChat}
+              </span>
+            ) : (
+              <span className="field-help muted">{t('models.form.toolsDetected')}</span>
+            )}
+          </fieldset>
+        )}
 
         <div className="form-grid">
           {form.supportsChat ? (
-            <FormField id="ep-model" label={t('models.columns.model')} error={errors.model}>
+            <FormField id="ep-model" label={t('models.columns.model')} error={errors.model} help={cli ? t('setup.field.modelHelpCli') : undefined}>
               <div className="input-with-button">
                 <input id="ep-model" className="mono" list="ep-model-options" value={form.model} onChange={(e) => set({ model: e.target.value })} autoComplete="off" />
                 {isEdit ? (
@@ -285,9 +339,11 @@ export default function EndpointFormModal({ state, onClose, onSaved }) {
               ))}
             </select>
           </FormField>
-          <FormField id="ep-temperature" label={t('models.form.temperature')} help={anthropic ? t('models.form.temperatureAnthropic') : t('models.form.temperatureHelp')} error={errors.temperature}>
-            <input id="ep-temperature" type="number" min={0} max={2} step={0.1} value={anthropic ? '' : form.temperature} disabled={anthropic} onChange={(e) => set({ temperature: e.target.value })} />
-          </FormField>
+          {cli ? null : (
+            <FormField id="ep-temperature" label={t('models.form.temperature')} help={noTemperature ? t('models.form.temperatureAnthropic') : t('models.form.temperatureHelp')} error={errors.temperature}>
+              <input id="ep-temperature" type="number" min={0} max={2} step={0.1} value={noTemperature ? '' : form.temperature} disabled={noTemperature} onChange={(e) => set({ temperature: e.target.value })} />
+            </FormField>
+          )}
           {number('contextLength', t('models.form.contextLength'), null, 1)}
           {number('timeoutMs', t('models.form.timeoutMs'), t('models.form.timeoutHelp'), 1000)}
         </div>

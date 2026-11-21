@@ -147,6 +147,11 @@ namespace MyMorningNews.Sdk.Models
         public bool? LastValidationSucceeded { get; set; } = null;
 
         /// <summary>
+        /// How the endpoint signs in. Null means the provider's usual method: an API key for hosted APIs, none for Ollama and OpenAI-compatible servers without a key, and the server's own sign-in for agent CLIs.
+        /// </summary>
+        public ModelAuthMethodEnum? AuthMethod { get; set; } = null;
+
+        /// <summary>
         /// Instantiate.
         /// </summary>
         public ModelEndpoint()

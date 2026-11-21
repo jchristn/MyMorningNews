@@ -55,12 +55,22 @@ namespace MyMorningNews.Core.Responses
         public string? Model { get; set; } = null;
 
         /// <summary>
+        /// Server address, for Ollama and OpenAI-compatible model checks shown to administrators. Null otherwise.
+        /// </summary>
+        public string? BaseUrl { get; set; } = null;
+
+        /// <summary>
         /// Tasks the endpoint serves, for model checks.
         /// </summary>
         public List<ModelTaskEnum> Tasks { get; set; } = new List<ModelTaskEnum>();
 
         /// <summary>
-        /// Whether the provider requires an API key.
+        /// How the endpoint signs in, for model checks.
+        /// </summary>
+        public ModelAuthMethodEnum? AuthMethod { get; set; } = null;
+
+        /// <summary>
+        /// Whether the sign-in method needs a stored secret (an API key, a token, or a sign-in file).
         /// </summary>
         public bool NeedsApiKey { get; set; } = false;
 

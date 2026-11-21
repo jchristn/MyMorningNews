@@ -28,6 +28,11 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// Connection string.
         /// </summary>
-        ConnectionString
+        ConnectionString,
+
+        /// <summary>
+        /// Contents of a sign-in file, such as Codex's auth.json or Gemini CLI's oauth_creds.json.
+        /// </summary>
+        SignInFile
     }
 }

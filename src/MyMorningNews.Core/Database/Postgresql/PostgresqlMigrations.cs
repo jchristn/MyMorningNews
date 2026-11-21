@@ -232,6 +232,10 @@ namespace MyMorningNews.Core.Database.Postgresql
             new SchemaMigration(19, "Model endpoint verification", new List<string>
             {
                 "ALTER TABLE modelendpoints ADD COLUMN IF NOT EXISTS lastvalidationsucceeded BOOLEAN"
+            }),
+            new SchemaMigration(20, "Model endpoint sign-in method", new List<string>
+            {
+                "ALTER TABLE modelendpoints ADD COLUMN IF NOT EXISTS authmethod VARCHAR(32)"
             })
         };
 

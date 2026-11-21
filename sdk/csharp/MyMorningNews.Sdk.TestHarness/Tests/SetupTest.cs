@@ -9,17 +9,19 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
     using MyMorningNews.Sdk.Requests;
 
     /// <summary>
-    /// Workspace setup without billed calls: the administrator reads the status, stores a key for an unreachable local
-    /// endpoint (the live check fails, so the endpoint reports LastValidationSucceeded false and the check is not Ready),
-    /// gets 404 for an unknown endpoint, and a plain user reads the status with CanConfigure false and is refused verify and
-    /// model-key with 403. The administrator's VerifyAsync is not called because it probes the real providers.
+    /// Workspace setup without billed calls: the administrator reads the status and the provider options (Claude Code lists
+    /// AccessToken first), has two bad connect requests refused before anything is stored, stores a key for an unreachable
+    /// local endpoint (the live check fails, so the endpoint reports LastValidationSucceeded false and the check is not
+    /// Ready), gets 404 for an unknown endpoint, and a plain user reads the status with CanConfigure false and is refused
+    /// verify, model-key, options, and connect with 403. The administrator's VerifyAsync is not called because it probes the
+    /// real providers.
     /// </summary>
     public class SetupTest : TestBase
     {
         /// <summary>
         /// Case name.
         /// </summary>
-        public override string Name => "Setup status, model key, and 403 for non-administrators";
+        public override string Name => "Setup status, options, connect, model key, and 403 for non-administrators";
 
         /// <summary>
         /// Instantiate.
@@ -44,6 +46,41 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             Helpers.True(status.Checks.All(x => !String.IsNullOrEmpty(x.Key)), "every check has a key");
             Helpers.True(status.Checks.Any(x => x.Kind == SetupCheckKindEnum.Search), "status has a search check");
             Helpers.Equal(status.Checks.Where(x => x.Required).All(x => x.State == SetupCheckStateEnum.Ready), status.Ready, "ready matches the required checks");
+
+            SetupOptionsResponse options = await StepAsync(context, result, "GET setup/options (admin)", () => c.Setup.GetOptionsAsync(token)).ConfigureAwait(false);
+            Helpers.True(options.Providers.Any(), "options list providers");
+            Helpers.NotEmpty(options.ServerContainer, "server container");
+            SetupProviderOption? claudeCode = options.Providers.FirstOrDefault(x => x.Provider == ModelProviderEnum.ClaudeCode);
+            Helpers.NotNull(claudeCode, "Claude Code is offered");
+            Helpers.Equal(SetupProviderGroupEnum.AgentCli, claudeCode!.Group, "Claude Code is an agent CLI");
+            Helpers.True(claudeCode.Methods.Any(), "Claude Code has sign-in methods");
+            Helpers.Equal(ModelAuthMethodEnum.AccessToken, claudeCode.Methods[0].Method, "Claude Code lists AccessToken first");
+            Helpers.True(claudeCode.Methods[0].Recommended, "the first method is recommended");
+            if (!claudeCode.Available) Helpers.NotEmpty(claudeCode.UnavailableReason, "an unavailable CLI says why");
+            if (claudeCode.TurnedOff) Helpers.True(!claudeCode.Available, "a turned-off CLI is unavailable");
+            SetupProviderOption? anthropic = options.Providers.FirstOrDefault(x => x.Provider == ModelProviderEnum.Anthropic);
+            Helpers.True(anthropic != null && anthropic.Group == SetupProviderGroupEnum.Api, "Anthropic is a hosted API");
+            Helpers.True(anthropic!.Methods.Any(x => x.Method == ModelAuthMethodEnum.ApiKey), "Anthropic signs in with an API key");
+            Helpers.True(anthropic.Recommended, "Anthropic is the recommended provider");
+            Helpers.True(status.Connection == null, "GET setup carries no connection result");
+
+            MyMorningNewsException badToken = await StepAsync(context, result, "POST setup/connect with an API key as a setup-token token (400)",
+                () => Helpers.ExpectErrorAsync(() => c.Setup.ConnectAsync(new SetupConnectRequest
+                {
+                    Provider = ModelProviderEnum.ClaudeCode,
+                    AuthMethod = ModelAuthMethodEnum.AccessToken,
+                    Secret = "sk-ant-api03-harness"
+                }, token), 400, "ValidationFailed")).ConfigureAwait(false);
+            string expectedField = claudeCode.Available ? "secret" : "provider";
+            Helpers.True(badToken.Details.TryGetValue("field", out string? field) && field == expectedField, "details.field is " + expectedField);
+            await StepAsync(context, result, "POST setup/connect with an unknown endpoint (404)",
+                () => Helpers.ExpectErrorAsync(() => c.Setup.ConnectAsync(new SetupConnectRequest
+                {
+                    Provider = ModelProviderEnum.Anthropic,
+                    AuthMethod = ModelAuthMethodEnum.ApiKey,
+                    Secret = "sk-harness",
+                    ModelEndpointId = "mdl_missing"
+                }, token), 404)).ConfigureAwait(false);
 
             await StepAsync(context, result, "POST setup/model-key with an unknown endpoint (404)",
                 () => Helpers.ExpectErrorAsync(() => c.Setup.SetModelKeyAsync("mdl_missing", "sk-harness", token), 404)).ConfigureAwait(false);
@@ -93,6 +130,13 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
                 Helpers.True(!mine.CanConfigure, "a plain user cannot configure");
                 await StepAsync(context, result, "POST setup/verify as a user (403)", () => Helpers.ExpectErrorAsync(() => u.Setup.VerifyAsync(token), 403)).ConfigureAwait(false);
                 await StepAsync(context, result, "POST setup/model-key as a user (403)", () => Helpers.ExpectErrorAsync(() => u.Setup.SetModelKeyAsync(e.Id, "sk-harness", token), 403)).ConfigureAwait(false);
+                await StepAsync(context, result, "GET setup/options as a user (403)", () => Helpers.ExpectErrorAsync(() => u.Setup.GetOptionsAsync(token), 403)).ConfigureAwait(false);
+                await StepAsync(context, result, "POST setup/connect as a user (403)", () => Helpers.ExpectErrorAsync(() => u.Setup.ConnectAsync(new SetupConnectRequest
+                {
+                    Provider = ModelProviderEnum.Anthropic,
+                    AuthMethod = ModelAuthMethodEnum.ApiKey,
+                    Secret = "sk-harness"
+                }, token), 403)).ConfigureAwait(false);
             }
 
             await StepAsync(context, result, "DELETE user", () => Fixtures.DeleteUserAsync(context, c, user.Id, token)).ConfigureAwait(false);

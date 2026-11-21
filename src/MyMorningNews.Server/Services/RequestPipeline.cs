@@ -215,6 +215,10 @@ namespace MyMorningNews.Server.Services
                 case JsonException jex:
                     // RouteBase rethrows a described JsonException (field and expected value) with the original inside.
                     status = 400; error = "BadRequest"; message = jex.InnerException is JsonException ? jex.Message : "The request body is not valid JSON."; break;
+                case FieldValidationException fve:
+                    status = 400; error = "ValidationFailed"; message = fve.Message;
+                    details = new Dictionary<string, string>(StringComparer.Ordinal) { { "field", fve.Field } };
+                    break;
                 case ArgumentException ae:
                     status = 400; error = "ValidationFailed"; message = ErrorText.Plain(ae); break;
                 case KeyNotFoundException knf:

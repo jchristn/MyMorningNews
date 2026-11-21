@@ -41,6 +41,14 @@ namespace MyMorningNews.Core.Services
         public Func<ModelCallRequest, CancellationToken, Task>? PreCallCheck { get; set; } = null;
 
         /// <summary>
+        /// Runner for agent CLI endpoints (Claude Code, Codex, Gemini CLI, Mux).
+        /// </summary>
+        public AgentCliService AgentClis
+        {
+            get { return _Clis; }
+        }
+
+        /// <summary>
         /// Name of the tool offered for structured output.
         /// </summary>
         public const string SubmitToolName = "submit_result";
@@ -54,6 +62,7 @@ namespace MyMorningNews.Core.Services
         private readonly ServerSettings _Settings;
         private readonly LoggingModule _Logging;
         private readonly ModelClientFactory _Factory;
+        private readonly AgentCliService _Clis;
         private readonly SemaphoreSlim _Concurrency;
         private readonly string _Header = "[ModelGateway] ";
         private bool _Disposed = false;
@@ -82,6 +91,7 @@ namespace MyMorningNews.Core.Services
             _Settings = settings;
             _Logging = logging;
             _Factory = factory ?? new ModelClientFactory(null, logging);
+            _Clis = new AgentCliService(() => _Settings.Models, logging);
             _Concurrency = new SemaphoreSlim(settings.Pipeline.MaxConcurrentModelCalls, settings.Pipeline.MaxConcurrentModelCalls);
         }
 
@@ -130,6 +140,7 @@ namespace MyMorningNews.Core.Services
 
             if (endpoint == null) throw new ModelCallException("No model endpoint is configured for " + task + ". Add one on the Models page.");
             string? model = modelOverride ?? assignment?.ModelOverride ?? (embedding ? endpoint.EmbeddingModel : endpoint.Model);
+            if (String.IsNullOrWhiteSpace(model) && !embedding && AgentCliService.IsAgentCli(endpoint.Provider)) model = AgentCliService.DefaultModel;
             if (String.IsNullOrWhiteSpace(model)) throw new ModelCallException("Endpoint " + endpoint.Name + " has no " + (embedding ? "embedding " : String.Empty) + "model configured.");
             return new ResolvedModel(endpoint, model, assignment?.ReasoningEffort ?? endpoint.ReasoningEffort);
         }
@@ -431,66 +442,87 @@ namespace MyMorningNews.Core.Services
             ModelValidationResponse result = new ModelValidationResponse();
             try
             {
-                string? key = await _Vault.ResolveAsync(endpoint.TenantId, endpoint.CredentialId, token).ConfigureAwait(false);
-                using (ProviderClientBase client = _Factory.Create(endpoint, key))
+                if (AgentCliService.IsAgentCli(endpoint.Provider))
                 {
-                    if (endpoint.SupportsChat && !String.IsNullOrWhiteSpace(endpoint.Model))
+                    ModelCallRequest cliProbe = new ModelCallRequest
                     {
-                        ModelCallRequest probe = new ModelCallRequest
+                        TenantId = endpoint.TenantId,
+                        Task = ModelTaskEnum.QueryPlanning,
+                        ModelEndpointId = endpoint.Id,
+                        UserPrompt = "Reply with the word ready.",
+                        SystemPrompt = "You are a connectivity probe. Do not use any tools.",
+                        MaxTokens = 64,
+                        IsDryRun = true
+                    };
+                    ModelCallResult answered = await ChatAsync(cliProbe, token).ConfigureAwait(false);
+                    result.Reachable = true;
+                    result.ModelFound = true;
+                    result.SupportsTools = false;
+                    result.Messages.Add("The CLI answered in " + Math.Round(answered.DurationMs) + " ms. Structured results use JSON replies.");
+                }
+                else
+                {
+                    string? key = await _Vault.ResolveAsync(endpoint.TenantId, endpoint.CredentialId, token).ConfigureAwait(false);
+                    using (ProviderClientBase client = _Factory.Create(endpoint, key))
+                    {
+                        if (endpoint.SupportsChat && !String.IsNullOrWhiteSpace(endpoint.Model))
                         {
-                            TenantId = endpoint.TenantId,
-                            Task = ModelTaskEnum.QueryPlanning,
-                            ModelEndpointId = endpoint.Id,
-                            UserPrompt = "Reply with the word ready.",
-                            SystemPrompt = "You are a connectivity probe.",
-                            MaxTokens = 64,
-                            IsDryRun = true
-                        };
-                        ModelCallResult chat = await ChatAsync(probe, token).ConfigureAwait(false);
-                        result.Reachable = true;
-                        result.ModelFound = true;
-                        result.Messages.Add("Chat responded in " + Math.Round(chat.DurationMs) + " ms.");
-
-                        ModelEndpoint toolProbe = Clone(endpoint);
-                        toolProbe.SupportsTools = null;
-                        try
-                        {
-                            ModelCallRequest tools = new ModelCallRequest
+                            ModelCallRequest probe = new ModelCallRequest
                             {
                                 TenantId = endpoint.TenantId,
                                 Task = ModelTaskEnum.QueryPlanning,
                                 ModelEndpointId = endpoint.Id,
-                                UserPrompt = "Submit the answer 'ready'.",
-                                MaxTokens = 256,
+                                UserPrompt = "Reply with the word ready.",
+                                SystemPrompt = "You are a connectivity probe.",
+                                MaxTokens = 64,
                                 IsDryRun = true
                             };
-                            await ChatStructuredWithEndpointAsync<TextAnswerResult>(tools, toolProbe, token).ConfigureAwait(false);
-                            result.SupportsTools = true;
-                            result.Messages.Add("Tool calls work.");
-                        }
-                        catch (ModelCallException ex)
-                        {
-                            result.SupportsTools = false;
-                            result.Messages.Add("Tool calls are not supported or failed (" + ex.Message + "); structured output will use JSON mode.");
-                        }
-                    }
-                    else
-                    {
-                        result.ModelFound = true;
-                    }
-
-                    if (endpoint.SupportsEmbeddings && !String.IsNullOrWhiteSpace(endpoint.EmbeddingModel))
-                    {
-                        EmbeddingResponse emb = await client.EmbedAsync("dimension probe", new EmbeddingOptions { Model = endpoint.EmbeddingModel }, token).ConfigureAwait(false);
-                        if (emb.Success && emb.Embeddings.Count > 0)
-                        {
+                            ModelCallResult chat = await ChatAsync(probe, token).ConfigureAwait(false);
                             result.Reachable = true;
-                            result.EmbeddingDimensions = emb.Embeddings[0].Embedding.Length;
-                            result.Messages.Add("Embeddings return " + result.EmbeddingDimensions + " dimensions.");
+                            result.ModelFound = true;
+                            result.Messages.Add("Chat responded in " + Math.Round(chat.DurationMs) + " ms.");
+
+                            ModelEndpoint toolProbe = Clone(endpoint);
+                            toolProbe.SupportsTools = null;
+                            try
+                            {
+                                ModelCallRequest tools = new ModelCallRequest
+                                {
+                                    TenantId = endpoint.TenantId,
+                                    Task = ModelTaskEnum.QueryPlanning,
+                                    ModelEndpointId = endpoint.Id,
+                                    UserPrompt = "Submit the answer 'ready'.",
+                                    MaxTokens = 256,
+                                    IsDryRun = true
+                                };
+                                await ChatStructuredWithEndpointAsync<TextAnswerResult>(tools, toolProbe, token).ConfigureAwait(false);
+                                result.SupportsTools = true;
+                                result.Messages.Add("Tool calls work.");
+                            }
+                            catch (ModelCallException ex)
+                            {
+                                result.SupportsTools = false;
+                                result.Messages.Add("Tool calls are not supported or failed (" + ex.Message + "); structured output will use JSON mode.");
+                            }
                         }
                         else
                         {
-                            result.Messages.Add("Embedding failed: " + (emb.Error ?? "no vectors returned") + ".");
+                            result.ModelFound = true;
+                        }
+
+                        if (endpoint.SupportsEmbeddings && !String.IsNullOrWhiteSpace(endpoint.EmbeddingModel))
+                        {
+                            EmbeddingResponse emb = await client.EmbedAsync("dimension probe", new EmbeddingOptions { Model = endpoint.EmbeddingModel }, token).ConfigureAwait(false);
+                            if (emb.Success && emb.Embeddings.Count > 0)
+                            {
+                                result.Reachable = true;
+                                result.EmbeddingDimensions = emb.Embeddings[0].Embedding.Length;
+                                result.Messages.Add("Embeddings return " + result.EmbeddingDimensions + " dimensions.");
+                            }
+                            else
+                            {
+                                result.Messages.Add("Embedding failed: " + (emb.Error ?? "no vectors returned") + ".");
+                            }
                         }
                     }
                 }
@@ -500,8 +532,9 @@ namespace MyMorningNews.Core.Services
                 result.Messages.Add(ErrorText.Plain(ex));
             }
 
-            bool chatChecked = endpoint.SupportsChat && !String.IsNullOrWhiteSpace(endpoint.Model);
-            bool embeddingChecked = endpoint.SupportsEmbeddings && !String.IsNullOrWhiteSpace(endpoint.EmbeddingModel);
+            bool cli = AgentCliService.IsAgentCli(endpoint.Provider);
+            bool chatChecked = endpoint.SupportsChat && (cli || !String.IsNullOrWhiteSpace(endpoint.Model));
+            bool embeddingChecked = !cli && endpoint.SupportsEmbeddings && !String.IsNullOrWhiteSpace(endpoint.EmbeddingModel);
             bool succeeded = (chatChecked || embeddingChecked)
                 && (!chatChecked || (result.Reachable && result.ModelFound))
                 && (!embeddingChecked || result.EmbeddingDimensions.HasValue);
@@ -525,6 +558,7 @@ namespace MyMorningNews.Core.Services
         public async Task<List<ModelListItem>> ListModelsAsync(ModelEndpoint endpoint, CancellationToken token = default)
         {
             ArgumentNullException.ThrowIfNull(endpoint);
+            if (AgentCliService.IsAgentCli(endpoint.Provider)) return new List<ModelListItem>();
             string? key = await _Vault.ResolveAsync(endpoint.TenantId, endpoint.CredentialId, token).ConfigureAwait(false);
             List<ModelListItem> items = new List<ModelListItem>();
             try
@@ -639,6 +673,7 @@ namespace MyMorningNews.Core.Services
 
         private async Task<ModelExchange> SendAsync(ResolvedModel resolved, List<ChatMessage> messages, List<ToolDefinition>? tools, ModelCallRequest request, CallState state, CancellationToken token)
         {
+            if (AgentCliService.IsAgentCli(resolved.Endpoint.Provider)) return await SendCliAsync(resolved, messages, request, state, token).ConfigureAwait(false);
             string? key;
             try
             {
@@ -781,6 +816,106 @@ namespace MyMorningNews.Core.Services
 
             if (last is ModelCallException mce) throw mce;
             throw new ModelCallException("Model endpoint " + resolved.Endpoint.Name + " is unreachable: " + (last?.Message ?? "unknown error"), null, true, last);
+        }
+
+        private async Task<ModelExchange> SendCliAsync(ResolvedModel resolved, List<ChatMessage> messages, ModelCallRequest request, CallState state, CancellationToken token)
+        {
+            ModelEndpoint endpoint = resolved.Endpoint;
+            string? secret = null;
+            if (AgentCliService.NeedsSecret(AgentCliService.EffectiveMethod(endpoint)))
+            {
+                try
+                {
+                    secret = await _Vault.ResolveAsync(request.TenantId, endpoint.CredentialId, token).ConfigureAwait(false);
+                }
+                catch (VaultSecretUnavailableException ex)
+                {
+                    throw new ModelCallException(ex.Message, null, false, ex);
+                }
+            }
+
+            state.Prompt = Render(messages);
+            state.Streamed = false;
+            int attempts = _Settings.Pipeline.ModelCallAttempts;
+            string task = request.Task.ToString();
+            string provider = endpoint.Provider.ToString();
+            ModelCallException? last = null;
+            for (int attempt = 1; attempt <= attempts; attempt++)
+            {
+                token.ThrowIfCancellationRequested();
+                state.Attempts++;
+                Stopwatch sw = Stopwatch.StartNew();
+                using (Activity? span = MyMorningNewsTelemetry.StartSpan("polyprompt cli", ActivityKind.Client))
+                {
+                    span?.SetTag("mymorningnews.task", task);
+                    span?.SetTag("gen_ai.system", provider);
+                    span?.SetTag("gen_ai.request.model", resolved.Model);
+                    await _Concurrency.WaitAsync(token).ConfigureAwait(false);
+                    CliAgentResult result;
+                    try
+                    {
+                        result = await _Clis.RunAsync(endpoint, secret, resolved.Model, messages, token).ConfigureAwait(false);
+                    }
+                    catch (Exception ex) when (ex is ArgumentException || ex is InvalidOperationException || ex is System.ComponentModel.Win32Exception || ex is System.IO.IOException || ex is UnauthorizedAccessException)
+                    {
+                        throw new ModelCallException(ErrorText.Plain(ex), null, false, ex);
+                    }
+                    finally
+                    {
+                        _Concurrency.Release();
+                    }
+
+                    double seconds = sw.Elapsed.TotalSeconds;
+                    state.DurationMs += seconds * 1000;
+                    Accumulate(state, result.Usage, task, provider);
+                    MyMorningNewsTelemetry.Record(MyMorningNewsTelemetry.LlmCallDuration, seconds, "task", task, "provider", provider);
+                    if (result.Succeeded)
+                    {
+                        MyMorningNewsTelemetry.Increment(MyMorningNewsTelemetry.LlmCalls, "task", task, "provider", provider, "outcome", "success");
+                        return new ModelExchange { Text = result.Text, FinishReason = "stop", StatusCode = 200, AssistantMessage = ChatMessage.Assistant(result.Text ?? String.Empty) };
+                    }
+
+                    int? status;
+                    bool transient;
+                    string reason;
+                    switch (result.FailureKind)
+                    {
+                        case CliFailureKind.NotInstalled:
+                            status = null; transient = false; reason = "the " + provider + " CLI is not installed on the server";
+                            break;
+                        case CliFailureKind.NotAuthenticated:
+                            status = 401; transient = false; reason = "the CLI is not signed in or its sign-in was rejected (" + AgentCliService.Describe(AgentCliService.EffectiveMethod(endpoint), endpoint.Provider) + ")";
+                            break;
+                        case CliFailureKind.RateLimited:
+                            status = 429; transient = true; reason = "the provider's usage limit was reached";
+                            break;
+                        case CliFailureKind.TimedOut:
+                            status = 504; transient = true; reason = "the CLI did not finish within " + Math.Round(endpoint.TimeoutMs / 1000.0) + " seconds";
+                            break;
+                        default:
+                            status = null; transient = false; reason = "the CLI failed";
+                            break;
+                    }
+
+                    string detail = FirstLine(result.Error) ?? FirstLine(result.StandardError) ?? result.FailureKind.ToString();
+                    span?.SetStatus(ActivityStatusCode.Error, detail);
+                    MyMorningNewsTelemetry.Increment(MyMorningNewsTelemetry.LlmCalls, "task", task, "provider", provider, "outcome", transient ? "retryable_error" : "error");
+                    last = new ModelCallException(endpoint.Name + ": " + reason + ". " + detail, status, transient);
+                    if (!transient) throw last;
+                    if (attempt < attempts) await Task.Delay(Backoff(attempt), token).ConfigureAwait(false);
+                }
+            }
+
+            throw last ?? new ModelCallException(endpoint.Name + " did not answer.", null, true);
+        }
+
+        private static string? FirstLine(string? text)
+        {
+            if (String.IsNullOrWhiteSpace(text)) return null;
+            string plain = System.Text.RegularExpressions.Regex.Replace(text, "\u001b\\[[0-9;?]*[A-Za-z]", String.Empty);
+            string line = plain.Trim().Split('\n')[0].Trim();
+            if (line.Length == 0) return null;
+            return line.Length > 400 ? line.Substring(0, 400) : line;
         }
 
         private static void Accumulate(CallState state, TokenUsage? usage, string task, string provider)

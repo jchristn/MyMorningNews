@@ -684,7 +684,8 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
  * @typedef {object} ModelEndpoint
  * @property {string} id Identifier.
  * @property {string} name Name.
- * @property {string} provider Provider.
+ * @property {string} provider Provider: `Anthropic`, `OpenAi`, `OpenAiCompatible`, `Ollama`, `Gemini`, `XAi`, `OllamaCloud`,
+ *     or an agent CLI in the server: `ClaudeCode`, `Codex`, `GeminiCli`, `Mux`.
  * @property {string|null} endpoint Base URL.
  * @property {string|null} model Chat model.
  * @property {string|null} embeddingModel Embedding model.
@@ -695,6 +696,9 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
  * @property {boolean|null} [lastValidationSucceeded] Whether the endpoint last proved it works: true after a successful
  *     validation or model call, false after a failed validation, null when never checked or after its connection
  *     settings changed.
+ * @property {'ApiKey'|'AccessToken'|'AuthFile'|'ServerSignIn'|'None'|null} [authMethod] How the endpoint signs in. Null
+ *     means the provider's usual method: an API key for hosted APIs, none for Ollama and OpenAI-compatible servers
+ *     without a key, and the server's own sign-in for agent CLIs.
  */
 
 /**
@@ -709,8 +713,13 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
  * @property {string|null} [resourceName] Model endpoint or search provider name.
  * @property {string|null} [provider] Provider name.
  * @property {string|null} [model] Model name, for model and embedding checks.
+ * @property {string|null} [baseUrl] Server address, for Ollama and OpenAI-compatible model checks shown to
+ *     administrators. Null otherwise.
  * @property {string[]} tasks Tasks the endpoint serves, for model checks.
- * @property {boolean} needsApiKey Whether the provider requires an API key.
+ * @property {'ApiKey'|'AccessToken'|'AuthFile'|'ServerSignIn'|'None'|null} [authMethod] How the endpoint signs in, for
+ *     model checks.
+ * @property {boolean} needsApiKey Whether the sign-in method needs a stored secret (an API key, a token, or a sign-in
+ *     file).
  * @property {boolean} hasApiKey Whether a key is stored or supplied by the platform.
  * @property {boolean} usesPlatformKey Whether the endpoint uses the hosted service's key, which users never enter.
  * @property {string|null} [verifiedUtc] When the resource was last checked.
@@ -723,6 +732,72 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
  * @property {boolean} canConfigure Whether the caller can change the configuration (a global or tenant administrator).
  * @property {SetupCheck[]} checks Checks, required ones first.
  * @property {string} checkedUtc When the status was computed.
+ * @property {SetupConnectionResult|null} [connection] Result of the connection attempt, on responses to
+ *     `setup.connect`. Null otherwise.
+ */
+
+/**
+ * Outcome of a Setup page connection attempt.
+ * @typedef {object} SetupConnectionResult
+ * @property {string|null} [modelEndpointId] Endpoint that was connected or tried.
+ * @property {boolean} succeeded Whether the live test prompt succeeded.
+ * @property {boolean} keptPrevious Whether a working model was kept because the new one failed its test. The
+ *     workspace keeps using it.
+ * @property {string|null} [message] The test's result in plain language (the provider's error text on failure).
+ */
+
+/**
+ * One way a provider can sign in, as offered on the Setup page.
+ * @typedef {object} SetupAuthOption
+ * @property {'ApiKey'|'AccessToken'|'AuthFile'|'ServerSignIn'|'None'} method Method.
+ * @property {'Text'|'File'|'None'} input What the user supplies: a key or token, a sign-in file's contents, or nothing.
+ * @property {string|null} [fileName] File name the CLI keeps the sign-in in, for File inputs (`auth.json`,
+ *     `oauth_creds.json`, `endpoints.json`).
+ * @property {boolean} recommended Whether this is the suggested method for the provider.
+ */
+
+/**
+ * A model provider the Setup page can connect, with the ways it can sign in.
+ * @typedef {object} SetupProviderOption
+ * @property {string} provider Provider.
+ * @property {'Api'|'AgentCli'|'SelfHosted'} group Group for display: a hosted API, an agent CLI in the server image, or a
+ *     model server you run yourself.
+ * @property {boolean} available Whether the provider can be used on this server now (for agent CLIs: allowed and
+ *     installed).
+ * @property {boolean} installed For agent CLIs: whether the executable is installed in the server. Always true for other
+ *     providers.
+ * @property {boolean} turnedOff For agent CLIs: whether the server's operator turned agent CLIs off
+ *     (`Models.AllowAgentClis`).
+ * @property {string|null} [unavailableReason] Why the provider is unavailable, when it is.
+ * @property {boolean} recommended Whether this is the suggested provider.
+ * @property {string|null} [defaultModel] Model filled in by default; `default` lets an agent CLI choose; null means the
+ *     user must name one.
+ * @property {boolean} needsBaseUrl Whether a base URL is asked for (Ollama and OpenAI-compatible servers).
+ * @property {string|null} [defaultBaseUrl] Base URL filled in by default.
+ * @property {SetupAuthOption[]} methods Sign-in methods, recommended first.
+ */
+
+/**
+ * Model providers the Setup page can connect on this server.
+ * @typedef {object} SetupOptionsResponse
+ * @property {SetupProviderOption[]} providers Providers, recommended first within each group.
+ * @property {string} serverContainer Name of the server container, for sign-in commands such as
+ *     `docker exec -it {container} claude`.
+ */
+
+/**
+ * Connect the workspace's chat model: choose a provider and how it signs in, then verify it with a live call.
+ * @typedef {object} SetupConnectRequest
+ * @property {string} provider Provider. Required.
+ * @property {'ApiKey'|'AccessToken'|'AuthFile'|'ServerSignIn'|'None'} [authMethod] Sign-in method. Omitted uses the
+ *     provider's recommended method.
+ * @property {string} [secret] The API key, the access token (`claude setup-token`), or the sign-in file's contents
+ *     (`auth.json`, `oauth_creds.json`, `endpoints.json`). Required unless the method is `ServerSignIn` or `None`, or the
+ *     endpoint already has one stored for the same method. Stored encrypted and never returned.
+ * @property {string} [model] Model. Omitted uses the provider's default (an agent CLI's own default when it has one).
+ * @property {string} [baseUrl] Base URL for Ollama and OpenAI-compatible servers.
+ * @property {string} [modelEndpointId] Endpoint to change. Omitted reuses the workspace's endpoint for the same provider,
+ *     or creates one.
  */
 
 /**
@@ -3298,7 +3373,7 @@ export class DevicesResource extends ResourceGroup {
 
 /**
  * Workspace setup: whether the workspace has a chat model with a working key and web search, live checks that prove it,
- * and storing a model API key. Until `ready` is true, refinement sessions and research requests fail with
+ * the model providers and sign-in methods the server offers, connecting one, and storing a model API key. Until `ready` is true, refinement sessions and research requests fail with
  * {@link SetupRequiredError} (409 `SetupRequired`).
  */
 export class SetupResource extends ResourceGroup {
@@ -3318,6 +3393,34 @@ export class SetupResource extends ResourceGroup {
      */
     verify() {
         return this._req('POST', this._base + '/verify');
+    }
+
+    /**
+     * Model providers and sign-in methods the Setup page can connect on this server (administrators only, 403
+     * otherwise): hosted APIs (API key), agent CLIs in the server image (Claude Code, Codex, Gemini CLI, Mux), and
+     * self-hosted servers, each with whether it is installed and allowed and its sign-in methods, recommended first.
+     * @returns {Promise<SetupOptionsResponse>} Options.
+     */
+    options() {
+        return this._req('GET', this._base + '/options');
+    }
+
+    /**
+     * Connect the workspace's chat model (administrators only, 403 otherwise). Stores the secret for the chosen sign-in
+     * method (an API key, a `claude setup-token` token, or a sign-in file's contents) encrypted in the vault, tests it
+     * with a live call, and points every chat task at the endpoint. When the workspace already has a working model, the
+     * new sign-in is tested first and the working one is kept if the test fails. `connection` on the result says what
+     * happened (`succeeded`, `keptPrevious`, `message`). The secret is never returned. 400 `ValidationFailed` (with
+     * `details.field`: `provider`, `authMethod`, `secret`, `model`, or `baseUrl`) for a missing provider or secret, a
+     * method the provider does not accept, or an agent CLI that is not allowed or not installed; 404 when the named
+     * endpoint does not exist.
+     * @param {SetupConnectRequest} request Provider, sign-in method, secret, and optional model, base URL, and endpoint.
+     * @returns {Promise<SetupStatusResponse>} Status after the endpoint was checked.
+     */
+    connect(request) {
+        requireValue(request, 'request');
+        requireValue(request.provider, 'provider');
+        return this._req('POST', this._base + '/connect', { body: request });
     }
 
     /**

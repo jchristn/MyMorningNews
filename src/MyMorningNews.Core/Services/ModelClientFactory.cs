@@ -77,6 +77,11 @@ namespace MyMorningNews.Core.Services
                     return new OpenAiCompatibleClient(url, String.IsNullOrEmpty(apiKey) ? null : apiKey, options);
                 case ModelProviderEnum.Ollama:
                     return new OllamaClient(url ?? DefaultOllamaEndpoint, String.IsNullOrEmpty(apiKey) ? null : apiKey, options);
+                case ModelProviderEnum.ClaudeCode:
+                case ModelProviderEnum.Codex:
+                case ModelProviderEnum.GeminiCli:
+                case ModelProviderEnum.Mux:
+                    throw new ArgumentException(endpoint.Name + " is an agent CLI; it runs through AgentCliService, not an HTTP client.");
                 default:
                     throw new ArgumentException("Unsupported provider " + endpoint.Provider + ".", nameof(endpoint));
             }

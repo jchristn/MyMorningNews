@@ -1058,7 +1058,11 @@
       "Ollama": "Ollama",
       "Gemini": "Gemini",
       "XAi": "xAI",
-      "OllamaCloud": "Ollama Cloud"
+      "OllamaCloud": "Ollama Cloud",
+      "ClaudeCode": "Claude Code",
+      "Codex": "Codex",
+      "GeminiCli": "Gemini CLI",
+      "Mux": "Mux"
     },
     "reasoningEffort": {
       "None": "Tiada",
@@ -1074,7 +1078,8 @@
       "BearerToken": "Token pembawa",
       "BasicAuth": "Pengesahan asas",
       "CustomHeader": "Pengepala tersuai",
-      "ConnectionString": "Rentetan sambungan"
+      "ConnectionString": "Rentetan sambungan",
+      "SignInFile": "Fail log masuk"
     },
     "vaultProvider": {
       "Anthropic": "Anthropic",
@@ -1302,6 +1307,13 @@
     "ttsProvider": {
       "OpenAiCompatibleSpeech": "Pertuturan serasi OpenAI",
       "Disabled": "Dilumpuhkan"
+    },
+    "authMethod": {
+      "ApiKey": "Kunci API",
+      "AccessToken": "Token akses",
+      "AuthFile": "Fail log masuk",
+      "ServerSignIn": "Log masuk pada pelayan",
+      "None": "Tiada kunci"
     }
   },
   "vault": {
@@ -1395,7 +1407,8 @@
       "credential": "Kelayakan",
       "lastValidated": "Kali terakhir disahkan",
       "status": "Status",
-      "id": "ID"
+      "id": "ID",
+      "signIn": "Log masuk"
     },
     "capabilities": {
       "chat": "Sembang",
@@ -1432,18 +1445,16 @@
         "XAi": "Biarkan kosong untuk API xAI.",
         "OllamaCloud": "Biarkan kosong untuk Ollama Cloud."
       },
-      "apiKey": "Kunci API",
       "keyModes": {
-        "new": "Masukkan kunci",
+        "new": "Tambah kunci baharu",
         "vault": "Gunakan kelayakan tersimpan",
-        "none": "Tiada kunci"
+        "none": "Tidak ditetapkan"
       },
-      "newKey": "Kunci API baharu",
       "newKeyHelp": "Disimpan dalam peti besi kelayakan (disulitkan) dan dipautkan kepada titik akhir ini. Biarkan kosong untuk mengekalkan kunci semasa.",
       "storedKey": "Kelayakan tersimpan",
       "storedKeyHelp": "Putarnya pada halaman Kelayakan tersimpan dan setiap titik akhir yang menggunakannya akan menerima perubahan itu.",
       "pickCredential": "Pilih kelayakan",
-      "noKeyWarning": "Penyedia ini biasanya memerlukan kunci API. Panggilan akan gagal tanpanya.",
+      "noKeyWarning": "Panggilan kepada titik akhir ini gagal sehingga kunci ditambah.",
       "capabilities": "Menyediakan",
       "toolsDetected": "Sokongan alat dan dimensi pembenaman dikesan apabila anda menjalankan Sahkan.",
       "embeddingDimensions": "Dimensi pembenaman",
@@ -1478,7 +1489,11 @@
         "capability": "Pilih sembang, pembenaman atau kedua-duanya.",
         "credential": "Pilih kelayakan tersimpan.",
         "number": "Masukkan nombor sifar atau lebih."
-      }
+      },
+      "signIn": "Log masuk",
+      "secretSource": "Sumber rahsia",
+      "howTo": "Cara mendapatkannya",
+      "cliNotice": "Ini menjalankan alat baris perintah penyedia pada pelayan. Ia hanya menjawab gesaan sembang, jadi ia tiada URL, panggilan alat atau pembenaman."
     },
     "test": {
       "title": "Uji model",
@@ -4203,31 +4218,31 @@
     }
   },
   "modelKeys": {
-    "title": "Titik akhir model tiada kunci API yang boleh digunakan",
+    "title": "Titik akhir model tiada kunci atau log masuk",
     "problem": {
       "missing": "{name} tiada kunci API, jadi panggilan kepadanya gagal.",
       "notFound": "{name} menggunakan kelayakan tersimpan yang tidak lagi wujud.",
       "inactive": "{name} menggunakan kelayakan tersimpan yang telah dimatikan.",
       "expired": "{name} menggunakan kelayakan tersimpan yang telah tamat tempoh.",
       "platformMissing": "{name} menggunakan kunci model platform, tetapi pelayan tidak mempunyai kunci yang dikonfigurasikan (MYMORNINGNEWS_ANTHROPIC_API_KEY).",
-      "platformMissingUser": "{name} menggunakan kunci model kongsi pelayan ini, dan pengendali pelayan belum menyediakannya."
+      "platformMissingUser": "{name} menggunakan kunci model kongsi pelayan ini, dan pengendali pelayan belum menyediakannya.",
+      "missingToken": "{name} tiada token langganan, jadi panggilan kepadanya gagal.",
+      "missingFile": "{name} tiada fail log masuk, jadi panggilan kepadanya gagal."
     },
     "fix": "Tambah kunci pada {name}",
     "view": "Lihat titik akhir model",
     "consequence": {
-      "general": "Penghalusan topik, larian penyelidikan dan taklimat memerlukan model yang berfungsi, jadi semuanya gagal sehingga masalah ini dibaiki.",
-      "wizard": "Wizard meminta model mencadangkan dimensi dan soalan, jadi ia gagal pada langkah pertama sehingga masalah ini dibaiki."
+      "general": "Penghalusan topik, larian penyelidikan dan taklimat memerlukan model yang berfungsi, jadi semuanya gagal sehingga masalah ini dibaiki."
     },
     "askAdmin": "Hanya pentadbir penyewa boleh menambah kunci. Minta pentadbir anda membaikinya.",
     "badge": "Tiada kunci API",
-    "fixOwnKey": "Gunakan kunci API anda sendiri untuk {name}"
+    "fixOwnKey": "Gunakan kunci API anda sendiri untuk {name}",
+    "badgeToken": "Tiada token",
+    "badgeFile": "Tiada fail log masuk",
+    "fixSignIn": "Kemas kini log masuk untuk {name}"
   },
   "setup": {
-    "summary": "Tambah dan sahkan perkara yang diperlukan oleh My Morning News: kunci API model dan penyedia carian yang berfungsi.",
-    "intro": {
-      "title": "Selesaikan persediaan dahulu.",
-      "message": "Topik, larian penyelidikan dan taklimat kekal dikunci sehingga setiap semakan wajib di bawah sedia."
-    },
+    "summary": "Sebelum sesiapa boleh mencipta topik, ruang kerja ini memerlukan model AI dan carian web.",
     "blockedNotice": "Satu tindakan dihentikan kerana persediaan belum selesai.",
     "verifyAll": "Sahkan semua",
     "verifying": "Menyemak dengan panggilan langsung. Ini mungkin mengambil masa beberapa saat.",
@@ -4244,48 +4259,21 @@
       "Email": "E-mel"
     },
     "check": {
-      "title": "{kind}: {name}",
-      "providerModel": "{provider}, model {model}",
-      "provider": "Penyedia: {provider}",
-      "tasks": "Digunakan untuk {tasks}",
-      "verified": "Kali terakhir disahkan: {time}",
-      "platformKey": "Titik akhir ini menggunakan kunci model kongsi perkhidmatan, yang diurus oleh pengendali pelayan, jadi tiada kunci untuk dimasukkan di sini.",
-      "verify": "Sahkan",
-      "retry": "Cuba lagi",
-      "openSearch": "Buka penyedia carian",
-      "openEndpoint": "Buka {name} di halaman Model",
-      "openModels": "Buka halaman Model"
-    },
-    "key": {
-      "label": "Kunci API untuk {name}",
-      "help": "Disimpan secara tersulit bersama kelayakan tersimpan anda, dipautkan pada titik akhir ini dan disemak dengan panggilan langsung.",
-      "save": "Simpan dan sahkan",
-      "saving": "Menyimpan kunci dan menyemaknya dengan panggilan langsung. Ini mungkin mengambil masa beberapa saat."
+      "title": "{kind}: {name}"
     },
     "required": {
-      "heading": "Wajib",
-      "none": "Pelayan tidak melaporkan sebarang semakan wajib.",
       "open": "Selesaikan persediaan",
       "askAdmin": "Pentadbir perlu menyelesaikan persediaan sebelum ini berfungsi."
     },
-    "optional": {
-      "heading": "Pilihan",
-      "note": "Semakan pilihan tidak pernah menyekat penyelidikan. Ia menghidupkan ciri tambahan seperti padanan semantik dan penghantaran e-mel."
-    },
-    "help": {
-      "title": "Cara lain untuk menyediakannya",
-      "env": "Pemasangan hos sendiri juga boleh meletakkan kunci dalam docker/.env sebagai MYMORNINGNEWS_ANTHROPIC_API_KEY dan memulakan semula pelayan.",
-      "models": "Gunakan penyedia model lain di halaman Model"
-    },
     "ready": {
       "title": "Anda sudah sedia",
-      "message": "Setiap semakan wajib telah lulus. Anda kini boleh mencipta topik dan menjalankan penyelidikan.",
-      "newTopic": "Cipta topik",
-      "topics": "Pergi ke topik"
+      "message": "Model AI dan carian web kedua-duanya berfungsi. Cipta topik untuk mendapatkan taklimat pertama anda.",
+      "newTopic": "Cipta topik pertama anda",
+      "home": "Pergi ke Utama"
     },
     "gate": {
       "title": "Ruang kerja ini belum sedia",
-      "message": "Pentadbir perlu menambah dan mengesahkan kunci API model sebelum sesiapa boleh menggunakan My Morning News.",
+      "message": "Pentadbir perlu menyambungkan model AI dan carian web sebelum sesiapa boleh menggunakan My Morning News.",
       "askAdmin": "Minta pentadbir anda membuka Persediaan dalam papan pemuka, kemudian semak semula di sini.",
       "checkAgain": "Semak semula",
       "checking": "Menyemak",
@@ -4299,6 +4287,176 @@
     "nav": {
       "callout": "Selesaikan persediaan",
       "blocked": "{name} dibuka selepas persediaan selesai"
+    },
+    "title": "Sediakan My Morning News",
+    "copyCommand": "Salin perintah",
+    "newTab": "(dibuka dalam tab baharu)",
+    "progress": {
+      "label": "Kemajuan persediaan",
+      "step": "Langkah {number}",
+      "model": "Model AI",
+      "search": "Carian web",
+      "done": "Selesai",
+      "todo": "Belum dibuat",
+      "attention": "Perlu perhatian"
+    },
+    "model": {
+      "heading": "Sambungkan model AI",
+      "intro": "My Morning News menggunakannya untuk merancang penyelidikan, membaca sumber dan menulis taklimat anda. Pilih cara anda mahu membayarnya.",
+      "providerLegend": "Pilih penyedia",
+      "groups": {
+        "AgentCli": {
+          "title": "Gunakan langganan AI anda",
+          "note": "Menjalankan alat baris perintah penyedia pada pelayan dengan pelan yang sudah anda bayar."
+        },
+        "Api": {
+          "title": "Gunakan kunci API",
+          "note": "Kunci API dibilkan oleh penyedia mengikut penggunaan."
+        },
+        "SelfHosted": {
+          "title": "Jalankan model anda sendiri",
+          "note": "Sambungkan pelayan model yang anda jalankan sendiri, seperti Ollama."
+        }
+      },
+      "recommended": "Disyorkan",
+      "notInstalled": "Tidak dipasang pada pelayan ini",
+      "unavailable": "Tidak tersedia pada pelayan ini",
+      "methodLegend": "Bagaimanakah ia patut log masuk?",
+      "stepsTitle": "Cara menyambungkan {provider}",
+      "connect": "Sambung dan uji",
+      "connecting": "Menguji",
+      "testing": "Menguji sambungan. Ini menghantar satu gesaan pendek dan boleh mengambil masa sehingga seminit untuk CLI.",
+      "turnedOff": "Dimatikan pada pelayan ini"
+    },
+    "providers": {
+      "geminiName": "Google Gemini",
+      "compatibleName": "Pelayan serasi OpenAI",
+      "ClaudeCode": "Claude Pro atau Max",
+      "Codex": "ChatGPT Plus, Pro atau Business",
+      "GeminiCli": "Akaun Google",
+      "Mux": "Titik akhir Mux anda",
+      "Anthropic": "Model Claude",
+      "OpenAi": "Model GPT",
+      "Gemini": "Model Gemini",
+      "XAi": "Model Grok",
+      "OllamaCloud": "Model terbuka yang dihoskan oleh Ollama",
+      "Ollama": "Model pada komputer atau pelayan anda sendiri",
+      "OpenAiCompatible": "vLLM, LM Studio, llama.cpp dan lain-lain"
+    },
+    "method": {
+      "subscriptionToken": "Token langganan",
+      "anthropicKey": "Kunci API Anthropic",
+      "openAiKey": "Kunci API OpenAI",
+      "geminiKey": "Kunci API Gemini",
+      "chatGptFile": "Fail log masuk ChatGPT ({file})",
+      "googleFile": "Fail log masuk Google ({file})",
+      "muxFile": "Konfigurasi Mux ({file})",
+      "serverSignIn": "Sudah log masuk pada pelayan",
+      "serverConfigured": "Sudah dikonfigurasikan pada pelayan",
+      "noKey": "Tiada kunci diperlukan",
+      "apiKey": "Kunci API"
+    },
+    "steps": {
+      "runAnywhere": "Pada mana-mana komputer yang mempunyai {app}, jalankan:",
+      "finishBrowser": "Selesaikan log masuk dalam tetingkap pelayar yang dibuka.",
+      "copyToken": "Salin token yang dicetaknya (bermula dengan {prefix}) dan tampalkannya di bawah.",
+      "tokenNote": "Token ini menggunakan langganan Claude anda, jadi tiada bil berasingan mengikut penggunaan.",
+      "openKeys": "Buka halaman kunci API penyedia dan log masuk:",
+      "createKey": "Cipta kunci, salin dan tampalkannya di bawah.",
+      "codexLogin": "Pada komputer anda, jalankan perintah ini dan log masuk dengan ChatGPT:",
+      "geminiLogin": "Pada komputer anda, jalankan perintah ini dan pilih Log masuk dengan Google:",
+      "chooseFile": "Pilih fail yang disimpannya dalam kotak di bawah. Fail itu berada di sini:",
+      "muxChoose": "Pilih fail titik akhir Mux anda dalam kotak di bawah. Biasanya ia berada di sini:",
+      "windows": "Pada Windows:",
+      "fileWarning": "Fail ini melog masuk sebagai anda. Ia disimpan secara tersulit dan hanya digunakan oleh pelayan ini.",
+      "muxWarning": "Fail ini boleh mengandungi kunci penyedia anda. Ia disimpan secara tersulit dan hanya digunakan oleh pelayan ini.",
+      "hiddenFolder": "Folder yang bermula dengan titik adalah tersembunyi. Pada Mac, tekan Command+Shift+Period dalam pemilih fail untuk memaparkannya, atau tampalkan kandungannya sebagai ganti.",
+      "install": "Belum dipasang? Pasangkannya dengan:",
+      "serverOpen": "Pada komputer yang menjalankan My Morning News, buka terminal dan jalankan:",
+      "serverClaudeLogin": "Taip /login dan selesaikan log masuk.",
+      "serverCodexLogin": "Buka pautan yang dipaparkannya, masukkan kod dan log masuk dengan ChatGPT.",
+      "serverGeminiLogin": "Pilih Log masuk dengan Google dan ikut pautan yang dipaparkannya.",
+      "serverMuxConfigure": "Taip /endpoint, pilih Add dan simpan titik akhir yang hendak digunakan. Mux menulisnya ke {file}.",
+      "serverReturn": "Kembali ke sini dan klik Sambung dan uji.",
+      "ollamaAddress": "Masukkan alamat yang digunakan oleh pelayan untuk mencapai Ollama. Dari Docker pada macOS atau Windows, alamat itu biasanya {url}.",
+      "ollamaModel": "Masukkan nama model yang telah anda tarik. Perintah ini menyenaraikannya:",
+      "compatAddress": "Masukkan URL asas pelayan. Biasanya ia berakhir dengan /v1.",
+      "compatModel": "Masukkan nama model yang disediakan oleh pelayan.",
+      "selfKey": "Tampalkan kunci yang dijangkakan oleh pelayan anda."
+    },
+    "field": {
+      "token": "Token daripada claude setup-token",
+      "file": "Fail log masuk ({file})",
+      "apiKey": "Kunci API",
+      "keepStored": "Biarkan kosong untuk mengekalkan yang sudah disimpan.",
+      "drop": "Lepaskan {file} di sini, atau",
+      "chooseFile": "Pilih fail",
+      "replace": "Ganti",
+      "fileHelp": "Fail ini dibaca dalam pelayar anda dan hanya dihantar ke pelayan ini. Kandungannya tidak pernah dipaparkan.",
+      "pasteInstead": "Tampal kandungan sebagai ganti",
+      "chooseInstead": "Pilih fail sebagai ganti",
+      "pasteLabel": "Kandungan {file}",
+      "fileReadError": "Fail itu tidak dapat dibaca. Cuba lagi, atau tampalkan kandungannya sebagai ganti.",
+      "fileTooLarge": "Fail itu lebih besar daripada 64 KB, jadi ia bukan fail log masuk.",
+      "required": {
+        "AccessToken": "Tampalkan token daripada claude setup-token.",
+        "ApiKey": "Tampalkan kunci API.",
+        "AuthFile": "Pilih fail, atau tampalkan kandungannya."
+      },
+      "model": "Model",
+      "modelRequired": "Masukkan model yang hendak digunakan.",
+      "modelHelpRequired": "ID model tepat seperti yang disenaraikan oleh {provider}.",
+      "modelHelpDefault": "Biarkan seperti sedia ada melainkan anda mahukan model lain.",
+      "modelHelpCli": "Biarkan kosong untuk menggunakan model lalai CLI.",
+      "cliDefault": "Model lalai CLI",
+      "advanced": "Lanjutan",
+      "advancedSummary": "Model: {model}",
+      "baseUrl": "Alamat pelayan",
+      "baseUrlHelp": "Alamat yang digunakan oleh pelayan My Morning News untuk mencapainya.",
+      "baseUrlHelpOllama": "Dari Docker pada macOS atau Windows, ini biasanya {url}.",
+      "baseUrlInvalid": "Masukkan alamat yang bermula dengan http:// atau https://."
+    },
+    "result": {
+      "success": "Disambungkan. {provider} menjawab gesaan ujian.",
+      "failed": "Ujian tidak lulus",
+      "noAnswer": "Model tidak menjawab gesaan ujian.",
+      "keptPrevious": "Log masuk baharu gagal dalam ujian, jadi My Morning News terus menggunakan {provider}."
+    },
+    "hint": {
+      "token": "Jika token ditolak, jalankan {command} sekali lagi dan tampalkan token baharu.",
+      "file": "Jika log masuk ditolak, jalankan {command} sekali lagi dan pilih {file} yang baharu.",
+      "muxFile": "Semak titik akhir dalam {file} dan pilih fail itu sekali lagi.",
+      "server": "Log masuk di dalam bekas pelayan, kemudian cuba lagi:",
+      "apiKey": "Pastikan kunci itu betul dan akaun telah menyediakan pengebilan atau masih mempunyai baki kredit.",
+      "selfHosted": "Pastikan pelayan sedang berjalan, alamat ini dapat mencapainya dan nama model adalah betul."
+    },
+    "connected": {
+      "provider": "Penyedia",
+      "method": "Log masuk",
+      "model": "Model",
+      "verified": "Disahkan {time}",
+      "change": "Tukar",
+      "fix": "Baiki",
+      "testAgain": "Uji semula",
+      "openModels": "Buka di halaman Model",
+      "platformKey": "Kunci kongsi daripada pengendali pelayan"
+    },
+    "search": {
+      "heading": "Carian web",
+      "ready": "Carian web berfungsi ({provider}).",
+      "intro": "Penyelidikan mencari sumber baharu di web. Carian SearXNG yang disertakan disemak secara automatik.",
+      "open": "Buka penyedia carian"
+    },
+    "extras": {
+      "title": "Tambahan pilihan",
+      "count": "{ready} daripada {count} dihidupkan",
+      "note": "Ini tidak pernah menyekat penyelidikan. Sediakannya bila-bila masa anda mahu.",
+      "what": {
+        "Embeddings": "Mengesan berita berulang mengikut makna, bukan sekadar padanan perkataan.",
+        "Email": "Menghantar e-mel taklimat selepas setiap larian, dengan pautan butiran dan maklum balas."
+      },
+      "openModels": "Buka Model",
+      "openSettings": "Buka Tetapan"
     }
   }
 }

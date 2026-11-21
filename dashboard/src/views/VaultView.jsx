@@ -315,8 +315,13 @@ export default function VaultView() {
             </FormField>
           ) : null}
           {editing && editing.mode === 'create' ? (
-            <FormField id="vault-secret" label={t('vault.fields.secret')} help={t('vault.fields.secretHelp')} error={errors.secret}>
-              <PasswordInput id="vault-secret" value={form.secret} onChange={(v) => setForm({ ...form, secret: v })} autoComplete="new-password" required />
+            <FormField id="vault-secret" label={t('vault.fields.secret')} help={t('vault.fields.secretHelp')} error={errors.secret} wide={form.kind === 'SignInFile'}>
+              {form.kind === 'SignInFile' ? (
+                // A sign-in file is several lines of JSON, and a password field would drop its line breaks.
+                <textarea id="vault-secret" className="mono secret-paste" rows={5} value={form.secret} onChange={(e) => setForm({ ...form, secret: e.target.value })} autoComplete="off" spellCheck={false} required />
+              ) : (
+                <PasswordInput id="vault-secret" value={form.secret} onChange={(v) => setForm({ ...form, secret: v })} autoComplete="new-password" required />
+              )}
             </FormField>
           ) : null}
           <FormField id="vault-expires" label={t('vault.columns.expires')} help={t('vault.fields.expiresHelp')}>

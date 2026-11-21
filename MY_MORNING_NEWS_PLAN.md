@@ -1528,7 +1528,7 @@ Exit: a clean checkout reaches a first briefing by following only the README.
 ### Phase 13: Benchmarks, simulated user testing, release readiness
 
 - [x] Benchmark harness, datasets, isolated stack, CI gate, round 0 (bugs found are fixed first), `RESULTS.md`, `IMPROVEMENTS.md`.
-- [ ] Simulated user testing session, report, your decisions, approved fixes verified on a fresh instance.
+- [x] Simulated user testing session, report, your decisions, approved fixes verified on a fresh instance. Session 2026-11-20 on a clean clone (`user-testing/2026-11-20-full-session.md`): 33 findings (0 S1, 6 S2, 13 S3, 14 S4), all addressed; each fix verified against a freshly started server, with UT-028 partly fixed (stdin close cancels in-flight MCP requests inside Voltaic).
 - [ ] Final review against every document in section 3.
 
 Exit: all Definition of Done checklists in `BENCHMARKING.md` and `SIMULATED_USER_TESTING.md` are satisfied, or each exception is recorded with a reason.

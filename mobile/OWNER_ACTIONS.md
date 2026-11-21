@@ -5,6 +5,21 @@ metadata, privacy answers, age rating, screenshots, and review notes are a separ
 [`APP_STORE_SUBMISSION.md`](../APP_STORE_SUBMISSION.md) at the repository root. Never paste passwords, private keys,
 or tokens into this repository; they go into the consoles, EAS, or the password manager.
 
+## Status (2026-11-21)
+
+| Item | Value |
+|------|-------|
+| Apple Team | Lattice AI LLC, Team ID `U34NDPAH3K` (`eas.json` `submit.*.ios.appleTeamId`) |
+| App Store Connect app | Apple ID `6837840760` (`eas.json` `submit.*.ios.ascAppId`), https://appstoreconnect.apple.com/apps/6837840760/distribution |
+| iOS bundle ID | `ai.latticetech.mymorningnews`, registered by EAS; provisioning profile `V53L7MLT46`; team distribution certificate reused |
+| EAS project | `@joel-christner/mymorningnews`, `d2070f2d-77b5-4f8f-8961-7fb5d00b6410` (default in `app.config.js`) |
+| EAS Update signing | Certificate `mobile/updates/certificate.pem` (to 2036); private key `~/.mymorningnews/keys/updates/` on the owner's Mac |
+| Android | Expo-managed upload keystore; first bundle 0.1.0 (build 1), EAS build `4cd0e908-6b69-4e92-aef0-5d04454fe507` |
+| Hosted service | Live at `https://app.mymorningnews.ai` (AWS load balancer to `~/mymorningnews` on the EC2 host) |
+
+Items 1, 2, 3, 5, and 12 below are done. The Apple record of every key, certificate, and app ID for the team is kept
+in the owner's `Lattice AI/APPLE.md` (outside the repository).
+
 ## Now (unblocks device testing and push)
 
 1. **Decide the publisher accounts.** Confirm the apps publish under the Lattice AI LLC organization accounts (the

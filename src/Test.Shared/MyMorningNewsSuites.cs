@@ -40,6 +40,7 @@ namespace Test.Shared
                     AccountSuite.Create(),
                     EntitlementSuite.Create(),
                     EgressSuite.Create(),
+                    SetupSuite.Create(),
                     McpSuite.Create(),
                     UserTestingSuite.Create()
                 };

@@ -49,7 +49,8 @@
     "tooMany": "Trop de requêtes. Patientez un instant et réessayez.",
     "unauthorized": "Votre session n’est plus valide. Reconnectez-vous.",
     "capReached": "Limite du forfait atteinte.",
-    "egressBlocked": "Cette adresse se trouve sur un réseau privé, ce que ce serveur n’autorise pas."
+    "egressBlocked": "Cette adresse se trouve sur un réseau privé, ce que ce serveur n’autorise pas.",
+    "setupRequired": "La configuration n’est pas terminée."
   },
   "access": {
     "deniedTitle": "Accès refusé",
@@ -186,7 +187,8 @@
       "insightsOverview": "Vue d’ensemble",
       "plans": "Forfaits",
       "emailInsights": "Distribution des e-mails",
-      "mcp": "Client MCP"
+      "mcp": "Client MCP",
+      "setup": "Configuration initiale"
     }
   },
   "routes": {
@@ -315,6 +317,9 @@
     },
     "mcp": {
       "summary": "Connectez Claude Code ou un autre client MCP à vos recherches"
+    },
+    "setup": {
+      "summary": "Ce dont My Morning News a besoin pour fonctionner, et l’état de chaque élément"
     }
   },
   "topbar": {
@@ -4216,5 +4221,84 @@
     "askAdmin": "Seul un administrateur du locataire peut ajouter une clé. Demandez au vôtre de corriger ce problème.",
     "badge": "Aucune clé d’API",
     "fixOwnKey": "Utiliser votre propre clé API pour {name}"
+  },
+  "setup": {
+    "summary": "Ajoutez et vérifiez ce dont My Morning News a besoin : une clé d’API de modèle et un fournisseur de recherche qui fonctionne.",
+    "intro": {
+      "title": "Terminez d’abord la configuration.",
+      "message": "Les sujets, les recherches et les synthèses restent verrouillés tant que chaque vérification obligatoire ci-dessous n’est pas prête."
+    },
+    "blockedNotice": "Une action a été bloquée, car la configuration n’est pas terminée.",
+    "verifyAll": "Tout vérifier",
+    "verifying": "Vérification par des appels réels. Cela peut prendre plusieurs secondes.",
+    "state": {
+      "Ready": "Prêt",
+      "Missing": "Manquant",
+      "Unverified": "Non vérifié",
+      "Failed": "En échec"
+    },
+    "kind": {
+      "Model": "Modèle",
+      "Search": "Recherche",
+      "Embeddings": "Embeddings",
+      "Email": "E-mail"
+    },
+    "check": {
+      "title": "{kind} : {name}",
+      "providerModel": "{provider}, modèle {model}",
+      "provider": "Fournisseur : {provider}",
+      "tasks": "Utilisé pour {tasks}",
+      "verified": "Dernière vérification : {time}",
+      "platformKey": "Ce point de terminaison utilise la clé de modèle partagée du service, gérée par l’opérateur du serveur : il n’y a donc aucune clé à saisir ici.",
+      "verify": "Vérifier",
+      "retry": "Réessayer",
+      "openSearch": "Ouvrir les fournisseurs de recherche",
+      "openEndpoint": "Ouvrir {name} sur la page Modèles d’IA",
+      "openModels": "Ouvrir la page Modèles d’IA"
+    },
+    "key": {
+      "label": "Clé d’API pour {name}",
+      "help": "Enregistrée chiffrée avec vos identifiants enregistrés, associée à ce point de terminaison et vérifiée par un appel réel.",
+      "save": "Enregistrer et vérifier",
+      "saving": "Enregistrement de la clé et vérification par un appel réel. Cela peut prendre plusieurs secondes."
+    },
+    "required": {
+      "heading": "Obligatoire",
+      "none": "Le serveur n’a signalé aucune vérification obligatoire.",
+      "open": "Terminer la configuration",
+      "askAdmin": "Un administrateur doit terminer la configuration pour que cela fonctionne."
+    },
+    "optional": {
+      "heading": "Facultatif",
+      "note": "Les vérifications facultatives ne bloquent jamais la recherche. Elles activent des options comme la correspondance sémantique et l’envoi par e-mail."
+    },
+    "help": {
+      "title": "Autres façons de configurer",
+      "env": "Pour une installation auto-hébergée, vous pouvez aussi placer la clé dans docker/.env sous le nom MYMORNINGNEWS_ANTHROPIC_API_KEY, puis redémarrer le serveur.",
+      "models": "Utiliser un autre fournisseur de modèles sur la page Modèles d’IA"
+    },
+    "ready": {
+      "title": "Tout est prêt",
+      "message": "Toutes les vérifications obligatoires ont réussi. Vous pouvez maintenant créer des sujets et lancer des recherches.",
+      "newTopic": "Créer un sujet",
+      "topics": "Aller aux sujets"
+    },
+    "gate": {
+      "title": "Cet espace de travail n’est pas prêt",
+      "message": "Un administrateur doit ajouter et vérifier la clé d’API du modèle avant que quiconque puisse utiliser My Morning News.",
+      "askAdmin": "Demandez à votre administrateur d’ouvrir Configuration initiale dans le tableau de bord, puis vérifiez à nouveau ici.",
+      "checkAgain": "Vérifier à nouveau",
+      "checking": "Vérification",
+      "signOut": "Se déconnecter",
+      "checked": "Dernière vérification : {time}"
+    },
+    "loadError": {
+      "title": "Impossible de charger l’état de la configuration",
+      "message": "My Morning News vérifie que cet espace de travail est configuré avant de s’ouvrir, et cette vérification n’a pas abouti. Réessayez dans un instant."
+    },
+    "nav": {
+      "callout": "Terminer la configuration",
+      "blocked": "{name} sera accessible une fois la configuration terminée"
+    }
   }
 }

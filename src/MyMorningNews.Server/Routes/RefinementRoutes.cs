@@ -58,6 +58,7 @@ namespace MyMorningNews.Server.Routes
             }
 
             await CheckTopicLimitAsync(tenantId, rc.UserId, ctx.Token).ConfigureAwait(false);
+            await Server.Setup.RequireAsync(tenantId, ModelTaskEnum.Refinement, null, ctx.Token).ConfigureAwait(false);
 
             RefinementStartRequest? req = await ReadBodyAsync<RefinementStartRequest>(ctx).ConfigureAwait(false);
             if (req == null) return;
@@ -92,6 +93,7 @@ namespace MyMorningNews.Server.Routes
         {
             RefinementSession? s = await SessionAsync(ctx, RequestTypeEnum.RefinementWrite).ConfigureAwait(false);
             if (s == null) return;
+            await Server.Setup.RequireAsync(s.TenantId, ModelTaskEnum.Refinement, s.TopicId, ctx.Token).ConfigureAwait(false);
             RefinementGenerateRequest? req = await OptionalBodyAsync(ctx).ConfigureAwait(false);
             if (req == null) return;
             await SendJsonAsync(ctx, 200, await Server.Refinement.ProposeDimensionsAsync(s.TenantId, CallerOrOwner(ctx, s), s.Id, req.Guidance, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
@@ -101,6 +103,7 @@ namespace MyMorningNews.Server.Routes
         {
             RefinementSession? s = await SessionAsync(ctx, RequestTypeEnum.RefinementWrite).ConfigureAwait(false);
             if (s == null) return;
+            await Server.Setup.RequireAsync(s.TenantId, ModelTaskEnum.Refinement, s.TopicId, ctx.Token).ConfigureAwait(false);
             RefinementGenerateRequest? req = await OptionalBodyAsync(ctx).ConfigureAwait(false);
             if (req == null) return;
             await SendJsonAsync(ctx, 200, await Server.Refinement.AskQuestionsAsync(s.TenantId, CallerOrOwner(ctx, s), s.Id, req.Guidance, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
@@ -119,6 +122,7 @@ namespace MyMorningNews.Server.Routes
         {
             RefinementSession? s = await SessionAsync(ctx, RequestTypeEnum.RefinementWrite).ConfigureAwait(false);
             if (s == null) return;
+            await Server.Setup.RequireAsync(s.TenantId, ModelTaskEnum.Refinement, s.TopicId, ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 200, await Server.Refinement.SynthesizeAsync(s.TenantId, CallerOrOwner(ctx, s), s.Id, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
@@ -126,6 +130,7 @@ namespace MyMorningNews.Server.Routes
         {
             RefinementSession? s = await SessionAsync(ctx, RequestTypeEnum.RefinementWrite).ConfigureAwait(false);
             if (s == null) return;
+            await Server.Setup.RequireAsync(s.TenantId, ModelTaskEnum.Refinement, s.TopicId, ctx.Token).ConfigureAwait(false);
             List<SourceCheck> checks = await Server.Refinement.SuggestSourcesAsync(s.TenantId, CallerOrOwner(ctx, s), s.Id, ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 200, checks).ConfigureAwait(false);
         }

@@ -219,6 +219,10 @@ namespace MyMorningNews.Server.Services
                     status = 400; error = "ValidationFailed"; message = ErrorText.Plain(ae); break;
                 case KeyNotFoundException knf:
                     status = 404; error = "NotFound"; message = String.IsNullOrWhiteSpace(knf.Message) || knf.Message.StartsWith("The given key", StringComparison.Ordinal) ? "The requested resource was not found." : knf.Message; break;
+                case SetupRequiredException sre:
+                    status = 409; error = "SetupRequired"; message = sre.Message;
+                    details = new Dictionary<string, string>(StringComparer.Ordinal) { { "check", sre.CheckKey } };
+                    break;
                 case ConflictException ce:
                     status = 409; error = "Conflict"; message = ce.Message; break;
                 case EgressBlockedException ebe:

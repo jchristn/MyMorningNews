@@ -5,6 +5,7 @@ import { BottomTabBar, Tabs } from 'expo-router/js-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTranslation } from 'react-i18next';
 import { MiniPlayer } from '@/components/player/MiniPlayer';
+import { SetupGate } from '@/components/SetupGate';
 import { LoadingState } from '@/components/states';
 import { useAuth } from '@/state/AuthContext';
 import { useTheme } from '@/theme/ThemeContext';
@@ -17,7 +18,10 @@ const ICONS = {
   account: 'person-circle-outline',
 };
 
-/** Signed-in shell: five tabs (each a stack), with the mini player docked above the tab bar. */
+/**
+ * Signed-in shell: five tabs (each a stack), with the mini player docked above the tab bar. The setup gate comes
+ * first: until the tenant's model key and search are verified, a full-screen message replaces the tabs.
+ */
 export default function AppLayout() {
   const { state } = useAuth();
   const p = useTheme();
@@ -35,26 +39,28 @@ export default function AppLayout() {
     />
   );
   return (
-    <Tabs
-      tabBar={(props) => (
-        <View>
-          <MiniPlayer />
-          <BottomTabBar {...props} />
-        </View>
-      )}
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: p.primary,
-        tabBarInactiveTintColor: p.muted,
-        tabBarStyle: { backgroundColor: p.surface, borderTopColor: p.border },
-        sceneStyle: { backgroundColor: p.bg },
-      }}
-    >
-      {tab('today', t('mobile.tabs.today'))}
-      {tab('listen', t('mobile.tabs.listen'))}
-      {tab('topics', t('mobile.tabs.topics'))}
-      {tab('insights', t('mobile.tabs.insights'))}
-      {tab('account', t('mobile.tabs.account'))}
-    </Tabs>
+    <SetupGate>
+      <Tabs
+        tabBar={(props) => (
+          <View>
+            <MiniPlayer />
+            <BottomTabBar {...props} />
+          </View>
+        )}
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: p.primary,
+          tabBarInactiveTintColor: p.muted,
+          tabBarStyle: { backgroundColor: p.surface, borderTopColor: p.border },
+          sceneStyle: { backgroundColor: p.bg },
+        }}
+      >
+        {tab('today', t('mobile.tabs.today'))}
+        {tab('listen', t('mobile.tabs.listen'))}
+        {tab('topics', t('mobile.tabs.topics'))}
+        {tab('insights', t('mobile.tabs.insights'))}
+        {tab('account', t('mobile.tabs.account'))}
+      </Tabs>
+    </SetupGate>
   );
 }

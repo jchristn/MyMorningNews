@@ -92,8 +92,11 @@ Open the dashboard at http://127.0.0.1:12101 and sign in. Change these credentia
 | Password | `password` |
 | Tenant | `default` (or leave it blank) |
 
-If you did not set a key in `.env`, add your Anthropic API key in the dashboard under Configuration, Stored
-credentials, and select it on the Anthropic model endpoint. Then create a topic from Topics, New topic.
+After you sign in, the dashboard shows the Setup page until the workspace has what it needs: a chat model whose key
+passed a live test call, and a web search provider that answered a test query (the bundled SearXNG passes on its own).
+Paste your Anthropic API key there and it is stored encrypted and checked on the spot. If you set
+`MYMORNINGNEWS_ANTHROPIC_API_KEY` in `.env` before the first start, the Setup page checks that key instead. People
+who are not administrators see a notice until an administrator finishes. Then create a topic from Topics, New topic.
 
 Sign in through the API:
 

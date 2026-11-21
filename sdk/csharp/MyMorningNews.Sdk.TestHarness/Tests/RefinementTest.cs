@@ -36,8 +36,24 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
         public override async Task RunAsync(TestContext context, TestResult result, CancellationToken token)
         {
             MyMorningNewsClient c = context.RequireAdmin();
-            await StepAsync(context, result, "POST refinement-session with no seed (400)",
-                () => Helpers.ExpectErrorAsync(() => c.Refinement.StartAsync(new RefinementStartRequest { SeedText = " " }, token), 400)).ConfigureAwait(false);
+            await StepAsync(context, result, "POST refinement-session with no seed (400)", async () =>
+            {
+                try
+                {
+                    await c.Refinement.StartAsync(new RefinementStartRequest { SeedText = " " }, token).ConfigureAwait(false);
+                }
+                catch (SetupRequiredException ex)
+                {
+                    throw new SkipTestException("the workspace is not set up for model work (409 SetupRequired, check "
+                        + Helpers.NotEmpty(ex.Check, "setup check key") + "); store a model key with Setup.SetModelKeyAsync first");
+                }
+                catch (MyMorningNewsException ex) when (ex.StatusCode == 400)
+                {
+                    return;
+                }
+
+                throw new HarnessAssertionException("Expected HTTP 400 but the call succeeded.");
+            }).ConfigureAwait(false);
 
             RefinementStateResponse state = await StepAsync(context, result, "POST refinement-session", () => c.Refinement.StartAsync(new RefinementStartRequest
             {

@@ -500,8 +500,15 @@ namespace MyMorningNews.Core.Services
                 result.Messages.Add(ErrorText.Plain(ex));
             }
 
+            bool chatChecked = endpoint.SupportsChat && !String.IsNullOrWhiteSpace(endpoint.Model);
+            bool embeddingChecked = endpoint.SupportsEmbeddings && !String.IsNullOrWhiteSpace(endpoint.EmbeddingModel);
+            bool succeeded = (chatChecked || embeddingChecked)
+                && (!chatChecked || (result.Reachable && result.ModelFound))
+                && (!embeddingChecked || result.EmbeddingDimensions.HasValue);
             endpoint.LastValidatedUtc = result.ValidatedUtc;
             endpoint.LastValidationResult = String.Join(" ", result.Messages);
+            endpoint.LastValidationSucceeded = succeeded;
+            result.Succeeded = succeeded;
             if (result.SupportsTools.HasValue) endpoint.SupportsTools = result.SupportsTools;
             if (result.EmbeddingDimensions.HasValue) endpoint.EmbeddingDimensions = result.EmbeddingDimensions;
             await _Database.ModelEndpoints.UpdateAsync(endpoint, token).ConfigureAwait(false);
@@ -895,11 +902,28 @@ namespace MyMorningNews.Core.Services
                 };
                 call = await _Database.LlmCalls.CreateAsync(call, token).ConfigureAwait(false);
                 state.LlmCallId = call.Id;
+                bool rejected = statusCode == 401 || statusCode == 403;
+                if ((success && e.LastValidationSucceeded != true) || (rejected && e.LastValidationSucceeded != false))
+                    await RecordVerificationAsync(e, success, success ? null : error, token).ConfigureAwait(false);
             }
             catch (Exception ex) when (!(ex is OperationCanceledException))
             {
                 _Logging.Warn(_Header + "unable to log model call: " + ex.Message);
             }
+        }
+
+        private async Task RecordVerificationAsync(ModelEndpoint used, bool succeeded, string? error, CancellationToken token)
+        {
+            ModelEndpoint? current = await _Database.ModelEndpoints.ReadAsync(used.TenantId, used.Id, token).ConfigureAwait(false);
+            if (current == null) return;
+            if (!String.Equals(current.CredentialId, used.CredentialId, StringComparison.Ordinal)
+                || !String.Equals(current.Endpoint, used.Endpoint, StringComparison.Ordinal)
+                || current.Provider != used.Provider) return;
+            current.LastValidationSucceeded = succeeded;
+            current.LastValidatedUtc = DateTime.UtcNow;
+            if (!succeeded && !String.IsNullOrWhiteSpace(error)) current.LastValidationResult = error;
+            await _Database.ModelEndpoints.UpdateAsync(current, token).ConfigureAwait(false);
+            used.LastValidationSucceeded = succeeded;
         }
 
         private static string? Clip(string? value, int max)

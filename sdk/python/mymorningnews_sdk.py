@@ -367,6 +367,24 @@ class ConflictError(MyMorningNewsError):
     """HTTP 409: the request conflicts with the resource's current state."""
 
 
+class SetupRequiredError(ConflictError):
+    """HTTP 409 ``SetupRequired``: the workspace is missing something it needs, such as a working model key.
+
+    Refinement sessions and :meth:`ResearchRequestsResource.create` raise it when the model endpoint for
+    refinement has no key or failed its last check. Read :meth:`SetupResource.status`; an administrator
+    can fix it with :meth:`SetupResource.set_model_key` or :meth:`SetupResource.verify`.
+
+    Attributes:
+        check: The setup check that is not ready, for example ``model:mdl_abc`` (matches
+            :attr:`SetupCheck.key`; None when the server sent none).
+    """
+
+    @property
+    def check(self) -> Optional[str]:
+        """The setup check key from ``details.check``."""
+        return (self.details or {}).get("check")
+
+
 class GoneError(MyMorningNewsError):
     """HTTP 410: the resource expired (for example ``ArtifactExpired``; regenerate it)."""
 
@@ -465,6 +483,8 @@ def _error_from_response(resp: requests.Response) -> MyMorningNewsError:
         cls = CapReachedError if code == "CapReached" else PlanLimitError
     elif resp.status_code == 403 and code == "EmailNotVerified":
         cls = EmailNotVerifiedError
+    elif resp.status_code == 409 and code == "SetupRequired":
+        cls = SetupRequiredError
     if cls is None:
         cls = ServerError if resp.status_code >= 500 else MyMorningNewsError
     return cls(message, status=resp.status_code, code=code, request_id=request_id, details=details, body=body)
@@ -1161,6 +1181,24 @@ class McpTransport(str, Enum):
 
     STREAMABLE_HTTP = "StreamableHttp"
     SSE = "Sse"
+
+
+class SetupCheckKind(str, Enum):
+    """What a setup check covers. Model and Search are required; Embeddings and Email are optional."""
+
+    MODEL = "Model"
+    SEARCH = "Search"
+    EMBEDDINGS = "Embeddings"
+    EMAIL = "Email"
+
+
+class SetupCheckState(str, Enum):
+    """State of a setup check."""
+
+    READY = "Ready"
+    MISSING = "Missing"
+    UNVERIFIED = "Unverified"
+    FAILED = "Failed"
 
 
 # ---------------------------------------------------------------------------
@@ -2462,7 +2500,11 @@ class LlmCall(Model):
 
 @dataclass
 class ModelEndpoint(Model):
-    """A model provider endpoint reached through PolyPrompt."""
+    """A model provider endpoint reached through PolyPrompt.
+
+    ``last_validation_succeeded`` is True after a successful validation or model call, False after a failed
+    validation, and None when never checked or after its connection settings changed.
+    """
     id: Optional[str] = None
     tenant_id: Optional[str] = None
     name: Optional[str] = None
@@ -2486,6 +2528,7 @@ class ModelEndpoint(Model):
     cache_write_cost_per_m_tok: Optional[float] = None
     last_validated_utc: Optional[str] = None
     last_validation_result: Optional[str] = None
+    last_validation_succeeded: Optional[bool] = None
     active: Optional[bool] = None
     created_utc: Optional[str] = None
     last_update_utc: Optional[str] = None
@@ -2508,13 +2551,52 @@ class ModelAssignment(Model):
 
 @dataclass
 class ModelValidation(Model):
-    """Result of validating a model endpoint."""
+    """Result of validating a model endpoint. ``succeeded`` is True when every check that applies to the
+    endpoint passed (chat when it has a chat model, embeddings when it has an embedding model)."""
     reachable: Optional[bool] = None
+    succeeded: Optional[bool] = None
     model_found: Optional[bool] = None
     supports_tools: Optional[bool] = None
     embedding_dimensions: Optional[int] = None
     messages: Optional[List[str]] = None
     validated_utc: Optional[str] = None
+
+
+@dataclass
+class SetupCheck(Model):
+    """One thing the workspace needs before people can use it, and whether it is ready.
+
+    ``key`` is stable: ``model:{endpointId}`` (or ``model:none``), ``search``, ``embeddings``, or ``email``.
+    ``kind`` is a :class:`SetupCheckKind` name and ``state`` a :class:`SetupCheckState` name.
+    """
+    key: Optional[str] = None
+    kind: Optional[str] = None
+    required: Optional[bool] = None
+    state: Optional[str] = None
+    message: Optional[str] = None
+    resource_id: Optional[str] = None
+    resource_name: Optional[str] = None
+    provider: Optional[str] = None
+    model: Optional[str] = None
+    tasks: Optional[List[str]] = None
+    needs_api_key: Optional[bool] = None
+    has_api_key: Optional[bool] = None
+    uses_platform_key: Optional[bool] = None
+    verified_utc: Optional[str] = None
+
+
+@dataclass
+class SetupStatus(Model):
+    """Whether the workspace has everything it needs, checked with live calls.
+
+    ``ready`` is True when every required check is ready; ``can_configure`` tells whether the caller (a
+    global or tenant administrator) can change the configuration. Checks come required ones first.
+    """
+    _nested: ClassVar[Dict[str, str]] = {'checks': 'SetupCheck'}
+    ready: Optional[bool] = None
+    can_configure: Optional[bool] = None
+    checks: Optional[List[SetupCheck]] = None
+    checked_utc: Optional[str] = None
 
 
 @dataclass
@@ -4191,6 +4273,48 @@ class AccountResource(_Resource):
         return self._json("POST", "/v1.0/public/password/reset", body={"token": token, "password": password}, auth=False)
 
 
+class SetupResource(_Resource):
+    """Workspace setup under ``/v1.0/api/setup``: whether the workspace has a chat model with a working key
+    and web search, live checks that prove it, and storing a model API key. Until ``ready`` is True,
+    refinement sessions and research requests raise :class:`SetupRequiredError`."""
+
+    def status(self) -> SetupStatus:
+        """The workspace setup status (``ready``, ``can_configure``, and the checks)."""
+        return self._one(SetupStatus, "GET", API + "/setup")
+
+    def verify(self) -> SetupStatus:
+        """Re-check setup with live calls. Administrators only (PermissionDeniedError otherwise).
+
+        Sends a short probe prompt to each chat endpoint, a test query to each default web search provider,
+        and one embedding request, so it contacts the providers.
+        """
+        return self._one(SetupStatus, "POST", API + "/setup/verify")
+
+    def set_model_key(self, model_endpoint_id: str, api_key: str) -> SetupStatus:
+        """Store an API key for a model endpoint and verify it with a live call. Administrators only.
+
+        The key is stored encrypted in the vault, attached to the endpoint, and never returned.
+
+        Args:
+            model_endpoint_id: The model endpoint.
+            api_key: The API key.
+
+        Returns:
+            The :class:`SetupStatus` after the key was checked.
+
+        Raises:
+            ValueError: ``model_endpoint_id`` or ``api_key`` is empty.
+            BadRequestError: The server rejected a value (400 ``ValidationFailed``).
+            PermissionDeniedError: The caller is not an administrator.
+            NotFoundError: The endpoint does not exist.
+        """
+        if not model_endpoint_id:
+            raise ValueError("model_endpoint_id is required.")
+        if not api_key:
+            raise ValueError("api_key is required.")
+        return self._one(SetupStatus, "POST", API + "/setup/model-key", body={"modelEndpointId": model_endpoint_id, "apiKey": api_key})
+
+
 class McpServersResource(_Resource):
     """MCP server registry for agentic research (``/v1.0/api/mcp-servers``): register remote MCP servers
     (Streamable HTTP or SSE URLs; stdio is not supported), test them, discover tools, and turn tools on
@@ -4399,6 +4523,7 @@ class MyMorningNewsClient:
         self.devices = DevicesResource(self)
         self.account = AccountResource(self)
         self.mcp_servers = McpServersResource(self)
+        self.setup = SetupResource(self)
         self.settings = SettingsResource(self)
         self.public = PublicResource(self)
 
@@ -4682,7 +4807,7 @@ def iterate(list_fn: Callable[..., Any], page_size: int = 100, max_pages: Option
 __all__ = [
     "MyMorningNewsClient", "MyMorningNewsError", "BadRequestError", "AuthenticationError", "PermissionDeniedError",
     "NotFoundError", "ConflictError", "GoneError", "RangeNotSatisfiableError", "RateLimitError", "ServerError",
-    "TenantSelectionRequired", "WaitTimeoutError", "EmailNotVerifiedError", "PlanLimitError", "CapReachedError", "Model", "Page", "Download", "iterate", "to_camel", "to_snake",
+    "TenantSelectionRequired", "WaitTimeoutError", "EmailNotVerifiedError", "PlanLimitError", "CapReachedError", "SetupRequiredError", "Model", "Page", "Download", "iterate", "to_camel", "to_snake",
     "sign_request", "string_to_sign", "body_sha256", "SIGNATURE_ALGORITHM", "RunEvent", "parse_sse", "RUN_STAGES",
     "RESUMABLE_RUN_STAGES",
     "DEFAULT_BASE_URL", "TERMINAL_RUN_STATUSES", "__version__",

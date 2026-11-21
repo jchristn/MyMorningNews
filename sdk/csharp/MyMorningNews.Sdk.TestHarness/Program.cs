@@ -113,6 +113,7 @@ namespace MyMorningNews.Sdk.TestHarness
                 new AnalyticsUsageTest(),
                 new AnalyticsNewReportsTest(),
                 new ModelEndpointsTest(),
+                new SetupTest(),
                 new SearchVoicesTest(),
                 new VaultDevicesTest(),
                 new AccountTest(),

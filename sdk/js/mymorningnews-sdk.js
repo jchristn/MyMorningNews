@@ -692,6 +692,37 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
  * @property {boolean} supportsEmbeddings Serves embeddings.
  * @property {number} timeoutMs Timeout.
  * @property {boolean} active Active.
+ * @property {boolean|null} [lastValidationSucceeded] Whether the endpoint last proved it works: true after a successful
+ *     validation or model call, false after a failed validation, null when never checked or after its connection
+ *     settings changed.
+ */
+
+/**
+ * One thing the workspace needs before people can use it, and whether it is ready.
+ * @typedef {object} SetupCheck
+ * @property {string} key Stable key: `model:{endpointId}` (or `model:none`), `search`, `embeddings`, or `email`.
+ * @property {'Model'|'Search'|'Embeddings'|'Email'} kind What the check covers.
+ * @property {boolean} required Whether the workspace is blocked until this check is ready.
+ * @property {'Ready'|'Missing'|'Unverified'|'Failed'} state State.
+ * @property {string|null} [message] Plain-language detail, such as the provider's error text.
+ * @property {string|null} [resourceId] Model endpoint or search provider ID, when the check is about one.
+ * @property {string|null} [resourceName] Model endpoint or search provider name.
+ * @property {string|null} [provider] Provider name.
+ * @property {string|null} [model] Model name, for model and embedding checks.
+ * @property {string[]} tasks Tasks the endpoint serves, for model checks.
+ * @property {boolean} needsApiKey Whether the provider requires an API key.
+ * @property {boolean} hasApiKey Whether a key is stored or supplied by the platform.
+ * @property {boolean} usesPlatformKey Whether the endpoint uses the hosted service's key, which users never enter.
+ * @property {string|null} [verifiedUtc] When the resource was last checked.
+ */
+
+/**
+ * Whether the workspace has everything it needs, checked with live calls.
+ * @typedef {object} SetupStatusResponse
+ * @property {boolean} ready True when every required check is ready.
+ * @property {boolean} canConfigure Whether the caller can change the configuration (a global or tenant administrator).
+ * @property {SetupCheck[]} checks Checks, required ones first.
+ * @property {string} checkedUtc When the status was computed.
  */
 
 /**
@@ -910,6 +941,26 @@ export class EmailNotVerifiedError extends MyMorningNewsError {
     constructor(message, info) {
         super(message, info);
         this.name = 'EmailNotVerifiedError';
+    }
+}
+
+/**
+ * Raised for HTTP 409 `SetupRequired`: the workspace is missing something it needs, such as a working model key.
+ * Refinement sessions and `requests.create` raise it when the model endpoint for refinement has no key or failed its
+ * last check. `check` names the setup check that is not ready (it matches a `SetupCheck.key`); read `setup.status()`,
+ * and an administrator can fix it with `setup.setModelKey` or `setup.verify`.
+ */
+export class SetupRequiredError extends MyMorningNewsError {
+    /**
+     * Create the error.
+     * @param {string} message Message.
+     * @param {object} info Error details, as for {@link MyMorningNewsError}.
+     */
+    constructor(message, info) {
+        super(message, info);
+        this.name = 'SetupRequiredError';
+        /** @type {string|null} Setup check key from `details.check`, for example `model:mdl_abc`. */
+        this.check = (this.details ?? {}).check ?? null;
     }
 }
 
@@ -3055,9 +3106,10 @@ export class ModelEndpointsResource extends CrudResource {
     }
 
     /**
-     * Validate connectivity, tool support, and embeddings.
+     * Validate connectivity, tool support, and embeddings. `succeeded` is true when every check that applies to the
+     * endpoint passed, and the endpoint's `lastValidationSucceeded` records it.
      * @param {string} id Endpoint.
-     * @returns {Promise<{ reachable: boolean, modelFound: boolean, supportsTools: boolean|null, embeddingDimensions: number|null, messages: string[], validatedUtc: string }>} Validation.
+     * @returns {Promise<{ reachable: boolean, succeeded: boolean, modelFound: boolean, supportsTools: boolean|null, embeddingDimensions: number|null, messages: string[], validatedUtc: string }>} Validation.
      */
     validate(id) {
         return this._req('POST', this._path(id, '/validate'));
@@ -3241,6 +3293,45 @@ export class DevicesResource extends ResourceGroup {
      */
     test(id) {
         return this._req('POST', this._path(id, '/test'));
+    }
+}
+
+/**
+ * Workspace setup: whether the workspace has a chat model with a working key and web search, live checks that prove it,
+ * and storing a model API key. Until `ready` is true, refinement sessions and research requests fail with
+ * {@link SetupRequiredError} (409 `SetupRequired`).
+ */
+export class SetupResource extends ResourceGroup {
+    /**
+     * The workspace setup status. `ready` is false until every required check is `Ready`; `canConfigure` tells whether
+     * the caller (a global or tenant administrator) can change the configuration.
+     * @returns {Promise<SetupStatusResponse>} Status.
+     */
+    status() {
+        return this._req('GET', this._base);
+    }
+
+    /**
+     * Re-check setup with live calls (administrators only, 403 otherwise). Sends a short probe prompt to each chat
+     * endpoint, a test query to each default web search provider, and one embedding request.
+     * @returns {Promise<SetupStatusResponse>} Status after the checks.
+     */
+    verify() {
+        return this._req('POST', this._base + '/verify');
+    }
+
+    /**
+     * Store an API key for a model endpoint and verify it with a live call (administrators only, 403 otherwise). The key
+     * is stored encrypted in the vault, attached to the endpoint, and never returned. 400 `ValidationFailed` for a missing
+     * value, 404 when the endpoint does not exist.
+     * @param {string} modelEndpointId Model endpoint.
+     * @param {string} apiKey API key.
+     * @returns {Promise<SetupStatusResponse>} Status after the key was checked.
+     */
+    setModelKey(modelEndpointId, apiKey) {
+        requireValue(modelEndpointId, 'modelEndpointId');
+        requireValue(apiKey, 'apiKey');
+        return this._req('POST', this._base + '/model-key', { body: { modelEndpointId, apiKey } });
     }
 }
 
@@ -3590,6 +3681,8 @@ export class MyMorningNewsClient {
         this.account = new AccountResource(this, '/v1.0/api/account');
         /** @type {McpServersResource} */
         this.mcpServers = new McpServersResource(this, '/v1.0/api/mcp-servers');
+        /** @type {SetupResource} */
+        this.setup = new SetupResource(this, '/v1.0/api/setup');
         /** @type {SettingsResource} */
         this.settings = new SettingsResource(this, '/v1.0/api/settings');
         /** @type {PublicResource} */
@@ -3976,6 +4069,7 @@ export class MyMorningNewsClient {
         }
         if (response.status === 402 && obj.error === 'CapReached') return new CapReachedError(String(message).trim(), info);
         if (response.status === 403 && obj.error === 'EmailNotVerified') return new EmailNotVerifiedError(String(message).trim(), info);
+        if (response.status === 409 && obj.error === 'SetupRequired') return new SetupRequiredError(String(message).trim(), info);
         return new MyMorningNewsError(String(message).trim(), info);
     }
 

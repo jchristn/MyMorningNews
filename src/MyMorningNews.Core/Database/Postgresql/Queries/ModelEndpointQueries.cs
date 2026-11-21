@@ -15,7 +15,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Column list in model order.
         /// </summary>
-        public const string Columns = "id, tenantid, name, provider, endpoint, credentialid, model, embeddingmodel, embeddingdimensions, supportschat, supportstools, supportsembeddings, temperature, maxtokens, reasoningeffort, contextlength, timeoutms, inputcostpermtok, outputcostpermtok, cachedinputcostpermtok, cachewritecostpermtok, lastvalidatedutc, lastvalidationresult, active, createdutc, lastupdateutc";
+        public const string Columns = "id, tenantid, name, provider, endpoint, credentialid, model, embeddingmodel, embeddingdimensions, supportschat, supportstools, supportsembeddings, temperature, maxtokens, reasoningeffort, contextlength, timeoutms, inputcostpermtok, outputcostpermtok, cachedinputcostpermtok, cachewritecostpermtok, lastvalidatedutc, lastvalidationresult, active, createdutc, lastupdateutc, lastvalidationsucceeded";
 
         /// <summary>
         /// Schema statements: table and indexes. Idempotent.
@@ -59,12 +59,12 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Insert statement with positional parameters in column order.
         /// </summary>
-        public const string Insert = "INSERT INTO modelendpoints (" + Columns + ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26)";
+        public const string Insert = "INSERT INTO modelendpoints (" + Columns + ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27)";
 
         /// <summary>
         /// Update statement. $1 is id, $2 is tenantid, then the mutable columns in model order.
         /// </summary>
-        public const string Update = "UPDATE modelendpoints SET name = $3, provider = $4, endpoint = $5, credentialid = $6, model = $7, embeddingmodel = $8, embeddingdimensions = $9, supportschat = $10, supportstools = $11, supportsembeddings = $12, temperature = $13, maxtokens = $14, reasoningeffort = $15, contextlength = $16, timeoutms = $17, inputcostpermtok = $18, outputcostpermtok = $19, cachedinputcostpermtok = $20, cachewritecostpermtok = $21, lastvalidatedutc = $22, lastvalidationresult = $23, active = $24, lastupdateutc = $25 WHERE id = $1 AND tenantid = $2";
+        public const string Update = "UPDATE modelendpoints SET name = $3, provider = $4, endpoint = $5, credentialid = $6, model = $7, embeddingmodel = $8, embeddingdimensions = $9, supportschat = $10, supportstools = $11, supportsembeddings = $12, temperature = $13, maxtokens = $14, reasoningeffort = $15, contextlength = $16, timeoutms = $17, inputcostpermtok = $18, outputcostpermtok = $19, cachedinputcostpermtok = $20, cachewritecostpermtok = $21, lastvalidatedutc = $22, lastvalidationresult = $23, active = $24, lastupdateutc = $25, lastvalidationsucceeded = $26 WHERE id = $1 AND tenantid = $2";
 
         /// <summary>
         /// Select by identifier within a tenant.

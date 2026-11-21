@@ -59,6 +59,9 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
 
             ModelValidationResponse v = await StepAsync(context, result, "POST validate (unreachable)", () => c.ModelEndpoints.ValidateAsync(e.Id, token)).ConfigureAwait(false);
             Helpers.True(!v.Reachable, "an unreachable endpoint is reported");
+            Helpers.True(!v.Succeeded, "an unreachable endpoint does not succeed");
+            ModelEndpoint checkedEndpoint = await StepAsync(context, result, "GET model endpoint (after validate)", () => c.ModelEndpoints.GetAsync(e.Id, token)).ConfigureAwait(false);
+            Helpers.True(checkedEndpoint.LastValidationSucceeded == false, "the failed validation is recorded");
             await StepAsync(context, result, "GET models (502)", () => Helpers.ExpectErrorAsync(() => c.ModelEndpoints.ListModelsAsync(e.Id, token), 502, "UpstreamError")).ConfigureAwait(false);
             ModelTestResponse t = await StepAsync(context, result, "POST test (unreachable)", () => c.ModelEndpoints.TestAsync(e.Id, new ModelTestRequest { Prompt = "Say hi." }, token)).ConfigureAwait(false);
             Helpers.True(!t.Success && !System.String.IsNullOrEmpty(t.Error), "a failed test carries an error");

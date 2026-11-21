@@ -56,6 +56,7 @@ namespace MyMorningNews.Server.Routes
 
             ResearchRequestCreateRequest? req = await ReadBodyAsync<ResearchRequestCreateRequest>(ctx).ConfigureAwait(false);
             if (req == null) return;
+            await Server.Setup.RequireAsync(tenantId, ModelTaskEnum.Refinement, null, ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 201, await Server.ResearchRequests.CreateAsync(tenantId, user, req, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }
 

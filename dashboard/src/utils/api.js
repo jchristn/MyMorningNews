@@ -50,6 +50,15 @@ export function pagedQuery({ pageNumber, pageSize, sortBy, sortDirection, search
 
 const enc = encodeURIComponent;
 
+// Fired on window when the server refuses work because the tenant's setup (model key, search) is missing or failed.
+// The setup gate listens and re-reads the setup status, so the app sends the user to finish setup.
+export const SETUP_REQUIRED_EVENT = 'setup:required';
+
+// True for the 409 SetupRequired response from refinement, run, retry, and one-time request endpoints.
+export function isSetupRequired(status, body) {
+  return status === 409 && Boolean(body) && typeof body === 'object' && body.error === 'SetupRequired';
+}
+
 // The file name in a Content-Disposition header (filename* first, then filename), or null.
 export function filenameFromDisposition(header) {
   if (!header) return null;
@@ -108,6 +117,9 @@ export class ApiClient {
     }
     if (response.status === 401 && this.token && typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('auth:unauthorized', { detail: { path } }));
+    }
+    if (isSetupRequired(response.status, data) && typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent(SETUP_REQUIRED_EVENT, { detail: { path, message: data.message || null } }));
     }
     if (!response.ok) throw new ApiError(response.status, data && typeof data === 'object' ? data : null, typeof data === 'string' ? data : undefined);
     return data;
@@ -179,6 +191,19 @@ export class ApiClient {
   }
   getOpenApiSpec() {
     return this._request('GET', '/openapi.json');
+  }
+
+  // Setup: the checks that must pass (a verified model key, a working search provider) before the product is usable.
+  getSetupStatus(signal) {
+    return this._request('GET', '/v1.0/api/setup', { signal });
+  }
+  // Administrators only: re-runs every check with live calls.
+  verifySetup() {
+    return this._request('POST', '/v1.0/api/setup/verify');
+  }
+  // Administrators only: stores the key in the vault, attaches it to the endpoint, and verifies it with a live call.
+  setSetupModelKey(modelEndpointId, apiKey) {
+    return this._request('POST', '/v1.0/api/setup/model-key', { body: { modelEndpointId, apiKey } });
   }
 
   // Profile

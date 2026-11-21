@@ -12,8 +12,9 @@ All three:
 
 - Default to `http://127.0.0.1:12100`.
 - Sign in with an email and password, an access key and secret, or signed requests (`MMN1-HMAC-SHA256`, so the secret never travels), and log out.
-- Raise a typed error carrying the HTTP status, error code, message, request ID, and details from the server's `{ error, message, requestId, details }` body. A plan limit (402 `CapReached`) raises `CapReachedException` / `CapReachedError` with the limit's key, limit, and reset time, and a sign-in refused for an unconfirmed email (403 `EmailNotVerified`) raises `EmailNotVerifiedException` / `EmailNotVerifiedError`.
+- Raise a typed error carrying the HTTP status, error code, message, request ID, and details from the server's `{ error, message, requestId, details }` body. A plan limit (402 `CapReached`) raises `CapReachedException` / `CapReachedError` with the limit's key, limit, and reset time, a sign-in refused for an unconfirmed email (403 `EmailNotVerified`) raises `EmailNotVerifiedException` / `EmailNotVerifiedError`, and model work refused because the workspace is not set up (409 `SetupRequired`) raises `SetupRequiredException` / `SetupRequiredError` with the setup check key.
 - Cover hosted accounts: the public sign-up, email verification (and resend), and password reset routes (sent without credentials), plus the usage meter, data export (ZIP), and account deletion for a signed-in user.
+- Cover workspace setup (`GET /v1.0/api/setup`, `POST /v1.0/api/setup/verify`, `POST /v1.0/api/setup/model-key`): C# `Setup.GetStatusAsync`, `VerifyAsync`, `SetModelKeyAsync`; JavaScript `setup.status`, `verify`, `setModelKey`; Python `setup.status`, `verify`, `set_model_key`.
 - Cover the MCP server registry for agentic research (register, test, discover tools, turn tools on or off), topics' `agenticSearch` and `mcpToolIds`, and a run's agentic tool calls.
 - Page through lists with `pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`, and per-resource filters, and offer a helper that walks every page.
 - Download briefings (Markdown, HTML, audio) and stored files, with byte ranges.

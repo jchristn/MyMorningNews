@@ -116,7 +116,7 @@ Every non-2xx response raises a subclass of `MyMorningNewsError`:
 | 402 | `CapReachedError` for `CapReached` (adds `key`, `limit`, and `reset_utc`); `PlanLimitError`, its base class, for any other 402 |
 | 403 | `PermissionDeniedError` (adds `reason` and `required_permission`); `EmailNotVerifiedError`, a subclass, when `login` is refused because a signed-up account has not confirmed its email |
 | 404 | `NotFoundError` |
-| 409 | `ConflictError` (`TenantSelectionRequired` on login) |
+| 409 | `ConflictError` (`TenantSelectionRequired` on login); `SetupRequiredError`, a subclass, for `SetupRequired` from refinement sessions and `requests.create` when the model endpoint for refinement has no key or failed its last check (adds `check`, the setup check key such as `model:mdl_abc`) |
 | 410 | `GoneError` (for example `ArtifactExpired`) |
 | 416 | `RangeNotSatisfiableError` |
 | 429 | `RateLimitError` |
@@ -377,7 +377,7 @@ client.llm_calls.list(run_id=run_id); client.llm_calls.get(call_id)
 ```python
 ep = client.model_endpoints.create(name="Local Ollama", provider="Ollama", endpoint="http://127.0.0.1:12120",
                                    embedding_model="all-minilm", supports_embeddings=True)
-client.model_endpoints.validate(ep.id); client.model_endpoints.models(ep.id)
+client.model_endpoints.validate(ep.id); client.model_endpoints.models(ep.id)   # ModelValidation.succeeded; ModelEndpoint.last_validation_succeeded records it
 client.model_endpoints.test(chat_endpoint_id, prompt="Say ok.")       # may spend tokens
 client.model_assignments.set(task="Scoring", topic_id=tid, model_endpoint_id=ep.id)
 
@@ -408,6 +408,17 @@ anon.account.verify_email(token); anon.account.resend_verification("me@example.c
 anon.account.forgot_password("me@example.com"); anon.account.reset_password(token, "a new passphrase")
 ```
 
+### setup
+
+Workspace setup. `status()` returns a `SetupStatus` (`ready`, `can_configure`, `checks`, `checked_utc`); each `SetupCheck` has a `key` (`model:{endpointId}`, `search`, `embeddings`, or `email`), a `kind` (`SetupCheckKind`), `required`, and a `state` (`SetupCheckState`: `Ready`, `Missing`, `Unverified`, or `Failed`). Until `ready` is True, refinement sessions and research requests raise `SetupRequiredError`. Administrators can call `verify()` (live probes of each chat endpoint, the default search providers, and embeddings) and `set_model_key(model_endpoint_id, api_key)` (stores the key in the vault, attaches it to the endpoint, and checks it live; the key is never returned). Both raise `PermissionDeniedError` for anyone else and both contact the providers.
+
+```python
+status = client.setup.status()
+missing = next((c for c in status.checks if c.kind == "Model" and c.state != "Ready"), None)
+if missing and status.can_configure:
+    client.setup.set_model_key(missing.resource_id, os.environ["ANTHROPIC_API_KEY"])
+```
+
 ### mcp_servers
 
 ```python
@@ -429,7 +440,7 @@ client.request("GET", "/v1.0/api/audit", query={"page_size": 10})
 
 `test_harness.py` runs against a live server. It signs in as the admin user, creates its own data with names starting `SDK-python-`, exercises every resource group (create, read back, update, list contains it, delete, 404 after delete, and typed errors on bad requests), checks the server-sent event parser against canned lines, checks request signing against a known test vector offline and with a temporary credential on the live server (including replay and stale-date refusal), checks that the `demo@mymorningnews` user cannot see the admin's topic, and deletes everything it created. Cases that start research runs or call a paid model are skipped unless you pass `--with-run`.
 
-Three cases cover hosted accounts and the MCP registry. The plan limit case grants a new user the Free plan and checks the usage meter, the ZIP export, `CapReachedError` past the topic limit, and account deletion undone by signing in. The sign-up case opens `Hosting.PublicSignupEnabled` through the settings API and restores the original settings afterward, checks `EmailNotVerifiedError` at sign-in, reads the verification and reset links from the personal tenant's outbox through an access key the administrator creates, and deletes the personal tenant; it skips when an environment variable pins the setting. The MCP case runs a fake MCP server on 127.0.0.1 (it answers initialize and tools/list; no tool is called) and skips discovery when the server cannot reach it, for example from a container.
+The setup cases check `SetupRequiredError` mapping and the `SetupStatus` model offline, then read `setup.status()`, store a key for an unreachable local endpoint (the live check fails, so `last_validation_succeeded` is False), expect `NotFoundError` for an unknown endpoint, and expect `PermissionDeniedError` from `verify` and `set_model_key` for a plain user; the administrator's live `verify()` is not called because it probes the real providers. Three cases cover hosted accounts and the MCP registry. The plan limit case grants a new user the Free plan and checks the usage meter, the ZIP export, `CapReachedError` past the topic limit, and account deletion undone by signing in. The sign-up case opens `Hosting.PublicSignupEnabled` through the settings API and restores the original settings afterward, checks `EmailNotVerifiedError` at sign-in, reads the verification and reset links from the personal tenant's outbox through an access key the administrator creates, and deletes the personal tenant; it skips when an environment variable pins the setting. The MCP case runs a fake MCP server on 127.0.0.1 (it answers initialize and tools/list; no tool is called) and skips discovery when the server cannot reach it, for example from a container.
 
 ```bash
 ./run-tests.sh                       # macOS and Linux

@@ -14,10 +14,11 @@ export {
   fieldErrors,
   isModelError,
   isConflict,
+  isSetupRequired,
 } from './errors';
 export { routes } from './routes';
 export { authApi } from './auth';
-export { accountApi, serverApi, devicesApi, planApi, emailPreferencesApi, feedTokensApi } from './account';
+export { accountApi, serverApi, setupApi, devicesApi, planApi, emailPreferencesApi, feedTokensApi } from './account';
 export {
   topicsApi,
   refinementApi,

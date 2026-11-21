@@ -207,6 +207,11 @@ namespace MyMorningNews.Core.Models
         /// </summary>
         public DateTime LastUpdateUtc { get; set; } = DateTime.UtcNow;
 
+        /// <summary>
+        /// Whether the endpoint last proved it works: true after a successful validation or model call, false after a failed validation, null when never checked or after its connection settings changed.
+        /// </summary>
+        public bool? LastValidationSucceeded { get; set; } = null;
+
         #endregion
 
         #region Private-Members

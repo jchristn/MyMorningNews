@@ -49,7 +49,8 @@
     "tooMany": "Solicitações demais. Aguarde um momento e tente novamente.",
     "unauthorized": "Sua sessão não é mais válida. Entre novamente.",
     "capReached": "Limite do plano atingido.",
-    "egressBlocked": "Esse endereço está em uma rede privada, o que este servidor não permite."
+    "egressBlocked": "Esse endereço está em uma rede privada, o que este servidor não permite.",
+    "setupRequired": "A configuração não foi concluída."
   },
   "access": {
     "deniedTitle": "Acesso negado",
@@ -186,7 +187,8 @@
       "insightsOverview": "Visão geral",
       "plans": "Planos",
       "emailInsights": "Entrega de e-mail",
-      "mcp": "Cliente MCP"
+      "mcp": "Cliente MCP",
+      "setup": "Configuração"
     }
   },
   "routes": {
@@ -315,6 +317,9 @@
     },
     "mcp": {
       "summary": "Conecte o Claude Code ou outro cliente MCP à sua pesquisa"
+    },
+    "setup": {
+      "summary": "O que o My Morning News precisa para funcionar e se cada parte funciona"
     }
   },
   "topbar": {
@@ -4216,5 +4221,84 @@
     "askAdmin": "Somente um administrador do locatário pode adicionar uma chave. Peça ao seu para corrigir isso.",
     "badge": "Sem chave de API",
     "fixOwnKey": "Usar sua própria chave de API para {name}"
+  },
+  "setup": {
+    "summary": "Adicione e verifique o que o My Morning News precisa: uma chave de API do modelo e um provedor de pesquisa que funcione.",
+    "intro": {
+      "title": "Conclua a configuração primeiro.",
+      "message": "Temas, execuções de pesquisa e resumos ficam bloqueados até que todas as verificações obrigatórias abaixo estejam prontas."
+    },
+    "blockedNotice": "Uma ação foi interrompida porque a configuração não foi concluída.",
+    "verifyAll": "Verificar tudo",
+    "verifying": "Verificando com chamadas ao vivo. Isso pode levar alguns segundos.",
+    "state": {
+      "Ready": "Pronto",
+      "Missing": "Ausente",
+      "Unverified": "Não verificado",
+      "Failed": "Com falha"
+    },
+    "kind": {
+      "Model": "Modelo",
+      "Search": "Pesquisa",
+      "Embeddings": "Embeddings",
+      "Email": "E-mail"
+    },
+    "check": {
+      "title": "{kind}: {name}",
+      "providerModel": "{provider}, modelo {model}",
+      "provider": "Provedor: {provider}",
+      "tasks": "Usado para {tasks}",
+      "verified": "Última verificação: {time}",
+      "platformKey": "Este endpoint usa a chave de modelo compartilhada do serviço, gerenciada pelo operador do servidor, então não há chave para informar aqui.",
+      "verify": "Verificar",
+      "retry": "Tentar novamente",
+      "openSearch": "Abrir provedores de pesquisa",
+      "openEndpoint": "Abrir {name} na página Modelos de IA",
+      "openModels": "Abrir a página Modelos de IA"
+    },
+    "key": {
+      "label": "Chave de API para {name}",
+      "help": "Armazenada com criptografia nas suas credenciais armazenadas, vinculada a este endpoint e verificada com uma chamada ao vivo.",
+      "save": "Salvar e verificar",
+      "saving": "Salvando a chave e verificando com uma chamada ao vivo. Isso pode levar alguns segundos."
+    },
+    "required": {
+      "heading": "Obrigatórias",
+      "none": "O servidor não informou verificações obrigatórias.",
+      "open": "Concluir a configuração",
+      "askAdmin": "Um administrador precisa concluir a configuração para que isso funcione."
+    },
+    "optional": {
+      "heading": "Opcionais",
+      "note": "Verificações opcionais nunca bloqueiam a pesquisa. Elas ativam extras como correspondência semântica e envio por e-mail."
+    },
+    "help": {
+      "title": "Outras formas de configurar",
+      "env": "Em instalações próprias, você também pode colocar a chave em docker/.env como MYMORNINGNEWS_ANTHROPIC_API_KEY e reiniciar o servidor.",
+      "models": "Use outro provedor de modelos na página Modelos de IA"
+    },
+    "ready": {
+      "title": "Tudo pronto",
+      "message": "Todas as verificações obrigatórias passaram. Você já pode criar temas e executar pesquisas.",
+      "newTopic": "Criar um tema",
+      "topics": "Ir para temas"
+    },
+    "gate": {
+      "title": "Este espaço de trabalho não está pronto",
+      "message": "Um administrador precisa adicionar e verificar a chave de API do modelo antes que alguém possa usar o My Morning News.",
+      "askAdmin": "Peça ao seu administrador para abrir Configuração no painel e depois verifique novamente aqui.",
+      "checkAgain": "Verificar novamente",
+      "checking": "Verificando",
+      "signOut": "Sair",
+      "checked": "Última verificação: {time}"
+    },
+    "loadError": {
+      "title": "Não foi possível carregar o status da configuração",
+      "message": "O My Morning News verifica se este espaço de trabalho está configurado antes de abrir, e essa verificação não foi concluída. Tente novamente em instantes."
+    },
+    "nav": {
+      "callout": "Concluir a configuração",
+      "blocked": "{name} abre depois que a configuração for concluída"
+    }
   }
 }

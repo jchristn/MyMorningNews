@@ -228,6 +228,10 @@ namespace MyMorningNews.Core.Database.Postgresql
             {
                 "ALTER TABLE predictions ADD COLUMN IF NOT EXISTS duenotifiedutc TIMESTAMPTZ",
                 "CREATE INDEX IF NOT EXISTS ix_predictions_due ON predictions (horizonutc) WHERE status = 'Open' AND duenotifiedutc IS NULL"
+            }),
+            new SchemaMigration(19, "Model endpoint verification", new List<string>
+            {
+                "ALTER TABLE modelendpoints ADD COLUMN IF NOT EXISTS lastvalidationsucceeded BOOLEAN"
             })
         };
 

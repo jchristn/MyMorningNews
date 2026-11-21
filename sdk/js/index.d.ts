@@ -184,6 +184,13 @@ export declare class EmailNotVerifiedError extends MyMorningNewsError {
     constructor(message: string, info: ErrorInfo);
 }
 
+/** HTTP 409 `SetupRequired`: the workspace is missing something it needs, such as a working model key. */
+export declare class SetupRequiredError extends MyMorningNewsError {
+    constructor(message: string, info: ErrorInfo);
+    /** Setup check key from `details.check`, for example `model:mdl_abc`; matches a `SetupCheck.key`. */
+    check: string | null;
+}
+
 // ---------------------------------------------------------------------------------------------------------------------
 // Models
 // ---------------------------------------------------------------------------------------------------------------------
@@ -372,6 +379,44 @@ export interface UsageMeter {
     audioMinutesMax?: number | null;
     audioEnabled: boolean;
     customEndpoints: boolean;
+}
+
+export type SetupCheckKind = 'Model' | 'Search' | 'Embeddings' | 'Email';
+export type SetupCheckState = 'Ready' | 'Missing' | 'Unverified' | 'Failed';
+
+/** One thing the workspace needs before people can use it, and whether it is ready. */
+export interface SetupCheck {
+    /** Stable key: `model:{endpointId}` (or `model:none`), `search`, `embeddings`, or `email`. */
+    key: string;
+    kind: SetupCheckKind;
+    /** Whether the workspace is blocked until this check is ready. */
+    required: boolean;
+    state: SetupCheckState;
+    /** Plain-language detail, such as the provider's error text. */
+    message?: string | null;
+    /** Model endpoint or search provider ID, when the check is about one. */
+    resourceId?: string | null;
+    resourceName?: string | null;
+    provider?: string | null;
+    model?: string | null;
+    /** Tasks the endpoint serves, for model checks. */
+    tasks: string[];
+    needsApiKey: boolean;
+    hasApiKey: boolean;
+    /** Whether the endpoint uses the hosted service's key, which users never enter. */
+    usesPlatformKey: boolean;
+    verifiedUtc?: string | null;
+}
+
+/** Whether the workspace has everything it needs, checked with live calls. */
+export interface SetupStatusResponse {
+    /** True when every required check is ready. */
+    ready: boolean;
+    /** Whether the caller can change the configuration (a global or tenant administrator). */
+    canConfigure: boolean;
+    /** Checks, required ones first. */
+    checks: SetupCheck[];
+    checkedUtc: string;
 }
 
 export interface SignupRequest {
@@ -986,10 +1031,14 @@ export interface ModelEndpoint extends Record_ {
     cacheWriteCostPerMTok: number | null;
     lastValidatedUtc: string | null;
     lastValidationResult: string | null;
+    /** True after a successful validation or model call, false after a failed validation, null when never checked or after its connection settings changed. */
+    lastValidationSucceeded: boolean | null;
 }
 
 export interface ModelValidation {
     reachable: boolean;
+    /** Whether every check that applies to the endpoint passed (chat when it has a chat model, embeddings when it has an embedding model). */
+    succeeded: boolean;
     modelFound: boolean;
     supportsTools: boolean | null;
     embeddingDimensions: number | null;
@@ -1595,6 +1644,14 @@ export declare class AccountResource extends ResourceGroup {
     resetPassword(token: string, password: string): Promise<{ reset: boolean; email: string }>;
 }
 
+export declare class SetupResource extends ResourceGroup {
+    status(): Promise<SetupStatusResponse>;
+    /** Administrators only (403 otherwise). Live probes of each chat endpoint, the default search providers, and embeddings. */
+    verify(): Promise<SetupStatusResponse>;
+    /** Administrators only (403 otherwise). Stores the key in the vault, attaches it to the endpoint, and checks it live; 404 for an unknown endpoint. */
+    setModelKey(modelEndpointId: string, apiKey: string): Promise<SetupStatusResponse>;
+}
+
 export declare class McpServersResource extends CrudResource<McpServer, McpServerDetail, McpServerUpsertRequest> {
     list(options?: ListOptions & { enabled?: boolean }): Promise<EnumerationResult<McpServer>>;
     /** HTTP 200 even when the connection fails (`success: false`). */
@@ -1663,6 +1720,7 @@ export declare class MyMorningNewsClient {
     readonly devices: DevicesResource;
     readonly account: AccountResource;
     readonly mcpServers: McpServersResource;
+    readonly setup: SetupResource;
     readonly settings: SettingsResource;
     readonly publicApi: PublicResource;
 

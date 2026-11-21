@@ -49,7 +49,8 @@
     "tooMany": "Too many requests. Wait a moment and try again.",
     "unauthorized": "Your session is no longer valid. Sign in again.",
     "capReached": "Plan limit reached.",
-    "egressBlocked": "That address is on a private network, which this server does not allow."
+    "egressBlocked": "That address is on a private network, which this server does not allow.",
+    "setupRequired": "Setup is not finished."
   },
   "access": {
     "deniedTitle": "Access denied",
@@ -186,7 +187,8 @@
       "insightsOverview": "Overview",
       "plans": "Plans",
       "emailInsights": "Email delivery",
-      "mcp": "MCP client"
+      "mcp": "MCP client",
+      "setup": "Setup"
     }
   },
   "routes": {
@@ -315,6 +317,9 @@
     },
     "mcp": {
       "summary": "Connect Claude Code or another MCP client to your research"
+    },
+    "setup": {
+      "summary": "What My Morning News needs to run, and whether each part works"
     }
   },
   "topbar": {
@@ -4216,5 +4221,84 @@
     "askAdmin": "Only a tenant administrator can add a key. Ask yours to fix it.",
     "badge": "No API key",
     "fixOwnKey": "Use your own API key for {name}"
+  },
+  "setup": {
+    "summary": "Add and verify what My Morning News needs: a model API key and a working search provider.",
+    "intro": {
+      "title": "Finish setup first.",
+      "message": "Topics, research runs, and briefings stay locked until every required check below is ready."
+    },
+    "blockedNotice": "An action was stopped because setup is not finished.",
+    "verifyAll": "Verify all",
+    "verifying": "Checking with live calls. This can take several seconds.",
+    "state": {
+      "Ready": "Ready",
+      "Missing": "Missing",
+      "Unverified": "Not verified",
+      "Failed": "Failed"
+    },
+    "kind": {
+      "Model": "Model",
+      "Search": "Search",
+      "Embeddings": "Embeddings",
+      "Email": "Email"
+    },
+    "check": {
+      "title": "{kind}: {name}",
+      "providerModel": "{provider}, model {model}",
+      "provider": "Provider: {provider}",
+      "tasks": "Used for {tasks}",
+      "verified": "Last verified {time}",
+      "platformKey": "This endpoint uses the service's shared model key, which the server operator manages, so there is no key to enter here.",
+      "verify": "Verify",
+      "retry": "Try again",
+      "openSearch": "Open search providers",
+      "openEndpoint": "Open {name} on the Models page",
+      "openModels": "Open the Models page"
+    },
+    "key": {
+      "label": "API key for {name}",
+      "help": "Stored encrypted with your stored credentials, attached to this endpoint, and checked with a live call.",
+      "save": "Save and verify",
+      "saving": "Saving the key and checking it with a live call. This can take several seconds."
+    },
+    "required": {
+      "heading": "Required",
+      "none": "The server reported no required checks.",
+      "open": "Finish setup",
+      "askAdmin": "An administrator needs to finish setup before this works."
+    },
+    "optional": {
+      "heading": "Optional",
+      "note": "Optional checks never block research. They turn on extras such as semantic matching and email delivery."
+    },
+    "help": {
+      "title": "Other ways to set it up",
+      "env": "Self-hosted installs can also put the key in docker/.env as MYMORNINGNEWS_ANTHROPIC_API_KEY and restart the server.",
+      "models": "Use a different model provider on the Models page"
+    },
+    "ready": {
+      "title": "You're ready",
+      "message": "Every required check passed. You can create topics and run research now.",
+      "newTopic": "Create a topic",
+      "topics": "Go to topics"
+    },
+    "gate": {
+      "title": "This workspace is not ready",
+      "message": "An administrator needs to add and verify the model API key before anyone can use My Morning News.",
+      "askAdmin": "Ask your administrator to open Setup in the dashboard, then check again here.",
+      "checkAgain": "Check again",
+      "checking": "Checking",
+      "signOut": "Sign out",
+      "checked": "Last checked {time}"
+    },
+    "loadError": {
+      "title": "Setup status could not be loaded",
+      "message": "My Morning News checks that this workspace is set up before it opens, and that check did not complete. Try again in a moment."
+    },
+    "nav": {
+      "callout": "Finish setup",
+      "blocked": "{name} opens after setup is finished"
+    }
   }
 }

@@ -16,6 +16,17 @@ export const ADMIN_DETAILS = {
 
 export const MEMBER_DETAILS = { ...ADMIN_DETAILS, userId: 'usr_member', email: 'member@mymorningnews', isAdmin: false, isTenantAdmin: false };
 
+// A setup status where every required check passed, so views render the product. Tests of the gate override it.
+export const READY_SETUP = {
+  ready: true,
+  canConfigure: true,
+  checkedUtc: '2026-11-20T08:00:00Z',
+  checks: [
+    { key: 'model:mep_1', kind: 'Model', required: true, state: 'Ready', message: null, resourceId: 'mep_1', resourceName: 'Anthropic', provider: 'Anthropic', model: 'claude-opus-5-5', tasks: ['Refinement', 'Synthesis'], needsApiKey: true, hasApiKey: true, usesPlatformKey: false, verifiedUtc: '2026-11-20T08:00:00Z' },
+    { key: 'search', kind: 'Search', required: true, state: 'Ready', message: null, resourceId: 'srp_1', resourceName: 'SearXNG', provider: 'Searxng', model: null, tasks: [], needsApiKey: false, hasApiKey: false, usesPlatformKey: false, verifiedUtc: '2026-11-20T08:00:00Z' }
+  ]
+};
+
 export const EMPTY_PAGE = { items: [], pageNumber: 1, pageSize: 10, totalCount: 0, totalPages: 0, durationMs: 1 };
 
 // A client whose named methods are spies. Methods not given in overrides resolve to an empty page so any view renders.
@@ -27,6 +38,7 @@ export function fakeClient(overrides = {}) {
     healthCheck: vi.fn(async () => ({ status: 'Healthy', version: '0.1.0-alpha', uptimeSeconds: 5, components: { database: 'Healthy' } })),
     getRequestHistorySummary: vi.fn(async () => ({ totalCount: 0, totalSuccess: 0, totalFailure: 0, averageDurationMs: 0, buckets: [] })),
     getServerInfo: vi.fn(async () => ({ product: 'My Morning News', version: '0.1.0-alpha', uptimeSeconds: 5, externalServices: [] })),
+    getSetupStatus: vi.fn(async () => READY_SETUP),
     ...overrides
   };
   return new Proxy(base, {

@@ -181,6 +181,11 @@ namespace MyMorningNews.Server
         public PredictionNoticeService PredictionNotices { get; set; } = null!;
 
         /// <summary>
+        /// Workspace setup checks: model keys and web search, verified with live calls.
+        /// </summary>
+        public SetupService Setup { get; set; } = null!;
+
+        /// <summary>
         /// Client for registered MCP servers.
         /// </summary>
         public MyMorningNews.Core.Mcp.McpClientService Mcp { get; set; } = null!;

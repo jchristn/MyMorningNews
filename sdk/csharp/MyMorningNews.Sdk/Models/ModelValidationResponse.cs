@@ -17,6 +17,11 @@ namespace MyMorningNews.Sdk.Models
         public bool Reachable { get; set; } = false;
 
         /// <summary>
+        /// Whether every check that applies to the endpoint passed (chat when it has a chat model, embeddings when it has an embedding model). Default false.
+        /// </summary>
+        public bool Succeeded { get; set; } = false;
+
+        /// <summary>
         /// Configured chat model exists (null model counts as found). Default false.
         /// </summary>
         public bool ModelFound { get; set; } = false;

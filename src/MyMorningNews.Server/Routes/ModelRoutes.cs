@@ -108,12 +108,26 @@ namespace MyMorningNews.Server.Routes
             ModelEndpoint? e = await LoadAsync(ctx).ConfigureAwait(false);
             if (e == null) return;
             if (!String.IsNullOrWhiteSpace(req.Name)) e.Name = req.Name.Trim();
+            ModelProviderEnum provider = e.Provider;
+            string? endpoint = e.Endpoint;
+            string? credential = e.CredentialId;
+            string? model = e.Model;
+            string? embeddingModel = e.EmbeddingModel;
             if (req.Provider.HasValue) e.Provider = req.Provider.Value;
             string? error = await ApplyAsync(e, req, e.TenantId, ctx).ConfigureAwait(false);
             if (error != null)
             {
                 await SendErrorAsync(ctx, 400, "ValidationFailed", error).ConfigureAwait(false);
                 return;
+            }
+
+            if (provider != e.Provider
+                || !String.Equals(endpoint, e.Endpoint, StringComparison.Ordinal)
+                || !String.Equals(credential, e.CredentialId, StringComparison.Ordinal)
+                || !String.Equals(model, e.Model, StringComparison.Ordinal)
+                || !String.Equals(embeddingModel, e.EmbeddingModel, StringComparison.Ordinal))
+            {
+                e.LastValidationSucceeded = null;
             }
 
             e = await Server.Database.ModelEndpoints.UpdateAsync(e, ctx.Token).ConfigureAwait(false);

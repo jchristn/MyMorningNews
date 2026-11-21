@@ -6,6 +6,7 @@ import {
   CalendarClock,
   ChartColumn,
   ChartPie,
+  ClipboardCheck,
   CirclePlay,
   Coins,
   Compass,
@@ -125,6 +126,7 @@ export const NAV_GROUPS = [
   {
     key: 'system',
     items: [
+      { path: 'setup', key: 'setup', icon: ClipboardCheck, access: 'tenantAdmin' },
       { path: 'settings', key: 'settings', icon: Settings, access: 'admin' },
       { path: 'server-info', key: 'serverInfo', icon: Info, access: 'all' },
       { path: 'profile', key: 'profile', icon: User, access: 'all' }
@@ -133,6 +135,15 @@ export const NAV_GROUPS = [
 ];
 
 export const ALL_ROUTES = NAV_GROUPS.flatMap((g) => g.items.map((item) => ({ ...item, group: g.key })));
+
+// While the tenant's setup is not ready, administrators can open only these routes: the Setup screen and the
+// configuration it may send them to (model endpoints, the credential vault, search providers, settings), plus their
+// profile. Every other route redirects to the Setup screen.
+export const SETUP_ALLOWED_ROUTES = ['setup', 'models', 'vault', 'searchProviders', 'settings', 'profile'];
+
+export function allowedBeforeSetup(item) {
+  return Boolean(item) && SETUP_ALLOWED_ROUTES.includes(item.key);
+}
 
 export function canAccess(item, auth) {
   if (!item || item.access === 'all') return true;

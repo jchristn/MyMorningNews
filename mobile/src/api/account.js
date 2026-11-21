@@ -21,6 +21,15 @@ export const serverApi = {
   health: (client) => client.request('GET', routes.health, { auth: false }),
 };
 
+/**
+ * Setup status (`GET /v1.0/api/setup`): `{ ready, canConfigure, checkedUtc, checks: [{ key, kind, required, state,
+ * message, resourceName, ... }] }`. Nothing in the product works until `ready`; administrators finish setup in the web
+ * dashboard (the app does not take keys).
+ */
+export const setupApi = {
+  status: (client) => client.get(routes.setup),
+};
+
 /** Push devices (contract C). */
 export const devicesApi = {
   register: (client, { expoPushToken, platform, name, locale }) => client.post(routes.devices, { expoPushToken, platform, name, locale }),

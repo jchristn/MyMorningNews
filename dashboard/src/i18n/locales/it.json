@@ -49,7 +49,8 @@
     "tooMany": "Troppe richieste. Attendi un momento e riprova.",
     "unauthorized": "La tua sessione non è più valida. Accedi di nuovo.",
     "capReached": "Limite del piano raggiunto.",
-    "egressBlocked": "Quell’indirizzo si trova su una rete privata, che questo server non consente."
+    "egressBlocked": "Quell’indirizzo si trova su una rete privata, che questo server non consente.",
+    "setupRequired": "La configurazione non è completa."
   },
   "access": {
     "deniedTitle": "Accesso negato",
@@ -186,7 +187,8 @@
       "insightsOverview": "Panoramica",
       "plans": "Piani",
       "emailInsights": "Consegna email",
-      "mcp": "Client MCP"
+      "mcp": "Client MCP",
+      "setup": "Configurazione"
     }
   },
   "routes": {
@@ -315,6 +317,9 @@
     },
     "mcp": {
       "summary": "Collega Claude Code o un altro client MCP alla tua ricerca"
+    },
+    "setup": {
+      "summary": "Ciò che serve a My Morning News per funzionare e lo stato di ogni parte"
     }
   },
   "topbar": {
@@ -4216,5 +4221,84 @@
     "askAdmin": "Solo un amministratore del tenant può aggiungere una chiave. Chiedi al tuo di risolvere il problema.",
     "badge": "Nessuna chiave API",
     "fixOwnKey": "Usa la tua chiave API per {name}"
+  },
+  "setup": {
+    "summary": "Aggiungi e verifica ciò che serve a My Morning News: una chiave API del modello e un provider di ricerca funzionante.",
+    "intro": {
+      "title": "Completa prima la configurazione.",
+      "message": "Argomenti, ricerche e riepiloghi restano bloccati finché tutti i controlli obbligatori qui sotto non sono pronti."
+    },
+    "blockedNotice": "Un’azione è stata bloccata perché la configurazione non è completa.",
+    "verifyAll": "Verifica tutto",
+    "verifying": "Verifica con chiamate reali in corso. Può richiedere alcuni secondi.",
+    "state": {
+      "Ready": "Pronto",
+      "Missing": "Mancante",
+      "Unverified": "Non verificato",
+      "Failed": "Non riuscito"
+    },
+    "kind": {
+      "Model": "Modello",
+      "Search": "Ricerca",
+      "Embeddings": "Embedding",
+      "Email": "Email"
+    },
+    "check": {
+      "title": "{kind}: {name}",
+      "providerModel": "{provider}, modello {model}",
+      "provider": "Provider: {provider}",
+      "tasks": "Usato per {tasks}",
+      "verified": "Ultima verifica: {time}",
+      "platformKey": "Questo endpoint usa la chiave del modello condivisa del servizio, gestita dall’operatore del server, quindi qui non c’è alcuna chiave da inserire.",
+      "verify": "Verifica",
+      "retry": "Riprova",
+      "openSearch": "Apri i provider di ricerca",
+      "openEndpoint": "Apri {name} nella pagina Modelli di IA",
+      "openModels": "Apri la pagina Modelli di IA"
+    },
+    "key": {
+      "label": "Chiave API per {name}",
+      "help": "Salvata cifrata nelle tue credenziali salvate, collegata a questo endpoint e verificata con una chiamata reale.",
+      "save": "Salva e verifica",
+      "saving": "Salvataggio della chiave e verifica con una chiamata reale. Può richiedere alcuni secondi."
+    },
+    "required": {
+      "heading": "Obbligatori",
+      "none": "Il server non ha segnalato controlli obbligatori.",
+      "open": "Completa la configurazione",
+      "askAdmin": "Un amministratore deve completare la configurazione perché funzioni."
+    },
+    "optional": {
+      "heading": "Facoltativi",
+      "note": "I controlli facoltativi non bloccano mai la ricerca. Attivano funzioni extra come la corrispondenza semantica e l’invio via email."
+    },
+    "help": {
+      "title": "Altri modi per configurarlo",
+      "env": "Nelle installazioni self-hosted puoi anche inserire la chiave in docker/.env come MYMORNINGNEWS_ANTHROPIC_API_KEY e riavviare il server.",
+      "models": "Usa un altro provider di modelli nella pagina Modelli di IA"
+    },
+    "ready": {
+      "title": "Tutto pronto",
+      "message": "Tutti i controlli obbligatori sono stati superati. Ora puoi creare argomenti ed eseguire ricerche.",
+      "newTopic": "Crea un argomento",
+      "topics": "Vai agli argomenti"
+    },
+    "gate": {
+      "title": "Questo spazio di lavoro non è pronto",
+      "message": "Un amministratore deve aggiungere e verificare la chiave API del modello prima che chiunque possa usare My Morning News.",
+      "askAdmin": "Chiedi al tuo amministratore di aprire Configurazione nella dashboard, poi controlla di nuovo qui.",
+      "checkAgain": "Controlla di nuovo",
+      "checking": "Controllo in corso",
+      "signOut": "Esci",
+      "checked": "Ultimo controllo: {time}"
+    },
+    "loadError": {
+      "title": "Impossibile caricare lo stato della configurazione",
+      "message": "My Morning News controlla che questo spazio di lavoro sia configurato prima di aprirsi, e il controllo non è stato completato. Riprova tra poco."
+    },
+    "nav": {
+      "callout": "Completa la configurazione",
+      "blocked": "{name} si apre al termine della configurazione"
+    }
   }
 }

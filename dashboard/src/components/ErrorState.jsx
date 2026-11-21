@@ -1,7 +1,24 @@
 import PropTypes from 'prop-types';
 import { RefreshCw, TriangleAlert, X } from 'lucide-react';
+import { Link, useInRouterContext } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { describeError } from '../utils/errors.js';
+import { useOptionalAuth } from '../context/AuthContext.jsx';
+import { describeError, isSetupRequiredError } from '../utils/errors.js';
+
+// The way forward from a SetupRequired refusal: administrators open the Setup screen, everyone else asks one.
+function SetupRequiredHint() {
+  const { t } = useTranslation();
+  const auth = useOptionalAuth();
+  const inRouter = useInRouterContext();
+  if (auth && auth.isTenantAdmin && inRouter) {
+    return (
+      <Link to="/dashboard/setup" className="small" data-testid="setup-required-link">
+        {t('setup.required.open')}
+      </Link>
+    );
+  }
+  return <span className="muted small">{t('setup.required.askAdmin')}</span>;
+}
 
 // Error presenter with retry and the request ID. inline renders a dismissible banner instead of a block.
 export default function ErrorState({ error, onRetry, inline = false, onDismiss }) {
@@ -14,6 +31,7 @@ export default function ErrorState({ error, onRetry, inline = false, onDismiss }
       <div className="error-text">
         <strong>{info.title}</strong>
         <span>{info.message}</span>
+        {isSetupRequiredError(error) ? <SetupRequiredHint /> : null}
         {info.requestId ? (
           <span className="muted small">
             {t('errors.requestId')} <code>{info.requestId}</code>

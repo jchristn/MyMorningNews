@@ -49,7 +49,8 @@
     "tooMany": "Terlalu banyak permintaan. Tunggu sebentar dan cuba lagi.",
     "unauthorized": "Sesi anda tidak lagi sah. Log masuk semula.",
     "capReached": "Had pelan telah dicapai.",
-    "egressBlocked": "Alamat itu berada dalam rangkaian persendirian, yang tidak dibenarkan oleh pelayan ini."
+    "egressBlocked": "Alamat itu berada dalam rangkaian persendirian, yang tidak dibenarkan oleh pelayan ini.",
+    "setupRequired": "Persediaan belum selesai."
   },
   "access": {
     "deniedTitle": "Akses ditolak",
@@ -186,7 +187,8 @@
       "insightsOverview": "Gambaran keseluruhan",
       "plans": "Pelan",
       "emailInsights": "Penghantaran e-mel",
-      "mcp": "Klien MCP"
+      "mcp": "Klien MCP",
+      "setup": "Persediaan"
     }
   },
   "routes": {
@@ -315,6 +317,9 @@
     },
     "mcp": {
       "summary": "Sambungkan Claude Code atau klien MCP lain kepada penyelidikan anda"
+    },
+    "setup": {
+      "summary": "Perkara yang diperlukan oleh My Morning News untuk berjalan, dan sama ada setiap bahagian berfungsi"
     }
   },
   "topbar": {
@@ -4216,5 +4221,84 @@
     "askAdmin": "Hanya pentadbir penyewa boleh menambah kunci. Minta pentadbir anda membaikinya.",
     "badge": "Tiada kunci API",
     "fixOwnKey": "Gunakan kunci API anda sendiri untuk {name}"
+  },
+  "setup": {
+    "summary": "Tambah dan sahkan perkara yang diperlukan oleh My Morning News: kunci API model dan penyedia carian yang berfungsi.",
+    "intro": {
+      "title": "Selesaikan persediaan dahulu.",
+      "message": "Topik, larian penyelidikan dan taklimat kekal dikunci sehingga setiap semakan wajib di bawah sedia."
+    },
+    "blockedNotice": "Satu tindakan dihentikan kerana persediaan belum selesai.",
+    "verifyAll": "Sahkan semua",
+    "verifying": "Menyemak dengan panggilan langsung. Ini mungkin mengambil masa beberapa saat.",
+    "state": {
+      "Ready": "Sedia",
+      "Missing": "Tiada",
+      "Unverified": "Belum disahkan",
+      "Failed": "Gagal"
+    },
+    "kind": {
+      "Model": "Model",
+      "Search": "Carian",
+      "Embeddings": "Embedding",
+      "Email": "E-mel"
+    },
+    "check": {
+      "title": "{kind}: {name}",
+      "providerModel": "{provider}, model {model}",
+      "provider": "Penyedia: {provider}",
+      "tasks": "Digunakan untuk {tasks}",
+      "verified": "Kali terakhir disahkan: {time}",
+      "platformKey": "Titik akhir ini menggunakan kunci model kongsi perkhidmatan, yang diurus oleh pengendali pelayan, jadi tiada kunci untuk dimasukkan di sini.",
+      "verify": "Sahkan",
+      "retry": "Cuba lagi",
+      "openSearch": "Buka penyedia carian",
+      "openEndpoint": "Buka {name} di halaman Model",
+      "openModels": "Buka halaman Model"
+    },
+    "key": {
+      "label": "Kunci API untuk {name}",
+      "help": "Disimpan secara tersulit bersama kelayakan tersimpan anda, dipautkan pada titik akhir ini dan disemak dengan panggilan langsung.",
+      "save": "Simpan dan sahkan",
+      "saving": "Menyimpan kunci dan menyemaknya dengan panggilan langsung. Ini mungkin mengambil masa beberapa saat."
+    },
+    "required": {
+      "heading": "Wajib",
+      "none": "Pelayan tidak melaporkan sebarang semakan wajib.",
+      "open": "Selesaikan persediaan",
+      "askAdmin": "Pentadbir perlu menyelesaikan persediaan sebelum ini berfungsi."
+    },
+    "optional": {
+      "heading": "Pilihan",
+      "note": "Semakan pilihan tidak pernah menyekat penyelidikan. Ia menghidupkan ciri tambahan seperti padanan semantik dan penghantaran e-mel."
+    },
+    "help": {
+      "title": "Cara lain untuk menyediakannya",
+      "env": "Pemasangan hos sendiri juga boleh meletakkan kunci dalam docker/.env sebagai MYMORNINGNEWS_ANTHROPIC_API_KEY dan memulakan semula pelayan.",
+      "models": "Gunakan penyedia model lain di halaman Model"
+    },
+    "ready": {
+      "title": "Anda sudah sedia",
+      "message": "Setiap semakan wajib telah lulus. Anda kini boleh mencipta topik dan menjalankan penyelidikan.",
+      "newTopic": "Cipta topik",
+      "topics": "Pergi ke topik"
+    },
+    "gate": {
+      "title": "Ruang kerja ini belum sedia",
+      "message": "Pentadbir perlu menambah dan mengesahkan kunci API model sebelum sesiapa boleh menggunakan My Morning News.",
+      "askAdmin": "Minta pentadbir anda membuka Persediaan dalam papan pemuka, kemudian semak semula di sini.",
+      "checkAgain": "Semak semula",
+      "checking": "Menyemak",
+      "signOut": "Log keluar",
+      "checked": "Kali terakhir disemak: {time}"
+    },
+    "loadError": {
+      "title": "Status persediaan tidak dapat dimuatkan",
+      "message": "My Morning News menyemak bahawa ruang kerja ini telah disediakan sebelum dibuka, dan semakan itu tidak selesai. Cuba lagi sebentar lagi."
+    },
+    "nav": {
+      "callout": "Selesaikan persediaan",
+      "blocked": "{name} dibuka selepas persediaan selesai"
+    }
   }
 }

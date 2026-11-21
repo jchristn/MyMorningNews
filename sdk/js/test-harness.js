@@ -16,7 +16,7 @@
 
 import { createServer } from 'node:http';
 import {
-    MyMorningNewsClient, MyMorningNewsError, TenantSelectionRequiredError, CapReachedError, EmailNotVerifiedError, RunsResource, paginate,
+    MyMorningNewsClient, MyMorningNewsError, TenantSelectionRequiredError, CapReachedError, EmailNotVerifiedError, SetupRequiredError, RunsResource, paginate,
     SDK_VERSION, DEFAULT_BASE_URL, signRequest, stringToSign, SIGNATURE_ALGORITHM, parseServerSentEvents
 } from './mymorningnews-sdk.js';
 
@@ -667,7 +667,15 @@ async function main() {
     // ---- Refinement ------------------------------------------------------------------------------------------------
 
     await run('refinement.start, get, list, abandon', async () => {
-        const state = await client.refinement.start({ seedText: name('refinement') + ' covering open source vector databases', goal: 'SDK harness' });
+        let state;
+        try {
+            state = await client.refinement.start({ seedText: name('refinement') + ' covering open source vector databases', goal: 'SDK harness' });
+        } catch (err) {
+            if (!(err instanceof SetupRequiredError)) throw err;
+            assert(typeof err.check === 'string' && err.check.length > 0, 'SetupRequiredError names the setup check');
+            S.setupRequired = err.check;
+            skip('the workspace is not set up for model work (409 SetupRequired, check ' + err.check + '); store a model key with setup.setModelKey first');
+        }
         assert(state.session.id, 'session ID');
         assertEqual(state.topic.status, 'Draft', 'draft topic');
         onCleanup('refinement topic', () => client.topics.remove(state.topic.id));
@@ -683,6 +691,7 @@ async function main() {
     });
 
     await run('refinement.start without seed text is a typed 400', async () => {
+        if (S.setupRequired) skip('the workspace is not set up for model work (409 SetupRequired, check ' + S.setupRequired + ')');
         await expectError(client.refinement.start({ seedText: '' }), 400, 'ValidationFailed');
     });
 
@@ -1452,6 +1461,8 @@ async function main() {
         assert(page.items.some((x) => x.id === e.id), 'listed');
         const v = await client.modelEndpoints.validate(e.id);
         assertEqual(v.reachable, false, 'fake endpoint is unreachable');
+        assertEqual(v.succeeded, false, 'validation of a fake endpoint does not succeed');
+        assertEqual((await client.modelEndpoints.get(e.id)).lastValidationSucceeded, false, 'the failed validation is recorded');
         const t = await client.modelEndpoints.test(e.id, { prompt: 'ping' });
         assertEqual(t.success, false, 'test fails on a fake endpoint');
         try {
@@ -1475,6 +1486,93 @@ async function main() {
         await client.modelAssignments.remove(a.id);
         const tenantDefault = (await client.modelAssignments.list({ pageSize: 100 })).items.find((x) => !x.topicId);
         if (tenantDefault) await expectError(client.modelAssignments.remove(tenantDefault.id), 409, 'Conflict');
+    });
+
+    // ---- Workspace setup -------------------------------------------------------------------------------------------
+
+    await run('setup paths and SetupRequiredError (offline, fake fetch)', async () => {
+        const seen = [];
+        const status = { ready: false, canConfigure: true, checks: [{ key: 'model:mdl_x', kind: 'Model', required: true, state: 'Missing', tasks: [], needsApiKey: true, hasApiKey: false, usesPlatformKey: false }], checkedUtc: '2026-01-01T00:00:00Z' };
+        const fake = new MyMorningNewsClient({
+            baseUrl: 'http://127.0.0.1:1', token: 'test-token',
+            fetch: async (url, init) => {
+                seen.push({ url, init });
+                if (url.includes('/refinement-sessions')) return new Response('{"error":"SetupRequired","message":"Add a key on the Setup page.","requestId":"rqi_s","details":{"check":"model:mdl_x"}}', { status: 409, headers: { 'content-type': 'application/json' } });
+                return new Response(JSON.stringify(status), { status: 200, headers: { 'content-type': 'application/json' } });
+            }
+        });
+        const st = await fake.setup.status();
+        assertEqual(st.checks[0].key, 'model:mdl_x', 'status parsed');
+        await fake.setup.verify();
+        await fake.setup.setModelKey('mdl_x', 'sk-test');
+        assertEqual(seen[0].init.method, 'GET', 'status method');
+        assert(seen[0].url.endsWith('/v1.0/api/setup'), 'status path');
+        assertEqual(seen[1].init.method, 'POST', 'verify method');
+        assert(seen[1].url.endsWith('/v1.0/api/setup/verify'), 'verify path');
+        assert(seen[2].url.endsWith('/v1.0/api/setup/model-key'), 'model-key path');
+        assertEqual(JSON.parse(seen[2].init.body).modelEndpointId, 'mdl_x', 'model-key body');
+        let threw = false;
+        try {
+            fake.setup.setModelKey('mdl_x', '');
+        } catch (e) {
+            threw = e instanceof TypeError;
+        }
+        assert(threw, 'setModelKey requires an API key');
+        const err = await expectError(fake.refinement.start({ seedText: 'x' }), 409, 'SetupRequired');
+        assert(err instanceof SetupRequiredError, 'SetupRequired is a SetupRequiredError (got ' + err.name + ')');
+        assertEqual(err.check, 'model:mdl_x', 'setup check key');
+    });
+
+    await run('setup.status, setModelKey (unreachable fake), 403 for a plain user', async () => {
+        if (!S.isAdmin) skip('needs an administrator');
+        const st = await client.setup.status();
+        assertEqual(st.canConfigure, true, 'the administrator can configure');
+        assert(Array.isArray(st.checks) && st.checks.length > 0, 'status lists checks');
+        assert(st.checks.some((c) => c.kind === 'Search'), 'status has a search check');
+        assertEqual(st.ready, st.checks.filter((c) => c.required).every((c) => c.state === 'Ready'), 'ready matches the required checks');
+        await expectError(client.setup.setModelKey('mdl_missing', 'sk-harness'), 404);
+        const e = await client.modelEndpoints.create({ name: name('setup'), provider: 'OpenAiCompatible', endpoint: 'http://127.0.0.1:9/v1', model: 'sdk-fake-model', supportsChat: true, timeoutMs: 2000, active: false });
+        let credentialId = null;
+        onCleanup('setup endpoint and key', async () => {
+            try {
+                await client.modelEndpoints.remove(e.id);
+            } catch (err) {
+                if (!(err instanceof MyMorningNewsError && err.status === 404)) throw err;
+            }
+            if (credentialId) await client.vault.remove(credentialId);
+        });
+        assertEqual(e.lastValidationSucceeded ?? null, null, 'a new endpoint has never been checked');
+        const after = await client.setup.setModelKey(e.id, 'sk-harness-' + STAMP);
+        assertEqual(after.canConfigure, true, 'status returned after the key');
+        const keyed = await client.modelEndpoints.get(e.id);
+        credentialId = keyed.credentialId;
+        assert(typeof credentialId === 'string' && credentialId.length > 0, 'credential attached to the endpoint');
+        assertEqual(keyed.lastValidationSucceeded, false, 'the failed live check is recorded');
+        const check = after.checks.find((c) => c.resourceId === e.id);
+        if (check) assert(check.state !== 'Ready', 'an unreachable endpoint is not Ready');
+
+        const tenant = OPTS.tenant;
+        const email = 'sdk-js-setup-' + STAMP + '@example.com';
+        const password = 'Harness-' + STAMP + '-pw';
+        const user = await client.request('POST', '/v1.0/tenants/' + encodeURIComponent(tenant) + '/users', {
+            body: { email, password, firstName: 'SDK', lastName: 'Harness', active: true }
+        });
+        const removeUser = async () => {
+            const eds = await client.editions.list({ userId: user.id, pageSize: 100 });
+            for (const ed of eds.items.filter((x) => x.userId === user.id)) await client.editions.remove(ed.id);
+            await client.request('DELETE', '/v1.0/tenants/' + encodeURIComponent(tenant) + '/users/' + encodeURIComponent(user.id));
+        };
+        onCleanup('setup user', removeUser);
+        const u = new MyMorningNewsClient({ baseUrl: OPTS.baseUrl });
+        await u.login(email, password, { tenantId: tenant });
+        assertEqual((await u.setup.status()).canConfigure, false, 'a plain user cannot configure');
+        await expectError(u.setup.verify(), 403);
+        await expectError(u.setup.setModelKey(e.id, 'sk-harness'), 403);
+        await u.logout();
+        await removeUser();
+        await client.modelEndpoints.remove(e.id);
+        await client.vault.remove(credentialId);
+        credentialId = null;
     });
 
     await run('modelEndpoints.remove then get is a typed 404', async () => {

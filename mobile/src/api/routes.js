@@ -18,6 +18,8 @@ export const routes = {
   health: '/v1.0/api/health',
   serverInfo: '/v1.0/api/server-info',
   clientConfig: '/v1.0/api/client-config',
+  // Setup status: whether the tenant's model key and search provider are verified (any signed-in user)
+  setup: '/v1.0/api/setup',
   // Profile and usage (existing)
   me: '/v1.0/api/me',
   mePassword: '/v1.0/api/me/password',

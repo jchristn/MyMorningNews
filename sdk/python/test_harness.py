@@ -619,7 +619,11 @@ def t_cross_user(h: Harness) -> None:
 @case("Refinement: start, get, list, abandon (no model calls)")
 def t_refinement(h: Harness) -> None:
     h.need("tenant")
-    state = h.client.refinement.start(seed_text=h.name("wizard") + " perovskite solar cells", goal="Track progress")
+    try:
+        state = h.client.refinement.start(seed_text=h.name("wizard") + " perovskite solar cells", goal="Track progress")
+    except mmn.SetupRequiredError as ex:
+        check(ex.check, "SetupRequiredError names the setup check")
+        raise Skip("the workspace is not set up for model work (409 SetupRequired, check " + str(ex.check) + "); store a model key with setup.set_model_key first")
     sid = state.session.id
     draft = state.topic.id
     h.on_cleanup("refinement " + sid, lambda: h.client.refinement.abandon(sid))
@@ -1340,6 +1344,8 @@ def t_endpoint_validate(h: Harness) -> str:
     eid = h.need("endpoint")
     v = h.client.model_endpoints.validate(eid)
     check(isinstance(v, mmn.ModelValidation) and v.raw, "validation result")
+    check(isinstance(v.succeeded, bool), "validation reports succeeded")
+    eq(h.client.model_endpoints.get(eid).last_validation_succeeded, v.succeeded, "the endpoint records the validation outcome")
     try:
         models = h.client.model_endpoints.models(eid)
         check(isinstance(models, list), "model list")
@@ -1366,6 +1372,86 @@ def t_assignments(h: Harness) -> None:
     check(a.id in ids(h.client.model_assignments.list(topic_id=tid)), "listed for the topic")
     h.client.model_assignments.delete(a.id)
     check(a.id not in ids(h.client.model_assignments.list(topic_id=tid)), "removed")
+
+
+@case("Setup: SetupRequiredError mapping and request shapes (offline)")
+def t_setup_offline(h: Harness) -> None:
+    resp = requests.Response()
+    resp.status_code = 409
+    resp.reason = "Conflict"
+    resp.headers["Content-Type"] = "application/json"
+    resp._content = json.dumps({"error": "SetupRequired", "message": "Add a key on the Setup page.", "requestId": "rqi_s",
+                                "details": {"check": "model:mdl_x"}}).encode("utf-8")
+    err = mmn._error_from_response(resp)
+    check(isinstance(err, mmn.SetupRequiredError), "SetupRequired is a SetupRequiredError (got " + type(err).__name__ + ")")
+    check(isinstance(err, ConflictError), "SetupRequiredError is a ConflictError")
+    eq(err.check, "model:mdl_x", "setup check key")
+    status = mmn.SetupStatus.from_dict({"ready": False, "canConfigure": True, "checkedUtc": "2026-01-01T00:00:00Z",
+                                        "checks": [{"key": "model:mdl_x", "kind": "Model", "required": True, "state": "Missing", "needsApiKey": True}]})
+    check(isinstance(status.checks[0], mmn.SetupCheck), "checks are SetupCheck models")
+    eq(status.checks[0].state, mmn.SetupCheckState.MISSING.value, "check state")
+    eq(status.can_configure, True, "can_configure")
+    offline = MyMorningNewsClient("http://127.0.0.1:1")
+    expect_value_error(lambda: offline.setup.set_model_key("mdl_x", ""))
+    expect_value_error(lambda: offline.setup.set_model_key("", "sk-test"))
+
+
+@case("Setup: status, set_model_key (unreachable endpoint), 403 for a plain user")
+def t_setup(h: Harness) -> None:
+    tenant = h.need("tenant")
+    if not h.state.get("is_admin"):
+        raise Skip("needs an administrator")
+    st = h.client.setup.status()
+    eq(st.can_configure, True, "the administrator can configure")
+    check(st.checks, "status lists checks")
+    check(any(c.kind == "Search" for c in st.checks), "status has a search check")
+    eq(st.ready, all(c.state == "Ready" for c in st.checks if c.required), "ready matches the required checks")
+    expect_error(NotFoundError, lambda: h.client.setup.set_model_key("mdl_missing", "sk-harness"))
+    e = h.client.model_endpoints.create(name=h.name("setup"), provider=mmn.ModelProvider.OPEN_AI_COMPATIBLE, endpoint="http://127.0.0.1:9/v1",
+                                        model="harness-model", supports_chat=True, supports_embeddings=False, timeout_ms=2000, active=False)
+    keep: Dict[str, Optional[str]] = {"credential": None}
+
+    def remove_endpoint_and_key() -> None:
+        try:
+            h.client.model_endpoints.delete(e.id)
+        except NotFoundError:
+            pass
+        if keep["credential"]:
+            h.client.vault.delete(keep["credential"])
+
+    h.on_cleanup("setup endpoint and key", remove_endpoint_and_key)
+    check(e.last_validation_succeeded is None, "a new endpoint has never been checked")
+    after = h.client.setup.set_model_key(e.id, "sk-harness-" + uuid.uuid4().hex[:8])
+    eq(after.can_configure, True, "status returned after the key")
+    keyed = h.client.model_endpoints.get(e.id)
+    keep["credential"] = keyed.credential_id
+    check(keyed.credential_id, "credential attached to the endpoint")
+    eq(keyed.last_validation_succeeded, False, "the failed live check is recorded")
+    mine = next((c for c in after.checks if c.resource_id == e.id), None)
+    if mine is not None:
+        check(mine.state != "Ready", "an unreachable endpoint is not Ready")
+
+    email = "sdk-python-setup-" + uuid.uuid4().hex[:8] + "@example.com"
+    password = "Harness-" + uuid.uuid4().hex[:8]
+    user = h.client.request("POST", "/v1.0/tenants/" + tenant + "/users",
+                            body={"email": email, "password": password, "first_name": "SDK", "last_name": "Harness", "active": True})
+
+    def remove_user() -> None:
+        for ed in h.client.editions.list(user_id=user["id"], page_size=100).items:
+            if ed.user_id == user["id"]:
+                h.client.editions.delete(ed.id)
+        h.client.request("DELETE", "/v1.0/tenants/" + tenant + "/users/" + user["id"])
+
+    h.on_cleanup("setup user", remove_user)
+    with MyMorningNewsClient(h.config.base_url) as u:
+        u.login(email, password, tenant)
+        eq(u.setup.status().can_configure, False, "a plain user cannot configure")
+        expect_error(mmn.PermissionDeniedError, u.setup.verify)
+        expect_error(mmn.PermissionDeniedError, lambda: u.setup.set_model_key(e.id, "sk-harness"))
+        u.logout()
+    remove_user()
+    remove_endpoint_and_key()
+    keep["credential"] = None
 
 
 @case("Model endpoints: delete, then 404")

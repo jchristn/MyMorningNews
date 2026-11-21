@@ -116,6 +116,11 @@ refers to the credential `platform:anthropic`. It resolves from `MYMORNINGNEWS_A
 is never copied into a tenant vault, so tenants cannot read or reveal it. Tenants cannot assign it to their own
 endpoints, and an endpoint that uses it cannot be pointed at a different provider or URL.
 
+`GET /v1.0/api/setup` reports such an endpoint with `usesPlatformKey` true, and `POST /v1.0/api/setup/model-key`
+refuses it with 400 because there is nothing to enter. When the platform key is missing, the model check reads
+Missing ("The hosted service's model key is not configured"), so the topic wizard and one-time requests answer 409
+`SetupRequired` until the operator sets `MYMORNINGNEWS_ANTHROPIC_API_KEY`.
+
 ## Private network blocking
 
 With `hosting.restrictPrivateNetworks` on, the server refuses outbound requests to loopback, private (10/8,

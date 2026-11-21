@@ -105,3 +105,12 @@ export function isSignupClosed(error) {
 export function isConflict(error) {
   return error instanceof ApiError && error.status === 409;
 }
+
+/**
+ * True for 409 SetupRequired: the tenant's model key or search provider is missing or failed verification, so the
+ * server refuses to start research (refinement sessions and their model steps, and one-time requests). `details.check`
+ * names the setup check.
+ */
+export function isSetupRequired(error) {
+  return error instanceof ApiError && error.status === 409 && error.code === 'SetupRequired';
+}

@@ -116,12 +116,13 @@ try {
 }
 ```
 
-Two codes have their own subclasses:
+Three codes have their own subclasses:
 
 | Class | When | Extra properties |
 |-------|------|------------------|
 | `CapReachedError` | 402 `CapReached`: a plan limit was hit (topics, daily runs, monthly model cost, audio minutes, custom endpoints, shortest schedule). | `key` (for example `topics.max`), `limit` (the plan's value as text), `resetUtc` (`Date` or `null`) |
 | `EmailNotVerifiedError` | 403 `EmailNotVerified` from `login`: a publicly signed-up account has not confirmed its email. | none; call `account.resendVerification` or `account.verifyEmail` |
+| `SetupRequiredError` | 409 `SetupRequired` from refinement sessions and `requests.create`: the model endpoint for refinement has no key or failed its last check. | `check` (the setup check key, for example `model:mdl_abc`); read `setup.status()`, and an administrator fixes it with `setup.setModelKey` or `setup.verify` |
 
 ```js
 try {
@@ -373,7 +374,7 @@ await client.llmCalls.get(calls.items[0].id);
 
 ```js
 const ep = await client.modelEndpoints.create({ name: 'Local', provider: 'Ollama', endpoint: 'http://127.0.0.1:12120', model: 'llama3', supportsChat: true });
-await client.modelEndpoints.validate(ep.id);
+await client.modelEndpoints.validate(ep.id); // { reachable, succeeded, ... }; the endpoint's lastValidationSucceeded records it
 await client.modelEndpoints.models(ep.id);
 await client.modelEndpoints.test(ep.id, { prompt: 'Say hello.' }); // model call
 await client.modelAssignments.upsert({ task: 'Synthesis', topicId, modelEndpointId: ep.id });
@@ -409,6 +410,16 @@ const { purgeAfterUtc } = await client.account.delete(); // 202; signing in agai
 ```
 
 The public account routes send no credentials: `account.signup({ email, password, acceptTerms, confirmAge, displayName, timeZone, promoCode })` (always 202 with `{ message, verificationRequired }`; 404 `SignupClosed` when sign-up is off), `account.verifyEmail(token)`, `account.resendVerification(email)`, `account.forgotPassword(email)`, and `account.resetPassword(token, password)`.
+
+### setup
+
+Workspace setup. `status()` returns `{ ready, canConfigure, checks, checkedUtc }`; each check has a `key` (`model:{endpointId}`, `search`, `embeddings`, or `email`), a `kind`, whether it is `required`, and a `state` (`Ready`, `Missing`, `Unverified`, or `Failed`). Until `ready` is true, refinement sessions and research requests fail with `SetupRequiredError`. Administrators can call `verify()` (live probes of each chat endpoint, the default search providers, and embeddings) and `setModelKey(modelEndpointId, apiKey)` (stores the key in the vault, attaches it to the endpoint, and checks it live; the key is never returned). Both are 403 for anyone else and both call the providers.
+
+```js
+const status = await client.setup.status();
+const model = status.checks.find((c) => c.kind === 'Model' && c.state !== 'Ready');
+if (model && status.canConfigure) await client.setup.setModelKey(model.resourceId, process.env.ANTHROPIC_API_KEY);
+```
 
 ### mcpServers
 
@@ -447,7 +458,7 @@ Cases that trigger real research runs or model calls (refinement generation, one
 
 The access key and signed request cases create and delete temporary credentials through `client.request` against the control plane, so they need an administrator. The signed request cases also check a known signature vector offline, check a replayed nonce and a bad signature are rejected, and check that the credential stops working once deleted. The run stream cases parse a canned event stream offline (split chunks, CR and LF line endings, comments, multi-line data, UTF-8 split across chunks) and drive `events` and `follow` against a fake fetch; the live case checks 404, 409, and 400 without queuing anything and replays a finished run when one exists. It skips when the server does not have the events route yet. Finding edit cases skip when the server has no findings; they restore each finding's pinned and hidden flags afterwards and never delete real findings.
 
-The plan limit case creates a user, grants it the Free plan, reads `account.usage`, downloads `account.export`, expects `CapReachedError` on the topic past the limit, and deletes then restores the account by signing in again. The sign-up case opens `Hosting.PublicSignupEnabled` through the settings API (and restores the original settings afterward, even on failure), signs up, expects `EmailNotVerifiedError` at sign-in, reads the verification and reset link tokens from the personal tenant's outbox with an access key it creates as the administrator, verifies, resets the password, and deletes the personal tenant. It skips when the setting is pinned by an environment variable. The MCP case runs a small fake MCP server on 127.0.0.1 (initialize and tools/list only; no tool is ever called) and skips the discovery part when the server cannot reach it, for example from a container.
+The setup cases check the request paths and `SetupRequiredError` against a fake fetch offline, then read `setup.status()`, store a key for an unreachable local endpoint (the live check fails, so `lastValidationSucceeded` is false), expect 404 for an unknown endpoint, and expect 403 from `verify` and `setModelKey` for a plain user. The administrator's live `verify()` is not called because it probes the real providers. The plan limit case creates a user, grants it the Free plan, reads `account.usage`, downloads `account.export`, expects `CapReachedError` on the topic past the limit, and deletes then restores the account by signing in again. The sign-up case opens `Hosting.PublicSignupEnabled` through the settings API (and restores the original settings afterward, even on failure), signs up, expects `EmailNotVerifiedError` at sign-in, reads the verification and reset link tokens from the personal tenant's outbox with an access key it creates as the administrator, verifies, resets the password, and deletes the personal tenant. It skips when the setting is pinned by an environment variable. The MCP case runs a small fake MCP server on 127.0.0.1 (initialize and tools/list only; no tool is ever called) and skips the discovery part when the server cannot reach it, for example from a container.
 
 ## Requirements
 

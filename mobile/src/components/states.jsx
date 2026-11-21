@@ -2,7 +2,7 @@ import React from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTranslation } from 'react-i18next';
-import { isModelError, isNetworkError, isSessionExpired } from '@/api/errors';
+import { isModelError, isNetworkError, isSessionExpired, isSetupRequired } from '@/api/errors';
 import { useTheme } from '@/theme/ThemeContext';
 import { spacing } from '@/theme/palette';
 import { Banner, Button, T } from './ui';
@@ -95,6 +95,17 @@ export function ErrorState({ error, onRetry }) {
 export function ActionError({ error, onRetry, manualHint, testID = 'action-error' }) {
   const { t } = useTranslation();
   if (!error) return null;
+  // 409 SetupRequired: the server's message says what is missing; the setup gate re-checks and takes over the screen.
+  if (isSetupRequired(error)) {
+    return (
+      <Banner kind="warning" title={t('mobile.setup.requiredTitle')} testID={testID}>
+        <View style={{ gap: spacing.sm }}>
+          {error.message ? <T variant="small">{error.message}</T> : null}
+          <T variant="small">{t('mobile.setup.requiredHint')}</T>
+        </View>
+      </Banner>
+    );
+  }
   const model = isModelError(error);
   const offline = isNetworkError(error);
   return (

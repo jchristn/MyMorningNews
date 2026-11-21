@@ -237,6 +237,11 @@ namespace MyMorningNews.Sdk
         public McpServersResource McpServers { get; }
 
         /// <summary>
+        /// Workspace setup: status, live checks, and storing a model API key.
+        /// </summary>
+        public SetupResource Setup { get; }
+
+        /// <summary>
         /// Administration: control plane, promotional codes, plans, audit, request history, and settings.
         /// </summary>
         public AdminResource Admin { get; }
@@ -310,6 +315,7 @@ namespace MyMorningNews.Sdk
             Devices = new DevicesResource(this);
             Account = new AccountResource(this);
             McpServers = new McpServersResource(this);
+            Setup = new SetupResource(this);
             Admin = new AdminResource(this);
         }
 
@@ -887,6 +893,7 @@ namespace MyMorningNews.Sdk
             if (String.IsNullOrWhiteSpace(message)) message = "The server returned HTTP " + status + " " + response.ReasonPhrase + ".";
             if (status == 402 && String.Equals(error, "CapReached", StringComparison.Ordinal)) return new CapReachedException(message, requestId, details, text);
             if (status == 403 && String.Equals(error, "EmailNotVerified", StringComparison.Ordinal)) return new EmailNotVerifiedException(message, requestId, details, text);
+            if (status == 409 && String.Equals(error, "SetupRequired", StringComparison.Ordinal)) return new SetupRequiredException(message, requestId, details, text);
             return new MyMorningNewsException(status, error, message, requestId, details, text);
         }
 

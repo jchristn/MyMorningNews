@@ -16,6 +16,7 @@
     "Settings": "Server settings. Secrets come back masked as ******** and a masked or empty secret is left unchanged on update. Some settings take effect only after a restart.",
     "Vault": "Encrypted storage for API keys and tokens that model endpoints, search providers, and voices use. Lists and reads never include the secret; reveal is rate limited and audited.",
     "Models": "Model endpoints (Anthropic, OpenAI, Ollama, and compatible servers), task role assignments, and the accounting record of every model call.",
+    "Setup": "What the workspace still needs before people can use it (a chat model with a working key, and web search; embeddings and email are optional) and live checks that prove it. Until every required check is Ready, refinement sessions and research requests answer 409 SetupRequired. Verify and model-key are for administrators.",
     "Usage": "Model usage and cost, grouped or bucketed over time. Members see their own; administrators can see the tenant, and global administrators every tenant.",
     "Devices": "Push notification devices registered by the mobile app for the signed-in user.",
     "Topics": "The things a reader follows. A topic has a research brief, weighted dimensions, constraints (keywords, domains, feeds, tracked questions), and email recipients.",
@@ -371,14 +372,14 @@
     "DELETE /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes/{scopeId}": {"response": "none", "status": {"204": "No Content", "403": "Forbidden", "404": "NotFound"}},
     "GET /v1.0/tenants/{tenantId}/users/{userId}/permissions": {"response": "EffectivePermissionsResponse", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
     "GET /v1.0/tenants/{tenantId}/credentials/{credentialId}/permissions": {"response": "EffectivePermissionsResponse", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/refinement-sessions": {"response": "RefinementStateResponse", "status": {"201": "Created", "400": "BadRequest, TenantRequired", "403": "Forbidden"}},
+    "POST /v1.0/api/refinement-sessions": {"response": "RefinementStateResponse", "status": {"201": "Created", "400": "BadRequest, TenantRequired", "403": "Forbidden", "409": "SetupRequired"}},
     "GET /v1.0/api/refinement-sessions": {"response": "EnumerationResult<RefinementSession>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
     "GET /v1.0/api/refinement-sessions/{id}": {"response": "RefinementStateResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/refinement-sessions/{id}/dimensions": {"response": "RefinementStateResponse", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/refinement-sessions/{id}/questions": {"response": "RefinementStateResponse", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
+    "POST /v1.0/api/refinement-sessions/{id}/dimensions": {"response": "RefinementStateResponse", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "SetupRequired"}},
+    "POST /v1.0/api/refinement-sessions/{id}/questions": {"response": "RefinementStateResponse", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "SetupRequired"}},
     "PUT /v1.0/api/refinement-sessions/{id}/questions/{questionId}": {"response": "RefinementQuestionResponse", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/refinement-sessions/{id}/context": {"response": "RefinementStateResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/refinement-sessions/{id}/sources": {"response": "List<SourceCheck>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
+    "POST /v1.0/api/refinement-sessions/{id}/context": {"response": "RefinementStateResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "SetupRequired"}},
+    "POST /v1.0/api/refinement-sessions/{id}/sources": {"response": "List<SourceCheck>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "SetupRequired"}},
     "POST /v1.0/api/refinement-sessions/{id}/sources/accept": {"response": "RefinementStateResponse", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
     "POST /v1.0/api/refinement-sessions/{id}/complete": {"response": "RefinementStateResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
     "POST /v1.0/api/refinement-sessions/{id}/abandon": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
@@ -387,7 +388,7 @@
     "DELETE /v1.0/api/request-history": {"response": "DeleteManyResponse", "status": {"200": "OK", "403": "Forbidden"}},
     "GET /v1.0/api/request-history/{id}": {"response": "RequestHistoryEntry", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
     "DELETE /v1.0/api/request-history/{id}": {"response": "none", "status": {"204": "No Content", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/requests": {"response": "ResearchRequestResponse", "status": {"201": "Created", "400": "BadRequest, TenantRequired", "403": "Forbidden"}},
+    "POST /v1.0/api/requests": {"response": "ResearchRequestResponse", "status": {"201": "Created", "400": "BadRequest, TenantRequired", "403": "Forbidden", "409": "SetupRequired"}},
     "GET /v1.0/api/requests": {"response": "EnumerationResult<ResearchRequest>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
     "GET /v1.0/api/requests/{id}": {"response": "ResearchRequestResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
     "PUT /v1.0/api/requests/{id}/questions/{questionId}": {"response": "RefinementQuestionResponse", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
@@ -522,7 +523,10 @@
     "PUT /v1.0/api/mcp-servers/{id}/tools/{toolId}": {"response": "McpServerTool", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
     "GET /v1.0/api/runs/{id}/tool-calls": {"response": "List<RunToolCall>", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
     "GET /v1.0/api/briefings/{id}/progress": {"response": "BriefingProgress", "status": {"200": "OK", "400": "BadRequest (needs a signed-in user)", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/api/briefings/{id}/progress": {"response": "BriefingProgress", "status": {"200": "OK", "400": "BadRequest, ValidationFailed", "403": "Forbidden", "404": "NotFound"}}
+    "PUT /v1.0/api/briefings/{id}/progress": {"response": "BriefingProgress", "status": {"200": "OK", "400": "BadRequest, ValidationFailed", "403": "Forbidden", "404": "NotFound"}},
+    "GET /v1.0/api/setup": {"response": "SetupStatusResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}, "notes": "Reads the stored state and makes no provider calls. `canConfigure` is true for global and tenant administrators."},
+    "POST /v1.0/api/setup/verify": {"response": "SetupStatusResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Administrators only"}, "notes": "Calls the providers: a short probe prompt per chat endpoint, a test query per default web search provider, and one embedding request. Each endpoint's `lastValidationSucceeded` records the outcome."},
+    "POST /v1.0/api/setup/model-key": {"response": "SetupStatusResponse", "status": {"200": "OK", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Administrators only", "404": "NotFound"}, "notes": "Stores the key encrypted in the vault (a new credential, or the endpoint's existing one updated), attaches it to the endpoint, and checks it with a live call. The key is never returned. 400 `ValidationFailed` when a value is missing or the endpoint uses the hosted service's key."}
   },
   "routeBodies": {
     "PUT /v1.0/api/topics/{id}/search-providers": [
@@ -1279,6 +1283,10 @@
       "positionSeconds": 312.5,
       "durationSeconds": 905,
       "completed": false
+    },
+    "SetupModelKeyRequest": {
+      "modelEndpointId": "{{modelEndpointId}}",
+      "apiKey": "sk-ant-EXAMPLE-not-a-real-key"
     }
   },
   "examples": {
@@ -1595,6 +1603,79 @@
       "active": true,
       "createdUtc": "2026-11-20T19:54:29.890159Z",
       "lastUpdateUtc": "2026-11-20T20:02:04.994029Z"
+    },
+    "SetupStatusResponse": {
+      "ready": false,
+      "canConfigure": true,
+      "checks": [
+        {
+          "key": "model:mdl_mwpee2b8_Nm4qW7eR0tYu3iOp6As",
+          "kind": "Model",
+          "required": true,
+          "state": "Missing",
+          "message": "Anthropic needs an API key.",
+          "resourceId": "mdl_mwpee2b8_Nm4qW7eR0tYu3iOp6As",
+          "resourceName": "Anthropic",
+          "provider": "Anthropic",
+          "model": "claude-opus-5-5",
+          "tasks": [
+            "Refinement",
+            "QueryPlanning",
+            "Extraction",
+            "Scoring",
+            "Synthesis",
+            "Prediction",
+            "Suggestion",
+            "Composition",
+            "PodcastScript",
+            "FeedbackAnalysis"
+          ],
+          "needsApiKey": true,
+          "hasApiKey": false,
+          "usesPlatformKey": false
+        },
+        {
+          "key": "search",
+          "kind": "Search",
+          "required": true,
+          "state": "Ready",
+          "resourceId": "spv_mwpee2c4_Rt5yU8iO1pAs4dFg7Hj",
+          "resourceName": "SearXNG",
+          "provider": "Searxng",
+          "tasks": [],
+          "needsApiKey": false,
+          "hasApiKey": false,
+          "usesPlatformKey": false,
+          "verifiedUtc": "2026-11-20T20:02:05.276221Z"
+        },
+        {
+          "key": "embeddings",
+          "kind": "Embeddings",
+          "required": false,
+          "state": "Unverified",
+          "resourceId": "mdl_mwpee2b9_Hh5WkPq2c9XbN0aLr4e",
+          "resourceName": "Ollama embeddings",
+          "provider": "Ollama",
+          "model": "all-minilm",
+          "tasks": [],
+          "needsApiKey": false,
+          "hasApiKey": false,
+          "usesPlatformKey": false
+        },
+        {
+          "key": "email",
+          "kind": "Email",
+          "required": false,
+          "state": "Missing",
+          "message": "Email is turned off, so briefings are only shown in the app.",
+          "provider": "Disabled",
+          "tasks": [],
+          "needsApiKey": false,
+          "hasApiKey": false,
+          "usesPlatformKey": false
+        }
+      ],
+      "checkedUtc": "2026-11-20T20:02:05.276221Z"
     }
   }
 }

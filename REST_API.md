@@ -218,6 +218,7 @@ Route handlers send most errors directly. Anything they throw is mapped in `src/
 | 404 | `RouteNotFound` | No such endpoint on this server. Unmatched `/v1.0/public/...` and `/.well-known/...` paths answer this without asking for credentials. |
 | 409 | `Conflict` | A state conflict, a duplicate unique value, or a record still referenced elsewhere. For a duplicate the message names the field (`A model endpoint with that name already exists.`) and `details` has it as the key. |
 | 409 | `PromoCodeInvalid` | A promotional code cannot be redeemed. `details.reason` says why. |
+| 409 | `SetupRequired` | The workspace is not set up for model work: the model endpoint for refinement has no key or failed its last check. Starting the topic wizard, its model steps (dimensions, questions, context, sources), and creating a one-time request answer this. `details.check` is the setup check key (for example `model:mdl_...`, or `model:none` when no endpoint serves the task); `GET /v1.0/api/setup` shows the full status, and an administrator fixes it with `POST /v1.0/api/setup/model-key` or `POST /v1.0/api/setup/verify`. |
 | 410 | `ArtifactExpired` | The file passed its retention window. Regenerate it. |
 | 416 | `RangeNotSatisfiable` | The `Range` header is outside the file. |
 | 422 | `ModelRefused` | The model declined the request. |
@@ -386,7 +387,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 
 ## Route reference
 
-295 routes in 45 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
+298 routes in 46 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
 
 | Group | Routes | What it covers |
 |---|---|---|
@@ -405,6 +406,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [Settings](#settings) | 4 | Server settings. Secrets come back masked as ******** and a masked or empty secret is left unchanged on update. Some settings take effect only after a restart. |
 | [Vault](#vault) | 7 | Encrypted storage for API keys and tokens that model endpoints, search providers, and voices use. Lists and reads never include the secret; reveal is rate limited and audited. |
 | [Models](#models) | 13 | Model endpoints (Anthropic, OpenAI, Ollama, and compatible servers), task role assignments, and the accounting record of every model call. |
+| [Setup](#setup) | 3 | What the workspace still needs before people can use it (a chat model with a working key, and web search; embeddings and email are optional) and live checks that prove it. Until every required check is Ready, refinement sessions and research requests answer 409 SetupRequired. Verify and model-key are for administrators. |
 | [Usage](#usage) | 3 | Model usage and cost, grouped or bucketed over time. Members see their own; administrators can see the tenant, and global administrators every tenant. |
 | [Devices](#devices) | 4 | Push notification devices registered by the mobile app for the signed-in user. |
 | [Topics](#topics) | 21 | The things a reader follows. A topic has a research brief, weighted dimensions, constraints (keywords, domains, feeds, tracked questions), and email recipients. |
@@ -2908,6 +2910,87 @@ curl -s "http://127.0.0.1:12100/v1.0/api/llm-calls/llm_mwpfe1fc_Qw8eR1tY4uIo7pAs
   -H "Authorization: Bearer $TOKEN"
 ```
 
+## Setup
+
+What the workspace still needs before people can use it (a chat model with a working key, and web search; embeddings and email are optional) and live checks that prove it. Until every required check is Ready, refinement sessions and research requests answer 409 SetupRequired. Verify and model-key are for administrators.
+
+| Method | Path | Summary |
+|---|---|---|
+| GET | [`/v1.0/api/setup`](#get-v10apisetup) | Workspace setup status |
+| POST | [`/v1.0/api/setup/verify`](#post-v10apisetupverify) | Re-check setup with live calls |
+| POST | [`/v1.0/api/setup/model-key`](#post-v10apisetupmodel-key) | Store and verify a model API key |
+
+### GET /v1.0/api/setup
+
+**Workspace setup status.** Whether the workspace has a chat model with a working key and web search. ready is false until every required check is Ready; the apps keep people out of the product until then.
+
+- Auth: Any authenticated principal.
+- Response: [`SetupStatusResponse`](#setupstatusresponse)
+- Notes: Reads the stored state and makes no provider calls. `canConfigure` is true for global and tenant administrators.
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/setup" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/setup/verify
+
+**Re-check setup with live calls.** Administrators only. Sends a short probe prompt to each chat endpoint, a test query to each default web search provider, and one embedding request.
+
+- Auth: Any authenticated principal.
+- Response: [`SetupStatusResponse`](#setupstatusresponse)
+- Notes: Calls the providers: a short probe prompt per chat endpoint, a test query per default web search provider, and one embedding request. Each endpoint's `lastValidationSucceeded` records the outcome.
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden: Administrators only |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/setup/verify" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/setup/model-key
+
+**Store and verify a model API key.** Administrators only. Stores the key encrypted in the vault, attaches it to the endpoint, and verifies it with a live call. The key is never returned.
+
+- Auth: Any authenticated principal.
+- Response: [`SetupStatusResponse`](#setupstatusresponse)
+- Notes: Stores the key encrypted in the vault (a new credential, or the endpoint's existing one updated), attaches it to the endpoint, and checks it with a live call. The key is never returned. 400 `ValidationFailed` when a value is missing or the endpoint uses the hosted service's key.
+
+Request body: [`SetupModelKeyRequest`](#setupmodelkeyrequest).
+
+```json
+{
+  "modelEndpointId": "mdl_mwpee2b8_Nm4qW7eR0tYu3iOp6As",
+  "apiKey": "sk-ant-EXAMPLE-not-a-real-key"
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `BadRequest`, `ValidationFailed`, `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden: Administrators only |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/setup/model-key" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
 ## Usage
 
 Model usage and cost, grouped or bucketed over time. Members see their own; administrators can see the tenant, and global administrators every tenant.
@@ -3818,6 +3901,7 @@ Request body: [`RefinementStartRequest`](#refinementstartrequest).
 | 400 | Bad Request: `BadRequest`, `TenantRequired` |
 | 401 | Unauthorized |
 | 403 | Forbidden |
+| 409 | Conflict: `SetupRequired` |
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/refinement-sessions" \
@@ -3903,6 +3987,7 @@ Request body: [`RefinementGenerateRequest`](#refinementgeneraterequest).
 | 401 | Unauthorized |
 | 403 | Forbidden |
 | 404 | Not Found |
+| 409 | Conflict: `SetupRequired` |
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/refinement-sessions/rfs_mwpf1a2b_Qz9xW4vN2mLk7cRt5Ya/dimensions" \
@@ -3936,6 +4021,7 @@ Request body: [`RefinementGenerateRequest`](#refinementgeneraterequest).
 | 401 | Unauthorized |
 | 403 | Forbidden |
 | 404 | Not Found |
+| 409 | Conflict: `SetupRequired` |
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/refinement-sessions/rfs_mwpf1a2b_Qz9xW4vN2mLk7cRt5Ya/questions" \
@@ -3997,6 +4083,7 @@ curl -s -X PUT "http://127.0.0.1:12100/v1.0/api/refinement-sessions/rfs_mwpf1a2b
 | 401 | Unauthorized |
 | 403 | Forbidden |
 | 404 | Not Found |
+| 409 | Conflict: `SetupRequired` |
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/refinement-sessions/rfs_mwpf1a2b_Qz9xW4vN2mLk7cRt5Ya/context" \
@@ -4021,6 +4108,7 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/refinement-sessions/rfs_mwpf1a2
 | 401 | Unauthorized |
 | 403 | Forbidden |
 | 404 | Not Found |
+| 409 | Conflict: `SetupRequired` |
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/refinement-sessions/rfs_mwpf1a2b_Qz9xW4vN2mLk7cRt5Ya/sources" \
@@ -4160,6 +4248,7 @@ Request body: [`ResearchRequestCreateRequest`](#researchrequestcreaterequest).
 | 400 | Bad Request: `BadRequest`, `TenantRequired` |
 | 401 | Unauthorized |
 | 403 | Forbidden |
+| 409 | Conflict: `SetupRequired` |
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/requests" \
@@ -11054,6 +11143,7 @@ Returned by [GET /v1.0/api/model-endpoints](#get-v10apimodel-endpoints), [POST /
 | `active` | boolean | Whether the record is active. |
 | `createdUtc` | date-time | UTC creation time. |
 | `lastUpdateUtc` | date-time | UTC time of the last update. |
+| `lastValidationSucceeded` | boolean | Whether the endpoint last proved it works: true after a successful validation or model call, false after a failed validation, null when never checked or after its connection settings changed. |
 
 #### ModelEndpointUpsertRequest
 
@@ -11144,6 +11234,7 @@ Returned by [POST /v1.0/api/model-endpoints/{id}/validate](#post-v10apimodel-end
 | Field | Type | Description |
 |---|---|---|
 | `reachable` | boolean | Endpoint reachable. |
+| `succeeded` | boolean | Whether every check that applies to the endpoint passed (chat when it has a chat model, embeddings when it has an embedding model). Default false. |
 | `modelFound` | boolean | Configured chat model exists (null model counts as found). |
 | `supportsTools` | boolean | Tool calls work. |
 | `embeddingDimensions` | integer | Embedding dimensions, when embeddings are configured. |
@@ -12734,6 +12825,129 @@ Returned by [PUT /v1.0/api/settings](#put-v10apisettings).
 | `changed` | array of string | Paths whose values changed. |
 | `appliedLive` | array of string | Paths applied immediately. |
 | `pendingRestart` | array of string | Paths that take effect after a restart. |
+
+#### SetupCheck
+
+One thing the workspace needs before people can use it, and whether it is ready.
+
+| Field | Type | Description |
+|---|---|---|
+| `key` | string | Stable key: model:{endpointId} (or model:none), search, embeddings, or email. |
+| `kind` | [`SetupCheckKindEnum`](#setupcheckkindenum) | What the check covers. |
+| `required` | boolean | Whether the workspace is blocked until this check is ready. |
+| `state` | [`SetupCheckStateEnum`](#setupcheckstateenum) | State. |
+| `message` | string | Plain-language detail, such as the provider's error text. Null when there is nothing to add. |
+| `resourceId` | string | Model endpoint or search provider ID, when the check is about one. |
+| `resourceName` | string | Model endpoint or search provider name. |
+| `provider` | string | Provider name (a ModelProviderEnum or SearchProviderKindEnum value). |
+| `model` | string | Model name, for model and embedding checks. |
+| `tasks` | array of [`ModelTaskEnum`](#modeltaskenum) | Tasks the endpoint serves, for model checks. |
+| `needsApiKey` | boolean | Whether the provider requires an API key. |
+| `hasApiKey` | boolean | Whether a key is stored or supplied by the platform. |
+| `usesPlatformKey` | boolean | Whether the endpoint uses the hosted service's key, which users never enter. |
+| `verifiedUtc` | date-time | When the resource was last checked (UTC), or null. |
+
+#### SetupModelKeyRequest
+
+Store an API key for a model endpoint and verify it.
+
+Request body of [POST /v1.0/api/setup/model-key](#post-v10apisetupmodel-key).
+
+| Field | Type | Description |
+|---|---|---|
+| `modelEndpointId` | string | Model endpoint. Required. |
+| `apiKey` | string | API key. Required; stored encrypted in the vault and never returned. |
+
+#### SetupStatusResponse
+
+Whether the workspace has everything it needs, checked with live calls.
+
+Returned by [GET /v1.0/api/setup](#get-v10apisetup), [POST /v1.0/api/setup/verify](#post-v10apisetupverify), [POST /v1.0/api/setup/model-key](#post-v10apisetupmodel-key).
+
+| Field | Type | Description |
+|---|---|---|
+| `ready` | boolean | True when every required check is ready. |
+| `canConfigure` | boolean | Whether the caller can change the configuration (a global or tenant administrator). |
+| `checks` | array of [`SetupCheck`](#setupcheck) | Checks, required ones first. |
+| `checkedUtc` | date-time | When the status was computed (UTC). |
+
+Example:
+
+```json
+{
+  "ready": false,
+  "canConfigure": true,
+  "checks": [
+    {
+      "key": "model:mdl_mwpee2b8_Nm4qW7eR0tYu3iOp6As",
+      "kind": "Model",
+      "required": true,
+      "state": "Missing",
+      "message": "Anthropic needs an API key.",
+      "resourceId": "mdl_mwpee2b8_Nm4qW7eR0tYu3iOp6As",
+      "resourceName": "Anthropic",
+      "provider": "Anthropic",
+      "model": "claude-opus-5-5",
+      "tasks": [
+        "Refinement",
+        "QueryPlanning",
+        "Extraction",
+        "Scoring",
+        "Synthesis",
+        "Prediction",
+        "Suggestion",
+        "Composition",
+        "PodcastScript",
+        "FeedbackAnalysis"
+      ],
+      "needsApiKey": true,
+      "hasApiKey": false,
+      "usesPlatformKey": false
+    },
+    {
+      "key": "search",
+      "kind": "Search",
+      "required": true,
+      "state": "Ready",
+      "resourceId": "spv_mwpee2c4_Rt5yU8iO1pAs4dFg7Hj",
+      "resourceName": "SearXNG",
+      "provider": "Searxng",
+      "tasks": [],
+      "needsApiKey": false,
+      "hasApiKey": false,
+      "usesPlatformKey": false,
+      "verifiedUtc": "2026-11-20T20:02:05.276221Z"
+    },
+    {
+      "key": "embeddings",
+      "kind": "Embeddings",
+      "required": false,
+      "state": "Unverified",
+      "resourceId": "mdl_mwpee2b9_Hh5WkPq2c9XbN0aLr4e",
+      "resourceName": "Ollama embeddings",
+      "provider": "Ollama",
+      "model": "all-minilm",
+      "tasks": [],
+      "needsApiKey": false,
+      "hasApiKey": false,
+      "usesPlatformKey": false
+    },
+    {
+      "key": "email",
+      "kind": "Email",
+      "required": false,
+      "state": "Missing",
+      "message": "Email is turned off, so briefings are only shown in the app.",
+      "provider": "Disabled",
+      "tasks": [],
+      "needsApiKey": false,
+      "hasApiKey": false,
+      "usesPlatformKey": false
+    }
+  ],
+  "checkedUtc": "2026-11-20T20:02:05.276221Z"
+}
+```
 
 #### SignupRequest
 
@@ -14434,6 +14648,28 @@ What happened to a search result.
 | `SkippedLimit` | Over the fetch limit. |
 | `SkippedDuplicate` | Duplicate in this run. |
 | `FetchFailed` | Fetch failed. |
+
+#### SetupCheckKindEnum
+
+What a setup check covers.
+
+| Value | Description |
+|---|---|
+| `Model` | A chat model endpoint that serves one or more tasks. Required. |
+| `Search` | Web search. Required. |
+| `Embeddings` | Embeddings for duplicate detection and ranking. Optional. |
+| `Email` | Email delivery. Optional. |
+
+#### SetupCheckStateEnum
+
+State of a setup check.
+
+| Value | Description |
+|---|---|
+| `Ready` | Configured and proven to work. |
+| `Missing` | Something it needs is not configured, such as an API key. |
+| `Unverified` | Configured but not yet proven to work. |
+| `Failed` | The last check failed. |
 
 #### StageStatusEnum
 

@@ -49,7 +49,8 @@
     "tooMany": "Zu viele Anfragen. Warten Sie einen Moment und versuchen Sie es erneut.",
     "unauthorized": "Ihre Sitzung ist nicht mehr gültig. Melden Sie sich erneut an.",
     "capReached": "Tariflimit erreicht.",
-    "egressBlocked": "Diese Adresse liegt in einem privaten Netzwerk, was dieser Server nicht zulässt."
+    "egressBlocked": "Diese Adresse liegt in einem privaten Netzwerk, was dieser Server nicht zulässt.",
+    "setupRequired": "Die Einrichtung ist nicht abgeschlossen."
   },
   "access": {
     "deniedTitle": "Zugriff verweigert",
@@ -186,7 +187,8 @@
       "insightsOverview": "Übersicht",
       "plans": "Tarife",
       "emailInsights": "E-Mail-Zustellung",
-      "mcp": "MCP-Client"
+      "mcp": "MCP-Client",
+      "setup": "Einrichtung"
     }
   },
   "routes": {
@@ -315,6 +317,9 @@
     },
     "mcp": {
       "summary": "Claude Code oder einen anderen MCP-Client mit Ihrer Recherche verbinden"
+    },
+    "setup": {
+      "summary": "Was My Morning News zum Laufen braucht und ob jeder Teil funktioniert"
     }
   },
   "topbar": {
@@ -4216,5 +4221,84 @@
     "askAdmin": "Nur ein Mandantenadministrator kann einen Schlüssel hinzufügen. Bitten Sie Ihren Administrator, das zu beheben.",
     "badge": "Kein API-Schlüssel",
     "fixOwnKey": "Eigenen API-Schlüssel für {name} verwenden"
+  },
+  "setup": {
+    "summary": "Hinterlegen und prüfen Sie, was My Morning News braucht: einen API-Schlüssel für das Modell und einen funktionierenden Suchanbieter.",
+    "intro": {
+      "title": "Schließen Sie zuerst die Einrichtung ab.",
+      "message": "Themen, Recherchen und Briefings bleiben gesperrt, bis jede erforderliche Prüfung unten bereit ist."
+    },
+    "blockedNotice": "Eine Aktion wurde gestoppt, weil die Einrichtung nicht abgeschlossen ist.",
+    "verifyAll": "Alles prüfen",
+    "verifying": "Prüfung mit Live-Aufrufen. Das kann einige Sekunden dauern.",
+    "state": {
+      "Ready": "Bereit",
+      "Missing": "Fehlt",
+      "Unverified": "Nicht geprüft",
+      "Failed": "Fehlgeschlagen"
+    },
+    "kind": {
+      "Model": "Modell",
+      "Search": "Suche",
+      "Embeddings": "Embeddings",
+      "Email": "E-Mail"
+    },
+    "check": {
+      "title": "{kind}: {name}",
+      "providerModel": "{provider}, Modell {model}",
+      "provider": "Anbieter: {provider}",
+      "tasks": "Verwendet für {tasks}",
+      "verified": "Zuletzt geprüft: {time}",
+      "platformKey": "Dieser Endpunkt nutzt den gemeinsamen Modellschlüssel des Dienstes, den der Serverbetreiber verwaltet. Hier ist daher kein Schlüssel einzugeben.",
+      "verify": "Prüfen",
+      "retry": "Erneut versuchen",
+      "openSearch": "Suchanbieter öffnen",
+      "openEndpoint": "{name} auf der Seite Modelle öffnen",
+      "openModels": "Seite Modelle öffnen"
+    },
+    "key": {
+      "label": "API-Schlüssel für {name}",
+      "help": "Wird verschlüsselt bei Ihren gespeicherten Zugangsdaten abgelegt, diesem Endpunkt zugeordnet und mit einem Live-Aufruf geprüft.",
+      "save": "Speichern und prüfen",
+      "saving": "Der Schlüssel wird gespeichert und mit einem Live-Aufruf geprüft. Das kann einige Sekunden dauern."
+    },
+    "required": {
+      "heading": "Erforderlich",
+      "none": "Der Server hat keine erforderlichen Prüfungen gemeldet.",
+      "open": "Einrichtung abschließen",
+      "askAdmin": "Ein Administrator muss die Einrichtung abschließen, damit das funktioniert."
+    },
+    "optional": {
+      "heading": "Optional",
+      "note": "Optionale Prüfungen blockieren die Recherche nie. Sie schalten Extras wie semantischen Abgleich und E-Mail-Versand frei."
+    },
+    "help": {
+      "title": "Weitere Möglichkeiten der Einrichtung",
+      "env": "Bei selbst gehosteten Installationen können Sie den Schlüssel auch in docker/.env als MYMORNINGNEWS_ANTHROPIC_API_KEY eintragen und den Server neu starten.",
+      "models": "Einen anderen Modellanbieter auf der Seite Modelle verwenden"
+    },
+    "ready": {
+      "title": "Alles bereit",
+      "message": "Alle erforderlichen Prüfungen waren erfolgreich. Sie können jetzt Themen anlegen und Recherchen starten.",
+      "newTopic": "Thema anlegen",
+      "topics": "Zu den Themen"
+    },
+    "gate": {
+      "title": "Dieser Arbeitsbereich ist nicht bereit",
+      "message": "Ein Administrator muss den API-Schlüssel für das Modell hinzufügen und prüfen, bevor jemand My Morning News nutzen kann.",
+      "askAdmin": "Bitten Sie Ihren Administrator, im Dashboard die Einrichtung zu öffnen, und prüfen Sie dann hier erneut.",
+      "checkAgain": "Erneut prüfen",
+      "checking": "Wird geprüft",
+      "signOut": "Abmelden",
+      "checked": "Zuletzt geprüft: {time}"
+    },
+    "loadError": {
+      "title": "Der Einrichtungsstatus konnte nicht geladen werden",
+      "message": "My Morning News prüft vor dem Öffnen, ob dieser Arbeitsbereich eingerichtet ist, und diese Prüfung wurde nicht abgeschlossen. Versuchen Sie es gleich noch einmal."
+    },
+    "nav": {
+      "callout": "Einrichtung abschließen",
+      "blocked": "{name} ist nach Abschluss der Einrichtung verfügbar"
+    }
   }
 }

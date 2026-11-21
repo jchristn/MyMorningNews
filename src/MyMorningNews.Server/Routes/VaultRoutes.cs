@@ -107,6 +107,16 @@ namespace MyMorningNews.Server.Routes
             VaultCredential? v = await LoadAsync(ctx).ConfigureAwait(false);
             if (v == null) return;
             v = await Server.Vault.UpdateAsync(v, req, ctx.Token).ConfigureAwait(false);
+            if (!String.IsNullOrEmpty(req.Secret))
+            {
+                EnumerationResult<ModelEndpoint> rotated = await Server.Database.ModelEndpoints.EnumerateAsync(new ModelEndpointFilter { TenantId = v.TenantId, CredentialId = v.Id, PageSize = 1000 }, ctx.Token).ConfigureAwait(false);
+                foreach (ModelEndpoint e in rotated.Items)
+                {
+                    e.LastValidationSucceeded = null;
+                    await Server.Database.ModelEndpoints.UpdateAsync(e, ctx.Token).ConfigureAwait(false);
+                }
+            }
+
             await Server.Audit.RecordAsync(AuditEventTypeEnum.VaultCredentialChanged, Context(ctx), 200, "Vault credential " + v.Id + (String.IsNullOrEmpty(req.Secret) ? " updated." : " rotated."), ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 200, VaultCredentialResponse.FromModel(v)).ConfigureAwait(false);
         }
@@ -120,6 +130,7 @@ namespace MyMorningNews.Server.Routes
             foreach (ModelEndpoint e in users.Items)
             {
                 e.CredentialId = null;
+                e.LastValidationSucceeded = null;
                 await Server.Database.ModelEndpoints.UpdateAsync(e, ctx.Token).ConfigureAwait(false);
             }
 

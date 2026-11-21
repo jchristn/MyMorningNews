@@ -53,6 +53,16 @@ export class ApiClient {
     this.getLocale = getLocale || (() => null);
     this.fetchImpl = fetchImpl || ((...args) => fetch(...args));
     this.timeoutMs = timeoutMs || DEFAULT_TIMEOUT_MS;
+    this.setupListeners = new Set();
+  }
+
+  /**
+   * Call `listener(body)` whenever the server refuses a request with 409 SetupRequired (the setup gate re-checks the
+   * setup status). Returns a function that removes the listener.
+   */
+  onSetupRequired(listener) {
+    this.setupListeners.add(listener);
+    return () => this.setupListeners.delete(listener);
   }
 
   /** Absolute URL for a path (used for media sources that the player fetches itself). */
@@ -131,6 +141,15 @@ export class ApiClient {
     if (status >= 200 && status < 300) return data;
     if (status === 409 && data && typeof data === 'object' && data.error === 'TenantSelectionRequired') {
       throw new TenantSelectionRequiredError(data);
+    }
+    if (status === 409 && data && typeof data === 'object' && data.error === 'SetupRequired') {
+      for (const listener of [...this.setupListeners]) {
+        try {
+          listener(data);
+        } catch {
+          // A listener's failure never changes the error the caller gets.
+        }
+      }
     }
     throw new ApiError(status, data && typeof data === 'object' ? data : null, typeof data === 'string' && data ? data : undefined);
   }

@@ -49,7 +49,8 @@
     "tooMany": "请求过多。请稍候再试。",
     "unauthorized": "您的会话已失效。请重新登录。",
     "capReached": "已达到套餐限制。",
-    "egressBlocked": "该地址位于私有网络中，此服务器不允许访问。"
+    "egressBlocked": "该地址位于私有网络中，此服务器不允许访问。",
+    "setupRequired": "设置尚未完成。"
   },
   "access": {
     "deniedTitle": "拒绝访问",
@@ -186,7 +187,8 @@
       "insightsOverview": "概览",
       "plans": "套餐",
       "emailInsights": "邮件投递",
-      "mcp": "MCP 客户端"
+      "mcp": "MCP 客户端",
+      "setup": "设置"
     }
   },
   "routes": {
@@ -315,6 +317,9 @@
     },
     "mcp": {
       "summary": "将 Claude Code 或其他 MCP 客户端连接到您的研究"
+    },
+    "setup": {
+      "summary": "My Morning News 运行所需的内容，以及每一项是否正常"
     }
   },
   "topbar": {
@@ -4216,5 +4221,84 @@
     "askAdmin": "只有租户管理员可以添加密钥。请联系您的管理员进行修复。",
     "badge": "无 API 密钥",
     "fixOwnKey": "为 {name} 使用您自己的 API 密钥"
+  },
+  "setup": {
+    "summary": "添加并验证 My Morning News 所需的内容：一个模型 API 密钥和一个可用的搜索提供商。",
+    "intro": {
+      "title": "请先完成设置。",
+      "message": "在下方所有必需检查都就绪之前，主题、研究运行和简报都处于锁定状态。"
+    },
+    "blockedNotice": "由于设置尚未完成，一项操作已被阻止。",
+    "verifyAll": "全部验证",
+    "verifying": "正在通过实时调用进行检查，可能需要几秒钟。",
+    "state": {
+      "Ready": "就绪",
+      "Missing": "缺失",
+      "Unverified": "未验证",
+      "Failed": "失败"
+    },
+    "kind": {
+      "Model": "模型",
+      "Search": "搜索",
+      "Embeddings": "嵌入",
+      "Email": "电子邮件"
+    },
+    "check": {
+      "title": "{kind}：{name}",
+      "providerModel": "{provider}，模型 {model}",
+      "provider": "提供商：{provider}",
+      "tasks": "用于 {tasks}",
+      "verified": "上次验证：{time}",
+      "platformKey": "此端点使用服务的共享模型密钥，由服务器运营方管理，因此无需在此输入密钥。",
+      "verify": "验证",
+      "retry": "重试",
+      "openSearch": "打开搜索提供商",
+      "openEndpoint": "在模型页面打开 {name}",
+      "openModels": "打开模型页面"
+    },
+    "key": {
+      "label": "{name} 的 API 密钥",
+      "help": "加密保存在已存储凭据中，关联到此端点，并通过实时调用进行检查。",
+      "save": "保存并验证",
+      "saving": "正在保存密钥并通过实时调用检查，可能需要几秒钟。"
+    },
+    "required": {
+      "heading": "必需",
+      "none": "服务器未报告任何必需检查。",
+      "open": "完成设置",
+      "askAdmin": "需要管理员完成设置后才能使用此功能。"
+    },
+    "optional": {
+      "heading": "可选",
+      "note": "可选检查从不阻止研究。它们会开启语义匹配和电子邮件发送等附加功能。"
+    },
+    "help": {
+      "title": "其他设置方式",
+      "env": "自托管安装也可以在 docker/.env 中将密钥设置为 MYMORNINGNEWS_ANTHROPIC_API_KEY，然后重启服务器。",
+      "models": "在模型页面使用其他模型提供商"
+    },
+    "ready": {
+      "title": "一切就绪",
+      "message": "所有必需检查均已通过。现在可以创建主题并运行研究了。",
+      "newTopic": "创建主题",
+      "topics": "前往主题"
+    },
+    "gate": {
+      "title": "此工作区尚未就绪",
+      "message": "需要管理员添加并验证模型 API 密钥后，任何人才能使用 My Morning News。",
+      "askAdmin": "请让管理员在控制台中打开“设置”，然后在这里重新检查。",
+      "checkAgain": "重新检查",
+      "checking": "正在检查",
+      "signOut": "退出登录",
+      "checked": "上次检查：{time}"
+    },
+    "loadError": {
+      "title": "无法加载设置状态",
+      "message": "My Morning News 会在打开前检查此工作区是否已设置，但该检查未能完成。请稍后重试。"
+    },
+    "nav": {
+      "callout": "完成设置",
+      "blocked": "完成设置后即可打开{name}"
+    }
   }
 }

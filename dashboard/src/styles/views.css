@@ -291,3 +291,135 @@
 .settings-meta .field-help {
   overflow-wrap: anywhere;
 }
+
+/* Setup: required checks before the product opens */
+.nav-setup-callout {
+  margin-bottom: 8px;
+  background: var(--color-warning-soft);
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.nav-setup-callout:hover,
+.nav-setup-callout.active {
+  background: var(--color-warning);
+  color: #fff;
+}
+
+.nav-item-blocked {
+  opacity: 0.45;
+}
+
+.setup-page {
+  max-width: 960px;
+}
+
+.setup-section h2,
+.setup-help h2,
+.setup-ready h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.setup-check {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.setup-check-failed,
+.setup-check-missing {
+  border-color: var(--color-danger);
+}
+
+.setup-check-unverified {
+  border-color: var(--color-warning);
+}
+
+.setup-check-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.setup-check-head h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.setup-check-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+
+.setup-check-message {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.setup-check-actions,
+.setup-gate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.setup-gate-actions {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.setup-key-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 520px;
+}
+
+.setup-ready {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  border-color: var(--color-success);
+  background: var(--color-success-soft);
+}
+
+.setup-ready > svg {
+  color: var(--color-success);
+  flex-shrink: 0;
+}
+
+.setup-ready p {
+  margin: 0;
+}
+
+.setup-blocked-notice {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.setup-help p {
+  margin: 0;
+}
+
+.setup-gate-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.setup-gate-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}

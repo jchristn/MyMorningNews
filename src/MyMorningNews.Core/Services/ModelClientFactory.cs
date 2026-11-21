@@ -73,7 +73,7 @@ namespace MyMorningNews.Core.Services
                 case ModelProviderEnum.OllamaCloud:
                     return new OllamaCloudClient(Require(apiKey, endpoint), url, options);
                 case ModelProviderEnum.OpenAiCompatible:
-                    if (url == null) throw new ArgumentException("Endpoint " + endpoint.Name + " needs a base URL.", nameof(endpoint));
+                    if (url == null) throw new ArgumentException("Endpoint " + endpoint.Name + " needs a base URL.");
                     return new OpenAiCompatibleClient(url, String.IsNullOrEmpty(apiKey) ? null : apiKey, options);
                 case ModelProviderEnum.Ollama:
                     return new OllamaClient(url ?? DefaultOllamaEndpoint, String.IsNullOrEmpty(apiKey) ? null : apiKey, options);
@@ -89,7 +89,7 @@ namespace MyMorningNews.Core.Services
         private static string Require(string? apiKey, ModelEndpoint endpoint)
         {
             if (String.IsNullOrWhiteSpace(apiKey))
-                throw new ArgumentException("Endpoint " + endpoint.Name + " (" + endpoint.Provider + ") needs an API key. Add one to the vault and select it on the endpoint.", nameof(apiKey));
+                throw new ArgumentException("Endpoint " + endpoint.Name + " (" + endpoint.Provider + ") needs an API key. Add one on the Setup page, or store it under Stored credentials and select it on the endpoint.");
             return apiKey;
         }
 

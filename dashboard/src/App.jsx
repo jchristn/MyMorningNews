@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { AppProvider } from './context/AppContext.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
+import { SetupProvider, useSetup } from './context/SetupContext.jsx';
 import { ThemeProvider } from './context/ThemeContext.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import LoadingState from './components/LoadingState.jsx';
@@ -13,10 +14,12 @@ import SignupPage from './components/auth/SignupPage.jsx';
 import VerifyEmailPage from './components/auth/VerifyEmailPage.jsx';
 import Login from './components/Login.jsx';
 import { PrivateRoute, PublicRoute, RequireAccess } from './components/ProtectedRoute.jsx';
-import { ALL_ROUTES } from './utils/navigation.js';
+import SetupGate from './components/SetupGate.jsx';
+import { ALL_ROUTES, allowedBeforeSetup } from './utils/navigation.js';
 
 const VIEWS = {
   home: lazy(() => import('./views/HomeView.jsx')),
+  setup: lazy(() => import('./views/SetupView.jsx')),
   today: lazy(() => import('./views/TodayView.jsx')),
   briefings: lazy(() => import('./views/BriefingsView.jsx')),
   listen: lazy(() => import('./views/ListenView.jsx')),
@@ -62,6 +65,9 @@ const VIEWS = {
 
 function RouteElement({ route }) {
   const View = VIEWS[route.key];
+  const setup = useSetup();
+  // Until every required check passes, the product routes send administrators to finish setup first.
+  if (setup && setup.status && !setup.status.ready && !allowedBeforeSetup(route)) return <Navigate to="/dashboard/setup" replace />;
   return (
     <RequireAccess item={route}>
       {View ? (
@@ -110,7 +116,11 @@ export function AppRoutes() {
         path="/dashboard"
         element={
           <PrivateRoute>
-            <Dashboard />
+            <SetupProvider>
+              <SetupGate>
+                <Dashboard />
+              </SetupGate>
+            </SetupProvider>
           </PrivateRoute>
         }
       >

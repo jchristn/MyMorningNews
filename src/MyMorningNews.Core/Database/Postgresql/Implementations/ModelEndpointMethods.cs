@@ -81,7 +81,8 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.LastValidationResult,
                 obj.Active,
                 DateTime.SpecifyKind(obj.CreatedUtc, DateTimeKind.Utc),
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
+                obj.LastValidationSucceeded).ConfigureAwait(false);
             return obj;
         }
 
@@ -132,7 +133,8 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.LastValidatedUtc.HasValue ? DateTime.SpecifyKind(obj.LastValidatedUtc.Value, DateTimeKind.Utc) : null,
                 obj.LastValidationResult,
                 obj.Active,
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
+                obj.LastValidationSucceeded).ConfigureAwait(false);
             if (affected < 1) throw new KeyNotFoundException("ModelEndpoint " + obj.Id + " was not found.");
             return obj;
         }
@@ -226,6 +228,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             obj.Active = reader.GetBoolean(23);
             obj.CreatedUtc = DateTime.SpecifyKind(reader.GetDateTime(24), DateTimeKind.Utc);
             obj.LastUpdateUtc = DateTime.SpecifyKind(reader.GetDateTime(25), DateTimeKind.Utc);
+            obj.LastValidationSucceeded = (reader.IsDBNull(26) ? (bool?)null : reader.GetBoolean(26));
             return obj;
         }
 

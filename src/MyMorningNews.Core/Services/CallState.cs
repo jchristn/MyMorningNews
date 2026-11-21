@@ -99,6 +99,11 @@ namespace MyMorningNews.Core.Services
         public decimal? EstimatedCostUsd { get; set; } = null;
 
         /// <summary>
+        /// Cost the provider reported itself (agent CLIs signed in with an API key), used when the endpoint has no prices.
+        /// </summary>
+        public decimal? ReportedCostUsd { get; set; } = null;
+
+        /// <summary>
         /// Repair turns used.
         /// </summary>
         public int Repairs { get; set; } = 0;

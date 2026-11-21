@@ -2338,7 +2338,8 @@
         "results": "结果",
         "details": "详情",
         "calls": "模型调用",
-        "tools": "工具调用"
+        "tools": "工具调用",
+        "costs": "费用"
       },
       "contextHash": "上下文快照"
     },
@@ -2371,13 +2372,7 @@
       "sources": "已读取来源",
       "newFindings": "新发现",
       "duplicates": "重复项",
-      "tokens": "令牌",
-      "tokenSplit": "输入 {input}，输出 {output}",
-      "cost": "预估费用",
-      "modelUsage": "模型用量",
-      "notRecorded": "未记录",
-      "notRecordedHelp": "此运行没有记录任何模型调用。",
-      "costPending": "未定价"
+      "notRecordedHelp": "此运行没有记录任何模型调用。"
     },
     "stages": {
       "empty": "此运行没有记录任何阶段。",
@@ -4457,6 +4452,69 @@
       },
       "openModels": "打开模型",
       "openSettings": "打开设置"
+    }
+  },
+  "costs": {
+    "under": "低于 {amount}",
+    "noCalls": "没有模型调用",
+    "notPriced": "未定价",
+    "unpriced": {
+      "someTitle": "部分调用没有价格",
+      "allTitle": "没有任何调用有价格",
+      "count": "没有价格的调用：{count} / {total}",
+      "endpoint": "端点未设置价格：请在“模型”页面设置其输入和输出价格。",
+      "setPrices": "设置价格",
+      "subscription": "通过订阅登录的智能体 CLI：费用已包含在您的订阅中。",
+      "partial": "显示的金额只包含有价格的调用。",
+      "callTitle": "此调用没有价格：其端点未设置价格，或由订阅支付。"
+    },
+    "header": {
+      "aria": "运行费用",
+      "cost": "运行费用",
+      "costSoFar": "目前费用",
+      "split": "输入 {input}，输出 {output}",
+      "tokens": "令牌",
+      "inputTokens": "输入 {input}，缓存 {cached}",
+      "outputTokens": "输出 {output}，推理 {reasoning}",
+      "calls": "模型调用",
+      "unpricedCalls": "{count, plural, other {# 次未定价}}",
+      "failedCalls": "{count, plural, other {# 次失败}}",
+      "perFinding": "每条新发现的费用",
+      "newFindings": "{count, plural, =0 {没有新发现} other {# 条新发现}}",
+      "breakdown": "钱花在了哪里"
+    },
+    "stages": {
+      "cost": "费用",
+      "share": "费用占比",
+      "calls": "调用",
+      "tokens": "令牌",
+      "mostExpensive": "最贵",
+      "openCalls": "显示 {stage} 的模型调用",
+      "callsTitle": "{stage}：模型调用",
+      "callsSummary": "{cost}，共 {count, plural, other {# 次调用}}"
+    },
+    "breakdown": {
+      "title": "钱花在了哪里",
+      "total": "{cost}，共 {count, plural, other {# 次模型调用}}",
+      "byStage": "按阶段",
+      "byModel": "按模型",
+      "byTask": "按任务",
+      "model": "模型",
+      "task": "任务",
+      "unknownModel": "未知模型",
+      "unattributed": "有 {count, plural, other {# 次调用}}不属于任何阶段："
+    },
+    "topic": {
+      "title": "每次运行的费用",
+      "help": "最近 {count} 次已完成的运行，从旧到新。选择一列即可打开该运行。",
+      "average": "在 {count, plural, other {# 次运行}}中，每次有价格的运行平均 {average}，共计 {total}",
+      "noPriced": "这些运行都没有价格。",
+      "empty": "还没有已完成的运行。",
+      "aria": "最近 {count, plural, other {# 次运行}}的每次运行费用",
+      "status": "状态",
+      "note": "备注",
+      "kind": "类型",
+      "partialSuffix": "（部分调用未定价）"
     }
   }
 }

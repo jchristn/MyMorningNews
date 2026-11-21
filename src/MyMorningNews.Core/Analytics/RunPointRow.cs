@@ -40,6 +40,21 @@ namespace MyMorningNews.Core.Analytics
         public double DurationMs { get; set; } = 0;
 
         /// <summary>
+        /// Estimated cost in US dollars. Null when none of the run's model calls was priced.
+        /// </summary>
+        public decimal? EstimatedCostUsd { get; set; } = null;
+
+        /// <summary>
+        /// Model calls the run made.
+        /// </summary>
+        public int LlmCallCount { get; set; } = 0;
+
+        /// <summary>
+        /// Model calls with no price (left out of the cost).
+        /// </summary>
+        public int UnpricedCallCount { get; set; } = 0;
+
+        /// <summary>
         /// Non-duplicate findings by tier. Every tier is present.
         /// </summary>
         public Dictionary<string, int> Tiers { get; set; } = new Dictionary<string, int>(StringComparer.Ordinal);

@@ -1,0 +1,172 @@
+/* Model cost: run cost header, stage cost and share, breakdown tables, unpriced marker. Theme tokens only, so both
+   themes follow. */
+
+.cost-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.cost-open {
+  font-variant-numeric: tabular-nums;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+}
+
+.unpriced-note {
+  display: inline-flex;
+  align-items: center;
+}
+
+.unpriced-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--color-warning);
+  cursor: pointer;
+}
+
+.unpriced-marker:hover,
+.unpriced-marker[aria-expanded='true'] {
+  background: var(--color-warning-soft);
+}
+
+.unpriced-marker:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.cost-popover {
+  position: fixed;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: calc(100vw - 16px);
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+  font-size: var(--font-size-sm);
+  font-weight: 400;
+  text-align: start;
+  white-space: normal;
+  line-height: var(--line-height-body);
+}
+
+/* Share of cost: a thin proportional bar and the percent. */
+.share-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 96px;
+  width: 100%;
+}
+
+.share-bar-track {
+  flex: 1;
+  min-width: 40px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--color-surface-alt);
+  overflow: hidden;
+}
+
+.share-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--chart-series-1);
+}
+
+.share-bar.top .share-bar-fill {
+  background: var(--color-accent);
+}
+
+.share-bar-value {
+  min-width: 3.5em;
+  text-align: end;
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+}
+
+.stage-top-cost td {
+  background: var(--color-accent-soft);
+}
+
+.top-cost-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 6px;
+  border-radius: 9px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  white-space: nowrap;
+}
+
+/* Run cost header */
+.run-cost-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Four tiles in the drawer, two on a phone; the cost tile is set apart by color and size, not by width. */
+.run-cost-grid {
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+}
+
+.run-cost-grid .kpi-tile {
+  padding: 10px 12px;
+}
+
+.run-cost-grid .kpi-tile.tone-accent {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+.run-cost-grid .kpi-tile.tone-accent .kpi-value {
+  font-size: 26px;
+}
+
+.run-cost-more {
+  align-self: flex-start;
+  gap: 4px;
+}
+
+/* Breakdown */
+.cost-breakdown-caption {
+  caption-side: top;
+  text-align: start;
+  font-weight: 600;
+  padding-bottom: 6px;
+}
+
+.cost-breakdown-subtitle {
+  margin: 0;
+  font-size: var(--font-size-base);
+}
+
+.cost-breakdown-table th.cost-breakdown-label {
+  font-weight: 400;
+  text-align: start;
+}
+
+.cost-breakdown-table td:nth-child(3) {
+  min-width: 120px;
+}

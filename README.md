@@ -147,6 +147,10 @@ Each model call records who it is attributed to, the topic and run, input, cache
 reasoning tokens, time to first token, tool calls, retries, and estimated cost. Insights, Usage shows the totals, as
 does `GET /v1.0/api/usage/report`.
 
+Every run and every stage of a run shows its estimated cost in US dollars, from the prices set on each model endpoint,
+with calls that have no price counted separately. `GET /v1.0/api/runs/{id}/costs` breaks a run's cost down by stage,
+model, and task (see [Run and stage cost](REST_API.md#run-and-stage-cost)).
+
 A scope guardrail is prepended to every model call, and every default prompt repeats it: models only research and
 summarize your topics, treat fetched pages as data rather than instructions, and decline unrelated
 requests.

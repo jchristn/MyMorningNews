@@ -30,7 +30,9 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             { "queuedUtc", "queuedutc" },
             { "completedUtc", "completedutc" },
             { "createdUtc", "createdutc" },
-            { "lastUpdateUtc", "lastupdateutc" }
+            { "lastUpdateUtc", "lastupdateutc" },
+            { "estimatedCostUsd", "estimatedcostusd" },
+            { "durationMs", "durationms" }
         };
 
         #endregion
@@ -87,7 +89,11 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.Active,
                 DateTime.SpecifyKind(obj.CreatedUtc, DateTimeKind.Utc),
                 DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
-                obj.ResumeFromStage).ConfigureAwait(false);
+                obj.ResumeFromStage,
+                obj.LlmCallCount,
+                obj.UnpricedCallCount,
+                obj.CachedInputTokens,
+                obj.ReasoningTokens).ConfigureAwait(false);
             return obj;
         }
 
@@ -142,7 +148,11 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.ContextSnapshotHash,
                 obj.Active,
                 DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
-                obj.ResumeFromStage).ConfigureAwait(false);
+                obj.ResumeFromStage,
+                obj.LlmCallCount,
+                obj.UnpricedCallCount,
+                obj.CachedInputTokens,
+                obj.ReasoningTokens).ConfigureAwait(false);
             if (affected < 1) throw new KeyNotFoundException("Run " + obj.Id + " was not found.");
             return obj;
         }
@@ -186,7 +196,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             long total = counts.FirstOrDefault();
             args.Add(filter.PageSize);
             args.Add((long)(filter.PageNumber - 1) * filter.PageSize);
-            string sql = "SELECT " + RunQueries.Columns + " FROM " + RunQueries.Table + where + " ORDER BY " + sortColumn + " " + direction + ", id " + direction + " LIMIT $" + (args.Count - 1) + " OFFSET $" + args.Count;
+            string sql = "SELECT " + RunQueries.Columns + " FROM " + RunQueries.Table + where + " ORDER BY " + sortColumn + " " + direction + (sortColumn == "estimatedcostusd" ? " NULLS LAST" : String.Empty) + ", id " + direction + " LIMIT $" + (args.Count - 1) + " OFFSET $" + args.Count;
             List<Run> items = await QueryAsync(sql, Map, token, args.ToArray()).ConfigureAwait(false);
             return EnumerationResult<Run>.Create(items, filter, total, sw.Elapsed.TotalMilliseconds);
         }
@@ -272,6 +282,10 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             obj.CreatedUtc = DateTime.SpecifyKind(reader.GetDateTime(27), DateTimeKind.Utc);
             obj.LastUpdateUtc = DateTime.SpecifyKind(reader.GetDateTime(28), DateTimeKind.Utc);
             obj.ResumeFromStage = reader.IsDBNull(29) ? null : reader.GetString(29);
+            obj.LlmCallCount = reader.GetInt32(30);
+            obj.UnpricedCallCount = reader.GetInt32(31);
+            obj.CachedInputTokens = reader.GetInt32(32);
+            obj.ReasoningTokens = reader.GetInt32(33);
             return obj;
         }
 

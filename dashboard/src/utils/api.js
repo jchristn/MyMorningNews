@@ -705,6 +705,10 @@ export class ApiClient {
   listRunResults(id, disposition) {
     return this._request('GET', '/v1.0/api/runs/' + enc(id) + '/results', { query: { disposition } });
   }
+  // What a run cost: totals, each stage, each model, and each task role (RunCostReport). Current while the run is going.
+  getRunCosts(id) {
+    return this._request('GET', '/v1.0/api/runs/' + enc(id) + '/costs');
+  }
   // A run's model calls, paged and oldest first unless sortDirection says otherwise.
   listRunLlmCalls(id, query) {
     return this._request('GET', '/v1.0/api/runs/' + enc(id) + '/llm-calls', { query });

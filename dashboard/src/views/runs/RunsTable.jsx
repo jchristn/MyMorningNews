@@ -11,6 +11,7 @@ import { pagedQuery } from '../../utils/api.js';
 import { RUN_STATUSES, RUN_STATUS_TONES, RUN_TRIGGERS } from '../../utils/enums.js';
 import { describeError } from '../../utils/errors.js';
 import CopyableId from '../../components/CopyableId.jsx';
+import CostValue from '../../components/CostValue.jsx';
 import DataTable from '../../components/DataTable.jsx';
 import DateCell from '../../components/DateCell.jsx';
 import JsonViewerModal from '../../components/JsonViewerModal.jsx';
@@ -18,7 +19,8 @@ import StatusBadge from '../../components/StatusBadge.jsx';
 import RunDetailDrawer from './RunDetailDrawer.jsx';
 import { findingsLink, isActiveRun, runDurationMs } from './runParts.js';
 
-// Runs with status, trigger, timing, summary, and error. Pass topicId to scope to one topic. The table refreshes
+// Runs with status, cost, trigger, timing, summary, and error. Cost sits right after status and is always shown; it
+// sorts on the server (sortBy=estimatedCostUsd, unpriced runs last). Pass topicId to scope to one topic. The table refreshes
 // every five seconds while any run on the page is queued or running.
 export default function RunsTable({ topicId = null, tableKey = 'runs', toolbar = null, refreshSignal = 0, initialRunId = null, onRunClosed }) {
   const { t } = useTranslation();
@@ -79,6 +81,14 @@ export default function RunsTable({ topicId = null, tableKey = 'runs', toolbar =
         </span>
       )
     },
+    {
+      key: 'estimatedCostUsd',
+      header: t('runs.columns.cost'),
+      sortKey: 'estimatedCostUsd',
+      pinned: true,
+      align: 'right',
+      render: (r) => <CostValue totals={r} pending={isActiveRun(r)} />
+    },
     ...(topicId
       ? []
       : [
@@ -101,6 +111,7 @@ export default function RunsTable({ topicId = null, tableKey = 'runs', toolbar =
     {
       key: 'duration',
       header: t('runs.columns.duration'),
+      sortKey: 'durationMs',
       align: 'right',
       render: (r) => {
         const ms = runDurationMs(r);
@@ -121,13 +132,6 @@ export default function RunsTable({ topicId = null, tableKey = 'runs', toolbar =
         )
     },
     { key: 'sourceCount', header: t('runs.columns.sources'), align: 'right', defaultHidden: true, render: (r) => f.number(r.sourceCount || 0) },
-    {
-      key: 'estimatedCostUsd',
-      header: t('runs.columns.cost'),
-      align: 'right',
-      defaultHidden: true,
-      render: (r) => (r.estimatedCostUsd === null || r.estimatedCostUsd === undefined ? <span className="muted">-</span> : f.usd(r.estimatedCostUsd))
-    },
     {
       key: 'summary',
       header: t('runs.columns.summary'),

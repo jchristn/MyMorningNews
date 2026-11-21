@@ -2338,7 +2338,8 @@
         "results": "Results",
         "details": "Details",
         "calls": "Model calls",
-        "tools": "Tool calls"
+        "tools": "Tool calls",
+        "costs": "Costs"
       },
       "contextHash": "Context snapshot"
     },
@@ -2371,13 +2372,7 @@
       "sources": "Sources read",
       "newFindings": "New findings",
       "duplicates": "Duplicates",
-      "tokens": "Tokens",
-      "tokenSplit": "{input} in, {output} out",
-      "cost": "Estimated cost",
-      "modelUsage": "Model usage",
-      "notRecorded": "Not recorded",
-      "notRecordedHelp": "No model calls were recorded for this run.",
-      "costPending": "Not priced"
+      "notRecordedHelp": "No model calls were recorded for this run."
     },
     "stages": {
       "empty": "No stages recorded for this run.",
@@ -4457,6 +4452,69 @@
       },
       "openModels": "Open Models",
       "openSettings": "Open Settings"
+    }
+  },
+  "costs": {
+    "under": "under {amount}",
+    "noCalls": "No model calls",
+    "notPriced": "Not priced",
+    "unpriced": {
+      "someTitle": "Some calls had no price",
+      "allTitle": "No call had a price",
+      "count": "Calls without a price: {count} of {total}",
+      "endpoint": "An endpoint without prices: set its input and output prices on the Models page.",
+      "setPrices": "Set prices",
+      "subscription": "An agent CLI signed in with a subscription: the cost is included in your subscription.",
+      "partial": "The amount shown covers only the priced calls.",
+      "callTitle": "This call had no price: its endpoint has no prices set, or a subscription covers it."
+    },
+    "header": {
+      "aria": "Run cost",
+      "cost": "Run cost",
+      "costSoFar": "Cost so far",
+      "split": "{input} input, {output} output",
+      "tokens": "Tokens",
+      "inputTokens": "{input} in, {cached} cached",
+      "outputTokens": "{output} out, {reasoning} reasoning",
+      "calls": "Model calls",
+      "unpricedCalls": "{count, plural, one {# unpriced} other {# unpriced}}",
+      "failedCalls": "{count, plural, one {# failed} other {# failed}}",
+      "perFinding": "Cost per new finding",
+      "newFindings": "{count, plural, =0 {No new findings} one {# new finding} other {# new findings}}",
+      "breakdown": "Where the money went"
+    },
+    "stages": {
+      "cost": "Cost",
+      "share": "Share of cost",
+      "calls": "Calls",
+      "tokens": "Tokens",
+      "mostExpensive": "Most expensive",
+      "openCalls": "Show the model calls of {stage}",
+      "callsTitle": "{stage}: model calls",
+      "callsSummary": "{cost} across {count, plural, one {# call} other {# calls}}"
+    },
+    "breakdown": {
+      "title": "Where the money went",
+      "total": "{cost} across {count, plural, one {# model call} other {# model calls}}",
+      "byStage": "By stage",
+      "byModel": "By model",
+      "byTask": "By task",
+      "model": "Model",
+      "task": "Task",
+      "unknownModel": "Unknown model",
+      "unattributed": "{count, plural, one {# call was} other {# calls were}} made outside any stage:"
+    },
+    "topic": {
+      "title": "Cost per run",
+      "help": "The last {count} finished runs, oldest to newest. Select a column to open the run.",
+      "average": "Average {average} per priced run across {count, plural, one {# run} other {# runs}}, {total} in all",
+      "noPriced": "None of these runs was priced.",
+      "empty": "No finished runs yet.",
+      "aria": "Cost per run for the last {count, plural, one {# run} other {# runs}}",
+      "status": "Status",
+      "note": "Note",
+      "kind": "Kind",
+      "partialSuffix": "(some calls unpriced)"
     }
   }
 }

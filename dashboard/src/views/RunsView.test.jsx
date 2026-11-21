@@ -61,8 +61,11 @@ describe('RunsView', () => {
     expect(within(totals).getByText('Sources read').closest('.kpi-tile')).toHaveTextContent('6');
     expect(within(totals).getByText('New findings').closest('.kpi-tile')).toHaveTextContent('3');
     expect(within(totals).getByText('Duplicates').closest('.kpi-tile')).toHaveTextContent('2');
-    expect(within(totals).getByText('Tokens').closest('.kpi-tile')).toHaveTextContent('12K in, 3.4K out');
-    expect(within(totals).getByText('Estimated cost').closest('.kpi-tile')).toHaveTextContent('$0.42');
+    const cost = within(drawer).getByTestId('run-cost-header');
+    expect(within(cost).getByText('Tokens').closest('.kpi-tile')).toHaveTextContent('12K in, 0 cached');
+    expect(within(cost).getByText('Tokens').closest('.kpi-tile')).toHaveTextContent('3.4K out, 0 reasoning');
+    expect(within(cost).getByText('Run cost').closest('.kpi-tile')).toHaveTextContent('$0.42');
+    expect(within(cost).getByText('Cost per new finding').closest('.kpi-tile')).toHaveTextContent('$0.14');
     expect(within(drawer).getByRole('link', { name: /View findings \(3\)/ })).toHaveAttribute('href', '/dashboard/findings?runId=run_p');
 
     const stages = await within(drawer).findByTestId('run-stages');

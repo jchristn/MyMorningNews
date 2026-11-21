@@ -92,6 +92,8 @@ export const runsApi = {
   stages: (client, id) => client.get(routes.runStages(id)),
   queries: (client, id) => client.get(routes.runQueries(id)),
   results: (client, id, disposition) => client.get(routes.runResults(id), disposition ? { disposition } : undefined),
+  /** What the run cost (RunCostReport): totals, each stage, each model, and each task role. Current while it runs. */
+  costs: (client, id) => client.get(routes.runCosts(id)),
 };
 
 /**

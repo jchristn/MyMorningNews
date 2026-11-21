@@ -7,6 +7,7 @@ import { findingsApi, runsApi } from '@/api/research';
 import { HorizontalBarChart } from '@/charts/HorizontalBarChart';
 import { ActionError } from '@/components/states';
 import { Badge, Banner, Button, Card, KeyValue, ListRow, SectionHeader, T } from '@/components/ui';
+import { costLabel, costPerFinding, costState, mostExpensiveStage, runCostTotals, stageCosts } from '@/lib/costs';
 import { ACTIVE_RUN_STATUSES, RUN_STATUS_TONES, STAGE_STATUS_TONES } from '@/lib/enums';
 import { formatCompact, formatCost, formatDateTime, formatNumber } from '@/lib/format';
 import { useAuth } from '@/state/AuthContext';
@@ -32,21 +33,23 @@ export function dispositionCounts(results) {
     .sort((a, b) => b.count - a.count);
 }
 
-/** Everything the run detail shows, read together: the run, its stages, queries, results, and new findings. */
+/** Everything the run detail shows, read together: the run, its stages, its cost report, queries, results, and new findings. */
 export async function loadRun(client, id) {
   const run = await runsApi.get(client, id);
-  const [stages, queries, results, findings] = await Promise.all([
+  const [stages, costs, queries, results, findings] = await Promise.all([
     runsApi.stages(client, id).catch(() => []),
+    runsApi.costs(client, id).catch(() => null),
     runsApi.queries(client, id).catch(() => []),
     runsApi.results(client, id).catch(() => []),
     findingsApi.list(client, { runId: id, pageNumber: 1, pageSize: 20, sortBy: 'relevanceScore', sortDirection: 'Descending', includeDryRun: run.isDryRun || undefined }).catch(() => null),
   ]);
-  return { run, stages: Array.isArray(stages) ? stages : listItems(stages), queries: listItems(queries), results: listItems(results), findings: listItems(findings) };
+  return { run, stages: Array.isArray(stages) ? stages : listItems(stages), costs: costs && costs.totals ? costs : null, queries: listItems(queries), results: listItems(results), findings: listItems(findings) };
 }
 
 /**
- * One run (dashboard `/runs/:id`): status, totals (duration, findings, duplicates, sources, tokens, cost), the stage
- * list with a duration chart, the queries it sent, what happened to the results, and its findings. Polls while the run
+ * One run (dashboard `/runs/:id`): status, what it cost (total, input and output, tokens, calls, cost per finding, and
+ * why some calls had no price), totals (duration, findings, duplicates, sources), the stage list with each stage's
+ * cost and share and the most expensive marked, duration and cost charts, the queries it sent, what happened to the results, and its findings. Polls while the run
  * is queued or running, and offers Cancel then.
  */
 export function RunDetail({ id }) {
@@ -83,12 +86,19 @@ export function RunDetail({ id }) {
 }
 
 function RunBody({ data, resource, busy, error, onCancel, t, locale }) {
-  const { run, stages, queries, results, findings } = data;
+  const { run, stages, costs, queries, results, findings } = data;
   const active = ACTIVE_RUN_STATUSES.includes(run.status);
   usePolling(resource.poll, active);
   const ordered = stages.slice().sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
   const timed = ordered.filter((s) => s.durationMs > 0);
-  const tokens = (run.inputTokens || 0) + (run.outputTokens || 0);
+  const totals = runCostTotals(run, costs);
+  const tokens = (totals.inputTokens || 0) + (totals.outputTokens || 0);
+  const perStage = stageCosts(ordered, costs);
+  const top = mostExpensiveStage(perStage);
+  const costed = ordered.filter((s) => (perStage.get(s.stage).estimatedCostUsd || 0) > 0);
+  const perFinding = costPerFinding(run, costs);
+  const unpriced = Number(totals.unpricedCallCount) || 0;
+  const hasSplit = totals.inputCostUsd !== null && totals.inputCostUsd !== undefined && totals.outputCostUsd !== null && totals.outputCostUsd !== undefined;
   return (
     <>
       <DetailHeader
@@ -113,6 +123,23 @@ function RunBody({ data, resource, busy, error, onCancel, t, locale }) {
           <T selectable>{run.summary}</T>
         </Card>
       ) : null}
+      <SectionHeader title={t('mobile.runs.cost')} />
+      <Card testID="run-cost">
+        <KeyValue label={active ? t('mobile.runs.costSoFar') : t('mobile.runs.costTotal')} value={costLabel(totals, t, locale)} />
+        {hasSplit ? <KeyValue label={t('mobile.runs.costSplit')} value={t('mobile.runs.costSplitValue', { input: formatCost(totals.inputCostUsd, locale), output: formatCost(totals.outputCostUsd, locale) })} /> : null}
+        <KeyValue label={t('mobile.runs.tokens')} value={t('mobile.runs.tokensValue', { total: formatCompact(tokens, locale), input: formatCompact(totals.inputTokens || 0, locale), output: formatCompact(totals.outputTokens || 0, locale) })} />
+        <KeyValue label={t('mobile.runs.tokenDetail')} value={t('mobile.runs.tokenDetailValue', { cached: formatCompact(totals.cachedInputTokens || 0, locale), reasoning: formatCompact(totals.reasoningTokens || 0, locale) })} />
+        <KeyValue label={t('mobile.runs.calls')} value={formatNumber(totals.llmCallCount || 0, locale)} />
+        <KeyValue label={t('mobile.runs.perFinding')} value={perFinding !== null ? formatCost(perFinding, locale) : '-'} />
+        {unpriced > 0 ? (
+          <View style={{ gap: 2, paddingTop: spacing.xs }} testID="run-unpriced">
+            <T variant="small" style={{ fontWeight: '600' }}>
+              {t('mobile.runs.unpricedLine', { count: unpriced })}
+            </T>
+            <T variant="small">{t('mobile.runs.unpricedHelp')}</T>
+          </View>
+        ) : null}
+      </Card>
       <SectionHeader title={t('mobile.runs.totals')} />
       <Card testID="run-totals">
         <KeyValue label={t('mobile.runs.duration')} value={formatDuration(run.durationMs, locale)} />
@@ -120,8 +147,6 @@ function RunBody({ data, resource, busy, error, onCancel, t, locale }) {
         <KeyValue label={t('mobile.runs.duplicates')} value={String(run.duplicateCount || 0)} />
         <KeyValue label={t('mobile.runs.sources')} value={String(run.sourceCount || 0)} />
         <KeyValue label={t('mobile.runs.queries')} value={String(queries.length)} />
-        <KeyValue label={t('mobile.runs.tokens')} value={t('mobile.runs.tokensValue', { total: formatCompact(tokens, locale), input: formatCompact(run.inputTokens || 0, locale), output: formatCompact(run.outputTokens || 0, locale) })} />
-        {run.estimatedCostUsd !== undefined && run.estimatedCostUsd !== null ? <KeyValue label={t('mobile.runs.cost')} value={formatCost(run.estimatedCostUsd, locale)} /> : null}
         <KeyValue label={t('mobile.runs.queued')} value={formatDateTime(run.queuedUtc, locale)} />
         {run.completedUtc ? <KeyValue label={t('mobile.runs.completed')} value={formatDateTime(run.completedUtc, locale)} /> : null}
       </Card>
@@ -132,9 +157,11 @@ function RunBody({ data, resource, busy, error, onCancel, t, locale }) {
             <View key={s.id} style={{ gap: 2, paddingVertical: spacing.xs }} testID={'stage-' + s.stage}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flexWrap: 'wrap' }}>
                 <T style={{ flex: 1, fontWeight: '600' }}>{t('mobile.enums.stage.' + s.stage, { defaultValue: s.stage })}</T>
+                {top === s.stage ? <Badge label={t('mobile.runs.mostExpensive')} tone="primary" /> : null}
                 <Badge label={t('mobile.enums.stageStatus.' + s.status)} tone={STAGE_STATUS_TONES[s.status] || 'neutral'} />
               </View>
               <T variant="small">{t('mobile.runs.stageLine', { duration: formatDuration(s.durationMs, locale), in: s.itemsIn || 0, out: s.itemsOut || 0 })}</T>
+              <StageCostLine cost={perStage.get(s.stage)} t={t} locale={locale} testID={'stage-cost-' + s.stage} />
               {s.errorMessage ? <T variant="small">{s.errorMessage}</T> : null}
             </View>
           ))}
@@ -145,6 +172,11 @@ function RunBody({ data, resource, busy, error, onCancel, t, locale }) {
       {timed.length > 1 ? (
         <Card>
           <HorizontalBarChart testID="stage-chart" rows={timed.map((s) => ({ label: t('mobile.enums.stage.' + s.stage, { defaultValue: s.stage }), value: s.durationMs }))} formatValue={(n) => formatDuration(n, locale)} accessibilityLabel={t('mobile.runs.stageChart')} />
+        </Card>
+      ) : null}
+      {costed.length > 0 ? (
+        <Card>
+          <HorizontalBarChart testID="stage-cost-chart" rows={costed.map((s) => ({ label: t('mobile.enums.stage.' + s.stage, { defaultValue: s.stage }), value: perStage.get(s.stage).estimatedCostUsd }))} formatValue={(n) => formatCost(n, locale)} accessibilityLabel={t('mobile.runs.stageCostChart')} />
         </Card>
       ) : null}
       {results.length ? (
@@ -179,5 +211,21 @@ function RunBody({ data, resource, busy, error, onCancel, t, locale }) {
       ) : null}
       <Button title={t('mobile.runs.openTopic')} kind="ghost" onPress={() => router.push('/topics/' + encodeURIComponent(run.topicId))} />
     </>
+  );
+}
+
+/** A stage's cost, share of the run, and calls; nothing for a stage without model calls. */
+function StageCostLine({ cost, t, locale, testID }) {
+  const state = costState(cost);
+  if (state === 'none') return null;
+  const calls = cost.llmCallCount || 0;
+  const text =
+    state === 'unpriced'
+      ? t('mobile.runs.stageCostUnpriced', { calls })
+      : t('mobile.runs.stageCostLine', { cost: formatCost(cost.estimatedCostUsd, locale), share: cost.shareOfCost !== null ? formatNumber(cost.shareOfCost, locale, { style: 'percent', maximumFractionDigits: 0 }) : '-', calls });
+  return (
+    <T variant="small" testID={testID}>
+      {text}
+    </T>
   );
 }

@@ -13,7 +13,7 @@ namespace MyMorningNews.McpServer.Tools
     using Voltaic.Mcp;
 
     /// <summary>
-    /// Topic and run tools: list, read, create from a description, run now, and read a run.
+    /// Topic and run tools: list, read, create from a description, run now, read a run, and read what a run cost.
     /// </summary>
     public static class TopicTools
     {
@@ -139,11 +139,12 @@ namespace MyMorningNews.McpServer.Tools
                 }));
 
             tools.Add(new McpTool("get_run", "Read a run",
-                "Read a research run: status, counts, cost, and summary, with each pipeline stage's status.",
+                "Read a research run: status, counts, estimated cost, and summary, with each pipeline stage's status, model calls, and cost. "
+                + "Use get_run_costs for the full breakdown by stage, model, and task.",
                 Schema.Object(Schema.Props("runId", Schema.String("Run ID (run_...).", 64)), new[] { "runId" }),
                 Schema.Object(Schema.Props(
                     "run", Shapes.RunSchema,
-                    "stages", Schema.Array("Pipeline stages in order.", Schema.Record("Stage: stage, status, itemsIn, itemsOut, durationMs, error."))), new[] { "run" }, true),
+                    "stages", Schema.Array("Pipeline stages in order.", Shapes.StageSchema)), new[] { "run" }, true),
                 true, false,
                 async (a, c, t) =>
                 {
@@ -153,12 +154,18 @@ namespace MyMorningNews.McpServer.Tools
                     return new Dictionary<string, object?>(StringComparer.Ordinal)
                     {
                         { "run", Shapes.Run(run) },
-                        { "stages", stages.OrderBy(s => s.SortOrder).Select(s => new Dictionary<string, object?>
-                            {
-                                { "stage", s.Stage }, { "status", s.Status.ToString() }, { "itemsIn", s.ItemsIn }, { "itemsOut", s.ItemsOut }, { "durationMs", Math.Round(s.DurationMs, 0) }, { "error", s.ErrorMessage }
-                            }).ToList() }
+                        { "stages", stages.OrderBy(s => s.SortOrder).Select(Shapes.Stage).ToList() }
                     };
                 }));
+
+            tools.Add(new McpTool("get_run_costs", "What a run cost",
+                "What a research run cost: totals, each pipeline stage (with its share of the cost), each model, and each task, with tokens and call counts. "
+                + "Amounts are estimates in US dollars from each model endpoint's prices; calls with no price (an endpoint without prices, or an agent CLI on a subscription) "
+                + "are counted in unpricedCallCount and left out of the amounts. Current while the run is going.",
+                Schema.Object(Schema.Props("runId", Schema.String("Run ID (run_...).", 64)), new[] { "runId" }),
+                Shapes.RunCostsSchema,
+                true, false,
+                async (a, c, t) => Shapes.RunCosts(await c.Runs.GetCostsAsync(a.RequiredText("runId", 64), t).ConfigureAwait(false))));
 
             return tools;
         }

@@ -2338,7 +2338,8 @@
         "results": "Hasil",
         "details": "Butiran",
         "calls": "Panggilan model",
-        "tools": "Panggilan alat"
+        "tools": "Panggilan alat",
+        "costs": "Kos"
       },
       "contextHash": "Petikan konteks"
     },
@@ -2371,13 +2372,7 @@
       "sources": "Sumber dibaca",
       "newFindings": "Dapatan baharu",
       "duplicates": "Pendua",
-      "tokens": "Token",
-      "tokenSplit": "{input} masuk, {output} keluar",
-      "cost": "Anggaran kos",
-      "modelUsage": "Penggunaan model",
-      "notRecorded": "Tidak direkodkan",
-      "notRecordedHelp": "Tiada panggilan model direkodkan untuk larian ini.",
-      "costPending": "Tiada harga"
+      "notRecordedHelp": "Tiada panggilan model direkodkan untuk larian ini."
     },
     "stages": {
       "empty": "Tiada peringkat direkodkan untuk larian ini.",
@@ -4457,6 +4452,69 @@
       },
       "openModels": "Buka Model",
       "openSettings": "Buka Tetapan"
+    }
+  },
+  "costs": {
+    "under": "kurang daripada {amount}",
+    "noCalls": "Tiada panggilan model",
+    "notPriced": "Tiada harga",
+    "unpriced": {
+      "someTitle": "Sesetengah panggilan tiada harga",
+      "allTitle": "Tiada panggilan yang berharga",
+      "count": "Panggilan tanpa harga: {count} daripada {total}",
+      "endpoint": "Titik akhir tanpa harga: tetapkan harga input dan outputnya di halaman Model.",
+      "setPrices": "Tetapkan harga",
+      "subscription": "CLI ejen yang dilog masuk dengan langganan: kosnya termasuk dalam langganan anda.",
+      "partial": "Jumlah yang ditunjukkan hanya meliputi panggilan yang berharga.",
+      "callTitle": "Panggilan ini tiada harga: titik akhirnya tiada harga ditetapkan, atau langganan menanggungnya."
+    },
+    "header": {
+      "aria": "Kos larian",
+      "cost": "Kos larian",
+      "costSoFar": "Kos setakat ini",
+      "split": "{input} input, {output} output",
+      "tokens": "Token",
+      "inputTokens": "{input} masuk, {cached} dari cache",
+      "outputTokens": "{output} keluar, {reasoning} penaakulan",
+      "calls": "Panggilan model",
+      "unpricedCalls": "{count, plural, other {# tanpa harga}}",
+      "failedCalls": "{count, plural, other {# gagal}}",
+      "perFinding": "Kos bagi setiap dapatan baharu",
+      "newFindings": "{count, plural, =0 {Tiada dapatan baharu} other {# dapatan baharu}}",
+      "breakdown": "Ke mana wang dibelanjakan"
+    },
+    "stages": {
+      "cost": "Kos",
+      "share": "Bahagian kos",
+      "calls": "Panggilan",
+      "tokens": "Token",
+      "mostExpensive": "Paling mahal",
+      "openCalls": "Tunjukkan panggilan model bagi {stage}",
+      "callsTitle": "{stage}: panggilan model",
+      "callsSummary": "{cost} untuk {count, plural, other {# panggilan}}"
+    },
+    "breakdown": {
+      "title": "Ke mana wang dibelanjakan",
+      "total": "{cost} untuk {count, plural, other {# panggilan model}}",
+      "byStage": "Mengikut peringkat",
+      "byModel": "Mengikut model",
+      "byTask": "Mengikut tugas",
+      "model": "Model",
+      "task": "Tugas",
+      "unknownModel": "Model tidak diketahui",
+      "unattributed": "{count, plural, other {# panggilan}} dibuat di luar mana-mana peringkat:"
+    },
+    "topic": {
+      "title": "Kos bagi setiap larian",
+      "help": "{count} larian terakhir yang selesai, dari yang terlama hingga terbaharu. Pilih lajur untuk membuka larian itu.",
+      "average": "Purata {average} bagi setiap larian berharga merentas {count, plural, other {# larian}}, {total} kesemuanya",
+      "noPriced": "Tiada larian ini yang berharga.",
+      "empty": "Belum ada larian yang selesai.",
+      "aria": "Kos bagi setiap larian untuk {count, plural, other {# larian}} terakhir",
+      "status": "Status",
+      "note": "Catatan",
+      "kind": "Jenis",
+      "partialSuffix": "(sesetengah panggilan tanpa harga)"
     }
   }
 }

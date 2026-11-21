@@ -868,6 +868,8 @@ namespace MyMorningNews.Core.Services
                     double seconds = sw.Elapsed.TotalSeconds;
                     state.DurationMs += seconds * 1000;
                     Accumulate(state, result.Usage, task, provider);
+                    if (result.CostUsd.HasValue && AgentCliService.EffectiveMethod(endpoint) == ModelAuthMethodEnum.ApiKey)
+                        state.ReportedCostUsd = (state.ReportedCostUsd ?? 0) + result.CostUsd.Value;
                     MyMorningNewsTelemetry.Record(MyMorningNewsTelemetry.LlmCallDuration, seconds, "task", task, "provider", provider);
                     if (result.Succeeded)
                     {
@@ -990,6 +992,7 @@ namespace MyMorningNews.Core.Services
                 }
 
                 decimal? cost = inputCost.HasValue || outputCost.HasValue ? (inputCost ?? 0) + (outputCost ?? 0) : null;
+                if (!cost.HasValue && state.ReportedCostUsd.HasValue) cost = Math.Round(state.ReportedCostUsd.Value, 6);
                 state.EstimatedCostUsd = cost;
                 if (cost.HasValue) MyMorningNewsTelemetry.AddDouble(MyMorningNewsTelemetry.LlmCostUsd, (double)cost.Value, "task", state.Request.Task.ToString(), "provider", e.Provider.ToString());
                 bool capture = _Settings.Diagnostics.CaptureLlmPayloads;
@@ -1001,6 +1004,7 @@ namespace MyMorningNews.Core.Services
                     TopicId = state.Request.TopicId,
                     Task = state.Request.Task,
                     RunId = state.Request.RunId,
+                    RunStageId = state.Request.RunStageId ?? (state.Request.RunId != null ? RunStageScope.Current : null),
                     RefinementSessionId = state.Request.RefinementSessionId,
                     BriefingId = state.Request.BriefingId,
                     ModelEndpointId = e.Id,

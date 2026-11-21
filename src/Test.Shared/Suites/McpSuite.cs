@@ -77,7 +77,7 @@ namespace Test.Shared.Suites
             {
                 JsonElement tools = (await c.CallAsync("tools/list", null, token).ConfigureAwait(false)).GetProperty("tools");
                 List<string> names = tools.EnumerateArray().Select(t => t.GetProperty("name").GetString()!).ToList();
-                string[] planned = { "list_topics", "get_topic", "create_topic", "run_topic", "get_run", "list_findings", "get_finding", "search_findings", "get_latest_briefing", "get_briefing",
+                string[] planned = { "list_topics", "get_topic", "create_topic", "run_topic", "get_run", "get_run_costs", "list_findings", "get_finding", "search_findings", "get_latest_briefing", "get_briefing",
                     "list_predictions", "resolve_prediction", "list_suggestions", "update_suggestion_status", "submit_feedback", "list_learned_preferences", "accept_learned_preference", "get_analytics_summary" };
                 Assert.True(planned.All(names.Contains), "every planned tool: missing " + String.Join(", ", planned.Where(p => !names.Contains(p))));
                 Assert.Equal(McpSurface.AllTools().Count, names.Count, "tool count");
@@ -179,6 +179,20 @@ namespace Test.Shared.Suites
 
                 McpToolOutcome gotRun = await c.ToolAsync("get_run", new { runId = run.Id }, token).ConfigureAwait(false);
                 Assert.True(!gotRun.IsError && gotRun.Structured.GetProperty("run").GetProperty("status").GetString() == "Completed" && gotRun.Structured.GetProperty("stages").GetArrayLength() == 15, "get_run: " + gotRun.Text);
+                JsonElement runShape = gotRun.Structured.GetProperty("run");
+                Assert.True(runShape.GetProperty("llmCallCount").GetInt32() > 0 && runShape.GetProperty("estimatedCostUsd").ValueKind == JsonValueKind.Number, "get_run carries the run's cost: " + gotRun.Text);
+                Assert.True(gotRun.Structured.GetProperty("stages").EnumerateArray().Any(s => s.GetProperty("llmCallCount").GetInt32() > 0 && s.GetProperty("estimatedCostUsd").ValueKind == JsonValueKind.Number), "get_run stages carry their cost");
+                McpToolOutcome costs = await c.ToolAsync("get_run_costs", new { runId = run.Id }, token).ConfigureAwait(false);
+                Assert.True(!costs.IsError && costs.Str("runId") == run.Id && costs.Str("currency") == "USD", "get_run_costs: " + costs.Text);
+                JsonElement costTotals = costs.Structured.GetProperty("totals");
+                JsonElement costStages = costs.Structured.GetProperty("stages");
+                Assert.Equal(15, costStages.GetArrayLength(), "a cost row per stage");
+                Assert.Equal(runShape.GetProperty("llmCallCount").GetInt32(), costTotals.GetProperty("llmCallCount").GetInt32(), "report and run agree on calls");
+                int attributed = costStages.EnumerateArray().Sum(s => s.GetProperty("llmCallCount").GetInt32())
+                    + (costs.Structured.GetProperty("unattributed").ValueKind == JsonValueKind.Object ? costs.Structured.GetProperty("unattributed").GetProperty("llmCallCount").GetInt32() : 0);
+                Assert.Equal(costTotals.GetProperty("llmCallCount").GetInt32(), attributed, "stage calls add up to the total");
+                Assert.True(costs.Structured.GetProperty("byModel").GetArrayLength() >= 1 && costs.Structured.GetProperty("byTask").GetArrayLength() >= 1, "by model and by task");
+                Assert.True((await c.ToolAsync("get_run_costs", new { runId = "run_missing" }, token).ConfigureAwait(false)).IsError, "get_run_costs for a missing run is an error");
 
                 McpToolOutcome latest = await c.ToolAsync("get_latest_briefing", new { }, token).ConfigureAwait(false);
                 JsonElement brief = latest.Structured.GetProperty("briefing");
@@ -271,6 +285,7 @@ namespace Test.Shared.Suites
                 Assert.True(topicBrief.Contains("## Dimensions", StringComparison.Ordinal) && topicBrief.Contains("Rebates", StringComparison.Ordinal) && topicBrief.Contains("blocked.test", StringComparison.Ordinal), "topic brief");
                 string runSummary = (await c.CallAsync("resources/read", new { uri = "mmn://runs/" + run.Id + "/summary" }, token).ConfigureAwait(false)).GetProperty("contents")[0].GetProperty("text").GetString()!;
                 Assert.True(runSummary.Contains("| Extract |", StringComparison.Ordinal) && runSummary.Contains("## Top findings", StringComparison.Ordinal) && runSummary.Contains("fnd_", StringComparison.Ordinal), "run summary");
+                Assert.True(runSummary.Contains("Cost: $", StringComparison.Ordinal) && runSummary.Contains("| Cost (USD) |", StringComparison.Ordinal), "run summary shows the cost: " + runSummary);
                 Assert.True(await c.ErrorCodeAsync("resources/read", new { uri = "mmn://briefings/brf_missing" }, token).ConfigureAwait(false) != 0, "missing briefing is an error");
 
                 string review = (await c.CallAsync("prompts/get", new { name = "review_morning_briefing", arguments = new { } }, token).ConfigureAwait(false)).GetProperty("messages")[0].GetProperty("content").GetProperty("text").GetString()!;
@@ -300,6 +315,7 @@ namespace Test.Shared.Suites
                         Assert.True((await c.ToolAsync("get_topic", new { topicId = f.Topic.Id }, token).ConfigureAwait(false)).IsError, "topic hidden");
                         Assert.True((await c.ToolAsync("get_finding", new { findingId = finding.Id }, token).ConfigureAwait(false)).IsError, "finding hidden");
                         Assert.True((await c.ToolAsync("get_run", new { runId = run.Id }, token).ConfigureAwait(false)).IsError, "run hidden");
+                        Assert.True((await c.ToolAsync("get_run_costs", new { runId = run.Id }, token).ConfigureAwait(false)).IsError, "run cost hidden");
                         Assert.True((await c.ToolAsync("run_topic", new { topicId = f.Topic.Id }, token).ConfigureAwait(false)).IsError, "cannot run it");
                         Assert.True((await c.ToolAsync("submit_feedback", new { targetType = "Finding", targetId = finding.Id, rating = "relevant" }, token).ConfigureAwait(false)).IsError, "cannot rate it");
                         Assert.True((await c.ToolAsync("update_topic", new { topicId = f.Topic.Id, name = "Taken over" }, token).ConfigureAwait(false)).IsError, "cannot edit it");

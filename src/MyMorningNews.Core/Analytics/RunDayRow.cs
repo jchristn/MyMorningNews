@@ -29,6 +29,11 @@ namespace MyMorningNews.Core.Analytics
         public int Total { get; set; } = 0;
 
         /// <summary>
+        /// Estimated cost of the day's runs in US dollars. Null when none was priced.
+        /// </summary>
+        public decimal? CostUsd { get; set; } = null;
+
+        /// <summary>
         /// Runs by status. Every run status is present.
         /// </summary>
         public Dictionary<string, int> Counts { get; set; } = new Dictionary<string, int>(StringComparer.Ordinal);

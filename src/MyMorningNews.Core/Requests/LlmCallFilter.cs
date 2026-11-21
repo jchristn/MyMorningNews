@@ -19,6 +19,11 @@ namespace MyMorningNews.Core.Requests
         public string? RunId { get; set; } = null;
 
         /// <summary>
+        /// Match RunStageId exactly when set.
+        /// </summary>
+        public string? RunStageId { get; set; } = null;
+
+        /// <summary>
         /// Match RefinementSessionId exactly when set.
         /// </summary>
         public string? RefinementSessionId { get; set; } = null;

@@ -87,6 +87,41 @@ namespace MyMorningNews.Sdk.Models
         public DateTime LastUpdateUtc { get; set; }
 
         /// <summary>
+        /// Model calls made during the stage. Default 0.
+        /// </summary>
+        public int LlmCallCount { get; set; } = 0;
+
+        /// <summary>
+        /// Model calls whose endpoint has no prices set (or that a subscription covers), so they are not in the cost. Default 0.
+        /// </summary>
+        public int UnpricedCallCount { get; set; } = 0;
+
+        /// <summary>
+        /// Input tokens across the stage's model calls. Default 0.
+        /// </summary>
+        public int InputTokens { get; set; } = 0;
+
+        /// <summary>
+        /// Output tokens across the stage's model calls. Default 0.
+        /// </summary>
+        public int OutputTokens { get; set; } = 0;
+
+        /// <summary>
+        /// Input tokens read from the provider's prompt cache (part of InputTokens). Default 0.
+        /// </summary>
+        public int CachedInputTokens { get; set; } = 0;
+
+        /// <summary>
+        /// Reasoning (thinking) tokens. Default 0.
+        /// </summary>
+        public int ReasoningTokens { get; set; } = 0;
+
+        /// <summary>
+        /// Estimated cost of the stage's model calls in US dollars, from the endpoints' prices. Null when no call was priced.
+        /// </summary>
+        public decimal? EstimatedCostUsd { get; set; } = null;
+
+        /// <summary>
         /// Instantiate.
         /// </summary>
         public RunStage()

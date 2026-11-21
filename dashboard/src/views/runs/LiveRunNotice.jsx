@@ -2,7 +2,9 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { CircleCheck, CircleX, LoaderCircle, TriangleAlert, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import CostValue from '../../components/CostValue.jsx';
 import StatusBadge from '../../components/StatusBadge.jsx';
+import { costState } from '../../utils/cost.js';
 import { RUN_STATUS_TONES } from '../../utils/enums.js';
 import { findingsLink, isActiveRun } from './runParts.js';
 import useLiveRun from './useLiveRun.js';
@@ -17,7 +19,7 @@ function currentStage(stages) {
 }
 
 // A run the user just started, followed live until it ends: queued, running (with the current stage), then the result
-// with its new findings, or the failure. Key it by run ID. onFinished(run) runs once when the run ends.
+// with its new findings, or the failure, and what it has cost so far once it has made model calls. Key it by run ID. onFinished(run) runs once when the run ends.
 export default function LiveRunNotice({ runId, initialRun, onFinished, onDismiss }) {
   const { t } = useTranslation();
   const { run, stages, error } = useLiveRun(runId, { initialRun, onFinished });
@@ -47,6 +49,12 @@ export default function LiveRunNotice({ runId, initialRun, onFinished, onDismiss
           <StatusBadge tone={RUN_STATUS_TONES[status]}>{t('enums.runStatus.' + status)}</StatusBadge>
         </span>
         <span dir="auto">{message}</span>
+        {run && costState(run) !== 'none' ? (
+          <span className="small row-actions" data-testid="live-run-cost">
+            <span className="muted">{active ? t('costs.header.costSoFar') : t('costs.header.cost')}</span>
+            <CostValue totals={run} />
+          </span>
+        ) : null}
         {!active && run && run.summary ? (
           <span className="muted small run-summary live-run-summary" dir="auto">
             {run.summary}

@@ -47,5 +47,20 @@ namespace MyMorningNews.Core.Analytics
         /// Longest duration in milliseconds.
         /// </summary>
         public double MaxMs { get; set; } = 0;
+
+        /// <summary>
+        /// Total estimated cost of this stage across the runs, in US dollars. Null when no call was priced.
+        /// </summary>
+        public decimal? TotalCostUsd { get; set; } = null;
+
+        /// <summary>
+        /// Mean estimated cost per run of this stage, in US dollars, over the runs where it was priced. Null when none was.
+        /// </summary>
+        public decimal? MeanCostUsd { get; set; } = null;
+
+        /// <summary>
+        /// Model calls this stage made across the runs.
+        /// </summary>
+        public int LlmCallCount { get; set; } = 0;
     }
 }

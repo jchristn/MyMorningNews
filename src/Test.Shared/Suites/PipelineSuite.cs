@@ -34,6 +34,7 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "QuoteVerifier", "Quotes are verified verbatim with offsets, ignoring case, spacing, and typography", QuoteAsync, "fast"),
                 Cases.Case(S, "Ranker", "Recency, novelty, source, composite, and tiers follow the plan", RankerAsync, "fast"),
                 Cases.Case(S, "FullRun", "A run searches, filters, fetches, extracts verified findings, scores, synthesizes, predicts, suggests, and reviews", FullRunAsync),
+                Cases.Case(S, "RunCosts", "Each stage records its model calls, tokens, and cost; stages add up to the run; the cost report breaks it down by stage, model, and task", RunCostsAsync),
                 Cases.Case(S, "SecondRunDedupe", "A later run skips seen pages and marks a repeated finding as a duplicate", SecondRunAsync),
                 Cases.Case(S, "SeenOnlyAfterFinishedRuns", "Pages fetched by a dry run or a failed run are not skipped as seen by the next run", SeenOnlyAfterFinishedRunsAsync),
                 Cases.Case(S, "Failures", "A critical failure fails the run; an optional failure leaves it partially succeeded", FailuresAsync),
@@ -121,6 +122,45 @@ namespace Test.Shared.Suites
         {
             Run queued = (await f.User.Client.PostAsync("/v1.0/api/topics/" + f.Topic.Id + "/run", null, token).ConfigureAwait(false)).Expect(202, "run now").Json<Run>();
             return await RunWaiter.FinishAsync(f.Server, queued, token).ConfigureAwait(false);
+        }
+
+        private static async Task RunCostsAsync(CancellationToken token)
+        {
+            PipelineFixture f = await FixtureAsync("Track residential heat pump rebates and the rules that govern them.", "/pipeline", token).ConfigureAwait(false);
+            Run run = await RunAsync(f, token).ConfigureAwait(false);
+            Assert.True(run.Status == RunStatusEnum.Completed && run.EstimatedCostUsd > 0 && run.LlmCallCount > 0 && run.UnpricedCallCount == 0, "a priced run: " + run.Status + " " + run.EstimatedCostUsd + " " + run.LlmCallCount);
+
+            List<RunStage> stages = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages", token).ConfigureAwait(false)).Expect(200, "stages").Json<List<RunStage>>();
+            Assert.Equal(run.LlmCallCount, stages.Sum(s => s.LlmCallCount), "every call belongs to a stage");
+            Assert.Equal(run.EstimatedCostUsd, stages.Sum(s => s.EstimatedCostUsd ?? 0), "stage costs add up to the run");
+            Assert.Equal(run.InputTokens, stages.Sum(s => s.InputTokens), "stage tokens add up to the run");
+            RunStage extract = stages.Single(s => s.Stage == "Extract");
+            Assert.True(extract.LlmCallCount > 0 && extract.EstimatedCostUsd > 0, "extraction made priced calls");
+            Assert.True(stages.Single(s => s.Stage == "Search").EstimatedCostUsd == null && stages.Single(s => s.Stage == "Search").LlmCallCount == 0, "a stage without model calls has no cost");
+
+            RunCostReport report = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/costs", token).ConfigureAwait(false)).Expect(200, "cost report").Json<RunCostReport>();
+            Assert.True(report.Currency == "USD" && report.Totals.EstimatedCostUsd == run.EstimatedCostUsd && report.Totals.LlmCallCount == run.LlmCallCount && report.Unattributed == null, "report totals match the run");
+            Assert.True(report.Stages.Count == stages.Count && report.Stages.Sum(s => s.EstimatedCostUsd ?? 0) == report.Totals.EstimatedCostUsd, "report stages add up");
+            Assert.True(Math.Abs(report.Stages.Sum(s => s.ShareOfCost ?? 0) - 1.0) < 0.01, "stage shares add to one");
+            Assert.True(report.Totals.InputCostUsd > 0 && report.Totals.OutputCostUsd > 0 && report.Totals.InputCostUsd + report.Totals.OutputCostUsd == report.Totals.EstimatedCostUsd, "input and output cost");
+            Assert.True(report.ByModel.Count == 1 && report.ByModel[0].EndpointName == "stub research" && report.ByModel[0].EstimatedCostUsd == report.Totals.EstimatedCostUsd, "one model");
+            Assert.True(report.ByTask.Any(t => t.Task == ModelTaskEnum.Extraction) && report.ByTask.Sum(t => t.LlmCallCount) == run.LlmCallCount, "by task");
+            Assert.True(report.CostPerNewFindingUsd.HasValue && Math.Abs(report.CostPerNewFindingUsd.Value - report.Totals.EstimatedCostUsd!.Value / run.NewFindingCount) < 0.000001m, "cost per new finding");
+
+            EnumerationResult<LlmCall> extractCalls = (await f.User.Client.GetAsync("/v1.0/api/llm-calls?runStageId=" + extract.Id + "&pageSize=100", token).ConfigureAwait(false)).Expect(200, "calls by stage").Json<EnumerationResult<LlmCall>>();
+            Assert.True(extractCalls.Items.Count == extract.LlmCallCount && extractCalls.Items.All(c => c.RunStageId == extract.Id && c.RunId == run.Id), "calls filter by stage");
+            EnumerationResult<LlmCall> scoped = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/llm-calls?runStageId=" + extract.Id + "&pageSize=100", token).ConfigureAwait(false)).Expect(200, "run calls by stage").Json<EnumerationResult<LlmCall>>();
+            Assert.Equal(extract.LlmCallCount, scoped.Items.Count, "the run's own call list filters by stage");
+            MyMorningNews.Core.Analytics.RunsReport analytics = (await f.User.Client.GetAsync("/v1.0/api/analytics/runs?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Expect(200, "analytics").Json<MyMorningNews.Core.Analytics.RunsReport>();
+            Assert.True(analytics.TotalCostUsd == run.EstimatedCostUsd && analytics.Runs.Single(r => r.RunId == run.Id).EstimatedCostUsd == run.EstimatedCostUsd
+                && analytics.Stages.Single(s => s.Stage == "Extract").TotalCostUsd == extract.EstimatedCostUsd, "analytics carry run, day, and stage cost");
+            EnumerationResult<Run> byCost = (await f.User.Client.GetAsync("/v1.0/api/runs?sortBy=estimatedCostUsd&sortDirection=Descending", token).ConfigureAwait(false)).Expect(200, "runs by cost").Json<EnumerationResult<Run>>();
+            Assert.True(byCost.Items.Count > 0 && byCost.Items[0].EstimatedCostUsd >= byCost.Items[byCost.Items.Count - 1].EstimatedCostUsd.GetValueOrDefault(), "runs sort by cost");
+
+            TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
+            Tenant other = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
+            TestUser stranger = await TestFixtures.CreateUserAsync(admin, other.Id, true, token).ConfigureAwait(false);
+            (await stranger.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/costs", token).ConfigureAwait(false)).Expect(404, "another tenant cannot see the cost");
         }
 
         private static async Task FullRunAsync(CancellationToken token)

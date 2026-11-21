@@ -148,7 +148,7 @@ python3 src/Tools/mcpdocs/generate_mcp_api.py
 
 ## Tools
 
-26 tools. Every tool returns structured content that matches its output schema, and the same data as JSON text.
+27 tools. Every tool returns structured content that matches its output schema, and the same data as JSON text.
 
 | Tool | Title | Read only | Destructive |
 |---|---|---|---|
@@ -157,6 +157,7 @@ python3 src/Tools/mcpdocs/generate_mcp_api.py
 | [`create_topic`](#create_topic) | Create a topic from a description | no | no |
 | [`run_topic`](#run_topic) | Research a topic now | no | no |
 | [`get_run`](#get_run) | Read a run | yes | no |
+| [`get_run_costs`](#get_run_costs) | What a run cost | yes | no |
 | [`update_topic`](#update_topic) | Update a topic | no | no |
 | [`set_topic_dimension`](#set_topic_dimension) | Add or change a dimension | no | no |
 | [`remove_topic_dimension`](#remove_topic_dimension) | Remove a dimension | no | yes |
@@ -259,12 +260,12 @@ Output:
 
 | Name | Type | Always | Description |
 |---|---|---|---|
-| `run` | object with `id`, `topicId`, `status`, `trigger`, `isDryRun`, `queuedUtc`, `startedUtc`, `completedUtc`, `summary`, `newFindingCount`, `duplicateCount`, `sourceCount`, `estimatedCostUsd`, `errorMessage`, `skippedReason` | yes |  |
+| `run` | object with `id`, `topicId`, `status`, `trigger`, `isDryRun`, `queuedUtc`, `startedUtc`, `completedUtc`, `summary`, `newFindingCount`, `duplicateCount`, `sourceCount`, `estimatedCostUsd`, `llmCallCount`, `unpricedCallCount`, `inputTokens`, `outputTokens`, `errorMessage`, `skippedReason` | yes |  |
 | `finished` | boolean | yes | True when the run reached a final status. |
 
 ### get_run
 
-**Read a run.** Read a research run: status, counts, cost, and summary, with each pipeline stage's status.
+**Read a run.** Read a research run: status, counts, estimated cost, and summary, with each pipeline stage's status, model calls, and cost. Use get_run_costs for the full breakdown by stage, model, and task.
 
 Input:
 
@@ -276,8 +277,33 @@ Output:
 
 | Name | Type | Always | Description |
 |---|---|---|---|
-| `run` | object with `id`, `topicId`, `status`, `trigger`, `isDryRun`, `queuedUtc`, `startedUtc`, `completedUtc`, `summary`, `newFindingCount`, `duplicateCount`, `sourceCount`, `estimatedCostUsd`, `errorMessage`, `skippedReason` | yes |  |
-| `stages` | array of object | no | Pipeline stages in order. |
+| `run` | object with `id`, `topicId`, `status`, `trigger`, `isDryRun`, `queuedUtc`, `startedUtc`, `completedUtc`, `summary`, `newFindingCount`, `duplicateCount`, `sourceCount`, `estimatedCostUsd`, `llmCallCount`, `unpricedCallCount`, `inputTokens`, `outputTokens`, `errorMessage`, `skippedReason` | yes |  |
+| `stages` | array of object with `id`, `stage`, `status`, `itemsIn`, `itemsOut`, `durationMs`, `llmCallCount`, `unpricedCallCount`, `estimatedCostUsd`, `error` | no | Pipeline stages in order. |
+
+### get_run_costs
+
+**What a run cost.** What a research run cost: totals, each pipeline stage (with its share of the cost), each model, and each task, with tokens and call counts. Amounts are estimates in US dollars from each model endpoint's prices; calls with no price (an endpoint without prices, or an agent CLI on a subscription) are counted in unpricedCallCount and left out of the amounts. Current while the run is going.
+
+Input:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `runId` | string (up to 64) | yes | Run ID (run_...). |
+
+Output:
+
+| Name | Type | Always | Description |
+|---|---|---|---|
+| `runId` | string | yes | Run ID. |
+| `topicId` | string | no | Topic. |
+| `status` | string | no | One of: Queued, Running, Completed, PartiallySucceeded, Failed, Cancelled, Skipped. |
+| `currency` | string | yes | Always USD. |
+| `totals` | object with `estimatedCostUsd`, `inputCostUsd`, `outputCostUsd`, `llmCallCount`, `unpricedCallCount`, `failedCallCount`, `inputTokens`, `outputTokens`, `cachedInputTokens`, `cacheWriteTokens`, `reasoningTokens`, `modelDurationMs` | yes | Totals across the run. |
+| `costPerNewFindingUsd` | number or null | no | Estimated cost divided by new findings. Null when there is no priced cost or no new finding. |
+| `stages` | array of object with `runStageId`, `stage`, `status`, `durationMs`, `shareOfCost`, `estimatedCostUsd`, `inputCostUsd`, `outputCostUsd`, `llmCallCount`, `unpricedCallCount`, `failedCallCount`, `inputTokens`, `outputTokens`, `cachedInputTokens`, `cacheWriteTokens`, `reasoningTokens`, `modelDurationMs` | yes | One row per stage, in run order. |
+| `unattributed` | object or null | no | Totals of calls with no stage (same fields as totals), or null when every call has one. |
+| `byModel` | array of object with `modelEndpointId`, `endpointName`, `provider`, `model`, `estimatedCostUsd`, `inputCostUsd`, `outputCostUsd`, `llmCallCount`, `unpricedCallCount`, `failedCallCount`, `inputTokens`, `outputTokens`, `cachedInputTokens`, `cacheWriteTokens`, `reasoningTokens`, `modelDurationMs` | no | By endpoint and model, most expensive first. |
+| `byTask` | array of object with `task`, `estimatedCostUsd`, `inputCostUsd`, `outputCostUsd`, `llmCallCount`, `unpricedCallCount`, `failedCallCount`, `inputTokens`, `outputTokens`, `cachedInputTokens`, `cacheWriteTokens`, `reasoningTokens`, `modelDurationMs` | no | By model task, most expensive first. |
 
 ### update_topic
 
@@ -788,7 +814,7 @@ Output:
 | `mmn://briefings/latest` | Latest briefing | Your newest ready briefing as Markdown. |
 | `mmn://briefings/{id}` | Briefing | A briefing as Markdown. |
 | `mmn://topics/{id}/brief` | Topic brief | A topic's brief, dimensions, and constraints as Markdown. |
-| `mmn://runs/{id}/summary` | Run summary | A run's status, stages, summary, and top findings as Markdown. |
+| `mmn://runs/{id}/summary` | Run summary | A run's status, estimated cost, stages with their cost, summary, and top findings as Markdown. |
 
 All resources are `text/markdown`. A missing ID returns JSON-RPC error -32002.
 

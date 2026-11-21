@@ -10,6 +10,7 @@ import { Markdown } from '@/components/Markdown';
 import { ScheduleEditor, ScheduleSummary } from '@/components/ScheduleEditor';
 import { ActionError, EmptyState, ResourceView } from '@/components/states';
 import { Badge, Banner, Button, Card, ListRow, Screen, SectionHeader, T } from '@/components/ui';
+import { costLabel, costState } from '@/lib/costs';
 import { ACTIVE_RUN_STATUSES, DIMENSION_WEIGHT_TONES, RUN_STATUS_TONES, TOPIC_STATUS_TONES } from '@/lib/enums';
 import { formatDate, formatDateTime } from '@/lib/format';
 import { isSafeUrl } from '@/lib/markdown';
@@ -225,7 +226,7 @@ function TopicRuns({ topicId }) {
                 { label: t('mobile.enums.trigger.' + r.trigger), tone: 'neutral' },
                 r.isDryRun ? { label: t('mobile.runs.dryRun'), tone: 'warning' } : null,
               ]}
-              lines={[t('mobile.runs.counts', { findings: r.newFindingCount || 0, sources: r.sourceCount || 0 }), r.errorMessage || r.skippedReason || r.summary]}
+              lines={[t('mobile.runs.counts', { findings: r.newFindingCount || 0, sources: r.sourceCount || 0 }), ACTIVE_RUN_STATUSES.includes(r.status) && costState(r) === 'none' ? null : t('mobile.runs.rowCost', { cost: costLabel(r, t, i18n.language) }), r.errorMessage || r.skippedReason || r.summary]}
             />
           ))}
         </View>

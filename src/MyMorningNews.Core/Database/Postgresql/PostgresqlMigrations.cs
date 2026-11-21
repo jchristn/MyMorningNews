@@ -236,6 +236,35 @@ namespace MyMorningNews.Core.Database.Postgresql
             new SchemaMigration(20, "Model endpoint sign-in method", new List<string>
             {
                 "ALTER TABLE modelendpoints ADD COLUMN IF NOT EXISTS authmethod VARCHAR(32)"
+            }),
+            new SchemaMigration(21, "Run and stage cost", new List<string>
+            {
+                "ALTER TABLE llmcalls ADD COLUMN IF NOT EXISTS runstageid VARCHAR(64)",
+                "CREATE INDEX IF NOT EXISTS ix_llmcalls_runstageid ON llmcalls (runstageid)",
+                "CREATE INDEX IF NOT EXISTS ix_llmcalls_runid ON llmcalls (runid)",
+                "ALTER TABLE runstages ADD COLUMN IF NOT EXISTS llmcallcount INTEGER NOT NULL DEFAULT 0",
+                "ALTER TABLE runstages ADD COLUMN IF NOT EXISTS unpricedcallcount INTEGER NOT NULL DEFAULT 0",
+                "ALTER TABLE runstages ADD COLUMN IF NOT EXISTS inputtokens INTEGER NOT NULL DEFAULT 0",
+                "ALTER TABLE runstages ADD COLUMN IF NOT EXISTS outputtokens INTEGER NOT NULL DEFAULT 0",
+                "ALTER TABLE runstages ADD COLUMN IF NOT EXISTS cachedinputtokens INTEGER NOT NULL DEFAULT 0",
+                "ALTER TABLE runstages ADD COLUMN IF NOT EXISTS reasoningtokens INTEGER NOT NULL DEFAULT 0",
+                "ALTER TABLE runstages ADD COLUMN IF NOT EXISTS estimatedcostusd NUMERIC(18,6)",
+                "ALTER TABLE runs ADD COLUMN IF NOT EXISTS llmcallcount INTEGER NOT NULL DEFAULT 0",
+                "ALTER TABLE runs ADD COLUMN IF NOT EXISTS unpricedcallcount INTEGER NOT NULL DEFAULT 0",
+                "ALTER TABLE runs ADD COLUMN IF NOT EXISTS cachedinputtokens INTEGER NOT NULL DEFAULT 0",
+                "ALTER TABLE runs ADD COLUMN IF NOT EXISTS reasoningtokens INTEGER NOT NULL DEFAULT 0",
+                // Earlier calls carry no stage: stages run one at a time, so attribute each call to the stage that was running when it was logged.
+                @"UPDATE llmcalls c SET runstageid = s.id FROM runstages s
+WHERE c.runid = s.runid AND c.runstageid IS NULL AND s.startedutc IS NOT NULL
+AND c.createdutc >= s.startedutc AND c.createdutc <= COALESCE(s.completedutc, s.startedutc + INTERVAL '1 day')",
+                @"UPDATE runstages s SET llmcallcount = a.calls, unpricedcallcount = a.unpriced, inputtokens = a.input, outputtokens = a.output,
+cachedinputtokens = a.cached, reasoningtokens = a.reasoning, estimatedcostusd = a.cost
+FROM (SELECT runstageid, COUNT(*) AS calls, COUNT(*) FILTER (WHERE estimatedcostusd IS NULL) AS unpriced, COALESCE(SUM(inputtokens), 0) AS input,
+COALESCE(SUM(outputtokens), 0) AS output, COALESCE(SUM(cachedinputtokens), 0) AS cached, COALESCE(SUM(reasoningtokens), 0) AS reasoning, SUM(estimatedcostusd) AS cost
+FROM llmcalls WHERE runstageid IS NOT NULL GROUP BY runstageid) a WHERE s.id = a.runstageid",
+                @"UPDATE runs r SET llmcallcount = a.calls, unpricedcallcount = a.unpriced, cachedinputtokens = a.cached, reasoningtokens = a.reasoning
+FROM (SELECT runid, COUNT(*) AS calls, COUNT(*) FILTER (WHERE estimatedcostusd IS NULL) AS unpriced, COALESCE(SUM(cachedinputtokens), 0) AS cached,
+COALESCE(SUM(reasoningtokens), 0) AS reasoning FROM llmcalls WHERE runid IS NOT NULL GROUP BY runid) a WHERE r.id = a.runid"
             })
         };
 

@@ -210,6 +210,26 @@ namespace MyMorningNews.Core.Models
         /// </summary>
         public string? ResumeFromStage { get; set; } = null;
 
+        /// <summary>
+        /// Model calls made during the run.
+        /// </summary>
+        public int LlmCallCount { get; set; } = 0;
+
+        /// <summary>
+        /// Model calls whose endpoint has no prices set (or that a subscription covers), so they are not in the cost.
+        /// </summary>
+        public int UnpricedCallCount { get; set; } = 0;
+
+        /// <summary>
+        /// Input tokens read from the provider's prompt cache (part of InputTokens).
+        /// </summary>
+        public int CachedInputTokens { get; set; } = 0;
+
+        /// <summary>
+        /// Reasoning (thinking) tokens.
+        /// </summary>
+        public int ReasoningTokens { get; set; } = 0;
+
         #endregion
 
         #region Private-Members

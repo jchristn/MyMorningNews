@@ -91,6 +91,7 @@ namespace MyMorningNews.Sdk.TestHarness
                 new SignerVectorTest(),
                 new TolerantEnumTest(),
                 new SetupWireTest(),
+                new RunCostWireTest(),
                 new ListOptionsTest(),
                 new HealthTest(),
                 new LoginTest(),

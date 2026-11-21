@@ -2338,7 +2338,8 @@
         "results": "Résultats",
         "details": "Détails",
         "calls": "Appels au modèle",
-        "tools": "Appels d’outils"
+        "tools": "Appels d’outils",
+        "costs": "Coûts"
       },
       "contextHash": "Instantané du contexte"
     },
@@ -2371,13 +2372,7 @@
       "sources": "Sources lues",
       "newFindings": "Nouveaux constats",
       "duplicates": "Doublons",
-      "tokens": "Jetons",
-      "tokenSplit": "{input} en entrée, {output} en sortie",
-      "cost": "Coût estimé",
-      "modelUsage": "Utilisation des modèles",
-      "notRecorded": "Non enregistré",
-      "notRecordedHelp": "Aucun appel de modèle n’a été enregistré pour cette exécution.",
-      "costPending": "Non tarifé"
+      "notRecordedHelp": "Aucun appel de modèle n’a été enregistré pour cette exécution."
     },
     "stages": {
       "empty": "Aucune étape enregistrée pour cette exécution.",
@@ -4457,6 +4452,69 @@
       },
       "openModels": "Ouvrir Modèles d’IA",
       "openSettings": "Ouvrir Paramètres"
+    }
+  },
+  "costs": {
+    "under": "moins de {amount}",
+    "noCalls": "Aucun appel au modèle",
+    "notPriced": "Non tarifé",
+    "unpriced": {
+      "someTitle": "Certains appels n’avaient pas de prix",
+      "allTitle": "Aucun appel n’avait de prix",
+      "count": "Appels sans prix : {count} sur {total}",
+      "endpoint": "Un point de terminaison sans prix : définissez ses prix d’entrée et de sortie sur la page Modèles d’IA.",
+      "setPrices": "Définir les prix",
+      "subscription": "Une CLI d’agent connectée avec un abonnement : le coût est inclus dans votre abonnement.",
+      "partial": "Le montant affiché ne couvre que les appels tarifés.",
+      "callTitle": "Cet appel n’avait pas de prix : son point de terminaison n’a pas de prix définis, ou un abonnement le couvre."
+    },
+    "header": {
+      "aria": "Coût de l’exécution",
+      "cost": "Coût de l’exécution",
+      "costSoFar": "Coût jusqu’ici",
+      "split": "{input} en entrée, {output} en sortie",
+      "tokens": "Jetons",
+      "inputTokens": "{input} en entrée, {cached} en cache",
+      "outputTokens": "{output} en sortie, {reasoning} de raisonnement",
+      "calls": "Appels au modèle",
+      "unpricedCalls": "{count, plural, one {# non tarifé} other {# non tarifés}}",
+      "failedCalls": "{count, plural, one {# en échec} other {# en échec}}",
+      "perFinding": "Coût par nouveau résultat",
+      "newFindings": "{count, plural, =0 {Aucun nouveau résultat} one {# nouveau résultat} other {# nouveaux résultats}}",
+      "breakdown": "Où est passé l’argent"
+    },
+    "stages": {
+      "cost": "Coût",
+      "share": "Part du coût",
+      "calls": "Appels",
+      "tokens": "Jetons",
+      "mostExpensive": "La plus coûteuse",
+      "openCalls": "Afficher les appels au modèle de {stage}",
+      "callsTitle": "{stage} : appels au modèle",
+      "callsSummary": "{cost} pour {count, plural, one {# appel} other {# appels}}"
+    },
+    "breakdown": {
+      "title": "Où est passé l’argent",
+      "total": "{cost} pour {count, plural, one {# appel au modèle} other {# appels au modèle}}",
+      "byStage": "Par étape",
+      "byModel": "Par modèle",
+      "byTask": "Par tâche",
+      "model": "Modèle",
+      "task": "Tâche",
+      "unknownModel": "Modèle inconnu",
+      "unattributed": "{count, plural, one {# appel a été fait} other {# appels ont été faits}} en dehors de toute étape :"
+    },
+    "topic": {
+      "title": "Coût par exécution",
+      "help": "Les {count} dernières exécutions terminées, de la plus ancienne à la plus récente. Sélectionnez une colonne pour ouvrir l’exécution.",
+      "average": "Moyenne de {average} par exécution tarifée sur {count, plural, one {# exécution} other {# exécutions}}, {total} au total",
+      "noPriced": "Aucune de ces exécutions n’était tarifée.",
+      "empty": "Aucune exécution terminée pour l’instant.",
+      "aria": "Coût par exécution pour {count, plural, one {la dernière exécution} other {les # dernières exécutions}}",
+      "status": "Statut",
+      "note": "Remarque",
+      "kind": "Type",
+      "partialSuffix": "(certains appels non tarifés)"
     }
   }
 }

@@ -114,6 +114,9 @@ namespace MyMorningNews.Core.Analytics
             List<Run> runs = (await RunsInScopeAsync(scope, fromUtc, toUtc, token).ConfigureAwait(false)).OrderBy(x => x.CreatedUtc).ThenBy(x => x.Id, StringComparer.Ordinal).ToList();
             HashSet<string> runIds = new HashSet<string>(runs.Select(x => x.Id), StringComparer.Ordinal);
             r.Total = runs.Count;
+            List<Run> priced = runs.Where(x => x.EstimatedCostUsd.HasValue).ToList();
+            r.TotalCostUsd = priced.Count > 0 ? priced.Sum(x => x.EstimatedCostUsd!.Value) : null;
+            r.MeanCostPerRunUsd = priced.Count > 0 ? Math.Round(priced.Average(x => x.EstimatedCostUsd!.Value), 6) : null;
             foreach (RunStatusEnum status in Enum.GetValues<RunStatusEnum>()) r.ByStatus[status.ToString()] = runs.Count(x => x.Status == status);
             r.ByDay = Days(runs, fromUtc, toUtc, tz);
             r.Activity = Activity(runs, tz);
@@ -238,6 +241,7 @@ namespace MyMorningNews.Core.Analytics
                 if (!byKey.TryGetValue(Day(TimeZoneInfo.ConvertTimeFromUtc(Utc(run.CreatedUtc), tz)), out RunDayRow? row)) continue;
                 row.Total++;
                 row.Counts[run.Status.ToString()]++;
+                if (run.EstimatedCostUsd.HasValue) row.CostUsd = (row.CostUsd ?? 0) + run.EstimatedCostUsd.Value;
             }
 
             return days;
@@ -276,7 +280,10 @@ namespace MyMorningNews.Core.Analytics
                         P50Ms = Math.Round(Percentile(sorted, 0.5), 2),
                         P95Ms = Math.Round(Percentile(sorted, 0.95), 2),
                         MeanMs = Math.Round(sorted.Average(), 2),
-                        MaxMs = Math.Round(sorted[sorted.Count - 1], 2)
+                        MaxMs = Math.Round(sorted[sorted.Count - 1], 2),
+                        TotalCostUsd = g.Any(s => s.EstimatedCostUsd.HasValue) ? g.Sum(s => s.EstimatedCostUsd ?? 0) : null,
+                        MeanCostUsd = g.Any(s => s.EstimatedCostUsd.HasValue) ? Math.Round(g.Where(s => s.EstimatedCostUsd.HasValue).Average(s => s.EstimatedCostUsd!.Value), 6) : null,
+                        LlmCallCount = g.Sum(s => s.LlmCallCount)
                     };
                 })
                 .OrderBy(x => x.SortOrder).ThenBy(x => x.Stage, StringComparer.Ordinal).ToList();
@@ -336,6 +343,9 @@ namespace MyMorningNews.Core.Analytics
                     CreatedUtc = Utc(run.CreatedUtc),
                     Status = run.Status,
                     DurationMs = run.DurationMs,
+                    EstimatedCostUsd = run.EstimatedCostUsd,
+                    LlmCallCount = run.LlmCallCount,
+                    UnpricedCallCount = run.UnpricedCallCount,
                     NewFindings = run.NewFindingCount,
                     Duplicates = run.DuplicateCount,
                     DuplicateShare = run.NewFindingCount + run.DuplicateCount == 0 ? null : Math.Round(run.DuplicateCount / (double)(run.NewFindingCount + run.DuplicateCount), 4),

@@ -32,6 +32,16 @@ namespace MyMorningNews.Core.Analytics
         public int Total { get; set; } = 0;
 
         /// <summary>
+        /// Estimated cost of the runs in the range, in US dollars. Null when none was priced.
+        /// </summary>
+        public decimal? TotalCostUsd { get; set; } = null;
+
+        /// <summary>
+        /// Mean estimated cost per priced run, in US dollars. Null when none was priced.
+        /// </summary>
+        public decimal? MeanCostPerRunUsd { get; set; } = null;
+
+        /// <summary>
         /// Runs by status. Every run status is present.
         /// </summary>
         public Dictionary<string, int> ByStatus { get; set; } = new Dictionary<string, int>(StringComparer.Ordinal);

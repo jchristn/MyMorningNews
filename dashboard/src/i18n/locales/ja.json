@@ -2338,7 +2338,8 @@
         "results": "結果",
         "details": "詳細",
         "calls": "モデル呼び出し",
-        "tools": "ツール呼び出し"
+        "tools": "ツール呼び出し",
+        "costs": "コスト"
       },
       "contextHash": "コンテキストのスナップショット"
     },
@@ -2371,13 +2372,7 @@
       "sources": "読み込んだソース",
       "newFindings": "新しい発見事項",
       "duplicates": "重複",
-      "tokens": "トークン",
-      "tokenSplit": "入力 {input}、出力 {output}",
-      "cost": "推定コスト",
-      "modelUsage": "モデル使用量",
-      "notRecorded": "記録なし",
-      "notRecordedHelp": "この実行ではモデル呼び出しが記録されていません。",
-      "costPending": "価格未設定"
+      "notRecordedHelp": "この実行ではモデル呼び出しが記録されていません。"
     },
     "stages": {
       "empty": "この実行にはステージの記録がありません。",
@@ -4457,6 +4452,69 @@
       },
       "openModels": "モデルを開く",
       "openSettings": "設定を開く"
+    }
+  },
+  "costs": {
+    "under": "{amount} 未満",
+    "noCalls": "モデル呼び出しはありません",
+    "notPriced": "価格未設定",
+    "unpriced": {
+      "someTitle": "一部の呼び出しに価格がありません",
+      "allTitle": "どの呼び出しにも価格がありません",
+      "count": "価格のない呼び出し: {total} 件中 {count} 件",
+      "endpoint": "価格が設定されていないエンドポイント: モデルのページで入力と出力の価格を設定してください。",
+      "setPrices": "価格を設定",
+      "subscription": "サブスクリプションでサインインしたエージェント CLI: 費用はサブスクリプションに含まれています。",
+      "partial": "表示されている金額は、価格のある呼び出しだけを含みます。",
+      "callTitle": "この呼び出しには価格がありません。エンドポイントに価格が設定されていないか、サブスクリプションの対象です。"
+    },
+    "header": {
+      "aria": "実行のコスト",
+      "cost": "実行のコスト",
+      "costSoFar": "これまでのコスト",
+      "split": "入力 {input}、出力 {output}",
+      "tokens": "トークン",
+      "inputTokens": "入力 {input}、キャッシュ {cached}",
+      "outputTokens": "出力 {output}、推論 {reasoning}",
+      "calls": "モデル呼び出し",
+      "unpricedCalls": "{count, plural, other {価格未設定 # 件}}",
+      "failedCalls": "{count, plural, other {失敗 # 件}}",
+      "perFinding": "新しい発見 1 件あたりのコスト",
+      "newFindings": "{count, plural, =0 {新しい発見はありません} other {新しい発見 # 件}}",
+      "breakdown": "お金の使い道"
+    },
+    "stages": {
+      "cost": "コスト",
+      "share": "コストの割合",
+      "calls": "呼び出し",
+      "tokens": "トークン",
+      "mostExpensive": "最も高い",
+      "openCalls": "{stage} のモデル呼び出しを表示",
+      "callsTitle": "{stage}: モデル呼び出し",
+      "callsSummary": "{cost}（{count, plural, other {# 件の呼び出し}}）"
+    },
+    "breakdown": {
+      "title": "お金の使い道",
+      "total": "{cost}（{count, plural, other {# 件のモデル呼び出し}}）",
+      "byStage": "ステージ別",
+      "byModel": "モデル別",
+      "byTask": "タスク別",
+      "model": "モデル",
+      "task": "タスク",
+      "unknownModel": "不明なモデル",
+      "unattributed": "{count, plural, other {# 件}}の呼び出しがどのステージにも属さずに行われました:"
+    },
+    "topic": {
+      "title": "実行ごとのコスト",
+      "help": "完了した直近 {count} 件の実行（古い順）。列を選ぶとその実行が開きます。",
+      "average": "価格のある実行 1 件あたり平均 {average}（{count, plural, other {# 件の実行}}）、合計 {total}",
+      "noPriced": "これらの実行にはどれも価格がありません。",
+      "empty": "完了した実行はまだありません。",
+      "aria": "直近 {count, plural, other {# 件の実行}}の実行ごとのコスト",
+      "status": "状態",
+      "note": "注記",
+      "kind": "種類",
+      "partialSuffix": "（一部の呼び出しは価格未設定）"
     }
   }
 }

@@ -264,7 +264,10 @@ client.schedules.list(owner_type="Topic", owner_id=tid)
 
 ```python
 client.runs.list(topic_id=tid, status="Completed")
+client.runs.list(sort_by="estimatedCostUsd", sort_direction="Descending")   # most expensive first
 client.runs.get(run_id); client.runs.stages(run_id); client.runs.queries(run_id)
+client.runs.costs(run_id)              # RunCostReport: totals, stages, models, tasks (USD estimates)
+client.llm_calls.list(run_stage_id=stage_id)   # model calls made in one stage
 client.runs.results(run_id, disposition="Fetched")
 client.runs.llm_calls(run_id)          # paged, oldest first
 client.runs.tool_calls(run_id)         # agentic tool calls (RunToolCall), in order

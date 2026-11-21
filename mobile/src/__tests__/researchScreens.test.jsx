@@ -432,6 +432,69 @@ describe('runs', () => {
     await waitFor(() => expect(screen.getByText('Cancelling')).toBeTruthy());
     expect(server.count('POST /v1.0/api/runs/run_1/cancel')).toBe(1);
   });
+
+  it('shows the run cost with tokens, calls, unpriced help, and each stage cost with the most expensive marked', async () => {
+    const totals = { estimatedCostUsd: 0.42, inputCostUsd: 0.12, outputCostUsd: 0.3, llmCallCount: 6, unpricedCallCount: 1, failedCallCount: 0, inputTokens: 12000, outputTokens: 3000, cachedInputTokens: 4000, reasoningTokens: 900 };
+    await renderSignedIn(<RunDetail id="run_1" />, {
+      'GET /v1.0/api/runs/run_1': () => ({ body: { ...run, llmCallCount: 6, unpricedCallCount: 1 } }),
+      'GET /v1.0/api/runs/run_1/stages': () => ({
+        body: [
+          { id: 'rst_1', stage: 'Search', status: 'Succeeded', durationMs: 1200, itemsIn: 1, itemsOut: 8, sortOrder: 2, llmCallCount: 0, estimatedCostUsd: null },
+          { id: 'rst_2', stage: 'Extract', status: 'Succeeded', durationMs: 3000, itemsIn: 8, itemsOut: 4, sortOrder: 5 },
+          { id: 'rst_3', stage: 'Predict', status: 'Succeeded', durationMs: 900, itemsIn: 4, itemsOut: 2, sortOrder: 11 },
+        ],
+      }),
+      'GET /v1.0/api/runs/run_1/costs': () => ({
+        body: {
+          runId: 'run_1',
+          totals,
+          costPerNewFindingUsd: 0.14,
+          stages: [
+            { runStageId: 'rst_1', stage: 'Search', estimatedCostUsd: null, llmCallCount: 0, shareOfCost: null },
+            { runStageId: 'rst_2', stage: 'Extract', estimatedCostUsd: 0.315, llmCallCount: 4, shareOfCost: 0.75 },
+            { runStageId: 'rst_3', stage: 'Predict', estimatedCostUsd: null, llmCallCount: 2, unpricedCallCount: 2, shareOfCost: null },
+          ],
+          byModel: [],
+          byTask: [],
+        },
+      }),
+      'GET /v1.0/api/runs/run_1/queries': () => ({ body: [] }),
+      'GET /v1.0/api/runs/run_1/results': () => ({ body: [] }),
+      'GET /v1.0/api/findings': () => page([]),
+    });
+    await waitFor(() => expect(screen.getByTestId('run-cost')).toBeTruthy());
+    expect(screen.getByText('$0.42')).toBeTruthy();
+    expect(screen.getByText('$0.12 input, $0.30 output')).toBeTruthy();
+    expect(screen.getByText('4K cached, 900 reasoning')).toBeTruthy();
+    expect(screen.getByText('$0.14')).toBeTruthy();
+    expect(screen.getByText('1 call had no price')).toBeTruthy();
+    expect(screen.getByTestId('run-unpriced')).toBeTruthy();
+    expect(screen.getByTestId('stage-cost-Extract').props.children).toBe('$0.32 · 75% of the run · 4 calls');
+    expect(screen.getByTestId('stage-cost-Predict').props.children).toBe('Not priced · 2 calls');
+    expect(screen.queryByTestId('stage-cost-Search')).toBeNull();
+    expect(screen.getAllByText('Most expensive')).toHaveLength(1);
+    expect(screen.getByTestId('stage-cost-chart').props.accessibilityLabel).toContain('Extract: $0.32');
+  });
+
+  it('says Not priced and No model calls instead of $0.00 in the topic runs list', async () => {
+    await renderSignedIn(<TopicWorkspace id="top_1" />, {
+      'GET /v1.0/api/topics/top_1': () => ({ body: { topic, dimensions: [], constraints: [], recipients: [] } }),
+      'GET /v1.0/api/findings': () => page([]),
+      'GET /v1.0/api/runs': () =>
+        page([
+          { ...run, id: 'run_a', estimatedCostUsd: 0.12, llmCallCount: 3 },
+          { ...run, id: 'run_b', estimatedCostUsd: null, llmCallCount: 3, unpricedCallCount: 3, inputTokens: 10, outputTokens: 5 },
+          { ...run, id: 'run_c', estimatedCostUsd: null, llmCallCount: 0, inputTokens: 0, outputTokens: 0 },
+        ]),
+    });
+    await waitFor(() => expect(screen.getByTestId('topic-tab-runs')).toBeTruthy());
+    await fireEvent.press(screen.getByTestId('topic-tab-runs'));
+    await waitFor(() => expect(screen.getByTestId('run-row-run_a')).toBeTruthy());
+    expect(screen.getByText('Cost: $0.12')).toBeTruthy();
+    expect(screen.getByText('Cost: Not priced')).toBeTruthy();
+    expect(screen.getByText('Cost: No model calls')).toBeTruthy();
+    expect(screen.queryByText('Cost: $0.00')).toBeNull();
+  });
 });
 
 describe('refinement wizard', () => {

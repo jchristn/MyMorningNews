@@ -191,6 +191,7 @@ namespace MyMorningNews.Server
             tenantDefaults.UsePlatformCredentials = () => _Context.SettingsService.Current.Hosting.UsePlatformCredentials;
             _Context.Accounts = new AccountDataService(_Database, briefings, _Artifacts);
             _Context.PredictionNotices = new PredictionNoticeService(_Database, _Push!, _Logging);
+            _Context.RunCosts = new RunCostService(_Database);
             _Context.Setup = new SetupService(_Database, _Models!, _Search!, _Context.Vault, () => _Context.SettingsService.Current, _Logging);
             _Context.Account = new AccountService(_Database, settings, email, tenantDefaults, _Context.PromoCodes, _Context.Accounts);
             MyMorningNews.Core.Entitlements.EntitlementService entitlements = _Context.Entitlements;

@@ -54,6 +54,11 @@ namespace MyMorningNews.Core.Services
         public string? RunId { get; set; } = null;
 
         /// <summary>
+        /// Run stage, for the call log. Null takes the stage from <see cref="RunStageScope.Current"/>.
+        /// </summary>
+        public string? RunStageId { get; set; } = null;
+
+        /// <summary>
         /// Refinement session, for the call log.
         /// </summary>
         public string? RefinementSessionId { get; set; } = null;

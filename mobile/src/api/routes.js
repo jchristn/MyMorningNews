@@ -62,6 +62,7 @@ export const routes = {
   runStages: (id) => '/v1.0/api/runs/' + enc(id) + '/stages',
   runQueries: (id) => '/v1.0/api/runs/' + enc(id) + '/queries',
   runResults: (id) => '/v1.0/api/runs/' + enc(id) + '/results',
+  runCosts: (id) => '/v1.0/api/runs/' + enc(id) + '/costs',
   // Findings, evidence sources, predictions, suggestions (Phase 6)
   findings: '/v1.0/api/findings',
   finding: (id) => '/v1.0/api/findings/' + enc(id),

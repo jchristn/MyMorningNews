@@ -2338,7 +2338,8 @@
         "results": "Ergebnisse",
         "details": "Details",
         "calls": "Modellaufrufe",
-        "tools": "Tool-Aufrufe"
+        "tools": "Tool-Aufrufe",
+        "costs": "Kosten"
       },
       "contextHash": "Kontext-Snapshot"
     },
@@ -2371,13 +2372,7 @@
       "sources": "Gelesene Quellen",
       "newFindings": "Neue Erkenntnisse",
       "duplicates": "Duplikate",
-      "tokens": "Tokens",
-      "tokenSplit": "{input} ein, {output} aus",
-      "cost": "Geschätzte Kosten",
-      "modelUsage": "Modellnutzung",
-      "notRecorded": "Nicht erfasst",
-      "notRecordedHelp": "Für diesen Lauf wurden keine Modellaufrufe erfasst.",
-      "costPending": "Ohne Preis"
+      "notRecordedHelp": "Für diesen Lauf wurden keine Modellaufrufe erfasst."
     },
     "stages": {
       "empty": "Für diesen Lauf wurden keine Phasen aufgezeichnet.",
@@ -4457,6 +4452,69 @@
       },
       "openModels": "Modelle öffnen",
       "openSettings": "Einstellungen öffnen"
+    }
+  },
+  "costs": {
+    "under": "unter {amount}",
+    "noCalls": "Keine Modellaufrufe",
+    "notPriced": "Ohne Preis",
+    "unpriced": {
+      "someTitle": "Einige Aufrufe hatten keinen Preis",
+      "allTitle": "Kein Aufruf hatte einen Preis",
+      "count": "Aufrufe ohne Preis: {count} von {total}",
+      "endpoint": "Ein Endpunkt ohne Preise: Legen Sie seine Eingabe- und Ausgabepreise auf der Seite Modelle fest.",
+      "setPrices": "Preise festlegen",
+      "subscription": "Eine Agent-CLI, die mit einem Abonnement angemeldet ist: Die Kosten sind in Ihrem Abonnement enthalten.",
+      "partial": "Der angezeigte Betrag umfasst nur die Aufrufe mit Preis.",
+      "callTitle": "Dieser Aufruf hatte keinen Preis: Für seinen Endpunkt sind keine Preise festgelegt, oder ein Abonnement deckt ihn ab."
+    },
+    "header": {
+      "aria": "Kosten des Laufs",
+      "cost": "Kosten des Laufs",
+      "costSoFar": "Bisherige Kosten",
+      "split": "{input} Eingabe, {output} Ausgabe",
+      "tokens": "Tokens",
+      "inputTokens": "{input} ein, {cached} aus dem Cache",
+      "outputTokens": "{output} aus, {reasoning} für das Denken",
+      "calls": "Modellaufrufe",
+      "unpricedCalls": "{count, plural, one {# ohne Preis} other {# ohne Preis}}",
+      "failedCalls": "{count, plural, one {# fehlgeschlagen} other {# fehlgeschlagen}}",
+      "perFinding": "Kosten pro neuem Ergebnis",
+      "newFindings": "{count, plural, =0 {Keine neuen Ergebnisse} one {# neues Ergebnis} other {# neue Ergebnisse}}",
+      "breakdown": "Wohin das Geld ging"
+    },
+    "stages": {
+      "cost": "Kosten",
+      "share": "Anteil an den Kosten",
+      "calls": "Aufrufe",
+      "tokens": "Tokens",
+      "mostExpensive": "Am teuersten",
+      "openCalls": "Modellaufrufe von {stage} anzeigen",
+      "callsTitle": "{stage}: Modellaufrufe",
+      "callsSummary": "{cost} für {count, plural, one {# Aufruf} other {# Aufrufe}}"
+    },
+    "breakdown": {
+      "title": "Wohin das Geld ging",
+      "total": "{cost} für {count, plural, one {# Modellaufruf} other {# Modellaufrufe}}",
+      "byStage": "Nach Phase",
+      "byModel": "Nach Modell",
+      "byTask": "Nach Aufgabe",
+      "model": "Modell",
+      "task": "Aufgabe",
+      "unknownModel": "Unbekanntes Modell",
+      "unattributed": "{count, plural, one {# Aufruf wurde} other {# Aufrufe wurden}} außerhalb jeder Phase ausgeführt:"
+    },
+    "topic": {
+      "title": "Kosten pro Lauf",
+      "help": "Die letzten {count} abgeschlossenen Läufe, vom ältesten zum neuesten. Wählen Sie eine Säule, um den Lauf zu öffnen.",
+      "average": "Durchschnittlich {average} pro Lauf mit Preis über {count, plural, one {# Lauf} other {# Läufe}}, insgesamt {total}",
+      "noPriced": "Keiner dieser Läufe hatte einen Preis.",
+      "empty": "Noch keine abgeschlossenen Läufe.",
+      "aria": "Kosten pro Lauf für {count, plural, one {den letzten Lauf} other {die letzten # Läufe}}",
+      "status": "Status",
+      "note": "Hinweis",
+      "kind": "Art",
+      "partialSuffix": "(einige Aufrufe ohne Preis)"
     }
   }
 }

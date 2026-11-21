@@ -10,14 +10,14 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
     using MyMorningNews.Sdk.Resources;
 
     /// <summary>
-    /// Runs, read only: list, read, stages, queries, results, email preview, and WaitAsync on a finished run.
+    /// Runs, read only: list, read, stages, costs, queries, results, email preview, and WaitAsync on a finished run.
     /// </summary>
     public class RunsReadTest : TestBase
     {
         /// <summary>
         /// Case name.
         /// </summary>
-        public override string Name => "Runs list, get, stages, queries, results, email preview, wait, events, retry";
+        public override string Name => "Runs list, get, stages, costs, queries, results, email preview, wait, events, retry";
 
         /// <summary>
         /// Instantiate.
@@ -38,6 +38,8 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             MyMorningNewsClient c = context.RequireAdmin();
             await StepAsync(context, result, "GET unknown run (404)", () => Helpers.ExpectErrorAsync(() => c.Runs.GetAsync("run_missing", token), 404)).ConfigureAwait(false);
             await StepAsync(context, result, "Events for an unknown run (404)", () => Helpers.ExpectErrorAsync(() => DrainAsync(c, "run_missing", token), 404)).ConfigureAwait(false);
+            await StepAsync(context, result, "Costs of an unknown run (404)", () => Helpers.ExpectErrorAsync(() => c.Runs.GetCostsAsync("run_missing", token), 404)).ConfigureAwait(false);
+            await StepAsync(context, result, "GET runs sorted by cost", () => c.Runs.ListAsync(new RunListOptions { PageSize = 5, SortBy = "estimatedCostUsd" }, token)).ConfigureAwait(false);
             await StepAsync(context, result, "Retry an unknown run (404)", () => Helpers.ExpectErrorAsync(() => c.Runs.RetryAsync("run_missing", "Predict", token), 404)).ConfigureAwait(false);
             EnumerationResult<Run> runs = await StepAsync(context, result, "GET runs", () => c.Runs.ListAsync(new RunListOptions { PageSize = 25 }, token)).ConfigureAwait(false);
             Run? finished = null;
@@ -60,6 +62,18 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             Helpers.Equal(finished.Id, run.Id, "run id");
             List<RunStage> stages = await StepAsync(context, result, "GET run stages", () => c.Runs.ListStagesAsync(run.Id, token)).ConfigureAwait(false);
             Helpers.True(stages.All(s => s.RunId == run.Id), "stages belong to the run");
+            RunCostReport costs = await StepAsync(context, result, "GET run costs", () => c.Runs.GetCostsAsync(run.Id, token)).ConfigureAwait(false);
+            Helpers.Equal(run.Id, costs.RunId, "cost report run id");
+            Helpers.Equal("USD", costs.Currency, "cost report currency");
+            Helpers.Equal(stages.Count, costs.Stages.Count, "a cost row per stage");
+            Helpers.True(costs.Stages.Sum(s => s.LlmCallCount) + (costs.Unattributed?.LlmCallCount ?? 0) == costs.Totals.LlmCallCount, "stage and unattributed calls add up to the total");
+            RunStage? costed = stages.FirstOrDefault(s => s.LlmCallCount > 0);
+            if (costed != null)
+            {
+                EnumerationResult<LlmCall> stageCalls = await StepAsync(context, result, "GET llm-calls by stage", () => c.LlmCalls.ListAsync(new LlmCallListOptions { RunStageId = costed.Id, PageSize = 100 }, token)).ConfigureAwait(false);
+                Helpers.True(stageCalls.Items.All(x => x.RunStageId == costed.Id), "calls belong to the stage");
+            }
+
             await StepAsync(context, result, "GET run queries", () => c.Runs.ListQueriesAsync(run.Id, token)).ConfigureAwait(false);
             await StepAsync(context, result, "GET run results", () => c.Runs.ListResultsAsync(run.Id, null, token)).ConfigureAwait(false);
             EmailPreview preview = await StepAsync(context, result, "GET run email-preview", () => c.Runs.GetEmailPreviewAsync(run.Id, token)).ConfigureAwait(false);

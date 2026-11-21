@@ -399,7 +399,13 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
  * @property {number} durationMs Duration.
  * @property {number} newFindingCount New findings.
  * @property {number} sourceCount Sources fetched.
- * @property {number|null} estimatedCostUsd Estimated cost.
+ * @property {number} inputTokens Input tokens across the run's model calls.
+ * @property {number} outputTokens Output tokens.
+ * @property {number} cachedInputTokens Input tokens read from the provider's prompt cache.
+ * @property {number} reasoningTokens Reasoning (thinking) tokens.
+ * @property {number} llmCallCount Model calls made during the run.
+ * @property {number} unpricedCallCount Model calls with no price (endpoint without prices, or a subscription CLI), left out of the cost.
+ * @property {number|null} estimatedCostUsd Estimated cost in US dollars, or null when no call was priced. Updated after every stage.
  * @property {string|null} resumeFromStage Stage a retried run resumes from, or null for a full run.
  */
 
@@ -423,6 +429,61 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
  * @property {number} itemsIn Items in.
  * @property {number} itemsOut Items out.
  * @property {string|null} errorMessage Error.
+ * @property {number} llmCallCount Model calls made during the stage.
+ * @property {number} unpricedCallCount Model calls with no price, left out of the cost.
+ * @property {number} inputTokens Input tokens.
+ * @property {number} outputTokens Output tokens.
+ * @property {number} cachedInputTokens Input tokens read from the provider's prompt cache.
+ * @property {number} reasoningTokens Reasoning (thinking) tokens.
+ * @property {number|null} estimatedCostUsd Estimated cost in US dollars, or null when no call was priced.
+ */
+
+/**
+ * Cost and token totals for a run, a stage, a model, or a task. Amounts are US dollar estimates from the endpoints'
+ * prices, null when no call was priced.
+ * @typedef {object} CostTotals
+ * @property {number|null} estimatedCostUsd Estimated cost.
+ * @property {number|null} inputCostUsd Input share of the cost (uncached, cached, and cache-write input).
+ * @property {number|null} outputCostUsd Output share of the cost.
+ * @property {number} llmCallCount Model calls.
+ * @property {number} unpricedCallCount Calls with no price, left out of the amounts.
+ * @property {number} failedCallCount Failed calls.
+ * @property {number} inputTokens Input tokens.
+ * @property {number} outputTokens Output tokens.
+ * @property {number} cachedInputTokens Input tokens read from the prompt cache.
+ * @property {number} cacheWriteTokens Input tokens written to the prompt cache.
+ * @property {number} reasoningTokens Reasoning tokens.
+ * @property {number} modelDurationMs Time spent in model calls, in milliseconds.
+ */
+
+/**
+ * Cost of one run stage.
+ * @typedef {CostTotals & { runStageId: string, stage: string, status: string, sortOrder: number, durationMs: number, itemsIn: number, itemsOut: number, shareOfCost: number|null }} StageCost
+ */
+
+/**
+ * Cost of one model endpoint and model in a run.
+ * @typedef {CostTotals & { modelEndpointId: string|null, endpointName: string|null, provider: string|null, model: string|null }} ModelCost
+ */
+
+/**
+ * Cost of one model task in a run.
+ * @typedef {CostTotals & { task: string }} TaskCost
+ */
+
+/**
+ * What a run cost, from `runs.costs`.
+ * @typedef {object} RunCostReport
+ * @property {string} runId Run.
+ * @property {string} topicId Topic.
+ * @property {string} status Run status.
+ * @property {string} currency Always `USD`.
+ * @property {CostTotals} totals Totals across the run.
+ * @property {number|null} costPerNewFindingUsd Cost divided by new findings, or null.
+ * @property {StageCost[]} stages One row per stage, in run order.
+ * @property {CostTotals|null} unattributed Calls with no stage, or null when every call has one.
+ * @property {ModelCost[]} byModel By endpoint and model, most expensive first.
+ * @property {TaskCost[]} byTask By task, most expensive first.
  */
 
 /**
@@ -899,6 +960,7 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
  * @property {string} id Identifier.
  * @property {string} task Task.
  * @property {string|null} runId Run.
+ * @property {string|null} runStageId Run stage the call was made in.
  * @property {string|null} model Model.
  * @property {string|null} promptKey Prompt key.
  * @property {number} inputTokens Input tokens.
@@ -1869,7 +1931,8 @@ export class RunsResource extends ResourceGroup {
     }
 
     /**
-     * List runs. Filters: `topicId`, `status`, `trigger`.
+     * List runs. Filters: `topicId`, `status`, `trigger`. `sortBy: 'estimatedCostUsd'` (unpriced runs last) or
+     * `sortBy: 'durationMs'` ranks runs by cost or duration.
      * @param {ListOptions & { topicId?: string, status?: string, trigger?: string }} [options] Options.
      * @returns {Promise<EnumerationResult<Run>>} Page.
      */
@@ -1894,6 +1957,16 @@ export class RunsResource extends ResourceGroup {
      */
     start(topicId, options = {}) {
         return this._client.topics.run(topicId, options);
+    }
+
+    /**
+     * What a run cost: totals, each stage, each model, and each task. Computed on request, so it is current while the run
+     * is going. Amounts are US dollar estimates; unpriced calls are counted and left out of the amounts.
+     * @param {string} id Run.
+     * @returns {Promise<RunCostReport>} Cost report.
+     */
+    costs(id) {
+        return this._req('GET', this._path(id, '/costs'));
     }
 
     /**
@@ -3149,7 +3222,7 @@ export class UsageResource extends ResourceGroup {
  */
 export class LlmCallsResource extends ResourceGroup {
     /**
-     * List model calls (payloads left out). Filters: `runId`, `refinementSessionId`, `briefingId`, `modelEndpointId`, `model`, `promptKey`, `userId`, `topicId`, `success`, `isDryRun`, `task`.
+     * List model calls (payloads left out). Filters: `runId`, `runStageId`, `refinementSessionId`, `briefingId`, `modelEndpointId`, `model`, `promptKey`, `userId`, `topicId`, `success`, `isDryRun`, `task`.
      * @param {ListOptions & Record<string, any>} [options] Options.
      * @returns {Promise<EnumerationResult<LlmCall>>} Page.
      */

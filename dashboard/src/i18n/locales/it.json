@@ -2338,7 +2338,8 @@
         "results": "Risultati di ricerca",
         "details": "Dettagli",
         "calls": "Chiamate al modello",
-        "tools": "Chiamate agli strumenti"
+        "tools": "Chiamate agli strumenti",
+        "costs": "Costi"
       },
       "contextHash": "Istantanea del contesto"
     },
@@ -2371,13 +2372,7 @@
       "sources": "Fonti lette",
       "newFindings": "Nuovi risultati",
       "duplicates": "Duplicati",
-      "tokens": "Token",
-      "tokenSplit": "{input} in ingresso, {output} in uscita",
-      "cost": "Costo stimato",
-      "modelUsage": "Utilizzo dei modelli",
-      "notRecorded": "Non registrato",
-      "notRecordedHelp": "Per questa esecuzione non è stata registrata alcuna chiamata ai modelli.",
-      "costPending": "Senza prezzo"
+      "notRecordedHelp": "Per questa esecuzione non è stata registrata alcuna chiamata ai modelli."
     },
     "stages": {
       "empty": "Nessuna fase registrata per questa esecuzione.",
@@ -4457,6 +4452,69 @@
       },
       "openModels": "Apri Modelli di IA",
       "openSettings": "Apri Impostazioni"
+    }
+  },
+  "costs": {
+    "under": "meno di {amount}",
+    "noCalls": "Nessuna chiamata al modello",
+    "notPriced": "Senza prezzo",
+    "unpriced": {
+      "someTitle": "Alcune chiamate non avevano un prezzo",
+      "allTitle": "Nessuna chiamata aveva un prezzo",
+      "count": "Chiamate senza prezzo: {count} su {total}",
+      "endpoint": "Un endpoint senza prezzi: imposta i prezzi di ingresso e di uscita nella pagina Modelli di IA.",
+      "setPrices": "Imposta i prezzi",
+      "subscription": "Una CLI di agente connessa con un abbonamento: il costo è incluso nel tuo abbonamento.",
+      "partial": "L’importo mostrato copre solo le chiamate con prezzo.",
+      "callTitle": "Questa chiamata non aveva un prezzo: il suo endpoint non ha prezzi impostati oppure è coperta da un abbonamento."
+    },
+    "header": {
+      "aria": "Costo dell’esecuzione",
+      "cost": "Costo dell’esecuzione",
+      "costSoFar": "Costo finora",
+      "split": "{input} in ingresso, {output} in uscita",
+      "tokens": "Token",
+      "inputTokens": "{input} in ingresso, {cached} in cache",
+      "outputTokens": "{output} in uscita, {reasoning} di ragionamento",
+      "calls": "Chiamate al modello",
+      "unpricedCalls": "{count, plural, one {# senza prezzo} other {# senza prezzo}}",
+      "failedCalls": "{count, plural, one {# non riuscita} other {# non riuscite}}",
+      "perFinding": "Costo per nuovo risultato",
+      "newFindings": "{count, plural, =0 {Nessun nuovo risultato} one {# nuovo risultato} other {# nuovi risultati}}",
+      "breakdown": "Dove sono finiti i soldi"
+    },
+    "stages": {
+      "cost": "Costo",
+      "share": "Quota del costo",
+      "calls": "Chiamate",
+      "tokens": "Token",
+      "mostExpensive": "La più costosa",
+      "openCalls": "Mostra le chiamate al modello di {stage}",
+      "callsTitle": "{stage}: chiamate al modello",
+      "callsSummary": "{cost} per {count, plural, one {# chiamata} other {# chiamate}}"
+    },
+    "breakdown": {
+      "title": "Dove sono finiti i soldi",
+      "total": "{cost} per {count, plural, one {# chiamata al modello} other {# chiamate al modello}}",
+      "byStage": "Per fase",
+      "byModel": "Per modello",
+      "byTask": "Per attività",
+      "model": "Modello",
+      "task": "Attività",
+      "unknownModel": "Modello sconosciuto",
+      "unattributed": "{count, plural, one {# chiamata è stata fatta} other {# chiamate sono state fatte}} fuori da qualsiasi fase:"
+    },
+    "topic": {
+      "title": "Costo per esecuzione",
+      "help": "Le ultime {count} esecuzioni concluse, dalla più vecchia alla più recente. Seleziona una colonna per aprire l’esecuzione.",
+      "average": "Media di {average} per esecuzione con prezzo su {count, plural, one {# esecuzione} other {# esecuzioni}}, {total} in totale",
+      "noPriced": "Nessuna di queste esecuzioni aveva un prezzo.",
+      "empty": "Nessuna esecuzione conclusa per ora.",
+      "aria": "Costo per esecuzione {count, plural, one {dell’ultima esecuzione} other {delle ultime # esecuzioni}}",
+      "status": "Stato",
+      "note": "Nota",
+      "kind": "Tipo",
+      "partialSuffix": "(alcune chiamate senza prezzo)"
     }
   }
 }

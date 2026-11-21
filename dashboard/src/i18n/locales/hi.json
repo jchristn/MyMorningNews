@@ -2338,7 +2338,8 @@
         "results": "परिणाम",
         "details": "विवरण",
         "calls": "मॉडल कॉल",
-        "tools": "टूल कॉल"
+        "tools": "टूल कॉल",
+        "costs": "लागत"
       },
       "contextHash": "संदर्भ स्नैपशॉट"
     },
@@ -2371,13 +2372,7 @@
       "sources": "पढ़े गए स्रोत",
       "newFindings": "नए निष्कर्ष",
       "duplicates": "डुप्लिकेट",
-      "tokens": "टोकन",
-      "tokenSplit": "{input} इनपुट, {output} आउटपुट",
-      "cost": "अनुमानित लागत",
-      "modelUsage": "मॉडल उपयोग",
-      "notRecorded": "रिकॉर्ड नहीं किया गया",
-      "notRecordedHelp": "इस रन के लिए कोई मॉडल कॉल रिकॉर्ड नहीं की गई।",
-      "costPending": "मूल्य तय नहीं"
+      "notRecordedHelp": "इस रन के लिए कोई मॉडल कॉल रिकॉर्ड नहीं की गई।"
     },
     "stages": {
       "empty": "इस रन के लिए कोई चरण दर्ज नहीं है।",
@@ -4457,6 +4452,69 @@
       },
       "openModels": "मॉडल खोलें",
       "openSettings": "सेटिंग्स खोलें"
+    }
+  },
+  "costs": {
+    "under": "{amount} से कम",
+    "noCalls": "कोई मॉडल कॉल नहीं",
+    "notPriced": "मूल्य तय नहीं",
+    "unpriced": {
+      "someTitle": "कुछ कॉल का कोई मूल्य नहीं था",
+      "allTitle": "किसी भी कॉल का मूल्य नहीं था",
+      "count": "बिना मूल्य वाली कॉल: {total} में से {count}",
+      "endpoint": "बिना मूल्य वाला एंडपॉइंट: मॉडल पेज पर उसके इनपुट और आउटपुट मूल्य सेट करें।",
+      "setPrices": "मूल्य सेट करें",
+      "subscription": "सब्सक्रिप्शन से साइन इन किया गया एजेंट CLI: लागत आपके सब्सक्रिप्शन में शामिल है।",
+      "partial": "दिखाई गई राशि में केवल मूल्य वाली कॉल शामिल हैं।",
+      "callTitle": "इस कॉल का कोई मूल्य नहीं था: इसके एंडपॉइंट पर कोई मूल्य सेट नहीं है, या कोई सब्सक्रिप्शन इसे कवर करता है।"
+    },
+    "header": {
+      "aria": "रन की लागत",
+      "cost": "रन की लागत",
+      "costSoFar": "अब तक की लागत",
+      "split": "{input} इनपुट, {output} आउटपुट",
+      "tokens": "टोकन",
+      "inputTokens": "{input} इनपुट, {cached} कैश से",
+      "outputTokens": "{output} आउटपुट, {reasoning} तर्क",
+      "calls": "मॉडल कॉल",
+      "unpricedCalls": "{count, plural, one {# बिना मूल्य} other {# बिना मूल्य}}",
+      "failedCalls": "{count, plural, one {# विफल} other {# विफल}}",
+      "perFinding": "प्रति नई खोज लागत",
+      "newFindings": "{count, plural, =0 {कोई नई खोज नहीं} one {# नई खोज} other {# नई खोजें}}",
+      "breakdown": "पैसा कहाँ गया"
+    },
+    "stages": {
+      "cost": "लागत",
+      "share": "लागत में हिस्सा",
+      "calls": "कॉल",
+      "tokens": "टोकन",
+      "mostExpensive": "सबसे महँगा",
+      "openCalls": "{stage} की मॉडल कॉल दिखाएँ",
+      "callsTitle": "{stage}: मॉडल कॉल",
+      "callsSummary": "{count, plural, one {# कॉल} other {# कॉल}} में {cost}"
+    },
+    "breakdown": {
+      "title": "पैसा कहाँ गया",
+      "total": "{count, plural, one {# मॉडल कॉल} other {# मॉडल कॉल}} में {cost}",
+      "byStage": "चरण के अनुसार",
+      "byModel": "मॉडल के अनुसार",
+      "byTask": "कार्य के अनुसार",
+      "model": "मॉडल",
+      "task": "कार्य",
+      "unknownModel": "अज्ञात मॉडल",
+      "unattributed": "{count, plural, one {# कॉल} other {# कॉल}} किसी भी चरण के बाहर की गईं:"
+    },
+    "topic": {
+      "title": "प्रति रन लागत",
+      "help": "पिछले {count} पूरे हुए रन, सबसे पुराने से सबसे नए तक। रन खोलने के लिए कोई कॉलम चुनें।",
+      "average": "{count, plural, one {# रन} other {# रन}} में हर मूल्य वाले रन का औसत {average}, कुल {total}",
+      "noPriced": "इनमें से किसी भी रन का मूल्य नहीं था।",
+      "empty": "अभी तक कोई रन पूरा नहीं हुआ।",
+      "aria": "पिछले {count, plural, one {# रन} other {# रन}} की प्रति रन लागत",
+      "status": "स्थिति",
+      "note": "नोट",
+      "kind": "प्रकार",
+      "partialSuffix": "(कुछ कॉल बिना मूल्य)"
     }
   }
 }

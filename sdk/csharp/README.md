@@ -161,7 +161,7 @@ Unless noted, each group offers `ListAsync(options)`, `GetAsync(id)`, `CreateAsy
 | `Refinement` | `StartAsync`, `GetAsync`, `ListAsync`, `GenerateDimensionsAsync`, `GenerateQuestionsAsync`, `AnswerAsync`, `GenerateContextAsync`, `SuggestSourcesAsync`, `AcceptSourcesAsync`, `CompleteAsync`, `AbandonAsync` | `await client.Refinement.StartAsync(new RefinementStartRequest { SeedText = "..." });` |
 | `Requests` | One-time requests: `CreateAsync`, `ListAsync`, `GetAsync`, `AnswerAsync`, `ReplanAsync`, `ConfirmAsync`, `CancelAsync`, `ConvertAsync`, `DeleteAsync` | `await client.Requests.CancelAsync(id);` |
 | `Schedules` | `PreviewAsync` | `await client.Schedules.PreviewAsync(new ScheduleUpsertRequest { IntervalType = IntervalTypeEnum.Cron, CronExpression = "0 7 * * 1-5" });` |
-| `Runs` | `ListAsync`, `GetAsync`, `ListStagesAsync`, `ListQueriesAsync`, `ListResultsAsync(id, disposition)`, `ListLlmCallsAsync`, `ListToolCallsAsync` (agentic tool calls in order), `GetEmailPreviewAsync`, `CancelAsync`, `WaitAsync` | `await client.Runs.ListToolCallsAsync(runId);` |
+| `Runs` | `ListAsync` (SortBy `estimatedCostUsd` or `durationMs`), `GetAsync`, `GetCostsAsync` (RunCostReport: totals, stages, models, tasks), `ListStagesAsync`, `ListQueriesAsync`, `ListResultsAsync(id, disposition)`, `ListLlmCallsAsync`, `ListToolCallsAsync` (agentic tool calls in order), `GetEmailPreviewAsync`, `CancelAsync`, `WaitAsync` | `await client.Runs.ListToolCallsAsync(runId);` |
 | `Findings` | `ListAsync`, `GetAsync` (with evidence), `UpdateAsync` (pin or hide), `DeleteAsync`, `GetEvidenceAsync` | `await client.Findings.UpdateAsync(id, new FindingUpdateRequest { Pinned = true });` |
 | `Sources` | `ListAsync`, `GetAsync` | `await client.Sources.ListAsync(new SourceListOptions { RunId = runId });` |
 | `Predictions` | `ListAsync`, `GetAsync`, `ResolveAsync`, `AcceptReviewAsync`, `RejectReviewAsync` | `await client.Predictions.ResolveAsync(id, new PredictionResolveRequest { Status = PredictionStatusEnum.Accurate });` |
@@ -178,7 +178,7 @@ Unless noted, each group offers `ListAsync(options)`, `GetAsync(id)`, `CreateAsy
 | `Email` | Outbox: `ListAsync`, `GetAsync`, `ResendAsync`, `DeleteAsync`; `SendTestAsync`, `PreviewRunAsync`, `GetPreferencesAsync`, `UpdatePreferencesAsync` | `await client.Email.UpdatePreferencesAsync(new EmailPreferencesRequest { FailureEmails = false });` |
 | `Analytics` | `OverviewAsync`, `RelevanceAsync`, `AccuracyAsync`, `FeedbackAsync`, `SuggestionsAsync`, `ReasonsAsync`, `QualityAsync`, `EmailAsync` | `await client.Analytics.RelevanceAsync(new AnalyticsOptions { TopicId = id });` |
 | `Usage` | `GetMineAsync`, `GetReportAsync`, `GetTimeseriesAsync` | `await client.Usage.GetReportAsync(new UsageOptions { GroupBy = UsageGroupByEnum.Model });` |
-| `LlmCalls` | `ListAsync`, `GetAsync` | `await client.LlmCalls.ListAsync(new LlmCallListOptions { RunId = runId });` |
+| `LlmCalls` | `ListAsync`, `GetAsync` | `await client.LlmCalls.ListAsync(new LlmCallListOptions { RunStageId = stageId });` (RunId, RunStageId, and other filters) |
 | `ModelEndpoints` | `ValidateAsync`, `ListModelsAsync`, `TestAsync`, `ListAssignmentsAsync`, `SetAssignmentAsync`, `DeleteAssignmentAsync` | `await client.ModelEndpoints.ValidateAsync(id);` |
 | `SearchProviders` | `TestAsync`, `FetchTestAsync` | `await client.SearchProviders.TestAsync(id, new SearchTestRequest { Query = "postgres" });` |
 | `Voices` | `TestAsync` (returns audio as `DownloadResult`) | `await client.Voices.TestAsync(id, new VoiceTestRequest { Text = "Hello." });` |

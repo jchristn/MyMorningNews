@@ -11,6 +11,7 @@ namespace MyMorningNews.Core.Pipeline
     using MyMorningNews.Core.Pipeline.Stages;
     using MyMorningNews.Core.Requests;
     using MyMorningNews.Core.Responses;
+    using MyMorningNews.Core.Services;
     using MyMorningNews.Core.Telemetry;
 
     /// <summary>
@@ -134,7 +135,12 @@ namespace MyMorningNews.Core.Pipeline
                         span?.SetTag("run.id", run.Id);
                         try
                         {
-                            StageOutcome outcome = await stage.ExecuteAsync(ctx, _Services, token).ConfigureAwait(false);
+                            StageOutcome outcome;
+                            using (RunStageScope.Begin(row.Id))
+                            {
+                                outcome = await stage.ExecuteAsync(ctx, _Services, token).ConfigureAwait(false);
+                            }
+
                             row.Status = StageStatusEnum.Succeeded;
                             row.ItemsIn = outcome.ItemsIn;
                             row.ItemsOut = outcome.ItemsOut;
@@ -159,6 +165,7 @@ namespace MyMorningNews.Core.Pipeline
                         {
                             if (row.Status == StageStatusEnum.Running) row.Status = StageStatusEnum.Failed;
                             await FinishStageAsync(row, sw, CancellationToken.None).ConfigureAwait(false);
+                            await PublishTotalsAsync(run, CancellationToken.None).ConfigureAwait(false);
                             MyMorningNewsTelemetry.Record(MyMorningNewsTelemetry.RunStageDuration, sw.Elapsed.TotalSeconds, "stage", stage.Name);
                         }
                     }
@@ -212,15 +219,74 @@ namespace MyMorningNews.Core.Pipeline
             if (row.CompletedUtc.HasValue) return;
             row.CompletedUtc = DateTime.UtcNow;
             row.DurationMs = Math.Round(sw.Elapsed.TotalMilliseconds, 1);
+            try
+            {
+                List<LlmCall> calls = await CallsAsync(row.TenantId, row.RunId, row.Id, token).ConfigureAwait(false);
+                row.LlmCallCount = calls.Count;
+                row.UnpricedCallCount = calls.Count(c => !c.EstimatedCostUsd.HasValue);
+                row.InputTokens = calls.Sum(c => c.InputTokens);
+                row.OutputTokens = calls.Sum(c => c.OutputTokens);
+                row.CachedInputTokens = calls.Sum(c => c.CachedInputTokens);
+                row.ReasoningTokens = calls.Sum(c => c.ReasoningTokens);
+                row.EstimatedCostUsd = calls.Any(c => c.EstimatedCostUsd.HasValue) ? calls.Sum(c => c.EstimatedCostUsd ?? 0) : null;
+            }
+            catch (Exception ex) when (!(ex is OperationCanceledException))
+            {
+                _Services.Logging.Warn("[ResearchPipeline] unable to total the cost of stage " + row.Stage + " in run " + row.RunId + ": " + ex.Message);
+            }
+
             await _Services.Database.RunStages.UpdateAsync(row, token).ConfigureAwait(false);
         }
 
         private async Task TotalsAsync(Run run, CancellationToken token)
         {
-            List<LlmCall> calls = (await _Services.Database.LlmCalls.EnumerateAsync(new LlmCallFilter { TenantId = run.TenantId, RunId = run.Id, PageSize = 1000 }, token).ConfigureAwait(false)).Items;
+            List<LlmCall> calls = await CallsAsync(run.TenantId, run.Id, null, token).ConfigureAwait(false);
+            run.LlmCallCount = calls.Count;
+            run.UnpricedCallCount = calls.Count(c => !c.EstimatedCostUsd.HasValue);
             run.InputTokens = calls.Sum(c => c.InputTokens);
             run.OutputTokens = calls.Sum(c => c.OutputTokens);
+            run.CachedInputTokens = calls.Sum(c => c.CachedInputTokens);
+            run.ReasoningTokens = calls.Sum(c => c.ReasoningTokens);
             run.EstimatedCostUsd = calls.Any(c => c.EstimatedCostUsd.HasValue) ? calls.Sum(c => c.EstimatedCostUsd ?? 0) : null;
+        }
+
+        private async Task PublishTotalsAsync(Run run, CancellationToken token)
+        {
+            // Keep the run's cost current while it runs. Copy the totals onto a fresh read so a cancel request is not lost.
+            try
+            {
+                await TotalsAsync(run, token).ConfigureAwait(false);
+                Run? latest = await _Services.Database.Runs.ReadAsync(run.TenantId, run.Id, token).ConfigureAwait(false);
+                if (latest == null) return;
+                latest.LlmCallCount = run.LlmCallCount;
+                latest.UnpricedCallCount = run.UnpricedCallCount;
+                latest.InputTokens = run.InputTokens;
+                latest.OutputTokens = run.OutputTokens;
+                latest.CachedInputTokens = run.CachedInputTokens;
+                latest.ReasoningTokens = run.ReasoningTokens;
+                latest.EstimatedCostUsd = run.EstimatedCostUsd;
+                await _Services.Database.Runs.UpdateAsync(latest, token).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (!(ex is OperationCanceledException))
+            {
+                _Services.Logging.Warn("[ResearchPipeline] unable to update the cost of run " + run.Id + ": " + ex.Message);
+            }
+        }
+
+        private async Task<List<LlmCall>> CallsAsync(string tenantId, string runId, string? runStageId, CancellationToken token)
+        {
+            List<LlmCall> all = new List<LlmCall>();
+            for (int page = 1; page <= 100; page++)
+            {
+                EnumerationResult<LlmCall> batch = await _Services.Database.LlmCalls.EnumerateAsync(new LlmCallFilter
+                {
+                    TenantId = tenantId, RunId = runId, RunStageId = runStageId, PageSize = 1000, PageNumber = page
+                }, token).ConfigureAwait(false);
+                all.AddRange(batch.Items);
+                if (batch.Items.Count < 1000) break;
+            }
+
+            return all;
         }
 
         #endregion

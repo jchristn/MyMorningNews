@@ -41,7 +41,7 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/api/findings/{id}", DeleteFindingAsync, null, openApiMetadata: Doc("Delete a finding", "Findings",
                 "Removes the finding and its evidence links. Shared evidence and sources stay. Ratings of it stay in history."));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/evidence/{id}", ReadEvidenceAsync, null, openApiMetadata: Doc("Read one piece of evidence with its source", "Findings"));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}/llm-calls", RunCallsAsync, null, openApiMetadata: Paged(Doc("A run's model calls, oldest first", "Runs")));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}/llm-calls", RunCallsAsync, null, openApiMetadata: Paged(Doc("A run's model calls, oldest first", "Runs").WithParameter(QueryParam("runStageId", typeof(string)))));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}/stages", StagesAsync, null, openApiMetadata: Doc("A run's stages", "Runs"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}/queries", QueriesAsync, null, openApiMetadata: Doc("A run's search queries", "Runs"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}/results", ResultsAsync, null, openApiMetadata: Doc("A run's search results with dispositions", "Runs")
@@ -156,7 +156,7 @@ namespace MyMorningNews.Server.Routes
         {
             Run? run = await OwnedRunAsync(ctx).ConfigureAwait(false);
             if (run == null) return;
-            LlmCallFilter filter = new LlmCallFilter { TenantId = run.TenantId, RunId = run.Id };
+            LlmCallFilter filter = new LlmCallFilter { TenantId = run.TenantId, RunId = run.Id, RunStageId = Query(ctx, "runStageId") };
             ApplyPaging(ctx, filter);
             if (String.IsNullOrEmpty(Query(ctx, "sortDirection"))) filter.SortDirection = SortDirectionEnum.Ascending;
             await SendJsonAsync(ctx, 200, await Server.Database.LlmCalls.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);

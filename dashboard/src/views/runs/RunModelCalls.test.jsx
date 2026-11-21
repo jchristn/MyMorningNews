@@ -80,6 +80,7 @@ describe('Run model calls', () => {
     renderRoute('/dashboard/runs?run=run_1', { listRuns: vi.fn(async () => page([RUN])), getRun: vi.fn(async () => RUN), listRunLlmCalls: vi.fn(async () => page([])) });
     const drawer = await screen.findByTestId('run-detail');
     await userEvent.click(within(drawer).getByRole('tab', { name: 'Model calls' }));
-    expect(await within(drawer).findByText('No model calls')).toBeInTheDocument();
+    const table = await within(drawer).findByTestId('run-llm-calls');
+    expect(await within(table).findByText('No model calls')).toBeInTheDocument();
   });
 });

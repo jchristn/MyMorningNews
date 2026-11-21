@@ -697,6 +697,13 @@ export interface Run extends Record_ {
     sourceCount: number;
     inputTokens: number;
     outputTokens: number;
+    /** Input tokens read from the provider's prompt cache. */
+    cachedInputTokens: number;
+    reasoningTokens: number;
+    llmCallCount: number;
+    /** Calls with no price (endpoint without prices, or a subscription CLI), left out of the cost. */
+    unpricedCallCount: number;
+    /** US dollar estimate, null when no call was priced. Updated after every stage. */
     estimatedCostUsd: number | null;
     /** Stage a retried run resumes from, or null for a full run. */
     resumeFromStage: string | null;
@@ -729,6 +736,69 @@ export interface RunStage extends Record_ {
     itemsOut: number;
     errorMessage: string | null;
     sortOrder: number;
+    llmCallCount: number;
+    unpricedCallCount: number;
+    inputTokens: number;
+    outputTokens: number;
+    cachedInputTokens: number;
+    reasoningTokens: number;
+    /** US dollar estimate, null when no call was priced. */
+    estimatedCostUsd: number | null;
+}
+
+/** Cost and token totals. Amounts are US dollar estimates from the endpoints' prices, null when no call was priced. */
+export interface CostTotals {
+    estimatedCostUsd: number | null;
+    inputCostUsd: number | null;
+    outputCostUsd: number | null;
+    llmCallCount: number;
+    /** Calls with no price, left out of the amounts. */
+    unpricedCallCount: number;
+    failedCallCount: number;
+    inputTokens: number;
+    outputTokens: number;
+    cachedInputTokens: number;
+    cacheWriteTokens: number;
+    reasoningTokens: number;
+    modelDurationMs: number;
+}
+
+export interface StageCost extends CostTotals {
+    runStageId: string;
+    stage: string;
+    status: string;
+    sortOrder: number;
+    durationMs: number;
+    itemsIn: number;
+    itemsOut: number;
+    /** Share of the run's cost, 0 to 1, or null when the run has no priced cost. */
+    shareOfCost: number | null;
+}
+
+export interface ModelCost extends CostTotals {
+    modelEndpointId: string | null;
+    endpointName: string | null;
+    provider: string | null;
+    model: string | null;
+}
+
+export interface TaskCost extends CostTotals {
+    task: string;
+}
+
+export interface RunCostReport {
+    runId: string;
+    topicId: string;
+    status: RunStatus;
+    currency: 'USD' | string;
+    totals: CostTotals;
+    costPerNewFindingUsd: number | null;
+    /** One row per stage, in run order. */
+    stages: StageCost[];
+    /** Calls with no stage, or null when every call has one. */
+    unattributed: CostTotals | null;
+    byModel: ModelCost[];
+    byTask: TaskCost[];
 }
 
 export interface Finding extends Record_ {
@@ -1265,6 +1335,8 @@ export interface Device extends Record_ {
 export interface LlmCall extends Record_ {
     task: string;
     runId: string | null;
+    /** Run stage the call was made in. */
+    runStageId: string | null;
     refinementSessionId: string | null;
     briefingId: string | null;
     modelEndpointId: string | null;
@@ -1419,9 +1491,12 @@ export interface RunWaitOptions {
 
 export declare class RunsResource extends ResourceGroup {
     static isTerminal(status: string): boolean;
-    list(options?: ListOptions): Promise<EnumerationResult<Run>>;
+    /** sortBy `estimatedCostUsd` (unpriced runs last) or `durationMs` ranks runs by cost or duration. */
+    list(options?: RunListOptions): Promise<EnumerationResult<Run>>;
     get(id: string): Promise<Run>;
     start(topicId: string, options?: { dryRun?: boolean }): Promise<Run>;
+    /** Totals, stages, models, and tasks. Current while the run is going. 404 for an unknown run. */
+    costs(id: string): Promise<RunCostReport>;
     stages(id: string): Promise<RunStage[]>;
     queries(id: string): Promise<any[]>;
     results(id: string, options?: { disposition?: string }): Promise<any[]>;
@@ -1622,8 +1697,33 @@ export declare class UsageResource extends ResourceGroup {
     timeseries(options?: UsageOptions): Promise<any>;
 }
 
+export interface LlmCallListOptions extends ListOptions {
+    runId?: string;
+    /** Only calls made in this run stage. */
+    runStageId?: string;
+    refinementSessionId?: string;
+    briefingId?: string;
+    modelEndpointId?: string;
+    model?: string;
+    promptKey?: string;
+    userId?: string;
+    topicId?: string;
+    success?: boolean;
+    isDryRun?: boolean;
+    task?: string;
+}
+
+export interface RunListOptions extends ListOptions {
+    topicId?: string;
+    status?: RunStatus | string;
+    trigger?: string;
+    userId?: string;
+    mine?: boolean;
+    sortBy?: 'estimatedCostUsd' | 'durationMs' | 'queuedUtc' | 'completedUtc' | 'createdUtc' | 'lastUpdateUtc' | string;
+}
+
 export declare class LlmCallsResource extends ResourceGroup {
-    list(options?: ListOptions): Promise<EnumerationResult<LlmCall>>;
+    list(options?: LlmCallListOptions): Promise<EnumerationResult<LlmCall>>;
     get(id: string): Promise<LlmCall>;
 }
 

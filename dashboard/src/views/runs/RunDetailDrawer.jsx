@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { Braces, CircleStop, ListChecks, Mail, Play, Radio } from 'lucide-react';
@@ -7,6 +7,7 @@ import { useApp } from '../../context/AppContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import useFormat from '../../hooks/useFormat.js';
 import useInterval from '../../hooks/useInterval.js';
+import { costSignature, stageCosts } from '../../utils/cost.js';
 import { RUN_STATUS_TONES } from '../../utils/enums.js';
 import ConfirmModal from '../../components/ConfirmModal.jsx';
 import CopyableId from '../../components/CopyableId.jsx';
@@ -19,18 +20,24 @@ import LoadingState from '../../components/LoadingState.jsx';
 import Modal from '../../components/Modal.jsx';
 import StatusBadge from '../../components/StatusBadge.jsx';
 import EmailPreviewModal from '../email/EmailPreviewModal.jsx';
+import { costText } from '../../components/CostValue.jsx';
+import RunCostBreakdown from './RunCostBreakdown.jsx';
+import RunCostHeader from './RunCostHeader.jsx';
 import RunModelCalls from './RunModelCalls.jsx';
 import RunToolCalls from './RunToolCalls.jsx';
 import RunStages from './RunStages.jsx';
 import { RunQueriesTable, RunResultsTable } from './RunSearchTables.jsx';
 import { failedStages, findingsLink, isActiveRun, isFinishedRun, mergeStage, retryAction, runDurationMs, withAllStages } from './runParts.js';
+import useRunCosts from './useRunCosts.js';
 import useRunEvents from './useRunEvents.js';
 
-const TABS = ['stages', 'queries', 'results', 'calls', 'tools', 'details'];
+const TABS = ['stages', 'costs', 'queries', 'results', 'calls', 'tools', 'details'];
 
-// Everything about one run: totals, the stage timeline, queries, results with dispositions, model calls, and provenance.
-// While the run is queued or running it follows the run's server-sent events and shows every stage as a live
-// timeline, falling back to polling when the stream cannot be used. A finished run can be retried from a stage at
+// Everything about one run: what it cost (total, tokens, calls, cost per finding), totals, the stage timeline with each
+// stage's cost, where the money went (by stage, model, and task), queries, results with dispositions, model calls,
+// and provenance. While the run is queued or running it follows the run's server-sent events and shows every stage as
+// a live timeline, falling back to polling when the stream cannot be used. The cost report is read again only when a
+// stage finishes or the run's cost moves (see useRunCosts). A finished run can be retried from a stage at
 // Synthesize or later (same run) or run again (a new run, opened through onOpenRun).
 export default function RunDetailDrawer({ runId, topicLabel, onClose, onChanged, onOpenRun }) {
   const { t } = useTranslation();
@@ -47,6 +54,7 @@ export default function RunDetailDrawer({ runId, topicLabel, onClose, onChanged,
   const [emailPreview, setEmailPreview] = useState(false);
   const loadEmailPreview = useCallback(() => apiClient.getRunEmailPreview(runId), [apiClient, runId]);
   const [tab, setTab] = useState('stages');
+  const [stageCalls, setStageCalls] = useState(null);
 
   const load = useCallback(async () => {
     if (!runId) return;
@@ -64,6 +72,7 @@ export default function RunDetailDrawer({ runId, topicLabel, onClose, onChanged,
     setRun(null);
     setStages(null);
     setTab('stages');
+    setStageCalls(null);
     load();
   }, [load]);
 
@@ -106,12 +115,17 @@ export default function RunDetailDrawer({ runId, topicLabel, onClose, onChanged,
     }
   }
 
+  const costs = useRunCosts(runId, costSignature(run, stages));
+  const shownStages = useMemo(() => (active ? withAllStages(stages) : stages), [active, stages]);
+  const perStage = useMemo(() => stageCosts(shownStages, costs.report), [shownStages, costs.report]);
+  const openStageCalls = (stage, cost) => {
+    const id = (cost && cost.runStageId) || stage.id || stage.runStageId;
+    if (id) setStageCalls({ id, stage: stage.stage, cost });
+  };
+
   const duration = run && run.durationMs > 0 && !isActiveRun(run) ? run.durationMs : runDurationMs(run);
   const failed = failedStages(stages);
-  const tokens = run ? (run.inputTokens || 0) + (run.outputTokens || 0) : 0;
-  const hasCost = Boolean(run) && run.estimatedCostUsd !== null && run.estimatedCostUsd !== undefined;
-  // A finished run that recorded no tokens and no cost made no accounted model calls (or predates accounting).
-  const usageUnrecorded = Boolean(run) && isFinishedRun(run) && tokens === 0 && (!hasCost || Number(run.estimatedCostUsd) === 0);
+  const stageCallsLabel = stageCalls ? t('enums.runStage.' + stageCalls.stage, { defaultValue: stageCalls.stage }) : '';
   return (
     <Modal
       open={Boolean(runId)}
@@ -152,6 +166,7 @@ export default function RunDetailDrawer({ runId, topicLabel, onClose, onChanged,
             {run.isDryRun ? <StatusBadge tone="info">{t('runs.dryRun')}</StatusBadge> : null}
             {duration !== null ? <span>{f.duration(duration)}</span> : null}
           </div>
+          <RunCostHeader run={run} report={costs.report} active={active} onShowBreakdown={() => setTab('costs')} />
           {run.status === 'PartiallySucceeded' ? (
             <div className="notice notice-warning" data-testid="partial-notice">
               {failed.length > 0
@@ -173,14 +188,6 @@ export default function RunDetailDrawer({ runId, topicLabel, onClose, onChanged,
             <KpiTile label={t('runs.totals.sources')} value={f.number(run.sourceCount || 0)} />
             <KpiTile label={t('runs.totals.newFindings')} value={f.number(run.newFindingCount || 0)} tone={run.newFindingCount > 0 ? 'success' : 'neutral'} />
             <KpiTile label={t('runs.totals.duplicates')} value={f.number(run.duplicateCount || 0)} />
-            {usageUnrecorded ? (
-              <KpiTile label={t('runs.totals.modelUsage')} value={t('runs.totals.notRecorded')} detail={t('runs.totals.notRecordedHelp')} />
-            ) : (
-              <>
-                <KpiTile label={t('runs.totals.tokens')} value={f.compact(tokens)} detail={t('runs.totals.tokenSplit', { input: f.compact(run.inputTokens || 0), output: f.compact(run.outputTokens || 0) })} />
-                <KpiTile label={t('runs.totals.cost')} value={hasCost ? f.usd(run.estimatedCostUsd) : t('runs.totals.costPending')} />
-              </>
-            )}
           </div>
           <div className="row-actions">
             <Link className="button secondary small" to={findingsLink(run)}>
@@ -207,13 +214,14 @@ export default function RunDetailDrawer({ runId, topicLabel, onClose, onChanged,
                   )}
                 </div>
               ) : null}
-              {stages || active ? (
-                <RunStages stages={active ? withAllStages(stages) : stages} now={now} retryFor={(stage) => retryAction(run, stage)} onRetry={(action) => setRetrying(action)} />
+              {shownStages ? (
+                <RunStages stages={shownStages} now={now} costs={perStage} onOpenCalls={openStageCalls} retryFor={(stage) => retryAction(run, stage)} onRetry={(action) => setRetrying(action)} />
               ) : (
                 <LoadingState />
               )}
             </div>
           ) : null}
+          {tab === 'costs' ? <RunCostBreakdown report={costs.report} error={costs.error} onRetry={costs.reload} onOpenStage={(s) => openStageCalls(s, s)} /> : null}
           {tab === 'queries' ? <RunQueriesTable runId={run.id} /> : null}
           {tab === 'results' ? <RunResultsTable runId={run.id} /> : null}
           {tab === 'calls' ? <RunModelCalls runId={run.id} /> : null}
@@ -236,6 +244,22 @@ export default function RunDetailDrawer({ runId, topicLabel, onClose, onChanged,
         </div>
       ) : null}
       <JsonViewerModal open={json && Boolean(run)} value={run} onClose={() => setJson(false)} />
+      <Modal
+        open={Boolean(stageCalls) && Boolean(run)}
+        size="xlarge"
+        title={t('costs.stages.callsTitle', { stage: stageCallsLabel })}
+        subtitle={
+          stageCalls && stageCalls.cost
+            ? t('costs.stages.callsSummary', {
+                cost: stageCalls.cost.estimatedCostUsd === null || stageCalls.cost.estimatedCostUsd === undefined ? t('costs.notPriced') : costText(stageCalls.cost.estimatedCostUsd, f, t),
+                count: stageCalls.cost.llmCallCount || 0
+              })
+            : null
+        }
+        onClose={() => setStageCalls(null)}
+      >
+        {stageCalls && run ? <RunModelCalls runId={run.id} runStageId={stageCalls.id} /> : null}
+      </Modal>
       <ConfirmModal
         open={Boolean(retrying)}
         title={retrying && retrying.kind === 'resume' ? t('runs.retry.resumeTitle') : t('runs.retry.newTitle')}

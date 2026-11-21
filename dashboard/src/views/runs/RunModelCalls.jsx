@@ -11,19 +11,26 @@ import DataTable from '../../components/DataTable.jsx';
 import { llmCallColumns } from '../models/callColumns.jsx';
 
 // The model calls one run made, oldest first: task, model, prompt key, tokens, cost, duration, and outcome. Callers
-// who may read the model call log open a call's full record there.
-export default function RunModelCalls({ runId }) {
+// who may read the model call log open a call's full record there. runStageId keeps the list to one stage (the run's
+// own call list filters by stage on the server).
+export default function RunModelCalls({ runId, runStageId = null }) {
   const { t } = useTranslation();
   const f = useFormat();
   const navigate = useNavigate();
   const { apiClient } = useAuth();
   const canReadCalls = useCanReadCalls();
-  const fetchPage = useCallback((q) => apiClient.listRunLlmCalls(runId, pagedQuery(q)), [apiClient, runId]);
+  const fetchPage = useCallback(
+    (q) => {
+      const query = pagedQuery(q);
+      return apiClient.listRunLlmCalls(runId, runStageId ? { ...query, runStageId } : query);
+    },
+    [apiClient, runId, runStageId]
+  );
   const open = (r) => navigate('/dashboard/models?tab=calls&call=' + encodeURIComponent(r.id));
   return (
-    <div data-testid="run-llm-calls">
+    <div data-testid={runStageId ? 'stage-llm-calls' : 'run-llm-calls'}>
       <DataTable
-        tableKey="run-llm-calls"
+        tableKey={runStageId ? 'stage-llm-calls' : 'run-llm-calls'}
         columns={llmCallColumns({ t, f, promptKeyHidden: false })}
         fetchPage={fetchPage}
         defaultSort={{ key: 'createdUtc', direction: 'asc' }}
@@ -37,4 +44,4 @@ export default function RunModelCalls({ runId }) {
   );
 }
 
-RunModelCalls.propTypes = { runId: PropTypes.string.isRequired };
+RunModelCalls.propTypes = { runId: PropTypes.string.isRequired, runStageId: PropTypes.string };

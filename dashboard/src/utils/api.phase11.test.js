@@ -47,6 +47,14 @@ describe('finding pin, hide, delete, evidence, run model calls, and new analytic
     expect(call(fetch, 1)).toMatchObject({ url: '/v1.0/api/runs/run%201/llm-calls?pageNumber=2&pageSize=25&sortBy=createdUtc&sortDirection=Ascending', method: 'GET' });
   });
 
+  it('reads a run cost report and filters the call log by run stage', async () => {
+    const { api, fetch } = client();
+    await api.getRunCosts('run 1');
+    await api.listLlmCalls({ runId: 'run_1', runStageId: 'rst_2', pageSize: 25 });
+    expect(call(fetch, 0)).toMatchObject({ url: '/v1.0/api/runs/run%201/costs', method: 'GET' });
+    expect(call(fetch, 1).url).toBe('/v1.0/api/llm-calls?runId=run_1&runStageId=rst_2&pageSize=25');
+  });
+
   it('reads the overview and email analytics with the scope', async () => {
     const { api, fetch } = client();
     await api.getAnalytics('overview', { from: '2026-10-20T00:00:00.000Z', all: true });

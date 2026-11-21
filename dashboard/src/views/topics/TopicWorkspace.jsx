@@ -23,6 +23,7 @@ import TopicInsights from '../insights/TopicInsights.jsx';
 import PredictionsTable from '../predictions/PredictionsTable.jsx';
 import LiveRunNotice from '../runs/LiveRunNotice.jsx';
 import RunsTable from '../runs/RunsTable.jsx';
+import TopicRunCosts from '../runs/TopicRunCosts.jsx';
 import SuggestionsTable from '../suggestions/SuggestionsTable.jsx';
 import AgenticSearchSettings from './AgenticSearchSettings.jsx';
 import ConstraintEditor from './ConstraintEditor.jsx';
@@ -73,6 +74,7 @@ export default function TopicWorkspace() {
   const [editions, setEditions] = useState([]);
   const [runsRefresh, setRunsRefresh] = useState(0);
   const [liveRun, setLiveRun] = useState(null);
+  const [openRunId, setOpenRunId] = useState(null);
   const requested = params.get('tab') || 'overview';
   const tab = WORKSPACE_TABS.some((x) => x.id === requested) ? requested : 'overview';
 
@@ -277,21 +279,26 @@ export default function TopicWorkspace() {
         ) : null}
 
         {tab === 'runs' ? (
-          <RunsTable
-            topicId={topic.id}
-            tableKey="topic-runs"
-            refreshSignal={runsRefresh}
-            toolbar={
-              <>
-                <button type="button" className="button primary small" disabled={isDraft || topic.status === 'Archived'} onClick={() => startRun(false)}>
-                  <Play size={14} aria-hidden="true" /> {t('topics.actions.runNow')}
-                </button>
-                <button type="button" className="button secondary small" disabled={topic.status === 'Archived'} onClick={() => startRun(true)}>
-                  <FlaskConical size={14} aria-hidden="true" /> {t('topics.actions.dryRun')}
-                </button>
-              </>
-            }
-          />
+          <div className="stack">
+            <TopicRunCosts topicId={topic.id} refreshSignal={runsRefresh} onOpenRun={setOpenRunId} />
+            <RunsTable
+              topicId={topic.id}
+              tableKey="topic-runs"
+              refreshSignal={runsRefresh}
+              initialRunId={openRunId}
+              onRunClosed={() => setOpenRunId(null)}
+              toolbar={
+                <>
+                  <button type="button" className="button primary small" disabled={isDraft || topic.status === 'Archived'} onClick={() => startRun(false)}>
+                    <Play size={14} aria-hidden="true" /> {t('topics.actions.runNow')}
+                  </button>
+                  <button type="button" className="button secondary small" disabled={topic.status === 'Archived'} onClick={() => startRun(true)}>
+                    <FlaskConical size={14} aria-hidden="true" /> {t('topics.actions.dryRun')}
+                  </button>
+                </>
+              }
+            />
+          </div>
         ) : null}
 
         {tab === 'findings' ? <FindingsTable topicId={topic.id} tableKey="topic-findings" /> : null}

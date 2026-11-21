@@ -59,7 +59,8 @@ namespace MyMorningNews.McpServer
                 { "id", r.Id }, { "topicId", r.TopicId }, { "status", r.Status.ToString() }, { "trigger", r.Trigger.ToString() }, { "isDryRun", r.IsDryRun },
                 { "queuedUtc", Iso(r.QueuedUtc) }, { "startedUtc", Iso(r.StartedUtc) }, { "completedUtc", Iso(r.CompletedUtc) }, { "summary", r.Summary },
                 { "newFindingCount", r.NewFindingCount }, { "duplicateCount", r.DuplicateCount }, { "sourceCount", r.SourceCount },
-                { "estimatedCostUsd", r.EstimatedCostUsd }, { "errorMessage", r.ErrorMessage }, { "skippedReason", r.SkippedReason }
+                { "estimatedCostUsd", r.EstimatedCostUsd }, { "llmCallCount", r.LlmCallCount }, { "unpricedCallCount", r.UnpricedCallCount },
+                { "inputTokens", r.InputTokens }, { "outputTokens", r.OutputTokens }, { "errorMessage", r.ErrorMessage }, { "skippedReason", r.SkippedReason }
             };
         }
 
@@ -76,9 +77,137 @@ namespace MyMorningNews.McpServer
                     "queuedUtc", Schema.NullableString("Queued (UTC)."), "startedUtc", Schema.NullableString("Started (UTC)."), "completedUtc", Schema.NullableString("Completed (UTC)."),
                     "summary", Schema.NullableString("Synthesis summary."), "newFindingCount", Schema.Integer("New findings.", 0, int.MaxValue),
                     "duplicateCount", Schema.Integer("Duplicates.", 0, int.MaxValue), "sourceCount", Schema.Integer("Sources fetched.", 0, int.MaxValue),
-                    "estimatedCostUsd", Schema.Number("Model cost (USD).", true), "errorMessage", Schema.NullableString("Error, when failed."),
-                    "skippedReason", Schema.NullableString("Why it was skipped, when skipped.")),
+                    "estimatedCostUsd", Schema.Number("Estimated model cost in US dollars, from the endpoints' prices. Null when no call was priced. Updated after every stage.", true),
+                    "llmCallCount", Schema.Integer("Model calls made during the run.", 0, int.MaxValue),
+                    "unpricedCallCount", Schema.Integer("Model calls with no price (an endpoint without prices, or an agent CLI on a subscription), left out of the cost.", 0, int.MaxValue),
+                    "inputTokens", Schema.Integer("Input tokens.", 0, int.MaxValue), "outputTokens", Schema.Integer("Output tokens.", 0, int.MaxValue),
+                    "errorMessage", Schema.NullableString("Error, when failed."), "skippedReason", Schema.NullableString("Why it was skipped, when skipped.")),
                     new[] { "id", "topicId", "status" }, true);
+            }
+        }
+
+        /// <summary>
+        /// Shape a run stage.
+        /// </summary>
+        /// <param name="s">Stage.</param>
+        /// <returns>Projection.</returns>
+        public static Dictionary<string, object?> Stage(RunStage s)
+        {
+            ArgumentNullException.ThrowIfNull(s);
+            return new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                { "id", s.Id }, { "stage", s.Stage }, { "status", s.Status.ToString() }, { "itemsIn", s.ItemsIn }, { "itemsOut", s.ItemsOut }, { "durationMs", Math.Round(s.DurationMs, 0) },
+                { "llmCallCount", s.LlmCallCount }, { "unpricedCallCount", s.UnpricedCallCount }, { "estimatedCostUsd", s.EstimatedCostUsd }, { "error", s.ErrorMessage }
+            };
+        }
+
+        /// <summary>
+        /// Run stage schema.
+        /// </summary>
+        public static Dictionary<string, object> StageSchema
+        {
+            get
+            {
+                return Schema.Object(Schema.Props(
+                    "id", Schema.String("Run stage ID."), "stage", Schema.String("Stage name, for example Plan, Search, Extract, Synthesize."), "status", Schema.String(Names<StageStatusEnum>()),
+                    "itemsIn", Schema.Integer("Items into the stage.", 0, int.MaxValue), "itemsOut", Schema.Integer("Items out of the stage.", 0, int.MaxValue),
+                    "durationMs", Schema.Number("Duration in milliseconds."), "llmCallCount", Schema.Integer("Model calls made in the stage.", 0, int.MaxValue),
+                    "unpricedCallCount", Schema.Integer("Model calls with no price, left out of the cost.", 0, int.MaxValue),
+                    "estimatedCostUsd", Schema.Number("Estimated model cost of the stage in US dollars. Null when no call was priced.", true), "error", Schema.NullableString("Error, when failed.")),
+                    new[] { "stage", "status" }, true);
+            }
+        }
+
+        /// <summary>
+        /// Shape cost and token totals.
+        /// </summary>
+        /// <param name="c">Totals.</param>
+        /// <returns>Projection.</returns>
+        public static Dictionary<string, object?> Cost(CostTotals c)
+        {
+            ArgumentNullException.ThrowIfNull(c);
+            Dictionary<string, object?> d = new Dictionary<string, object?>(StringComparer.Ordinal);
+            AddCost(d, c);
+            return d;
+        }
+
+        /// <summary>
+        /// Cost totals schema.
+        /// </summary>
+        public static Dictionary<string, object> CostSchema
+        {
+            get
+            {
+                return Schema.Object(CostProps(), new[] { "estimatedCostUsd", "llmCallCount" }, true);
+            }
+        }
+
+        /// <summary>
+        /// Shape a run cost report.
+        /// </summary>
+        /// <param name="r">Report.</param>
+        /// <returns>Projection.</returns>
+        public static Dictionary<string, object?> RunCosts(RunCostReport r)
+        {
+            ArgumentNullException.ThrowIfNull(r);
+            return new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                { "runId", r.RunId }, { "topicId", r.TopicId }, { "status", r.Status.ToString() }, { "currency", r.Currency }, { "totals", Cost(r.Totals) },
+                { "costPerNewFindingUsd", r.CostPerNewFindingUsd },
+                { "stages", r.Stages.OrderBy(x => x.SortOrder).Select(x =>
+                    {
+                        Dictionary<string, object?> d = new Dictionary<string, object?>(StringComparer.Ordinal)
+                        {
+                            { "runStageId", x.RunStageId }, { "stage", x.Stage }, { "status", x.Status.ToString() }, { "durationMs", Math.Round(x.DurationMs, 0) }, { "shareOfCost", x.ShareOfCost }
+                        };
+                        AddCost(d, x);
+                        return d;
+                    }).ToList() },
+                { "unattributed", r.Unattributed == null ? null : Cost(r.Unattributed) },
+                { "byModel", r.ByModel.Select(x =>
+                    {
+                        Dictionary<string, object?> d = new Dictionary<string, object?>(StringComparer.Ordinal)
+                        {
+                            { "modelEndpointId", x.ModelEndpointId }, { "endpointName", x.EndpointName }, { "provider", x.Provider }, { "model", x.Model }
+                        };
+                        AddCost(d, x);
+                        return d;
+                    }).ToList() },
+                { "byTask", r.ByTask.Select(x =>
+                    {
+                        Dictionary<string, object?> d = new Dictionary<string, object?>(StringComparer.Ordinal) { { "task", x.Task.ToString() } };
+                        AddCost(d, x);
+                        return d;
+                    }).ToList() }
+            };
+        }
+
+        /// <summary>
+        /// Run cost report schema.
+        /// </summary>
+        public static Dictionary<string, object> RunCostsSchema
+        {
+            get
+            {
+                Dictionary<string, object> stage = WithCost(Schema.Props(
+                    "runStageId", Schema.String("Run stage ID."), "stage", Schema.String("Stage name."), "status", Schema.String(Names<StageStatusEnum>()),
+                    "durationMs", Schema.Number("Stage duration in milliseconds."),
+                    "shareOfCost", Schema.Number("Share of the run's cost, from 0 to 1. Null when the run has no priced cost.", true)));
+                Dictionary<string, object> model = WithCost(Schema.Props(
+                    "modelEndpointId", Schema.NullableString("Model endpoint ID."), "endpointName", Schema.NullableString("Endpoint name."),
+                    "provider", Schema.NullableString("Provider."), "model", Schema.NullableString("Model.")));
+                Dictionary<string, object> task = WithCost(Schema.Props("task", Schema.String(Names<ModelTaskEnum>())));
+                Dictionary<string, object> totals = CostSchema;
+                totals["description"] = "Totals across the run.";
+                return Schema.Object(Schema.Props(
+                    "runId", Schema.String("Run ID."), "topicId", Schema.String("Topic."), "status", Schema.String(Names<RunStatusEnum>()), "currency", Schema.String("Always USD."),
+                    "totals", totals,
+                    "costPerNewFindingUsd", Schema.Number("Estimated cost divided by new findings. Null when there is no priced cost or no new finding.", true),
+                    "stages", Schema.Array("One row per stage, in run order.", Schema.Object(stage, new[] { "stage", "llmCallCount" }, true)),
+                    "unattributed", Schema.Record("Totals of calls with no stage (same fields as totals), or null when every call has one.", true),
+                    "byModel", Schema.Array("By endpoint and model, most expensive first.", Schema.Object(model, new[] { "llmCallCount" }, true)),
+                    "byTask", Schema.Array("By model task, most expensive first.", Schema.Object(task, new[] { "task", "llmCallCount" }, true))),
+                    new[] { "runId", "currency", "totals", "stages" }, true);
             }
         }
 
@@ -323,6 +452,49 @@ namespace MyMorningNews.McpServer
         public static string? Iso(DateTime? utc)
         {
             return utc.HasValue ? DateTime.SpecifyKind(utc.Value, DateTimeKind.Utc).ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture) : null;
+        }
+
+        #endregion
+
+        #region Private-Methods
+
+        private static void AddCost(Dictionary<string, object?> d, CostTotals c)
+        {
+            d["estimatedCostUsd"] = c.EstimatedCostUsd;
+            d["inputCostUsd"] = c.InputCostUsd;
+            d["outputCostUsd"] = c.OutputCostUsd;
+            d["llmCallCount"] = c.LlmCallCount;
+            d["unpricedCallCount"] = c.UnpricedCallCount;
+            d["failedCallCount"] = c.FailedCallCount;
+            d["inputTokens"] = c.InputTokens;
+            d["outputTokens"] = c.OutputTokens;
+            d["cachedInputTokens"] = c.CachedInputTokens;
+            d["cacheWriteTokens"] = c.CacheWriteTokens;
+            d["reasoningTokens"] = c.ReasoningTokens;
+            d["modelDurationMs"] = Math.Round(c.ModelDurationMs, 0);
+        }
+
+        private static Dictionary<string, object> WithCost(Dictionary<string, object> identity)
+        {
+            foreach (KeyValuePair<string, object> p in CostProps()) identity[p.Key] = p.Value;
+            return identity;
+        }
+
+        private static Dictionary<string, object> CostProps()
+        {
+            return Schema.Props(
+                "estimatedCostUsd", Schema.Number("Estimated cost in US dollars, from the endpoints' prices. Null when no call was priced.", true),
+                "inputCostUsd", Schema.Number("Input share of the cost (uncached, cached, and cache-write input). Null when no call was priced.", true),
+                "outputCostUsd", Schema.Number("Output share of the cost. Null when no call was priced.", true),
+                "llmCallCount", Schema.Integer("Model calls.", 0, int.MaxValue),
+                "unpricedCallCount", Schema.Integer("Calls with no price (an endpoint without prices, or an agent CLI on a subscription), left out of the amounts.", 0, int.MaxValue),
+                "failedCallCount", Schema.Integer("Failed calls.", 0, int.MaxValue),
+                "inputTokens", Schema.Integer("Input tokens.", 0, int.MaxValue),
+                "outputTokens", Schema.Integer("Output tokens.", 0, int.MaxValue),
+                "cachedInputTokens", Schema.Integer("Input tokens read from the prompt cache.", 0, int.MaxValue),
+                "cacheWriteTokens", Schema.Integer("Input tokens written to the prompt cache.", 0, int.MaxValue),
+                "reasoningTokens", Schema.Integer("Reasoning tokens.", 0, int.MaxValue),
+                "modelDurationMs", Schema.Number("Time spent in model calls, in milliseconds."));
         }
 
         #endregion

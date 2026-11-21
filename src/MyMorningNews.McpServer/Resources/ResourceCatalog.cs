@@ -34,7 +34,7 @@ namespace MyMorningNews.McpServer.Resources
                     BriefingMarkdown(await c.Briefings.GetAsync(Variable(v, "id"), t).ConfigureAwait(false))),
                 new McpResourceSpec("mmn://topics/{id}/brief", "Topic brief", "A topic's brief, dimensions, and constraints as Markdown.", true, async (c, v, t) =>
                     TopicMarkdown(await c.Topics.GetAsync(Variable(v, "id"), t).ConfigureAwait(false))),
-                new McpResourceSpec("mmn://runs/{id}/summary", "Run summary", "A run's status, stages, summary, and top findings as Markdown.", true, async (c, v, t) =>
+                new McpResourceSpec("mmn://runs/{id}/summary", "Run summary", "A run's status, estimated cost, stages with their cost, summary, and top findings as Markdown.", true, async (c, v, t) =>
                 {
                     string id = Variable(v, "id");
                     Run run = await c.Runs.GetAsync(id, t).ConfigureAwait(false);
@@ -109,18 +109,32 @@ namespace MyMorningNews.McpServer.Resources
             sb.Append("Status: ").Append(run.Status).Append(run.IsDryRun ? " (dry run)" : String.Empty).Append(". ");
             sb.Append(run.NewFindingCount.ToString(CultureInfo.InvariantCulture)).Append(" new findings, ").Append(run.DuplicateCount.ToString(CultureInfo.InvariantCulture)).Append(" duplicates, ")
                 .Append(run.SourceCount.ToString(CultureInfo.InvariantCulture)).Append(" sources.");
-            if (run.EstimatedCostUsd.HasValue) sb.Append(" Model cost $").Append(run.EstimatedCostUsd.Value.ToString("0.0000", CultureInfo.InvariantCulture)).Append('.');
             sb.Append("\n\n");
+            sb.Append("Cost: ").Append(Usd(run.EstimatedCostUsd)).Append(" (estimated, USD) across ").Append(run.LlmCallCount.ToString(CultureInfo.InvariantCulture)).Append(" model calls, ")
+                .Append(run.InputTokens.ToString("N0", CultureInfo.InvariantCulture)).Append(" input and ").Append(run.OutputTokens.ToString("N0", CultureInfo.InvariantCulture)).Append(" output tokens");
+            if (run.UnpricedCallCount > 0) sb.Append("; ").Append(run.UnpricedCallCount.ToString(CultureInfo.InvariantCulture)).Append(" calls had no price and are not counted");
+            sb.Append(".\n\n");
             if (!String.IsNullOrWhiteSpace(run.ErrorMessage)) sb.Append("Error: ").Append(run.ErrorMessage).Append("\n\n");
             if (!String.IsNullOrWhiteSpace(run.Summary)) sb.Append("## Summary\n\n").Append(run.Summary!.Trim()).Append("\n\n");
-            sb.Append("## Stages\n\n| Stage | Status | In | Out | ms |\n|---|---|---|---|---|\n");
+            sb.Append("## Stages\n\n| Stage | Status | In | Out | ms | Model calls | Cost (USD) | Share |\n|---|---|---|---|---|---|---|---|\n");
+            decimal total = run.EstimatedCostUsd ?? 0m;
             foreach (RunStage s in stages.OrderBy(x => x.SortOrder))
-                sb.Append("| ").Append(s.Stage).Append(" | ").Append(s.Status).Append(" | ").Append(s.ItemsIn).Append(" | ").Append(s.ItemsOut).Append(" | ").Append(Math.Round(s.DurationMs).ToString(CultureInfo.InvariantCulture)).Append(" |\n");
+            {
+                string share = s.EstimatedCostUsd.HasValue && total > 0m ? Math.Round(s.EstimatedCostUsd.Value / total * 100m, 0).ToString(CultureInfo.InvariantCulture) + "%" : "-";
+                sb.Append("| ").Append(s.Stage).Append(" | ").Append(s.Status).Append(" | ").Append(s.ItemsIn).Append(" | ").Append(s.ItemsOut).Append(" | ").Append(Math.Round(s.DurationMs).ToString(CultureInfo.InvariantCulture))
+                    .Append(" | ").Append(s.LlmCallCount.ToString(CultureInfo.InvariantCulture)).Append(s.UnpricedCallCount > 0 ? " (" + s.UnpricedCallCount.ToString(CultureInfo.InvariantCulture) + " unpriced)" : String.Empty)
+                    .Append(" | ").Append(s.EstimatedCostUsd.HasValue ? Usd(s.EstimatedCostUsd) : "-").Append(" | ").Append(share).Append(" |\n");
+            }
             sb.Append("\n## Top findings\n\n");
             if (!top.Any()) sb.Append("(None.)\n");
             foreach (Finding f in top)
                 sb.Append("- **").Append(f.Title).Append("** (").Append(Math.Round(f.RelevanceScore).ToString(CultureInfo.InvariantCulture)).Append(", `").Append(f.Id).Append("`)").Append(String.IsNullOrWhiteSpace(f.Summary) ? String.Empty : ": " + f.Summary!.Trim()).Append('\n');
             return sb.ToString();
+        }
+
+        private static string Usd(decimal? amount)
+        {
+            return amount.HasValue ? "$" + amount.Value.ToString("0.0000", CultureInfo.InvariantCulture) : "not priced";
         }
 
         private static string Variable(IReadOnlyDictionary<string, string> v, string name)

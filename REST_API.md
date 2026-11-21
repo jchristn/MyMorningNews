@@ -14,6 +14,7 @@ A Postman collection with every route lives at [`assets/postman/MyMorningNews.po
 - [Paging, sorting, and filtering](#paging-sorting-and-filtering)
 - [Rate limits](#rate-limits)
 - [Server-sent events](#server-sent-events)
+- [Run and stage cost](#run-and-stage-cost)
 - [Range downloads](#range-downloads)
 - [Retention](#retention)
 - [IDs](#ids)
@@ -303,6 +304,30 @@ data: {"stage":"Search","status":"Running", ...}
 
 The server checks for changes every `Rest.EventStreamPollMs` (default 1000). A browser's `EventSource` cannot set an `Authorization` header, so read the stream with `fetch` from web code.
 
+## Run and stage cost
+
+Each run records what its model calls cost, and so does each of its stages. The amounts are estimates in US dollars, calculated from the prices you set on each model endpoint, so they can differ from what the provider bills.
+
+| Where | What it has |
+|---|---|
+| `Run` (`GET /v1.0/api/runs/{id}`, `GET /v1.0/api/runs`, and the `run` event) | `estimatedCostUsd`, `llmCallCount`, `unpricedCallCount`, `inputTokens`, `outputTokens`, `cachedInputTokens`, and `reasoningTokens`. They update after every stage while the run is going. |
+| `RunStage` (`GET /v1.0/api/runs/{id}/stages` and the `stage` event) | The same counts and `estimatedCostUsd`, for that stage alone. |
+| `GET /v1.0/api/runs/{id}/costs` | A `RunCostReport`: totals, one row per stage with its `shareOfCost`, the cost by model and by task, and `costPerNewFindingUsd`. The server builds it from the run's model calls on each request, so it is current during a run. |
+| `GET /v1.0/api/llm-calls?runStageId=rst_...` | The model calls behind one stage, each with its tokens and `estimatedCostUsd`. Filter by `runId` instead to list every call in the run. |
+| `GET /v1.0/api/runs?sortBy=estimatedCostUsd` | Runs ranked by cost, most expensive first, with unpriced runs last. `sortBy=durationMs` ranks them by duration. |
+
+### Prices
+
+A model endpoint has four optional rates in US dollars per million tokens: `inputCostPerMTok`, `outputCostPerMTok`, `cachedInputCostPerMTok` (prompt cache reads), and `cacheWriteCostPerMTok` (prompt cache writes). Set them with `POST /v1.0/api/model-endpoints` or `PUT /v1.0/api/model-endpoints/{id}`. Uncached input tokens are charged at the input rate, cache reads and writes at their own rates (the input rate when those are unset), and output tokens at the output rate. The server fixes a call's cost when it logs the call, so a price change applies only to later calls.
+
+### Unpriced calls
+
+A call is unpriced when its endpoint has no input or output price and nothing else reports a cost. That happens with endpoints you have not priced and with agent CLIs signed in through a subscription, which report no per-call cost. An agent CLI signed in with an API key reports its own cost, and the server uses that figure when the endpoint has no prices. `unpricedCallCount` counts unpriced calls, and no amount includes them, so a run with unpriced calls cost at least what it shows. When none of a run's or stage's calls is priced, `estimatedCostUsd` is null rather than zero. Prices set on a subscription endpoint do apply, which shows what the run would have cost on an API key.
+
+### Older runs
+
+When the server upgraded, it matched calls logged before stage tracking to the stage that was running when each call was made. Calls it could not match appear under `unattributed` in the cost report.
+
 ## Range downloads
 
 File routes (`GET /v1.0/api/artifacts/{id}/content`, `GET /v1.0/api/briefings/{id}/download`, and the public episode and chapter routes) honor a single HTTP byte range, which is what lets audio players seek. They send `Accept-Ranges: bytes`, an `ETag` (the file's SHA-256), `Cache-Control: private, max-age=300`, and `Content-Disposition`.
@@ -387,7 +412,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 
 ## Route reference
 
-300 routes in 46 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
+301 routes in 46 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
 
 | Group | Routes | What it covers |
 |---|---|---|
@@ -413,7 +438,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [Refinement](#refinement) | 11 | The topic wizard. A session proposes dimensions, asks clarifying questions, drafts the brief and constraints, suggests sources, and then applies the topic. Generating steps call the configured model. |
 | [Requests](#requests) | 9 | One-time research requests: a report, podcast, or email summary produced once, now or at a set time. A request can later become a recurring topic. |
 | [Schedules](#schedules) | 6 | When topics, editions, and requests run. Interval, days-of-week, days-of-month, one-time, and cron schedules, each in a time zone. Preview validates a schedule and lists its next runs. |
-| [Runs](#runs) | 11 | Research runs and their stages, search queries, search results, and model calls. A run can be watched live over server-sent events, canceled, or retried from a later stage. |
+| [Runs](#runs) | 12 | Research runs and their stages, cost, search queries, search results, and model calls. Every run and every stage carries its estimated cost; see [Run and stage cost](#run-and-stage-cost). A run can be watched live over server-sent events, canceled, or retried from a later stage. |
 | [Search](#search) | 9 | Search providers (SearXNG, Tavily, You.com, RSS, Hacker News, arXiv, hosted model web search), per-topic provider choices, and test tools for queries and page fetches. |
 | [Findings](#findings) | 5 | Ranked results from runs, each backed by evidence. Findings can be pinned or hidden. |
 | [Sources](#sources) | 2 | Pages the pipeline fetched for your topics, with their extracted text. |
@@ -2664,6 +2689,7 @@ curl -s -X PUT "http://127.0.0.1:12100/v1.0/api/model-assignments" \
 | Query parameter | Type | Notes |
 |---|---|---|
 | `runId` | string | Only records from this run. |
+| `runStageId` | string | Only model calls made in this run stage (`rst_...`, from `GET /v1.0/api/runs/{id}/stages` or a cost report's `stages[].runStageId`). |
 | `refinementSessionId` | string | Only calls made by this refinement session. |
 | `briefingId` | string | Only records for this briefing. |
 | `modelEndpointId` | string | Only calls to this model endpoint. |
@@ -4796,13 +4822,14 @@ curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/schedules/sch_mwpentea_Zq7Wn2
 
 ## Runs
 
-Research runs and their stages, search queries, search results, and model calls. A run can be watched live over server-sent events, canceled, or retried from a later stage.
+Research runs and their stages, cost, search queries, search results, and model calls. Every run and every stage carries its estimated cost; see [Run and stage cost](#run-and-stage-cost). A run can be watched live over server-sent events, canceled, or retried from a later stage.
 
 | Method | Path | Summary |
 |---|---|---|
 | GET | [`/v1.0/api/runs`](#get-v10apiruns) | List runs |
 | GET | [`/v1.0/api/runs/{id}/tool-calls`](#get-v10apirunsidtool-calls) | A run's agentic tool calls, in order |
 | GET | [`/v1.0/api/runs/{id}`](#get-v10apirunsid) | Read a run |
+| GET | [`/v1.0/api/runs/{id}/costs`](#get-v10apirunsidcosts) | What a run cost, by stage, model, and task |
 | POST | [`/v1.0/api/runs/{id}/cancel`](#post-v10apirunsidcancel) | Cancel a queued or running run |
 | POST | [`/v1.0/api/runs/{id}/retry`](#post-v10apirunsidretry) | Retry a finished run |
 | GET | [`/v1.0/api/runs/{id}/events`](#get-v10apirunsidevents) | Stream a run's progress (server-sent events) |
@@ -4818,6 +4845,7 @@ Research runs and their stages, search queries, search results, and model calls.
 
 - Auth: `Run:Read` (`RunRead`).
 - Response: a page ([`EnumerationResult`](#enumerationresult)) of [`Run`](#run)
+- Notes: `sortBy=estimatedCostUsd` lists the most expensive runs first (runs with no priced cost sort last) and `sortBy=durationMs` the longest; `queuedUtc`, `completedUtc`, `createdUtc` (the default), `lastUpdateUtc`, and `status` also work.
 
 | Query parameter | Type | Notes |
 |---|---|---|
@@ -4866,7 +4894,7 @@ curl -s "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty/t
 
 ### GET /v1.0/api/runs/{id}
 
-**Read a run.**
+**Read a run.** The run includes its estimated cost (estimatedCostUsd), tokens, and model call counts; unpricedCallCount says how many calls had no price. They update after every stage while the run is going.
 
 - Auth: `Run:Read` (`RunRead`).
 - Response: [`Run`](#run)
@@ -4885,6 +4913,517 @@ curl -s "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty/t
 
 ```bash
 curl -s "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### GET /v1.0/api/runs/{id}/costs
+
+**What a run cost, by stage, model, and task.** Computed from the run's model calls on request, so it is current while the run is going. Amounts are US dollars from each endpoint's prices; calls with no price (an endpoint without prices, or an agent CLI on a subscription) are counted in unpricedCallCount and left out of the amounts.
+
+- Auth: `Run:Read` (`RunRead`).
+- Response: [`RunCostReport`](#runcostreport)
+- Notes: See [Run and stage cost](#run-and-stage-cost).
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{runId}}` |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+Response example:
+
+```json
+{
+  "runId": "run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty",
+  "topicId": "top_mwpentds_HEIqz5MgsLmLdBrfbuN",
+  "status": "Completed",
+  "currency": "USD",
+  "totals": {
+    "estimatedCostUsd": 0.925,
+    "inputCostUsd": 0.4275,
+    "outputCostUsd": 0.4975,
+    "llmCallCount": 14,
+    "unpricedCallCount": 0,
+    "failedCallCount": 0,
+    "inputTokens": 138300,
+    "outputTokens": 19900,
+    "cachedInputTokens": 62000,
+    "cacheWriteTokens": 12000,
+    "reasoningTokens": 1700,
+    "modelDurationMs": 89300
+  },
+  "costPerNewFindingUsd": 0.077083,
+  "stages": [
+    {
+      "runStageId": "rst_mwpf3c4e_Ab3dE6gH9jK2mN5pQ8s",
+      "stage": "AssembleContext",
+      "status": "Succeeded",
+      "sortOrder": 0,
+      "durationMs": 42,
+      "itemsIn": 0,
+      "itemsOut": 1,
+      "shareOfCost": 0.0,
+      "estimatedCostUsd": null,
+      "inputCostUsd": null,
+      "outputCostUsd": null,
+      "llmCallCount": 0,
+      "unpricedCallCount": 0,
+      "failedCallCount": 0,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "cachedInputTokens": 0,
+      "cacheWriteTokens": 0,
+      "reasoningTokens": 0,
+      "modelDurationMs": 0
+    },
+    {
+      "runStageId": "rst_mwpf3c4e_Bc4eF7hJ1kL3nP6qR9t",
+      "stage": "PlanQueries",
+      "status": "Succeeded",
+      "sortOrder": 1,
+      "durationMs": 4310,
+      "itemsIn": 1,
+      "itemsOut": 12,
+      "shareOfCost": 0.0384,
+      "estimatedCostUsd": 0.0355,
+      "inputCostUsd": 0.013,
+      "outputCostUsd": 0.0225,
+      "llmCallCount": 1,
+      "unpricedCallCount": 0,
+      "failedCallCount": 0,
+      "inputTokens": 6200,
+      "outputTokens": 900,
+      "cachedInputTokens": 4000,
+      "cacheWriteTokens": 0,
+      "reasoningTokens": 300,
+      "modelDurationMs": 4200
+    },
+    {
+      "runStageId": "rst_mwpf3c4e_Cd5fG8jK2lM4pQ7rS1u",
+      "stage": "Search",
+      "status": "Succeeded",
+      "sortOrder": 2,
+      "durationMs": 6820,
+      "itemsIn": 12,
+      "itemsOut": 96,
+      "shareOfCost": 0.0,
+      "estimatedCostUsd": null,
+      "inputCostUsd": null,
+      "outputCostUsd": null,
+      "llmCallCount": 0,
+      "unpricedCallCount": 0,
+      "failedCallCount": 0,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "cachedInputTokens": 0,
+      "cacheWriteTokens": 0,
+      "reasoningTokens": 0,
+      "modelDurationMs": 0
+    },
+    {
+      "runStageId": "rst_mwpf3c4e_De6gH9kL3mN5qR8sT2v",
+      "stage": "Filter",
+      "status": "Succeeded",
+      "sortOrder": 3,
+      "durationMs": 15,
+      "itemsIn": 96,
+      "itemsOut": 41,
+      "shareOfCost": 0.0,
+      "estimatedCostUsd": null,
+      "inputCostUsd": null,
+      "outputCostUsd": null,
+      "llmCallCount": 0,
+      "unpricedCallCount": 0,
+      "failedCallCount": 0,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "cachedInputTokens": 0,
+      "cacheWriteTokens": 0,
+      "reasoningTokens": 0,
+      "modelDurationMs": 0
+    },
+    {
+      "runStageId": "rst_mwpf3c4e_Ef7hJ1lM4nP6rS9tU3w",
+      "stage": "Fetch",
+      "status": "Succeeded",
+      "sortOrder": 4,
+      "durationMs": 18400,
+      "itemsIn": 41,
+      "itemsOut": 33,
+      "shareOfCost": 0.0,
+      "estimatedCostUsd": null,
+      "inputCostUsd": null,
+      "outputCostUsd": null,
+      "llmCallCount": 0,
+      "unpricedCallCount": 0,
+      "failedCallCount": 0,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "cachedInputTokens": 0,
+      "cacheWriteTokens": 0,
+      "reasoningTokens": 0,
+      "modelDurationMs": 0
+    },
+    {
+      "runStageId": "rst_mwpf3c4e_Fg8jK2mN5pQ7sT1uV4x",
+      "stage": "Extract",
+      "status": "Succeeded",
+      "sortOrder": 5,
+      "durationMs": 21650,
+      "itemsIn": 33,
+      "itemsOut": 16,
+      "shareOfCost": 0.493,
+      "estimatedCostUsd": 0.456,
+      "inputCostUsd": 0.216,
+      "outputCostUsd": 0.24,
+      "llmCallCount": 8,
+      "unpricedCallCount": 0,
+      "failedCallCount": 0,
+      "inputTokens": 72000,
+      "outputTokens": 9600,
+      "cachedInputTokens": 32000,
+      "cacheWriteTokens": 0,
+      "reasoningTokens": 0,
+      "modelDurationMs": 38400
+    },
+    {
+      "runStageId": "rst_mwpf3c4e_Gh9kL3nP6qR8tU2vW5y",
+      "stage": "Embed",
+      "status": "Succeeded",
+      "sortOrder": 6,
+      "durationMs": 1240,
+      "itemsIn": 16,
+      "itemsOut": 16,
+      "shareOfCost": 0.0,
+      "estimatedCostUsd": null,
+      "inputCostUsd": null,
+      "outputCostUsd": null,
+      "llmCallCount": 0,
+      "unpricedCallCount": 0,
+      "failedCallCount": 0,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "cachedInputTokens": 0,
+      "cacheWriteTokens": 0,
+      "reasoningTokens": 0,
+      "modelDurationMs": 0
+    },
+    {
+      "runStageId": "rst_mwpf3c4e_Hj1lM4pQ7rS9uV3wX6z",
+      "stage": "Dedupe",
+      "status": "Succeeded",
+      "sortOrder": 7,
+      "durationMs": 35,
+      "itemsIn": 16,
+      "itemsOut": 12,
+      "shareOfCost": 0.0,
+      "estimatedCostUsd": null,
+      "inputCostUsd": null,
+      "outputCostUsd": null,
+      "llmCallCount": 0,
+      "unpricedCallCount": 0,
+      "failedCallCount": 0,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "cachedInputTokens": 0,
+      "cacheWriteTokens": 0,
+      "reasoningTokens": 0,
+      "modelDurationMs": 0
+    },
+    {
+      "runStageId": "rst_mwpf3c4e_Jk2mN5qR8sT1vW4xY7a",
+      "stage": "Score",
+      "status": "Succeeded",
+      "sortOrder": 8,
+      "durationMs": 6180,
+      "itemsIn": 12,
+      "itemsOut": 12,
+      "shareOfCost": 0.0854,
+      "estimatedCostUsd": 0.079,
+      "inputCostUsd": 0.034,
+      "outputCostUsd": 0.045,
+      "llmCallCount": 1,
+      "unpricedCallCount": 0,
+      "failedCallCount": 0,
+      "inputTokens": 14000,
+      "outputTokens": 1800,
+      "cachedInputTokens": 8000,
+      "cacheWriteTokens": 0,
+      "reasoningTokens": 0,
+      "modelDurationMs": 6100
+    },
+    {
+      "runStageId": "rst_mwpf3c4e_Kl3nP6rS9tU2wX5yZ8b",
+      "stage": "Synthesize",
+      "status": "Succeeded",
+      "sortOrder": 9,
+      "durationMs": 21890,
+      "itemsIn": 12,
+      "itemsOut": 1,
+      "shareOfCost": 0.2027,
+      "estimatedCostUsd": 0.1875,
+      "inputCostUsd": 0.1075,
+      "outputCostUsd": 0.08,
+      "llmCallCount": 1,
+      "unpricedCallCount": 0,
+      "failedCallCount": 0,
+      "inputTokens": 18500,
+      "outputTokens": 3200,
+      "cachedInputTokens": 0,
+      "cacheWriteTokens": 12000,
+      "reasoningTokens": 1400,
+      "modelDurationMs": 21800
+    },
+    {
+      "runStageId": "rst_mwpf3c4e_Lm4pQ7sT1uV3xY6zA9c",
+      "stage": "ReviewPredictions",
+      "status": "Succeeded",
+      "sortOrder": 10,
+      "durationMs": 12,
+      "itemsIn": 0,
+      "itemsOut": 0,
+      "shareOfCost": 0.0,
+      "estimatedCostUsd": null,
+      "inputCostUsd": null,
+      "outputCostUsd": null,
+      "llmCallCount": 0,
+      "unpricedCallCount": 0,
+      "failedCallCount": 0,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "cachedInputTokens": 0,
+      "cacheWriteTokens": 0,
+      "reasoningTokens": 0,
+      "modelDurationMs": 0
+    },
+    {
+      "runStageId": "rst_mwpf3c4e_Mn5qR8tU2vW4yZ7aB1d",
+      "stage": "Predict",
+      "status": "Succeeded",
+      "sortOrder": 11,
+      "durationMs": 5260,
+      "itemsIn": 12,
+      "itemsOut": 3,
+      "shareOfCost": 0.0492,
+      "estimatedCostUsd": 0.0455,
+      "inputCostUsd": 0.018,
+      "outputCostUsd": 0.0275,
+      "llmCallCount": 1,
+      "unpricedCallCount": 0,
+      "failedCallCount": 0,
+      "inputTokens": 9000,
+      "outputTokens": 1100,
+      "cachedInputTokens": 6000,
+      "cacheWriteTokens": 0,
+      "reasoningTokens": 0,
+      "modelDurationMs": 5200
+    },
+    {
+      "runStageId": "rst_mwpf3c4e_Np6rS9uV3wX5zA8bC2e",
+      "stage": "Suggest",
+      "status": "Succeeded",
+      "sortOrder": 12,
+      "durationMs": 3950,
+      "itemsIn": 12,
+      "itemsOut": 2,
+      "shareOfCost": 0.0308,
+      "estimatedCostUsd": 0.0285,
+      "inputCostUsd": 0.011,
+      "outputCostUsd": 0.0175,
+      "llmCallCount": 1,
+      "unpricedCallCount": 0,
+      "failedCallCount": 0,
+      "inputTokens": 7600,
+      "outputTokens": 700,
+      "cachedInputTokens": 6000,
+      "cacheWriteTokens": 0,
+      "reasoningTokens": 0,
+      "modelDurationMs": 3900
+    },
+    {
+      "runStageId": "rst_mwpf3c4e_Pq7sT1vW4xY6aB9cD3f",
+      "stage": "ComposeBriefing",
+      "status": "Succeeded",
+      "sortOrder": 13,
+      "durationMs": 9810,
+      "itemsIn": 12,
+      "itemsOut": 1,
+      "shareOfCost": 0.1005,
+      "estimatedCostUsd": 0.093,
+      "inputCostUsd": 0.028,
+      "outputCostUsd": 0.065,
+      "llmCallCount": 1,
+      "unpricedCallCount": 0,
+      "failedCallCount": 0,
+      "inputTokens": 11000,
+      "outputTokens": 2600,
+      "cachedInputTokens": 6000,
+      "cacheWriteTokens": 0,
+      "reasoningTokens": 0,
+      "modelDurationMs": 9700
+    },
+    {
+      "runStageId": "rst_mwpf3c4e_Qr8tU2wX5yZ7bC1dE4g",
+      "stage": "Notify",
+      "status": "Succeeded",
+      "sortOrder": 14,
+      "durationMs": 640,
+      "itemsIn": 1,
+      "itemsOut": 2,
+      "shareOfCost": 0.0,
+      "estimatedCostUsd": null,
+      "inputCostUsd": null,
+      "outputCostUsd": null,
+      "llmCallCount": 0,
+      "unpricedCallCount": 0,
+      "failedCallCount": 0,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "cachedInputTokens": 0,
+      "cacheWriteTokens": 0,
+      "reasoningTokens": 0,
+      "modelDurationMs": 0
+    }
+  ],
+  "unattributed": null,
+  "byModel": [
+    {
+      "modelEndpointId": "mdl_mwpee2b8_Nm4qW7eR0tYu3iOp6As",
+      "endpointName": "Anthropic",
+      "provider": "Anthropic",
+      "model": "claude-opus-5-5",
+      "estimatedCostUsd": 0.925,
+      "inputCostUsd": 0.4275,
+      "outputCostUsd": 0.4975,
+      "llmCallCount": 14,
+      "unpricedCallCount": 0,
+      "failedCallCount": 0,
+      "inputTokens": 138300,
+      "outputTokens": 19900,
+      "cachedInputTokens": 62000,
+      "cacheWriteTokens": 12000,
+      "reasoningTokens": 1700,
+      "modelDurationMs": 89300
+    }
+  ],
+  "byTask": [
+    {
+      "task": "Extraction",
+      "estimatedCostUsd": 0.456,
+      "inputCostUsd": 0.216,
+      "outputCostUsd": 0.24,
+      "llmCallCount": 8,
+      "unpricedCallCount": 0,
+      "failedCallCount": 0,
+      "inputTokens": 72000,
+      "outputTokens": 9600,
+      "cachedInputTokens": 32000,
+      "cacheWriteTokens": 0,
+      "reasoningTokens": 0,
+      "modelDurationMs": 38400
+    },
+    {
+      "task": "Synthesis",
+      "estimatedCostUsd": 0.1875,
+      "inputCostUsd": 0.1075,
+      "outputCostUsd": 0.08,
+      "llmCallCount": 1,
+      "unpricedCallCount": 0,
+      "failedCallCount": 0,
+      "inputTokens": 18500,
+      "outputTokens": 3200,
+      "cachedInputTokens": 0,
+      "cacheWriteTokens": 12000,
+      "reasoningTokens": 1400,
+      "modelDurationMs": 21800
+    },
+    {
+      "task": "Composition",
+      "estimatedCostUsd": 0.093,
+      "inputCostUsd": 0.028,
+      "outputCostUsd": 0.065,
+      "llmCallCount": 1,
+      "unpricedCallCount": 0,
+      "failedCallCount": 0,
+      "inputTokens": 11000,
+      "outputTokens": 2600,
+      "cachedInputTokens": 6000,
+      "cacheWriteTokens": 0,
+      "reasoningTokens": 0,
+      "modelDurationMs": 9700
+    },
+    {
+      "task": "Scoring",
+      "estimatedCostUsd": 0.079,
+      "inputCostUsd": 0.034,
+      "outputCostUsd": 0.045,
+      "llmCallCount": 1,
+      "unpricedCallCount": 0,
+      "failedCallCount": 0,
+      "inputTokens": 14000,
+      "outputTokens": 1800,
+      "cachedInputTokens": 8000,
+      "cacheWriteTokens": 0,
+      "reasoningTokens": 0,
+      "modelDurationMs": 6100
+    },
+    {
+      "task": "Prediction",
+      "estimatedCostUsd": 0.0455,
+      "inputCostUsd": 0.018,
+      "outputCostUsd": 0.0275,
+      "llmCallCount": 1,
+      "unpricedCallCount": 0,
+      "failedCallCount": 0,
+      "inputTokens": 9000,
+      "outputTokens": 1100,
+      "cachedInputTokens": 6000,
+      "cacheWriteTokens": 0,
+      "reasoningTokens": 0,
+      "modelDurationMs": 5200
+    },
+    {
+      "task": "QueryPlanning",
+      "estimatedCostUsd": 0.0355,
+      "inputCostUsd": 0.013,
+      "outputCostUsd": 0.0225,
+      "llmCallCount": 1,
+      "unpricedCallCount": 0,
+      "failedCallCount": 0,
+      "inputTokens": 6200,
+      "outputTokens": 900,
+      "cachedInputTokens": 4000,
+      "cacheWriteTokens": 0,
+      "reasoningTokens": 300,
+      "modelDurationMs": 4200
+    },
+    {
+      "task": "Suggestion",
+      "estimatedCostUsd": 0.0285,
+      "inputCostUsd": 0.011,
+      "outputCostUsd": 0.0175,
+      "llmCallCount": 1,
+      "unpricedCallCount": 0,
+      "failedCallCount": 0,
+      "inputTokens": 7600,
+      "outputTokens": 700,
+      "cachedInputTokens": 6000,
+      "cacheWriteTokens": 0,
+      "reasoningTokens": 0,
+      "modelDurationMs": 3900
+    }
+  ]
+}
+```
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty/costs" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -5004,6 +5543,10 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLm
 | Path parameter | Type | Postman variable |
 |---|---|---|
 | `id` | string | `{{runId}}` |
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `runStageId` | string | Only model calls made in this run stage (`rst_...`, from `GET /v1.0/api/runs/{id}/stages` or a cost report's `stages[].runStageId`). |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -10081,6 +10624,25 @@ Request body of [POST /v1.0/api/topics/{id}/constraints](#post-v10apitopicsidcon
 | `dimensionId` | string | Dimension. |
 | `isLocked` | boolean | Locked. |
 
+#### CostTotals
+
+Model cost and token totals for a set of model calls.
+
+| Field | Type | Description |
+|---|---|---|
+| `estimatedCostUsd` | number | Estimated cost in US dollars, from the endpoints' prices. Null when none of the calls was priced; when some calls are unpriced, this covers only the priced ones (see UnpricedCallCount). |
+| `inputCostUsd` | number | Cost of input tokens, in US dollars. Null when unpriced. |
+| `outputCostUsd` | number | Cost of output tokens, in US dollars. Null when unpriced. |
+| `llmCallCount` | integer | Model calls. |
+| `unpricedCallCount` | integer | Calls with no price: the endpoint has no prices set, or a subscription covers it (agent CLIs signed in with a subscription). |
+| `failedCallCount` | integer | Failed calls (they can still cost input tokens). |
+| `inputTokens` | integer | Input tokens, including the cached and cache-write tokens counted below. |
+| `outputTokens` | integer | Output tokens. |
+| `cachedInputTokens` | integer | Input tokens read from the provider's prompt cache (part of InputTokens). |
+| `cacheWriteTokens` | integer | Input tokens written to the provider's prompt cache (part of InputTokens). |
+| `reasoningTokens` | integer | Reasoning (thinking) tokens. |
+| `modelDurationMs` | number | Time spent in model calls, in milliseconds. |
+
 #### CredentialCreatedResponse
 
 Response to credential creation. SecretKey is returned exactly once.
@@ -11032,6 +11594,7 @@ Returned by [GET /v1.0/api/llm-calls](#get-v10apillm-calls), [GET /v1.0/api/llm-
 | `active` | boolean | Whether the record is active. |
 | `createdUtc` | date-time | UTC creation time. |
 | `lastUpdateUtc` | date-time | UTC time of the last update. |
+| `runStageId` | string | Run stage the call was made in, when it was made during a research run. |
 
 #### LoggingSettings
 
@@ -11222,6 +11785,29 @@ Request body of [PUT /v1.0/api/model-assignments](#put-v10apimodel-assignments).
 | `modelEndpointId` | string | Model endpoint. |
 | `modelOverride` | string | Model name override. |
 | `reasoningEffort` | [`ReasoningEffortEnum`](#reasoningeffortenum) | Reasoning effort. |
+
+#### ModelCost
+
+Cost of the calls one model made in a run.
+
+| Field | Type | Description |
+|---|---|---|
+| `estimatedCostUsd` | number | Estimated cost in US dollars, from the endpoints' prices. Null when none of the calls was priced; when some calls are unpriced, this covers only the priced ones (see UnpricedCallCount). |
+| `inputCostUsd` | number | Cost of input tokens, in US dollars. Null when unpriced. |
+| `outputCostUsd` | number | Cost of output tokens, in US dollars. Null when unpriced. |
+| `llmCallCount` | integer | Model calls. |
+| `unpricedCallCount` | integer | Calls with no price: the endpoint has no prices set, or a subscription covers it (agent CLIs signed in with a subscription). |
+| `failedCallCount` | integer | Failed calls (they can still cost input tokens). |
+| `inputTokens` | integer | Input tokens, including the cached and cache-write tokens counted below. |
+| `outputTokens` | integer | Output tokens. |
+| `cachedInputTokens` | integer | Input tokens read from the provider's prompt cache (part of InputTokens). |
+| `cacheWriteTokens` | integer | Input tokens written to the provider's prompt cache (part of InputTokens). |
+| `reasoningTokens` | integer | Reasoning (thinking) tokens. |
+| `modelDurationMs` | number | Time spent in model calls, in milliseconds. |
+| `modelEndpointId` | string | Model endpoint, when it still exists. |
+| `endpointName` | string | Model endpoint name, when it still exists. |
+| `provider` | string | Provider. |
+| `model` | string | Model. |
 
 #### ModelEndpoint
 
@@ -12392,6 +12978,29 @@ Returned by [GET /v1.0/api/runs](#get-v10apiruns), [GET /v1.0/api/runs/{id}](#ge
 | `createdUtc` | date-time | UTC creation time. |
 | `lastUpdateUtc` | date-time | UTC time of the last update. |
 | `resumeFromStage` | string | When set, the next execution reruns the pipeline from this stage on the same run, reusing its saved findings and summary (POST /runs/{id}/retry). Cleared when execution starts. Null for a normal run. |
+| `llmCallCount` | integer | Model calls made during the run. |
+| `unpricedCallCount` | integer | Model calls whose endpoint has no prices set (or that a subscription covers), so they are not in the cost. |
+| `cachedInputTokens` | integer | Input tokens read from the provider's prompt cache (part of InputTokens). |
+| `reasoningTokens` | integer | Reasoning (thinking) tokens. |
+
+#### RunCostReport
+
+What a run cost: totals, each stage, each model, and each task role. Computed from the run's model calls, so it is current while the run is still going.
+
+Returned by [GET /v1.0/api/runs/{id}/costs](#get-v10apirunsidcosts).
+
+| Field | Type | Description |
+|---|---|---|
+| `runId` | string | Run. |
+| `topicId` | string | Topic. |
+| `status` | [`RunStatusEnum`](#runstatusenum) | Run status. |
+| `currency` | string | Currency of every amount. Always USD. |
+| `totals` | [`CostTotals`](#costtotals) | Run totals. |
+| `costPerNewFindingUsd` | number | Estimated cost per new finding, when the run found any and had a priced cost. |
+| `stages` | array of [`StageCost`](#stagecost) | Stages in run order. |
+| `unattributed` | [`CostTotals`](#costtotals) | Calls made for the run outside any stage (rare; for example calls logged before stage tracking existed). |
+| `byModel` | array of [`ModelCost`](#modelcost) | By model, most expensive first. |
+| `byTask` | array of [`TaskCost`](#taskcost) | By task role, most expensive first. |
 
 #### RunDayRow
 
@@ -12403,6 +13012,7 @@ Runs created on one day, by status.
 | `startUtc` | date-time | The UTC instant the day starts. |
 | `endUtc` | date-time | The UTC instant the day ends (the next day's start). |
 | `total` | integer | Runs created on the day. |
+| `costUsd` | number | Estimated cost of the day's runs in US dollars. Null when none was priced. |
 | `counts` | object (map of integer) | Runs by status. Every run status is present. |
 
 #### RunPointRow
@@ -12417,6 +13027,9 @@ One run: its findings by tier, its duplicate share, and the sources it examined,
 | `createdUtc` | date-time | When the run was created, UTC. |
 | `status` | [`RunStatusEnum`](#runstatusenum) | Status. |
 | `durationMs` | number | Total duration in milliseconds. |
+| `estimatedCostUsd` | number | Estimated cost in US dollars. Null when none of the run's model calls was priced. |
+| `llmCallCount` | integer | Model calls the run made. |
+| `unpricedCallCount` | integer | Model calls with no price (left out of the cost). |
 | `tiers` | object (map of integer) | Non-duplicate findings by tier. Every tier is present. |
 | `newFindings` | integer | New findings the run kept (Run.NewFindingCount). |
 | `duplicates` | integer | Candidates that repeated an earlier finding (Run.DuplicateCount). |
@@ -12437,6 +13050,8 @@ Returned by [GET /v1.0/api/analytics/runs](#get-v10apianalyticsruns).
 | `toUtc` | date-time | End of the window (exclusive), UTC. |
 | `timeZone` | string | IANA time zone the days and hours are in. Defaults to UTC. |
 | `total` | integer | Runs created in the window. |
+| `totalCostUsd` | number | Estimated cost of the runs in the range, in US dollars. Null when none was priced. |
+| `meanCostPerRunUsd` | number | Mean estimated cost per priced run, in US dollars. Null when none was priced. |
 | `byStatus` | object (map of integer) | Runs by status. Every run status is present. |
 | `byDay` | array of [`RunDayRow`](#rundayrow) | Runs per day by status, oldest first, gap-filled. |
 | `stages` | array of [`StageDurationRow`](#stagedurationrow) | Duration percentiles per stage, in pipeline order. |
@@ -12469,6 +13084,13 @@ Returned by [GET /v1.0/api/runs/{id}/stages](#get-v10apirunsidstages).
 | `active` | boolean | Whether the record is active. |
 | `createdUtc` | date-time | UTC creation time. |
 | `lastUpdateUtc` | date-time | UTC time of the last update. |
+| `llmCallCount` | integer | Model calls made during the stage. |
+| `unpricedCallCount` | integer | Model calls whose endpoint has no prices set (or that a subscription covers), so they are not in the cost. |
+| `inputTokens` | integer | Input tokens across the stage's model calls. |
+| `outputTokens` | integer | Output tokens across the stage's model calls. |
+| `cachedInputTokens` | integer | Input tokens read from the provider's prompt cache (part of InputTokens). |
+| `reasoningTokens` | integer | Reasoning (thinking) tokens. |
+| `estimatedCostUsd` | number | Estimated cost of the stage's model calls in US dollars, from the endpoints' prices. Null when no call was priced. |
 
 #### RunToolCall
 
@@ -13318,6 +13940,33 @@ Returned by [GET /v1.0/api/sources](#get-v10apisources), [GET /v1.0/api/sources/
 | `createdUtc` | date-time | UTC creation time. |
 | `lastUpdateUtc` | date-time | UTC time of the last update. |
 
+#### StageCost
+
+Cost of one run stage.
+
+| Field | Type | Description |
+|---|---|---|
+| `estimatedCostUsd` | number | Estimated cost in US dollars, from the endpoints' prices. Null when none of the calls was priced; when some calls are unpriced, this covers only the priced ones (see UnpricedCallCount). |
+| `inputCostUsd` | number | Cost of input tokens, in US dollars. Null when unpriced. |
+| `outputCostUsd` | number | Cost of output tokens, in US dollars. Null when unpriced. |
+| `llmCallCount` | integer | Model calls. |
+| `unpricedCallCount` | integer | Calls with no price: the endpoint has no prices set, or a subscription covers it (agent CLIs signed in with a subscription). |
+| `failedCallCount` | integer | Failed calls (they can still cost input tokens). |
+| `inputTokens` | integer | Input tokens, including the cached and cache-write tokens counted below. |
+| `outputTokens` | integer | Output tokens. |
+| `cachedInputTokens` | integer | Input tokens read from the provider's prompt cache (part of InputTokens). |
+| `cacheWriteTokens` | integer | Input tokens written to the provider's prompt cache (part of InputTokens). |
+| `reasoningTokens` | integer | Reasoning (thinking) tokens. |
+| `modelDurationMs` | number | Time spent in model calls, in milliseconds. |
+| `runStageId` | string | Run stage. |
+| `stage` | string | Stage name, for example Plan, Search, Extract, Score, Synthesize. |
+| `status` | [`StageStatusEnum`](#stagestatusenum) | Stage status. |
+| `sortOrder` | integer | Position in the run. |
+| `durationMs` | number | Stage duration in milliseconds. |
+| `itemsIn` | integer | Items into the stage. |
+| `itemsOut` | integer | Items out of the stage. |
+| `shareOfCost` | number | Share of the run's estimated cost, from 0 to 1. Null when the run has no priced cost. |
+
 #### StageDurationRow
 
 How long one pipeline stage takes. Counts finished stage rows (succeeded or failed) of the runs in the window; percentiles interpolate linearly between the nearest ranks.
@@ -13332,6 +13981,9 @@ How long one pipeline stage takes. Counts finished stage rows (succeeded or fail
 | `p95Ms` | number | 95th percentile duration in milliseconds. |
 | `meanMs` | number | Mean duration in milliseconds. |
 | `maxMs` | number | Longest duration in milliseconds. |
+| `totalCostUsd` | number | Total estimated cost of this stage across the runs, in US dollars. Null when no call was priced. |
+| `meanCostUsd` | number | Mean estimated cost per run of this stage, in US dollars, over the runs where it was priced. Null when none was. |
+| `llmCallCount` | integer | Model calls this stage made across the runs. |
 
 #### StorageSettings
 
@@ -13406,6 +14058,26 @@ Request body of [PUT /v1.0/api/suggestions/{id}/status](#put-v10apisuggestionsid
 |---|---|---|
 | `status` | [`SuggestionStatusEnum`](#suggestionstatusenum) | New status. |
 | `snoozedUntilUtc` | date-time | Snooze until (for Snoozed). |
+
+#### TaskCost
+
+Cost of the calls made for one task role in a run.
+
+| Field | Type | Description |
+|---|---|---|
+| `estimatedCostUsd` | number | Estimated cost in US dollars, from the endpoints' prices. Null when none of the calls was priced; when some calls are unpriced, this covers only the priced ones (see UnpricedCallCount). |
+| `inputCostUsd` | number | Cost of input tokens, in US dollars. Null when unpriced. |
+| `outputCostUsd` | number | Cost of output tokens, in US dollars. Null when unpriced. |
+| `llmCallCount` | integer | Model calls. |
+| `unpricedCallCount` | integer | Calls with no price: the endpoint has no prices set, or a subscription covers it (agent CLIs signed in with a subscription). |
+| `failedCallCount` | integer | Failed calls (they can still cost input tokens). |
+| `inputTokens` | integer | Input tokens, including the cached and cache-write tokens counted below. |
+| `outputTokens` | integer | Output tokens. |
+| `cachedInputTokens` | integer | Input tokens read from the provider's prompt cache (part of InputTokens). |
+| `cacheWriteTokens` | integer | Input tokens written to the provider's prompt cache (part of InputTokens). |
+| `reasoningTokens` | integer | Reasoning (thinking) tokens. |
+| `modelDurationMs` | number | Time spent in model calls, in milliseconds. |
+| `task` | [`ModelTaskEnum`](#modeltaskenum) | Task role. |
 
 #### TelemetrySettings
 

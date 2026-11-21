@@ -14,6 +14,11 @@ namespace MyMorningNews.Sdk.Options
         public string? RunId { get; set; } = null;
 
         /// <summary>
+        /// Only calls made in this run stage. Null by default.
+        /// </summary>
+        public string? RunStageId { get; set; } = null;
+
+        /// <summary>
         /// Only calls of this refinement session. Null by default.
         /// </summary>
         public string? RefinementSessionId { get; set; } = null;
@@ -78,6 +83,7 @@ namespace MyMorningNews.Sdk.Options
         {
             base.AddFilters(query);
             QueryFormat.Add(query, "runId", RunId);
+            QueryFormat.Add(query, "runStageId", RunStageId);
             QueryFormat.Add(query, "refinementSessionId", RefinementSessionId);
             QueryFormat.Add(query, "briefingId", BriefingId);
             QueryFormat.Add(query, "modelEndpointId", ModelEndpointId);

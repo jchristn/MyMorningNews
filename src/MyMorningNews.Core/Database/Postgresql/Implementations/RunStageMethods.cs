@@ -70,7 +70,14 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.SortOrder,
                 obj.Active,
                 DateTime.SpecifyKind(obj.CreatedUtc, DateTimeKind.Utc),
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
+                obj.LlmCallCount,
+                obj.UnpricedCallCount,
+                obj.InputTokens,
+                obj.OutputTokens,
+                obj.CachedInputTokens,
+                obj.ReasoningTokens,
+                obj.EstimatedCostUsd).ConfigureAwait(false);
             return obj;
         }
 
@@ -110,7 +117,14 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.ErrorMessage,
                 obj.SortOrder,
                 obj.Active,
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
+                obj.LlmCallCount,
+                obj.UnpricedCallCount,
+                obj.InputTokens,
+                obj.OutputTokens,
+                obj.CachedInputTokens,
+                obj.ReasoningTokens,
+                obj.EstimatedCostUsd).ConfigureAwait(false);
             if (affected < 1) throw new KeyNotFoundException("RunStage " + obj.Id + " was not found.");
             return obj;
         }
@@ -193,6 +207,13 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             obj.Active = reader.GetBoolean(12);
             obj.CreatedUtc = DateTime.SpecifyKind(reader.GetDateTime(13), DateTimeKind.Utc);
             obj.LastUpdateUtc = DateTime.SpecifyKind(reader.GetDateTime(14), DateTimeKind.Utc);
+            obj.LlmCallCount = reader.GetInt32(15);
+            obj.UnpricedCallCount = reader.GetInt32(16);
+            obj.InputTokens = reader.GetInt32(17);
+            obj.OutputTokens = reader.GetInt32(18);
+            obj.CachedInputTokens = reader.GetInt32(19);
+            obj.ReasoningTokens = reader.GetInt32(20);
+            obj.EstimatedCostUsd = reader.IsDBNull(21) ? null : reader.GetDecimal(21);
             return obj;
         }
 

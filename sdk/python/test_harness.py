@@ -862,6 +862,91 @@ def t_run_missing(h: Harness) -> None:
     expect_error(NotFoundError, lambda: h.client.topics.run("top_missing"))
 
 
+@case("Runs: cost report, cost fields, and cost filters (offline)")
+def t_run_costs_offline(h: Harness) -> None:
+    report = mmn.RunCostReport.from_dict({
+        "runId": "run_x", "topicId": "top_x", "status": "Completed", "currency": "USD",
+        "totals": {"estimatedCostUsd": 0.4215, "llmCallCount": 12, "unpricedCallCount": 1, "inputTokens": 90000, "cachedInputTokens": 40000},
+        "costPerNewFindingUsd": 0.0527,
+        "stages": [{"runStageId": "stg_a", "stage": "Plan", "status": "Succeeded", "sortOrder": 0, "estimatedCostUsd": 0.03, "llmCallCount": 1, "shareOfCost": 0.071},
+                   {"runStageId": "stg_b", "stage": "Notify", "status": "Succeeded", "sortOrder": 9, "llmCallCount": 0}],
+        "unattributed": None,
+        "byModel": [{"modelEndpointId": "mdl_x", "provider": "Anthropic", "model": "claude-opus-5-5", "estimatedCostUsd": 0.4215}],
+        "byTask": [{"task": "Synthesis", "estimatedCostUsd": 0.2}]})
+    check(isinstance(report.totals, mmn.CostTotals), "totals is a CostTotals model")
+    eq(report.totals.estimated_cost_usd, 0.4215, "total cost")
+    eq(report.totals.unpriced_call_count, 1, "unpriced calls")
+    eq(report.totals.cached_input_tokens, 40000, "cached input tokens")
+    eq(report.cost_per_new_finding_usd, 0.0527, "cost per new finding")
+    check(all(isinstance(s, mmn.StageCost) for s in report.stages), "stages are StageCost models")
+    check(isinstance(report.stages[0], mmn.CostTotals), "a StageCost is a CostTotals")
+    eq(report.stages[0].share_of_cost, 0.071, "share of cost")
+    check(report.stages[1].estimated_cost_usd is None and report.stages[1].share_of_cost is None, "a stage without model calls has no cost")
+    check(report.unattributed is None, "unattributed is None when every call has a stage")
+    check(isinstance(report.by_model[0], mmn.ModelCost), "by_model rows are ModelCost models")
+    eq(report.by_model[0].model, "claude-opus-5-5", "model")
+    check(isinstance(report.by_task[0], mmn.TaskCost), "by_task rows are TaskCost models")
+    eq(report.by_task[0].task, mmn.ModelTask.SYNTHESIS.value, "task")
+    run = mmn.Run.from_dict({"id": "run_x", "estimatedCostUsd": 0.4215, "llmCallCount": 12, "unpricedCallCount": 1, "cachedInputTokens": 40000, "reasoningTokens": 2000})
+    check(run.llm_call_count == 12 and run.unpriced_call_count == 1 and run.cached_input_tokens == 40000 and run.reasoning_tokens == 2000, "run cost fields")
+    stage = mmn.RunStage.from_dict({"id": "stg_a", "estimatedCostUsd": 0.03, "llmCallCount": 1, "inputTokens": 5000, "outputTokens": 400})
+    check(stage.estimated_cost_usd == 0.03 and stage.llm_call_count == 1 and stage.input_tokens == 5000 and stage.output_tokens == 400, "stage cost fields")
+    eq(mmn.LlmCall.from_dict({"id": "llm_x", "runStageId": "stg_a"}).run_stage_id, "stg_a", "call stage")
+
+    class _Capture(requests.Session):
+        def __init__(self) -> None:
+            super().__init__()
+            self.seen: List[requests.PreparedRequest] = []
+
+        def send(self, request: requests.PreparedRequest, **kwargs: Any) -> requests.Response:  # type: ignore[override]
+            self.seen.append(request)
+            r = requests.Response()
+            r.status_code = 200
+            r.headers["Content-Type"] = "application/json"
+            body: Dict[str, Any] = {"runId": "run_x", "currency": "USD", "totals": {}, "stages": []} if "/costs" in str(request.url) \
+                else {"items": [], "pageNumber": 1, "pageSize": 10, "totalCount": 0, "totalPages": 0}
+            r._content = json.dumps(body).encode("utf-8")
+            return r
+
+    cap = _Capture()
+    fake = MyMorningNewsClient("http://127.0.0.1:1", token="test-token", session=cap)
+    got = fake.runs.costs("run_x")
+    check(isinstance(got, mmn.RunCostReport), "costs returns a RunCostReport")
+    eq(cap.seen[0].method, "GET", "costs method")
+    check(str(cap.seen[0].url).endswith("/v1.0/api/runs/run_x/costs"), "costs path")
+    fake.llm_calls.list(run_id="run_x", run_stage_id="stg_a")
+    check("runStageId=stg_a" in str(cap.seen[1].url), "runStageId filter sent")
+    fake.runs.list(sort_by="estimatedCostUsd", sort_direction="Descending")
+    check("sortBy=estimatedCostUsd" in str(cap.seen[2].url), "sortBy sent")
+    expect_value_error(lambda: fake.runs.costs(""))
+
+
+@case("Runs: cost report and model calls by stage")
+def t_run_costs(h: Harness) -> str:
+    h.need("tenant")
+    expect_error(NotFoundError, lambda: h.client.runs.costs("run_missing"), code="NotFound")
+    by_cost = h.client.runs.list(page_size=5, sort_by="estimatedCostUsd", sort_direction="Descending")
+    priced = [r.estimated_cost_usd for r in by_cost.items if r.estimated_cost_usd is not None]
+    eq(priced, sorted(priced, reverse=True), "most expensive first")
+    done = [r for r in h.client.runs.list(page_size=25).items if r.status in mmn.TERMINAL_RUN_STATUSES]
+    if not done:
+        raise Skip("no finished run is visible")
+    r = done[0]
+    costs = h.client.runs.costs(r.id)
+    eq(costs.run_id, r.id, "report run")
+    eq(costs.currency, "USD", "currency")
+    stages = h.client.runs.stages(r.id)
+    eq(len(costs.stages or []), len(stages), "a cost row per stage")
+    attributed = sum(s.llm_call_count or 0 for s in costs.stages or []) + ((costs.unattributed.llm_call_count or 0) if costs.unattributed else 0)
+    eq(attributed, costs.totals.llm_call_count if costs.totals else 0, "stage and unattributed calls add up to the total")
+    costed = next((s for s in stages if (s.llm_call_count or 0) > 0), None)
+    if costed is not None:
+        calls = h.client.llm_calls.list(run_stage_id=costed.id, page_size=100)
+        eq(all(c.run_stage_id == costed.id for c in calls.items), True, "calls belong to the stage")
+    total = costs.totals.estimated_cost_usd if costs.totals else None
+    return r.id + " cost " + ("unpriced" if total is None else "$" + format(total, ".4f"))
+
+
 @case("Runs: dry run a topic, wait, stages, findings, email preview", needs_run=True)
 def t_run_live(h: Harness) -> str:
     tid = h.need("topic")

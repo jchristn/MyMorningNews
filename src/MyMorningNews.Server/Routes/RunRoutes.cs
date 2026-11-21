@@ -33,7 +33,10 @@ namespace MyMorningNews.Server.Routes
             ArgumentNullException.ThrowIfNull(webserver);
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/runs", ListAsync, null, openApiMetadata: Paged(Doc("List runs", "Runs").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))
                 .WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("status", typeof(RunStatusEnum))).WithParameter(QueryParam("trigger", typeof(RunTriggerEnum)))));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}", ReadAsync, null, openApiMetadata: Doc("Read a run", "Runs"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}", ReadAsync, null, openApiMetadata: Doc("Read a run", "Runs",
+                "The run includes its estimated cost (estimatedCostUsd), tokens, and model call counts; unpricedCallCount says how many calls had no price. They update after every stage while the run is going."));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}/costs", CostsAsync, null, openApiMetadata: Doc("What a run cost, by stage, model, and task", "Runs",
+                "Computed from the run's model calls on request, so it is current while the run is going. Amounts are US dollars from each endpoint's prices; calls with no price (an endpoint without prices, or an agent CLI on a subscription) are counted in unpricedCallCount and left out of the amounts."));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/api/runs/{id}/cancel", CancelAsync, null, openApiMetadata: Doc("Cancel a queued or running run", "Runs"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/api/runs/{id}/retry", RetryAsync, null, openApiMetadata: Doc("Retry a finished run", "Runs",
                 "fromStage=Synthesize or a later stage (ReviewPredictions, Predict, Suggest, ComposeBriefing, Notify) reruns those stages on the same run with its saved findings, "
@@ -70,6 +73,13 @@ namespace MyMorningNews.Server.Routes
             Run? run = await OwnedRunAsync(ctx, RequestTypeEnum.RunRead).ConfigureAwait(false);
             if (run == null) return;
             await SendJsonAsync(ctx, 200, run).ConfigureAwait(false);
+        }
+
+        private async Task CostsAsync(HttpContextBase ctx)
+        {
+            Run? run = await OwnedRunAsync(ctx, RequestTypeEnum.RunRead).ConfigureAwait(false);
+            if (run == null) return;
+            await SendJsonAsync(ctx, 200, await Server.RunCosts.BuildAsync(run, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         private async Task CancelAsync(HttpContextBase ctx)

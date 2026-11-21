@@ -186,6 +186,11 @@ namespace MyMorningNews.Server
         public SetupService Setup { get; set; } = null!;
 
         /// <summary>
+        /// Run cost reports: totals, stages, models, and task roles.
+        /// </summary>
+        public RunCostService RunCosts { get; set; } = null!;
+
+        /// <summary>
         /// Client for registered MCP servers.
         /// </summary>
         public MyMorningNews.Core.Mcp.McpClientService Mcp { get; set; } = null!;

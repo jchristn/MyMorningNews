@@ -15,7 +15,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Column list in model order.
         /// </summary>
-        public const string Columns = "id, tenantid, runid, stage, status, startedutc, completedutc, durationms, itemsin, itemsout, errormessage, sortorder, active, createdutc, lastupdateutc";
+        public const string Columns = "id, tenantid, runid, stage, status, startedutc, completedutc, durationms, itemsin, itemsout, errormessage, sortorder, active, createdutc, lastupdateutc, llmcallcount, unpricedcallcount, inputtokens, outputtokens, cachedinputtokens, reasoningtokens, estimatedcostusd";
 
         /// <summary>
         /// Schema statements: table and indexes. Idempotent.
@@ -47,12 +47,12 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Insert statement with positional parameters in column order.
         /// </summary>
-        public const string Insert = "INSERT INTO runstages (" + Columns + ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)";
+        public const string Insert = "INSERT INTO runstages (" + Columns + ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)";
 
         /// <summary>
         /// Update statement. $1 is id, $2 is tenantid, then the mutable columns in model order.
         /// </summary>
-        public const string Update = "UPDATE runstages SET runid = $3, stage = $4, status = $5, startedutc = $6, completedutc = $7, durationms = $8, itemsin = $9, itemsout = $10, errormessage = $11, sortorder = $12, active = $13, lastupdateutc = $14 WHERE id = $1 AND tenantid = $2";
+        public const string Update = "UPDATE runstages SET runid = $3, stage = $4, status = $5, startedutc = $6, completedutc = $7, durationms = $8, itemsin = $9, itemsout = $10, errormessage = $11, sortorder = $12, active = $13, lastupdateutc = $14, llmcallcount = $15, unpricedcallcount = $16, inputtokens = $17, outputtokens = $18, cachedinputtokens = $19, reasoningtokens = $20, estimatedcostusd = $21 WHERE id = $1 AND tenantid = $2";
 
         /// <summary>
         /// Select by identifier within a tenant.

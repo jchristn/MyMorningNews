@@ -28,7 +28,8 @@ namespace MyMorningNews.Sdk.Resources
         }
 
         /// <summary>
-        /// List runs.
+        /// List runs. Set SortBy to estimatedCostUsd (runs without a priced cost sort last) or durationMs to rank runs by
+        /// cost or duration.
         /// </summary>
         /// <param name="options">Filters and paging, or null for defaults.</param>
         /// <param name="token">Cancellation token.</param>
@@ -50,6 +51,21 @@ namespace MyMorningNews.Sdk.Resources
         public Task<Run> GetAsync(string id, CancellationToken token = default)
         {
             return Client.SendAsync<Run>(HttpMethod.Get, "/v1.0/api/runs/" + MyMorningNewsClient.Segment(id, nameof(id)), null, null, token);
+        }
+
+        /// <summary>
+        /// What a run cost: totals, each stage, each model, and each task. Computed from the run's model calls on request,
+        /// so it is current while the run is going. Amounts are estimates in US dollars from the endpoints' prices; calls
+        /// with no price are counted in UnpricedCallCount and left out of the amounts.
+        /// </summary>
+        /// <param name="id">Run identifier.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The RunCostReport.</returns>
+        /// <exception cref="ArgumentNullException">id is null or empty.</exception>
+        /// <exception cref="MyMorningNewsException">The server returned an error (404 when the run is not found).</exception>
+        public Task<RunCostReport> GetCostsAsync(string id, CancellationToken token = default)
+        {
+            return Client.SendAsync<RunCostReport>(HttpMethod.Get, "/v1.0/api/runs/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/costs", null, null, token);
         }
 
         /// <summary>

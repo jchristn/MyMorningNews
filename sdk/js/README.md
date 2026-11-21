@@ -244,7 +244,7 @@ await client.schedules.update(s.id, { enabled: false });
 
 ### runs
 
-`list({ topicId, status, trigger })`, `get`, `start(topicId, { dryRun })`, `stages`, `queries`, `results(id, { disposition })`, `llmCalls(id, options)` (paged, oldest first), `toolCalls(id)` (agentic tool calls in order), `emailPreview`, `cancel`, `retry(id, { fromStage })`, `events(id, { signal })`, `follow(id, onEvent)`, `wait`, and `RunsResource.isTerminal(status)`.
+`list({ topicId, status, trigger, sortBy })` (`sortBy: 'estimatedCostUsd'` or `'durationMs'`), `get`, `costs(id)` (RunCostReport: totals, stages, models, tasks), `start(topicId, { dryRun })`, `stages`, `queries`, `results(id, { disposition })`, `llmCalls(id, options)` (paged, oldest first), `toolCalls(id)` (agentic tool calls in order), `emailPreview`, `cancel`, `retry(id, { fromStage })`, `events(id, { signal })`, `follow(id, onEvent)`, `wait`, and `RunsResource.isTerminal(status)`.
 
 ### findings, evidence, sources
 
@@ -367,6 +367,7 @@ await client.usage.me();
 await client.usage.report({ groupBy: 'Model' });
 await client.usage.timeseries({ bucketMinutes: 60 });
 const calls = await client.llmCalls.list({ runId });
+const stageCalls = await client.llmCalls.list({ runStageId: stage.id });
 await client.llmCalls.get(calls.items[0].id);
 ```
 

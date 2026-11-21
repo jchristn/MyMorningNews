@@ -820,6 +820,68 @@ async function main() {
         assert(calls >= 2, 'polled more than once');
     });
 
+    await run('runs.costs and cost filters (offline, fake fetch)', async () => {
+        const seen = [];
+        const report = {
+            runId: 'run_fake', topicId: 'top_fake', status: 'Completed', currency: 'USD',
+            totals: { estimatedCostUsd: 0.4215, llmCallCount: 12, unpricedCallCount: 1, inputTokens: 90000, outputTokens: 8000 },
+            costPerNewFindingUsd: 0.0527,
+            stages: [{ runStageId: 'stg_a', stage: 'Plan', status: 'Succeeded', sortOrder: 0, estimatedCostUsd: 0.03, llmCallCount: 1, shareOfCost: 0.071 }],
+            unattributed: null,
+            byModel: [{ provider: 'Anthropic', model: 'claude-opus-5-5', estimatedCostUsd: 0.4215, llmCallCount: 12 }],
+            byTask: [{ task: 'Synthesis', estimatedCostUsd: 0.2 }]
+        };
+        const fake = new MyMorningNewsClient({
+            baseUrl: 'http://127.0.0.1:1', token: 't',
+            fetch: async (url, init) => {
+                seen.push({ url, init });
+                const body = url.includes('/costs') ? report : { items: [], pageNumber: 1, pageSize: 10, totalCount: 0, totalPages: 0 };
+                return new Response(JSON.stringify(body), { status: 200, headers: { 'content-type': 'application/json' } });
+            }
+        });
+        const got = await fake.runs.costs('run_fake');
+        assert(seen[0].url.endsWith('/v1.0/api/runs/run_fake/costs'), 'costs path');
+        assertEqual(seen[0].init.method, 'GET', 'costs is a GET');
+        assertEqual(got.totals.estimatedCostUsd, 0.4215, 'total cost');
+        assertEqual(got.stages[0].shareOfCost, 0.071, 'stage share');
+        assertEqual(got.byModel[0].model, 'claude-opus-5-5', 'model row');
+        await fake.llmCalls.list({ runId: 'run_fake', runStageId: 'stg_a' });
+        assertEqual(new URL(seen[1].url).searchParams.get('runStageId'), 'stg_a', 'runStageId filter sent');
+        await fake.runs.list({ sortBy: 'estimatedCostUsd', sortDirection: 'Descending' });
+        assertEqual(new URL(seen[2].url).searchParams.get('sortBy'), 'estimatedCostUsd', 'sortBy sent');
+        let threw = false;
+        try {
+            await fake.runs.costs('');
+        } catch {
+            threw = true;
+        }
+        assert(threw, 'costs rejects an empty id');
+    });
+
+    await run('runs.costs (live: totals, stages, llm calls by stage)', async () => {
+        await expectError(client.runs.costs(bogus('run')), 404, 'NotFound');
+        const byCost = await client.runs.list({ pageSize: 5, sortBy: 'estimatedCostUsd', sortDirection: 'Descending' });
+        assertPage(byCost, 'runs.list sorted by cost');
+        const priced = byCost.items.filter((r) => r.estimatedCostUsd !== null && r.estimatedCostUsd !== undefined);
+        for (let i = 1; i < priced.length; i++) assert(priced[i - 1].estimatedCostUsd >= priced[i].estimatedCostUsd, 'most expensive first');
+        const r = (await client.runs.list({ pageSize: 25 })).items.find((x) => RunsResource.isTerminal(x.status));
+        if (!r) skip('no finished run to cost');
+        const costs = await client.runs.costs(r.id);
+        assertEqual(costs.runId, r.id, 'report run');
+        assertEqual(costs.currency, 'USD', 'currency');
+        const stages = await client.runs.stages(r.id);
+        assertEqual(costs.stages.length, stages.length, 'a cost row per stage');
+        const stageCalls = costs.stages.reduce((n, s) => n + s.llmCallCount, 0) + (costs.unattributed ? costs.unattributed.llmCallCount : 0);
+        assertEqual(stageCalls, costs.totals.llmCallCount, 'stage and unattributed calls add up to the total');
+        const costed = stages.find((s) => s.llmCallCount > 0);
+        if (costed) {
+            const calls = await client.llmCalls.list({ runStageId: costed.id, pageSize: 100 });
+            assert(calls.items.every((c) => c.runStageId === costed.id), 'calls belong to the stage');
+        } else {
+            verbose('run ' + r.id + ' has no stage with model calls');
+        }
+    });
+
     await run('SSE parser: canned stream (offline)', async () => {
         const enc = new TextEncoder();
         const stream = '\uFEFF: comment line\r\n'

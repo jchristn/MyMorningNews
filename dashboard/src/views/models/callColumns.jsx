@@ -49,7 +49,19 @@ export function llmCallColumns({ t, f, endpointLabel = null, userLabel = null, p
     { key: 'tokens', header: t('models.calls.columns.tokens'), align: 'right', render: (r) => <span title={t('models.calls.tokensTitle', { input: f.number(r.inputTokens || 0), output: f.number(r.outputTokens || 0) })}>{f.compact(r.totalTokens || 0)}</span> },
     { key: 'ttft', header: t('models.calls.columns.ttft'), sortKey: 'timeToFirstTokenMs', align: 'right', defaultHidden: true, render: (r) => (r.timeToFirstTokenMs === null || r.timeToFirstTokenMs === undefined ? '' : f.duration(r.timeToFirstTokenMs)) },
     { key: 'durationMs', header: t('models.calls.columns.duration'), sortKey: 'durationMs', align: 'right', render: (r) => f.duration(r.durationMs || 0) },
-    { key: 'cost', header: t('models.calls.columns.cost'), align: 'right', render: (r) => f.usd(r.estimatedCostUsd || 0) },
+    {
+      key: 'cost',
+      header: t('models.calls.columns.cost'),
+      align: 'right',
+      render: (r) =>
+        r.estimatedCostUsd === null || r.estimatedCostUsd === undefined ? (
+          <span className="muted" title={t('costs.unpriced.callTitle')}>
+            {t('costs.notPriced')}
+          </span>
+        ) : (
+          f.usd(r.estimatedCostUsd)
+        )
+    },
     {
       key: 'success',
       header: t('models.calls.columns.outcome'),

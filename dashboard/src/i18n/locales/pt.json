@@ -2338,7 +2338,8 @@
         "results": "Resultados",
         "details": "Detalhes",
         "calls": "Chamadas ao modelo",
-        "tools": "Chamadas de ferramentas"
+        "tools": "Chamadas de ferramentas",
+        "costs": "Custos"
       },
       "contextHash": "Instantâneo do contexto"
     },
@@ -2371,13 +2372,7 @@
       "sources": "Fontes lidas",
       "newFindings": "Novas descobertas",
       "duplicates": "Duplicadas",
-      "tokens": "Tokens",
-      "tokenSplit": "{input} de entrada, {output} de saída",
-      "cost": "Custo estimado",
-      "modelUsage": "Uso de modelos",
-      "notRecorded": "Não registrado",
-      "notRecordedHelp": "Nenhuma chamada de modelo foi registrada nesta execução.",
-      "costPending": "Sem preço"
+      "notRecordedHelp": "Nenhuma chamada de modelo foi registrada nesta execução."
     },
     "stages": {
       "empty": "Nenhuma etapa registrada para esta execução.",
@@ -4457,6 +4452,69 @@
       },
       "openModels": "Abrir Modelos de IA",
       "openSettings": "Abrir Configurações"
+    }
+  },
+  "costs": {
+    "under": "menos de {amount}",
+    "noCalls": "Nenhuma chamada ao modelo",
+    "notPriced": "Sem preço",
+    "unpriced": {
+      "someTitle": "Algumas chamadas não tinham preço",
+      "allTitle": "Nenhuma chamada tinha preço",
+      "count": "Chamadas sem preço: {count} de {total}",
+      "endpoint": "Um endpoint sem preços: defina os preços de entrada e de saída na página Modelos de IA.",
+      "setPrices": "Definir preços",
+      "subscription": "Uma CLI de agente conectada com uma assinatura: o custo está incluído na sua assinatura.",
+      "partial": "O valor mostrado cobre apenas as chamadas com preço.",
+      "callTitle": "Esta chamada não tinha preço: o endpoint não tem preços definidos ou uma assinatura a cobre."
+    },
+    "header": {
+      "aria": "Custo da execução",
+      "cost": "Custo da execução",
+      "costSoFar": "Custo até agora",
+      "split": "{input} de entrada, {output} de saída",
+      "tokens": "Tokens",
+      "inputTokens": "{input} de entrada, {cached} em cache",
+      "outputTokens": "{output} de saída, {reasoning} de raciocínio",
+      "calls": "Chamadas ao modelo",
+      "unpricedCalls": "{count, plural, one {# sem preço} other {# sem preço}}",
+      "failedCalls": "{count, plural, one {# com falha} other {# com falha}}",
+      "perFinding": "Custo por nova descoberta",
+      "newFindings": "{count, plural, =0 {Nenhuma nova descoberta} one {# nova descoberta} other {# novas descobertas}}",
+      "breakdown": "Para onde foi o dinheiro"
+    },
+    "stages": {
+      "cost": "Custo",
+      "share": "Parte do custo",
+      "calls": "Chamadas",
+      "tokens": "Tokens",
+      "mostExpensive": "A mais cara",
+      "openCalls": "Mostrar as chamadas ao modelo de {stage}",
+      "callsTitle": "{stage}: chamadas ao modelo",
+      "callsSummary": "{cost} em {count, plural, one {# chamada} other {# chamadas}}"
+    },
+    "breakdown": {
+      "title": "Para onde foi o dinheiro",
+      "total": "{cost} em {count, plural, one {# chamada ao modelo} other {# chamadas ao modelo}}",
+      "byStage": "Por etapa",
+      "byModel": "Por modelo",
+      "byTask": "Por tarefa",
+      "model": "Modelo",
+      "task": "Tarefa",
+      "unknownModel": "Modelo desconhecido",
+      "unattributed": "{count, plural, one {# chamada foi feita} other {# chamadas foram feitas}} fora de qualquer etapa:"
+    },
+    "topic": {
+      "title": "Custo por execução",
+      "help": "As últimas {count} execuções concluídas, da mais antiga para a mais recente. Selecione uma coluna para abrir a execução.",
+      "average": "Média de {average} por execução com preço em {count, plural, one {# execução} other {# execuções}}, {total} no total",
+      "noPriced": "Nenhuma destas execuções tinha preço.",
+      "empty": "Ainda não há execuções concluídas.",
+      "aria": "Custo por execução {count, plural, one {da última execução} other {das últimas # execuções}}",
+      "status": "Status",
+      "note": "Observação",
+      "kind": "Tipo",
+      "partialSuffix": "(algumas chamadas sem preço)"
     }
   }
 }

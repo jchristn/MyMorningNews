@@ -256,6 +256,11 @@ namespace MyMorningNews.Core.Models
         /// </summary>
         public DateTime LastUpdateUtc { get; set; } = DateTime.UtcNow;
 
+        /// <summary>
+        /// Run stage the call was made in, when it was made during a research run.
+        /// </summary>
+        public string? RunStageId { get; set; } = null;
+
         #endregion
 
         #region Private-Members

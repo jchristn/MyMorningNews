@@ -1749,6 +1749,10 @@ class Run(Model):
     created_utc: Optional[str] = None
     last_update_utc: Optional[str] = None
     resume_from_stage: Optional[str] = None
+    llm_call_count: Optional[int] = None
+    unpriced_call_count: Optional[int] = None
+    cached_input_tokens: Optional[int] = None
+    reasoning_tokens: Optional[int] = None
 
 
 @dataclass
@@ -1769,6 +1773,83 @@ class RunStage(Model):
     active: Optional[bool] = None
     created_utc: Optional[str] = None
     last_update_utc: Optional[str] = None
+    llm_call_count: Optional[int] = None
+    unpriced_call_count: Optional[int] = None
+    input_tokens: Optional[int] = None
+    output_tokens: Optional[int] = None
+    cached_input_tokens: Optional[int] = None
+    reasoning_tokens: Optional[int] = None
+    estimated_cost_usd: Optional[float] = None
+
+
+@dataclass
+class CostTotals(Model):
+    """Cost and token totals for a run, a stage, a model, or a task.
+
+    Amounts are US dollar estimates from the endpoints' prices, None when no call was priced.
+    ``unpriced_call_count`` counts calls with no price (an endpoint without prices, or an agent CLI on a
+    subscription); they are left out of the amounts.
+    """
+    estimated_cost_usd: Optional[float] = None
+    input_cost_usd: Optional[float] = None
+    output_cost_usd: Optional[float] = None
+    llm_call_count: Optional[int] = None
+    unpriced_call_count: Optional[int] = None
+    failed_call_count: Optional[int] = None
+    input_tokens: Optional[int] = None
+    output_tokens: Optional[int] = None
+    cached_input_tokens: Optional[int] = None
+    cache_write_tokens: Optional[int] = None
+    reasoning_tokens: Optional[int] = None
+    model_duration_ms: Optional[float] = None
+
+
+@dataclass
+class StageCost(CostTotals):
+    """Cost of one run stage. ``share_of_cost`` is the stage's share of the run's cost, 0 to 1, or None."""
+    run_stage_id: Optional[str] = None
+    stage: Optional[str] = None
+    status: Optional[str] = None
+    sort_order: Optional[int] = None
+    duration_ms: Optional[float] = None
+    items_in: Optional[int] = None
+    items_out: Optional[int] = None
+    share_of_cost: Optional[float] = None
+
+
+@dataclass
+class ModelCost(CostTotals):
+    """Cost of one model endpoint and model in a run."""
+    model_endpoint_id: Optional[str] = None
+    endpoint_name: Optional[str] = None
+    provider: Optional[str] = None
+    model: Optional[str] = None
+
+
+@dataclass
+class TaskCost(CostTotals):
+    """Cost of one model task in a run."""
+    task: Optional[str] = None
+
+
+@dataclass
+class RunCostReport(Model):
+    """What a run cost: totals, each stage in run order, each model, and each task.
+
+    Computed from the run's model calls on request, so it is current while the run is going.
+    ``unattributed`` holds calls with no stage, or None when every call has one. ``currency`` is always ``USD``.
+    """
+    _nested: ClassVar[Dict[str, str]] = {'totals': 'CostTotals', 'stages': 'StageCost', 'unattributed': 'CostTotals', 'by_model': 'ModelCost', 'by_task': 'TaskCost'}
+    run_id: Optional[str] = None
+    topic_id: Optional[str] = None
+    status: Optional[str] = None
+    currency: Optional[str] = None
+    totals: Optional[CostTotals] = None
+    cost_per_new_finding_usd: Optional[float] = None
+    stages: Optional[List[StageCost]] = None
+    unattributed: Optional[CostTotals] = None
+    by_model: Optional[List[ModelCost]] = None
+    by_task: Optional[List[TaskCost]] = None
 
 
 @dataclass
@@ -2482,6 +2563,7 @@ class LlmCall(Model):
     tenant_id: Optional[str] = None
     task: Optional[str] = None
     run_id: Optional[str] = None
+    run_stage_id: Optional[str] = None
     refinement_session_id: Optional[str] = None
     briefing_id: Optional[str] = None
     model_endpoint_id: Optional[str] = None
@@ -3369,12 +3451,27 @@ class RunsResource(_Resource):
     """
 
     def list(self, **filters: Any) -> Page[Run]:
-        """List runs (filters: ``topic_id``, ``status``, ``trigger``, plus paging)."""
+        """List runs (filters: ``topic_id``, ``status``, ``trigger``, plus paging).
+
+        ``sort_by="estimatedCostUsd"`` (runs without a priced cost sort last) or ``sort_by="durationMs"`` ranks
+        runs by cost or duration.
+        """
         return self._page(Run, API + "/runs", filters)
 
     def get(self, run_id: str) -> Run:
         """Read a run."""
         return self._one(Run, "GET", API + "/runs/" + _seg(run_id))
+
+    def costs(self, run_id: str) -> RunCostReport:
+        """What a run cost: totals, each stage, each model, and each task.
+
+        Computed on request, so it is current while the run is going. Amounts are US dollar estimates from the
+        endpoints' prices; unpriced calls are counted in ``unpriced_call_count`` and left out of the amounts.
+
+        Raises:
+            NotFoundError: The run does not exist or belongs to another user.
+        """
+        return self._one(RunCostReport, "GET", API + "/runs/" + _seg(run_id) + "/costs")
 
     def stages(self, run_id: str) -> List[RunStage]:
         """A run's pipeline stages in order."""
@@ -4093,7 +4190,7 @@ class LlmCallsResource(_Resource):
     """Model call records under ``/v1.0/api/llm-calls``."""
 
     def list(self, **filters: Any) -> Page[LlmCall]:
-        """List model calls (filters: ``run_id``, ``refinement_session_id``, ``briefing_id``, ``model_endpoint_id``, ``model``,
+        """List model calls (filters: ``run_id``, ``run_stage_id``, ``refinement_session_id``, ``briefing_id``, ``model_endpoint_id``, ``model``,
         ``prompt_key``, ``user_id``, ``topic_id``, ``success``, ``is_dry_run``, ``task``, paging)."""
         return self._page(LlmCall, API + "/llm-calls", filters)
 

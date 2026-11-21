@@ -135,15 +135,32 @@
     "open": "नेविगेशन खोलें",
     "skip": "सामग्री पर जाएँ",
     "version": "v{version}",
-    "groups": {
-      "start": "शुरुआत",
+    "hubTabs": "{hub} के पेज",
+    "sections": {
+      "research": "शोध",
+      "briefings": "ब्रीफ़िंग",
+      "configuration": "कॉन्फ़िगरेशन",
+      "system": "सिस्टम"
+    },
+    "hubs": {
+      "topics": "विषय",
       "research": "शोध",
       "briefings": "ब्रीफ़िंग",
       "insights": "इनसाइट्स",
       "configuration": "कॉन्फ़िगरेशन",
       "observability": "निगरानी",
       "administration": "प्रशासन",
-      "system": "सिस्टम"
+      "settings": "सेटिंग्स"
+    },
+    "tabs": {
+      "requests": "अनुरोध",
+      "credentials": "एक्सेस कुंजियाँ",
+      "roles": "भूमिकाएँ",
+      "adminUsage": "उपयोग",
+      "promoCodes": "प्रोमो कोड",
+      "settings": "सर्वर सेटिंग्स",
+      "emailInsights": "ईमेल",
+      "mcp": "सहायक कनेक्ट करें"
     },
     "items": {
       "home": "होम",

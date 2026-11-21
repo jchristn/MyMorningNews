@@ -135,15 +135,32 @@
     "open": "打开导航",
     "skip": "跳到内容",
     "version": "v{version}",
-    "groups": {
-      "start": "开始",
+    "hubTabs": "{hub}页面",
+    "sections": {
+      "research": "研究",
+      "briefings": "简报",
+      "configuration": "配置",
+      "system": "系统"
+    },
+    "hubs": {
+      "topics": "主题",
       "research": "研究",
       "briefings": "简报",
       "insights": "洞察",
       "configuration": "配置",
       "observability": "可观测性",
       "administration": "管理",
-      "system": "系统"
+      "settings": "设置"
+    },
+    "tabs": {
+      "requests": "请求",
+      "credentials": "访问密钥",
+      "roles": "角色",
+      "adminUsage": "用量",
+      "promoCodes": "优惠码",
+      "settings": "服务器设置",
+      "emailInsights": "电子邮件",
+      "mcp": "连接助手"
     },
     "items": {
       "home": "首页",

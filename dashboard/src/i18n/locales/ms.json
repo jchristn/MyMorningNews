@@ -135,15 +135,32 @@
     "open": "Buka navigasi",
     "skip": "Langkau ke kandungan",
     "version": "v{version}",
-    "groups": {
-      "start": "Mula",
+    "hubTabs": "Halaman {hub}",
+    "sections": {
+      "research": "Penyelidikan",
+      "briefings": "Taklimat",
+      "configuration": "Konfigurasi",
+      "system": "Sistem"
+    },
+    "hubs": {
+      "topics": "Topik",
       "research": "Penyelidikan",
       "briefings": "Taklimat",
       "insights": "Analisis",
       "configuration": "Konfigurasi",
       "observability": "Kebolehcerapan",
       "administration": "Pentadbiran",
-      "system": "Sistem"
+      "settings": "Tetapan"
+    },
+    "tabs": {
+      "requests": "Permintaan",
+      "credentials": "Kunci akses",
+      "roles": "Peranan",
+      "adminUsage": "Penggunaan",
+      "promoCodes": "Kod promo",
+      "settings": "Tetapan pelayan",
+      "emailInsights": "E-mel",
+      "mcp": "Sambungkan pembantu"
     },
     "items": {
       "home": "Utama",

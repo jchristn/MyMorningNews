@@ -48,7 +48,7 @@ const VIEWS = [
   }
 ];
 
-const ENGLISH_NAV = [en.nav.items.home, en.nav.items.topics, en.nav.groups.administration, en.nav.items.settings];
+const ENGLISH_NAV = [en.nav.items.home, en.nav.items.topics, en.nav.hubs.administration, en.nav.items.settings];
 
 afterEach(async () => {
   await setActiveLocale('en');

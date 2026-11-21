@@ -88,7 +88,9 @@ describe('routing guards', () => {
   it('blocks members from admin-only pages', async () => {
     renderApp('/dashboard/settings', fakeClient({ getTokenDetails: async () => MEMBER_DETAILS }), { signedIn: true });
     expect(await screen.findByText('Access denied')).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /Settings/ })).not.toBeInTheDocument();
+    // The Settings hub stays, opening the first page a member can use; the Server settings tab is not offered.
+    expect(screen.queryByRole('link', { name: 'Server settings' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Settings' })).toHaveAttribute('href', '/dashboard/profile');
   });
 
   it('clears a stored session the server rejects', async () => {

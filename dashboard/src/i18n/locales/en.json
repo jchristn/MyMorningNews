@@ -135,15 +135,32 @@
     "open": "Open navigation",
     "skip": "Skip to content",
     "version": "v{version}",
-    "groups": {
-      "start": "Start",
+    "hubTabs": "{hub} pages",
+    "sections": {
+      "research": "Research",
+      "briefings": "Briefings",
+      "configuration": "Configuration",
+      "system": "System"
+    },
+    "hubs": {
+      "topics": "Topics",
       "research": "Research",
       "briefings": "Briefings",
       "insights": "Insights",
       "configuration": "Configuration",
       "observability": "Observability",
       "administration": "Administration",
-      "system": "System"
+      "settings": "Settings"
+    },
+    "tabs": {
+      "requests": "Requests",
+      "credentials": "Access keys",
+      "roles": "Roles",
+      "adminUsage": "Usage",
+      "promoCodes": "Promo codes",
+      "settings": "Server settings",
+      "emailInsights": "Email",
+      "mcp": "Connect an assistant"
     },
     "items": {
       "home": "Home",

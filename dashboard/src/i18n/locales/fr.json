@@ -135,15 +135,32 @@
     "open": "Ouvrir la navigation",
     "skip": "Aller au contenu",
     "version": "v{version}",
-    "groups": {
-      "start": "Démarrer",
+    "hubTabs": "Pages de la section {hub}",
+    "sections": {
+      "research": "Recherche",
+      "briefings": "Briefings",
+      "configuration": "Configuration",
+      "system": "Système"
+    },
+    "hubs": {
+      "topics": "Sujets",
       "research": "Recherche",
       "briefings": "Briefings",
       "insights": "Analyses",
       "configuration": "Configuration",
       "observability": "Observabilité",
       "administration": "Administration",
-      "system": "Système"
+      "settings": "Paramètres"
+    },
+    "tabs": {
+      "requests": "Requêtes",
+      "credentials": "Clés d'accès",
+      "roles": "Rôles",
+      "adminUsage": "Utilisation",
+      "promoCodes": "Codes promo",
+      "settings": "Paramètres du serveur",
+      "emailInsights": "E-mail",
+      "mcp": "Connecter un assistant"
     },
     "items": {
       "home": "Accueil",

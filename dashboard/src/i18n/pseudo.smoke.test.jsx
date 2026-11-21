@@ -25,7 +25,7 @@ function renderAt(path, signedIn) {
   );
 }
 
-const ENGLISH_UI = [en.login.signIn, en.login.email, en.login.serverUrl, en.nav.items.home, en.nav.groups.administration, en.nav.items.settings];
+const ENGLISH_UI = [en.login.signIn, en.login.email, en.login.serverUrl, en.nav.items.home, en.nav.hubs.administration, en.nav.items.settings];
 
 function leakedEnglish() {
   const text = document.body.textContent;

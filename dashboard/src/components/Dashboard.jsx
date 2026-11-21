@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useApp } from '../context/AppContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { findRoute } from '../utils/navigation.js';
+import HubTabs from './HubTabs.jsx';
 import Sidebar from './Sidebar.jsx';
 import Topbar from './Topbar.jsx';
 import ToastHost from './Toast.jsx';
@@ -49,6 +50,7 @@ export default function Dashboard() {
         <Topbar title={title} summary={summary} />
         <main id="main" className="workspace" tabIndex={-1}>
           <SignInNotice />
+          <HubTabs />
           <Outlet />
         </main>
       </div>

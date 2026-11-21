@@ -135,15 +135,32 @@
     "open": "فتح التنقل",
     "skip": "انتقل إلى المحتوى",
     "version": "v{version}",
-    "groups": {
-      "start": "البداية",
+    "hubTabs": "صفحات {hub}",
+    "sections": {
+      "research": "البحث",
+      "briefings": "الموجزات",
+      "configuration": "التكوين",
+      "system": "النظام"
+    },
+    "hubs": {
+      "topics": "المواضيع",
       "research": "البحث",
       "briefings": "الموجزات",
       "insights": "الرؤى",
-      "configuration": "الإعداد",
+      "configuration": "التكوين",
       "observability": "المراقبة",
       "administration": "الإدارة",
-      "system": "النظام"
+      "settings": "الإعدادات"
+    },
+    "tabs": {
+      "requests": "الطلبات",
+      "credentials": "مفاتيح الوصول",
+      "roles": "الأدوار",
+      "adminUsage": "الاستخدام",
+      "promoCodes": "الرموز الترويجية",
+      "settings": "إعدادات الخادم",
+      "emailInsights": "البريد الإلكتروني",
+      "mcp": "ربط مساعد"
     },
     "items": {
       "home": "الرئيسية",

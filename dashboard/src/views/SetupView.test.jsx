@@ -327,7 +327,10 @@ describe('setup page for administrators', () => {
     renderRoute('/dashboard/topics', { getSetupStatus: vi.fn(async () => FRESH) });
     expect(await screen.findByRole('heading', { name: 'Set up My Morning News', level: 1 })).toBeInTheDocument();
     expect(screen.getByTestId('setup-callout')).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('link', { name: 'Search providers' }));
+    // The Configuration hub opens on Models, and its Search providers tab stays open before setup is finished.
+    await userEvent.click(screen.getByRole('link', { name: 'Configuration' }));
+    expect(await screen.findByRole('heading', { name: 'Models', level: 1 })).toBeInTheDocument();
+    await userEvent.click(within(screen.getByRole('navigation', { name: 'Configuration pages' })).getByRole('link', { name: 'Search providers' }));
     expect(await screen.findByRole('heading', { name: 'Search providers', level: 1 })).toBeInTheDocument();
   });
 });

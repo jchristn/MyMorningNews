@@ -135,15 +135,32 @@
     "open": "Открыть навигацию",
     "skip": "Перейти к содержимому",
     "version": "v{version}",
-    "groups": {
-      "start": "Начало",
+    "hubTabs": "Страницы раздела «{hub}»",
+    "sections": {
+      "research": "Исследования",
+      "briefings": "Сводки",
+      "configuration": "Конфигурация",
+      "system": "Система"
+    },
+    "hubs": {
+      "topics": "Темы",
       "research": "Исследования",
       "briefings": "Сводки",
       "insights": "Аналитика",
       "configuration": "Конфигурация",
       "observability": "Наблюдаемость",
       "administration": "Администрирование",
-      "system": "Система"
+      "settings": "Настройки"
+    },
+    "tabs": {
+      "requests": "Запросы",
+      "credentials": "Ключи доступа",
+      "roles": "Роли",
+      "adminUsage": "Использование",
+      "promoCodes": "Промокоды",
+      "settings": "Настройки сервера",
+      "emailInsights": "Почта",
+      "mcp": "Подключить ассистента"
     },
     "items": {
       "home": "Главная",

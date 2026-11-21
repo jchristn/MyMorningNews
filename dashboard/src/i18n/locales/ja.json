@@ -135,15 +135,32 @@
     "open": "ナビゲーションを開く",
     "skip": "コンテンツへスキップ",
     "version": "v{version}",
-    "groups": {
-      "start": "スタート",
+    "hubTabs": "{hub}のページ",
+    "sections": {
+      "research": "リサーチ",
+      "briefings": "ブリーフィング",
+      "configuration": "構成",
+      "system": "システム"
+    },
+    "hubs": {
+      "topics": "トピック",
       "research": "リサーチ",
       "briefings": "ブリーフィング",
       "insights": "インサイト",
       "configuration": "構成",
       "observability": "オブザーバビリティ",
       "administration": "管理",
-      "system": "システム"
+      "settings": "設定"
+    },
+    "tabs": {
+      "requests": "リクエスト",
+      "credentials": "アクセスキー",
+      "roles": "ロール",
+      "adminUsage": "使用状況",
+      "promoCodes": "プロモコード",
+      "settings": "サーバー設定",
+      "emailInsights": "メール",
+      "mcp": "アシスタントを接続"
     },
     "items": {
       "home": "ホーム",

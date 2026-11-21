@@ -75,8 +75,8 @@ docker compose -f compose.yaml -f hosted/compose.elb.yaml up -d --build
 
 | Target group | Host port | Health check | Listener rule |
 |--------------|-----------|--------------|---------------|
-| API (server) | 12100 (HTTP 8000 in the container) | `GET /v1.0/api/health`, 200 | Paths `/v1.0/*`, `/openapi.json`, `/swagger*`, `/.well-known/*` |
-| Dashboard | 12101 (HTTP 80 in the container) | `GET /health`, 200 | Default (every other path) |
+| API (server) | 8000 (HTTP, same port in the container) | `GET /v1.0/api/health`, 200 | Paths `/v1.0/*`, `/openapi.json`, `/swagger*`, `/.well-known/*` |
+| Dashboard | 8080 (HTTP 80 in the container) | `GET /health`, 200 | Default (every other path) |
 
 - Allow both ports only from the load balancer's security group. Every other service stays on `127.0.0.1`.
 - The HTTPS listener forwards plain HTTP to both target groups. Redirect port 80 to 443 on the load balancer.

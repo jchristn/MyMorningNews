@@ -21,7 +21,8 @@ namespace MyMorningNews.Core.Pipeline
         public bool Delivered { get; set; } = false;
 
         /// <summary>
-        /// Whether a non-critical stage failed (the run finishes as PartiallySucceeded).
+        /// Whether a non-critical stage failed, or a stage finished with a warning such as Fetch reading no pages (the run
+        /// finishes as PartiallySucceeded).
         /// </summary>
         public bool PartiallySucceeded { get; set; } = false;
     }

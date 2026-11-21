@@ -174,6 +174,13 @@ def ids(items: Any) -> List[str]:
     return [x.id for x in items]
 
 
+def _in_days(days: int) -> str:
+    """An ISO 8601 UTC time the given number of days from now (requests can be scheduled up to a year ahead)."""
+    import datetime
+    when = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=days)
+    return when.replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 class Harness:
     """Holds clients, shared state, and the cleanup stack, and runs the cases."""
 
@@ -658,7 +665,7 @@ def t_requests(h: Harness) -> None:
 @case("Requests: create, get, cancel, delete", needs_run=True)
 def t_requests_llm(h: Harness) -> None:
     rr = h.client.requests.create(request_text=h.name("request") + " summarize sodium-ion battery news this week",
-                                  skip_questions=True, run_at_utc="2099-01-01T00:00:00Z")
+                                  skip_questions=True, run_at_utc=_in_days(30))
     rid = rr.request.id
     h.on_cleanup("request " + rid, lambda: h.client.requests.delete(rid))
     eq(h.client.requests.get(rid).request.id, rid, "get")

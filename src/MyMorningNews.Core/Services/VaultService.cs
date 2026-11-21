@@ -142,7 +142,7 @@ namespace MyMorningNews.Core.Services
             if (String.Equals(credentialId, PlatformAnthropicCredentialId, StringComparison.Ordinal))
             {
                 string? platformKey = Environment.GetEnvironmentVariable(Constants.EnvironmentPrefix + "ANTHROPIC_API_KEY");
-                if (String.IsNullOrWhiteSpace(platformKey)) throw new VaultSecretUnavailableException("The platform model key is not configured on this server.");
+                if (String.IsNullOrWhiteSpace(platformKey)) throw new VaultSecretUnavailableException("No model key is available for your account yet. Add your own: open Models, add an endpoint for your provider, and save your API key with it. Or ask whoever runs this server to set up its shared model key.");
                 return platformKey.Trim();
             }
 

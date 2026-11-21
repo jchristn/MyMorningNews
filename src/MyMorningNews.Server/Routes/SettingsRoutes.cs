@@ -31,7 +31,7 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/settings", ReadAsync, null, openApiMetadata: Doc("Read server settings (secrets masked)", "Settings"));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.PUT, "/v1.0/api/settings", UpdateAsync, null, openApiMetadata: Doc("Update server settings", "Settings").WithRequestBody(Body<ServerSettings>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/settings/restart", RestartAsync, null, openApiMetadata: Doc("Restart the server", "Settings"));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/server-info", InfoAsync, null, openApiMetadata: Doc("Server information and bundled tool links", "Settings"));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/server-info", InfoAsync, null, openApiMetadata: Doc("Server information and bundled tool links", "Settings", "Members get the product name, version, and uptime. Runtime, database, pending restart, and bundled tool details are returned only to global administrators."));
         }
 
         private async Task ReadAsync(HttpContextBase ctx)
@@ -79,21 +79,27 @@ namespace MyMorningNews.Server.Routes
                 Product = Constants.ProductName,
                 Version = Constants.ProductVersion,
                 StartedUtc = Server.Lifetime.StartedUtc,
-                UptimeSeconds = (long)(DateTime.UtcNow - Server.Lifetime.StartedUtc).TotalSeconds,
-                DatabaseType = Server.Database.DatabaseType.ToString(),
-                SchemaVersion = Server.Database.SchemaVersion,
-                VectorAvailable = Server.Database is MyMorningNews.Core.Database.Postgresql.PostgresqlDatabaseDriver pg && pg.VectorAvailable,
-                RuntimeVersion = RuntimeInformation.FrameworkDescription,
-                OperatingSystem = RuntimeInformation.OSDescription,
-                PendingRestart = Server.SettingsService.Describe().PendingRestart,
-                ExternalServices = new List<ExternalServiceInfo>
+                UptimeSeconds = (long)(DateTime.UtcNow - Server.Lifetime.StartedUtc).TotalSeconds
+            };
+
+            // Runtime, schema, and operator tool details are for global administrators only (user testing UT-033).
+            if (Context(ctx).IsAdmin)
+            {
+                info.DatabaseType = Server.Database.DatabaseType.ToString();
+                info.SchemaVersion = Server.Database.SchemaVersion;
+                info.VectorAvailable = Server.Database is MyMorningNews.Core.Database.Postgresql.PostgresqlDatabaseDriver pg && pg.VectorAvailable;
+                info.RuntimeVersion = RuntimeInformation.FrameworkDescription;
+                info.OperatingSystem = RuntimeInformation.OSDescription;
+                info.PendingRestart = Server.SettingsService.Describe().PendingRestart;
+                info.ExternalServices = new List<ExternalServiceInfo>
                 {
                     new ExternalServiceInfo { Name = "Grafana", Url = t.GrafanaUrl, Credentials = "admin / admin", Description = "Dashboards for metrics, traces, and logs." },
                     new ExternalServiceInfo { Name = "Prometheus", Url = t.PrometheusUrl, Description = "Metrics." },
                     new ExternalServiceInfo { Name = "Tempo", Url = t.TempoUrl, Description = "Traces." },
                     new ExternalServiceInfo { Name = "Loki", Url = t.LokiUrl, Description = "Logs." }
-                }
-            };
+                };
+            }
+
             await SendJsonAsync(ctx, 200, info).ConfigureAwait(false);
         }
     }

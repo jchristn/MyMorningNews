@@ -9,6 +9,7 @@ namespace MyMorningNews.Core.Services
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
+    using MyMorningNews.Core.Helpers;
     using MyMorningNews.Core.Responses;
     using MyMorningNews.Core.Serialization;
     using MyMorningNews.Core.Settings;
@@ -180,7 +181,7 @@ namespace MyMorningNews.Core.Services
                     }
                     catch (TargetInvocationException ex) when (ex.InnerException is ArgumentException)
                     {
-                        result.Errors[field.Path] = ex.InnerException.Message;
+                        result.Errors[field.Path] = ErrorText.Plain(ex.InnerException);
                         continue;
                     }
 
@@ -200,9 +201,7 @@ namespace MyMorningNews.Core.Services
                 if (result.Changed.Count == 0) return result;
 
                 string json = Serializer.Serialize(candidate, true);
-                string temp = FilePath + ".tmp";
-                await File.WriteAllTextAsync(temp, json, token).ConfigureAwait(false);
-                File.Move(temp, FilePath, true);
+                await FileReplacer.WriteAllTextAsync(FilePath, json, token).ConfigureAwait(false);
 
                 foreach (SettingField field in Fields())
                 {

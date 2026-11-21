@@ -10,6 +10,7 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// Label, such as the podcast app.
         /// </summary>
+        [TextLimit(128)]
         public string? Name { get; set; } = null;
 
         /// <summary>

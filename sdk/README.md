@@ -17,7 +17,7 @@ All three:
 - Cover the MCP server registry for agentic research (register, test, discover tools, turn tools on or off), topics' `agenticSearch` and `mcpToolIds`, and a run's agentic tool calls.
 - Page through lists with `pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`, and per-resource filters, and offer a helper that walks every page.
 - Download briefings (Markdown, HTML, audio) and stored files, with byte ranges.
-- Wait for a run by polling, because the server has no run event stream yet.
+- Follow a run live through its server-sent event stream (`GET /v1.0/api/runs/{id}/events`: `run`, `stage`, `ping`, and a final `done`), or wait for it by polling. C#: `Runs.StreamEventsAsync` and `Runs.WaitAsync`; JavaScript: `runs.events`, `runs.follow`, and `runs.wait`; Python: `runs.events` and `runs.wait`.
 
 The C# SDK also covers the control plane (tenants, users, credentials, roles, permissions, assignments), promotional codes and plans, audit, request history, settings, and vault reveal. The MCP server (`src/MyMorningNews.McpServer`, see [`MCP_API.md`](../MCP_API.md)) is built on it.
 

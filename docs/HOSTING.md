@@ -18,8 +18,12 @@ allow private network targets.
 | `rest.corsAllowedOrigins` | dashboard on 127.0.0.1 | `https://app.mymorningnews.ai` |
 | TLS | none (127.0.0.1 only) | Caddy on 80 and 443 with automatic certificates |
 
-The settings live in `docker/hosted/mymorningnews.json`. Every value can also be changed in the dashboard under
-Server settings, or with the `MYMORNINGNEWS_HOSTING_*` environment variables.
+The settings live in `docker/hosted/mymorningnews.json`, mounted into the server container. Every value can also be
+changed in the dashboard under Server settings (saved back to that file), by editing the file and restarting the
+server (`docker compose -f compose.yaml -f hosted/compose.yaml restart server`), or with the `MYMORNINGNEWS_HOSTING_*`
+environment variables. An environment variable reaches the server only when the compose file passes it: the hosted
+overlay passes the Turnstile and Apple ones listed below, and the base `docker/compose.yaml` passes none, so add any
+other one to the server's `environment:` list first.
 
 ## Before you start
 
@@ -55,7 +59,7 @@ Then start the stack with the overlay:
 docker compose -f compose.yaml -f hosted/compose.yaml up -d --build
 ```
 
-Caddy gets a certificate on first start. Check `https://app.mymorningnews.ai/v1.0/health`, then sign in with the
+Caddy gets a certificate on first start. Check `https://app.mymorningnews.ai/v1.0/api/health`, then sign in with the
 administrator account and change its password at once.
 
 ## Sign-up and accounts
@@ -64,7 +68,8 @@ administrator account and change its password at once.
   The same answer comes back whether or not the email already has an account, so the form cannot be used to find
   out who is a customer.
 - Sign-in is refused (403 `EmailNotVerified`) until the link is used. `POST /v1.0/public/verify-email/resend` sends a
-  new one. Links last `hosting.verificationHours` (default 24).
+  new one. Links last `hosting.verificationHours` (default 48). A link that was already used answers 400 `LinkUsed`
+  (the address is confirmed, so the reader can sign in); an old one answers `LinkExpired`.
 - `POST /v1.0/public/password/forgot` and `POST /v1.0/public/password/reset` handle lost passwords. A reset signs out
   every session and sends a confirmation email. Reset links last `hosting.passwordResetMinutes` (default 60).
 - Sign-up is rate limited per address (`hosting.signupsPerIpPerHour`, default 5), and addresses at

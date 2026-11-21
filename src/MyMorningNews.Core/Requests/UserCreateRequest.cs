@@ -10,6 +10,7 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// Email (unique in the tenant).
         /// </summary>
+        [TextLimit(256)]
         public string Email { get; set; } = String.Empty;
 
         /// <summary>
@@ -20,11 +21,13 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// First name.
         /// </summary>
+        [TextLimit(128)]
         public string? FirstName { get; set; } = null;
 
         /// <summary>
         /// Last name.
         /// </summary>
+        [TextLimit(128)]
         public string? LastName { get; set; } = null;
 
         /// <summary>
@@ -40,11 +43,13 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// Time zone.
         /// </summary>
+        [TextLimit(64)]
         public string? TimeZone { get; set; } = null;
 
         /// <summary>
         /// Locale.
         /// </summary>
+        [TextLimit(16)]
         public string? Locale { get; set; } = null;
 
         /// <summary>

@@ -112,6 +112,12 @@ namespace MyMorningNews.Core.Pipeline
         public List<string> Notes { get; set; } = new List<string>();
 
         /// <summary>
+        /// Whether a stage finished without the result it was meant to produce but the run can still complete, for
+        /// example Fetch reading none of the selected pages. The run ends as PartiallySucceeded. Default false.
+        /// </summary>
+        public bool PartiallySucceeded { get; set; } = false;
+
+        /// <summary>
         /// Briefing composed for the run, or null.
         /// </summary>
         public string? BriefingId { get; set; } = null;

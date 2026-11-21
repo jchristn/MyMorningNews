@@ -123,6 +123,9 @@ namespace Test.Shared.Suites
             TestResponse page = (await anon.GetAsync(relevant, token).ConfigureAwait(false)).Expect(200, "landing page");
             Assert.True(page.Body.Contains("value=\"relevant\" checked", StringComparison.Ordinal) && page.Body.Contains("<form method=\"post\"", StringComparison.Ordinal) && page.Headers["X-Robots-Tag"].Contains("noindex", StringComparison.Ordinal)
                 && page.Headers["Content-Security-Policy"].Contains("default-src 'none'", StringComparison.Ordinal), "form with the choice preselected");
+            Assert.True(page.Body.Contains("Confirm your rating", StringComparison.Ordinal) && page.Body.Contains("<button type=\"submit\">Save “Relevant”</button>", StringComparison.Ordinal)
+                && page.Body.Contains("not saved until you press", StringComparison.Ordinal), "the page says the rating still needs confirming, with one clear button (UT-002)");
+            Assert.True(m.RenderedText!.Contains("confirm", StringComparison.OrdinalIgnoreCase) && !m.RenderedText.Contains("one-click", StringComparison.OrdinalIgnoreCase), "the email says rating links ask for a confirmation");
             Assert.Equal(0L, await CountFeedbackAsync(f, top.Id, token).ConfigureAwait(false), "a GET records nothing (mail scanners)");
 
             string post = relevant.Split('?')[0];

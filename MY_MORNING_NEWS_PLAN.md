@@ -1737,7 +1737,7 @@ A static marketing site in `~/Websites/mymorningnews.ai`, its own repository `ht
 - **Sections:**
   - Hero, with an illustrative briefing card built in HTML and CSS (no fabricated metrics).
   - How it works, in three steps: tell us what you care about (the refinement wizard asks a few questions), AI researches on your schedule, and you get a ranked briefing with sources.
-  - Your way: podcast (private feed for any podcast app), email (after every edition, with one-click feedback), and the app (phone and tablet, iOS and Android).
+  - Your way: podcast (private feed for any podcast app), email (after every edition, with rating links that open a one-step confirmation page), and the app (phone and tablet, iOS and Android).
   - Why it's different: relevance ranking that learns from your feedback, every claim backed by a quote and a link, predictions it keeps score on, and suggestions for what to dig into.
   - Free while in alpha (with a usage cap).
   - Self-host it (open source, Docker, link to GitHub).

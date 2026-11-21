@@ -10,6 +10,7 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// Code (4 to 40 letters, digits, and dashes; stored uppercase). Required on create.
         /// </summary>
+        [TextLimit(40)]
         public string? Code { get; set; } = null;
 
         /// <summary>

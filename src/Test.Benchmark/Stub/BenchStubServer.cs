@@ -100,14 +100,33 @@ namespace MyMorningNews.Benchmark.Stub
         /// <param name="dataset">Dataset whose corpora are served, or null to serve only the model and speech routes.</param>
         /// <exception cref="ArgumentOutOfRangeException">port is out of range.</exception>
         /// <exception cref="HttpListenerException">The port is in use.</exception>
-        public BenchStubServer(int port, BenchmarkDataset? dataset)
+        public BenchStubServer(int port, BenchmarkDataset? dataset) : this(port, dataset, "127.0.0.1", null)
+        {
+        }
+
+        /// <summary>
+        /// Start listening on a chosen address, serving URLs (search results, page links) with a chosen host name, so a
+        /// server in a Docker container can use the stub (stub command: --stub-bind and --stub-host).
+        /// </summary>
+        /// <param name="port">Port, 1 to 65535.</param>
+        /// <param name="dataset">Dataset whose corpora are served, or null to serve only the model and speech routes.</param>
+        /// <param name="bind">Address to listen on: an IP address or host name (only requests naming it are answered), or "*"
+        /// for every interface and any host name. Default 127.0.0.1.</param>
+        /// <param name="publicHost">Host name the stub puts in the URLs it serves, such as host.docker.internal. Null uses
+        /// <paramref name="bind"/>, or 127.0.0.1 when that is "*".</param>
+        /// <exception cref="ArgumentOutOfRangeException">port is out of range.</exception>
+        /// <exception cref="HttpListenerException">The port is in use or the address cannot be bound.</exception>
+        public BenchStubServer(int port, BenchmarkDataset? dataset, string? bind, string? publicHost)
         {
             if (port < 1 || port > 65535) throw new ArgumentOutOfRangeException(nameof(port));
-            BaseUrl = "http://127.0.0.1:" + port.ToString(CultureInfo.InvariantCulture);
+            string listen = String.IsNullOrWhiteSpace(bind) ? "127.0.0.1" : bind.Trim();
+            string host = !String.IsNullOrWhiteSpace(publicHost) ? publicHost.Trim() : (listen == "*" || listen == "+" ? "127.0.0.1" : listen);
+            string portText = port.ToString(CultureInfo.InvariantCulture);
+            BaseUrl = "http://" + host + ":" + portText;
             _Index = dataset == null ? null : new DatasetIndex(dataset, BaseUrl);
             _Search = _Index == null ? null : new StubSearch(_Index);
             Brain = new StubModelBrain(_Index, Ledger);
-            _Listener.Prefixes.Add(BaseUrl + "/");
+            _Listener.Prefixes.Add("http://" + listen + ":" + portText + "/");
             _Listener.Start();
             Task.Run(() => LoopAsync(_Stop.Token));
         }

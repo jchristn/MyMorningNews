@@ -58,5 +58,11 @@ namespace MyMorningNews.Core.Responses
         /// Refresh token expiration (UTC), when a refresh token was issued.
         /// </summary>
         public DateTime? RefreshExpiresUtc { get; set; } = null;
+
+        /// <summary>
+        /// Whether this sign-in cancelled a pending account deletion (signing in during the grace period keeps the
+        /// account). Default false; always false for refreshes and access key sign-ins without a pending deletion.
+        /// </summary>
+        public bool DeletionCancelled { get; set; } = false;
     }
 }

@@ -4,7 +4,7 @@
 
 # My Morning News
 
-A self-hosted research assistant that refines what you care about through an LLM-guided interview, researches it on your schedule, ranks and cites everything it finds, and delivers a Markdown briefing, audio, and an email after every run with one-click feedback links. It learns from that feedback and keeps score on its own predictions.
+A self-hosted research assistant that refines what you care about through an LLM-guided interview, researches it on your schedule, ranks and cites everything it finds, and delivers a Markdown briefing, audio, and an email after every run with rating links that open a short confirmation page. It learns from that feedback and keeps score on its own predictions.
 
 > Early alpha (`0.1.0-alpha`). Source, plan, and progress: https://github.com/jchristn/MyMorningNews
 

@@ -320,8 +320,13 @@ def response_label(resp):
 def path_variable(path, name, supplement):
     """Postman variable for a path parameter: {id} takes its name from the segment before it (topics gives topicId)."""
     overrides = supplement.get("pathVariables", {})
+    # A key ending in "$" matches that path exactly; any other key matches paths that start with it.
     for prefix, var in overrides.items():
-        if prefix.endswith("{" + name + "}") and path.startswith(prefix):
+        if prefix.endswith("$"):
+            if prefix[:-1].endswith("{" + name + "}") and path == prefix[:-1]:
+                return var
+    for prefix, var in overrides.items():
+        if not prefix.endswith("$") and prefix.endswith("{" + name + "}") and path.startswith(prefix):
             return var
     if name != "id":
         return name

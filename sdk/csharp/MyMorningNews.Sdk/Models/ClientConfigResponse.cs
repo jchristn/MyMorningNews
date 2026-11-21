@@ -57,6 +57,16 @@ namespace MyMorningNews.Sdk.Models
         public string Copyright { get; set; } = "(c) 2026 Lattice AI LLC";
 
         /// <summary>
+        /// Days an account deletion waits before the data is removed (Hosting.DeletionGraceDays); signing in during them cancels it. Default 7.
+        /// </summary>
+        public int DeletionGraceDays { get; set; } = 7;
+
+        /// <summary>
+        /// Public base URL of the web dashboard (Rest.AppBaseUrl), for example to open the web sign-up page when the app cannot show the Turnstile challenge itself. Default "http://127.0.0.1:12101".
+        /// </summary>
+        public string AppUrl { get; set; } = "http://127.0.0.1:12101";
+
+        /// <summary>
         /// Public URL of the MCP server's Streamable HTTP endpoint. Default "http://127.0.0.1:12105/mcp".
         /// </summary>
         public string McpUrl { get; set; } = "http://127.0.0.1:12105/mcp";
@@ -80,6 +90,11 @@ namespace MyMorningNews.Sdk.Models
         /// Current terms of service version.
         /// </summary>
         public string TermsVersion { get; set; } = String.Empty;
+
+        /// <summary>
+        /// Whether the server has the operator's platform model key (`MYMORNINGNEWS_ANTHROPIC_API_KEY`), so endpoints that reference `platform:anthropic` can call the model. Never carries the key itself. Default false.
+        /// </summary>
+        public bool PlatformModelKeyConfigured { get; set; } = false;
 
         /// <summary>
         /// Instantiate.

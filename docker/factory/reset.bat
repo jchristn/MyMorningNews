@@ -1,7 +1,8 @@
 @echo off
 REM reset.bat: reset My Morning News to factory defaults.
-REM DESTRUCTIVE. Stops the stack, deletes every Docker volume (PostgreSQL, media with reports and audio, Prometheus,
-REM Tempo, Loki, Grafana), restores server\mymorningnews.json from factory\mymorningnews.json, and starts fresh.
+REM DESTRUCTIVE. Stops the stack, deletes every Docker volume of its compose project (PostgreSQL, media with reports and
+REM audio, Prometheus, Tempo, Loki, Grafana), restores server\mymorningnews.json from factory\mymorningnews.json, and
+REM starts fresh. The project is "mymorningnews" unless COMPOSE_PROJECT_NAME is set; other projects are never touched.
 REM Usage: factory\reset.bat [--demo] [--keep-ollama] [--yes]
 REM   --demo         start with the factory demo overlay (factory\compose.factory.yaml): a demo user (demo@mymorningnews /
 REM                  password) with topics, completed runs, findings, evidence, predictions, suggestions, briefings, and
@@ -28,11 +29,19 @@ shift
 goto args
 :run
 cd /d %~dp0\..
+REM The compose project this reset applies to; only its containers and volumes are touched.
+set PROJECT=
+for /f "tokens=1,* delims=: " %%a in ('docker compose -f compose.yaml -f factory\compose.factory.yaml config 2^>nul ^| findstr /b "name:"') do set PROJECT=%%~b
+if "%PROJECT%"=="" (
+  echo Could not read the compose project name ^(docker compose config failed^). Nothing was changed.
+  exit /b 1
+)
 echo.
 echo ==========================================================
 echo   My Morning News: reset to factory defaults
 echo ==========================================================
-echo WARNING: this deletes all data: users, topics, briefings, audio, settings changes, and metrics.
+echo Compose project: %PROJECT%
+echo WARNING: this deletes all data in this project: users, topics, briefings, audio, settings changes, and metrics.
 if "%YES%"=="1" goto go
 set /p CONFIRM=Type RESET to continue:
 if /I not "%CONFIRM%"=="RESET" (
@@ -41,12 +50,16 @@ if /I not "%CONFIRM%"=="RESET" (
 )
 :go
 echo [1/3] Stopping containers and removing volumes...
-if "%KEEP_OLLAMA%"=="1" (
-  docker compose -f compose.yaml -f factory\compose.factory.yaml --profile tts --profile mcp --profile ollama down --remove-orphans
-  for /f %%v in ('docker volume ls --format "{{.Name}}" ^| findstr /b "mymorningnews_" ^| findstr /v /e "_ollama"') do docker volume rm %%v >nul
-) else (
-  docker compose -f compose.yaml -f factory\compose.factory.yaml --profile tts --profile mcp --profile ollama down -v --remove-orphans
-)
+if not "%KEEP_OLLAMA%"=="1" goto dropall
+docker compose -f compose.yaml -f factory\compose.factory.yaml --profile tts --profile mcp --profile ollama down --remove-orphans
+REM Select volumes by the labels compose puts on them, never by name, so another project's volumes are never touched.
+set OLLAMA_VOLUME=
+for /f %%o in ('docker volume ls -q --filter "label=com.docker.compose.project=%PROJECT%" --filter "label=com.docker.compose.volume=ollama"') do set OLLAMA_VOLUME=%%o
+for /f %%v in ('docker volume ls -q --filter "label=com.docker.compose.project=%PROJECT%"') do if /I not "%%v"=="%OLLAMA_VOLUME%" docker volume rm %%v >nul
+goto restore
+:dropall
+docker compose -f compose.yaml -f factory\compose.factory.yaml --profile tts --profile mcp --profile ollama down -v --remove-orphans
+:restore
 echo [2/3] Restoring factory settings...
 copy /y factory\mymorningnews.json server\mymorningnews.json >nul
 echo [3/3] Starting...

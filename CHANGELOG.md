@@ -15,6 +15,36 @@ All notable changes to this project are documented here. The project follows [Se
 
 ### Fixed
 
+- Server, scripts, SDKs, and documentation, from the 2026-11-20 user testing session:
+  - Saving server settings works in the Docker stack. The settings file is a single-file bind mount, which cannot be replaced by a rename, so a save that cannot rename now writes the file in place (and leaves no `.tmp` file behind); elsewhere saves stay atomic. HOSTING.md explains the file and environment routes (UT-001).
+  - Email rating links keep their confirm step, because mail scanners open links on their own. The page now says "Confirm your rating", explains why, shows the chosen rating highlighted, and has one button named for it ("Save “Relevant”"). Emails say rating links open a confirmation page, and the README, REST_API.md, DOCKERHUB_README.md, and the plan no longer call them one-click (UT-002).
+  - `docker/update.sh` and `update.bat` pull only published images (`--ignore-buildable`), rebuild the local images from the working tree (`up -d --build`), and stop on the first error instead of taking the stack down (UT-003).
+  - Text longer than its database column (user names, model endpoint, feed token, topic, search provider, tenant, vault, voice, MCP server, role, and other names) is a 400 `ValidationFailed` naming the field and its limit instead of a 500, and topics and search providers no longer cut long names silently. A value too long for its column that gets past the checks is a 400 too (UT-004).
+  - `docker/factory/reset.sh --keep-ollama` (and `reset.bat`) removes only the volumes of the compose project it resets, found by their compose labels, instead of every volume whose name starts with `mymorningnews_`; the script shows the project before asking to confirm (UT-006).
+  - The Postman collection runs top to bottom on a fresh stack: every delete is in a Cleanup folder after the folders that use the records, logout and a restart (with the administration key) are in a Run last folder, Create a tenant saves `newTenantId` instead of overwriting `tenantId`, Change my password and Update server settings send back the current values, and list requests save the first item's ID for the reads that follow (UT-007).
+  - A sign-up user with no model key gets a message they can act on (add a key under Models, or ask the operator) instead of "The platform model key is not configured on this server." (UT-011).
+  - Run email times use the reader's profile time zone (then the topic owner's, the topic's schedule zone, the tenant's, or UTC) and show the zone, such as "12:51 PM HST" (UT-014).
+  - README and MCP_API.md start the MCP profile with `--build` and explain that the image tags are shared by every compose project (UT-015).
+  - The Python harness schedules its one-time request 30 days ahead instead of in 2099 (UT-016).
+  - A run whose Fetch stage reads none of the selected pages, while search and the model work, ends Partially succeeded with the warning "Nothing new could be read" and sends no failure push; a run fails only when search or the model fails (UT-018).
+  - Errors no longer show internal names: no "(Parameter 'apiKey')", structured output failures name what was asked for ("could not be used as a dimension proposal"), a value of the wrong JSON type names the field and what it takes (for an enum, the valid values) instead of `System.Nullable`1[...]`, and "Value cannot be null." names the missing value (UT-020).
+  - A duplicate unique value names the record and field, such as "A model endpoint with that name already exists.", with the field in `details` (UT-021).
+  - Adding a constraint a topic already has (same kind and value, ignoring case) returns the existing one; an update that would duplicate one is a 409. Blank names are refused, and a user name of only spaces is stored as unset (UT-023).
+  - The README and the hosted web search message no longer list Azure OpenAI, which is not a model provider here (UT-024).
+  - HOSTING.md gives the right health URL (`/v1.0/api/health`) and the verification link default (48 hours) (UT-025).
+  - `sdk/README.md` and the C# SDK README describe the run event stream each SDK already reads (UT-026).
+  - An already used verification or reset link answers 400 `LinkUsed` (expired: `LinkExpired`; unknown: `LinkInvalid`), and a used verification link tells the reader to sign in (UT-027).
+  - The MCP server in stdio mode writes protocol messages to standard error only with `--verbose`, and a signal that arrives after the run has ended no longer crashes it with `ObjectDisposedException` (UT-028).
+  - Unmatched `/v1.0/public/...` and `/.well-known/...` paths answer 404 `RouteNotFound` instead of 401, and a database that cannot be reached answers 503 `DatabaseUnavailable` with `Retry-After` instead of 500 (UT-029).
+  - The run email subject and lead count the findings the email shows, and an email that shows fewer than the run found says "This email shows the top N of M new findings" (UT-030).
+  - `benchmarks/README.md` lists every stub URL and how to configure a server with it, and the stub command takes `--stub-bind` and `--stub-host` so a Docker stack can use it (`--stub-bind '*' --stub-host host.docker.internal`) (UT-031).
+  - Responses no longer carry Watson's request-style default headers (`Host` with the internal bind address, `Accept`, `Accept-Language`, `Accept-Charset`) (UT-032).
+  - `GET /v1.0/api/server-info` returns the operating system, .NET, database, schema, pending restart, and bundled tool details only to global administrators; members get the product, version, and uptime (UT-033).
+
+### Added
+
+- `ClientConfigResponse.appUrl` (the dashboard address, for the mobile app's Turnstile sign-up fallback) and `deletionGraceDays`; `TokenResponse.deletionCancelled` says a sign-in cancelled a pending account deletion; the iOS universal links cover `/verify*`, `/reset-password*`, and `/signup*`.
+
 - Dashboard, from the 2026-11-20 user testing session:
   - Home shows External services (Grafana, Prometheus, Tempo, Loki) and their credentials only to global administrators, and never on a personal tenant or a customer tenant of a server with public sign-up (UT-005). Next steps offers "Set up a model endpoint" to administrators only and "Change the default password" to the seeded administrator only.
   - The wizard's Preview run follows the dry run on the Review step: queued, the running stage, then the result with its new findings, or the reason it failed or could not start. The note under the button no longer claims a dry run stays out of history (UT-008).

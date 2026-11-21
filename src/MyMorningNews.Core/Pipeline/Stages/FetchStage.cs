@@ -12,7 +12,8 @@ namespace MyMorningNews.Core.Pipeline.Stages
 
     /// <summary>
     /// Stage 5: fetches selected results in parallel, reusing a tenant's stored source when it was fetched in the last
-    /// seven days. Fails when results were selected and none could be read.
+    /// seven days. When results were selected and none could be read, the stage succeeds with a warning and the run ends
+    /// as PartiallySucceeded (it fails only when search or the model fails).
     /// </summary>
     public class FetchStage : IRunStage
     {
@@ -50,8 +51,17 @@ namespace MyMorningNews.Core.Pipeline.Stages
                 })).ConfigureAwait(false);
             }
 
-            if (ctx.Selected.Count > 0 && ctx.Sources.Count == 0) throw new InvalidOperationException("None of the " + ctx.Selected.Count + " selected pages could be read.");
             ctx.Run.SourceCount = ctx.Sources.Count;
+            if (ctx.Selected.Count > 0 && ctx.Sources.Count == 0)
+            {
+                // Search worked and found something new, but none of it could be read (unreachable hosts, blocked or
+                // empty pages). That is not a failure of the run: it finishes as Partially succeeded with this warning.
+                string note = "Nothing new could be read: none of the " + ctx.Selected.Count + (ctx.Selected.Count == 1 ? " selected page" : " selected pages") + " could be fetched.";
+                ctx.Notes.Add(note);
+                ctx.PartiallySucceeded = true;
+                return StageOutcome.Of(ctx.Selected.Count, 0, note);
+            }
+
             return StageOutcome.Of(ctx.Selected.Count, ctx.Sources.Count);
         }
 

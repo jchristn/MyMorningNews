@@ -10,6 +10,7 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// Name (required on create).
         /// </summary>
+        [TextLimit(128, AllowBlank = false)]
         public string? Name { get; set; } = null;
 
         /// <summary>
@@ -20,11 +21,13 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// Region.
         /// </summary>
+        [TextLimit(64)]
         public string? Region { get; set; } = null;
 
         /// <summary>
         /// IANA time zone.
         /// </summary>
+        [TextLimit(64)]
         public string? TimeZone { get; set; } = null;
 
         /// <summary>

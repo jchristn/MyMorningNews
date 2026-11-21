@@ -195,7 +195,7 @@ namespace MyMorningNews.Server
             MyMorningNews.Core.Entitlements.EntitlementService entitlements = _Context.Entitlements;
             AccountService account = _Context.Account;
             authentication.SignInGate = (user, t) => Task.FromResult(account.NeedsVerification(user) ? "Confirm your email address first: open the link we sent you, or ask for a new one." : (string?)null);
-            authentication.OnSignIn = async (user, t) => { await account.CancelDeletionAsync(user, t).ConfigureAwait(false); };
+            authentication.OnSignIn = (user, t) => account.CancelDeletionAsync(user, t);
             _Models.PreCallCheck = (req, t) => String.IsNullOrEmpty(req.UserId) ? Task.CompletedTask : entitlements.CheckCostAsync(req.TenantId, req.UserId, t);
             scheduling.RunGate = async (tenantId, userId, t) =>
             {
@@ -253,6 +253,9 @@ namespace MyMorningNews.Server
             webserverSettings.Telemetry.Enable = settings.Telemetry.Enabled;
             webserverSettings.Telemetry.Prometheus.Enable = false;
             _Webserver = new Webserver(webserverSettings, DefaultRouteAsync);
+            // Watson's default response headers include request-style ones (Host with the bind address, Accept,
+            // Accept-Language, Accept-Charset) that mean nothing in a response and leak the internal address.
+            foreach (string requestHeader in new[] { "Host", "Accept", "Accept-Language", "Accept-Charset" }) _Webserver.Settings.Headers.DefaultHeaders.Remove(requestHeader);
             _Webserver.UseOpenApi(openApi =>
             {
                 openApi.Info.Title = Constants.ProductName;

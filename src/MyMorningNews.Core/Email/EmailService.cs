@@ -4,12 +4,14 @@ namespace MyMorningNews.Core.Email
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
+    using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
     using MyMorningNews.Core.Briefings;
     using MyMorningNews.Core.Database;
     using MyMorningNews.Core.Enums;
     using MyMorningNews.Core.Exceptions;
+    using MyMorningNews.Core.Helpers;
     using MyMorningNews.Core.Models;
     using MyMorningNews.Core.Prompts;
     using MyMorningNews.Core.Requests;
@@ -43,6 +45,7 @@ namespace MyMorningNews.Core.Email
         private readonly ServerSettings _Settings;
         private readonly LoggingModule _Logging;
         private const string _Header = "[EmailService] ";
+        private static readonly Regex _CountOnlySummary = new Regex(@"^\d+ new findings?\.$", RegexOptions.Compiled);
 
         #endregion
 
@@ -405,7 +408,34 @@ namespace MyMorningNews.Core.Email
 
         private static string FallbackLead(Run run, DigestContent c)
         {
-            return FirstParagraph(run.Summary) ?? (c.Findings.Count == 0 ? "Nothing new this run." : c.Findings.Count + (c.Findings.Count == 1 ? " new finding." : " new findings."));
+            string counted = c.Findings.Count == 0 ? "Nothing new this run." : c.Findings.Count + (c.Findings.Count == 1 ? " new finding." : " new findings.");
+            string? first = FirstParagraph(run.Summary);
+            // The pipeline's stand-in summary is only a count of every new finding; say what this email shows instead.
+            if (first == null || _CountOnlySummary.IsMatch(first)) return counted;
+            return first;
+        }
+
+        private async Task<TimeZoneInfo> ReaderZoneAsync(string tenantId, string recipient, Topic topic, CancellationToken token)
+        {
+            // The reader's own profile zone when the recipient is a user of the tenant, then the topic owner's, then the
+            // zone the topic is scheduled in, then the tenant's; UTC when none is set.
+            string address = Normalize(recipient);
+            if (address.Length > 0)
+            {
+                User? reader = (await _Database.Users.ReadAllByEmailAsync(address, token).ConfigureAwait(false)).FirstOrDefault(u => u.TenantId == tenantId);
+                TimeZoneInfo? own = TimeZoneHelper.TryFind(reader?.TimeZone);
+                if (own != null) return own;
+            }
+
+            User? owner = await _Database.Users.ReadAsync(tenantId, topic.UserId, token).ConfigureAwait(false);
+            TimeZoneInfo? ownerZone = TimeZoneHelper.TryFind(owner?.TimeZone);
+            if (ownerZone != null) return ownerZone;
+            Schedule? schedule = (await _Database.Schedules.EnumerateAsync(new ScheduleFilter { TenantId = tenantId, OwnerType = ScheduleOwnerTypeEnum.Topic, OwnerId = topic.Id, PageSize = 10 }, token).ConfigureAwait(false)).Items
+                .FirstOrDefault(x => !String.IsNullOrWhiteSpace(x.TimeZone));
+            TimeZoneInfo? scheduleZone = TimeZoneHelper.TryFind(schedule?.TimeZone);
+            if (scheduleZone != null) return scheduleZone;
+            Tenant? tenant = await _Database.Tenants.ReadAsync(tenantId, token).ConfigureAwait(false);
+            return TimeZoneHelper.TryFind(tenant?.TimeZone) ?? TimeZoneInfo.Utc;
         }
 
         private async Task<string> LeadAsync(Run run, Topic topic, DigestContent c, CancellationToken token)
@@ -438,13 +468,17 @@ namespace MyMorningNews.Core.Email
         private async Task<EmailPreview> RenderDigestAsync(Run run, Topic topic, DigestContent c, EmailMessage m, string userId, bool issueTokens, CancellationToken token)
         {
             string app = _Settings.Rest.AppBaseUrl;
-            User? owner = await _Database.Users.ReadAsync(run.TenantId, topic.UserId, token).ConfigureAwait(false);
-            string when = Local(run.CompletedUtc ?? DateTime.UtcNow, owner?.TimeZone).ToString("dddd, MMMM d, h:mm tt", CultureInfo.InvariantCulture);
+            DateTime finishedUtc = DateTime.SpecifyKind(run.CompletedUtc ?? DateTime.UtcNow, DateTimeKind.Utc);
+            TimeZoneInfo zone = await ReaderZoneAsync(run.TenantId, m.Recipient, topic, token).ConfigureAwait(false);
+            string when = TimeZoneInfo.ConvertTimeFromUtc(finishedUtc, zone).ToString("dddd, MMMM d, h:mm tt", CultureInfo.InvariantCulture) + " " + TimeZoneHelper.Abbreviation(zone, finishedUtc);
+            // The subject and the lead count the findings this email shows (owner decision for UT-030).
             int mustRead = c.Findings.Count(f => f.Tier == FindingTierEnum.MustRead);
             string subject = c.Findings.Count == 0 ? Subject(topic.Name + ": nothing significant this run") : Subject(topic.Name + ": " + c.Findings.Count + " new (" + mustRead + " must-read)");
             EmailBuilder b = new EmailBuilder().Preheader(c.Findings.FirstOrDefault()?.Title ?? "Nothing significant this run.")
                 .Header(Logo(), topic.Name, when, new EmailLink("View this run", app + "/dashboard/runs?id=" + run.Id))
                 .Paragraph(c.Lead);
+            if (run.NewFindingCount > c.Findings.Count && c.Findings.Count > 0)
+                b.Paragraph("This email shows the top " + c.Findings.Count + " of " + run.NewFindingCount + " new findings. The rest are in the full run.");
 
             if (c.Findings.Count > 0) b.Section("Top findings");
             int rank = 1;
@@ -497,7 +531,7 @@ namespace MyMorningNews.Core.Email
             };
             EmailLink? unsubscribe = await UnsubscribeAsync(m, userId, EmailCategoryEnum.RunEmails, topic.Id, issueTokens, token).ConfigureAwait(false);
             if (unsubscribe != null) footer.Add(unsubscribe);
-            b.Footer(footer, "You get this email because you follow " + topic.Name + " in My Morning News.");
+            b.Footer(footer, "Rating links open a short page where you confirm your rating. You get this email because you follow " + topic.Name + " in My Morning News.");
             return new EmailPreview { Recipient = m.Recipient, Subject = subject, Html = b.Html(subject), Text = b.Text() };
         }
 
@@ -536,7 +570,7 @@ namespace MyMorningNews.Core.Email
             List<EmailLink> footer = new List<EmailLink> { new EmailLink("Open in My Morning News", app + "/dashboard/briefings/" + br.Id), new EmailLink("Email preferences", app + "/dashboard/profile") };
             EmailLink? unsubscribe = await UnsubscribeAsync(m, userId, EmailCategoryEnum.BriefingEmails, null, issueTokens, token).ConfigureAwait(false);
             if (unsubscribe != null) footer.Add(unsubscribe);
-            b.Footer(footer, "You get this email because briefing email is on for this edition.");
+            b.Footer(footer, "Rating links open a short page where you confirm your rating. You get this email because briefing email is on for this edition.");
             return new EmailPreview { Recipient = m.Recipient, Subject = subject, Html = b.Html(subject), Text = b.Text() };
         }
 
@@ -598,22 +632,6 @@ namespace MyMorningNews.Core.Email
         private static string Truncate(string s, int max)
         {
             return s.Length <= max ? s : s.Substring(0, max).TrimEnd() + "...";
-        }
-
-        private static DateTime Local(DateTime utc, string? tz)
-        {
-            try
-            {
-                return TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), TimeZoneInfo.FindSystemTimeZoneById(String.IsNullOrWhiteSpace(tz) ? "UTC" : tz));
-            }
-            catch (TimeZoneNotFoundException)
-            {
-                return utc;
-            }
-            catch (InvalidTimeZoneException)
-            {
-                return utc;
-            }
         }
 
         #endregion

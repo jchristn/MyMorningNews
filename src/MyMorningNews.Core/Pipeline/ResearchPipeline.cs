@@ -173,7 +173,7 @@ namespace MyMorningNews.Core.Pipeline
             string summary = ctx.Summary ?? (ctx.Findings.Count + " new findings.");
             if (failed.Count > 0) summary += "\n\nSome optional steps did not finish: " + String.Join(", ", failed) + ".";
             if (ctx.Notes.Count > 0) summary += "\n\n" + String.Join(" ", ctx.Notes);
-            return new RunResult { Summary = summary, PartiallySucceeded = partial, BriefingId = ctx.BriefingId, Delivered = ctx.Delivered };
+            return new RunResult { Summary = summary, PartiallySucceeded = partial || ctx.PartiallySucceeded, BriefingId = ctx.BriefingId, Delivered = ctx.Delivered };
         }
 
         #endregion

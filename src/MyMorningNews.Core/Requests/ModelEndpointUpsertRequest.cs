@@ -12,6 +12,7 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// Name (required on create).
         /// </summary>
+        [TextLimit(128, AllowBlank = false)]
         public string? Name { get; set; } = null;
 
         /// <summary>
@@ -22,6 +23,7 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// Base URL; empty uses the provider default.
         /// </summary>
+        [TextLimit(512)]
         public string? Endpoint { get; set; } = null;
 
         /// <summary>
@@ -37,11 +39,13 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// Chat model.
         /// </summary>
+        [TextLimit(256)]
         public string? Model { get; set; } = null;
 
         /// <summary>
         /// Embedding model.
         /// </summary>
+        [TextLimit(256)]
         public string? EmbeddingModel { get; set; } = null;
 
         /// <summary>

@@ -191,6 +191,8 @@ passes only an explicit list of variables to the server and none of them are hos
 **Suggested direction:** Mount the config directory instead of the file, or write in place when the target is a
 mount; and mention the file-edit route in HOSTING.md.
 
+**Outcome (server):** Fixed and verified (server), branch `worktree-agent-a1d500eac6b4d17a2`. A save that cannot replace the file with a rename (the single-file bind mount answers "Device or resource busy") now writes the file in place and leaves no `.tmp` behind; elsewhere it stays atomic (`Helpers/FileReplacer`). Rerun in Docker: the server published from this tree, run in `mcr.microsoft.com/dotnet/aspnet:10.0` (container `mmn-fix-ut001`, no shared image tag touched) with a copy of `docker/server/mymorningnews.json` bind mounted as a single file at `/app/config/mymorningnews.json`, as `compose.yaml` does; `PUT /v1.0/api/settings` flipping `hosting.publicSignupEnabled` returned 200, the mounted file on the host changed, and `client-config` reported `signupEnabled: true`. HOSTING.md now explains the file and environment routes. Test: `UserTesting.SettingsSaveWithoutRename`.
+
 ### UT-002: Email "one-click" rating links do not record a rating
 
 - **Severity:** S2
@@ -215,6 +217,8 @@ clicks the link and closes the tab, which is what a one-click link invites, give
 **Suggested direction:** If the extra step is deliberate (link scanners prefetch URLs), say "Confirm your rating"
 on the page and stop calling it one-click; otherwise record on open and offer Undo.
 
+**Outcome (server):** Fixed and verified (server, per the owner decision), branch `worktree-agent-a1d500eac6b4d17a2`. The confirm step stays. The page says "Confirm your rating: “Relevant”. It is not saved until you press the button below.", highlights the chosen option, has one button named for it ("Save “Relevant”"), and explains that mail scanners open links on their own. The run and edition emails say rating links open a confirmation page. README, DOCKERHUB_README.md, REST_API.md, the Postman notes, and the plan no longer say one-click. Rerun: a GET of `?a=relevant` records nothing and shows the confirm page; Save records it. Test: `Email.FeedbackLinks`. The website (`~/Websites/mymorningnews.ai/index.html`, "in one click") is a separate repository and still needs the same change.
+
 ### UT-003: `docker/update.sh` fails at its first step and never rebuilds
 
 - **Severity:** S2
@@ -237,6 +241,8 @@ errors, so on Windows it would take the stack down and bring it back on the old 
 **Workaround:** `docker compose up -d --build`.
 **Suggested direction:** `docker compose pull --ignore-buildable` (or drop the pull), then `up -d --build`.
 
+**Outcome (server):** Fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2`. `update.sh` and `update.bat` run `docker compose pull --ignore-buildable` and then `docker compose up -d --build`, stopping on the first error (`update.bat` no longer takes the stack down first). Checked in a scratch copy under project `mmn-fixtest`: the pull passed (pgvector and Grafana only, exit 0), and `docker compose --dry-run up -d --build` showed every local image rebuilding. The owner stack was not touched.
+
 ### UT-004: Over-long names crash several create routes with 500
 
 - **Severity:** S2
@@ -257,6 +263,8 @@ errors, so on Windows it would take the stack down and bring it back on the old 
 
 **Evidence:** `api/user-create-probes.txt`, `api/long-name-probes.txt`
 **Suggested direction:** Validate lengths in the services against the column sizes, and map Postgres 22001 to 400 as a backstop.
+
+**Outcome (server):** Fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2`. Request bodies are checked against their column sizes (`TextLimitAttribute` on the request classes, `RequestValidator` in `RouteBase`), so the three probes now answer 400 `ValidationFailed` ("firstName must be at most 128 characters.", "name must be 1 to 128 characters.") with the field in `details`; topics (200) and search providers (128) refuse instead of truncating. Postgres 22001 maps to 400 as a backstop. Rerun with the 5,000 character probes against a fresh server. Test: `UserTesting.LongTextIsValidation`.
 
 ### UT-005: Home shows operator infrastructure and Grafana credentials to sign-up users and members
 
@@ -307,6 +315,8 @@ touch only `mmn-usertest_*`.
 **Suggested direction:** Derive the prefix from `docker compose config --format json` (`.name`), or list volumes by
 the `com.docker.compose.project` label.
 
+**Outcome (server):** Fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2`. Both scripts read the project name from `docker compose config` and select volumes by the `com.docker.compose.project` label (keeping the one labeled `com.docker.compose.volume=ollama`); the confirmation shows the project. Rerun of `reset.sh --keep-ollama --yes` under `COMPOSE_PROJECT_NAME=mmn-fixtest` with a PATH shim that skipped every compose up and down: it removed `mmn-fixtest_pgdata` and `mmn-fixtest_media`, kept `mmn-fixtest_ollama` and a decoy `mmn-fixtest-other_pgdata`, and all eight `mymorningnews_*` volumes were still there. `reset.bat` has the same logic and was not run (no Windows host).
+
 ### S3: Minor
 
 ### UT-007: The Postman collection cannot be run end to end as documented
@@ -332,6 +342,8 @@ value. The empty-ID public routes answer 401 rather than 404 (UT-029).
 **Evidence:** `postman/newman-cli.txt`, `postman/newman.json`, `postman/newman-pass2.json`
 **Suggested direction:** Reorder so deletes come last and logout is at the very end, keep `tenantId` separate from a
 created tenant, and move Restart and Change password into a clearly labelled destructive folder.
+
+**Outcome (server):** Fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2`. The generator moves every delete into a Cleanup folder (latest folder first, children before parents) and logout, account deletion (refused for the protected admin), and a restart with the administration key into a Run last folder; Create a tenant saves `newTenantId`; Change my password sends `{{password}}` as the new password; Update server settings sends back what Read server settings returned; list requests save the first item's ID; the access key example follows Credentials and uses a Hybrid credential. Rerun with newman 6.2.1 on a fresh database: 298 requests, 0 with 401, 0 with 500, 0 with no response, the restart last, and the admin still signs in with `password` afterwards. The 54 404s left are records a fresh stack has none of (findings, briefings, audio, predictions) and public links with no token.
 
 ### UT-008: Wizard "Preview run" gives no feedback at all
 
@@ -394,6 +406,8 @@ which only the operator can fix and which tells Sam nothing about what to do nex
 
 **Outcome:** Dashboard part fixed and verified. The warning already detected a missing platform key after commit fa5dd79 (this session ran 6f0357b, where `platform:anthropic` was always treated as set). It now tells users other than global administrators that the server's shared key is not set up, and offers tenant administrators "Use your own API key for {name}" instead of naming the operator's environment variable. Rerun live as a sign-up user. The wizard's server error text is server-side and unchanged.
 
+**Outcome (server):** Server part fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2`. The error now says "No model key is available for your account yet. Add your own: open Models, add an endpoint for your provider, and save your API key with it. Or ask whoever runs this server to set up its shared model key." Test: `UserTesting.PlatformKeyMessage`.
+
 ### UT-012: Account deletion messaging leaves the user guessing
 
 - **Severity:** S3
@@ -441,6 +455,8 @@ browser zone, so the fallback is UTC, and the email does not say so.
 **Evidence:** `email/eml_mwpkpwxk_MEqa5chnTaWPFLc6NqL.txt`
 **Suggested direction:** Fall back to the topic's schedule zone, or print the zone.
 
+**Outcome (server):** Fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2`. The run email uses the reader's profile zone (then the topic owner's, the topic schedule's, the tenant's, then UTC) and prints the zone ("12:51 PM HST"; zones without a common abbreviation show "UTC+5:30"). Test: `UserTesting.EmailTimeZone` (owner in Pacific/Honolulu).
+
 ### UT-015: Fixed image tags make a stale MCP image easy to run
 
 - **Severity:** S3
@@ -457,6 +473,8 @@ command has no `--build`. This session's builds also re-tagged the owner's `serv
 **Evidence:** `mcp/compose-up.log` (1.2 s), `mcp/compose-build.log`
 **Suggested direction:** Add `--build` to the README command, and consider tags that include the project name.
 
+**Outcome (server):** Fixed (documentation), branch `worktree-agent-a1d500eac6b4d17a2`. README and MCP_API.md use `docker compose --profile mcp up -d --build` and explain that the image tags are shared by every compose project and checkout. `update.sh` notes `COMPOSE_PROFILES` for profiles.
+
 ### UT-016: Python harness `--with-run` fails on its own one-time request date
 
 - **Severity:** S3
@@ -470,6 +488,8 @@ command has no `--build`. This session's builds also re-tagged the owner's `serv
 `run_at_utc="2099-01-01T00:00:00Z"` (`sdk/python/test_harness.py` line 661). The other two failures in that run
 are UT-001 and the stub's inability to answer refinement prompts (not a product problem).
 **Evidence:** `sdk/python-harness.log`
+
+**Outcome (server):** Fixed, branch `worktree-agent-a1d500eac6b4d17a2`. The harness schedules the request 30 days ahead (`_in_days(30)`). Not rerun against a stack (`--with-run` needs a model); the date is now inside the server's one year window.
 
 ### UT-017: Members can list every user in the tenant through the API
 
@@ -501,6 +521,8 @@ new existed, which a reader might expect to be "Completed, nothing new" (the res
 is Completed). A Failed run sends a failure email.
 **Question for the owner:** Should a fetch stage with zero readable pages fail the run, or complete it empty with a warning?
 **Evidence:** `mcp/tool-calls.txt` (run_topic), run `run_mwplfo9d_JTiR5dqpXJoIqFxlr3Y` stages
+
+**Outcome (server):** Fixed and verified (per the owner decision), branch `worktree-agent-a1d500eac6b4d17a2`. Fetch reading none of the selected pages is no longer a stage failure: the stage succeeds with "Nothing new could be read: none of the N selected pages could be fetched.", the later stages run, and the run ends Partially succeeded, which sends no failure push. Search failures still fail the run. Test: `UserTesting.FetchReadsNothing`. A model outage still ends Completed with fallbacks, as before; that path was not changed.
 
 ### UT-019: The mobile app still plans sign-up, password reset, and account deletion
 
@@ -539,6 +561,8 @@ not return valid DimensionProposalResult output after 3 attempts." (also Questio
 bad JSON types, with no list of valid values.
 **Evidence:** `dashboard/j1-nokey-wizard/log.txt`, `dashboard/j7e-wizard-manual/`, `api/long-name-probes.txt`, `api/user-create-probes.txt`
 
+**Outcome (server):** Fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2`. No parameter suffixes (`ErrorText.Plain` in the pipeline, model gateway, settings, and routes), structured output failures read "The model's reply could not be used as a dimension proposal after 3 attempts...", a value of the wrong type reads "provider must be one of: OpenAiCompatibleSpeech, Disabled." or "email must be text.", and "Value cannot be null." names the value. Rerun with the report's probes. Test: `UserTesting.PlainErrorMessages`.
+
 ### UT-021: Duplicate name conflict does not name the field
 
 - **Severity:** S4
@@ -548,6 +572,8 @@ bad JSON types, with no list of valid values.
 Saving a second endpoint named "Stub chat" shows "A record with the same unique value already exists." The user
 creation dialog does better ("A user with that email already exists in the tenant.").
 **Evidence:** `dashboard/j3-stub-endpoints/02-saved-Stub_chat.png`
+
+**Outcome (server):** Fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2`. A duplicate now reads "A model endpoint with that name already exists. Choose a different name." with `details.name`. Test: `UserTesting.DuplicateNamesTheField`.
 
 ### UT-022: Model assignments are tedious to change
 
@@ -571,6 +597,8 @@ The same blocked domain added twice is stored twice (Review shows "Blocked domai
 three spaces is created.
 **Evidence:** `dashboard/j7i-wizard-finish/04-after-Next_Review.png`, `api/user-create-probes.txt` (whitespace case)
 
+**Outcome (server):** Fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2`. Adding the same blocked domain again (case and spaces ignored) returns the existing constraint (Review would show 1), an update that would duplicate one is 409, blank names are refused, and a user first name of spaces is stored as unset. Test: `UserTesting.BlankAndDuplicateInputs`.
+
 ### UT-024: README lists Azure OpenAI; the Add model dialog has no such provider
 
 - **Severity:** S4
@@ -580,6 +608,8 @@ three spaces is created.
 The provider list offers Anthropic, OpenAI, OpenAI-compatible, Ollama, Gemini, xAI, and Ollama Cloud. If Azure works
 through OpenAI-compatible, the README should say so.
 **Evidence:** `dashboard/j2-add-model/`
+
+**Outcome (server):** Fixed (documentation), branch `worktree-agent-a1d500eac6b4d17a2`. PolyPrompt has an Azure OpenAI client, but My Morning News has no Azure provider (`ModelProviderEnum`), so the README lists Anthropic, OpenAI, OpenAI-compatible, Ollama, Ollama Cloud, Gemini, and xAI, and the README and the server's hosted web search message no longer name Azure. The plan still describes Azure as a possible provider.
 
 ### UT-025: HOSTING.md has a wrong health URL and a wrong default
 
@@ -591,6 +621,8 @@ through OpenAI-compatible, the README should say so.
 `hosting.verificationHours` is documented as default 24; the setting is 48 and the email says 48 hours.
 **Evidence:** `setup/health.txt`, `email/` (VerifyEmail)
 
+**Outcome (server):** Fixed (documentation), branch `worktree-agent-a1d500eac6b4d17a2`. HOSTING.md checks `/v1.0/api/health` and gives the verification default as 48 hours, matching `Hosting.VerificationHours`.
+
 ### UT-026: SDK README says there is no run event stream
 
 - **Severity:** S4
@@ -600,6 +632,8 @@ through OpenAI-compatible, the README should say so.
 "Wait for a run by polling, because the server has no run event stream yet." `GET /v1.0/api/runs/{id}/events` works
 (run, stage, and done events, as REST_API.md documents).
 **Evidence:** `api/sse.txt`
+
+**Outcome (server):** Fixed (documentation), branch `worktree-agent-a1d500eac6b4d17a2`. `sdk/README.md` and the C# README describe the event stream each SDK reads (`Runs.StreamEventsAsync`, `runs.events` and `runs.follow`, Python `runs.events`).
 
 ### UT-027: A used verification link says it is invalid or expired
 
@@ -614,6 +648,8 @@ sign in.
 
 **Outcome:** Dashboard part fixed (Vitest). The verify page says "This link was already used. If your email is confirmed, sign in." when the server returns error code `LinkUsed`, and keeps the general message otherwise. Not verifiable live until the server sends `LinkUsed`.
 
+**Outcome (server):** Server part fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2`. A used link answers 400 `LinkUsed` ("This link was already used, so your email address is confirmed. Sign in to continue."); expired is `LinkExpired` and unknown is `LinkInvalid`. Documented in REST_API.md and HOSTING.md. Test: `Account.SignupVerify`.
+
 ### UT-028: MCP stdio logs full payloads to stderr and crashes on a late signal
 
 - **Severity:** S4
@@ -626,6 +662,8 @@ client"; a signal after that ends in `Unhandled exception. System.ObjectDisposed
 has been disposed.` at `Program.cs` line 48.
 **Evidence:** `mcp/stdio.err`, `mcp/stdio2.err`
 
+**Outcome (server):** Partially fixed, branch `worktree-agent-a1d500eac6b4d17a2`. Verified with the report's steps: without `--verbose`, standard error now carries only "[mcp] stdio, REST API ..." (the transport library's own payload logging is silenced in stdio mode), with `--verbose` the payloads appear once, and a SIGTERM after standard input closes ends cleanly with no `ObjectDisposedException`. Not fixed: when standard input closes, Voltaic still cancels requests that are in flight; that is the library's behavior.
+
 ### UT-029: Some status codes say less than they could
 
 - **Severity:** S4
@@ -637,6 +675,8 @@ rather than 404. With Postgres stopped, every route returns 500 InternalError wh
 503 with "database unavailable" would tell an operator more.
 **Evidence:** `degraded/postgres-down.txt`, `postman/newman-pass2.json`
 
+**Outcome (server):** Fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2`. Unmatched `/v1.0/public/...` and `/.well-known/...` paths answer 404 `RouteNotFound`; with Postgres stopped, a route answered 503 `DatabaseUnavailable` with `Retry-After: 10` (health still 503 Unhealthy) and recovered when it came back. Test: `UserTesting.StatusCodes`.
+
 ### UT-030: Run email subject counts differ from the run
 
 - **Severity:** S4
@@ -646,6 +686,8 @@ rather than 404. With Postgres stopped, every route returns 500 InternalError wh
 The subject said "10 new (1 must-read)" for a run whose `newFindingCount` was 11; the eleventh was FYI tier and below
 the email threshold. Is "new" meant to count only what the email shows?
 **Evidence:** `email/eml_mwpkpwxk_MEqa5chnTaWPFLc6NqL.json`
+
+**Outcome (server):** Fixed and verified (per the owner decision), branch `worktree-agent-a1d500eac6b4d17a2`. The subject already counted the findings the email shows; the lead no longer repeats the pipeline's count of every new finding, and an email that shows fewer adds "This email shows the top N of M new findings. The rest are in the full run." Test: `UserTesting.EmailTimeZone` (1 of 2).
 
 ### UT-031: Benchmark stub cannot serve a Docker stack and its use is undocumented
 
@@ -658,6 +700,8 @@ the email threshold. Is "new" meant to count only what the email shows?
 serves page URLs on `127.0.0.1`, so the documented Docker stack cannot use it without a relay. The same README says
 the user-test stack uses 127xx ports, which nothing else documents.
 
+**Outcome (server):** Fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2`. `benchmarks/README.md` lists every stub URL with how to configure it, and the stub takes `--stub-bind` and `--stub-host`. Rerun: `stub --stub-bind '*' --stub-host host.docker.internal` answered a search from a container (`curlimages/curl`), and its results linked to `host.docker.internal` pages; no relay needed. The stray 127xx note is gone.
+
 ### UT-032: Health responses echo request-style headers
 
 - **Severity:** S4
@@ -667,6 +711,8 @@ the user-test stack uses 127xx ports, which nothing else documents.
 `GET /v1.0/api/health` returns `Host: 0.0.0.0:8000`, `Accept: */*`, `Accept-Language`, and `Accept-Charset` as
 response headers, which leaks the internal bind address and is not meaningful in a response.
 **Evidence:** `setup/health.txt`
+
+**Outcome (server):** Fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2`. Watson's request-style default headers (`Host`, `Accept`, `Accept-Language`, `Accept-Charset`) are removed from every response. Test: `UserTesting.NoEchoedHeaders`.
 
 ### UT-033: Members see server runtime details
 
@@ -679,6 +725,8 @@ private install; worth deciding for the hosted service.
 **Evidence:** `dashboard/member-crawl/summary.json` (server-info)
 
 **Outcome:** Dashboard part fixed and verified. Server info shows database, schema, vector search, runtime, operating system, and pending restarts to global administrators only, and leaves out any value the server stops sending. Rerun live as Riley.
+
+**Outcome (server):** Server part fixed and verified (per the owner decision), branch `worktree-agent-a1d500eac6b4d17a2`. Members get the product, version, start time, and uptime; the operating system, .NET, database, schema, pending restarts, and bundled tool links go only to global administrators. Rerun as a member and as the admin. Test: `UserTesting.ServerInfoForMembers`.
 
 ## Things that looked wrong but were not product problems
 
@@ -710,38 +758,38 @@ Decided by the owner on 2026-11-20. Every finding is addressed in this round exc
 
 | Finding | Recommendation | Decision |
 |---|---|---|
-| UT-001 | Fix now || Address |
-| UT-002 | Fix now (or relabel the page and the README) || Address: keep the confirm step (it stops link scanners); say so on the page, in the email, and in the README |
-| UT-003 | Fix now || Address |
-| UT-004 | Fix now || Address |
+| UT-001 | Fix now || Address. Server outcome: fixed and verified (server), branch `worktree-agent-a1d500eac6b4d17a2` |
+| UT-002 | Fix now (or relabel the page and the README) || Address: keep the confirm step (it stops link scanners); say so on the page, in the email, and in the README. Server outcome: fixed and verified (server: confirm page, email, docs; the website still says one click), branch `worktree-agent-a1d500eac6b4d17a2` |
+| UT-003 | Fix now || Address. Server outcome: fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2` |
+| UT-004 | Fix now || Address. Server outcome: fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2` |
 | UT-005 | Fix now || Address. Outcome: fixed and verified (dashboard), branch `worktree-agent-a6c33e078972d88f5` |
-| UT-006 | Fix now || Address |
-| UT-007 | Fix later || Address |
+| UT-006 | Fix now || Address. Server outcome: fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2` |
+| UT-007 | Fix later || Address. Server outcome: fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2` |
 | UT-008 | Fix now || Address. Outcome: fixed and verified (dashboard), branch `worktree-agent-a6c33e078972d88f5` |
 | UT-009 | Fix later || Address. Outcome: fixed and verified (dashboard), branch `worktree-agent-a6c33e078972d88f5` |
 | UT-010 | Fix later || Address. Outcome: fixed and verified (dashboard), branch `worktree-agent-a6c33e078972d88f5` |
-| UT-011 | Fix later || Address. Outcome: dashboard part fixed and verified, branch `worktree-agent-a6c33e078972d88f5` |
-| UT-012 | Fix later || Address. Outcome: fixed and verified (dashboard); the server should add `deletionGraceDays` to client config and `deletionCancelled` to the sign-in response, branch `worktree-agent-a6c33e078972d88f5` |
+| UT-011 | Fix later || Address. Outcome: dashboard part fixed and verified, branch `worktree-agent-a6c33e078972d88f5`. Server outcome: server part fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2` |
+| UT-012 | Fix later || Address. Outcome: fixed and verified (dashboard); the server should add `deletionGraceDays` to client config and `deletionCancelled` to the sign-in response, branch `worktree-agent-a6c33e078972d88f5`. Server outcome: server now sends `deletionGraceDays` in client config and `deletionCancelled` on sign-in, branch `worktree-agent-a1d500eac6b4d17a2` |
 | UT-013 | Fix later || Address. Outcome: fixed and verified (dashboard), branch `worktree-agent-a6c33e078972d88f5` |
-| UT-014 | Fix later || Address |
-| UT-015 | Update the docs || Address |
-| UT-016 | Fix now (one line) || Address |
+| UT-014 | Fix later || Address. Server outcome: fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2` |
+| UT-015 | Update the docs || Address. Server outcome: fixed (docs), branch `worktree-agent-a1d500eac6b4d17a2` |
+| UT-016 | Fix now (one line) || Address. Server outcome: fixed, branch `worktree-agent-a1d500eac6b4d17a2` |
 | UT-017 | Owner decides || Won't fix the API: members keep the user directory; Address: show the Users page to members read-only. Outcome: dashboard fixed and verified, branch `worktree-agent-a6c33e078972d88f5` |
-| UT-018 | Owner decides || Address: a run whose fetch reads nothing ends Partially succeeded with a warning and no failure push |
+| UT-018 | Owner decides || Address: a run whose fetch reads nothing ends Partially succeeded with a warning and no failure push. Server outcome: fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2` |
 | UT-019 | Owner decides before store submission || Address: add in-app sign-up, email verification prompt, and forgot password before store submission |
-| UT-020 | Fix later || Address |
-| UT-021 | Fix later || Address |
+| UT-020 | Fix later || Address. Server outcome: fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2` |
+| UT-021 | Fix later || Address. Server outcome: fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2` |
 | UT-022 | Leave as is, or fix later || Address. Outcome: fixed and verified (dashboard), branch `worktree-agent-a6c33e078972d88f5` |
-| UT-023 | Fix later || Address |
-| UT-024 | Update the docs || Address |
-| UT-025 | Update the docs || Address |
-| UT-026 | Update the docs || Address |
-| UT-027 | Fix later || Address. Outcome: dashboard part fixed; the live check waits for the server `LinkUsed` code, branch `worktree-agent-a6c33e078972d88f5` |
-| UT-028 | Fix later || Address |
-| UT-029 | Leave as is, or fix later || Address |
-| UT-030 | Owner decides || Address: the subject and summary count what the email shows |
-| UT-031 | Update the docs || Address |
-| UT-032 | Fix later || Address |
-| UT-033 | Owner decides || Address. Outcome: dashboard part fixed and verified, branch `worktree-agent-a6c33e078972d88f5` |
+| UT-023 | Fix later || Address. Server outcome: fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2` |
+| UT-024 | Update the docs || Address. Server outcome: fixed (docs), branch `worktree-agent-a1d500eac6b4d17a2` |
+| UT-025 | Update the docs || Address. Server outcome: fixed (docs), branch `worktree-agent-a1d500eac6b4d17a2` |
+| UT-026 | Update the docs || Address. Server outcome: fixed (docs), branch `worktree-agent-a1d500eac6b4d17a2` |
+| UT-027 | Fix later || Address. Outcome: dashboard part fixed; the live check waits for the server `LinkUsed` code, branch `worktree-agent-a6c33e078972d88f5`. Server outcome: server part fixed and verified (`LinkUsed`), branch `worktree-agent-a1d500eac6b4d17a2` |
+| UT-028 | Fix later || Address. Server outcome: partially fixed (in-flight requests on stdin close are the library's), branch `worktree-agent-a1d500eac6b4d17a2` |
+| UT-029 | Leave as is, or fix later || Address. Server outcome: fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2` |
+| UT-030 | Owner decides || Address: the subject and summary count what the email shows. Server outcome: fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2` |
+| UT-031 | Update the docs || Address. Server outcome: fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2` |
+| UT-032 | Fix later || Address. Server outcome: fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2` |
+| UT-033 | Owner decides || Address. Outcome: dashboard part fixed and verified, branch `worktree-agent-a6c33e078972d88f5`. Server outcome: server part fixed and verified, branch `worktree-agent-a1d500eac6b4d17a2` |
 
 (c) 2026 Lattice AI LLC

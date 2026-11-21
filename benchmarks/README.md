@@ -40,8 +40,8 @@ stops the command (`STOPPED: ...`, exit 1).
 
 ## Ports
 
-The suite uses the 125xx block, bound to `127.0.0.1` only. The development stack uses 12100 to 12120 and the user-test
-stack 127xx, so the three never collide.
+The suite uses the 125xx block, bound to `127.0.0.1` only. The development stack uses 12100 to 12120, so the two never
+collide.
 
 | Port | What |
 |---|---|
@@ -104,6 +104,7 @@ PAID=1 MAX_SPEND_USD=1.00 benchmarks/run-baseline.sh r2       # the same through
 | `--admin-key` | `MYMORNINGNEWS_BENCH_ADMIN_KEY`, else the bench settings key | same | Administration key (never written to reports). |
 | `--metrics-url` | `http://127.0.0.1:12509/metrics` | ingest, quality, e2e, load | Prometheus exporter, or `none`. |
 | `--stub-port` | 12503 | all that host the stub | Stub port (must match the bench settings' TTS and Ollama URLs). |
+| `--stub-bind`, `--stub-host` | `127.0.0.1`, the bind address | stub | Listening address (`*` for every interface) and the host name in the URLs the stub serves (`host.docker.internal` for a Docker stack). |
 | `--dataset` | `benchmarks/datasets/mymorningnews-synthetic.json` | validate (comma list), ingest, quality, e2e, load, resilience, stub | Dataset file. |
 | `--arms` | `default,llm-only` | ingest, quality | Product arms. `--no-reference` drops the reference arms. |
 | `--corpora` | all | ingest, quality | Only these corpus ids. |
@@ -137,8 +138,36 @@ $B load --runs 12 --model-latency-ms 800 --label r2-slow-model   # run throughpu
 $B compare --baseline benchmarks/results/<r1>-quality-mymorningnews-synthetic-r1.json --candidate benchmarks/results/<r2>-quality-mymorningnews-synthetic-r2.json
 $B compare --baseline <a>-load-...json --candidate <b>-load-...json --latency-tolerance 0.2
 $B history --rounds R0=round0,R1=round1,R2=r2
-$B stub    # then point a server at 127.0.0.1:12503 by hand
+$B stub    # then point a server at the stub by hand (see "Using the stub by hand" below)
 ```
+
+### Using the stub by hand
+
+`$B stub` serves every stand-in on one port and prints the exact URLs for the dataset it loaded:
+
+| Stand-in | URL (default port 12503) | Configure it in the dashboard as |
+|---|---|---|
+| Chat | `http://127.0.0.1:12503/v1`, model `bench-stub-chat` | Models: an OpenAI-compatible endpoint with that base URL and model, no key, then assign every task to it |
+| Embeddings | same `/v1`, model `bench-hash-384` (384 dimensions) | the same endpoint with embeddings on, or a second one |
+| Search | `http://127.0.0.1:12503/search/<corpus>/r<round>`, for example `/search/heat-pumps/r1` | Search providers: a SearXNG provider with that endpoint |
+| Pages | `http://127.0.0.1:12503/corpus/<corpus>/<item>.html` | nothing: search results link to them |
+| Speech | `http://127.0.0.1:12503/v1/audio/speech` | Voices: an OpenAI-compatible speech voice with base URL `.../v1` |
+| Faults and state | `POST /_stub/faults?target=Model&mode=Down`, `GET /_stub/state` | |
+
+A server started from source on the same machine reaches those `127.0.0.1` URLs as they are. A server in Docker (the
+documented stack) cannot: inside the container `127.0.0.1` is the container itself, and by default the stub answers
+only requests addressed to `127.0.0.1`. Start it with two options instead:
+
+```bash
+$B stub --stub-bind '*' --stub-host host.docker.internal
+```
+
+`--stub-bind` is the address to listen on (default `127.0.0.1`; `*` is every interface and any host name), and
+`--stub-host` is the host name the stub writes into the URLs it serves, so search results link to pages the container
+can fetch. Then use `http://host.docker.internal:12503/v1` and `http://host.docker.internal:12503/search/<corpus>/r<round>`
+in the dashboard. The stack's server already maps `host.docker.internal` to the host (`extra_hosts` in
+`docker/compose.yaml`). Listening on every interface lets anything that can reach this machine use the stub, so do it
+only on a network you trust, and stop the stub when you are done.
 
 Sweeps: arms are per-topic ranking weights, so a new weighting is a new `ProductArm` in `Runners/ProductArm.cs`; each
 arm gets its own workspace automatically (the arm's settings are part of the workspace hash).

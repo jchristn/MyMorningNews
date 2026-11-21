@@ -51,7 +51,7 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, B + "/{id}/dimensions/{dimensionId}", DeleteDimensionAsync, null, openApiMetadata: Doc("Delete a dimension", "Topics"));
 
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, B + "/{id}/constraints", ListConstraintsAsync, null, openApiMetadata: Doc("List constraints", "Topics").WithParameter(QueryParam("kind", typeof(ConstraintKindEnum))));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, B + "/{id}/constraints", CreateConstraintAsync, null, openApiMetadata: Doc("Add a constraint", "Topics").WithRequestBody(Body<ConstraintUpsertRequest>()));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, B + "/{id}/constraints", CreateConstraintAsync, null, openApiMetadata: Doc("Add a constraint", "Topics", "Adding a constraint the topic already has (same kind, same value ignoring case) returns the existing one with 200 instead of a copy.").WithRequestBody(Body<ConstraintUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, B + "/{id}/constraints/{constraintId}", UpdateConstraintAsync, null, openApiMetadata: Doc("Update a constraint", "Topics").WithRequestBody(Body<ConstraintUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, B + "/{id}/constraints/{constraintId}", DeleteConstraintAsync, null, openApiMetadata: Doc("Delete a constraint", "Topics"));
 
@@ -296,6 +296,14 @@ namespace MyMorningNews.Server.Routes
 
             string? error = await ValidateConstraintAsync(topic, req.Kind.Value, req.Value, req.DimensionId, ctx).ConfigureAwait(false);
             if (error != null) { await SendErrorAsync(ctx, 400, "ValidationFailed", error).ConfigureAwait(false); return; }
+            // Adding the same constraint twice (same kind, same value ignoring case) returns the one already there.
+            TopicConstraint? existing = await SameConstraintAsync(topic, req.Kind.Value, req.Value, null, ctx).ConfigureAwait(false);
+            if (existing != null)
+            {
+                await SendJsonAsync(ctx, 200, existing).ConfigureAwait(false);
+                return;
+            }
+
             TopicConstraint c = await Server.Database.TopicConstraints.CreateAsync(new TopicConstraint
             {
                 TenantId = topic.TenantId, TopicId = topic.Id, Kind = req.Kind.Value, Value = req.Value.Trim(), Note = req.Note, DimensionId = req.DimensionId,
@@ -317,6 +325,12 @@ namespace MyMorningNews.Server.Routes
             string value = req.Value ?? c.Value;
             string? error = await ValidateConstraintAsync(topic, kind, value, req.DimensionId ?? c.DimensionId, ctx).ConfigureAwait(false);
             if (error != null) { await SendErrorAsync(ctx, 400, "ValidationFailed", error).ConfigureAwait(false); return; }
+            if (await SameConstraintAsync(topic, kind, value, c.Id, ctx).ConfigureAwait(false) != null)
+            {
+                await SendErrorAsync(ctx, 409, "Conflict", "This topic already has a " + MyMorningNews.Core.Helpers.ErrorText.Words(kind.ToString()) + " constraint with that value.", new Dictionary<string, string> { { "value", "Already on this topic." } }).ConfigureAwait(false);
+                return;
+            }
+
             c.Kind = kind;
             c.Value = value.Trim();
             if (req.Note != null) c.Note = req.Note;
@@ -411,6 +425,13 @@ namespace MyMorningNews.Server.Routes
         private async Task<List<TopicRecipient>> RecipientsAsync(Topic topic, HttpContextBase ctx)
         {
             return (await Server.Database.TopicRecipients.EnumerateAsync(new TopicRecipientFilter { TenantId = topic.TenantId, TopicId = topic.Id, PageSize = 200 }, ctx.Token).ConfigureAwait(false)).Items;
+        }
+
+        private async Task<TopicConstraint?> SameConstraintAsync(Topic topic, ConstraintKindEnum kind, string value, string? exceptId, HttpContextBase ctx)
+        {
+            string v = (value ?? String.Empty).Trim();
+            List<TopicConstraint> items = await Server.Refinement.ConstraintsAsync(topic.TenantId, topic.Id, ctx.Token).ConfigureAwait(false);
+            return items.FirstOrDefault(x => x.Kind == kind && !String.Equals(x.Id, exceptId, StringComparison.Ordinal) && String.Equals(x.Value.Trim(), v, StringComparison.OrdinalIgnoreCase));
         }
 
         private async Task<string?> ValidateConstraintAsync(Topic topic, ConstraintKindEnum kind, string value, string? dimensionId, HttpContextBase ctx)

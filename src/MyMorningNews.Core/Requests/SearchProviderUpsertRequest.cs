@@ -12,6 +12,7 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// Name.
         /// </summary>
+        [TextLimit(128, AllowBlank = false)]
         public string? Name { get; set; } = null;
 
         /// <summary>
@@ -22,6 +23,7 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// Endpoint override (SearXNG base URL, or a full API URL).
         /// </summary>
+        [TextLimit(512)]
         public string? Endpoint { get; set; } = null;
 
         /// <summary>

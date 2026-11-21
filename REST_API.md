@@ -163,7 +163,7 @@ curl -s http://127.0.0.1:12100/v1.0/api/topics -H "x-api-key: $ADMIN_API_KEY" -H
 
 Routes under `/v1.0/public` take no headers at all. The token in the path is the credential, issued by the server and embedded in what it sends you:
 
-- Every run and briefing email links to `/v1.0/public/feedback/{token}` (one-click ratings, optionally preselected with `?a=<action>`) and `/v1.0/public/unsubscribe/{token}`. Each token is tied to one recipient and the actions it allows, and expires.
+- Every run and briefing email links to `/v1.0/public/feedback/{token}` (rating links, optionally preselected with `?a=<action>`; the page asks the reader to confirm the rating with one button, because opening a link records nothing and mail scanners open links on their own) and `/v1.0/public/unsubscribe/{token}`. Each token is tied to one recipient and the actions it allows, and expires.
 - `POST /v1.0/api/feed-tokens` creates a private podcast feed and returns its secret once; the feed URL is `/v1.0/public/feeds/{token}/podcast.xml`, and episode audio and chapters hang off the same token. Only a hash is stored, so a lost feed URL means creating a new token. Revoke with `DELETE /v1.0/api/feed-tokens/{id}`.
 - `GET /v1.0/public/promo-codes/{code}` lets a sign-up page check a promotional code before an account exists.
 
@@ -205,14 +205,18 @@ Route handlers send most errors directly. Anything they throw is mapped in `src/
 
 | Status | `error` | When |
 |---|---|---|
-| 400 | `BadRequest` | The body is not valid JSON for the operation, or a required value is missing. |
-| 400 | `ValidationFailed` | A value is out of range or the wrong shape (an `ArgumentException` in the service). |
+| 400 | `BadRequest` | The body is not valid JSON for the operation, or a required value is missing. A value of the wrong type names the field and what it takes (for an enum, the valid values). |
+| 400 | `ValidationFailed` | A value is out of range or the wrong shape (an `ArgumentException` in the service). Text longer than its field allows, or a blank name, is refused here with the field and its limit in `details` (for example `name must be 1 to 128 characters.`). |
+| 400 | `LinkUsed` | An emailed verification or password reset link was already used. For verification the address is confirmed, so the reader can sign in. |
+| 400 | `LinkExpired` | An emailed account link is too old. Ask for a new one. |
+| 400 | `LinkInvalid` | An emailed account link is not one this server issued for that purpose. |
 | 400 | `TenantRequired` | A tenant-scoped route was called with the administration key and no `x-tenant-guid`. |
 | 400 | `TemplateInvalid` | A briefing template does not parse. `details` maps `line N` to the problem. |
 | 401 | `Unauthorized` | Missing, malformed, expired, or revoked credentials. |
 | 403 | `Forbidden` | Authenticated but lacking the permission (body is `AuthorizationFailureResponse`). |
 | 404 | `NotFound` | No such record in your tenant, or not yours. |
-| 409 | `Conflict` | A state conflict, a duplicate unique value, or a record still referenced elsewhere. |
+| 404 | `RouteNotFound` | No such endpoint on this server. Unmatched `/v1.0/public/...` and `/.well-known/...` paths answer this without asking for credentials. |
+| 409 | `Conflict` | A state conflict, a duplicate unique value, or a record still referenced elsewhere. For a duplicate the message names the field (`A model endpoint with that name already exists.`) and `details` has it as the key. |
 | 409 | `PromoCodeInvalid` | A promotional code cannot be redeemed. `details.reason` says why. |
 | 410 | `ArtifactExpired` | The file passed its retention window. Regenerate it. |
 | 416 | `RangeNotSatisfiable` | The `Range` header is outside the file. |
@@ -224,6 +228,7 @@ Route handlers send most errors directly. Anything they throw is mapped in `src/
 | 502 | `ModelError` | The model endpoint failed. |
 | 502 | `ModelOutputInvalid` | The model's structured output could not be repaired. |
 | 502 | `TtsError` | The speech endpoint failed. |
+| 503 | `DatabaseUnavailable` | The database cannot be reached right now. Retry after the `Retry-After` seconds; `GET /v1.0/api/health` reports the same outage. |
 
 ## Paging, sorting, and filtering
 
@@ -362,7 +367,9 @@ IDs are K-sortable strings with a type prefix, such as `top_mwpentds_HEIqz5MgsLm
 | `adminApiKey` | `mymorningnewsadmin` | For requests you switch to the administration key. |
 | `accessKey`, `secretKey` | empty | For the access key and signed request examples. |
 
-Run **Token > Issue a session token** first. Its test script saves `token`, `userId`, and `tenantId`. Create requests save the new record's ID into the matching variable (`topicId`, `runId`, and so on), so you can walk a resource from create to delete. The **Signed requests** folder shows a pre-request script that signs with `accessKey` and `secretKey`.
+Run **Token > Issue a session token** first. Its test script saves `token`, `userId`, and `tenantId`. Create requests save the new record's ID into the matching variable (`topicId`, `runId`, and so on), and some list requests save the first item's ID, so the read and update requests that follow use it. **Create a tenant** saves `newTenantId`, so the control-plane folders keep using your own `tenantId`. The **Authentication examples** folder, after **Credentials**, shows an access key, the administration key, and a pre-request script that signs with `accessKey` and `secretKey`.
+
+The collection also runs top to bottom (for example `newman run assets/postman/MyMorningNews.postman_collection.json`) on a fresh stack. Every delete sits in the **Cleanup** folder, which undoes the folders in reverse order after they have used their records, and the **Run last** folder signs out and then restarts the server with the administration key. **Change my password** sends the current password as the new one and **Update server settings** sends back what **Read server settings** returned, so a run leaves the administrator's password and the settings as they were. On a fresh stack, requests for records that only a model-backed run produces (findings, briefings, audio) answer 404.
 
 ## Keeping this file current
 
@@ -775,7 +782,7 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/tenants" \
 
 | Path parameter | Type | Postman variable |
 |---|---|---|
-| `tenantId` | string | `{{tenantId}}` |
+| `tenantId` | string | `{{newTenantId}}` |
 
 | Status | Meaning |
 |---|---|
@@ -785,7 +792,7 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/tenants" \
 | 404 | Not Found |
 
 ```bash
-curl -s "http://127.0.0.1:12100/v1.0/tenants/default" \
+curl -s "http://127.0.0.1:12100/v1.0/tenants/<newTenantId>" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -798,7 +805,7 @@ curl -s "http://127.0.0.1:12100/v1.0/tenants/default" \
 
 | Path parameter | Type | Postman variable |
 |---|---|---|
-| `tenantId` | string | `{{tenantId}}` |
+| `tenantId` | string | `{{newTenantId}}` |
 
 Request body: [`TenantUpsertRequest`](#tenantupsertrequest).
 
@@ -822,7 +829,7 @@ Request body: [`TenantUpsertRequest`](#tenantupsertrequest).
 | 409 | Conflict |
 
 ```bash
-curl -s -X PUT "http://127.0.0.1:12100/v1.0/tenants/default" \
+curl -s -X PUT "http://127.0.0.1:12100/v1.0/tenants/<newTenantId>" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -836,7 +843,7 @@ curl -s -X PUT "http://127.0.0.1:12100/v1.0/tenants/default" \
 
 | Path parameter | Type | Postman variable |
 |---|---|---|
-| `tenantId` | string | `{{tenantId}}` |
+| `tenantId` | string | `{{newTenantId}}` |
 
 | Status | Meaning |
 |---|---|
@@ -847,7 +854,7 @@ curl -s -X PUT "http://127.0.0.1:12100/v1.0/tenants/default" \
 | 409 | Conflict |
 
 ```bash
-curl -s -X DELETE "http://127.0.0.1:12100/v1.0/tenants/default" \
+curl -s -X DELETE "http://127.0.0.1:12100/v1.0/tenants/<newTenantId>" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -1081,7 +1088,7 @@ Request body: [`CredentialCreateRequest`](#credentialcreaterequest).
 {
   "userId": "usr_mwpee269_4XZwNzElANM2Mmc4q6c",
   "name": "Nightly export job",
-  "authMode": "SignedRequest",
+  "authMode": "Hybrid",
   "scopes": [],
   "resourceIds": [],
   "expiresUtc": "2027-01-01T00:00:00Z"
@@ -2276,10 +2283,11 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/settings/restart" \
 
 ### GET /v1.0/api/server-info
 
-**Server information and bundled tool links.**
+**Server information and bundled tool links.** Members get the product name, version, and uptime. Runtime, database, pending restart, and bundled tool details are returned only to global administrators.
 
 - Auth: Any authenticated principal (`ServerInfoRead`).
 - Response: [`ServerInfoResponse`](#serverinforesponse)
+- Notes: Everyone signed in gets the product, version, start time, and uptime. The database type, schema version, pgvector flag, .NET runtime, operating system, pending restarts, and bundled tool links (Grafana, Prometheus, Tempo, Loki) are returned only to global administrators.
 
 | Status | Meaning |
 |---|---|
@@ -3589,7 +3597,7 @@ curl -s "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLmLdBrfbuN
 
 ### POST /v1.0/api/topics/{id}/constraints
 
-**Add a constraint.**
+**Add a constraint.** Adding a constraint the topic already has (same kind, same value ignoring case) returns the existing one with 200 instead of a copy.
 
 - Auth: `Topic:Update` (`TopicWrite`).
 - Response: [`TopicConstraint`](#topicconstraint)
@@ -3610,6 +3618,7 @@ Request body: [`ConstraintUpsertRequest`](#constraintupsertrequest).
 
 | Status | Meaning |
 |---|---|
+| 200 | OK (the topic already had this constraint; it is returned unchanged) |
 | 201 | Created |
 | 400 | Bad Request: `BadRequest`, `ValidationFailed`, `TenantRequired` |
 | 401 | Unauthorized |
@@ -8698,7 +8707,7 @@ Request body: [`AccountTokenRequest`](#accounttokenrequest).
 | Status | Meaning |
 |---|---|
 | 200 | OK |
-| 400 | Bad Request: BadRequest (expired, used, or unknown link) |
+| 400 | Bad Request: LinkUsed (already used: the address is confirmed, so sign in), LinkExpired, LinkInvalid, BadRequest |
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/public/verify-email" \
@@ -8774,7 +8783,7 @@ Request body: [`AccountTokenRequest`](#accounttokenrequest).
 | Status | Meaning |
 |---|---|
 | 200 | OK |
-| 400 | Bad Request: BadRequest (weak password, or expired, used, or unknown link) |
+| 400 | Bad Request: ValidationFailed (weak password), LinkUsed, LinkExpired, LinkInvalid, BadRequest |
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/public/password/reset" \
@@ -9046,7 +9055,7 @@ curl -s "http://127.0.0.1:12100/v1.0/public/assets/logo.png" \
 
 - Auth: None. The `{token}` path segment is the credential.
 - Response: `text/html`
-- Notes: Renders the one-click feedback page from an email link. The optional `a` query value preselects an action.
+- Notes: Renders the feedback page from an email rating link. The optional `a` query value preselects an action, and the page asks the reader to confirm it with one button; opening the link records nothing, so mail scanners that follow links cannot rate.
 
 | Path parameter | Type | Postman variable |
 |---|---|---|
@@ -9824,11 +9833,14 @@ Returned by [GET /v1.0/api/client-config](#get-v10apiclient-config).
 | `minimumAppVersion` | string | Oldest mobile app version this server supports. |
 | `links` | object (map of string) | Legal and support links keyed by privacy, terms, support, and deleteAccount. |
 | `copyright` | string | Copyright notice. |
+| `deletionGraceDays` | integer | Days an account deletion waits before the data is removed (Hosting.DeletionGraceDays); signing in during them cancels it. Default 7. |
+| `appUrl` | string | Public base URL of the web dashboard (Rest.AppBaseUrl), for example to open the web sign-up page when the app cannot show the Turnstile challenge itself. |
 | `mcpUrl` | string | Public URL of the MCP server's Streamable HTTP endpoint. |
 | `turnstileSiteKey` | string | Cloudflare Turnstile site key for the sign-up form, or null when the check is off. |
 | `requireEmailVerification` | boolean | Whether sign-up requires email verification. |
 | `minimumAge` | integer | Minimum age to sign up. |
 | `termsVersion` | string | Current terms of service version. |
+| `platformModelKeyConfigured` | boolean | Whether the server has the operator's platform model key (`MYMORNINGNEWS_ANTHROPIC_API_KEY`), so endpoints that reference `platform:anthropic` can call the model. Never carries the key itself. |
 
 Example:
 
@@ -11251,7 +11263,9 @@ Research pipeline and model gateway limits.
 | `recencyHalfLifeHours` | integer | Half-life of the recency score in hours. Default 72. Minimum 1, maximum 8760. |
 | `displayThreshold` | integer | Default relevance threshold for display (0 to 100). Default 40. Minimum 0, maximum 100. |
 | `duplicateSimilarity` | number | Similarity at or above which a finding is a duplicate. Default 0.92. Minimum 0.5, maximum 1.0. |
+| `textUpdateSimilarity` | number | Without embeddings: the blended title and summary word overlap (Jaccard) at or above which an earlier finding is shown to the model to judge whether the new one is a duplicate or an update of it. Default 0.35. Minimum 0.1, maximum 0.8. |
 | `borderlineSimilarity` | number | Similarity at or above which a model judges duplicate or update. Default 0.85. Minimum 0.5, maximum 1.0. |
+| `relevanceGateScore` | number | Model score below which feedback, novelty, source, and recency can no longer lift a finding above the model's own judgment (they are scaled in proportion). Default 0 (off) until a paid benchmark round settles it; 50 fixed the off-topic case under the stub. Minimum 0, maximum 100. |
 | `weightLlm` | number | Ranking weight of the model judgment. Default 0.45. Minimum 0, maximum 1. |
 | `weightFeedback` | number | Ranking weight of feedback similarity. Default 0.2. Minimum 0, maximum 1. |
 | `weightNovelty` | number | Ranking weight of novelty. Default 0.15. Minimum 0, maximum 1. |
@@ -12588,7 +12602,7 @@ Request body of [PUT /v1.0/api/me](#put-v10apime).
 
 #### ServerInfoResponse
 
-Server version, configuration summary, and bundled tool links.
+Server version, configuration summary, and bundled tool links. Everyone signed in sees the product, version, and uptime; the runtime, database, pending restart, and bundled tool details go only to global administrators.
 
 Returned by [GET /v1.0/api/server-info](#get-v10apiserver-info).
 
@@ -12598,14 +12612,14 @@ Returned by [GET /v1.0/api/server-info](#get-v10apiserver-info).
 | `version` | string | Version. |
 | `startedUtc` | date-time | Start time. |
 | `uptimeSeconds` | integer | Uptime. |
-| `databaseType` | string | Database provider. |
-| `schemaVersion` | integer | Applied schema version. |
-| `vectorAvailable` | boolean | Whether pgvector is available. |
-| `runtimeVersion` | string | .NET runtime version. |
-| `operatingSystem` | string | Host operating system. |
+| `databaseType` | string | Database provider. Null unless the caller is a global administrator. |
+| `schemaVersion` | integer | Applied schema version. Null unless the caller is a global administrator. |
+| `vectorAvailable` | boolean | Whether pgvector is available. Null unless the caller is a global administrator. |
+| `runtimeVersion` | string | .NET runtime version. Null unless the caller is a global administrator. |
+| `operatingSystem` | string | Host operating system. Null unless the caller is a global administrator. |
 | `repositoryUrl` | string | Source repository. |
-| `externalServices` | array of [`ExternalServiceInfo`](#externalserviceinfo) | Bundled tools. |
-| `pendingRestart` | array of string | Settings saved but awaiting restart. |
+| `externalServices` | array of [`ExternalServiceInfo`](#externalserviceinfo) | Bundled tools (Grafana, Prometheus, Tempo, Loki). Empty unless the caller is a global administrator. |
+| `pendingRestart` | array of string | Settings saved but awaiting restart. Empty unless the caller is a global administrator. |
 
 Example:
 
@@ -13103,6 +13117,7 @@ Returned by [POST /v1.0/token](#post-v10token), [POST /v1.0/token/refresh-token]
 | `user` | [`UserResponse`](#userresponse) | User profile, for user sessions. |
 | `refreshToken` | string | Rotating refresh token (mobile clients only, sent with x-client: mobile). Store it securely; each use returns a new one. |
 | `refreshExpiresUtc` | date-time | Refresh token expiration (UTC), when a refresh token was issued. |
+| `deletionCancelled` | boolean | Whether this sign-in cancelled a pending account deletion (signing in during the grace period keeps the account). Default false; always false for refreshes and access key sign-ins without a pending deletion. |
 
 Example:
 

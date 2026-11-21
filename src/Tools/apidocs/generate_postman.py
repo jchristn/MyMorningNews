@@ -48,9 +48,14 @@ def capture_script(captures):
     """Test script that stores values from a successful response into collection variables."""
     lines = ["if (pm.response.code >= 200 && pm.response.code < 300) {", "    const body = pm.response.json();"]
     for var, path in captures.items():
+        # "json:a.b" stores the value as JSON text, for a later request body that sends it back unchanged.
+        as_json = path.startswith("json:")
+        if as_json:
+            path = path[5:]
         steps = path.split(".")
-        guard = " && ".join("body" + "".join("." + p for p in steps[:i + 1]) for i in range(len(steps)))
-        expr = "body." + path
+        access = lambda parts: "body" + "".join("[" + p + "]" if p.isdigit() else "." + p for p in parts)
+        guard = " && ".join(access(steps[:i + 1]) for i in range(len(steps)))
+        expr = ("JSON.stringify(" + access(steps) + ", null, 2)") if as_json else access(steps)
         lines.append("    if (body && {0}) pm.collectionVariables.set(\"{1}\", {2});".format(guard, var, expr))
     lines.append("}")
     return lines
@@ -154,7 +159,10 @@ class Builder(object):
         return "\n".join(lines)
 
     def body(self, o):
-        rb = self.sup.get("routeBodies", {}).get(o.key)
+        pb = self.sup.get("postmanBodies", {}).get(o.key)
+        if isinstance(pb, str):
+            return {"mode": "raw", "raw": pb, "options": {"raw": {"language": "json"}}}
+        rb = pb if pb is not None else self.sup.get("routeBodies", {}).get(o.key)
         if rb is None:
             rb = self.sup.get("bodies", {}).get(o.body_name or "")
             if rb is not None and o.body_is_array:
@@ -169,6 +177,8 @@ class Builder(object):
         events = []
         if o.anonymous:
             req["auth"] = NOAUTH
+        if self.sup.get("postmanAuth", {}).get(o.key) == "adminApiKey":
+            req["auth"] = {"type": "apikey", "apikey": [{"key": "key", "value": "x-api-key", "type": "string"}, {"key": "value", "value": "{{adminApiKey}}", "type": "string"}, {"key": "in", "value": "header", "type": "string"}]}
         if o.key == "POST /v1.0/token":
             req["header"] = [
                 {"key": "x-email", "value": "{{email}}", "type": "text"},
@@ -248,15 +258,50 @@ class Builder(object):
         ]
         return {"name": "Authentication examples", "description": "The other ways to authenticate besides a bearer session token: a credential's access key and secret, a signed request, and the administration key. Each request sets its own auth to No Auth and sends the headers itself.", "item": items}
 
+    def order(self, o):
+        """Position inside its folder: firstInFolder keys in their listed order, then the rest, then lastInFolder keys."""
+        first = self.sup.get("firstInFolder", [])
+        last = self.sup.get("lastInFolder", [])
+        if o.key in first:
+            return first.index(o.key) - len(first)
+        if o.key in last:
+            return 1 + last.index(o.key)
+        return 0
+
     def build(self):
+        """Folders in tag order, then Cleanup (every delete, latest folder first, so the collection runs from top to
+        bottom: each record is created, used, and only then deleted), then the run-last folder (logout, restart)."""
         tags = self.sup.get("tags", {})
         folders = {}
-        last = self.sup.get("lastInFolder", [])
-        for o in sorted(self.ops, key=lambda x: x.key in last):
-            folders.setdefault(o.tag, []).append(self.request(o))
-        items = [{"name": tag, "description": tags.get(tag, ""), "item": reqs} for tag, reqs in folders.items()]
+        cleanup = self.sup.get("cleanupFolder", {})
+        final = self.sup.get("finalFolder", {})
+        final_keys = final.get("keys", [])
+        deletes = []
+        finals = {}
+        for o in self.ops:
+            folders.setdefault(o.tag, [])
+        for o in sorted(self.ops, key=self.order):
+            folders.setdefault(o.tag, [])
+            if o.key in final_keys:
+                finals[o.key] = self.request(o)
+            elif cleanup and o.method == "DELETE":
+                deletes.append((o.tag, self.request(o)))
+            else:
+                folders[o.tag].append(self.request(o))
+        items = [{"name": tag, "description": tags.get(tag, ""), "item": reqs} for tag, reqs in folders.items() if reqs]
         names = [i["name"] for i in items]
-        items.insert(names.index("Token") + 1 if "Token" in names else 0, self.auth_examples())
+        # The examples use the access key and secret that Credentials > Create a credential stores, so they follow it.
+        anchor = "Credentials" if "Credentials" in names else "Token"
+        items.insert(names.index(anchor) + 1 if anchor in names else 0, self.auth_examples())
+        if deletes:
+            tag_order = list(folders.keys())
+            # Latest folder first and, inside a folder, the last delete first (child records before their parent).
+            ordered = [d for i, d in sorted(enumerate(deletes), key=lambda e: (-tag_order.index(e[1][0]), -e[0]))]
+            for tag, req in ordered:
+                req["name"] = tag + ": " + req["name"]
+            items.append({"name": cleanup.get("name", "Cleanup"), "description": cleanup.get("description", ""), "item": [r for t, r in ordered]})
+        if finals:
+            items.append({"name": final.get("name", "Run last"), "description": final.get("description", ""), "item": [finals[k] for k in final_keys if k in finals]})
         variables = [{"key": k, "value": v, "type": "string", "description": d} for k, v, d in VARIABLES]
         known = set(k for k, v, d in VARIABLES)
         for var in sorted(self.path_vars | set(v for caps in self.sup.get("captures", {}).values() for v in caps)):
@@ -298,7 +343,9 @@ def collection_description(info, count):
         "",
         "**Conventions.** Lists take pageNumber, pageSize, sortBy, sortDirection, search, fromUtc, and toUtc, and return { items, pageNumber, pageSize, totalCount, totalPages, durationMs }. Errors are { error, message, requestId, details }. Optional query parameters are included but disabled; enable the ones you need.",
         "",
-        "**Careful.** Requests that start runs, refinement steps, prompt lab runs, and model tests call the configured model and cost money. Run a topic uses dryRun=true by default. Delete requests delete.",
+        "**Running the whole collection.** The folders run top to bottom on a fresh stack: each folder creates its records and uses them, the Cleanup folder then deletes them (newest first), and the Run last folder signs out and restarts the server. Change my password sends the current password as the new one, and Update server settings sends back the settings that Read server settings returned, so a run leaves the administrator's password and the server's settings as they were. Requests for records a fresh stack does not have yet (runs, findings, briefings, audio) answer 404 until a run has produced some.",
+        "",
+        "**Careful.** Requests that start runs, refinement steps, prompt lab runs, and model tests call the configured model and cost money. Run a topic uses dryRun=true by default. Delete requests delete, and the bulk deletes in Cleanup remove every matching record.",
         "",
         "(c) 2026 Lattice AI LLC",
     ])

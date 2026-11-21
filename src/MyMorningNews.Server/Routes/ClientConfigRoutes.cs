@@ -46,6 +46,8 @@ namespace MyMorningNews.Server.Routes
                 AudioEnabled = Server.SettingsService.Current.Tts.Enabled,
                 EmailEnabled = Server.SettingsService.Current.Email.Enabled && Server.SettingsService.Current.Email.Provider != EmailProviderEnum.Disabled,
                 MinimumAppVersion = "0.1.0",
+                AppUrl = Server.SettingsService.Current.Rest.AppBaseUrl,
+                DeletionGraceDays = Server.SettingsService.Current.Hosting.DeletionGraceDays,
                 McpUrl = Server.SettingsService.Current.Rest.McpPublicUrl,
                 Links = new Dictionary<string, string>
                 {

@@ -237,7 +237,7 @@ namespace MyMorningNews.Core.Services
                 }
 
                 state.Output = lastRaw ?? String.Empty;
-                StructuredOutputException failure = new StructuredOutputException("The model did not return valid " + typeof(T).Name + " output after " + (maxRepairs + 1) + " attempts.", lastRaw);
+                StructuredOutputException failure = new StructuredOutputException("The model's reply could not be used as a " + ErrorText.Describe(typeof(T)) + " after " + (maxRepairs + 1) + " attempts. Try again, or choose a different model under Models.", lastRaw);
                 await LogAsync(state, false, failure.Message, null, null, token).ConfigureAwait(false);
                 throw failure;
             }
@@ -362,7 +362,7 @@ namespace MyMorningNews.Core.Services
                 }
 
                 state.Output = lastRaw ?? String.Empty;
-                StructuredOutputException failure = new StructuredOutputException("The model did not submit valid " + typeof(T).Name + " output in the agentic loop (" + used + " tool calls).", lastRaw);
+                StructuredOutputException failure = new StructuredOutputException("The model did not submit a usable " + ErrorText.Describe(typeof(T)) + " after " + used + " tool calls. Try again, or choose a different model under Models.", lastRaw);
                 await LogAsync(state, false, failure.Message, null, null, token).ConfigureAwait(false);
                 throw failure;
             }
@@ -497,7 +497,7 @@ namespace MyMorningNews.Core.Services
             }
             catch (Exception ex) when (ex is ModelCallException || ex is ArgumentException || ex is VaultSecretUnavailableException || ex is HttpRequestException)
             {
-                result.Messages.Add(ex.Message);
+                result.Messages.Add(ErrorText.Plain(ex));
             }
 
             endpoint.LastValidatedUtc = result.ValidatedUtc;
@@ -725,7 +725,7 @@ namespace MyMorningNews.Core.Services
                         }
                         catch (ArgumentException ex)
                         {
-                            throw new ModelCallException(ex.Message, null, false, ex);
+                            throw new ModelCallException(ErrorText.Plain(ex), null, false, ex);
                         }
                         catch (Exception ex) when (ex is HttpRequestException || (ex is OperationCanceledException && !token.IsCancellationRequested))
                         {

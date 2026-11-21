@@ -121,6 +121,8 @@ namespace Test.Shared.Suites
                 TestApiClient anon = await SharedTestServer.AnonymousClientAsync(token).ConfigureAwait(false);
                 ClientConfigResponse config = (await anon.GetAsync("/v1.0/api/client-config", token).ConfigureAwait(false)).Expect(200, "client config").Json<ClientConfigResponse>();
                 Assert.True(config.SignupEnabled && config.RequireEmailVerification && config.MinimumAge == 18 && config.TurnstileSiteKey == null, "client config advertises sign-up");
+                Assert.Equal(server.Context.Settings.Rest.AppBaseUrl, config.AppUrl, "client config names the web app address");
+                Assert.Equal(h.DeletionGraceDays, config.DeletionGraceDays, "client config gives the deletion grace period");
 
                 string email = NewEmail();
                 TestResponse first = (await SignupAsync(anon, email.ToUpperInvariant(), token).ConfigureAwait(false)).Expect(202, "sign up");
@@ -144,9 +146,12 @@ namespace Test.Shared.Suites
                 (await anon.PostAsync("/v1.0/public/verify-email/resend", new { email = NewEmail() }, token).ConfigureAwait(false)).Expect(202, "resend for nobody looks the same");
 
                 string link = await LinkTokenAsync(server, tenant.Id, EmailTemplateEnum.VerifyEmail, token).ConfigureAwait(false);
-                (await anon.PostAsync("/v1.0/public/verify-email", new { token = "not-a-token" }, token).ConfigureAwait(false)).Expect(400, "bad token");
+                ErrorResponse bad = (await anon.PostAsync("/v1.0/public/verify-email", new { token = "not-a-token" }, token).ConfigureAwait(false)).Expect(400, "bad token").Json<ErrorResponse>();
+                Assert.Equal("LinkInvalid", bad.Error, "an unknown link is LinkInvalid");
                 (await anon.PostAsync("/v1.0/public/verify-email", new { token = link }, token).ConfigureAwait(false)).Expect(200, "verify");
-                (await anon.PostAsync("/v1.0/public/verify-email", new { token = link }, token).ConfigureAwait(false)).Expect(400, "a link works once");
+                ErrorResponse used = (await anon.PostAsync("/v1.0/public/verify-email", new { token = link }, token).ConfigureAwait(false)).Expect(400, "a link works once").Json<ErrorResponse>();
+                Assert.Equal("LinkUsed", used.Error, "a used verification link says so (UT-027)");
+                Assert.True(used.Message.Contains("Sign in", StringComparison.Ordinal), "a used verification link tells the reader to sign in");
                 User verified = (await server.Context.Database.Users.ReadAsync(user.TenantId, user.Id, token).ConfigureAwait(false))!;
                 Assert.True(verified.EmailVerifiedUtc.HasValue, "verified");
                 TokenResponse session = (await SignInAsync(anon, email, Password, token).ConfigureAwait(false)).Expect(200, "sign in without a tenant").Json<TokenResponse>();
@@ -228,7 +233,9 @@ namespace Test.Shared.Suites
                 Assert.True(pending.DeletionRequestedUtc.HasValue, "deletion pending");
                 Assert.True((await server.Context.Database.Tenants.ReadAsync(user.TenantId, token).ConfigureAwait(false))!.PurgeAfterUtc.HasValue, "tenant purge date set");
 
-                (await SignInAsync(anon, user.Email, Password, token).ConfigureAwait(false)).Expect(200, "signing in again");
+                TokenResponse back = (await SignInAsync(anon, user.Email, Password, token).ConfigureAwait(false)).Expect(200, "signing in again").Json<TokenResponse>();
+                Assert.True(back.DeletionCancelled, "the sign-in response says the deletion was cancelled");
+                Assert.True(!(await SignInAsync(anon, user.Email, Password, token).ConfigureAwait(false)).Expect(200, "a later sign-in").Json<TokenResponse>().DeletionCancelled, "only the sign-in that cancelled it says so");
                 User kept = (await server.Context.Database.Users.ReadAsync(user.TenantId, user.Id, token).ConfigureAwait(false))!;
                 Assert.True(!kept.DeletionRequestedUtc.HasValue && !(await server.Context.Database.Tenants.ReadAsync(user.TenantId, token).ConfigureAwait(false))!.PurgeAfterUtc.HasValue, "sign-in cancels the deletion");
 
@@ -337,7 +344,8 @@ namespace Test.Shared.Suites
                 h.AppleTeamId = "ABCDE12345";
                 h.AndroidCertificateFingerprints = new List<string> { "aa:bb:cc" };
                 string apple = (await anon.GetAsync("/.well-known/apple-app-site-association", token).ConfigureAwait(false)).Expect(200, "apple").Body;
-                Assert.True(apple.Contains("ABCDE12345.ai.latticetech.mymorningnews", StringComparison.Ordinal) && apple.Contains("/briefings/*", StringComparison.Ordinal), "apple file: " + apple);
+                Assert.True(apple.Contains("ABCDE12345.ai.latticetech.mymorningnews", StringComparison.Ordinal) && apple.Contains("/briefings/*", StringComparison.Ordinal)
+                    && apple.Contains("/verify*", StringComparison.Ordinal) && apple.Contains("/reset-password*", StringComparison.Ordinal) && apple.Contains("/signup*", StringComparison.Ordinal), "apple file, including the verify, reset, and sign-up links: " + apple);
                 string android = (await anon.GetAsync("/.well-known/assetlinks.json", token).ConfigureAwait(false)).Expect(200, "android").Body;
                 Assert.True(android.Contains("ai.latticetech.mymorningnews", StringComparison.Ordinal) && android.Contains("AA:BB:CC", StringComparison.Ordinal), "android file: " + android);
             }

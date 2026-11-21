@@ -23,12 +23,15 @@ namespace MyMorningNews.Core.Email
             "img.logo{width:150px;max-width:55%;height:auto;margin:0 0 16px}h1{font-size:21px;line-height:1.3;margin:0 0 8px}p{margin:0 0 12px}.muted{color:var(--muted);font-size:14px}" +
             "fieldset{border:0;margin:14px 0;padding:0}legend{font-weight:600;margin-bottom:8px}.opts{display:flex;flex-wrap:wrap;gap:8px}" +
             ".opts label{border:1px solid var(--line);border-radius:18px;padding:6px 12px;cursor:pointer}.opts input{margin-right:6px}" +
+            ".opts label:has(input:checked){border-color:var(--accent);outline:1px solid var(--accent)}.confirm{border-left:3px solid var(--accent);padding-left:10px}" +
             "textarea{width:100%;box-sizing:border-box;min-height:110px;border:1px solid var(--line);border-radius:8px;padding:10px;background:transparent;color:inherit;font:inherit}" +
             "button{margin-top:14px;padding:10px 18px;border:0;border-radius:6px;background:var(--accent);color:#fff;font:600 15px/1 inherit;cursor:pointer}a{color:var(--accent)}" +
             "footer{margin-top:18px;font-size:12px;color:var(--muted);text-align:center}";
 
         /// <summary>
-        /// The feedback form with the chosen action preselected.
+        /// The feedback form with the chosen action preselected. Opening an email rating link never records the rating by
+        /// itself (mail security scanners open links automatically), so the page asks the reader to confirm it with one
+        /// clearly labeled button and says why.
         /// </summary>
         /// <param name="logoUrl">Logo URL.</param>
         /// <param name="postUrl">Form action URL.</param>
@@ -44,20 +47,25 @@ namespace MyMorningNews.Core.Email
             StringBuilder sb = new StringBuilder();
             sb.Append("<h1>").Append(Enc(itemTitle)).Append("</h1>");
             if (!String.IsNullOrWhiteSpace(itemSummary)) sb.Append("<p class=\"muted\">").Append(Enc(itemSummary)).Append("</p>");
+            string? chosen = selected != null && actions.Contains(selected, StringComparer.Ordinal) ? selected : null;
             if (recorded) sb.Append("<p><strong>Thanks, your rating is saved.</strong> You can change it or add a reason below.</p>");
+            else if (chosen != null) sb.Append("<p class=\"confirm\"><strong>Confirm your rating: “").Append(Enc(EmailActions.Label(chosen))).Append("”.</strong> It is not saved until you press the button below.</p>");
+            else sb.Append("<p class=\"confirm\"><strong>Choose a rating</strong>, then press the button below to save it.</p>");
             sb.Append("<form method=\"post\" action=\"").Append(Enc(postUrl)).Append("\">");
             sb.Append("<fieldset><legend>Your rating</legend><div class=\"opts\">");
             foreach (string a in actions)
             {
                 sb.Append("<label><input type=\"radio\" name=\"a\" value=\"").Append(Enc(a)).Append('"');
-                if (String.Equals(a, selected, StringComparison.Ordinal)) sb.Append(" checked");
+                if (String.Equals(a, chosen, StringComparison.Ordinal)) sb.Append(" checked");
                 sb.Append('>').Append(Enc(EmailActions.Label(a))).Append("</label>");
             }
 
             sb.Append("</div></fieldset>");
             sb.Append("<label for=\"reason\"><strong>Why?</strong> <span class=\"muted\">(optional)</span></label>");
             sb.Append("<textarea id=\"reason\" name=\"reason\" maxlength=\"2000\" placeholder=\"What made this useful or not? It helps tune your future briefings.\"></textarea>");
-            sb.Append("<button type=\"submit\">Submit</button></form>");
+            string button = recorded ? "Update my rating" : (chosen != null ? "Save “" + Enc(EmailActions.Label(chosen)) + "”" : "Save my rating");
+            sb.Append("<button type=\"submit\">").Append(button).Append("</button></form>");
+            if (!recorded) sb.Append("<p class=\"muted\" style=\"margin-top:12px\">We ask you to confirm because email security scanners open links on their own, and a click from a scanner should not count as your rating.</p>");
             if (SafeMarkdown.IsSafeUrl(openUrl)) sb.Append("<p class=\"muted\" style=\"margin-top:16px\"><a href=\"").Append(Enc(openUrl!)).Append("\">Open in My Morning News</a></p>");
             return Page("Your feedback", logoUrl, sb.ToString());
         }

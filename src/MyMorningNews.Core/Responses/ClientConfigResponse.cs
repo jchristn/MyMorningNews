@@ -54,6 +54,18 @@ namespace MyMorningNews.Core.Responses
         public string Copyright { get; set; } = "(c) 2026 Lattice AI LLC";
 
         /// <summary>
+        /// Days an account deletion waits before the data is removed (Hosting.DeletionGraceDays); signing in during them
+        /// cancels it. Default 7.
+        /// </summary>
+        public int DeletionGraceDays { get; set; } = 7;
+
+        /// <summary>
+        /// Public base URL of the web dashboard (Rest.AppBaseUrl), for example to open the web sign-up page when the app
+        /// cannot show the Turnstile challenge itself.
+        /// </summary>
+        public string AppUrl { get; set; } = "http://127.0.0.1:12101";
+
+        /// <summary>
         /// Public URL of the MCP server's Streamable HTTP endpoint.
         /// </summary>
         public string McpUrl { get; set; } = "http://127.0.0.1:12105/mcp";

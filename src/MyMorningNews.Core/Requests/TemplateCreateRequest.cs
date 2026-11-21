@@ -15,6 +15,7 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// Name override; null uses the front matter name.
         /// </summary>
+        [TextLimit(128)]
         public string? Name { get; set; } = null;
 
         /// <summary>

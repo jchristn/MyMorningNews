@@ -143,7 +143,7 @@ using (FileStream fs = File.Create("briefing.md"))
 
 ## Waiting for runs
 
-The server has no run event stream, so `Runs.WaitAsync(runId, timeout, pollInterval)` polls `GET /v1.0/api/runs/{id}` (every 2 seconds by default, for up to 30 minutes) until the status is terminal (`Completed`, `PartiallySucceeded`, `Failed`, `Cancelled`, or `Skipped`). `RunsResource.IsTerminal(status)` is public.
+`Runs.StreamEventsAsync(runId)` follows the run's server-sent event stream (`GET /v1.0/api/runs/{id}/events`) as it happens. To wait without a stream, `Runs.WaitAsync(runId, timeout, pollInterval)` polls `GET /v1.0/api/runs/{id}` (every 2 seconds by default, for up to 30 minutes) until the status is terminal (`Completed`, `PartiallySucceeded`, `Failed`, `Cancelled`, or `Skipped`). `RunsResource.IsTerminal(status)` is public.
 
 ```csharp
 Run queued = await client.Topics.RunAsync(topicId, dryRun: true);

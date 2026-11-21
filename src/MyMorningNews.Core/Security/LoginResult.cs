@@ -71,6 +71,11 @@ namespace MyMorningNews.Core.Security
         public DateTime? RefreshExpiresUtc { get; set; } = null;
 
         /// <summary>
+        /// Whether this sign-in cancelled a pending account deletion. Default false.
+        /// </summary>
+        public bool DeletionCancelled { get; set; } = false;
+
+        /// <summary>
         /// Create a failure.
         /// </summary>
         /// <param name="statusCode">Status code.</param>

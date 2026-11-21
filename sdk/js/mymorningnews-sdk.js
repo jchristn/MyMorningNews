@@ -128,6 +128,7 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
  * @property {object|null} user User profile, for user logins.
  * @property {string|null} refreshToken Refresh token (mobile clients only).
  * @property {string|null} refreshExpiresUtc Refresh token expiry.
+ * @property {boolean} [deletionCancelled] True when this sign-in cancelled a pending account deletion.
  */
 
 /**

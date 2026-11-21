@@ -158,7 +158,8 @@ namespace MyMorningNews.Server.Routes
                 PrincipalType = result.Session.PrincipalType,
                 User = result.User != null && result.Credential == null ? UserResponse.FromModel(result.User) : null,
                 RefreshToken = result.RefreshToken,
-                RefreshExpiresUtc = result.RefreshExpiresUtc
+                RefreshExpiresUtc = result.RefreshExpiresUtc,
+                DeletionCancelled = result.DeletionCancelled
             };
         }
 

@@ -20,7 +20,8 @@ namespace Test.Shared.Helpers
     /// stub-embed-N (embeddings of N dimensions, derived from each text), stub-research (shaped answers for every research prompt), stub-refine (shaped answers for every refinement prompt, detected from the prompt text).
     /// GET requests other than /models return an RSS document (200), or 404 when the path contains "missing" (for source checks).
     /// GET .../flaky429/search answers 429 (Retry-After: 0) the first time each URL is seen, then the normal search results;
-    /// GET .../always503/search always answers 503 (search retry checks).
+    /// GET .../always503/search always answers 503 (search retry checks);
+    /// GET .../pipelinemissing/search returns only pages that answer 404 (a run that can read nothing new).
     /// Requests whose system prompt contains "JSON Schema" receive the JSON answer as fenced text. Streaming requests receive SSE chunks
     /// (text or tool-call argument deltas split in two) and a final chunk with usage including cached and reasoning tokens.
     /// Thread safety: safe for concurrent requests.
@@ -238,6 +239,8 @@ namespace Test.Shared.Helpers
                     string root = BaseUrl;
                     string[] urls = path.Contains("/pipeline2/", StringComparison.Ordinal)
                         ? new[] { root + "/news/d.html" }
+                        : path.Contains("/pipelinemissing/", StringComparison.Ordinal)
+                        ? new[] { root + "/news/missing-1.html", root + "/news/missing-2.html" }
                         : new[] { root + "/news/a.html?utm_source=x", root + "/news/a.html", root + "/news/b.html", "https://blocked.test/x" };
                     await WriteAsync(ctx, 200, "{\"results\":[" + String.Join(",", urls.Select((u, i) => "{\"url\":\"" + u + "\",\"title\":\"Result " + i + "\",\"content\":\"Snippet.\",\"publishedDate\":\"" + DateTime.UtcNow.AddHours(-6).ToString("o") + "\"}")) + "]}").ConfigureAwait(false);
                     return;

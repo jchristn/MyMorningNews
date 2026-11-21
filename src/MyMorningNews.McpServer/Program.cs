@@ -1,12 +1,14 @@
 namespace MyMorningNews.McpServer
 {
     using System;
+    using System.IO;
     using System.Threading;
     using System.Threading.Tasks;
 
     /// <summary>
     /// MCP server entry point. Streamable HTTP by default (<c>/mcp</c> on port 12105, health on <c>/</c>), or stdio with
-    /// <c>--stdio</c>. Diagnostics go to standard error so stdio's standard output carries only MCP messages.
+    /// <c>--stdio</c>. Diagnostics go to standard error so stdio's standard output carries only MCP messages; protocol
+    /// messages are written there only with <c>--verbose</c>.
     /// </summary>
     public static class Program
     {
@@ -35,17 +37,38 @@ namespace MyMorningNews.McpServer
                 return 0;
             }
 
-            Action<string> log = message => Console.Error.WriteLine(message);
+            // The stdio transport library writes every message it sends and receives straight to standard error. Keep the
+            // real standard error for our own diagnostics, and let protocol messages through only with --verbose (they
+            // then arrive through the server's Log event).
+            TextWriter stderr = Console.Error;
+            Action<string> log = message => stderr.WriteLine(message);
+            if (settings.Stdio) Console.SetError(TextWriter.Null);
+
             using (CancellationTokenSource stop = new CancellationTokenSource())
             using (McpTelemetryHost telemetry = new McpTelemetryHost())
             using (McpHost host = new McpHost(settings, log))
             {
-                Console.CancelKeyPress += (s, e) =>
+                int stopped = 0;
+                Action requestStop = () =>
+                {
+                    // A signal can arrive after the run has ended and the token source is gone; ignore it then.
+                    if (Volatile.Read(ref stopped) != 0) return;
+                    try
+                    {
+                        stop.Cancel();
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                    }
+                };
+                ConsoleCancelEventHandler onCancel = (s, e) =>
                 {
                     e.Cancel = true;
-                    stop.Cancel();
+                    requestStop();
                 };
-                AppDomain.CurrentDomain.ProcessExit += (s, e) => stop.Cancel();
+                EventHandler onExit = (s, e) => requestStop();
+                Console.CancelKeyPress += onCancel;
+                AppDomain.CurrentDomain.ProcessExit += onExit;
                 telemetry.Start(settings, log);
                 try
                 {
@@ -61,6 +84,12 @@ namespace MyMorningNews.McpServer
                 {
                     log(ex.Message);
                     return 1;
+                }
+                finally
+                {
+                    Interlocked.Exchange(ref stopped, 1);
+                    Console.CancelKeyPress -= onCancel;
+                    AppDomain.CurrentDomain.ProcessExit -= onExit;
                 }
             }
         }

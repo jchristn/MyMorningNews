@@ -9,6 +9,7 @@ namespace MyMorningNews.Server.Services
     using MyMorningNews.Core.Briefings;
     using MyMorningNews.Core.Enums;
     using MyMorningNews.Core.Exceptions;
+    using MyMorningNews.Core.Helpers;
     using MyMorningNews.Core.Responses;
     using MyMorningNews.Core.Security;
     using MyMorningNews.Core.Serialization;
@@ -26,6 +27,8 @@ namespace MyMorningNews.Server.Services
         #region Private-Members
 
         private const string OpenApiDocumentPath = "/openapi.json";
+        private const string PublicPrefix = "/v1.0/public/";
+        private const string WellKnownPrefix = "/.well-known/";
 
         private readonly ServerContext _Server;
         private readonly RequestHistoryCaptureService _Capture;
@@ -106,7 +109,8 @@ namespace MyMorningNews.Server.Services
         }
 
         /// <summary>
-        /// Authenticate post-authentication routes. Sends 401 when authentication fails.
+        /// Authenticate post-authentication routes. Sends 401 when authentication fails, and 404 for a public or
+        /// well-known path that matched no route.
         /// </summary>
         /// <param name="ctx">HTTP context.</param>
         /// <returns>Task.</returns>
@@ -115,6 +119,22 @@ namespace MyMorningNews.Server.Services
             ArgumentNullException.ThrowIfNull(ctx);
             RequestContext rc = ctx.Metadata as RequestContext ?? new RequestContext();
             ctx.Metadata = rc;
+
+            // Every public and well-known route is registered before authentication, so one that reaches this point
+            // matched nothing: say so (404) instead of asking for credentials it would never accept.
+            string path = ctx.Request.Url.RawWithoutQuery ?? String.Empty;
+            if (path.StartsWith(PublicPrefix, StringComparison.OrdinalIgnoreCase) || path.StartsWith(WellKnownPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                ctx.Response.StatusCode = 404;
+                ctx.Response.ContentType = "application/json";
+                await ctx.Response.Send(Serializer.Serialize(new ErrorResponse
+                {
+                    Error = "RouteNotFound",
+                    Message = "This server has no " + ctx.Request.Method + " " + path + " endpoint.",
+                    RequestId = rc.RequestId
+                }), ctx.Token).ConfigureAwait(false);
+                return;
+            }
 
             AuthenticationContext auth = await _Server.Authentication.AuthenticateAsync(new AuthenticationRequest
             {
@@ -190,10 +210,13 @@ namespace MyMorningNews.Server.Services
                     status = 409; error = "PromoCodeInvalid"; message = pce.Message;
                     details = new Dictionary<string, string>(StringComparer.Ordinal) { { "reason", pce.Reason } };
                     break;
-                case JsonException:
-                    status = 400; error = "BadRequest"; message = "The request body is not valid JSON."; break;
+                case AccountLinkException ale:
+                    status = 400; error = ale.Code; message = ale.Message; break;
+                case JsonException jex:
+                    // RouteBase rethrows a described JsonException (field and expected value) with the original inside.
+                    status = 400; error = "BadRequest"; message = jex.InnerException is JsonException ? jex.Message : "The request body is not valid JSON."; break;
                 case ArgumentException ae:
-                    status = 400; error = "ValidationFailed"; message = ValidationMessage(ae); break;
+                    status = 400; error = "ValidationFailed"; message = ErrorText.Plain(ae); break;
                 case KeyNotFoundException knf:
                     status = 404; error = "NotFound"; message = String.IsNullOrWhiteSpace(knf.Message) || knf.Message.StartsWith("The given key", StringComparison.Ordinal) ? "The requested resource was not found." : knf.Message; break;
                 case ConflictException ce:
@@ -216,11 +239,21 @@ namespace MyMorningNews.Server.Services
                 case ModelCallException mce:
                     status = 502; error = "ModelError"; message = mce.Message; break;
                 case PostgresException pe when pe.SqlState == PostgresErrorCodes.UniqueViolation:
-                    status = 409; error = "Conflict"; message = "A record with the same unique value already exists."; break;
+                    status = 409; error = "Conflict"; message = DatabaseErrorDescriber.UniqueMessage(pe);
+                    string? field = DatabaseErrorDescriber.UniqueField(pe);
+                    if (field != null) details = new Dictionary<string, string>(StringComparer.Ordinal) { { field, "Already in use." } };
+                    break;
+                case PostgresException pe when pe.SqlState == PostgresErrorCodes.StringDataRightTruncation:
+                    // Request bodies are checked against column sizes first (TextLimitAttribute); this is the backstop.
+                    status = 400; error = "ValidationFailed"; message = "A value is longer than its field allows. Shorten it and try again."; break;
                 case PostgresException pe when pe.SqlState == PostgresErrorCodes.ForeignKeyViolation:
                     status = 409; error = "Conflict"; message = "The operation references a record that does not exist or is still in use."; break;
                 case OperationCanceledException:
                     status = 499; error = "Canceled"; message = "The request was canceled."; break;
+                case Exception dbe when DatabaseErrorDescriber.IsUnavailable(dbe) || (dbe.InnerException != null && DatabaseErrorDescriber.IsUnavailable(dbe.InnerException)):
+                    status = 503; error = "DatabaseUnavailable"; message = "The database is not reachable right now. Try again in a moment.";
+                    ctx.Response.Headers.Set("Retry-After", "10");
+                    break;
                 default:
                     status = 500; error = "InternalError"; message = "An unexpected error occurred. Reference the request ID when reporting it."; break;
             }
@@ -255,18 +288,6 @@ namespace MyMorningNews.Server.Services
             ctx.Response.Headers.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
             ctx.Response.Headers.Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Api-Key, X-Token, X-Email, X-Password, X-Tenant-Guid, X-Access-Key, X-Secret-Key, X-Date, X-Nonce, X-Signature, X-Request, Accept-Language, Range");
             ctx.Response.Headers.Set("Access-Control-Expose-Headers", "X-Request-Id, Content-Disposition, Content-Range, Accept-Ranges, Content-Length, ETag");
-        }
-
-        private static string ValidationMessage(ArgumentException ex)
-        {
-            string message = ex.Message;
-            if (!String.IsNullOrEmpty(ex.ParamName))
-            {
-                string suffix = " (Parameter '" + ex.ParamName + "')";
-                if (message.EndsWith(suffix, StringComparison.Ordinal)) message = message.Substring(0, message.Length - suffix.Length);
-            }
-
-            return message;
         }
 
         private static string? Trim(string? value, int max)

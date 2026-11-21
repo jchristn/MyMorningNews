@@ -22,6 +22,7 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// Label.
         /// </summary>
+        [TextLimit(200)]
         public string? Name { get; set; } = null;
 
         /// <summary>
@@ -57,11 +58,13 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// Cron expression for the Cron type.
         /// </summary>
+        [TextLimit(200)]
         public string? CronExpression { get; set; } = null;
 
         /// <summary>
         /// IANA time zone, for example America/Los_Angeles.
         /// </summary>
+        [TextLimit(64)]
         public string? TimeZone { get; set; } = null;
 
         /// <summary>

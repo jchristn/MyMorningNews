@@ -31,9 +31,10 @@ namespace MyMorningNews.Core.Services
         public Func<User, CancellationToken, Task<string?>>? SignInGate { get; set; } = null;
 
         /// <summary>
-        /// Optional action after a sign-in is allowed (for example cancelling a pending account deletion). Set by the server.
+        /// Optional action after a sign-in is allowed: cancels a pending account deletion and returns true when it did, so
+        /// the sign-in response can say so (<see cref="LoginResult.DeletionCancelled"/>). Set by the server.
         /// </summary>
-        public Func<User, CancellationToken, Task>? OnSignIn { get; set; } = null;
+        public Func<User, CancellationToken, Task<bool>>? OnSignIn { get; set; } = null;
 
         #endregion
 
@@ -198,10 +199,11 @@ namespace MyMorningNews.Core.Services
                 if (refusal != null) return LoginResult.Fail(403, AuthenticationOutcomeEnum.Inactive, refusal);
             }
 
-            if (OnSignIn != null) await OnSignIn(user, token).ConfigureAwait(false);
+            bool deletionCancelled = OnSignIn != null && await OnSignIn(user, token).ConfigureAwait(false);
 
             _RateLimiter.Reset(limiterKey);
             LoginResult result = await IssueSessionAsync(tenant, user, credential, userLogin ? AuthSchemeEnum.PasswordHeaders : AuthSchemeEnum.AccessKeySecret, request.SourceIp, request.UserAgent, token).ConfigureAwait(false);
+            result.DeletionCancelled = deletionCancelled;
 
             if (userLogin)
             {

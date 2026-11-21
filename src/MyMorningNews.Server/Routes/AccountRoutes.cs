@@ -143,7 +143,7 @@ namespace MyMorningNews.Server.Routes
             string team = Server.Settings.Hosting.AppleTeamId?.Trim() ?? String.Empty;
             if (team.Length == 0) { await SendErrorAsync(ctx, 404, "NotConfigured", "Universal links are not configured.").ConfigureAwait(false); return; }
             string appId = team + "." + Server.Settings.Hosting.MobileAppId;
-            string[] paths = new[] { "/briefings/*", "/topics/*", "/predictions/*", "/findings/*", "/redeem*" };
+            string[] paths = new[] { "/briefings/*", "/topics/*", "/predictions/*", "/findings/*", "/redeem*", "/verify*", "/reset-password*", "/signup*" };
             object doc = new Dictionary<string, object>
             {
                 { "applinks", new Dictionary<string, object> { { "details", new[] { new Dictionary<string, object> { { "appIDs", new[] { appId } }, { "components", paths.Select(p => new Dictionary<string, string> { { "/", p } }).ToArray() } } } } } },

@@ -12,6 +12,7 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// Email address.
         /// </summary>
+        [TextLimit(256)]
         public string Email { get; set; } = String.Empty;
 
         /// <summary>

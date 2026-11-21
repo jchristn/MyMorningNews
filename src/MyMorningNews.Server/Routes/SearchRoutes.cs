@@ -194,7 +194,7 @@ namespace MyMorningNews.Server.Routes
             if (!String.IsNullOrWhiteSpace(req.Name)) p.Name = req.Name.Trim().Length > 128 ? req.Name.Trim().Substring(0, 128) : req.Name.Trim();
             if (req.Kind.HasValue)
             {
-                if (req.Kind.Value == SearchProviderKindEnum.HostedModelWebSearch) return "Hosted model web search is configured on OpenAI, Azure, or xAI model endpoints, not as a search provider.";
+                if (req.Kind.Value == SearchProviderKindEnum.HostedModelWebSearch) return "Hosted model web search is configured on OpenAI or xAI model endpoints, not as a search provider.";
                 p.Kind = req.Kind.Value;
             }
 

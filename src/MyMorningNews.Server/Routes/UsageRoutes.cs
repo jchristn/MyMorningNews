@@ -49,7 +49,7 @@ namespace MyMorningNews.Server.Routes
             }
             catch (ArgumentException ex)
             {
-                await SendErrorAsync(ctx, 400, "BadRequest", ex.Message).ConfigureAwait(false);
+                await SendErrorAsync(ctx, 400, "BadRequest", MyMorningNews.Core.Helpers.ErrorText.Plain(ex)).ConfigureAwait(false);
             }
         }
 

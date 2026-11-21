@@ -12,6 +12,7 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// Name (required on create).
         /// </summary>
+        [TextLimit(128, AllowBlank = false)]
         public string? Name { get; set; } = null;
 
         /// <summary>

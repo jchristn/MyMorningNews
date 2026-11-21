@@ -8,6 +8,7 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// Email address (required).
         /// </summary>
+        [TextLimit(256)]
         public string? Email { get; set; } = null;
 
         /// <summary>
@@ -18,16 +19,19 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// Display name. Defaults to the part of the email before @.
         /// </summary>
+        [TextLimit(128)]
         public string? DisplayName { get; set; } = null;
 
         /// <summary>
         /// IANA time zone. Default UTC.
         /// </summary>
+        [TextLimit(64)]
         public string? TimeZone { get; set; } = null;
 
         /// <summary>
         /// Locale, for example en or fr. Default en.
         /// </summary>
+        [TextLimit(16)]
         public string? Locale { get; set; } = null;
 
         /// <summary>
@@ -43,6 +47,7 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// Optional promotional code, redeemed for the new account.
         /// </summary>
+        [TextLimit(40)]
         public string? PromoCode { get; set; } = null;
 
         /// <summary>

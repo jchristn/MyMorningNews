@@ -11,11 +11,13 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// Stable key (required on create).
         /// </summary>
+        [TextLimit(64, AllowBlank = false)]
         public string? Key { get; set; } = null;
 
         /// <summary>
         /// Name.
         /// </summary>
+        [TextLimit(128, AllowBlank = false)]
         public string? Name { get; set; } = null;
 
         /// <summary>

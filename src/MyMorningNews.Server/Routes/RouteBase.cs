@@ -7,6 +7,7 @@ namespace MyMorningNews.Server.Routes
     using System.Text.Json;
     using System.Threading.Tasks;
     using MyMorningNews.Core.Enums;
+    using MyMorningNews.Core.Helpers;
     using MyMorningNews.Core.Requests;
     using MyMorningNews.Core.Responses;
     using MyMorningNews.Core.Security;
@@ -257,12 +258,25 @@ namespace MyMorningNews.Server.Routes
         /// <typeparam name="T">Body type.</typeparam>
         /// <param name="ctx">HTTP context.</param>
         /// <returns>Body, or null when empty.</returns>
-        /// <exception cref="JsonException">The body is not valid JSON.</exception>
+        /// <exception cref="JsonException">The body is not valid JSON, or a value has the wrong type (400 BadRequest).</exception>
+        /// <exception cref="ArgumentException">A value is longer than its field allows or is blank where it cannot be (400 ValidationFailed).</exception>
         protected static Task<T?> ReadOptionalBodyAsync<T>(HttpContextBase ctx) where T : class
         {
             string body = ctx.Request.DataAsString ?? String.Empty;
             if (String.IsNullOrWhiteSpace(body)) return Task.FromResult<T?>(null);
-            return Task.FromResult(Serializer.Deserialize<T>(body));
+            T? value;
+            try
+            {
+                value = Serializer.Deserialize<T>(body);
+            }
+            catch (JsonException ex)
+            {
+                throw new JsonException(JsonErrorDescriber.Describe(ex, typeof(T)), ex);
+            }
+
+            Dictionary<string, string> errors = RequestValidator.Validate(value);
+            if (errors.Count > 0) throw new ArgumentException(RequestValidator.Summarize(errors));
+            return Task.FromResult(value);
         }
 
         /// <summary>
@@ -280,22 +294,36 @@ namespace MyMorningNews.Server.Routes
                 return null;
             }
 
+            T? value;
             try
             {
-                T? value = Serializer.Deserialize<T>(body);
-                if (value == null) await SendErrorAsync(ctx, 400, "BadRequest", "The request body must be a JSON object.").ConfigureAwait(false);
-                return value;
+                value = Serializer.Deserialize<T>(body);
             }
             catch (JsonException ex)
             {
-                await SendErrorAsync(ctx, 400, "BadRequest", "The request body is not valid JSON for this operation: " + ex.Message).ConfigureAwait(false);
+                await SendErrorAsync(ctx, 400, "BadRequest", JsonErrorDescriber.Describe(ex, typeof(T))).ConfigureAwait(false);
                 return null;
             }
             catch (ArgumentException ex)
             {
-                await SendErrorAsync(ctx, 400, "ValidationFailed", ex.Message).ConfigureAwait(false);
+                await SendErrorAsync(ctx, 400, "ValidationFailed", ErrorText.Plain(ex)).ConfigureAwait(false);
                 return null;
             }
+
+            if (value == null)
+            {
+                await SendErrorAsync(ctx, 400, "BadRequest", "The request body must be a JSON object.").ConfigureAwait(false);
+                return null;
+            }
+
+            Dictionary<string, string> errors = RequestValidator.Validate(value);
+            if (errors.Count > 0)
+            {
+                await SendErrorAsync(ctx, 400, "ValidationFailed", RequestValidator.Summarize(errors), errors).ConfigureAwait(false);
+                return null;
+            }
+
+            return value;
         }
 
         /// <summary>

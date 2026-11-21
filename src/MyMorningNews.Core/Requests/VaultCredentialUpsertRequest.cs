@@ -12,6 +12,7 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// Name (required on create).
         /// </summary>
+        [TextLimit(128, AllowBlank = false)]
         public string? Name { get; set; } = null;
 
         /// <summary>
@@ -27,11 +28,13 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// Header name for CustomHeader secrets.
         /// </summary>
+        [TextLimit(128)]
         public string? HeaderName { get; set; } = null;
 
         /// <summary>
         /// Username for BasicAuth secrets.
         /// </summary>
+        [TextLimit(256)]
         public string? Username { get; set; } = null;
 
         /// <summary>

@@ -31,12 +31,12 @@ email. Your feedback teaches it what you care about, and it keeps score on its o
   dig into next.
 - Delivers it your way. Briefings follow Markdown templates you can edit. Editions combine several topics on
   their own schedule. Output is Markdown and HTML, audio from a local Kokoro voice (or any OpenAI-compatible speech
-  service), a private podcast feed, an email after every run with one-click feedback links, and push notifications
-  to the mobile app.
+  service), a private podcast feed, an email after every run with rating links (each opens a short page where you
+  confirm the rating, so mail scanners that open links cannot rate for you), and push notifications to the mobile app.
 - Learns from you. Rate anything and say why, on the web, in email, in the app, or through MCP. The system turns
   feedback into preferences you approve, and the Insights pages chart relevance, accuracy, feedback, cost, and usage.
 - Uses the model you choose. Model access goes through [PolyPrompt](https://github.com/jchristn/PolyPrompt):
-  Anthropic (the default), OpenAI, Azure OpenAI, OpenAI-compatible servers, Ollama, Gemini, xAI, and more, assignable
+  Anthropic (the default), OpenAI, OpenAI-compatible servers, Ollama, Ollama Cloud, Gemini, and xAI, assignable
   per task. Topics can opt in to agentic search, where the model searches, reads, and calls the MCP tools you allow.
 - Runs for one person or many. Tenants, users, roles and permissions, access keys, signed requests, audit, request
   history, plans with usage caps, promotional codes, and an optional public sign-up for a hosted service.
@@ -117,7 +117,7 @@ script, feedback analysis) can be assigned to another endpoint under Configurati
 Ollama `all-minilm` when Ollama is available (`docker compose --profile ollama up -d`).
 
 A model served by Ollama or another OpenAI-compatible server can call tools but
-cannot search the web by itself; only OpenAI, Azure OpenAI, and xAI endpoints offer hosted web search. The bundled
+cannot search the web by itself; only OpenAI and xAI endpoints offer hosted web search. The bundled
 SearXNG works without a key, and Tavily and You.com work with an API key (Configuration, Search providers). Agentic
 search needs a model that supports tool calls.
 
@@ -155,9 +155,14 @@ The MCP server lets Claude Code, Claude Desktop, and other MCP clients list your
 the evidence behind a finding, and record feedback. It acts only with your own credentials.
 
 ```bash
-cd docker && docker compose --profile mcp up -d
+cd docker && docker compose --profile mcp up -d --build
 claude mcp add --transport http mymorningnews http://127.0.0.1:12105/mcp --header "Authorization: Bearer <session token>"
 ```
+
+Keep `--build` in that command: every compose project shares the fixed image tags (`mymorningnews/server:local`,
+`mymorningnews/mcp:local`, and so on), so without it compose starts whatever image last carried the tag, which may
+have been built from older code or from another checkout. `docker/update.sh` rebuilds every profile you name in
+`COMPOSE_PROFILES`.
 
 For a long-lived connection, create an access key under Credentials. Stdio mode, every tool, the resources, and the
 prompts are in [`MCP_API.md`](MCP_API.md). Separately, topics can call tools on remote MCP servers you register under

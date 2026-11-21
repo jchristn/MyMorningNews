@@ -92,8 +92,8 @@ namespace MyMorningNews.Server.Routes
                 TenantId = tenantId,
                 Email = email,
                 PasswordSha256 = SecretHasher.Sha256Hex(req.Password!),
-                FirstName = req.FirstName,
-                LastName = req.LastName,
+                FirstName = NameOrNull(req.FirstName),
+                LastName = NameOrNull(req.LastName),
                 IsAdmin = req.IsAdmin,
                 IsTenantAdmin = req.IsTenantAdmin,
                 TimeZone = req.TimeZone,
@@ -162,8 +162,8 @@ namespace MyMorningNews.Server.Routes
 
             if (newEmail != null) user.Email = newEmail;
             if (req.Password != null) user.PasswordSha256 = SecretHasher.Sha256Hex(req.Password);
-            if (req.FirstName != null) user.FirstName = req.FirstName;
-            if (req.LastName != null) user.LastName = req.LastName;
+            if (req.FirstName != null) user.FirstName = NameOrNull(req.FirstName);
+            if (req.LastName != null) user.LastName = NameOrNull(req.LastName);
             if (req.IsAdmin.HasValue) user.IsAdmin = req.IsAdmin.Value;
             if (req.IsTenantAdmin.HasValue) user.IsTenantAdmin = req.IsTenantAdmin.Value;
             if (req.TimeZone != null) user.TimeZone = req.TimeZone;
@@ -237,8 +237,8 @@ namespace MyMorningNews.Server.Routes
             }
 
             User user = rc.Authentication.User;
-            if (req.FirstName != null) user.FirstName = req.FirstName;
-            if (req.LastName != null) user.LastName = req.LastName;
+            if (req.FirstName != null) user.FirstName = NameOrNull(req.FirstName);
+            if (req.LastName != null) user.LastName = NameOrNull(req.LastName);
             if (req.TimeZone != null) user.TimeZone = req.TimeZone;
             if (req.Locale != null) user.Locale = req.Locale;
             user = await Server.Database.Users.UpdateAsync(user, ctx.Token).ConfigureAwait(false);
@@ -274,6 +274,12 @@ namespace MyMorningNews.Server.Routes
             await Server.Database.Users.UpdateAsync(user, ctx.Token).ConfigureAwait(false);
             await Server.Audit.RecordAsync(AuditEventTypeEnum.UserChanged, rc, 204, "Password changed.", ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 204, null).ConfigureAwait(false);
+        }
+
+        private static string? NameOrNull(string? name)
+        {
+            // A name of only spaces is no name: store it as unset rather than as blank text.
+            return String.IsNullOrWhiteSpace(name) ? null : name.Trim();
         }
 
         private async Task<User?> FindByEmailAsync(string tenantId, string email, CancellationToken token)

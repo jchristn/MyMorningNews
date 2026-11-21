@@ -111,7 +111,7 @@ namespace MyMorningNews.Core.Services
             if (display.Length > 128) display = display.Substring(0, 128);
             Tenant tenant = await _Database.Tenants.CreateAsync(new Tenant
             {
-                Name = display + " (personal)", Description = "Personal tenant created by sign-up.", TimeZone = String.IsNullOrWhiteSpace(request.TimeZone) ? "UTC" : request.TimeZone.Trim(), IsPersonal = true
+                Name = (display.Length > 117 ? display.Substring(0, 117).TrimEnd() : display) + " (personal)", Description = "Personal tenant created by sign-up.", TimeZone = String.IsNullOrWhiteSpace(request.TimeZone) ? "UTC" : request.TimeZone.Trim(), IsPersonal = true
             }, token).ConfigureAwait(false);
             DateTime now = DateTime.UtcNow;
             User user = await _Database.Users.CreateAsync(new User
@@ -157,11 +157,11 @@ namespace MyMorningNews.Core.Services
         /// <param name="rawToken">Token from the link.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>The verified user.</returns>
-        /// <exception cref="ArgumentException">The link is invalid, used, or expired.</exception>
+        /// <exception cref="AccountLinkException">The link is invalid (LinkInvalid), already used (LinkUsed), or expired (LinkExpired).</exception>
         public async Task<User> VerifyEmailAsync(string? rawToken, CancellationToken token = default)
         {
             AccountToken t = await UseTokenAsync(rawToken, AccountTokenKindEnum.VerifyEmail, token).ConfigureAwait(false);
-            User user = await _Database.Users.ReadAsync(t.TenantId, t.UserId, token).ConfigureAwait(false) ?? throw new ArgumentException("This link is no longer valid.");
+            User user = await _Database.Users.ReadAsync(t.TenantId, t.UserId, token).ConfigureAwait(false) ?? throw new AccountLinkException(AccountLinkException.Invalid, "This link is no longer valid.");
             if (!user.EmailVerifiedUtc.HasValue)
             {
                 user.EmailVerifiedUtc = DateTime.UtcNow;
@@ -204,12 +204,13 @@ namespace MyMorningNews.Core.Services
         /// <param name="newPassword">New password.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>The user.</returns>
-        /// <exception cref="ArgumentException">The link is invalid or the password is too short.</exception>
+        /// <exception cref="ArgumentException">The password is too short.</exception>
+        /// <exception cref="AccountLinkException">The link is invalid (LinkInvalid), already used (LinkUsed), or expired (LinkExpired).</exception>
         public async Task<User> ResetPasswordAsync(string? rawToken, string? newPassword, CancellationToken token = default)
         {
             ValidatePassword(newPassword);
             AccountToken t = await UseTokenAsync(rawToken, AccountTokenKindEnum.ResetPassword, token).ConfigureAwait(false);
-            User user = await _Database.Users.ReadAsync(t.TenantId, t.UserId, token).ConfigureAwait(false) ?? throw new ArgumentException("This link is no longer valid.");
+            User user = await _Database.Users.ReadAsync(t.TenantId, t.UserId, token).ConfigureAwait(false) ?? throw new AccountLinkException(AccountLinkException.Invalid, "This link is no longer valid.");
             user.PasswordSha256 = SecretHasher.Sha256Hex(newPassword!);
             if (user.SelfSignup && !user.EmailVerifiedUtc.HasValue) user.EmailVerifiedUtc = DateTime.UtcNow;
             await _Database.Users.UpdateAsync(user, token).ConfigureAwait(false);
@@ -354,11 +355,15 @@ namespace MyMorningNews.Core.Services
 
         private async Task<AccountToken> UseTokenAsync(string? rawToken, AccountTokenKindEnum kind, CancellationToken token)
         {
-            if (String.IsNullOrWhiteSpace(rawToken) || rawToken.Length > 200) throw new ArgumentException("This link is not valid.");
+            if (String.IsNullOrWhiteSpace(rawToken) || rawToken.Length > 200) throw new AccountLinkException(AccountLinkException.Invalid, "This link is not valid.");
             AccountToken? t = await _Database.AccountTokens.ReadByHashAsync(SecretHasher.Sha256Hex(rawToken.Trim()), token).ConfigureAwait(false);
-            if (t == null || t.Kind != kind || !t.Active) throw new ArgumentException("This link is not valid.");
-            if (t.UsedUtc.HasValue) throw new ArgumentException("This link was already used.");
-            if (t.ExpiresUtc < DateTime.UtcNow) throw new ArgumentException("This link has expired. Ask for a new one.");
+            if (t == null || t.Kind != kind || !t.Active) throw new AccountLinkException(AccountLinkException.Invalid, "This link is not valid.");
+            // Holding the token proves the reader received the email, so saying it was used reveals nothing new.
+            if (t.UsedUtc.HasValue)
+                throw new AccountLinkException(AccountLinkException.Used, kind == AccountTokenKindEnum.VerifyEmail
+                    ? "This link was already used, so your email address is confirmed. Sign in to continue."
+                    : "This link was already used. Ask for a new one if you still need to reset your password.");
+            if (t.ExpiresUtc < DateTime.UtcNow) throw new AccountLinkException(AccountLinkException.Expired, "This link has expired. Ask for a new one.");
             t.UsedUtc = DateTime.UtcNow;
             await _Database.AccountTokens.UpdateAsync(t, token).ConfigureAwait(false);
             return t;

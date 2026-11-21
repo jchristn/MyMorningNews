@@ -6,6 +6,7 @@ namespace MyMorningNews.Core.Services
     using System.Threading;
     using System.Threading.Tasks;
     using MyMorningNews.Core.Database;
+    using MyMorningNews.Core.Helpers;
     using MyMorningNews.Core.Models;
     using MyMorningNews.Core.Prompts;
     using MyMorningNews.Core.Requests;
@@ -131,7 +132,7 @@ namespace MyMorningNews.Core.Services
             }
             catch (Exception ex) when (ex is FormatException || ex is ArgumentException)
             {
-                errors["content"] = ex.Message;
+                errors["content"] = ErrorText.Plain(ex);
                 return errors;
             }
 

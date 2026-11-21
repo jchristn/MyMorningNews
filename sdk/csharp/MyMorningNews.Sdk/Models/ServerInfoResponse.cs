@@ -7,7 +7,7 @@ namespace MyMorningNews.Sdk.Models
     using System.Collections.Generic;
 
     /// <summary>
-    /// Server version, configuration summary, and bundled tool links.
+    /// Server version, configuration summary, and bundled tool links. Everyone signed in sees the product, version, and uptime; the runtime, database, pending restart, and bundled tool details go only to global administrators.
     /// </summary>
     public class ServerInfoResponse
     {
@@ -32,29 +32,29 @@ namespace MyMorningNews.Sdk.Models
         public long UptimeSeconds { get; set; } = 0;
 
         /// <summary>
-        /// Database provider.
+        /// Database provider. Null unless the caller is a global administrator.
         /// </summary>
-        public string DatabaseType { get; set; } = String.Empty;
+        public string? DatabaseType { get; set; } = null;
 
         /// <summary>
-        /// Applied schema version. Default 0.
+        /// Applied schema version. Null unless the caller is a global administrator.
         /// </summary>
-        public int SchemaVersion { get; set; } = 0;
+        public int? SchemaVersion { get; set; } = null;
 
         /// <summary>
-        /// Whether pgvector is available. Default false.
+        /// Whether pgvector is available. Null unless the caller is a global administrator.
         /// </summary>
-        public bool VectorAvailable { get; set; } = false;
+        public bool? VectorAvailable { get; set; } = null;
 
         /// <summary>
-        /// .NET runtime version.
+        /// .NET runtime version. Null unless the caller is a global administrator.
         /// </summary>
-        public string RuntimeVersion { get; set; } = String.Empty;
+        public string? RuntimeVersion { get; set; } = null;
 
         /// <summary>
-        /// Host operating system.
+        /// Host operating system. Null unless the caller is a global administrator.
         /// </summary>
-        public string OperatingSystem { get; set; } = String.Empty;
+        public string? OperatingSystem { get; set; } = null;
 
         /// <summary>
         /// Source repository. Default "https://github.com/jchristn/MyMorningNews".
@@ -62,12 +62,12 @@ namespace MyMorningNews.Sdk.Models
         public string RepositoryUrl { get; set; } = "https://github.com/jchristn/MyMorningNews";
 
         /// <summary>
-        /// Bundled tools.
+        /// Bundled tools (Grafana, Prometheus, Tempo, Loki). Empty unless the caller is a global administrator.
         /// </summary>
         public List<ExternalServiceInfo> ExternalServices { get; set; } = new List<ExternalServiceInfo>();
 
         /// <summary>
-        /// Settings saved but awaiting restart.
+        /// Settings saved but awaiting restart. Empty unless the caller is a global administrator.
         /// </summary>
         public List<string> PendingRestart { get; set; } = new List<string>();
 

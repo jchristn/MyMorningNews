@@ -1182,6 +1182,7 @@ class TokenResponse(Model):
     user: Optional[User] = None
     refresh_token: Optional[str] = None
     refresh_expires_utc: Optional[str] = None
+    deletion_cancelled: Optional[bool] = None
 
 
 @dataclass
@@ -1285,6 +1286,8 @@ class ClientConfig(Model):
     audio_enabled: Optional[bool] = None
     email_enabled: Optional[bool] = None
     minimum_app_version: Optional[str] = None
+    app_url: Optional[str] = None
+    deletion_grace_days: Optional[int] = None
     links: Optional[Dict[str, str]] = None
     copyright: Optional[str] = None
 

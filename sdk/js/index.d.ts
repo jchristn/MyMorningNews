@@ -235,6 +235,8 @@ export interface TokenResponse {
     user: UserProfile | null;
     refreshToken: string | null;
     refreshExpiresUtc: string | null;
+    /** True when this sign-in cancelled a pending account deletion. */
+    deletionCancelled?: boolean;
 }
 
 export interface TokenDetails {

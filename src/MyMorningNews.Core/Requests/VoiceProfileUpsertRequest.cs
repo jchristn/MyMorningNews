@@ -11,6 +11,7 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// Name.
         /// </summary>
+        [TextLimit(128, AllowBlank = false)]
         public string? Name { get; set; } = null;
 
         /// <summary>
@@ -21,21 +22,25 @@ namespace MyMorningNews.Core.Requests
         /// <summary>
         /// Base URL; empty uses Tts.Endpoint.
         /// </summary>
+        [TextLimit(512)]
         public string? Endpoint { get; set; } = null;
 
         /// <summary>
         /// Model.
         /// </summary>
+        [TextLimit(128)]
         public string? Model { get; set; } = null;
 
         /// <summary>
         /// Narrator voice.
         /// </summary>
+        [TextLimit(128)]
         public string? Voice { get; set; } = null;
 
         /// <summary>
         /// Second voice; empty clears it.
         /// </summary>
+        [TextLimit(128)]
         public string? SecondaryVoice { get; set; } = null;
 
         /// <summary>

@@ -14,8 +14,10 @@ It is a separate process, `src/MyMorningNews.McpServer`, built on [Voltaic](http
 Run it:
 
 ```bash
-# Docker (the server must be running): Streamable HTTP on 127.0.0.1:12105
-cd docker && docker compose --profile mcp up -d
+# Docker (the server must be running): Streamable HTTP on 127.0.0.1:12105. Keep --build: the image tag
+# mymorningnews/mcp:local is shared by every compose project and checkout, so without it compose may start an
+# image built from older code.
+cd docker && docker compose --profile mcp up -d --build
 
 # From source: Streamable HTTP
 dotnet run --project src/MyMorningNews.McpServer -f net10.0 -- --api-url http://127.0.0.1:12100

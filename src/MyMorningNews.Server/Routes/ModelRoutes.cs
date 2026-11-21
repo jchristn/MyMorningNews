@@ -219,7 +219,7 @@ namespace MyMorningNews.Server.Routes
             }
             catch (Exception ex) when (ex is ModelCallException || ex is VaultSecretUnavailableException || ex is ArgumentException)
             {
-                await SendErrorAsync(ctx, 502, "UpstreamError", ex.Message).ConfigureAwait(false);
+                await SendErrorAsync(ctx, 502, "UpstreamError", MyMorningNews.Core.Helpers.ErrorText.Plain(ex)).ConfigureAwait(false);
             }
         }
 

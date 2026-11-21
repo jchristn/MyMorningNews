@@ -1,5 +1,5 @@
 {
-  "_about": "Supplemental map for src/Tools/apidocs/generate_rest_api.py and generate_postman.py. OpenAPI carries no response schemas, so each route's response type, status codes, and notes live here. tags orders and describes the folders and sections. bodies holds an example request body per schema (Postman variables in {{braces}}). examples holds response examples per type. samples gives the values the Markdown shows for each {{variable}}. pathVariables names the Postman variable for a path parameter where the default rule (topics/{id} gives topicId) does not fit. parameters notes query values. captures, postmanQuery, variableDefaults, and lastInFolder shape the Postman collection. (c) 2026 Lattice AI LLC",
+  "_about": "Supplemental map for src/Tools/apidocs/generate_rest_api.py and generate_postman.py. OpenAPI carries no response schemas, so each route's response type, status codes, and notes live here. tags orders and describes the folders and sections. bodies holds an example request body per schema (Postman variables in {{braces}}). examples holds response examples per type. samples gives the values the Markdown shows for each {{variable}}. pathVariables names the Postman variable for a path parameter where the default rule (topics/{id} gives topicId) does not fit. parameters notes query values. captures (a \"json:\" path stores the value as JSON text), postmanQuery, postmanBodies (Postman-only bodies; a string is sent as is), postmanAuth, variableDefaults, firstInFolder, lastInFolder, cleanupFolder (every delete, run after the resource folders), and finalFolder (logout and restart, run last) shape the Postman collection so a run from top to bottom works on a fresh stack and leaves the administrator's password alone. (c) 2026 Lattice AI LLC",
   "tags": {
     "Health": "An anonymous liveness and readiness probe. Container healthchecks and load balancers call it.",
     "Server": "Public client configuration that the dashboard and mobile app read before anyone signs in: feature flags, the minimum app version, legal links, and the MCP URL.",
@@ -48,6 +48,7 @@
     "MCP servers": "Remote MCP tool servers that agentic research may call, their discovered tools, and the per-tool allow-list."
   },
   "pathVariables": {
+    "/v1.0/tenants/{tenantId}$": "newTenantId",
     "/v1.0/api/vault/credentials/{id}": "vaultCredentialId",
     "/v1.0/api/requests/{id}": "researchRequestId",
     "/v1.0/api/audit/{id}": "auditId",
@@ -269,7 +270,7 @@
     "PUT /v1.0/api/email-preferences": {"response": "EmailPreferencesResponse", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "409": "Conflict"}},
     "POST /v1.0/api/feedback": {"response": "Feedback", "status": {"201": "Created", "400": "BadRequest, TenantRequired", "403": "Forbidden"}},
     "GET /v1.0/api/feedback": {"response": "EnumerationResult<Feedback>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "GET /v1.0/public/feedback/{token}": {"response": "text/html", "status": {"200": "OK", "404": "NotFound", "429": "TooManyRequests"}, "notes": "Renders the one-click feedback page from an email link. The optional `a` query value preselects an action."},
+    "GET /v1.0/public/feedback/{token}": {"response": "text/html", "status": {"200": "OK", "404": "NotFound", "429": "TooManyRequests"}, "notes": "Renders the feedback page from an email rating link. The optional `a` query value preselects an action, and the page asks the reader to confirm it with one button; opening the link records nothing, so mail scanners that follow links cannot rate."},
     "POST /v1.0/public/feedback/{token}": {"response": "text/html", "status": {"200": "OK", "400": "BadRequest", "404": "NotFound", "429": "TooManyRequests"}, "notes": "Form post (`application/x-www-form-urlencoded`) from the feedback page."},
     "GET /v1.0/public/unsubscribe/{token}": {"response": "text/html", "status": {"200": "OK", "404": "NotFound", "429": "TooManyRequests"}},
     "POST /v1.0/public/unsubscribe/{token}": {"response": "text/html", "status": {"200": "OK", "404": "NotFound", "429": "TooManyRequests"}, "notes": "Form post (`application/x-www-form-urlencoded`) from the unsubscribe page."},
@@ -438,7 +439,7 @@
     "GET /v1.0/api/settings": {"response": "SettingsResponse", "status": {"200": "OK", "403": "Forbidden"}},
     "PUT /v1.0/api/settings": {"response": "SettingsUpdateResult", "status": {"200": "OK", "400": "BadRequest, ValidationFailed", "403": "Forbidden"}},
     "POST /v1.0/api/settings/restart": {"response": "ErrorResponse", "status": {"202": "Accepted (the body is an ErrorResponse-shaped notice with error Accepted)", "403": "Forbidden"}},
-    "GET /v1.0/api/server-info": {"response": "ServerInfoResponse", "status": {"200": "OK", "403": "Forbidden"}},
+    "GET /v1.0/api/server-info": {"response": "ServerInfoResponse", "status": {"200": "OK", "403": "Forbidden"}, "notes": "Everyone signed in gets the product, version, start time, and uptime. The database type, schema version, pgvector flag, .NET runtime, operating system, pending restarts, and bundled tool links (Grafana, Prometheus, Tempo, Loki) are returned only to global administrators."},
     "GET /v1.0/api/briefing-templates": {"response": "EnumerationResult<BriefingTemplate>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
     "POST /v1.0/api/briefing-templates": {"response": "TemplateDetailResponse", "status": {"201": "Created", "400": "BadRequest, TenantRequired", "403": "Forbidden"}},
     "POST /v1.0/api/briefing-templates/validate": {"response": "TemplateValidationResponse", "status": {"200": "OK", "400": "BadRequest", "403": "Forbidden"}},
@@ -475,7 +476,7 @@
     "PUT /v1.0/api/topics/{id}/dimensions/{dimensionId}": {"response": "TopicDimension", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
     "DELETE /v1.0/api/topics/{id}/dimensions/{dimensionId}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
     "GET /v1.0/api/topics/{id}/constraints": {"response": "List<TopicConstraint>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/topics/{id}/constraints": {"response": "TopicConstraint", "status": {"201": "Created", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
+    "POST /v1.0/api/topics/{id}/constraints": {"response": "TopicConstraint", "status": {"200": "OK (the topic already had this constraint; it is returned unchanged)", "201": "Created", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
     "PUT /v1.0/api/topics/{id}/constraints/{constraintId}": {"response": "TopicConstraint", "status": {"200": "OK", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
     "DELETE /v1.0/api/topics/{id}/constraints/{constraintId}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
     "GET /v1.0/api/topics/{id}/recipients": {"response": "List<TopicRecipient>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
@@ -502,10 +503,10 @@
     "GET /openapi.json": {"response": "application/json", "status": {"200": "OK"}, "notes": "The OpenAPI 3 document this reference is generated from."},
     "GET /swagger": {"response": "text/html", "status": {"200": "OK"}, "notes": "Swagger UI over /openapi.json."},
     "POST /v1.0/public/signup": {"response": "SignupResult", "status": {"202": "Accepted (same body whether or not the email has an account)", "400": "BadRequest, VerificationFailed", "404": "SignupClosed", "429": "QuotaExceeded"}},
-    "POST /v1.0/public/verify-email": {"response": "VerifyResult", "status": {"200": "OK", "400": "BadRequest (expired, used, or unknown link)"}},
+    "POST /v1.0/public/verify-email": {"response": "VerifyResult", "status": {"200": "OK", "400": "LinkUsed (already used: the address is confirmed, so sign in), LinkExpired, LinkInvalid, BadRequest"}},
     "POST /v1.0/public/verify-email/resend": {"response": "Message", "status": {"202": "Accepted", "429": "QuotaExceeded"}},
     "POST /v1.0/public/password/forgot": {"response": "Message", "status": {"202": "Accepted", "429": "QuotaExceeded"}},
-    "POST /v1.0/public/password/reset": {"response": "ResetResult", "status": {"200": "OK", "400": "BadRequest (weak password, or expired, used, or unknown link)"}},
+    "POST /v1.0/public/password/reset": {"response": "ResetResult", "status": {"200": "OK", "400": "ValidationFailed (weak password), LinkUsed, LinkExpired, LinkInvalid, BadRequest"}},
     "GET /.well-known/apple-app-site-association": {"response": "AppleAppSiteAssociation", "status": {"200": "OK", "404": "NotConfigured"}},
     "GET /.well-known/assetlinks.json": {"response": "AssetLinks", "status": {"200": "OK", "404": "NotConfigured"}},
     "GET /v1.0/api/account/usage": {"response": "UsageMeter", "status": {"200": "OK", "400": "BadRequest (access keys are refused)", "403": "Forbidden"}},
@@ -540,7 +541,7 @@
     },
     "POST /v1.0/api/refinement-sessions": {
       "refinementSessionId": "session.id",
-      "topicId": "topic.id"
+      "draftTopicId": "topic.id"
     },
     "POST /v1.0/api/topics/{id}/refine": {
       "refinementSessionId": "session.id"
@@ -573,14 +574,100 @@
     "POST /v1.0/token/refresh-token": {
       "token": "token",
       "refreshToken": "refreshToken"
+    },
+    "GET /v1.0/api/settings": {
+      "settingsJson": "json:settings"
+    },
+    "GET /v1.0/api/admin/plans": {
+      "planId": "0.plan.id"
+    },
+    "POST /v1.0/api/admin/plans": {
+      "planId": "plan.id"
+    },
+    "POST /v1.0/api/admin/plan-assignments": {
+      "planAssignmentId": "id"
+    },
+    "POST /v1.0/tenants/{tenantId}/users/{userId}/assignments": {
+      "assignmentId": "id"
+    },
+    "POST /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes": {
+      "scopeId": "id"
+    },
+    "GET /v1.0/api/audit": {
+      "auditId": "items.0.id"
+    },
+    "GET /v1.0/api/request-history": {
+      "requestHistoryId": "items.0.id"
+    },
+    "GET /v1.0/api/llm-calls": {
+      "llmCallId": "items.0.id"
+    },
+    "GET /v1.0/api/prompts": {
+      "promptId": "items.0.id"
+    },
+    "GET /v1.0/api/email-messages": {
+      "emailMessageId": "items.0.id"
+    },
+    "GET /v1.0/api/findings": {
+      "findingId": "items.0.id"
+    },
+    "GET /v1.0/api/sources": {
+      "sourceId": "items.0.id"
+    },
+    "GET /v1.0/api/predictions": {
+      "predictionId": "items.0.id"
+    },
+    "GET /v1.0/api/suggestions": {
+      "suggestionId": "items.0.id"
+    },
+    "GET /v1.0/api/briefings": {
+      "briefingId": "items.0.id"
+    },
+    "GET /v1.0/api/artifacts": {
+      "artifactId": "items.0.id"
+    },
+    "GET /v1.0/api/media": {
+      "mediaId": "items.0.id"
     }
   },
   "variableDefaults": {
     "assetName": "logo.png"
   },
-  "lastInFolder": [
-    "DELETE /v1.0/token"
+  "firstInFolder": [
+    "POST /v1.0/api/topics/{id}/run",
+    "POST /v1.0/api/email/test"
   ],
+  "lastInFolder": [
+    "POST /v1.0/api/topics/{id}/archive",
+    "POST /v1.0/api/topics/{id}/resume"
+  ],
+  "cleanupFolder": {
+    "name": "Cleanup",
+    "description": "Every delete in the API, collected here so a run of the whole collection creates and uses each record before deleting it. The folders are undone in reverse order (the newest records first, the tenant and user created earlier last). Bulk deletes remove every matching record, not only the ones this collection made."
+  },
+  "finalFolder": {
+    "name": "Run last",
+    "description": "Requests that end the session or the server. Delete my account is refused for the protected administrator. Logout revokes the token every other request uses. Restart uses the administration key and takes the server down for a few seconds.",
+    "keys": [
+      "POST /v1.0/api/account/delete",
+      "DELETE /v1.0/token",
+      "POST /v1.0/api/settings/restart"
+    ]
+  },
+  "postmanBodies": {
+    "POST /v1.0/api/account/delete": {
+      "password": "{{password}}",
+      "confirm": true
+    },
+    "PUT /v1.0/api/me/password": {
+      "currentPassword": "{{password}}",
+      "newPassword": "{{password}}"
+    },
+    "PUT /v1.0/api/settings": "{{settingsJson}}"
+  },
+  "postmanAuth": {
+    "POST /v1.0/api/settings/restart": "adminApiKey"
+  },
   "postmanQuery": {
     "POST /v1.0/api/topics/{id}/run": {
       "dryRun": "true"
@@ -645,7 +732,7 @@
     "CredentialCreateRequest": {
       "userId": "{{userId}}",
       "name": "Nightly export job",
-      "authMode": "SignedRequest",
+      "authMode": "Hybrid",
       "scopes": [],
       "resourceIds": [],
       "expiresUtc": "2027-01-01T00:00:00Z"

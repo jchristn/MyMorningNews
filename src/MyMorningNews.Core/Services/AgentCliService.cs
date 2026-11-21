@@ -187,6 +187,17 @@ namespace MyMorningNews.Core.Services
         }
 
         /// <summary>
+        /// Whether a caller may connect (create or change) an agent CLI endpoint: CLIs are allowed, and either anyone may
+        /// connect them or the caller is a global administrator (<see cref="ModelSettings.AgentClisAdminsOnly"/>).
+        /// </summary>
+        /// <param name="globalAdmin">Whether the caller is a global administrator.</param>
+        /// <returns>True when the caller may connect one.</returns>
+        public bool AllowedFor(bool globalAdmin)
+        {
+            return Allowed() && (globalAdmin || !_Settings().AgentClisAdminsOnly);
+        }
+
+        /// <summary>
         /// Run one turn. The last message is the prompt; earlier non-system messages are history; system messages form the
         /// system prompt.
         /// </summary>

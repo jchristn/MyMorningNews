@@ -151,6 +151,7 @@ namespace MyMorningNews.Server.Routes
 
             bool cli = AgentCliService.IsAgentCli(e.Provider);
             if (cli && !Server.Models.AgentClis.Allowed()) return "Agent CLIs are turned off on this server (Models.AllowAgentClis). Use a provider API key instead.";
+            if (cli && !Server.Models.AgentClis.AllowedFor(Context(ctx).IsAdmin)) return "On this server, only administrators can connect agent CLIs. Use a provider API key instead.";
             if (req.AuthMethod.HasValue)
             {
                 if (!ModelCredentials.Accepts(e.Provider, req.AuthMethod.Value)) return e.Provider + " cannot sign in with " + AgentCliService.Describe(req.AuthMethod.Value, e.Provider) + ".";

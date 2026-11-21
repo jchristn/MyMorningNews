@@ -35,7 +35,8 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "Options", "Administrators see every provider with its sign-in methods, including agent CLIs and their sign-in files", OptionsAsync),
                 Cases.Case(S, "ClaudeCodeToken", "Claude Code connects with a claude setup-token token in a private home, a rejected token is reported, and an API key pasted as a token is caught", ClaudeCodeTokenAsync),
                 Cases.Case(S, "CodexAuthFile", "Codex connects with a pasted auth.json written privately once, a refreshed file is kept, and deleting the endpoint removes it", CodexAuthFileAsync),
-                Cases.Case(S, "AgentClisOff", "With agent CLIs turned off they are offered as unavailable and cannot be connected", AgentClisOffAsync)
+                Cases.Case(S, "AgentClisOff", "With agent CLIs turned off they are offered as unavailable and cannot be connected", AgentClisOffAsync),
+                Cases.Case(S, "AgentClisAdminsOnly", "With agent CLIs limited to administrators, a global administrator may connect one and a tenant administrator may not", AgentClisAdminsOnlyAsync)
             });
         }
 
@@ -289,6 +290,35 @@ namespace Test.Shared.Suites
             finally
             {
                 server.Context.Settings.Models.AllowAgentClis = allowed;
+            }
+        }
+        private static async Task AgentClisAdminsOnlyAsync(CancellationToken token)
+        {
+            MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+            ModelSettings models = server.Context.Settings.Models;
+            bool allowed = models.AllowAgentClis;
+            bool adminsOnly = models.AgentClisAdminsOnly;
+            try
+            {
+                models.AllowAgentClis = true;
+                models.AgentClisAdminsOnly = true;
+                TestUser ta = (await WorkspaceAsync(token).ConfigureAwait(false))[0];
+                SetupOptionsResponse mine = (await ta.Client.GetAsync("/v1.0/api/setup/options", token).ConfigureAwait(false)).Expect(200, "tenant admin options").Json<SetupOptionsResponse>();
+                SetupProviderOption cc = mine.Providers.Single(p => p.Provider == ModelProviderEnum.ClaudeCode);
+                Assert.True(!cc.Available && cc.TurnedOff && cc.UnavailableReason!.Contains("only administrators", StringComparison.Ordinal), "a tenant administrator cannot use agent CLIs: " + cc.UnavailableReason);
+                Assert.True(mine.Providers.Where(p => p.Group == SetupProviderGroupEnum.Api).All(p => p.Available), "API keys stay available");
+                (await ta.Client.PostAsync("/v1.0/api/setup/connect", new { provider = "ClaudeCode", authMethod = "AccessToken", secret = "sk-ant-oat01-x" }, token).ConfigureAwait(false)).Expect(400, "connect refused");
+                (await ta.Client.PostAsync("/v1.0/api/model-endpoints", new { name = "cc", provider = "ClaudeCode", authMethod = "ServerSignIn" }, token).ConfigureAwait(false)).Expect(400, "endpoint refused");
+
+                TestApiClient global = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
+                SetupOptionsResponse theirs = (await global.GetAsync("/v1.0/api/setup/options", token).ConfigureAwait(false)).Expect(200, "global admin options").Json<SetupOptionsResponse>();
+                SetupProviderOption gcc = theirs.Providers.Single(p => p.Provider == ModelProviderEnum.ClaudeCode);
+                Assert.True(!gcc.TurnedOff && (gcc.Available || !gcc.Installed), "a global administrator may connect agent CLIs (unless the CLI is not installed here)");
+            }
+            finally
+            {
+                models.AllowAgentClis = allowed;
+                models.AgentClisAdminsOnly = adminsOnly;
             }
         }
     }

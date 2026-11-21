@@ -10,8 +10,10 @@ services:
       MYMORNINGNEWS_HOSTING_TURNSTILE_SITE_KEY: ${MYMORNINGNEWS_HOSTING_TURNSTILE_SITE_KEY:-}
       MYMORNINGNEWS_HOSTING_TURNSTILE_SECRET_KEY: ${MYMORNINGNEWS_HOSTING_TURNSTILE_SECRET_KEY:-}
       MYMORNINGNEWS_HOSTING_APPLE_TEAM_ID: ${MYMORNINGNEWS_HOSTING_APPLE_TEAM_ID:-}
-      # Agent CLIs run inside the server as its own user; a shared service uses provider API keys only.
-      MYMORNINGNEWS_MODELS_ALLOW_AGENT_CLIS: "false"
+      # Agent CLIs run inside the server as its own user. Anyone can sign up here, so only global administrators may
+      # connect them (for example a Claude Code setup token); everyone else uses provider API keys.
+      MYMORNINGNEWS_MODELS_ALLOW_AGENT_CLIS: "true"
+      MYMORNINGNEWS_MODELS_AGENT_CLIS_ADMINS_ONLY: "true"
 
   caddy:
     image: caddy:2.11.8-alpine

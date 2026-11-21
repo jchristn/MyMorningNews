@@ -60,7 +60,7 @@ namespace MyMorningNews.Server.Routes
         {
             string? tenantId = await AdminTenantAsync(ctx).ConfigureAwait(false);
             if (tenantId == null) return;
-            await SendJsonAsync(ctx, 200, Server.Setup.GetOptions()).ConfigureAwait(false);
+            await SendJsonAsync(ctx, 200, Server.Setup.GetOptions(Context(ctx).IsAdmin)).ConfigureAwait(false);
         }
 
         private async Task ConnectAsync(HttpContextBase ctx)
@@ -70,7 +70,7 @@ namespace MyMorningNews.Server.Routes
             SetupConnectRequest? req = await ReadBodyAsync<SetupConnectRequest>(ctx).ConfigureAwait(false);
             if (req == null) return;
             RequestContext rc = Context(ctx);
-            SetupStatusResponse status = await Server.Setup.ConnectAsync(tenantId, rc.UserId, req, ctx.Token).ConfigureAwait(false);
+            SetupStatusResponse status = await Server.Setup.ConnectAsync(tenantId, rc.UserId, req, rc.IsAdmin, ctx.Token).ConfigureAwait(false);
             await Server.Audit.RecordAsync(AuditEventTypeEnum.VaultCredentialChanged, rc, 200, "Chat model connected on the Setup page: " + req.Provider + " (" + (req.AuthMethod?.ToString() ?? "recommended sign-in") + ").", ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 200, status).ConfigureAwait(false);
         }

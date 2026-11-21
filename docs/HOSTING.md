@@ -149,16 +149,23 @@ Missing ("The hosted service's model key is not configured"), so the topic wizar
 
 ## Agent CLIs
 
-A self-hosted server can run Claude Code, Codex, Gemini CLI, and Mux inside the server container as model endpoints,
-so a workspace can use an AI subscription instead of an API key. The hosted overlay turns this off
-(`MYMORNINGNEWS_MODELS_ALLOW_AGENT_CLIS: "false"`):
+A server can run Claude Code, Codex, Gemini CLI, and Mux inside the server container as model endpoints, so a
+workspace can use an AI subscription (a `claude setup-token` token, a Codex `auth.json`) instead of an API key. The
+hosted profiles allow them for global administrators only:
 
-- The CLIs run as the server's own user. Each endpoint gets a private home folder and an empty working folder, in
-  the CLI's most restricted permission mode, but a shared service should not run tenant-chosen programs at all.
-- The "Already signed in on the server" method would let any tenant administrator use the operator's own sign-in.
+```yaml
+MYMORNINGNEWS_MODELS_ALLOW_AGENT_CLIS: "true"
+MYMORNINGNEWS_MODELS_AGENT_CLIS_ADMINS_ONLY: "true"
+```
 
-With the setting off, `GET /v1.0/api/setup/options` lists the CLIs with `available` false and a reason, and
-`POST /v1.0/api/setup/connect` refuses them with 400. Hosted tenants use the platform key or a provider API key.
+- The CLIs run as the server's own user. Each endpoint gets a private home folder and an empty working folder in the
+  CLI's most restricted permission mode, but anyone can sign up on the hosted service, and sign-ups are administrators
+  of their own workspace, so they must not be able to start programs on the server.
+- The "Already signed in on the server" method uses the operator's own sign-in, which only operators should use.
+
+For everyone else, `GET /v1.0/api/setup/options` lists the CLIs with `available` false, `turnedOff` true, and a reason,
+and `POST /v1.0/api/setup/connect` and `POST /v1.0/api/model-endpoints` refuse them with 400; they use the platform key
+or a provider API key. `MYMORNINGNEWS_MODELS_ALLOW_AGENT_CLIS=false` turns the CLIs off for everyone.
 
 ## Private network blocking
 

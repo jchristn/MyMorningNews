@@ -51,6 +51,13 @@ namespace MyMorningNews.Core.Settings
         public bool AllowAgentClis { get; set; } = true;
 
         /// <summary>
+        /// When agent CLIs are allowed, limit connecting them to global administrators. Default false. The hosted profile
+        /// turns it on: anyone can sign up there, so only the server's operators may run CLIs inside the server.
+        /// </summary>
+        [Setting(Description = "Only global administrators can connect agent CLI endpoints.", EnvironmentVariable = "MODELS_AGENT_CLIS_ADMINS_ONLY")]
+        public bool AgentClisAdminsOnly { get; set; } = false;
+
+        /// <summary>
         /// Folder that holds a private home folder for each agent CLI endpoint (its sign-in file and an empty working
         /// folder). Default .mymorningnews/cli under the server user's home, which the Docker stack keeps in the clihome volume.
         /// </summary>

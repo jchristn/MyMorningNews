@@ -117,22 +117,23 @@ namespace MyMorningNews.Core.Services
         /// <summary>
         /// Model providers the Setup page can connect on this server, with their sign-in methods.
         /// </summary>
+        /// <param name="globalAdmin">Whether the caller is a global administrator (agent CLIs may be limited to them).</param>
         /// <returns>Options.</returns>
-        public SetupOptionsResponse GetOptions()
+        public SetupOptionsResponse GetOptions(bool globalAdmin = false)
         {
             SetupOptionsResponse options = new SetupOptionsResponse();
             string chat = _Settings().Models.DefaultChatModel;
-            options.Providers.Add(Option(ModelProviderEnum.Anthropic, SetupProviderGroupEnum.Api, true, chat, false, null));
-            options.Providers.Add(Option(ModelProviderEnum.OpenAi, SetupProviderGroupEnum.Api, false, null, false, null));
-            options.Providers.Add(Option(ModelProviderEnum.Gemini, SetupProviderGroupEnum.Api, false, null, false, null));
-            options.Providers.Add(Option(ModelProviderEnum.XAi, SetupProviderGroupEnum.Api, false, null, false, null));
-            options.Providers.Add(Option(ModelProviderEnum.OllamaCloud, SetupProviderGroupEnum.Api, false, null, false, null));
-            options.Providers.Add(Option(ModelProviderEnum.ClaudeCode, SetupProviderGroupEnum.AgentCli, false, chat, false, null));
-            options.Providers.Add(Option(ModelProviderEnum.Codex, SetupProviderGroupEnum.AgentCli, false, AgentCliService.DefaultModel, false, null));
-            options.Providers.Add(Option(ModelProviderEnum.GeminiCli, SetupProviderGroupEnum.AgentCli, false, AgentCliService.DefaultModel, false, null));
-            options.Providers.Add(Option(ModelProviderEnum.Mux, SetupProviderGroupEnum.AgentCli, false, AgentCliService.DefaultModel, false, null));
-            options.Providers.Add(Option(ModelProviderEnum.Ollama, SetupProviderGroupEnum.SelfHosted, false, null, true, _Settings().Models.DefaultOllamaEndpoint));
-            options.Providers.Add(Option(ModelProviderEnum.OpenAiCompatible, SetupProviderGroupEnum.SelfHosted, false, null, true, null));
+            options.Providers.Add(Option(ModelProviderEnum.Anthropic, SetupProviderGroupEnum.Api, globalAdmin, true, chat, false, null));
+            options.Providers.Add(Option(ModelProviderEnum.OpenAi, SetupProviderGroupEnum.Api, globalAdmin, false, null, false, null));
+            options.Providers.Add(Option(ModelProviderEnum.Gemini, SetupProviderGroupEnum.Api, globalAdmin, false, null, false, null));
+            options.Providers.Add(Option(ModelProviderEnum.XAi, SetupProviderGroupEnum.Api, globalAdmin, false, null, false, null));
+            options.Providers.Add(Option(ModelProviderEnum.OllamaCloud, SetupProviderGroupEnum.Api, globalAdmin, false, null, false, null));
+            options.Providers.Add(Option(ModelProviderEnum.ClaudeCode, SetupProviderGroupEnum.AgentCli, globalAdmin, false, chat, false, null));
+            options.Providers.Add(Option(ModelProviderEnum.Codex, SetupProviderGroupEnum.AgentCli, globalAdmin, false, AgentCliService.DefaultModel, false, null));
+            options.Providers.Add(Option(ModelProviderEnum.GeminiCli, SetupProviderGroupEnum.AgentCli, globalAdmin, false, AgentCliService.DefaultModel, false, null));
+            options.Providers.Add(Option(ModelProviderEnum.Mux, SetupProviderGroupEnum.AgentCli, globalAdmin, false, AgentCliService.DefaultModel, false, null));
+            options.Providers.Add(Option(ModelProviderEnum.Ollama, SetupProviderGroupEnum.SelfHosted, globalAdmin, false, null, true, _Settings().Models.DefaultOllamaEndpoint));
+            options.Providers.Add(Option(ModelProviderEnum.OpenAiCompatible, SetupProviderGroupEnum.SelfHosted, globalAdmin, false, null, true, null));
             return options;
         }
 
@@ -144,18 +145,19 @@ namespace MyMorningNews.Core.Services
         /// <param name="tenantId">Tenant.</param>
         /// <param name="userId">Administrator, when known.</param>
         /// <param name="req">Request.</param>
+        /// <param name="globalAdmin">Whether the caller is a global administrator (agent CLIs may be limited to them).</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Status after the check.</returns>
         /// <exception cref="ArgumentNullException">tenantId or req is null.</exception>
         /// <exception cref="ArgumentException">The request is incomplete, the provider is unavailable, or the secret does not look right.</exception>
         /// <exception cref="KeyNotFoundException">The named endpoint does not exist.</exception>
-        public async Task<SetupStatusResponse> ConnectAsync(string tenantId, string? userId, SetupConnectRequest req, CancellationToken token = default)
+        public async Task<SetupStatusResponse> ConnectAsync(string tenantId, string? userId, SetupConnectRequest req, bool globalAdmin = false, CancellationToken token = default)
         {
             if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));
             ArgumentNullException.ThrowIfNull(req);
             if (!req.Provider.HasValue) throw new FieldValidationException("provider", "Choose a provider.");
             ModelProviderEnum provider = req.Provider.Value;
-            SetupProviderOption option = GetOptions().Providers.FirstOrDefault(o => o.Provider == provider)
+            SetupProviderOption option = GetOptions(globalAdmin).Providers.FirstOrDefault(o => o.Provider == provider)
                 ?? throw new FieldValidationException("provider", provider + " cannot be set up here. Use the Models page.");
             if (!option.Available) throw new FieldValidationException("provider", option.UnavailableReason ?? provider + " is not available on this server.");
             ModelAuthMethodEnum method = req.AuthMethod ?? option.Methods[0].Method;
@@ -718,7 +720,7 @@ namespace MyMorningNews.Core.Services
                 || kind == SearchProviderKindEnum.HostedModelWebSearch;
         }
 
-        private SetupProviderOption Option(ModelProviderEnum provider, SetupProviderGroupEnum group, bool recommended, string? defaultModel, bool needsBaseUrl, string? defaultBaseUrl)
+        private SetupProviderOption Option(ModelProviderEnum provider, SetupProviderGroupEnum group, bool globalAdmin, bool recommended, string? defaultModel, bool needsBaseUrl, string? defaultBaseUrl)
         {
             SetupProviderOption option = new SetupProviderOption
             {
@@ -750,6 +752,12 @@ namespace MyMorningNews.Core.Services
                     option.Available = false;
                     option.TurnedOff = true;
                     option.UnavailableReason = "Agent CLIs are turned off on this server (Models.AllowAgentClis).";
+                }
+                else if (!_Models.AgentClis.AllowedFor(globalAdmin))
+                {
+                    option.Available = false;
+                    option.TurnedOff = true;
+                    option.UnavailableReason = "On this server, only administrators can connect agent CLIs. Use an API key instead.";
                 }
                 else if (!option.Installed)
                 {

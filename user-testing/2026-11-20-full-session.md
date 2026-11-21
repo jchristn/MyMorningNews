@@ -677,42 +677,42 @@ private install; worth deciding for the hosted service.
 
 ## Decisions
 
-To be filled in after the owner reviews the list.
+Decided by the owner on 2026-11-20. Every finding is addressed in this round except where noted.
 
 | Finding | Recommendation | Decision |
 |---|---|---|
-| UT-001 | Fix now | |
-| UT-002 | Fix now (or relabel the page and the README) | |
-| UT-003 | Fix now | |
-| UT-004 | Fix now | |
-| UT-005 | Fix now | |
-| UT-006 | Fix now | |
-| UT-007 | Fix later | |
-| UT-008 | Fix now | |
-| UT-009 | Fix later | |
-| UT-010 | Fix later | |
-| UT-011 | Fix later | |
-| UT-012 | Fix later | |
-| UT-013 | Fix later | |
-| UT-014 | Fix later | |
-| UT-015 | Update the docs | |
-| UT-016 | Fix now (one line) | |
-| UT-017 | Owner decides | |
-| UT-018 | Owner decides | |
-| UT-019 | Owner decides before store submission | |
-| UT-020 | Fix later | |
-| UT-021 | Fix later | |
-| UT-022 | Leave as is, or fix later | |
-| UT-023 | Fix later | |
-| UT-024 | Update the docs | |
-| UT-025 | Update the docs | |
-| UT-026 | Update the docs | |
-| UT-027 | Fix later | |
-| UT-028 | Fix later | |
-| UT-029 | Leave as is, or fix later | |
-| UT-030 | Owner decides | |
-| UT-031 | Update the docs | |
-| UT-032 | Fix later | |
-| UT-033 | Owner decides | |
+| UT-001 | Fix now || Address |
+| UT-002 | Fix now (or relabel the page and the README) || Address: keep the confirm step (it stops link scanners); say so on the page, in the email, and in the README |
+| UT-003 | Fix now || Address |
+| UT-004 | Fix now || Address |
+| UT-005 | Fix now || Address |
+| UT-006 | Fix now || Address |
+| UT-007 | Fix later || Address |
+| UT-008 | Fix now || Address |
+| UT-009 | Fix later || Address |
+| UT-010 | Fix later || Address |
+| UT-011 | Fix later || Address |
+| UT-012 | Fix later || Address |
+| UT-013 | Fix later || Address |
+| UT-014 | Fix later || Address |
+| UT-015 | Update the docs || Address |
+| UT-016 | Fix now (one line) || Address |
+| UT-017 | Owner decides || Won't fix the API: members keep the user directory; Address: show the Users page to members read-only |
+| UT-018 | Owner decides || Address: a run whose fetch reads nothing ends Partially succeeded with a warning and no failure push |
+| UT-019 | Owner decides before store submission || Address: add in-app sign-up, email verification prompt, and forgot password before store submission |
+| UT-020 | Fix later || Address |
+| UT-021 | Fix later || Address |
+| UT-022 | Leave as is, or fix later || Address |
+| UT-023 | Fix later || Address |
+| UT-024 | Update the docs || Address |
+| UT-025 | Update the docs || Address |
+| UT-026 | Update the docs || Address |
+| UT-027 | Fix later || Address |
+| UT-028 | Fix later || Address |
+| UT-029 | Leave as is, or fix later || Address |
+| UT-030 | Owner decides || Address: the subject and summary count what the email shows |
+| UT-031 | Update the docs || Address |
+| UT-032 | Fix later || Address |
+| UT-033 | Owner decides || Address: runtime and schema details for administrators only |
 
 (c) 2026 Lattice AI LLC

@@ -330,8 +330,15 @@
   text-align: center;
 }
 
-.chip-server {
-  max-width: 190px;
+/* The server URL is shown in full (never cut off with an ellipsis); the title gives way instead, and the chip is
+   hidden below 1100px. */
+.topbar-context .chip-server {
+  max-width: none;
+  flex-shrink: 0;
+}
+
+.chip-server-url {
+  white-space: nowrap;
 }
 
 .chip-tenant {

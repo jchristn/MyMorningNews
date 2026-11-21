@@ -242,8 +242,11 @@ Every port is bound to `127.0.0.1`. Grafana's local sign-in is `admin` / `admin`
 git clone https://github.com/jchristn/MyMorningNews.git
 cd MyMorningNews/docker
 cp .env.example .env        # optional: put your Anthropic key in MYMORNINGNEWS_ANTHROPIC_API_KEY
-docker compose up -d --build
+docker compose pull && docker compose up -d
 ```
+
+Every service runs a published image from Docker Hub (`jchristn77/mymorningnews-<type>:latest`); nothing is built
+on your machine.
 
 Open the dashboard at http://127.0.0.1:12101 and sign in. Change these credentials before exposing the stack.
 
@@ -278,7 +281,8 @@ Send the returned token as `Authorization: Bearer <token>`. The OpenAPI document
 http://127.0.0.1:12100/openapi.json and Swagger UI at `/swagger`. [`REST_API.md`](REST_API.md) describes every route,
 and [`assets/postman/`](assets/postman/) has a Postman collection.
 
-Helpers: `docker/update.sh` (or `.bat`) rebuilds and recreates the stack without touching data.
+Helpers: `docker/update.sh` (or `.bat`) pulls the latest images and restarts the stack without touching data
+(`docker compose pull && docker compose down && docker compose up -d && docker ps -a`).
 `docker/factory/reset.sh` (or `.bat`) deletes all data and starts fresh; add `--demo` for a demo account
 (`demo@mymorningnews` / `password`) with topics, finished runs, findings, evidence, predictions, briefings, and
 feedback, created without model calls or an API key.
@@ -341,14 +345,12 @@ The MCP server lets Claude Code, Claude Desktop, and other MCP clients list your
 the evidence behind a finding, and record feedback. It acts only with your own credentials.
 
 ```bash
-cd docker && docker compose --profile mcp up -d --build
+cd docker && docker compose --profile mcp pull && docker compose --profile mcp up -d
 claude mcp add --transport http mymorningnews http://127.0.0.1:12105/mcp --header "Authorization: Bearer <session token>"
 ```
 
-Keep `--build` in that command: every compose project shares the fixed image tags (`mymorningnews/server:local`,
-`mymorningnews/mcp:local`, and so on), so without it compose starts whatever image last carried the tag, which may
-have been built from older code or from another checkout. `docker/update.sh` rebuilds every profile you name in
-`COMPOSE_PROFILES`.
+`docker/update.sh` also updates every profile you name in `COMPOSE_PROFILES`, for example
+`COMPOSE_PROFILES=mcp ./update.sh`.
 
 For a long-lived connection, create an access key under Credentials. Stdio mode, every tool, the resources, and the
 prompts are in [`MCP_API.md`](MCP_API.md). Separately, topics can call tools on remote MCP servers you register under
@@ -381,6 +383,14 @@ MYMORNINGNEWS_TEST_DB="Host=127.0.0.1;Port=12102;Username=postgres;Password=pass
 
 The same suites run under xUnit (`dotnet test src/Test.Xunit3`). The mobile app's checks are `cd mobile && npm run
 verify`.
+
+### Docker images
+
+`docker/compose.yaml` uses only published images. To publish new ones, run `./build-all.sh <tag>` (or `build-all.bat`)
+from the repository root: it builds every image on the Docker cloud builder for `linux/amd64` and `linux/arm64`,
+pushes each as `jchristn77/mymorningnews-<type>:latest` and `:<tag>`, and pulls them back. One image at a time:
+`./build-server.sh <tag>`, and likewise `build-dashboard`, `build-mcp`, `build-searxng`, `build-tts`, `build-ollama`,
+`build-prometheus`, `build-tempo`, `build-loki`, and `build-grafana`. Then `docker/update.sh` runs them.
 
 ## Languages
 

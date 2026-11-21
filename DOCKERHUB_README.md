@@ -30,7 +30,7 @@ A self-hosted research assistant that refines what you care about through an LLM
 ```bash
 git clone https://github.com/jchristn/MyMorningNews.git
 cd MyMorningNews/docker
-docker compose up -d --build
+docker compose pull && docker compose up -d
 ```
 
 Open http://127.0.0.1:12101 and sign in with `admin@mymorningnews` / `password` (tenant `default`, or leave it blank). Change these credentials before exposing the stack.

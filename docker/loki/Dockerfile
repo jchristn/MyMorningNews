@@ -2,3 +2,5 @@
 FROM tarampampam/curl:8.11.1 AS curl
 FROM grafana/loki:3.5.5
 COPY --from=curl /bin/curl /usr/local/bin/curl
+# The configuration is part of the image, so a deployment needs only compose.yaml.
+COPY loki.yaml /etc/loki/loki.yaml

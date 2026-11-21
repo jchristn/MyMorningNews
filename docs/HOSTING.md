@@ -58,7 +58,8 @@ Edit `.env`:
 Then start the stack with the overlay:
 
 ```bash
-docker compose -f compose.yaml -f hosted/compose.yaml up -d --build
+docker compose -f compose.yaml -f hosted/compose.yaml pull
+docker compose -f compose.yaml -f hosted/compose.yaml up -d
 ```
 
 Caddy gets a certificate on first start. Check `https://app.mymorningnews.ai/v1.0/api/health`, then sign in with the
@@ -66,12 +67,13 @@ administrator account and change its password at once.
 
 ## Behind a load balancer
 
-When a load balancer such as an AWS Application Load Balancer terminates TLS, use `hosted/compose.elb.yaml` instead
-of `hosted/compose.yaml`. It runs no Caddy and publishes only the server and the dashboard on the host's interfaces:
-
-```bash
-docker compose -f compose.yaml -f hosted/compose.elb.yaml up -d --build
-```
+When a load balancer such as an AWS Application Load Balancer terminates TLS, use the self-contained deployment in
+`docker/production/` (generated from `docker/compose.yaml` and `hosted/compose.elb.yaml`). It runs no Caddy, publishes
+only the server and the dashboard on the host's interfaces, and needs no source code on the host: copy
+`production/compose.yaml`, `production/update.sh`, `hosted/mymorningnews.json` (as `mymorningnews.json`), and a
+filled-in `.env` into one folder, such as `~/mymorningnews`, and run `./update.sh`
+(`docker compose pull && docker compose down && docker compose up -d && docker ps -a`). See
+`docker/production/README.md`.
 
 | Target group | Host port | Health check | Listener rule |
 |--------------|-----------|--------------|---------------|

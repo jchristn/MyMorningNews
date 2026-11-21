@@ -64,9 +64,9 @@ cp factory/mymorningnews.json server/mymorningnews.json
 
 echo "[3/3] Starting..."
 if [ "$DEMO" = "1" ]; then
-  docker compose "${FILES[@]}" up -d --build
+  docker compose "${FILES[@]}" pull --ignore-pull-failures && docker compose "${FILES[@]}" up -d
 else
-  docker compose up -d --build
+  docker compose pull && docker compose up -d
 fi
 docker ps -a --filter name=mymorningnews
 echo

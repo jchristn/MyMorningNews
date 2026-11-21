@@ -6,11 +6,13 @@ ports 80 and 443 and serves the API and the dashboard on one origin. All other s
 ```bash
 cd docker
 cp .env.example .env    # set real secrets: signing key, admin key, Anthropic key, S3 storage, Expo token
-docker compose -f compose.yaml -f hosted/compose.yaml up -d --build
+docker compose -f compose.yaml -f hosted/compose.yaml pull
+docker compose -f compose.yaml -f hosted/compose.yaml up -d
 ```
 
-- Behind a load balancer that terminates TLS (for example an AWS ALB), use `hosted/compose.elb.yaml` instead: no
-  Caddy, and only the server (8000) and dashboard (8080) published. See `docs/HOSTING.md`, "Behind a load balancer".
+- Behind a load balancer that terminates TLS (for example an AWS ALB), use `hosted/compose.elb.yaml` instead (no
+  Caddy, and only the server on 8000 and the dashboard on 8080 published), or the self-contained `docker/production/`
+  folder, which needs no source code on the host. See `docs/HOSTING.md`, "Behind a load balancer".
 - `hosted/mymorningnews.json` is the server settings file for the hosted profile: CORS limited to the app origin,
   public sign-up with email verification, the Free plan as the default, private-network blocking, platform
   credentials by reference, and a short list of disposable email domains.

@@ -2,3 +2,5 @@
 FROM tarampampam/curl:8.11.1 AS curl
 FROM prom/prometheus:v3.5.4
 COPY --from=curl /bin/curl /usr/local/bin/curl
+# The configuration is part of the image, so a deployment needs only compose.yaml.
+COPY prometheus.yaml /etc/prometheus/prometheus.yaml

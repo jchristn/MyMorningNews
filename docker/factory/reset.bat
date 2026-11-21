@@ -64,9 +64,9 @@ echo [2/3] Restoring factory settings...
 copy /y factory\mymorningnews.json server\mymorningnews.json >nul
 echo [3/3] Starting...
 if "%DEMO%"=="1" (
-  docker compose -f compose.yaml -f factory\compose.factory.yaml up -d --build
+  docker compose -f compose.yaml -f factory\compose.factory.yaml pull --ignore-pull-failures && docker compose -f compose.yaml -f factory\compose.factory.yaml up -d
 ) else (
-  docker compose up -d --build
+  docker compose pull && docker compose up -d
 )
 docker ps -a --filter name=mymorningnews
 echo.

@@ -26,7 +26,8 @@ dotnet build src/MyMorningNews.sln
 MYMORNINGNEWS_TEST_DB="Host=127.0.0.1;Port=12102;Username=postgres;Password=password" \
   dotnet run --project src/Test.Automated -f net10.0 -- --provider postgresql
 cd dashboard && npm ci && npm run lint && npm test && npm run build
-cd docker && docker compose up -d --build
+./build-all.sh <tag>        # build and push every image (jchristn77/mymorningnews-<type>:latest and :<tag>)
+cd docker && docker compose pull && docker compose up -d   # compose.yaml uses published images only
 ```
 
 ## Decisions (see plan section 4)

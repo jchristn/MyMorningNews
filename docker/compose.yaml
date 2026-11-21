@@ -21,10 +21,7 @@ services:
       start_period: 20s
 
   server:
-    build:
-      context: ..
-      dockerfile: docker/server/Dockerfile
-    image: mymorningnews/server:local
+    image: jchristn77/mymorningnews-server:latest
     container_name: mymorningnews-server
     restart: unless-stopped
     depends_on:
@@ -94,10 +91,7 @@ services:
       start_period: 15s
 
   dashboard:
-    build:
-      context: ../dashboard
-      dockerfile: Dockerfile
-    image: mymorningnews/dashboard:local
+    image: jchristn77/mymorningnews-dashboard:latest
     container_name: mymorningnews-dashboard
     restart: unless-stopped
     depends_on:
@@ -112,9 +106,7 @@ services:
       retries: 2
 
   searxng:
-    build:
-      context: ./searxng
-    image: mymorningnews/searxng:local
+    image: jchristn77/mymorningnews-searxng:latest
     container_name: mymorningnews-searxng
     restart: unless-stopped
     environment:
@@ -132,9 +124,7 @@ services:
   tts:
     # Kokoro text-to-speech (CPU) for briefing audio and podcast episodes. Large image (several GB). Set
     # MYMORNINGNEWS_TTS_ENABLED=false on the server and skip this service ("docker compose up -d --scale tts=0") to run without audio.
-    build:
-      context: ./tts
-    image: mymorningnews/tts:local
+    image: jchristn77/mymorningnews-tts:latest
     container_name: mymorningnews-tts
     restart: unless-stopped
     ports:
@@ -150,10 +140,7 @@ services:
     # MCP server (Voltaic, Streamable HTTP on /mcp). Start with: docker compose --profile mcp up -d
     # Clients authenticate with the same bearer token or access key as the REST API.
     profiles: ["mcp"]
-    build:
-      context: ..
-      dockerfile: docker/mcp/Dockerfile
-    image: mymorningnews/mcp:local
+    image: jchristn77/mymorningnews-mcp:latest
     container_name: mymorningnews-mcp
     restart: unless-stopped
     depends_on:
@@ -181,9 +168,7 @@ services:
     # has no GPU there), so on a Mac a native Ollama is faster; the server reaches that at host.docker.internal:11434.
     # To use this container instead, set MYMORNINGNEWS_OLLAMA_ENDPOINT=http://ollama:11434 in docker/.env.
     profiles: ["ollama"]
-    build:
-      context: ./ollama
-    image: mymorningnews/ollama:local
+    image: jchristn77/mymorningnews-ollama:latest
     container_name: mymorningnews-ollama
     restart: unless-stopped
     ports:
@@ -198,9 +183,7 @@ services:
       start_period: 20s
 
   prometheus:
-    build:
-      context: ./prometheus
-    image: mymorningnews/prometheus:local
+    image: jchristn77/mymorningnews-prometheus:latest
     container_name: mymorningnews-prometheus
     restart: unless-stopped
     command:
@@ -210,7 +193,6 @@ services:
     ports:
       - "127.0.0.1:12111:9090"
     volumes:
-      - ./prometheus/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
       - prometheus:/prometheus
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:9090/-/healthy"]
@@ -219,9 +201,7 @@ services:
       retries: 2
 
   tempo:
-    build:
-      context: ./tempo
-    image: mymorningnews/tempo:local
+    image: jchristn77/mymorningnews-tempo:latest
     container_name: mymorningnews-tempo
     restart: unless-stopped
     user: "0"
@@ -231,7 +211,6 @@ services:
       - "127.0.0.1:12113:4317"
       - "127.0.0.1:12114:4318"
     volumes:
-      - ./tempo/tempo.yaml:/etc/tempo/tempo.yaml:ro
       - tempo:/var/tempo
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:3200/ready"]
@@ -241,16 +220,13 @@ services:
       start_period: 20s
 
   loki:
-    build:
-      context: ./loki
-    image: mymorningnews/loki:local
+    image: jchristn77/mymorningnews-loki:latest
     container_name: mymorningnews-loki
     restart: unless-stopped
     command: ['-config.file=/etc/loki/loki.yaml']
     ports:
       - "127.0.0.1:12115:3100"
     volumes:
-      - ./loki/loki.yaml:/etc/loki/loki.yaml:ro
       - loki:/loki
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:3100/ready"]
@@ -260,7 +236,7 @@ services:
       start_period: 20s
 
   grafana:
-    image: grafana/grafana-oss:13.0.2
+    image: jchristn77/mymorningnews-grafana:latest
     container_name: mymorningnews-grafana
     restart: unless-stopped
     depends_on:
@@ -277,8 +253,6 @@ services:
     ports:
       - "127.0.0.1:12110:3000"
     volumes:
-      - ./grafana/provisioning:/etc/grafana/provisioning:ro
-      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
       - grafana:/var/lib/grafana
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:3000/api/health"]

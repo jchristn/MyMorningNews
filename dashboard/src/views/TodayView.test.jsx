@@ -34,6 +34,31 @@ describe('TodayView', () => {
     expect(screen.getByRole('link', { name: 'Report: heat pumps' })).toBeInTheDocument();
   });
 
+  it('plays a recent run briefing from the list, one at a time, with one-time reports beneath the run briefings', async () => {
+    const withAudio = { ...BRIEFING, id: 'brf_run', kind: 'Run', title: 'Run briefing: AI tools', mediaAssetId: 'med_1' };
+    const noAudio = { ...BRIEFING, id: 'brf_run2', kind: 'Run', title: 'Run briefing: heat pumps' };
+    const oneTime = { ...BRIEFING, id: 'brf_once', kind: 'OneTime', title: 'Report: heat pumps' };
+    const episode = { id: 'med_1', briefingId: 'brf_run', status: 'Ready', artifactId: 'art_1', durationSeconds: 300, bytes: 1000 };
+    const client = renderRoute('/dashboard/today', {
+      listEditions: vi.fn(async () => page([EDITION])),
+      listBriefings: briefingLists({ runs: [withAudio, noAudio], oneTime: [oneTime] }),
+      getBriefing: vi.fn(async () => detail()),
+      listMedia: vi.fn(async (q) => page(q.briefingId === 'brf_run' ? [episode] : [])),
+      getArtifactContent: vi.fn(async () => ({ blob: new Blob(['x'], { type: 'audio/mpeg' }) }))
+    });
+    const runs = await screen.findByTestId('today-runs');
+    const oneTimePanel = screen.getByTestId('today-one-time');
+    expect(runs.compareDocumentPosition(oneTimePanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(runs.closest('.two-column')).toBeNull();
+    const play = await within(runs).findByRole('button', { name: 'Play Run briefing: AI tools' });
+    expect(within(runs).queryByRole('button', { name: 'Play Run briefing: heat pumps' })).toBeNull();
+    await userEvent.click(play);
+    await waitFor(() => expect(client.getArtifactContent).toHaveBeenCalledWith('art_1', expect.anything()));
+    expect(within(runs).getByRole('button', { name: 'Stop and close the player for Run briefing: AI tools' })).toHaveAttribute('aria-pressed', 'true');
+    await userEvent.click(within(runs).getByRole('button', { name: 'Stop and close the player for Run briefing: AI tools' }));
+    expect(within(runs).getByRole('button', { name: 'Play Run briefing: AI tools' })).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('shows the empty state with Compose now, then follows the queued briefing until it is ready', async () => {
     const queued = { ...BRIEFING, id: 'brf_new', status: 'Queued', researchDeadlineUtc: undefined, composedUtc: undefined };
     let state = 'none';

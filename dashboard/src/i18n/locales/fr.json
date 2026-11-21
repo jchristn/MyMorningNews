@@ -2859,7 +2859,12 @@
     "runs": "Briefings des exécutions récentes",
     "oneTime": "Rapports ponctuels",
     "noRuns": "Aucun briefing d’exécution pour l’instant.",
-    "noOneTime": "Aucun rapport ponctuel pour l’instant."
+    "noOneTime": "Aucun rapport ponctuel pour l’instant.",
+    "audio": {
+      "play": "Écouter {title}",
+      "hide": "Arrêter et fermer le lecteur de {title}",
+      "none": "Pas encore d'audio"
+    }
   },
   "editions": {
     "add": "Nouvelle édition",
@@ -4175,6 +4180,13 @@
       "max": "Plus longue",
       "count": "Étapes mesurées",
       "failed": "Échouées"
+    },
+    "stageCosts": {
+      "title": "Coût par étape",
+      "help": "Coût estimé du modèle pour chaque étape sur les exécutions de la période.",
+      "label": "{stage} : {mean} par exécution en moyenne, {calls} appels au modèle",
+      "total": "{total} au total, {mean} par exécution",
+      "empty": "Aucun appel au modèle tarifé sur cette période."
     },
     "tiers": {
       "title": "Constats par exécution et par niveau",

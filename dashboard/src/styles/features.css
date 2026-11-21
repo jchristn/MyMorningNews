@@ -151,6 +151,25 @@
   grid-column: 1 / -1;
 }
 
+.run-charts-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* One time range control for every chart in a group, above the charts. */
+.chart-range-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chart-range-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
 .chart-empty {
   padding: 24px 8px;
   text-align: center;

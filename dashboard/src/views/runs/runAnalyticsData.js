@@ -69,6 +69,21 @@ export function stageDurations(report) {
     });
 }
 
+// Estimated model cost per stage over the range, in stage order: total, mean per run, and calls. Stages with no
+// priced cost are left out; an empty list means nothing in the range was priced.
+export function stageCostRows(report) {
+  return [...((report && report.stages) || [])]
+    .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0) || String(a.stage).localeCompare(String(b.stage)))
+    .filter((s) => s.totalCostUsd !== null && s.totalCostUsd !== undefined && !Number.isNaN(Number(s.totalCostUsd)))
+    .map((s) => ({
+      stage: String(s.stage),
+      total: Number(s.totalCostUsd) || 0,
+      mean: s.meanCostUsd === null || s.meanCostUsd === undefined ? null : Number(s.meanCostUsd),
+      calls: count(s.llmCallCount),
+      count: count(s.count)
+    }));
+}
+
 // The most recent runs (at most limit), oldest first.
 export function recentRuns(report, limit = MAX_RUN_COLUMNS) {
   const runs = (report && report.runs) || [];

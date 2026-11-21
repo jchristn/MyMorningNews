@@ -2859,7 +2859,12 @@
     "runs": "Briefing delle esecuzioni recenti",
     "oneTime": "Report una tantum",
     "noRuns": "Ancora nessun briefing delle esecuzioni.",
-    "noOneTime": "Ancora nessun report una tantum."
+    "noOneTime": "Ancora nessun report una tantum.",
+    "audio": {
+      "play": "Riproduci {title}",
+      "hide": "Interrompi e chiudi il lettore di {title}",
+      "none": "Ancora nessun audio"
+    }
   },
   "editions": {
     "add": "Nuova edizione",
@@ -4175,6 +4180,13 @@
       "max": "Più lunga",
       "count": "Fasi misurate",
       "failed": "Non riuscite"
+    },
+    "stageCosts": {
+      "title": "Costo per fase",
+      "help": "Costo stimato del modello per ogni fase nelle esecuzioni del periodo.",
+      "label": "{stage}: in media {mean} per esecuzione, {calls} chiamate al modello",
+      "total": "{total} in totale, {mean} per esecuzione",
+      "empty": "Nessuna chiamata al modello con prezzo in questo periodo."
     },
     "tiers": {
       "title": "Risultati per esecuzione e livello",

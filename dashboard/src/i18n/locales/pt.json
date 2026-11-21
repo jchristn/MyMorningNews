@@ -2859,7 +2859,12 @@
     "runs": "Boletins de execuções recentes",
     "oneTime": "Relatórios avulsos",
     "noRuns": "Nenhum boletim de execução ainda.",
-    "noOneTime": "Nenhum relatório avulso ainda."
+    "noOneTime": "Nenhum relatório avulso ainda.",
+    "audio": {
+      "play": "Reproduzir {title}",
+      "hide": "Parar e fechar o leitor de {title}",
+      "none": "Ainda sem áudio"
+    }
   },
   "editions": {
     "add": "Nova edição",
@@ -4175,6 +4180,13 @@
       "max": "Mais longa",
       "count": "Etapas medidas",
       "failed": "Com falha"
+    },
+    "stageCosts": {
+      "title": "Custo por etapa",
+      "help": "Custo estimado do modelo em cada etapa nas execuções do período.",
+      "label": "{stage}: {mean} por execução em média, {calls} chamadas ao modelo",
+      "total": "{total} no total, {mean} por execução",
+      "empty": "Nenhuma chamada ao modelo com preço neste período."
     },
     "tiers": {
       "title": "Descobertas por execução e nível",

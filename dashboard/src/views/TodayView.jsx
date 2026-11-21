@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { BookOpen, FileCode, FileText, Newspaper, Send } from 'lucide-react';
+import { BookOpen, FileCode, FileText, Newspaper, Play, Send, Square } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../context/AppContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -16,17 +16,48 @@ import EmptyState from '../components/EmptyState.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import LoadingState from '../components/LoadingState.jsx';
 import PageHeader from '../components/PageHeader.jsx';
-import BriefingAudio from './briefings/BriefingAudio.jsx';
+import AudioPlayer from '../components/AudioPlayer.jsx';
+import BriefingAudio, { playableEpisode } from './briefings/BriefingAudio.jsx';
 import BriefingMarkdown from './briefings/BriefingMarkdown.jsx';
 import useBriefingActions, { BriefingStatusBadge } from './briefings/briefingParts.jsx';
 
 const POLL_MS = 3000;
 const NEWEST = { sortBy: 'createdUtc', sortDirection: 'Descending' };
 
-function RecentList({ title, items, emptyText, moreHref }) {
+// Ready audio for each briefing in a list (the briefing's own episode, else its newest ready one), keyed by briefing.
+function useListAudio(items) {
+  const { apiClient } = useAuth();
+  const [audio, setAudio] = useState({});
+  const ids = (items || []).map((b) => b.id).join(',');
+  useEffect(() => {
+    if (!items || items.length === 0) return undefined;
+    let cancelled = false;
+    Promise.all(
+      items.map((b) =>
+        apiClient
+          .listMedia({ briefingId: b.id, status: 'Ready', pageSize: 5, ...NEWEST })
+          .then((page) => [b.id, playableEpisode((page && page.items) || [], b)])
+          .catch(() => [b.id, null])
+      )
+    ).then((pairs) => {
+      if (!cancelled) setAudio(Object.fromEntries(pairs.filter((p) => p[1])));
+    });
+    return () => {
+      cancelled = true;
+    };
+    // The ids string stands for the items.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiClient, ids]);
+  return audio;
+}
+
+// A list of recent briefings. Each one with ready audio has a play button; pressing it opens a compact player under
+// the row and starts it. Only one plays at a time across the page (playingId lives in the page).
+function RecentList({ title, items, emptyText, moreHref, playingId, onPlay, testId }) {
   const { t } = useTranslation();
+  const audio = useListAudio(items);
   return (
-    <section className="panel">
+    <section className="panel" data-testid={testId}>
       <div className="section-title">
         <h2>{title}</h2>
         <Link to={moreHref} className="small">
@@ -36,26 +67,59 @@ function RecentList({ title, items, emptyText, moreHref }) {
       {items === null ? <LoadingState /> : null}
       {items && items.length === 0 ? <p className="muted small">{emptyText}</p> : null}
       {items && items.length > 0 ? (
-        <ul className="event-list">
-          {items.map((b) => (
-            <li key={b.id}>
-              <Link to={'/dashboard/briefings/' + encodeURIComponent(b.id)} className="truncate">
-                {b.title || t('briefings.untitled')}
-              </Link>
-              <BriefingStatusBadge status={b.status} />
-              <DateCell value={b.composedUtc || b.createdUtc} />
-            </li>
-          ))}
+        <ul className="event-list recent-briefings">
+          {items.map((b) => {
+            const episode = audio[b.id] || null;
+            const playing = playingId === b.id;
+            const name = b.title || t('briefings.untitled');
+            return (
+              <li key={b.id} className={playing ? 'playing' : ''}>
+                <div className="recent-briefing-row">
+                  {episode ? (
+                    <button
+                      type="button"
+                      className={'icon-button play-toggle' + (playing ? ' active' : '')}
+                      aria-pressed={playing}
+                      aria-label={playing ? t('today.audio.hide', { title: name }) : t('today.audio.play', { title: name })}
+                      title={playing ? t('today.audio.hide', { title: name }) : t('today.audio.play', { title: name })}
+                      onClick={() => onPlay(playing ? null : b.id)}
+                    >
+                      {playing ? <Square size={14} aria-hidden="true" /> : <Play size={14} aria-hidden="true" />}
+                    </button>
+                  ) : (
+                    <span className="play-toggle-placeholder" title={t('today.audio.none')} aria-hidden="true" />
+                  )}
+                  <Link to={'/dashboard/briefings/' + encodeURIComponent(b.id)} className="truncate">
+                    {name}
+                  </Link>
+                  <BriefingStatusBadge status={b.status} />
+                  <DateCell value={b.composedUtc || b.createdUtc} />
+                </div>
+                {playing && episode ? (
+                  <AudioPlayer artifactId={episode.artifactId} durationSeconds={episode.durationSeconds} bytes={episode.bytes} title={name} compact autoPlay />
+                ) : null}
+              </li>
+            );
+          })}
         </ul>
       ) : null}
     </section>
   );
 }
 
-RecentList.propTypes = { title: PropTypes.string.isRequired, items: PropTypes.array, emptyText: PropTypes.string.isRequired, moreHref: PropTypes.string.isRequired };
+RecentList.propTypes = {
+  title: PropTypes.string.isRequired,
+  items: PropTypes.array,
+  emptyText: PropTypes.string.isRequired,
+  moreHref: PropTypes.string.isRequired,
+  playingId: PropTypes.string,
+  onPlay: PropTypes.func.isRequired,
+  testId: PropTypes.string
+};
 
 // Today: the latest ready edition briefing rendered inline, Compose now with live status while it is queued or
-// composing, and the most recent run briefings and one-time reports.
+// composing, then the most recent run briefings and, beneath them, one-time reports, each full width with a play
+// button for briefings that have audio.
 export default function TodayView() {
   const { t } = useTranslation();
   const f = useFormat();
@@ -67,6 +131,7 @@ export default function TodayView() {
   const [latest, setLatest] = useState(undefined);
   const [pending, setPending] = useState([]);
   const [runs, setRuns] = useState(null);
+  const [playingId, setPlayingId] = useState(null);
   const [oneTime, setOneTime] = useState(null);
   const [error, setError] = useState(null);
   const [composing, setComposing] = useState(false);
@@ -246,10 +311,8 @@ export default function TodayView() {
         </section>
       ) : null}
 
-      <div className="two-column">
-        <RecentList title={t('today.runs')} items={runs} emptyText={t('today.noRuns')} moreHref="/dashboard/briefings?kind=Run" />
-        <RecentList title={t('today.oneTime')} items={oneTime} emptyText={t('today.noOneTime')} moreHref="/dashboard/briefings?kind=OneTime" />
-      </div>
+      <RecentList title={t('today.runs')} items={runs} emptyText={t('today.noRuns')} moreHref="/dashboard/briefings?kind=Run" playingId={playingId} onPlay={setPlayingId} testId="today-runs" />
+      <RecentList title={t('today.oneTime')} items={oneTime} emptyText={t('today.noOneTime')} moreHref="/dashboard/briefings?kind=OneTime" playingId={playingId} onPlay={setPlayingId} testId="today-one-time" />
     </div>
   );
 }

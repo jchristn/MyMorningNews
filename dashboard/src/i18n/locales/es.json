@@ -2859,7 +2859,12 @@
     "runs": "Resúmenes informativos de ejecuciones recientes",
     "oneTime": "Informes puntuales",
     "noRuns": "Aún no hay resúmenes informativos de ejecuciones.",
-    "noOneTime": "Aún no hay informes puntuales."
+    "noOneTime": "Aún no hay informes puntuales.",
+    "audio": {
+      "play": "Reproducir {title}",
+      "hide": "Detener y cerrar el reproductor de {title}",
+      "none": "Todavía no hay audio"
+    }
   },
   "editions": {
     "add": "Nueva edición",
@@ -4175,6 +4180,13 @@
       "max": "Más larga",
       "count": "Etapas medidas",
       "failed": "Fallidas"
+    },
+    "stageCosts": {
+      "title": "Coste por etapa",
+      "help": "Coste estimado del modelo en cada etapa para las ejecuciones del periodo.",
+      "label": "{stage}: {mean} por ejecución de media, {calls} llamadas al modelo",
+      "total": "{total} en total, {mean} por ejecución",
+      "empty": "No hay llamadas al modelo con precio en este periodo."
     },
     "tiers": {
       "title": "Hallazgos por ejecución y nivel",

@@ -2859,7 +2859,12 @@
     "runs": "最近的运行简报",
     "oneTime": "一次性报告",
     "noRuns": "暂无运行简报。",
-    "noOneTime": "暂无一次性报告。"
+    "noOneTime": "暂无一次性报告。",
+    "audio": {
+      "play": "播放 {title}",
+      "hide": "停止并关闭 {title} 的播放器",
+      "none": "暂无音频"
+    }
   },
   "editions": {
     "add": "新建期刊",
@@ -4175,6 +4180,13 @@
       "max": "最长",
       "count": "已测量的阶段",
       "failed": "失败"
+    },
+    "stageCosts": {
+      "title": "各阶段成本",
+      "help": "该时间范围内各次运行中每个阶段的预估模型成本。",
+      "label": "{stage}：每次运行平均 {mean}，{calls} 次模型调用",
+      "total": "共 {total}，每次运行 {mean}",
+      "empty": "该时间范围内没有已定价的模型调用。"
     },
     "tiers": {
       "title": "每次运行按等级划分的发现",

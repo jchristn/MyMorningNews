@@ -20,7 +20,8 @@ const RUNS_REPORT = {
   ],
   stages: [
     { stage: 'Search', sortOrder: 2, count: 3, failed: 1, p50Ms: 1200, p95Ms: 4000, meanMs: 1500, maxMs: 4200 },
-    { stage: 'Fetch', sortOrder: 4, count: 2, failed: 0, p50Ms: 8000, p95Ms: 9000, meanMs: 8200, maxMs: 9100 }
+    { stage: 'Fetch', sortOrder: 4, count: 2, failed: 0, p50Ms: 8000, p95Ms: 9000, meanMs: 8200, maxMs: 9100 },
+    { stage: 'Extract', sortOrder: 6, count: 3, failed: 0, p50Ms: 3000, p95Ms: 5000, meanMs: 3200, maxMs: 5100, totalCostUsd: 0.9, meanCostUsd: 0.3, llmCallCount: 12 }
   ],
   runs: [
     { runId: 'run_1', topicId: 'top_1', topicName: 'AI developer tools', createdUtc: '2026-11-19T14:00:00Z', status: 'Completed', durationMs: 60000, tiers: tiers(2, 3), newFindings: 6, duplicates: 2, duplicateShare: 0.25, examined: 40, fetched: 12, used: 5 },
@@ -39,7 +40,7 @@ const report = () => vi.fn(async () => RUNS_REPORT);
 const lastQuery = (client) => client.getRunsAnalytics.mock.calls[client.getRunsAnalytics.mock.calls.length - 1][0];
 
 describe('Run charts', () => {
-  it('shows runs by status and stage durations on Runs, for the tenant, in the browser time zone, with a range control', async () => {
+  it('shows runs by status, stage durations, and cost by stage on Runs, for the tenant, in the browser time zone, under one range control', async () => {
     const client = renderRoute('/dashboard/runs', { getRunsAnalytics: report(), listTopics: vi.fn(async () => page([TOPIC])) });
     const status = await screen.findByRole('img', { name: 'Runs over time by status' });
     expect(status).toBeInTheDocument();
@@ -50,12 +51,22 @@ describe('Run charts', () => {
     const q = lastQuery(client);
     expect(q).toMatchObject({ all: true, timeZone: expect.any(String) });
     expect(new Date(q.to) - new Date(q.from)).toBe(30 * 86400000);
-    const card = status.closest('.chart-card');
-    await userEvent.click(within(card).getByRole('button', { name: 'Last week' }));
+    // One range control above every chart, none inside a card.
+    const bar = screen.getByTestId('chart-range-bar');
+    expect(within(status.closest('.chart-card')).queryByRole('button', { name: 'Last week' })).toBeNull();
+    expect(screen.getAllByRole('button', { name: 'Last week' })).toHaveLength(1);
+    expect(status.closest('.chart-card')).toHaveClass('wide');
+    expect(stages.closest('.chart-card')).toHaveClass('wide');
+    await userEvent.click(within(bar).getByRole('button', { name: 'Last week' }));
     await waitFor(() => {
       const next = lastQuery(client);
       expect(new Date(next.to) - new Date(next.from)).toBe(7 * 86400000);
     });
+    const costs = screen.getByRole('list', { name: 'Cost by stage' });
+    expect(costs.closest('.chart-card')).toHaveClass('wide');
+    expect(within(costs).getByText('$0.90')).toBeInTheDocument();
+    expect(within(costs).getByText(/Extract: \$0.30 per run on average, 12 model calls/)).toBeInTheDocument();
+    expect(within(costs).queryByText(/Search/)).toBeNull();
     const slot = stages.querySelector('[data-stage="Search"]');
     fireEvent.focus(slot);
     expect(await screen.findByRole('tooltip')).toHaveTextContent('95th percentile (p95)');

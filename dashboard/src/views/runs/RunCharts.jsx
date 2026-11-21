@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import useFormat from '../../hooks/useFormat.js';
 import useLocalStorage from '../../hooks/useLocalStorage.js';
 import ChartCard from '../../charts/ChartCard.jsx';
+import ChartRangeBar from '../../charts/ChartRangeBar.jsx';
 import HeatmapChart from '../../charts/HeatmapChart.jsx';
 import HorizontalBarChart from '../../charts/HorizontalBarChart.jsx';
 import LineChart from '../../charts/LineChart.jsx';
@@ -25,6 +26,7 @@ import {
   runsQuery,
   scoreBuckets,
   sourceParts,
+  stageCostRows,
   stageDurations,
   statusDays,
   tierSeries
@@ -34,9 +36,10 @@ import {
 // two columns.
 export const RUN_CHARTS = {
   status: { number: 2, wide: true },
-  stages: { number: 3, wide: false },
+  stages: { number: 3, wide: true },
+  stageCosts: { number: 25, wide: true },
   tiers: { number: 4, wide: true },
-  scores: { number: 5, wide: false },
+  scores: { number: 5, wide: true },
   activity: { number: 21, wide: true },
   novelty: { number: 22, wide: false },
   sources: { number: 23, wide: true },
@@ -120,6 +123,26 @@ function RunChartBody({ id, report }) {
             { label: t('runCharts.stages.count'), value: f.number(s.count) },
             { label: t('runCharts.stages.failed'), value: f.number(s.failed) }
           ]
+        }))}
+      />
+    );
+  }
+
+  if (id === 'stageCosts') {
+    const rows = stageCostRows(report);
+    if (rows.length === 0) return <div className="chart-empty">{t('runCharts.stageCosts.empty')}</div>;
+    return (
+      <HorizontalBarChart
+        ariaLabel={t('runCharts.stageCosts.title')}
+        formatValue={(v) => f.usd(v)}
+        items={rows.map((s) => ({
+          key: s.stage,
+          value: s.total,
+          label: t('runCharts.stageCosts.label', {
+            stage: t('enums.runStage.' + s.stage, { defaultValue: s.stage }),
+            mean: s.mean === null ? '-' : f.usd(s.mean),
+            calls: f.number(s.calls)
+          })
         }))}
       />
     );
@@ -217,12 +240,13 @@ function RunChartBody({ id, report }) {
 
 RunChartBody.propTypes = { id: PropTypes.oneOf(Object.keys(RUN_CHARTS)).isRequired, report: PropTypes.object };
 
-// A grid of run charts that share one report and one range (week, month, or quarter, remembered per page). tenantWide
-// asks for the whole tenant when the caller is a tenant administrator; everyone else sees their own runs. A page
-// with its own scope control (the Insights pages) passes scope ({ days, topicId, everyone }) instead, and the cards
-// then show no range control of their own.
+// A grid of run charts that share one report and one range (week, month, or quarter, remembered per page), chosen with
+// a single range control above the charts. tenantWide asks for the whole tenant when the caller is a tenant
+// administrator; everyone else sees their own runs. A page with its own scope control (the Insights pages) passes
+// scope ({ days, topicId, everyone }) instead, and then no range control is shown.
 export default function RunCharts({ charts, topicId = '', tenantWide = false, rangeStorage = 'mymorningnews.runCharts.range', defaultRange = 'month', scope = null }) {
   const { t } = useTranslation();
+  const f = useFormat();
   const { isTenantAdmin, timeZone } = useAuth();
   const [stored, setRangeId] = useLocalStorage(rangeStorage, defaultRange);
   const rangeId = RUN_RANGE_IDS.includes(stored) ? stored : defaultRange;
@@ -230,18 +254,23 @@ export default function RunCharts({ charts, topicId = '', tenantWide = false, ra
   const report = useRunsReport({ rangeId, days: scope ? scope.days : undefined, topicId: scope ? scope.topicId || '' : topicId, everyone });
   const ids = useMemo(() => charts.filter((id) => RUN_CHARTS[id]), [charts]);
   return (
-    <div className="chart-grid run-charts" data-testid="run-charts">
+    <div className="run-charts-group">
+      {scope ? null : <ChartRangeBar ranges={RUN_RANGE_IDS} rangeId={rangeId} onRangeChange={setRangeId} onRefresh={report.reload} loading={report.loading} />}
+      <div className="chart-grid run-charts" data-testid="run-charts">
       {ids.map((id) => (
         <ChartCard
           key={id}
           title={t('runCharts.' + id + '.title')}
           subtitle={id === 'activity' ? t('runCharts.activity.help', { zone: (report.data && report.data.timeZone) || timeZone || browserTimeZone() || 'UTC' }) : t('runCharts.' + id + '.help')}
-          ranges={RUN_RANGE_IDS}
-          rangeId={rangeId}
-          onRangeChange={scope ? undefined : setRangeId}
-          onRefresh={report.reload}
+          onRefresh={scope ? report.reload : undefined}
           loading={report.loading}
-          totals={id === 'status' && report.data ? <span>{t('runCharts.status.total', { count: report.data.total || 0 })}</span> : null}
+          totals={
+            id === 'status' && report.data ? (
+              <span>{t('runCharts.status.total', { count: report.data.total || 0 })}</span>
+            ) : id === 'stageCosts' && report.data && report.data.totalCostUsd !== null && report.data.totalCostUsd !== undefined ? (
+              <span>{t('runCharts.stageCosts.total', { total: f.usd(report.data.totalCostUsd), mean: report.data.meanCostPerRunUsd === null || report.data.meanCostPerRunUsd === undefined ? '-' : f.usd(report.data.meanCostPerRunUsd) })}</span>
+            ) : null
+          }
           className={RUN_CHARTS[id].wide ? 'wide' : ''}
         >
           <ErrorState error={report.error} inline onRetry={report.reload} />
@@ -249,6 +278,7 @@ export default function RunCharts({ charts, topicId = '', tenantWide = false, ra
           {report.data ? <RunChartBody id={id} report={report.data} /> : null}
         </ChartCard>
       ))}
+      </div>
     </div>
   );
 }

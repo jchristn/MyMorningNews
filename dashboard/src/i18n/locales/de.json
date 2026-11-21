@@ -2859,7 +2859,12 @@
     "runs": "Briefings aus letzten Läufen",
     "oneTime": "Einmalige Berichte",
     "noRuns": "Noch keine Briefings aus Läufen.",
-    "noOneTime": "Noch keine einmaligen Berichte."
+    "noOneTime": "Noch keine einmaligen Berichte.",
+    "audio": {
+      "play": "{title} abspielen",
+      "hide": "Wiedergabe von {title} beenden und Player schließen",
+      "none": "Noch kein Audio"
+    }
   },
   "editions": {
     "add": "Neue Ausgabe",
@@ -4175,6 +4180,13 @@
       "max": "Längste",
       "count": "Gemessene Phasen",
       "failed": "Fehlgeschlagen"
+    },
+    "stageCosts": {
+      "title": "Kosten nach Phase",
+      "help": "Geschätzte Modellkosten jeder Phase über die Läufe im Zeitraum.",
+      "label": "{stage}: durchschnittlich {mean} pro Lauf, {calls} Modellaufrufe",
+      "total": "{total} insgesamt, {mean} pro Lauf",
+      "empty": "Keine bepreisten Modellaufrufe in diesem Zeitraum."
     },
     "tiers": {
       "title": "Erkenntnisse pro Lauf nach Stufe",

@@ -49,6 +49,27 @@
   align-items: center;
 }
 
+.recent-briefings li {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recent-briefing-row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.play-toggle-placeholder {
+  width: 28px;
+}
+
+.play-toggle.active {
+  color: var(--color-primary);
+}
+
 .url-list li {
   display: flex;
   flex-direction: column;

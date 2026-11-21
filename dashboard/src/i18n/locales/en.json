@@ -2859,7 +2859,12 @@
     "runs": "Recent run briefings",
     "oneTime": "One-time reports",
     "noRuns": "No run briefings yet.",
-    "noOneTime": "No one-time reports yet."
+    "noOneTime": "No one-time reports yet.",
+    "audio": {
+      "play": "Play {title}",
+      "hide": "Stop and close the player for {title}",
+      "none": "No audio yet"
+    }
   },
   "editions": {
     "add": "New edition",
@@ -4175,6 +4180,13 @@
       "max": "Longest",
       "count": "Stages measured",
       "failed": "Failed"
+    },
+    "stageCosts": {
+      "title": "Cost by stage",
+      "help": "Estimated model cost of each stage across the runs in the range.",
+      "label": "{stage}: {mean} per run on average, {calls} model calls",
+      "total": "{total} in total, {mean} per run",
+      "empty": "No priced model calls in this range."
     },
     "tiers": {
       "title": "Findings per run by tier",

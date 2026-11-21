@@ -859,7 +859,8 @@
       "grants": "{count, plural, one {Basierend auf # Freigabe} other {Basierend auf # Freigaben}}",
       "resource": "Ressource",
       "title": "Effektive Berechtigungen"
-    }
+    },
+    "readOnly": "Sie sehen, wer zu diesem Arbeitsbereich gehört. Nur ein Administrator kann Benutzer hinzufügen, ändern oder entfernen."
   },
   "credentials": {
     "allScopes": "Alle",
@@ -1542,12 +1543,20 @@
       "overridesIntro": "Ein Thema kann eine Rolle auf einem anderen Endpunkt als dem Mandantenstandard ausführen.",
       "noOverrides": "Keine Themenüberschreibungen.",
       "topic": "Thema",
-      "topicId": "Themen-ID",
-      "topicIdHelp": "Die ID des Themas, das überschrieben werden soll.",
       "addOverride": "Themenüberschreibung hinzufügen",
       "overrideAdded": "Themenüberschreibung gespeichert",
       "deleteTitle": "Themenüberschreibung entfernen",
-      "deleteMessage": "Die Überschreibung für {role} bei Thema {topic} entfernen? Das Thema verwendet dann wieder den Mandantenstandard."
+      "deleteMessage": "Die Überschreibung für {role} bei Thema {topic} entfernen? Das Thema verwendet dann wieder den Mandantenstandard.",
+      "pickTopic": "Thema auswählen",
+      "topicHelp": "Das Thema, das diese Rolle auf einem anderen Endpunkt ausführt.",
+      "bulkLabel": "Einen Endpunkt für alle Aufgaben verwenden",
+      "bulkApply": "Auf alle Aufgaben anwenden",
+      "bulkTitle": "Einen Endpunkt für alle Aufgaben verwenden",
+      "bulkMessage": "{name} {count, plural, one {der # Aufgabe} other {allen # Aufgaben}} zuweisen, die er bedienen kann? Jede Aufgabe behält ihren Denkaufwand, und Modellüberschreibungen dieser Aufgaben werden entfernt.",
+      "bulkDone": "{name} bedient jetzt {count, plural, one {# Aufgabe} other {# Aufgaben}}",
+      "saveAll": "Alle Änderungen speichern ({count})",
+      "savedAll": "{count, plural, one {# Zuweisung gespeichert} other {# Zuweisungen gespeichert}}",
+      "savedSome": "{saved} von {total} Zuweisungen gespeichert. Versuchen Sie die übrigen erneut."
     },
     "calls": {
       "detailTitle": "Modellaufruf",
@@ -2240,7 +2249,8 @@
       "draft": "Kontext entwerfen",
       "intro": "Bearbeiten Sie alles. Gesperrte und Ihre eigenen Einschränkungen bleiben bei einem Neuentwurf erhalten.",
       "redraft": "Neu entwerfen",
-      "constraints": "Einschränkungen"
+      "constraints": "Einschränkungen",
+      "nextNeedsBrief": "Schreiben oder entwerfen Sie eine Kurzbeschreibung, um fortzufahren."
     },
     "sources": {
       "intro": "Vorgeschlagene Feeds und Startseiten werden live abgerufen. Grüne haben geantwortet.",
@@ -2268,10 +2278,10 @@
       "dimensions": "{count, plural, one {# Dimension} other {# Dimensionen}}",
       "constraintCount": "{kind}: {count}",
       "preview": "Vorschaulauf",
-      "previewHelp": "Ein Testlauf sendet keine E-Mail und wird nicht im Verlauf gezählt.",
+      "previewHelp": "Ein Testlauf sendet keine E-Mail, und seine Erkenntnisse erscheinen nicht in Ihrer Erkenntnisliste. Unter Läufe wird er trotzdem angezeigt, als Testlauf gekennzeichnet.",
       "apply": "Thema übernehmen",
       "appliedToast": "{name} ist bereit",
-      "previewQueued": "Testlauf eingereiht. Verfolgen Sie ihn im Tab „Läufe“ des Themas."
+      "previewStarting": "Testlauf wird gestartet..."
     },
     "newTitle": "Neues Thema",
     "refineTitle": "{name} verfeinern",
@@ -2398,7 +2408,19 @@
     },
     "live": {
       "streaming": "Live",
-      "polling": "Aktualisierung alle paar Sekunden"
+      "polling": "Aktualisierung alle paar Sekunden",
+      "queued": "In der Warteschlange. Der Lauf startet, sobald ein Worker frei ist.",
+      "running": "Läuft.",
+      "runningStage": "Läuft: {stage}.",
+      "completed": "Abgeschlossen mit {count, plural, one {# neuen Erkenntnis} other {# neuen Erkenntnissen}}.",
+      "partial": "Mit Warnungen abgeschlossen, {count, plural, one {# neue Erkenntnis} other {# neue Erkenntnisse}}. Öffnen Sie den Lauf, um zu sehen, welche Phase fehlgeschlagen ist.",
+      "failed": "Der Lauf ist fehlgeschlagen. Öffnen Sie ihn, um zu sehen, welche Phase fehlgeschlagen ist und warum.",
+      "failedReason": "Der Lauf ist fehlgeschlagen: {reason}",
+      "skipped": "Der Lauf wurde übersprungen.",
+      "skippedReason": "Der Lauf wurde übersprungen: {reason}",
+      "cancelled": "Der Lauf wurde abgebrochen.",
+      "unreadable": "Der Fortschritt des Laufs konnte nicht gelesen werden. Öffnen Sie den Lauf, um ihn zu prüfen.",
+      "openRun": "Lauf öffnen"
     },
     "retry": {
       "column": "Wiederholen",
@@ -2863,7 +2885,8 @@
       "lookback": "Rückblick",
       "lastComposed": "Zuletzt erstellt",
       "created": "Erstellt",
-      "id": "ID"
+      "id": "ID",
+      "owner": "Eigentümer"
     },
     "badges": {
       "email": "E-Mail",
@@ -2924,6 +2947,12 @@
       "add": "Hinzufügen",
       "save": "Themen speichern",
       "saved": "Themen gespeichert"
+    },
+    "ownerYou": "Sie",
+    "scope": {
+      "label": "Ausgaben anzeigen",
+      "mine": "Meine",
+      "all": "Alle"
     }
   },
   "templates": {
@@ -3528,11 +3557,21 @@
     "delete": {
       "button": "Mein Konto löschen",
       "title": "Ihr Konto löschen?",
-      "message": "Alle Sitzungen werden jetzt abgemeldet. Ihr Konto und Ihre Daten werden nach Ablauf der Karenzzeit gelöscht; wenn Sie sich vorher anmelden, bleiben sie erhalten.",
+      "message": "Alle Sitzungen werden jetzt abgemeldet. Nach einer Karenzzeit werden Ihr Konto und alle seine Daten (Themen, Briefings, Erkenntnisse, Feedback und Audio) endgültig gelöscht. Die nächste Seite und eine Bestätigungs-E-Mail nennen das Datum. Wenn Sie sich vorher anmelden, wird die Löschung abgebrochen.",
       "typeEmail": "Geben Sie zur Bestätigung Ihre E-Mail-Adresse ein",
       "mismatch": "Die E-Mail-Adresse stimmt nicht mit Ihrem Konto überein.",
       "confirm": "Mein Konto löschen",
-      "scheduled": "Ihr Konto wird am {date} gelöscht. Melden Sie sich vorher an, um es zu behalten."
+      "scheduled": "Ihr Konto wird am {date} gelöscht. Melden Sie sich vorher an, um es zu behalten.",
+      "messageDated": "Alle Sitzungen werden jetzt abgemeldet. Am {date} werden Ihr Konto und alle seine Daten (Themen, Briefings, Erkenntnisse, Feedback und Audio) endgültig gelöscht. Wenn Sie sich vorher anmelden, wird die Löschung abgebrochen.",
+      "cancelledTitle": "Die Löschung Ihres Kontos wurde abgebrochen.",
+      "cancelledMessage": "Durch die Anmeldung bleiben Ihr Konto und alle seine Daten erhalten."
+    },
+    "deleted": {
+      "title": "Ihr Konto ist zur Löschung vorgemerkt",
+      "noDate": "Ihr Konto wird gelöscht, wenn die Karenzzeit endet. Die Bestätigungs-E-Mail nennt das Datum. Melden Sie sich vorher an, um es zu behalten.",
+      "signedOut": "Sie sind auf allen Geräten abgemeldet, und wir haben Ihnen eine Bestätigungs-E-Mail gesendet.",
+      "howToCancel": "Haben Sie es sich anders überlegt? Melden Sie sich vor diesem Datum an, und die Löschung wird abgebrochen. Ihre Daten bleiben unverändert.",
+      "signIn": "Anmelden und Konto behalten"
     }
   },
   "email": {
@@ -3976,7 +4015,8 @@
     "verify": {
       "title": "E-Mail-Adresse bestätigen",
       "done": "Ihre E-Mail-Adresse ist bestätigt. Sie können sich jetzt anmelden.",
-      "failed": "Dieser Link ist ungültig oder abgelaufen. Geben Sie Ihre E-Mail-Adresse ein, um einen neuen zu erhalten."
+      "failed": "Dieser Link ist ungültig oder abgelaufen. Geben Sie Ihre E-Mail-Adresse ein, um einen neuen zu erhalten.",
+      "used": "Dieser Link wurde bereits verwendet. Wenn Ihre E-Mail-Adresse bestätigt ist, melden Sie sich an."
     },
     "forgot": {
       "title": "Passwort zurücksetzen",
@@ -4164,7 +4204,8 @@
       "notFound": "{name} verwendet gespeicherte Zugangsdaten, die nicht mehr existieren.",
       "inactive": "{name} verwendet gespeicherte Zugangsdaten, die deaktiviert sind.",
       "expired": "{name} verwendet gespeicherte Zugangsdaten, die abgelaufen sind.",
-      "platformMissing": "{name} verwendet den Plattform-Modellschlüssel, aber auf dem Server ist keiner eingerichtet (MYMORNINGNEWS_ANTHROPIC_API_KEY)."
+      "platformMissing": "{name} verwendet den Plattform-Modellschlüssel, aber auf dem Server ist keiner eingerichtet (MYMORNINGNEWS_ANTHROPIC_API_KEY).",
+      "platformMissingUser": "{name} verwendet den gemeinsamen Modellschlüssel dieses Servers, und der Serverbetreiber hat noch keinen eingerichtet."
     },
     "fix": "Schlüssel zu {name} hinzufügen",
     "view": "Modellendpunkte anzeigen",
@@ -4173,6 +4214,7 @@
       "wizard": "Der Assistent lässt das Modell Dimensionen und Fragen vorschlagen und schlägt daher schon im ersten Schritt fehl, bis dies behoben ist."
     },
     "askAdmin": "Nur ein Mandantenadministrator kann einen Schlüssel hinzufügen. Bitten Sie Ihren Administrator, das zu beheben.",
-    "badge": "Kein API-Schlüssel"
+    "badge": "Kein API-Schlüssel",
+    "fixOwnKey": "Eigenen API-Schlüssel für {name} verwenden"
   }
 }

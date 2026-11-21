@@ -859,7 +859,8 @@
       "grants": "{count, plural, one {In base a # concessione} other {In base a # concessioni}}",
       "resource": "Risorsa",
       "title": "Autorizzazioni effettive"
-    }
+    },
+    "readOnly": "Puoi vedere chi fa parte di questo spazio di lavoro. Solo un amministratore può aggiungere, modificare o rimuovere utenti."
   },
   "credentials": {
     "allScopes": "Tutti",
@@ -1542,12 +1543,20 @@
       "overridesIntro": "Un argomento può eseguire un ruolo su un endpoint diverso da quello predefinito del tenant.",
       "noOverrides": "Nessuna impostazione per argomento.",
       "topic": "Argomento",
-      "topicId": "ID argomento",
-      "topicIdHelp": "L’ID dell’argomento da personalizzare.",
       "addOverride": "Aggiungi impostazione per argomento",
       "overrideAdded": "Impostazione per argomento salvata",
       "deleteTitle": "Rimuovi impostazione per argomento",
-      "deleteMessage": "Rimuovere l’impostazione di {role} per l’argomento {topic}? L’argomento torna all’impostazione predefinita del tenant."
+      "deleteMessage": "Rimuovere l’impostazione di {role} per l’argomento {topic}? L’argomento torna all’impostazione predefinita del tenant.",
+      "pickTopic": "Scegli un argomento",
+      "topicHelp": "L’argomento che esegue questo ruolo su un endpoint diverso.",
+      "bulkLabel": "Usa un endpoint per tutte le attività",
+      "bulkApply": "Applica a tutte le attività",
+      "bulkTitle": "Usa un endpoint per tutte le attività",
+      "bulkMessage": "Assegnare {name} {count, plural, one {alla # attività} other {a tutte le # attività}} che può gestire? Ogni attività mantiene il suo sforzo di ragionamento e gli override del modello di quelle attività vengono rimossi.",
+      "bulkDone": "{name} ora gestisce {count, plural, one {# attività} other {# attività}}",
+      "saveAll": "Salva tutte le modifiche ({count})",
+      "savedAll": "{count, plural, one {# assegnazione salvata} other {# assegnazioni salvate}}",
+      "savedSome": "Salvate {saved} assegnazioni su {total}. Riprova le altre."
     },
     "calls": {
       "detailTitle": "Chiamata al modello",
@@ -2240,7 +2249,8 @@
       "draft": "Redigi il contesto",
       "intro": "Modifica qualsiasi cosa. I vincoli bloccati e i tuoi restano anche dopo una nuova bozza.",
       "redraft": "Nuova bozza",
-      "constraints": "Vincoli"
+      "constraints": "Vincoli",
+      "nextNeedsBrief": "Scrivi o genera una descrizione per continuare."
     },
     "sources": {
       "intro": "I feed e le pagine iniziali suggeriti vengono recuperati in tempo reale. Quelli verdi hanno risposto.",
@@ -2268,10 +2278,10 @@
       "dimensions": "{count, plural, one {# dimensione} other {# dimensioni}}",
       "constraintCount": "{kind}: {count}",
       "preview": "Esecuzione di anteprima",
-      "previewHelp": "Un’esecuzione di prova non invia email e non viene conteggiata nella cronologia.",
+      "previewHelp": "Un’esecuzione di prova non invia email e i suoi risultati restano fuori dal tuo elenco dei risultati. Compare comunque in Esecuzioni, contrassegnata come esecuzione di prova.",
       "apply": "Applica argomento",
       "appliedToast": "{name} è pronto",
-      "previewQueued": "Esecuzione di prova in coda. Seguila nella scheda Esecuzioni dell’argomento."
+      "previewStarting": "Avvio dell’esecuzione di prova..."
     },
     "newTitle": "Nuovo argomento",
     "refineTitle": "Perfeziona {name}",
@@ -2398,7 +2408,19 @@
     },
     "live": {
       "streaming": "In diretta",
-      "polling": "Aggiornamento ogni pochi secondi"
+      "polling": "Aggiornamento ogni pochi secondi",
+      "queued": "In coda. Parte quando un worker è libero.",
+      "running": "In corso.",
+      "runningStage": "In corso: {stage}.",
+      "completed": "Terminata con {count, plural, one {# nuovo risultato} other {# nuovi risultati}}.",
+      "partial": "Terminata con avvisi e {count, plural, one {# nuovo risultato} other {# nuovi risultati}}. Apri l’esecuzione per vedere quale fase non è riuscita.",
+      "failed": "L’esecuzione non è riuscita. Aprila per vedere quale fase non è riuscita e perché.",
+      "failedReason": "L’esecuzione non è riuscita: {reason}",
+      "skipped": "L’esecuzione è stata saltata.",
+      "skippedReason": "L’esecuzione è stata saltata: {reason}",
+      "cancelled": "L’esecuzione è stata annullata.",
+      "unreadable": "Impossibile leggere l’avanzamento dell’esecuzione. Apri l’esecuzione per controllarla.",
+      "openRun": "Apri l’esecuzione"
     },
     "retry": {
       "column": "Riprova",
@@ -2863,7 +2885,8 @@
       "lookback": "Periodo considerato",
       "lastComposed": "Ultima composizione",
       "created": "Creata",
-      "id": "ID"
+      "id": "ID",
+      "owner": "Proprietario"
     },
     "badges": {
       "email": "Email",
@@ -2924,6 +2947,12 @@
       "add": "Aggiungi",
       "save": "Salva argomenti",
       "saved": "Argomenti salvati"
+    },
+    "ownerYou": "Tu",
+    "scope": {
+      "label": "Mostra edizioni",
+      "mine": "Mie",
+      "all": "Di tutti"
     }
   },
   "templates": {
@@ -3528,11 +3557,21 @@
     "delete": {
       "button": "Elimina il mio account",
       "title": "Eliminare il tuo account?",
-      "message": "Tutte le sessioni vengono disconnesse ora. Il tuo account e i tuoi dati vengono eliminati dopo il periodo di tolleranza; se accedi prima, vengono mantenuti.",
+      "message": "Tutte le sessioni vengono disconnesse ora. Dopo un periodo di tolleranza, il tuo account e tutti i suoi dati (argomenti, briefing, risultati, feedback e audio) vengono eliminati per sempre. La pagina successiva e un’email di conferma indicano la data. Se accedi prima, l’eliminazione viene annullata.",
       "typeEmail": "Scrivi la tua email per confermare",
       "mismatch": "L’email non corrisponde al tuo account.",
       "confirm": "Elimina il mio account",
-      "scheduled": "Il tuo account verrà eliminato il {date}. Accedi prima di allora per mantenerlo."
+      "scheduled": "Il tuo account verrà eliminato il {date}. Accedi prima di allora per mantenerlo.",
+      "messageDated": "Tutte le sessioni vengono disconnesse ora. Il {date}, il tuo account e tutti i suoi dati (argomenti, briefing, risultati, feedback e audio) vengono eliminati per sempre. Se accedi prima, l’eliminazione viene annullata.",
+      "cancelledTitle": "L’eliminazione del tuo account è stata annullata.",
+      "cancelledMessage": "Accedendo hai mantenuto il tuo account e tutti i suoi dati."
+    },
+    "deleted": {
+      "title": "L’eliminazione del tuo account è programmata",
+      "noDate": "Il tuo account verrà eliminato al termine del periodo di tolleranza. L’email di conferma indica la data. Accedi prima di allora per mantenerlo.",
+      "signedOut": "Sei stato disconnesso su tutti i dispositivi e ti abbiamo inviato un’email di conferma.",
+      "howToCancel": "Hai cambiato idea? Accedi prima di quella data e l’eliminazione viene annullata. I tuoi dati restano come erano.",
+      "signIn": "Accedi per mantenere il mio account"
     }
   },
   "email": {
@@ -3976,7 +4015,8 @@
     "verify": {
       "title": "Conferma la tua email",
       "done": "La tua email è confermata. Ora puoi accedere.",
-      "failed": "Questo link non è valido o è scaduto. Inserisci la tua email per riceverne uno nuovo."
+      "failed": "Questo link non è valido o è scaduto. Inserisci la tua email per riceverne uno nuovo.",
+      "used": "Questo link è già stato usato. Se la tua email è confermata, accedi."
     },
     "forgot": {
       "title": "Reimposta la password",
@@ -4164,7 +4204,8 @@
       "notFound": "{name} usa una credenziale salvata che non esiste più.",
       "inactive": "{name} usa una credenziale salvata disattivata.",
       "expired": "{name} usa una credenziale salvata scaduta.",
-      "platformMissing": "{name} usa la chiave del modello della piattaforma, ma il server non ne ha nessuna configurata (MYMORNINGNEWS_ANTHROPIC_API_KEY)."
+      "platformMissing": "{name} usa la chiave del modello della piattaforma, ma il server non ne ha nessuna configurata (MYMORNINGNEWS_ANTHROPIC_API_KEY).",
+      "platformMissingUser": "{name} usa la chiave del modello condivisa di questo server, e l’operatore del server non ne ha configurata nessuna."
     },
     "fix": "Aggiungi una chiave a {name}",
     "view": "Visualizza gli endpoint dei modelli",
@@ -4173,6 +4214,7 @@
       "wizard": "La procedura guidata chiede al modello di proporre dimensioni e domande, quindi non riesce già al primo passaggio finché il problema non viene risolto."
     },
     "askAdmin": "Solo un amministratore del tenant può aggiungere una chiave. Chiedi al tuo di risolvere il problema.",
-    "badge": "Nessuna chiave API"
+    "badge": "Nessuna chiave API",
+    "fixOwnKey": "Usa la tua chiave API per {name}"
   }
 }

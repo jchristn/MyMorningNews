@@ -36,11 +36,19 @@ export function useModelKeyProblems({ tasks = CHAT_TASKS, refreshSignal = 0 } = 
   return problems;
 }
 
+// The message key for one problem. The platform key is the operator's to set (an environment variable), so only a
+// global administrator is pointed at it; everyone else is told the server's shared key is missing.
+export function problemMessageKey(problem, isAdmin) {
+  if (problem === 'platformMissing' && !isAdmin) return 'modelKeys.problem.platformMissingUser';
+  return 'modelKeys.problem.' + problem;
+}
+
 // A warning that research and the topic wizard will fail because the chat endpoint has no usable API key, with a
-// link to fix it: administrators open the endpoint, members are told to ask an administrator.
+// link to fix it: administrators open the endpoint (a sign-up user can add their own key there when the server's
+// shared key is missing), members are told to ask an administrator.
 export default function ModelKeyWarning({ tasks = CHAT_TASKS, refreshSignal = 0, context = 'general' }) {
   const { t } = useTranslation();
-  const { isTenantAdmin } = useAuth();
+  const { isAdmin, isTenantAdmin } = useAuth();
   const problems = useModelKeyProblems({ tasks, refreshSignal });
   if (!problems || problems.length === 0) return null;
   return (
@@ -50,9 +58,11 @@ export default function ModelKeyWarning({ tasks = CHAT_TASKS, refreshSignal = 0,
         <strong>{t('modelKeys.title')}</strong>
         {problems.map(({ endpoint, problem }) => (
           <span key={endpoint.id}>
-            {t('modelKeys.problem.' + problem, { name: endpoint.name })}{' '}
+            {t(problemMessageKey(problem, isAdmin), { name: endpoint.name })}{' '}
             {isTenantAdmin ? (
-              <Link to={'/dashboard/models?endpoint=' + encodeURIComponent(endpoint.id)}>{t('modelKeys.fix', { name: endpoint.name })}</Link>
+              <Link to={'/dashboard/models?endpoint=' + encodeURIComponent(endpoint.id)}>
+                {t(problem === 'platformMissing' && !isAdmin ? 'modelKeys.fixOwnKey' : 'modelKeys.fix', { name: endpoint.name })}
+              </Link>
             ) : (
               <Link to="/dashboard/models">{t('modelKeys.view')}</Link>
             )}

@@ -158,7 +158,7 @@ function RunChartBody({ id, report }) {
       <HeatmapChart
         ariaLabel={t('runCharts.activity.title')}
         rows={grid.map((r) => ({ key: String(r.day), label: f.date(new Date(Date.UTC(2023, 0, 1 + r.day)), { weekday: 'short', timeZone: 'UTC' }), values: r.values }))}
-        columns={Array.from({ length: 24 }, (_, h) => ({ key: String(h), label: f.time(new Date(Date.UTC(2023, 0, 1, h)), { hour: 'numeric', timeZone: 'UTC' }), short: String(h) }))}
+        columns={Array.from({ length: 24 }, (_, h) => ({ key: String(h), label: f.time(new Date(Date.UTC(2023, 0, 1, h)), { hour: 'numeric', timeZone: 'UTC' }), short: String(h), minor: h % 3 !== 0 }))}
       />
     );
   }

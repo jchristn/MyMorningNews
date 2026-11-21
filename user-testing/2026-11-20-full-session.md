@@ -281,6 +281,8 @@ service, this card would show the operator's internals to every customer.
 **Suggested direction:** Show External services and the default-password step only to global administrators; drop
 next steps a user's role cannot act on.
 
+**Outcome:** Fixed and verified (dashboard). External services and their credentials show only to global administrators, never on a personal tenant or on a non-default tenant of a server with sign-up open. "Change the default password" shows only to the seeded (protected) administrator, and "Set up a model endpoint" only to administrators. Rerun on a fresh instance built from source: the admin sees the card; Riley and a sign-up user do not. Tests in `dashboard/src/views/UserTestingFixes.test.jsx`.
+
 ### UT-006: `reset.sh --keep-ollama` deletes volumes by name prefix, ignoring the project
 
 - **Severity:** S2
@@ -346,6 +348,8 @@ created tenant, and move Restart and Change password into a clearly labelled des
 appears in Runs.
 **Evidence:** `dashboard/j8-preview-apply/01-preview.png`
 
+**Outcome:** Fixed and verified (dashboard). Preview run now follows the dry run on the Review step (queued, the running stage, then the result with its new findings and links, or the error that stopped it from starting), and the note no longer says a dry run stays out of history. Verified with Vitest against a controlled event stream; the same notice was exercised live on the topic page (UT-009).
+
 ### UT-009: Topic page never updates after "Run now"
 
 - **Severity:** S3
@@ -359,6 +363,8 @@ appears in Runs.
 "Last run -" while the API returned `lastRunUtc`. There is no link from the toast to the run.
 **Evidence:** `dashboard/j9-runnow/`
 
+**Outcome:** Fixed and verified (dashboard). Run now and Dry run show a live notice that follows the run over SSE (polling as the fallback), links to the run, and refreshes the topic and its runs when it ends. Rerun live: the notice went from Queued to "The run failed: Search failed: ..." without a reload.
+
 ### UT-010: Wizard Context step: Next stays disabled until a separate "Save context"
 
 - **Severity:** S3
@@ -370,6 +376,8 @@ appears in Runs.
 **Expected:** Next becomes available, as the page header promises "Every step is saved as you go".
 **Actual:** Next stays disabled with no hint until "Save context", lower on the page, is pressed.
 **Evidence:** `dashboard/j7h-wizard-finish/01-context-filled.png`, `dashboard/j7i-wizard-finish/`
+
+**Outcome:** Fixed and verified (dashboard). Next is available once a brief is typed and saves the brief and settings before moving on; with no brief it says "Write or draft a brief to continue." A failed save keeps the user on Context with the error. Vitest.
 
 ### UT-011: Sign-up users with no model key get no warning, then an operator-only error
 
@@ -383,6 +391,8 @@ appears in Runs.
 **Actual:** No banner anywhere. The wizard then fails with "The platform model key is not configured on this server.",
 which only the operator can fix and which tells Sam nothing about what to do next.
 **Evidence:** `dashboard/j17c-verify/03-first-screen.png`, `dashboard/j17d-sam/02-wizard.png`
+
+**Outcome:** Dashboard part fixed and verified. The warning already detected a missing platform key after commit fa5dd79 (this session ran 6f0357b, where `platform:anthropic` was always treated as set). It now tells users other than global administrators that the server's shared key is not set up, and offers tenant administrators "Use your own API key for {name}" instead of naming the operator's environment variable. Rerun live as a sign-up user. The wizard's server error text is server-side and unchanged.
 
 ### UT-012: Account deletion messaging leaves the user guessing
 
@@ -399,6 +409,8 @@ expired. Sign in again to continue." Signing in again cancels the deletion silen
 give the date (November 27) and the cancel rule.
 **Evidence:** `dashboard/j19-sam-export/02-delete-dialog.png`, `dashboard/j19b-sam-delete/`
 
+**Outcome:** Fixed and verified (dashboard), with two server gaps. The dialog says what is deleted and that signing in cancels it. It gives the date when client config reports `deletionGraceDays`; the server does not send that yet, so for now it says the next page and the email give the date. After deleting, the user lands on a signed-out page with the date from the delete response and how to cancel (no sign-out request is sent, so no "session expired"). The next sign-in says the deletion was cancelled. The server does not report the cancel, so the dashboard remembers the deletion in that browser and also honors a `deletionCancelled` flag on the sign-in response if the server adds one. Rerun live end to end.
+
 ### UT-013: Admins see every user's identical "Morning News" edition
 
 - **Severity:** S3
@@ -411,6 +423,8 @@ give the date (November 27) and the cancel rule.
 **Actual:** Three rows named "Morning News" with the same description and no owner column; Today's picker offers
 "Morning News" three times. Editing or composing the wrong one is easy.
 **Evidence:** `dashboard/j21-edition/01-editions.png`
+
+**Outcome:** Fixed and verified (dashboard). Editions start with "Mine" (`mine=true`); administrators can switch to "Everyone's", which adds an Owner column (the email, or You). Today's picker lists only your own editions. Vitest.
 
 ### UT-014: Run email times are UTC with no time zone
 
@@ -471,6 +485,8 @@ for the route, and TenantMember evidently holds it, but the dashboard shows the 
 **Question for the owner:** Should members see the user directory? If yes, the dashboard could show a read-only list;
 if no, TenantMember should lose `User:Read`.
 **Evidence:** `api/member-lists-users.txt`, `api/member-isolation.txt`
+
+**Outcome:** Dashboard part fixed and verified. Members reach Users and see the directory read-only with a note; only View JSON is offered. Rerun live as Riley.
 
 ### UT-018: A run whose only new page cannot be fetched ends as Failed
 
@@ -543,6 +559,8 @@ Moving every task to a new endpoint takes eleven selections and eleven separate 
 raw topic ID typed into a text box.
 **Evidence:** `dashboard/j4-assign/01-assignments-after.png`
 
+**Outcome:** Fixed and verified (dashboard). Assignments gain "Use one endpoint for every task" (confirms, keeps reasoning effort, clears model overrides) and "Save all changes (n)". Topic overrides pick the topic by name, preselected from the topic's Models tab link, and the overrides table shows topic names. Vitest.
+
 ### UT-023: Duplicate constraints and blank names are accepted
 
 - **Severity:** S4
@@ -593,6 +611,8 @@ Opening the link a second time shows "This link is not valid or has expired. Ent
 API knows the real reason ("This link was already used.") and the account is verified, so the user should be told to
 sign in.
 **Evidence:** `dashboard/j17c-verify/02-verify-again.png`
+
+**Outcome:** Dashboard part fixed (Vitest). The verify page says "This link was already used. If your email is confirmed, sign in." when the server returns error code `LinkUsed`, and keeps the general message otherwise. Not verifiable live until the server sends `LinkUsed`.
 
 ### UT-028: MCP stdio logs full payloads to stderr and crashes on a late signal
 
@@ -658,6 +678,8 @@ A member sees the operating system (Ubuntu 24.04.5), .NET version, and database 
 private install; worth deciding for the hosted service.
 **Evidence:** `dashboard/member-crawl/summary.json` (server-info)
 
+**Outcome:** Dashboard part fixed and verified. Server info shows database, schema, vector search, runtime, operating system, and pending restarts to global administrators only, and leaves out any value the server stops sending. Rerun live as Riley.
+
 ## Things that looked wrong but were not product problems
 
 - The wizard could not propose dimensions, questions, or a context with the stub. The stub only answers the research
@@ -692,34 +714,34 @@ Decided by the owner on 2026-11-20. Every finding is addressed in this round exc
 | UT-002 | Fix now (or relabel the page and the README) || Address: keep the confirm step (it stops link scanners); say so on the page, in the email, and in the README |
 | UT-003 | Fix now || Address |
 | UT-004 | Fix now || Address |
-| UT-005 | Fix now || Address |
+| UT-005 | Fix now || Address. Outcome: fixed and verified (dashboard), branch `worktree-agent-a6c33e078972d88f5` |
 | UT-006 | Fix now || Address |
 | UT-007 | Fix later || Address |
-| UT-008 | Fix now || Address |
-| UT-009 | Fix later || Address |
-| UT-010 | Fix later || Address |
-| UT-011 | Fix later || Address |
-| UT-012 | Fix later || Address |
-| UT-013 | Fix later || Address |
+| UT-008 | Fix now || Address. Outcome: fixed and verified (dashboard), branch `worktree-agent-a6c33e078972d88f5` |
+| UT-009 | Fix later || Address. Outcome: fixed and verified (dashboard), branch `worktree-agent-a6c33e078972d88f5` |
+| UT-010 | Fix later || Address. Outcome: fixed and verified (dashboard), branch `worktree-agent-a6c33e078972d88f5` |
+| UT-011 | Fix later || Address. Outcome: dashboard part fixed and verified, branch `worktree-agent-a6c33e078972d88f5` |
+| UT-012 | Fix later || Address. Outcome: fixed and verified (dashboard); the server should add `deletionGraceDays` to client config and `deletionCancelled` to the sign-in response, branch `worktree-agent-a6c33e078972d88f5` |
+| UT-013 | Fix later || Address. Outcome: fixed and verified (dashboard), branch `worktree-agent-a6c33e078972d88f5` |
 | UT-014 | Fix later || Address |
 | UT-015 | Update the docs || Address |
 | UT-016 | Fix now (one line) || Address |
-| UT-017 | Owner decides || Won't fix the API: members keep the user directory; Address: show the Users page to members read-only |
+| UT-017 | Owner decides || Won't fix the API: members keep the user directory; Address: show the Users page to members read-only. Outcome: dashboard fixed and verified, branch `worktree-agent-a6c33e078972d88f5` |
 | UT-018 | Owner decides || Address: a run whose fetch reads nothing ends Partially succeeded with a warning and no failure push |
 | UT-019 | Owner decides before store submission || Address: add in-app sign-up, email verification prompt, and forgot password before store submission |
 | UT-020 | Fix later || Address |
 | UT-021 | Fix later || Address |
-| UT-022 | Leave as is, or fix later || Address |
+| UT-022 | Leave as is, or fix later || Address. Outcome: fixed and verified (dashboard), branch `worktree-agent-a6c33e078972d88f5` |
 | UT-023 | Fix later || Address |
 | UT-024 | Update the docs || Address |
 | UT-025 | Update the docs || Address |
 | UT-026 | Update the docs || Address |
-| UT-027 | Fix later || Address |
+| UT-027 | Fix later || Address. Outcome: dashboard part fixed; the live check waits for the server `LinkUsed` code, branch `worktree-agent-a6c33e078972d88f5` |
 | UT-028 | Fix later || Address |
 | UT-029 | Leave as is, or fix later || Address |
 | UT-030 | Owner decides || Address: the subject and summary count what the email shows |
 | UT-031 | Update the docs || Address |
 | UT-032 | Fix later || Address |
-| UT-033 | Owner decides || Address: runtime and schema details for administrators only |
+| UT-033 | Owner decides || Address. Outcome: dashboard part fixed and verified, branch `worktree-agent-a6c33e078972d88f5` |
 
 (c) 2026 Lattice AI LLC

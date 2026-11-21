@@ -859,7 +859,8 @@
       "grants": "{count, plural, one {Basé sur # droit} other {Basé sur # droits}}",
       "resource": "Ressource",
       "title": "Autorisations effectives"
-    }
+    },
+    "readOnly": "Vous pouvez voir qui fait partie de cet espace de travail. Seul un administrateur peut ajouter, modifier ou supprimer des utilisateurs."
   },
   "credentials": {
     "allScopes": "Toutes",
@@ -1542,12 +1543,20 @@
       "overridesIntro": "Un sujet peut exécuter un rôle sur un autre point de terminaison que celui par défaut du locataire.",
       "noOverrides": "Aucun remplacement par sujet.",
       "topic": "Sujet",
-      "topicId": "ID du sujet",
-      "topicIdHelp": "L’ID du sujet à remplacer.",
       "addOverride": "Ajouter un remplacement par sujet",
       "overrideAdded": "Remplacement par sujet enregistré",
       "deleteTitle": "Retirer le remplacement par sujet",
-      "deleteMessage": "Retirer le remplacement {role} du sujet {topic} ? Le sujet revient à la valeur par défaut du locataire."
+      "deleteMessage": "Retirer le remplacement {role} du sujet {topic} ? Le sujet revient à la valeur par défaut du locataire.",
+      "pickTopic": "Choisissez un sujet",
+      "topicHelp": "Le sujet qui exécute ce rôle sur un autre point de terminaison.",
+      "bulkLabel": "Utiliser un point de terminaison pour toutes les tâches",
+      "bulkApply": "Appliquer à toutes les tâches",
+      "bulkTitle": "Utiliser un point de terminaison pour toutes les tâches",
+      "bulkMessage": "Attribuer {name} {count, plural, one {à la # tâche} other {aux # tâches}} qu’il peut prendre en charge ? Chaque tâche garde son effort de raisonnement, et les remplacements de modèle de ces tâches sont effacés.",
+      "bulkDone": "{name} prend maintenant en charge {count, plural, one {# tâche} other {# tâches}}",
+      "saveAll": "Enregistrer toutes les modifications ({count})",
+      "savedAll": "{count, plural, one {# attribution enregistrée} other {# attributions enregistrées}}",
+      "savedSome": "{saved} attributions sur {total} enregistrées. Réessayez les autres."
     },
     "calls": {
       "detailTitle": "Appel de modèle",
@@ -2240,7 +2249,8 @@
       "draft": "Rédiger le contexte",
       "intro": "Modifiez ce que vous voulez. Les contraintes verrouillées et les vôtres survivent à une nouvelle rédaction.",
       "redraft": "Rédiger à nouveau",
-      "constraints": "Contraintes"
+      "constraints": "Contraintes",
+      "nextNeedsBrief": "Rédigez ou générez un cahier des charges pour continuer."
     },
     "sources": {
       "intro": "Les flux et pages de départ suggérés sont récupérés en direct. Ceux en vert ont répondu.",
@@ -2268,10 +2278,10 @@
       "dimensions": "{count, plural, one {# dimension} other {# dimensions}}",
       "constraintCount": "{kind} : {count}",
       "preview": "Exécution d’aperçu",
-      "previewHelp": "Une simulation n’envoie aucun e-mail et n’est pas comptée dans l’historique.",
+      "previewHelp": "Une simulation n’envoie aucun e-mail, et ses constats restent hors de votre liste de constats. Elle apparaît quand même dans Exécutions, marquée comme simulation.",
       "apply": "Appliquer le sujet",
       "appliedToast": "{name} est prêt",
-      "previewQueued": "Simulation en file d’attente. Suivez-la dans l’onglet Exécutions du sujet."
+      "previewStarting": "Démarrage de la simulation..."
     },
     "newTitle": "Nouveau sujet",
     "refineTitle": "Affiner {name}",
@@ -2398,7 +2408,19 @@
     },
     "live": {
       "streaming": "En direct",
-      "polling": "Actualisation toutes les quelques secondes"
+      "polling": "Actualisation toutes les quelques secondes",
+      "queued": "En file d’attente. Elle démarre dès qu’un worker est libre.",
+      "running": "En cours.",
+      "runningStage": "En cours : {stage}.",
+      "completed": "Terminée avec {count, plural, one {# nouveau constat} other {# nouveaux constats}}.",
+      "partial": "Terminée avec des avertissements et {count, plural, one {# nouveau constat} other {# nouveaux constats}}. Ouvrez l’exécution pour voir quelle étape a échoué.",
+      "failed": "L’exécution a échoué. Ouvrez-la pour voir quelle étape a échoué et pourquoi.",
+      "failedReason": "L’exécution a échoué : {reason}",
+      "skipped": "L’exécution a été ignorée.",
+      "skippedReason": "L’exécution a été ignorée : {reason}",
+      "cancelled": "L’exécution a été annulée.",
+      "unreadable": "La progression de l’exécution n’a pas pu être lue. Ouvrez l’exécution pour la vérifier.",
+      "openRun": "Ouvrir l’exécution"
     },
     "retry": {
       "column": "Relancer",
@@ -2863,7 +2885,8 @@
       "lookback": "Période couverte",
       "lastComposed": "Dernière composition",
       "created": "Créée",
-      "id": "ID"
+      "id": "ID",
+      "owner": "Propriétaire"
     },
     "badges": {
       "email": "E-mail",
@@ -2924,6 +2947,12 @@
       "add": "Ajouter",
       "save": "Enregistrer les sujets",
       "saved": "Sujets enregistrés"
+    },
+    "ownerYou": "Vous",
+    "scope": {
+      "label": "Afficher les éditions",
+      "mine": "Les miennes",
+      "all": "De tout le monde"
     }
   },
   "templates": {
@@ -3528,11 +3557,21 @@
     "delete": {
       "button": "Supprimer mon compte",
       "title": "Supprimer votre compte ?",
-      "message": "Toutes les sessions sont déconnectées maintenant. Votre compte et vos données sont supprimés à la fin du délai de grâce ; vous connecter avant cette date les conserve.",
+      "message": "Toutes les sessions sont déconnectées maintenant. Après un délai de grâce, votre compte et toutes ses données (sujets, briefings, constats, retours et audio) sont supprimés définitivement. La page suivante et un e-mail de confirmation indiquent la date. Connectez-vous avant et la suppression est annulée.",
       "typeEmail": "Saisissez votre e-mail pour confirmer",
       "mismatch": "L’e-mail ne correspond pas à votre compte.",
       "confirm": "Supprimer mon compte",
-      "scheduled": "Votre compte sera supprimé le {date}. Connectez-vous avant cette date pour le conserver."
+      "scheduled": "Votre compte sera supprimé le {date}. Connectez-vous avant cette date pour le conserver.",
+      "messageDated": "Toutes les sessions sont déconnectées maintenant. Le {date}, votre compte et toutes ses données (sujets, briefings, constats, retours et audio) sont supprimés définitivement. Connectez-vous avant et la suppression est annulée.",
+      "cancelledTitle": "La suppression de votre compte est annulée.",
+      "cancelledMessage": "En vous connectant, vous avez conservé votre compte et toutes ses données."
+    },
+    "deleted": {
+      "title": "La suppression de votre compte est programmée",
+      "noDate": "Votre compte sera supprimé à la fin du délai de grâce. L’e-mail de confirmation indique la date. Connectez-vous avant pour le conserver.",
+      "signedOut": "Vous êtes déconnecté sur tous les appareils, et nous vous avons envoyé un e-mail de confirmation.",
+      "howToCancel": "Vous avez changé d’avis ? Connectez-vous avant cette date et la suppression est annulée. Vos données restent telles quelles.",
+      "signIn": "Se connecter pour conserver mon compte"
     }
   },
   "email": {
@@ -3976,7 +4015,8 @@
     "verify": {
       "title": "Confirmez votre e-mail",
       "done": "Votre e-mail est confirmé. Vous pouvez maintenant vous connecter.",
-      "failed": "Ce lien n’est pas valide ou a expiré. Saisissez votre e-mail pour en recevoir un nouveau."
+      "failed": "Ce lien n’est pas valide ou a expiré. Saisissez votre e-mail pour en recevoir un nouveau.",
+      "used": "Ce lien a déjà été utilisé. Si votre e-mail est confirmé, connectez-vous."
     },
     "forgot": {
       "title": "Réinitialiser votre mot de passe",
@@ -4164,7 +4204,8 @@
       "notFound": "{name} utilise un identifiant enregistré qui n’existe plus.",
       "inactive": "{name} utilise un identifiant enregistré qui est désactivé.",
       "expired": "{name} utilise un identifiant enregistré qui a expiré.",
-      "platformMissing": "{name} utilise la clé de modèle de la plateforme, mais le serveur n’en a aucune de configurée (MYMORNINGNEWS_ANTHROPIC_API_KEY)."
+      "platformMissing": "{name} utilise la clé de modèle de la plateforme, mais le serveur n’en a aucune de configurée (MYMORNINGNEWS_ANTHROPIC_API_KEY).",
+      "platformMissingUser": "{name} utilise la clé de modèle partagée de ce serveur, et l’opérateur du serveur n’en a configuré aucune."
     },
     "fix": "Ajouter une clé à {name}",
     "view": "Voir les points de terminaison de modèles",
@@ -4173,6 +4214,7 @@
       "wizard": "L’assistant demande au modèle de proposer des dimensions et des questions : il échoue dès la première étape tant que ce problème n’est pas corrigé."
     },
     "askAdmin": "Seul un administrateur du locataire peut ajouter une clé. Demandez au vôtre de corriger ce problème.",
-    "badge": "Aucune clé d’API"
+    "badge": "Aucune clé d’API",
+    "fixOwnKey": "Utiliser votre propre clé API pour {name}"
   }
 }

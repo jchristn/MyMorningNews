@@ -19,7 +19,7 @@ describe('Home', () => {
     expect(screen.queryByText(/Phase 3/)).toBeNull();
   });
 
-  it('warns that the model endpoint has no key and hides service credentials from members', async () => {
+  it('warns that the model endpoint has no key and hides external services from members', async () => {
     renderRoute('/dashboard/home', {
       getTokenDetails: vi.fn(async () => MEMBER_DETAILS),
       getServerInfo: vi.fn(async () => SERVER_INFO),
@@ -29,7 +29,10 @@ describe('Home', () => {
     const warning = await screen.findByTestId('model-key-warning');
     expect(within(warning).getByText(/Anthropic has no API key/)).toBeInTheDocument();
     expect(within(warning).getByText(/Ask yours to fix it/)).toBeInTheDocument();
-    expect(await screen.findByText('Dashboards for metrics, traces, and logs.')).toBeInTheDocument();
+    // External services are the operator's: members do not see them at all (UT-005).
+    await waitFor(() => expect(screen.getByText('Try the API in the explorer')).toBeInTheDocument());
+    expect(screen.queryByTestId('external-services')).toBeNull();
+    expect(screen.queryByText('Dashboards for metrics, traces, and logs.')).toBeNull();
     expect(screen.queryByText('admin / admin')).toBeNull();
   });
 

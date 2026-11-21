@@ -859,7 +859,8 @@
       "grants": "{count, plural, one {Based on # grant} other {Based on # grants}}",
       "resource": "Resource",
       "title": "Effective permissions"
-    }
+    },
+    "readOnly": "You can see who is in this workspace. Only an administrator can add, change, or remove users."
   },
   "credentials": {
     "allScopes": "All",
@@ -1542,12 +1543,20 @@
       "overridesIntro": "A topic can run a role on a different endpoint than the tenant default.",
       "noOverrides": "No topic overrides.",
       "topic": "Topic",
-      "topicId": "Topic ID",
-      "topicIdHelp": "The ID of the topic to override.",
       "addOverride": "Add topic override",
       "overrideAdded": "Topic override saved",
       "deleteTitle": "Remove topic override",
-      "deleteMessage": "Remove the {role} override for topic {topic}? The topic goes back to the tenant default."
+      "deleteMessage": "Remove the {role} override for topic {topic}? The topic goes back to the tenant default.",
+      "pickTopic": "Choose a topic",
+      "topicHelp": "The topic that runs this role on a different endpoint.",
+      "bulkLabel": "Use one endpoint for every task",
+      "bulkApply": "Apply to all tasks",
+      "bulkTitle": "Use one endpoint for every task",
+      "bulkMessage": "Assign {name} to {count, plural, one {the # task} other {all # tasks}} it can serve? Each task keeps its reasoning effort, and model overrides on those tasks are cleared.",
+      "bulkDone": "{name} now serves {count, plural, one {# task} other {# tasks}}",
+      "saveAll": "Save all changes ({count})",
+      "savedAll": "{count, plural, one {# assignment saved} other {# assignments saved}}",
+      "savedSome": "Saved {saved} of {total} assignments. Try the rest again."
     },
     "calls": {
       "detailTitle": "Model call",
@@ -2240,7 +2249,8 @@
       "draft": "Draft the context",
       "intro": "Edit anything. Locked constraints and your own survive a redraft.",
       "redraft": "Redraft",
-      "constraints": "Constraints"
+      "constraints": "Constraints",
+      "nextNeedsBrief": "Write or draft a brief to continue."
     },
     "sources": {
       "intro": "Suggested feeds and seed pages are fetched live. Green ones responded.",
@@ -2268,10 +2278,10 @@
       "dimensions": "{count, plural, one {# dimension} other {# dimensions}}",
       "constraintCount": "{kind}: {count}",
       "preview": "Preview run",
-      "previewHelp": "A dry run sends no email and is not counted in history.",
+      "previewHelp": "A dry run sends no email, and its findings stay out of your findings list. It still shows in Runs, marked as a dry run.",
       "apply": "Apply topic",
       "appliedToast": "{name} is ready",
-      "previewQueued": "Dry run queued. Follow it on the topic Runs tab."
+      "previewStarting": "Starting the dry run..."
     },
     "newTitle": "New topic",
     "refineTitle": "Refine {name}",
@@ -2398,7 +2408,19 @@
     },
     "live": {
       "streaming": "Live",
-      "polling": "Refreshing every few seconds"
+      "polling": "Refreshing every few seconds",
+      "queued": "Queued. It starts when a worker is free.",
+      "running": "Running.",
+      "runningStage": "Running: {stage}.",
+      "completed": "Finished with {count, plural, one {# new finding} other {# new findings}}.",
+      "partial": "Finished with warnings and {count, plural, one {# new finding} other {# new findings}}. Open the run to see which stage failed.",
+      "failed": "The run failed. Open it to see which stage failed and why.",
+      "failedReason": "The run failed: {reason}",
+      "skipped": "The run was skipped.",
+      "skippedReason": "The run was skipped: {reason}",
+      "cancelled": "The run was cancelled.",
+      "unreadable": "The run's progress could not be read. Open the run to check on it.",
+      "openRun": "Open the run"
     },
     "retry": {
       "column": "Retry",
@@ -2863,7 +2885,8 @@
       "lookback": "Look-back",
       "lastComposed": "Last composed",
       "created": "Created",
-      "id": "ID"
+      "id": "ID",
+      "owner": "Owner"
     },
     "badges": {
       "email": "Email",
@@ -2924,6 +2947,12 @@
       "add": "Add",
       "save": "Save topics",
       "saved": "Topics saved"
+    },
+    "ownerYou": "You",
+    "scope": {
+      "label": "Show editions",
+      "mine": "Mine",
+      "all": "Everyone's"
     }
   },
   "templates": {
@@ -3528,11 +3557,21 @@
     "delete": {
       "button": "Delete my account",
       "title": "Delete your account?",
-      "message": "Every session signs out now. Your account and data are deleted after the grace period; signing in before then keeps them.",
+      "message": "Every session signs out now. After a grace period, your account and all its data (topics, briefings, findings, feedback, and audio) are deleted for good. The next page and a confirmation email give the date. Sign in before then and the deletion is cancelled.",
       "typeEmail": "Type your email to confirm",
       "mismatch": "The email does not match your account.",
       "confirm": "Delete my account",
-      "scheduled": "Your account will be deleted on {date}. Sign in before then to keep it."
+      "scheduled": "Your account will be deleted on {date}. Sign in before then to keep it.",
+      "messageDated": "Every session signs out now. On {date}, your account and all its data (topics, briefings, findings, feedback, and audio) are deleted for good. Sign in before then and the deletion is cancelled.",
+      "cancelledTitle": "Your account deletion is cancelled.",
+      "cancelledMessage": "Signing in kept your account and all its data."
+    },
+    "deleted": {
+      "title": "Your account is scheduled for deletion",
+      "noDate": "Your account will be deleted when the grace period ends. The confirmation email gives the date. Sign in before then to keep it.",
+      "signedOut": "You are signed out on every device, and we sent you a confirmation email.",
+      "howToCancel": "Changed your mind? Sign in before that date and the deletion is cancelled. Your data stays as it was.",
+      "signIn": "Sign in to keep my account"
     }
   },
   "email": {
@@ -3976,7 +4015,8 @@
     "verify": {
       "title": "Confirm your email",
       "done": "Your email is confirmed. You can sign in now.",
-      "failed": "This link is not valid or has expired. Enter your email to get a new one."
+      "failed": "This link is not valid or has expired. Enter your email to get a new one.",
+      "used": "This link was already used. If your email is confirmed, sign in."
     },
     "forgot": {
       "title": "Reset your password",
@@ -4164,7 +4204,8 @@
       "notFound": "{name} uses a stored credential that no longer exists.",
       "inactive": "{name} uses a stored credential that is turned off.",
       "expired": "{name} uses a stored credential that has expired.",
-      "platformMissing": "{name} uses the platform model key, but the server has none configured (MYMORNINGNEWS_ANTHROPIC_API_KEY)."
+      "platformMissing": "{name} uses the platform model key, but the server has none configured (MYMORNINGNEWS_ANTHROPIC_API_KEY).",
+      "platformMissingUser": "{name} uses this server's shared model key, and the server operator has not set one up."
     },
     "fix": "Add a key to {name}",
     "view": "View model endpoints",
@@ -4173,6 +4214,7 @@
       "wizard": "The wizard asks the model to propose dimensions and questions, so it fails at the first step until this is fixed."
     },
     "askAdmin": "Only a tenant administrator can add a key. Ask yours to fix it.",
-    "badge": "No API key"
+    "badge": "No API key",
+    "fixOwnKey": "Use your own API key for {name}"
   }
 }

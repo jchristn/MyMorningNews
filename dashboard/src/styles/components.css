@@ -640,16 +640,43 @@ table {
   border-bottom: 0;
 }
 
-/* The missing model key warning: an icon beside its lines. */
-.model-key-warning {
+/* A notice from sign-in (a cancelled account deletion) above the page, with its dismiss button at the end. */
+.sign-in-notice {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+/* The missing model key warning and a live run notice: an icon beside their lines. */
+.model-key-warning,
+.live-run-notice {
   display: flex;
   align-items: flex-start;
   gap: 10px;
 }
 
-.model-key-warning > svg {
+.model-key-warning > svg,
+.live-run-notice > svg {
   flex: none;
   margin-top: 2px;
+}
+
+.live-run-notice > .stack-tight {
+  flex: 1;
+}
+
+.live-run-dismiss {
+  flex: none;
+}
+
+/* A finished run's summary under its live notice: a few lines, not the whole text. */
+.live-run-summary {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .stack-tight {
@@ -705,16 +732,21 @@ table {
 }
 
 .data-table .actions-cell {
-  /* The row action menu stays in view at the inline end while a wide table scrolls under it. */
+  /* The row action menu stays in view at the inline end while a wide table scrolls under it. The soft shadow on its
+     leading edge shows that columns continue beneath it rather than ending there. */
   position: sticky;
   inset-inline-end: 0;
   z-index: 1;
   background: var(--color-surface);
-  box-shadow: inset 1px 0 0 var(--color-border);
+  box-shadow:
+    inset 1px 0 0 var(--color-border),
+    -6px 0 6px -6px rgba(15, 23, 42, 0.22);
 }
 
 [dir='rtl'] .data-table .actions-cell {
-  box-shadow: inset -1px 0 0 var(--color-border);
+  box-shadow:
+    inset -1px 0 0 var(--color-border),
+    6px 0 6px -6px rgba(15, 23, 42, 0.22);
 }
 
 .data-table thead tr:first-child th.actions-cell {
@@ -1284,6 +1316,35 @@ table {
   padding: 0;
 }
 
+/* In a narrow card (a phone), the grid fits instead of scrolling: a narrow day column, cells that shrink to fit,
+   and hour labels every third hour. */
+.heatmap {
+  container-type: inline-size;
+}
+
+@container (max-width: 480px) {
+  .heatmap-row {
+    grid-template-columns: 30px;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 1px;
+  }
+
+  .heatmap-col-label {
+    font-size: 9px;
+    text-overflow: clip;
+  }
+
+  .heatmap-col-label.minor {
+    visibility: hidden;
+  }
+
+  .heatmap-cell {
+    height: 12px;
+    min-width: 0;
+    border-radius: 1px;
+  }
+}
+
 .status-strip-bar {
   display: flex;
   height: 12px;
@@ -1422,16 +1483,18 @@ table {
 /* Free text in a table cell (an audit reason) wraps within a readable width instead of widening the table. */
 .cell-text {
   display: inline-block;
-  min-width: 140px;
+  min-width: 120px;
   max-width: 240px;
   white-space: normal;
   overflow-wrap: anywhere;
 }
 
+/* A truncated path or ID gives up width on narrower screens, so a table such as Audit fits beside its pinned row
+   menu instead of sliding its last column underneath it. */
 .cell-path-short {
-  max-width: 220px;
+  max-width: clamp(120px, 12vw, 220px);
 }
 
 .cell-id-short {
-  max-width: 170px;
+  max-width: clamp(100px, 9vw, 170px);
 }

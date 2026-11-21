@@ -165,8 +165,11 @@ export function topicContextBody(form) {
   };
 }
 
-// The brief (Markdown), audience, horizon, novelty, and seed queries, saved with one button.
-export function TopicContextForm({ topic, onSaved, disabled = false }) {
+// The brief (Markdown), audience, horizon, novelty, and seed queries, saved with one button. controlRef (optional)
+// receives { dirty, brief, save } so a parent can save unsaved edits itself: save() resolves to the saved topic, the
+// topic unchanged when nothing was edited, or null when saving failed (the error shows in the form).
+// onDraftChange(form) reports every edit.
+export function TopicContextForm({ topic, onSaved, disabled = false, controlRef, onDraftChange }) {
   const { t } = useTranslation();
   const { apiClient } = useAuth();
   const { addNotification } = useApp();
@@ -183,14 +186,26 @@ export function TopicContextForm({ topic, onSaved, disabled = false }) {
     setSaving(true);
     setError(null);
     try {
-      onSaved(await apiClient.updateTopic(topic.id, topicContextBody(form)));
+      const saved = await apiClient.updateTopic(topic.id, topicContextBody(form));
+      onSaved(saved);
       addNotification(t('wizard.context.saved'), 'success');
+      return saved;
     } catch (err) {
       setError(err);
+      return null;
     } finally {
       setSaving(false);
     }
   }
+
+  useEffect(() => {
+    if (!controlRef) return;
+    controlRef.current = { dirty, brief: form.brief, save: () => (dirty ? save() : Promise.resolve(topic)) };
+  });
+
+  useEffect(() => {
+    if (onDraftChange) onDraftChange(form);
+  }, [form, onDraftChange]);
 
   return (
     <div className="stack">
@@ -236,10 +251,10 @@ export function TopicContextForm({ topic, onSaved, disabled = false }) {
   );
 }
 
-TopicContextForm.propTypes = { topic: PropTypes.object.isRequired, onSaved: PropTypes.func.isRequired, disabled: PropTypes.bool };
+TopicContextForm.propTypes = { topic: PropTypes.object.isRequired, onSaved: PropTypes.func.isRequired, disabled: PropTypes.bool, controlRef: PropTypes.object, onDraftChange: PropTypes.func };
 
 // Step 4: the drafted brief and constraints, every item editable, lockable, and removable.
-export function ContextStep({ data, dispatch, onDraft, busy }) {
+export function ContextStep({ data, dispatch, onDraft, busy, controlRef, onDraftChange }) {
   const { t } = useTranslation();
   const hasBrief = Boolean(data.topic.brief && data.topic.brief.trim());
   return (
@@ -263,7 +278,7 @@ export function ContextStep({ data, dispatch, onDraft, busy }) {
           </button>
         </div>
       )}
-      <TopicContextForm topic={data.topic} disabled={busy} onSaved={(topic) => dispatch({ type: 'topic', topic })} />
+      <TopicContextForm topic={data.topic} disabled={busy} onSaved={(topic) => dispatch({ type: 'topic', topic })} controlRef={controlRef} onDraftChange={onDraftChange} />
       <h3>{t('wizard.context.constraints')}</h3>
       <ConstraintEditor
         topicId={data.topic.id}
@@ -277,4 +292,11 @@ export function ContextStep({ data, dispatch, onDraft, busy }) {
   );
 }
 
-ContextStep.propTypes = { data: PropTypes.object.isRequired, dispatch: PropTypes.func.isRequired, onDraft: PropTypes.func.isRequired, busy: PropTypes.bool };
+ContextStep.propTypes = {
+  data: PropTypes.object.isRequired,
+  dispatch: PropTypes.func.isRequired,
+  onDraft: PropTypes.func.isRequired,
+  busy: PropTypes.bool,
+  controlRef: PropTypes.object,
+  onDraftChange: PropTypes.func
+};

@@ -5,7 +5,8 @@ import { formatNumber } from '../i18n/formatters.js';
 import ChartTooltip from './ChartTooltip.jsx';
 
 // Grid of cells shaded by value (for example activity by day and hour). Every cell is a button with a tooltip on hover
-// and on keyboard focus.
+// and on keyboard focus. A column marked minor keeps its label off a narrow grid (the full label stays in its title).
+// The grid shrinks to fit its card rather than scrolling.
 export default function HeatmapChart({ rows, columns, ariaLabel, formatValue, onCellClick }) {
   const { locale } = useLocale();
   const [tip, setTip] = useState(null);
@@ -16,7 +17,7 @@ export default function HeatmapChart({ rows, columns, ariaLabel, formatValue, on
       <div className="heatmap-row heatmap-header" role="row">
         <span className="heatmap-label" role="columnheader" />
         {columns.map((c) => (
-          <span key={c.key} className="heatmap-col-label" role="columnheader" title={c.label}>
+          <span key={c.key} className={'heatmap-col-label' + (c.minor ? ' minor' : '')} role="columnheader" title={c.label}>
             {c.short || c.label}
           </span>
         ))}
@@ -56,7 +57,7 @@ export default function HeatmapChart({ rows, columns, ariaLabel, formatValue, on
 
 HeatmapChart.propTypes = {
   rows: PropTypes.arrayOf(PropTypes.shape({ key: PropTypes.string.isRequired, label: PropTypes.string.isRequired, values: PropTypes.arrayOf(PropTypes.number).isRequired })).isRequired,
-  columns: PropTypes.arrayOf(PropTypes.shape({ key: PropTypes.string.isRequired, label: PropTypes.string.isRequired, short: PropTypes.string })).isRequired,
+  columns: PropTypes.arrayOf(PropTypes.shape({ key: PropTypes.string.isRequired, label: PropTypes.string.isRequired, short: PropTypes.string, minor: PropTypes.bool })).isRequired,
   ariaLabel: PropTypes.string.isRequired,
   formatValue: PropTypes.func,
   onCellClick: PropTypes.func

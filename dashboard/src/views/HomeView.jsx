@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Activity, Building2, CircleAlert, Gauge, History, Lightbulb, Send, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext.jsx';
+import useClientConfig from '../hooks/useClientConfig.js';
 import useFormat from '../hooks/useFormat.js';
 import useLocalStorage from '../hooks/useLocalStorage.js';
 import { greeting } from '../utils/greeting.js';
@@ -27,12 +28,22 @@ const SERVICE_DESCRIPTIONS = { grafana: 'grafana', prometheus: 'prometheus', tem
 const OVERVIEW_KEYS = ['runs', 'findings', 'precision', 'briefings', 'feedback', 'cost'];
 const OVERVIEW_DAYS = 30;
 
+// Whether the signed-in tenant is a customer's on a hosted service: a personal (sign-up) tenant, or any tenant other
+// than the default on a server with public sign-up open. The operator's infrastructure never shows there.
+export function isHostedTenant(tenant, config, tenantId) {
+  if (tenant && tenant.isPersonal) return true;
+  return Boolean(config && config.signupEnabled && tenantId && tenantId !== 'default');
+}
+
 // Command center: what happened, what needs attention, and where to go next.
 export default function HomeView() {
   const { t } = useTranslation();
   const f = useFormat();
   const navigate = useNavigate();
-  const { apiClient, identity, isTenantAdmin, profile, timeZone } = useAuth();
+  const { apiClient, identity, isAdmin, isTenantAdmin, profile, timeZone } = useAuth();
+  const { config } = useClientConfig();
+  // The signed-in tenant, read for global administrators only: undefined while loading, null when unreadable.
+  const [tenant, setTenant] = useState(undefined);
   const [rangeId, setRangeId] = useLocalStorage('mymorningnews.home.range', 'day');
   const [health, setHealth] = useState(null);
   const [info, setInfo] = useState(null);
@@ -77,6 +88,25 @@ export default function HomeView() {
   useEffect(() => {
     load();
   }, [load]);
+
+  const ownTenantId = identity ? identity.tenantId : null;
+  useEffect(() => {
+    let live = true;
+    if (!isAdmin || !ownTenantId) return undefined;
+    Promise.resolve()
+      .then(() => apiClient.getTenant(ownTenantId))
+      .then((x) => live && setTenant(x && typeof x === 'object' && !Array.isArray(x.items) ? x : null))
+      .catch(() => live && setTenant(null));
+    return () => {
+      live = false;
+    };
+  }, [apiClient, isAdmin, ownTenantId]);
+
+  // External services (Grafana, Prometheus, and the rest) and their credentials are the operator's: global
+  // administrators see them, and never on a hosted customer's tenant.
+  const showServices = isAdmin && tenant !== undefined && !isHostedTenant(tenant, config, ownTenantId);
+  // The default-password step is for the seeded administrator account only; endpoints are set up by administrators.
+  const showPasswordStep = isAdmin && Boolean(profile && profile.isProtected);
 
   const hello = greeting(profile, loadedAt || new Date(), timeZone);
   const failureRate = summary && summary.totalCount > 0 ? summary.totalFailure / summary.totalCount : 0;
@@ -164,16 +194,20 @@ export default function HomeView() {
                 {topicCount ? t('home.next.topics') : t('home.next.topic')}
               </button>
             </li>
-            <li>
-              <button type="button" className="link-button" onClick={() => navigate('/dashboard/models')}>
-                {t('home.next.models')}
-              </button>
-            </li>
-            <li>
-              <button type="button" className="link-button" onClick={() => navigate('/dashboard/profile')}>
-                {t('home.next.password')}
-              </button>
-            </li>
+            {isTenantAdmin ? (
+              <li>
+                <button type="button" className="link-button" onClick={() => navigate('/dashboard/models')}>
+                  {t('home.next.models')}
+                </button>
+              </li>
+            ) : null}
+            {showPasswordStep ? (
+              <li>
+                <button type="button" className="link-button" onClick={() => navigate('/dashboard/profile')}>
+                  {t('home.next.password')}
+                </button>
+              </li>
+            ) : null}
             <li>
               <button type="button" className="link-button" onClick={() => navigate('/dashboard/explorer')}>
                 {t('home.next.explorer')}
@@ -206,38 +240,40 @@ export default function HomeView() {
         ) : null}
       </div>
 
-      <section className="panel external-services">
-        <h2>{t('home.services.title')}</h2>
-        <p className="muted small">{t('home.services.summary')}</p>
-        {errors.info ? <ErrorState error={errors.info} inline onRetry={load} /> : null}
-        {info && info.externalServices && info.externalServices.length > 0 ? (
-          <div className="service-grid">
-            {info.externalServices.map((s) => (
-              <div className="service-item" key={s.name}>
-                <strong>{s.name}</strong>
-                {s.description || SERVICE_DESCRIPTIONS[String(s.name).toLowerCase()] ? (
-                  <span className="muted small" dir="auto">
-                    {SERVICE_DESCRIPTIONS[String(s.name).toLowerCase()] ? t('home.services.descriptions.' + SERVICE_DESCRIPTIONS[String(s.name).toLowerCase()]) : s.description}
+      {showServices ? (
+        <section className="panel external-services" data-testid="external-services">
+          <h2>{t('home.services.title')}</h2>
+          <p className="muted small">{t('home.services.summary')}</p>
+          {errors.info ? <ErrorState error={errors.info} inline onRetry={load} /> : null}
+          {info && info.externalServices && info.externalServices.length > 0 ? (
+            <div className="service-grid">
+              {info.externalServices.map((s) => (
+                <div className="service-item" key={s.name}>
+                  <strong>{s.name}</strong>
+                  {s.description || SERVICE_DESCRIPTIONS[String(s.name).toLowerCase()] ? (
+                    <span className="muted small" dir="auto">
+                      {SERVICE_DESCRIPTIONS[String(s.name).toLowerCase()] ? t('home.services.descriptions.' + SERVICE_DESCRIPTIONS[String(s.name).toLowerCase()]) : s.description}
+                    </span>
+                  ) : null}
+                  <span className="service-url">
+                    <a href={s.url} target="_blank" rel="noreferrer" className="mono truncate">
+                      {s.url}
+                    </a>
+                    <CopyButton value={s.url} labelKey="common.copyUrl" />
                   </span>
-                ) : null}
-                <span className="service-url">
-                  <a href={s.url} target="_blank" rel="noreferrer" className="mono truncate">
-                    {s.url}
-                  </a>
-                  <CopyButton value={s.url} labelKey="common.copyUrl" />
-                </span>
-                {s.credentials && isTenantAdmin ? (
-                  <span className="small">
-                    {t('home.services.credentials')} <code>{s.credentials}</code>
-                  </span>
-                ) : null}
-              </div>
-            ))}
-          </div>
-        ) : info ? (
-          <EmptyState title={t('home.services.none')} />
-        ) : null}
-      </section>
+                  {s.credentials ? (
+                    <span className="small">
+                      {t('home.services.credentials')} <code>{s.credentials}</code>
+                    </span>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          ) : info ? (
+            <EmptyState title={t('home.services.none')} />
+          ) : null}
+        </section>
+      ) : null}
     </div>
   );
 }

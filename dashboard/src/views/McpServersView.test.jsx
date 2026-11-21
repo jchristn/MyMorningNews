@@ -74,6 +74,12 @@ describe('Account card', () => {
     await userEvent.type(within(dialog).getByLabelText('Type your email to confirm'), 'admin@mymorningnews');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Delete my account' }));
     await waitFor(() => expect(deleteAccount).toHaveBeenCalled());
-    await waitFor(() => expect(client.logout).toHaveBeenCalled());
+    // The server already ended every session: the account-deleted page shows the date, and no sign-out request is sent
+    // (it would fail and read as an expired session).
+    const signedOut = await screen.findByTestId('account-deleted');
+    expect(within(signedOut).getByText(/Your account will be deleted on/)).toBeInTheDocument();
+    expect(within(signedOut).getByRole('link', { name: 'Sign in to keep my account' })).toHaveAttribute('href', '/');
+    expect(screen.queryByText(/Your session expired/)).toBeNull();
+    expect(client.logout).not.toHaveBeenCalled();
   });
 });

@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import { useNavigate } from 'react-router-dom';
 import { Download, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useApp } from '../../context/AppContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
+import useClientConfig from '../../hooks/useClientConfig.js';
 import useFormat from '../../hooks/useFormat.js';
+import { rememberPendingDeletion } from '../../utils/accountDeletion.js';
 import { saveBlob } from '../../utils/briefing.js';
 import ConfirmModal from '../../components/ConfirmModal.jsx';
 import ErrorState from '../../components/ErrorState.jsx';
@@ -34,13 +36,23 @@ export function UsageBar({ label, used, max, display }) {
 
 UsageBar.propTypes = { label: PropTypes.string.isRequired, used: PropTypes.number.isRequired, max: PropTypes.number, display: PropTypes.func.isRequired };
 
+// The confirmation text for account deletion: the date the data goes when the server says how long the grace period
+// is (client config deletionGraceDays), else the general rule.
+export function deletionMessage(t, f, config, now = new Date()) {
+  const days = config && Number.isInteger(config.deletionGraceDays) && config.deletionGraceDays >= 0 ? config.deletionGraceDays : null;
+  if (days === null) return t('account.delete.message');
+  return t('account.delete.messageDated', { date: f.date(new Date(now.getTime() + days * 86400000)) });
+}
+
 // Usage against the plan (GET /v1.0/api/account/usage), the data export, and account deletion. Deletion signs out
-// every session; signing in again within the grace period keeps the account.
+// every session and opens a signed-out page with the date; signing in again within the grace period keeps the
+// account.
 export default function AccountCard() {
   const { t } = useTranslation();
   const f = useFormat();
-  const { apiClient, identity, logout } = useAuth();
-  const { addNotification } = useApp();
+  const navigate = useNavigate();
+  const { apiClient, identity } = useAuth();
+  const { config } = useClientConfig();
   const [meter, setMeter] = useState(null);
   const [error, setError] = useState(null);
   const [exporting, setExporting] = useState(false);
@@ -68,11 +80,13 @@ export default function AccountCard() {
     }
   }
 
+  // The server has already ended every session. The signed-out page ends it here too, without a sign-out request
+  // (which would fail and read as an expired session), once it has replaced this page.
   async function deleteAccount() {
     const result = await apiClient.deleteAccount();
-    const when = result && result.purgeAfterUtc ? f.date(result.purgeAfterUtc) : '';
-    addNotification(t('account.delete.scheduled', { date: when }), 'warning', 12000);
-    await logout();
+    const purge = result && result.purgeAfterUtc ? String(result.purgeAfterUtc) : null;
+    rememberPendingDeletion(email, purge);
+    navigate('/account-deleted' + (purge ? '?until=' + encodeURIComponent(purge) : ''), { replace: true, state: { endSession: true } });
   }
 
   const number = (v) => f.number(v);
@@ -106,7 +120,7 @@ export default function AccountCard() {
         open={confirming}
         danger
         title={t('account.delete.title')}
-        message={t('account.delete.message')}
+        message={deletionMessage(t, f, config)}
         confirmLabel={t('account.delete.confirm')}
         onConfirm={async () => {
           if (typed.trim().toLowerCase() !== email.toLowerCase()) throw new Error(t('account.delete.mismatch'));

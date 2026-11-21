@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import i18next from '../i18n/index.js';
+import { deletionCancelledBySignIn } from '../utils/accountDeletion.js';
 import { ApiClient, defaultServerUrl } from '../utils/api.js';
 import { intlLocale } from '../i18n/localeRegistry.js';
 
@@ -54,6 +55,8 @@ export function AuthProvider({ children, clientFactory = createClient }) {
   const [profile, setProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(Boolean(read(STORAGE_KEYS.token)));
   const [sessionExpired, setSessionExpired] = useState(false);
+  // Something to tell the user once they are signed in: 'deletionCancelled', or null.
+  const [signInNotice, setSignInNotice] = useState(null);
   const factory = useRef(clientFactory);
 
   const apiClient = useMemo(() => factory.current(serverUrl, token), [serverUrl, token]);
@@ -111,7 +114,9 @@ export function AuthProvider({ children, clientFactory = createClient }) {
   }, [apiClient, token, identity, clearSession]);
 
   useEffect(() => {
+    // A 401 that arrives after the session was already ended here (a late request) is not an expired session.
     const onUnauthorized = () => {
+      if (!read(STORAGE_KEYS.token)) return;
       setSessionExpired(true);
       clearSession();
     };
@@ -132,8 +137,18 @@ export function AuthProvider({ children, clientFactory = createClient }) {
     setToken(issued.token);
     setIdentity(details);
     setSessionExpired(false);
+    setSignInNotice(deletionCancelledBySignIn(email, issued) ? 'deletionCancelled' : null);
     return details;
   }, []);
+
+  // End the session here without asking the server, for when the server already ended it (account deletion).
+  const endSession = useCallback(() => {
+    setSessionExpired(false);
+    setSignInNotice(null);
+    clearSession();
+  }, [clearSession]);
+
+  const dismissSignInNotice = useCallback(() => setSignInNotice(null), []);
 
   const logout = useCallback(async () => {
     try {
@@ -161,9 +176,12 @@ export function AuthProvider({ children, clientFactory = createClient }) {
       isTenantAdmin: Boolean(identity && (identity.isTenantAdmin || identity.isAdmin)),
       lastTenantId: read(STORAGE_KEYS.tenantId) || 'default',
       login,
-      logout
+      logout,
+      endSession,
+      signInNotice,
+      dismissSignInNotice
     }),
-    [token, identity, profile, refreshProfile, isLoading, sessionExpired, apiClient, serverUrl, login, logout]
+    [token, identity, profile, refreshProfile, isLoading, sessionExpired, apiClient, serverUrl, login, logout, endSession, signInNotice, dismissSignInNotice]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

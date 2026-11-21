@@ -15,6 +15,7 @@ import StatusBadge, { statusTone } from '../../../components/StatusBadge.jsx';
 import ConstraintEditor from '../ConstraintEditor.jsx';
 import DeliverySettings from '../DeliverySettings.jsx';
 import TopicSchedules from '../TopicSchedules.jsx';
+import LiveRunNotice from '../../runs/LiveRunNotice.jsx';
 
 // URLs suggested by the model that are not saved on the topic yet.
 export function pendingSources(checks, constraints) {
@@ -155,7 +156,7 @@ DeliveryStep.propTypes = {
 };
 
 // Step 7: everything captured, a dry-run preview, and Apply.
-export function ReviewStep({ data, recipients, onApply, onPreview, busy, applied }) {
+export function ReviewStep({ data, recipients, onApply, onPreview, preview, onPreviewDismiss, busy, applied }) {
   const { t } = useTranslation();
   const f = useFormat();
   const { apiClient } = useAuth();
@@ -226,11 +227,13 @@ export function ReviewStep({ data, recipients, onApply, onPreview, busy, applied
           </ul>
         </section>
       ) : null}
+      {preview && preview.run ? <LiveRunNotice key={preview.run.id} runId={preview.run.id} initialRun={preview.run} onDismiss={onPreviewDismiss} /> : null}
+      {preview && preview.error ? <ErrorState error={preview.error} inline onDismiss={onPreviewDismiss} /> : null}
       {!applied ? (
         <div className="review-actions">
           <div className="stack">
-            <button type="button" className="button secondary" disabled={busy} onClick={onPreview}>
-              <FlaskConical size={14} aria-hidden="true" /> {t('wizard.review.preview')}
+            <button type="button" className="button secondary" disabled={busy || (preview && preview.starting)} onClick={onPreview} data-testid="preview-run">
+              <FlaskConical size={14} aria-hidden="true" /> {preview && preview.starting ? t('wizard.review.previewStarting') : t('wizard.review.preview')}
             </button>
             <span className="muted small">{t('wizard.review.previewHelp')}</span>
           </div>
@@ -248,6 +251,8 @@ ReviewStep.propTypes = {
   recipients: PropTypes.array.isRequired,
   onApply: PropTypes.func.isRequired,
   onPreview: PropTypes.func.isRequired,
+  preview: PropTypes.shape({ starting: PropTypes.bool, error: PropTypes.object, run: PropTypes.object }),
+  onPreviewDismiss: PropTypes.func,
   busy: PropTypes.bool,
   applied: PropTypes.bool
 };

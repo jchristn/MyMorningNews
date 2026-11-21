@@ -166,6 +166,15 @@
   justify-content: space-between;
 }
 
+/* Model assignments: the bulk endpoint picker and its buttons, with Save all at the end. */
+.assign-bulk {
+  justify-content: flex-start;
+}
+
+.assign-bulk [data-testid='assign-save-all'] {
+  margin-inline-start: auto;
+}
+
 .toolbar-row .group {
   display: flex;
   flex-wrap: wrap;

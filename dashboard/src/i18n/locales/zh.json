@@ -4209,7 +4209,7 @@
     "stageCosts": {
       "title": "各阶段成本",
       "help": "该时间范围内各次运行中每个阶段的预估模型成本。",
-      "label": "{stage}：每次运行平均 {mean}，{calls} 次模型调用",
+      "label": "{stage}（每次运行 {mean}）",
       "total": "共 {total}，每次运行 {mean}",
       "empty": "该时间范围内没有已定价的模型调用。"
     },

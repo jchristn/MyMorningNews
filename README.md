@@ -49,18 +49,178 @@ email. Your feedback teaches it what you care about, and it keeps score on its o
 - Track forward-looking calls (prices, launches, policy changes) and see which ones came true.
 - Give a team a shared research feed with per-person preferences, or run it as a service for others.
 
+## Screenshots
+
+These come from the demo account that `docker/factory/reset.sh --demo` creates, plus a few weeks of extra runs and
+model calls so the charts have data. The topics, sources, and products in them are made up.
+
+<details>
+<summary>Today and the briefing reader</summary>
+
+Today shows the latest Morning News edition with its audio player above the text.
+
+![Today](assets/screenshots/today.png)
+
+The reader adds audio chapters, a section outline, numbered citations, and a relevance rating for each section.
+
+![Briefing reader](assets/screenshots/briefing.png)
+
+</details>
+
+<details>
+<summary>Topics and the refinement wizard</summary>
+
+Topics lists each topic with its status, last run, and last refinement.
+
+![Topics](assets/screenshots/topics.png)
+
+The wizard's Dimensions step: weigh, lock, edit, or exclude each angle the research covers, with terms to include and
+exclude.
+
+![Refinement wizard, Dimensions step](assets/screenshots/wizard-dimensions.png)
+
+A topic's Runs tab charts the cost of its last 20 runs above the run table.
+
+![Topic runs and cost per run](assets/screenshots/topic-runs.png)
+
+</details>
+
+<details>
+<summary>Research runs and cost</summary>
+
+Research, Runs: median and p95 duration of each pipeline stage, and model cost by stage, over one time range.
+
+![Run duration and cost by stage](assets/screenshots/runs.png)
+
+A run's detail opens with its cost, tokens, model calls, and cost per new finding, and the Costs tab shows where the
+money went, stage by stage.
+
+![Run detail with per-stage cost](assets/screenshots/run-costs.png)
+
+</details>
+
+<details>
+<summary>Findings and evidence</summary>
+
+A finding shows how its relevance score breaks down and the verified quotes behind it, each linked to its source.
+
+![Finding with score breakdown and evidence](assets/screenshots/finding.png)
+
+</details>
+
+<details>
+<summary>Home and Insights</summary>
+
+Home sums up the last 30 days: runs, findings shown, relevance precision, feedback, and model cost, with runs per day
+by status.
+
+![Home](assets/screenshots/home.png)
+
+Insights, Accuracy grades predictions: accuracy rate, Brier score, and a calibration curve of stated confidence against
+what came true.
+
+![Insights, Accuracy](assets/screenshots/accuracy.png)
+
+Insights, Usage shows cost, calls, tokens, failures, and time to first token, with cost over time and by user.
+
+![Insights, Usage](assets/screenshots/usage.png)
+
+</details>
+
+<details>
+<summary>Setup and configuration</summary>
+
+The Setup page on a new workspace: connect a chat model with an agent CLI and your subscription, an API key, or your
+own model server.
+
+![Setup](assets/screenshots/setup.png)
+
+Configuration, Models: the endpoint and reasoning effort assigned to each pipeline task.
+
+![Model assignments](assets/screenshots/models.png)
+
+</details>
+
 ## Architecture
 
-```text
- dashboard (React)   mobile app (Expo)   SDKs (C#, JS, Python)   MCP clients
-        \                  |                   |                     |
-         +-------------- REST API (C#, Watson 7) ---------------- MCP server
-                              |
-   scheduler -> research pipeline -> briefings -> audio -> email and push
-                              |
-   PostgreSQL + pgvector   SearXNG   Kokoro TTS   model providers (PolyPrompt)
-                              |
-           Prometheus, Grafana, Tempo, Loki (metrics, traces, logs)
+```mermaid
+flowchart TB
+  subgraph clients["Clients"]
+    direction LR
+    dash["Dashboard<br/>React 19"]
+    mobile["Mobile app<br/>Expo"]
+    sdks["SDKs<br/>.NET, JavaScript, Python"]
+  end
+
+  subgraph mcp["MCP"]
+    direction LR
+    mcpc["MCP clients<br/>Claude Code, Claude Desktop"] --> mcps["MCP server<br/>Voltaic"]
+  end
+
+  subgraph server["Server: .NET, Watson 7"]
+    api["REST API<br/>auth, roles, setup gate"]
+    sched["Scheduler<br/>topics and editions"]
+    subgraph pipeline["Research pipeline"]
+      direction LR
+      plan["Plan<br/>queries"] --> search["Search<br/>and filter"] --> fetch["Fetch<br/>pages"] --> extract["Extract,<br/>verify quotes"] --> rank["Embed, dedupe,<br/>score"] --> synth["Synthesize,<br/>predict, suggest"] --> compose["Compose<br/>briefing"]
+    end
+    subgraph output["Briefings and delivery"]
+      direction LR
+      briefings["Briefings<br/>templates, editions"] --> audio["Audio<br/>worker"]
+      briefings --> delivery["Email<br/>and push"]
+    end
+    gateway["Model gateway<br/>guardrail, accounting, cost"]
+    clis["Agent CLI runner<br/>Claude Code, Codex, Gemini CLI, Mux"]
+    learning["Feedback learning"]
+    vault["Credential vault"]
+  end
+
+  subgraph models["Models"]
+    direction LR
+    providers["Model providers via PolyPrompt<br/>Anthropic, OpenAI, Gemini, xAI,<br/>Ollama Cloud, OpenAI-compatible"]
+    ollama["Ollama<br/>local models, embeddings"]
+  end
+
+  subgraph searching["Search"]
+    direction LR
+    searx["SearXNG"]
+    searchapis["Tavily, You.com,<br/>RSS, Hacker News, arXiv"]
+    remotemcp["Remote MCP servers<br/>agentic search tools"]
+  end
+
+  subgraph services["Delivery services"]
+    direction LR
+    tts["Kokoro TTS"]
+    mailgun["Mailgun"]
+    expo["Expo push"]
+  end
+
+  subgraph data["Data"]
+    direction LR
+    pg[("PostgreSQL<br/>with pgvector")]
+    media[("Media storage<br/>local disk or S3")]
+  end
+
+  subgraph obs["Observability"]
+    direction LR
+    prom["Prometheus"]
+    tempo["Tempo"]
+    loki["Loki"]
+    grafana["Grafana"]
+  end
+
+  clients --> api
+  mcp --> api
+  api --> sched --> pipeline --> output
+  pipeline --> searching
+  pipeline --> gateway
+  output --> gateway
+  learning --> gateway
+  gateway --> clis
+  gateway --> models
+  output --> services
+  server --> data
+  server -. telemetry .-> obs
 ```
 
 | Component | What it is | Port |

@@ -4209,7 +4209,7 @@
     "stageCosts": {
       "title": "Kos mengikut peringkat",
       "help": "Anggaran kos model bagi setiap peringkat merentas larian dalam julat ini.",
-      "label": "{stage}: purata {mean} setiap larian, {calls} panggilan model",
+      "label": "{stage} ({mean} setiap larian)",
       "total": "{total} keseluruhan, {mean} setiap larian",
       "empty": "Tiada panggilan model yang berharga dalam julat ini."
     },

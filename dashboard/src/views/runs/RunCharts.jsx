@@ -140,8 +140,7 @@ function RunChartBody({ id, report }) {
           value: s.total,
           label: t('runCharts.stageCosts.label', {
             stage: t('enums.runStage.' + s.stage, { defaultValue: s.stage }),
-            mean: s.mean === null ? '-' : f.usd(s.mean),
-            calls: f.number(s.calls)
+            mean: s.mean === null ? '-' : f.usd(s.mean)
           })
         }))}
       />

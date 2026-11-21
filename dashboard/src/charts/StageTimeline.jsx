@@ -18,7 +18,8 @@ export default function StageTimeline({ items, ariaLabel, formatDuration }) {
   const [tip, setTip] = useState(null);
   const [active, setActive] = useState(null);
   const labelWidth = Math.min(150, Math.max(90, Math.max(0, ...items.map((s) => s.label.length)) * 7 + 12));
-  const valueWidth = 64;
+  // Wide enough for the longest value text ("12.4 sec / 36.2 sec"), so it is never cut off at the right edge.
+  const valueWidth = Math.min(160, Math.max(64, Math.max(0, ...items.map((s) => String(s.durationText || '').length)) * 6.5 + 12));
   const plotWidth = Math.max(60, width - labelWidth - valueWidth - 8);
   const span = Math.max(1, ...items.map((s) => (s.offsetMs || 0) + Math.max(s.durationMs || 0, s.whiskerMs || 0)));
   const height = TOP + items.length * ROW + BOTTOM;

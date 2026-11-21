@@ -65,7 +65,7 @@ describe('Run charts', () => {
     const costs = screen.getByRole('list', { name: 'Cost by stage' });
     expect(costs.closest('.chart-card')).toHaveClass('wide');
     expect(within(costs).getByText('$0.90')).toBeInTheDocument();
-    expect(within(costs).getByText(/Extract: \$0.30 per run on average, 12 model calls/)).toBeInTheDocument();
+    expect(within(costs).getByText('Extract ($0.30 per run)')).toBeInTheDocument();
     expect(within(costs).queryByText(/Search/)).toBeNull();
     const slot = stages.querySelector('[data-stage="Search"]');
     fireEvent.focus(slot);

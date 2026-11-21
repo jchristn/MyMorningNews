@@ -4209,7 +4209,7 @@
     "stageCosts": {
       "title": "Kosten nach Phase",
       "help": "Geschätzte Modellkosten jeder Phase über die Läufe im Zeitraum.",
-      "label": "{stage}: durchschnittlich {mean} pro Lauf, {calls} Modellaufrufe",
+      "label": "{stage} ({mean} pro Lauf)",
       "total": "{total} insgesamt, {mean} pro Lauf",
       "empty": "Keine bepreisten Modellaufrufe in diesem Zeitraum."
     },

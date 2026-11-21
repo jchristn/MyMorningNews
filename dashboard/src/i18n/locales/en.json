@@ -4209,7 +4209,7 @@
     "stageCosts": {
       "title": "Cost by stage",
       "help": "Estimated model cost of each stage across the runs in the range.",
-      "label": "{stage}: {mean} per run on average, {calls} model calls",
+      "label": "{stage} ({mean} per run)",
       "total": "{total} in total, {mean} per run",
       "empty": "No priced model calls in this range."
     },

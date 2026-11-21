@@ -4209,7 +4209,7 @@
     "stageCosts": {
       "title": "Coste por etapa",
       "help": "Coste estimado del modelo en cada etapa para las ejecuciones del periodo.",
-      "label": "{stage}: {mean} por ejecución de media, {calls} llamadas al modelo",
+      "label": "{stage} ({mean} por ejecución)",
       "total": "{total} en total, {mean} por ejecución",
       "empty": "No hay llamadas al modelo con precio en este periodo."
     },

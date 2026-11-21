@@ -9,6 +9,8 @@ cp .env.example .env    # set real secrets: signing key, admin key, Anthropic ke
 docker compose -f compose.yaml -f hosted/compose.yaml up -d --build
 ```
 
+- Behind a load balancer that terminates TLS (for example an AWS ALB), use `hosted/compose.elb.yaml` instead: no
+  Caddy, and only the server (12100) and dashboard (12101) published. See `docs/HOSTING.md`, "Behind a load balancer".
 - `hosted/mymorningnews.json` is the server settings file for the hosted profile: CORS limited to the app origin,
   public sign-up with email verification, the Free plan as the default, private-network blocking, platform
   credentials by reference, and a short list of disposable email domains.

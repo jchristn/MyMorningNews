@@ -64,6 +64,28 @@ docker compose -f compose.yaml -f hosted/compose.yaml up -d --build
 Caddy gets a certificate on first start. Check `https://app.mymorningnews.ai/v1.0/api/health`, then sign in with the
 administrator account and change its password at once.
 
+## Behind a load balancer
+
+When a load balancer such as an AWS Application Load Balancer terminates TLS, use `hosted/compose.elb.yaml` instead
+of `hosted/compose.yaml`. It runs no Caddy and publishes only the server and the dashboard on the host's interfaces:
+
+```bash
+docker compose -f compose.yaml -f hosted/compose.elb.yaml up -d --build
+```
+
+| Target group | Host port | Health check | Listener rule |
+|--------------|-----------|--------------|---------------|
+| API (server) | 12100 (HTTP 8000 in the container) | `GET /v1.0/api/health`, 200 | Paths `/v1.0/*`, `/openapi.json`, `/swagger*`, `/.well-known/*` |
+| Dashboard | 12101 (HTTP 80 in the container) | `GET /health`, 200 | Default (every other path) |
+
+- Allow both ports only from the load balancer's security group. Every other service stays on `127.0.0.1`.
+- The HTTPS listener forwards plain HTTP to both target groups. Redirect port 80 to 443 on the load balancer.
+- Set the idle timeout to about 120 seconds. Run progress streams send a keep-alive every 15 seconds, and a model
+  connection test on the Setup page can take up to a minute.
+- `hosting.trustForwardedFor` (on in the hosted profile) takes the client address from the last `X-Forwarded-For`
+  entry, which is the one the load balancer appends, so per-IP rate limits see real clients.
+- The dashboard talks to the API on its own origin when it is served over HTTPS, so no dashboard setting changes.
+
 ## Sign-up and accounts
 
 - `POST /v1.0/public/signup` creates a personal tenant and an unverified user, then emails a link to `/verify`.

@@ -1,0 +1,26 @@
+# Load balancer overlay for the hosted service (plan section 33): a load balancer such as an AWS Application Load
+# Balancer terminates TLS for https://app.mymorningnews.ai and routes by path, so Caddy is not used.
+#   docker compose -f compose.yaml -f hosted/compose.elb.yaml up -d --build
+#
+# Only two ports are published on the host's interfaces; restrict both to the load balancer's security group:
+#   12100 -> server (HTTP 8000 in the container): /v1.0/*, /openapi.json, /swagger*, /.well-known/*
+#            health check GET /v1.0/api/health (200, no authentication, not rate limited)
+#   12101 -> dashboard (HTTP 80 in the container): every other path
+#            health check GET /health
+# Every other service stays on 127.0.0.1. See docs/HOSTING.md, "Behind a load balancer".
+services:
+  server:
+    ports: !override
+      - "12100:8000"
+    volumes:
+      - ./hosted/mymorningnews.json:/app/config/mymorningnews.json
+    environment:
+      MYMORNINGNEWS_HOSTING_TURNSTILE_SITE_KEY: ${MYMORNINGNEWS_HOSTING_TURNSTILE_SITE_KEY:-}
+      MYMORNINGNEWS_HOSTING_TURNSTILE_SECRET_KEY: ${MYMORNINGNEWS_HOSTING_TURNSTILE_SECRET_KEY:-}
+      MYMORNINGNEWS_HOSTING_APPLE_TEAM_ID: ${MYMORNINGNEWS_HOSTING_APPLE_TEAM_ID:-}
+      # Agent CLIs run inside the server as its own user; a shared service uses provider API keys only.
+      MYMORNINGNEWS_MODELS_ALLOW_AGENT_CLIS: "false"
+
+  dashboard:
+    ports: !override
+      - "12101:80"

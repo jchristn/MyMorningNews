@@ -5,6 +5,8 @@
 //   https://app.mymorningnews.ai/dashboard/briefings/{id}  dashboard URLs (all routes live under /dashboard)
 //   /briefings/{id}                                        a path from the router
 //   mymorningnews://redeem?code=SPRING-2027                promotional codes (also /account/redeem?code=)
+//   https://app.mymorningnews.ai/verify?token=...          the verification email (also /reset-password?token=)
+//   https://app.mymorningnews.ai/signup?code=...           the web sign-up page, with an optional promotional code
 // They map onto the app's routes. Anything unknown returns null and the caller falls back to Today.
 
 export const APP_HOST = 'app.mymorningnews.ai';
@@ -73,6 +75,23 @@ function redeemRoute(input) {
   return /^[A-Z0-9-]{1,40}$/.test(code) ? '/account/redeem?code=' + enc(code) : '/account/redeem';
 }
 
+/** A link token from an email: base64url from the server, so letters, digits, dash, underscore (and . or ~). */
+const LINK_TOKEN = /^[A-Za-z0-9_.~-]{1,512}$/;
+
+/** The verify email or reset password screen, with the token from the link when it looks like one. */
+function tokenRoute(route, input) {
+  const token = String(linkQuery(input).token || '').trim();
+  return LINK_TOKEN.test(token) ? route + '?token=' + enc(token) : route;
+}
+
+/** The sign-up screen, with a promotional code from the link when it looks like one. */
+function signUpRoute(input) {
+  const code = String(linkQuery(input).code || '')
+    .trim()
+    .toUpperCase();
+  return /^[A-Z0-9-]{1,40}$/.test(code) ? '/sign-up?code=' + enc(code) : '/sign-up';
+}
+
 /** Tabs whose nested paths are app routes already (for example /today/briefings/{id}, /account/profile). */
 const APP_ROUTE_ROOTS = ['today', 'listen', 'account', 'insights'];
 
@@ -90,10 +109,19 @@ export function mapDeepLink(input) {
     case 'home':
       return '/today';
     case 'sign-in':
-    case 'sign-up':
     case 'forgot-password':
     case 'server':
       return '/' + first;
+    case 'login':
+      return '/sign-in';
+    case 'sign-up':
+    case 'signup':
+      return signUpRoute(input);
+    case 'verify':
+    case 'verify-email':
+      return tokenRoute('/verify', input);
+    case 'reset-password':
+      return tokenRoute('/reset-password', input);
     case 'briefings':
       return second ? '/today/briefings/' + enc(second) : '/today/briefings';
     case 'findings':

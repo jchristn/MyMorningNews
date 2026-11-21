@@ -2,17 +2,20 @@ import React, { useState } from 'react';
 import { Image, View } from 'react-native';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { ApiError, TenantSelectionRequiredError, isNetworkError } from '@/api/errors';
+import { ApiError, TenantSelectionRequiredError, isEmailNotVerified, isNetworkError } from '@/api/errors';
 import { Banner, Button, Choice, Field, IconButton, Screen, T } from '@/components/ui';
 import { LegalFooter } from '@/components/LegalFooter';
 import { useAuth } from '@/state/AuthContext';
 import { usePrefs } from '@/state/PrefsContext';
+import { useServer } from '@/state/ServerContext';
 import { isInsecureServer } from '@/storage/prefs';
 import { spacing } from '@/theme/palette';
+import { ResendLink } from './ResendLink';
 
 /** Map a sign-in failure to a message. */
 export function signInErrorKey(error) {
   if (isNetworkError(error)) return 'mobile.signIn.errorUnreachable';
+  if (isEmailNotVerified(error)) return 'mobile.signIn.unverifiedBody';
   if (error instanceof ApiError) {
     if (error.status === 400 && /tenant/i.test(error.message || '')) return 'mobile.signIn.errorTenantRequired';
     if (error.status === 401 || error.status === 403) return 'mobile.signIn.errorCredentials';
@@ -25,12 +28,14 @@ export function signInErrorKey(error) {
 /**
  * Sign in with email and password (plan section 33.1). The tenant ID is optional: servers with tenant-less sign-in
  * (contract B) find the tenant, and ask which one when the account belongs to several. Older servers that require a
- * tenant say so, and the field takes it.
+ * tenant say so, and the field takes it. An account whose email is not confirmed yet (403 EmailNotVerified, after
+ * sign-up) is offered a new verification link. "Create account" appears only when client config has sign-up open.
  */
 export function SignInScreen() {
   const { t } = useTranslation();
   const { auth, state } = useAuth();
   const { prefs, update } = usePrefs();
+  const { config } = useServer();
   const [email, setEmail] = useState(prefs.lastEmail);
   const [password, setPassword] = useState('');
   const [reveal, setReveal] = useState(false);
@@ -58,6 +63,7 @@ export function SignInScreen() {
         setTenants(error.tenants);
         setChosenTenant(error.tenants[0].id);
       } else {
+        setTenants(null);
         const key = signInErrorKey(error);
         if (key === 'mobile.signIn.errorTenantRequired') setShowTenant(true);
         setErrorKey(key);
@@ -107,15 +113,22 @@ export function SignInScreen() {
           ) : (
             <Button title={t('mobile.signIn.addTenant')} kind="ghost" onPress={() => setShowTenant(true)} />
           )}
-          {errorKey ? (
+          {errorKey === 'mobile.signIn.unverifiedBody' ? (
+            <>
+              <Banner kind="warning" title={t('mobile.signIn.unverifiedTitle')} testID="sign-in-unverified">
+                {t(errorKey)}
+              </Banner>
+              <ResendLink key={email.trim()} email={email} />
+            </>
+          ) : errorKey ? (
             <Banner kind="danger" testID="sign-in-error">
               {t(errorKey)}
             </Banner>
           ) : null}
           <Button title={t('mobile.signIn.submit')} busy={busy} onPress={() => void submit()} testID="sign-in-submit" />
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-            <Button title={t('mobile.signIn.createAccount')} kind="ghost" onPress={() => router.push('/sign-up')} />
-            <Button title={t('mobile.signIn.forgot')} kind="ghost" onPress={() => router.push('/forgot-password')} />
+            {config && config.signupEnabled ? <Button title={t('mobile.signIn.createAccount')} kind="ghost" onPress={() => router.push('/sign-up')} testID="sign-in-create" /> : null}
+            <Button title={t('mobile.signIn.forgot')} kind="ghost" onPress={() => router.push('/forgot-password')} testID="sign-in-forgot" />
           </View>
         </View>
       )}

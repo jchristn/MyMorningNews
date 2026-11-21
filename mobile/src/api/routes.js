@@ -1,6 +1,5 @@
 // Every path the app calls, in one place (plan section 24, plus the mobile contracts A to E in section 35.5 and
-// 33.1). Routes marked "planned" do not exist on the server yet; calls to them return 404 until their phase lands,
-// and screens show the "later server update" state. Topics through feedback, learning, and analytics (Phases 4 to 10)
+// 33.1). A server without a route answers 404, and screens show the "later server update" state. Topics through feedback, learning, and analytics (Phases 4 to 10)
 // and plans with promotional codes (section 33.2) are live.
 const enc = encodeURIComponent;
 
@@ -9,9 +8,12 @@ export const routes = {
   token: '/v1.0/token',
   tokenRefresh: '/v1.0/token/refresh',
   tokenRefreshToken: '/v1.0/token/refresh-token',
-  // Public account flows (planned, Phase 14)
+  // Public account flows (plan section 33.1): sign-up, email verification, and password reset
   signup: '/v1.0/public/signup',
+  verifyEmail: '/v1.0/public/verify-email',
+  verifyEmailResend: '/v1.0/public/verify-email/resend',
   passwordForgot: '/v1.0/public/password/forgot',
+  passwordReset: '/v1.0/public/password/reset',
   // Server (existing; client config is contract D)
   health: '/v1.0/api/health',
   serverInfo: '/v1.0/api/server-info',

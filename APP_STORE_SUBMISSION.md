@@ -28,12 +28,12 @@ be re-checked against the release build at submission.
 | # | Gate | Status |
 |---|------|--------|
 | 0.1 | **Minimum functionality (Apple 4.2, Google "Minimum functionality").** Today, Topics, and Insights show "This arrives in a later server update" until plan Phases 4 to 10 land. Use TestFlight and Play internal testing now; submit for public release after briefings (Phase 7), audio (Phase 8), and account deletion (Phase 14). | `[ ] Owner: confirm the release timing` |
-| 0.2 | **In-app account deletion (Apple 5.1.1(v), Google account deletion policy).** Account > Delete account calls `POST /v1.0/api/account/delete` (contract E, Phase 14). Until it exists the screen links to the web page, which is not enough for Apple review. | Blocked on Phase 14 |
+| 0.2 | **In-app account creation and deletion (Apple 5.1.1(v), Google account deletion policy).** The app creates accounts (sign-in > Create account, `POST /v1.0/public/signup`), so it must also delete them in the app: Account > Delete account calls `POST /v1.0/api/account/delete`, which the server ships. The web page stays as the second path (section 9.2). | `[x]` Both in the app (UT-019, 2026-11-20); check on the release build |
 | 0.3 | **Hosted service live** at `https://app.mymorningnews.ai`, with the reviewer demo account (section 9). | `[ ] Owner: confirm` |
 | 0.4 | **Legal pages reviewed and live**: privacy, terms, support, account deletion (section 1). | `[x]` Wording approved 2026-11-20 (support `hello@latticetech.ai`; terms set to 18 and over) |
 | 0.5 | **Interface review done**, then screenshots captured (section 8). No screenshots before the review. | `[ ] Owner: review the private review page` |
 | 0.6 | **Every proposed text and answer in this file approved.** | `[x]` Approved 2026-11-20; re-check at submission |
-| 0.7 | **`npm run parity:strict` passes** (nothing planned remains for the routes the release claims). | Run before submitting |
+| 0.7 | **`npm run parity:strict` passes** (nothing planned remains for the routes the release claims). | Passes 2026-11-20 (34 implemented, 0 planned); run again before submitting |
 
 ---
 
@@ -241,7 +241,7 @@ Product Personalization where noted).
 | Apple data type | Collected | What it is in this app |
 |---|---|---|
 | Contact Info > Email Address | Yes | Account email: sign-in, verification, password reset, briefing emails |
-| Contact Info > Name | Yes (optional) | First and last name on the profile |
+| Contact Info > Name | Yes (optional) | The name given at sign-up, and first and last name on the profile |
 | Contact Info > Phone, Physical Address, Other | No | |
 | User Content > Other User Content | Yes | Topic descriptions, refinement answers, feedback and the reasons given (also Product Personalization: ranking learns from it) |
 | User Content > Audio, Photos or Videos, Emails or Text Messages, Gameplay, Customer Support | No | |
@@ -252,7 +252,10 @@ Product Personalization where noted).
 | Diagnostics | No | No crash reporting SDK; change if one is added |
 | Location, Health and Fitness, Financial Info, Contacts, Browsing History, Search History, Sensitive Info, Purchases, Other Data | No | |
 
-Notes: time zone and language preferences are settings, not location. Topic text and fetched source text are sent
+Notes: in-app sign-up collects the email, a password (the server keeps only a hash), an optional name, and an
+optional promotional code, sends the device time zone and language as settings, and records that the terms were
+accepted and the minimum age confirmed (a yes, not a birth date); none of these is a new data type. Time zone and
+language preferences are settings, not location. Topic text and fetched source text are sent
 to the AI model provider the server uses (Anthropic by default) to do the research; that provider processes it on the
 operator's behalf and does not use it for its own purposes.
 
@@ -276,7 +279,7 @@ at build time. After the first EAS production build, check the generated manifes
 | Category > type | Collected | Required or optional | Purposes |
 |---|---|---|---|
 | Personal info > Email address | Yes | Required | App functionality, Account management, Developer communications |
-| Personal info > Name | Yes | Optional | App functionality, Account management |
+| Personal info > Name | Yes | Optional | App functionality, Account management (sign-up and profile) |
 | Personal info > User IDs | Yes | Required | App functionality, Account management |
 | Personal info > Address, Phone, Race, Political or religious beliefs, Sexual orientation, Other | No | | |
 | App activity > App interactions | Yes | Required | App functionality, Personalization, Fraud prevention and security (request history) |
@@ -348,6 +351,9 @@ Where to look:
 - Account > Notifications: notifications are optional and the permission is asked only there.
 - Account > Delete account: deletes the account (type DELETE to confirm). It can also be requested on the web at
   https://mymorningnews.ai/delete-account.html.
+- Create account (on the sign-in screen): in-app sign-up with email and password, the terms and privacy policy, and
+  an 18 and over confirmation. The confirmation email's link opens the app. Reviewers can use the demo account
+  instead. "Forgot password?" sends a reset link that also opens the app.
 
 Sign-in uses email and password only, with no third-party or social login, so Sign in with Apple is not required
 (Guideline 4.8). The app has no ads, no tracking, and no purchases. "Change server" on the sign-in screen is for
@@ -355,7 +361,7 @@ people who run their own open-source My Morning News server; reviewers do not ne
 Contact: hello@latticetech.ai
 ```
 
-`[x]` Approved 2026-11-20
+`[x]` Approved 2026-11-20. `[ ] Owner: approve the "Create account" lines added for UT-019`
 
 Before each submission: sign in with the demo account on a release build against production and make sure it has
 fresh briefings with audio.
@@ -365,8 +371,14 @@ fresh briefings with audio.
 - Email and password only (plus "Change server" for self-hosted installs). No Google, Facebook, or other third-party
   login, so Sign in with Apple is not required. If a third-party login is ever added, Sign in with Apple is added
   with it (plan section 35.3).
-- Sign-up in the app (`POST /v1.0/public/signup`) arrives with Phase 14; until then the screen says it is not
-  available.
+- In-app sign-up (`POST /v1.0/public/signup`): email, password (8 or more characters), an optional name and
+  promotional code, links to the terms and privacy policy, and an age box using client config `minimumAge` (18 on
+  the hosted service). "Create account" appears only when client config has `signupEnabled`. The verification and
+  reset emails link to `https://app.mymorningnews.ai/verify` and `/reset-password`; universal links open the app's
+  own screens for them, and sign-in offers "Send a new link" when an account is not confirmed yet.
+- Cloudflare Turnstile: the app has no WebView, so when client config carries a `turnstileSiteKey` the sign-up
+  screen sends people to the web sign-up page and back to sign in. With Turnstile on, account creation happens on the
+  web, and in-app deletion is still required (Apple 5.1.1(v) applies to accounts created anywhere).
 
 ### 9.2 Account deletion
 
@@ -426,6 +438,9 @@ The first Android upload must be done by hand in Play Console (Testing > Interna
 ### 10.5 TestFlight and internal testing checklist
 
 - [ ] Sign in against the hosted service, change server to a self-hosted one and back, sign out.
+- [ ] Create account in the app with a new address, open the verification email on the device (the link opens the
+      app), confirm, and sign in. Sign in before confirming and use "Send a new link". "Forgot password?", open the
+      reset email on the device, choose a new password, and sign in with it.
 - [ ] Today, briefing reader, Listen; audio with the screen locked; lock-screen and notification controls (play,
       pause, back 15, forward 30); speed; chapters; sleep timer; downloads offline.
 - [ ] Notifications: turn on, receive the test notification, tap it and land on the right screen; Android channels

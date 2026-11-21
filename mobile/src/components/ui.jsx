@@ -234,6 +234,28 @@ export function SwitchRow({ title, detail, value, onValueChange, disabled, testI
   );
 }
 
+/** A checkbox row (consent, age); the whole row toggles it and is announced as a checkbox. */
+export function CheckRow({ title, detail, value, onValueChange, disabled, testID }) {
+  const p = useTheme();
+  return (
+    <Pressable
+      testID={testID}
+      onPress={disabled ? undefined : () => onValueChange(!value)}
+      accessibilityRole="checkbox"
+      accessibilityLabel={title}
+      accessibilityHint={detail}
+      accessibilityState={{ checked: Boolean(value), disabled: Boolean(disabled) }}
+      style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: MIN_TOUCH, opacity: disabled ? 0.55 : pressed ? 0.7 : 1 }]}
+    >
+      <Ionicons name={value ? 'checkbox' : 'square-outline'} size={24} color={value ? p.primary : p.muted} />
+      <View style={{ flex: 1, gap: 2 }}>
+        <T>{title}</T>
+        {detail ? <T variant="small">{detail}</T> : null}
+      </View>
+    </Pressable>
+  );
+}
+
 /** A labeled set of choices (theme, language, speed). The selected one is announced as selected. */
 export function Choice({ options, value, onChange, accessibilityLabel }) {
   const p = useTheme();

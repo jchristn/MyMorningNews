@@ -91,6 +91,16 @@ export function isModelError(error) {
   return error.code === 'ModelError' || error.status === 502 || error.status === 503;
 }
 
+/** True when sign-in was refused because the account's email address is not confirmed yet (403 EmailNotVerified). */
+export function isEmailNotVerified(error) {
+  return error instanceof ApiError && error.status === 403 && error.code === 'EmailNotVerified';
+}
+
+/** True when the server does not offer public sign-up (404 SignupClosed, or no sign-up route at all). */
+export function isSignupClosed(error) {
+  return error instanceof ApiError && error.status === 404 && (error.code === 'SignupClosed' || isNotAvailable(error));
+}
+
 /** True for a 409 Conflict (a state the action does not allow, for example applying a topic without a brief). */
 export function isConflict(error) {
   return error instanceof ApiError && error.status === 409;

@@ -48,7 +48,8 @@ or tokens into this repository; they go into the consoles, EAS, or the password 
     project if you want the server to be the only sender.
 11. **Universal links.** Give the backend agent the Apple Team ID and, after the first Play upload, the Play App
     Signing SHA-256 certificate fingerprint (Play Console > App integrity), so `app.mymorningnews.ai` can serve
-    `/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json` (plan section 33.3).
+    `/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json` (plan section 33.3). The Apple file
+    must also list `/verify*` and `/reset-password*`, so the verification and reset emails open the app on iOS.
 12. **Hosted service reachable.** `https://app.mymorningnews.ai` must be live (plan Phase 14 and `docs/HOSTING.md`)
     before TestFlight external testing or review: reviewers sign in against it.
 13. **Reviewer demo account.** On the hosted service, create a demo user with a topic and at least one briefing
@@ -60,11 +61,12 @@ or tokens into this repository; they go into the consoles, EAS, or the password 
 14. **Decide whether the first public release waits for content.** Today and Topics now work against Phases 4 to 7
     (briefings, topics, the wizard, requests, runs, findings, predictions, suggestions, editions), and audio, feedback,
     Insights, learned preferences, plans and codes, email preferences, and podcast feeds work against Phases 8 to 10.
-    Account deletion and export (Phase 14) are what still show "This arrives in a later server update"; both stores
-    require in-app deletion. Recommendation: TestFlight and Play internal testing now, public submission after Phase 14.
+    In-app sign-up, email verification, password reset, account deletion, and export now work against the server
+    (UT-019), and `npm run parity:strict` passes, so nothing the stores require is still waiting on the server.
 15. **Account deletion route.** In-app deletion (`POST /v1.0/api/account/delete`, contract E) is required by both
-    stores; until it ships, the app links to `https://mymorningnews.ai/delete-account.html`. Confirm that page works
-    without the app and names the app and the developer (Google requirement).
+    stores, since the app now creates accounts; it ships, and the app also links to
+    `https://mymorningnews.ai/delete-account.html`. Confirm that page works without the app and names the app and the
+    developer (Google requirement).
 16. **Legal pages.** Review the privacy policy, terms, and support pages on `mymorningnews.ai` (drafts from Phase 15)
     and confirm they describe the app's data (account email, usage data, push token).
 17. **Interface review, then screenshots.** Review the app with the agent on an iPhone, an iPad, an Android phone,

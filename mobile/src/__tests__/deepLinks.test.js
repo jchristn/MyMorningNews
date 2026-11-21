@@ -34,6 +34,24 @@ describe('deep and universal links', () => {
     expect(mapDeepLink(url)).toBe(route);
   });
 
+  it.each([
+    ['https://app.mymorningnews.ai/verify?token=Ab-c_9', '/verify?token=Ab-c_9'],
+    ['https://app.mymorningnews.ai/reset-password?token=Zz_1-2', '/reset-password?token=Zz_1-2'],
+    ['mymorningnews://verify?token=abc', '/verify?token=abc'],
+    ['/reset-password?token=abc', '/reset-password?token=abc'],
+    ['https://app.mymorningnews.ai/verify', '/verify'],
+    ['https://app.mymorningnews.ai/verify?token=a%20b%3Cscript%3E', '/verify'],
+    ['https://app.mymorningnews.ai/reset-password?token=', '/reset-password'],
+    ['https://app.mymorningnews.ai/signup', '/sign-up'],
+    ['https://app.mymorningnews.ai/signup?code=launch-2026', '/sign-up?code=LAUNCH-2026'],
+    ['https://app.mymorningnews.ai/signup?code=bad%20code', '/sign-up'],
+    ['https://app.mymorningnews.ai/forgot-password', '/forgot-password'],
+    ['https://app.mymorningnews.ai/login', '/sign-in'],
+  ])('emailed account link %s opens %s', (url, route) => {
+    expect(mapDeepLink(url)).toBe(route);
+    expect(redirectSystemPath({ path: url, initial: true })).toBe(route);
+  });
+
   it('rejects other hosts and schemes', () => {
     expect(mapDeepLink('https://evil.example/briefings/1')).toBeNull();
     expect(mapDeepLink('ftp://app.mymorningnews.ai/briefings/1')).toBeNull();

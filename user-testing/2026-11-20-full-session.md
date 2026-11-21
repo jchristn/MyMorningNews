@@ -500,6 +500,13 @@ server ships all of them, and the README presents the app as store-ready. App St
 deletion for apps that allow account creation.
 **Question for the owner:** Is in-app deletion planned before the store submission?
 **Evidence:** `mobile/verify.log` (evidence) and `mobile/parity.json` (repository)
+**Outcome (2026-11-20):** Addressed. The app has in-app sign-up (shown only when client config has sign-up open, with
+the terms and privacy links and the `minimumAge` box), "Check your email" with "Send a new link", verify email and
+reset password screens opened by the emailed links, Forgot password, and "Send a new link" when sign-in answers
+`403 EmailNotVerified`. With Turnstile on, sign-up opens the web page (the app has no WebView). Account deletion and
+export already called the shipped routes and are now marked implemented: parity reports 34 implemented and 0
+planned, and `npm run parity:strict` passes. `npm run verify` passes with 391 Jest tests. Still needed from the
+server: `/verify*` and `/reset-password*` in `apple-app-site-association`, so the links open the app on iOS.
 
 ### S4: Polish
 

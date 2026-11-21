@@ -31,20 +31,21 @@ emulators, and free personal-team signing are in [docs/MOBILE_DEVICE_TESTING.md]
 
 | What | How |
 | --- | --- |
-| Sign in | `POST /v1.0/token` with `x-email`, `x-password`, `x-client: mobile`, and `x-tenant-guid` only when the user typed one. Without a tenant the server finds it; a `409 TenantSelectionRequired` lists the tenants and the app asks which one (contract B). Older servers that answer `400 x-tenant-guid is required` make the tenant field appear. |
+| Sign in | `POST /v1.0/token` with `x-email`, `x-password`, `x-client: mobile`, and `x-tenant-guid` only when the user typed one. Without a tenant the server finds it; a `409 TenantSelectionRequired` lists the tenants and the app asks which one (contract B). Older servers that answer `400 x-tenant-guid is required` make the tenant field appear. A `403 EmailNotVerified` (a sign-up not confirmed yet) offers "Send a new link". |
 | Tokens | The session token and the rotating refresh token (contract A, 30 days) live in the Keychain / Keystore (`expo-secure-store`, `AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY`), one entry per server. `src/auth/AuthController.js` refreshes 60 seconds before expiry and after a 401 with `POST /v1.0/token/refresh-token`, with exactly one refresh in flight (a reused refresh token revokes the sign-in). Servers without contract A get the authenticated `POST /v1.0/token/refresh`. A rejected refresh shows "Your session expired". Sign out sends `DELETE /v1.0/token`, which also revokes the refresh token. |
 | API | `src/api/`: `ApiClient` with an injected base URL, token provider, refresh function, and fetch; typed errors (`ApiError`, `NetworkError`, `TimeoutError`, `SessionExpiredError`, `TenantSelectionRequiredError`); every route in `routes.js`. A 404 (or 405, 501) is "not available on this server yet", and screens say "This arrives in a later server update" instead of showing an error. |
-| Client config | `GET /v1.0/api/client-config` (contract D, no auth): server version, sign-up and push switches, minimum app version, legal links, copyright. Defaults apply when it is missing. |
+| Client config | `GET /v1.0/api/client-config` (contract D, no auth): server version, sign-up (`signupEnabled`, `requireEmailVerification`, `minimumAge`, `turnstileSiteKey`), push, audio, and email switches, minimum app version, legal links, copyright. Defaults apply when it is missing, and sign-up then stays hidden. |
+| Sign-up and recovery | `POST /v1.0/public/signup` (sign-in > Create account, shown only when `signupEnabled`), `POST /v1.0/public/verify-email` and `/verify-email/resend`, `POST /v1.0/public/password/forgot` and `/password/reset`, all without auth. Sign-up always ends on "Check your email" (the server answers 202 the same way whether or not the email has an account), or "Your account is ready" when verification is off; 404 `SignupClosed` shows the closed state. The emailed `/verify?token=` and `/reset-password?token=` links open the app's own screens, which work signed in or out. |
 | Profile and usage | `GET/PUT /v1.0/api/me`, `PUT /v1.0/api/me/password`, `GET /v1.0/api/usage/me` (cost, calls, tokens, by task or model, drawn with react-native-svg). |
 | Push | `POST /v1.0/api/devices` with the Expo push token, platform, name, and locale (contract C); `GET` lists devices, `DELETE /devices/{id}` removes one (also on sign-out), `POST /devices/{id}/test` sends a test. The permission prompt appears only from Account > Notifications. Taps route by `{ kind, briefingId \| topicId \| predictionId }`. Android channels: `briefings`, `predictions`, `account`. |
-| Links | `mymorningnews://briefings/{id}` and `https://app.mymorningnews.ai/briefings/{id}` (also `/dashboard/...`, topics, predictions, findings, suggestions, insights, account, and `mymorningnews://redeem?code=...` for promotional codes) map to screens in `src/lib/deepLinks.js`, applied by `src/app/+native-intent.js`. iOS associated domain `applinks:app.mymorningnews.ai`; Android `autoVerify` intent filters. |
+| Links | `mymorningnews://briefings/{id}` and `https://app.mymorningnews.ai/briefings/{id}` (also `/dashboard/...`, topics, predictions, findings, suggestions, insights, account, `mymorningnews://redeem?code=...` for promotional codes, and the account emails' `/verify?token=` and `/reset-password?token=`, plus `/signup?code=` and `/login`) map to screens in `src/lib/deepLinks.js`, applied by `src/app/+native-intent.js`. iOS associated domain `applinks:app.mymorningnews.ai`; Android `autoVerify` intent filters. |
 | Research (Phases 4 to 7) | Topics with dimensions and constraints, the refinement wizard, one-time requests, schedules (with `POST /v1.0/api/schedules/preview`), runs with stages, queries, and results, findings with evidence (pin, hide, and delete with `PUT` and `DELETE /v1.0/api/findings/{id}`, and the `pinned` and `includeHidden` list filters), sources, predictions with reviews, suggestions, briefings (read, pin, regenerate, download `.md` and `.html`), and editions (edit, topics, compose, preview): `src/api/research.js`. Model-backed steps (wizard generation, request planning) answer `502 ModelError` without a model key; screens say so and offer the manual path (`ActionError` in `src/components/states.jsx`). |
 | Audio (Phase 8) | The briefing detail carries `audio` (the newest episode in any status) and the briefing names its ready episode in `mediaAssetId`. `GET /v1.0/api/media/{id}` gives the chapters and `audioPath`; audio streams from `GET /v1.0/api/artifacts/{id}/content` with the bearer token and HTTP Range. `POST /v1.0/api/briefings/{id}/audio` makes audio (409 `AudioInProgress`, `AudioDisabled`, `BriefingNotReady`); the reader polls while it is made. Listen lists `GET /v1.0/api/media?status=Ready`. Make actions and podcast feeds are hidden when client config has `audioEnabled: false`. |
 | Podcast feeds | `GET/POST/DELETE /v1.0/api/feed-tokens` (Account > Podcast feeds): the feed URL is shown once with Copy (`expo-clipboard`), Share, and Open in Podcasts (`podcast://` on iOS, `pcast://` on Android). |
 | Feedback (Phases 9 and 10) | `POST /v1.0/api/feedback` with `{ targetType, targetId, action, reason, channel: "Mobile" }` from inline chips on findings, predictions, suggestions, briefings, and the findings a briefing cites; the current rating comes from `GET /v1.0/api/feedback?targetType=&targetId=` (or one read per list); the why sheet adds a reason, changes, or retracts (`DELETE /v1.0/api/feedback/{id}`). `src/lib/feedback.js` holds the actions per target. |
 | Insights and learning (Phase 10) | `GET /v1.0/api/analytics/{overview,relevance,accuracy,feedback,suggestions,reasons,quality}` with `from` and `to` (the overview tiles head Insights and Today), drawn with the hand-rolled charts in `src/charts/` (bars, trend line and columns, calibration diagram); feedback history with `PUT` and `DELETE /v1.0/api/feedback/{id}`; learned preferences with accept, reject, disable, enable, edit, delete, and create. |
 | Plans, codes, email | `GET /v1.0/api/account/plan` and `POST /v1.0/api/promo-codes/redeem` (409 `PromoCodeInvalid` with `details.reason`, each explained; `src/lib/promo.js`); `GET/PUT /v1.0/api/email-preferences`. |
-| Planned routes | Briefing progress, sign-up, password reset, account delete and export: called as plan section 24 describes, and degrade until their phase lands. |
+| Account data | `POST /v1.0/api/account/delete` (Account > Delete account, type DELETE, then sign out) and `GET /v1.0/api/account/export` (a ZIP through the share sheet). Both degrade to "later server update" (and the web deletion page) on a server without them. |
 
 ## Audio player
 
@@ -76,6 +77,15 @@ one-minute chapters, a beep every ten seconds; regenerate with `npm run assets:t
 empty module in release bundles (`metro.config.js`), so it never ships.
 
 ## Layout
+
+Signed out: sign-in (with Create account when sign-up is open, and Forgot password?), server, sign-up, forgot
+password, and the verify email and reset password screens that emailed links open.
+
+**Turnstile.** The app has no WebView (briefings render natively, so nothing in the app runs web content), and
+Cloudflare Turnstile has no native widget. When client config carries a `turnstileSiteKey`, the sign-up screen
+explains that the server asks for a check the app cannot show and opens the web sign-up page (`<server>/signup`, the
+same origin on the hosted service) in the in-app browser, then the person comes back and signs in. Adding
+`react-native-webview` only for this was not worth a native module.
 
 Phones use five tabs (Today, Listen, Topics, Insights, Account), each a stack. Tablets and windows 768 points and
 wider show split views (the briefing, finding, prediction, request, topic, and edition lists beside their detail, and
@@ -119,8 +129,9 @@ add its directory to `sharedDirs`, import it as `@dashboard/<dir>`, and delete t
 ## Strings and languages
 
 The app's strings are under `mobile.*` in `src/i18n/catalog/` with ICU syntax, like the dashboard. English is
-complete; `es`, `pt`, `fr`, `it`, `de`, `zh`, `ar`, `ru`, `ms`, `hi`, and `ja` have the tab names and fall back to
-English key by key until the Phase 12 translations; `qps-ploc` and `qps-rtl` are generated from English.
+the source; `es`, `pt`, `fr`, `it`, `de`, `zh`, `ar`, `ru`, `ms`, `hi`, and `ja` translate every key (machine-translated
+and awaiting native review; the account screens reuse the dashboard's wording); `qps-ploc` and `qps-rtl` are generated
+from English.
 `npm run i18n:check` fails on a key the code uses that English lacks, an English key nothing uses, a locale key
 English lacks, a changed placeholder, an invalid ICU message, or an em-dash.
 
@@ -140,7 +151,8 @@ app calls arrives with its plan phase; see `parity.json` for the route list. Gap
 | Need | Why |
 | --- | --- |
 | `PUT /v1.0/api/briefings/{id}/progress` and `GET` of the saved position | Resume across devices (section 35.5). The app already sends `{ positionSeconds, completed }`. |
-| `/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json` on `app.mymorningnews.ai` | Universal links (section 33.3) need the Apple team id and the Android signing certificate fingerprint. |
+| `/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json` on `app.mymorningnews.ai` | Universal links (section 33.3) need the Apple team id and the Android signing certificate fingerprint. The server's file lists `/briefings/*`, `/topics/*`, `/predictions/*`, `/findings/*`, and `/redeem*`; it also needs `/verify*` and `/reset-password*` so the account emails open the app on iOS (Android's intent filters already list them). |
+| The web app URL in client config (for example `appUrl`) | With Turnstile on, the app opens `<server>/signup`. That is right on the hosted service (one origin), but a self-hosted server whose dashboard is on another port needs the web address. |
 | A distinct error code for unknown routes (for example `RouteNotFound`) | The app tells "not on this server yet" from "this item does not exist" by whether a 404 carries a `requestId` (the server's default handler omits it). An explicit code would make that robust. |
 | `minimumAppVersion` enforcement | The value arrives in client config; the app does not block old versions yet. |
 | A `GET /v1.0/api/suggestions/{id}` | The briefing detail now carries `itemTitles` (the app uses it, and reads findings and predictions one by one only on older servers), but a cited suggestion still opens the suggestions list, since there is no read route. |
@@ -184,7 +196,8 @@ Store metadata, privacy answers, age rating, screenshots, review notes, and the 
 `npm run verify` runs ESLint (`eslint-config-expo`, zero warnings, plus the host-agnostic rules), the i18n check, the
 parity check, `npm run audit:check` (fails on any advisory not reviewed in `audit-allowlist.json`), Jest with
 `@testing-library/react-native` (API client, auth controller and refresh, lock policy, player state machine and
-service, progress and downloads, deep links, parity, i18n, screens, repository rules such as no em-dashes), and
+service, progress and downloads, deep links, parity, i18n, screens including sign-up, verification, and password
+reset, repository rules such as no em-dashes), and
 `expo export` for iOS and Android. `.github/workflows/mobile.yml` runs it on every push.
 
 ## Project layout
@@ -200,7 +213,8 @@ mobile/
 |-- scripts/                  generate-assets, generate-test-tone, parity, check-audit, lint-shared,
 |                             updates, generate-updates-certificate, publish-update
 `-- src/
-    |-- app/                  expo-router routes: (auth) sign-in, server, sign-up, forgot-password;
+    |-- app/                  expo-router routes: (auth) sign-in, server, sign-up, forgot-password, verify,
+    |                         reset-password;
     |                         (app) tabs today, listen, topics, insights, account; +native-intent.js
     |-- api/                  ApiClient, errors, routes, endpoint modules
     |-- auth/                 AuthController (tokens, one refresh at a time), secure token storage, lock policy

@@ -12,16 +12,17 @@ export const DEFAULT_LINKS = Object.freeze({
 
 export const SUPPORT_EMAIL = 'hello@latticetech.ai';
 
-const ServerContext = createContext({ config: null, available: false, links: DEFAULT_LINKS, reload: () => undefined });
+const ServerContext = createContext({ config: null, available: false, loaded: false, links: DEFAULT_LINKS, reload: () => undefined });
 
 /**
  * Client configuration for the active server (`GET /v1.0/api/client-config`, contract D, no auth): product name,
  * server version, sign-up and push switches, minimum app version, and legal links. Servers without the route answer
- * 404 (or 401, since unknown routes require authentication); the app then uses defaults.
+ * 404 (or 401, since unknown routes require authentication); the app then uses defaults. `loaded` turns true once
+ * the first answer (or failure) arrives, so screens that depend on a switch (sign-up) can wait for it.
  */
 export function ServerProvider({ children }) {
   const { auth } = useAuth();
-  const [state, setState] = useState({ config: null, available: false });
+  const [state, setState] = useState({ config: null, available: false, loaded: false });
   const [version, setVersion] = useState(0);
   const reload = useCallback(() => setVersion((v) => v + 1), []);
 
@@ -30,10 +31,10 @@ export function ServerProvider({ children }) {
     serverApi
       .clientConfig(auth.client)
       .then((config) => {
-        if (alive) setState({ config: config && typeof config === 'object' ? config : null, available: Boolean(config) });
+        if (alive) setState({ config: config && typeof config === 'object' ? config : null, available: Boolean(config), loaded: true });
       })
       .catch(() => {
-        if (alive) setState({ config: null, available: false });
+        if (alive) setState({ config: null, available: false, loaded: true });
       });
     return () => {
       alive = false;
@@ -42,7 +43,7 @@ export function ServerProvider({ children }) {
 
   const value = useMemo(() => {
     const links = { ...DEFAULT_LINKS, ...((state.config && state.config.links) || {}) };
-    return { config: state.config, available: state.available, links, reload };
+    return { config: state.config, available: state.available, loaded: state.loaded, links, reload };
   }, [state, reload]);
   return <ServerContext.Provider value={value}>{children}</ServerContext.Provider>;
 }

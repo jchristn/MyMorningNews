@@ -128,6 +128,9 @@ module.exports = () => {
             { scheme: 'https', host: ASSOCIATED_DOMAIN, pathPrefix: '/suggestions' },
             { scheme: 'https', host: ASSOCIATED_DOMAIN, pathPrefix: '/dashboard' },
             { scheme: 'https', host: ASSOCIATED_DOMAIN, pathPrefix: '/redeem' },
+            // Account emails: the verification and password reset links open their screens in the app.
+            { scheme: 'https', host: ASSOCIATED_DOMAIN, pathPrefix: '/verify' },
+            { scheme: 'https', host: ASSOCIATED_DOMAIN, pathPrefix: '/reset-password' },
           ],
           category: ['BROWSABLE', 'DEFAULT'],
         },

@@ -16,37 +16,45 @@
     {
       "route": "/signup",
       "group": "Account",
-      "status": "planned",
-      "phase": "Phase 14",
+      "status": "implemented",
       "screen": "app/(auth)/sign-up.jsx",
       "api": [
-        "POST /v1.0/public/signup"
+        "GET /v1.0/api/client-config",
+        "POST /v1.0/public/signup",
+        "POST /v1.0/public/verify-email/resend"
       ],
-      "notes": "Screen built; shows 'not available' until the route exists or when client config has signupEnabled false."
+      "notes": "Shown only when client config has signupEnabled (sign-in hides Create account otherwise). Email, password (8 or more characters), name, optional promotional code (filled from /signup?code=), the terms and privacy links, and the age box from minimumAge, then Check your email with Send a new link (or Your account is ready when verification is off). When client config carries a turnstileSiteKey the app has no WebView for the check, so it opens the web sign-up page instead."
     },
     {
       "route": "/verify",
       "group": "Account",
-      "status": "planned",
-      "phase": "Phase 14",
-      "notes": "Verification links open the web page; an in-app handoff screen follows the sign-up route."
+      "status": "implemented",
+      "screen": "app/(auth)/verify.jsx",
+      "api": [
+        "POST /v1.0/public/verify-email",
+        "POST /v1.0/public/verify-email/resend"
+      ],
+      "notes": "Opened by the emailed /verify?token= link (universal link, src/lib/deepLinks.js). Confirms once, then offers Sign in; a link that does not work offers Send a new link. Sign-in also offers a new link on 403 EmailNotVerified."
     },
     {
       "route": "/forgot-password",
       "group": "Account",
-      "status": "planned",
-      "phase": "Phase 14",
+      "status": "implemented",
       "screen": "app/(auth)/forgot-password.jsx",
       "api": [
         "POST /v1.0/public/password/forgot"
-      ]
+      ],
+      "notes": "Linked from sign-in. Warns when client config has emailEnabled false, since the link cannot be sent."
     },
     {
       "route": "/reset-password",
       "group": "Account",
-      "status": "planned",
-      "phase": "Phase 14",
-      "notes": "Reset links open the web page until the app handles the universal link."
+      "status": "implemented",
+      "screen": "app/(auth)/reset-password.jsx",
+      "api": [
+        "POST /v1.0/public/password/reset"
+      ],
+      "notes": "Opened by the emailed /reset-password?token= link. New password with confirmation, then Sign in; signs this device out when the reset account is the one signed in. A rejected link offers a new one."
     },
     {
       "route": "/home",
@@ -551,23 +559,22 @@
     {
       "route": "/account/delete",
       "group": "Account",
-      "status": "planned",
-      "phase": "Phase 14",
+      "status": "implemented",
       "screen": "app/(app)/account/delete.jsx",
       "api": [
         "POST /v1.0/api/account/delete"
       ],
-      "notes": "Required by both stores. Screen built; it links to the web deletion page until the route exists."
+      "notes": "Required by both stores. Optional password, type DELETE to confirm, then sign out; signing in again during the 7-day grace period cancels it. Links to the web deletion page as well, and falls back to it on a server without the route."
     },
     {
       "route": "/account/export",
       "group": "Account",
-      "status": "planned",
-      "phase": "Phase 14",
+      "status": "implemented",
       "screen": "app/(app)/account/export.jsx",
       "api": [
         "GET /v1.0/api/account/export"
-      ]
+      ],
+      "notes": "Downloads the ZIP with the bearer token and opens the share sheet."
     }
   ]
 }

@@ -60,7 +60,8 @@ describe('sign-in', () => {
   it('links to sign-up when it is open and signs in without a tenant', async () => {
     const client = renderSignedOut('/');
     expect(await screen.findByRole('link', { name: 'Create an account' })).toBeInTheDocument();
-    await waitFor(() => expect(screen.getByLabelText('Tenant')).toHaveValue(''));
+    expect(screen.queryByLabelText(/Tenant/i)).toBeNull();
+    expect(screen.queryByLabelText(/workspace/i)).toBeNull();
     await userEvent.type(screen.getByLabelText('Email'), 'reader@example.com');
     await userEvent.type(screen.getByLabelText('Password', { selector: 'input' }), 'a long passphrase');
     await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
@@ -68,7 +69,38 @@ describe('sign-in', () => {
     expect(client.login).toHaveBeenCalledWith('reader@example.com', 'a long passphrase', '');
   });
 
-  it('offers a tenant list when the email is in several', async () => {
+  it('shows the first-run hint without a tenant when sign-up is closed', async () => {
+    renderSignedOut('/', { getClientConfig: vi.fn(async () => ({ ...OPEN, signupEnabled: false })) });
+    expect(await screen.findByText('First run? Sign in with admin@mymorningnews and password password, then change the password.')).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Tenant/i)).toBeNull();
+  });
+
+  it('signs in directly when the server offers a single workspace', async () => {
+    const login = vi.fn(async (email, password, tenant) => {
+      if (!tenant) throw new ApiError(409, { tenants: [{ id: 'ten_only', name: 'Only' }] });
+      return { token: 'tok_1', tenantId: tenant };
+    });
+    renderSignedOut('/', { login });
+    await userEvent.type(await screen.findByLabelText('Email'), 'reader@example.com');
+    await userEvent.type(screen.getByLabelText('Password', { selector: 'input' }), 'a long passphrase');
+    await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    await waitFor(() => expect(screen.getByTestId('location').textContent).toBe('/dashboard/home'));
+    expect(login.mock.calls.map((c) => c[2])).toEqual(['', 'ten_only']);
+  });
+
+  it('preselects the workspace of the last session in the list', async () => {
+    const login = vi.fn(async () => {
+      throw new ApiError(409, { tenants: [{ id: 'ten_a', name: 'Alpha' }, { id: 'ten_b', name: 'Beta' }] });
+    });
+    renderSignedOut('/', { login });
+    window.localStorage.setItem('mymorningnews.tenantId', 'ten_b');
+    await userEvent.type(await screen.findByLabelText('Email'), 'reader@example.com');
+    await userEvent.type(screen.getByLabelText('Password', { selector: 'input' }), 'a long passphrase');
+    await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    expect(await screen.findByLabelText('Choose a workspace')).toHaveValue('ten_b');
+  });
+
+  it('offers a workspace list when the email is in several', async () => {
     let calls = 0;
     const login = vi.fn(async () => {
       calls += 1;
@@ -79,7 +111,9 @@ describe('sign-in', () => {
     await userEvent.type(await screen.findByLabelText('Email'), 'reader@example.com');
     await userEvent.type(screen.getByLabelText('Password', { selector: 'input' }), 'a long passphrase');
     await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
-    const choice = await screen.findByLabelText('Workspace');
+    const choice = await screen.findByLabelText('Choose a workspace');
+    expect(login).toHaveBeenLastCalledWith('reader@example.com', 'a long passphrase', '');
+    expect(Array.from(choice.options).map((o) => o.textContent)).toEqual(['Alpha', 'Beta']);
     await userEvent.selectOptions(choice, 'ten_b');
     await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
     await waitFor(() => expect(login).toHaveBeenLastCalledWith('reader@example.com', 'a long passphrase', 'ten_b'));

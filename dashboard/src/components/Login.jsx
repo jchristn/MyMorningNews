@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -10,6 +10,13 @@ import AuthShell from './auth/AuthShell.jsx';
 import FormField from './FormField.jsx';
 import PasswordInput from './PasswordInput.jsx';
 
+// The workspaces a 409 sign-in answer offers, or none for any other failure.
+function offeredTenants(err) {
+  if (!(err instanceof ApiError) || err.status !== 409 || !err.body || !Array.isArray(err.body.tenants)) return [];
+  return err.body.tenants.filter((c) => c && typeof c.id === 'string');
+}
+
+// The workspace of the last session, used only to preselect it in the list.
 function storedTenant() {
   try {
     return window.localStorage.getItem(STORAGE_KEYS.tenantId) || '';
@@ -18,8 +25,8 @@ function storedTenant() {
   }
 }
 
-// Sign in. The tenant is optional: without one, an email in a single tenant signs in and an email in several gets a
-// list to choose from (409). Unverified sign-up accounts get a link to send the confirmation email again.
+// Sign in. The form never asks for a tenant: the server finds it from the credentials. An email in several workspaces
+// gets the list to choose from (409), and a list of one is used directly. Unverified sign-up accounts get a link to send the confirmation email again.
 export default function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -30,29 +37,40 @@ export default function Login() {
   const [serverUrl, setServerUrl] = useState(savedUrl);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [tenantId, setTenantId] = useState(() => storedTenant() || 'default');
-  const [tenantTouched, setTenantTouched] = useState(false);
   const [choices, setChoices] = useState(null);
+  const [tenantId, setTenantId] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [resent, setResent] = useState(false);
 
-  useEffect(() => {
-    if (signupOpen && !tenantTouched && !storedTenant()) setTenantId('');
-  }, [signupOpen, tenantTouched]);
+  // The list belongs to the credentials that produced it, so it goes when they change.
+  function edit(setter) {
+    return (value) => {
+      setChoices(null);
+      setter(value);
+    };
+  }
 
   async function signIn(tenant) {
     setBusy(true);
     setError(null);
     setResent(false);
     try {
-      await login(serverUrl, email.trim(), password, tenant ? tenant.trim() : '');
+      try {
+        await login(serverUrl, email.trim(), password, tenant);
+      } catch (err) {
+        // A list of one is not a choice: sign in to it without asking.
+        if (tenant || offeredTenants(err).length !== 1) throw err;
+        await login(serverUrl, email.trim(), password, offeredTenants(err)[0].id);
+      }
       const from = location.state && location.state.from ? location.state.from : '/dashboard/home';
       navigate(from, { replace: true });
     } catch (err) {
-      if (err instanceof ApiError && err.status === 409 && err.body && Array.isArray(err.body.tenants)) {
-        setChoices(err.body.tenants);
-        if (err.body.tenants.length) setTenantId(err.body.tenants[0].id);
+      const offered = offeredTenants(err);
+      if (!tenant && offered.length > 1) {
+        const last = storedTenant();
+        setChoices(offered);
+        setTenantId(offered.some((c) => c.id === last) ? last : offered[0].id);
       } else {
         setError(err);
       }
@@ -63,7 +81,7 @@ export default function Login() {
 
   function onSubmit(event) {
     event.preventDefault();
-    signIn(tenantId);
+    signIn(choices ? tenantId : '');
   }
 
   async function resend() {
@@ -84,38 +102,25 @@ export default function Login() {
         <p className="muted">{t('login.subtitle')}</p>
         {sessionExpired ? <div className="notice notice-warning">{t('login.sessionExpired')}</div> : null}
         <FormField id="login-server" label={t('login.serverUrl')} help={t('login.serverUrlHelp')}>
-          <input id="login-server" type="url" value={serverUrl} onChange={(e) => setServerUrl(e.target.value)} autoComplete="url" required className="mono" />
+          <input id="login-server" type="url" value={serverUrl} onChange={(e) => edit(setServerUrl)(e.target.value)} autoComplete="url" required className="mono" />
         </FormField>
         <FormField id="login-email" label={t('login.email')}>
-          <input id="login-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required />
+          <input id="login-email" type="email" value={email} onChange={(e) => edit(setEmail)(e.target.value)} autoComplete="username" required />
         </FormField>
         <FormField id="login-password" label={t('login.password')}>
-          <PasswordInput id="login-password" value={password} onChange={setPassword} required />
+          <PasswordInput id="login-password" value={password} onChange={edit(setPassword)} required />
         </FormField>
         {choices ? (
           <FormField id="login-tenant-choice" label={t('login.chooseTenant')} help={t('login.chooseTenantHelp')}>
             <select id="login-tenant-choice" value={tenantId} onChange={(e) => setTenantId(e.target.value)}>
               {choices.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name}
+                  {c.name || c.id}
                 </option>
               ))}
             </select>
           </FormField>
-        ) : (
-          <FormField id="login-tenant" label={t('login.tenant')} help={t('login.tenantOptionalHelp')}>
-            <input
-              id="login-tenant"
-              type="text"
-              value={tenantId}
-              onChange={(e) => {
-                setTenantTouched(true);
-                setTenantId(e.target.value);
-              }}
-              className="mono"
-            />
-          </FormField>
-        )}
+        ) : null}
         {unverified ? (
           <div className="notice notice-warning" role="alert">
             <strong>{t('login.unverifiedTitle')}</strong> {t('login.unverifiedMessage')}{' '}
@@ -140,7 +145,7 @@ export default function Login() {
           <Link to="/forgot-password">{t('login.forgot')}</Link>
           {signupOpen ? <Link to="/signup">{t('login.createAccount')}</Link> : null}
         </div>
-        {signupOpen ? null : <p className="login-defaults muted small">{t('login.defaults', { email: 'admin@mymorningnews', password: 'password', tenant: 'default' })}</p>}
+        {signupOpen ? null : <p className="login-defaults muted small">{t('login.defaults', { email: 'admin@mymorningnews', password: 'password' })}</p>}
       </form>
     </AuthShell>
   );

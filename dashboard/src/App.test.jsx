@@ -47,7 +47,7 @@ describe('routing guards', () => {
     await userEvent.type(screen.getByLabelText('Password', { selector: 'input' }), 'password');
     await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
     await waitFor(() => expect(location()).toBe('/dashboard/server-info'));
-    expect(client.login).toHaveBeenCalledWith('admin@mymorningnews', 'password', 'default');
+    expect(client.login).toHaveBeenCalledWith('admin@mymorningnews', 'password', '');
   });
 
   it('shows an error and stays on the login page when sign-in fails', async () => {

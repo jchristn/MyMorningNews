@@ -8,7 +8,7 @@ against a local server. Store builds and submission are in `APP_STORE_SUBMISSION
 
 - Node.js 24 and npm (`cd mobile && npm ci`).
 - The Docker stack running (`cd docker && docker compose up -d`), with the server on `http://127.0.0.1:12100`. Local
-  sign-in: `admin@mymorningnews` / `password`. Leave the tenant empty; the server finds it (tenant-less sign-in).
+  sign-in: `admin@mymorningnews` / `password`. There is no tenant field; the server finds the tenant (tenant-less sign-in).
 - iOS: Xcode with an iOS simulator runtime (macOS only).
 - Android: Android Studio (for the SDK at `~/Library/Android/sdk` and its bundled Java runtime) and an emulator image.
   Gradle needs Java: `export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"`.
@@ -97,7 +97,7 @@ Enable Developer options and USB debugging, connect the device, and run `npx exp
 
 | Area | Steps |
 | --- | --- |
-| Sign-in | Change server to the local one, sign in without a tenant, sign out (session revoked), sign in again. An account in several tenants shows the tenant picker. |
+| Sign-in | Change server to the local one, sign in without a tenant, sign out (session revoked), sign in again. An account in several tenants shows the workspace picker. |
 | Session | Leave the app for more than the session lifetime, or revoke the session in the dashboard: the app refreshes with the rotating refresh token, or says "Your session expired". |
 | Account | Profile save, password change, Your usage chart, Notifications (permission asked only here; simulators report that push needs a device), Language (Arabic or "Pseudo RTL" mirrors the layout after "Restart now"), Appearance (light, dark, system), App lock (Face ID or passcode; Features > Face ID > Enrolled on the simulator), Server, About. |
 | Player | Listen > Developer player (development builds only): Load test tone, play, back 15, forward 30, drag the scrubber, chapters, speed 0.75x to 2x, sleep timer. Then press Home or lock the device: audio continues, and the lock screen (iOS) or the media notification (Android) shows the title, artwork, play and pause, back 15, and forward 30. Leave it longer than three minutes on Android to prove the foreground service keeps it alive. |

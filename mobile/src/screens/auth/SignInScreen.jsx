@@ -12,12 +12,11 @@ import { isInsecureServer } from '@/storage/prefs';
 import { spacing } from '@/theme/palette';
 import { ResendLink } from './ResendLink';
 
-/** Map a sign-in failure to a message. */
+/** Map a sign-in failure to a message key. */
 export function signInErrorKey(error) {
   if (isNetworkError(error)) return 'mobile.signIn.errorUnreachable';
   if (isEmailNotVerified(error)) return 'mobile.signIn.unverifiedBody';
   if (error instanceof ApiError) {
-    if (error.status === 400 && /tenant/i.test(error.message || '')) return 'mobile.signIn.errorTenantRequired';
     if (error.status === 401 || error.status === 403) return 'mobile.signIn.errorCredentials';
     if (error.status === 404) return 'mobile.signIn.errorNotServer';
     if (error.status === 429) return 'mobile.signIn.errorRateLimited';
@@ -25,10 +24,30 @@ export function signInErrorKey(error) {
   return 'mobile.signIn.errorGeneric';
 }
 
+/** The server's own words for a request it rejected (400), shown as they are; null for every other failure. */
+export function signInServerMessage(error) {
+  if (!(error instanceof ApiError) || error.status !== 400) return null;
+  const message = error.body && typeof error.body.message === 'string' ? error.body.message.trim() : '';
+  return message || null;
+}
+
+/** The workspace to preselect in the picker: the one chosen last time when it is offered again, else the first. */
+export function preselectedTenant(tenants, lastTenantId) {
+  const last = tenants.find((tn) => tn.id === lastTenantId);
+  return last ? last.id : tenants[0].id;
+}
+
+/** Picker rows: each workspace by name. The ID appears only to tell apart workspaces that share a name. */
+export function tenantOptions(tenants) {
+  const labels = tenants.map((tn) => tn.name || tn.id);
+  return tenants.map((tn, i) => ({ value: tn.id, label: labels[i], detail: labels.indexOf(labels[i]) !== labels.lastIndexOf(labels[i]) ? tn.id : undefined }));
+}
+
 /**
- * Sign in with email and password (plan section 33.1). The tenant ID is optional: servers with tenant-less sign-in
- * (contract B) find the tenant, and ask which one when the account belongs to several. Older servers that require a
- * tenant say so, and the field takes it. An account whose email is not confirmed yet (403 EmailNotVerified, after
+ * Sign in with email and password (plan section 33.1). The screen never asks for a tenant: the server finds it from
+ * the credentials (contract B). When the email belongs to several workspaces the server lists them (409) and the
+ * reader picks one; a list of one is used directly. The last pick is remembered only to preselect it the next time
+ * the same choice comes up. An account whose email is not confirmed yet (403 EmailNotVerified, after
  * sign-up) is offered a new verification link. "Create account" appears only when client config has sign-up open.
  */
 export function SignInScreen() {
@@ -39,34 +58,40 @@ export function SignInScreen() {
   const [email, setEmail] = useState(prefs.lastEmail);
   const [password, setPassword] = useState('');
   const [reveal, setReveal] = useState(false);
-  const [tenantId, setTenantId] = useState(prefs.lastTenantId);
-  const [showTenant, setShowTenant] = useState(Boolean(prefs.lastTenantId));
   const [tenants, setTenants] = useState(null);
   const [chosenTenant, setChosenTenant] = useState(null);
   const [busy, setBusy] = useState(false);
   const [errorKey, setErrorKey] = useState(null);
+  const [errorText, setErrorText] = useState(null);
 
-  const submit = async (tenantOverride) => {
+  const submit = async (tenant = '') => {
     if (!email.trim() || !password) {
       setErrorKey('mobile.signIn.errorMissing');
       return;
     }
     setBusy(true);
     setErrorKey(null);
-    const tenant = tenantOverride || tenantId.trim();
+    setErrorText(null);
     try {
-      await auth.signIn({ email, password, tenantId: tenant });
-      update({ lastEmail: email.trim(), lastTenantId: tenant || '' });
+      let chosen = tenant;
+      try {
+        await auth.signIn({ email, password, tenantId: chosen });
+      } catch (error) {
+        // A list of one is not a choice: sign in to it without asking.
+        if (chosen || !(error instanceof TenantSelectionRequiredError) || error.tenants.length !== 1) throw error;
+        chosen = error.tenants[0].id;
+        await auth.signIn({ email, password, tenantId: chosen });
+      }
+      update({ lastEmail: email.trim(), lastTenantId: chosen });
       setTenants(null);
     } catch (error) {
-      if (error instanceof TenantSelectionRequiredError && error.tenants.length > 0) {
+      if (!tenant && error instanceof TenantSelectionRequiredError && error.tenants.length > 1) {
         setTenants(error.tenants);
-        setChosenTenant(error.tenants[0].id);
+        setChosenTenant(preselectedTenant(error.tenants, prefs.lastTenantId));
       } else {
         setTenants(null);
-        const key = signInErrorKey(error);
-        if (key === 'mobile.signIn.errorTenantRequired') setShowTenant(true);
-        setErrorKey(key);
+        setErrorKey(signInErrorKey(error));
+        setErrorText(signInServerMessage(error));
       }
     } finally {
       setBusy(false);
@@ -97,7 +122,7 @@ export function SignInScreen() {
         <View style={{ gap: spacing.md }} testID="tenant-picker">
           <T variant="title">{t('mobile.signIn.chooseTenant')}</T>
           <T variant="muted">{t('mobile.signIn.chooseTenantBody')}</T>
-          <Choice accessibilityLabel={t('mobile.signIn.chooseTenant')} value={chosenTenant} onChange={setChosenTenant} options={tenants.map((tn) => ({ value: tn.id, label: tn.name || tn.id, detail: tn.id }))} />
+          <Choice accessibilityLabel={t('mobile.signIn.chooseTenant')} value={chosenTenant} onChange={setChosenTenant} options={tenantOptions(tenants)} />
           <Button title={t('mobile.signIn.continue')} busy={busy} onPress={() => void submit(chosenTenant)} testID="tenant-continue" />
           <Button title={t('mobile.common.cancel')} kind="ghost" onPress={() => setTenants(null)} />
         </View>
@@ -108,11 +133,6 @@ export function SignInScreen() {
             <Field label={t('mobile.signIn.password')} value={password} onChangeText={setPassword} secureTextEntry={!reveal} autoComplete="current-password" textContentType="password" testID="sign-in-password" onSubmitEditing={() => void submit()} />
             <IconButton icon={reveal ? 'eye-off-outline' : 'eye-outline'} accessibilityLabel={reveal ? t('mobile.signIn.hidePassword') : t('mobile.signIn.showPassword')} onPress={() => setReveal(!reveal)} style={{ position: 'absolute', end: 0, bottom: 0 }} />
           </View>
-          {showTenant ? (
-            <Field label={t('mobile.signIn.tenant')} hint={t('mobile.signIn.tenantHint')} value={tenantId} onChangeText={setTenantId} autoCapitalize="none" autoCorrect={false} testID="sign-in-tenant" />
-          ) : (
-            <Button title={t('mobile.signIn.addTenant')} kind="ghost" onPress={() => setShowTenant(true)} />
-          )}
           {errorKey === 'mobile.signIn.unverifiedBody' ? (
             <>
               <Banner kind="warning" title={t('mobile.signIn.unverifiedTitle')} testID="sign-in-unverified">
@@ -122,7 +142,7 @@ export function SignInScreen() {
             </>
           ) : errorKey ? (
             <Banner kind="danger" testID="sign-in-error">
-              {t(errorKey)}
+              {errorText || t(errorKey)}
             </Banner>
           ) : null}
           <Button title={t('mobile.signIn.submit')} busy={busy} onPress={() => void submit()} testID="sign-in-submit" />

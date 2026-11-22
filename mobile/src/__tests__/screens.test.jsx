@@ -4,7 +4,7 @@ import { I18nextProvider } from 'react-i18next';
 import { AuthController } from '@/auth/AuthController';
 import { memoryTokenStorage } from '@/auth/tokens';
 import { initI18n } from '@/i18n/runtime';
-import { SignInScreen, signInErrorKey } from '@/screens/auth/SignInScreen';
+import { SignInScreen, preselectedTenant, signInErrorKey, signInServerMessage, tenantOptions } from '@/screens/auth/SignInScreen';
 import { UsageScreen, tokenMixRows, usageChartRows, usageWindow } from '@/screens/insights/UsageScreen';
 import { NotificationsSection, pushStatusKey } from '@/screens/account/NotificationsSection';
 import { passwordProblem } from '@/screens/account/PasswordSection';
@@ -63,7 +63,49 @@ describe('sign-in screen', () => {
     expect(server.calls.filter((c) => c.key === 'POST /v1.0/token').map((c) => c.headers['x-tenant-guid'])).toEqual([undefined, 'ten_b']);
   });
 
-  it('asks for a tenant when an older server requires one, and explains bad credentials', async () => {
+  it('has no tenant field and signs in without a tenant', async () => {
+    const { server, controller } = await renderWith(<SignInScreen />, { 'POST /v1.0/token': () => ({ body: tokenResponse() }) }, { lastTenantId: 'ten_old' });
+    expect(screen.queryByTestId('sign-in-tenant')).toBeNull();
+    expect(screen.queryByText(/tenant/i)).toBeNull();
+    await fireEvent.changeText(screen.getByTestId('sign-in-email'), 'admin@mymorningnews');
+    await fireEvent.changeText(screen.getByTestId('sign-in-password'), 'password');
+    await fireEvent.press(screen.getByTestId('sign-in-submit'));
+    await waitFor(() => expect(controller.getState().status).toBe('signedIn'));
+    expect(server.calls.filter((c) => c.key === 'POST /v1.0/token').map((c) => c.headers['x-tenant-guid'])).toEqual([undefined]);
+  });
+
+  it('signs in directly when the server offers a single workspace', async () => {
+    const { server, controller } = await renderWith(<SignInScreen />, {
+      'POST /v1.0/token': (call) => (call.headers['x-tenant-guid'] ? { body: tokenResponse() } : { status: 409, body: { error: 'TenantSelectionRequired', tenants: [{ id: 'ten_only', name: 'Only' }] } }),
+    });
+    await fireEvent.changeText(screen.getByTestId('sign-in-email'), 'admin@mymorningnews');
+    await fireEvent.changeText(screen.getByTestId('sign-in-password'), 'password');
+    await fireEvent.press(screen.getByTestId('sign-in-submit'));
+    await waitFor(() => expect(controller.getState().status).toBe('signedIn'));
+    expect(screen.queryByTestId('tenant-picker')).toBeNull();
+    expect(server.calls.filter((c) => c.key === 'POST /v1.0/token').map((c) => c.headers['x-tenant-guid'])).toEqual([undefined, 'ten_only']);
+  });
+
+  it('preselects the workspace chosen last time in the picker', async () => {
+    const { server, controller } = await renderWith(
+      <SignInScreen />,
+      {
+        'POST /v1.0/token': (call) =>
+          call.headers['x-tenant-guid'] ? { body: tokenResponse() } : { status: 409, body: { error: 'TenantSelectionRequired', tenants: [{ id: 'ten_a', name: 'Acme' }, { id: 'ten_b', name: 'Beta' }] } },
+      },
+      { lastTenantId: 'ten_b' },
+    );
+    await fireEvent.changeText(screen.getByTestId('sign-in-email'), 'admin@mymorningnews');
+    await fireEvent.changeText(screen.getByTestId('sign-in-password'), 'password');
+    await fireEvent.press(screen.getByTestId('sign-in-submit'));
+    await waitFor(() => expect(screen.getByTestId('tenant-picker')).toBeTruthy());
+    expect(screen.getByText('Choose a workspace')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('tenant-continue'));
+    await waitFor(() => expect(controller.getState().status).toBe('signedIn'));
+    expect(server.calls.filter((c) => c.key === 'POST /v1.0/token').map((c) => c.headers['x-tenant-guid'])).toEqual([undefined, 'ten_b']);
+  });
+
+  it('shows the server message when an older server requires a tenant, and explains bad credentials', async () => {
     let attempt = 0;
     await renderWith(<SignInScreen />, {
       'POST /v1.0/token': () => {
@@ -74,9 +116,8 @@ describe('sign-in screen', () => {
     await fireEvent.changeText(screen.getByTestId('sign-in-email'), 'a@b');
     await fireEvent.changeText(screen.getByTestId('sign-in-password'), 'x');
     await fireEvent.press(screen.getByTestId('sign-in-submit'));
-    await waitFor(() => expect(screen.getByTestId('sign-in-tenant')).toBeTruthy());
-    expect(screen.getByText('This server needs a tenant ID. Ask your administrator for it.')).toBeTruthy();
-    await fireEvent.changeText(screen.getByTestId('sign-in-tenant'), 'default');
+    await waitFor(() => expect(screen.getByText('x-tenant-guid is required.')).toBeTruthy());
+    expect(screen.queryByTestId('sign-in-tenant')).toBeNull();
     await fireEvent.press(screen.getByTestId('sign-in-submit'));
     await waitFor(() => expect(screen.getByText('The email or password is incorrect.')).toBeTruthy());
   });
@@ -86,6 +127,17 @@ describe('sign-in screen', () => {
     expect(signInErrorKey(new ApiError(401, null))).toBe('mobile.signIn.errorCredentials');
     expect(signInErrorKey(new ApiError(429, null))).toBe('mobile.signIn.errorRateLimited');
     expect(signInErrorKey(new ApiError(500, null))).toBe('mobile.signIn.errorGeneric');
+    expect(signInErrorKey(new ApiError(400, { message: 'x-tenant-guid is required.' }))).toBe('mobile.signIn.errorGeneric');
+    expect(signInServerMessage(new ApiError(400, { message: 'x-tenant-guid is required.' }))).toBe('x-tenant-guid is required.');
+    expect(signInServerMessage(new ApiError(400, null))).toBeNull();
+    expect(signInServerMessage(new ApiError(401, { message: 'No.' }))).toBeNull();
+  });
+
+  it('lists workspaces by name and shows the ID only for a shared name', () => {
+    expect(tenantOptions([{ id: 'ten_a', name: 'Acme' }, { id: 'ten_b', name: 'Beta' }])).toEqual([{ value: 'ten_a', label: 'Acme', detail: undefined }, { value: 'ten_b', label: 'Beta', detail: undefined }]);
+    expect(tenantOptions([{ id: 'ten_a', name: 'Acme' }, { id: 'ten_b', name: 'Acme' }]).map((o) => o.detail)).toEqual(['ten_a', 'ten_b']);
+    expect(preselectedTenant([{ id: 'ten_a' }, { id: 'ten_b' }], 'ten_b')).toBe('ten_b');
+    expect(preselectedTenant([{ id: 'ten_a' }, { id: 'ten_b' }], 'ten_gone')).toBe('ten_a');
   });
 });
 

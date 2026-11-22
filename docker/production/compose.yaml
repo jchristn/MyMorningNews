@@ -306,7 +306,6 @@ services:
       - MYMORNINGNEWS_TELEMETRY_OTLP_ENDPOINT=http://tempo:4317
       - MYMORNINGNEWS_TELEMETRY_PROMETHEUS_HOSTNAME=server
       - MYMORNINGNEWS_TTS_ENABLED=${MYMORNINGNEWS_TTS_ENABLED:-true}
-      - MYMORNINGNEWS_TTS_URL=http://tts:8880/v1
       - OPENAI_API_KEY=${CLI_OPENAI_API_KEY:-}
       - MYMORNINGNEWS_HOSTING_APPLE_TEAM_ID=${MYMORNINGNEWS_HOSTING_APPLE_TEAM_ID:-}
       - MYMORNINGNEWS_HOSTING_TURNSTILE_SECRET_KEY=${MYMORNINGNEWS_HOSTING_TURNSTILE_SECRET_KEY:-}
@@ -411,6 +410,8 @@ services:
         protocol: tcp
         published: "12104"
         target: 8880
+    profiles:
+      - local-tts
     restart: unless-stopped
 volumes:
   clihome:

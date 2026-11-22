@@ -47,5 +47,8 @@
     "mobileAppId": "ai.latticetech.mymorningnews",
     "requestsPerMinutePerIp": 600,
     "trustForwardedFor": true
+  },
+  "tts": {
+    "endpoint": "http://tts:8880/v1"
   }
 }

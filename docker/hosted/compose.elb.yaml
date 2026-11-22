@@ -27,3 +27,8 @@ services:
   dashboard:
     ports: !override
       - "8080:80"
+
+  # Speech runs outside this host by default here (set tts.endpoint on the Server settings page). Start the bundled
+  # Kokoro container with COMPOSE_PROFILES=local-tts when the host has the memory for it (about 3 GB).
+  tts:
+    profiles: ["local-tts"]

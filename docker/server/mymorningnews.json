@@ -24,5 +24,8 @@
     "expoPushUrl": "https://exp.host/--/api/v2/push/send",
     "expoAccessToken": "",
     "timeoutMs": 10000
+  },
+  "tts": {
+    "endpoint": "http://tts:8880/v1"
   }
 }

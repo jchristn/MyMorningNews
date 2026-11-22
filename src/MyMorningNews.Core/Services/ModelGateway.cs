@@ -139,10 +139,46 @@ namespace MyMorningNews.Core.Services
             }
 
             if (endpoint == null) throw new ModelCallException("No model endpoint is configured for " + task + ". Add one on the Models page.");
+
+            // A workspace on the server's shared model, when the operator set no shared key in the environment, uses the
+            // model the operator connected in the default workspace (an API key or an agent CLI sign-in).
+            if (!embedding
+                && String.IsNullOrEmpty(endpointOverride)
+                && !String.Equals(tenantId, Constants.DefaultTenantId, StringComparison.Ordinal)
+                && String.Equals(endpoint.CredentialId, VaultService.PlatformAnthropicCredentialId, StringComparison.Ordinal)
+                && !VaultService.PlatformKeyConfigured())
+            {
+                ResolvedModel? shared = await SharedModelAsync(task, token).ConfigureAwait(false);
+                if (shared != null) return shared;
+            }
+
             string? model = modelOverride ?? assignment?.ModelOverride ?? (embedding ? endpoint.EmbeddingModel : endpoint.Model);
             if (String.IsNullOrWhiteSpace(model) && !embedding && AgentCliService.IsAgentCli(endpoint.Provider)) model = AgentCliService.DefaultModel;
             if (String.IsNullOrWhiteSpace(model)) throw new ModelCallException("Endpoint " + endpoint.Name + " has no " + (embedding ? "embedding " : String.Empty) + "model configured.");
             return new ResolvedModel(endpoint, model, assignment?.ReasoningEffort ?? endpoint.ReasoningEffort);
+        }
+
+        /// <summary>
+        /// The operator's model for a task: what the default workspace resolves to, when that endpoint has proven it works
+        /// and is not itself waiting on the shared key. Workspaces on the shared model use it when no shared key is set
+        /// in the environment.
+        /// </summary>
+        /// <param name="task">Task role.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The operator's resolved model, or null when the default workspace has none usable.</returns>
+        public async Task<ResolvedModel?> SharedModelAsync(ModelTaskEnum task, CancellationToken token = default)
+        {
+            try
+            {
+                ResolvedModel shared = await ResolveAsync(Constants.DefaultTenantId, task, null, null, null, token).ConfigureAwait(false);
+                if (String.Equals(shared.Endpoint.CredentialId, VaultService.PlatformAnthropicCredentialId, StringComparison.Ordinal)) return null;
+                if (shared.Endpoint.LastValidationSucceeded != true) return null;
+                return shared;
+            }
+            catch (ModelCallException)
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -677,7 +713,7 @@ namespace MyMorningNews.Core.Services
             string? key;
             try
             {
-                key = await _Vault.ResolveAsync(request.TenantId, resolved.Endpoint.CredentialId, token).ConfigureAwait(false);
+                key = await _Vault.ResolveAsync(resolved.Endpoint.TenantId, resolved.Endpoint.CredentialId, token).ConfigureAwait(false);
             }
             catch (VaultSecretUnavailableException ex)
             {
@@ -826,7 +862,7 @@ namespace MyMorningNews.Core.Services
             {
                 try
                 {
-                    secret = await _Vault.ResolveAsync(request.TenantId, endpoint.CredentialId, token).ConfigureAwait(false);
+                    secret = await _Vault.ResolveAsync(endpoint.TenantId, endpoint.CredentialId, token).ConfigureAwait(false);
                 }
                 catch (VaultSecretUnavailableException ex)
                 {

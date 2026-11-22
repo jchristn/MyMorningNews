@@ -439,9 +439,13 @@ namespace MyMorningNews.Core.Services
                 AuthMethod = AgentCliService.EffectiveMethod(endpoint),
                 BaseUrl = endpoint.Provider == ModelProviderEnum.Ollama || endpoint.Provider == ModelProviderEnum.OpenAiCompatible ? endpoint.Endpoint : null,
                 NeedsApiKey = AgentCliService.NeedsSecret(AgentCliService.EffectiveMethod(endpoint)),
-                UsesPlatformKey = IsPlatform(endpoint),
+                UsesPlatformKey = IsPlatform(endpoint) || !String.Equals(endpoint.TenantId, tenantId, StringComparison.Ordinal),
                 VerifiedUtc = endpoint.LastValidatedUtc
             };
+
+            // The operator's shared model (an endpoint of the default workspace): report it, never change or probe it here.
+            bool shared = !String.Equals(endpoint.TenantId, tenantId, StringComparison.Ordinal);
+            if (shared) live = false;
 
             if (AgentCliService.IsAgentCli(endpoint.Provider))
             {
@@ -482,7 +486,7 @@ namespace MyMorningNews.Core.Services
                 await _Models.ValidateAsync(endpoint, token).ConfigureAwait(false);
                 if (check.UsesPlatformKey) RememberPlatform(endpoint.LastValidationSucceeded == true, endpoint.LastValidationResult);
             }
-            else if (check.UsesPlatformKey && endpoint.LastValidationSucceeded != true)
+            else if (!shared && check.UsesPlatformKey && endpoint.LastValidationSucceeded != true)
             {
                 await VerifyPlatformEndpointAsync(endpoint, token).ConfigureAwait(false);
             }
@@ -677,7 +681,7 @@ namespace MyMorningNews.Core.Services
             if (String.IsNullOrEmpty(endpoint.CredentialId)) return false;
             try
             {
-                string? key = await _Vault.ResolveAsync(tenantId, endpoint.CredentialId, token).ConfigureAwait(false);
+                string? key = await _Vault.ResolveAsync(endpoint.TenantId, endpoint.CredentialId, token).ConfigureAwait(false);
                 return !String.IsNullOrWhiteSpace(key);
             }
             catch (VaultSecretUnavailableException)

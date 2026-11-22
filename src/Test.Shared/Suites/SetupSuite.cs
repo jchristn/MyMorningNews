@@ -36,6 +36,7 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "ClaudeCodeToken", "Claude Code connects with a claude setup-token token in a private home, a rejected token is reported, and an API key pasted as a token is caught", ClaudeCodeTokenAsync),
                 Cases.Case(S, "CodexAuthFile", "Codex connects with a pasted auth.json written privately once, a refreshed file is kept, and deleting the endpoint removes it", CodexAuthFileAsync),
                 Cases.Case(S, "AgentClisOff", "With agent CLIs turned off they are offered as unavailable and cannot be connected", AgentClisOffAsync),
+                Cases.Case(S, "SharedModel", "A workspace on the shared model uses the operator's verified model when no shared key is set", SharedModelAsync),
                 Cases.Case(S, "AgentClisAdminsOnly", "With agent CLIs limited to administrators, a global administrator may connect one and a tenant administrator may not", AgentClisAdminsOnlyAsync)
             });
         }
@@ -319,6 +320,44 @@ namespace Test.Shared.Suites
             {
                 models.AllowAgentClis = allowed;
                 models.AgentClisAdminsOnly = adminsOnly;
+            }
+        }
+        private static async Task SharedModelAsync(CancellationToken token)
+        {
+            string variable = MyMorningNews.Core.Constants.EnvironmentPrefix + "ANTHROPIC_API_KEY";
+            string? before = Environment.GetEnvironmentVariable(variable);
+            TestApiClient global = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
+            ModelEndpoint? operatorEndpoint = null;
+            ModelAssignment? assignment = null;
+            try
+            {
+                Environment.SetEnvironmentVariable(variable, null);
+                TestUser ta = (await WorkspaceAsync(token).ConfigureAwait(false))[0];
+                // New workspaces on a hosted server get the seeded Anthropic endpoint on the shared key; set that here.
+                MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+                SetupCheck seeded = (await StatusAsync(ta, token).ConfigureAwait(false)).Checks.First(c => c.Kind == SetupCheckKindEnum.Model);
+                ModelEndpoint mine = (await server.Context.Database.ModelEndpoints.ReadAsync(ta.User.TenantId, seeded.ResourceId!, token).ConfigureAwait(false))!;
+                mine.CredentialId = "platform:anthropic";
+                await server.Context.Database.ModelEndpoints.UpdateAsync(mine, token).ConfigureAwait(false);
+                (await ta.Client.PostAsync("/v1.0/api/refinement-sessions", new { seedText = "Heat pump rebates" }, token).ConfigureAwait(false)).Expect(409, "no shared key and no operator model: refused");
+
+                operatorEndpoint = (await global.PostAsync("/v1.0/api/model-endpoints", new { name = "operator stub " + Guid.NewGuid().ToString("N").Substring(0, 6), provider = "OpenAiCompatible", endpoint = StubModelServer.Shared.BaseUrl, model = "stub-refine", supportsChat = true }, token).ConfigureAwait(false))
+                    .Expect(201, "operator endpoint").Json<ModelEndpoint>();
+                assignment = (await global.PutAsync("/v1.0/api/model-assignments", new { task = "Refinement", modelEndpointId = operatorEndpoint.Id }, token).ConfigureAwait(false)).Json<ModelAssignment>();
+                (await global.PostAsync("/v1.0/api/model-endpoints/" + operatorEndpoint.Id + "/test", new { }, token).ConfigureAwait(false)).Expect(200, "operator model answers, which verifies it");
+
+                SetupCheck check = (await StatusAsync(ta, token).ConfigureAwait(false)).Checks.First(c => c.Kind == SetupCheckKindEnum.Model && c.Tasks.Contains(ModelTaskEnum.Refinement));
+                Assert.True(check.State == SetupCheckStateEnum.Ready && check.UsesPlatformKey && check.ResourceId == operatorEndpoint.Id, "the workspace's refinement runs on the operator's model: " + check.State + " " + check.Message);
+                RefinementStateResponse session = (await ta.Client.PostAsync("/v1.0/api/refinement-sessions", new { seedText = "Heat pump rebates" }, token).ConfigureAwait(false)).Expect(201, "wizard starts").Json<RefinementStateResponse>();
+                (await ta.Client.PostAsync("/v1.0/api/refinement-sessions/" + session.Session.Id + "/dimensions", new { }, token).ConfigureAwait(false)).Expect(200, "a model step runs on the operator's model");
+                EnumerationResult<LlmCall> calls = (await ta.Client.GetAsync("/v1.0/api/llm-calls?pageSize=5", token).ConfigureAwait(false)).Expect(200, "calls").Json<EnumerationResult<LlmCall>>();
+                Assert.True(calls.Items.Count > 0 && calls.Items.All(c => c.TenantId == ta.User.TenantId), "the calls are logged in the workspace that made them");
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(variable, before);
+                if (assignment != null) await global.DeleteAsync("/v1.0/api/model-assignments/" + assignment.Id, token).ConfigureAwait(false);
+                if (operatorEndpoint != null) await global.DeleteAsync("/v1.0/api/model-endpoints/" + operatorEndpoint.Id, token).ConfigureAwait(false);
             }
         }
     }

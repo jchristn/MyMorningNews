@@ -129,12 +129,21 @@ namespace MyMorningNews.Core.Services
         }
 
         /// <summary>
-        /// Resolve a secret for server-side use (model calls, search providers). Updates last-used at most once a minute.
+        /// Whether the operator set the shared model key in the server environment.
         /// </summary>
-        /// <param name="tenantId">Tenant.</param>
+        /// <returns>True when the key is set.</returns>
+        public static bool PlatformKeyConfigured()
+        {
+            return !String.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(Constants.EnvironmentPrefix + "ANTHROPIC_API_KEY"));
+        }
+
+        /// <summary>
+        /// Resolve a credential's secret.
+        /// </summary>
+        /// <param name="tenantId">Tenant that owns the credential.</param>
         /// <param name="credentialId">Credential, or null.</param>
         /// <param name="token">Cancellation token.</param>
-        /// <returns>Plaintext, or null when no credential is referenced.</returns>
+        /// <returns>The secret, or null when there is no credential.</returns>
         /// <exception cref="VaultSecretUnavailableException">The credential is missing, inactive, expired, or undecryptable.</exception>
         public async Task<string?> ResolveAsync(string tenantId, string? credentialId, CancellationToken token = default)
         {

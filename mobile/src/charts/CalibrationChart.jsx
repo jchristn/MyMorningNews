@@ -45,7 +45,7 @@ export function CalibrationChart({ buckets, formatPercent, labels, accessibility
       ) : null}
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <T variant="small">{formatPercent(0)}</T>
-        <T variant="small">{labels.x}</T>
+        <T variant="small" style={{ flexShrink: 1, textAlign: 'center' }}>{labels.x}</T>
         <T variant="small">{formatPercent(1)}</T>
       </View>
       <T variant="small">{labels.diagonal}</T>

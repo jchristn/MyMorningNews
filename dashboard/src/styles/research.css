@@ -619,7 +619,7 @@ ol.chip-list {
 .step-rail li.current .step-index {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
 }
 
 .step-rail li.done:not(.current) .step-index {

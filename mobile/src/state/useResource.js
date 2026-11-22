@@ -4,8 +4,9 @@ import { isItemNotFound, isNotAvailable } from '@/api/errors';
 /**
  * Load data for a screen. Status is `loading`, `ready`, `error`, `notAvailable` (the route does not exist on this
  * server yet), or `notFound` (the route exists but the item does not). `reload()` refetches and sets `refreshing` while
- * the old data stays visible; `poll()` refetches without the refresh indicator (status polling); `setData(next)`
- * replaces the data after an action returned the new state (a value or an updater function).
+ * the old data stays visible; `poll()` refetches without the refresh indicator (status polling) and does nothing while
+ * another load is still in flight, so a server slower than the poll interval still gets its answers shown;
+ * `setData(next)` replaces the data after an action returned the new state (a value or an updater function).
  *
  * @param {() => Promise<any>} loader Called on mount and whenever `deps` change.
  * @param {any[]} deps
@@ -14,12 +15,16 @@ export function useResource(loader, deps) {
   const [state, setState] = useState({ status: 'loading', data: null, error: null, refreshing: false });
   const alive = useRef(true);
   const generation = useRef(0);
+  const inFlight = useRef(0);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const load = useCallback(loader, deps);
 
   const run = useCallback(
     async (mode) => {
+      // A poll that started while a load was in flight would supersede it, and with a slow server no answer would ever land.
+      if (mode === 'silent' && inFlight.current > 0) return;
       const mine = ++generation.current;
+      inFlight.current += 1;
       if (mode === 'refresh') setState((s) => ({ ...s, refreshing: true }));
       else if (!mode) setState({ status: 'loading', data: null, error: null, refreshing: false });
       try {
@@ -28,6 +33,8 @@ export function useResource(loader, deps) {
       } catch (error) {
         if (!alive.current || mine !== generation.current) return;
         setState((s) => ({ status: isNotAvailable(error) ? 'notAvailable' : isItemNotFound(error) ? 'notFound' : 'error', data: mode ? s.data : null, error, refreshing: false }));
+      } finally {
+        inFlight.current -= 1;
       }
     },
     [load],

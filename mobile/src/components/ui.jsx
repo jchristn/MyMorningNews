@@ -114,7 +114,7 @@ export function Button({ title, onPress, kind = 'primary', busy, disabled, style
       ]}
     >
       {busy ? <ActivityIndicator color={c.fg} size="small" /> : icon ? <Ionicons name={icon} size={18} color={c.fg} /> : null}
-      <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={{ color: c.fg, fontSize: font.body, fontWeight: '600' }}>
+      <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={{ color: c.fg, fontSize: font.body, fontWeight: '600', flexShrink: 1, textAlign: 'center' }}>
         {title}
       </Text>
     </Pressable>
@@ -301,10 +301,26 @@ export function Banner({ kind = 'info', title, children, testID }) {
   return (
     <View testID={testID} accessibilityRole={kind === 'danger' ? 'alert' : undefined} style={{ flexDirection: 'row', gap: spacing.sm, padding: spacing.md, borderRadius: radius.md, backgroundColor: tone.bg }}>
       <Ionicons name={tone.icon} size={20} color={tone.iconColor} />
-      <View style={{ flex: 1, gap: 2 }}>
+      <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
         {title ? <T style={{ fontWeight: '600', color: tone.fg }}>{title}</T> : null}
         {typeof children === 'string' ? <T variant="small" style={{ color: tone.fg }}>{children}</T> : children}
       </View>
+    </View>
+  );
+}
+
+/**
+ * A spinner beside a line of text (work in progress inside a card or banner). The text takes the width that is left
+ * and wraps: text placed straight into a row does not shrink in React Native, so it runs past the edge of its card.
+ */
+export function BusyLine({ children, testID }) {
+  const p = useTheme();
+  return (
+    <View testID={testID} style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'center', alignSelf: 'stretch', minWidth: 0 }}>
+      <ActivityIndicator color={p.primary} />
+      <T variant="small" style={{ flex: 1, flexShrink: 1, minWidth: 0 }}>
+        {children}
+      </T>
     </View>
   );
 }
@@ -315,7 +331,7 @@ export function Badge({ label, tone = 'neutral' }) {
   const tones = { neutral: [p.surfaceAlt, p.textSecondary], primary: [p.primarySoft, p.primary], success: [p.successSoft, p.success], warning: [p.warningSoft, p.warning], danger: [p.dangerSoft, p.danger] };
   const [bg, fg] = tones[tone] || tones.neutral;
   return (
-    <View style={{ alignSelf: 'flex-start', paddingHorizontal: spacing.sm, paddingVertical: 2, borderRadius: radius.pill, backgroundColor: bg }}>
+    <View style={{ alignSelf: 'flex-start', maxWidth: '100%', paddingHorizontal: spacing.sm, paddingVertical: 2, borderRadius: radius.pill, backgroundColor: bg }}>
       <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={{ color: fg, fontSize: font.small, fontWeight: '600' }}>
         {label}
       </Text>

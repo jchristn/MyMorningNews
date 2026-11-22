@@ -179,7 +179,7 @@ function TopicOverview({ resource }) {
           {detail.dimensions.map((d) => (
             <View key={d.id} style={{ gap: 2, paddingVertical: spacing.xs }}>
               <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'center', flexWrap: 'wrap' }}>
-                <T style={{ fontWeight: '600' }}>{d.name}</T>
+                <T style={{ fontWeight: '600', flexShrink: 1 }}>{d.name}</T>
                 <Badge label={t('mobile.enums.weight.' + d.weight)} tone={DIMENSION_WEIGHT_TONES[d.weight] || 'neutral'} />
               </View>
               {d.description ? <T variant="small">{d.description}</T> : null}

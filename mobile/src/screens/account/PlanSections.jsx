@@ -31,7 +31,7 @@ function PlanCard({ data }) {
     <Card testID="plan-current">
       <T variant="label">{t('mobile.plan.current')}</T>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flexWrap: 'wrap' }}>
-        <T variant="title">{plan.name || plan.key || t('mobile.plan.unknown')}</T>
+        <T variant="title" style={{ flexShrink: 1 }}>{plan.name || plan.key || t('mobile.plan.unknown')}</T>
         {source && source !== 'Default' ? <Badge label={t('mobile.plan.sources.' + source)} tone="primary" /> : null}
       </View>
       {plan.description ? <T variant="muted">{plan.description}</T> : null}

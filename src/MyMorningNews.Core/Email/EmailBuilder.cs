@@ -60,7 +60,7 @@ namespace MyMorningNews.Core.Email
         {
             ArgumentNullException.ThrowIfNull(link);
             if (!SafeMarkdown.IsSafeUrl(link.Url)) return this;
-            _Html.Append("<tr><td style=\"padding:4px 0 16px\"><a href=\"").Append(Attr(link.Url)).Append("\" style=\"display:inline-block;padding:10px 18px;border-radius:6px;background:#b4531f;color:#ffffff;text-decoration:none;font:600 14px/1 ")
+            _Html.Append("<tr><td style=\"padding:4px 0 16px\"><a href=\"").Append(Attr(link.Url)).Append("\" style=\"display:inline-block;padding:10px 18px;border-radius:6px;background:#2563eb;color:#ffffff;text-decoration:none;font:600 14px/1 ")
                 .Append(_Font).Append("\">").Append(Enc(link.Label)).Append("</a></td></tr>");
             _Text.Append(link.Label).Append(": ").Append(link.Url).Append('\n');
             return this;
@@ -119,8 +119,8 @@ namespace MyMorningNews.Core.Email
             List<string> body = (lines ?? Enumerable.Empty<string>()).Where(l => !String.IsNullOrWhiteSpace(l)).ToList();
             List<EmailLink> src = (chips ?? Enumerable.Empty<EmailLink>()).Where(c => SafeMarkdown.IsSafeUrl(c.Url)).ToList();
             List<EmailLink> acts = (actions ?? Enumerable.Empty<EmailLink>()).Where(a => SafeMarkdown.IsSafeUrl(a.Url)).ToList();
-            _Html.Append("<tr><td style=\"padding:0 0 18px\"><table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" style=\"border-left:3px solid #b4531f\"><tr><td style=\"padding:2px 0 2px 12px;font:15px/1.5 ").Append(_Font).Append("\">");
-            if (!String.IsNullOrWhiteSpace(badge)) _Html.Append("<div style=\"font:600 12px/1.4 ").Append(_Font).Append(";color:#b4531f;text-transform:uppercase;letter-spacing:.03em\">").Append(Enc(badge)).Append("</div>");
+            _Html.Append("<tr><td style=\"padding:0 0 18px\"><table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" style=\"border-left:3px solid #2563eb\"><tr><td style=\"padding:2px 0 2px 12px;font:15px/1.5 ").Append(_Font).Append("\">");
+            if (!String.IsNullOrWhiteSpace(badge)) _Html.Append("<div class=\"mmn-accent\" style=\"font:600 12px/1.4 ").Append(_Font).Append(";color:#2563eb;text-transform:uppercase;letter-spacing:.03em\">").Append(Enc(badge)).Append("</div>");
             _Html.Append("<div style=\"font:600 16px/1.35 ").Append(_Font).Append(";margin:2px 0 4px\">");
             if (SafeMarkdown.IsSafeUrl(titleUrl)) _Html.Append("<a href=\"").Append(Attr(titleUrl!)).Append("\" style=\"color:inherit;text-decoration:underline\">").Append(Enc(title)).Append("</a>");
             else _Html.Append(Enc(title));
@@ -180,11 +180,11 @@ namespace MyMorningNews.Core.Email
         public string Html(string title)
         {
             string css = ":root{color-scheme:light dark;supported-color-schemes:light dark}body{margin:0;padding:0}" +
-                "@media (prefers-color-scheme:dark){.mmn-bg{background:#14161a !important}.mmn-card{background:#1d2026 !important;color:#e8eaed !important}}" +
+                "@media (prefers-color-scheme:dark){.mmn-bg{background:#0f172a !important}.mmn-card{background:#111c33 !important;color:#e2e8f0 !important}.mmn-accent{color:#60a5fa !important}}" +
                 "@media (max-width:420px){.mmn-card{padding:16px !important}}";
             string inner = "<div style=\"display:none;max-height:0;overflow:hidden;opacity:0\">" + Enc(_Preheader) + "</div>" +
-                "<table role=\"presentation\" class=\"mmn-bg\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" style=\"background:#f3f4f6\"><tr><td align=\"center\" style=\"padding:16px 8px\">" +
-                "<table role=\"presentation\" class=\"mmn-card\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" style=\"max-width:600px;background:#ffffff;color:#1c1f24;border-radius:8px;padding:24px\">" +
+                "<table role=\"presentation\" class=\"mmn-bg\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" style=\"background:#f8fafc\"><tr><td align=\"center\" style=\"padding:16px 8px\">" +
+                "<table role=\"presentation\" class=\"mmn-card\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" style=\"max-width:600px;background:#ffffff;color:#0f172a;border-radius:8px;padding:24px\">" +
                 _Html + "</table></td></tr></table>";
             using (Html builder = new Html())
             {

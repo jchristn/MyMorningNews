@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, RefreshControl, View } from 'react-native';
+import { RefreshControl, View } from 'react-native';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { findingsApi, predictionsApi, briefingsApi } from '@/api/research';
@@ -9,7 +9,7 @@ import { RatingControl, useFeedbackMap } from '@/components/feedback/RatingContr
 import { BriefingAudio } from '@/components/player/BriefingAudio';
 import { Markdown } from '@/components/Markdown';
 import { ResourceView } from '@/components/states';
-import { Banner, Button, Card, ListRow, Screen, SectionHeader, T } from '@/components/ui';
+import { Banner, BusyLine, Button, Card, ListRow, Screen, SectionHeader, T } from '@/components/ui';
 import { shareBriefingFile } from '@/lib/briefingFiles';
 import { BRIEFING_STATUS_TONES, PENDING_BRIEFING_STATUSES } from '@/lib/enums';
 import { formatDateTime } from '@/lib/format';
@@ -21,7 +21,6 @@ import { usePolling } from '@/state/usePolling';
 import { useResource } from '@/state/useResource';
 import { useTheme } from '@/theme/ThemeContext';
 import { spacing } from '@/theme/palette';
-import { PENDING_AUDIO_STATUSES } from '../common/items';
 import { DetailHeader } from '../common/DetailScreen';
 
 /**
@@ -158,7 +157,7 @@ function FileActions({ detail, onChanged }) {
  * The briefing reader (plan section 21.3): title and status, audio (make, listen, download, chapters), section
  * navigation, the Markdown rendered with native components with the section being read aloud marked, numbered
  * citations that jump to the Sources section, the items it links to with inline ratings on findings, pin, and share or
- * save the `.md` and `.html` files. A briefing that is still being composed, or whose audio is being made, polls.
+ * save the `.md` and `.html` files. A briefing that is still being composed polls; audio being made polls on its own.
  */
 export function BriefingDetail({ id }) {
   const p = useTheme();
@@ -174,8 +173,8 @@ export function BriefingDetail({ id }) {
   const detail = resource.data;
   const briefing = detail && detail.briefing;
   const pending = Boolean(briefing && PENDING_BRIEFING_STATUSES.includes(briefing.status));
-  const audioPending = Boolean(detail && detail.audio && PENDING_AUDIO_STATUSES.includes(detail.audio.status));
-  usePolling(resource.poll, pending || audioPending);
+  // Audio being made is followed by BriefingAudio with its own small status read, not by reloading the whole briefing.
+  usePolling(resource.poll, pending);
   const { state: player } = usePlayer();
 
   const citationsHeadings = useMemo(() => ((detail && detail.sections) || []).filter((s) => s.source === 'citations').map((s) => s.heading), [detail]);
@@ -228,10 +227,7 @@ export function BriefingDetail({ id }) {
               />
               {pending ? (
                 <Banner kind="info" title={t('mobile.reader.composingTitle')} testID="briefing-pending">
-                  <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'center' }}>
-                    <ActivityIndicator color={p.primary} />
-                    <T variant="small">{t('mobile.reader.composingBody')}</T>
-                  </View>
+                  <BusyLine>{t('mobile.reader.composingBody')}</BusyLine>
                 </Banner>
               ) : null}
               {briefing.status === 'Failed' ? <Banner kind="danger" title={t('mobile.reader.failedTitle')}>{briefing.errorMessage || t('mobile.states.errorBody')}</Banner> : null}

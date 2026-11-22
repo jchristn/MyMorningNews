@@ -15,8 +15,8 @@ namespace MyMorningNews.Core.Briefings
         public const string Copyright = "© 2026 Lattice AI LLC";
 
         private const string Css =
-            ":root{color-scheme:light dark;--bg:#ffffff;--fg:#1c1f24;--muted:#5d6570;--rule:#e3e6ea;--accent:#b4531f;--quote:#f5f2ee}" +
-            "@media (prefers-color-scheme:dark){:root{--bg:#14161a;--fg:#e8eaed;--muted:#a2a9b3;--rule:#2b3038;--accent:#f0915c;--quote:#1d2026}}" +
+            ":root{color-scheme:light dark;--bg:#ffffff;--fg:#0f172a;--muted:#475569;--rule:#e2e8f0;--accent:#2563eb;--quote:#f1f5f9}" +
+            "@media (prefers-color-scheme:dark){:root{--bg:#0f172a;--fg:#e2e8f0;--muted:#94a3b8;--rule:#26344f;--accent:#60a5fa;--quote:#111c33}}" +
             "html{background:var(--bg)}body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.6 Georgia,'Times New Roman',serif}" +
             "main{max-width:680px;margin:0 auto;padding:32px 16px 48px}" +
             ".meta{font:13px/1.4 -apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:var(--muted);margin:0 0 24px}" +

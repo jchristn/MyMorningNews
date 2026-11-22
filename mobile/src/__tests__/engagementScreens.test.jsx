@@ -218,8 +218,12 @@ describe('Briefing audio', () => {
     const { server } = await renderSignedIn(<BriefingDetail id="brf_1" />, {
       'GET /v1.0/api/briefings/brf_1': () => {
         reads += 1;
-        if (make === 0) return { body: detail() };
-        return { body: detail(reads > 3 ? { briefing: { mediaAssetId: 'med_1' }, audio: EPISODE } : { audio: { ...EPISODE, status: 'Synthesizing' } }) };
+        return { body: detail() };
+      },
+      // Progress is read from the briefing's newest episode, not by reloading the whole briefing.
+      'GET /v1.0/api/media': () => {
+        reads += 1;
+        return page([reads > 2 ? EPISODE : { ...EPISODE, status: 'Synthesizing' }]);
       },
       'POST /v1.0/api/briefings/brf_1/audio': () => {
         make += 1;
@@ -238,6 +242,7 @@ describe('Briefing audio', () => {
     expect(screen.getByText('Waiting to start.')).toBeTruthy();
     await waitFor(() => expect(screen.getByTestId('audio-listen')).toBeTruthy(), { timeout: 12000 });
     expect(server.count('POST /v1.0/api/briefings/brf_1/audio')).toBe(2);
+    expect(server.count('GET /v1.0/api/briefings/brf_1')).toBe(1);
   }, 20000);
 
   it('hides Make audio when the server has audio off', async () => {

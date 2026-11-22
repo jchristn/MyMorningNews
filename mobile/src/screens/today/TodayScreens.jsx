@@ -1,19 +1,18 @@
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, RefreshControl, View } from 'react-native';
+import { RefreshControl } from 'react-native';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { listItems } from '@/api/client';
 import { briefingsApi, editionsApi } from '@/api/research';
 import { ChipGroup } from '@/components/Chips';
 import { EmptyState, ResourceView } from '@/components/states';
-import { Banner, Button, Card, ListRow, Screen, SectionHeader, T } from '@/components/ui';
+import { Banner, BusyLine, Button, Card, ListRow, Screen, SectionHeader, T } from '@/components/ui';
 import { BRIEFING_STATUS_TONES, PENDING_BRIEFING_STATUSES } from '@/lib/enums';
 import { displayName, formatDate, formatDateTime } from '@/lib/format';
 import { useAuth } from '@/state/AuthContext';
 import { usePolling } from '@/state/usePolling';
 import { useResource } from '@/state/useResource';
 import { useTheme } from '@/theme/ThemeContext';
-import { spacing } from '@/theme/palette';
 import { ItemCard } from '../common/DetailScreen';
 import { TodayOverview } from '../insights/InsightsScreens';
 import { ResourceListScreen } from '../common/ResourceListScreen';
@@ -70,15 +69,11 @@ export function useCompose(onReady) {
 
 /** Composing, done, or failed, for a compose started from Today or the edition screen. */
 export function ComposeStatus({ compose }) {
-  const p = useTheme();
   const { t } = useTranslation();
   if (compose.status === 'starting' || compose.status === 'composing') {
     return (
       <Banner kind="info" title={t('mobile.compose.composingTitle')} testID="compose-status">
-        <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'center' }}>
-          <ActivityIndicator color={p.primary} />
-          <T variant="small">{t('mobile.compose.composingBody')}</T>
-        </View>
+        <BusyLine testID="compose-progress">{t('mobile.compose.composingBody')}</BusyLine>
       </Banner>
     );
   }

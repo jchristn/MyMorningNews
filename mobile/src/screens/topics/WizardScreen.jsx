@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { listItems } from '@/api/client';
@@ -7,12 +7,11 @@ import { refinementApi, topicsApi } from '@/api/research';
 import { ButtonRow, ChipGroup } from '@/components/Chips';
 import { QuestionCard } from '@/components/QuestionCard';
 import { ActionError, ResourceView } from '@/components/states';
-import { Badge, Banner, Button, Card, Field, IconButton, ListRow, Screen, SectionHeader, T } from '@/components/ui';
+import { Badge, Banner, BusyLine, Button, Card, Field, IconButton, ListRow, Screen, SectionHeader, T } from '@/components/ui';
 import { AUDIENCE_LEVELS, CONTEXT_CONSTRAINT_KINDS, DIMENSION_WEIGHTS, HORIZONS } from '@/lib/enums';
 import { WIZARD_STEPS, answeredCount, canAskMore, hasBrief, initialStep, isCompleted, isOutOfScope, nextStep, previousStep, questionRounds, stepAvailable, upsertById } from '@/lib/wizard';
 import { useAuth } from '@/state/AuthContext';
 import { useResource } from '@/state/useResource';
-import { useTheme } from '@/theme/ThemeContext';
 import { spacing } from '@/theme/palette';
 import { topicHref } from './TopicsScreens';
 
@@ -285,7 +284,6 @@ function Review({ data, onComplete, onAbandon, busy }) {
  * set up; each step can then be done by hand (add dimensions, skip questions, write the brief).
  */
 export function WizardScreen() {
-  const p = useTheme();
   const { t } = useTranslation();
   const { client } = useAuth();
   const params = useLocalSearchParams();
@@ -411,10 +409,7 @@ export function WizardScreen() {
       ) : null}
       {busy && busy !== 'start' && busy !== 'complete' && busy !== 'abandon' ? (
         <Banner kind="info" title={t('mobile.wizard.thinking')} testID="wizard-busy">
-          <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'center' }}>
-            <ActivityIndicator color={p.primary} />
-            <T variant="small">{t('mobile.wizard.thinkingBody')}</T>
-          </View>
+          <BusyLine>{t('mobile.wizard.thinkingBody')}</BusyLine>
         </Banner>
       ) : null}
       <ActionError error={error && error.error} manualHint={error ? manualHints[error.kind] : undefined} onRetry={error && data && ['dimensions', 'questions', 'context'].includes(error.kind) ? () => void generate(error.kind) : undefined} testID="wizard-error" />

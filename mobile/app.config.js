@@ -41,12 +41,12 @@ const IOS_BUNDLE_ID = LOCAL_TEAM_ID ? BUNDLE_ID + '.dev' : BUNDLE_ID;
 // without the owner's approval.
 const RELEASE_VERSION = '0.1.0-alpha';
 const STORE_VERSION = '0.1.0';
-const BUILD_NUMBER = 2;
+const BUILD_NUMBER = 3;
 
 const ASSOCIATED_DOMAIN = 'app.mymorningnews.ai';
-const BRAND_ORANGE = '#f5820d';
+const BRAND_BLUE = '#2563eb';
 const SPLASH_LIGHT = '#ffffff';
-const SPLASH_DARK = '#121417';
+const SPLASH_DARK = '#0f172a';
 const FACE_ID_USAGE = 'My Morning News uses Face ID to unlock the app when you turn on the app lock.';
 
 const warned = new Set();
@@ -158,7 +158,7 @@ module.exports = () => {
         'expo-notifications',
         {
           icon: './assets/images/notification-icon.png',
-          color: BRAND_ORANGE,
+          color: BRAND_BLUE,
           defaultChannel: 'briefings',
           enableBackgroundRemoteNotifications: true,
         },

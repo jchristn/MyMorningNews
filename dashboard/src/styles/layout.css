@@ -404,7 +404,7 @@
 }
 
 [data-theme='dark'] .login-logo {
-  /* The logo artwork is dark text on transparent; invert it for dark surfaces while keeping the sun orange. */
+  /* The logo artwork is dark text on transparent; invert it for dark surfaces while keeping the sun gold. */
   filter: invert(1) hue-rotate(180deg);
 }
 

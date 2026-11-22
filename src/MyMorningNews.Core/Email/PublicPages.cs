@@ -16,8 +16,8 @@ namespace MyMorningNews.Core.Email
     public static class PublicPages
     {
         private const string Css =
-            ":root{color-scheme:light dark;--bg:#f3f4f6;--card:#ffffff;--fg:#1c1f24;--muted:#6b7280;--line:#d1d5db;--accent:#b4531f}" +
-            "@media (prefers-color-scheme:dark){:root{--bg:#14161a;--card:#1d2026;--fg:#e8eaed;--muted:#a2a9b3;--line:#3a4049;--accent:#f0915c}}" +
+            ":root{color-scheme:light dark;--bg:#f8fafc;--card:#ffffff;--fg:#0f172a;--muted:#475569;--line:#cbd5e1;--accent:#2563eb;--button:#2563eb}" +
+            "@media (prefers-color-scheme:dark){:root{--bg:#0f172a;--card:#111c33;--fg:#e2e8f0;--muted:#94a3b8;--line:#384a6b;--accent:#60a5fa;--button:#2563eb}}" +
             "html,body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 -apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif}" +
             "main{max-width:560px;margin:0 auto;padding:24px 16px}.card{background:var(--card);border-radius:10px;padding:22px}" +
             "img.logo{width:150px;max-width:55%;height:auto;margin:0 0 16px}h1{font-size:21px;line-height:1.3;margin:0 0 8px}p{margin:0 0 12px}.muted{color:var(--muted);font-size:14px}" +
@@ -25,7 +25,7 @@ namespace MyMorningNews.Core.Email
             ".opts label{border:1px solid var(--line);border-radius:18px;padding:6px 12px;cursor:pointer}.opts input{margin-right:6px}" +
             ".opts label:has(input:checked){border-color:var(--accent);outline:1px solid var(--accent)}.confirm{border-left:3px solid var(--accent);padding-left:10px}" +
             "textarea{width:100%;box-sizing:border-box;min-height:110px;border:1px solid var(--line);border-radius:8px;padding:10px;background:transparent;color:inherit;font:inherit}" +
-            "button{margin-top:14px;padding:10px 18px;border:0;border-radius:6px;background:var(--accent);color:#fff;font:600 15px/1 inherit;cursor:pointer}a{color:var(--accent)}" +
+            "button{margin-top:14px;padding:10px 18px;border:0;border-radius:6px;background:var(--button);color:#fff;font:600 15px/1 inherit;cursor:pointer}a{color:var(--accent)}" +
             "footer{margin-top:18px;font-size:12px;color:var(--muted);text-align:center}";
 
         /// <summary>

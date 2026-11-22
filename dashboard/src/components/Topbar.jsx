@@ -10,6 +10,7 @@ import useInterval from '../hooks/useInterval.js';
 import LanguageSelector from '../i18n/LanguageSelector.jsx';
 import CopyButton from './CopyButton.jsx';
 import GitHubIcon from './GitHubIcon.jsx';
+import NotificationBell from './NotificationBell.jsx';
 
 export const REPOSITORY_URL = 'https://github.com/jchristn/MyMorningNews';
 
@@ -87,6 +88,7 @@ export default function Topbar({ title, summary, onRefresh }) {
             <RefreshCw size={16} aria-hidden="true" />
           </button>
         ) : null}
+        <NotificationBell />
         <LanguageSelector compact />
         <button type="button" className="icon-button" onClick={toggleTheme} aria-label={theme === 'dark' ? t('theme.light') : t('theme.dark')} title={theme === 'dark' ? t('theme.light') : t('theme.dark')}>
           {theme === 'dark' ? <Sun size={16} aria-hidden="true" /> : <Moon size={16} aria-hidden="true" />}

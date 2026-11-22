@@ -49,7 +49,7 @@ const ADMIN_TABS = {
   configuration: ['Models', 'Prompts', 'Search providers', 'MCP servers', 'Connect an assistant', 'Voices', 'Email', 'Stored credentials'],
   observability: ['Health', 'Requests', 'Audit', 'API explorer'],
   administration: ['Users', 'Tenants', 'Access keys', 'Roles', 'Usage', 'Plans', 'Promo codes'],
-  settings: ['Profile', 'Server settings', 'Server info', 'Setup']
+  settings: ['Profile', 'Notifications', 'Server settings', 'Server info', 'Setup']
 };
 
 const MEMBER_TABS = {
@@ -57,7 +57,7 @@ const MEMBER_TABS = {
   configuration: ['Models', 'Prompts', 'Search providers', 'Connect an assistant', 'Voices', 'Email', 'Stored credentials'],
   observability: ['Health', 'API explorer'],
   administration: ['Users'],
-  settings: ['Profile', 'Server info']
+  settings: ['Profile', 'Notifications', 'Server info']
 };
 
 function renderShell(path) {
@@ -118,11 +118,11 @@ describe('sidebar hubs', () => {
   });
 
   it('orders the Settings hub Profile, Server settings, Server info, Setup', () => {
-    expect(NAV_HUBS.find((hub) => hub.key === 'settings').tabs).toEqual(['profile', 'settings', 'serverInfo', 'setup']);
+    expect(NAV_HUBS.find((hub) => hub.key === 'settings').tabs).toEqual(['profile', 'notifications', 'settings', 'serverInfo', 'setup']);
     expect(hubTarget(NAV_HUBS.find((hub) => hub.key === 'settings'), ADMIN).key).toBe('profile');
     expect(hubTarget(NAV_HUBS.find((hub) => hub.key === 'settings'), ADMIN, true).key).toBe('profile');
     renderShell('/dashboard/setup');
-    expect(tabNames('Settings')).toEqual(['Profile', 'Server settings', 'Server info', 'Setup']);
+    expect(tabNames('Settings')).toEqual(['Profile', 'Notifications', 'Server settings', 'Server info', 'Setup']);
   });
 
   it('keeps every hub for a member, each opening the first page a member can use', () => {
@@ -142,8 +142,8 @@ describe('sidebar hubs', () => {
       ).map((route) => route.key)
     ).toEqual(['users']);
     const total = (auth) => NAV_HUBS.reduce((sum, hub) => sum + hubTabs(hub, auth).length, 0);
-    expect(total(ADMIN)).toBe(41);
-    expect(total(MEMBER)).toBe(30);
+    expect(total(ADMIN)).toBe(42);
+    expect(total(MEMBER)).toBe(31);
   });
 
   it('hides a hub the user can open none of the pages of', () => {
@@ -157,7 +157,7 @@ describe('sidebar hubs', () => {
     const keys = ['home', 'today', ...NAV_HUBS.flatMap((hub) => hub.tabs)];
     expect(new Set(keys).size).toBe(keys.length);
     expect(keys.every((key) => routeByKey(key))).toBe(true);
-    expect(keys).toHaveLength(43);
+    expect(keys).toHaveLength(44);
   });
 
   it('shows icons only when collapsed, with each label as the name and tooltip', () => {

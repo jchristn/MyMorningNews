@@ -31,7 +31,7 @@ describe('Settings and the Setup status page in a ready workspace', () => {
     expect(settings).toHaveAttribute('href', '/dashboard/profile');
     await userEvent.click(settings);
     const strip = await screen.findByRole('navigation', { name: 'Settings pages' });
-    expect(within(strip).getAllByRole('link').map((link) => link.textContent)).toEqual(['Profile', 'Server settings', 'Server info', 'Setup']);
+    expect(within(strip).getAllByRole('link').map((link) => link.textContent)).toEqual(['Profile', 'Notifications', 'Server settings', 'Server info', 'Setup']);
     expect(within(strip).getByRole('link', { name: 'Profile' })).toHaveAttribute('aria-current', 'page');
     expect(screen.queryByRole('heading', { name: 'Set up My Morning News' })).not.toBeInTheDocument();
     expect(screen.queryByTestId('setup-callout')).not.toBeInTheDocument();

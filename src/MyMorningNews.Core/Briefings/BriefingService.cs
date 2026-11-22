@@ -45,15 +45,12 @@ namespace MyMorningNews.Core.Briefings
         public Audio.AudioService? Audio { get; set; } = null;
 
         /// <summary>
-        /// Email service; when set, ready edition briefings with email on and one-time reports with the Email deliverable are emailed.
+        /// Notifications; when set, ready edition briefings and one-time reports are announced through it. The edition's
+        /// email and push switches and a one-time request's Email deliverable are passed as further filters on top of
+        /// the reader's notification preferences. Push payloads carry the briefing ID and the edition name, never
+        /// briefing content.
         /// </summary>
-        public Email.EmailService? Email { get; set; } = null;
-
-        /// <summary>
-        /// Push service; when set, ready edition briefings with push on notify the owner's devices. The payload carries
-        /// the briefing ID and the edition name, never briefing content.
-        /// </summary>
-        public Services.PushService? Push { get; set; } = null;
+        public Services.NotificationService? Notifications { get; set; } = null;
 
         #endregion
 
@@ -149,8 +146,18 @@ namespace MyMorningNews.Core.Briefings
                 ? request.Deliverables.Any(d => String.Equals(d, "Podcast", StringComparison.OrdinalIgnoreCase))
                 : template.Definition.Audio.Enabled;
             if (wantsAudio) await QueueAudioAsync(composed, request != null ? MediaKindEnum.PodcastEpisode : MediaKindEnum.BriefingAudio, null, token).ConfigureAwait(false);
-            if (Email != null && request != null && composed.Status == BriefingStatusEnum.Ready && request.Deliverables.Any(d => String.Equals(d, "Email", StringComparison.OrdinalIgnoreCase)))
-                await Email.QueueBriefingAsync(composed, request.EmailRecipients, token).ConfigureAwait(false);
+            if (Notifications != null && request != null && composed.Status == BriefingStatusEnum.Ready)
+            {
+                // One-time reports were never pushed; the reader's in-app choice and the Email deliverable decide the rest.
+                await Notifications.NotifyAsync(composed.TenantId, composed.UserId, NotificationKindEnum.BriefingReady, new Services.NotificationContext
+                {
+                    Briefing = composed,
+                    EmailRecipients = request.EmailRecipients,
+                    EmailAllowed = request.Deliverables.Any(d => String.Equals(d, "Email", StringComparison.OrdinalIgnoreCase)),
+                    PushAllowed = false
+                }, token).ConfigureAwait(false);
+            }
+
             return composed;
         }
 
@@ -476,26 +483,16 @@ namespace MyMorningNews.Core.Briefings
                 edition.LastComposedUtc = composed.ComposedUtc ?? nowUtc;
                 await _Database.Editions.UpdateAsync(edition, token).ConfigureAwait(false);
                 if (edition.AudioEnabled) await QueueAudioAsync(composed, MediaKindEnum.BriefingAudio, edition.VoiceProfileId, token).ConfigureAwait(false);
-                if (edition.EmailEnabled && Email != null) await Email.QueueBriefingAsync(composed, null, token).ConfigureAwait(false);
-                if (edition.PushEnabled && Push != null) await PushReadyAsync(composed, edition, token).ConfigureAwait(false);
-            }
-        }
-
-        private async Task PushReadyAsync(Briefing composed, Edition edition, CancellationToken token)
-        {
-            try
-            {
-                await Push!.SendToUserAsync(edition.TenantId, edition.UserId, new Services.PushMessage
+                if (Notifications != null)
                 {
-                    Title = edition.Name,
-                    Body = "Your briefing is ready.",
-                    ChannelId = "briefings",
-                    Data = new Dictionary<string, string> { { "kind", "briefing.ready" }, { "briefingId", composed.Id }, { "editionName", edition.Name } }
-                }, token).ConfigureAwait(false);
-            }
-            catch (Exception ex) when (!(ex is OperationCanceledException))
-            {
-                _Logging.Warn("[BriefingService] push for briefing " + composed.Id + " failed: " + ex.Message);
+                    await Notifications.NotifyAsync(edition.TenantId, edition.UserId, NotificationKindEnum.BriefingReady, new Services.NotificationContext
+                    {
+                        Briefing = composed,
+                        Edition = edition,
+                        EmailAllowed = edition.EmailEnabled,
+                        PushAllowed = edition.PushEnabled
+                    }, token).ConfigureAwait(false);
+                }
             }
         }
 

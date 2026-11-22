@@ -197,6 +197,7 @@
       "settings": "Configurações",
       "serverInfo": "Informações do servidor",
       "profile": "Perfil",
+      "notifications": "Notificações",
       "adminUsage": "Uso da plataforma",
       "oneTimeRequests": "Solicitações avulsas",
       "listen": "Ouvir",
@@ -310,6 +311,9 @@
     },
     "profile": {
       "summary": "Sua conta"
+    },
+    "notifications": {
+      "summary": "Escolha sobre o que você é avisado e onde"
     },
     "adminUsage": {
       "summary": "Custo da plataforma por locatário, a base para decisões de preço"
@@ -1050,7 +1054,9 @@
     "password": "Senha",
     "passwordChanged": "Senha alterada",
     "saved": "Perfil salvo",
-    "timeZoneHelp": "Deixe em branco para usar o fuso horário do navegador ({zone})."
+    "timeZoneHelp": "Deixe em branco para usar o fuso horário do navegador ({zone}).",
+    "notificationsMoved": "As opções de e-mail e de outras notificações agora ficam na página Notificações.",
+    "notificationsLink": "Abrir preferências de notificação"
   },
   "enums": {
     "task": {
@@ -3679,23 +3685,60 @@
       "settingsHelp": "Salve suas alterações primeiro e depois envie um teste para você."
     }
   },
-  "emailPrefs": {
-    "title": "Preferências de e-mail",
-    "address": "Os e-mails vão para {address}.",
-    "saved": "Preferências de e-mail salvas",
-    "categories": {
-      "runEmails": "E-mails de execução",
-      "briefingEmails": "E-mails de boletim",
-      "failureEmails": "E-mails de falha"
+  "notifications": {
+    "bell": "Notificações",
+    "bellUnread": "Notificações, {count} não lidas",
+    "panelTitle": "Notificações",
+    "markAllRead": "Marcar tudo como lido",
+    "empty": "Você está em dia.",
+    "emptyOff": "As notificações no aplicativo estão desativadas.",
+    "emptyOffLink": "Ative-as nas suas preferências de notificação",
+    "settingsLink": "Preferências de notificação",
+    "unread": "Não lida",
+    "kinds": {
+      "RunResults": "Novas descobertas",
+      "BriefingReady": "Boletim pronto",
+      "AudioReady": "Áudio pronto",
+      "RunFailed": "Falha na execução",
+      "CapReached": "Limite do plano atingido",
+      "PredictionDue": "Previsão vencida"
     },
-    "help": {
-      "runEmails": "Um resumo após cada execução dos seus temas.",
-      "briefingEmails": "Quando um boletim de edição ou de execução é publicado.",
-      "failureEmails": "Quando uma execução falha."
+    "descriptions": {
+      "RunResults": "Uma execução de pesquisa encontrou algo novo em um dos seus temas.",
+      "BriefingReady": "Um boletim de edição ou avulso está pronto para leitura.",
+      "AudioReady": "Um boletim foi transformado em áudio que você pode ouvir.",
+      "RunFailed": "Uma execução de pesquisa não pôde ser concluída.",
+      "CapReached": "Uma execução agendada foi ignorada porque seu plano atingiu um limite.",
+      "PredictionDue": "Uma previsão chegou à data e está pronta para ser conferida."
     },
-    "unsubscribedTitle": "Temas dos quais você cancelou a inscrição",
-    "noUnsubscribed": "Você recebe e-mails de execução de todos os temas que os enviam.",
-    "resubscribeHelp": "Para voltar a receber e-mails de execução de um destes temas, use o link no último e-mail dele."
+    "channels": {
+      "Email": "E-mail",
+      "Push": "Telefone",
+      "InApp": "No aplicativo"
+    },
+    "reasons": {
+      "NoEmailAddress": "Sua conta não tem endereço de e-mail.",
+      "EmailNotVerified": "Confirme seu endereço de e-mail para receber e-mails.",
+      "EmailNotConfigured": "Este servidor não está configurado para enviar e-mails.",
+      "EmailUnsubscribed": "Você cancelou a inscrição de todos os e-mails.",
+      "PushNotConfigured": "Este servidor não está configurado para enviar notificações ao telefone.",
+      "NoDevice": "Ative as notificações no aplicativo móvel.",
+      "Unavailable": "Indisponível no momento."
+    },
+    "prefs": {
+      "title": "Sobre o que me avisar e onde",
+      "intro": "Cada chave é salva na hora. Temas e edições ainda podem desativar seus próprios e-mails ou notificações no telefone.",
+      "kindColumn": "Notificação",
+      "cellLabel": "{kind}: {channel}",
+      "saved": "Preferências de notificação salvas",
+      "address": "Os e-mails vão para {address}.",
+      "unsubscribedTitle": "Temas dos quais você cancelou a inscrição",
+      "noUnsubscribed": "Você recebe e-mails de execução de todos os temas que os enviam.",
+      "unsubscribedHelp": "Você não recebe e-mails de execução destes temas.",
+      "resubscribe": "Inscrever-se novamente",
+      "resubscribeTopic": "Inscrever-se novamente em {topic}",
+      "resubscribed": "Você voltará a receber e-mails de execução de {topic}"
+    }
   },
   "feedbackControl": {
     "rate": "Avaliar",

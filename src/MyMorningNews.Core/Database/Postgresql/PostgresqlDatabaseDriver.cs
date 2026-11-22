@@ -73,6 +73,8 @@ namespace MyMorningNews.Core.Database.Postgresql
             UsageAnalytics = new UsageAnalyticsMethods(this);
             RefreshTokens = new RefreshTokenMethods(this);
             Devices = new DeviceMethods(this);
+            Notifications = new NotificationMethods(this);
+            NotificationPreferences = new NotificationPreferenceMethods(this);
             Topics = new TopicMethods(this);
             TopicDimensions = new TopicDimensionMethods(this);
             TopicConstraints = new TopicConstraintMethods(this);

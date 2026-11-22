@@ -197,6 +197,7 @@
       "settings": "Tetapan",
       "serverInfo": "Maklumat pelayan",
       "profile": "Profil",
+      "notifications": "Pemberitahuan",
       "adminUsage": "Penggunaan platform",
       "oneTimeRequests": "Permintaan sekali",
       "listen": "Dengar",
@@ -310,6 +311,9 @@
     },
     "profile": {
       "summary": "Akaun anda"
+    },
+    "notifications": {
+      "summary": "Pilih perkara yang anda dimaklumkan, dan di mana"
     },
     "adminUsage": {
       "summary": "Kos platform mengikut penyewa, input kepada keputusan harga"
@@ -1050,7 +1054,9 @@
     "password": "Kata laluan",
     "passwordChanged": "Kata laluan ditukar",
     "saved": "Profil disimpan",
-    "timeZoneHelp": "Biarkan kosong untuk menggunakan zon waktu pelayar anda ({zone})."
+    "timeZoneHelp": "Biarkan kosong untuk menggunakan zon waktu pelayar anda ({zone}).",
+    "notificationsMoved": "Pilihan e-mel dan pemberitahuan lain kini berada di halaman Pemberitahuan.",
+    "notificationsLink": "Buka keutamaan pemberitahuan"
   },
   "enums": {
     "task": {
@@ -3679,23 +3685,60 @@
       "settingsHelp": "Simpan perubahan anda dahulu, kemudian hantar ujian kepada diri sendiri."
     }
   },
-  "emailPrefs": {
-    "title": "Keutamaan e-mel",
-    "address": "E-mel dihantar ke {address}.",
-    "saved": "Keutamaan e-mel disimpan",
-    "categories": {
-      "runEmails": "E-mel larian",
-      "briefingEmails": "E-mel taklimat",
-      "failureEmails": "E-mel kegagalan"
+  "notifications": {
+    "bell": "Pemberitahuan",
+    "bellUnread": "Pemberitahuan, {count} belum dibaca",
+    "panelTitle": "Pemberitahuan",
+    "markAllRead": "Tandai semua sebagai dibaca",
+    "empty": "Tiada yang baharu untuk anda.",
+    "emptyOff": "Pemberitahuan dalam aplikasi dimatikan.",
+    "emptyOffLink": "Hidupkannya dalam keutamaan pemberitahuan anda",
+    "settingsLink": "Keutamaan pemberitahuan",
+    "unread": "Belum dibaca",
+    "kinds": {
+      "RunResults": "Penemuan baharu",
+      "BriefingReady": "Taklimat sedia",
+      "AudioReady": "Audio sedia",
+      "RunFailed": "Larian gagal",
+      "CapReached": "Had pelan dicapai",
+      "PredictionDue": "Ramalan sampai tempoh"
     },
-    "help": {
-      "runEmails": "Ringkasan selepas setiap larian topik anda.",
-      "briefingEmails": "Apabila taklimat edisi atau larian diterbitkan.",
-      "failureEmails": "Apabila larian gagal."
+    "descriptions": {
+      "RunResults": "Larian penyelidikan menemui sesuatu yang baharu untuk salah satu topik anda.",
+      "BriefingReady": "Taklimat edisi atau taklimat sekali sahaja sedia untuk dibaca.",
+      "AudioReady": "Taklimat telah ditukar kepada audio yang boleh anda mainkan.",
+      "RunFailed": "Larian penyelidikan tidak dapat diselesaikan.",
+      "CapReached": "Larian berjadual dilangkau kerana pelan anda mencapai had.",
+      "PredictionDue": "Ramalan telah sampai tarikhnya dan sedia untuk disemak."
     },
-    "unsubscribedTitle": "Topik yang anda nyahlanggan",
-    "noUnsubscribed": "Anda menerima e-mel larian untuk setiap topik yang menghantarnya.",
-    "resubscribeHelp": "Untuk menerima e-mel larian salah satu topik ini semula, gunakan pautan dalam e-mel terakhirnya."
+    "channels": {
+      "Email": "E-mel",
+      "Push": "Telefon",
+      "InApp": "Dalam aplikasi"
+    },
+    "reasons": {
+      "NoEmailAddress": "Akaun anda tiada alamat e-mel.",
+      "EmailNotVerified": "Sahkan alamat e-mel anda untuk menerima e-mel.",
+      "EmailNotConfigured": "Pelayan ini tidak disediakan untuk menghantar e-mel.",
+      "EmailUnsubscribed": "Anda telah menyahlanggan semua e-mel.",
+      "PushNotConfigured": "Pelayan ini tidak disediakan untuk menghantar pemberitahuan telefon.",
+      "NoDevice": "Hidupkan pemberitahuan dalam aplikasi mudah alih.",
+      "Unavailable": "Tidak tersedia buat masa ini."
+    },
+    "prefs": {
+      "title": "Perkara yang dimaklumkan kepada saya, dan di mana",
+      "intro": "Setiap suis disimpan serta-merta. Topik dan edisi masih boleh mematikan e-mel atau pemberitahuan telefon mereka sendiri.",
+      "kindColumn": "Pemberitahuan",
+      "cellLabel": "{kind}: {channel}",
+      "saved": "Keutamaan pemberitahuan disimpan",
+      "address": "E-mel dihantar ke {address}.",
+      "unsubscribedTitle": "Topik yang anda nyahlanggan",
+      "noUnsubscribed": "Anda menerima e-mel larian untuk setiap topik yang menghantarnya.",
+      "unsubscribedHelp": "Anda tidak menerima e-mel larian untuk topik ini.",
+      "resubscribe": "Langgan semula",
+      "resubscribeTopic": "Langgan semula {topic}",
+      "resubscribed": "Anda akan menerima e-mel larian untuk {topic} semula"
+    }
   },
   "feedbackControl": {
     "rate": "Nilai ini",

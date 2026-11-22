@@ -261,6 +261,16 @@ namespace MyMorningNews.Core.Enums
         DeviceWrite,
 
         /// <summary>
+        /// Read my notifications and notification preferences.
+        /// </summary>
+        NotificationRead,
+
+        /// <summary>
+        /// Mark or delete my notifications and change my notification preferences.
+        /// </summary>
+        NotificationWrite,
+
+        /// <summary>
         /// Read findings and evidence.
         /// </summary>
         FindingRead,

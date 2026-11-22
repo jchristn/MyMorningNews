@@ -52,6 +52,13 @@ namespace MyMorningNews.Core.Audio
         public AudioMixer Mixer { get; }
 
         /// <summary>
+        /// Notifications; when set, the owner is told once when a briefing's audio becomes ready (not for dry runs,
+        /// voice previews, or voice tests, which make no stored audio). An edition's email and push switches are passed
+        /// as further filters on top of the reader's notification preferences. May be null.
+        /// </summary>
+        public NotificationService? Notifications { get; set; } = null;
+
+        /// <summary>
         /// Seconds the speech server's voice list is kept before it is read again. Default 300, minimum 0 (never
         /// kept), maximum 86400.
         /// </summary>
@@ -683,6 +690,7 @@ namespace MyMorningNews.Core.Audio
                 b.MediaAssetId = m.Id;
                 await _Database.Briefings.UpdateAsync(b, token).ConfigureAwait(false);
                 MyMorningNewsTelemetry.Increment(MyMorningNewsTelemetry.MediaEpisodes, "outcome", "ready", "format", mix.Extension);
+                await NotifyReadyAsync(m, b, token).ConfigureAwait(false);
             }
             catch (Exception ex) when (!(ex is OperationCanceledException && token.IsCancellationRequested))
             {
@@ -693,6 +701,28 @@ namespace MyMorningNews.Core.Audio
                 await _Database.MediaAssets.UpdateAsync(m, CancellationToken.None).ConfigureAwait(false);
                 MyMorningNewsTelemetry.Increment(MyMorningNewsTelemetry.MediaEpisodes, "outcome", retry ? "retry" : "failed", "format", "none");
                 _Logging.Warn(_Header + "audio " + m.Id + (retry ? " will retry: " : " failed: ") + ex.Message);
+            }
+        }
+
+        private async Task NotifyReadyAsync(MediaAsset m, Briefing b, CancellationToken token)
+        {
+            if (Notifications == null || b.IsDryRun) return;
+            try
+            {
+                Edition? edition = b.EditionId == null ? null : await _Database.Editions.ReadAsync(b.TenantId, b.EditionId, token).ConfigureAwait(false);
+                await Notifications.NotifyAsync(m.TenantId, m.UserId, NotificationKindEnum.AudioReady, new NotificationContext
+                {
+                    Briefing = b,
+                    Media = m,
+                    Edition = edition,
+                    EmailAllowed = edition == null || edition.EmailEnabled,
+                    PushAllowed = edition == null || edition.PushEnabled
+                }, token).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (!(ex is OperationCanceledException))
+            {
+                // The audio is ready and saved; a notice that could not be sent must not mark it failed.
+                _Logging.Warn(_Header + "audio " + m.Id + " is ready but its notice failed: " + ex.Message);
             }
         }
 

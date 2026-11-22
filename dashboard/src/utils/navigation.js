@@ -1,5 +1,6 @@
 import {
   Activity,
+  Bell,
   BookOpen,
   Bot,
   Building2,
@@ -102,6 +103,7 @@ export const ALL_ROUTES = [
 
   { path: 'setup', key: 'setup', icon: ClipboardCheck, access: 'tenantAdmin' },
   { path: 'profile', key: 'profile', icon: User, access: 'all' },
+  { path: 'notifications', key: 'notifications', icon: Bell, access: 'all' },
   { path: 'settings', key: 'settings', icon: Settings, access: 'admin' },
   { path: 'server-info', key: 'serverInfo', icon: Info, access: 'all' }
 ];
@@ -125,7 +127,7 @@ export const NAV_HUBS = [
   { key: 'configuration', icon: SlidersHorizontal, tabs: ['models', 'prompts', 'searchProviders', 'mcpServers', 'mcp', 'voices', 'email', 'vault'] },
   { key: 'observability', icon: Activity, tabs: ['health', 'requests', 'audit', 'explorer'] },
   { key: 'administration', icon: UserCog, tabs: ['users', 'tenants', 'credentials', 'roles', 'adminUsage', 'plans', 'promoCodes'] },
-  { key: 'settings', icon: Settings, tabs: ['profile', 'settings', 'serverInfo', 'setup'] }
+  { key: 'settings', icon: Settings, tabs: ['profile', 'notifications', 'settings', 'serverInfo', 'setup'] }
 ];
 
 // Labelled sidebar sections and the hubs under each.
@@ -163,8 +165,8 @@ export function tabLabelKey(routeKey) {
 
 // While the first-run setup guide is on (setup is not ready and the user has not skipped it), only these routes open:
 // the Setup screen and the configuration it may send people to (model endpoints, the credential vault, search
-// providers, voices, settings), plus the profile and server info. Every other route redirects to the Setup screen.
-export const SETUP_ALLOWED_ROUTES = ['setup', 'models', 'vault', 'searchProviders', 'voices', 'settings', 'profile', 'serverInfo'];
+// providers, voices, settings), plus the profile, notification preferences, and server info. Every other route redirects to the Setup screen.
+export const SETUP_ALLOWED_ROUTES = ['setup', 'models', 'vault', 'searchProviders', 'voices', 'settings', 'profile', 'notifications', 'serverInfo'];
 
 // Pages where unfinished setup bites (the topic wizard, research runs, and briefings need a working model and web
 // search). After someone skips setup, these pages carry a warning.

@@ -1106,6 +1106,29 @@ export class ApiClient {
     return this._request('PUT', '/v1.0/api/email-preferences', { body });
   }
 
+  // Notifications: what the signed-in user is told in the app, and the kind-by-channel preference matrix.
+  listNotifications(query) {
+    return this._request('GET', '/v1.0/api/notifications', { query });
+  }
+  getNotificationUnreadCount() {
+    return this._request('GET', '/v1.0/api/notifications/unread-count');
+  }
+  markNotificationRead(id) {
+    return this._request('POST', '/v1.0/api/notifications/' + enc(id) + '/read');
+  }
+  markAllNotificationsRead() {
+    return this._request('POST', '/v1.0/api/notifications/read-all');
+  }
+  deleteNotification(id) {
+    return this._request('DELETE', '/v1.0/api/notifications/' + enc(id));
+  }
+  getNotificationPreferences() {
+    return this._request('GET', '/v1.0/api/notifications/preferences');
+  }
+  updateNotificationPreferences(body) {
+    return this._request('PUT', '/v1.0/api/notifications/preferences', { body });
+  }
+
   // Feedback and learning (Phase 10). action is one of relevant, somewhat, not-relevant, accurate, partially,
   // inaccurate, too-early, useful, or not-useful.
   giveFeedback({ targetType, targetId, action, reason }) {

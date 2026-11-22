@@ -19,7 +19,7 @@ namespace MyMorningNews.Sdk.Enums
         BriefingPublished,
 
         /// <summary>
-        /// A run failed (opted-in administrators).
+        /// A run failed.
         /// </summary>
         RunFailed,
 
@@ -61,6 +61,16 @@ namespace MyMorningNews.Sdk.Enums
         /// <summary>
         /// A plan limit stopped a scheduled run (sent at most once per limit per month).
         /// </summary>
-        CapReached
+        CapReached,
+
+        /// <summary>
+        /// The audio version of a briefing is ready.
+        /// </summary>
+        AudioReady,
+
+        /// <summary>
+        /// A prediction is due for review.
+        /// </summary>
+        PredictionDue
     }
 }

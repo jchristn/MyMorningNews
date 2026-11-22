@@ -1690,6 +1690,51 @@ def t_vault(h: Harness) -> None:
     expect_error(NotFoundError, lambda: h.client.vault.get(c.id))
 
 
+@case("Notifications: preferences matrix, round trip, and the older email preferences")
+def t_notification_prefs(h: Harness) -> None:
+    h.need("tenant")
+    before = h.client.notifications.preferences()
+    eq(len(before.preferences), 18, "six kinds on three channels")
+    eq([c.channel for c in before.channels], ["Email", "Push", "InApp"], "channel order")
+    check(before.channels[2].available is True, "in-app is always available")
+    if not h.client.devices.list():
+        check(before.channels[1].available is False and before.channels[1].reason in ("NoDevice", "PushNotConfigured"), "push needs a device")
+    check(before.address is not None and before.unsubscribed_topic_ids is not None, "address and topic list")
+    in_app = before.enabled(mmn.NotificationKind.AUDIO_READY, mmn.NotificationChannel.IN_APP)
+    run_email = before.enabled("RunResults", "Email")
+    try:
+        saved = h.client.notifications.set_preferences([
+            {"kind": mmn.NotificationKind.AUDIO_READY, "channel": mmn.NotificationChannel.IN_APP, "enabled": not in_app},
+            {"kind": "RunResults", "channel": "Email", "enabled": not run_email},
+        ])
+        eq(saved.enabled("AudioReady", "InApp"), not in_app, "in-app cell saved")
+        eq(saved.enabled("BriefingReady", "Email"), before.enabled("BriefingReady", "Email"), "unsent cells unchanged")
+        eq(h.client.notifications.preferences().enabled("RunResults", "Email"), not run_email, "persisted")
+        eq(h.client.email.preferences().run_emails, not run_email, "the older email preferences show the same cell")
+        h.client.email.set_preferences(run_emails=run_email)
+        eq(h.client.notifications.preferences().enabled("RunResults", "Email"), run_email, "the matrix shows what the older route saved")
+    finally:
+        h.client.notifications.set_preference("AudioReady", "InApp", in_app)
+        h.client.notifications.set_preference("RunResults", "Email", run_email)
+    expect_error(BadRequestError, lambda: h.client.notifications.set_preference("Bogus", "Email", True))
+
+
+@case("Notifications: list, unread count, read, read all, delete")
+def t_notifications(h: Harness) -> None:
+    h.need("tenant")
+    page = h.client.notifications.list(page_size=5)
+    check(page.items is not None and page.total_count is not None, "page shape")
+    unread = h.client.notifications.list(unread=True, kind="AudioReady", page_size=100)
+    check(all(n.kind == "AudioReady" and not n.read_utc for n in unread.items), "filters apply")
+    check(h.client.notifications.unread_count() >= len(unread.items), "unread count")
+    for n in [x for x in page.items if not x.read_utc][:1]:
+        check(h.client.notifications.mark_read(n.id).read_utc, "marked read")
+    check(h.client.notifications.mark_all_read() >= 0, "read-all count")
+    eq(h.client.notifications.unread_count(), 0, "none unread after read-all")
+    expect_error(NotFoundError, lambda: h.client.notifications.mark_read("ntf_missing"))
+    expect_error(NotFoundError, lambda: h.client.notifications.delete("ntf_missing"))
+
+
 @case("Devices: register, list, delete")
 def t_devices(h: Harness) -> None:
     h.need("tenant")

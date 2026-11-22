@@ -197,6 +197,7 @@
       "settings": "Paramètres",
       "serverInfo": "Infos serveur",
       "profile": "Profil",
+      "notifications": "Notifications",
       "adminUsage": "Utilisation de la plateforme",
       "oneTimeRequests": "Demandes ponctuelles",
       "listen": "Écouter",
@@ -310,6 +311,9 @@
     },
     "profile": {
       "summary": "Votre compte"
+    },
+    "notifications": {
+      "summary": "Choisissez ce dont vous êtes informé, et où"
     },
     "adminUsage": {
       "summary": "Coût de la plateforme par locataire, base des décisions tarifaires"
@@ -1050,7 +1054,9 @@
     "password": "Mot de passe",
     "passwordChanged": "Mot de passe modifié",
     "saved": "Profil enregistré",
-    "timeZoneHelp": "Laissez vide pour utiliser le fuseau horaire de votre navigateur ({zone})."
+    "timeZoneHelp": "Laissez vide pour utiliser le fuseau horaire de votre navigateur ({zone}).",
+    "notificationsMoved": "Les choix d’e-mails et des autres notifications se trouvent désormais sur la page Notifications.",
+    "notificationsLink": "Ouvrir les préférences de notification"
   },
   "enums": {
     "task": {
@@ -3679,23 +3685,60 @@
       "settingsHelp": "Enregistrez d’abord vos modifications, puis envoyez-vous un test."
     }
   },
-  "emailPrefs": {
-    "title": "Préférences e-mail",
-    "address": "Les e-mails sont envoyés à {address}.",
-    "saved": "Préférences e-mail enregistrées",
-    "categories": {
-      "runEmails": "E-mails d’exécution",
-      "briefingEmails": "E-mails de briefing",
-      "failureEmails": "E-mails d’échec"
+  "notifications": {
+    "bell": "Notifications",
+    "bellUnread": "Notifications, {count} non lues",
+    "panelTitle": "Notifications",
+    "markAllRead": "Tout marquer comme lu",
+    "empty": "Vous êtes à jour.",
+    "emptyOff": "Les notifications dans l’application sont désactivées.",
+    "emptyOffLink": "Activez-les dans vos préférences de notification",
+    "settingsLink": "Préférences de notification",
+    "unread": "Non lue",
+    "kinds": {
+      "RunResults": "Nouveaux résultats",
+      "BriefingReady": "Briefing prêt",
+      "AudioReady": "Audio prêt",
+      "RunFailed": "Échec d’une exécution",
+      "CapReached": "Limite de l’offre atteinte",
+      "PredictionDue": "Prédiction arrivée à échéance"
     },
-    "help": {
-      "runEmails": "Une synthèse après chaque exécution de vos sujets.",
-      "briefingEmails": "Lorsqu’un briefing d’édition ou d’exécution est publié.",
-      "failureEmails": "Lorsqu’une exécution échoue."
+    "descriptions": {
+      "RunResults": "Une exécution de recherche a trouvé du nouveau pour l’un de vos sujets.",
+      "BriefingReady": "Un briefing d’édition ou ponctuel est prêt à être lu.",
+      "AudioReady": "Un briefing a été converti en audio que vous pouvez écouter.",
+      "RunFailed": "Une exécution de recherche n’a pas pu se terminer.",
+      "CapReached": "Une exécution planifiée a été ignorée, car votre offre a atteint une limite.",
+      "PredictionDue": "Une prédiction est arrivée à sa date et peut être vérifiée."
     },
-    "unsubscribedTitle": "Sujets auxquels vous vous êtes désabonné",
-    "noUnsubscribed": "Vous recevez les e-mails d’exécution de tous les sujets qui en envoient.",
-    "resubscribeHelp": "Pour recevoir de nouveau les e-mails d’exécution de l’un de ces sujets, utilisez le lien de son dernier e-mail."
+    "channels": {
+      "Email": "E-mail",
+      "Push": "Téléphone",
+      "InApp": "Dans l’application"
+    },
+    "reasons": {
+      "NoEmailAddress": "Votre compte n’a pas d’adresse e-mail.",
+      "EmailNotVerified": "Confirmez votre adresse e-mail pour recevoir des e-mails.",
+      "EmailNotConfigured": "Ce serveur n’est pas configuré pour envoyer des e-mails.",
+      "EmailUnsubscribed": "Vous vous êtes désabonné de tous les e-mails.",
+      "PushNotConfigured": "Ce serveur n’est pas configuré pour envoyer des notifications sur téléphone.",
+      "NoDevice": "Activez les notifications dans l’application mobile.",
+      "Unavailable": "Indisponible pour le moment."
+    },
+    "prefs": {
+      "title": "De quoi m’informer, et où",
+      "intro": "Chaque interrupteur est enregistré immédiatement. Les sujets et les éditions peuvent toujours désactiver leurs propres e-mails ou notifications sur téléphone.",
+      "kindColumn": "Notification",
+      "cellLabel": "{kind}: {channel}",
+      "saved": "Préférences de notification enregistrées",
+      "address": "Les e-mails sont envoyés à {address}.",
+      "unsubscribedTitle": "Sujets auxquels vous vous êtes désabonné",
+      "noUnsubscribed": "Vous recevez les e-mails d’exécution de tous les sujets qui en envoient.",
+      "unsubscribedHelp": "Vous ne recevez pas les e-mails d’exécution de ces sujets.",
+      "resubscribe": "Se réabonner",
+      "resubscribeTopic": "Se réabonner à {topic}",
+      "resubscribed": "Vous recevrez de nouveau les e-mails d’exécution de {topic}"
+    }
   },
   "feedbackControl": {
     "rate": "Noter",

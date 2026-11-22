@@ -1,4 +1,4 @@
-import { linkSegments, mapDeepLink, routeForNotification } from '@/lib/deepLinks';
+import { linkSegments, mapDeepLink, playerRoute, routeForInApp, routeForNotification } from '@/lib/deepLinks';
 import { redirectSystemPath } from '@/app/+native-intent';
 
 describe('deep and universal links', () => {
@@ -70,6 +70,34 @@ describe('push notification taps', () => {
     expect(routeForNotification({ kind: 'briefing.ready', briefingId: 'brf_1' })).toBe('/today/briefings/brf_1');
     expect(routeForNotification({ kind: 'prediction.due', predictionId: 'prd_1' })).toBe('/today/predictions/prd_1');
     expect(routeForNotification({ kind: 'run.failed', topicId: 'top_1' })).toBe('/topics/top_1');
+    expect(routeForNotification({ kind: 'run.failed', topicId: 'top_1', runId: 'run_1' })).toBe('/topics/top_1');
+  });
+
+  it('opens the player on the audio when a briefing was turned into audio', () => {
+    expect(routeForNotification({ kind: 'audio.ready', briefingId: 'brf_1', mediaAssetId: 'med_1' })).toBe('/listen/player?mediaId=med_1&briefingId=brf_1');
+    expect(playerRoute('brf 1', 'med/1')).toBe('/listen/player?mediaId=med%2F1&briefingId=brf%201');
+    // Without the episode the briefing itself is the best place to land.
+    expect(routeForNotification({ kind: 'audio.ready', briefingId: 'brf_1' })).toBe('/today/briefings/brf_1');
+    expect(routeForNotification({ kind: 'audio.ready' })).toBe('/today');
+  });
+
+  it('opens the run when research found something new', () => {
+    expect(routeForNotification({ kind: 'run.results', topicId: 'top_1', runId: 'run_1' })).toBe('/topics/runs/run_1');
+    expect(routeForNotification({ kind: 'run.results', topicId: 'top_1' })).toBe('/topics/top_1');
+    expect(routeForNotification({ kind: 'run.results' })).toBe('/topics');
+  });
+
+  it('routes in-app notifications by kind', () => {
+    expect(routeForInApp({ kind: 'RunResults', runId: 'run_1', topicId: 'top_1' })).toBe('/topics/runs/run_1');
+    expect(routeForInApp({ kind: 'BriefingReady', briefingId: 'brf_1' })).toBe('/today/briefings/brf_1');
+    expect(routeForInApp({ kind: 'AudioReady', briefingId: 'brf_1', mediaAssetId: 'med_1' })).toBe('/listen/player?mediaId=med_1&briefingId=brf_1');
+    expect(routeForInApp({ kind: 'RunFailed', runId: 'run_1', topicId: 'top_1' })).toBe('/topics/runs/run_1');
+    expect(routeForInApp({ kind: 'RunFailed', topicId: 'top_1' })).toBe('/topics/top_1');
+    expect(routeForInApp({ kind: 'CapReached' })).toBe('/account/usage');
+    expect(routeForInApp({ kind: 'PredictionDue', predictionId: 'prd_1' })).toBe('/today/predictions/prd_1');
+    expect(routeForInApp({ kind: 'PredictionDue' })).toBe('/today/predictions');
+    expect(routeForInApp({ kind: 'Mystery' })).toBeNull();
+    expect(routeForInApp(null)).toBeNull();
   });
 
   it('falls back by kind, and ignores payloads it does not understand', () => {

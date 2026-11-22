@@ -210,7 +210,8 @@ namespace MyMorningNews.Server.Routes
             string? topicId = parts.Length > 1 && parts[1].Length > 0 ? parts[1] : null;
             string? topicName = topicId == null ? null : (await Server.Database.Topics.ReadAsync(t.TenantId, topicId, ctx.Token).ConfigureAwait(false))?.Name;
             string what = category == EmailCategoryEnum.RunEmails ? "run emails" + (topicName != null ? " for " + topicName : String.Empty)
-                : category == EmailCategoryEnum.BriefingEmails ? "briefing emails" : category == EmailCategoryEnum.FailureEmails ? "run failure emails" : "email from My Morning News";
+                : category == EmailCategoryEnum.BriefingEmails ? "briefing emails" : category == EmailCategoryEnum.FailureEmails ? "run failure emails"
+                : category == EmailCategoryEnum.AudioEmails ? "audio ready emails" : category == EmailCategoryEnum.PredictionEmails ? "prediction emails" : "email from My Morning News";
             return new UnsubscribeScope { Category = category, TopicId = topicId, Description = what };
         }
 

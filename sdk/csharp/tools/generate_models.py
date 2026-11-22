@@ -39,6 +39,7 @@ ROOTS = [
     "TokenDetailsResponse", "TokenResponse", "TopicDetailResponse", "UsageBucket", "UsageReport", "UsageRow",
     "UsageTimeseries", "UserResponse", "VaultCredentialResponse", "VaultRevealResponse", "VaultUsageItem",
     "McpServerDetailResponse", "SetupStatusResponse", "SetupOptionsResponse", "RunCostReport", "AvailableVoicesResponse",
+    "NotificationPreferencesResponse", "NotificationCountResponse",
     # Models returned directly by routes.
     "Topic", "TopicDimension", "TopicConstraint", "TopicRecipient", "RefinementSession", "ResearchRequest", "Schedule",
     "Run", "RunStage", "SearchQuery", "SearchResult", "Finding", "Prediction", "PredictionReview", "Suggestion",
@@ -47,7 +48,7 @@ ROOTS = [
     "EmailMessage", "Feedback", "LearnedPreference", "PromptTemplate", "PromptTemplateVersion", "ModelEndpoint",
     "ModelAssignment", "LlmCall", "SearchProvider", "Device", "AuditRecord", "RequestHistoryEntry", "Tenant",
     "UserRole", "Permission", "UserRoleAssignment", "CredentialScopeAssignment", "PromoRedemption", "Plan",
-    "PlanAssignment", "McpServer", "McpServerTool", "RunToolCall",
+    "PlanAssignment", "McpServer", "McpServerTool", "RunToolCall", "Notification",
     # Service results the routes serialize directly.
     "SearchOutcome", "FetchResult", "EffectivePlan", "FeedTokenCreated", "PromoCheck", "PromoCodeStats",
     "EmailPreview", "RelevanceReport", "AccuracyReport", "FeedbackReport", "SuggestionReport", "ReasonReport",
@@ -69,6 +70,7 @@ ROOTS = [
     "TopicUpsertRequest", "UserCreateRequest", "UserUpdateRequest", "VaultCredentialUpsertRequest",
     "VoiceProfileUpsertRequest", "VoiceTestRequest", "SignupRequest", "AccountTokenRequest", "AccountEmailRequest",
     "McpServerUpsertRequest", "McpToolUpdateRequest", "SetupModelKeyRequest", "SetupConnectRequest", "VoicePreviewRequest",
+    "NotificationPreferencesRequest",
     # Enums used as query filters (not always reachable from a body).
     "SortDirectionEnum", "TopicStatusEnum", "ConstraintKindEnum", "RefinementStatusEnum", "ResearchRequestStatusEnum",
     "ScheduleOwnerTypeEnum", "RunStatusEnum", "RunTriggerEnum", "FindingTierEnum", "FindingCategoryEnum",
@@ -77,6 +79,7 @@ ROOTS = [
     "EmailStatusEnum", "EmailTemplateEnum", "FeedbackTargetTypeEnum", "FeedbackChannelEnum", "PreferenceStatusEnum",
     "PreferenceOriginEnum", "ModelTaskEnum", "ModelProviderEnum", "SearchProviderKindEnum", "VaultCredentialKindEnum",
     "VaultProviderEnum", "AuditEventTypeEnum", "PermissionTypeEnum", "UsageGroupByEnum", "McpTransportEnum",
+    "NotificationKindEnum", "NotificationChannelEnum",
 ]
 
 # Server-only types mapped to something a client can hold.

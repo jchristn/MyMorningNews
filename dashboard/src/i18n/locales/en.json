@@ -197,6 +197,7 @@
       "settings": "Settings",
       "serverInfo": "Server info",
       "profile": "Profile",
+      "notifications": "Notifications",
       "adminUsage": "Platform usage",
       "oneTimeRequests": "One-time requests",
       "listen": "Listen",
@@ -310,6 +311,9 @@
     },
     "profile": {
       "summary": "Your account"
+    },
+    "notifications": {
+      "summary": "Choose what you hear about, and where"
     },
     "adminUsage": {
       "summary": "Platform cost by tenant, the input to pricing decisions"
@@ -1050,7 +1054,9 @@
     "password": "Password",
     "passwordChanged": "Password changed",
     "saved": "Profile saved",
-    "timeZoneHelp": "Leave blank to use your browser time zone ({zone})."
+    "timeZoneHelp": "Leave blank to use your browser time zone ({zone}).",
+    "notificationsMoved": "Email and other notification choices are now on the Notifications page.",
+    "notificationsLink": "Open notification preferences"
   },
   "enums": {
     "task": {
@@ -3679,23 +3685,60 @@
       "settingsHelp": "Save your changes first, then send yourself a test."
     }
   },
-  "emailPrefs": {
-    "title": "Email preferences",
-    "address": "Email goes to {address}.",
-    "saved": "Email preferences saved",
-    "categories": {
-      "runEmails": "Run emails",
-      "briefingEmails": "Briefing emails",
-      "failureEmails": "Failure emails"
+  "notifications": {
+    "bell": "Notifications",
+    "bellUnread": "Notifications, {count} unread",
+    "panelTitle": "Notifications",
+    "markAllRead": "Mark all read",
+    "empty": "You are all caught up.",
+    "emptyOff": "In-app notifications are off.",
+    "emptyOffLink": "Turn them on in your notification preferences",
+    "settingsLink": "Notification preferences",
+    "unread": "Unread",
+    "kinds": {
+      "RunResults": "New findings",
+      "BriefingReady": "Briefing ready",
+      "AudioReady": "Audio ready",
+      "RunFailed": "Run failed",
+      "CapReached": "Plan limit reached",
+      "PredictionDue": "Prediction due"
     },
-    "help": {
-      "runEmails": "A digest after each run of your topics.",
-      "briefingEmails": "When an edition or run briefing is published.",
-      "failureEmails": "When a run fails."
+    "descriptions": {
+      "RunResults": "A research run found something new for one of your topics.",
+      "BriefingReady": "An edition or one-time briefing is ready to read.",
+      "AudioReady": "A briefing has been turned into audio you can play.",
+      "RunFailed": "A research run could not finish.",
+      "CapReached": "A scheduled run was skipped because your plan reached a limit.",
+      "PredictionDue": "A prediction reached its date and is ready to check."
     },
-    "unsubscribedTitle": "Topics you unsubscribed from",
-    "noUnsubscribed": "You get run email for every topic that sends it.",
-    "resubscribeHelp": "To get run email for one of these again, use the link in its last email."
+    "channels": {
+      "Email": "Email",
+      "Push": "Phone",
+      "InApp": "In-app"
+    },
+    "reasons": {
+      "NoEmailAddress": "Your account has no email address.",
+      "EmailNotVerified": "Confirm your email address to get email.",
+      "EmailNotConfigured": "This server is not set up to send email.",
+      "EmailUnsubscribed": "You unsubscribed from all email.",
+      "PushNotConfigured": "This server is not set up to send phone notifications.",
+      "NoDevice": "Turn on notifications in the mobile app.",
+      "Unavailable": "Not available right now."
+    },
+    "prefs": {
+      "title": "What to tell me, and where",
+      "intro": "Each switch saves at once. Topics and editions can still turn their own email or phone notifications off.",
+      "kindColumn": "Notification",
+      "cellLabel": "{kind}: {channel}",
+      "saved": "Notification preferences saved",
+      "address": "Email goes to {address}.",
+      "unsubscribedTitle": "Topics you unsubscribed from",
+      "noUnsubscribed": "You get run email for every topic that sends it.",
+      "unsubscribedHelp": "You do not get run email for these topics.",
+      "resubscribe": "Resubscribe",
+      "resubscribeTopic": "Resubscribe to {topic}",
+      "resubscribed": "You will get run email for {topic} again"
+    }
   },
   "feedbackControl": {
     "rate": "Rate this",

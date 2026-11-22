@@ -40,19 +40,31 @@ export async function permissionGranted() {
 }
 
 /**
- * Register this device for push with the server (contract C). `prompt` asks for permission when it is not granted
- * yet; the app passes true only from Account > Notifications, never at launch.
- * @returns {Promise<{ status: string, device?: object, error?: Error }>}
+ * Whether this device can register for push, asking for permission when `prompt` is true and it is not granted yet.
+ * Nothing is sent to the server. The app passes `prompt` only when the user turns on a Phone switch in
+ * Account > Notifications, never at launch.
+ * @returns {Promise<{ status: 'ready' | 'simulator' | 'notConfigured' | 'denied', projectId?: string }>}
  */
-export async function registerForPush(client, { prompt, name, locale }) {
+export async function preparePush({ prompt } = {}) {
   if (!Device.isDevice) return { status: 'simulator' };
   const projectId = easProjectId();
   if (!projectId) return { status: 'notConfigured' };
   let permission = await Notifications.getPermissionsAsync();
   if (!permission.granted && prompt) permission = await Notifications.requestPermissionsAsync();
   if (!permission.granted) return { status: 'denied' };
+  return { status: 'ready', projectId };
+}
+
+/**
+ * Register this device for push with the server (contract C). `prompt` asks for permission when it is not granted
+ * yet; the app passes true only from Account > Notifications, never at launch.
+ * @returns {Promise<{ status: string, device?: object, error?: Error }>}
+ */
+export async function registerForPush(client, { prompt, name, locale }) {
+  const ready = await preparePush({ prompt });
+  if (ready.status !== 'ready') return { status: ready.status };
   try {
-    const token = await Notifications.getExpoPushTokenAsync({ projectId });
+    const token = await Notifications.getExpoPushTokenAsync({ projectId: ready.projectId });
     const device = await devicesApi.register(client, {
       expoPushToken: token.data,
       platform: Platform.OS === 'ios' ? 'ios' : 'android',

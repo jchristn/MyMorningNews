@@ -197,6 +197,7 @@
       "settings": "設定",
       "serverInfo": "サーバー情報",
       "profile": "プロフィール",
+      "notifications": "通知",
       "adminUsage": "プラットフォーム使用状況",
       "oneTimeRequests": "単発リクエスト",
       "listen": "聴く",
@@ -310,6 +311,9 @@
     },
     "profile": {
       "summary": "あなたのアカウント"
+    },
+    "notifications": {
+      "summary": "何をどこで受け取るかを選びます"
     },
     "adminUsage": {
       "summary": "テナント別のプラットフォームコスト (価格決定の材料)"
@@ -1050,7 +1054,9 @@
     "password": "パスワード",
     "passwordChanged": "パスワードを変更しました",
     "saved": "プロフィールを保存しました",
-    "timeZoneHelp": "ブラウザーのタイムゾーン ({zone}) を使う場合は空欄のままにします。"
+    "timeZoneHelp": "ブラウザーのタイムゾーン ({zone}) を使う場合は空欄のままにします。",
+    "notificationsMoved": "メールやその他の通知の設定は「通知」ページに移動しました。",
+    "notificationsLink": "通知設定を開く"
   },
   "enums": {
     "task": {
@@ -3679,23 +3685,60 @@
       "settingsHelp": "先に変更を保存してから、自分宛てにテストを送信してください。"
     }
   },
-  "emailPrefs": {
-    "title": "メールの設定",
-    "address": "メールは {address} に届きます。",
-    "saved": "メールの設定を保存しました",
-    "categories": {
-      "runEmails": "実行メール",
-      "briefingEmails": "ブリーフィングメール",
-      "failureEmails": "失敗通知メール"
+  "notifications": {
+    "bell": "通知",
+    "bellUnread": "通知、未読 {count} 件",
+    "panelTitle": "通知",
+    "markAllRead": "すべて既読にする",
+    "empty": "新しい通知はありません。",
+    "emptyOff": "アプリ内通知はオフです。",
+    "emptyOffLink": "通知設定でオンにする",
+    "settingsLink": "通知設定",
+    "unread": "未読",
+    "kinds": {
+      "RunResults": "新しい発見",
+      "BriefingReady": "ブリーフィングの準備完了",
+      "AudioReady": "音声の準備完了",
+      "RunFailed": "実行の失敗",
+      "CapReached": "プランの上限に到達",
+      "PredictionDue": "予測の期日到来"
     },
-    "help": {
-      "runEmails": "トピックの実行ごとに届くダイジェストです。",
-      "briefingEmails": "エディションまたは実行のブリーフィングが公開されたときに届きます。",
-      "failureEmails": "実行が失敗したときに届きます。"
+    "descriptions": {
+      "RunResults": "リサーチの実行で、トピックに新しい発見がありました。",
+      "BriefingReady": "エディションまたは単発のブリーフィングを読めるようになりました。",
+      "AudioReady": "ブリーフィングが再生できる音声になりました。",
+      "RunFailed": "リサーチの実行を完了できませんでした。",
+      "CapReached": "プランが上限に達したため、予定された実行がスキップされました。",
+      "PredictionDue": "予測が期日を迎え、確認できるようになりました。"
     },
-    "unsubscribedTitle": "配信を停止したトピック",
-    "noUnsubscribed": "実行メールを送るすべてのトピックからメールを受け取ります。",
-    "resubscribeHelp": "これらのトピックの実行メールを再び受け取るには、最後に届いたメールのリンクを使用してください。"
+    "channels": {
+      "Email": "メール",
+      "Push": "スマートフォン",
+      "InApp": "アプリ内"
+    },
+    "reasons": {
+      "NoEmailAddress": "アカウントにメールアドレスがありません。",
+      "EmailNotVerified": "メールを受け取るには、メールアドレスを確認してください。",
+      "EmailNotConfigured": "このサーバーはメールを送信するように設定されていません。",
+      "EmailUnsubscribed": "すべてのメールの配信を停止しています。",
+      "PushNotConfigured": "このサーバーはスマートフォンへの通知を送信するように設定されていません。",
+      "NoDevice": "モバイルアプリで通知をオンにしてください。",
+      "Unavailable": "現在は利用できません。"
+    },
+    "prefs": {
+      "title": "何をどこで知らせるか",
+      "intro": "スイッチはすぐに保存されます。トピックやエディションごとに、メールやスマートフォン通知をオフにすることもできます。",
+      "kindColumn": "通知",
+      "cellLabel": "{kind}: {channel}",
+      "saved": "通知設定を保存しました",
+      "address": "メールは {address} に届きます。",
+      "unsubscribedTitle": "配信を停止したトピック",
+      "noUnsubscribed": "実行メールを送るすべてのトピックからメールを受け取ります。",
+      "unsubscribedHelp": "これらのトピックの実行メールは届きません。",
+      "resubscribe": "再登録",
+      "resubscribeTopic": "{topic} を再登録",
+      "resubscribed": "{topic} の実行メールが再び届くようになります"
+    }
   },
   "feedbackControl": {
     "rate": "評価する",

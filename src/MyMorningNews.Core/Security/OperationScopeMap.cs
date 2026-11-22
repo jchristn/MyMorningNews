@@ -75,6 +75,8 @@ namespace MyMorningNews.Core.Security
             { RequestTypeEnum.PromoCodeAdmin, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
             { RequestTypeEnum.PromoCodeRedeem, new RequiredPermission(ResourceTypeEnum.User, OperationTypeEnum.Read) },
             { RequestTypeEnum.DeviceWrite, new RequiredPermission(ResourceTypeEnum.User, OperationTypeEnum.Update, anyAuthenticated: true) },
+            { RequestTypeEnum.NotificationRead, new RequiredPermission(ResourceTypeEnum.User, OperationTypeEnum.Read, anyAuthenticated: true) },
+            { RequestTypeEnum.NotificationWrite, new RequiredPermission(ResourceTypeEnum.User, OperationTypeEnum.Update, anyAuthenticated: true) },
             { RequestTypeEnum.CredentialRead, new RequiredPermission(ResourceTypeEnum.Credential, OperationTypeEnum.Read) },
             { RequestTypeEnum.CredentialWrite, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },
             { RequestTypeEnum.CredentialDelete, new RequiredPermission(ResourceTypeEnum.Admin, OperationTypeEnum.Admin) },

@@ -56,6 +56,28 @@ export const emailPreferencesApi = {
   update: (client, body) => client.put(routes.emailPreferences, body),
 };
 
+/** What a notification can be about, in the order the server lists them (NotificationKindEnum). */
+export const NOTIFICATION_KINDS = ['RunResults', 'BriefingReady', 'AudioReady', 'RunFailed', 'CapReached', 'PredictionDue'];
+
+/** Where a notification can arrive (NotificationChannelEnum). The app calls them Email, Phone, and In-app. */
+export const NOTIFICATION_CHANNELS = ['Email', 'Push', 'InApp'];
+
+/**
+ * Notifications. The in-app list: `list()` is a page of `{ id, kind, title, body?, topicId?, runId?, briefingId?,
+ * mediaAssetId?, predictionId?, readUtc?, createdUtc }`, newest first (no `readUtc` means unread). The preference
+ * matrix: `{ preferences: [{ kind, channel, enabled }], channels: [{ channel, available, reason? }], address,
+ * unsubscribedTopicIds }`; `updatePreferences` changes only the cells it sends and returns the new matrix.
+ */
+export const notificationsApi = {
+  list: (client, { unread, kind, pageNumber = 1, pageSize = 50 } = {}) => client.get(routes.notifications, { unread: unread ? true : undefined, kind, pageNumber, pageSize }),
+  unreadCount: (client) => client.get(routes.notificationsUnreadCount),
+  markRead: (client, id) => client.post(routes.notificationRead(id), {}),
+  markAllRead: (client) => client.post(routes.notificationsReadAll, {}),
+  remove: (client, id) => client.delete(routes.notification(id)),
+  preferences: (client) => client.get(routes.notificationPreferences),
+  updatePreferences: (client, body) => client.put(routes.notificationPreferences, body),
+};
+
 /**
  * Private podcast feeds (Phase 8). `list()` is a bare array of tokens (`{ id, name, editionId?, tokenPrefix,
  * lastUsedUtc?, revokedUtc?, createdUtc }`); `create()` returns `{ token, secret, feedUrl }`, and the secret and URL

@@ -4,7 +4,6 @@ import * as Clipboard from 'expo-clipboard';
 import { router, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { PlanSection, RedeemSection } from '@/screens/account/PlanSections';
-import { EmailSection } from '@/screens/account/EmailSection';
 import { PodcastSection } from '@/screens/account/PodcastSection';
 import { AccountScreen } from '@/screens/account/AccountScreen';
 import { AccuracyScreen, FeedbackInsightsScreen, InsightsScreen, PreferencesScreen, RelevanceScreen } from '@/screens/insights/InsightsScreens';
@@ -68,38 +67,15 @@ describe('Account: plan and promotional codes', () => {
     useLocalSearchParams.mockReturnValue({});
   });
 
-  it('lists plan, email, and podcast feeds in the Account menu, and hides feeds when audio is off', async () => {
+  it('lists plan and podcast feeds in the Account menu, hides feeds when audio is off, and keeps email under Notifications', async () => {
     await renderSignedIn(<AccountScreen />, { 'GET /v1.0/api/client-config': config({ audioEnabled: false }) });
     await waitFor(() => expect(screen.queryByTestId('account-podcast')).toBeNull());
     expect(screen.getByTestId('account-plan')).toBeTruthy();
-    expect(screen.getByTestId('account-email')).toBeTruthy();
+    expect(screen.getByTestId('account-notifications')).toBeTruthy();
+    expect(screen.queryByTestId('account-email')).toBeNull();
     expect(screen.queryByTestId('account-redeem')).toBeNull();
     await fireEvent.press(screen.getByTestId('account-plan'));
     expect(router.push).toHaveBeenCalledWith('/account/plan');
-  });
-});
-
-describe('Account: email preferences', () => {
-  it('shows the address and saves each switch', async () => {
-    const prefs = { address: 'demo@mymorningnews', runEmails: true, briefingEmails: true, failureEmails: true, unsubscribedTopicIds: ['top_1'] };
-    const { server } = await renderSignedIn(<EmailSection />, {
-      'GET /v1.0/api/email-preferences': () => ({ body: prefs }),
-      'PUT /v1.0/api/email-preferences': (call) => ({ body: { ...prefs, ...call.body } }),
-    });
-    await waitFor(() => expect(screen.getByText('demo@mymorningnews')).toBeTruthy());
-    expect(screen.getByTestId('email-topics-off')).toBeTruthy();
-    await fireEvent(screen.getByTestId('email-runEmails'), 'valueChange', false);
-    await waitFor(() => expect(server.count('PUT /v1.0/api/email-preferences')).toBe(1));
-    expect(server.calls.find((c) => c.key === 'PUT /v1.0/api/email-preferences').body).toEqual({ runEmails: false });
-    await waitFor(() => expect(screen.getByTestId('email-runEmails').props.value).toBe(false));
-  });
-
-  it('says so when the server sends no email', async () => {
-    await renderSignedIn(<EmailSection />, {
-      'GET /v1.0/api/client-config': config({ emailEnabled: false }),
-      'GET /v1.0/api/email-preferences': () => ({ body: { address: 'a@b', runEmails: true, briefingEmails: true, failureEmails: true } }),
-    });
-    await waitFor(() => expect(screen.getByText('This server does not send email right now.')).toBeTruthy());
   });
 });
 

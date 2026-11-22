@@ -169,7 +169,9 @@ namespace MyMorningNews.Server
             _Audio = new MyMorningNews.Core.Audio.AudioService(_Database, _Models, prompts, _Artifacts, vault, settings, _Logging, TtsOverride);
             briefings.Audio = _Audio;
             MyMorningNews.Core.Email.EmailService email = new MyMorningNews.Core.Email.EmailService(_Database, _Models, prompts, settings, _Logging);
-            briefings.Email = email;
+            NotificationService notifications = new NotificationService(_Database, email, _Push, settings, _Logging);
+            briefings.Notifications = notifications;
+            _Audio.Notifications = notifications;
             tenantDefaults.Audio = _Audio;
             tenantDefaults.Briefings = briefings;
             await tenantDefaults.EnsureAllAsync(token).ConfigureAwait(false);
@@ -177,6 +179,9 @@ namespace MyMorningNews.Server
             _Context.Briefings = briefings;
             _Context.Audio = _Audio;
             _Context.Email = email;
+            _Context.Notifications = notifications;
+            int keptPush = await notifications.Preferences.KeepEarlierPushForDevicesAsync(token).ConfigureAwait(false);
+            if (keptPush > 0) _Logging.Info(_Header + "kept push on for " + keptPush + " users with devices registered before per-kind notification preferences");
             _Context.Feedback = new MyMorningNews.Core.Feedback.FeedbackService(_Database);
             MyMorningNews.Core.Feedback.LearningService learning = new MyMorningNews.Core.Feedback.LearningService(_Database, _Models, prompts, settings, _Logging);
             _Context.Learning = learning;
@@ -190,7 +195,7 @@ namespace MyMorningNews.Server
             MyMorningNews.Core.Security.NetworkGuard.AllowedHosts = () => _Context.SettingsService.Current.Hosting.AllowedPrivateHosts;
             tenantDefaults.UsePlatformCredentials = () => _Context.SettingsService.Current.Hosting.UsePlatformCredentials;
             _Context.Accounts = new AccountDataService(_Database, briefings, _Artifacts);
-            _Context.PredictionNotices = new PredictionNoticeService(_Database, _Push!, _Logging);
+            _Context.PredictionNotices = new PredictionNoticeService(_Database, notifications, _Logging);
             _Context.RunCosts = new RunCostService(_Database);
             _Context.Setup = new SetupService(_Database, _Models!, _Search!, _Context.Vault, () => _Context.SettingsService.Current, _Logging) { Audio = _Audio };
             _Context.Account = new AccountService(_Database, settings, email, tenantDefaults, _Context.PromoCodes, _Context.Accounts);
@@ -206,38 +211,13 @@ namespace MyMorningNews.Server
                 long runsToday = await _Database.Runs.CountAsync(new MyMorningNews.Core.Requests.RunFilter { TenantId = tenantId, UserId = userId, IsDryRun = false, FromUtc = today }, t).ConfigureAwait(false);
                 await entitlements.CheckCountAsync(tenantId, userId, "runs.daily.max", runsToday, "runs a day", today.AddDays(1), t).ConfigureAwait(false);
             };
-            MyMorningNews.Core.Email.EmailService capEmail = email;
-            PushService? capPush = _Push;
             scheduling.OnCapReached = async (tenantId, userId, topicName, cap, t) =>
             {
-                MyMorningNews.Core.Models.User? owner = await _Database.Users.ReadAsync(tenantId, userId, t).ConfigureAwait(false);
-                if (owner == null) return;
-                string period = DateTime.UtcNow.ToString("yyyyMM", System.Globalization.CultureInfo.InvariantCulture);
-                MyMorningNews.Core.Models.EmailMessage? sent = await capEmail.SendAccountEmailAsync(owner, MyMorningNews.Core.Enums.EmailTemplateEnum.CapReached, "A scheduled run was skipped",
-                    new List<string> { cap.Message, "Your topic \"" + topicName + "\" will run again when the limit resets. You can see your usage in Account settings." },
-                    new MyMorningNews.Core.Email.EmailLink("See my usage", _Context.SettingsService.Current.Rest.AppBaseUrl + "/dashboard/profile"),
-                    "cap:" + owner.Id + ":" + cap.Key + ":" + period, t).ConfigureAwait(false);
-                if (sent == null || capPush == null) return;
-                await capPush.SendToUserAsync(tenantId, userId, new PushMessage
-                {
-                    Title = "Scheduled run skipped",
-                    Body = cap.Message,
-                    ChannelId = "account",
-                    Data = new Dictionary<string, string> { { "kind", "cap.reached" }, { "key", cap.Key } }
-                }, t).ConfigureAwait(false);
+                await notifications.NotifyAsync(tenantId, userId, MyMorningNews.Core.Enums.NotificationKindEnum.CapReached, new NotificationContext { Cap = cap, TopicName = topicName }, t).ConfigureAwait(false);
             };
-            briefings.Push = _Push;
             scheduling.OnRunFailed = async (run, t) =>
             {
-                if (capPush == null) return;
-                MyMorningNews.Core.Models.Topic? failedTopic = await _Database.Topics.ReadAsync(run.TenantId, run.TopicId, t).ConfigureAwait(false);
-                await capPush.SendToUserAsync(run.TenantId, run.UserId, new PushMessage
-                {
-                    Title = "A research run failed",
-                    Body = failedTopic != null ? failedTopic.Name : "One of your topics could not finish its research.",
-                    ChannelId = "account",
-                    Data = new Dictionary<string, string> { { "kind", "run.failed" }, { "topicId", run.TopicId }, { "runId", run.Id } }
-                }, t).ConfigureAwait(false);
+                await notifications.NotifyAsync(run.TenantId, run.UserId, MyMorningNews.Core.Enums.NotificationKindEnum.RunFailed, new NotificationContext { Run = run }, t).ConfigureAwait(false);
             };
             scheduling.MinimumIntervalForUser = async (tenantId, userId, t) =>
             {
@@ -245,7 +225,7 @@ namespace MyMorningNews.Server
                 return limit.HasValue ? (int)limit.Value : null;
             };
             _Context.Mcp = new MyMorningNews.Core.Mcp.McpClientService(vault);
-            PipelineServices pipelineServices = new PipelineServices(_Database, _Models, prompts, _Search!, _Fetch!, settings, _Logging) { Briefings = briefings, Email = email, Learning = learning, Mcp = _Context.Mcp };
+            PipelineServices pipelineServices = new PipelineServices(_Database, _Models, prompts, _Search!, _Fetch!, settings, _Logging) { Briefings = briefings, Email = email, Notifications = notifications, Learning = learning, Mcp = _Context.Mcp };
             _Context.RunExecutor = new ResearchPipeline(pipelineServices);
 
             _Capture = new RequestHistoryCaptureService(_Database, settings.RequestHistory, _Logging);
@@ -378,6 +358,7 @@ namespace MyMorningNews.Server
                 new SetupRoutes(context),
                 new UsageRoutes(context),
                 new DeviceRoutes(context),
+                new NotificationRoutes(context),
                 new ClientConfigRoutes(context),
                 new TopicRoutes(context),
                 new RefinementRoutes(context),

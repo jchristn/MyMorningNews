@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../context/AppContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { fieldErrors } from '../utils/errors.js';
+import { NOTIFICATIONS_PATH } from '../utils/notifications.js';
 import CopyableId from '../components/CopyableId.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import FormField from '../components/FormField.jsx';
@@ -11,7 +13,6 @@ import PageHeader from '../components/PageHeader.jsx';
 import PasswordInput from '../components/PasswordInput.jsx';
 import LanguageSelector from '../i18n/LanguageSelector.jsx';
 import AccountCard from './profile/AccountCard.jsx';
-import EmailPreferences from './profile/EmailPreferences.jsx';
 import PlanCard from './profile/PlanCard.jsx';
 import PodcastFeeds from './profile/PodcastFeeds.jsx';
 
@@ -117,7 +118,12 @@ export default function ProfileView() {
       </div>
       <PlanCard />
       <AccountCard />
-      <EmailPreferences />
+      <section className="panel" aria-labelledby="profile-notifications-title">
+        <h2 id="profile-notifications-title">{t('nav.items.notifications')}</h2>
+        <p className="muted small">
+          {t('profile.notificationsMoved')} <Link to={NOTIFICATIONS_PATH}>{t('profile.notificationsLink')}</Link>
+        </p>
+      </section>
       <PodcastFeeds />
     </div>
   );

@@ -1,6 +1,6 @@
 # My Morning News Python SDK
 
-A Python client for the My Morning News REST API. It covers topics and the refinement wizard, one-time research requests, schedules, runs, findings, sources, predictions, suggestions, feedback, learned preferences, editions, briefings, templates, prompts, audio, stored files, podcast feeds, email, analytics, usage, model endpoints, search providers, voices, the vault, devices, the MCP server registry, and the account (plan, usage meter, data export, deletion, and the public sign-up, email verification, and password reset routes).
+A Python client for the My Morning News REST API. It covers topics and the refinement wizard, one-time research requests, schedules, runs, findings, sources, predictions, suggestions, feedback, learned preferences, editions, briefings, templates, prompts, audio, stored files, podcast feeds, email, analytics, usage, model endpoints, search providers, voices, the vault, devices, notifications and notification preferences, the MCP server registry, and the account (plan, usage meter, data export, deletion, and the public sign-up, email verification, and password reset routes).
 
 - Single module: `mymorningnews_sdk.py`
 - Python 3.10 or later
@@ -396,7 +396,7 @@ client.voices.preview(voice="bf_emma", text="Good morning.").save("preview.wav")
 client.topics.update(topic_id, voice="bf_emma")  # or voice_profile_id=..., and "" to use the workspace default
 ```
 
-### vault, devices, account
+### vault, devices, notifications, account
 
 ```python
 cred = client.vault.create(name="Tavily", kind="ApiKey", provider="Tavily", secret="...")   # never returned
@@ -404,6 +404,12 @@ client.vault.update(cred.id, secret="rotated"); client.vault.usage(cred.id)
 
 d = client.devices.register("ExponentPushToken[...]", "ios", name="Phone")
 client.devices.test(d.id); client.devices.delete(d.id)
+
+prefs = client.notifications.preferences()              # 18 cells (kind by channel) plus channel availability
+client.notifications.set_preference("AudioReady", "Push", True)   # or set_preferences([...], unsubscribe_topic_ids=[...])
+page = client.notifications.list(unread=True)           # in-app notifications, newest first
+client.notifications.unread_count(); client.notifications.mark_read(page.items[0].id)
+client.notifications.mark_all_read(); client.notifications.delete(page.items[0].id)
 
 client.account.plan(); client.account.redeem("SPRING-2026")
 meter = client.account.usage()          # UsageMeter: plan_key, topics, topics_max, runs_today, month_to_date_cost_usd, reset_utc, ...

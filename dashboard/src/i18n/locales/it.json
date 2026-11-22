@@ -197,6 +197,7 @@
       "settings": "Impostazioni",
       "serverInfo": "Info server",
       "profile": "Profilo",
+      "notifications": "Notifiche",
       "adminUsage": "Utilizzo della piattaforma",
       "oneTimeRequests": "Richieste una tantum",
       "listen": "Ascolta",
@@ -310,6 +311,9 @@
     },
     "profile": {
       "summary": "Il tuo account"
+    },
+    "notifications": {
+      "summary": "Scegli di cosa essere informato e dove"
     },
     "adminUsage": {
       "summary": "Costo della piattaforma per tenant, la base delle decisioni sui prezzi"
@@ -1050,7 +1054,9 @@
     "password": "Password",
     "passwordChanged": "Password cambiata",
     "saved": "Profilo salvato",
-    "timeZoneHelp": "Lascia vuoto per usare il fuso orario del browser ({zone})."
+    "timeZoneHelp": "Lascia vuoto per usare il fuso orario del browser ({zone}).",
+    "notificationsMoved": "Le scelte per le email e le altre notifiche ora si trovano nella pagina Notifiche.",
+    "notificationsLink": "Apri le preferenze di notifica"
   },
   "enums": {
     "task": {
@@ -3679,23 +3685,60 @@
       "settingsHelp": "Salva prima le modifiche, poi invia una prova a te stesso."
     }
   },
-  "emailPrefs": {
-    "title": "Preferenze email",
-    "address": "Le email vengono inviate a {address}.",
-    "saved": "Preferenze email salvate",
-    "categories": {
-      "runEmails": "Email delle esecuzioni",
-      "briefingEmails": "Email dei briefing",
-      "failureEmails": "Email di errore"
+  "notifications": {
+    "bell": "Notifiche",
+    "bellUnread": "Notifiche, {count} non lette",
+    "panelTitle": "Notifiche",
+    "markAllRead": "Segna tutte come lette",
+    "empty": "Non c’è niente di nuovo.",
+    "emptyOff": "Le notifiche nell’app sono disattivate.",
+    "emptyOffLink": "Attivale nelle preferenze di notifica",
+    "settingsLink": "Preferenze di notifica",
+    "unread": "Non letta",
+    "kinds": {
+      "RunResults": "Nuovi risultati",
+      "BriefingReady": "Briefing pronto",
+      "AudioReady": "Audio pronto",
+      "RunFailed": "Esecuzione non riuscita",
+      "CapReached": "Limite del piano raggiunto",
+      "PredictionDue": "Previsione in scadenza"
     },
-    "help": {
-      "runEmails": "Un riepilogo dopo ogni esecuzione dei tuoi argomenti.",
-      "briefingEmails": "Quando viene pubblicato il briefing di un’edizione o di un’esecuzione.",
-      "failureEmails": "Quando un’esecuzione non riesce."
+    "descriptions": {
+      "RunResults": "Un’esecuzione di ricerca ha trovato qualcosa di nuovo per uno dei tuoi argomenti.",
+      "BriefingReady": "Il briefing di un’edizione o un briefing una tantum è pronto da leggere.",
+      "AudioReady": "Un briefing è stato trasformato in audio che puoi ascoltare.",
+      "RunFailed": "Un’esecuzione di ricerca non è stata completata.",
+      "CapReached": "Un’esecuzione pianificata è stata saltata perché il tuo piano ha raggiunto un limite.",
+      "PredictionDue": "Una previsione è arrivata alla sua data ed è pronta per la verifica."
     },
-    "unsubscribedTitle": "Argomenti da cui hai annullato l’iscrizione",
-    "noUnsubscribed": "Ricevi le email delle esecuzioni per ogni argomento che le invia.",
-    "resubscribeHelp": "Per ricevere di nuovo le email delle esecuzioni di uno di questi, usa il link nella sua ultima email."
+    "channels": {
+      "Email": "Email",
+      "Push": "Telefono",
+      "InApp": "Nell’app"
+    },
+    "reasons": {
+      "NoEmailAddress": "Il tuo account non ha un indirizzo email.",
+      "EmailNotVerified": "Conferma il tuo indirizzo email per ricevere le email.",
+      "EmailNotConfigured": "Questo server non è configurato per inviare email.",
+      "EmailUnsubscribed": "Hai annullato l’iscrizione a tutte le email.",
+      "PushNotConfigured": "Questo server non è configurato per inviare notifiche al telefono.",
+      "NoDevice": "Attiva le notifiche nell’app mobile.",
+      "Unavailable": "Non disponibile al momento."
+    },
+    "prefs": {
+      "title": "Di cosa informarmi e dove",
+      "intro": "Ogni interruttore viene salvato subito. Argomenti ed edizioni possono comunque disattivare le proprie email o notifiche al telefono.",
+      "kindColumn": "Notifica",
+      "cellLabel": "{kind}: {channel}",
+      "saved": "Preferenze di notifica salvate",
+      "address": "Le email vengono inviate a {address}.",
+      "unsubscribedTitle": "Argomenti da cui hai annullato l’iscrizione",
+      "noUnsubscribed": "Ricevi le email delle esecuzioni per ogni argomento che le invia.",
+      "unsubscribedHelp": "Non ricevi le email delle esecuzioni per questi argomenti.",
+      "resubscribe": "Iscriviti di nuovo",
+      "resubscribeTopic": "Iscriviti di nuovo a {topic}",
+      "resubscribed": "Riceverai di nuovo le email delle esecuzioni per {topic}"
+    }
   },
   "feedbackControl": {
     "rate": "Valuta",

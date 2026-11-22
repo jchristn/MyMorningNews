@@ -677,6 +677,24 @@ namespace MyMorningNews.Core.Helpers
         }
 
         /// <summary>
+        /// Generate a Notification identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateNotificationId()
+        {
+            return Generate(IdPrefixes.Notification);
+        }
+
+        /// <summary>
+        /// Generate a NotificationPreference identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateNotificationPreferenceId()
+        {
+            return Generate(IdPrefixes.NotificationPreference);
+        }
+
+        /// <summary>
         /// Generate a RequestHistory identifier.
         /// </summary>
         /// <returns>Identifier.</returns>

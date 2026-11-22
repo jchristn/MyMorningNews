@@ -1244,6 +1244,35 @@ ENTITIES = [
             f('Completed', 'bool', doc='Whether the user finished listening.', default=False, filter=True),
         ],
     },
+    {
+        # HAND-EDITED after generation (unread filter, user index, MarkAllReadAsync, PruneAsync): do not --force.
+        'name': 'Notification', 'table': 'notifications', 'prefix': 'ntf_',
+        'doc': 'An in-app notification for one user, with the item it points to.',
+        'fields': [
+            f('UserId', doc='User the notification is for.', required=True, length=64, filter=True, fk=('users', 'CASCADE')),
+            f('Kind', 'enum:NotificationKindEnum', doc='What happened.', default='RunResults', filter=True),
+            f('Title', doc='What it is about, for example the topic or briefing title.', required=True, length=256),
+            f('Body', 'text', doc='A short sentence.', nullable=True),
+            f('TopicId', doc='Topic to open.', nullable=True, length=64),
+            f('RunId', doc='Run to open.', nullable=True, length=64),
+            f('BriefingId', doc='Briefing to open.', nullable=True, length=64),
+            f('MediaAssetId', doc='Audio to open.', nullable=True, length=64),
+            f('PredictionId', doc='Prediction to open.', nullable=True, length=64),
+            f('ReadUtc', 'datetime', doc='UTC time the user read it; null while unread.', nullable=True),
+        ],
+    },
+    {
+        # HAND-EDITED after generation (ListDevicesWithoutPushChoicesAsync): do not --force.
+        'name': 'NotificationPreference', 'table': 'notificationpreferences', 'prefix': 'npf_',
+        'doc': 'Whether one user wants one kind of notification on one channel. No row means the default applies.',
+        'uniques': [['userid', 'kind', 'channel']],
+        'fields': [
+            f('UserId', doc='User.', required=True, length=64, filter=True, fk=('users', 'CASCADE')),
+            f('Kind', 'enum:NotificationKindEnum', doc='Kind of notification.', default='RunResults', filter=True),
+            f('Channel', 'enum:NotificationChannelEnum', doc='Channel.', default='Email', filter=True),
+            f('Enabled', 'bool', doc='Whether the user wants it.', default=False, filter=True),
+        ],
+    },
 ]
 
 # Prefixes for identifiers that are not codegen entities.
@@ -1255,6 +1284,13 @@ EXTRA_PREFIXES = [
 ]
 
 ENUMS = [
+    ('NotificationKindEnum', 'What a notification is about.', [('RunResults', 'New findings after a research run.'), ('BriefingReady', 'A briefing is ready to read.'),
+        ('AudioReady', 'The audio version of a briefing is ready.'), ('RunFailed', 'A research run failed.'), ('CapReached', 'A plan limit stopped a scheduled run.'),
+        ('PredictionDue', 'A prediction reached its date and is due for review.')]),
+    ('NotificationChannelEnum', 'Where a notification is delivered.', [('Email', 'Email.'), ('Push', 'Push notification on a registered phone or tablet.'), ('InApp', 'The notification list in the dashboard and the mobile app.')]),
+    ('NotificationUnavailableReasonEnum', 'Why a notification channel cannot deliver to a user right now.', [('NoEmailAddress', 'The account has no email address.'),
+        ('EmailNotVerified', 'The email address is not verified yet.'), ('EmailNotConfigured', 'This server does not send email.'), ('EmailUnsubscribed', 'The address unsubscribed from all email.'),
+        ('PushNotConfigured', 'This server does not send push notifications.'), ('NoDevice', 'No phone or tablet is registered.')]),
     ('AccountTokenKindEnum', 'What an account token is for.', [('VerifyEmail', 'Verify the email address.'), ('ResetPassword', 'Reset the password.')]),
     ('McpTransportEnum', 'MCP transport.', [('StreamableHttp', 'Streamable HTTP.'), ('Sse', 'HTTP with server-sent events (older servers).')]),
     ('StageStatusEnum', 'Run stage status.', [('Pending', 'Not started.'), ('Running', 'Running.'), ('Succeeded', 'Succeeded.'), ('Failed', 'Failed.'), ('Skipped', 'Skipped.')]),
@@ -1277,11 +1313,12 @@ ENUMS = [
     ('TtsProviderEnum', 'Text-to-speech provider.', [('OpenAiCompatibleSpeech', 'POST {endpoint}/audio/speech (Kokoro-FastAPI, OpenAI, and compatible servers).'), ('Disabled', 'No audio.')]),
     ('MediaKindEnum', 'Kind of audio.', [('BriefingAudio', 'Audio for a briefing.'), ('PodcastEpisode', 'A one-time podcast episode.')]),
     ('MediaStatusEnum', 'Audio status.', [('Queued', 'Waiting.'), ('Scripting', 'Writing the script.'), ('Synthesizing', 'Synthesizing speech.'), ('Ready', 'Ready.'), ('Failed', 'Failed.')]),
-    ('EmailTemplateEnum', 'Email template.', [('RunDigest', 'After a research run.'), ('BriefingPublished', 'An edition or one-time briefing.'), ('RunFailed', 'A run failed (opted-in administrators).'),
+    ('EmailTemplateEnum', 'Email template.', [('RunDigest', 'After a research run.'), ('BriefingPublished', 'An edition or one-time briefing.'), ('RunFailed', 'A run failed.'),
         ('PreferenceProposal', 'Learned preference proposals.'), ('Test', 'Test email.')]),
     ('EmailStatusEnum', 'Email status.', [('Queued', 'Waiting.'), ('Sending', 'Sending.'), ('Sent', 'Sent.'), ('Failed', 'Failed for good.'), ('Suppressed', 'Not sent: the recipient unsubscribed.'), ('Skipped', 'Not sent: email is disabled.')]),
     ('EmailProviderEnum', 'Email provider.', [('Mailgun', 'Mailgun.'), ('File', 'Write HTML and text files (default until Mailgun is configured).'), ('Disabled', 'Do not send.')]),
-    ('EmailCategoryEnum', 'Email category for preferences and unsubscribing.', [('RunEmails', 'Run digests.'), ('BriefingEmails', 'Edition and one-time briefings.'), ('FailureEmails', 'Run failure notices.'), ('All', 'Every category.')]),
+    ('EmailCategoryEnum', 'Email category for preferences and unsubscribing.', [('RunEmails', 'Run digests.'), ('BriefingEmails', 'Edition and one-time briefings.'), ('FailureEmails', 'Run failure notices.'), ('All', 'Every category.'),
+        ('AudioEmails', 'Audio ready notices.'), ('PredictionEmails', 'Prediction due notices.')]),
     ('ActionTokenKindEnum', 'What an email link token does.', [('Feedback', 'Rate an item.'), ('Unsubscribe', 'Stop a category of email.')]),
     ('FeedbackTargetTypeEnum', 'What feedback is about.', [('Finding', 'Finding.'), ('Prediction', 'Prediction.'), ('PredictionReview', 'Proposed prediction resolution.'), ('Suggestion', 'Suggestion.'),
         ('SourceItem', 'Source.'), ('Domain', 'Source domain.'), ('Briefing', 'Briefing.'), ('BriefingSection', 'Briefing section.'), ('LearnedPreference', 'Learned preference.')]),
@@ -1431,6 +1468,8 @@ ENUMS = [
         ('UsageRead', 'Read model usage and cost analytics.'),
         ('DeviceRead', 'List my push devices.'),
         ('DeviceWrite', 'Register, test, or remove my push devices.'),
+        ('NotificationRead', 'Read my notifications and notification preferences.'),
+        ('NotificationWrite', 'Mark or delete my notifications and change my notification preferences.'),
         ('FindingRead', 'Read findings and evidence.'), ('FindingWrite', 'Pin, hide, or rate findings.'), ('PredictionRead', 'Read predictions.'), ('PredictionWrite', 'Resolve predictions and accept reviews.'),
         ('SuggestionRead', 'Read suggestions.'), ('SuggestionWrite', 'Change suggestion status.'), ('SourceRead', 'Read fetched sources.'),
         ('ScheduleRead', 'Read schedules.'), ('ScheduleWrite', 'Create, update, or delete schedules.'), ('RunRead', 'Read runs.'), ('RunExecute', 'Start or cancel runs.'),

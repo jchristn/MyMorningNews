@@ -32,7 +32,9 @@ namespace MyMorningNews.Server.Routes
             ArgumentNullException.ThrowIfNull(webserver);
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/devices", ListAsync, null, openApiMetadata: Doc("List my push devices", "Devices"));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/devices", RegisterAsync, null, openApiMetadata: Doc("Register a device for push notifications", "Devices",
-                "Returns 201 for a new device, or 200 with the existing device when the same token is registered again.").WithRequestBody(Body<DeviceRegisterRequest>()));
+                "Returns 201 for a new device, or 200 with the existing device when the same token is registered again. Push is a choice per kind of notification " +
+                "(PUT /v1.0/api/notifications/preferences): save the kinds to push before registering. A user who registers a device without any push choice gets the kinds " +
+                "earlier app builds delivered (BriefingReady, RunFailed, CapReached, PredictionDue).").WithRequestBody(Body<DeviceRegisterRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/api/devices/{id}", DeleteAsync, null, openApiMetadata: Doc("Remove a device", "Devices"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/api/devices/{id}/test", TestAsync, null, openApiMetadata: Doc("Send a test notification to a device", "Devices"));
         }
@@ -102,6 +104,9 @@ namespace MyMorningNews.Server.Routes
                 Locale = Trim(req.Locale, 32),
                 LastSeenUtc = DateTime.UtcNow
             }, ctx.Token).ConfigureAwait(false);
+            // App builds from before per-kind preferences register a device and expect pushes; a user who has made no
+            // push choice yet keeps the kinds those builds delivered. Newer builds save the chosen kind first.
+            await Server.Notifications.Preferences.KeepEarlierPushAsync(tenantId, userId, ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 201, device).ConfigureAwait(false);
         }
 

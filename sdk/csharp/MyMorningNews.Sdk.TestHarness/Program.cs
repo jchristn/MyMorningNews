@@ -118,6 +118,7 @@ namespace MyMorningNews.Sdk.TestHarness
                 new SetupTest(),
                 new SearchVoicesTest(),
                 new VaultDevicesTest(),
+                new NotificationsTest(),
                 new AccountTest(),
                 new AccountLimitsTest(),
                 new SignupTest(),

@@ -1770,6 +1770,57 @@ async function main() {
         await expectError(client.devices.remove(d.id), 404, 'NotFound');
     });
 
+    // ---- Notifications ---------------------------------------------------------------------------------------------
+
+    await run('notification preferences matrix, round trip, and the older email preferences', async () => {
+        const cell = (p, kind, channel) => p.preferences.find((x) => x.kind === kind && x.channel === channel);
+        const before = await client.notifications.getPreferences();
+        assertEqual(before.preferences.length, 18, 'six kinds on three channels');
+        assertEqual(before.channels.map((c) => c.channel).join(','), 'Email,Push,InApp', 'channel order');
+        assert(before.channels[2].available === true, 'in-app is always available');
+        if ((await client.devices.list()).length === 0) {
+            assert(before.channels[1].available === false && ['NoDevice', 'PushNotConfigured'].includes(before.channels[1].reason), 'push needs a device');
+        }
+        assert(typeof before.address === 'string' && Array.isArray(before.unsubscribedTopicIds), 'address and topic list');
+        const inApp = cell(before, 'AudioReady', 'InApp').enabled;
+        const runEmail = cell(before, 'RunResults', 'Email').enabled;
+        try {
+            const saved = await client.notifications.updatePreferences({ preferences: [
+                { kind: 'AudioReady', channel: 'InApp', enabled: !inApp },
+                { kind: 'RunResults', channel: 'Email', enabled: !runEmail },
+            ] });
+            assertEqual(cell(saved, 'AudioReady', 'InApp').enabled, !inApp, 'in-app cell saved');
+            assertEqual(cell(saved, 'BriefingReady', 'Email').enabled, cell(before, 'BriefingReady', 'Email').enabled, 'unsent cells unchanged');
+            assertEqual(cell(await client.notifications.getPreferences(), 'RunResults', 'Email').enabled, !runEmail, 'persisted');
+            assertEqual((await client.email.getPreferences()).runEmails, !runEmail, 'the older email preferences show the same cell');
+            await client.email.updatePreferences({ runEmails: runEmail });
+            assertEqual(cell(await client.notifications.getPreferences(), 'RunResults', 'Email').enabled, runEmail, 'and the matrix shows what the older route saved');
+        } finally {
+            await client.notifications.updatePreferences({ preferences: [
+                { kind: 'AudioReady', channel: 'InApp', enabled: inApp },
+                { kind: 'RunResults', channel: 'Email', enabled: runEmail },
+            ] });
+        }
+        await expectError(client.notifications.updatePreferences({ preferences: [{ kind: 'Bogus', channel: 'Email', enabled: true }] }), 400);
+    });
+
+    await run('notifications list, unread count, read, read all, remove', async () => {
+        const page = await client.notifications.list({ pageSize: 5 });
+        assert(Array.isArray(page.items) && typeof page.totalCount === 'number', 'page shape');
+        const unread = await client.notifications.list({ unread: true, kind: 'AudioReady', pageSize: 100 });
+        assert(unread.items.every((n) => n.kind === 'AudioReady' && !n.readUtc), 'filters apply');
+        const count = await client.notifications.unreadCount();
+        assert(typeof count.count === 'number' && count.count >= unread.items.length, 'unread count');
+        for (const n of page.items.filter((x) => !x.readUtc).slice(0, 1)) {
+            assert((await client.notifications.markRead(n.id)).readUtc, 'marked read');
+        }
+        const marked = await client.notifications.markAllRead();
+        assert(typeof marked.count === 'number', 'read-all count');
+        assertEqual((await client.notifications.unreadCount()).count, 0, 'none unread after read-all');
+        await expectError(client.notifications.markRead('ntf_missing'), 404, 'NotFound');
+        await expectError(client.notifications.remove('ntf_missing'), 404, 'NotFound');
+    });
+
     // ---- Account ---------------------------------------------------------------------------------------------------
 
     await run('account.plan and redeem a bad code', async () => {

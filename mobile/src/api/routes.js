@@ -96,6 +96,13 @@ export const routes = {
   feedToken: (id) => '/v1.0/api/feed-tokens/' + enc(id),
   // Email preferences (Phase 9)
   emailPreferences: '/v1.0/api/email-preferences',
+  // Notifications: the in-app list and the kind by channel preference matrix
+  notifications: '/v1.0/api/notifications',
+  notificationsUnreadCount: '/v1.0/api/notifications/unread-count',
+  notificationsReadAll: '/v1.0/api/notifications/read-all',
+  notification: (id) => '/v1.0/api/notifications/' + enc(id),
+  notificationRead: (id) => '/v1.0/api/notifications/' + enc(id) + '/read',
+  notificationPreferences: '/v1.0/api/notifications/preferences',
   // Feedback, learned preferences, and analytics (Phases 9 and 10)
   feedback: '/v1.0/api/feedback',
   feedbackItem: (id) => '/v1.0/api/feedback/' + enc(id),

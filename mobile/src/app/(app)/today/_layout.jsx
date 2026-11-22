@@ -1,6 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { TabStack } from '@/components/TabStack';
+import { NotificationBell } from '@/screens/notifications/NotificationsScreen';
+
+const bell = () => <NotificationBell />;
 
 export default function TodayLayout() {
   const { t } = useTranslation();
@@ -18,7 +21,9 @@ export default function TodayLayout() {
         'requests/index': t('mobile.requests.title'),
         'requests/[requestId]': t('mobile.requests.detail'),
         'new-request': t('mobile.requests.new'),
+        notifications: t('mobile.inbox.title'),
       }}
+      headerRight={{ index: bell }}
     />
   );
 }

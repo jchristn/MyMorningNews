@@ -21,7 +21,15 @@ export const DEFAULT_PREFS = Object.freeze({
   pushEnabled: false,
   pushDeviceId: null,
   playbackRate: 1,
+  /** Who chose to go on without finished setup: `{ [setupSkipKey]: true }`, per server, workspace, and user. */
+  setupSkipped: {},
 });
+
+/** The key of a signed-in identity in `setupSkipped`, or null when nobody is signed in. */
+export function setupSkipKey(state) {
+  if (!state || !state.tenantId || !state.user || !state.user.id) return null;
+  return [state.serverUrl || '', state.tenantId, state.user.id].join('|');
+}
 
 const KEY = 'mymorningnews.prefs';
 
@@ -34,6 +42,7 @@ export async function loadPrefs() {
     merged.serverUrl = normalizeServerUrl(merged.serverUrl) || DEFAULT_SERVER_URL;
     if (!['system', 'light', 'dark'].includes(merged.theme)) merged.theme = 'system';
     if (!LOCK_TIMEOUT_CHOICES.includes(merged.lockTimeoutSeconds)) merged.lockTimeoutSeconds = 0;
+    if (!merged.setupSkipped || typeof merged.setupSkipped !== 'object' || Array.isArray(merged.setupSkipped)) merged.setupSkipped = {};
     return merged;
   } catch {
     return { ...DEFAULT_PREFS };

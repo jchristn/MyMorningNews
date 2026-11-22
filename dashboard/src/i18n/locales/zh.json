@@ -197,6 +197,7 @@
       "settings": "设置",
       "serverInfo": "服务器信息",
       "profile": "个人资料",
+      "notifications": "通知",
       "adminUsage": "平台用量",
       "oneTimeRequests": "一次性请求",
       "listen": "收听",
@@ -310,6 +311,9 @@
     },
     "profile": {
       "summary": "您的账户"
+    },
+    "notifications": {
+      "summary": "选择接收哪些通知以及在哪里接收"
     },
     "adminUsage": {
       "summary": "按租户统计的平台费用，作为定价决策的依据"
@@ -1050,7 +1054,9 @@
     "password": "密码",
     "passwordChanged": "密码已修改",
     "saved": "个人资料已保存",
-    "timeZoneHelp": "留空则使用浏览器时区（{zone}）。"
+    "timeZoneHelp": "留空则使用浏览器时区（{zone}）。",
+    "notificationsMoved": "邮件和其他通知的选项现已移至“通知”页面。",
+    "notificationsLink": "打开通知偏好设置"
   },
   "enums": {
     "task": {
@@ -3679,23 +3685,60 @@
       "settingsHelp": "请先保存更改，然后给自己发送一封测试邮件。"
     }
   },
-  "emailPrefs": {
-    "title": "邮件偏好",
-    "address": "邮件将发送至 {address}。",
-    "saved": "邮件偏好已保存",
-    "categories": {
-      "runEmails": "运行邮件",
-      "briefingEmails": "简报邮件",
-      "failureEmails": "失败通知邮件"
+  "notifications": {
+    "bell": "通知",
+    "bellUnread": "通知，{count} 条未读",
+    "panelTitle": "通知",
+    "markAllRead": "全部标为已读",
+    "empty": "你已全部看完。",
+    "emptyOff": "应用内通知已关闭。",
+    "emptyOffLink": "在通知偏好设置中开启",
+    "settingsLink": "通知偏好设置",
+    "unread": "未读",
+    "kinds": {
+      "RunResults": "新发现",
+      "BriefingReady": "简报已就绪",
+      "AudioReady": "音频已就绪",
+      "RunFailed": "运行失败",
+      "CapReached": "已达到套餐上限",
+      "PredictionDue": "预测到期"
     },
-    "help": {
-      "runEmails": "你的主题每次运行后发送的摘要。",
-      "briefingEmails": "期刊或运行简报发布时。",
-      "failureEmails": "运行失败时。"
+    "descriptions": {
+      "RunResults": "一次研究运行为你的某个主题找到了新内容。",
+      "BriefingReady": "期刊简报或一次性简报已可阅读。",
+      "AudioReady": "一份简报已转换为可播放的音频。",
+      "RunFailed": "一次研究运行未能完成。",
+      "CapReached": "由于你的套餐达到上限，一次计划的运行被跳过。",
+      "PredictionDue": "一项预测已到期，可以核对了。"
     },
-    "unsubscribedTitle": "你已退订的主题",
-    "noUnsubscribed": "你会收到所有发送运行邮件的主题的邮件。",
-    "resubscribeHelp": "要重新接收其中某个主题的运行邮件，请使用其最近一封邮件中的链接。"
+    "channels": {
+      "Email": "邮件",
+      "Push": "手机",
+      "InApp": "应用内"
+    },
+    "reasons": {
+      "NoEmailAddress": "你的账户没有邮箱地址。",
+      "EmailNotVerified": "请确认你的邮箱地址以接收邮件。",
+      "EmailNotConfigured": "此服务器未配置邮件发送。",
+      "EmailUnsubscribed": "你已退订所有邮件。",
+      "PushNotConfigured": "此服务器未配置手机通知发送。",
+      "NoDevice": "请在移动应用中开启通知。",
+      "Unavailable": "暂时不可用。"
+    },
+    "prefs": {
+      "title": "通知我什么，以及在哪里通知",
+      "intro": "每个开关都会立即保存。主题和期刊仍可关闭各自的邮件或手机通知。",
+      "kindColumn": "通知",
+      "cellLabel": "{kind}: {channel}",
+      "saved": "通知偏好设置已保存",
+      "address": "邮件将发送至 {address}。",
+      "unsubscribedTitle": "你已退订的主题",
+      "noUnsubscribed": "你会收到所有发送运行邮件的主题的邮件。",
+      "unsubscribedHelp": "你不会收到这些主题的运行邮件。",
+      "resubscribe": "重新订阅",
+      "resubscribeTopic": "重新订阅 {topic}",
+      "resubscribed": "你将再次收到 {topic} 的运行邮件"
+    }
   },
   "feedbackControl": {
     "rate": "评价",

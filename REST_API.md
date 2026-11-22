@@ -412,7 +412,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 
 ## Route reference
 
-303 routes in 46 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
+310 routes in 47 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
 
 | Group | Routes | What it covers |
 |---|---|---|
@@ -434,6 +434,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [Setup](#setup) | 5 | What the workspace still needs before people can use it (a chat model with a working key, and web search; embeddings and email are optional) and live checks that prove it. Until every required check is Ready, refinement sessions and research requests answer 409 SetupRequired. Options lists the model providers and how each signs in; connect stores the sign-in and points the chat tasks at the endpoint. Verify, options, connect, and model-key are for administrators. |
 | [Usage](#usage) | 3 | Model usage and cost, grouped or bucketed over time. Members see their own; administrators can see the tenant, and global administrators every tenant. |
 | [Devices](#devices) | 4 | Push notification devices registered by the mobile app for the signed-in user. |
+| [Notifications](#notifications) | 7 | The signed-in user's notifications. Preferences are one matrix: each kind of notification (run results, briefing ready, audio ready, run failed, plan limit reached, prediction due) on each channel (email, push to a registered phone or tablet, and the in-app list). Without a saved choice, email is on for run results, ready briefings, failed runs, and plan limits, and everything else is off. The in-app list holds the notifications for kinds turned on for that channel; they are kept for 90 days. A topic's email-on-run switch and an edition's email and push switches still apply on top of these preferences. |
 | [Topics](#topics) | 21 | The things a reader follows. A topic has a research brief, weighted dimensions, constraints (keywords, domains, feeds, tracked questions), and email recipients. |
 | [Refinement](#refinement) | 11 | The topic wizard. A session proposes dimensions, asks clarifying questions, drafts the brief and constraints, suggests sources, and then applies the topic. Generating steps call the configured model. |
 | [Requests](#requests) | 9 | One-time research requests: a report, podcast, or email summary produced once, now or at a set time. A request can later become a recurring topic. |
@@ -2351,7 +2352,7 @@ Encrypted storage for API keys and tokens that model endpoints, search providers
 | Query parameter | Type | Notes |
 |---|---|---|
 | `active` | boolean | Only active (true) or inactive (false) records. |
-| `kind` | enum (`ApiKey`, `BearerToken`, `BasicAuth`, `CustomHeader`, `ConnectionString`, `SignInFile`) |  |
+| `kind` | enum (`ApiKey`, `BearerToken`, `BasicAuth`, `CustomHeader`, `ConnectionString`, `SignInFile`) | Only notifications of this kind. |
 | `provider` | enum (`Anthropic`, `OpenAi`, `Gemini`, `XAi`, `OllamaCloud`, `OpenAiCompatible`, `Tavily`, `YouCom`, `Mailgun`, `ElevenLabs`, `Mcp`, `Custom`) |  |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
@@ -3274,7 +3275,7 @@ curl -s "http://127.0.0.1:12100/v1.0/api/devices" \
 
 ### POST /v1.0/api/devices
 
-**Register a device for push notifications.** Returns 201 for a new device, or 200 with the existing device when the same token is registered again.
+**Register a device for push notifications.** Returns 201 for a new device, or 200 with the existing device when the same token is registered again. Push is a choice per kind of notification (PUT /v1.0/api/notifications/preferences): save the kinds to push before registering. A user who registers a device without any push choice gets the kinds earlier app builds delivered (BriefingReady, RunFailed, CapReached, PredictionDue).
 
 - Auth: Any authenticated principal (`DeviceWrite`).
 - Response: [`Device`](#device)
@@ -3349,6 +3350,192 @@ curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/devices/dev_mwpff20d_Gh5jK8lZ
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/devices/dev_mwpff20d_Gh5jK8lZ1xCv4bNm7Qw/test" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+## Notifications
+
+The signed-in user's notifications. Preferences are one matrix: each kind of notification (run results, briefing ready, audio ready, run failed, plan limit reached, prediction due) on each channel (email, push to a registered phone or tablet, and the in-app list). Without a saved choice, email is on for run results, ready briefings, failed runs, and plan limits, and everything else is off. The in-app list holds the notifications for kinds turned on for that channel; they are kept for 90 days. A topic's email-on-run switch and an edition's email and push switches still apply on top of these preferences.
+
+| Method | Path | Summary |
+|---|---|---|
+| GET | [`/v1.0/api/notifications`](#get-v10apinotifications) | List my in-app notifications |
+| GET | [`/v1.0/api/notifications/unread-count`](#get-v10apinotificationsunread-count) | Count my unread in-app notifications |
+| POST | [`/v1.0/api/notifications/read-all`](#post-v10apinotificationsread-all) | Mark all my in-app notifications as read |
+| GET | [`/v1.0/api/notifications/preferences`](#get-v10apinotificationspreferences) | My notification preferences |
+| PUT | [`/v1.0/api/notifications/preferences`](#put-v10apinotificationspreferences) | Change my notification preferences |
+| POST | [`/v1.0/api/notifications/{id}/read`](#post-v10apinotificationsidread) | Mark an in-app notification as read |
+| DELETE | [`/v1.0/api/notifications/{id}`](#delete-v10apinotificationsid) | Delete an in-app notification |
+
+### GET /v1.0/api/notifications
+
+**List my in-app notifications.** Newest first. A notification is created only for kinds the user turned on for the in-app channel. Rows older than 90 days are removed.
+
+- Auth: Any authenticated principal.
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`Notification`](#notification)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `unread` | boolean | Only unread (true) or only read (false) notifications. |
+| `kind` | enum (`RunResults`, `BriefingReady`, `AudioReady`, `RunFailed`, `CapReached`, `PredictionDue`) | Only notifications of this kind. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/notifications?pageSize=10" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### GET /v1.0/api/notifications/unread-count
+
+**Count my unread in-app notifications.**
+
+- Auth: Any authenticated principal (`NotificationRead`).
+- Response: [`NotificationCountResponse`](#notificationcountresponse)
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/notifications/unread-count" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/notifications/read-all
+
+**Mark all my in-app notifications as read.** Returns how many were marked.
+
+- Auth: Any authenticated principal (`NotificationWrite`).
+- Response: [`NotificationCountResponse`](#notificationcountresponse)
+
+| Status | Meaning |
+|---|---|
+| 200 | OK; count is how many were marked |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/notifications/read-all" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### GET /v1.0/api/notifications/preferences
+
+**My notification preferences.** Every kind on every channel, and whether each channel can deliver right now (a usable email address; at least one registered device for push). Without a saved choice the default applies: email is on for RunResults, BriefingReady, RunFailed, and CapReached; everything else is off.
+
+- Auth: Any authenticated principal (`NotificationRead`).
+- Response: [`NotificationPreferencesResponse`](#notificationpreferencesresponse)
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/notifications/preferences" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### PUT /v1.0/api/notifications/preferences
+
+**Change my notification preferences.** Only the cells that are sent change. A push cell can be saved before a device is registered. Topic lists stop or restore run emails for single topics.
+
+- Auth: Any authenticated principal (`NotificationWrite`).
+- Response: [`NotificationPreferencesResponse`](#notificationpreferencesresponse)
+
+Request body: [`NotificationPreferencesRequest`](#notificationpreferencesrequest).
+
+```json
+{
+  "preferences": [
+    {
+      "kind": "AudioReady",
+      "channel": "Email",
+      "enabled": true
+    },
+    {
+      "kind": "AudioReady",
+      "channel": "InApp",
+      "enabled": true
+    }
+  ],
+  "unsubscribeTopicIds": [],
+  "resubscribeTopicIds": []
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X PUT "http://127.0.0.1:12100/v1.0/api/notifications/preferences" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/api/notifications/{id}/read
+
+**Mark an in-app notification as read.**
+
+- Auth: Any authenticated principal (`NotificationWrite`).
+- Response: [`Notification`](#notification)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{notificationId}}` |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/notifications/ntf_mwq2k81c_Rt6yU9iP3aSd5fGh2Jk/read" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### DELETE /v1.0/api/notifications/{id}
+
+**Delete an in-app notification.**
+
+- Auth: Any authenticated principal (`NotificationWrite`).
+- Response: No body
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{notificationId}}` |
+
+| Status | Meaning |
+|---|---|
+| 204 | No Content |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/notifications/ntf_mwq2k81c_Rt6yU9iP3aSd5fGh2Jk" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -3807,7 +3994,7 @@ curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5Mgs
 
 | Query parameter | Type | Notes |
 |---|---|---|
-| `kind` | enum (`IncludeKeyword`, `ExcludeKeyword`, `IncludeEntity`, `ExcludeEntity`, `PreferredDomain`, `BlockedDomain`, `TrackedQuestion`, `FeedUrl`, `SeedUrl`) |  |
+| `kind` | enum (`IncludeKeyword`, `ExcludeKeyword`, `IncludeEntity`, `ExcludeEntity`, `PreferredDomain`, `BlockedDomain`, `TrackedQuestion`, `FeedUrl`, `SeedUrl`) | Only notifications of this kind. |
 
 | Status | Meaning |
 |---|---|
@@ -5668,7 +5855,7 @@ Search providers (SearXNG, Tavily, You.com, RSS, Hacker News, arXiv, hosted mode
 
 | Query parameter | Type | Notes |
 |---|---|---|
-| `kind` | enum (`Searxng`, `Tavily`, `YouCom`, `Rss`, `HackerNews`, `Arxiv`, `HostedModelWebSearch`) |  |
+| `kind` | enum (`Searxng`, `Tavily`, `YouCom`, `Rss`, `HackerNews`, `Arxiv`, `HostedModelWebSearch`) | Only notifications of this kind. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -6415,7 +6602,7 @@ Composed briefings with sections and items, their Markdown and HTML files, pinni
 |---|---|---|
 | `userId` | string | Administrators: another user's records. Ignored for members. |
 | `mine` | boolean | Administrators: true lists only your own records. |
-| `kind` | enum (`Edition`, `Run`, `OneTime`) |  |
+| `kind` | enum (`Edition`, `Run`, `OneTime`) | Only notifications of this kind. |
 | `editionId` | string | Only records for this edition. |
 | `topicId` | string | Only records for this topic. |
 | `runId` | string | Only records from this run. |
@@ -6658,7 +6845,7 @@ Stored files: briefing Markdown and HTML, audio, and exports. Content streams wi
 | `userId` | string | Administrators: another user's records. Ignored for members. |
 | `mine` | boolean | Administrators: true lists only your own records. |
 | `briefingId` | string | Only records for this briefing. |
-| `kind` | enum (`BriefingMarkdown`, `BriefingHtml`, `Audio`, `Chapters`, `Export`) |  |
+| `kind` | enum (`BriefingMarkdown`, `BriefingHtml`, `Audio`, `Chapters`, `Export`) | Only notifications of this kind. |
 | `pinned` | boolean | Only pinned (true) or unpinned (false) records. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
@@ -7333,7 +7520,7 @@ Audio episodes made from briefings, with chapters.
 | `briefingId` | string | Only records for this briefing. |
 | `editionId` | string | Only records for this edition. |
 | `status` | enum (`Queued`, `Scripting`, `Synthesizing`, `Ready`, `Failed`) |  |
-| `kind` | enum (`BriefingAudio`, `PodcastEpisode`) |  |
+| `kind` | enum (`BriefingAudio`, `PodcastEpisode`) | Only notifications of this kind. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -7789,7 +7976,7 @@ The email outbox, test and preview sends, resends, and the signed-in user's emai
 | Query parameter | Type | Notes |
 |---|---|---|
 | `status` | enum (`Queued`, `Sending`, `Sent`, `Failed`, `Suppressed`, `Skipped`) |  |
-| `template` | enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`, `CapReached`) | Email template. |
+| `template` | enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`, `CapReached`, `AudioReady`, `PredictionDue`) | Email template. |
 | `runId` | string | Only records from this run. |
 | `briefingId` | string | Only records for this briefing. |
 | `topicId` | string | Only records for this topic. |
@@ -7831,7 +8018,7 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/email/test" \
 
 ### GET /v1.0/api/email-preferences
 
-**My email preferences.**
+**My email preferences.** The three switches are the email column of GET /v1.0/api/notifications/preferences: runEmails is RunResults, briefingEmails is BriefingReady, failureEmails is RunFailed.
 
 - Auth: `Feedback:Read` (`FeedbackRead`).
 - Response: [`EmailPreferencesResponse`](#emailpreferencesresponse)
@@ -7850,7 +8037,7 @@ curl -s "http://127.0.0.1:12100/v1.0/api/email-preferences" \
 
 ### PUT /v1.0/api/email-preferences
 
-**Change my email preferences.**
+**Change my email preferences.** Saves the same cells as PUT /v1.0/api/notifications/preferences on the email channel (runEmails is RunResults, briefingEmails is BriefingReady, failureEmails is RunFailed).
 
 - Auth: `Feedback:Create` (`FeedbackWrite`).
 - Response: [`EmailPreferencesResponse`](#emailpreferencesresponse)
@@ -12065,6 +12252,227 @@ Returned by [POST /v1.0/api/model-endpoints/{id}/validate](#post-v10apimodel-end
 | `messages` | array of string | Diagnostic messages. |
 | `validatedUtc` | date-time | Validation time. |
 
+#### Notification
+
+An in-app notification for one user, with the item it points to.
+
+Returned by [GET /v1.0/api/notifications](#get-v10apinotifications), [POST /v1.0/api/notifications/{id}/read](#post-v10apinotificationsidread).
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Identifier (prefix ntf_). |
+| `tenantId` | string | Tenant identifier. |
+| `userId` | string | User the notification is for. |
+| `kind` | [`NotificationKindEnum`](#notificationkindenum) | What happened. |
+| `title` | string | What it is about, for example the topic or briefing title. |
+| `body` | string | A short sentence. May be null. |
+| `topicId` | string | Topic to open. May be null. |
+| `runId` | string | Run to open. May be null. |
+| `briefingId` | string | Briefing to open. May be null. |
+| `mediaAssetId` | string | Audio to open. May be null. |
+| `predictionId` | string | Prediction to open. May be null. |
+| `readUtc` | date-time | UTC time the user read it; null while unread. May be null. |
+| `active` | boolean | Whether the record is active. |
+| `createdUtc` | date-time | UTC creation time. |
+| `lastUpdateUtc` | date-time | UTC time of the last update. |
+
+Example:
+
+```json
+{
+  "id": "ntf_mwq2k81c_Rt6yU9iP3aSd5fGh2Jk",
+  "tenantId": "default",
+  "userId": "usr_mwpee269_4XZwNzElANM2Mmc4q6c",
+  "kind": "AudioReady",
+  "title": "Morning News for November 21",
+  "body": "The audio version is ready.",
+  "briefingId": "brf_mwpf8b9c_Er6tY9uI2oPa5sDf8Gh",
+  "mediaAssetId": "med_mwpf9cad_Lz5xC8vB1nMq4wEr7Ty",
+  "active": true,
+  "createdUtc": "2026-11-21T06:04:10.120000Z",
+  "lastUpdateUtc": "2026-11-21T06:04:10.120000Z"
+}
+```
+
+#### NotificationChannelStatus
+
+Whether a notification channel can deliver to the user right now.
+
+| Field | Type | Description |
+|---|---|---|
+| `channel` | [`NotificationChannelEnum`](#notificationchannelenum) | Channel. Default Email. |
+| `available` | boolean | Whether the channel can deliver. Default true. |
+| `reason` | [`NotificationUnavailableReasonEnum`](#notificationunavailablereasonenum) | Why the channel cannot deliver. Null when it can. |
+
+#### NotificationCountResponse
+
+A number of notifications: how many are unread, or how many were marked read.
+
+Returned by [GET /v1.0/api/notifications/unread-count](#get-v10apinotificationsunread-count), [POST /v1.0/api/notifications/read-all](#post-v10apinotificationsread-all).
+
+| Field | Type | Description |
+|---|---|---|
+| `count` | integer | Count. Minimum 0. |
+
+Example:
+
+```json
+{
+  "count": 1
+}
+```
+
+#### NotificationPreferenceCell
+
+One cell of the notification preference matrix: a kind of notification on one channel.
+
+| Field | Type | Description |
+|---|---|---|
+| `kind` | [`NotificationKindEnum`](#notificationkindenum) | Kind of notification. Default RunResults. |
+| `channel` | [`NotificationChannelEnum`](#notificationchannelenum) | Channel. Default Email. |
+| `enabled` | boolean | Whether the user wants this kind on this channel. Default false. |
+
+#### NotificationPreferencesRequest
+
+Change my notification preferences. Only the cells that are sent change.
+
+Request body of [PUT /v1.0/api/notifications/preferences](#put-v10apinotificationspreferences).
+
+| Field | Type | Description |
+|---|---|---|
+| `preferences` | array of [`NotificationPreferenceCell`](#notificationpreferencecell) | Cells to change. Null or empty changes none. |
+| `unsubscribeTopicIds` | array of string | Topics to stop run emails for. May be null. |
+| `resubscribeTopicIds` | array of string | Topics to get run emails for again. May be null. |
+
+#### NotificationPreferencesResponse
+
+My notification preferences: every kind on every channel, and whether each channel can deliver.
+
+Returned by [GET /v1.0/api/notifications/preferences](#get-v10apinotificationspreferences), [PUT /v1.0/api/notifications/preferences](#put-v10apinotificationspreferences).
+
+| Field | Type | Description |
+|---|---|---|
+| `preferences` | array of [`NotificationPreferenceCell`](#notificationpreferencecell) | Every kind on every channel, in kind order and then channel order. |
+| `channels` | array of [`NotificationChannelStatus`](#notificationchannelstatus) | Whether each channel can deliver right now, in channel order. |
+| `address` | string | My email address, or empty when the account has none. |
+| `unsubscribedTopicIds` | array of string | Topics whose run emails I unsubscribed from. |
+
+Example:
+
+```json
+{
+  "preferences": [
+    {
+      "kind": "RunResults",
+      "channel": "Email",
+      "enabled": true
+    },
+    {
+      "kind": "RunResults",
+      "channel": "Push",
+      "enabled": false
+    },
+    {
+      "kind": "RunResults",
+      "channel": "InApp",
+      "enabled": false
+    },
+    {
+      "kind": "BriefingReady",
+      "channel": "Email",
+      "enabled": true
+    },
+    {
+      "kind": "BriefingReady",
+      "channel": "Push",
+      "enabled": false
+    },
+    {
+      "kind": "BriefingReady",
+      "channel": "InApp",
+      "enabled": false
+    },
+    {
+      "kind": "AudioReady",
+      "channel": "Email",
+      "enabled": true
+    },
+    {
+      "kind": "AudioReady",
+      "channel": "Push",
+      "enabled": false
+    },
+    {
+      "kind": "AudioReady",
+      "channel": "InApp",
+      "enabled": true
+    },
+    {
+      "kind": "RunFailed",
+      "channel": "Email",
+      "enabled": true
+    },
+    {
+      "kind": "RunFailed",
+      "channel": "Push",
+      "enabled": false
+    },
+    {
+      "kind": "RunFailed",
+      "channel": "InApp",
+      "enabled": false
+    },
+    {
+      "kind": "CapReached",
+      "channel": "Email",
+      "enabled": true
+    },
+    {
+      "kind": "CapReached",
+      "channel": "Push",
+      "enabled": false
+    },
+    {
+      "kind": "CapReached",
+      "channel": "InApp",
+      "enabled": false
+    },
+    {
+      "kind": "PredictionDue",
+      "channel": "Email",
+      "enabled": false
+    },
+    {
+      "kind": "PredictionDue",
+      "channel": "Push",
+      "enabled": false
+    },
+    {
+      "kind": "PredictionDue",
+      "channel": "InApp",
+      "enabled": false
+    }
+  ],
+  "channels": [
+    {
+      "channel": "Email",
+      "available": true
+    },
+    {
+      "channel": "Push",
+      "available": false,
+      "reason": "NoDevice"
+    },
+    {
+      "channel": "InApp",
+      "available": true
+    }
+  ],
+  "address": "admin@mymorningnews",
+  "unsubscribedTopicIds": []
+}
+```
+
 #### OverviewReport
 
 Headline numbers for a window: activity counts plus the key figures from the relevance, accuracy, feedback, suggestion, quality, and usage reports. Built for dashboards, the mobile home screen, and the MCP summary tool.
@@ -15268,7 +15676,7 @@ Email template.
 |---|---|
 | `RunDigest` | After a research run. |
 | `BriefingPublished` | An edition or one-time briefing. |
-| `RunFailed` | A run failed (opted-in administrators). |
+| `RunFailed` | A run failed. |
 | `PreferenceProposal` | Learned preference proposals. |
 | `Test` | Test email. |
 | `VerifyEmail` | Verify the email address after sign-up. |
@@ -15277,6 +15685,8 @@ Email template.
 | `PasswordChanged` | The password was changed. |
 | `AccountDeletion` | Account deletion scheduled. |
 | `CapReached` | A plan limit stopped a scheduled run (sent at most once per limit per month). |
+| `AudioReady` | The audio version of a briefing is ready. |
+| `PredictionDue` | A prediction is due for review. |
 
 #### FeedbackChannelEnum
 
@@ -15477,6 +15887,42 @@ Pipeline task role used to pick a model.
 | `PodcastScript` | Audio script. |
 | `FeedbackAnalysis` | Feedback tagging and preference distillation. |
 | `Embedding` | Embeddings. |
+
+#### NotificationChannelEnum
+
+Where a notification is delivered.
+
+| Value | Description |
+|---|---|
+| `Email` | Email. |
+| `Push` | Push notification on a registered phone or tablet. |
+| `InApp` | The notification list in the dashboard and the mobile app. |
+
+#### NotificationKindEnum
+
+What a notification is about.
+
+| Value | Description |
+|---|---|
+| `RunResults` | New findings after a research run. |
+| `BriefingReady` | A briefing is ready to read. |
+| `AudioReady` | The audio version of a briefing is ready. |
+| `RunFailed` | A research run failed. |
+| `CapReached` | A plan limit stopped a scheduled run. |
+| `PredictionDue` | A prediction reached its date and is due for review. |
+
+#### NotificationUnavailableReasonEnum
+
+Why a notification channel cannot deliver to a user right now.
+
+| Value | Description |
+|---|---|
+| `NoEmailAddress` | The account has no email address. |
+| `EmailNotVerified` | The email address is not verified yet. |
+| `EmailNotConfigured` | This server does not send email. |
+| `EmailUnsubscribed` | The address unsubscribed from all email. |
+| `PushNotConfigured` | This server does not send push notifications. |
+| `NoDevice` | No phone or tablet is registered. |
 
 #### OperationTypeEnum
 

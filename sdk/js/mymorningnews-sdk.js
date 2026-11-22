@@ -980,6 +980,39 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
  */
 
 /**
+ * An in-app notification.
+ * @typedef {object} Notification
+ * @property {string} id Identifier.
+ * @property {string} kind `RunResults`, `BriefingReady`, `AudioReady`, `RunFailed`, `CapReached`, or `PredictionDue`.
+ * @property {string} title What it is about (topic name, briefing title).
+ * @property {string|null} body A short sentence.
+ * @property {string|null} topicId Topic to open.
+ * @property {string|null} runId Run to open.
+ * @property {string|null} briefingId Briefing to open.
+ * @property {string|null} mediaAssetId Audio to open.
+ * @property {string|null} predictionId Prediction to open.
+ * @property {string|null} readUtc When it was read; absent while unread.
+ * @property {string} createdUtc When it was created.
+ */
+
+/**
+ * One cell of the notification preference matrix.
+ * @typedef {object} NotificationPreferenceCell
+ * @property {string} kind Kind of notification.
+ * @property {string} channel `Email`, `Push`, or `InApp`.
+ * @property {boolean} enabled Whether the user wants it.
+ */
+
+/**
+ * My notification preferences.
+ * @typedef {object} NotificationPreferences
+ * @property {NotificationPreferenceCell[]} preferences Every kind on every channel (18 cells).
+ * @property {{ channel: string, available: boolean, reason?: string }[]} channels Whether each channel can deliver right now.
+ * @property {string} address My email address, or empty.
+ * @property {string[]} unsubscribedTopicIds Topics whose run emails I unsubscribed from.
+ */
+
+/**
  * A recorded model call.
  * @typedef {object} LlmCall
  * @property {string} id Identifier.
@@ -3443,6 +3476,71 @@ export class VaultResource extends CrudResource {
 }
 
 /**
+ * In-app notifications and notification preferences (which kinds I want by email, push, and in-app).
+ */
+export class NotificationsResource extends ResourceGroup {
+    /**
+     * List my in-app notifications, newest first.
+     * @param {{ unread?: boolean, kind?: string, pageNumber?: number, pageSize?: number }} [options] Filters and paging.
+     * @returns {Promise<EnumerationResult<Notification>>} Page.
+     */
+    list(options = {}) {
+        return this._req('GET', this._base, { query: options });
+    }
+
+    /**
+     * Count my unread in-app notifications.
+     * @returns {Promise<{ count: number }>} Count.
+     */
+    unreadCount() {
+        return this._req('GET', this._base + '/unread-count');
+    }
+
+    /**
+     * Mark a notification as read.
+     * @param {string} id Notification.
+     * @returns {Promise<Notification>} Notification.
+     */
+    markRead(id) {
+        return this._req('POST', this._path(id, '/read'));
+    }
+
+    /**
+     * Mark all my notifications as read.
+     * @returns {Promise<{ count: number }>} How many were marked.
+     */
+    markAllRead() {
+        return this._req('POST', this._base + '/read-all');
+    }
+
+    /**
+     * Delete a notification.
+     * @param {string} id Notification.
+     * @returns {Promise<null>} Resolves when deleted.
+     */
+    remove(id) {
+        return this._req('DELETE', this._path(id));
+    }
+
+    /**
+     * My notification preferences: every kind on every channel, and whether each channel can deliver.
+     * @returns {Promise<NotificationPreferences>} Preferences.
+     */
+    getPreferences() {
+        return this._req('GET', this._base + '/preferences');
+    }
+
+    /**
+     * Change my notification preferences. Only the cells that are sent change.
+     * @param {{ preferences?: NotificationPreferenceCell[], unsubscribeTopicIds?: string[], resubscribeTopicIds?: string[] }} body Changes.
+     * @returns {Promise<NotificationPreferences>} Preferences.
+     */
+    updatePreferences(body) {
+        return this._req('PUT', this._base + '/preferences', { body: requireValue(body, 'body') });
+    }
+}
+
+/**
  * Push devices.
  */
 export class DevicesResource extends ResourceGroup {
@@ -3902,6 +4000,8 @@ export class MyMorningNewsClient {
         this.vault = new VaultResource(this, '/v1.0/api/vault/credentials');
         /** @type {DevicesResource} */
         this.devices = new DevicesResource(this, '/v1.0/api/devices');
+        /** @type {NotificationsResource} */
+        this.notifications = new NotificationsResource(this, '/v1.0/api/notifications');
         /** @type {AccountResource} */
         this.account = new AccountResource(this, '/v1.0/api/account');
         /** @type {McpServersResource} */

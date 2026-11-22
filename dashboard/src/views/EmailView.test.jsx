@@ -182,19 +182,10 @@ describe('settings and profile email surfaces', () => {
     expect(screen.getByRole('button', { name: 'Send test email' })).toBeInTheDocument();
   });
 
-  it('shows and saves my email preferences with the topics I unsubscribed from', async () => {
-    const client = renderRoute('/dashboard/profile', {
-      getMe: vi.fn(async () => ({ id: 'usr_admin', email: 'admin@mymorningnews' })),
-      getMyPlan: vi.fn(async () => null),
-      getEmailPreferences: vi.fn(async () => ({ address: 'admin@mymorningnews', runEmails: true, briefingEmails: true, failureEmails: true, unsubscribedTopicIds: ['top_1'] })),
-      updateEmailPreferences: vi.fn(async () => ({ address: 'admin@mymorningnews', runEmails: false, briefingEmails: true, failureEmails: true, unsubscribedTopicIds: ['top_1'] })),
-      listTopics: vi.fn(async () => page([TOPIC]))
-    });
-    const box = await screen.findByRole('checkbox', { name: /Run emails/ });
-    expect(box).toBeChecked();
-    expect(await screen.findByRole('link', { name: TOPIC.name })).toBeInTheDocument();
-    await userEvent.click(box);
-    await waitFor(() => expect(client.updateEmailPreferences).toHaveBeenCalledWith({ runEmails: false }));
-    await waitFor(() => expect(screen.getByRole('checkbox', { name: /Run emails/ })).not.toBeChecked());
+  it('points from the profile to the notification preferences, where email choices now live', async () => {
+    renderRoute('/dashboard/profile', { getMe: vi.fn(async () => ({ id: 'usr_admin', email: 'admin@mymorningnews' })), getMyPlan: vi.fn(async () => null) });
+    const link = await screen.findByRole('link', { name: 'Open notification preferences' });
+    expect(link).toHaveAttribute('href', '/dashboard/notifications');
+    expect(screen.queryByRole('checkbox', { name: /Run emails/ })).not.toBeInTheDocument();
   });
 });

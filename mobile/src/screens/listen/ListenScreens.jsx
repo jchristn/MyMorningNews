@@ -1,13 +1,13 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { RefreshControl, View } from 'react-native';
 import { Asset } from 'expo-asset';
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { listItems } from '@/api/client';
 import { mediaApi } from '@/api/research';
 import { artworkUri } from '@/components/player/BriefingAudio';
 import { PlayerPanel } from '@/components/player/PlayerPanel';
-import { EmptyState, ResourceView } from '@/components/states';
+import { EmptyState, LoadingState, ResourceView } from '@/components/states';
 import { Banner, Button, Card, IconButton, KeyValue, ListRow, Screen, SectionHeader, T } from '@/components/ui';
 import { formatBytes, formatClock, formatDate } from '@/lib/format';
 import { usePlayer } from '@/player/PlayerContext';
@@ -106,11 +106,46 @@ export function ListenScreen() {
   );
 }
 
-/** The full player (opened from the mini player and Now playing). */
+/**
+ * The full player (opened from the mini player and Now playing). Opened with `mediaId` and `briefingId` (an "audio
+ * ready" notification), it loads and plays that episode unless it is already the current track; when the episode
+ * cannot be played it says so and offers the briefing.
+ */
 export function PlayerScreen() {
   const { t } = useTranslation();
   const { state } = usePlayer();
-  return <Screen testID="player-screen">{state.track ? <PlayerPanel /> : <EmptyState icon="headset-outline" title={t('mobile.player.nothingPlaying')} body={t('mobile.player.nothingPlayingHint')} />}</Screen>;
+  const params = useLocalSearchParams();
+  const mediaId = typeof params.mediaId === 'string' && params.mediaId ? params.mediaId : null;
+  const briefingId = typeof params.briefingId === 'string' && params.briefingId ? params.briefingId : null;
+  const play = useEpisodePlayer();
+  const requested = useRef(null);
+  // The outcome of opening the requested episode: `{ id, error }` once it loaded or failed.
+  const [opened, setOpened] = useState(null);
+  const current = state.track ? state.track.mediaId : null;
+  const error = opened && opened.id === mediaId ? opened.error : null;
+  const opening = Boolean(mediaId && current !== mediaId && !(opened && opened.id === mediaId));
+
+  useEffect(() => {
+    if (!mediaId || requested.current === mediaId) return;
+    requested.current = mediaId;
+    if (current === mediaId) return;
+    play({ id: mediaId, briefingId: briefingId || undefined })
+      .then(() => setOpened({ id: mediaId, error: null }))
+      .catch((e) => setOpened({ id: mediaId, error: e }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mediaId, briefingId]);
+
+  return (
+    <Screen testID="player-screen">
+      {error ? (
+        <Banner kind="danger" testID="player-open-error">
+          {error.message || t('mobile.states.errorBody')}
+        </Banner>
+      ) : null}
+      {error && briefingId ? <Button title={t('mobile.inbox.openBriefing')} kind="secondary" onPress={() => router.push('/today/briefings/' + encodeURIComponent(briefingId))} testID="player-open-briefing" /> : null}
+      {opening && !state.track ? <LoadingState /> : state.track ? <PlayerPanel /> : <EmptyState icon="headset-outline" title={t('mobile.player.nothingPlaying')} body={t('mobile.player.nothingPlayingHint')} />}
+    </Screen>
+  );
 }
 
 /** Offline downloads and storage management. */

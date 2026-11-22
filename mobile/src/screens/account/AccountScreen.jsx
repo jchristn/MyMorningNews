@@ -12,7 +12,6 @@ import { useIsWide } from '@/state/useLayout';
 import { spacing } from '@/theme/palette';
 import { useServer } from '@/state/ServerContext';
 import { DeleteSection, ExportSection } from './DataSections';
-import { EmailSection } from './EmailSection';
 import { AboutSection, ServerSection } from './InfoSections';
 import { NotificationsSection } from './NotificationsSection';
 import { PasswordSection } from './PasswordSection';
@@ -24,8 +23,8 @@ import { useSignOut } from './useSignOut';
 
 /**
  * Account sections, in menu order. Each has a route under /account and renders beside the menu on tablets. `hidden`
- * sections have a route but no menu row (Redeem opens from Plan and from links); `requires: 'audio'` hides a row when
- * the server has audio turned off.
+ * sections have a route but no menu row (Redeem opens from Plan and from links; Email is the old address of the email
+ * switches, which now live in Notifications); `requires: 'audio'` hides a row when the server has audio turned off.
  */
 export const ACCOUNT_SECTIONS = [
   { key: 'profile', icon: 'person-outline', group: 'account', Component: ProfileSection },
@@ -34,7 +33,7 @@ export const ACCOUNT_SECTIONS = [
   { key: 'redeem', icon: 'gift-outline', group: 'account', Component: RedeemSection, hidden: true },
   { key: 'usage', icon: 'stats-chart-outline', group: 'account', Component: UsageScreen },
   { key: 'notifications', icon: 'notifications-outline', group: 'delivery', Component: NotificationsSection },
-  { key: 'email', icon: 'mail-outline', group: 'delivery', Component: EmailSection },
+  { key: 'email', icon: 'mail-outline', group: 'delivery', Component: NotificationsSection, hidden: true },
   { key: 'podcast', icon: 'radio-outline', group: 'delivery', Component: PodcastSection, requires: 'audio' },
   { key: 'language', icon: 'language-outline', group: 'app', Component: LanguageSection },
   { key: 'appearance', icon: 'contrast-outline', group: 'app', Component: AppearanceSection },
@@ -54,7 +53,7 @@ export function visibleSections(config) {
 }
 
 /**
- * Account: profile, password, plan and promotional codes, usage, notifications, email preferences, podcast feeds,
+ * Account: profile, password, plan and promotional codes, usage, notifications (email, phone, and in-app), podcast feeds,
  * language, theme, lock, server, about, export, delete, and sign out.
  */
 export function AccountScreen() {

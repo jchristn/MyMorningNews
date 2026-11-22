@@ -548,13 +548,18 @@
         "POST /v1.0/api/devices",
         "GET /v1.0/api/account/plan",
         "POST /v1.0/api/promo-codes/redeem",
-        "GET /v1.0/api/email-preferences",
-        "PUT /v1.0/api/email-preferences",
+        "GET /v1.0/api/notifications/preferences",
+        "PUT /v1.0/api/notifications/preferences",
+        "GET /v1.0/api/notifications",
+        "GET /v1.0/api/notifications/unread-count",
+        "POST /v1.0/api/notifications/{id}/read",
+        "POST /v1.0/api/notifications/read-all",
+        "DELETE /v1.0/api/notifications/{id}",
         "GET /v1.0/api/feed-tokens",
         "POST /v1.0/api/feed-tokens",
         "DELETE /v1.0/api/feed-tokens/{id}"
       ],
-      "notes": "Profile, password, notifications, language, theme, and app lock, plus Plan and codes (account/plan.jsx: the effective plan, its limits, end date, and what starts later, and Redeem a code with friendly text for every PromoCodeInvalid reason; account/redeem.jsx opens from mymorningnews://redeem?code=), Email (account/email.jsx: run digests, briefings, and failed runs on or off), and Podcast feeds (account/podcast.jsx: create for all editions or one, the URL once with Copy, Share, and Open in Podcasts, revoke, delete revoked; hidden when audio is off)."
+      "notes": "Profile, password, language, theme, and app lock, plus Plan and codes (account/plan.jsx: the effective plan, its limits, end date, and what starts later, and Redeem a code with friendly text for every PromoCodeInvalid reason; account/redeem.jsx opens from mymorningnews://redeem?code=), Notifications (account/notifications.jsx: a row per kind with Email, Phone, and In-app switches, the address email goes to, devices, and per-topic unsubscribes; turning on a Phone switch asks for permission, saves the preference, then registers the device; account/email.jsx opens the same screen; the in-app list is today/notifications.jsx behind the bell in the Today header), and Podcast feeds (account/podcast.jsx: create for all editions or one, the URL once with Copy, Share, and Open in Podcasts, revoke, delete revoked; hidden when audio is off)."
     },
     {
       "route": "/account/delete",

@@ -401,12 +401,20 @@ const cred = await client.vault.create({ name: 'Tavily', kind: 'ApiKey', provide
 await client.vault.usage(cred.id); // secrets are never returned; reveal is in the C# SDK only
 ```
 
-### devices, account
+### devices, notifications, account
 
 ```js
 const d = await client.devices.register({ expoPushToken: 'ExponentPushToken[...]', platform: 'ios' });
 await client.devices.test(d.id);
 await client.devices.remove(d.id);
+
+const prefs = await client.notifications.getPreferences(); // 18 cells (kind by channel) plus channel availability
+await client.notifications.updatePreferences({ preferences: [{ kind: 'AudioReady', channel: 'Push', enabled: true }] });
+const unread = await client.notifications.list({ unread: true }); // in-app notifications, newest first
+await client.notifications.unreadCount();
+await client.notifications.markRead(unread.items[0].id);
+await client.notifications.markAllRead();
+await client.notifications.remove(unread.items[0].id);
 
 const plan = await client.account.plan();
 await client.account.redeem('WELCOME'); // 409 PromoCodeInvalid with details.reason when it cannot be redeemed

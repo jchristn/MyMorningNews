@@ -35,6 +35,22 @@ namespace MyMorningNews.Core.Email
         /// </summary>
         public EmailTokenService Tokens { get; }
 
+        /// <summary>
+        /// Notification preferences, read before any email in a category is queued.
+        /// </summary>
+        public NotificationPreferenceService Preferences { get; }
+
+        /// <summary>
+        /// Dashboard path of the notification preferences page, used by footer links. Default
+        /// /dashboard/notifications. Never null or empty.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Value is null or empty.</exception>
+        public string PreferencesPath
+        {
+            get { return _PreferencesPath; }
+            set { _PreferencesPath = String.IsNullOrWhiteSpace(value) ? throw new ArgumentNullException(nameof(PreferencesPath)) : value; }
+        }
+
         #endregion
 
         #region Private-Members
@@ -45,6 +61,7 @@ namespace MyMorningNews.Core.Email
         private readonly ServerSettings _Settings;
         private readonly LoggingModule _Logging;
         private const string _Header = "[EmailService] ";
+        private string _PreferencesPath = "/dashboard/notifications";
         private static readonly Regex _CountOnlySummary = new Regex(@"^\d+ new findings?\.$", RegexOptions.Compiled);
 
         #endregion
@@ -68,6 +85,7 @@ namespace MyMorningNews.Core.Email
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _Logging = logging ?? throw new ArgumentNullException(nameof(logging));
             Tokens = new EmailTokenService(database, settings);
+            Preferences = new NotificationPreferenceService(database);
         }
 
         #endregion
@@ -156,7 +174,7 @@ namespace MyMorningNews.Core.Email
             EmailBuilder b = new EmailBuilder().Preheader("Email from My Morning News is working.")
                 .Header(Logo(), "Test email", DateTime.UtcNow.ToString("MMMM d, yyyy HH:mm 'UTC'", CultureInfo.InvariantCulture), new EmailLink("Open My Morning News", _Settings.Rest.AppBaseUrl + "/dashboard/today"))
                 .Paragraph("If you can read this, email delivery works through the " + EmailProviderFactory.Create(_Settings.Email).Provider + " provider.")
-                .Footer(new List<EmailLink> { new EmailLink("Email preferences", _Settings.Rest.AppBaseUrl + "/dashboard/profile") }, null);
+                .Footer(new List<EmailLink> { new EmailLink("Email preferences", PreferencesUrl()) }, null);
             string subject = Subject("Test email");
             await FinishAsync(m, new EmailPreview { Recipient = recipient, Subject = subject, Html = b.Html(subject), Text = b.Text() }, token).ConfigureAwait(false);
             return m;
@@ -173,9 +191,11 @@ namespace MyMorningNews.Core.Email
         /// <param name="button">Main action, or null.</param>
         /// <param name="key">Idempotency key, unique per message.</param>
         /// <param name="token">Cancellation token.</param>
-        /// <returns>Queued message, or null when one with the same key exists.</returns>
+        /// <param name="preference">Kind whose email preference decides whether this is sent, or null to always send. When the
+        /// user turned that kind off, the message is recorded as Suppressed (so the key still counts as used) and not sent.</param>
+        /// <returns>The message (Queued, or Suppressed by the preference), or null when one with the same key exists.</returns>
         /// <exception cref="ArgumentNullException">An argument is null.</exception>
-        public async Task<EmailMessage?> SendAccountEmailAsync(User user, EmailTemplateEnum template, string title, IReadOnlyList<string> paragraphs, EmailLink? button, string key, CancellationToken token = default)
+        public async Task<EmailMessage?> SendAccountEmailAsync(User user, EmailTemplateEnum template, string title, IReadOnlyList<string> paragraphs, EmailLink? button, string key, CancellationToken token = default, NotificationKindEnum? preference = null)
         {
             ArgumentNullException.ThrowIfNull(user);
             ArgumentNullException.ThrowIfNull(title);
@@ -183,14 +203,51 @@ namespace MyMorningNews.Core.Email
             ArgumentNullException.ThrowIfNull(key);
             string recipient = Normalize(user.Email);
             if (recipient.Length == 0) return null;
-            EmailMessage? m = await CreateAsync(user.TenantId, recipient, template, null, null, null, key, null, null, token).ConfigureAwait(false);
+            EmailMessage? m = await CreateAsync(user.TenantId, recipient, template, null, null, null, key, null, null, token, preference).ConfigureAwait(false);
             if (m == null) return null;
+            if (m.Status == EmailStatusEnum.Suppressed) return m;
             EmailBuilder b = new EmailBuilder().Preheader(paragraphs.FirstOrDefault()).Header(Logo(), title, null, button);
             foreach (string p in paragraphs) b.Paragraph(p);
             b.Footer(new List<EmailLink> { new EmailLink("Support", "https://mymorningnews.ai/support.html") }, "You get this email because of activity on your My Morning News account.");
             string subject = Subject(title);
             await FinishAsync(m, new EmailPreview { Recipient = recipient, Subject = subject, Html = b.Html(subject), Text = b.Text() }, token).ConfigureAwait(false);
             return m;
+        }
+
+        /// <summary>
+        /// Queue a short notice email to a user (audio ready, run failed, prediction due). Honors the user's
+        /// notification preference for the notice's category and unsubscribes, and is idempotent per key and recipient.
+        /// Never throws; failures are logged and return false.
+        /// </summary>
+        /// <param name="user">Recipient.</param>
+        /// <param name="notice">Notice.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>True when a message was queued.</returns>
+        public async Task<bool> QueueNoticeAsync(User user, EmailNotice notice, CancellationToken token = default)
+        {
+            try
+            {
+                ArgumentNullException.ThrowIfNull(user);
+                ArgumentNullException.ThrowIfNull(notice);
+                string recipient = Normalize(user.Email);
+                if (recipient.Length == 0) return false;
+                EmailMessage? m = await CreateAsync(user.TenantId, recipient, notice.Template, notice.RunId, notice.BriefingId, notice.TopicId, notice.Key + ":" + recipient, notice.Category, null, token).ConfigureAwait(false);
+                if (m == null || m.Status != EmailStatusEnum.Queued) return false;
+                EmailBuilder b = new EmailBuilder().Preheader(notice.Paragraphs.FirstOrDefault() ?? notice.Title).Header(Logo(), notice.Title, notice.Subtitle, notice.Button);
+                foreach (string p in notice.Paragraphs) b.Paragraph(p);
+                List<EmailLink> footer = new List<EmailLink>(notice.Links) { new EmailLink("Notification preferences", PreferencesUrl()) };
+                EmailLink? unsubscribe = await UnsubscribeAsync(m, user.Id, notice.Category, null, true, token).ConfigureAwait(false);
+                if (unsubscribe != null) footer.Add(unsubscribe);
+                b.Footer(footer, notice.Note);
+                string subject = Subject(notice.Title);
+                await FinishAsync(m, new EmailPreview { Recipient = recipient, Subject = subject, Html = b.Html(subject), Text = b.Text() }, token).ConfigureAwait(false);
+                return true;
+            }
+            catch (Exception ex) when (!(ex is OperationCanceledException))
+            {
+                _Logging.Warn(_Header + "could not queue the " + notice?.Template + " notice " + notice?.Key + ": " + ex.Message);
+                return false;
+            }
         }
 
         /// <summary>
@@ -266,7 +323,9 @@ namespace MyMorningNews.Core.Email
         }
 
         /// <summary>
-        /// Whether a recipient opted out of a category (for a topic, or for every topic, or of all email).
+        /// Whether a recipient opted out of a category (for a topic, or for every topic, or of all email). For a
+        /// recipient who is a user of the tenant, the account-wide answer is that user's notification preference for the
+        /// category's kind on the email channel; other recipients are remembered by address.
         /// </summary>
         /// <param name="tenantId">Tenant.</param>
         /// <param name="recipient">Address.</param>
@@ -276,12 +335,19 @@ namespace MyMorningNews.Core.Email
         /// <returns>True when suppressed.</returns>
         public async Task<bool> IsSuppressedAsync(string tenantId, string recipient, EmailCategoryEnum category, string? topicId, CancellationToken token = default)
         {
-            List<EmailSuppression> rows = (await _Database.EmailSuppressions.EnumerateAsync(new EmailSuppressionFilter { TenantId = tenantId, Recipient = Normalize(recipient), PageSize = 500 }, token).ConfigureAwait(false)).Items;
-            return rows.Any(r => r.Category == EmailCategoryEnum.All || (r.Category == category && (r.TopicId == null || r.TopicId == topicId)));
+            string address = Normalize(recipient);
+            List<EmailSuppression> rows = (await _Database.EmailSuppressions.EnumerateAsync(new EmailSuppressionFilter { TenantId = tenantId, Recipient = address, PageSize = 500 }, token).ConfigureAwait(false)).Items;
+            if (rows.Any(r => r.Category == EmailCategoryEnum.All || (r.Category == category && r.TopicId != null && r.TopicId == topicId))) return true;
+            NotificationKindEnum? kind = NotificationPreferenceService.KindFor(category);
+            User? user = kind.HasValue ? await UserByAddressAsync(tenantId, address, token).ConfigureAwait(false) : null;
+            if (user != null && kind.HasValue) return !await Preferences.IsEnabledAsync(user, kind.Value, NotificationChannelEnum.Email, token).ConfigureAwait(false);
+            return rows.Any(r => r.Category == category && r.TopicId == null);
         }
 
         /// <summary>
-        /// Opt a recipient out of (or back into) a category, optionally for one topic.
+        /// Opt a recipient out of (or back into) a category, optionally for one topic. An account-wide choice by a user
+        /// of the tenant is saved as that user's notification preference (the same cell the preferences matrix shows);
+        /// topic choices, choices by other recipients, and <see cref="EmailCategoryEnum.All"/> are remembered by address.
         /// </summary>
         /// <param name="tenantId">Tenant.</param>
         /// <param name="recipient">Address.</param>
@@ -294,6 +360,14 @@ namespace MyMorningNews.Core.Email
         public async Task SetSuppressedAsync(string tenantId, string recipient, EmailCategoryEnum category, string? topicId, bool suppressed, string source, CancellationToken token = default)
         {
             string r = Normalize(recipient);
+            NotificationKindEnum? kind = topicId == null ? NotificationPreferenceService.KindFor(category) : null;
+            User? user = kind.HasValue ? await UserByAddressAsync(tenantId, r, token).ConfigureAwait(false) : null;
+            if (user != null && kind.HasValue)
+            {
+                await Preferences.SetAsync(user, kind.Value, NotificationChannelEnum.Email, !suppressed, token).ConfigureAwait(false);
+                return;
+            }
+
             List<EmailSuppression> rows = (await _Database.EmailSuppressions.EnumerateAsync(new EmailSuppressionFilter { TenantId = tenantId, Recipient = r, PageSize = 500 }, token).ConfigureAwait(false)).Items
                 .Where(x => x.Category == category && x.TopicId == topicId).ToList();
             if (suppressed && rows.Count == 0)
@@ -327,13 +401,14 @@ namespace MyMorningNews.Core.Email
             return true;
         }
 
-        private async Task<EmailMessage?> CreateAsync(string tenantId, string recipient, EmailTemplateEnum template, string? runId, string? briefingId, string? topicId, string key, EmailCategoryEnum? category, string? suppressionTopicId, CancellationToken token)
+        private async Task<EmailMessage?> CreateAsync(string tenantId, string recipient, EmailTemplateEnum template, string? runId, string? briefingId, string? topicId, string key, EmailCategoryEnum? category, string? suppressionTopicId, CancellationToken token, NotificationKindEnum? preference = null)
         {
             EmailMessage? existing = (await _Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenantId, Recipient = recipient, RunId = runId, BriefingId = briefingId, Template = template, PageSize = 50 }, token).ConfigureAwait(false)).Items
                 .FirstOrDefault(x => x.IdempotencyKey == key);
             if (existing != null) return null;
             User? user = (await _Database.Users.EnumerateAsync(new UserFilter { TenantId = tenantId, Email = recipient, PageSize = 1 }, token).ConfigureAwait(false)).Items.FirstOrDefault();
             bool suppressed = category.HasValue && await IsSuppressedAsync(tenantId, recipient, category.Value, suppressionTopicId, token).ConfigureAwait(false);
+            if (!suppressed && preference.HasValue && user != null) suppressed = !await Preferences.IsEnabledAsync(user, preference.Value, NotificationChannelEnum.Email, token).ConfigureAwait(false);
             EmailMessage m = new EmailMessage
             {
                 TenantId = tenantId,
@@ -527,7 +602,7 @@ namespace MyMorningNews.Core.Email
             {
                 new EmailLink("Full run", app + "/dashboard/runs?id=" + run.Id),
                 new EmailLink("Today's briefing", app + "/dashboard/today"),
-                new EmailLink("Email preferences", app + "/dashboard/profile")
+                new EmailLink("Email preferences", PreferencesUrl())
             };
             EmailLink? unsubscribe = await UnsubscribeAsync(m, userId, EmailCategoryEnum.RunEmails, topic.Id, issueTokens, token).ConfigureAwait(false);
             if (unsubscribe != null) footer.Add(unsubscribe);
@@ -567,7 +642,7 @@ namespace MyMorningNews.Core.Email
                 }
             }
 
-            List<EmailLink> footer = new List<EmailLink> { new EmailLink("Open in My Morning News", app + "/dashboard/briefings/" + br.Id), new EmailLink("Email preferences", app + "/dashboard/profile") };
+            List<EmailLink> footer = new List<EmailLink> { new EmailLink("Open in My Morning News", app + "/dashboard/briefings/" + br.Id), new EmailLink("Email preferences", PreferencesUrl()) };
             EmailLink? unsubscribe = await UnsubscribeAsync(m, userId, EmailCategoryEnum.BriefingEmails, null, issueTokens, token).ConfigureAwait(false);
             if (unsubscribe != null) footer.Add(unsubscribe);
             b.Footer(footer, "Rating links open a short page where you confirm your rating. You get this email because briefing email is on for this edition.");
@@ -599,6 +674,17 @@ namespace MyMorningNews.Core.Email
             User? owner = await _Database.Users.ReadAsync(topic.TenantId, topic.UserId, token).ConfigureAwait(false);
             string o = Normalize(owner?.Email);
             return o.Length == 0 ? new List<string>() : new List<string> { o };
+        }
+
+        private async Task<User?> UserByAddressAsync(string tenantId, string address, CancellationToken token)
+        {
+            if (String.IsNullOrEmpty(address)) return null;
+            return (await _Database.Users.ReadAllByEmailAsync(address, token).ConfigureAwait(false)).FirstOrDefault(u => u.TenantId == tenantId);
+        }
+
+        private string PreferencesUrl()
+        {
+            return _Settings.Rest.AppBaseUrl + _PreferencesPath;
         }
 
         private string Subject(string body)

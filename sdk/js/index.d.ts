@@ -1329,6 +1329,57 @@ export interface EmailPreferencesRequest {
     unsubscribeTopicIds?: string[];
 }
 
+export type NotificationKind = 'RunResults' | 'BriefingReady' | 'AudioReady' | 'RunFailed' | 'CapReached' | 'PredictionDue';
+export type NotificationChannel = 'Email' | 'Push' | 'InApp';
+export type NotificationUnavailableReason = 'NoEmailAddress' | 'EmailNotVerified' | 'EmailNotConfigured' | 'EmailUnsubscribed' | 'PushNotConfigured' | 'NoDevice';
+
+export interface Notification extends Record_ {
+    userId: string;
+    kind: NotificationKind;
+    title: string;
+    body?: string | null;
+    topicId?: string | null;
+    runId?: string | null;
+    briefingId?: string | null;
+    mediaAssetId?: string | null;
+    predictionId?: string | null;
+    readUtc?: string | null;
+}
+
+export interface NotificationPreferenceCell {
+    kind: NotificationKind;
+    channel: NotificationChannel;
+    enabled: boolean;
+}
+
+export interface NotificationChannelStatus {
+    channel: NotificationChannel;
+    available: boolean;
+    reason?: NotificationUnavailableReason | null;
+}
+
+export interface NotificationPreferences {
+    preferences: NotificationPreferenceCell[];
+    channels: NotificationChannelStatus[];
+    address: string;
+    unsubscribedTopicIds: string[];
+}
+
+export interface NotificationPreferencesRequest {
+    preferences?: NotificationPreferenceCell[];
+    unsubscribeTopicIds?: string[];
+    resubscribeTopicIds?: string[];
+}
+
+export interface NotificationCount {
+    count: number;
+}
+
+export interface NotificationListOptions extends ListOptions {
+    unread?: boolean;
+    kind?: NotificationKind;
+}
+
 export interface VaultCredential extends Record_ {
     name: string;
     kind: 'ApiKey' | 'BearerToken' | 'BasicAuth' | 'CustomHeader' | 'ConnectionString' | 'SignInFile';
@@ -1838,6 +1889,16 @@ export declare class VaultResource extends CrudResource<VaultCredential, VaultCr
     usage(id: string): Promise<any[]>;
 }
 
+export declare class NotificationsResource extends ResourceGroup {
+    list(options?: NotificationListOptions): Promise<EnumerationResult<Notification>>;
+    unreadCount(): Promise<NotificationCount>;
+    markRead(id: string): Promise<Notification>;
+    markAllRead(): Promise<NotificationCount>;
+    remove(id: string): Promise<null>;
+    getPreferences(): Promise<NotificationPreferences>;
+    updatePreferences(body: NotificationPreferencesRequest): Promise<NotificationPreferences>;
+}
+
 export declare class DevicesResource extends ResourceGroup {
     list(): Promise<Device[]>;
     register(body: { expoPushToken: string; platform: 'ios' | 'android'; name?: string; locale?: string }): Promise<Device>;
@@ -1945,6 +2006,7 @@ export declare class MyMorningNewsClient {
     readonly voices: VoicesResource;
     readonly vault: VaultResource;
     readonly devices: DevicesResource;
+    readonly notifications: NotificationsResource;
     readonly account: AccountResource;
     readonly mcpServers: McpServersResource;
     readonly setup: SetupResource;

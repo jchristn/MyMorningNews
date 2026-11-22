@@ -44,6 +44,7 @@ const VIEWS = {
   settings: lazy(() => import('./views/SettingsView.jsx')),
   serverInfo: lazy(() => import('./views/ServerInfoView.jsx')),
   profile: lazy(() => import('./views/ProfileView.jsx')),
+  notifications: lazy(() => import('./views/NotificationsView.jsx')),
   vault: lazy(() => import('./views/VaultView.jsx')),
   models: lazy(() => import('./views/ModelsView.jsx')),
   prompts: lazy(() => import('./views/PromptsView.jsx')),

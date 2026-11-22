@@ -197,6 +197,7 @@
       "settings": "Einstellungen",
       "serverInfo": "Serverinfo",
       "profile": "Profil",
+      "notifications": "Benachrichtigungen",
       "adminUsage": "Plattformnutzung",
       "oneTimeRequests": "Einmalige Anfragen",
       "listen": "Anhören",
@@ -310,6 +311,9 @@
     },
     "profile": {
       "summary": "Ihr Konto"
+    },
+    "notifications": {
+      "summary": "Legen Sie fest, worüber und wo Sie informiert werden"
     },
     "adminUsage": {
       "summary": "Plattformkosten pro Mandant als Grundlage für Preisentscheidungen"
@@ -1050,7 +1054,9 @@
     "password": "Passwort",
     "passwordChanged": "Passwort geändert",
     "saved": "Profil gespeichert",
-    "timeZoneHelp": "Leer lassen, um die Zeitzone Ihres Browsers zu verwenden ({zone})."
+    "timeZoneHelp": "Leer lassen, um die Zeitzone Ihres Browsers zu verwenden ({zone}).",
+    "notificationsMoved": "E-Mail- und andere Benachrichtigungseinstellungen finden Sie jetzt auf der Seite Benachrichtigungen.",
+    "notificationsLink": "Benachrichtigungseinstellungen öffnen"
   },
   "enums": {
     "task": {
@@ -3679,23 +3685,60 @@
       "settingsHelp": "Speichern Sie zuerst Ihre Änderungen und senden Sie sich dann einen Test."
     }
   },
-  "emailPrefs": {
-    "title": "E-Mail-Einstellungen",
-    "address": "E-Mails gehen an {address}.",
-    "saved": "E-Mail-Einstellungen gespeichert",
-    "categories": {
-      "runEmails": "Lauf-E-Mails",
-      "briefingEmails": "Briefing-E-Mails",
-      "failureEmails": "Fehler-E-Mails"
+  "notifications": {
+    "bell": "Benachrichtigungen",
+    "bellUnread": "Benachrichtigungen, {count} ungelesen",
+    "panelTitle": "Benachrichtigungen",
+    "markAllRead": "Alle als gelesen markieren",
+    "empty": "Sie sind auf dem neuesten Stand.",
+    "emptyOff": "In-App-Benachrichtigungen sind aus.",
+    "emptyOffLink": "In den Benachrichtigungseinstellungen einschalten",
+    "settingsLink": "Benachrichtigungseinstellungen",
+    "unread": "Ungelesen",
+    "kinds": {
+      "RunResults": "Neue Ergebnisse",
+      "BriefingReady": "Briefing bereit",
+      "AudioReady": "Audio bereit",
+      "RunFailed": "Lauf fehlgeschlagen",
+      "CapReached": "Tariflimit erreicht",
+      "PredictionDue": "Prognose fällig"
     },
-    "help": {
-      "runEmails": "Eine Zusammenfassung nach jedem Lauf Ihrer Themen.",
-      "briefingEmails": "Wenn ein Briefing einer Ausgabe oder eines Laufs veröffentlicht wird.",
-      "failureEmails": "Wenn ein Lauf fehlschlägt."
+    "descriptions": {
+      "RunResults": "Ein Recherchelauf hat zu einem Ihrer Themen etwas Neues gefunden.",
+      "BriefingReady": "Ein Briefing einer Ausgabe oder ein einmaliges Briefing ist lesebereit.",
+      "AudioReady": "Ein Briefing wurde in Audio umgewandelt und kann abgespielt werden.",
+      "RunFailed": "Ein Recherchelauf konnte nicht abgeschlossen werden.",
+      "CapReached": "Ein geplanter Lauf wurde übersprungen, weil Ihr Tarif ein Limit erreicht hat.",
+      "PredictionDue": "Eine Prognose hat ihr Datum erreicht und kann überprüft werden."
     },
-    "unsubscribedTitle": "Abbestellte Themen",
-    "noUnsubscribed": "Sie erhalten Lauf-E-Mails für jedes Thema, das welche sendet.",
-    "resubscribeHelp": "Um Lauf-E-Mails für eines dieser Themen wieder zu erhalten, verwenden Sie den Link in dessen letzter E-Mail."
+    "channels": {
+      "Email": "E-Mail",
+      "Push": "Telefon",
+      "InApp": "In der App"
+    },
+    "reasons": {
+      "NoEmailAddress": "Ihr Konto hat keine E-Mail-Adresse.",
+      "EmailNotVerified": "Bestätigen Sie Ihre E-Mail-Adresse, um E-Mails zu erhalten.",
+      "EmailNotConfigured": "Dieser Server ist nicht für den E-Mail-Versand eingerichtet.",
+      "EmailUnsubscribed": "Sie haben alle E-Mails abbestellt.",
+      "PushNotConfigured": "Dieser Server ist nicht für Telefonbenachrichtigungen eingerichtet.",
+      "NoDevice": "Schalten Sie Benachrichtigungen in der mobilen App ein.",
+      "Unavailable": "Derzeit nicht verfügbar."
+    },
+    "prefs": {
+      "title": "Worüber und wo ich informiert werde",
+      "intro": "Jeder Schalter speichert sofort. Themen und Ausgaben können ihre eigenen E-Mail- oder Telefonbenachrichtigungen weiterhin ausschalten.",
+      "kindColumn": "Benachrichtigung",
+      "cellLabel": "{kind}: {channel}",
+      "saved": "Benachrichtigungseinstellungen gespeichert",
+      "address": "E-Mails gehen an {address}.",
+      "unsubscribedTitle": "Abbestellte Themen",
+      "noUnsubscribed": "Sie erhalten Lauf-E-Mails für jedes Thema, das welche sendet.",
+      "unsubscribedHelp": "Für diese Themen erhalten Sie keine Lauf-E-Mails.",
+      "resubscribe": "Wieder abonnieren",
+      "resubscribeTopic": "{topic} wieder abonnieren",
+      "resubscribed": "Sie erhalten wieder Lauf-E-Mails für {topic}"
+    }
   },
   "feedbackControl": {
     "rate": "Bewerten",

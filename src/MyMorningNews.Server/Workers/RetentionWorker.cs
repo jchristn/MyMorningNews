@@ -44,6 +44,21 @@ namespace MyMorningNews.Server.Workers
             }
         }
 
+        /// <summary>
+        /// Days to keep in-app notifications, read or not. Default 90. Minimum 1, maximum 3650.
+        /// </summary>
+        public int NotificationRetentionDays
+        {
+            get
+            {
+                return _NotificationRetentionDays;
+            }
+            set
+            {
+                _NotificationRetentionDays = Math.Clamp(value, 1, 3650);
+            }
+        }
+
         #endregion
 
         #region Private-Members
@@ -51,6 +66,7 @@ namespace MyMorningNews.Server.Workers
         private readonly ServerContext _Server;
         private TimeSpan _Interval = TimeSpan.FromHours(1);
         private int _ExpiredSessionRetentionDays = 7;
+        private int _NotificationRetentionDays = 90;
 
         #endregion
 
@@ -113,6 +129,8 @@ namespace MyMorningNews.Server.Workers
                 int audit = _Server.Settings.Diagnostics.AuditRetentionDays > 0
                     ? await _Server.Database.AuditRecords.DeleteOlderThanAsync(null, DateTime.UtcNow.AddDays(-_Server.Settings.Diagnostics.AuditRetentionDays), token).ConfigureAwait(false)
                     : 0;
+                int notifications = await _Server.Database.Notifications.PruneAsync(DateTime.UtcNow.AddDays(-NotificationRetentionDays), token).ConfigureAwait(false);
+                if (notifications > 0) _Server.Logging.Info("[RetentionWorker] pruned " + notifications + " in-app notifications");
                 int purgedAccounts = await _Server.Account.PurgeDueAsync(DateTime.UtcNow, token).ConfigureAwait(false);
                 if (purgedAccounts > 0) _Server.Logging.Info("[RetentionWorker] purged " + purgedAccounts + " deleted accounts");
                 if (refresh > 0 || actionTokens > 0 || audit > 0)

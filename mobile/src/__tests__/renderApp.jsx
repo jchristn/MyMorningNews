@@ -43,7 +43,8 @@ export function fakeAudioPlayer() {
 /**
  * Render a screen signed in against a scripted fake server (`handlers` keyed by "METHOD /path"), inside every
  * provider the app wraps screens in. Resolves the render result plus `server` (its recorded calls), the auth
- * `controller`, and the player `service`. `options.createAudioPlayer` replaces the native player factory.
+ * `controller`, and the player `service`. `options.createAudioPlayer` replaces the native player factory, and
+ * `options.prefs` sets saved preferences (for example a registered push device or a remembered setup skip).
  */
 export async function renderSignedIn(ui, handlers = {}, options = {}) {
   const server = fakeServer({
@@ -57,7 +58,7 @@ export async function renderSignedIn(ui, handlers = {}, options = {}) {
   const i18n = initI18n('en');
   const utils = await render(
     <I18nextProvider i18n={i18n}>
-      <PrefsProvider initial={{ ...DEFAULT_PREFS, serverUrl: SERVER }}>
+      <PrefsProvider initial={{ ...DEFAULT_PREFS, serverUrl: SERVER, ...(options.prefs || {}) }}>
         <ThemeProvider preference="light">
           <AuthProvider controller={controller}>
             <ServerProvider>

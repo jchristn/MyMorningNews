@@ -270,7 +270,10 @@ COALESCE(SUM(reasoningtokens), 0) AS reasoning FROM llmcalls WHERE runid IS NOT 
             {
                 "ALTER TABLE topics ADD COLUMN IF NOT EXISTS voiceprofileid VARCHAR(64) REFERENCES voiceprofiles(id) ON DELETE SET NULL",
                 "CREATE INDEX IF NOT EXISTS ix_topics_voiceprofileid ON topics (voiceprofileid)"
-            })
+            }),
+            new SchemaMigration(23, "In-app notifications and per-kind, per-channel notification preferences", Concat(
+                NotificationQueries.Schema,
+                NotificationPreferenceQueries.Schema))
         };
 
         private static List<string> Concat(params IReadOnlyList<string>[] parts)

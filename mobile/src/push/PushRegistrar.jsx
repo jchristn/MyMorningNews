@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import * as Notifications from 'expo-notifications';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { notificationsApi } from '@/api/account';
 import { routeForNotification } from '@/lib/deepLinks';
 import { useAuth } from '@/state/AuthContext';
 import { usePrefs } from '@/state/PrefsContext';
@@ -12,11 +13,23 @@ Notifications.setNotificationHandler({
   handleNotification: async () => ({ shouldShowBanner: true, shouldShowList: true, shouldPlaySound: false, shouldSetBadge: false }),
 });
 
+/** True when the account has at least one Phone switch on. A server without the preference route counts as on. */
+export async function wantsPush(client) {
+  try {
+    const matrix = await notificationsApi.preferences(client);
+    const cells = matrix && Array.isArray(matrix.preferences) ? matrix.preferences : [];
+    return cells.some((c) => c && c.channel === 'Push' && c.enabled);
+  } catch {
+    return true;
+  }
+}
+
 /**
  * App-wide push plumbing, with no prompts: creates the Android channels, opens the right screen when a notification
  * is tapped (also when it launched the app), and, after sign-in, quietly refreshes this device's registration when
  * the user already turned notifications on and permission is granted. The permission prompt itself lives in
- * Account > Notifications.
+ * Account > Notifications. The refresh is skipped for an account with every Phone switch off (someone else signing in
+ * on this device has not opted in), so registering never turns anything on by itself.
  */
 export function PushRegistrar() {
   const { client, state } = useAuth();
@@ -52,6 +65,7 @@ export function PushRegistrar() {
     registeredFor.current = state.serverUrl;
     void (async () => {
       if (!(await permissionGranted().catch(() => false))) return;
+      if (!(await wantsPush(client))) return;
       const result = await registerForPush(client, { prompt: false, locale: currentLanguage() });
       if (result.status === 'registered' && result.device && result.device.id !== prefs.pushDeviceId) update({ pushDeviceId: result.device.id });
     })();

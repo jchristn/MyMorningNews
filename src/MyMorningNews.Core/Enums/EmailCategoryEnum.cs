@@ -23,6 +23,16 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// Every category.
         /// </summary>
-        All
+        All,
+
+        /// <summary>
+        /// Audio ready notices.
+        /// </summary>
+        AudioEmails,
+
+        /// <summary>
+        /// Prediction due notices.
+        /// </summary>
+        PredictionEmails
     }
 }

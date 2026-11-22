@@ -226,6 +226,11 @@ namespace MyMorningNews.Sdk
         public DevicesResource Devices { get; }
 
         /// <summary>
+        /// In-app notifications and notification preferences.
+        /// </summary>
+        public NotificationsResource Notifications { get; }
+
+        /// <summary>
         /// The caller's account: plan, promotional codes, usage meter, data export, and deletion, plus the public sign-up,
         /// email verification, and password reset routes.
         /// </summary>
@@ -313,6 +318,7 @@ namespace MyMorningNews.Sdk
             Voices = new VoicesResource(this);
             Vault = new VaultResource(this);
             Devices = new DevicesResource(this);
+            Notifications = new NotificationsResource(this);
             Account = new AccountResource(this);
             McpServers = new McpServersResource(this);
             Setup = new SetupResource(this);

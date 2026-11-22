@@ -764,6 +764,23 @@ def _range_header(byte_range: ByteRange) -> Optional[str]:
 # ---------------------------------------------------------------------------
 
 
+class NotificationKind(str, Enum):
+    """What a notification is about."""
+    RUN_RESULTS = "RunResults"
+    BRIEFING_READY = "BriefingReady"
+    AUDIO_READY = "AudioReady"
+    RUN_FAILED = "RunFailed"
+    CAP_REACHED = "CapReached"
+    PREDICTION_DUE = "PredictionDue"
+
+
+class NotificationChannel(str, Enum):
+    """Where a notification is delivered."""
+    EMAIL = "Email"
+    PUSH = "Push"
+    IN_APP = "InApp"
+
+
 class SortDirection(str, Enum):
     """Sort direction for enumeration."""
 
@@ -2996,6 +3013,67 @@ class Device(Model):
 
 
 @dataclass
+class Notification(Model):
+    """An in-app notification for the signed-in user, with the item it points to."""
+    id: Optional[str] = None
+    tenant_id: Optional[str] = None
+    user_id: Optional[str] = None
+    kind: Optional[str] = None
+    title: Optional[str] = None
+    body: Optional[str] = None
+    topic_id: Optional[str] = None
+    run_id: Optional[str] = None
+    briefing_id: Optional[str] = None
+    media_asset_id: Optional[str] = None
+    prediction_id: Optional[str] = None
+    read_utc: Optional[str] = None
+    active: Optional[bool] = None
+    created_utc: Optional[str] = None
+    last_update_utc: Optional[str] = None
+
+
+@dataclass
+class NotificationPreferenceCell(Model):
+    """One cell of the notification preference matrix: a kind of notification on one channel."""
+    kind: Optional[str] = None
+    channel: Optional[str] = None
+    enabled: Optional[bool] = None
+
+
+@dataclass
+class NotificationChannelStatus(Model):
+    """Whether a notification channel can deliver right now, and why not."""
+    channel: Optional[str] = None
+    available: Optional[bool] = None
+    reason: Optional[str] = None
+
+
+@dataclass
+class NotificationPreferences(Model):
+    """My notification preferences: every kind on every channel, and whether each channel can deliver."""
+    _nested: ClassVar[Dict[str, str]] = {'preferences': 'NotificationPreferenceCell', 'channels': 'NotificationChannelStatus'}
+    preferences: Optional[List[NotificationPreferenceCell]] = None
+    channels: Optional[List[NotificationChannelStatus]] = None
+    address: Optional[str] = None
+    unsubscribed_topic_ids: Optional[List[str]] = None
+
+    def enabled(self, kind: Any, channel: Any) -> bool:
+        """Whether a kind is on for a channel (``False`` when the cell is missing)."""
+        k = kind.value if isinstance(kind, Enum) else kind
+        c = channel.value if isinstance(channel, Enum) else channel
+        for cell in self.preferences or []:
+            if cell.kind == k and cell.channel == c:
+                return bool(cell.enabled)
+        return False
+
+
+@dataclass
+class NotificationCount(Model):
+    """A number of notifications: how many are unread, or how many were marked read."""
+    count: Optional[int] = None
+
+
+@dataclass
 class EffectivePlan(Model):
     """The plan a user has right now and its entitlement values."""
     plan: Optional[Any] = None
@@ -4431,6 +4509,69 @@ class VaultResource(_Resource):
         return self._many(VaultUsageItem, "GET", API + "/vault/credentials/" + _seg(credential_id) + "/usage")
 
 
+class NotificationsResource(_Resource):
+    """In-app notifications and notification preferences under ``/v1.0/api/notifications``."""
+
+    def list(self, **filters: Any) -> Page[Notification]:
+        """List my in-app notifications, newest first (filters: ``unread``, ``kind``, paging)."""
+        return self._page(Notification, API + "/notifications", filters)
+
+    def unread_count(self) -> int:
+        """How many of my in-app notifications are unread."""
+        return int(self._one(NotificationCount, "GET", API + "/notifications/unread-count").count or 0)
+
+    def mark_read(self, notification_id: str) -> Notification:
+        """Mark a notification as read.
+
+        Raises:
+            NotFoundError: The notification does not exist or is not mine.
+        """
+        return self._one(Notification, "POST", API + "/notifications/" + _seg(notification_id) + "/read")
+
+    def mark_all_read(self) -> int:
+        """Mark all my notifications as read and return how many were marked."""
+        return int(self._one(NotificationCount, "POST", API + "/notifications/read-all").count or 0)
+
+    def delete(self, notification_id: str) -> None:
+        """Delete a notification.
+
+        Raises:
+            NotFoundError: The notification does not exist or is not mine.
+        """
+        self._json("DELETE", API + "/notifications/" + _seg(notification_id))
+
+    def preferences(self) -> NotificationPreferences:
+        """My notification preferences: every kind on every channel, and whether each channel can deliver."""
+        return self._one(NotificationPreferences, "GET", API + "/notifications/preferences")
+
+    def set_preferences(self, preferences: Optional[Sequence[Mapping[str, Any]]] = None, unsubscribe_topic_ids: Optional[Sequence[str]] = None,
+                        resubscribe_topic_ids: Optional[Sequence[str]] = None) -> NotificationPreferences:
+        """Change my notification preferences. Only the cells that are sent change.
+
+        Args:
+            preferences: Cells such as ``{"kind": "AudioReady", "channel": "Push", "enabled": True}``.
+            unsubscribe_topic_ids: Topics to stop run emails for.
+            resubscribe_topic_ids: Topics to get run emails for again.
+        """
+        cells = []
+        for cell in preferences or []:
+            c = cell.to_wire() if isinstance(cell, Model) else dict(cell)
+            kind, channel = c.get("kind"), c.get("channel")
+            cells.append({"kind": kind.value if isinstance(kind, Enum) else kind, "channel": channel.value if isinstance(channel, Enum) else channel, "enabled": bool(c.get("enabled"))})
+        body: Dict[str, Any] = {}
+        if preferences is not None:
+            body["preferences"] = cells
+        if unsubscribe_topic_ids is not None:
+            body["unsubscribeTopicIds"] = list(unsubscribe_topic_ids)
+        if resubscribe_topic_ids is not None:
+            body["resubscribeTopicIds"] = list(resubscribe_topic_ids)
+        return self._one(NotificationPreferences, "PUT", API + "/notifications/preferences", body=body)
+
+    def set_preference(self, kind: Any, channel: Any, enabled: bool) -> NotificationPreferences:
+        """Turn one kind on or off for one channel."""
+        return self.set_preferences([{"kind": kind, "channel": channel, "enabled": enabled}])
+
+
 class DevicesResource(_Resource):
     """Push notification devices under ``/v1.0/api/devices``."""
 
@@ -4848,6 +4989,7 @@ class MyMorningNewsClient:
         self.voices = VoicesResource(self)
         self.vault = VaultResource(self)
         self.devices = DevicesResource(self)
+        self.notifications = NotificationsResource(self)
         self.account = AccountResource(self)
         self.mcp_servers = McpServersResource(self)
         self.setup = SetupResource(self)

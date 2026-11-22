@@ -72,6 +72,11 @@ namespace MyMorningNews.Core.Pipeline
         public Email.EmailService? Email { get; set; } = null;
 
         /// <summary>
+        /// Notifications; when set, the Notify stage tells the topic's recipients and owner about the run.
+        /// </summary>
+        public NotificationService? Notifications { get; set; } = null;
+
+        /// <summary>
         /// Learning service for feedback exemplars and active preferences in prompts; null leaves them empty.
         /// </summary>
         public MyMorningNews.Core.Feedback.LearningService? Learning { get; set; } = null;

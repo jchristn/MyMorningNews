@@ -6,13 +6,15 @@ namespace MyMorningNews.Core.Services
     using System.Threading;
     using System.Threading.Tasks;
     using MyMorningNews.Core.Database;
+    using MyMorningNews.Core.Enums;
     using MyMorningNews.Core.Models;
     using SyslogLogging;
 
     /// <summary>
     /// Tells owners when their predictions reach their horizon and are due for review (owner decision 2026-11-20: one
-    /// push per prediction). Each prediction is noticed once (<see cref="Prediction.DueNotifiedUtc"/>). When one user has
-    /// more than <see cref="GroupAbove"/> predictions due in the same pass, they get one combined push instead. Payloads
+    /// notice per prediction), through <see cref="NotificationService"/> on the channels the owner turned on. Each
+    /// prediction is noticed once (<see cref="Prediction.DueNotifiedUtc"/>). When one user has more than
+    /// <see cref="GroupAbove"/> predictions due in the same pass, they get one combined notice instead. Push payloads
     /// carry prediction IDs, never the statement. Thread safe (stateless beyond the database).
     /// </summary>
     public class PredictionNoticeService
@@ -20,7 +22,7 @@ namespace MyMorningNews.Core.Services
         #region Public-Members
 
         /// <summary>
-        /// Above this many due predictions for one user in one pass, send one combined push. Default 3, minimum 1,
+        /// Above this many due predictions for one user in one pass, send one combined notice. Default 3, minimum 1,
         /// maximum 50.
         /// </summary>
         public int GroupAbove
@@ -34,7 +36,7 @@ namespace MyMorningNews.Core.Services
         #region Private-Members
 
         private readonly DatabaseDriverBase _Database;
-        private readonly PushService _Push;
+        private readonly NotificationService _Notifications;
         private readonly LoggingModule _Logging;
         private int _GroupAbove = 3;
 
@@ -46,13 +48,13 @@ namespace MyMorningNews.Core.Services
         /// Create the service.
         /// </summary>
         /// <param name="database">Database.</param>
-        /// <param name="push">Push service.</param>
+        /// <param name="notifications">Notifications.</param>
         /// <param name="logging">Logging.</param>
         /// <exception cref="ArgumentNullException">An argument is null.</exception>
-        public PredictionNoticeService(DatabaseDriverBase database, PushService push, LoggingModule logging)
+        public PredictionNoticeService(DatabaseDriverBase database, NotificationService notifications, LoggingModule logging)
         {
             _Database = database ?? throw new ArgumentNullException(nameof(database));
-            _Push = push ?? throw new ArgumentNullException(nameof(push));
+            _Notifications = notifications ?? throw new ArgumentNullException(nameof(notifications));
             _Logging = logging ?? throw new ArgumentNullException(nameof(logging));
         }
 
@@ -79,31 +81,17 @@ namespace MyMorningNews.Core.Services
                 {
                     if (items.Count > _GroupAbove)
                     {
-                        await _Push.SendToUserAsync(first.TenantId, first.UserId, new PushMessage
-                        {
-                            Title = items.Count + " predictions are due",
-                            Body = "Check whether they came true.",
-                            ChannelId = "predictions",
-                            Data = new Dictionary<string, string> { { "kind", "prediction.due" }, { "count", items.Count.ToString(System.Globalization.CultureInfo.InvariantCulture) } }
-                        }, token).ConfigureAwait(false);
+                        await _Notifications.NotifyAsync(first.TenantId, first.UserId, NotificationKindEnum.PredictionDue, new NotificationContext { Prediction = first, PredictionCount = items.Count }, token).ConfigureAwait(false);
                     }
                     else
                     {
                         foreach (Prediction p in items)
-                        {
-                            await _Push.SendToUserAsync(p.TenantId, p.UserId, new PushMessage
-                            {
-                                Title = "A prediction is due",
-                                Body = "Check whether it came true.",
-                                ChannelId = "predictions",
-                                Data = new Dictionary<string, string> { { "kind", "prediction.due" }, { "predictionId", p.Id } }
-                            }, token).ConfigureAwait(false);
-                        }
+                            await _Notifications.NotifyAsync(p.TenantId, p.UserId, NotificationKindEnum.PredictionDue, new NotificationContext { Prediction = p, PredictionCount = 1 }, token).ConfigureAwait(false);
                     }
                 }
                 catch (Exception ex) when (!(ex is OperationCanceledException))
                 {
-                    _Logging.Warn("[PredictionNotice] push failed for user " + first.UserId + ": " + ex.Message);
+                    _Logging.Warn("[PredictionNotice] notice failed for user " + first.UserId + ": " + ex.Message);
                 }
 
                 foreach (Prediction p in items)

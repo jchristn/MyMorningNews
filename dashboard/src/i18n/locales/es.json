@@ -197,6 +197,7 @@
       "settings": "Configuración",
       "serverInfo": "Información del servidor",
       "profile": "Perfil",
+      "notifications": "Notificaciones",
       "adminUsage": "Uso de la plataforma",
       "oneTimeRequests": "Solicitudes puntuales",
       "listen": "Escuchar",
@@ -310,6 +311,9 @@
     },
     "profile": {
       "summary": "Tu cuenta"
+    },
+    "notifications": {
+      "summary": "Elige de qué te avisamos y dónde"
     },
     "adminUsage": {
       "summary": "Costo de la plataforma por inquilino, la base para las decisiones de precios"
@@ -1050,7 +1054,9 @@
     "password": "Contraseña",
     "passwordChanged": "Contraseña cambiada",
     "saved": "Perfil guardado",
-    "timeZoneHelp": "Déjalo en blanco para usar la zona horaria de tu navegador ({zone})."
+    "timeZoneHelp": "Déjalo en blanco para usar la zona horaria de tu navegador ({zone}).",
+    "notificationsMoved": "Las opciones de correo y de otras notificaciones están ahora en la página Notificaciones.",
+    "notificationsLink": "Abrir preferencias de notificaciones"
   },
   "enums": {
     "task": {
@@ -3679,23 +3685,60 @@
       "settingsHelp": "Guarda primero tus cambios y luego envíate una prueba."
     }
   },
-  "emailPrefs": {
-    "title": "Preferencias de correo",
-    "address": "Los correos van a {address}.",
-    "saved": "Preferencias de correo guardadas",
-    "categories": {
-      "runEmails": "Correos de ejecuciones",
-      "briefingEmails": "Correos de resúmenes informativos",
-      "failureEmails": "Correos de fallos"
+  "notifications": {
+    "bell": "Notificaciones",
+    "bellUnread": "Notificaciones, {count} sin leer",
+    "panelTitle": "Notificaciones",
+    "markAllRead": "Marcar todo como leído",
+    "empty": "Estás al día.",
+    "emptyOff": "Las notificaciones en la aplicación están desactivadas.",
+    "emptyOffLink": "Actívalas en tus preferencias de notificaciones",
+    "settingsLink": "Preferencias de notificaciones",
+    "unread": "Sin leer",
+    "kinds": {
+      "RunResults": "Nuevos hallazgos",
+      "BriefingReady": "Resumen informativo listo",
+      "AudioReady": "Audio listo",
+      "RunFailed": "Ejecución fallida",
+      "CapReached": "Límite del plan alcanzado",
+      "PredictionDue": "Predicción vencida"
     },
-    "help": {
-      "runEmails": "Un resumen después de cada ejecución de tus temas.",
-      "briefingEmails": "Cuando se publica un resumen informativo de una edición o ejecución.",
-      "failureEmails": "Cuando falla una ejecución."
+    "descriptions": {
+      "RunResults": "Una ejecución de investigación encontró algo nuevo para uno de tus temas.",
+      "BriefingReady": "Un resumen informativo de una edición o puntual está listo para leer.",
+      "AudioReady": "Un resumen informativo se convirtió en audio que puedes reproducir.",
+      "RunFailed": "Una ejecución de investigación no pudo terminar.",
+      "CapReached": "Se omitió una ejecución programada porque tu plan alcanzó un límite.",
+      "PredictionDue": "Una predicción llegó a su fecha y está lista para revisarse."
     },
-    "unsubscribedTitle": "Temas de los que te diste de baja",
-    "noUnsubscribed": "Recibes correos de ejecución de todos los temas que los envían.",
-    "resubscribeHelp": "Para volver a recibir correos de ejecución de uno de ellos, usa el enlace de su último correo."
+    "channels": {
+      "Email": "Correo",
+      "Push": "Teléfono",
+      "InApp": "En la aplicación"
+    },
+    "reasons": {
+      "NoEmailAddress": "Tu cuenta no tiene dirección de correo.",
+      "EmailNotVerified": "Confirma tu dirección de correo para recibir correos.",
+      "EmailNotConfigured": "Este servidor no está configurado para enviar correo.",
+      "EmailUnsubscribed": "Te diste de baja de todos los correos.",
+      "PushNotConfigured": "Este servidor no está configurado para enviar notificaciones al teléfono.",
+      "NoDevice": "Activa las notificaciones en la aplicación móvil.",
+      "Unavailable": "No disponible en este momento."
+    },
+    "prefs": {
+      "title": "De qué avisarme y dónde",
+      "intro": "Cada interruptor se guarda al instante. Los temas y las ediciones pueden seguir desactivando sus propios correos o notificaciones al teléfono.",
+      "kindColumn": "Notificación",
+      "cellLabel": "{kind}: {channel}",
+      "saved": "Preferencias de notificaciones guardadas",
+      "address": "Los correos van a {address}.",
+      "unsubscribedTitle": "Temas de los que te diste de baja",
+      "noUnsubscribed": "Recibes correos de ejecución de todos los temas que los envían.",
+      "unsubscribedHelp": "No recibes correos de ejecución de estos temas.",
+      "resubscribe": "Volver a suscribirme",
+      "resubscribeTopic": "Volver a suscribirme a {topic}",
+      "resubscribed": "Volverás a recibir correos de ejecución de {topic}"
+    }
   },
   "feedbackControl": {
     "rate": "Valorar",

@@ -156,20 +156,42 @@ export function mapDeepLink(input) {
   }
 }
 
+/** The full player for one episode: it loads and plays that briefing's audio when it is not the current track. */
+export function playerRoute(briefingId, mediaAssetId) {
+  return '/listen/player?mediaId=' + enc(mediaAssetId) + '&briefingId=' + enc(briefingId);
+}
+
 /**
  * The route for a tapped push notification. The payload carries `kind` and IDs, never content:
- * `{ kind, briefingId | topicId | predictionId }`.
+ * `{ kind, briefingId | mediaAssetId | runId | topicId | predictionId }`. `audio.ready` opens the player on that
+ * briefing's audio and `run.results` opens the run; every other kind goes to the item it names.
  */
 export function routeForNotification(data) {
   const d = data && typeof data === 'object' ? data : {};
   const str = (v) => (typeof v === 'string' && v.length > 0 ? v : null);
+  const kind = str(d.kind) || '';
+  if (kind === 'audio.ready' && str(d.briefingId) && str(d.mediaAssetId)) return playerRoute(d.briefingId, d.mediaAssetId);
+  if (kind === 'run.results' && str(d.runId)) return '/topics/runs/' + enc(d.runId);
   if (str(d.briefingId)) return '/today/briefings/' + enc(d.briefingId);
   if (str(d.predictionId)) return '/today/predictions/' + enc(d.predictionId);
   if (str(d.topicId)) return '/topics/' + enc(d.topicId);
-  const kind = str(d.kind) || '';
   if (kind.startsWith('account') || kind === 'cap.reached' || kind === 'test') return '/account';
   if (kind.startsWith('prediction')) return '/today/predictions';
-  if (kind.startsWith('briefing')) return '/today';
+  if (kind.startsWith('briefing') || kind.startsWith('audio')) return '/today';
+  if (kind.startsWith('run')) return '/topics';
   if (str(d.url)) return mapDeepLink(d.url);
   return null;
+}
+
+/** Push payload kinds for the in-app notification kinds (NotificationKindEnum). */
+const PUSH_KINDS = { RunResults: 'run.results', BriefingReady: 'briefing.ready', AudioReady: 'audio.ready', RunFailed: 'run.failed', CapReached: 'cap.reached', PredictionDue: 'prediction.due' };
+
+/** The route for an in-app notification (`{ kind, topicId?, runId?, briefingId?, mediaAssetId?, predictionId? }`): where its push opens, except that a failed run opens the run itself and a plan limit opens Your usage. */
+export function routeForInApp(notification) {
+  const n = notification && typeof notification === 'object' ? notification : {};
+  const kind = PUSH_KINDS[n.kind];
+  if (!kind) return null;
+  if (n.kind === 'CapReached') return '/account/usage';
+  if (n.kind === 'RunFailed' && typeof n.runId === 'string' && n.runId) return '/topics/runs/' + enc(n.runId);
+  return routeForNotification({ kind, topicId: n.topicId, runId: n.runId, briefingId: n.briefingId, mediaAssetId: n.mediaAssetId, predictionId: n.predictionId });
 }

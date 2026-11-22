@@ -86,6 +86,11 @@ namespace MyMorningNews.Server
         public PushService Push { get; }
 
         /// <summary>
+        /// User notifications across email, push, and the in-app list, with per-user preferences.
+        /// </summary>
+        public NotificationService Notifications { get; set; } = null!;
+
+        /// <summary>
         /// Topic refinement wizard.
         /// </summary>
         public RefinementService Refinement { get; }

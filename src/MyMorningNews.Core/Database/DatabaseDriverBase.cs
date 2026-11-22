@@ -132,6 +132,16 @@ namespace MyMorningNews.Core.Database
         public IDeviceMethods Devices { get; protected set; } = null!;
 
         /// <summary>
+        /// In-app notification data access.
+        /// </summary>
+        public INotificationMethods Notifications { get; protected set; } = null!;
+
+        /// <summary>
+        /// Notification preference data access.
+        /// </summary>
+        public INotificationPreferenceMethods NotificationPreferences { get; protected set; } = null!;
+
+        /// <summary>
         /// Topics.
         /// </summary>
         public ITopicMethods Topics { get; protected set; } = null!;

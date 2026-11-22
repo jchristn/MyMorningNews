@@ -10,6 +10,7 @@ namespace MyMorningNews.Server.Routes
     using MyMorningNews.Core.Requests;
     using MyMorningNews.Core.Responses;
     using MyMorningNews.Core.Security;
+    using MyMorningNews.Core.Services;
     using WatsonWebserver;
     using WatsonWebserver.Core;
 
@@ -41,8 +42,10 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/email/test", TestAsync, null, openApiMetadata: Doc("Send a test email to me", "Email"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}/email-preview", PreviewAsync, null, openApiMetadata: Doc("Render a run digest without sending it", "Email",
                 "The lead paragraph comes from the stored run summary. Pass summarize=true to have the model write it as a real send would (one model call).").WithParameter(QueryParam("summarize", typeof(bool))));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/email-preferences", PreferencesAsync, null, openApiMetadata: Doc("My email preferences", "Email"));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.PUT, "/v1.0/api/email-preferences", UpdatePreferencesAsync, null, openApiMetadata: Doc("Change my email preferences", "Email")
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/email-preferences", PreferencesAsync, null, openApiMetadata: Doc("My email preferences", "Email",
+                "The three switches are the email column of GET /v1.0/api/notifications/preferences: runEmails is RunResults, briefingEmails is BriefingReady, failureEmails is RunFailed."));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.PUT, "/v1.0/api/email-preferences", UpdatePreferencesAsync, null, openApiMetadata: Doc("Change my email preferences", "Email",
+                "Saves the same cells as PUT /v1.0/api/notifications/preferences on the email channel (runEmails is RunResults, briefingEmails is BriefingReady, failureEmails is RunFailed).")
                 .WithRequestBody(Body<EmailPreferencesRequest>()));
         }
 
@@ -162,12 +165,16 @@ namespace MyMorningNews.Server.Routes
             List<EmailSuppression> rows = address.Length == 0 ? new List<EmailSuppression>()
                 : (await Server.Database.EmailSuppressions.EnumerateAsync(new EmailSuppressionFilter { TenantId = tenantId, Recipient = address, PageSize = 500 }, ctx.Token).ConfigureAwait(false)).Items;
             bool all = rows.Any(r => r.Category == EmailCategoryEnum.All);
+            // The three switches are the email cells of the notification preference matrix (one store, no drift).
+            User? me = await Server.Database.Users.ReadAsync(tenantId, Context(ctx).UserId ?? String.Empty, ctx.Token).ConfigureAwait(false);
+            List<NotificationPreferenceCell> cells = me == null ? new List<NotificationPreferenceCell>() : await Server.Notifications.Preferences.ReadAllAsync(me, ctx.Token).ConfigureAwait(false);
+            bool On(NotificationKindEnum kind) => !all && (cells.FirstOrDefault(c => c.Kind == kind && c.Channel == NotificationChannelEnum.Email)?.Enabled ?? !rows.Any(r => r.TopicId == null && NotificationPreferenceService.KindFor(r.Category) == kind));
             return new EmailPreferencesResponse
             {
                 Address = address,
-                RunEmails = !all && !rows.Any(r => r.Category == EmailCategoryEnum.RunEmails && r.TopicId == null),
-                BriefingEmails = !all && !rows.Any(r => r.Category == EmailCategoryEnum.BriefingEmails && r.TopicId == null),
-                FailureEmails = !all && !rows.Any(r => r.Category == EmailCategoryEnum.FailureEmails && r.TopicId == null),
+                RunEmails = On(NotificationKindEnum.RunResults),
+                BriefingEmails = On(NotificationKindEnum.BriefingReady),
+                FailureEmails = On(NotificationKindEnum.RunFailed),
                 UnsubscribedTopicIds = rows.Where(r => r.Category == EmailCategoryEnum.RunEmails && r.TopicId != null).Select(r => r.TopicId!).Distinct().ToList()
             };
         }

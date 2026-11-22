@@ -361,6 +361,16 @@ namespace MyMorningNews.Core
         public const string BriefingProgress = "bpr_";
 
         /// <summary>
+        /// Prefix for Notification identifiers.
+        /// </summary>
+        public const string Notification = "ntf_";
+
+        /// <summary>
+        /// Prefix for NotificationPreference identifiers.
+        /// </summary>
+        public const string NotificationPreference = "npf_";
+
+        /// <summary>
         /// Prefix for request history entries.
         /// </summary>
         public const string RequestHistory = "req_";

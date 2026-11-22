@@ -96,7 +96,7 @@ describe('setup page for administrators', () => {
     // The choices stay so the next try is one click.
     expect(screen.getByRole('radio', { name: /^Claude Code/ })).toBeChecked();
     expect(screen.getByRole('radio', { name: 'Subscription token' })).toBeChecked();
-    expect(screen.queryByTestId('setup-ready')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('setup-complete')).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Connect and test' }));
     const success = await screen.findByText('Connected. Claude Code answered the test prompt.');
@@ -107,11 +107,20 @@ describe('setup page for administrators', () => {
     expect(within(summary).getByText('claude-opus-5-5')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Change' })).toBeInTheDocument();
 
-    const ready = screen.getByTestId('setup-ready');
-    expect(ready).toHaveTextContent("You're ready");
-    expect(within(ready).getByRole('link', { name: 'Create your first topic' })).toHaveAttribute('href', '/dashboard/topics/new');
-    await userEvent.click(within(ready).getByRole('link', { name: 'Go to Home' }));
-    await waitFor(() => expect(screen.queryByTestId('setup-progress')).not.toBeInTheDocument());
+    // Setup just finished in this session: a small note, not a takeover. The page is now a status page.
+    const done = screen.getByTestId('setup-complete');
+    expect(done).toHaveTextContent('Setup is complete. The AI model and web search both work.');
+    expect(screen.queryByText("You're ready")).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Create your first topic' })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('setup-progress')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('setup-skip')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Setup', level: 1 })).toBeInTheDocument();
+    expect(screen.queryByTestId('setup-callout')).not.toBeInTheDocument();
+    expect(within(done).getByRole('link', { name: 'Go to Topics' })).toHaveAttribute('href', '/dashboard/topics');
+    await userEvent.click(within(done).getByRole('button', { name: 'Dismiss' }));
+    expect(screen.queryByTestId('setup-complete')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('link', { name: 'Topics' }));
+    expect(await screen.findByRole('heading', { name: 'Topics', level: 1 })).toBeInTheDocument();
     expect(client.connectSetup).toHaveBeenCalledTimes(2);
   });
 
@@ -210,8 +219,7 @@ describe('setup page for administrators', () => {
   it('summarizes a working model and reopens the flow with Change, keeping the stored token', async () => {
     const connectSetup = vi.fn(async () => CLAUDE_CODE_READY);
     renderRoute('/dashboard/setup', { getSetupStatus: vi.fn(async () => CLAUDE_CODE_READY), connectSetup });
-    expect(await screen.findByTestId('setup-ready')).toBeInTheDocument();
-    const summary = screen.getByTestId('setup-check-model:mep_2');
+    const summary = await screen.findByTestId('setup-check-model:mep_2');
     expect(within(summary).getByText('Subscription token')).toBeInTheDocument();
     expect(within(summary).getByText(/^Verified /)).toBeInTheDocument();
     expect(screen.queryByRole('group', { name: 'Use your AI subscription' })).not.toBeInTheDocument();
@@ -278,8 +286,8 @@ describe('setup page for administrators', () => {
     // The form stays open with the new choice, and the working model is still shown and still ready.
     expect(screen.getByRole('radio', { name: /^Codex/ })).toBeChecked();
     expect(within(screen.getByTestId('setup-check-model:mep_2')).getByText('Subscription token')).toBeInTheDocument();
-    expect(screen.getByTestId('setup-ready')).toBeInTheDocument();
-    expect(within(screen.getByTestId('setup-progress')).getAllByText('Done')).toHaveLength(2);
+    expect(screen.getByRole('heading', { name: 'Setup', level: 1 })).toBeInTheDocument();
+    expect(screen.queryByTestId('setup-progress')).not.toBeInTheDocument();
   });
 
   it('sends a provider refusal to the result area', async () => {
@@ -306,7 +314,7 @@ describe('setup page for administrators', () => {
   it('verifies once on open when a sign-in is stored but untested', async () => {
     const verifySetup = vi.fn(async () => READY_SETUP);
     renderRoute('/dashboard/setup', { getSetupStatus: vi.fn(async () => status({ model: { state: 'Unverified', verifiedUtc: null } })), verifySetup });
-    expect(await screen.findByTestId('setup-ready')).toBeInTheDocument();
+    expect(await screen.findByTestId('setup-complete')).toBeInTheDocument();
     expect(verifySetup).toHaveBeenCalledTimes(1);
   });
 
@@ -397,7 +405,7 @@ describe('SetupRequired refusals', () => {
     expect(screen.getByTestId('setup-required-link')).toHaveAttribute('href', '/dashboard/setup');
   });
 
-  it('re-reads the setup status and re-engages the gate', async () => {
+  it('re-reads the setup status and warns in place, without sending a set up workspace back to Setup', async () => {
     const getSetupStatus = vi.fn(async () => READY_SETUP);
     renderRoute('/dashboard/topics', { getSetupStatus });
     expect(await screen.findByRole('heading', { name: 'Topics', level: 1 })).toBeInTheDocument();
@@ -405,9 +413,22 @@ describe('SetupRequired refusals', () => {
     act(() => {
       window.dispatchEvent(new CustomEvent(SETUP_REQUIRED_EVENT, { detail: { path: '/v1.0/api/refinement-sessions', message: 'Connect and test an AI model before starting research.' } }));
     });
+    const warning = await screen.findByTestId('setup-warning');
+    expect(warning).toHaveTextContent('Setup is not finished. Connect and test an AI model before starting research.');
+    expect(within(warning).getByRole('link', { name: 'Finish setup' })).toHaveAttribute('href', '/dashboard/setup');
+    // Still on Topics: the first-run guide does not come back for a workspace that was set up.
+    expect(screen.getByRole('heading', { name: 'Topics', level: 1 })).toBeInTheDocument();
+    expect(screen.queryByTestId('setup-progress')).not.toBeInTheDocument();
+    expect(await screen.findByTestId('setup-callout')).toBeInTheDocument();
+
+    // The callout is the way back, and the Setup page says what failed.
+    await userEvent.click(screen.getByTestId('setup-callout'));
     expect(await screen.findByTestId('setup-progress')).toBeInTheDocument();
     expect(screen.getByText('Connect and test an AI model before starting research.')).toBeInTheDocument();
     expect(screen.getByText('credit balance is too low')).toBeInTheDocument();
     expect(screen.getByText('Check that the key is right and that the account has billing set up or credit left.')).toBeInTheDocument();
+    expect(screen.queryByTestId('setup-skip')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('link', { name: 'Topics' }));
+    expect(await screen.findByRole('heading', { name: 'Topics', level: 1 })).toBeInTheDocument();
   });
 });

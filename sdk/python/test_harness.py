@@ -1665,6 +1665,9 @@ def t_voices(h: Harness) -> str:
     except mmn.ServerError as ex:
         eq(ex.code, "TtsError", "speech failure is a typed 502")
         note = "speech service unavailable (typed TtsError)"
+    available = h.client.voices.available()
+    check(any(x.voice_profile_id == v.id and x.label for x in available.voices or []), "voice profile among the available voices")
+    expect_error(BadRequestError, lambda: h.client.voices.preview(voice="   "))
     h.client.voices.delete(v.id)
     expect_error(NotFoundError, lambda: h.client.voices.get(v.id))
     expect_error(BadRequestError, lambda: h.client.voices.create(name=h.name("novoice")))

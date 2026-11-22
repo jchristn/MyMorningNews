@@ -189,6 +189,7 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
  * @property {string|null} briefingTemplateId Briefing template, or null for the default.
  * @property {boolean} agenticSearch Agentic search: the research model searches and reads pages itself (web_search, fetch_url, and allowed MCP tools). Default false.
  * @property {string[]} mcpToolIds MCP tool IDs (`mct_...`) the topic may use in agentic search. Empty allows every enabled tool.
+ * @property {string|null} voiceProfileId Voice profile that reads the topic's run briefings aloud, or null for the workspace default voice.
  * @property {string|null} lastRunUtc Last run.
  * @property {string|null} lastRefinedUtc Last refinement.
  * @property {boolean} active Active.
@@ -765,17 +766,19 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
 /**
  * One thing the workspace needs before people can use it, and whether it is ready.
  * @typedef {object} SetupCheck
- * @property {string} key Stable key: `model:{endpointId}` (or `model:none`), `search`, `embeddings`, or `email`.
- * @property {'Model'|'Search'|'Embeddings'|'Email'} kind What the check covers.
+ * @property {string} key Stable key: `model:{endpointId}` (or `model:none`), `search`, `embeddings`, `email`, or `speech`.
+ * @property {'Model'|'Search'|'Embeddings'|'Email'|'Speech'} kind What the check covers. Model and Search are required;
+ *     Embeddings, Email, and Speech (the text to speech endpoint) are optional and sent to administrators only.
  * @property {boolean} required Whether the workspace is blocked until this check is ready.
  * @property {'Ready'|'Missing'|'Unverified'|'Failed'} state State.
  * @property {string|null} [message] Plain-language detail, such as the provider's error text.
  * @property {string|null} [resourceId] Model endpoint or search provider ID, when the check is about one.
  * @property {string|null} [resourceName] Model endpoint or search provider name.
  * @property {string|null} [provider] Provider name.
- * @property {string|null} [model] Model name, for model and embedding checks.
- * @property {string|null} [baseUrl] Server address, for Ollama and OpenAI-compatible model checks shown to
- *     administrators. Null otherwise.
+ * @property {string|null} [model] Model name, for model, embedding, and speech checks.
+ * @property {string|null} [voice] Default voice, for the speech check. Null otherwise.
+ * @property {string|null} [baseUrl] Server address, for Ollama and OpenAI-compatible model checks and the speech check,
+ *     shown to administrators. Null otherwise.
  * @property {string[]} tasks Tasks the endpoint serves, for model checks.
  * @property {'ApiKey'|'AccessToken'|'AuthFile'|'ServerSignIn'|'None'|null} [authMethod] How the endpoint signs in, for
  *     model checks.
@@ -784,6 +787,28 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
  * @property {boolean} hasApiKey Whether a key is stored or supplied by the platform.
  * @property {boolean} usesPlatformKey Whether the endpoint uses the hosted service's key, which users never enter.
  * @property {string|null} [verifiedUtc] When the resource was last checked.
+ */
+
+/**
+ * A voice someone can choose for a topic: a workspace voice profile, or a voice the speech server offers.
+ * @typedef {object} AvailableVoice
+ * @property {string} voice The speech server's voice ID, such as `af_heart`.
+ * @property {string} label A readable label, such as "Heart (American English, female)"; the voice ID when it follows no
+ *     known naming.
+ * @property {string|null} voiceProfileId The workspace voice profile that uses this voice, or null for a speech server
+ *     voice that has no profile yet (choosing it for a topic creates one).
+ * @property {string|null} name The voice profile's name, or null.
+ * @property {boolean} isDefault True for the workspace's default voice profile.
+ */
+
+/**
+ * The voices someone can choose for a topic.
+ * @typedef {object} AvailableVoicesResponse
+ * @property {boolean} enabled Whether speech is turned on for this server.
+ * @property {boolean} listed True when the speech server listed its voices; false when the list is only the configured
+ *     default voices.
+ * @property {string|null} defaultVoiceProfileId The workspace's default voice profile, or null.
+ * @property {AvailableVoice[]} voices Voice profiles first, then the speech server's other voices.
  */
 
 /**
@@ -3361,6 +3386,28 @@ export class VoicesResource extends CrudResource {
     test(id, body = {}) {
         return this._req('POST', this._path(id, '/test'), { body, raw: true });
     }
+
+    /**
+     * The voices a topic can use: the workspace's voice profiles, then the voices the speech server offers that have no
+     * profile yet, each with a readable label. Anyone who can read topics may call it. To use one for a topic, send its
+     * `voiceProfileId`, or its `voice` when it has no profile yet, to `topics.update`.
+     * @returns {Promise<AvailableVoicesResponse>} Voices.
+     */
+    available() {
+        return this._req('GET', this._base + '/available');
+    }
+
+    /**
+     * Speak a short sample (up to 300 characters) with a speech server voice or a voice profile. Limited to 20 previews
+     * a minute per user: 409 when speech is turned off, 429 `TooManyRequests` over the limit, 502 `TtsError` when the
+     * speech endpoint fails.
+     * @param {{ voice?: string, voiceProfileId?: string, text?: string }} body A voice from `available()` or a voice
+     *     profile, and optional text.
+     * @returns {Promise<DownloadResult>} Audio (audio/wav).
+     */
+    preview(body) {
+        return this._req('POST', this._base + '/preview', { body: requireValue(body, 'body'), raw: true });
+    }
 }
 
 /**
@@ -3461,11 +3508,13 @@ export class SetupResource extends ResourceGroup {
 
     /**
      * Re-check setup with live calls (administrators only, 403 otherwise). Sends a short probe prompt to each chat
-     * endpoint, a test query to each default web search provider, and one embedding request.
+     * endpoint, a test query to each default web search provider, one embedding request, and one short speech request.
+     * @param {'Model'|'Search'|'Embeddings'|'Speech'} [check] Re-check only this kind; the other checks are reported
+     *     from stored results.
      * @returns {Promise<SetupStatusResponse>} Status after the checks.
      */
-    verify() {
-        return this._req('POST', this._base + '/verify');
+    verify(check) {
+        return this._req('POST', this._base + '/verify', check ? { query: { check } } : undefined);
     }
 
     /**

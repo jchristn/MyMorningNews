@@ -25,7 +25,7 @@ function presetFrom(check) {
 
 // Step 1, Connect an AI model. Open with the provider choice while nothing works; a summary with Change once a model
 // passed its test; the problem with Fix when a configured endpoint fails.
-export default function ModelStep({ checks, canConfigure, options, optionsError, onRetryOptions, verifying, onVerify }) {
+export default function ModelStep({ checks, canConfigure, options, optionsError, onRetryOptions, verifying, onVerify, numbered = true }) {
   const { t } = useTranslation();
   const stepState = modelStepState(checks);
   const [editing, setEditing] = useState(null);
@@ -111,6 +111,7 @@ export default function ModelStep({ checks, canConfigure, options, optionsError,
       title={t('setup.model.heading')}
       state={stepState === 'ready' ? 'done' : stepState === 'broken' ? 'attention' : 'todo'}
       intro={open ? t('setup.model.intro') : null}
+      numbered={numbered}
     >
       {body}
     </SetupStep>
@@ -124,5 +125,6 @@ ModelStep.propTypes = {
   optionsError: PropTypes.object,
   onRetryOptions: PropTypes.func,
   verifying: PropTypes.bool,
-  onVerify: PropTypes.func
+  onVerify: PropTypes.func,
+  numbered: PropTypes.bool
 };

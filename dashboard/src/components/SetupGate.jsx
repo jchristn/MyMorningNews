@@ -1,18 +1,19 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { LogOut, RefreshCw } from 'lucide-react';
+import { ArrowRight, LogOut, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext.jsx';
-import { orderedChecks, useSetup } from '../context/SetupContext.jsx';
+import { pendingChecks, useSetup } from '../context/SetupContext.jsx';
 import useFormat from '../hooks/useFormat.js';
 import AuthShell from './auth/AuthShell.jsx';
 import ErrorState from './ErrorState.jsx';
 import LoadingState from './LoadingState.jsx';
 import SetupStateBadge, { checkTitle } from './SetupStateBadge.jsx';
 
-// Check again and Sign out, shared by the full-screen setup messages.
-function GateActions() {
+// Check again and Sign out, shared by the full-screen setup messages. Members also get a way in: they can look around,
+// and anything that needs the model is refused by the server with its own message.
+function GateActions({ canContinue = false }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -35,6 +36,11 @@ function GateActions() {
       <button type="button" className="button primary block" onClick={checkAgain} disabled={busy}>
         <RefreshCw size={14} className={busy ? 'spin' : undefined} aria-hidden="true" /> {busy ? t('setup.gate.checking') : t('setup.gate.checkAgain')}
       </button>
+      {canContinue ? (
+        <button type="button" className="button secondary block" onClick={setup.skip} data-testid="setup-continue">
+          <ArrowRight size={14} aria-hidden="true" /> {t('setup.gate.continue')}
+        </button>
+      ) : null}
       <button type="button" className="button secondary block" onClick={signOut}>
         <LogOut size={14} aria-hidden="true" /> {t('setup.gate.signOut')}
       </button>
@@ -42,14 +48,15 @@ function GateActions() {
   );
 }
 
-// The workspace is not ready and this user cannot configure it: nothing in the product works until an
-// administrator adds and verifies the model key.
+GateActions.propTypes = { canContinue: PropTypes.bool };
+
+// The workspace is not ready and this user cannot configure it: research does not work until an administrator
+// connects and verifies a model. The screen explains that once; Continue to the app lets the member in to look around.
 export function SetupBlockedScreen() {
   const { t } = useTranslation();
   const f = useFormat();
   const setup = useSetup();
-  const { required } = orderedChecks(setup.status ? setup.status.checks : []);
-  const pending = required.filter((c) => c.state !== 'Ready');
+  const pending = pendingChecks(setup.status);
   const title = t('setup.gate.title');
   return (
     <AuthShell title={title}>
@@ -66,8 +73,9 @@ export function SetupBlockedScreen() {
           </ul>
         ) : null}
         <p className="muted small">{t('setup.gate.askAdmin')}</p>
+        <p className="muted small">{t('setup.gate.continueHelp')}</p>
         {setup.error ? <ErrorState error={setup.error} inline /> : null}
-        <GateActions />
+        <GateActions canContinue />
         {setup.checkedAt ? <p className="muted small">{t('setup.gate.checked', { time: f.time(setup.status && setup.status.checkedUtc ? setup.status.checkedUtc : setup.checkedAt) })}</p> : null}
       </div>
     </AuthShell>
@@ -92,15 +100,16 @@ export function SetupLoadErrorScreen() {
 }
 
 // Between sign-in and the product: waits for the setup status, shows an error when it cannot be read, and shows
-// members a full-screen message while setup is not ready. Administrators get the dashboard, where every route but
-// the setup and configuration pages redirects to the Setup screen (see RouteElement in App.jsx).
+// members a full-screen message while setup is not ready, until they choose to continue. Administrators get the
+// dashboard, where the first-run guide sends every route but the setup and configuration pages to the Setup screen
+// until setup is ready or they skip it (see RouteElement in App.jsx).
 export default function SetupGate({ children }) {
   const setup = useSetup();
   if (!setup || !setup.status) {
     if (setup && setup.error && !setup.loading) return <SetupLoadErrorScreen />;
     return <LoadingState />;
   }
-  if (!setup.status.ready && !setup.status.canConfigure) return <SetupBlockedScreen />;
+  if (setup.gated && !setup.status.canConfigure) return <SetupBlockedScreen />;
   return children;
 }
 

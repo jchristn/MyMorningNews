@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { CircleCheck, RefreshCw, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext.jsx';
-import { useSetup } from '../context/SetupContext.jsx';
+import { pendingChecks, useSetup } from '../context/SetupContext.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import LoadingState from '../components/LoadingState.jsx';
+import Modal from '../components/Modal.jsx';
 import PageHeader from '../components/PageHeader.jsx';
+import SetupStateBadge, { checkTitle } from '../components/SetupStateBadge.jsx';
 import ModelStep from './setup/ModelStep.jsx';
 import OptionalExtras from './setup/OptionalExtras.jsx';
 import SearchStep from './setup/SearchStep.jsx';
@@ -38,10 +40,70 @@ SetupProgress.propTypes = {
   ).isRequired
 };
 
-// Setup comes first: before anyone can create topics, the workspace needs a working AI model and web search. A guided
-// flow connects the model (a subscription CLI, an API key, or a model you run) and tests it with one prompt.
+// Leaving setup unfinished: exactly what is still missing, what will not work without it, and the choice to stay.
+function SkipSetupModal({ open, pending, onStay, onSkip }) {
+  const { t } = useTranslation();
+  const needsModel = pending.some((c) => c.kind === 'Model');
+  const needsSearch = pending.some((c) => c.kind === 'Search');
+  return (
+    <Modal
+      open={open}
+      title={t('setup.skip.title')}
+      onClose={onStay}
+      size="small"
+      footer={
+        <>
+          <button type="button" className="button primary" onClick={onStay}>
+            {t('setup.skip.stay')}
+          </button>
+          <button type="button" className="button secondary" onClick={onSkip} data-testid="setup-skip-confirm">
+            {t('setup.skip.button')}
+          </button>
+        </>
+      }
+    >
+      <div className="stack-tight" data-testid="setup-skip-modal">
+        <p>{t('setup.skip.intro')}</p>
+        <ul className="setup-skip-list">
+          {pending.map((check) => (
+            <li key={check.key}>
+              <div className="setup-extras-head">
+                <strong>{checkTitle(check, t)}</strong>
+                <SetupStateBadge state={check.state} />
+              </div>
+              {check.message ? (
+                <p className="muted small" dir="auto">
+                  {check.message}
+                </p>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+        <p>{t('setup.skip.untilThen')}</p>
+        <ul className="setup-skip-effects">
+          {needsModel ? <li>{t('setup.skip.needsModel')}</li> : null}
+          {needsSearch ? <li>{t('setup.skip.needsSearch')}</li> : null}
+        </ul>
+        <p className="muted small">{t('setup.skip.later')}</p>
+      </div>
+    </Modal>
+  );
+}
+
+SkipSetupModal.propTypes = {
+  open: PropTypes.bool.isRequired,
+  pending: PropTypes.arrayOf(PropTypes.object).isRequired,
+  onStay: PropTypes.func.isRequired,
+  onSkip: PropTypes.func.isRequired
+};
+
+// The Setup page. Until the workspace has a working AI model and web search it is a guided flow: connect the model (a
+// subscription CLI, an API key, or a model you run), test it with one prompt, and check search. Nobody has to finish
+// it: Skip for now says what is missing and opens the rest of the app. Once everything required works, the same page
+// is a plain status page (what is connected, with Change and Test again), not a wizard.
 export default function SetupView() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { apiClient } = useAuth();
   const setup = useSetup();
   const status = setup ? setup.status : null;
@@ -51,6 +113,7 @@ export default function SetupView() {
   const [verifyError, setVerifyError] = useState(null);
   const [options, setOptions] = useState(null);
   const [optionsError, setOptionsError] = useState(null);
+  const [skipOpen, setSkipOpen] = useState(false);
   const autoVerified = useRef(false);
 
   const verify = useCallback(async () => {
@@ -58,7 +121,7 @@ export default function SetupView() {
     setVerifying(true);
     setVerifyError(null);
     try {
-      await verifyAll();
+      await verifyAll(undefined);
     } catch (err) {
       setVerifyError(err);
     } finally {
@@ -99,38 +162,57 @@ export default function SetupView() {
     }
   ];
 
+  const ready = status.ready;
+  const pending = pendingChecks(status);
+
+  function skipSetup() {
+    setSkipOpen(false);
+    setup.skip();
+    navigate('/dashboard/home');
+  }
+
   return (
     <div className="page setup-page">
       <PageHeader
-        title={t('setup.title')}
-        summary={t('setup.summary')}
+        title={ready ? t('setup.status.title') : t('setup.title')}
+        summary={ready ? t('setup.status.summary') : t('setup.summary')}
         actions={
-          canConfigure ? (
-            <button type="button" className="button secondary" onClick={verify} disabled={verifying}>
-              <RefreshCw size={14} className={verifying ? 'spin' : undefined} aria-hidden="true" /> {t('setup.verifyAll')}
-            </button>
-          ) : null
+          <>
+            {canConfigure ? (
+              <button type="button" className="button secondary" onClick={() => verify()} disabled={verifying}>
+                <RefreshCw size={14} className={verifying ? 'spin' : undefined} aria-hidden="true" /> {t('setup.verifyAll')}
+              </button>
+            ) : null}
+            {!ready && setup.gated ? (
+              <button type="button" className="button secondary" onClick={() => setSkipOpen(true)} data-testid="setup-skip">
+                {t('setup.skip.button')}
+              </button>
+            ) : null}
+          </>
         }
       />
 
-      <SetupProgress steps={steps} />
+      {!ready ? <SetupProgress steps={steps} /> : null}
 
-      {status.ready ? (
-        <section className="panel setup-ready" role="status" data-testid="setup-ready">
-          <CircleCheck size={28} aria-hidden="true" />
-          <div className="stack-tight">
-            <h2>{t('setup.ready.title')}</h2>
-            <p>{t('setup.ready.message')}</p>
-            <div className="setup-check-actions">
-              <Link to="/dashboard/topics/new" className="button primary">
-                {t('setup.ready.newTopic')}
-              </Link>
-              <Link to="/dashboard/home" className="button secondary">
-                {t('setup.ready.home')}
-              </Link>
-            </div>
-          </div>
-        </section>
+      {!ready && !setup.gated ? (
+        <p className="muted small setup-skipped-note" data-testid="setup-skipped-note">
+          {t('setup.skip.skippedNote')}{' '}
+          <button type="button" className="link-button small" onClick={setup.resume}>
+            {t('setup.skip.resume')}
+          </button>
+        </p>
+      ) : null}
+
+      {ready && setup.justCompleted ? (
+        <div className="notice notice-success setup-complete" role="status" data-testid="setup-complete">
+          <CircleCheck size={16} aria-hidden="true" />
+          <span className="setup-warning-text">
+            {t('setup.complete.message')} <Link to="/dashboard/topics">{t('setup.complete.topics')}</Link>
+          </span>
+          <button type="button" className="icon-button" onClick={setup.dismissCompleted} aria-label={t('common.dismiss')} title={t('common.dismiss')}>
+            <X size={14} aria-hidden="true" />
+          </button>
+        </div>
       ) : null}
 
       {!status.ready && setup.blockedMessage !== null ? (
@@ -159,10 +241,12 @@ export default function SetupView() {
         optionsError={optionsError}
         onRetryOptions={loadOptions}
         verifying={verifying}
-        onVerify={verify}
+        onVerify={() => verify()}
+        numbered={!ready}
       />
-      <SearchStep check={search} canConfigure={canConfigure} verifying={verifying} onVerify={verify} />
-      <OptionalExtras checks={extras} />
+      <SearchStep check={search} canConfigure={canConfigure} verifying={verifying} onVerify={() => verify()} numbered={!ready} />
+      <OptionalExtras key={ready ? 'status' : 'guide'} checks={extras} defaultOpen={ready} onTest={canConfigure && verifyAll ? verifyAll : undefined} />
+      <SkipSetupModal open={skipOpen} pending={pending} onStay={() => setSkipOpen(false)} onSkip={skipSetup} />
     </div>
   );
 }

@@ -4,6 +4,7 @@ namespace MyMorningNews.Sdk.Resources
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
+    using MyMorningNews.Sdk.Enums;
     using MyMorningNews.Sdk.Models;
     using MyMorningNews.Sdk.Requests;
 
@@ -38,7 +39,8 @@ namespace MyMorningNews.Sdk.Resources
 
         /// <summary>
         /// Re-check setup with live calls (administrators only, 403 otherwise). Sends a short probe prompt to each chat
-        /// endpoint, a test query to each default web search provider, and one embedding request. Calls the providers.
+        /// endpoint, a test query to each default web search provider, one embedding request, and one short speech
+        /// request. Calls the providers.
         /// </summary>
         /// <param name="token">Cancellation token.</param>
         /// <returns>The SetupStatusResponse after the checks.</returns>
@@ -46,6 +48,19 @@ namespace MyMorningNews.Sdk.Resources
         public Task<SetupStatusResponse> VerifyAsync(CancellationToken token = default)
         {
             return Client.SendAsync<SetupStatusResponse>(HttpMethod.Post, "/v1.0/api/setup/verify", null, null, token);
+        }
+
+        /// <summary>
+        /// Re-check one kind of setup check with live calls (administrators only, 403 otherwise), for example only the
+        /// speech endpoint. The other checks are reported from stored results.
+        /// </summary>
+        /// <param name="check">The kind to re-check: Model, Search, Embeddings, or Speech.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The SetupStatusResponse after the check.</returns>
+        /// <exception cref="MyMorningNewsException">The server returned an error, for example 403 for a non-administrator.</exception>
+        public Task<SetupStatusResponse> VerifyAsync(SetupCheckKindEnum check, CancellationToken token = default)
+        {
+            return Client.SendAsync<SetupStatusResponse>(HttpMethod.Post, "/v1.0/api/setup/verify", Query("check", check.ToString()), null, token);
         }
 
         /// <summary>

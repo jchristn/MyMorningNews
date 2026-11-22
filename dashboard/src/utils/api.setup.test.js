@@ -20,6 +20,23 @@ function call(fetch, index = 0) {
 const REFUSAL = { error: 'SetupRequired', message: 'Add and verify a model API key first.', details: { check: 'model:mep_1' } };
 
 describe('setup API', () => {
+  it('re-checks one kind of setup check, lists the voices a topic can use, and previews one', async () => {
+    const { api, fetch } = client({ ready: true, canConfigure: true, checks: [] });
+    await api.verifySetup('Speech');
+    await api.getAvailableVoices();
+    expect(call(fetch, 0)).toMatchObject({ url: '/v1.0/api/setup/verify?check=Speech', method: 'POST', body: undefined });
+    expect(call(fetch, 1)).toMatchObject({ url: '/v1.0/api/voices/available', method: 'GET', body: undefined });
+
+    const blob = { size: 4 };
+    const audio = vi.fn(async () => ({ status: 200, ok: true, blob: async () => blob, headers: { get: (name) => (name === 'Content-Type' ? 'audio/wav' : null) } }));
+    const media = new ApiClient('http://127.0.0.1:12100', 'tok', { fetch: audio });
+    const result = await media.previewVoice({ voice: 'bf_emma', text: 'Hello.' });
+    expect(result).toMatchObject({ blob, contentType: 'audio/wav' });
+    expect(call(audio, 0)).toMatchObject({ url: '/v1.0/api/voices/preview', method: 'POST', body: { voice: 'bf_emma', text: 'Hello.' } });
+    await media.previewVoice({ voice: 'bf_emma', voiceProfileId: 'voi_1' });
+    expect(call(audio, 1).body).toEqual({ voiceProfileId: 'voi_1' });
+  });
+
   it('reads, verifies, and sets a model key', async () => {
     const { api, fetch } = client({ ready: true, canConfigure: true, checks: [] });
     await api.getSetupStatus();

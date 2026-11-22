@@ -7,7 +7,7 @@ import { useApp } from '../context/AppContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useSetup } from '../context/SetupContext.jsx';
 import useLocalStorage from '../hooks/useLocalStorage.js';
-import { SECTION_KEYS, allowedBeforeSetup, findRoute, hubBlockedBeforeSetup, hubForRoute, hubTarget, visibleNav } from '../utils/navigation.js';
+import { SECTION_KEYS, allowedBeforeSetup, canAccess, findRoute, hubBlockedBeforeSetup, hubForRoute, hubTarget, routeByKey, visibleNav } from '../utils/navigation.js';
 
 export const APP_VERSION = '0.1.0-alpha';
 
@@ -47,8 +47,11 @@ export default function Sidebar() {
   const { sidebarCollapsed, mobileNavOpen, setMobileNavOpen } = useApp();
   const [closedGroups, setClosedGroups] = useLocalStorage('mymorningnews.nav.closedGroups', []);
   const setup = useSetup();
-  // Setup comes first: until it is ready, a callout leads the navigation and the routes it blocks are dimmed.
-  const setupPending = Boolean(setup && setup.status && !setup.status.ready);
+  // Until setup is ready, a callout leads the navigation for the people who can finish it. While the first-run guide
+  // is on, the routes it blocks are dimmed; after Skip for now the callout stays and nothing is dimmed.
+  const setupUnfinished = Boolean(setup && setup.status && !setup.status.ready);
+  const setupPending = Boolean(setup && setup.gated);
+  const showCallout = setupUnfinished && canAccess(routeByKey('setup'), auth);
   const calloutLabel = t('setup.nav.callout');
   const nav = visibleNav(auth);
   const currentRoute = findRoute(location.pathname);
@@ -78,7 +81,7 @@ export default function Sidebar() {
           {!sidebarCollapsed ? <span>{t('app.name')}</span> : null}
         </div>
         <nav className="sidebar-nav" aria-label={t('nav.label')}>
-          {setupPending ? (
+          {showCallout ? (
             <NavLink
               to="/dashboard/setup"
               className="nav-item nav-setup-callout"

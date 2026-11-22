@@ -10,7 +10,7 @@ import Sidebar from './Sidebar.jsx';
 // The consolidated navigation: two standalone pages and eight hubs in four sections, each hub's pages as tabs.
 const authValue = { isAdmin: true, isTenantAdmin: true };
 vi.mock('../context/AuthContext.jsx', () => ({ useAuth: () => authValue }));
-const setupValue = { status: { ready: true } };
+const setupValue = { status: { ready: true }, gated: false };
 vi.mock('../context/SetupContext.jsx', () => ({ useSetup: () => setupValue }));
 
 const ADMIN = { isAdmin: true, isTenantAdmin: true };
@@ -49,7 +49,7 @@ const ADMIN_TABS = {
   configuration: ['Models', 'Prompts', 'Search providers', 'MCP servers', 'Connect an assistant', 'Voices', 'Email', 'Stored credentials'],
   observability: ['Health', 'Requests', 'Audit', 'API explorer'],
   administration: ['Users', 'Tenants', 'Access keys', 'Roles', 'Usage', 'Plans', 'Promo codes'],
-  settings: ['Setup', 'Profile', 'Server settings', 'Server info']
+  settings: ['Profile', 'Server settings', 'Server info', 'Setup']
 };
 
 const MEMBER_TABS = {
@@ -94,6 +94,7 @@ function tabNames(hubName) {
 beforeEach(() => {
   Object.assign(authValue, ADMIN);
   setupValue.status = { ready: true };
+  setupValue.gated = false;
 });
 
 describe('sidebar hubs', () => {
@@ -110,8 +111,18 @@ describe('sidebar hubs', () => {
     expect(sidebarLink('Insights')).toHaveAttribute('href', '/dashboard/insights/overview');
     expect(sidebarLink('Observability')).toHaveAttribute('href', '/dashboard/health');
     expect(sidebarLink('Administration')).toHaveAttribute('href', '/dashboard/admin/users');
-    expect(sidebarLink('Settings')).toHaveAttribute('href', '/dashboard/setup');
+    // Settings opens on Profile, never on Setup, and a ready workspace shows no setup callout.
+    expect(sidebarLink('Settings')).toHaveAttribute('href', '/dashboard/profile');
+    expect(screen.queryByTestId('setup-callout')).not.toBeInTheDocument();
     expect(sidebarLink('Home')).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('orders the Settings hub Profile, Server settings, Server info, Setup', () => {
+    expect(NAV_HUBS.find((hub) => hub.key === 'settings').tabs).toEqual(['profile', 'settings', 'serverInfo', 'setup']);
+    expect(hubTarget(NAV_HUBS.find((hub) => hub.key === 'settings'), ADMIN).key).toBe('profile');
+    expect(hubTarget(NAV_HUBS.find((hub) => hub.key === 'settings'), ADMIN, true).key).toBe('profile');
+    renderShell('/dashboard/setup');
+    expect(tabNames('Settings')).toEqual(['Profile', 'Server settings', 'Server info', 'Setup']);
   });
 
   it('keeps every hub for a member, each opening the first page a member can use', () => {
@@ -257,6 +268,7 @@ describe('hub tab strips', () => {
 describe('setup gate in the hub navigation', () => {
   beforeEach(() => {
     setupValue.status = { ready: false };
+    setupValue.gated = true;
   });
 
   it('dims the hubs with no page open before setup, and sends the others to a page that is', () => {
@@ -270,6 +282,26 @@ describe('setup gate in the hub navigation', () => {
     expect(sidebarLink('Configuration')).toHaveAttribute('href', '/dashboard/models');
     expect(sidebarLink('Settings')).not.toHaveClass('nav-item-blocked');
     expect(sidebarLink('Settings')).toHaveClass('active');
+    expect(sidebarLink('Settings')).toHaveAttribute('href', '/dashboard/profile');
+  });
+
+  it('keeps the callout and dims nothing after setup was skipped', () => {
+    setupValue.gated = false;
+    renderShell('/dashboard/topics');
+    expect(screen.getByTestId('setup-callout')).toHaveAttribute('href', '/dashboard/setup');
+    for (const name of ['Home', 'Today', 'Topics', 'Research', 'Briefings', 'Insights', 'Observability', 'Administration', 'Configuration', 'Settings']) {
+      expect(sidebarLink(name)).not.toHaveClass('nav-item-blocked');
+    }
+    expect(sidebarLink('Topics')).toHaveAttribute('href', '/dashboard/topics');
+    const strip = screen.getByRole('navigation', { name: 'Topics pages' });
+    expect(within(strip).getByRole('link', { name: 'One-time requests' })).not.toHaveClass('hub-tab-blocked');
+  });
+
+  it('shows no callout to a member, who cannot open Setup', () => {
+    Object.assign(authValue, MEMBER);
+    setupValue.gated = false;
+    renderShell('/dashboard/home');
+    expect(screen.queryByTestId('setup-callout')).not.toBeInTheDocument();
   });
 
   it('dims the blocked tabs with the same tooltip', () => {
@@ -278,7 +310,7 @@ describe('setup gate in the hub navigation', () => {
     const prompts = within(strip).getByRole('link', { name: 'Prompts' });
     expect(prompts).toHaveClass('hub-tab-blocked');
     expect(prompts).toHaveAttribute('title', 'Prompts opens after setup is finished');
-    for (const name of ['Models', 'Search providers', 'Stored credentials']) {
+    for (const name of ['Models', 'Search providers', 'Voices', 'Stored credentials']) {
       expect(within(strip).getByRole('link', { name })).not.toHaveClass('hub-tab-blocked');
     }
   });

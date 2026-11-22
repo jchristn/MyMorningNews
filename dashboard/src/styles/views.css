@@ -335,11 +335,6 @@
   max-width: 960px;
 }
 
-.setup-ready h2 {
-  margin: 0;
-  font-size: 1.05rem;
-}
-
 /* Progress checklist under the title: one line per required step. */
 .setup-progress {
   list-style: none;
@@ -929,21 +924,103 @@
   gap: 8px;
 }
 
-.setup-ready {
+/* Notes about setup: finished just now, left unfinished, and the warning on the pages where that bites. */
+.setup-complete,
+.setup-warning {
   display: flex;
   align-items: flex-start;
-  gap: 14px;
-  border-color: var(--color-success);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.setup-complete {
   background: var(--color-success-soft);
 }
 
-.setup-ready > svg {
+.setup-complete > svg {
   color: var(--color-success);
-  flex-shrink: 0;
 }
 
-.setup-ready p {
+.setup-complete > svg,
+.setup-warning > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.setup-warning-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.setup-skipped-note {
+  margin: 0 0 12px;
+}
+
+.setup-skip-list,
+.setup-skip-effects {
   margin: 0;
+  padding-inline-start: 18px;
+}
+
+.setup-skip-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.setup-skip-list li {
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.setup-skip-list p {
+  margin: 4px 0 0;
+}
+
+/* The voice picker on a topic's delivery settings: one row per voice with Play and Use this voice. */
+.voice-picker-current {
+  margin: 0;
+}
+
+.voice-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.voice-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.voice-row.current {
+  border-color: var(--color-primary);
+}
+
+.voice-row-name {
+  flex: 1;
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+}
+
+.voice-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 @media (max-width: 560px) {

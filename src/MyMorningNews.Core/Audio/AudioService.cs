@@ -5,6 +5,7 @@ namespace MyMorningNews.Core.Audio
     using System.Globalization;
     using System.Linq;
     using System.Net;
+    using System.Net.Http;
     using System.Security.Cryptography;
     using System.Text;
     using System.Text.Json;
@@ -19,6 +20,7 @@ namespace MyMorningNews.Core.Audio
     using MyMorningNews.Core.Models;
     using MyMorningNews.Core.Prompts;
     using MyMorningNews.Core.Requests;
+    using MyMorningNews.Core.Responses;
     using MyMorningNews.Core.Services;
     using MyMorningNews.Core.Settings;
     using MyMorningNews.Core.Storage;
@@ -49,6 +51,34 @@ namespace MyMorningNews.Core.Audio
         /// </summary>
         public AudioMixer Mixer { get; }
 
+        /// <summary>
+        /// Seconds the speech server's voice list is kept before it is read again. Default 300, minimum 0 (never
+        /// kept), maximum 86400.
+        /// </summary>
+        public int VoiceListCacheSeconds
+        {
+            get { return _VoiceListCacheSeconds; }
+            set { _VoiceListCacheSeconds = Math.Clamp(value, 0, 86400); }
+        }
+
+        /// <summary>
+        /// Seconds to wait for the speech server to list its voices. Default 5, minimum 1, maximum 60.
+        /// </summary>
+        public int VoiceListTimeoutSeconds
+        {
+            get { return _VoiceListTimeoutSeconds; }
+            set { _VoiceListTimeoutSeconds = Math.Clamp(value, 1, 60); }
+        }
+
+        /// <summary>
+        /// Most characters spoken by a voice preview. Default 300, minimum 20, maximum 1200.
+        /// </summary>
+        public int PreviewMaxCharacters
+        {
+            get { return _PreviewMaxCharacters; }
+            set { _PreviewMaxCharacters = Math.Clamp(value, 20, 1200); }
+        }
+
         #endregion
 
         #region Private-Members
@@ -62,6 +92,14 @@ namespace MyMorningNews.Core.Audio
         private readonly LoggingModule _Logging;
         private readonly ITtsProvider _Tts;
         private readonly bool _OwnsTts;
+        private readonly HttpClient _Http = new HttpClient { Timeout = Timeout.InfiniteTimeSpan };
+        private readonly object _VoiceListLock = new object();
+        private int _VoiceListCacheSeconds = 300;
+        private int _VoiceListTimeoutSeconds = 5;
+        private int _PreviewMaxCharacters = 300;
+        private string? _VoiceListEndpoint = null;
+        private List<string>? _VoiceList = null;
+        private DateTime _VoiceListUtc = DateTime.MinValue;
         private bool _Disposed = false;
         private const string _Header = "[AudioService] ";
 
@@ -126,7 +164,7 @@ namespace MyMorningNews.Core.Audio
         /// </summary>
         /// <param name="briefing">Ready briefing.</param>
         /// <param name="kind">Kind.</param>
-        /// <param name="voiceProfileId">Voice, or null for the edition or tenant default.</param>
+        /// <param name="voiceProfileId">Voice, or null for the edition's voice, then the topic's voice (a topic's own briefing), then the tenant default.</param>
         /// <param name="force">Make a new episode even when one exists.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>The queued or existing episode, or null when audio is turned off.</returns>
@@ -142,7 +180,15 @@ namespace MyMorningNews.Core.Audio
             if (live != null && live.Status != MediaStatusEnum.Ready) throw new ConflictException("Audio for this briefing is already being made.");
             BriefingTemplateDefinition template = await TemplateAsync(briefing, token).ConfigureAwait(false);
             Edition? edition = briefing.EditionId == null ? null : await _Database.Editions.ReadAsync(briefing.TenantId, briefing.EditionId, token).ConfigureAwait(false);
-            VoiceProfile? voice = await ResolveVoiceAsync(briefing.TenantId, voiceProfileId ?? edition?.VoiceProfileId, token).ConfigureAwait(false);
+            string? chosen = String.IsNullOrEmpty(voiceProfileId) ? edition?.VoiceProfileId : voiceProfileId;
+            if (String.IsNullOrEmpty(chosen) && briefing.EditionId == null && !String.IsNullOrEmpty(briefing.TopicId))
+            {
+                // A topic's own briefing is read in the voice chosen for that topic.
+                Topic? topic = await _Database.Topics.ReadAsync(briefing.TenantId, briefing.TopicId, token).ConfigureAwait(false);
+                chosen = topic?.VoiceProfileId;
+            }
+
+            VoiceProfile? voice = await ResolveVoiceAsync(briefing.TenantId, chosen, token).ConfigureAwait(false);
             return await _Database.MediaAssets.CreateAsync(new MediaAsset
             {
                 TenantId = briefing.TenantId,
@@ -248,6 +294,151 @@ namespace MyMorningNews.Core.Audio
             if (t.Length == 0) t = "Good morning. Here is what moved in your topics.";
             if (t.Length > _Settings.Tts.MaxSegmentCharacters) t = t.Substring(0, _Settings.Tts.MaxSegmentCharacters);
             return await _Tts.SynthesizeAsync(await RequestAsync(voice, voice.Voice, t, token).ConfigureAwait(false), token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// The voices someone in a workspace can choose for a topic: the workspace's voice profiles, then the voices
+        /// the speech server offers that have no profile yet. The server's list comes from GET {endpoint}/audio/voices
+        /// (Kokoro-FastAPI) and is kept for <see cref="VoiceListCacheSeconds"/>; when the server has no listing, the
+        /// configured default voices are offered instead.
+        /// </summary>
+        /// <param name="tenantId">Tenant.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Voices. Never null.</returns>
+        /// <exception cref="ArgumentNullException">tenantId is null or empty.</exception>
+        public async Task<AvailableVoicesResponse> AvailableVoicesAsync(string tenantId, CancellationToken token = default)
+        {
+            if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            AvailableVoicesResponse response = new AvailableVoicesResponse { Enabled = _Settings.Tts.Enabled };
+            List<VoiceProfile> profiles = await ProfilesAsync(tenantId, token).ConfigureAwait(false);
+            VoiceProfile? fallback = profiles.FirstOrDefault(p => p.IsDefault) ?? profiles.OrderBy(p => p.CreatedUtc).FirstOrDefault();
+            response.DefaultVoiceProfileId = fallback?.Id;
+            foreach (VoiceProfile p in profiles.Where(p => p.Active && p.Provider != TtsProviderEnum.Disabled)
+                .OrderByDescending(p => fallback != null && p.Id == fallback.Id).ThenBy(p => p.Name, StringComparer.OrdinalIgnoreCase))
+            {
+                response.Voices.Add(new AvailableVoice
+                {
+                    Voice = p.Voice,
+                    Label = VoiceNames.Describe(p.Voice),
+                    VoiceProfileId = p.Id,
+                    Name = p.Name,
+                    IsDefault = fallback != null && p.Id == fallback.Id
+                });
+            }
+
+            List<string>? listed = await ListedVoicesAsync(token).ConfigureAwait(false);
+            response.Listed = listed != null;
+            foreach (string voice in listed ?? ConfiguredVoices())
+            {
+                if (profiles.Any(p => IsServerProfile(p) && String.Equals(p.Voice, voice, StringComparison.Ordinal))) continue;
+                response.Voices.Add(new AvailableVoice { Voice = voice, Label = VoiceNames.Describe(voice) });
+            }
+
+            return response;
+        }
+
+        /// <summary>
+        /// Speak a short sample so someone can hear a voice before choosing it. With a voice profile, its endpoint,
+        /// model, voice, and speed are used; otherwise the voice must be one the speech server offers.
+        /// </summary>
+        /// <param name="tenantId">Tenant.</param>
+        /// <param name="req">Voice or voice profile, and optional text (cut to <see cref="PreviewMaxCharacters"/>).</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Audio.</returns>
+        /// <exception cref="ArgumentNullException">tenantId or req is null.</exception>
+        /// <exception cref="ArgumentException">Neither a voice nor a voice profile was given, or the speech server does not offer the voice.</exception>
+        /// <exception cref="KeyNotFoundException">The voice profile does not exist in the tenant.</exception>
+        /// <exception cref="ConflictException">Speech is turned off, or the voice profile is disabled.</exception>
+        /// <exception cref="TtsException">The speech server failed.</exception>
+        public async Task<TtsResult> PreviewAsync(string tenantId, VoicePreviewRequest req, CancellationToken token = default)
+        {
+            if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            ArgumentNullException.ThrowIfNull(req);
+            if (String.IsNullOrWhiteSpace(req.VoiceProfileId) && String.IsNullOrWhiteSpace(req.Voice)) throw new ArgumentException("voice or voiceProfileId is required.");
+            if (!_Settings.Tts.Enabled) throw new ConflictException("Speech is turned off on this server, so there is nothing to play.");
+            string text = SpeechScript.Clean(req.Text ?? String.Empty);
+            if (text.Length > _PreviewMaxCharacters) text = text.Substring(0, _PreviewMaxCharacters);
+
+            VoiceProfile profile;
+            if (!String.IsNullOrWhiteSpace(req.VoiceProfileId))
+            {
+                profile = await _Database.VoiceProfiles.ReadAsync(tenantId, req.VoiceProfileId.Trim(), token).ConfigureAwait(false)
+                    ?? throw new KeyNotFoundException("Voice profile " + req.VoiceProfileId.Trim() + " was not found.");
+            }
+            else
+            {
+                string voice = (req.Voice ?? String.Empty).Trim();
+                await RequireOfferedAsync(voice, token).ConfigureAwait(false);
+                profile = new VoiceProfile { TenantId = tenantId, Name = voice, Model = _Settings.Tts.Model, Voice = voice };
+            }
+
+            return await SampleAsync(profile, text, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// The workspace voice profile for a speech server voice: the existing profile that uses the voice on the
+        /// server's default speech endpoint, or a new one named after the voice.
+        /// </summary>
+        /// <param name="tenantId">Tenant.</param>
+        /// <param name="voice">Speech server voice ID, such as af_heart.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Voice profile.</returns>
+        /// <exception cref="ArgumentNullException">tenantId is null or empty.</exception>
+        /// <exception cref="ArgumentException">The voice is empty, or the speech server does not offer it.</exception>
+        public async Task<VoiceProfile> EnsureProfileForVoiceAsync(string tenantId, string voice, CancellationToken token = default)
+        {
+            if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            string id = (voice ?? String.Empty).Trim();
+            if (id.Length == 0) throw new ArgumentException("voice is required.");
+            List<VoiceProfile> profiles = await ProfilesAsync(tenantId, token).ConfigureAwait(false);
+            VoiceProfile? existing = profiles.Where(p => p.Active && IsServerProfile(p) && String.Equals(p.Voice, id, StringComparison.Ordinal))
+                .OrderByDescending(p => p.IsDefault).ThenBy(p => p.CreatedUtc).FirstOrDefault();
+            if (existing != null) return existing;
+            await RequireOfferedAsync(id, token).ConfigureAwait(false);
+
+            string label = VoiceNames.Describe(id);
+            string name = label;
+            for (int i = 2; profiles.Any(p => String.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase)); i++) name = label + " " + i;
+            string other = String.Equals(_Settings.Tts.SecondaryVoice, id, StringComparison.Ordinal) ? _Settings.Tts.Voice : _Settings.Tts.SecondaryVoice;
+            VoiceProfile created = await _Database.VoiceProfiles.CreateAsync(new VoiceProfile
+            {
+                TenantId = tenantId,
+                Name = name,
+                Provider = TtsProviderEnum.OpenAiCompatibleSpeech,
+                Model = _Settings.Tts.Model,
+                Voice = id,
+                SecondaryVoice = String.IsNullOrWhiteSpace(other) || String.Equals(other, id, StringComparison.Ordinal) ? null : other,
+                IsDefault = false
+            }, token).ConfigureAwait(false);
+            _Logging.Info(_Header + "created voice profile " + created.Id + " for voice " + id + " in tenant " + tenantId);
+            return created;
+        }
+
+        /// <summary>
+        /// Check the configured speech endpoint with one very short synthesis in the default voice.
+        /// </summary>
+        /// <param name="timeoutSeconds">Seconds to wait, 1 to 120.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Null when the endpoint returned audio; otherwise what went wrong.</returns>
+        public async Task<string?> ProbeAsync(int timeoutSeconds, CancellationToken token = default)
+        {
+            try
+            {
+                await _Tts.SynthesizeAsync(new TtsRequest
+                {
+                    Endpoint = _Settings.Tts.Endpoint,
+                    Model = _Settings.Tts.Model,
+                    Voice = _Settings.Tts.Voice,
+                    Format = "wav",
+                    Text = "Ready.",
+                    TimeoutSeconds = Math.Clamp(timeoutSeconds, 1, 120)
+                }, token).ConfigureAwait(false);
+                return null;
+            }
+            catch (TtsException ex)
+            {
+                return ex.Message;
+            }
         }
 
         /// <summary>
@@ -407,7 +598,12 @@ namespace MyMorningNews.Core.Audio
         protected virtual void Dispose(bool disposing)
         {
             if (_Disposed) return;
-            if (disposing && _OwnsTts && _Tts is IDisposable d) d.Dispose();
+            if (disposing)
+            {
+                if (_OwnsTts && _Tts is IDisposable d) d.Dispose();
+                _Http.Dispose();
+            }
+
             _Disposed = true;
         }
 
@@ -566,6 +762,122 @@ namespace MyMorningNews.Core.Audio
                 Text = text,
                 TimeoutSeconds = _Settings.Tts.TimeoutSeconds
             };
+        }
+
+        private async Task<List<VoiceProfile>> ProfilesAsync(string tenantId, CancellationToken token)
+        {
+            List<VoiceProfile> all = (await _Database.VoiceProfiles.EnumerateAsync(new VoiceProfileFilter { TenantId = tenantId, PageSize = 1000 }, token).ConfigureAwait(false)).Items;
+            if (all.Count == 0 && await EnsureDefaultVoiceAsync(tenantId, token).ConfigureAwait(false))
+                all = (await _Database.VoiceProfiles.EnumerateAsync(new VoiceProfileFilter { TenantId = tenantId, PageSize = 1000 }, token).ConfigureAwait(false)).Items;
+            return all;
+        }
+
+        private static bool IsServerProfile(VoiceProfile p)
+        {
+            return p.Provider == TtsProviderEnum.OpenAiCompatibleSpeech && String.IsNullOrWhiteSpace(p.Endpoint);
+        }
+
+        private List<string> ConfiguredVoices()
+        {
+            return new[] { _Settings.Tts.Voice, _Settings.Tts.SecondaryVoice }
+                .Where(v => !String.IsNullOrWhiteSpace(v)).Select(v => v.Trim()).Distinct(StringComparer.Ordinal).ToList();
+        }
+
+        private async Task RequireOfferedAsync(string voice, CancellationToken token)
+        {
+            List<string> offered = await ListedVoicesAsync(token).ConfigureAwait(false) ?? ConfiguredVoices();
+            if (!offered.Contains(voice, StringComparer.Ordinal))
+                throw new ArgumentException("The speech server does not offer a voice named " + (voice.Length > 80 ? voice.Substring(0, 80) : voice) + ". See GET /v1.0/api/voices/available.");
+        }
+
+        private async Task<List<string>?> ListedVoicesAsync(CancellationToken token)
+        {
+            string endpoint = _Settings.Tts.Endpoint;
+            lock (_VoiceListLock)
+            {
+                // A failed listing is asked again sooner than a good one.
+                double keep = _VoiceList != null ? _VoiceListCacheSeconds : Math.Min(_VoiceListCacheSeconds, 30);
+                if (String.Equals(_VoiceListEndpoint, endpoint, StringComparison.Ordinal) && (DateTime.UtcNow - _VoiceListUtc).TotalSeconds < keep)
+                    return _VoiceList == null ? null : new List<string>(_VoiceList);
+            }
+
+            List<string>? voices = null;
+            try
+            {
+                using (CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(token))
+                using (HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Get, endpoint.TrimEnd('/') + "/audio/voices"))
+                {
+                    timeout.CancelAfter(TimeSpan.FromSeconds(_VoiceListTimeoutSeconds));
+                    using (HttpResponseMessage resp = await _Http.SendAsync(msg, timeout.Token).ConfigureAwait(false))
+                    {
+                        if (resp.IsSuccessStatusCode) voices = ParseVoices(await resp.Content.ReadAsStringAsync(timeout.Token).ConfigureAwait(false));
+                    }
+                }
+            }
+            catch (OperationCanceledException) when (!token.IsCancellationRequested)
+            {
+                voices = null;
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is InvalidOperationException || ex is UriFormatException)
+            {
+                // Unreachable, or not an address a request can be sent to: there is no listing.
+                voices = null;
+            }
+
+            if (voices != null && voices.Count == 0) voices = null;
+            lock (_VoiceListLock)
+            {
+                _VoiceListEndpoint = endpoint;
+                _VoiceList = voices;
+                _VoiceListUtc = DateTime.UtcNow;
+            }
+
+            return voices == null ? null : new List<string>(voices);
+        }
+
+        private static List<string>? ParseVoices(string json)
+        {
+            try
+            {
+                using (JsonDocument doc = JsonDocument.Parse(json))
+                {
+                    JsonElement list = doc.RootElement;
+                    if (list.ValueKind == JsonValueKind.Object)
+                    {
+                        if (list.TryGetProperty("voices", out JsonElement voices)) list = voices;
+                        else if (list.TryGetProperty("data", out JsonElement data)) list = data;
+                    }
+
+                    if (list.ValueKind != JsonValueKind.Array) return null;
+                    List<string> ids = new List<string>();
+                    foreach (JsonElement item in list.EnumerateArray())
+                    {
+                        string? id = null;
+                        if (item.ValueKind == JsonValueKind.String) id = item.GetString();
+                        else if (item.ValueKind == JsonValueKind.Object)
+                        {
+                            foreach (string key in new[] { "id", "voice_id", "name" })
+                            {
+                                if (item.TryGetProperty(key, out JsonElement value) && value.ValueKind == JsonValueKind.String)
+                                {
+                                    id = value.GetString();
+                                    break;
+                                }
+                            }
+                        }
+
+                        id = id?.Trim();
+                        if (!String.IsNullOrEmpty(id) && id.Length <= 100 && !ids.Contains(id, StringComparer.Ordinal)) ids.Add(id);
+                        if (ids.Count >= 500) break;
+                    }
+
+                    return ids;
+                }
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
         }
 
         private async Task<VoiceProfile?> ResolveVoiceAsync(string tenantId, string? voiceProfileId, CancellationToken token)

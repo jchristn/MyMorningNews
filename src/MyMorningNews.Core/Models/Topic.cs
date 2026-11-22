@@ -264,6 +264,11 @@ namespace MyMorningNews.Core.Models
         public bool AgenticSearch { get; set; } = false;
 
         /// <summary>
+        /// Voice profile that reads this topic's run briefings aloud. Null uses the workspace default voice.
+        /// </summary>
+        public string? VoiceProfileId { get; set; } = null;
+
+        /// <summary>
         /// MCP tool IDs (mct_...) this topic may use in agentic search. Empty allows every enabled tool.
         /// </summary>
         public List<string> McpToolIds

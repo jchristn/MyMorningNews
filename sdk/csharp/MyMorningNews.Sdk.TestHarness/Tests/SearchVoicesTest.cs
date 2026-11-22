@@ -81,6 +81,9 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             EnumerationResult<VoiceProfile> voices = await StepAsync(context, result, "GET voices", () => c.Voices.ListAsync(new VoiceListOptions { PageSize = 100 }, token)).ConfigureAwait(false);
             Helpers.Contains(voices.Items, x => x.Id == v.Id, "the voice");
             await StepAsync(context, result, "POST voice test (unreachable, 502)", () => Helpers.ExpectErrorAsync(() => c.Voices.TestAsync(v.Id, new VoiceTestRequest { Text = "Hello." }, token), 502, "TtsError")).ConfigureAwait(false);
+            AvailableVoicesResponse available = await StepAsync(context, result, "GET voices available", () => c.Voices.GetAvailableAsync(token)).ConfigureAwait(false);
+            Helpers.Contains(available.Voices, x => x.VoiceProfileId == v.Id && x.Voice == "alloy", "the voice profile among the available voices");
+            await StepAsync(context, result, "POST voice preview without a voice (400)", () => Helpers.ExpectErrorAsync(() => c.Voices.PreviewAsync(new VoicePreviewRequest(), token), 400)).ConfigureAwait(false);
             await StepAsync(context, result, "DELETE voice", () => c.Voices.DeleteAsync(v.Id, token)).ConfigureAwait(false);
             context.Cleanup.Remove("voice:" + v.Id);
             await StepAsync(context, result, "GET deleted voice (404)", () => Helpers.ExpectErrorAsync(() => c.Voices.GetAsync(v.Id, token), 404)).ConfigureAwait(false);

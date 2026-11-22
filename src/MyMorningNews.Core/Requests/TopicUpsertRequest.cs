@@ -107,6 +107,19 @@ namespace MyMorningNews.Core.Requests
         public List<string>? McpToolIds { get; set; } = null;
 
         /// <summary>
+        /// Voice profile that reads this topic's run briefings aloud. It must exist in the workspace. An empty string
+        /// clears it (the workspace default voice is used). Null leaves it.
+        /// </summary>
+        public string? VoiceProfileId { get; set; } = null;
+
+        /// <summary>
+        /// A speech server voice ID from GET /v1.0/api/voices/available, such as af_heart, instead of voiceProfileId:
+        /// the server reuses the workspace voice profile for that voice, or creates one, and stores it as the topic's
+        /// voiceProfileId. Null leaves it.
+        /// </summary>
+        public string? Voice { get; set; } = null;
+
+        /// <summary>
         /// Seed search queries.
         /// </summary>
         public List<string>? SeedQueries { get; set; } = null;

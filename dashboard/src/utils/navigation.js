@@ -125,7 +125,7 @@ export const NAV_HUBS = [
   { key: 'configuration', icon: SlidersHorizontal, tabs: ['models', 'prompts', 'searchProviders', 'mcpServers', 'mcp', 'voices', 'email', 'vault'] },
   { key: 'observability', icon: Activity, tabs: ['health', 'requests', 'audit', 'explorer'] },
   { key: 'administration', icon: UserCog, tabs: ['users', 'tenants', 'credentials', 'roles', 'adminUsage', 'plans', 'promoCodes'] },
-  { key: 'settings', icon: Settings, tabs: ['setup', 'profile', 'settings', 'serverInfo'] }
+  { key: 'settings', icon: Settings, tabs: ['profile', 'settings', 'serverInfo', 'setup'] }
 ];
 
 // Labelled sidebar sections and the hubs under each.
@@ -161,10 +161,18 @@ export function tabLabelKey(routeKey) {
   return TAB_LABEL_KEYS[routeKey] || 'nav.items.' + routeKey;
 }
 
-// While the tenant's setup is not ready, administrators can open only these routes: the Setup screen and the
-// configuration it may send them to (model endpoints, the credential vault, search providers, settings), plus their
-// profile. Every other route redirects to the Setup screen.
-export const SETUP_ALLOWED_ROUTES = ['setup', 'models', 'vault', 'searchProviders', 'settings', 'profile'];
+// While the first-run setup guide is on (setup is not ready and the user has not skipped it), only these routes open:
+// the Setup screen and the configuration it may send people to (model endpoints, the credential vault, search
+// providers, voices, settings), plus the profile and server info. Every other route redirects to the Setup screen.
+export const SETUP_ALLOWED_ROUTES = ['setup', 'models', 'vault', 'searchProviders', 'voices', 'settings', 'profile', 'serverInfo'];
+
+// Pages where unfinished setup bites (the topic wizard, research runs, and briefings need a working model and web
+// search). After someone skips setup, these pages carry a warning.
+export const SETUP_AFFECTED_ROUTES = ['home', 'today', 'topics', 'oneTimeRequests', 'runs', 'briefings', 'editions', 'suggestions'];
+
+export function affectedBySetup(item) {
+  return Boolean(item) && SETUP_AFFECTED_ROUTES.includes(item.key);
+}
 
 export function allowedBeforeSetup(item) {
   return Boolean(item) && SETUP_ALLOWED_ROUTES.includes(item.key);
@@ -199,7 +207,7 @@ export function hubTabs(hub, auth) {
   return hub.tabs.map(routeByKey).filter((route) => route && canAccess(route, auth));
 }
 
-// Where the hub's sidebar item goes: its first tab the user can open, or, while setup is not finished, its first such
+// Where the hub's sidebar item goes: its first tab the user can open, or, while the setup guide is on, its first such
 // tab that setup leaves open (so the link does not bounce to the Setup screen). Null when the user can open none.
 export function hubTarget(hub, auth, setupPending = false) {
   const tabs = hubTabs(hub, auth);

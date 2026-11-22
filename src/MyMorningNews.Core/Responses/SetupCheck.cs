@@ -50,9 +50,14 @@ namespace MyMorningNews.Core.Responses
         public string? Provider { get; set; } = null;
 
         /// <summary>
-        /// Model name, for model and embedding checks.
+        /// Model name, for model, embedding, and speech checks.
         /// </summary>
         public string? Model { get; set; } = null;
+
+        /// <summary>
+        /// Default voice, for the speech check. Null for every other check.
+        /// </summary>
+        public string? Voice { get; set; } = null;
 
         /// <summary>
         /// Server address, for Ollama and OpenAI-compatible model checks shown to administrators. Null otherwise.

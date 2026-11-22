@@ -1729,6 +1729,9 @@ async function main() {
             if (err instanceof MyMorningNewsError && err.status === 502) verbose('voice test: TTS endpoint failed (' + err.message + ')');
             else throw err;
         }
+        const available = await client.voices.available();
+        assert(available.voices.some((x) => x.voiceProfileId === v.id && x.label), 'voice profile among the available voices');
+        await expectError(client.voices.preview({}), 400);
         await client.voices.remove(v.id);
         await expectError(client.voices.get(v.id), 404, 'NotFound');
         await expectError(client.voices.create({ name: name('voice-bad') }), 400, 'ValidationFailed');

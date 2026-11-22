@@ -15,7 +15,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Column list in model order.
         /// </summary>
-        public const string Columns = "id, tenantid, userid, name, slug, description, brief, audiencelevel, horizon, language, status, isonetime, noveltypreference, emailonrun, emailwhenempty, maxemailfindings, displaythreshold, weightllm, weightfeedback, weightnovelty, weightsource, weightrecency, seedqueries, briefingtemplateid, lastrunutc, lastrefinedutc, active, createdutc, lastupdateutc, agenticsearch, mcptoolids";
+        public const string Columns = "id, tenantid, userid, name, slug, description, brief, audiencelevel, horizon, language, status, isonetime, noveltypreference, emailonrun, emailwhenempty, maxemailfindings, displaythreshold, weightllm, weightfeedback, weightnovelty, weightsource, weightrecency, seedqueries, briefingtemplateid, lastrunutc, lastrefinedutc, active, createdutc, lastupdateutc, agenticsearch, mcptoolids, voiceprofileid";
 
         /// <summary>
         /// Schema statements: table and indexes. Idempotent.
@@ -61,12 +61,12 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Insert statement with positional parameters in column order.
         /// </summary>
-        public const string Insert = "INSERT INTO topics (" + Columns + ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31)";
+        public const string Insert = "INSERT INTO topics (" + Columns + ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32)";
 
         /// <summary>
         /// Update statement. $1 is id, $2 is tenantid, then the mutable columns in model order.
         /// </summary>
-        public const string Update = "UPDATE topics SET userid = $3, name = $4, slug = $5, description = $6, brief = $7, audiencelevel = $8, horizon = $9, language = $10, status = $11, isonetime = $12, noveltypreference = $13, emailonrun = $14, emailwhenempty = $15, maxemailfindings = $16, displaythreshold = $17, weightllm = $18, weightfeedback = $19, weightnovelty = $20, weightsource = $21, weightrecency = $22, seedqueries = $23, briefingtemplateid = $24, lastrunutc = $25, lastrefinedutc = $26, active = $27, lastupdateutc = $28, agenticsearch = $29, mcptoolids = $30 WHERE id = $1 AND tenantid = $2";
+        public const string Update = "UPDATE topics SET userid = $3, name = $4, slug = $5, description = $6, brief = $7, audiencelevel = $8, horizon = $9, language = $10, status = $11, isonetime = $12, noveltypreference = $13, emailonrun = $14, emailwhenempty = $15, maxemailfindings = $16, displaythreshold = $17, weightllm = $18, weightfeedback = $19, weightnovelty = $20, weightsource = $21, weightrecency = $22, seedqueries = $23, briefingtemplateid = $24, lastrunutc = $25, lastrefinedutc = $26, active = $27, lastupdateutc = $28, agenticsearch = $29, mcptoolids = $30, voiceprofileid = $31 WHERE id = $1 AND tenantid = $2";
 
         /// <summary>
         /// Select by identifier within a tenant.

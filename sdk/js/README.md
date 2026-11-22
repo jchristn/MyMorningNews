@@ -392,6 +392,11 @@ await client.searchProviders.fetchTest('https://example.test/article');
 const v = await client.voices.create({ name: 'Narrator', provider: 'OpenAiCompatibleSpeech', model: 'kokoro', voice: 'af_heart' });
 const sample = await client.voices.test(v.id, { text: 'Good morning.' }); // audio/wav
 
+// A voice per topic: list what a topic can use, hear one, and choose it.
+const { voices } = await client.voices.available(); // voice profiles, then the speech server's voices, each with a label
+const preview = await client.voices.preview({ voice: 'bf_emma', text: 'Good morning.' }); // audio/wav, 20 a minute
+await client.topics.update(topicId, { voice: 'bf_emma' }); // or { voiceProfileId }, and '' to use the workspace default
+
 const cred = await client.vault.create({ name: 'Tavily', kind: 'ApiKey', provider: 'Tavily', secret: process.env.TAVILY_KEY });
 await client.vault.usage(cred.id); // secrets are never returned; reveal is in the C# SDK only
 ```
@@ -414,7 +419,7 @@ The public account routes send no credentials: `account.signup({ email, password
 
 ### setup
 
-Workspace setup. `status()` returns `{ ready, canConfigure, checks, checkedUtc }`; each check has a `key` (`model:{endpointId}`, `search`, `embeddings`, or `email`), a `kind`, whether it is `required`, and a `state` (`Ready`, `Missing`, `Unverified`, or `Failed`). Until `ready` is true, refinement sessions and research requests fail with `SetupRequiredError`. Administrators can call `verify()` (live probes of each chat endpoint, the default search providers, and embeddings) and `setModelKey(modelEndpointId, apiKey)` (stores the key in the vault, attaches it to the endpoint, and checks it live; the key is never returned). Both are 403 for anyone else and both call the providers.
+Workspace setup. `status()` returns `{ ready, canConfigure, checks, checkedUtc }`; each check has a `key` (`model:{endpointId}`, `search`, `embeddings`, or `email`), a `kind`, whether it is `required`, and a `state` (`Ready`, `Missing`, `Unverified`, or `Failed`). Until `ready` is true, refinement sessions and research requests fail with `SetupRequiredError`. Administrators also get the optional `speech` check (the text to speech endpoint, with its `model` and default `voice`). Administrators can call `verify()` (live probes of each chat endpoint, the default search providers, embeddings, and speech; `verify('Speech')` probes one kind only) and `setModelKey(modelEndpointId, apiKey)` (stores the key in the vault, attaches it to the endpoint, and checks it live; the key is never returned). Both are 403 for anyone else and both call the providers.
 
 `options()` (administrators) returns `{ providers, serverContainer }`. Each provider has a `group` (`Api`, `AgentCli`, or `SelfHosted`), whether it is `available` and `installed` on this server (agent CLIs can be turned off or missing, with an `unavailableReason`), the default model and base URL, and its sign-in `methods` (recommended first, each with a `method` of `ApiKey`, `AccessToken`, `AuthFile`, `ServerSignIn`, or `None` and the input it needs). `connect({ provider, authMethod, secret, model, baseUrl, modelEndpointId })` stores the secret for that method (an API key, a `claude setup-token` token, or the contents of a sign-in file such as Codex's `auth.json`), points every chat task at the endpoint, and checks it with a live call. Both are 403 for anyone else.
 

@@ -303,6 +303,8 @@ export interface Topic extends Record_ {
     agenticSearch: boolean;
     /** MCP tool IDs (`mct_...`) allowed in agentic search. Empty allows every enabled tool. */
     mcpToolIds: string[];
+    /** Voice profile that reads the topic's run briefings aloud, or null for the workspace default voice. */
+    voiceProfileId: string | null;
     lastRunUtc: string | null;
     lastRefinedUtc: string | null;
 }
@@ -386,12 +388,12 @@ export interface UsageMeter {
     customEndpoints: boolean;
 }
 
-export type SetupCheckKind = 'Model' | 'Search' | 'Embeddings' | 'Email';
+export type SetupCheckKind = 'Model' | 'Search' | 'Embeddings' | 'Email' | 'Speech';
 export type SetupCheckState = 'Ready' | 'Missing' | 'Unverified' | 'Failed';
 
 /** One thing the workspace needs before people can use it, and whether it is ready. */
 export interface SetupCheck {
-    /** Stable key: `model:{endpointId}` (or `model:none`), `search`, `embeddings`, or `email`. */
+    /** Stable key: `model:{endpointId}` (or `model:none`), `search`, `embeddings`, `email`, or `speech`. */
     key: string;
     kind: SetupCheckKind;
     /** Whether the workspace is blocked until this check is ready. */
@@ -404,7 +406,9 @@ export interface SetupCheck {
     resourceName?: string | null;
     provider?: string | null;
     model?: string | null;
-    /** Server address, for Ollama and OpenAI-compatible model checks shown to administrators. Null otherwise. */
+    /** Default voice, for the speech check. Null otherwise. */
+    voice?: string | null;
+    /** Server address, for Ollama and OpenAI-compatible model checks and the speech check, shown to administrators. Null otherwise. */
     baseUrl?: string | null;
     /** Tasks the endpoint serves, for model checks. */
     tasks: string[];
@@ -570,6 +574,10 @@ export interface TopicUpsertRequest {
     /** IDs that do not start with `mct_` are dropped. */
     mcpToolIds?: string[];
     seedQueries?: string[];
+    /** Voice profile that reads the topic's run briefings aloud. An empty string goes back to the workspace default. */
+    voiceProfileId?: string;
+    /** A speech server voice from `voices.available()` instead of `voiceProfileId`; the server reuses or creates its voice profile. */
+    voice?: string;
 }
 
 export interface RefinementSession extends Record_ {
@@ -1242,6 +1250,31 @@ export interface VoiceProfile extends Record_ {
     isDefault: boolean;
 }
 
+/** A voice someone can choose for a topic: a workspace voice profile, or a voice the speech server offers. */
+export interface AvailableVoice {
+    /** The speech server's voice ID, such as `af_heart`. */
+    voice: string;
+    /** A readable label, such as "Heart (American English, female)"; the voice ID when it follows no known naming. */
+    label: string;
+    /** The workspace voice profile that uses this voice, or null for a speech server voice that has no profile yet. */
+    voiceProfileId: string | null;
+    /** The voice profile's name, or null. */
+    name: string | null;
+    /** True for the workspace's default voice profile. */
+    isDefault: boolean;
+}
+
+/** The voices someone can choose for a topic. */
+export interface AvailableVoicesResponse {
+    /** Whether speech is turned on for this server. */
+    enabled: boolean;
+    /** True when the speech server listed its voices; false when the list is only the configured default voices. */
+    listed: boolean;
+    defaultVoiceProfileId: string | null;
+    /** Voice profiles first, then the speech server's other voices. */
+    voices: AvailableVoice[];
+}
+
 export interface FeedToken extends Record_ {
     userId: string;
     editionId: string | null;
@@ -1795,6 +1828,10 @@ export interface VoiceProfileUpsertRequest {
 
 export declare class VoicesResource extends CrudResource<VoiceProfile, VoiceProfile, VoiceProfileUpsertRequest> {
     test(id: string, body?: { text?: string }): Promise<DownloadResult>;
+    /** The workspace's voice profiles, then the speech server's other voices, each with a readable label. */
+    available(): Promise<AvailableVoicesResponse>;
+    /** A short sample (up to 300 characters). 409 when speech is off, 429 over 20 a minute, 502 `TtsError` when the speech endpoint fails. */
+    preview(body: { voice?: string; voiceProfileId?: string; text?: string }): Promise<DownloadResult>;
 }
 
 export declare class VaultResource extends CrudResource<VaultCredential, VaultCredential, VaultCredentialUpsertRequest> {
@@ -1832,8 +1869,8 @@ export declare class AccountResource extends ResourceGroup {
 
 export declare class SetupResource extends ResourceGroup {
     status(): Promise<SetupStatusResponse>;
-    /** Administrators only (403 otherwise). Live probes of each chat endpoint, the default search providers, and embeddings. */
-    verify(): Promise<SetupStatusResponse>;
+    /** Administrators only (403 otherwise). Live probes of each chat endpoint, the default search providers, embeddings, and speech; `check` limits the probes to one kind. */
+    verify(check?: 'Model' | 'Search' | 'Embeddings' | 'Speech'): Promise<SetupStatusResponse>;
     /** Administrators only (403 otherwise). Stores the key in the vault, attaches it to the endpoint, and checks it live; 404 for an unknown endpoint. */
     setModelKey(modelEndpointId: string, apiKey: string): Promise<SetupStatusResponse>;
     /** Administrators only (403 otherwise). Providers and sign-in methods the server offers, with whether each agent CLI is installed and allowed. */

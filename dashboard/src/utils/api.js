@@ -197,9 +197,10 @@ export class ApiClient {
   getSetupStatus(signal) {
     return this._request('GET', '/v1.0/api/setup', { signal });
   }
-  // Administrators only: re-runs every check with live calls.
-  verifySetup() {
-    return this._request('POST', '/v1.0/api/setup/verify');
+  // Administrators only: re-runs every check with live calls, or only one kind ('Model', 'Search', 'Embeddings',
+  // 'Speech') when given.
+  verifySetup(check) {
+    return this._request('POST', '/v1.0/api/setup/verify', check ? { query: { check } } : undefined);
   }
   // Administrators only: stores the key in the vault, attaches it to the endpoint, and verifies it with a live call.
   setSetupModelKey(modelEndpointId, apiKey) {
@@ -840,6 +841,22 @@ export class ApiClient {
   // Speaks a sample: resolves to { blob, contentType } with audio/wav. 502 TtsError when the speech endpoint fails.
   testVoice(id, text, signal) {
     return this._requestBlob('POST', '/v1.0/api/voices/' + enc(id) + '/test', { body: { text: text || '' }, signal });
+  }
+
+  // The voices a topic can use: the workspace's voice profiles, then the speech server's other voices, each with a
+  // readable label. Resolves to { enabled, listed, defaultVoiceProfileId, voices: [{ voice, label, voiceProfileId, name, isDefault }] }.
+  getAvailableVoices(signal) {
+    return this._request('GET', '/v1.0/api/voices/available', { signal });
+  }
+  // Speaks a short sample of a speech server voice ({ voice }) or a voice profile ({ voiceProfileId }), with optional
+  // text (up to 300 characters): resolves to { blob, contentType }. 409 when speech is turned off, 429 over the limit,
+  // 502 TtsError when the speech endpoint fails.
+  previewVoice({ voice, voiceProfileId, text } = {}, signal) {
+    const body = {};
+    if (voiceProfileId) body.voiceProfileId = voiceProfileId;
+    else if (voice) body.voice = voice;
+    if (text) body.text = text;
+    return this._requestBlob('POST', '/v1.0/api/voices/preview', { body, signal });
   }
 
   // Private podcast feed tokens. Create returns { token, secret, feedUrl } once; only a hash is stored.

@@ -4286,7 +4286,8 @@
       "Model": "Modell",
       "Search": "Suche",
       "Embeddings": "Embeddings",
-      "Email": "E-Mail"
+      "Email": "E-Mail",
+      "Speech": "Sprachausgabe"
     },
     "check": {
       "title": "{kind}: {name}"
@@ -4295,12 +4296,6 @@
       "open": "Einrichtung abschließen",
       "askAdmin": "Ein Administrator muss die Einrichtung abschließen, damit das funktioniert."
     },
-    "ready": {
-      "title": "Alles bereit",
-      "message": "KI-Modell und Websuche funktionieren beide. Erstellen Sie ein Thema, um Ihr erstes Briefing zu erhalten.",
-      "newTopic": "Erstes Thema erstellen",
-      "home": "Zur Startseite"
-    },
     "gate": {
       "title": "Dieser Arbeitsbereich ist nicht bereit",
       "message": "Ein Administrator muss ein KI-Modell und eine Websuche verbinden, bevor jemand My Morning News nutzen kann.",
@@ -4308,7 +4303,9 @@
       "checkAgain": "Erneut prüfen",
       "checking": "Wird geprüft",
       "signOut": "Abmelden",
-      "checked": "Zuletzt geprüft: {time}"
+      "checked": "Zuletzt geprüft: {time}",
+      "continue": "Weiter zur App",
+      "continueHelp": "Sie können sich in der Zwischenzeit umsehen. Alles, was das KI-Modell braucht, funktioniert erst, wenn die Einrichtung abgeschlossen ist."
     },
     "loadError": {
       "title": "Der Einrichtungsstatus konnte nicht geladen werden",
@@ -4483,10 +4480,47 @@
       "note": "Diese blockieren die Recherche nie. Richten Sie sie ein, wann immer Sie möchten.",
       "what": {
         "Embeddings": "Erkennt wiederholte Meldungen anhand ihrer Bedeutung, nicht nur anhand übereinstimmender Wörter.",
-        "Email": "Sendet nach jedem Lauf eine Briefing-E-Mail mit Links zu Details und Feedback."
+        "Email": "Sendet nach jedem Lauf eine Briefing-E-Mail mit Links zu Details und Feedback.",
+        "Speech": "Liest Briefings vor und erstellt Podcast-Folgen."
       },
       "openModels": "Modelle öffnen",
       "openSettings": "Einstellungen öffnen"
+    },
+    "status": {
+      "title": "Einrichtung",
+      "summary": "Womit My Morning News verbunden ist. Hier können Sie eine Verbindung ändern oder erneut testen."
+    },
+    "complete": {
+      "message": "Die Einrichtung ist abgeschlossen. Das KI-Modell und die Websuche funktionieren.",
+      "topics": "Zu den Themen"
+    },
+    "skip": {
+      "button": "Vorerst überspringen",
+      "title": "Einrichtung vorerst überspringen?",
+      "intro": "Die Einrichtung ist nicht abgeschlossen. Das fehlt noch:",
+      "untilThen": "Bis sie abgeschlossen ist:",
+      "needsModel": "Der Themenassistent, Rechercheläufe und Briefings funktionieren nicht. Sie brauchen ein funktionierendes KI-Modell.",
+      "needsSearch": "Die Recherche kann keine neuen Quellen finden. Sie braucht einen Anbieter für die Websuche.",
+      "later": "Sie können jederzeit über „Einrichtung abschließen“ oben im Menü zurückkehren.",
+      "stay": "Weiter einrichten",
+      "skippedNote": "Sie haben die Einrichtung übersprungen, daher sind alle Seiten geöffnet. Schließen Sie die Schritte unten ab, wenn Sie so weit sind.",
+      "resume": "Auf dieser Seite bleiben, bis die Einrichtung abgeschlossen ist"
+    },
+    "warning": {
+      "title": "Die Einrichtung ist nicht abgeschlossen.",
+      "missing": "Es fehlt noch: {items}. Bis dahin funktionieren der Themenassistent, Rechercheläufe und Briefings nicht.",
+      "generic": "Bis sie abgeschlossen ist, funktioniert manches nicht."
+    },
+    "speech": {
+      "server": "Sprachserver",
+      "model": "Modell",
+      "voice": "Standardstimme",
+      "test": "Sprachausgabe testen",
+      "testing": "Die Sprachausgabe wird getestet. Dazu wird der Sprachserver um eine kurze Probe gebeten.",
+      "works": "Die Sprachausgabe funktioniert.",
+      "openSettings": "Einstellungen des Sprachservers",
+      "openVoices": "Stimmen",
+      "whoCanChange": "Nur ein Serveradministrator kann den Sprachserver ändern, unter Einstellungen, Servereinstellungen."
     }
   },
   "costs": {
@@ -4551,5 +4585,28 @@
       "kind": "Art",
       "partialSuffix": "(einige Aufrufe ohne Preis)"
     }
+  },
+  "topicVoice": {
+    "title": "Stimme",
+    "help": "Die Stimme, die die Briefings dieses Themas vorliest. Spielen Sie eine Probe ab, um jede Stimme zu hören.",
+    "current": "Dieses Thema verwendet {voice}.",
+    "usingDefault": "Dieses Thema verwendet die Standardstimme des Arbeitsbereichs, {voice}.",
+    "usingDefaultUnknown": "Dieses Thema verwendet die Standardstimme des Arbeitsbereichs.",
+    "useDefault": "Standard des Arbeitsbereichs verwenden",
+    "use": "Diese Stimme verwenden",
+    "useNamed": "{voice} für dieses Thema verwenden",
+    "inUse": "In Verwendung",
+    "workspaceDefault": "Standard des Arbeitsbereichs",
+    "play": "Probe von {voice} abspielen",
+    "stop": "Probe von {voice} stoppen",
+    "playShort": "Abspielen",
+    "stopShort": "Stoppen",
+    "loadingShort": "Wird geladen",
+    "listLabel": "Verfügbare Stimmen",
+    "sampleLabel": "Stimmprobe",
+    "saved": "{voice} liest jetzt dieses Thema vor",
+    "savedDefault": "Dieses Thema verwendet wieder die Standardstimme des Arbeitsbereichs",
+    "speechOff": "Die Sprachausgabe ist auf diesem Server ausgeschaltet, daher gibt es nichts abzuspielen. Ein Serveradministrator kann sie in den Servereinstellungen einschalten.",
+    "empty": "Es sind keine Stimmen verfügbar."
   }
 }

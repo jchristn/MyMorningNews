@@ -131,7 +131,7 @@ SourcesStep.propTypes = {
   busy: PropTypes.bool
 };
 
-// Step 6: the research schedule, email on every run, and recipients.
+// Step 6: the research schedule, email on every run, recipients, and the voice that reads the briefings aloud.
 export function DeliveryStep({ data, recipients, onRecipientsChanged, dispatch, scheduleRef, optionsRef, busy }) {
   const { t } = useTranslation();
   return (

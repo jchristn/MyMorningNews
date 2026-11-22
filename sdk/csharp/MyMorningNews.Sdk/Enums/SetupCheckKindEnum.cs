@@ -26,6 +26,11 @@ namespace MyMorningNews.Sdk.Enums
         /// <summary>
         /// Email delivery. Optional.
         /// </summary>
-        Email
+        Email,
+
+        /// <summary>
+        /// Speech for briefing audio (the text to speech endpoint). Optional.
+        /// </summary>
+        Speech
     }
 }

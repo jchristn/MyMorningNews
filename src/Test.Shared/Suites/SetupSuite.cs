@@ -37,6 +37,9 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "CodexAuthFile", "Codex connects with a pasted auth.json written privately once, a refreshed file is kept, and deleting the endpoint removes it", CodexAuthFileAsync),
                 Cases.Case(S, "AgentClisOff", "With agent CLIs turned off they are offered as unavailable and cannot be connected", AgentClisOffAsync),
                 Cases.Case(S, "SharedModel", "A workspace on the shared model uses the operator's verified model when no shared key is set", SharedModelAsync),
+                Cases.Case(S, "SpeechReady", "Administrators get an optional speech check that passes against a working speech endpoint, is kept between reads, and is checked again by verify", SpeechReadyAsync),
+                Cases.Case(S, "SpeechOff", "With speech turned off the speech check is missing and says who can turn it on", SpeechOffAsync),
+                Cases.Case(S, "SpeechFailed", "A speech endpoint that does not answer fails the optional check with the reason and does not block setup", SpeechFailedAsync),
                 Cases.Case(S, "AgentClisAdminsOnly", "With agent CLIs limited to administrators, a global administrator may connect one and a tenant administrator may not", AgentClisAdminsOnlyAsync)
             });
         }
@@ -322,6 +325,82 @@ namespace Test.Shared.Suites
                 models.AgentClisAdminsOnly = adminsOnly;
             }
         }
+        private static async Task SpeechReadyAsync(CancellationToken token)
+        {
+            MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+            TtsSettings tts = server.Context.Settings.Tts;
+            TestUser[] users = await WorkspaceAsync(token).ConfigureAwait(false);
+            SetupStatusResponse s = await StatusAsync(users[0], token).ConfigureAwait(false);
+            SetupCheck speech = s.Checks.Single(c => c.Kind == SetupCheckKindEnum.Speech);
+            Assert.True(speech.Key == "speech" && !speech.Required && speech.State == SetupCheckStateEnum.Ready && speech.Message == null, "speech is an optional check that passes: " + speech.State + " " + speech.Message);
+            Assert.True(speech.Model == tts.Model && speech.Voice == tts.Voice && speech.Provider == "OpenAiCompatibleSpeech" && speech.BaseUrl == tts.Endpoint
+                && speech.ResourceName!.StartsWith("127.0.0.1:", StringComparison.Ordinal) && speech.VerifiedUtc.HasValue, "it names the endpoint host, model, and default voice: " + speech.ResourceName);
+            Assert.True(!(await StatusAsync(users[1], token).ConfigureAwait(false)).Checks.Any(c => c.Kind == SetupCheckKindEnum.Speech), "members do not see the speech check");
+
+            int before = SpeechProbes();
+            SetupCheck again = (await StatusAsync(users[0], token).ConfigureAwait(false)).Checks.Single(c => c.Kind == SetupCheckKindEnum.Speech);
+            Assert.True(again.State == SetupCheckStateEnum.Ready && SpeechProbes() == before, "reading the status again does not call the speech endpoint again");
+            SetupStatusResponse verified = (await users[0].Client.PostAsync("/v1.0/api/setup/verify", null, token).ConfigureAwait(false)).Expect(200, "verify").Json<SetupStatusResponse>();
+            Assert.True(verified.Checks.Single(c => c.Kind == SetupCheckKindEnum.Speech).State == SetupCheckStateEnum.Ready && SpeechProbes() == before + 1, "verify speaks one more sample");
+            int requests = StubModelServer.Shared.Requests.Count;
+            SetupStatusResponse only = (await users[0].Client.PostAsync("/v1.0/api/setup/verify?check=Speech", null, token).ConfigureAwait(false)).Expect(200, "verify speech only").Json<SetupStatusResponse>();
+            Assert.True(only.Checks.Any(c => c.Kind == SetupCheckKindEnum.Model) && only.Checks.Single(c => c.Kind == SetupCheckKindEnum.Speech).State == SetupCheckStateEnum.Ready
+                && SpeechProbes() == before + 2 && StubModelServer.Shared.Requests.Count == requests, "check=Speech re-checks only the speech endpoint and still reports every check");
+            (await users[1].Client.PostAsync("/v1.0/api/setup/verify?check=Speech", null, token).ConfigureAwait(false)).Expect(403, "members cannot re-check");
+        }
+
+        private static int SpeechProbes()
+        {
+            return StubModelServer.Shared.SpeechRequests.Count(r => r.Contains("\"Ready.\"", StringComparison.Ordinal));
+        }
+
+        private static async Task SpeechOffAsync(CancellationToken token)
+        {
+            MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+            TtsSettings tts = server.Context.Settings.Tts;
+            bool enabled = tts.Enabled;
+            try
+            {
+                tts.Enabled = false;
+                TestUser ta = (await WorkspaceAsync(token).ConfigureAwait(false))[0];
+                SetupCheck speech = (await StatusAsync(ta, token).ConfigureAwait(false)).Checks.Single(c => c.Kind == SetupCheckKindEnum.Speech);
+                Assert.True(!speech.Required && speech.State == SetupCheckStateEnum.Missing && speech.Message!.Contains("turned off", StringComparison.Ordinal) && speech.Message.Contains("Server settings", StringComparison.Ordinal),
+                    "speech turned off is reported as missing: " + speech.State + " " + speech.Message);
+                (await ta.Client.PostAsync("/v1.0/api/voices/preview", new { voice = "af_heart" }, token).ConfigureAwait(false)).Expect(409, "nothing to preview while speech is off");
+            }
+            finally
+            {
+                tts.Enabled = enabled;
+            }
+        }
+
+        private static async Task SpeechFailedAsync(CancellationToken token)
+        {
+            MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+            TtsSettings tts = server.Context.Settings.Tts;
+            string endpoint = tts.Endpoint;
+            try
+            {
+                tts.Endpoint = "http://127.0.0.1:" + PortAllocator.GetFreePort() + "/v1";
+                TestUser ta = (await WorkspaceAsync(token).ConfigureAwait(false))[0];
+                SetupStatusResponse s = await StatusAsync(ta, token).ConfigureAwait(false);
+                SetupCheck speech = s.Checks.Single(c => c.Kind == SetupCheckKindEnum.Speech);
+                Assert.True(!speech.Required && speech.State == SetupCheckStateEnum.Failed && speech.Message!.Contains("Could not reach the speech endpoint", StringComparison.Ordinal),
+                    "a dead speech endpoint fails the check with the reason: " + speech.State + " " + speech.Message);
+                Assert.True(s.Checks.Where(c => c.Required).All(c => c.Kind != SetupCheckKindEnum.Speech), "speech never blocks setup");
+                ErrorResponse preview = (await ta.Client.PostAsync("/v1.0/api/voices/preview", new { voice = tts.Voice }, token).ConfigureAwait(false)).Expect(502, "preview reports the dead endpoint").Json<ErrorResponse>();
+                Assert.Equal("TtsError", preview.Error, "preview error code");
+
+                tts.Endpoint = endpoint;
+                SetupCheck back = (await StatusAsync(ta, token).ConfigureAwait(false)).Checks.Single(c => c.Kind == SetupCheckKindEnum.Speech);
+                Assert.True(back.State == SetupCheckStateEnum.Ready, "a changed endpoint is checked at once: " + back.State + " " + back.Message);
+            }
+            finally
+            {
+                tts.Endpoint = endpoint;
+            }
+        }
+
         private static async Task SharedModelAsync(CancellationToken token)
         {
             string variable = MyMorningNews.Core.Constants.EnvironmentPrefix + "ANTHROPIC_API_KEY";

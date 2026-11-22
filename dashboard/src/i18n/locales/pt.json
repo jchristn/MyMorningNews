@@ -4286,7 +4286,8 @@
       "Model": "Modelo",
       "Search": "Pesquisa",
       "Embeddings": "Embeddings",
-      "Email": "E-mail"
+      "Email": "E-mail",
+      "Speech": "Fala"
     },
     "check": {
       "title": "{kind}: {name}"
@@ -4295,12 +4296,6 @@
       "open": "Concluir a configuração",
       "askAdmin": "Um administrador precisa concluir a configuração para que isso funcione."
     },
-    "ready": {
-      "title": "Tudo pronto",
-      "message": "O modelo de IA e a pesquisa na web estão funcionando. Crie um tema para receber seu primeiro boletim.",
-      "newTopic": "Criar seu primeiro tema",
-      "home": "Ir para Início"
-    },
     "gate": {
       "title": "Este espaço de trabalho não está pronto",
       "message": "Um administrador precisa conectar um modelo de IA e a pesquisa na web antes que alguém possa usar o My Morning News.",
@@ -4308,7 +4303,9 @@
       "checkAgain": "Verificar novamente",
       "checking": "Verificando",
       "signOut": "Sair",
-      "checked": "Última verificação: {time}"
+      "checked": "Última verificação: {time}",
+      "continue": "Continuar para o aplicativo",
+      "continueHelp": "Enquanto isso, você pode explorar. Tudo o que precisa do modelo de IA não vai funcionar até a configuração ser concluída."
     },
     "loadError": {
       "title": "Não foi possível carregar o status da configuração",
@@ -4483,10 +4480,47 @@
       "note": "Eles nunca bloqueiam a pesquisa. Configure quando quiser.",
       "what": {
         "Embeddings": "Encontra notícias repetidas pelo significado, não apenas por palavras iguais.",
-        "Email": "Envia um e-mail com o boletim após cada execução, com links para os detalhes e para enviar feedback."
+        "Email": "Envia um e-mail com o boletim após cada execução, com links para os detalhes e para enviar feedback.",
+        "Speech": "Lê os boletins em voz alta e cria episódios de podcast."
       },
       "openModels": "Abrir Modelos de IA",
       "openSettings": "Abrir Configurações"
+    },
+    "status": {
+      "title": "Configuração",
+      "summary": "A que o My Morning News está conectado. Altere uma conexão ou teste-a novamente aqui."
+    },
+    "complete": {
+      "message": "A configuração está concluída. O modelo de IA e a pesquisa na web funcionam.",
+      "topics": "Ir para Temas"
+    },
+    "skip": {
+      "button": "Pular por enquanto",
+      "title": "Pular a configuração por enquanto?",
+      "intro": "A configuração não foi concluída. Ainda falta isto:",
+      "untilThen": "Até que seja concluída:",
+      "needsModel": "O assistente de temas, as execuções de pesquisa e os boletins não vão funcionar. Eles precisam de um modelo de IA funcionando.",
+      "needsSearch": "A pesquisa não consegue encontrar novas fontes. Ela precisa de um provedor de pesquisa na web.",
+      "later": "Você pode voltar a qualquer momento com Concluir a configuração, no topo do menu.",
+      "stay": "Continuar configurando",
+      "skippedNote": "Você pulou a configuração, então todas as páginas estão abertas. Conclua as etapas abaixo quando quiser.",
+      "resume": "Manter-me nesta página até concluir a configuração"
+    },
+    "warning": {
+      "title": "A configuração não foi concluída.",
+      "missing": "Ainda falta: {items}. Até lá, o assistente de temas, as execuções de pesquisa e os boletins não vão funcionar.",
+      "generic": "Algumas coisas não vão funcionar até que seja concluída."
+    },
+    "speech": {
+      "server": "Servidor de fala",
+      "model": "Modelo",
+      "voice": "Voz padrão",
+      "test": "Testar a fala",
+      "testing": "Testando a fala. Uma amostra curta é pedida ao servidor de fala.",
+      "works": "A fala funciona.",
+      "openSettings": "Ajustes do servidor de fala",
+      "openVoices": "Vozes",
+      "whoCanChange": "Somente um administrador do servidor pode alterar o servidor de fala, em Configurações, Ajustes do servidor."
     }
   },
   "costs": {
@@ -4551,5 +4585,28 @@
       "kind": "Tipo",
       "partialSuffix": "(algumas chamadas sem preço)"
     }
+  },
+  "topicVoice": {
+    "title": "Voz",
+    "help": "A voz que lê em voz alta os boletins deste tema. Reproduza uma amostra para ouvir cada uma.",
+    "current": "Este tema usa {voice}.",
+    "usingDefault": "Este tema usa a voz padrão do espaço de trabalho, {voice}.",
+    "usingDefaultUnknown": "Este tema usa a voz padrão do espaço de trabalho.",
+    "useDefault": "Usar a padrão do espaço de trabalho",
+    "use": "Usar esta voz",
+    "useNamed": "Usar {voice} neste tema",
+    "inUse": "Em uso",
+    "workspaceDefault": "Padrão do espaço de trabalho",
+    "play": "Reproduzir uma amostra de {voice}",
+    "stop": "Parar a amostra de {voice}",
+    "playShort": "Reproduzir",
+    "stopShort": "Parar",
+    "loadingShort": "Carregando",
+    "listLabel": "Vozes disponíveis",
+    "sampleLabel": "Amostra de voz",
+    "saved": "{voice} agora lê este tema",
+    "savedDefault": "Este tema voltou a usar a voz padrão do espaço de trabalho",
+    "speechOff": "A fala está desativada neste servidor, então não há áudio para reproduzir. Um administrador do servidor pode ativá-la em Ajustes do servidor.",
+    "empty": "Nenhuma voz disponível."
   }
 }

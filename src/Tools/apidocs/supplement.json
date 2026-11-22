@@ -34,7 +34,7 @@
     "Editions": "Recurring briefings that gather several topics, with a template, audio and email switches, and a lookback window.",
     "Templates": "Briefing templates in Markdown. Every save is a version; templates can be validated, previewed, rolled back, reset, imported, and exported.",
     "Media": "Audio episodes made from briefings, with chapters.",
-    "Voices": "Text-to-speech voice profiles, with a test route that speaks a sample.",
+    "Voices": "Text-to-speech voice profiles, with a test route that speaks a sample. Two more routes let anyone who can edit a topic choose its voice: one lists the voices a topic can use (the voice profiles, then the speech server's own voices with readable labels), and one speaks a short preview.",
     "Podcast feeds": "Private podcast feed tokens. The feed URL embeds the secret, which is shown once.",
     "Email": "The email outbox, test and preview sends, resends, and the signed-in user's email preferences.",
     "Feedback": "Ratings and reasons on findings, predictions, suggestions, sources, domains, and briefings. Feedback drives learning and analytics.",
@@ -81,6 +81,7 @@
     "bucketMinutes": "Bucket width in minutes for time series.",
     "category": "Finding category.",
     "channel": "Where the feedback came from.",
+    "check": "Re-check only this kind of setup check (Model, Search, Embeddings, or Speech) with live calls.",
     "dimensionId": "Only findings matched to this dimension.",
     "disposition": "What the pipeline did with each result.",
     "download": "true sends the file as an attachment.",
@@ -310,6 +311,8 @@
     "PUT /v1.0/api/voices/{id}": {"response": "VoiceProfile", "status": {"200": "OK", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
     "DELETE /v1.0/api/voices/{id}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
     "POST /v1.0/api/voices/{id}/test": {"response": "audio/wav", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound", "502": "TtsError"}},
+    "GET /v1.0/api/voices/available": {"response": "AvailableVoicesResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}, "notes": "The workspace's active voice profiles come first (the default one at the top), then the voices the speech server offers that no profile uses yet. The server's list is read from the speech endpoint's `/audio/voices` (Kokoro-FastAPI) and kept for five minutes; `listed` is false when the endpoint has no listing, and the configured default voices are offered instead. `label` is readable where the ID follows Kokoro's naming (`af_heart` is Heart, American English, female) and is the ID otherwise. To use a voice for a topic, send its `voiceProfileId`, or its `voice` when it has no profile yet, in `PUT /v1.0/api/topics/{id}`; the server then reuses or creates the voice profile. Needs permission to read topics."},
+    "POST /v1.0/api/voices/preview": {"response": "audio/wav", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "Conflict", "429": "TooManyRequests", "502": "TtsError"}, "notes": "Send `voice` (a speech server voice from the available list) or `voiceProfileId` (a voice profile, spoken with its own endpoint, model, and speed). `text` is cut to 300 characters; without it a default sentence is spoken. Each user may ask for 20 previews a minute. 400 when neither is given or the speech server does not offer the voice, 404 for an unknown voice profile, 409 when speech is turned off on the server, 502 `TtsError` when the speech endpoint fails. Needs permission to edit topics."},
     "GET /v1.0/api/feed-tokens": {"response": "List<FeedToken>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
     "POST /v1.0/api/feed-tokens": {"response": "FeedTokenCreated", "status": {"201": "Created", "400": "ValidationFailed, TenantRequired", "403": "Forbidden"}},
     "DELETE /v1.0/api/feed-tokens/{id}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
@@ -527,8 +530,8 @@
     "GET /v1.0/api/runs/{id}/tool-calls": {"response": "List<RunToolCall>", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
     "GET /v1.0/api/briefings/{id}/progress": {"response": "BriefingProgress", "status": {"200": "OK", "400": "BadRequest (needs a signed-in user)", "403": "Forbidden", "404": "NotFound"}},
     "PUT /v1.0/api/briefings/{id}/progress": {"response": "BriefingProgress", "status": {"200": "OK", "400": "BadRequest, ValidationFailed", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/setup": {"response": "SetupStatusResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}, "notes": "Reads the stored state and makes no provider calls. `canConfigure` is true for global and tenant administrators."},
-    "POST /v1.0/api/setup/verify": {"response": "SetupStatusResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Administrators only"}, "notes": "Calls the providers: a short probe prompt per chat endpoint, a test query per default web search provider, and one embedding request. Each endpoint's `lastValidationSucceeded` records the outcome."},
+    "GET /v1.0/api/setup": {"response": "SetupStatusResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}, "notes": "Reads the stored state. The only provider call is the optional speech check, for administrators: one short speech request to the configured endpoint, at most once every five minutes. `canConfigure` is true for global and tenant administrators, who also get the optional checks: `embeddings`, `email`, and `speech` (Ready when speech is on and the endpoint returned audio, Missing when it is turned off, Failed with the reason when the endpoint did not answer; it carries the endpoint host in `resourceName`, `model`, and the default `voice`)."},
+    "POST /v1.0/api/setup/verify": {"response": "SetupStatusResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Administrators only"}, "notes": "Calls the providers: a short probe prompt per chat endpoint, a test query per default web search provider, one embedding request, and one short speech request. Each endpoint's `lastValidationSucceeded` records the outcome. `check=Speech` (or `Model`, `Search`, `Embeddings`) re-checks only that kind and reports the others from stored results."},
     "GET /v1.0/api/setup/options": {"response": "SetupOptionsResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Administrators only"}, "notes": "Makes no provider calls. Lists the hosted APIs (`Api`: Anthropic, OpenAI, Gemini, xAI, Ollama Cloud), the agent CLIs in the server image (`AgentCli`: Claude Code, Codex, Gemini CLI, Mux), and self-hosted servers (`SelfHosted`: Ollama, OpenAI-compatible), with their sign-in methods, recommended first; Anthropic is the recommended provider. For an agent CLI, `installed` says whether the executable is in the server image and `available` is false (with `unavailableReason`) when it is missing or when `Models.AllowAgentClis` is off (`turnedOff` true), as on the hosted service. The example shows four of the eleven providers."},
     "POST /v1.0/api/setup/connect": {"response": "SetupStatusResponse", "status": {"200": "OK", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Administrators only", "404": "NotFound"}, "notes": "`authMethod` defaults to the provider's recommended method. `secret` is an API key, a token from `claude setup-token` (Claude Code), or the contents of a sign-in file (Codex `~/.codex/auth.json`, Gemini CLI `~/.gemini/oauth_creds.json`, Mux `~/.mux/endpoints.json`); it is not needed for `ServerSignIn` and `None`, or when the endpoint already has one for the same method. Reuses the workspace's endpoint for the provider (or `modelEndpointId`), or creates one; stores the secret encrypted in the vault; checks it with a live call; and assigns every chat task to the endpoint. When the workspace already has a working model, the new sign-in is tested first and the working one is kept if the test fails. `connection` on the returned status reports the outcome: `succeeded`, `keptPrevious` (true when the working model stayed in use), and `message` (the test result or the provider's error). The secret is never returned. 400 `ValidationFailed`, with `details.field` naming the request field (`provider`, `authMethod`, `secret`, `model`, or `baseUrl`), for a missing provider, model, or secret, a method the provider does not accept, a secret that does not look right (such as an Anthropic API key sent as a setup-token token), or an agent CLI that is turned off or not installed."},
     "POST /v1.0/api/setup/model-key": {"response": "SetupStatusResponse", "status": {"200": "OK", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Administrators only", "404": "NotFound"}, "notes": "Stores the key encrypted in the vault (a new credential, or the endpoint's existing one updated), attaches it to the endpoint, and checks it with a live call. The key is never returned. 400 `ValidationFailed` when a value is missing or the endpoint uses the hosted service's key."}
@@ -985,6 +988,10 @@
       "isDefault": false
     },
     "VoiceTestRequest": {
+      "text": "Good morning. Here is what changed overnight."
+    },
+    "VoicePreviewRequest": {
+      "voice": "af_heart",
       "text": "Good morning. Here is what changed overnight."
     },
     "FeedTokenCreateRequest": {
@@ -1687,9 +1694,49 @@
           "needsApiKey": false,
           "hasApiKey": false,
           "usesPlatformKey": false
+        },
+        {
+          "key": "speech",
+          "kind": "Speech",
+          "required": false,
+          "state": "Ready",
+          "resourceName": "tts:8880",
+          "provider": "OpenAiCompatibleSpeech",
+          "model": "kokoro",
+          "voice": "af_heart",
+          "baseUrl": "http://tts:8880/v1",
+          "tasks": [],
+          "needsApiKey": false,
+          "hasApiKey": false,
+          "usesPlatformKey": false,
+          "verifiedUtc": "2026-11-20T20:02:05.276221Z"
         }
       ],
       "checkedUtc": "2026-11-20T20:02:05.276221Z"
+    },
+    "AvailableVoicesResponse": {
+      "enabled": true,
+      "listed": true,
+      "defaultVoiceProfileId": "voi_mwpee2a5_Ui2oP5aS8dFg1hJk4Lz",
+      "voices": [
+        {
+          "voice": "af_heart",
+          "label": "Heart (American English, female)",
+          "voiceProfileId": "voi_mwpee2a5_Ui2oP5aS8dFg1hJk4Lz",
+          "name": "Kokoro (local)",
+          "isDefault": true
+        },
+        {
+          "voice": "am_michael",
+          "label": "Michael (American English, male)",
+          "isDefault": false
+        },
+        {
+          "voice": "bf_emma",
+          "label": "Emma (British English, female)",
+          "isDefault": false
+        }
+      ]
     },
     "SetupOptionsResponse": {
       "providers": [

@@ -265,6 +265,11 @@ FROM llmcalls WHERE runstageid IS NOT NULL GROUP BY runstageid) a WHERE s.id = a
                 @"UPDATE runs r SET llmcallcount = a.calls, unpricedcallcount = a.unpriced, cachedinputtokens = a.cached, reasoningtokens = a.reasoning
 FROM (SELECT runid, COUNT(*) AS calls, COUNT(*) FILTER (WHERE estimatedcostusd IS NULL) AS unpriced, COALESCE(SUM(cachedinputtokens), 0) AS cached,
 COALESCE(SUM(reasoningtokens), 0) AS reasoning FROM llmcalls WHERE runid IS NOT NULL GROUP BY runid) a WHERE r.id = a.runid"
+            }),
+            new SchemaMigration(22, "A voice per topic", new List<string>
+            {
+                "ALTER TABLE topics ADD COLUMN IF NOT EXISTS voiceprofileid VARCHAR(64) REFERENCES voiceprofiles(id) ON DELETE SET NULL",
+                "CREATE INDEX IF NOT EXISTS ix_topics_voiceprofileid ON topics (voiceprofileid)"
             })
         };
 

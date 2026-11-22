@@ -14,13 +14,13 @@ export function searchProviderName(check, t) {
 
 // Step 2, Web search. The bundled SearXNG is checked automatically, so this is usually done already; otherwise it
 // shows the server's message with Test again and a link to Search providers.
-export default function SearchStep({ check, canConfigure, verifying, onVerify }) {
+export default function SearchStep({ check, canConfigure, verifying, onVerify, numbered = true }) {
   const { t } = useTranslation();
   const f = useFormat();
   const state = check ? check.state : 'Missing';
   const ready = state === 'Ready';
   return (
-    <SetupStep number={2} id="setup-step-search" title={t('setup.search.heading')} state={progressState(state)}>
+    <SetupStep number={2} id="setup-step-search" title={t('setup.search.heading')} state={progressState(state)} numbered={numbered}>
       <div className="stack-tight" data-testid="setup-check-search">
         {ready ? (
           <>
@@ -61,5 +61,6 @@ SearchStep.propTypes = {
   check: PropTypes.object,
   canConfigure: PropTypes.bool,
   verifying: PropTypes.bool,
-  onVerify: PropTypes.func
+  onVerify: PropTypes.func,
+  numbered: PropTypes.bool
 };

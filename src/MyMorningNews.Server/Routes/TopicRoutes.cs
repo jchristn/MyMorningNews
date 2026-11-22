@@ -37,7 +37,7 @@ namespace MyMorningNews.Server.Routes
                 .WithParameter(QueryParam("status", typeof(TopicStatusEnum))).WithParameter(QueryParam("isOneTime", typeof(bool))).WithParameter(QueryParam("userId", typeof(string)))));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, B, CreateAsync, null, openApiMetadata: Doc("Create a topic without the wizard", "Topics").WithRequestBody(Body<TopicUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, B + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read a topic with dimensions, constraints, and recipients", "Topics"));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, B + "/{id}", UpdateAsync, null, openApiMetadata: Doc("Update a topic", "Topics").WithRequestBody(Body<TopicUpsertRequest>()));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, B + "/{id}", UpdateAsync, null, openApiMetadata: Doc("Update a topic", "Topics", "Only the fields sent are changed. voiceProfileId sets the voice that reads the topic's briefings aloud (an empty string goes back to the workspace default); voice names a speech server voice from GET /v1.0/api/voices/available instead, and the server reuses or creates the voice profile for it.").WithRequestBody(Body<TopicUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, B + "/{id}", DeleteAsync, null, openApiMetadata: Doc("Delete a topic and everything under it", "Topics"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, B + "/{id}/pause", PauseAsync, null, openApiMetadata: Doc("Pause a topic", "Topics"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, B + "/{id}/resume", ResumeAsync, null, openApiMetadata: Doc("Resume a paused or archived topic", "Topics"));
@@ -94,6 +94,7 @@ namespace MyMorningNews.Server.Routes
 
             string? toolError = await CheckToolIdsAsync(tenantId, req.McpToolIds, ctx).ConfigureAwait(false);
             if (toolError != null) { await SendErrorAsync(ctx, 400, "ValidationFailed", toolError).ConfigureAwait(false); return; }
+            if (!await ResolveVoiceAsync(tenantId, req, ctx).ConfigureAwait(false)) return;
             Topic topic = await Server.Refinement.CreateTopicAsync(tenantId, rc.UserId, req.Name, req.Description, false, ctx.Token).ConfigureAwait(false);
             Apply(topic, req);
             topic = await Server.Database.Topics.UpdateAsync(topic, ctx.Token).ConfigureAwait(false);
@@ -117,6 +118,7 @@ namespace MyMorningNews.Server.Routes
             if (req == null) return;
             string? badTools = await CheckToolIdsAsync(topic.TenantId, req.McpToolIds, ctx).ConfigureAwait(false);
             if (badTools != null) { await SendErrorAsync(ctx, 400, "ValidationFailed", badTools).ConfigureAwait(false); return; }
+            if (!await ResolveVoiceAsync(topic.TenantId, req, ctx).ConfigureAwait(false)) return;
             string oldName = topic.Name;
             Apply(topic, req);
             if (!String.Equals(oldName, topic.Name, StringComparison.Ordinal)) topic.Slug = await Server.Refinement.UniqueSlugAsync(topic.TenantId, topic.Name, ctx.Token).ConfigureAwait(false);
@@ -183,6 +185,7 @@ namespace MyMorningNews.Server.Routes
             copy.MaxEmailFindings = source.MaxEmailFindings;
             copy.DisplayThreshold = source.DisplayThreshold;
             copy.SeedQueries = new List<string>(source.SeedQueries);
+            copy.VoiceProfileId = source.VoiceProfileId;
             copy = await Server.Database.Topics.UpdateAsync(copy, ctx.Token).ConfigureAwait(false);
             Dictionary<string, string> dimensionMap = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (TopicDimension d in await Server.Refinement.DimensionsAsync(source.TenantId, source.Id, ctx.Token).ConfigureAwait(false))
@@ -463,6 +466,45 @@ namespace MyMorningNews.Server.Routes
             return null;
         }
 
+        // Settles the voice a request names into a voice profile ID on the request itself: a voice profile must exist in
+        // the workspace, and a speech server voice gets (or reuses) a profile. Sends the 400 and returns false otherwise.
+        private async Task<bool> ResolveVoiceAsync(string tenantId, TopicUpsertRequest req, HttpContextBase ctx)
+        {
+            string? profileId = req.VoiceProfileId?.Trim();
+            string? voice = String.IsNullOrWhiteSpace(req.Voice) ? null : req.Voice.Trim();
+            req.Voice = null;
+            if (!String.IsNullOrEmpty(profileId))
+            {
+                if (await Server.Database.VoiceProfiles.ReadAsync(tenantId, profileId, ctx.Token).ConfigureAwait(false) == null)
+                {
+                    await SendErrorAsync(ctx, 400, "ValidationFailed", "voiceProfileId: " + (profileId.Length > 80 ? profileId.Substring(0, 80) : profileId) + " is not a voice profile in this workspace.",
+                        new Dictionary<string, string> { { "field", "voiceProfileId" } }).ConfigureAwait(false);
+                    return false;
+                }
+
+                req.VoiceProfileId = profileId;
+                return true;
+            }
+
+            if (voice != null)
+            {
+                try
+                {
+                    req.VoiceProfileId = (await Server.Audio.EnsureProfileForVoiceAsync(tenantId, voice, ctx.Token).ConfigureAwait(false)).Id;
+                }
+                catch (ArgumentException ex) when (!(ex is ArgumentNullException))
+                {
+                    await SendErrorAsync(ctx, 400, "ValidationFailed", "voice: " + ex.Message, new Dictionary<string, string> { { "field", "voice" } }).ConfigureAwait(false);
+                    return false;
+                }
+
+                return true;
+            }
+
+            req.VoiceProfileId = profileId;
+            return true;
+        }
+
         private static void Apply(Topic topic, TopicUpsertRequest req)
         {
             if (!String.IsNullOrWhiteSpace(req.Name)) topic.Name = req.Name.Trim().Length > 200 ? req.Name.Trim().Substring(0, 200) : req.Name.Trim();
@@ -484,6 +526,7 @@ namespace MyMorningNews.Server.Routes
             if (req.WeightRecency.HasValue) topic.WeightRecency = req.WeightRecency.Value < 0 ? null : Math.Clamp(req.WeightRecency.Value, 0, 1);
             if (req.AgenticSearch.HasValue) topic.AgenticSearch = req.AgenticSearch.Value;
             if (req.McpToolIds != null) topic.McpToolIds = req.McpToolIds.Where(i => !String.IsNullOrWhiteSpace(i) && i.Trim().StartsWith(IdPrefixes.McpServerTool, StringComparison.Ordinal)).Select(i => i.Trim()).Distinct(StringComparer.Ordinal).Take(100).ToList();
+            if (req.VoiceProfileId != null) topic.VoiceProfileId = req.VoiceProfileId.Length == 0 ? null : req.VoiceProfileId;
             if (req.SeedQueries != null) topic.SeedQueries = req.SeedQueries.Where(q => !String.IsNullOrWhiteSpace(q)).Select(q => q.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).Take(20).ToList();
         }
 

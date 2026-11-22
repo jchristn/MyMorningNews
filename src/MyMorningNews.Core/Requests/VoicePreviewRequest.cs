@@ -1,0 +1,26 @@
+namespace MyMorningNews.Core.Requests
+{
+    using System;
+
+    /// <summary>
+    /// Speak a short sample with a voice before choosing it.
+    /// </summary>
+    public class VoicePreviewRequest
+    {
+        /// <summary>
+        /// A speech server voice ID from GET /v1.0/api/voices/available, such as af_heart. Required unless
+        /// voiceProfileId is given.
+        /// </summary>
+        public string? Voice { get; set; } = null;
+
+        /// <summary>
+        /// A workspace voice profile to speak with instead (its endpoint, model, voice, and speed). May be null.
+        /// </summary>
+        public string? VoiceProfileId { get; set; } = null;
+
+        /// <summary>
+        /// Text to speak, up to 300 characters; longer text is cut. Null speaks a default sentence.
+        /// </summary>
+        public string? Text { get; set; } = null;
+    }
+}

@@ -17,7 +17,7 @@ export default function HubTabs() {
   const route = findRoute(location.pathname);
   const hub = hubForRoute(route);
   const tabs = hubTabs(hub, auth);
-  const setupPending = Boolean(setup && setup.status && !setup.status.ready);
+  const setupPending = Boolean(setup && setup.gated);
   const currentKey = route ? route.key : null;
 
   // Keep the current tab in view on narrow screens.

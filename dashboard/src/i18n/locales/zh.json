@@ -4286,7 +4286,8 @@
       "Model": "模型",
       "Search": "搜索",
       "Embeddings": "嵌入",
-      "Email": "电子邮件"
+      "Email": "电子邮件",
+      "Speech": "语音合成"
     },
     "check": {
       "title": "{kind}：{name}"
@@ -4295,12 +4296,6 @@
       "open": "完成设置",
       "askAdmin": "需要管理员完成设置后才能使用此功能。"
     },
-    "ready": {
-      "title": "一切就绪",
-      "message": "AI 模型和网络搜索均可正常工作。创建一个主题即可获得您的第一份简报。",
-      "newTopic": "创建您的第一个主题",
-      "home": "前往首页"
-    },
     "gate": {
       "title": "此工作区尚未就绪",
       "message": "需要管理员连接 AI 模型和网络搜索后，任何人才能使用 My Morning News。",
@@ -4308,7 +4303,9 @@
       "checkAgain": "重新检查",
       "checking": "正在检查",
       "signOut": "退出登录",
-      "checked": "上次检查：{time}"
+      "checked": "上次检查：{time}",
+      "continue": "继续进入应用",
+      "continueHelp": "在此期间你可以随意浏览。凡是需要 AI 模型的功能，在设置完成前都无法使用。"
     },
     "loadError": {
       "title": "无法加载设置状态",
@@ -4483,10 +4480,47 @@
       "note": "这些功能从不阻止研究。您可以随时设置。",
       "what": {
         "Embeddings": "按含义查找重复的报道，而不仅仅是匹配字词。",
-        "Email": "每次运行后发送简报邮件，附带详情和反馈链接。"
+        "Email": "每次运行后发送简报邮件，附带详情和反馈链接。",
+        "Speech": "朗读简报并制作播客节目。"
       },
       "openModels": "打开模型",
       "openSettings": "打开设置"
+    },
+    "status": {
+      "title": "设置",
+      "summary": "My Morning News 已连接的内容。可在此更改连接或再次测试。"
+    },
+    "complete": {
+      "message": "设置已完成。AI 模型和网络搜索均可正常工作。",
+      "topics": "前往主题"
+    },
+    "skip": {
+      "button": "暂时跳过",
+      "title": "暂时跳过设置？",
+      "intro": "设置尚未完成。目前仍缺少：",
+      "untilThen": "在完成之前：",
+      "needsModel": "主题向导、研究运行和简报将无法使用。它们需要可用的 AI 模型。",
+      "needsSearch": "研究无法找到新的来源。它需要网络搜索提供方。",
+      "later": "你可以随时通过菜单顶部的“完成设置”返回。",
+      "stay": "继续设置",
+      "skippedNote": "你已跳过设置，因此所有页面均已开放。准备好后，请完成下面的步骤。",
+      "resume": "在设置完成前让我留在此页面"
+    },
+    "warning": {
+      "title": "设置尚未完成。",
+      "missing": "仍需要：{items}。在此之前，主题向导、研究运行和简报将无法使用。",
+      "generic": "在完成之前，部分功能将无法使用。"
+    },
+    "speech": {
+      "server": "语音服务器",
+      "model": "模型",
+      "voice": "默认语音",
+      "test": "测试语音合成",
+      "testing": "正在测试语音合成。将向语音服务器请求一段简短的样本。",
+      "works": "语音合成可正常工作。",
+      "openSettings": "语音服务器设置",
+      "openVoices": "语音",
+      "whoCanChange": "只有服务器管理员可以在“设置”的“服务器设置”中更改语音服务器。"
     }
   },
   "costs": {
@@ -4551,5 +4585,28 @@
       "kind": "类型",
       "partialSuffix": "（部分调用未定价）"
     }
+  },
+  "topicVoice": {
+    "title": "语音",
+    "help": "朗读此主题简报的语音。播放样本即可试听每种语音。",
+    "current": "此主题使用 {voice}。",
+    "usingDefault": "此主题使用工作区默认语音 {voice}。",
+    "usingDefaultUnknown": "此主题使用工作区默认语音。",
+    "useDefault": "使用工作区默认语音",
+    "use": "使用此语音",
+    "useNamed": "为此主题使用 {voice}",
+    "inUse": "使用中",
+    "workspaceDefault": "工作区默认",
+    "play": "播放 {voice} 的样本",
+    "stop": "停止 {voice} 的样本",
+    "playShort": "播放",
+    "stopShort": "停止",
+    "loadingShort": "正在加载",
+    "listLabel": "可用语音",
+    "sampleLabel": "语音样本",
+    "saved": "此主题现在由 {voice} 朗读",
+    "savedDefault": "此主题已恢复使用工作区默认语音",
+    "speechOff": "此服务器已关闭语音合成，因此没有可播放的音频。服务器管理员可以在服务器设置中将其开启。",
+    "empty": "没有可用的语音。"
   }
 }

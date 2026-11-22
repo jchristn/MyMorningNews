@@ -258,7 +258,10 @@ Open the dashboard at http://127.0.0.1:12101 and sign in. Change these credentia
 
 After you sign in, the dashboard shows the Setup page until the workspace has what it needs: a chat model that
 answered a live test prompt, and a web search provider that answered a test query (the bundled SearXNG passes on its
-own). The Setup page lets you connect the chat model in one of three ways:
+own). You can leave at any time with Skip for now: it lists what is still missing and what will not work without it,
+opens the rest of the dashboard, and keeps a Finish setup link at the top of the menu. Once both work, Setup is a
+status page under Settings. It also shows the optional items (embeddings, email, and speech, with a Test speech
+button). The Setup page lets you connect the chat model in one of three ways:
 
 - Your AI subscription, through an agent CLI in the server: Claude Code with a token from `claude setup-token`, Codex
   with the `auth.json` that `codex login` writes, Gemini CLI with the sign-in file from your Google sign-in

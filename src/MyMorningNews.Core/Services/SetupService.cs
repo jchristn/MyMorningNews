@@ -5,6 +5,7 @@ namespace MyMorningNews.Core.Services
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using MyMorningNews.Core.Audio;
     using MyMorningNews.Core.Database;
     using MyMorningNews.Core.Enums;
     using MyMorningNews.Core.Exceptions;
@@ -39,6 +40,30 @@ namespace MyMorningNews.Core.Services
             set { _RetryAfterSeconds = Math.Clamp(value, 10, 86400); }
         }
 
+        /// <summary>
+        /// Audio service used to check the speech endpoint. Null leaves the speech check out of the status.
+        /// </summary>
+        public AudioService? Audio { get; set; } = null;
+
+        /// <summary>
+        /// Seconds the result of the speech endpoint check is kept, so reading the status stays fast. A re-check with
+        /// live calls ignores it. Default 300, minimum 0 (never kept), maximum 86400.
+        /// </summary>
+        public int SpeechCacheSeconds
+        {
+            get { return _SpeechCacheSeconds; }
+            set { _SpeechCacheSeconds = Math.Clamp(value, 0, 86400); }
+        }
+
+        /// <summary>
+        /// Seconds to wait for the speech endpoint to answer the check. Default 8, minimum 1, maximum 120.
+        /// </summary>
+        public int SpeechProbeTimeoutSeconds
+        {
+            get { return _SpeechProbeTimeoutSeconds; }
+            set { _SpeechProbeTimeoutSeconds = Math.Clamp(value, 1, 120); }
+        }
+
         #endregion
 
         #region Private-Members
@@ -51,7 +76,13 @@ namespace MyMorningNews.Core.Services
         private readonly Func<ServerSettings> _Settings;
         private readonly LoggingModule _Logging;
         private readonly SemaphoreSlim _PlatformLock = new SemaphoreSlim(1, 1);
+        private readonly object _SpeechLock = new object();
         private int _RetryAfterSeconds = 120;
+        private int _SpeechCacheSeconds = 300;
+        private int _SpeechProbeTimeoutSeconds = 8;
+        private string? _SpeechKey = null;
+        private string? _SpeechFailure = null;
+        private DateTime _SpeechCheckedUtc = DateTime.MinValue;
         private DateTime? _PlatformVerifiedUtc = null;
         private DateTime? _PlatformFailedUtc = null;
         private string? _PlatformFailure = null;
@@ -87,7 +118,8 @@ namespace MyMorningNews.Core.Services
 
         /// <summary>
         /// Compute the workspace's setup status from stored results. The only live calls are a one-time check of the
-        /// hosted service's own key and a SearXNG test query when SearXNG has not been tested yet; both are free to the user.
+        /// hosted service's own key, a SearXNG test query when SearXNG has not been tested yet, and (for administrators)
+        /// a one word speech request when the last one is older than <see cref="SpeechCacheSeconds"/>; all are free to the user.
         /// </summary>
         /// <param name="tenantId">Tenant.</param>
         /// <param name="canConfigure">Whether the caller is an administrator; optional checks are included only for administrators.</param>
@@ -97,12 +129,12 @@ namespace MyMorningNews.Core.Services
         public async Task<SetupStatusResponse> GetStatusAsync(string tenantId, bool canConfigure, CancellationToken token = default)
         {
             if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));
-            return await BuildAsync(tenantId, canConfigure, false, token).ConfigureAwait(false);
+            return await BuildAsync(tenantId, canConfigure, false, null, token).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Re-check everything with live calls: each chat endpoint gets a short probe prompt, each default web search
-        /// provider gets a test query, and the embedding endpoint is asked for one vector.
+        /// provider gets a test query, the embedding endpoint is asked for one vector, and the speech endpoint speaks one word.
         /// </summary>
         /// <param name="tenantId">Tenant.</param>
         /// <param name="token">Cancellation token.</param>
@@ -111,7 +143,22 @@ namespace MyMorningNews.Core.Services
         public async Task<SetupStatusResponse> VerifyAsync(string tenantId, CancellationToken token = default)
         {
             if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));
-            return await BuildAsync(tenantId, true, true, token).ConfigureAwait(false);
+            return await BuildAsync(tenantId, true, true, null, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Re-check one kind of check with live calls (for example only the speech endpoint) and report every check;
+        /// the other checks come from stored results.
+        /// </summary>
+        /// <param name="tenantId">Tenant.</param>
+        /// <param name="only">The kind to re-check; null re-checks everything.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Status.</returns>
+        /// <exception cref="ArgumentNullException">tenantId is null or empty.</exception>
+        public async Task<SetupStatusResponse> VerifyAsync(string tenantId, SetupCheckKindEnum? only, CancellationToken token = default)
+        {
+            if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            return await BuildAsync(tenantId, true, true, only, token).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -270,7 +317,7 @@ namespace MyMorningNews.Core.Services
 
             _Logging.Info(_Header + (test.Succeeded ? "connected " : "could not connect ") + provider + " (" + method + ") as endpoint " + endpoint.Id + " in tenant " + tenantId
                 + (connection.KeptPrevious ? "; kept the working model" : String.Empty));
-            SetupStatusResponse status = await BuildAsync(tenantId, true, false, token).ConfigureAwait(false);
+            SetupStatusResponse status = await BuildAsync(tenantId, true, false, null, token).ConfigureAwait(false);
             status.Connection = connection;
             return status;
         }
@@ -306,7 +353,7 @@ namespace MyMorningNews.Core.Services
             await StoreSecretAsync(tenantId, userId, endpoint, method, req.ApiKey.Trim(), true, token).ConfigureAwait(false);
             await _Models.ValidateAsync(endpoint, token).ConfigureAwait(false);
             _Logging.Info(_Header + "stored a key for endpoint " + endpoint.Id + " in tenant " + tenantId);
-            return await BuildAsync(tenantId, true, false, token).ConfigureAwait(false);
+            return await BuildAsync(tenantId, true, false, null, token).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -362,8 +409,12 @@ namespace MyMorningNews.Core.Services
             _Disposed = true;
         }
 
-        private async Task<SetupStatusResponse> BuildAsync(string tenantId, bool canConfigure, bool live, CancellationToken token)
+        private async Task<SetupStatusResponse> BuildAsync(string tenantId, bool canConfigure, bool live, SetupCheckKindEnum? only, CancellationToken token)
         {
+            bool liveModel = live && (!only.HasValue || only.Value == SetupCheckKindEnum.Model);
+            bool liveSearch = live && (!only.HasValue || only.Value == SetupCheckKindEnum.Search);
+            bool liveEmbeddings = live && (!only.HasValue || only.Value == SetupCheckKindEnum.Embeddings);
+            bool liveSpeech = live && (!only.HasValue || only.Value == SetupCheckKindEnum.Speech);
             SetupStatusResponse status = new SetupStatusResponse { CanConfigure = canConfigure };
 
             Dictionary<string, ResolvedModel> byEndpoint = new Dictionary<string, ResolvedModel>(StringComparer.Ordinal);
@@ -406,17 +457,18 @@ namespace MyMorningNews.Core.Services
 
             foreach (KeyValuePair<string, ResolvedModel> pair in byEndpoint)
             {
-                SetupCheck check = await ModelCheckAsync(tenantId, pair.Value.Endpoint, pair.Value.Model, live, token).ConfigureAwait(false);
+                SetupCheck check = await ModelCheckAsync(tenantId, pair.Value.Endpoint, pair.Value.Model, liveModel, token).ConfigureAwait(false);
                 check.Tasks = tasks[pair.Key];
                 status.Checks.Add(check);
             }
 
-            status.Checks.Add(await SearchCheckAsync(tenantId, live, token).ConfigureAwait(false));
+            status.Checks.Add(await SearchCheckAsync(tenantId, liveSearch, token).ConfigureAwait(false));
 
             if (canConfigure)
             {
-                status.Checks.Add(await EmbeddingCheckAsync(tenantId, live, token).ConfigureAwait(false));
+                status.Checks.Add(await EmbeddingCheckAsync(tenantId, liveEmbeddings, token).ConfigureAwait(false));
                 status.Checks.Add(EmailCheck());
+                if (Audio != null) status.Checks.Add(await SpeechCheckAsync(Audio, liveSpeech, token).ConfigureAwait(false));
             }
 
             if (!canConfigure) foreach (SetupCheck c in status.Checks) c.BaseUrl = null;
@@ -671,6 +723,75 @@ namespace MyMorningNews.Core.Services
             else
             {
                 check.State = SetupCheckStateEnum.Ready;
+            }
+
+            return check;
+        }
+
+        private async Task<SetupCheck> SpeechCheckAsync(AudioService audio, bool live, CancellationToken token)
+        {
+            TtsSettings tts = _Settings().Tts;
+            SetupCheck check = new SetupCheck
+            {
+                Key = "speech",
+                Kind = SetupCheckKindEnum.Speech,
+                Required = false,
+                Provider = TtsProviderEnum.OpenAiCompatibleSpeech.ToString(),
+                Model = tts.Model,
+                Voice = tts.Voice,
+                BaseUrl = tts.Endpoint
+            };
+            if (Uri.TryCreate(tts.Endpoint, UriKind.Absolute, out Uri? uri)) check.ResourceName = uri.IsDefaultPort ? uri.Host : uri.Host + ":" + uri.Port;
+            if (!tts.Enabled)
+            {
+                check.State = SetupCheckStateEnum.Missing;
+                check.Message = "Speech is turned off, so briefings have no audio. A server administrator can turn it on in Server settings (tts.enabled).";
+                return check;
+            }
+
+            if (String.IsNullOrWhiteSpace(tts.Endpoint) || uri == null)
+            {
+                check.State = SetupCheckStateEnum.Missing;
+                check.Message = "No speech endpoint is set, so briefings have no audio. A server administrator can set it in Server settings (tts.endpoint).";
+                return check;
+            }
+
+            string key = tts.Endpoint + "|" + tts.Model + "|" + tts.Voice;
+            bool known;
+            string? failure;
+            DateTime checkedUtc;
+            lock (_SpeechLock)
+            {
+                known = String.Equals(_SpeechKey, key, StringComparison.Ordinal) && (DateTime.UtcNow - _SpeechCheckedUtc).TotalSeconds < _SpeechCacheSeconds;
+                failure = _SpeechFailure;
+                checkedUtc = _SpeechCheckedUtc;
+            }
+
+            if (live || !known)
+            {
+                failure = await audio.ProbeAsync(_SpeechProbeTimeoutSeconds, token).ConfigureAwait(false);
+                checkedUtc = DateTime.UtcNow;
+                lock (_SpeechLock)
+                {
+                    _SpeechKey = key;
+                    _SpeechFailure = failure;
+                    _SpeechCheckedUtc = checkedUtc;
+                }
+
+                if (failure != null) _Logging.Warn(_Header + "the speech endpoint failed its check: " + failure);
+            }
+
+            check.VerifiedUtc = checkedUtc;
+            if (failure == null)
+            {
+                check.State = SetupCheckStateEnum.Ready;
+            }
+            else
+            {
+                check.State = SetupCheckStateEnum.Failed;
+                string reason = failure.Trim();
+                if (reason.Length > 0 && !reason.EndsWith('.')) reason += ".";
+                check.Message = reason + " Research and email still work; briefings have no audio until the speech server answers.";
             }
 
             return check;

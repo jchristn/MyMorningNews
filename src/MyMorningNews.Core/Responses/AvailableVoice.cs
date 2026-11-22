@@ -1,0 +1,36 @@
+namespace MyMorningNews.Core.Responses
+{
+    using System;
+
+    /// <summary>
+    /// A voice someone can choose for a topic: one of the workspace's voice profiles, or a voice the speech server offers.
+    /// </summary>
+    public class AvailableVoice
+    {
+        /// <summary>
+        /// The speech server's voice ID, such as af_heart.
+        /// </summary>
+        public string Voice { get; set; } = String.Empty;
+
+        /// <summary>
+        /// A readable label, such as "Heart (American English, female)". The voice ID when it follows no known naming.
+        /// </summary>
+        public string Label { get; set; } = String.Empty;
+
+        /// <summary>
+        /// The workspace voice profile that uses this voice. Null for a speech server voice that has no profile yet;
+        /// choosing it for a topic creates one.
+        /// </summary>
+        public string? VoiceProfileId { get; set; } = null;
+
+        /// <summary>
+        /// The voice profile's name. Null for a speech server voice that has no profile yet.
+        /// </summary>
+        public string? Name { get; set; } = null;
+
+        /// <summary>
+        /// True for the workspace's default voice profile.
+        /// </summary>
+        public bool IsDefault { get; set; } = false;
+    }
+}

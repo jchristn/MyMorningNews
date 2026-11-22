@@ -389,6 +389,11 @@ client.search_providers.test(sp.id, query="battery"); client.search_providers.fe
 
 v = client.voices.create(name="Kokoro", provider="OpenAiCompatibleSpeech", model="kokoro", voice="af_heart")
 client.voices.test(v.id, "Good morning.").save("sample.mp3")
+
+# A voice per topic: list what a topic can use, hear one, and choose it.
+voices = client.voices.available().voices  # voice profiles, then the speech server's voices, each with a label
+client.voices.preview(voice="bf_emma", text="Good morning.").save("preview.wav")  # 20 a minute
+client.topics.update(topic_id, voice="bf_emma")  # or voice_profile_id=..., and "" to use the workspace default
 ```
 
 ### vault, devices, account
@@ -413,7 +418,7 @@ anon.account.forgot_password("me@example.com"); anon.account.reset_password(toke
 
 ### setup
 
-Workspace setup. `status()` returns a `SetupStatus` (`ready`, `can_configure`, `checks`, `checked_utc`); each `SetupCheck` has a `key` (`model:{endpointId}`, `search`, `embeddings`, or `email`), a `kind` (`SetupCheckKind`), `required`, and a `state` (`SetupCheckState`: `Ready`, `Missing`, `Unverified`, or `Failed`). Until `ready` is True, refinement sessions and research requests raise `SetupRequiredError`. Administrators can call `verify()` (live probes of each chat endpoint, the default search providers, and embeddings) and `set_model_key(model_endpoint_id, api_key)` (stores the key in the vault, attaches it to the endpoint, and checks it live; the key is never returned). Both raise `PermissionDeniedError` for anyone else and both contact the providers.
+Workspace setup. `status()` returns a `SetupStatus` (`ready`, `can_configure`, `checks`, `checked_utc`); each `SetupCheck` has a `key` (`model:{endpointId}`, `search`, `embeddings`, `email`, or `speech`, the optional text to speech check that `verify("Speech")` re-checks on its own), a `kind` (`SetupCheckKind`), `required`, and a `state` (`SetupCheckState`: `Ready`, `Missing`, `Unverified`, or `Failed`). Until `ready` is True, refinement sessions and research requests raise `SetupRequiredError`. Administrators can call `verify()` (live probes of each chat endpoint, the default search providers, and embeddings) and `set_model_key(model_endpoint_id, api_key)` (stores the key in the vault, attaches it to the endpoint, and checks it live; the key is never returned). Both raise `PermissionDeniedError` for anyone else and both contact the providers.
 
 `options()` (administrators) returns a `SetupOptions` listing each `SetupProviderOption`: the `provider`, its `group` (`SetupProviderGroup`: `Api`, `AgentCli`, or `SelfHosted`), whether it is `available` and `installed` on this server (agent CLIs can be turned off or missing, with an `unavailable_reason`), the default model and base URL, and its sign-in `methods` (`SetupAuthOption`, recommended first, with a `ModelAuthMethod` and the input it needs). `connect(provider, auth_method, secret, model=None, base_url=None, model_endpoint_id=None)` stores the secret for that method (an API key, a `claude setup-token` token, or the contents of a sign-in file such as Codex's `auth.json`), points every chat task at the endpoint, and checks it with a live call. Both raise `PermissionDeniedError` for anyone else.
 

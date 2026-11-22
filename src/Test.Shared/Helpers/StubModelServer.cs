@@ -46,7 +46,7 @@ namespace Test.Shared.Helpers
         public ConcurrentQueue<string> PushRequests { get; } = new ConcurrentQueue<string>();
 
         /// <summary>
-        /// Bodies of speech requests received (/audio/speech).
+        /// Bodies of speech requests received (/audio/speech). GET /audio/voices lists six voices.
         /// </summary>
         public ConcurrentQueue<string> SpeechRequests { get; } = new ConcurrentQueue<string>();
 
@@ -172,6 +172,14 @@ namespace Test.Shared.Helpers
                     MailgunRequests.Enqueue(body);
                     if (path.Contains("fail", StringComparison.Ordinal)) await WriteAsync(ctx, 500, "{\"message\":\"temporary failure\"}").ConfigureAwait(false);
                     else await WriteAsync(ctx, 200, "{\"id\":\"<stub." + Guid.NewGuid().ToString("N") + "@mg.example.test>\",\"message\":\"Queued. Thank you.\"}").ConfigureAwait(false);
+                    return;
+                }
+
+                if (path.EndsWith("/audio/voices", StringComparison.Ordinal))
+                {
+                    // Kokoro-FastAPI lists its voices here, as objects with an id (newer versions) or as plain IDs. A "/novoices/" path stands for a speech server without a listing.
+                    if (path.Contains("/novoices/", StringComparison.Ordinal)) await WriteAsync(ctx, 404, "{\"detail\":\"Not Found\"}").ConfigureAwait(false);
+                    else await WriteAsync(ctx, 200, "{\"voices\":[{\"id\":\"af_heart\",\"name\":\"af_heart\",\"overall_grade\":\"A\"},{\"id\":\"af_bella\",\"name\":\"af_bella\"},\"am_michael\",\"bf_emma\",\"bm_george\",\"studio-one\"]}").ConfigureAwait(false);
                     return;
                 }
 

@@ -88,7 +88,8 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 DateTime.SpecifyKind(obj.CreatedUtc, DateTimeKind.Utc),
                 DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
                 obj.AgenticSearch,
-                obj.McpToolIds.ToArray()).ConfigureAwait(false);
+                obj.McpToolIds.ToArray(),
+                (object?)obj.VoiceProfileId).ConfigureAwait(false);
             return obj;
         }
 
@@ -144,7 +145,8 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.Active,
                 DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
                 obj.AgenticSearch,
-                obj.McpToolIds.ToArray()).ConfigureAwait(false);
+                obj.McpToolIds.ToArray(),
+                (object?)obj.VoiceProfileId).ConfigureAwait(false);
             if (affected < 1) throw new KeyNotFoundException("Topic " + obj.Id + " was not found.");
             return obj;
         }
@@ -286,6 +288,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             obj.LastUpdateUtc = DateTime.SpecifyKind(reader.GetDateTime(28), DateTimeKind.Utc);
             obj.AgenticSearch = reader.GetBoolean(29);
             obj.McpToolIds = reader.IsDBNull(30) ? new List<string>() : new List<string>(reader.GetFieldValue<string[]>(30));
+            obj.VoiceProfileId = (reader.IsDBNull(31) ? null : reader.GetString(31));
             return obj;
         }
 

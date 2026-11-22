@@ -102,5 +102,34 @@ namespace MyMorningNews.Sdk.Resources
         {
             return Client.DownloadAsync(HttpMethod.Post, "/v1.0/api/voices/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/test", null, request, null, null, token);
         }
+
+        /// <summary>
+        /// The voices a topic can use: the workspace's voice profiles, then the voices the speech server offers that have
+        /// no profile yet, each with a readable label. Anyone who can read topics may call it. To use one for a topic, send
+        /// its VoiceProfileId, or its Voice when it has no profile yet, in a TopicUpsertRequest.
+        /// </summary>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The AvailableVoicesResponse.</returns>
+        /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
+        public Task<AvailableVoicesResponse> GetAvailableAsync(CancellationToken token = default)
+        {
+            return Client.SendAsync<AvailableVoicesResponse>(HttpMethod.Get, "/v1.0/api/voices/available", null, null, token);
+        }
+
+        /// <summary>
+        /// Speak a short sample (up to 300 characters) with a speech server voice or a voice profile and return the audio.
+        /// Limited to 20 previews a minute per user. 409 when speech is turned off, 429 TooManyRequests over the limit,
+        /// 502 TtsError when the speech endpoint fails.
+        /// </summary>
+        /// <param name="request">Voice or VoiceProfileId, and optional text.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The audio (audio/wav).</returns>
+        /// <exception cref="ArgumentNullException">request is null.</exception>
+        /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
+        public Task<DownloadResult> PreviewAsync(VoicePreviewRequest request, CancellationToken token = default)
+        {
+            ArgumentNullException.ThrowIfNull(request);
+            return Client.DownloadAsync(HttpMethod.Post, "/v1.0/api/voices/preview", null, request, null, null, token);
+        }
     }
 }

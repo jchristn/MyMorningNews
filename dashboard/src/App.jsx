@@ -66,8 +66,9 @@ const VIEWS = {
 function RouteElement({ route }) {
   const View = VIEWS[route.key];
   const setup = useSetup();
-  // Until every required check passes, the product routes send administrators to finish setup first.
-  if (setup && setup.status && !setup.status.ready && !allowedBeforeSetup(route)) return <Navigate to="/dashboard/setup" replace />;
+  // First run: until every required check passes or the person skips setup, the product routes lead to the Setup
+  // screen. A workspace that is ready, or whose setup was skipped, never redirects.
+  if (setup && setup.gated && !allowedBeforeSetup(route)) return <Navigate to="/dashboard/setup" replace />;
   return (
     <RequireAccess item={route}>
       {View ? (

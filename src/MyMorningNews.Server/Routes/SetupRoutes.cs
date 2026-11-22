@@ -29,9 +29,10 @@ namespace MyMorningNews.Server.Routes
         {
             ArgumentNullException.ThrowIfNull(webserver);
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, B, StatusAsync, null, openApiMetadata: Doc("Workspace setup status", "Setup",
-                "Whether the workspace has a chat model with a working key and web search. ready is false until every required check is Ready; the apps keep people out of the product until then."));
+                "Whether the workspace has a chat model with a working key and web search. ready is false until every required check is Ready; the apps ask administrators to finish setup first, and let them skip it. Administrators also get the optional checks: embeddings, email, and speech (the text to speech endpoint, with its model and default voice)."));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, B + "/verify", VerifyAsync, null, openApiMetadata: Doc("Re-check setup with live calls", "Setup",
-                "Administrators only. Sends a short probe prompt to each chat endpoint, a test query to each default web search provider, and one embedding request."));
+                "Administrators only. Sends a short probe prompt to each chat endpoint, a test query to each default web search provider, one embedding request, and one short speech request. check limits the live calls to one kind (Model, Search, Embeddings, or Speech); the other checks are reported from stored results.")
+                .WithParameter(QueryParam("check", typeof(SetupCheckKindEnum))));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, B + "/options", OptionsAsync, null, openApiMetadata: Doc("Model providers and sign-in methods", "Setup",
                 "Administrators only. Hosted APIs (API key), agent CLIs in the server image (Claude Code with a claude setup-token token, an Anthropic API key, or the server's sign-in; Codex with auth.json, an OpenAI API key, or the server's sign-in; Gemini CLI with oauth_creds.json, a Gemini API key, or the server's sign-in; Mux with endpoints.json), and self-hosted servers, with whether each is installed and allowed."));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, B + "/connect", ConnectAsync, null, openApiMetadata: Doc("Connect the workspace's chat model", "Setup",
@@ -53,7 +54,7 @@ namespace MyMorningNews.Server.Routes
         {
             string? tenantId = await AdminTenantAsync(ctx).ConfigureAwait(false);
             if (tenantId == null) return;
-            await SendJsonAsync(ctx, 200, await Server.Setup.VerifyAsync(tenantId, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
+            await SendJsonAsync(ctx, 200, await Server.Setup.VerifyAsync(tenantId, QueryEnum<SetupCheckKindEnum>(ctx, "check"), ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         private async Task OptionsAsync(HttpContextBase ctx)

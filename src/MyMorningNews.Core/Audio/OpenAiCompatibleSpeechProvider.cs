@@ -42,7 +42,7 @@ namespace MyMorningNews.Core.Audio
             using (CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(token))
             using (HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Post, url))
             {
-                timeout.CancelAfter(TimeSpan.FromSeconds(Math.Max(10, request.TimeoutSeconds)));
+                timeout.CancelAfter(TimeSpan.FromSeconds(Math.Max(1, request.TimeoutSeconds)));
                 msg.Content = new StringContent(body, Encoding.UTF8, "application/json");
                 if (!String.IsNullOrWhiteSpace(request.ApiKey)) msg.Headers.Authorization = new AuthenticationHeaderValue("Bearer", request.ApiKey);
                 try

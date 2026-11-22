@@ -21,7 +21,13 @@ namespace MyMorningNews.Server.Routes
     /// </summary>
     public class MediaRoutes : RouteBase
     {
+        /// <summary>
+        /// Voice previews one user may request per minute. Default 20.
+        /// </summary>
+        public int PreviewsPerMinute { get; set; } = 20;
+
         private static readonly string[] _PublicAssets = { "glyph.png", "logo.png" };
+        private readonly MyMorningNews.Core.Services.LoginRateLimiter _PreviewLimiter;
 
         /// <summary>
         /// Instantiate.
@@ -29,6 +35,7 @@ namespace MyMorningNews.Server.Routes
         /// <param name="server">Server context.</param>
         public MediaRoutes(ServerContext server) : base(server)
         {
+            _PreviewLimiter = new MyMorningNews.Core.Services.LoginRateLimiter(PreviewsPerMinute);
         }
 
         /// <inheritdoc />
@@ -50,6 +57,11 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/api/voices/{id}", DeleteVoiceAsync, null, openApiMetadata: Doc("Delete a voice profile", "Voices"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/api/voices/{id}/test", TestVoiceAsync, null, openApiMetadata: Doc("Speak a sample with a voice", "Voices",
                 "Returns the audio (audio/wav). 502 TtsError when the speech endpoint fails.").WithRequestBody(Body<VoiceTestRequest>()));
+
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/voices/available", AvailableVoicesAsync, null, openApiMetadata: Doc("List the voices a topic can use", "Voices",
+                "The workspace's voice profiles, then the voices the speech server offers that have no profile yet (read from the speech endpoint's /audio/voices; the configured default voices when it has no listing). Each has a readable label. Anyone who can read topics may call it."));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/voices/preview", PreviewVoiceAsync, null, openApiMetadata: Doc("Hear a short sample of a voice", "Voices",
+                "Speaks up to 300 characters with a speech server voice (voice) or a voice profile (voiceProfileId) and returns the audio (audio/wav). Anyone who can edit topics may call it, up to 20 times a minute. 409 when speech is turned off, 429 TooManyRequests over the limit, 502 TtsError when the speech endpoint fails.").WithRequestBody(Body<VoicePreviewRequest>()));
 
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/feed-tokens", ListTokensAsync, null, openApiMetadata: Doc("List my podcast feed tokens", "Podcast feeds"));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/feed-tokens", CreateTokenAsync, null, openApiMetadata: Doc("Create a private podcast feed", "Podcast feeds",
@@ -196,6 +208,43 @@ namespace MyMorningNews.Server.Routes
             try
             {
                 TtsResult r = await Server.Audio.SampleAsync(v, req.Text ?? String.Empty, ctx.Token).ConfigureAwait(false);
+                ctx.Response.StatusCode = 200;
+                ctx.Response.ContentType = r.ContentType;
+                ctx.Response.Headers.Add("Cache-Control", "no-store");
+                await ctx.Response.Send(r.Audio, ctx.Token).ConfigureAwait(false);
+            }
+            catch (TtsException ex)
+            {
+                await SendErrorAsync(ctx, 502, "TtsError", ex.Message).ConfigureAwait(false);
+            }
+        }
+
+        private async Task AvailableVoicesAsync(HttpContextBase ctx)
+        {
+            if (!await AuthorizeAsync(ctx, RequestTypeEnum.TopicRead).ConfigureAwait(false)) return;
+            string? tenantId = await RequireTenantAsync(ctx).ConfigureAwait(false);
+            if (tenantId == null) return;
+            await SendJsonAsync(ctx, 200, await Server.Audio.AvailableVoicesAsync(tenantId, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async Task PreviewVoiceAsync(HttpContextBase ctx)
+        {
+            if (!await AuthorizeAsync(ctx, RequestTypeEnum.TopicWrite).ConfigureAwait(false)) return;
+            string? tenantId = await RequireTenantAsync(ctx).ConfigureAwait(false);
+            if (tenantId == null) return;
+            VoicePreviewRequest? req = await ReadBodyAsync<VoicePreviewRequest>(ctx).ConfigureAwait(false);
+            if (req == null) return;
+            RequestContext rc = Context(ctx);
+            _PreviewLimiter.LimitPerMinute = PreviewsPerMinute;
+            if (!_PreviewLimiter.TryAcquire((rc.UserId ?? rc.Authentication.PrincipalId ?? "unknown") + "|voice-preview"))
+            {
+                await SendErrorAsync(ctx, 429, "TooManyRequests", "Too many voice previews. Try again in a minute.").ConfigureAwait(false);
+                return;
+            }
+
+            try
+            {
+                TtsResult r = await Server.Audio.PreviewAsync(tenantId, req, ctx.Token).ConfigureAwait(false);
                 ctx.Response.StatusCode = 200;
                 ctx.Response.ContentType = r.ContentType;
                 ctx.Response.Headers.Add("Cache-Control", "no-store");

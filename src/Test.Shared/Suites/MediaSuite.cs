@@ -38,6 +38,8 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "ScriptFallback", "Without a script model the episode is spoken from the briefing text", ScriptFallbackAsync),
                 Cases.Case(S, "Failure", "Speech failures are retried and then marked failed", FailureAsync),
                 Cases.Case(S, "Voices", "Voices are listed, managed by administrators, tested, and defaulted", VoicesAsync),
+                Cases.Case(S, "AvailableVoices", "Anyone in a workspace can list its voice profiles and the speech server's voices with readable labels, and hear a short preview", AvailableVoicesAsync),
+                Cases.Case(S, "TopicVoice", "A topic's voice is validated and stored, reads the topic's briefings aloud, cannot be set by someone else, and is cleared when the voice is deleted", TopicVoiceAsync),
                 Cases.Case(S, "Feed", "A private feed lists episodes with enclosures that stream, and stops when revoked", FeedAsync)
             });
         }
@@ -202,6 +204,137 @@ namespace Test.Shared.Suites
             (await ta.Client.PutAsync("/v1.0/api/voices/" + v.Id, new { endpoint = "ftp://bad" }, token).ConfigureAwait(false)).Expect(400, "endpoint validated");
             (await ta.Client.PutAsync("/v1.0/api/voices/" + v.Id, new { credentialId = "crd_missing" }, token).ConfigureAwait(false)).Expect(400, "credential validated");
             (await ta.Client.DeleteAsync("/v1.0/api/voices/" + v.Id, token).ConfigureAwait(false)).Expect(204, "delete");
+        }
+
+        private static async Task AvailableVoicesAsync(CancellationToken token)
+        {
+            Assert.True(VoiceNames.Describe("af_heart") == "Heart (American English, female)" && VoiceNames.Describe("bm_george") == "George (British English, male)"
+                && VoiceNames.Describe("studio-one") == "studio-one" && VoiceNames.Describe("xx_who") == "xx_who" && VoiceNames.Describe(null) == String.Empty, "Kokoro voice IDs get readable labels; others stay as they are");
+
+            MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+            TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
+            Tenant t = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
+            TestUser member = await TestFixtures.CreateUserAsync(admin, t.Id, false, token).ConfigureAwait(false);
+            AvailableVoicesResponse a = (await member.Client.GetAsync("/v1.0/api/voices/available", token).ConfigureAwait(false)).Expect(200, "available voices").Json<AvailableVoicesResponse>();
+            Assert.True(a.Enabled && a.Listed && a.Voices.Count == 6, "the workspace default profile and the speech server's five other voices: " + String.Join(", ", a.Voices.Select(v => v.Voice)));
+            AvailableVoice first = a.Voices[0];
+            Assert.True(first.Voice == "af_heart" && first.IsDefault && first.VoiceProfileId == a.DefaultVoiceProfileId && first.Name == AudioService.DefaultVoiceName && first.Label == "Heart (American English, female)",
+                "the default voice profile comes first: " + first.Voice + " " + first.Name);
+            AvailableVoice emma = a.Voices.Single(v => v.Voice == "bf_emma");
+            Assert.True(emma.VoiceProfileId == null && emma.Name == null && !emma.IsDefault && emma.Label == "Emma (British English, female)", "a speech server voice has a label and no profile yet");
+            Assert.Equal("studio-one", a.Voices.Single(v => v.Voice == "studio-one").Label, "an unknown voice ID is its own label");
+
+            int before = StubModelServer.Shared.SpeechRequests.Count;
+            TestResponse sample = (await member.Client.PostAsync("/v1.0/api/voices/preview", new { voice = "bf_emma", text = new string('a', 1000) }, token).ConfigureAwait(false)).Expect(200, "preview a server voice");
+            Assert.True(sample.Headers["Content-Type"].StartsWith("audio/wav", StringComparison.Ordinal) && sample.Body.StartsWith("RIFF", StringComparison.Ordinal), "preview audio");
+            string spoken = StubModelServer.Shared.SpeechRequests.Skip(before).Last(r => r.Contains("bf_emma", StringComparison.Ordinal));
+            Assert.True(spoken.Contains(new string('a', 300), StringComparison.Ordinal) && !spoken.Contains(new string('a', 301), StringComparison.Ordinal), "preview text is cut to 300 characters");
+            (await member.Client.PostAsync("/v1.0/api/voices/preview", new { voiceProfileId = first.VoiceProfileId }, token).ConfigureAwait(false)).Expect(200, "preview a voice profile with the default sentence");
+            (await member.Client.PostAsync("/v1.0/api/voices/preview", new { voice = "nobody" }, token).ConfigureAwait(false)).Expect(400, "a voice the server does not offer");
+            (await member.Client.PostAsync("/v1.0/api/voices/preview", new { }, token).ConfigureAwait(false)).Expect(400, "a voice is required");
+            (await member.Client.PostAsync("/v1.0/api/voices/preview", new { voiceProfileId = "vce_missing" }, token).ConfigureAwait(false)).Expect(404, "unknown voice profile");
+            Assert.Equal(1L, (await member.Client.GetAsync("/v1.0/api/voices", token).ConfigureAwait(false)).Json<EnumerationResult<VoiceProfile>>().TotalCount, "listing and previewing create no voice profiles");
+
+            // A speech server without a voice listing: the configured default voices are offered.
+            string endpoint = server.Context.Settings.Tts.Endpoint;
+            try
+            {
+                server.Context.Settings.Tts.Endpoint = StubModelServer.Shared.BaseUrl + "/novoices";
+                AvailableVoicesResponse plain = (await member.Client.GetAsync("/v1.0/api/voices/available", token).ConfigureAwait(false)).Expect(200, "no listing").Json<AvailableVoicesResponse>();
+                Assert.True(!plain.Listed && plain.Voices.Count == 2 && plain.Voices[0].VoiceProfileId != null && plain.Voices[1].Voice == "am_michael" && plain.Voices[1].VoiceProfileId == null,
+                    "falls back to the configured voices: " + String.Join(", ", plain.Voices.Select(v => v.Voice)));
+                (await member.Client.PostAsync("/v1.0/api/voices/preview", new { voice = "am_michael" }, token).ConfigureAwait(false)).Expect(200, "a configured voice still previews");
+                (await member.Client.PostAsync("/v1.0/api/voices/preview", new { voice = "bf_emma" }, token).ConfigureAwait(false)).Expect(400, "an unlisted voice does not");
+            }
+            finally
+            {
+                server.Context.Settings.Tts.Endpoint = endpoint;
+            }
+
+            // Previews are limited per user.
+            int last = 200;
+            for (int i = 0; i < 25 && last != 429; i++)
+                last = (await member.Client.PostAsync("/v1.0/api/voices/preview", new { voice = "af_heart", text = "Hi." }, token).ConfigureAwait(false)).StatusCode;
+            Assert.Equal(429, last, "more than 20 previews a minute are refused");
+            TestUser other = await TestFixtures.CreateUserAsync(admin, t.Id, false, token).ConfigureAwait(false);
+            (await other.Client.PostAsync("/v1.0/api/voices/preview", new { voice = "af_heart", text = "Hi." }, token).ConfigureAwait(false)).Expect(200, "the limit is per user");
+        }
+
+        private static async Task TopicVoiceAsync(CancellationToken token)
+        {
+            PipelineFixture f = await PipelineSuite.FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
+            TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
+            string topicPath = "/v1.0/api/topics/" + f.Topic.Id;
+            Assert.True(f.Topic.VoiceProfileId == null, "a new topic uses the workspace default voice");
+            VoiceProfile fallback = (await f.User.Client.GetAsync("/v1.0/api/voices", token).ConfigureAwait(false)).Json<EnumerationResult<VoiceProfile>>().Items.Single();
+
+            // Validation: the profile must exist in this workspace, and a server voice must be one the server offers.
+            ErrorResponse bad = (await f.User.Client.PutAsync(topicPath, new { voiceProfileId = "vce_missing" }, token).ConfigureAwait(false)).Expect(400, "unknown voice profile").Json<ErrorResponse>();
+            Assert.True(bad.Message.Contains("voiceProfileId", StringComparison.Ordinal), "names the field: " + bad.Message);
+            Tenant elsewhere = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
+            TestUser outsider = await TestFixtures.CreateUserAsync(admin, elsewhere.Id, true, token).ConfigureAwait(false);
+            VoiceProfile theirs = (await outsider.Client.PostAsync("/v1.0/api/voices", new { name = "Theirs", voice = "af_bella" }, token).ConfigureAwait(false)).Expect(201, "another workspace's voice").Json<VoiceProfile>();
+            (await f.User.Client.PutAsync(topicPath, new { voiceProfileId = theirs.Id }, token).ConfigureAwait(false)).Expect(400, "another workspace's voice profile");
+            (await f.User.Client.PutAsync(topicPath, new { voice = "nobody" }, token).ConfigureAwait(false)).Expect(400, "a voice the speech server does not offer");
+            (await f.User.Client.PostAsync("/v1.0/api/topics", new { name = "Bad voice " + Guid.NewGuid().ToString("N").Substring(0, 6), voice = "nobody" }, token).ConfigureAwait(false)).Expect(400, "create validates too");
+            Assert.Equal(1L, (await f.User.Client.GetAsync("/v1.0/api/topics", token).ConfigureAwait(false)).Json<EnumerationResult<Topic>>().TotalCount, "a refused create leaves no topic behind");
+
+            // Someone who cannot edit the topic cannot set its voice.
+            TestUser member = await TestFixtures.CreateUserAsync(admin, f.User.User.TenantId, false, token).ConfigureAwait(false);
+            (await member.Client.PutAsync(topicPath, new { voice = "bf_emma" }, token).ConfigureAwait(false)).Expect(404, "another member's topic");
+            (await outsider.Client.PutAsync(topicPath, new { voice = "bf_emma" }, token).ConfigureAwait(false)).Expect(404, "another workspace's topic");
+            Assert.Equal(1L, (await f.User.Client.GetAsync("/v1.0/api/voices", token).ConfigureAwait(false)).Json<EnumerationResult<VoiceProfile>>().TotalCount, "refused requests create no voice profiles");
+
+            // Choosing a speech server voice creates a profile for it once and reuses it afterwards.
+            Topic chosen = (await f.User.Client.PutAsync(topicPath, new { voice = "bf_emma" }, token).ConfigureAwait(false)).Expect(200, "choose a server voice").Json<Topic>();
+            VoiceProfile emma = (await f.User.Client.GetAsync("/v1.0/api/voices/" + chosen.VoiceProfileId, token).ConfigureAwait(false)).Expect(200, "its profile").Json<VoiceProfile>();
+            Assert.True(emma.Voice == "bf_emma" && emma.Name == "Emma (British English, female)" && !emma.IsDefault && emma.Endpoint == null && emma.Model == "kokoro" && emma.SecondaryVoice == "am_michael",
+                "a profile named after the voice: " + emma.Name);
+            Topic second = (await f.User.Client.PostAsync("/v1.0/api/topics", new { name = "Second " + Guid.NewGuid().ToString("N").Substring(0, 6), voice = "bf_emma" }, token).ConfigureAwait(false)).Expect(201, "create with a voice").Json<Topic>();
+            Assert.Equal(emma.Id, second.VoiceProfileId, "the same voice reuses its profile");
+            Assert.Equal(2L, (await f.User.Client.GetAsync("/v1.0/api/voices", token).ConfigureAwait(false)).Json<EnumerationResult<VoiceProfile>>().TotalCount, "one profile per voice");
+            AvailableVoicesResponse available = (await f.User.Client.GetAsync("/v1.0/api/voices/available", token).ConfigureAwait(false)).Json<AvailableVoicesResponse>();
+            Assert.True(available.Voices.Count(v => v.Voice == "bf_emma") == 1 && available.Voices.Single(v => v.Voice == "bf_emma").VoiceProfileId == emma.Id, "the voice is now listed once, as a profile");
+            Topic copy = (await f.User.Client.PostAsync(topicPath + "/duplicate", null, token).ConfigureAwait(false)).Expect(201, "duplicate").Json<TopicDetailResponse>().Topic;
+            Assert.Equal(emma.Id, copy.VoiceProfileId, "a copy keeps the voice");
+            Topic renamed = (await f.User.Client.PutAsync(topicPath, new { noveltyPreference = 60 }, token).ConfigureAwait(false)).Expect(200, "another edit").Json<Topic>();
+            Assert.Equal(emma.Id, renamed.VoiceProfileId, "an edit that does not name the voice leaves it");
+            TopicDetailResponse detail = (await f.User.Client.GetAsync(topicPath, token).ConfigureAwait(false)).Expect(200, "read").Json<TopicDetailResponse>();
+            Assert.Equal(emma.Id, detail.Topic.VoiceProfileId, "stored");
+
+            // The topic's briefing is read in the topic's voice; an explicit voice and an edition's voice still win.
+            await PipelineSuite.RunAsync(f, token).ConfigureAwait(false);
+            Run run = (await f.User.Client.GetAsync("/v1.0/api/runs?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Run>>().Items.First();
+            Briefing runBriefing = (await f.User.Client.GetAsync("/v1.0/api/briefings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().Items.Single();
+            MediaAsset queued = (await f.User.Client.PostAsync("/v1.0/api/briefings/" + runBriefing.Id + "/audio", null, token).ConfigureAwait(false)).Expect(202, "audio for the run briefing").Json<MediaAsset>();
+            Assert.Equal(emma.Id, queued.VoiceProfileId, "queued with the topic's voice");
+            int before = StubModelServer.Shared.SpeechRequests.Count;
+            MediaAsset made = await EpisodeForAsync(f, runBriefing, token).ConfigureAwait(false);
+            Assert.True(made.Status == MediaStatusEnum.Ready && made.VoiceProfileId == emma.Id, "episode made: " + made.Status + " " + made.ErrorMessage);
+            Assert.True(StubModelServer.Shared.SpeechRequests.Skip(before).Any(r => r.Contains("\"bf_emma\"", StringComparison.Ordinal)), "spoken in the topic's voice");
+            MediaAsset explicitVoice = (await f.User.Client.PostAsync("/v1.0/api/briefings/" + runBriefing.Id + "/audio", new { voiceProfileId = fallback.Id }, token).ConfigureAwait(false)).Expect(202, "remake with a named voice").Json<MediaAsset>();
+            Assert.Equal(fallback.Id, explicitVoice.VoiceProfileId, "a voice named in the request wins");
+            await EpisodeForAsync(f, runBriefing, token).ConfigureAwait(false);
+            Briefing editionBriefing = await EditionBriefingAsync(f, "Voice Heat", true, token).ConfigureAwait(false);
+            MediaAsset editionAudio = (await f.User.Client.GetAsync("/v1.0/api/media?briefingId=" + editionBriefing.Id, token).ConfigureAwait(false)).Json<EnumerationResult<MediaAsset>>().Items.Single();
+            Assert.Equal(fallback.Id, editionAudio.VoiceProfileId, "an edition keeps its own voice (here the workspace default)");
+            await EpisodeForAsync(f, editionBriefing, token).ConfigureAwait(false);
+
+            // Clearing, and deleting the voice.
+            Topic cleared = (await f.User.Client.PutAsync("/v1.0/api/topics/" + second.Id, new { voiceProfileId = String.Empty }, token).ConfigureAwait(false)).Expect(200, "clear").Json<Topic>();
+            Assert.True(cleared.VoiceProfileId == null, "an empty string goes back to the workspace default");
+            Topic byProfile = (await f.User.Client.PutAsync("/v1.0/api/topics/" + second.Id, new { voiceProfileId = emma.Id }, token).ConfigureAwait(false)).Expect(200, "set by profile").Json<Topic>();
+            Assert.Equal(emma.Id, byProfile.VoiceProfileId, "set by voice profile ID");
+            (await f.User.Client.DeleteAsync("/v1.0/api/voices/" + emma.Id, token).ConfigureAwait(false)).Expect(204, "delete the voice");
+            foreach (string id in new[] { f.Topic.Id, second.Id, copy.Id })
+            {
+                Topic after = (await f.User.Client.GetAsync("/v1.0/api/topics/" + id, token).ConfigureAwait(false)).Expect(200, "read after delete").Json<TopicDetailResponse>().Topic;
+                Assert.True(after.VoiceProfileId == null, "deleting a voice clears it from topic " + id);
+            }
+
+            MediaAsset afterDelete = (await f.User.Client.PostAsync("/v1.0/api/briefings/" + runBriefing.Id + "/audio", null, token).ConfigureAwait(false)).Expect(202, "audio after the voice is gone").Json<MediaAsset>();
+            Assert.Equal(fallback.Id, afterDelete.VoiceProfileId, "the workspace default reads it again");
+            await EpisodeForAsync(f, runBriefing, token).ConfigureAwait(false);
         }
 
         private static async Task FeedAsync(CancellationToken token)

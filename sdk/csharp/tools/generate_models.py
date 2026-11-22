@@ -38,7 +38,7 @@ ROOTS = [
     "TemplateDetailResponse", "TemplateValidationResponse", "TenantChoice", "TenantSelectionResponse",
     "TokenDetailsResponse", "TokenResponse", "TopicDetailResponse", "UsageBucket", "UsageReport", "UsageRow",
     "UsageTimeseries", "UserResponse", "VaultCredentialResponse", "VaultRevealResponse", "VaultUsageItem",
-    "McpServerDetailResponse", "SetupStatusResponse", "SetupOptionsResponse", "RunCostReport",
+    "McpServerDetailResponse", "SetupStatusResponse", "SetupOptionsResponse", "RunCostReport", "AvailableVoicesResponse",
     # Models returned directly by routes.
     "Topic", "TopicDimension", "TopicConstraint", "TopicRecipient", "RefinementSession", "ResearchRequest", "Schedule",
     "Run", "RunStage", "SearchQuery", "SearchResult", "Finding", "Prediction", "PredictionReview", "Suggestion",
@@ -68,7 +68,7 @@ ROOTS = [
     "TemplateSaveRequest", "TemplateValidateRequest", "TenantUpsertRequest", "TopicSearchProviderRequest",
     "TopicUpsertRequest", "UserCreateRequest", "UserUpdateRequest", "VaultCredentialUpsertRequest",
     "VoiceProfileUpsertRequest", "VoiceTestRequest", "SignupRequest", "AccountTokenRequest", "AccountEmailRequest",
-    "McpServerUpsertRequest", "McpToolUpdateRequest", "SetupModelKeyRequest", "SetupConnectRequest",
+    "McpServerUpsertRequest", "McpToolUpdateRequest", "SetupModelKeyRequest", "SetupConnectRequest", "VoicePreviewRequest",
     # Enums used as query filters (not always reachable from a body).
     "SortDirectionEnum", "TopicStatusEnum", "ConstraintKindEnum", "RefinementStatusEnum", "ResearchRequestStatusEnum",
     "ScheduleOwnerTypeEnum", "RunStatusEnum", "RunTriggerEnum", "FindingTierEnum", "FindingCategoryEnum",

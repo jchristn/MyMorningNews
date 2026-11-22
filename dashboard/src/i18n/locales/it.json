@@ -4286,7 +4286,8 @@
       "Model": "Modello",
       "Search": "Ricerca",
       "Embeddings": "Embedding",
-      "Email": "Email"
+      "Email": "Email",
+      "Speech": "Sintesi vocale"
     },
     "check": {
       "title": "{kind}: {name}"
@@ -4295,12 +4296,6 @@
       "open": "Completa la configurazione",
       "askAdmin": "Un amministratore deve completare la configurazione perché funzioni."
     },
-    "ready": {
-      "title": "Tutto pronto",
-      "message": "Il modello di IA e la ricerca web funzionano entrambi. Crea un argomento per ricevere il tuo primo briefing.",
-      "newTopic": "Crea il tuo primo argomento",
-      "home": "Vai alla Home"
-    },
     "gate": {
       "title": "Questo spazio di lavoro non è pronto",
       "message": "Un amministratore deve collegare un modello di IA e la ricerca web prima che chiunque possa usare My Morning News.",
@@ -4308,7 +4303,9 @@
       "checkAgain": "Controlla di nuovo",
       "checking": "Controllo in corso",
       "signOut": "Esci",
-      "checked": "Ultimo controllo: {time}"
+      "checked": "Ultimo controllo: {time}",
+      "continue": "Continua nell’app",
+      "continueHelp": "Nel frattempo puoi dare un’occhiata. Tutto ciò che richiede il modello di IA non funzionerà finché la configurazione non è completa."
     },
     "loadError": {
       "title": "Impossibile caricare lo stato della configurazione",
@@ -4483,10 +4480,47 @@
       "note": "Non bloccano mai la ricerca. Configurali quando vuoi.",
       "what": {
         "Embeddings": "Trova le notizie ripetute in base al significato, non solo alle parole corrispondenti.",
-        "Email": "Invia un’email con il briefing dopo ogni esecuzione, con link ai dettagli e per il feedback."
+        "Email": "Invia un’email con il briefing dopo ogni esecuzione, con link ai dettagli e per il feedback.",
+        "Speech": "Legge i briefing ad alta voce e crea episodi podcast."
       },
       "openModels": "Apri Modelli di IA",
       "openSettings": "Apri Impostazioni"
+    },
+    "status": {
+      "title": "Configurazione",
+      "summary": "A cosa è collegato My Morning News. Qui puoi modificare un collegamento o verificarlo di nuovo."
+    },
+    "complete": {
+      "message": "La configurazione è completa. Il modello di IA e la ricerca web funzionano.",
+      "topics": "Vai agli argomenti"
+    },
+    "skip": {
+      "button": "Salta per ora",
+      "title": "Saltare la configurazione per ora?",
+      "intro": "La configurazione non è completa. Manca ancora questo:",
+      "untilThen": "Finché non è completa:",
+      "needsModel": "La procedura guidata degli argomenti, le esecuzioni di ricerca e i briefing non funzioneranno. Serve un modello di IA funzionante.",
+      "needsSearch": "La ricerca non può trovare nuove fonti. Serve un provider di ricerca web.",
+      "later": "Puoi tornare in qualsiasi momento con Completa la configurazione, in cima al menu.",
+      "stay": "Continua la configurazione",
+      "skippedNote": "Hai saltato la configurazione, quindi tutte le pagine sono aperte. Completa i passaggi qui sotto quando vuoi.",
+      "resume": "Tienimi su questa pagina finché la configurazione non è completa"
+    },
+    "warning": {
+      "title": "La configurazione non è completa.",
+      "missing": "Manca ancora: {items}. Fino ad allora la procedura guidata degli argomenti, le esecuzioni di ricerca e i briefing non funzioneranno.",
+      "generic": "Alcune cose non funzioneranno finché non è completa."
+    },
+    "speech": {
+      "server": "Server vocale",
+      "model": "Modello",
+      "voice": "Voce predefinita",
+      "test": "Verifica la sintesi vocale",
+      "testing": "Verifica della sintesi vocale in corso. Viene chiesto al server vocale un breve campione.",
+      "works": "La sintesi vocale funziona.",
+      "openSettings": "Impostazioni del server vocale",
+      "openVoices": "Voci",
+      "whoCanChange": "Solo un amministratore del server può modificare il server vocale, in Impostazioni, Impostazioni del server."
     }
   },
   "costs": {
@@ -4551,5 +4585,28 @@
       "kind": "Tipo",
       "partialSuffix": "(alcune chiamate senza prezzo)"
     }
+  },
+  "topicVoice": {
+    "title": "Voce",
+    "help": "La voce che legge ad alta voce i briefing di questo argomento. Riproduci un campione per ascoltare ciascuna voce.",
+    "current": "Questo argomento usa {voice}.",
+    "usingDefault": "Questo argomento usa la voce predefinita dello spazio di lavoro, {voice}.",
+    "usingDefaultUnknown": "Questo argomento usa la voce predefinita dello spazio di lavoro.",
+    "useDefault": "Usa la voce predefinita dello spazio di lavoro",
+    "use": "Usa questa voce",
+    "useNamed": "Usa {voice} per questo argomento",
+    "inUse": "In uso",
+    "workspaceDefault": "Predefinita dello spazio di lavoro",
+    "play": "Riproduci un campione di {voice}",
+    "stop": "Interrompi il campione di {voice}",
+    "playShort": "Riproduci",
+    "stopShort": "Interrompi",
+    "loadingShort": "Caricamento",
+    "listLabel": "Voci disponibili",
+    "sampleLabel": "Campione vocale",
+    "saved": "{voice} ora legge questo argomento",
+    "savedDefault": "Questo argomento usa di nuovo la voce predefinita dello spazio di lavoro",
+    "speechOff": "La sintesi vocale è disattivata su questo server, quindi non c’è audio da riprodurre. Un amministratore del server può attivarla in Impostazioni del server.",
+    "empty": "Nessuna voce disponibile."
   }
 }

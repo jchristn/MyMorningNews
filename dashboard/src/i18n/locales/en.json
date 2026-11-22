@@ -4286,7 +4286,8 @@
       "Model": "Model",
       "Search": "Search",
       "Embeddings": "Embeddings",
-      "Email": "Email"
+      "Email": "Email",
+      "Speech": "Speech"
     },
     "check": {
       "title": "{kind}: {name}"
@@ -4295,12 +4296,6 @@
       "open": "Finish setup",
       "askAdmin": "An administrator needs to finish setup before this works."
     },
-    "ready": {
-      "title": "You're ready",
-      "message": "The AI model and web search both work. Create a topic to get your first briefing.",
-      "newTopic": "Create your first topic",
-      "home": "Go to Home"
-    },
     "gate": {
       "title": "This workspace is not ready",
       "message": "An administrator needs to connect an AI model and web search before anyone can use My Morning News.",
@@ -4308,7 +4303,9 @@
       "checkAgain": "Check again",
       "checking": "Checking",
       "signOut": "Sign out",
-      "checked": "Last checked {time}"
+      "checked": "Last checked {time}",
+      "continue": "Continue to the app",
+      "continueHelp": "You can look around in the meantime. Anything that needs the AI model will not work until setup is finished."
     },
     "loadError": {
       "title": "Setup status could not be loaded",
@@ -4483,10 +4480,47 @@
       "note": "These never block research. Set them up whenever you like.",
       "what": {
         "Embeddings": "Finds repeated stories by meaning, not only by matching words.",
-        "Email": "Sends a briefing email after every run, with detail and feedback links."
+        "Email": "Sends a briefing email after every run, with detail and feedback links.",
+        "Speech": "Reads briefings aloud and makes podcast episodes."
       },
       "openModels": "Open Models",
       "openSettings": "Open Settings"
+    },
+    "status": {
+      "title": "Setup",
+      "summary": "What My Morning News is connected to. Change a connection or test it again here."
+    },
+    "complete": {
+      "message": "Setup is complete. The AI model and web search both work.",
+      "topics": "Go to Topics"
+    },
+    "skip": {
+      "button": "Skip for now",
+      "title": "Skip setup for now?",
+      "intro": "Setup is not finished. This is still missing:",
+      "untilThen": "Until it is finished:",
+      "needsModel": "The topic wizard, research runs, and briefings will not work. They need a working AI model.",
+      "needsSearch": "Research cannot find new sources. It needs a web search provider.",
+      "later": "You can come back any time with Finish setup at the top of the menu.",
+      "stay": "Keep setting up",
+      "skippedNote": "You skipped setup, so every page is open. Finish the steps below when you are ready.",
+      "resume": "Keep me on this page until setup is done"
+    },
+    "warning": {
+      "title": "Setup is not finished.",
+      "missing": "Still needed: {items}. The topic wizard, research runs, and briefings will not work until then.",
+      "generic": "Some things will not work until it is done."
+    },
+    "speech": {
+      "server": "Speech server",
+      "model": "Model",
+      "voice": "Default voice",
+      "test": "Test speech",
+      "testing": "Testing speech. This asks the speech server for one short sample.",
+      "works": "Speech works.",
+      "openSettings": "Speech server settings",
+      "openVoices": "Voices",
+      "whoCanChange": "Only a server administrator can change the speech server, under Settings, Server settings."
     }
   },
   "costs": {
@@ -4551,5 +4585,28 @@
       "kind": "Kind",
       "partialSuffix": "(some calls unpriced)"
     }
+  },
+  "topicVoice": {
+    "title": "Voice",
+    "help": "The voice that reads this topic's briefings aloud. Play a sample to hear each one.",
+    "current": "This topic uses {voice}.",
+    "usingDefault": "This topic uses the workspace default voice, {voice}.",
+    "usingDefaultUnknown": "This topic uses the workspace default voice.",
+    "useDefault": "Use the workspace default",
+    "use": "Use this voice",
+    "useNamed": "Use {voice} for this topic",
+    "inUse": "In use",
+    "workspaceDefault": "Workspace default",
+    "play": "Play a sample of {voice}",
+    "stop": "Stop the sample of {voice}",
+    "playShort": "Play",
+    "stopShort": "Stop",
+    "loadingShort": "Loading",
+    "listLabel": "Available voices",
+    "sampleLabel": "Voice sample",
+    "saved": "{voice} now reads this topic",
+    "savedDefault": "This topic uses the workspace default voice again",
+    "speechOff": "Speech is turned off on this server, so there is no audio to play. A server administrator can turn it on in Server settings.",
+    "empty": "No voices are available."
   }
 }

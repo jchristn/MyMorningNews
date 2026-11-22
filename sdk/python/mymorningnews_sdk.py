@@ -1200,12 +1200,13 @@ class McpTransport(str, Enum):
 
 
 class SetupCheckKind(str, Enum):
-    """What a setup check covers. Model and Search are required; Embeddings and Email are optional."""
+    """What a setup check covers. Model and Search are required; Embeddings, Email, and Speech are optional."""
 
     MODEL = "Model"
     SEARCH = "Search"
     EMBEDDINGS = "Embeddings"
     EMAIL = "Email"
+    SPEECH = "Speech"
 
 
 class SetupCheckState(str, Enum):
@@ -1390,6 +1391,8 @@ class Topic(Model):
     """Agentic search: the research model searches and reads pages itself (web_search, fetch_url, allowed MCP tools)."""
     mcp_tool_ids: Optional[List[str]] = None
     """MCP tool IDs (``mct_...``) the topic may use in agentic search; empty allows every enabled tool."""
+    voice_profile_id: Optional[str] = None
+    """Voice profile that reads the topic's run briefings aloud; None uses the workspace default voice."""
 
 
 @dataclass
@@ -2675,7 +2678,9 @@ class ModelValidation(Model):
 class SetupCheck(Model):
     """One thing the workspace needs before people can use it, and whether it is ready.
 
-    ``key`` is stable: ``model:{endpointId}`` (or ``model:none``), ``search``, ``embeddings``, or ``email``.
+    ``key`` is stable: ``model:{endpointId}`` (or ``model:none``), ``search``, ``embeddings``, ``email``, or
+    ``speech``. The speech check (the text to speech endpoint) carries ``model``, ``voice`` (the default voice),
+    and ``base_url``.
     ``kind`` is a :class:`SetupCheckKind` name and ``state`` a :class:`SetupCheckState` name. For model checks,
     ``auth_method`` is a :class:`ModelAuthMethod` name and ``needs_api_key`` tells whether that method needs a
     stored secret (an API key, a token, or a sign-in file). ``base_url`` is the server address for Ollama and
@@ -2690,6 +2695,7 @@ class SetupCheck(Model):
     resource_name: Optional[str] = None
     provider: Optional[str] = None
     model: Optional[str] = None
+    voice: Optional[str] = None
     base_url: Optional[str] = None
     tasks: Optional[List[str]] = None
     auth_method: Optional[str] = None
@@ -2839,6 +2845,35 @@ class VoiceProfile(Model):
     active: Optional[bool] = None
     created_utc: Optional[str] = None
     last_update_utc: Optional[str] = None
+
+
+@dataclass
+class AvailableVoice(Model):
+    """A voice someone can choose for a topic: a workspace voice profile, or a voice the speech server offers.
+
+    ``voice`` is the speech server's voice ID (such as ``af_heart``) and ``label`` a readable label (such as
+    "Heart (American English, female)"; the voice ID when it follows no known naming). ``voice_profile_id`` and
+    ``name`` are None for a speech server voice that has no profile yet; choosing it for a topic creates one.
+    """
+    voice: Optional[str] = None
+    label: Optional[str] = None
+    voice_profile_id: Optional[str] = None
+    name: Optional[str] = None
+    is_default: Optional[bool] = None
+
+
+@dataclass
+class AvailableVoices(Model):
+    """The voices someone can choose for a topic: voice profiles first, then the speech server's other voices.
+
+    ``enabled`` tells whether speech is turned on for the server; ``listed`` is True when the speech server
+    listed its voices and False when the list is only the configured default voices.
+    """
+    _nested: ClassVar[Dict[str, str]] = {'voices': 'AvailableVoice'}
+    enabled: Optional[bool] = None
+    listed: Optional[bool] = None
+    default_voice_profile_id: Optional[str] = None
+    voices: Optional[List["AvailableVoice"]] = None
 
 
 @dataclass
@@ -4330,6 +4365,39 @@ class VoicesResource(_Resource):
         resp = self._client.request("POST", API + "/voices/" + _seg(voice_id) + "/test", body={"text": text}, raw=True)
         return Download.from_response(resp)
 
+    def available(self) -> AvailableVoices:
+        """The voices a topic can use: the workspace's voice profiles, then the speech server's other voices.
+
+        Each has a readable label. Anyone who can read topics may call it. To use one for a topic, send its
+        ``voice_profile_id``, or its ``voice`` when it has no profile yet, to :meth:`TopicsResource.update`.
+        """
+        return self._one(AvailableVoices, "GET", API + "/voices/available")
+
+    def preview(self, voice: Optional[str] = None, voice_profile_id: Optional[str] = None, text: Optional[str] = None) -> Download:
+        """Speak a short sample (up to 300 characters) with a speech server voice or a voice profile.
+
+        Args:
+            voice: A speech server voice ID from :meth:`available`, such as ``af_heart``.
+            voice_profile_id: A workspace voice profile to speak with instead.
+            text: Text to speak; None speaks a default sentence.
+
+        Raises:
+            ValueError: Neither ``voice`` nor ``voice_profile_id`` was given.
+            ConflictError: Speech is turned off on the server (HTTP 409).
+            ServerError: The speech service failed (``TtsError``, HTTP 502).
+        """
+        if not voice and not voice_profile_id:
+            raise ValueError("voice or voice_profile_id is required.")
+        body: Dict[str, Any] = {}
+        if voice_profile_id:
+            body["voiceProfileId"] = voice_profile_id
+        else:
+            body["voice"] = voice
+        if text:
+            body["text"] = text
+        resp = self._client.request("POST", API + "/voices/preview", body=body, raw=True)
+        return Download.from_response(resp)
+
 
 class VaultResource(_Resource):
     """Vault credentials under ``/v1.0/api/vault/credentials``. Secrets are never returned (reveal is C# only)."""
@@ -4479,13 +4547,18 @@ class SetupResource(_Resource):
         """The workspace setup status (``ready``, ``can_configure``, and the checks)."""
         return self._one(SetupStatus, "GET", API + "/setup")
 
-    def verify(self) -> SetupStatus:
+    def verify(self, check: Optional[Union[str, "SetupCheckKind"]] = None) -> SetupStatus:
         """Re-check setup with live calls. Administrators only (PermissionDeniedError otherwise).
 
         Sends a short probe prompt to each chat endpoint, a test query to each default web search provider,
-        and one embedding request, so it contacts the providers.
+        one embedding request, and one short speech request, so it contacts the providers.
+
+        Args:
+            check: Re-check only this kind (``Model``, ``Search``, ``Embeddings``, or ``Speech``); the other
+                checks are reported from stored results. None re-checks everything.
         """
-        return self._one(SetupStatus, "POST", API + "/setup/verify")
+        query = None if check is None else {"check": check.value if isinstance(check, Enum) else str(check)}
+        return self._one(SetupStatus, "POST", API + "/setup/verify", query=query)
 
     def options(self) -> SetupOptions:
         """Model providers and sign-in methods the Setup page can connect on this server. Administrators only

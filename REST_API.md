@@ -412,7 +412,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 
 ## Route reference
 
-301 routes in 46 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
+303 routes in 46 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
 
 | Group | Routes | What it covers |
 |---|---|---|
@@ -449,7 +449,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [Editions](#editions) | 8 | Recurring briefings that gather several topics, with a template, audio and email switches, and a lookback window. |
 | [Templates](#templates) | 10 | Briefing templates in Markdown. Every save is a version; templates can be validated, previewed, rolled back, reset, imported, and exported. |
 | [Media](#media) | 4 | Audio episodes made from briefings, with chapters. |
-| [Voices](#voices) | 6 | Text-to-speech voice profiles, with a test route that speaks a sample. |
+| [Voices](#voices) | 8 | Text-to-speech voice profiles, with a test route that speaks a sample. Two more routes let anyone who can edit a topic choose its voice: one lists the voices a topic can use (the voice profiles, then the speech server's own voices with readable labels), and one speaks a short preview. |
 | [Podcast feeds](#podcast-feeds) | 3 | Private podcast feed tokens. The feed URL embeds the secret, which is shown once. |
 | [Email](#email) | 8 | The email outbox, test and preview sends, resends, and the signed-in user's email preferences. |
 | [Feedback](#feedback) | 4 | Ratings and reasons on findings, predictions, suggestions, sources, domains, and briefings. Feedback drives learning and analytics. |
@@ -2950,11 +2950,11 @@ What the workspace still needs before people can use it (a chat model with a wor
 
 ### GET /v1.0/api/setup
 
-**Workspace setup status.** Whether the workspace has a chat model with a working key and web search. ready is false until every required check is Ready; the apps keep people out of the product until then.
+**Workspace setup status.** Whether the workspace has a chat model with a working key and web search. ready is false until every required check is Ready; the apps ask administrators to finish setup first, and let them skip it. Administrators also get the optional checks: embeddings, email, and speech (the text to speech endpoint, with its model and default voice).
 
 - Auth: Any authenticated principal.
 - Response: [`SetupStatusResponse`](#setupstatusresponse)
-- Notes: Reads the stored state and makes no provider calls. `canConfigure` is true for global and tenant administrators.
+- Notes: Reads the stored state. The only provider call is the optional speech check, for administrators: one short speech request to the configured endpoint, at most once every five minutes. `canConfigure` is true for global and tenant administrators, who also get the optional checks: `embeddings`, `email`, and `speech` (Ready when speech is on and the endpoint returned audio, Missing when it is turned off, Failed with the reason when the endpoint did not answer; it carries the endpoint host in `resourceName`, `model`, and the default `voice`).
 
 | Status | Meaning |
 |---|---|
@@ -2970,11 +2970,15 @@ curl -s "http://127.0.0.1:12100/v1.0/api/setup" \
 
 ### POST /v1.0/api/setup/verify
 
-**Re-check setup with live calls.** Administrators only. Sends a short probe prompt to each chat endpoint, a test query to each default web search provider, and one embedding request.
+**Re-check setup with live calls.** Administrators only. Sends a short probe prompt to each chat endpoint, a test query to each default web search provider, one embedding request, and one short speech request. check limits the live calls to one kind (Model, Search, Embeddings, or Speech); the other checks are reported from stored results.
 
 - Auth: Any authenticated principal.
 - Response: [`SetupStatusResponse`](#setupstatusresponse)
-- Notes: Calls the providers: a short probe prompt per chat endpoint, a test query per default web search provider, and one embedding request. Each endpoint's `lastValidationSucceeded` records the outcome.
+- Notes: Calls the providers: a short probe prompt per chat endpoint, a test query per default web search provider, one embedding request, and one short speech request. Each endpoint's `lastValidationSucceeded` records the outcome. `check=Speech` (or `Model`, `Search`, `Embeddings`) re-checks only that kind and reports the others from stored results.
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `check` | enum (`Model`, `Search`, `Embeddings`, `Email`, `Speech`) | Re-check only this kind of setup check (Model, Search, Embeddings, or Speech) with live calls. |
 
 | Status | Meaning |
 |---|---|
@@ -3467,7 +3471,7 @@ curl -s "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLmLdBrfbuN
 
 ### PUT /v1.0/api/topics/{id}
 
-**Update a topic.**
+**Update a topic.** Only the fields sent are changed. voiceProfileId sets the voice that reads the topic's briefings aloud (an empty string goes back to the workspace default); voice names a speech server voice from GET /v1.0/api/voices/available instead, and the server reuses or creates the voice profile for it.
 
 - Auth: `Topic:Update` (`TopicWrite`).
 - Response: [`Topic`](#topic)
@@ -7429,12 +7433,14 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/briefings/brf_mwpf8b9c_Er6tY9uI
 
 ## Voices
 
-Text-to-speech voice profiles, with a test route that speaks a sample.
+Text-to-speech voice profiles, with a test route that speaks a sample. Two more routes let anyone who can edit a topic choose its voice: one lists the voices a topic can use (the voice profiles, then the speech server's own voices with readable labels), and one speaks a short preview.
 
 | Method | Path | Summary |
 |---|---|---|
 | GET | [`/v1.0/api/voices`](#get-v10apivoices) | List voice profiles |
 | POST | [`/v1.0/api/voices`](#post-v10apivoices) | Create a voice profile |
+| GET | [`/v1.0/api/voices/available`](#get-v10apivoicesavailable) | List the voices a topic can use |
+| POST | [`/v1.0/api/voices/preview`](#post-v10apivoicespreview) | Hear a short sample of a voice |
 | GET | [`/v1.0/api/voices/{id}`](#get-v10apivoicesid) | Read a voice profile |
 | PUT | [`/v1.0/api/voices/{id}`](#put-v10apivoicesid) | Update a voice profile |
 | DELETE | [`/v1.0/api/voices/{id}`](#delete-v10apivoicesid) | Delete a voice profile |
@@ -7493,6 +7499,61 @@ Request body: [`VoiceProfileUpsertRequest`](#voiceprofileupsertrequest).
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/voices" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### GET /v1.0/api/voices/available
+
+**List the voices a topic can use.** The workspace's voice profiles, then the voices the speech server offers that have no profile yet (read from the speech endpoint's /audio/voices; the configured default voices when it has no listing). Each has a readable label. Anyone who can read topics may call it.
+
+- Auth: `Topic:Read` (`TopicRead`).
+- Response: [`AvailableVoicesResponse`](#availablevoicesresponse)
+- Notes: The workspace's active voice profiles come first (the default one at the top), then the voices the speech server offers that no profile uses yet. The server's list is read from the speech endpoint's `/audio/voices` (Kokoro-FastAPI) and kept for five minutes; `listed` is false when the endpoint has no listing, and the configured default voices are offered instead. `label` is readable where the ID follows Kokoro's naming (`af_heart` is Heart, American English, female) and is the ID otherwise. To use a voice for a topic, send its `voiceProfileId`, or its `voice` when it has no profile yet, in `PUT /v1.0/api/topics/{id}`; the server then reuses or creates the voice profile. Needs permission to read topics.
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/voices/available" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/voices/preview
+
+**Hear a short sample of a voice.** Speaks up to 300 characters with a speech server voice (voice) or a voice profile (voiceProfileId) and returns the audio (audio/wav). Anyone who can edit topics may call it, up to 20 times a minute. 409 when speech is turned off, 429 TooManyRequests over the limit, 502 TtsError when the speech endpoint fails.
+
+- Auth: `Topic:Update` (`TopicWrite`).
+- Response: `audio/wav`
+- Notes: Send `voice` (a speech server voice from the available list) or `voiceProfileId` (a voice profile, spoken with its own endpoint, model, and speed). `text` is cut to 300 characters; without it a default sentence is spoken. Each user may ask for 20 previews a minute. 400 when neither is given or the speech server does not offer the voice, 404 for an unknown voice profile, 409 when speech is turned off on the server, 502 `TtsError` when the speech endpoint fails. Needs permission to edit topics.
+
+Request body: [`VoicePreviewRequest`](#voicepreviewrequest).
+
+```json
+{
+  "voice": "af_heart",
+  "text": "Good morning. Here is what changed overnight."
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `BadRequest`, `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict |
+| 429 | Too Many Requests |
+| 502 | Bad Gateway: `TtsError` |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/voices/preview" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json \
+  -o output.bin
 ```
 
 ### GET /v1.0/api/voices/{id}
@@ -10361,6 +10422,60 @@ Authentication settings.
 | `allowRefresh` | boolean | Whether sessions can be refreshed. Default true. |
 | `refreshTokenLifetimeDays` | integer | Lifetime of mobile refresh tokens in days; each rotation starts a new lifetime. Default 30. Minimum 1, maximum 365. |
 
+#### AvailableVoice
+
+A voice someone can choose for a topic: one of the workspace's voice profiles, or a voice the speech server offers.
+
+| Field | Type | Description |
+|---|---|---|
+| `voice` | string | The speech server's voice ID, such as af_heart. |
+| `label` | string | A readable label, such as "Heart (American English, female)". The voice ID when it follows no known naming. |
+| `voiceProfileId` | string | The workspace voice profile that uses this voice. Null for a speech server voice that has no profile yet; choosing it for a topic creates one. |
+| `name` | string | The voice profile's name. Null for a speech server voice that has no profile yet. |
+| `isDefault` | boolean | True for the workspace's default voice profile. |
+
+#### AvailableVoicesResponse
+
+The voices someone can choose for a topic.
+
+Returned by [GET /v1.0/api/voices/available](#get-v10apivoicesavailable).
+
+| Field | Type | Description |
+|---|---|---|
+| `enabled` | boolean | Whether speech is turned on for this server. When false, voices can be chosen but no audio is made. |
+| `listed` | boolean | True when the speech server listed its voices; false when the list is only the configured default voices. |
+| `defaultVoiceProfileId` | string | The workspace's default voice profile, used by topics that have no voice of their own. May be null. |
+| `voices` | array of [`AvailableVoice`](#availablevoice) | Voices: the workspace's voice profiles first, then the speech server's other voices. Never null. |
+
+Example:
+
+```json
+{
+  "enabled": true,
+  "listed": true,
+  "defaultVoiceProfileId": "voi_mwpee2a5_Ui2oP5aS8dFg1hJk4Lz",
+  "voices": [
+    {
+      "voice": "af_heart",
+      "label": "Heart (American English, female)",
+      "voiceProfileId": "voi_mwpee2a5_Ui2oP5aS8dFg1hJk4Lz",
+      "name": "Kokoro (local)",
+      "isDefault": true
+    },
+    {
+      "voice": "am_michael",
+      "label": "Michael (American English, male)",
+      "isDefault": false
+    },
+    {
+      "voice": "bf_emma",
+      "label": "Emma (British English, female)",
+      "isDefault": false
+    }
+  ]
+}
+```
+
 #### BreakdownRow
 
 A rate for one group.
@@ -11899,6 +12014,7 @@ Defaults used when seeding a tenant's model endpoints. Existing endpoints are ne
 | `defaultOllamaEndpoint` | string | Ollama base URL for the seeded embedding endpoint. Default http://host.docker.internal:11434. |
 | `defaultEmbeddingModel` | string | Embedding model for the seeded Ollama endpoint. Default all-minilm (384 dimensions). |
 | `allowAgentClis` | boolean | Whether model endpoints may use agent CLIs (Claude Code, Codex, Gemini CLI, Mux) running inside the server. Default true. Turn it off on a shared or hosted server: the CLIs run as the server's own user, with read-only tools in a private, empty folder per endpoint. |
+| `agentClisAdminsOnly` | boolean | When agent CLIs are allowed, limit connecting them to global administrators. Default false. The hosted profile turns it on: anyone can sign up there, so only the server's operators may run CLIs inside the server. |
 | `cliHomeDirectory` | string | Folder that holds a private home folder for each agent CLI endpoint (its sign-in file and an empty working folder). Default .mymorningnews/cli under the server user's home, which the Docker stack keeps in the clihome volume. |
 | `claudeCodeExecutable` | string | Claude Code executable, a name on PATH or a full path. Default claude. |
 | `codexExecutable` | string | Codex executable, a name on PATH or a full path. Default codex. |
@@ -13595,7 +13711,8 @@ One thing the workspace needs before people can use it, and whether it is ready.
 | `resourceId` | string | Model endpoint or search provider ID, when the check is about one. |
 | `resourceName` | string | Model endpoint or search provider name. |
 | `provider` | string | Provider name (a ModelProviderEnum or SearchProviderKindEnum value). |
-| `model` | string | Model name, for model and embedding checks. |
+| `model` | string | Model name, for model, embedding, and speech checks. |
+| `voice` | string | Default voice, for the speech check. Null for every other check. |
 | `baseUrl` | string | Server address, for Ollama and OpenAI-compatible model checks shown to administrators. Null otherwise. |
 | `tasks` | array of [`ModelTaskEnum`](#modeltaskenum) | Tasks the endpoint serves, for model checks. |
 | `authMethod` | [`ModelAuthMethodEnum`](#modelauthmethodenum) | How the endpoint signs in, for model checks. |
@@ -13861,6 +13978,22 @@ Example:
       "needsApiKey": false,
       "hasApiKey": false,
       "usesPlatformKey": false
+    },
+    {
+      "key": "speech",
+      "kind": "Speech",
+      "required": false,
+      "state": "Ready",
+      "resourceName": "tts:8880",
+      "provider": "OpenAiCompatibleSpeech",
+      "model": "kokoro",
+      "voice": "af_heart",
+      "baseUrl": "http://tts:8880/v1",
+      "tasks": [],
+      "needsApiKey": false,
+      "hasApiKey": false,
+      "usesPlatformKey": false,
+      "verifiedUtc": "2026-11-20T20:02:05.276221Z"
     }
   ],
   "checkedUtc": "2026-11-20T20:02:05.276221Z"
@@ -14366,6 +14499,7 @@ Returned by [GET /v1.0/api/topics](#get-v10apitopics), [POST /v1.0/api/topics](#
 | `createdUtc` | date-time | UTC creation time. |
 | `lastUpdateUtc` | date-time | UTC time of the last update. |
 | `agenticSearch` | boolean | Agentic search: when the research model supports tools, it searches and reads pages itself (web_search, fetch_url, and allowed MCP tools) before the usual reading and verification. Opt-in, default false. |
+| `voiceProfileId` | string | Voice profile that reads this topic's run briefings aloud. Null uses the workspace default voice. |
 | `mcpToolIds` | array of string | MCP tool IDs (mct_...) this topic may use in agentic search. Empty allows every enabled tool. |
 
 Example:
@@ -14571,6 +14705,8 @@ Request body of [POST /v1.0/api/topics](#post-v10apitopics), [PUT /v1.0/api/topi
 | `weightRecency` | number | Ranking weight override for the recency component (0 to 1); a negative value clears the override. |
 | `agenticSearch` | boolean | Turn agentic search on or off for this topic (the research model searches and reads pages itself). |
 | `mcpToolIds` | array of string | MCP tool IDs (mct_...) agentic search may use; an empty list allows every enabled tool. Null leaves it. |
+| `voiceProfileId` | string | Voice profile that reads this topic's run briefings aloud. It must exist in the workspace. An empty string clears it (the workspace default voice is used). Null leaves it. |
+| `voice` | string | A speech server voice ID from GET /v1.0/api/voices/available, such as af_heart, instead of voiceProfileId: the server reuses the workspace voice profile for that voice, or creates one, and stores it as the topic's voiceProfileId. Null leaves it. |
 | `seedQueries` | array of string | Seed search queries. |
 
 #### TtsSettings
@@ -14868,6 +15004,18 @@ Returned by [GET /v1.0/api/vault/credentials/{id}/usage](#get-v10apivaultcredent
 | `resourceType` | string | Referencing resource type. |
 | `resourceId` | string | Referencing resource identifier. |
 | `name` | string | Referencing resource name. |
+
+#### VoicePreviewRequest
+
+Speak a short sample with a voice before choosing it.
+
+Request body of [POST /v1.0/api/voices/preview](#post-v10apivoicespreview).
+
+| Field | Type | Description |
+|---|---|---|
+| `voice` | string | A speech server voice ID from GET /v1.0/api/voices/available, such as af_heart. Required unless voiceProfileId is given. |
+| `voiceProfileId` | string | A workspace voice profile to speak with instead (its endpoint, model, voice, and speed). May be null. |
+| `text` | string | Text to speak, up to 300 characters; longer text is cut. Null speaks a default sentence. |
 
 #### VoiceProfile
 
@@ -15643,6 +15791,7 @@ What a setup check covers.
 | `Search` | Web search. Required. |
 | `Embeddings` | Embeddings for duplicate detection and ranking. Optional. |
 | `Email` | Email delivery. Optional. |
+| `Speech` | Speech for briefing audio (the text to speech endpoint). Optional. |
 
 #### SetupCheckStateEnum
 

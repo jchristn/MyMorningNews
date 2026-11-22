@@ -4286,7 +4286,8 @@
       "Model": "Model",
       "Search": "Carian",
       "Embeddings": "Embedding",
-      "Email": "E-mel"
+      "Email": "E-mel",
+      "Speech": "Pertuturan"
     },
     "check": {
       "title": "{kind}: {name}"
@@ -4295,12 +4296,6 @@
       "open": "Selesaikan persediaan",
       "askAdmin": "Pentadbir perlu menyelesaikan persediaan sebelum ini berfungsi."
     },
-    "ready": {
-      "title": "Anda sudah sedia",
-      "message": "Model AI dan carian web kedua-duanya berfungsi. Cipta topik untuk mendapatkan taklimat pertama anda.",
-      "newTopic": "Cipta topik pertama anda",
-      "home": "Pergi ke Utama"
-    },
     "gate": {
       "title": "Ruang kerja ini belum sedia",
       "message": "Pentadbir perlu menyambungkan model AI dan carian web sebelum sesiapa boleh menggunakan My Morning News.",
@@ -4308,7 +4303,9 @@
       "checkAgain": "Semak semula",
       "checking": "Menyemak",
       "signOut": "Log keluar",
-      "checked": "Kali terakhir disemak: {time}"
+      "checked": "Kali terakhir disemak: {time}",
+      "continue": "Teruskan ke aplikasi",
+      "continueHelp": "Anda boleh melihat-lihat buat sementara waktu. Apa-apa yang memerlukan model AI tidak akan berfungsi sehingga persediaan selesai."
     },
     "loadError": {
       "title": "Status persediaan tidak dapat dimuatkan",
@@ -4483,10 +4480,47 @@
       "note": "Ini tidak pernah menyekat penyelidikan. Sediakannya bila-bila masa anda mahu.",
       "what": {
         "Embeddings": "Mengesan berita berulang mengikut makna, bukan sekadar padanan perkataan.",
-        "Email": "Menghantar e-mel taklimat selepas setiap larian, dengan pautan butiran dan maklum balas."
+        "Email": "Menghantar e-mel taklimat selepas setiap larian, dengan pautan butiran dan maklum balas.",
+        "Speech": "Membacakan taklimat dan menghasilkan episod podcast."
       },
       "openModels": "Buka Model",
       "openSettings": "Buka Tetapan"
+    },
+    "status": {
+      "title": "Persediaan",
+      "summary": "Perkara yang disambungkan kepada My Morning News. Tukar sambungan atau uji semula di sini."
+    },
+    "complete": {
+      "message": "Persediaan selesai. Model AI dan carian web kedua-duanya berfungsi.",
+      "topics": "Pergi ke Topik"
+    },
+    "skip": {
+      "button": "Langkau buat masa ini",
+      "title": "Langkau persediaan buat masa ini?",
+      "intro": "Persediaan belum selesai. Ini masih belum ada:",
+      "untilThen": "Sehingga ia selesai:",
+      "needsModel": "Wizard topik, larian penyelidikan dan taklimat tidak akan berfungsi. Semuanya memerlukan model AI yang berfungsi.",
+      "needsSearch": "Penyelidikan tidak dapat mencari sumber baharu. Ia memerlukan penyedia carian web.",
+      "later": "Anda boleh kembali pada bila-bila masa melalui Selesaikan persediaan di bahagian atas menu.",
+      "stay": "Teruskan persediaan",
+      "skippedNote": "Anda melangkau persediaan, jadi semua halaman dibuka. Selesaikan langkah di bawah apabila anda bersedia.",
+      "resume": "Kekalkan saya di halaman ini sehingga persediaan selesai"
+    },
+    "warning": {
+      "title": "Persediaan belum selesai.",
+      "missing": "Masih diperlukan: {items}. Sehingga itu, wizard topik, larian penyelidikan dan taklimat tidak akan berfungsi.",
+      "generic": "Sesetengah perkara tidak akan berfungsi sehingga ia selesai."
+    },
+    "speech": {
+      "server": "Pelayan pertuturan",
+      "model": "Model",
+      "voice": "Suara lalai",
+      "test": "Uji pertuturan",
+      "testing": "Menguji pertuturan. Pelayan pertuturan diminta memberikan satu sampel pendek.",
+      "works": "Pertuturan berfungsi.",
+      "openSettings": "Tetapan pelayan pertuturan",
+      "openVoices": "Suara",
+      "whoCanChange": "Hanya pentadbir pelayan boleh menukar pelayan pertuturan, di bawah Tetapan, Tetapan pelayan."
     }
   },
   "costs": {
@@ -4551,5 +4585,28 @@
       "kind": "Jenis",
       "partialSuffix": "(sesetengah panggilan tanpa harga)"
     }
+  },
+  "topicVoice": {
+    "title": "Suara",
+    "help": "Suara yang membacakan taklimat topik ini. Mainkan sampel untuk mendengar setiap suara.",
+    "current": "Topik ini menggunakan {voice}.",
+    "usingDefault": "Topik ini menggunakan suara lalai ruang kerja, {voice}.",
+    "usingDefaultUnknown": "Topik ini menggunakan suara lalai ruang kerja.",
+    "useDefault": "Gunakan lalai ruang kerja",
+    "use": "Gunakan suara ini",
+    "useNamed": "Gunakan {voice} untuk topik ini",
+    "inUse": "Sedang digunakan",
+    "workspaceDefault": "Lalai ruang kerja",
+    "play": "Mainkan sampel {voice}",
+    "stop": "Hentikan sampel {voice}",
+    "playShort": "Main",
+    "stopShort": "Henti",
+    "loadingShort": "Memuatkan",
+    "listLabel": "Suara yang tersedia",
+    "sampleLabel": "Sampel suara",
+    "saved": "{voice} kini membacakan topik ini",
+    "savedDefault": "Topik ini kembali menggunakan suara lalai ruang kerja",
+    "speechOff": "Pertuturan dimatikan pada pelayan ini, jadi tiada audio untuk dimainkan. Pentadbir pelayan boleh menghidupkannya dalam Tetapan pelayan.",
+    "empty": "Tiada suara tersedia."
   }
 }

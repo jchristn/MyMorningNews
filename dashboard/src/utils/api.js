@@ -859,6 +859,18 @@ export class ApiClient {
     return this._requestBlob('POST', '/v1.0/api/voices/preview', { body, signal });
   }
 
+  // Public share links for a briefing. Create returns { share, secret, readUrl, listenUrl, audioReady } once; only a
+  // hash is stored. expiresInDays is 1 to 14 (the server maximum); the server refuses anything else with a 400.
+  listBriefingShares(briefingId, query) {
+    return this._request('GET', '/v1.0/api/briefings/' + enc(briefingId) + '/shares', { query });
+  }
+  createBriefingShare(briefingId, { expiresInDays, showOwnerName } = {}) {
+    return this._request('POST', '/v1.0/api/briefings/' + enc(briefingId) + '/shares', { body: { expiresInDays, showOwnerName: Boolean(showOwnerName) } });
+  }
+  revokeBriefingShare(briefingId, shareId, { purge } = {}) {
+    return this._request('DELETE', '/v1.0/api/briefings/' + enc(briefingId) + '/shares/' + enc(shareId), { query: purge ? { purge: true } : undefined });
+  }
+
   // Private podcast feed tokens. Create returns { token, secret, feedUrl } once; only a hash is stored.
   listFeedTokens() {
     return this._request('GET', '/v1.0/api/feed-tokens');

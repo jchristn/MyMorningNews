@@ -603,7 +603,8 @@
       "tts": "Texto a voz",
       "email": "Correo electrónico",
       "learning": "Aprendizaje",
-      "hosting": "Alojamiento"
+      "hosting": "Alojamiento",
+      "sharing": "Compartir"
     },
     "fields": {
       "rest_hostname": "Nombre de host",
@@ -761,7 +762,11 @@
       "hosting_termsVersion": "Versión de los términos",
       "hosting_minimumAge": "Edad mínima",
       "hosting_appleTeamId": "Apple Team ID",
-      "hosting_mobileAppId": "ID de la app móvil"
+      "hosting_mobileAppId": "ID de la app móvil",
+      "sharing_enabled": "Compartir informes mediante enlaces públicos",
+      "sharing_maxExpiryDays": "Duración máxima de un enlace compartido (días)",
+      "sharing_defaultExpiryDays": "Duración de un enlace compartido si no se elige (días)",
+      "sharing_publicRequestsPerMinute": "Solicitudes de páginas compartidas por dirección por minuto"
     }
   },
   "serverInfo": {
@@ -2873,6 +2878,39 @@
     "empty": {
       "title": "Aún no hay resúmenes informativos",
       "message": "Redacta una edición, ejecuta un tema o haz una pregunta única para obtener uno."
+    },
+    "share": {
+      "action": "Compartir",
+      "title": "Compartir este informe",
+      "about": "Crea enlaces públicos a este informe. Cualquier persona con un enlace puede leerlo o escucharlo sin iniciar sesión, hasta que el enlace caduque o lo revoques.",
+      "newLinks": "Tus enlaces nuevos",
+      "readLink": "Enlace de lectura",
+      "listenLink": "Enlace de escucha",
+      "copy": "Copiar enlace",
+      "expiresOn": "Caduca el {date}",
+      "expiredOn": "Caducó el {date}",
+      "revokedOn": "Revocado el {date}",
+      "noAudio": "Este informe aún no tiene audio. La página de escucha lo indica hasta que se genere el audio.",
+      "shownOnce": "Copia los enlaces ahora. Solo se muestran una vez. Si los pierdes, crea otros nuevos.",
+      "days": "Días hasta que caduquen los enlaces",
+      "daysHelp": "De {min} a {max} días. Todo lo que compartes caduca.",
+      "showName": "Mostrar mi nombre en las páginas compartidas",
+      "showNameHelp": "Tu dirección de correo nunca se muestra.",
+      "create": "Crear enlaces",
+      "createAnother": "Crear más enlaces",
+      "existing": "Enlaces de este informe",
+      "none": "Este informe no se ha compartido.",
+      "status": {
+        "Live": "Activo",
+        "Expired": "Caducado",
+        "Revoked": "Revocado"
+      },
+      "views": "Aperturas: {count}",
+      "lastOpened": "última apertura el {date}",
+      "revoke": "Revocar",
+      "remove": "Quitar de la lista",
+      "revoked": "Los enlaces ya no funcionan.",
+      "removed": "Quitado de la lista."
     }
   },
   "today": {

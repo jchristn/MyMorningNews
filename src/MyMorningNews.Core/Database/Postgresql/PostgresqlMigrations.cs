@@ -281,7 +281,8 @@ COALESCE(SUM(reasoningtokens), 0) AS reasoning FROM llmcalls WHERE runid IS NOT 
             new SchemaMigration(25, "Exact-title lookup for duplicate detection", new List<string>
             {
                 "CREATE INDEX IF NOT EXISTS ix_findings_topic_titlehash ON findings (tenantid, topicid, (md5(lower(btrim(title)))))"
-            })
+            }),
+            new SchemaMigration(26, "Public share links for briefings", BriefingShareQueries.Schema)
         };
 
         private static List<string> Concat(params IReadOnlyList<string>[] parts)

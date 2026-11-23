@@ -925,6 +925,31 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
  */
 
 /**
+ * A public share link for a briefing (the link secret is only returned once, at creation). A share whose
+ * `expiresUtc` has passed or whose `revokedUtc` is set no longer works.
+ * @typedef {object} BriefingShare
+ * @property {string} id Identifier (shr_...).
+ * @property {string} userId The user who created it.
+ * @property {string} briefingId Briefing.
+ * @property {string} tokenPrefix First characters of the secret.
+ * @property {boolean} showOwnerName Whether the public pages show the sharing user's display name.
+ * @property {string} expiresUtc When the links stop working. Always set.
+ * @property {string|null} revokedUtc Revoked.
+ * @property {number} viewCount Times a public page was opened.
+ * @property {string|null} lastViewedUtc Last opened.
+ */
+
+/**
+ * A created share with its secret and the two public links.
+ * @typedef {object} BriefingShareCreated
+ * @property {BriefingShare} share Share.
+ * @property {string} secret Secret (shown once).
+ * @property {string} readUrl Public reading page (no sign-in needed).
+ * @property {string} listenUrl Public listening page (no sign-in needed).
+ * @property {boolean} audioReady Whether the briefing has finished audio right now.
+ */
+
+/**
  * A created feed token with its secret and URL.
  * @typedef {object} FeedTokenCreated
  * @property {FeedToken} token Token.
@@ -2680,6 +2705,40 @@ export class BriefingsResource extends ResourceGroup {
      */
     generateAudio(id, body = {}) {
         return this._req('POST', this._path(id, '/audio'), { body });
+    }
+
+    /**
+     * List the public share links of a briefing, newest first (hashes are redacted; the links themselves are only
+     * returned when a share is created).
+     * @param {string} id Briefing.
+     * @param {ListOptions} [options] Paging.
+     * @returns {Promise<EnumerationResult<BriefingShare>>} Shares.
+     */
+    listShares(id, options = {}) {
+        return this._req('GET', this._path(id, '/shares'), { query: options });
+    }
+
+    /**
+     * Share a ready briefing through public links. Returns a reading link and a listening link that anyone can open
+     * with no sign-in. They are returned once. Every share expires: `expiresInDays` is 1 to 14 (the server maximum)
+     * and 7 when omitted; a value outside the range is refused with 400 ValidationFailed.
+     * @param {string} id Briefing.
+     * @param {{ expiresInDays?: number, showOwnerName?: boolean }} [body] Expiry in days (1 to 14, default 7) and whether to show my name (default false).
+     * @returns {Promise<BriefingShareCreated>} Share, secret, and links.
+     */
+    share(id, body = {}) {
+        return this._req('POST', this._path(id, '/shares'), { body });
+    }
+
+    /**
+     * Revoke a share so both links stop working; with `purge`, delete a share that is already revoked or expired.
+     * @param {string} id Briefing.
+     * @param {string} shareId Share.
+     * @param {{ purge?: boolean }} [options] Options.
+     * @returns {Promise<null>} Resolves when done.
+     */
+    revokeShare(id, shareId, options = {}) {
+        return this._req('DELETE', this._path(id, '/shares/' + encodeURIComponent(shareId)), { query: { purge: options.purge ? true : undefined } });
     }
 
     /**

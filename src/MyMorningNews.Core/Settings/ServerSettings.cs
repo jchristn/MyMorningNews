@@ -186,6 +186,16 @@ namespace MyMorningNews.Core.Settings
             set { _Hosting = value ?? throw new ArgumentNullException(nameof(Hosting)); }
         }
 
+        /// <summary>
+        /// Public share links for briefings.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Value is null.</exception>
+        public SharingSettings Sharing
+        {
+            get { return _Sharing; }
+            set { _Sharing = value ?? throw new ArgumentNullException(nameof(Sharing)); }
+        }
+
         #endregion
 
         #region Private-Members
@@ -207,6 +217,7 @@ namespace MyMorningNews.Core.Settings
         private EmailSettings _Email = new EmailSettings();
         private LearningSettings _Learning = new LearningSettings();
         private HostingSettings _Hosting = new HostingSettings();
+        private SharingSettings _Sharing = new SharingSettings();
 
         #endregion
     }

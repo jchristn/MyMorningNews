@@ -317,6 +317,11 @@ namespace MyMorningNews.Core.Database
         public IFeedTokenMethods FeedTokens { get; protected set; } = null!;
 
         /// <summary>
+        /// Public share links for briefings.
+        /// </summary>
+        public IBriefingShareMethods BriefingShares { get; protected set; } = null!;
+
+        /// <summary>
         /// Email outbox.
         /// </summary>
         public IEmailMessageMethods EmailMessages { get; protected set; } = null!;

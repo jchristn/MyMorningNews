@@ -50,14 +50,14 @@ ROOTS = [
     "UserRole", "Permission", "UserRoleAssignment", "CredentialScopeAssignment", "PromoRedemption", "Plan",
     "PlanAssignment", "McpServer", "McpServerTool", "RunToolCall", "Notification",
     # Service results the routes serialize directly.
-    "SearchOutcome", "FetchResult", "EffectivePlan", "FeedTokenCreated", "PromoCheck", "PromoCodeStats",
+    "SearchOutcome", "FetchResult", "EffectivePlan", "FeedTokenCreated", "BriefingShareCreated", "PromoCheck", "PromoCodeStats",
     "EmailPreview", "RelevanceReport", "AccuracyReport", "FeedbackReport", "SuggestionReport", "ReasonReport",
     "QualityReport", "RankingRecommendation", "PushResult", "OverviewReport", "EmailReport", "UsageMeter", "BriefingProgress",
     # Request bodies.
     "AssignmentUpsertRequest", "AccountDeleteRequest", "BriefingProgressRequest", "AudioGenerateRequest", "FindingUpdateRequest", "BriefingPinRequest", "ConstraintUpsertRequest",
     "CredentialCreateRequest", "CredentialUpdateRequest", "DeviceRegisterRequest", "DimensionUpsertRequest",
     "EditionPreviewRequest", "EditionTopicsRequest", "EditionUpsertRequest", "EmailPreferencesRequest",
-    "FeedbackCreateRequest", "FeedbackUpdateRequest", "FeedTokenCreateRequest", "FetchTestRequest",
+    "FeedbackCreateRequest", "FeedbackUpdateRequest", "FeedTokenCreateRequest", "BriefingShareCreateRequest", "FetchTestRequest",
     "ModelAssignmentUpsertRequest", "ModelEndpointUpsertRequest", "ModelTestRequest", "PasswordChangeRequest",
     "PermissionUpsertRequest", "PlanGrantRequest", "PlanUpsertRequest", "PredictionResolveRequest",
     "PreferenceUpsertRequest", "PromoApplyRequest", "PromoCodeGenerateRequest", "PromoCodeUpsertRequest",

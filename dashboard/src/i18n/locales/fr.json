@@ -603,7 +603,8 @@
       "tts": "Synthèse vocale",
       "email": "E-mail",
       "learning": "Apprentissage",
-      "hosting": "Hébergement"
+      "hosting": "Hébergement",
+      "sharing": "Partage"
     },
     "fields": {
       "rest_hostname": "Nom d’hôte",
@@ -761,7 +762,11 @@
       "hosting_termsVersion": "Version des conditions",
       "hosting_minimumAge": "Âge minimal",
       "hosting_appleTeamId": "Apple Team ID",
-      "hosting_mobileAppId": "ID de l’application mobile"
+      "hosting_mobileAppId": "ID de l’application mobile",
+      "sharing_enabled": "Partager les briefings par des liens publics",
+      "sharing_maxExpiryDays": "Durée maximale d’un lien de partage (jours)",
+      "sharing_defaultExpiryDays": "Durée d’un lien de partage si elle n’est pas choisie (jours)",
+      "sharing_publicRequestsPerMinute": "Requêtes de pages partagées par adresse et par minute"
     }
   },
   "serverInfo": {
@@ -2873,6 +2878,39 @@
     "empty": {
       "title": "Aucun briefing pour l’instant",
       "message": "Composez une édition, exécutez un sujet ou posez une question ponctuelle pour en obtenir un."
+    },
+    "share": {
+      "action": "Partager",
+      "title": "Partager ce briefing",
+      "about": "Créez des liens publics vers ce briefing. Toute personne disposant d’un lien peut le lire ou l’écouter sans se connecter, jusqu’à l’expiration du lien ou sa révocation.",
+      "newLinks": "Vos nouveaux liens",
+      "readLink": "Lien de lecture",
+      "listenLink": "Lien d’écoute",
+      "copy": "Copier le lien",
+      "expiresOn": "Expire le {date}",
+      "expiredOn": "Expiré le {date}",
+      "revokedOn": "Révoqué le {date}",
+      "noAudio": "Ce briefing n’a pas encore d’audio. La page d’écoute l’indique tant que l’audio n’est pas généré.",
+      "shownOnce": "Copiez les liens maintenant. Ils ne sont affichés qu’une seule fois. Si vous les perdez, créez-en de nouveaux.",
+      "days": "Jours avant l’expiration des liens",
+      "daysHelp": "De {min} à {max} jours. Tout partage expire.",
+      "showName": "Afficher mon nom sur les pages partagées",
+      "showNameHelp": "Votre adresse e-mail n’est jamais affichée.",
+      "create": "Créer les liens",
+      "createAnother": "Créer d’autres liens",
+      "existing": "Liens de ce briefing",
+      "none": "Ce briefing n’a pas été partagé.",
+      "status": {
+        "Live": "Actif",
+        "Expired": "Expiré",
+        "Revoked": "Révoqué"
+      },
+      "views": "Ouvertures : {count}",
+      "lastOpened": "dernière ouverture le {date}",
+      "revoke": "Révoquer",
+      "remove": "Retirer de la liste",
+      "revoked": "Les liens ne fonctionnent plus.",
+      "removed": "Retiré de la liste."
     }
   },
   "today": {

@@ -167,6 +167,7 @@ Routes under `/v1.0/public` take no headers at all. The token in the path is the
 
 - Every run and briefing email links to `/v1.0/public/feedback/{token}` (rating links, optionally preselected with `?a=<action>`; the page asks the reader to confirm the rating with one button, because opening a link records nothing and mail scanners open links on their own) and `/v1.0/public/unsubscribe/{token}`. Each token is tied to one recipient and the actions it allows, and expires.
 - `POST /v1.0/api/feed-tokens` creates a private podcast feed and returns its secret once; the feed URL is `/v1.0/public/feeds/{token}/podcast.xml`, and episode audio and chapters hang off the same token. Only a hash is stored, so a lost feed URL means creating a new token. Revoke with `DELETE /v1.0/api/feed-tokens/{id}`.
+- `POST /v1.0/api/briefings/{id}/shares` shares one briefing and returns two links once: `/v1.0/public/shares/{token}` (a reading page) and `/v1.0/public/shares/{token}/listen` (a listening page, with its audio at `/v1.0/public/shares/{token}/audio/{file}`). Anyone with a link can open it with no account. Every share expires: `expiresInDays` is 1 to 14 (7 when omitted), and a value outside that range is refused with 400. Only a hash is stored, so a lost link means creating a new share. Revoke with `DELETE /v1.0/api/briefings/{id}/shares/{shareId}`. Revoked, expired, and unknown links all answer the same 404 page.
 - `GET /v1.0/public/promo-codes/{code}` lets a sign-up page check a promotional code before an account exists.
 
 ## Authorization
@@ -425,7 +426,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 
 ## Route reference
 
-310 routes in 47 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
+316 routes in 48 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
 
 | Group | Routes | What it covers |
 |---|---|---|
@@ -465,6 +466,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [Media](#media) | 4 | Audio episodes made from briefings, with chapters. |
 | [Voices](#voices) | 8 | Text-to-speech voice profiles, with a test route that speaks a sample. Two more routes let anyone who can edit a topic choose its voice: one lists the voices a topic can use (the voice profiles, then the speech server's own voices with readable labels), and one speaks a short preview. |
 | [Podcast feeds](#podcast-feeds) | 3 | Private podcast feed tokens. The feed URL embeds the secret, which is shown once. |
+| [Sharing](#sharing) | 3 | Public share links for a briefing. One share yields a reading page and a listening page that anyone with the link can open with no sign-in. A share is made on purpose, never by default, always expires (1 to 14 days, 7 when not chosen), and can be revoked. The links are returned once; only a hash of the secret is stored. `sharing.enabled` turns the feature off for the whole server. |
 | [Email](#email) | 8 | The email outbox, test and preview sends, resends, and the signed-in user's email preferences. |
 | [Feedback](#feedback) | 4 | Ratings and reasons on findings, predictions, suggestions, sources, domains, and briefings. Feedback drives learning and analytics. |
 | [Learning](#learning) | 11 | Preferences learned from feedback (or written by hand), their review flow, and ranking weight recommendations. |
@@ -473,7 +475,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [Promotional codes](#promotional-codes) | 9 | Global administrators create, generate, and manage promotional codes that grant plans. |
 | [Plans](#plans) | 6 | Global administrators manage plans, their entitlement values, and per-user plan assignments. |
 | [Account](#account) | 10 | Sign-up, email verification, password reset, the signed-in user's plan, usage meter, data export, account deletion, and promotional code redemption. |
-| [Public](#public) | 11 | Routes reached from emails and podcast apps. They take no session; a token in the path is the credential. Feedback and unsubscribe pages are HTML forms. |
+| [Public](#public) | 14 | Routes reached from emails, podcast apps, and shared briefing links. They take no session; a token in the path is the credential. Feedback and unsubscribe pages are HTML forms. Shared briefing pages are server-rendered HTML with no script and no cookies. |
 | [OpenAPI](#openapi) | 2 | The OpenAPI 3 document and Swagger UI that Watson serves. They are not tagged in the document itself. |
 | [MCP servers](#mcp-servers) | 8 | Remote MCP tool servers that agentic research may call, their discovered tools, and the per-tool allow-list. |
 
@@ -511,7 +513,7 @@ Public client configuration that the dashboard and mobile app read before anyone
 
 ### GET /v1.0/api/client-config
 
-**Public client configuration.** Feature flags, minimum app version, and legal links for the web and mobile apps. No authentication.
+**Public client configuration.** Feature flags, minimum app version, and legal links for the web and mobile apps. No authentication. mcpUrl is left out when the server knows no MCP address a client could reach (never a loopback address on a public server).
 
 - Auth: None.
 - Response: [`ClientConfigResponse`](#clientconfigresponse)
@@ -1823,7 +1825,7 @@ Security and administration events: sign-ins, denials, credential use, settings 
 | `userId` | string | Administrators: another user's records. Ignored for members. |
 | `principalId` | string | User, credential, or system principal. |
 | `authorizationResult` | string | Authorization outcome, for example Permitted or Denied. |
-| `eventType` | enum (`AuthSuccess`, `AuthFailure`, `SessionIssued`, `SessionRefreshed`, `SessionRevoked`, `CredentialCreated`, `CredentialUsed`, `CredentialRevoked`, `AuthorizationDenied`, `AuthorizationBypass`, `RoleChanged`, `PermissionChanged`, `AssignmentChanged`, `UserChanged`, `TenantChanged`, `SettingsChanged`, `RestartRequested`, `CredentialRevealed`, `VaultCredentialChanged`, `FeedTokenCreated`, `FeedTokenRevoked`, `PromoCodeChanged`, `PromoCodeRedeemed`, `PlanChanged`, `CredentialUpdated`) | Audit event type. |
+| `eventType` | enum (`AuthSuccess`, `AuthFailure`, `SessionIssued`, `SessionRefreshed`, `SessionRevoked`, `CredentialCreated`, `CredentialUsed`, `CredentialRevoked`, `AuthorizationDenied`, `AuthorizationBypass`, `RoleChanged`, `PermissionChanged`, `AssignmentChanged`, `UserChanged`, `TenantChanged`, `SettingsChanged`, `RestartRequested`, `CredentialRevealed`, `VaultCredentialChanged`, `FeedTokenCreated`, `FeedTokenRevoked`, `PromoCodeChanged`, `PromoCodeRedeemed`, `PlanChanged`, `CredentialUpdated`, `ShareCreated`, `ShareRevoked`) | Audit event type. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -7954,7 +7956,7 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/feed-tokens" \
 
 | Query parameter | Type | Notes |
 |---|---|---|
-| `purge` | boolean | true deletes an already revoked token. |
+| `purge` | boolean | true deletes an already revoked token, or a share that is already revoked or expired. |
 
 | Status | Meaning |
 |---|---|
@@ -7966,6 +7968,109 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/feed-tokens" \
 
 ```bash
 curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/feed-tokens/fdt_mwpfadbe_Xc9vB2nM5qWe8rTy1Ui" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+## Sharing
+
+Public share links for a briefing. One share yields a reading page and a listening page that anyone with the link can open with no sign-in. A share is made on purpose, never by default, always expires (1 to 14 days, 7 when not chosen), and can be revoked. The links are returned once; only a hash of the secret is stored. `sharing.enabled` turns the feature off for the whole server.
+
+| Method | Path | Summary |
+|---|---|---|
+| GET | [`/v1.0/api/briefings/{id}/shares`](#get-v10apibriefingsidshares) | List the public share links of a briefing |
+| POST | [`/v1.0/api/briefings/{id}/shares`](#post-v10apibriefingsidshares) | Share a briefing through public links |
+| DELETE | [`/v1.0/api/briefings/{id}/shares/{shareId}`](#delete-v10apibriefingsidsharesshareid) | Revoke a public share link |
+
+### GET /v1.0/api/briefings/{id}/shares
+
+**List the public share links of a briefing.** Newest first. Each share has its expiry, revocation time, view count, and the time it was last opened. The link secret is never returned here; it is shown once when the share is created.
+
+- Auth: `Briefing:Read` (`ShareRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`BriefingShare`](#briefingshare)
+- Notes: The owner of the briefing and tenant administrators can list its shares. `tokenHash` is always `redacted`, and the links themselves are never returned here. A share works while `revokedUtc` is null and `expiresUtc` is in the future. `viewCount` and `lastViewedUtc` say whether a link was opened; nothing else about visitors is recorded.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{briefingId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/briefings/brf_mwpf8b9c_Er6tY9uI2oPa5sDf8Gh/shares?pageSize=10" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/briefings/{id}/shares
+
+**Share a briefing through public links.** Creates one share and returns its reading link and listening link once; only a hash of the secret is stored. Anyone with a link can open it with no sign-in until it expires or is revoked. expiresInDays is 1 to 14 (the server maximum, sharing.maxExpiryDays); omitted, it is 7 (sharing.defaultExpiryDays). A value outside the range is refused with 400 ValidationFailed. 409 SharingDisabled when sharing is turned off on the server, 409 BriefingNotReady when the briefing is not ready.
+
+- Auth: `Briefing:Update` (`ShareWrite`).
+- Response: [`BriefingShareCreated`](#briefingsharecreated)
+- Notes: The body is optional. `expiresInDays` must be from 1 to the server maximum (`sharing.maxExpiryDays`, 14 by default); omitted, it is `sharing.defaultExpiryDays` (7 by default, never more than the maximum). A value outside the range is refused with 400 `ValidationFailed`, with `minimum` and `maximum` in `details`; the server never adjusts it silently, and there is no share without an expiry. `showOwnerName` (default false) shows the sharing user's display name on the public pages; the email address is never shown. `readUrl`, `listenUrl`, and `secret` are returned only in this response.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{briefingId}}` |
+
+Request body: [`BriefingShareCreateRequest`](#briefingsharecreaterequest).
+
+```json
+{
+  "expiresInDays": 7,
+  "showOwnerName": false
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 201 | Created |
+| 400 | Bad Request: `ValidationFailed`, `BadRequest`, `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict: `SharingDisabled`, `BriefingNotReady` |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/briefings/brf_mwpf8b9c_Er6tY9uI2oPa5sDf8Gh/shares" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### DELETE /v1.0/api/briefings/{id}/shares/{shareId}
+
+**Revoke a public share link.** Both links stop working at once. With purge=true, deletes a share that is already revoked or expired.
+
+- Auth: `Briefing:Update` (`ShareWrite`).
+- Response: No body
+- Notes: Revokes a live share; both links answer 404 at once. Revoking twice is harmless. `purge=true` deletes a share that is already revoked or expired, and is ignored for a live one (which is revoked instead).
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{briefingId}}` |
+| `shareId` | string | `{{shareId}}` |
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `purge` | boolean | true deletes an already revoked token, or a share that is already revoked or expired. |
+
+| Status | Meaning |
+|---|---|
+| 204 | No Content |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/briefings/brf_mwpf8b9c_Er6tY9uI2oPa5sDf8Gh/shares/shr_mwq5t3ka_Hn4pQ7sV0xZc3bFg6Jm" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -9920,7 +10025,7 @@ curl -s "http://127.0.0.1:12100/v1.0/api/account/plan" \
 
 ## Public
 
-Routes reached from emails and podcast apps. They take no session; a token in the path is the credential. Feedback and unsubscribe pages are HTML forms.
+Routes reached from emails, podcast apps, and shared briefing links. They take no session; a token in the path is the credential. Feedback and unsubscribe pages are HTML forms. Shared briefing pages are server-rendered HTML with no script and no cookies.
 
 | Method | Path | Summary |
 |---|---|---|
@@ -9930,6 +10035,9 @@ Routes reached from emails and podcast apps. They take no session; a token in th
 | GET | [`/v1.0/public/feeds/{token}/episodes/{file}`](#get-v10publicfeedstokenepisodesfile) | Podcast episode audio (Range supported) |
 | GET | [`/v1.0/public/feeds/{token}/chapters/{file}`](#get-v10publicfeedstokenchaptersfile) | Podcast episode chapters (Podcasting 2.0 JSON) |
 | GET | [`/v1.0/public/assets/{name}`](#get-v10publicassetsname) | Public artwork (glyph.png, logo.png) |
+| GET | [`/v1.0/public/shares/{token}`](#get-v10publicsharestoken) | Shared briefing: reading page |
+| GET | [`/v1.0/public/shares/{token}/listen`](#get-v10publicsharestokenlisten) | Shared briefing: listening page |
+| GET | [`/v1.0/public/shares/{token}/audio/{file}`](#get-v10publicsharestokenaudiofile) | Shared briefing: audio (Range supported) |
 | GET | [`/v1.0/public/feedback/{token}`](#get-v10publicfeedbacktoken) | Email feedback page |
 | POST | [`/v1.0/public/feedback/{token}`](#post-v10publicfeedbacktoken) | Submit email feedback (form post) |
 | GET | [`/v1.0/public/unsubscribe/{token}`](#get-v10publicunsubscribetoken) | Unsubscribe page |
@@ -9938,7 +10046,7 @@ Routes reached from emails and podcast apps. They take no session; a token in th
 
 ### GET /.well-known/apple-app-site-association
 
-**iOS universal links.** 404 until Hosting.AppleTeamId is set.
+**iOS universal links.** The apple-app-site-association file as application/json, with no authentication and no redirect. 404 NotConfigured until Hosting.AppleTeamId (MYMORNINGNEWS_HOSTING_APPLE_TEAM_ID) is set.
 
 - Auth: None.
 - Response: `AppleAppSiteAssociation`
@@ -9954,7 +10062,7 @@ curl -s "http://127.0.0.1:12100/.well-known/apple-app-site-association"
 
 ### GET /.well-known/assetlinks.json
 
-**Android app links.** 404 until Hosting.AndroidCertificateFingerprints is set.
+**Android app links.** The Digital Asset Links file as application/json, with no authentication and no redirect. 404 NotConfigured until Hosting.AndroidCertificateFingerprints (MYMORNINGNEWS_HOSTING_ANDROID_CERT_FINGERPRINTS) is set.
 
 - Auth: None.
 - Response: `AssetLinks`
@@ -10058,6 +10166,80 @@ curl -s "http://127.0.0.1:12100/v1.0/public/feeds/fdk_9v3QeX7mT2pL5wR8yB1nC4/cha
 
 ```bash
 curl -s "http://127.0.0.1:12100/v1.0/public/assets/logo.png" \
+  -o output.bin
+```
+
+### GET /v1.0/public/shares/{token}
+
+**Shared briefing: reading page.** Server-rendered HTML. No authentication. 404 with the same page for every link that does not work.
+
+- Auth: None. The `{token}` path segment is the credential.
+- Response: `text/html`
+- Notes: The reading page of a shared briefing: title, topic or edition name, date, the briefing rendered from Markdown (raw HTML in the content is shown as text, and outbound links carry `rel="noopener noreferrer nofollow"`), a link to the listening page, and an invitation to sign up. No authentication, no cookies, no script. Sent with `X-Robots-Tag: noindex, nofollow`, `Referrer-Policy: no-referrer`, `Cache-Control: no-store`, and a Content-Security-Policy that allows only same-origin images and audio. An unknown, revoked, or expired link, a deleted briefing or user, and a server with sharing turned off all get the same 404 page. Each successful open adds one to the share's `viewCount`.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `token` | string | `{{shareToken}}` |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 404 | Not Found |
+| 429 | Too Many Requests |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/public/shares/mmns_4kXw9RtB2nLq7VzC1mPe6YhD3sGa8JfU5oNi0TbK"
+```
+
+### GET /v1.0/public/shares/{token}/listen
+
+**Shared briefing: listening page.** Server-rendered HTML with an audio player and chapter links. No authentication. t starts playback at that many seconds. When the briefing has no finished audio the page says so.
+
+- Auth: None. The `{token}` path segment is the credential.
+- Response: `text/html`
+- Notes: The listening page: a native audio player and chapter links (each reloads the page with `t`). When the briefing has no finished audio the page says so and links to the reading page. Same headers and same 404 as the reading page. A request with `t` is not counted as a new opening.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `token` | string | `{{shareToken}}` |
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `t` | integer | Start playback at this many seconds (a chapter link). |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 404 | Not Found |
+| 429 | Too Many Requests |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/public/shares/mmns_4kXw9RtB2nLq7VzC1mPe6YhD3sGa8JfU5oNi0TbK/listen"
+```
+
+### GET /v1.0/public/shares/{token}/audio/{file}
+
+**Shared briefing: audio (Range supported).** The audio behind the listening page. No authentication. Supports a single Range header (206 Partial Content).
+
+- Auth: None. The `{token}` path segment is the credential.
+- Response: File bytes (the stored file's content type)
+- Notes: The audio behind the listening page. No authentication. Honors `Range`. The file name is for the browser and may be anything, for example `briefing.mp3`. 404 when the link does not work or the briefing has no finished audio.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `token` | string | `{{shareToken}}` |
+| `file` | string | `{{shareAudioFile}}` |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 206 | Partial Content |
+| 404 | Not Found |
+| 410 | Gone: `ArtifactExpired` |
+| 416 | Range Not Satisfiable |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/public/shares/mmns_4kXw9RtB2nLq7VzC1mPe6YhD3sGa8JfU5oNi0TbK/audio/briefing.mp3" \
   -o output.bin
 ```
 
@@ -10830,6 +11012,54 @@ One section of a composed briefing.
 | `createdUtc` | date-time | UTC creation time. |
 | `lastUpdateUtc` | date-time | UTC time of the last update. |
 
+#### BriefingShare
+
+A public share link for one briefing. One record yields two links: a reading page and a listening page. Only the SHA-256 hash of the link secret is stored. Every share expires.
+
+Returned by [GET /v1.0/api/briefings/{id}/shares](#get-v10apibriefingsidshares).
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Identifier (prefix shr_). |
+| `tenantId` | string | Tenant identifier. |
+| `userId` | string | The user who created the share. |
+| `briefingId` | string | The shared briefing. |
+| `tokenHash` | string | SHA-256 of the link secret, lowercase hex. |
+| `tokenPrefix` | string | First characters of the link secret, for recognition. |
+| `showOwnerName` | boolean | Show the sharing user's display name on the public pages. Default false. The email address is never shown. |
+| `expiresUtc` | date-time | When the links stop working. Always set. Default seven days after creation. |
+| `revokedUtc` | date-time | When the share was revoked. May be null. |
+| `viewCount` | integer | Times a public page of this share was opened. Minimum 0. |
+| `lastViewedUtc` | date-time | When a public page of this share was last opened. May be null. |
+| `active` | boolean | Whether the record is active. |
+| `createdUtc` | date-time | UTC creation time. |
+| `lastUpdateUtc` | date-time | UTC time of the last update. |
+
+#### BriefingShareCreated
+
+A new public share; the secret and the two links are shown once.
+
+Returned by [POST /v1.0/api/briefings/{id}/shares](#post-v10apibriefingsidshares).
+
+| Field | Type | Description |
+|---|---|---|
+| `share` | [`BriefingShare`](#briefingshare) | Stored share (hash redacted). |
+| `secret` | string | The link secret. Shown once. |
+| `readUrl` | string | Public reading page URL. No sign-in is needed to open it. |
+| `listenUrl` | string | Public listening page URL. No sign-in is needed to open it. It plays audio once the briefing has audio. |
+| `audioReady` | boolean | Whether the briefing has finished audio right now. |
+
+#### BriefingShareCreateRequest
+
+Create a public share link for a briefing.
+
+Request body of [POST /v1.0/api/briefings/{id}/shares](#post-v10apibriefingsidshares).
+
+| Field | Type | Description |
+|---|---|---|
+| `expiresInDays` | integer | Days until the links stop working: 1 up to the server maximum (sharing.maxExpiryDays, 14 by default). Null uses the server default (sharing.defaultExpiryDays, 7 by default). A value outside the range is refused. |
+| `showOwnerName` | boolean | Show my display name on the public pages. Default false. The email address is never shown. |
+
 #### BriefingTemplate
 
 A Markdown briefing template with front matter and section directives (plan section 21.1).
@@ -10901,12 +11131,15 @@ Returned by [GET /v1.0/api/client-config](#get-v10apiclient-config).
 | `copyright` | string | Copyright notice. |
 | `deletionGraceDays` | integer | Days an account deletion waits before the data is removed (Hosting.DeletionGraceDays); signing in during them cancels it. Default 7. |
 | `appUrl` | string | Public base URL of the web dashboard (Rest.AppBaseUrl), for example to open the web sign-up page when the app cannot show the Turnstile challenge itself. |
-| `mcpUrl` | string | Public URL of the MCP server's Streamable HTTP endpoint. |
+| `mcpUrl` | string | Public URL of the MCP server's Streamable HTTP endpoint, or null (left out of the JSON) when the server knows no address a client could reach, for example a public server whose MCP URL is still a loopback address. Default null. |
 | `turnstileSiteKey` | string | Cloudflare Turnstile site key for the sign-up form, or null when the check is off. |
 | `requireEmailVerification` | boolean | Whether sign-up requires email verification. |
 | `minimumAge` | integer | Minimum age to sign up. |
 | `termsVersion` | string | Current terms of service version. |
 | `platformModelKeyConfigured` | boolean | Whether the server has the operator's platform model key (`MYMORNINGNEWS_ANTHROPIC_API_KEY`), so endpoints that reference `platform:anthropic` can call the model. Never carries the key itself. |
+| `sharingEnabled` | boolean | Whether public share links for briefings are turned on (sharing.enabled). Clients hide the Share control when false. |
+| `sharingMaxExpiryDays` | integer | Longest life of a share link in days (sharing.maxExpiryDays). Default 14. |
+| `sharingDefaultExpiryDays` | integer | Life of a share link in days when the request does not say (sharing.defaultExpiryDays, never more than the maximum). Default 7. |
 
 Example:
 
@@ -11824,9 +12057,9 @@ Hosted service settings (plan section 33). Off for self-hosted installs.
 | `allowedPrivateHosts` | array of string | Host names the private network block allows anyway: the operator's own services on the Docker network. Matched case-insensitively against the host in the URL. Default searxng, tts, ollama. |
 | `termsVersion` | string | Current terms of service version; sign-up records the version the user accepted. Default 2026-11-20. |
 | `minimumAge` | integer | Minimum age to sign up, confirmed at sign-up. Default 18, minimum 13, maximum 21. |
-| `appleTeamId` | string | Apple Team ID for /.well-known/apple-app-site-association. Empty leaves the file out. Default empty. |
+| `appleTeamId` | string | Apple Team ID (10 characters) for /.well-known/apple-app-site-association. While it is empty the route answers 404 <c>NotConfigured</c> as JSON, which iOS reads as "no universal links". Default empty. |
 | `mobileAppId` | string | Mobile bundle identifier (iOS) and application ID (Android). Default ai.latticetech.mymorningnews. |
-| `androidCertificateFingerprints` | array of string | SHA-256 signing certificate fingerprints for /.well-known/assetlinks.json (Play App Signing). Empty leaves the file out. |
+| `androidCertificateFingerprints` | array of string | SHA-256 signing certificate fingerprints for /.well-known/assetlinks.json (Play App Signing), each 32 colon-separated hex bytes. While the list is empty the route answers 404 <c>NotConfigured</c> as JSON, which Android reads as "no app links". The environment variable takes a comma-separated list. Default empty. |
 
 #### LearnedPreference
 
@@ -12601,6 +12834,7 @@ Research pipeline and model gateway limits.
 | `maxDocumentCharacters` | integer | Characters of a document sent to extraction. Default 24000. Minimum 2000, maximum 200000. |
 | `maxParallelFetches` | integer | Pages fetched at once. Default 4. Minimum 1, maximum 32. |
 | `dedupeLookbackDays` | integer | Days of earlier findings checked for duplicates. Default 90. Minimum 1, maximum 3650. |
+| `dedupeTextHistoryLimit` | integer | Without embeddings: how many of the topic's most recent earlier findings (inside DedupeLookbackDays) are compared with each new finding by word overlap. An earlier finding with exactly the same title is always found, whatever this limit; only reworded repeats older than the newest findings counted here can be missed. With embeddings the nearest earlier findings are found by vector search and this limit is not used. Default 5000. Minimum 100, maximum 50000. |
 | `noveltyLookbackDays` | integer | Days of earlier findings used for novelty. Default 30. Minimum 1, maximum 3650. |
 | `recencyHalfLifeHours` | integer | Half-life of the recency score in hours. Default 72. Minimum 1, maximum 8760. |
 | `displayThreshold` | integer | Default relevance threshold for display (0 to 100). Default 40. Minimum 0, maximum 100. |
@@ -13454,7 +13688,8 @@ REST listener settings. Changes require a restart.
 | `corsAllowedOrigins` | string | Value of the Access-Control-Allow-Origin response header. Default "*". |
 | `publicBaseUrl` | string | Public base URL of this server, used in podcast feeds, email links, and public pages. Default http://127.0.0.1:12100. No trailing slash. |
 | `appBaseUrl` | string | Public base URL of the web app (dashboard), used for deep links. Default http://127.0.0.1:12101. No trailing slash. |
-| `mcpPublicUrl` | string | Public URL of the MCP server's Streamable HTTP endpoint, shown to users who connect an MCP client. Default <c>http://127.0.0.1:12105/mcp</c>. |
+| `mcpPublicUrl` | string | Public URL of the MCP server's Streamable HTTP endpoint, shown to users who connect an MCP client. Default <c>http://127.0.0.1:12105/mcp</c>. A loopback value is published only while PublicBaseUrl is loopback too; see McpUrlResolver. |
+| `mcpOnPublicBaseUrl` | boolean | Whether a reverse proxy or load balancer routes <c>/mcp</c> on PublicBaseUrl to the MCP server (the hosted overlays do when the <c>mcp</c> compose profile is on). When true and McpPublicUrl is not a public address, clients are told the MCP endpoint is PublicBaseUrl plus <c>/mcp</c>. Default false. |
 | `eventStreamPollMs` | integer | How often an event stream (for example run progress) checks for changes, in milliseconds. Default 1000. Minimum 200, maximum 10000. |
 | `eventStreamMaxMinutes` | integer | Longest an event stream stays open, in minutes; clients reconnect after it closes. Default 30. Minimum 1, maximum 240. |
 
@@ -14066,6 +14301,7 @@ Request body of [PUT /v1.0/api/settings](#put-v10apisettings).
 | `email` | [`EmailSettings`](#emailsettings) | Email delivery. |
 | `learning` | [`LearningSettings`](#learningsettings) | Learning from feedback. |
 | `hosting` | [`HostingSettings`](#hostingsettings) | Hosted service (sign-up, plans). |
+| `sharing` | [`SharingSettings`](#sharingsettings) | Public share links for briefings. |
 
 #### SettingFieldDescriptor
 
@@ -14426,6 +14662,17 @@ Example:
   "checkedUtc": "2026-11-20T20:02:05.276221Z"
 }
 ```
+
+#### SharingSettings
+
+Public share links for briefings (plan section 36).
+
+| Field | Type | Description |
+|---|---|---|
+| `enabled` | boolean | Let users create public share links, and serve the public pages. Turning it off makes every existing link answer 404 until it is turned back on. Default true. |
+| `maxExpiryDays` | integer | Longest life of a share link in days. Default 14, minimum 1, maximum 365. |
+| `defaultExpiryDays` | integer | Life of a share link in days when the request does not say. Never more than MaxExpiryDays. Default 7, minimum 1, maximum 365. |
+| `publicRequestsPerMinute` | integer | Public share page requests allowed per IP address per minute. Audio streaming is not counted. Default 120, minimum 5, maximum 10000. |
 
 #### SignupRequest
 
@@ -15573,6 +15820,8 @@ Security event type.
 | `PromoCodeRedeemed` | A promotional code was redeemed or a redemption revoked. |
 | `PlanChanged` | A plan or plan assignment changed. |
 | `CredentialUpdated` | A credential's name, scopes, or expiry changed. |
+| `ShareCreated` | A public share link for a briefing was created. |
+| `ShareRevoked` | A public share link for a briefing was revoked. |
 
 #### AuthSchemeEnum
 

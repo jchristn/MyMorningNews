@@ -128,6 +128,7 @@ namespace MyMorningNews.Core.Database.Postgresql
             RunToolCalls = new RunToolCallMethods(this);
             AccountTokens = new AccountTokenMethods(this);
             BriefingProgress = new BriefingProgressMethods(this);
+            BriefingShares = new BriefingShareMethods(this);
             Embeddings = new EmbeddingMethods(this);
         }
 

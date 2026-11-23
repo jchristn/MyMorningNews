@@ -603,7 +603,8 @@
       "tts": "Conversão de texto em fala",
       "email": "E-mail",
       "learning": "Aprendizado",
-      "hosting": "Hospedagem"
+      "hosting": "Hospedagem",
+      "sharing": "Compartilhamento"
     },
     "fields": {
       "rest_hostname": "Nome do host",
@@ -761,7 +762,11 @@
       "hosting_termsVersion": "Versão dos termos",
       "hosting_minimumAge": "Idade mínima",
       "hosting_appleTeamId": "Apple Team ID",
-      "hosting_mobileAppId": "ID do app móvel"
+      "hosting_mobileAppId": "ID do app móvel",
+      "sharing_enabled": "Compartilhar briefings por links públicos",
+      "sharing_maxExpiryDays": "Duração máxima de um link compartilhado (dias)",
+      "sharing_defaultExpiryDays": "Duração de um link compartilhado quando não escolhida (dias)",
+      "sharing_publicRequestsPerMinute": "Solicitações de páginas compartilhadas por endereço por minuto"
     }
   },
   "serverInfo": {
@@ -2873,6 +2878,39 @@
     "empty": {
       "title": "Nenhum boletim ainda",
       "message": "Componha uma edição, execute um tema ou faça uma pergunta única para obter um."
+    },
+    "share": {
+      "action": "Compartilhar",
+      "title": "Compartilhar este briefing",
+      "about": "Crie links públicos para este briefing. Qualquer pessoa com um link pode ler ou ouvir sem entrar na conta, até o link expirar ou você revogá-lo.",
+      "newLinks": "Seus novos links",
+      "readLink": "Link de leitura",
+      "listenLink": "Link de áudio",
+      "copy": "Copiar link",
+      "expiresOn": "Expira em {date}",
+      "expiredOn": "Expirou em {date}",
+      "revokedOn": "Revogado em {date}",
+      "noAudio": "Este briefing ainda não tem áudio. A página de áudio informa isso até o áudio ser gerado.",
+      "shownOnce": "Copie os links agora. Eles são mostrados apenas uma vez. Se você os perder, crie novos.",
+      "days": "Dias até os links expirarem",
+      "daysHelp": "De {min} a {max} dias. Todo compartilhamento expira.",
+      "showName": "Mostrar meu nome nas páginas compartilhadas",
+      "showNameHelp": "Seu endereço de e-mail nunca é mostrado.",
+      "create": "Criar links",
+      "createAnother": "Criar mais links",
+      "existing": "Links deste briefing",
+      "none": "Este briefing não foi compartilhado.",
+      "status": {
+        "Live": "Ativo",
+        "Expired": "Expirado",
+        "Revoked": "Revogado"
+      },
+      "views": "Aberturas: {count}",
+      "lastOpened": "última abertura em {date}",
+      "revoke": "Revogar",
+      "remove": "Remover da lista",
+      "revoked": "Os links não funcionam mais.",
+      "removed": "Removido da lista."
     }
   },
   "today": {

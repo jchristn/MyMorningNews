@@ -603,7 +603,8 @@
       "tts": "文字转语音",
       "email": "电子邮件",
       "learning": "学习",
-      "hosting": "托管"
+      "hosting": "托管",
+      "sharing": "分享"
     },
     "fields": {
       "rest_hostname": "主机名",
@@ -761,7 +762,11 @@
       "hosting_termsVersion": "条款版本",
       "hosting_minimumAge": "最低年龄",
       "hosting_appleTeamId": "Apple Team ID",
-      "hosting_mobileAppId": "移动应用 ID"
+      "hosting_mobileAppId": "移动应用 ID",
+      "sharing_enabled": "通过公开链接分享简报",
+      "sharing_maxExpiryDays": "分享链接的最长有效期（天）",
+      "sharing_defaultExpiryDays": "未选择时分享链接的有效期（天）",
+      "sharing_publicRequestsPerMinute": "每个地址每分钟的分享页面请求数"
     }
   },
   "serverInfo": {
@@ -2873,6 +2878,39 @@
     "empty": {
       "title": "暂无简报",
       "message": "撰写一期期刊、运行一个主题或提出一次性问题即可获得简报。"
+    },
+    "share": {
+      "action": "分享",
+      "title": "分享此简报",
+      "about": "为此简报创建公开链接。任何拿到链接的人无需登录即可阅读或收听，直到链接过期或被你撤销。",
+      "newLinks": "你的新链接",
+      "readLink": "阅读链接",
+      "listenLink": "收听链接",
+      "copy": "复制链接",
+      "expiresOn": "{date} 过期",
+      "expiredOn": "已于 {date} 过期",
+      "revokedOn": "已于 {date} 撤销",
+      "noAudio": "此简报还没有音频。在音频生成之前，收听页面会说明这一点。",
+      "shownOnce": "请立即复制链接。链接只显示一次。如果丢失，请创建新的链接。",
+      "days": "链接过期前的天数",
+      "daysHelp": "{min} 到 {max} 天。所有分享都会过期。",
+      "showName": "在分享页面上显示我的姓名",
+      "showNameHelp": "你的电子邮件地址绝不会显示。",
+      "create": "创建链接",
+      "createAnother": "创建更多链接",
+      "existing": "此简报的链接",
+      "none": "此简报尚未分享。",
+      "status": {
+        "Live": "有效",
+        "Expired": "已过期",
+        "Revoked": "已撤销"
+      },
+      "views": "打开次数：{count}",
+      "lastOpened": "上次打开于 {date}",
+      "revoke": "撤销",
+      "remove": "从列表中移除",
+      "revoked": "链接已失效。",
+      "removed": "已从列表中移除。"
     }
   },
   "today": {

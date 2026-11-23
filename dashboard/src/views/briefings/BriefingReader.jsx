@@ -21,6 +21,7 @@ import PageHeader from '../../components/PageHeader.jsx';
 import FeedbackControl from '../../components/FeedbackControl.jsx';
 import StatusBadge from '../../components/StatusBadge.jsx';
 import BriefingAudio from './BriefingAudio.jsx';
+import BriefingShare from './BriefingShare.jsx';
 import BriefingMarkdown, { scrollToAnchor } from './BriefingMarkdown.jsx';
 import useBriefingActions, { BriefingKindBadge, BriefingStatusBadge } from './briefingParts.jsx';
 
@@ -316,6 +317,7 @@ export default function BriefingReader({ briefingId }) {
             <button type="button" className="button secondary small" disabled={!ready || expired || busy !== null} onClick={() => download('html')}>
               <FileCode size={14} aria-hidden="true" /> {t('briefings.download.html')}
             </button>
+            <BriefingShare briefing={briefing} disabled={busy !== null} />
             <button
               type="button"
               className="button secondary small"

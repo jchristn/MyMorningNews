@@ -53,6 +53,8 @@ namespace MyMorningNews.Core.Security
             { RequestTypeEnum.SourceRead, new RequiredPermission(ResourceTypeEnum.Source, OperationTypeEnum.Read) },
             { RequestTypeEnum.BriefingRead, new RequiredPermission(ResourceTypeEnum.Briefing, OperationTypeEnum.Read) },
             { RequestTypeEnum.BriefingWrite, new RequiredPermission(ResourceTypeEnum.Briefing, OperationTypeEnum.Update) },
+            { RequestTypeEnum.ShareRead, new RequiredPermission(ResourceTypeEnum.Briefing, OperationTypeEnum.Read) },
+            { RequestTypeEnum.ShareWrite, new RequiredPermission(ResourceTypeEnum.Briefing, OperationTypeEnum.Update) },
             { RequestTypeEnum.EditionRead, new RequiredPermission(ResourceTypeEnum.Edition, OperationTypeEnum.Read) },
             { RequestTypeEnum.EditionWrite, new RequiredPermission(ResourceTypeEnum.Edition, OperationTypeEnum.Update) },
             { RequestTypeEnum.TemplateRead, new RequiredPermission(ResourceTypeEnum.Template, OperationTypeEnum.Read) },

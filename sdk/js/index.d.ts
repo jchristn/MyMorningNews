@@ -1290,6 +1290,32 @@ export interface FeedToken extends Record_ {
     revokedUtc: string | null;
 }
 
+/** A public share link for a briefing. It no longer works once `expiresUtc` has passed or `revokedUtc` is set. */
+export interface BriefingShare extends Record_ {
+    userId: string;
+    briefingId: string;
+    /** Always `redacted` in responses. */
+    tokenHash: string;
+    tokenPrefix: string;
+    showOwnerName: boolean;
+    /** Always set: 1 to 14 days after creation. */
+    expiresUtc: string;
+    revokedUtc: string | null;
+    viewCount: number;
+    lastViewedUtc: string | null;
+}
+
+export interface BriefingShareCreated {
+    share: BriefingShare;
+    /** Shown once. */
+    secret: string;
+    /** Public reading page; no sign-in needed. */
+    readUrl: string;
+    /** Public listening page; no sign-in needed. */
+    listenUrl: string;
+    audioReady: boolean;
+}
+
 export interface FeedTokenCreated {
     token: FeedToken;
     /** Shown once. */
@@ -1684,6 +1710,10 @@ export declare class BriefingsResource extends ResourceGroup {
     saveProgress(id: string, progress: { positionSeconds: number; durationSeconds?: number; completed?: boolean }): Promise<BriefingProgress>;
     regenerate(id: string): Promise<Briefing>;
     generateAudio(id: string, body?: { voiceProfileId?: string }): Promise<MediaAsset>;
+    listShares(id: string, options?: ListOptions): Promise<EnumerationResult<BriefingShare>>;
+    /** `expiresInDays` is 1 to 14 (default 7); outside the range is a 400. */
+    share(id: string, body?: { expiresInDays?: number; showOwnerName?: boolean }): Promise<BriefingShareCreated>;
+    revokeShare(id: string, shareId: string, options?: { purge?: boolean }): Promise<null>;
     download(id: string, options?: DownloadOptions & { format?: 'md' | 'markdown' | 'html' }): Promise<DownloadResult>;
     markdown(id: string): Promise<string>;
     html(id: string): Promise<string>;

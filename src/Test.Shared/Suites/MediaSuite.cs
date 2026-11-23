@@ -90,7 +90,7 @@ namespace Test.Shared.Suites
             return Task.CompletedTask;
         }
 
-        private static async Task<Briefing> EditionBriefingAsync(PipelineFixture f, string name, bool audio, CancellationToken token)
+        internal static async Task<Briefing> EditionBriefingAsync(PipelineFixture f, string name, bool audio, CancellationToken token)
         {
             await PipelineSuite.RunAsync(f, token).ConfigureAwait(false);
             EditionResponse e = (await f.User.Client.PostAsync("/v1.0/api/editions", new { name = name, freshResearchBeforeCompose = false, audioEnabled = audio, lookbackHours = 48 }, token).ConfigureAwait(false))
@@ -102,7 +102,7 @@ namespace Test.Shared.Suites
             return b;
         }
 
-        private static async Task<MediaAsset> EpisodeForAsync(PipelineFixture f, Briefing b, CancellationToken token)
+        internal static async Task<MediaAsset> EpisodeForAsync(PipelineFixture f, Briefing b, CancellationToken token)
         {
             // Other suites queue audio too and the queue is shared, so wait on this briefing's episode rather than counting passes.
             System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();

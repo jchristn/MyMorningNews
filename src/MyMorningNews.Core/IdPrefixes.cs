@@ -389,5 +389,10 @@ namespace MyMorningNews.Core
         /// Prefix for embedding vectors.
         /// </summary>
         public const string Embedding = "emb_";
+
+        /// <summary>
+        /// Prefix for BriefingShare identifiers.
+        /// </summary>
+        public const string BriefingShare = "shr_";
     }
 }

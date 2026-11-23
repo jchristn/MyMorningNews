@@ -503,6 +503,16 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// Register, change, test, and discover MCP servers, and toggle their tools.
         /// </summary>
-        McpServerWrite
+        McpServerWrite,
+
+        /// <summary>
+        /// List the public share links of a briefing.
+        /// </summary>
+        ShareRead,
+
+        /// <summary>
+        /// Create or revoke public share links of a briefing.
+        /// </summary>
+        ShareWrite
     }
 }

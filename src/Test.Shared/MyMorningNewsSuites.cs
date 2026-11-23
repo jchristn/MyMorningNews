@@ -34,6 +34,7 @@ namespace Test.Shared
                     StorageSuite.Create(),
                     BriefingSuite.Create(),
                     MediaSuite.Create(),
+                    ShareSuite.Create(),
                     EmailSuite.Create(),
                     NotificationSuite.Create(),
                     LearningSuite.Create(),

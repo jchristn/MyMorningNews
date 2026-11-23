@@ -34,7 +34,12 @@ namespace MyMorningNews.Server.Services
         /// <summary>
         /// Path prefixes whose response bodies are never stored (for example credential reveal).
         /// </summary>
-        public List<string> RedactedResponsePathPrefixes { get; set; } = new List<string> { "/v1.0/api/vault/", "/v1.0/token" };
+        public List<string> RedactedResponsePathPrefixes { get; set; } = new List<string> { "/v1.0/api/vault/", "/v1.0/token", "/v1.0/public/shares/" };
+
+        /// <summary>
+        /// Path endings whose response bodies are never stored: creating a share returns its link secret once.
+        /// </summary>
+        public List<string> RedactedResponsePathSuffixes { get; set; } = new List<string> { "/shares" };
 
         /// <summary>
         /// Path prefixes whose request bodies are never stored.
@@ -125,7 +130,8 @@ namespace MyMorningNews.Server.Services
                 if (redactRequest && requestBytes.Length > 0) entry.RequestBody = "[redacted]";
                 else Truncate(requestBytes, _Settings.MaxRequestBodyBytes, out string? reqBody, out bool reqTruncated, entry, true);
 
-                bool redactResponse = RedactedResponsePathPrefixes.Any(p => path.StartsWith(p, StringComparison.OrdinalIgnoreCase));
+                bool redactResponse = RedactedResponsePathPrefixes.Any(p => path.StartsWith(p, StringComparison.OrdinalIgnoreCase))
+                    || RedactedResponsePathSuffixes.Any(p => path.TrimEnd('/').EndsWith(p, StringComparison.OrdinalIgnoreCase));
                 byte[] responseBytes = SafeResponseBytes(ctx);
                 entry.ResponseBodyBytes = responseBytes.Length;
                 if (redactResponse && responseBytes.Length > 0) entry.ResponseBody = "[redacted]";

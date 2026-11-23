@@ -95,5 +95,20 @@ namespace MyMorningNews.Core.Responses
         /// reference `platform:anthropic` can call the model. Never carries the key itself.
         /// </summary>
         public bool PlatformModelKeyConfigured { get; set; } = false;
+
+        /// <summary>
+        /// Whether public share links for briefings are turned on (sharing.enabled). Clients hide the Share control when false.
+        /// </summary>
+        public bool SharingEnabled { get; set; } = true;
+
+        /// <summary>
+        /// Longest life of a share link in days (sharing.maxExpiryDays). Default 14.
+        /// </summary>
+        public int SharingMaxExpiryDays { get; set; } = 14;
+
+        /// <summary>
+        /// Life of a share link in days when the request does not say (sharing.defaultExpiryDays, never more than the maximum). Default 7.
+        /// </summary>
+        public int SharingDefaultExpiryDays { get; set; } = 7;
     }
 }

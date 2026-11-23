@@ -77,7 +77,7 @@ namespace Test.Shared.Suites
             {
                 JsonElement tools = (await c.CallAsync("tools/list", null, token).ConfigureAwait(false)).GetProperty("tools");
                 List<string> names = tools.EnumerateArray().Select(t => t.GetProperty("name").GetString()!).ToList();
-                string[] planned = { "list_topics", "get_topic", "create_topic", "run_topic", "get_run", "get_run_costs", "list_findings", "get_finding", "search_findings", "get_latest_briefing", "get_briefing",
+                string[] planned = { "list_topics", "get_topic", "create_topic", "run_topic", "get_run", "get_run_costs", "list_findings", "get_finding", "search_findings", "get_latest_briefing", "get_briefing", "share_briefing", "list_briefing_shares", "revoke_briefing_share",
                     "list_predictions", "resolve_prediction", "list_suggestions", "update_suggestion_status", "submit_feedback", "list_learned_preferences", "accept_learned_preference", "get_analytics_summary" };
                 Assert.True(planned.All(names.Contains), "every planned tool: missing " + String.Join(", ", planned.Where(p => !names.Contains(p))));
                 Assert.Equal(McpSurface.AllTools().Count, names.Count, "tool count");
@@ -201,6 +201,19 @@ namespace Test.Shared.Suites
                 McpToolOutcome small = await c.ToolAsync("get_briefing", new { briefingId = briefingId, maxCharacters = 1000 }, token).ConfigureAwait(false);
                 Assert.True(!small.IsError && small.Structured.GetProperty("markdown").GetString()!.Length <= 1200 && small.Structured.GetProperty("items").GetArrayLength() >= 3, "get_briefing with a budget");
                 Assert.True((await c.ToolAsync("list_briefings", new { kind = "Run" }, token).ConfigureAwait(false)).Structured.GetProperty("totalCount").GetInt64() == 1, "list_briefings");
+
+                McpToolOutcome tooLong = await c.ToolAsync("share_briefing", new { briefingId = briefingId, expiresInDays = 15 }, token).ConfigureAwait(false);
+                Assert.True(tooLong.IsError, "share_briefing refuses 15 days: " + tooLong.Text);
+                McpToolOutcome shared = await c.ToolAsync("share_briefing", new { briefingId = briefingId, expiresInDays = 14 }, token).ConfigureAwait(false);
+                Assert.True(!shared.IsError && shared.Structured.GetProperty("readUrl").GetString()!.Contains("/v1.0/public/shares/mmns_", StringComparison.Ordinal)
+                    && shared.Structured.GetProperty("listenUrl").GetString()!.EndsWith("/listen", StringComparison.Ordinal) && shared.Structured.GetProperty("share").GetProperty("status").GetString() == "Live", "share_briefing: " + shared.Text);
+                Assert.True(!shared.Text.Contains("tokenHash", StringComparison.Ordinal), "the stored hash is left out");
+                string shareId = shared.Structured.GetProperty("share").GetProperty("id").GetString()!;
+                McpToolOutcome shares = await c.ToolAsync("list_briefing_shares", new { briefingId = briefingId }, token).ConfigureAwait(false);
+                Assert.True(!shares.IsError && shares.Structured.GetProperty("totalCount").GetInt64() == 1 && shares.Structured.GetProperty("items")[0].GetProperty("id").GetString() == shareId, "list_briefing_shares: " + shares.Text);
+                McpToolOutcome revoked = await c.ToolAsync("revoke_briefing_share", new { briefingId = briefingId, shareId = shareId }, token).ConfigureAwait(false);
+                Assert.True(!revoked.IsError && revoked.Structured.GetProperty("revoked").GetBoolean(), "revoke_briefing_share: " + revoked.Text);
+                Assert.Equal("Revoked", (await c.ToolAsync("list_briefing_shares", new { briefingId = briefingId }, token).ConfigureAwait(false)).Structured.GetProperty("items")[0].GetProperty("status").GetString(), "revoked share listed");
 
                 McpToolOutcome findings = await c.ToolAsync("list_findings", new { topicId = f.Topic.Id, minScore = 1 }, token).ConfigureAwait(false);
                 JsonElement items = findings.Structured.GetProperty("items");

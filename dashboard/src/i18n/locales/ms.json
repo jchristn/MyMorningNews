@@ -603,7 +603,8 @@
       "tts": "Teks ke pertuturan",
       "email": "E-mel",
       "learning": "Pembelajaran",
-      "hosting": "Pengehosan"
+      "hosting": "Pengehosan",
+      "sharing": "Perkongsian"
     },
     "fields": {
       "rest_hostname": "Nama hos",
@@ -761,7 +762,11 @@
       "hosting_termsVersion": "Versi terma",
       "hosting_minimumAge": "Umur minimum",
       "hosting_appleTeamId": "Apple Team ID",
-      "hosting_mobileAppId": "ID aplikasi mudah alih"
+      "hosting_mobileAppId": "ID aplikasi mudah alih",
+      "sharing_enabled": "Kongsi taklimat melalui pautan awam",
+      "sharing_maxExpiryDays": "Tempoh paling lama bagi pautan kongsi (hari)",
+      "sharing_defaultExpiryDays": "Tempoh pautan kongsi jika tidak dipilih (hari)",
+      "sharing_publicRequestsPerMinute": "Permintaan halaman kongsi bagi setiap alamat seminit"
     }
   },
   "serverInfo": {
@@ -2867,6 +2872,39 @@
     "empty": {
       "title": "Belum ada taklimat",
       "message": "Susun edisi, jalankan topik atau tanya soalan sekali untuk mendapatkannya."
+    },
+    "share": {
+      "action": "Kongsi",
+      "title": "Kongsi taklimat ini",
+      "about": "Cipta pautan awam ke taklimat ini. Sesiapa yang mempunyai pautan boleh membaca atau mendengar tanpa log masuk, sehingga pautan tamat tempoh atau anda membatalkannya.",
+      "newLinks": "Pautan baharu anda",
+      "readLink": "Pautan bacaan",
+      "listenLink": "Pautan dengar",
+      "copy": "Salin pautan",
+      "expiresOn": "Tamat tempoh pada {date}",
+      "expiredOn": "Telah tamat tempoh pada {date}",
+      "revokedOn": "Dibatalkan pada {date}",
+      "noAudio": "Taklimat ini belum mempunyai audio. Halaman dengar menyatakannya sehingga audio dihasilkan.",
+      "shownOnce": "Salin pautan sekarang. Pautan dipaparkan sekali sahaja. Jika hilang, cipta yang baharu.",
+      "days": "Bilangan hari sehingga pautan tamat tempoh",
+      "daysHelp": "Dari {min} hingga {max} hari. Setiap perkongsian akan tamat tempoh.",
+      "showName": "Paparkan nama saya pada halaman yang dikongsi",
+      "showNameHelp": "Alamat e-mel anda tidak pernah dipaparkan.",
+      "create": "Cipta pautan",
+      "createAnother": "Cipta lagi pautan",
+      "existing": "Pautan untuk taklimat ini",
+      "none": "Taklimat ini belum dikongsi.",
+      "status": {
+        "Live": "Aktif",
+        "Expired": "Tamat tempoh",
+        "Revoked": "Dibatalkan"
+      },
+      "views": "Dibuka: {count}",
+      "lastOpened": "kali terakhir dibuka pada {date}",
+      "revoke": "Batalkan",
+      "remove": "Buang daripada senarai",
+      "revoked": "Pautan tidak lagi berfungsi.",
+      "removed": "Dibuang daripada senarai."
     }
   },
   "today": {

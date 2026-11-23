@@ -34,5 +34,10 @@ namespace MyMorningNews.Core
         /// Health route path.
         /// </summary>
         public const string HealthPath = "/v1.0/api/health";
+
+        /// <summary>
+        /// The marketing website, where public pages send a visitor when this server has no open sign-up.
+        /// </summary>
+        public const string MarketingSiteUrl = "https://mymorningnews.ai";
     }
 }

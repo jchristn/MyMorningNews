@@ -136,6 +136,11 @@ namespace MyMorningNews.Server
         public MyMorningNews.Core.Audio.AudioService Audio { get; set; } = null!;
 
         /// <summary>
+        /// Public share links for briefings.
+        /// </summary>
+        public BriefingShareService Shares { get; set; } = null!;
+
+        /// <summary>
         /// Email outbox and delivery.
         /// </summary>
         public MyMorningNews.Core.Email.EmailService Email { get; set; } = null!;

@@ -178,6 +178,7 @@ namespace MyMorningNews.Server
             _Context.Artifacts = _Artifacts;
             _Context.Briefings = briefings;
             _Context.Audio = _Audio;
+            _Context.Shares = new BriefingShareService(_Database, settings);
             _Context.Email = email;
             _Context.Notifications = notifications;
             int keptPush = await notifications.Preferences.KeepEarlierPushForDevicesAsync(token).ConfigureAwait(false);
@@ -371,6 +372,7 @@ namespace MyMorningNews.Server
                 new EditionRoutes(context),
                 new TemplateRoutes(context),
                 new MediaRoutes(context),
+                new ShareRoutes(context),
                 new EmailRoutes(context),
                 new FeedbackRoutes(context),
                 new LearningRoutes(context),

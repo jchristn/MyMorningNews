@@ -730,6 +730,15 @@ namespace MyMorningNews.Core.Helpers
             return Generate(IdPrefixes.Embedding);
         }
 
+        /// <summary>
+        /// Generate a BriefingShare identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateBriefingShareId()
+        {
+            return Generate(IdPrefixes.BriefingShare);
+        }
+
         #endregion
     }
 }

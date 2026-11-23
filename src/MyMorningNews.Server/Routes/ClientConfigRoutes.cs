@@ -50,6 +50,9 @@ namespace MyMorningNews.Server.Routes
                 AppUrl = Server.SettingsService.Current.Rest.AppBaseUrl,
                 DeletionGraceDays = Server.SettingsService.Current.Hosting.DeletionGraceDays,
                 McpUrl = Server.SettingsService.Current.Rest.McpPublicUrl,
+                SharingEnabled = Server.SettingsService.Current.Sharing.Enabled,
+                SharingMaxExpiryDays = Server.Shares.MaxExpiryDays,
+                SharingDefaultExpiryDays = Server.Shares.DefaultExpiryDays,
                 Links = new Dictionary<string, string>
                 {
                     { "privacy", "https://mymorningnews.ai/privacy.html" },

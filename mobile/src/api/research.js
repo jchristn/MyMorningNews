@@ -153,6 +153,15 @@ export const briefingsApi = {
   regenerate: (client, id) => client.post(routes.briefingRegenerate(id), {}),
   /** `{ positionSeconds, completed }` */
   saveProgress: (client, id, progress) => client.put(routes.briefingProgress(id), progress),
+  /** A page of the briefing's public shares: `{ id, expiresUtc, revokedUtc, viewCount, lastViewedUtc, tokenPrefix, showOwnerName }`. */
+  shares: (client, id, query) => client.get(routes.briefingShares(id), query),
+  /**
+   * Create a public share: `{ share, secret, readUrl, listenUrl, audioReady }`, shown once. `expiresInDays` is 1 to 14
+   * (the server maximum); the server answers 400 for anything else and 409 SharingDisabled when sharing is off.
+   */
+  share: (client, id, { expiresInDays, showOwnerName } = {}) => client.post(routes.briefingShares(id), { expiresInDays, showOwnerName: Boolean(showOwnerName) }),
+  /** Revoke a live share; with `purge`, delete one that is already revoked or expired. */
+  revokeShare: (client, id, shareId, { purge = false } = {}) => client.delete(routes.briefingShare(id, shareId), { query: purge ? { purge: true } : undefined }),
 };
 
 /** Editions (Phase 7, plan section 21.3). */

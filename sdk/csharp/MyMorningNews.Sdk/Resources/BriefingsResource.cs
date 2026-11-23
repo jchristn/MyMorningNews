@@ -212,6 +212,54 @@ namespace MyMorningNews.Sdk.Resources
         }
 
         /// <summary>
+        /// List the public share links of a briefing, newest first. The link secret is never returned here; a share
+        /// whose ExpiresUtc has passed or whose RevokedUtc is set no longer works.
+        /// </summary>
+        /// <param name="id">Briefing identifier.</param>
+        /// <param name="options">Paging, or null for defaults.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>A page of BriefingShare items (hashes redacted).</returns>
+        /// <exception cref="ArgumentNullException">id is null or empty.</exception>
+        /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
+        public Task<EnumerationResult<BriefingShare>> ListSharesAsync(string id, ListOptions? options = null, CancellationToken token = default)
+        {
+            return Client.SendAsync<EnumerationResult<BriefingShare>>(HttpMethod.Get, "/v1.0/api/briefings/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/shares", (options ?? new ListOptions()).ToQuery(), null, token);
+        }
+
+        /// <summary>
+        /// Share a briefing through public links. Returns a reading link and a listening link that anyone can open
+        /// with no sign-in. The links are returned once; only a hash of the secret is stored. Every share expires:
+        /// ExpiresInDays is 1 to 14 (the server maximum), and 7 when the request does not say. A value outside the
+        /// range is refused with 400.
+        /// </summary>
+        /// <param name="id">Briefing identifier. The briefing must be ready.</param>
+        /// <param name="request">Expiry in days and whether to show my name, or null for the defaults (7 days, name hidden).</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The BriefingShareCreated with ReadUrl and ListenUrl.</returns>
+        /// <exception cref="ArgumentNullException">id is null or empty.</exception>
+        /// <exception cref="MyMorningNewsException">The server returned an error: 400 ValidationFailed for an expiry outside 1 to 14 days, 409 SharingDisabled when sharing is turned off, 409 BriefingNotReady.</exception>
+        public Task<BriefingShareCreated> ShareAsync(string id, BriefingShareCreateRequest? request = null, CancellationToken token = default)
+        {
+            return Client.SendAsync<BriefingShareCreated>(HttpMethod.Post, "/v1.0/api/briefings/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/shares", null, request, token);
+        }
+
+        /// <summary>
+        /// Revoke a public share so both of its links stop working; with purge, delete a share that is already revoked or expired.
+        /// </summary>
+        /// <param name="id">Briefing identifier.</param>
+        /// <param name="shareId">Share identifier (shr_...).</param>
+        /// <param name="purge">Delete a revoked or expired share.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="ArgumentNullException">id or shareId is null or empty.</exception>
+        /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
+        public Task RevokeShareAsync(string id, string shareId, bool purge = false, CancellationToken token = default)
+        {
+            return Client.SendAsync(HttpMethod.Delete, "/v1.0/api/briefings/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/shares/" + MyMorningNewsClient.Segment(shareId, nameof(shareId)),
+                Query("purge", purge ? (object)true : null), null, token);
+        }
+
+        /// <summary>
         /// The newest briefing matching the filter, with its detail, or null when there is none.
         /// </summary>
         /// <param name="options">Filters, or null for the caller's newest briefing. Paging is overridden.</param>

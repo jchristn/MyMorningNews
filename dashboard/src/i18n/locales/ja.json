@@ -603,7 +603,8 @@
       "tts": "音声合成",
       "email": "メール",
       "learning": "学習",
-      "hosting": "ホスティング"
+      "hosting": "ホスティング",
+      "sharing": "共有"
     },
     "fields": {
       "rest_hostname": "ホスト名",
@@ -761,7 +762,11 @@
       "hosting_termsVersion": "規約のバージョン",
       "hosting_minimumAge": "最低年齢",
       "hosting_appleTeamId": "Apple Team ID",
-      "hosting_mobileAppId": "モバイルアプリ ID"
+      "hosting_mobileAppId": "モバイルアプリ ID",
+      "sharing_enabled": "公開リンクでブリーフィングを共有する",
+      "sharing_maxExpiryDays": "共有リンクの最長有効期間（日）",
+      "sharing_defaultExpiryDays": "未指定時の共有リンクの有効期間（日）",
+      "sharing_publicRequestsPerMinute": "アドレスごとの 1 分あたりの共有ページリクエスト数"
     }
   },
   "serverInfo": {
@@ -2867,6 +2872,39 @@
     "empty": {
       "title": "まだブリーフィングはありません",
       "message": "エディションを作成するか、トピックを実行するか、単発の質問をするとブリーフィングが届きます。"
+    },
+    "share": {
+      "action": "共有",
+      "title": "このブリーフィングを共有",
+      "about": "このブリーフィングの公開リンクを作成します。リンクを知っている人は、リンクの有効期限が切れるか取り消されるまで、サインインせずに読んだり聴いたりできます。",
+      "newLinks": "新しいリンク",
+      "readLink": "閲覧用リンク",
+      "listenLink": "再生用リンク",
+      "copy": "リンクをコピー",
+      "expiresOn": "{date} に期限切れ",
+      "expiredOn": "{date} に期限が切れました",
+      "revokedOn": "{date} に取り消されました",
+      "noAudio": "このブリーフィングにはまだ音声がありません。音声が作成されるまで、再生ページにその旨が表示されます。",
+      "shownOnce": "今すぐリンクをコピーしてください。リンクは一度しか表示されません。紛失した場合は新しく作成してください。",
+      "days": "リンクの有効日数",
+      "daysHelp": "{min} 日から {max} 日まで。共有には必ず有効期限があります。",
+      "showName": "共有ページに自分の名前を表示する",
+      "showNameHelp": "メールアドレスが表示されることはありません。",
+      "create": "リンクを作成",
+      "createAnother": "リンクをさらに作成",
+      "existing": "このブリーフィングのリンク",
+      "none": "このブリーフィングは共有されていません。",
+      "status": {
+        "Live": "有効",
+        "Expired": "期限切れ",
+        "Revoked": "取り消し済み"
+      },
+      "views": "開かれた回数: {count}",
+      "lastOpened": "最後に開かれた日時: {date}",
+      "revoke": "取り消す",
+      "remove": "一覧から削除",
+      "revoked": "リンクは使えなくなりました。",
+      "removed": "一覧から削除しました。"
     }
   },
   "today": {

@@ -603,7 +603,8 @@
       "tts": "Text to speech",
       "email": "Email",
       "learning": "Learning",
-      "hosting": "Hosting"
+      "hosting": "Hosting",
+      "sharing": "Sharing"
     },
     "fields": {
       "rest_hostname": "Hostname",
@@ -761,7 +762,11 @@
       "hosting_termsVersion": "Terms version",
       "hosting_minimumAge": "Minimum age",
       "hosting_appleTeamId": "Apple Team ID",
-      "hosting_mobileAppId": "Mobile app ID"
+      "hosting_mobileAppId": "Mobile app ID",
+      "sharing_enabled": "Share briefings through public links",
+      "sharing_maxExpiryDays": "Longest life of a share link (days)",
+      "sharing_defaultExpiryDays": "Life of a share link when not chosen (days)",
+      "sharing_publicRequestsPerMinute": "Share page requests per address per minute"
     }
   },
   "serverInfo": {
@@ -2867,6 +2872,39 @@
     "empty": {
       "title": "No briefings yet",
       "message": "Compose an edition, run a topic, or ask a one-time question to get one."
+    },
+    "share": {
+      "action": "Share",
+      "title": "Share this briefing",
+      "about": "Create public links to this briefing. Anyone with a link can read or listen without signing in, until the link expires or you revoke it.",
+      "newLinks": "Your new links",
+      "readLink": "Reading link",
+      "listenLink": "Listening link",
+      "copy": "Copy link",
+      "expiresOn": "Expires {date}",
+      "expiredOn": "Expired {date}",
+      "revokedOn": "Revoked {date}",
+      "noAudio": "This briefing has no audio yet. The listening page says so until audio is made.",
+      "shownOnce": "Copy the links now. They are shown only once. If you lose them, create new ones.",
+      "days": "Days until the links expire",
+      "daysHelp": "From {min} to {max} days. Every share expires.",
+      "showName": "Show my name on the shared pages",
+      "showNameHelp": "Your email address is never shown.",
+      "create": "Create links",
+      "createAnother": "Create more links",
+      "existing": "Links for this briefing",
+      "none": "This briefing has not been shared.",
+      "status": {
+        "Live": "Live",
+        "Expired": "Expired",
+        "Revoked": "Revoked"
+      },
+      "views": "Opened: {count}",
+      "lastOpened": "last opened {date}",
+      "revoke": "Revoke",
+      "remove": "Remove from the list",
+      "revoked": "The links no longer work.",
+      "removed": "Removed from the list."
     }
   },
   "today": {

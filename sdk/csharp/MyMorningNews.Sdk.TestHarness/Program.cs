@@ -111,6 +111,7 @@ namespace MyMorningNews.Sdk.TestHarness
                 new PromptsTest(),
                 new MediaArtifactsTest(),
                 new FeedTokensTest(),
+                new BriefingSharesTest(),
                 new EmailTest(),
                 new AnalyticsUsageTest(),
                 new AnalyticsNewReportsTest(),

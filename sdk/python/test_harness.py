@@ -1172,6 +1172,40 @@ def t_feed_tokens(h: Harness) -> None:
     check(tok.id not in ids(h.client.feed_tokens.list()), "purged")
 
 
+@case("Briefing shares: 1 to 14 day expiry, create, list, revoke, purge")
+def t_briefing_shares(h: Harness) -> None:
+    h.need("tenant")
+    expect_error(NotFoundError, lambda: h.client.briefings.list_shares("brf_missing"))
+    cfg = h.client.client_config()
+    if cfg.sharing_enabled is False:
+        raise Skip("sharing is turned off on this server")
+    page = h.client.briefings.list(page_size=1, status="Ready")
+    if not page.items:
+        raise Skip("no ready briefing is visible")
+    bid = page.items[0].id
+    longest = cfg.sharing_max_expiry_days or 14
+    expect_error(BadRequestError, lambda: h.client.briefings.share(bid, expires_in_days=longest + 1))
+    expect_error(BadRequestError, lambda: h.client.briefings.share(bid, expires_in_days=0))
+    created = h.client.briefings.share(bid, expires_in_days=longest)
+    sid = created.share.id
+
+    def cleanup() -> None:
+        h.client.briefings.revoke_share(bid, sid)
+        h.client.briefings.revoke_share(bid, sid, purge=True)
+
+    h.on_cleanup("briefing share " + sid, cleanup)
+    check(created.secret and "/v1.0/public/shares/" in created.read_url and created.listen_url == created.read_url + "/listen", "both links returned once")
+    eq(created.share.token_hash, "redacted", "hash is redacted")
+    check(created.share.expires_utc, "a share always has an expiry")
+    check(sid in ids(h.client.briefings.list_shares(bid).items), "listed")
+    h.client.briefings.revoke_share(bid, sid)
+    revoked = [s for s in h.client.briefings.list_shares(bid).items if s.id == sid]
+    check(revoked and revoked[0].revoked_utc, "revokedUtc set")
+    h.client.briefings.revoke_share(bid, sid, purge=True)
+    check(sid not in ids(h.client.briefings.list_shares(bid).items), "purged")
+    expect_error(NotFoundError, lambda: h.client.briefings.revoke_share(bid, sid))
+
+
 @case("Editions: delete, then 404")
 def t_edition_delete(h: Harness) -> None:
     eid = h.need("edition")

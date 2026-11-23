@@ -1345,6 +1345,39 @@ async function main() {
         await expectError(client.briefings.download(S.briefingId, { range: { start: full.data.byteLength + 100 } }), 416, 'RangeNotSatisfiable');
     });
 
+    await run('briefings.share, listShares, revokeShare (1 to 14 days)', async () => {
+        if (!S.briefingId) skip('no briefing');
+        const cfg = await client.clientConfig();
+        if (cfg.sharingEnabled === false) skip('sharing is turned off on this server');
+        const max = cfg.sharingMaxExpiryDays || 14;
+        await expectError(client.briefings.share(S.briefingId, { expiresInDays: max + 1 }), 400, 'ValidationFailed');
+        await expectError(client.briefings.share(S.briefingId, { expiresInDays: 0 }), 400, 'ValidationFailed');
+        const created = await client.briefings.share(S.briefingId, { expiresInDays: max });
+        const id = created.share.id;
+        onCleanup('briefing share', async () => {
+            await client.briefings.revokeShare(S.briefingId, id).catch(() => null);
+            await client.briefings.revokeShare(S.briefingId, id, { purge: true });
+        });
+        assert(created.secret && created.readUrl.includes('/v1.0/public/shares/') && created.listenUrl === created.readUrl + '/listen', 'both links returned once');
+        assertEqual(created.share.tokenHash, 'redacted', 'hash redacted');
+        assert(new Date(created.share.expiresUtc).getTime() > Date.now() + (max - 1) * 86400000, 'expiry stored');
+        const byDefault = await client.briefings.share(S.briefingId);
+        onCleanup('briefing share (default)', async () => {
+            await client.briefings.revokeShare(S.briefingId, byDefault.share.id).catch(() => null);
+            await client.briefings.revokeShare(S.briefingId, byDefault.share.id, { purge: true });
+        });
+        assert(new Date(byDefault.share.expiresUtc).getTime() <= Date.now() + max * 86400000 + 60000, 'a share always has an expiry');
+        const page = await client.briefings.listShares(S.briefingId);
+        assertPage(page, 'briefings.listShares');
+        assert(page.items.some((s) => s.id === id && s.tokenHash === 'redacted' && !s.revokedUtc), 'share listed, redacted');
+        await client.briefings.revokeShare(S.briefingId, id);
+        const revoked = (await client.briefings.listShares(S.briefingId)).items.find((s) => s.id === id);
+        assert(revoked && revoked.revokedUtc, 'revoked');
+        await client.briefings.revokeShare(S.briefingId, id, { purge: true });
+        assert(!(await client.briefings.listShares(S.briefingId)).items.some((s) => s.id === id), 'purged');
+        await expectError(client.briefings.revokeShare(S.briefingId, id), 404, 'NotFound');
+    });
+
     await run('briefings.pin, unpin, regenerate', async () => {
         if (!S.briefingId) skip('no briefing');
         assertEqual((await client.briefings.pin(S.briefingId)).pinned, true, 'pinned');

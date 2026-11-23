@@ -1370,6 +1370,9 @@ class ClientConfig(Model):
     deletion_grace_days: Optional[int] = None
     links: Optional[Dict[str, str]] = None
     copyright: Optional[str] = None
+    sharing_enabled: Optional[bool] = None
+    sharing_max_expiry_days: Optional[int] = None
+    sharing_default_expiry_days: Optional[int] = None
 
 
 @dataclass
@@ -2470,6 +2473,36 @@ class FeedToken(Model):
     active: Optional[bool] = None
     created_utc: Optional[str] = None
     last_update_utc: Optional[str] = None
+
+
+@dataclass
+class BriefingShare(Model):
+    """A public share link for a briefing. Only the hash of the link secret is stored. Every share expires."""
+    id: Optional[str] = None
+    tenant_id: Optional[str] = None
+    user_id: Optional[str] = None
+    briefing_id: Optional[str] = None
+    token_hash: Optional[str] = None
+    token_prefix: Optional[str] = None
+    show_owner_name: Optional[bool] = None
+    expires_utc: Optional[str] = None
+    revoked_utc: Optional[str] = None
+    view_count: Optional[int] = None
+    last_viewed_utc: Optional[str] = None
+    active: Optional[bool] = None
+    created_utc: Optional[str] = None
+    last_update_utc: Optional[str] = None
+
+
+@dataclass
+class BriefingShareCreated(Model):
+    """A new public share; the secret and the two links are shown once."""
+    _nested: ClassVar[Dict[str, str]] = {'share': 'BriefingShare'}
+    share: Optional[BriefingShare] = None
+    secret: Optional[str] = None
+    read_url: Optional[str] = None
+    listen_url: Optional[str] = None
+    audio_ready: Optional[bool] = None
 
 
 @dataclass
@@ -3991,6 +4024,27 @@ class BriefingsResource(_Resource):
             ConflictError: Audio is disabled (``AudioDisabled``), the briefing is not ready, or audio is in progress.
         """
         return self._one(MediaAsset, "POST", API + "/briefings/" + _seg(briefing_id) + "/audio", body={"voiceProfileId": voice_profile_id})
+
+    def list_shares(self, briefing_id: str, **filters: Any) -> Page[BriefingShare]:
+        """List the public share links of a briefing, newest first (hashes redacted; links are shown only at creation)."""
+        return self._page(BriefingShare, API + "/briefings/" + _seg(briefing_id) + "/shares", filters)
+
+    def share(self, briefing_id: str, expires_in_days: Optional[int] = None, show_owner_name: bool = False) -> BriefingShareCreated:
+        """Share a ready briefing through public links that anyone can open with no sign-in.
+
+        Returns a reading link (``read_url``) and a listening link (``listen_url``) once; only a hash is stored.
+        Every share expires: ``expires_in_days`` is 1 to 14 (the server maximum), and 7 when omitted.
+
+        Raises:
+            BadRequestError: ``expires_in_days`` is outside 1 to 14 (``ValidationFailed``).
+            ConflictError: Sharing is turned off (``SharingDisabled``) or the briefing is not ready.
+        """
+        return self._one(BriefingShareCreated, "POST", API + "/briefings/" + _seg(briefing_id) + "/shares",
+                         body={"expiresInDays": expires_in_days, "showOwnerName": show_owner_name})
+
+    def revoke_share(self, briefing_id: str, share_id: str, purge: bool = False) -> None:
+        """Revoke a share so both links stop working; with ``purge``, delete one that is already revoked or expired."""
+        self._json("DELETE", API + "/briefings/" + _seg(briefing_id) + "/shares/" + _seg(share_id), query={"purge": True} if purge else None)
 
     def download(self, briefing_id: str, format: str = "md", byte_range: ByteRange = None) -> Download:
         """Download a briefing file.

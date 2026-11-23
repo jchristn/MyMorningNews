@@ -33,6 +33,10 @@ email. Your feedback teaches it what you care about, and it keeps score on its o
   their own schedule. Output is Markdown and HTML, audio from a local Kokoro voice (or any OpenAI-compatible speech
   service), a private podcast feed, an email after every run with rating links (each opens a short page where you
   confirm the rating, so mail scanners that open links cannot rate for you), and push notifications to the mobile app.
+- Shares on purpose. A briefing is private until you share it. Share creates two public links, one to read and one to
+  listen, that anyone can open without an account. Each share lasts 1 to 14 days (7 unless you choose), can be
+  revoked at any time, and shows how often it was opened. The pages carry no scripts, cookies, or trackers, and an
+  administrator can turn sharing off for the whole server (`sharing.enabled`).
 - Learns from you. Rate anything and say why, on the web, in email, in the app, or through MCP. The system turns
   feedback into preferences you approve, and the Insights pages chart relevance, accuracy, feedback, cost, and usage.
 - Uses the model you choose. Model access goes through [PolyPrompt](https://github.com/jchristn/PolyPrompt):
@@ -333,7 +337,8 @@ The stack starts with the `File` email provider, which writes each email to the 
 `MYMORNINGNEWS_EMAIL_PROVIDER=Mailgun`, `MYMORNINGNEWS_MAILGUN_DOMAIN`, and `MYMORNINGNEWS_MAILGUN_API_KEY` in
 `docker/.env`. The From domain must match the sending domain for DMARC. The Email section of Settings has a Send test button.
 For email links and podcast feeds that open on your phone, set `MYMORNINGNEWS_PUBLIC_BASE_URL` and
-`MYMORNINGNEWS_APP_BASE_URL` to addresses the phone can reach.
+`MYMORNINGNEWS_APP_BASE_URL` to addresses the phone can reach. Shared briefing links are built from
+`MYMORNINGNEWS_PUBLIC_BASE_URL` too, so set it to an address the people you share with can reach.
 
 ## Mobile apps
 

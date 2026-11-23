@@ -273,7 +273,8 @@ COALESCE(SUM(reasoningtokens), 0) AS reasoning FROM llmcalls WHERE runid IS NOT 
             }),
             new SchemaMigration(23, "In-app notifications and per-kind, per-channel notification preferences", Concat(
                 NotificationQueries.Schema,
-                NotificationPreferenceQueries.Schema))
+                NotificationPreferenceQueries.Schema)),
+            new SchemaMigration(24, "Public share links for briefings", BriefingShareQueries.Schema)
         };
 
         private static List<string> Concat(params IReadOnlyList<string>[] parts)

@@ -296,7 +296,10 @@
         "GET /v1.0/api/artifacts/{id}/content",
         "GET /v1.0/api/feedback",
         "POST /v1.0/api/feedback",
-        "PUT /v1.0/api/briefings/{id}/progress"
+        "PUT /v1.0/api/briefings/{id}/progress",
+        "GET /v1.0/api/briefings/{id}/shares",
+        "POST /v1.0/api/briefings/{id}/shares",
+        "DELETE /v1.0/api/briefings/{id}/shares/{shareId}"
       ],
       "notes": "The reader renders Markdown with native components (no WebView or HTML), with section navigation, citation numbers that jump to Sources, linked items with inline ratings on findings, pin, share or save the .md and .html files, and regenerate expired files. Audio: Make audio (409 AudioInProgress, AudioDisabled, BriefingNotReady explained; hidden when client config has audioEnabled false), progress while it is made, Listen streamed from the artifact with the bearer token and Range, Download for offline use with chapters, the chapter list with seek, and the section being read marked in the text. Feedback on the briefing with the why sheet."
     },

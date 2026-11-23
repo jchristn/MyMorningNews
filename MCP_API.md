@@ -147,7 +147,7 @@ python3 src/Tools/mcpdocs/generate_mcp_api.py
 
 ## Tools
 
-27 tools. Every tool returns structured content that matches its output schema, and the same data as JSON text.
+30 tools. Every tool returns structured content that matches its output schema, and the same data as JSON text.
 
 | Tool | Title | Read only | Destructive |
 |---|---|---|---|
@@ -169,6 +169,9 @@ python3 src/Tools/mcpdocs/generate_mcp_api.py
 | [`list_briefings`](#list_briefings) | List briefings | yes | no |
 | [`get_latest_briefing`](#get_latest_briefing) | Read today's briefing | yes | no |
 | [`get_briefing`](#get_briefing) | Read a briefing | yes | no |
+| [`share_briefing`](#share_briefing) | Share a briefing with a public link | no | no |
+| [`list_briefing_shares`](#list_briefing_shares) | List a briefing's public links | yes | no |
+| [`revoke_briefing_share`](#revoke_briefing_share) | Stop sharing a briefing link | no | yes |
 | [`list_predictions`](#list_predictions) | List predictions | yes | no |
 | [`resolve_prediction`](#resolve_prediction) | Resolve a prediction | no | no |
 | [`list_suggestions`](#list_suggestions) | List suggestions | yes | no |
@@ -583,6 +586,66 @@ Output:
 | `markdown` | string or null | no | The briefing as Markdown (may be truncated; see maxCharacters). |
 | `sections` | array of string | no | Section headings in order. |
 | `items` | array of object | no | Items cited in the briefing, in order. |
+
+### share_briefing
+
+**Share a briefing with a public link.** Create public links for one of your ready briefings: a reading page and a listening page that anyone with the link can open with no sign-in. The links are returned once and cannot be read back later, so give them to the user now. Every share expires: expiresInDays is 1 to 14 (default 7), and a value outside that range is refused. Only share when the user asks to.
+
+Input:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `briefingId` | string (up to 64) | yes | Briefing ID (brf_...). |
+| `expiresInDays` | integer (1 to 14) | no | Days until the links stop working. 1 to 14. Default 7. |
+| `showOwnerName` | boolean | no | Show your display name on the public pages. Default false. Your email address is never shown. |
+
+Output:
+
+| Name | Type | Always | Description |
+|---|---|---|---|
+| `share` | object with `id`, `briefingId`, `status`, `expiresUtc`, `revokedUtc`, `showOwnerName`, `viewCount`, `lastViewedUtc`, `createdUtc` | yes |  |
+| `readUrl` | string | yes | Public reading page. Anyone with the link can open it with no sign-in. |
+| `listenUrl` | string | yes | Public listening page. Anyone with the link can open it with no sign-in. |
+| `audioReady` | boolean | no | Whether the briefing has finished audio now. When false the listening page says the audio is not ready. |
+
+### list_briefing_shares
+
+**List a briefing's public links.** List the public share links of one briefing, newest first: when each expires (1 to 14 days after it was made), whether it was revoked, and how often it was opened. The links themselves are shown only when a share is created.
+
+Input:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `briefingId` | string (up to 64) | yes | Briefing ID (brf_...). |
+| `pageSize` | integer (1 to 100) | no | Shares per page. Default 20. |
+| `pageNumber` | integer (1 to 10000) | no | Page (1-based). Default 1. |
+
+Output:
+
+| Name | Type | Always | Description |
+|---|---|---|---|
+| `items` | array of object with `id`, `briefingId`, `status`, `expiresUtc`, `revokedUtc`, `showOwnerName`, `viewCount`, `lastViewedUtc`, `createdUtc` | yes | Items on this page. |
+| `totalCount` | integer | yes | Items matching across all pages. |
+| `pageNumber` | integer | no | Page number (1-based). |
+| `totalPages` | integer | no | Pages available. |
+
+### revoke_briefing_share
+
+**Stop sharing a briefing link.** Revoke one public share so its reading and listening links stop working at once. This cannot be undone; make a new share to share again.
+
+Input:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `briefingId` | string (up to 64) | yes | Briefing ID (brf_...). |
+| `shareId` | string (up to 64) | yes | Share ID (shr_...), from list_briefing_shares or share_briefing. |
+
+Output:
+
+| Name | Type | Always | Description |
+|---|---|---|---|
+| `revoked` | boolean | yes | True when the share is revoked. |
+| `shareId` | string | yes | Share ID. |
 
 ### list_predictions
 

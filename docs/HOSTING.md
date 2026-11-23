@@ -48,7 +48,8 @@ Edit `.env`:
 
 - `MYMORNINGNEWS_AUTH_SIGNING_KEY` and `MYMORNINGNEWS_AUTH_ADMIN_API_KEY`: long random values (`openssl rand -hex 32`).
 - `MYMORNINGNEWS_ANTHROPIC_API_KEY`: the platform key.
-- `MYMORNINGNEWS_PUBLIC_BASE_URL` and `MYMORNINGNEWS_APP_BASE_URL`: both `https://app.mymorningnews.ai`.
+- `MYMORNINGNEWS_PUBLIC_BASE_URL` and `MYMORNINGNEWS_APP_BASE_URL`: both `https://app.mymorningnews.ai`. Shared briefing links (`/v1.0/public/shares/{token}`) are built from the public base URL, and with public sign-up on, their call to action opens `<app base URL>/signup`; with sign-up off it points at `https://mymorningnews.ai`.
+- Public sharing of briefings is on by default. `MYMORNINGNEWS_SHARING_ENABLED=false` turns it off for the whole server (existing links answer 404 until it is turned back on), and `MYMORNINGNEWS_SHARING_MAX_EXPIRY_DAYS` changes the longest life of a link (14 days by default). Both are also in Settings under Sharing.
 - `MYMORNINGNEWS_EMAIL_PROVIDER=Mailgun`, plus `MYMORNINGNEWS_MAILGUN_DOMAIN` and `MYMORNINGNEWS_MAILGUN_API_KEY`.
 - `MYMORNINGNEWS_STORAGE_*` for S3.
 - `MYMORNINGNEWS_HOSTING_TURNSTILE_SITE_KEY` and `MYMORNINGNEWS_HOSTING_TURNSTILE_SECRET_KEY` if you use Turnstile.

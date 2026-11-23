@@ -22,6 +22,7 @@ import { useResource } from '@/state/useResource';
 import { useTheme } from '@/theme/ThemeContext';
 import { spacing } from '@/theme/palette';
 import { DetailHeader } from '../common/DetailScreen';
+import { BriefingShare } from './BriefingShare';
 
 /**
  * Titles for the items a briefing links to. The detail carries them in `itemTitles` (item ID to title); servers that
@@ -156,8 +157,8 @@ function FileActions({ detail, onChanged }) {
 /**
  * The briefing reader (plan section 21.3): title and status, audio (make, listen, download, chapters), section
  * navigation, the Markdown rendered with native components with the section being read aloud marked, numbered
- * citations that jump to the Sources section, the items it links to with inline ratings on findings, pin, and share or
- * save the `.md` and `.html` files. A briefing that is still being composed polls; audio being made polls on its own.
+ * citations that jump to the Sources section, the items it links to with inline ratings on findings, pin, share or
+ * save the `.md` and `.html` files, and public share links (BriefingShare). A briefing that is still being composed polls; audio being made polls on its own.
  */
 export function BriefingDetail({ id }) {
   const p = useTheme();
@@ -233,6 +234,7 @@ export function BriefingDetail({ id }) {
               {briefing.status === 'Failed' ? <Banner kind="danger" title={t('mobile.reader.failedTitle')}>{briefing.errorMessage || t('mobile.states.errorBody')}</Banner> : null}
               <BriefingAudio detail={detail} onChanged={resource.setData} />
               <FileActions detail={detail} onChanged={resource.setData} />
+              <BriefingShare detail={detail} />
               {navOptions.length > 1 ? (
                 <View style={{ gap: spacing.xs }}>
                   <T variant="label">{t('mobile.reader.sections')}</T>

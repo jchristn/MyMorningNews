@@ -128,6 +128,16 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// A credential's name, scopes, or expiry changed.
         /// </summary>
-        CredentialUpdated
+        CredentialUpdated,
+
+        /// <summary>
+        /// A public share link for a briefing was created.
+        /// </summary>
+        ShareCreated,
+
+        /// <summary>
+        /// A public share link for a briefing was revoked.
+        /// </summary>
+        ShareRevoked
     }
 }

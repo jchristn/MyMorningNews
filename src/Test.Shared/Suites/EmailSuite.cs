@@ -91,9 +91,17 @@ namespace Test.Shared.Suites
             Assert.True(m.RenderedText!.Contains("Relevant: http", StringComparison.Ordinal) && m.RenderedText.Contains("Unsubscribe from this topic: http", StringComparison.Ordinal), "text with feedback and unsubscribe links");
             Assert.Equal(0, await f.Server.Context.Email.QueueRunDigestAsync(run, token).ConfigureAwait(false), "idempotent per run and recipient");
 
-            await f.Server.Context.Email.DeliverDueAsync(DateTime.UtcNow, token).ConfigureAwait(false);
-            EmailMessage sent = (await f.Server.Context.Database.EmailMessages.ReadAsync(m.TenantId, m.Id, token).ConfigureAwait(false))!;
-            Assert.True(sent.Status == EmailStatusEnum.Sent && sent.Provider == EmailProviderEnum.File && sent.ProviderMessageId == "file:" + m.Id && sent.SentUtc.HasValue, "sent by the File provider");
+            // Delivery claims the oldest 50 queued messages across every tenant, and other cases on the shared server
+            // queue their own, so deliver in batches until this message has left the queue.
+            EmailMessage sent = m;
+            for (int batch = 0; batch < 40; batch++)
+            {
+                int delivered = await f.Server.Context.Email.DeliverDueAsync(DateTime.UtcNow, token).ConfigureAwait(false);
+                sent = (await f.Server.Context.Database.EmailMessages.ReadAsync(m.TenantId, m.Id, token).ConfigureAwait(false))!;
+                if (sent.Status != EmailStatusEnum.Queued || delivered == 0) break;
+            }
+
+            Assert.True(sent.Status == EmailStatusEnum.Sent && sent.Provider == EmailProviderEnum.File && sent.ProviderMessageId == "file:" + m.Id && sent.SentUtc.HasValue, "sent by the File provider: " + sent.Status + " via " + sent.Provider);
             string dir = f.Server.Context.Settings.Email.FileDirectory;
             Assert.True(File.Exists(Path.Combine(dir, m.Id + ".html")) && File.Exists(Path.Combine(dir, m.Id + ".txt")) && File.ReadAllText(Path.Combine(dir, m.Id + ".json")).Contains(m.Subject.Replace("\"", "\\\""), StringComparison.Ordinal), "files written");
             EmailReport er = (await f.User.Client.GetAsync("/v1.0/api/analytics/email?all=true&topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Expect(200, "email analytics").Json<EmailReport>();

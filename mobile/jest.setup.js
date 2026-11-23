@@ -38,6 +38,11 @@ jest.mock('expo-file-system', () => ({
   Paths: { document: {}, cache: {}, availableDiskSpace: 0 },
 }));
 
+jest.mock('expo-network', () => ({
+  getNetworkStateAsync: jest.fn(async () => ({ isConnected: true, isInternetReachable: true })),
+  addNetworkStateListener: jest.fn(() => ({ remove: jest.fn() })),
+}));
+
 jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(async () => true), getStringAsync: jest.fn(async () => '') }));
 
 jest.mock('expo-sharing', () =>({ isAvailableAsync: jest.fn(async () => false), shareAsync: jest.fn(async () => undefined) }));

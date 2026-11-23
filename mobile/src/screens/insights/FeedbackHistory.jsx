@@ -10,7 +10,9 @@ import { EmptyState, ResourceView } from '@/components/states';
 import { Badge, Button, Card, T } from '@/components/ui';
 import { FEEDBACK_TARGET_FILTERS, actionKey, actionOf, feedbackTargetHref } from '@/lib/feedback';
 import { formatDateTime } from '@/lib/format';
+import { FeedbackQueueFullError } from '@/feedback/FeedbackQueue';
 import { useAuth } from '@/state/AuthContext';
+import { useFeedbackActions, useFeedbackSettled, useQueuedFeedback } from '@/state/OfflineContext';
 import { useResource } from '@/state/useResource';
 import { spacing } from '@/theme/palette';
 
@@ -21,15 +23,20 @@ export const HISTORY_PAGE_SIZE = 50;
  * Save from the history's edit sheet: the same rating with a new reason edits the reason (`PUT /feedback/{id}`); a
  * different rating is a new rating that supersedes the old one (`POST /feedback`), as on the email pages.
  */
-export async function saveHistoryEdit(client, item, { action, reason }) {
-  if (!action || action === actionOf(item)) return feedbackApi.update(client, item.id, reason);
-  return feedbackApi.submit(client, { targetType: item.targetType, targetId: item.targetId, action, reason });
+export async function saveHistoryEdit(client, item, { action, reason }, actions) {
+  const sender = actions || {
+    update: (feedback, text) => feedbackApi.update(client, feedback.id, text),
+    submit: (fields) => feedbackApi.submit(client, fields),
+  };
+  if (!action || action === actionOf(item)) return sender.update(item, reason);
+  return sender.submit({ targetType: item.targetType, targetId: item.targetId, action, reason });
 }
 
 /**
  * Feedback history (plan section 20): every current rating, newest first, with its reason, target, channel, and date,
  * filtered by target type. Edit the reason or the rating, retract it (the earlier rating, if any, becomes current), or
- * open the item.
+ * open the item. Changes made without a connection go to the offline feedback queue (`useFeedbackActions`), and the
+ * item says "Will send when online" until they are sent.
  */
 export function FeedbackHistory() {
   const { t, i18n } = useTranslation();
@@ -41,6 +48,20 @@ export function FeedbackHistory() {
     () => feedbackApi.list(client, { pageNumber: 1, pageSize, sortBy: 'createdUtc', sortDirection: 'Descending', targetType: filter === 'all' ? undefined : filter }),
     [client, filter, pageSize],
   );
+  const actions = useFeedbackActions();
+  const isQueued = useQueuedFeedback();
+  useFeedbackSettled(() => void resource.reload());
+  const send = async (fn) => {
+    let result;
+    try {
+      result = await fn();
+    } catch (e) {
+      if (e instanceof FeedbackQueueFullError) throw new Error(t('mobile.connection.queueFull'));
+      throw e;
+    }
+    // A queued change shows on the item until it is sent; reading the list again now would only fail.
+    if (!result || !result.queued) await resource.reload();
+  };
   const items = listItems(resource.data);
   const total = resource.data && typeof resource.data.totalCount === 'number' ? resource.data.totalCount : items.length;
   return (
@@ -65,6 +86,11 @@ export function FeedbackHistory() {
               </View>
               {item.reason ? <T selectable>{item.reason}</T> : <T variant="small">{t('mobile.insights.history.noReason')}</T>}
               <T variant="small">{formatDateTime(item.createdUtc, i18n.language)}</T>
+              {isQueued(item) ? (
+                <T variant="small" testID={'history-queued-' + item.id}>
+                  {t('mobile.connection.queued')}
+                </T>
+              ) : null}
               <ButtonRow>
                 <Button title={t('mobile.insights.history.edit')} icon="create-outline" kind="secondary" onPress={() => setEditing(item)} testID={'history-edit-' + item.id} />
                 {href ? <Button title={t('mobile.insights.history.open')} kind="ghost" onPress={() => router.push(href)} testID={'history-open-' + item.id} /> : null}
@@ -78,14 +104,8 @@ export function FeedbackHistory() {
         visible={Boolean(editing)}
         targetType={editing ? editing.targetType : 'Finding'}
         current={editing}
-        onSave={async (change) => {
-          await saveHistoryEdit(client, editing, change);
-          await resource.reload();
-        }}
-        onRetract={async () => {
-          await feedbackApi.retract(client, editing.id);
-          await resource.reload();
-        }}
+        onSave={(change) => send(() => saveHistoryEdit(client, editing, change, actions))}
+        onRetract={() => send(() => actions.retract(editing))}
         onClose={() => setEditing(null)}
       />
     </View>

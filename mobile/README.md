@@ -43,6 +43,8 @@ emulators, and free personal-team signing are in [docs/MOBILE_DEVICE_TESTING.md]
 | Audio (Phase 8) | The briefing detail carries `audio` (the newest episode in any status) and the briefing names its ready episode in `mediaAssetId`. `GET /v1.0/api/media/{id}` gives the chapters and `audioPath`; audio streams from `GET /v1.0/api/artifacts/{id}/content` with the bearer token and HTTP Range. `POST /v1.0/api/briefings/{id}/audio` makes audio (409 `AudioInProgress`, `AudioDisabled`, `BriefingNotReady`); the reader polls while it is made. Listen lists `GET /v1.0/api/media?status=Ready`. Make actions and podcast feeds are hidden when client config has `audioEnabled: false`. |
 | Podcast feeds | `GET/POST/DELETE /v1.0/api/feed-tokens` (Account > Podcast feeds): the feed URL is shown once with Copy (`expo-clipboard`), Share, and Open in Podcasts (`podcast://` on iOS, `pcast://` on Android). |
 | Feedback (Phases 9 and 10) | `POST /v1.0/api/feedback` with `{ targetType, targetId, action, reason, channel: "Mobile" }` from inline chips on findings, predictions, suggestions, briefings, and the findings a briefing cites; the current rating comes from `GET /v1.0/api/feedback?targetType=&targetId=` (or one read per list); the why sheet adds a reason, changes, or retracts (`DELETE /v1.0/api/feedback/{id}`). `src/lib/feedback.js` holds the actions per target. |
+| Minimum app version | `src/components/UpdateGate.jsx` compares the installed store version (`0.1.0`, from the app config) with client config's `minimumAppVersion` at launch and each time the app returns to the foreground (`src/lib/version.js`, semantic versioning: `0.1.0-alpha` is older than `0.1.0`). An older app gets a full-screen "Update required" message that cannot be dismissed, with a button to the store listing when one is known. A missing or unreadable value never blocks, a failed config read keeps the last verdict, and a block from a self-hosted server offers the hosted service. |
+| Offline feedback and connection state | Every feedback write goes through `useFeedbackActions` (`src/state/OfflineContext.jsx`). Without a connection, or after a network failure, the action goes to `src/feedback/FeedbackQueue.js`: kept in AsyncStorage per signed-in identity, at most 100 actions, the last rating per item wins, sent in order when the connection returns, and checked against the server's current rating before a retry so nothing is applied twice. A 4xx answer drops the action with a quiet notice; a failing server is retried five times. The control shows "Will send when online". Signing out clears the queue. `src/net/ConnectivityMonitor.js` follows `expo-network` and every API exchange and probes client config until the server answers; `src/components/ConnectionBanner.jsx` sits above the mini player and the tab bar, says "You are offline" or "Cannot reach the server" with the number of ratings waiting, and clears itself. |
 | Insights and learning (Phase 10) | `GET /v1.0/api/analytics/{overview,relevance,accuracy,feedback,suggestions,reasons,quality}` with `from` and `to` (the overview tiles head Insights and Today), drawn with the hand-rolled charts in `src/charts/` (bars, trend line and columns, calibration diagram); feedback history with `PUT` and `DELETE /v1.0/api/feedback/{id}`; learned preferences with accept, reject, disable, enable, edit, delete, and create. |
 | Plans, codes, email | `GET /v1.0/api/account/plan` and `POST /v1.0/api/promo-codes/redeem` (409 `PromoCodeInvalid` with `details.reason`, each explained; `src/lib/promo.js`); `GET/PUT /v1.0/api/email-preferences`. |
 | Account data | `POST /v1.0/api/account/delete` (Account > Delete account, type DELETE, then sign out) and `GET /v1.0/api/account/export` (a ZIP through the share sheet). Both degrade to "later server update" (and the web deletion page) on a server without them. |
@@ -154,7 +156,8 @@ app calls arrives with its plan phase; see `parity.json` for the route list. Gap
 | `/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json` on `app.mymorningnews.ai` | Universal links (section 33.3) need the Apple team id and the Android signing certificate fingerprint. The server's file lists `/briefings/*`, `/topics/*`, `/predictions/*`, `/findings/*`, and `/redeem*`; it also needs `/verify*` and `/reset-password*` so the account emails open the app on iOS (Android's intent filters already list them). |
 | The web app URL in client config (for example `appUrl`) | With Turnstile on, the app opens `<server>/signup`. That is right on the hosted service (one origin), but a self-hosted server whose dashboard is on another port needs the web address. |
 | A distinct error code for unknown routes (for example `RouteNotFound`) | The app tells "not on this server yet" from "this item does not exist" by whether a 404 carries a `requestId` (the server's default handler omits it). An explicit code would make that robust. |
-| `minimumAppVersion` enforcement | The value arrives in client config; the app does not block old versions yet. |
+| Store links in client config (`links.appStore`, `links.playStore`) | The update-required screen opens the store listing. Android falls back to the Play listing of the application ID; iOS needs the numeric App Store ID, so without `links.appStore` the screen shows the message with no button. |
+| An idempotency key on `POST /v1.0/api/feedback` | The offline queue avoids sending a rating twice by reading the current rating before it retries. A key the server honors would make that exact, and would keep a second history row from appearing in the rare case the check itself cannot run. |
 | A `GET /v1.0/api/suggestions/{id}` | The briefing detail now carries `itemTitles` (the app uses it, and reads findings and predictions one by one only on older servers), but a cited suggestion still opens the suggestions list, since there is no read route. |
 | A "mine" filter on editions, briefings, and topics for administrators | Administrators list every user's editions; Today keeps the signed-in user's own by `userId` on the client. |
 | The request ID on a failed `POST /v1.0/api/requests` | Planning failures (502 ModelError) still save the request, but the error does not name it; the app finds it by listing the newest request with the same text. |
@@ -197,7 +200,8 @@ Store metadata, privacy answers, age rating, screenshots, review notes, and the 
 parity check, `npm run audit:check` (fails on any advisory not reviewed in `audit-allowlist.json`), Jest with
 `@testing-library/react-native` (API client, auth controller and refresh, lock policy, player state machine and
 service, progress and downloads, deep links, parity, i18n, screens including sign-up, verification, and password
-reset, repository rules such as no em-dashes), and
+reset, version comparison and the update gate, the offline feedback queue and connection banner, repository rules
+such as no em-dashes), and
 `expo export` for iOS and Android. `.github/workflows/mobile.yml` runs it on every push.
 
 ## Project layout
@@ -219,13 +223,18 @@ mobile/
     |-- api/                  ApiClient, errors, routes, endpoint modules
     |-- auth/                 AuthController (tokens, one refresh at a time), secure token storage, lock policy
     |-- charts/               hand-rolled react-native-svg bar chart and its layout math
-    |-- components/           UI primitives, states, split view, lock gate, Markdown, feedback bar, player UI
+    |-- components/           UI primitives, states, split view, lock gate, update gate, connection banner,
+    |                         Markdown, feedback bar, player UI
+    |-- feedback/             the offline feedback queue
     |-- i18n/                 locales, ICU catalogs (mobile.*), pseudo-locales, runtime
-    |-- lib/                  deep links, formatters, Markdown parser, schedules, wizard steps, enums, briefing files
+    |-- lib/                  deep links, formatters, Markdown parser, schedules, wizard steps, enums, briefing files,
+    |                         version comparison
+    |-- net/                  connectivity monitor (device network and server reachability)
     |-- player/               state machine, PlayerService (expo-audio), progress, downloads, test tone
     |-- push/                 registration, channels, notification taps
     |-- screens/              screens per tab (route files under app/ re-export them)
-    |-- state/                prefs, auth, server config, resources, layout hooks
+    |-- state/                prefs, auth, server config, offline (connection and feedback queue), resources,
+    |                         layout hooks
     `-- theme/                palette (mirrors the dashboard) and theme provider
 ```
 

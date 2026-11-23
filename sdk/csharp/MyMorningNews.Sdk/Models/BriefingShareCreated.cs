@@ -21,12 +21,18 @@ namespace MyMorningNews.Sdk.Models
         public string Secret { get; set; } = String.Empty;
 
         /// <summary>
-        /// Public reading page URL. No sign-in is needed to open it.
+        /// The public link: one page to listen to and read the briefing. No sign-in is needed to open it. It plays
+        /// audio once the briefing has audio.
+        /// </summary>
+        public string Url { get; set; } = String.Empty;
+
+        /// <summary>
+        /// Same value as <see cref="Url"/>. Kept for code written when reading and listening had separate links.
         /// </summary>
         public string ReadUrl { get; set; } = String.Empty;
 
         /// <summary>
-        /// Public listening page URL. No sign-in is needed to open it. It plays audio once the briefing has audio.
+        /// Same value as <see cref="Url"/>. Kept for code written when reading and listening had separate links.
         /// </summary>
         public string ListenUrl { get; set; } = String.Empty;
 

@@ -337,10 +337,10 @@ const bytes = await client.artifacts.download(files.items[0].id);
 ### briefings: public share links
 
 ```js
-// Reading and listening links that anyone can open with no sign-in. Shown once; only a hash is stored.
+// One public link to listen and read, which anyone can open with no sign-in. Shown once; only a hash is stored.
 // Every share expires: expiresInDays is 1 to 14 (default 7). A value outside the range is a 400.
 const shared = await client.briefings.share(briefingId, { expiresInDays: 7, showOwnerName: false });
-console.log(shared.readUrl, shared.listenUrl, shared.share.expiresUtc);
+console.log(shared.url, shared.share.expiresUtc);
 const shares = await client.briefings.listShares(briefingId);   // viewCount, lastViewedUtc, expiresUtc, revokedUtc
 await client.briefings.revokeShare(briefingId, shared.share.id);
 await client.briefings.revokeShare(briefingId, shared.share.id, { purge: true });

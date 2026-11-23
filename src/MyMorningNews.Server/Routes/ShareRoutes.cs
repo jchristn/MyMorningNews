@@ -43,17 +43,18 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b, ListAsync, null, openApiMetadata: Paged(Doc("List the public share links of a briefing", "Sharing",
                 "Newest first. Each share has its expiry, revocation time, view count, and the time it was last opened. The link secret is never returned here; it is shown once when the share is created.")));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b, CreateAsync, null, openApiMetadata: Doc("Share a briefing through public links", "Sharing",
-                "Creates one share and returns its reading link and listening link once; only a hash of the secret is stored. Anyone with a link can open it with no sign-in until it expires or is revoked. " +
+                "Creates one share and returns its link once (one page to listen and to read); only a hash of the secret is stored. Anyone with a link can open it with no sign-in until it expires or is revoked. " +
                 "expiresInDays is 1 to 14 (the server maximum, sharing.maxExpiryDays); omitted, it is 7 (sharing.defaultExpiryDays). A value outside the range is refused with 400 ValidationFailed. " +
                 "409 SharingDisabled when sharing is turned off on the server, 409 BriefingNotReady when the briefing is not ready.").WithRequestBody(Body<BriefingShareCreateRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, b + "/{shareId}", RevokeAsync, null, openApiMetadata: Doc("Revoke a public share link", "Sharing",
-                "Both links stop working at once. With purge=true, deletes a share that is already revoked or expired.").WithParameter(QueryParam("purge", typeof(bool))));
+                "The link stops working at once. With purge=true, deletes a share that is already revoked or expired.").WithParameter(QueryParam("purge", typeof(bool))));
 
             const string p = "/v1.0/public/shares/{token}";
-            webserver.Routes.PreAuthentication.Parameter.Add(HttpMethod.GET, p, ReadPageAsync, null, openApiMetadata: Doc("Shared briefing: reading page", "Public",
-                "Server-rendered HTML. No authentication. 404 with the same page for every link that does not work."));
-            webserver.Routes.PreAuthentication.Parameter.Add(HttpMethod.GET, p + "/listen", ListenPageAsync, null, openApiMetadata: Doc("Shared briefing: listening page", "Public",
-                "Server-rendered HTML with an audio player and chapter links. No authentication. t starts playback at that many seconds. When the briefing has no finished audio the page says so.")
+            webserver.Routes.PreAuthentication.Parameter.Add(HttpMethod.GET, p, ReadPageAsync, null, openApiMetadata: Doc("Shared briefing page", "Public",
+                "Server-rendered HTML: one page to listen and to read, with an audio player and chapter links when the briefing has finished audio, then the briefing text. No authentication. t starts playback at that many seconds. 404 with the same page for every link that does not work.")
+                .WithParameter(QueryParam("t", typeof(int))));
+            webserver.Routes.PreAuthentication.Parameter.Add(HttpMethod.GET, p + "/listen", ListenPageAsync, null, openApiMetadata: Doc("Shared briefing page (earlier listening address)", "Public",
+                "Kept so links made when listening had its own page keep working. Renders the same single page as GET /v1.0/public/shares/{token}. No authentication. t starts playback at that many seconds.")
                 .WithParameter(QueryParam("t", typeof(int))));
             webserver.Routes.PreAuthentication.Parameter.Add(HttpMethod.GET, p + "/audio/{file}", AudioAsync, null, openApiMetadata: Doc("Shared briefing: audio (Range supported)", "Public",
                 "The audio behind the listening page. No authentication. Supports a single Range header (206 Partial Content)."));
@@ -130,8 +131,10 @@ namespace MyMorningNews.Server.Routes
             string secret = Param(ctx, "token") ?? String.Empty;
             SharedBriefing? shared = await Server.Shares.ResolveAsync(secret, ctx.Token).ConfigureAwait(false);
             if (shared == null) { await SendHtmlAsync(ctx, 404, SharePages.NotFound(Links(null, null))).ConfigureAwait(false); return; }
-            await Server.Shares.RecordViewAsync(shared.Share, ctx.Token).ConfigureAwait(false);
-            await SendHtmlAsync(ctx, 200, SharePages.Read(shared, Links(secret, shared))).ConfigureAwait(false);
+            int? start = QueryInt(ctx, "t");
+            // A chapter link reloads the page at another time; that is the same visit, not a new opening.
+            if (!start.HasValue) await Server.Shares.RecordViewAsync(shared.Share, ctx.Token).ConfigureAwait(false);
+            await SendHtmlAsync(ctx, 200, SharePages.Read(shared, Links(secret, shared), start)).ConfigureAwait(false);
         }
 
         private async Task ListenPageAsync(HttpContextBase ctx)

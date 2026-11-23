@@ -22,7 +22,7 @@ export function useSharingEnabled() {
 }
 
 /** One public link shown once after creating a share: the URL, the native share sheet, and Copy. */
-function LinkBlock({ kind, label, url, title }) {
+function LinkBlock({ label, url, title }) {
   const p = useTheme();
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
@@ -43,13 +43,13 @@ function LinkBlock({ kind, label, url, title }) {
     <View style={{ gap: spacing.xs }}>
       <T variant="label">{label}</T>
       <View style={{ backgroundColor: p.surfaceAlt, borderRadius: radius.md, padding: spacing.md }}>
-        <T variant="mono" selectable testID={'share-url-' + kind}>
+        <T variant="mono" selectable testID="share-url">
           {url}
         </T>
       </View>
       <ButtonRow>
-        <Button title={kind === 'read' ? t('mobile.share.shareRead') : t('mobile.share.shareListen')} icon="share-outline" onPress={() => void share()} testID={'share-send-' + kind} />
-        <Button title={copied ? t('mobile.share.copied') : t('mobile.share.copy')} icon={copied ? 'checkmark' : 'copy-outline'} kind="secondary" onPress={() => void copy()} testID={'share-copy-' + kind} accessibilityLabel={(copied ? t('mobile.share.copied') : t('mobile.share.copy')) + ': ' + label} />
+        <Button title={t('mobile.share.shareLink')} icon="share-outline" onPress={() => void share()} testID="share-send" />
+        <Button title={copied ? t('mobile.share.copied') : t('mobile.share.copy')} icon={copied ? 'checkmark' : 'copy-outline'} kind="secondary" onPress={() => void copy()} testID="share-copy" accessibilityLabel={(copied ? t('mobile.share.copied') : t('mobile.share.copy')) + ': ' + label} />
       </ButtonRow>
       {error ? <Banner kind="danger">{error}</Banner> : null}
     </View>
@@ -134,8 +134,7 @@ export function BriefingShare({ detail }) {
           {created ? (
             <View style={{ gap: spacing.sm }} testID="share-created">
               <T variant="label">{t('mobile.share.newLinks')}</T>
-              <LinkBlock kind="read" label={t('mobile.share.readLink')} url={created.readUrl} title={briefing.title} />
-              <LinkBlock kind="listen" label={t('mobile.share.listenLink')} url={created.listenUrl} title={briefing.title} />
+              <LinkBlock label={t('mobile.share.link')} url={created.url || created.readUrl} title={briefing.title} />
               <T variant="small" testID="share-expires">
                 {t('mobile.share.expiresOn', { date: when(created.share.expiresUtc) })}
               </T>

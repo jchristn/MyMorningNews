@@ -944,8 +944,9 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
  * @typedef {object} BriefingShareCreated
  * @property {BriefingShare} share Share.
  * @property {string} secret Secret (shown once).
- * @property {string} readUrl Public reading page (no sign-in needed).
- * @property {string} listenUrl Public listening page (no sign-in needed).
+ * @property {string} url The public link: one page to listen to and read the briefing (no sign-in needed).
+ * @property {string} readUrl Same value as url; kept for older code.
+ * @property {string} listenUrl Same value as url; kept for older code.
  * @property {boolean} audioReady Whether the briefing has finished audio right now.
  */
 

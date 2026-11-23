@@ -129,8 +129,9 @@ namespace MyMorningNews.Core.Briefings
             {
                 Share = share,
                 Secret = secret,
+                Url = ReadUrl(secret),
                 ReadUrl = ReadUrl(secret),
-                ListenUrl = ListenUrl(secret),
+                ListenUrl = ReadUrl(secret),
                 AudioReady = await ReadyAudioAsync(briefing, token).ConfigureAwait(false) != null
             };
         }
@@ -224,23 +225,13 @@ namespace MyMorningNews.Core.Briefings
         }
 
         /// <summary>
-        /// Public reading page URL for a secret.
+        /// Public page URL for a secret: the single link for listening and reading.
         /// </summary>
         /// <param name="secret">Link secret.</param>
         /// <returns>Absolute URL.</returns>
         public string ReadUrl(string secret)
         {
             return _Settings.Rest.PublicBaseUrl + PagePath(secret);
-        }
-
-        /// <summary>
-        /// Public listening page URL for a secret.
-        /// </summary>
-        /// <param name="secret">Link secret.</param>
-        /// <returns>Absolute URL.</returns>
-        public string ListenUrl(string secret)
-        {
-            return _Settings.Rest.PublicBaseUrl + PagePath(secret) + "/listen";
         }
 
         /// <summary>

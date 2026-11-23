@@ -125,8 +125,7 @@ export function ShareDialog({ briefing, open, onClose, config = null }) {
         {created ? (
           <section className="share-created" aria-label={t('briefings.share.newLinks')} data-testid="share-created">
             <strong>{t('briefings.share.newLinks')}</strong>
-            <LinkRow id={'share-read-' + briefingId} label={t('briefings.share.readLink')} url={created.readUrl} />
-            <LinkRow id={'share-listen-' + briefingId} label={t('briefings.share.listenLink')} url={created.listenUrl} />
+            <LinkRow id={'share-link-' + briefingId} label={t('briefings.share.link')} url={created.url || created.readUrl} />
             <p className="small">
               <span data-testid="share-expires">{t('briefings.share.expiresOn', { date: f.dateTime(created.share.expiresUtc) })}</span>
             </p>

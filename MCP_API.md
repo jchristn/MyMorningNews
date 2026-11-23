@@ -682,14 +682,14 @@ Output:
 
 ### share_briefing
 
-**Share a briefing with a public link.** Create public links for one of your ready briefings: a reading page and a listening page that anyone with the link can open with no sign-in. The links are returned once and cannot be read back later, so give them to the user now. Every share expires: expiresInDays is 1 to 14 (default 7), and a value outside that range is refused. Only share when the user asks to.
+**Share a briefing with a public link.** Create a public link for one of your ready briefings: one page where anyone with the link can listen to it and read it with no sign-in. The link (url) is returned once and cannot be read back later, so give it to the user now. Every share expires: expiresInDays is 1 to 14 (default 7), and a value outside that range is refused. Only share when the user asks to.
 
 Input:
 
 | Name | Type | Required | Description |
 |---|---|---|---|
 | `briefingId` | string (up to 64) | yes | Briefing ID (brf_...). |
-| `expiresInDays` | integer (1 to 14) | no | Days until the links stop working. 1 to 14. Default 7. |
+| `expiresInDays` | integer (1 to 14) | no | Days until the link stops working. 1 to 14. Default 7. |
 | `showOwnerName` | boolean | no | Show your display name on the public pages. Default false. Your email address is never shown. |
 
 Output:
@@ -697,9 +697,10 @@ Output:
 | Name | Type | Always | Description |
 |---|---|---|---|
 | `share` | object with `id`, `briefingId`, `status`, `expiresUtc`, `revokedUtc`, `showOwnerName`, `viewCount`, `lastViewedUtc`, `createdUtc` | yes |  |
-| `readUrl` | string | yes | Public reading page. Anyone with the link can open it with no sign-in. |
-| `listenUrl` | string | yes | Public listening page. Anyone with the link can open it with no sign-in. |
-| `audioReady` | boolean | no | Whether the briefing has finished audio now. When false the listening page says the audio is not ready. |
+| `url` | string | yes | The public link: one page to listen to and read the briefing. Anyone with the link can open it with no sign-in. |
+| `readUrl` | string | yes | Same value as url. Kept for older clients. |
+| `listenUrl` | string | yes | Same value as url. Kept for older clients. |
+| `audioReady` | boolean | no | Whether the briefing has finished audio now. When false the page shows the text alone until audio is made. |
 
 ### list_briefing_shares
 
@@ -724,7 +725,7 @@ Output:
 
 ### revoke_briefing_share
 
-**Stop sharing a briefing link.** Revoke one public share so its reading and listening links stop working at once. This cannot be undone; make a new share to share again.
+**Stop sharing a briefing link.** Revoke one public share so its link stops working at once. This cannot be undone; make a new share to share again.
 
 Input:
 

@@ -320,11 +320,11 @@ client.briefings.markdown(briefing_id); client.briefings.html(briefing_id)
 client.briefings.pin(briefing_id); client.briefings.regenerate(briefing_id)
 client.briefings.generate_audio(briefing_id, voice_profile_id=voice_id)
 
-# Public share links: a reading page and a listening page that anyone can open with no sign-in.
+# Public share link: one page to listen and read that anyone can open with no sign-in.
 # Shown once; only a hash is stored. Every share expires: expires_in_days is 1 to 14 (default 7),
 # and a value outside the range raises BadRequestError.
 shared = client.briefings.share(briefing_id, expires_in_days=7, show_owner_name=False)
-print(shared.read_url, shared.listen_url, shared.share.expires_utc)
+print(shared.url, shared.share.expires_utc)
 client.briefings.list_shares(briefing_id)        # view_count, last_viewed_utc, expires_utc, revoked_utc
 client.briefings.revoke_share(briefing_id, shared.share.id)
 client.briefings.revoke_share(briefing_id, shared.share.id, purge=True)

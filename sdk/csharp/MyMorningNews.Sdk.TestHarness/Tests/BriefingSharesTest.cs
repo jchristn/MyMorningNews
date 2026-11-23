@@ -55,7 +55,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
                 await c.Briefings.RevokeShareAsync(ready.Id, id, true, ct).ConfigureAwait(false);
             });
             Helpers.NotEmpty(created.Secret, "secret");
-            Helpers.True(created.ReadUrl.Contains("/v1.0/public/shares/", System.StringComparison.Ordinal) && created.ListenUrl == created.ReadUrl + "/listen", "reading and listening links");
+            Helpers.True(created.Url.Contains("/v1.0/public/shares/", System.StringComparison.Ordinal) && created.ReadUrl == created.Url && created.ListenUrl == created.Url, "one public link");
             Helpers.Equal("redacted", created.Share.TokenHash, "hash is redacted");
             Helpers.True(created.Share.ExpiresUtc > System.DateTime.UtcNow.AddDays(max - 1) && !created.Share.ShowOwnerName, "expiry stored, name hidden by default");
 

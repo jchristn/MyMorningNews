@@ -39,18 +39,19 @@ namespace MyMorningNews.McpServer.Tools
             List<McpTool> tools = new List<McpTool>();
             Dictionary<string, object> created = Schema.Object(Schema.Props(
                 "share", ShareSchema,
-                "readUrl", Schema.String("Public reading page. Anyone with the link can open it with no sign-in."),
-                "listenUrl", Schema.String("Public listening page. Anyone with the link can open it with no sign-in."),
-                "audioReady", Schema.Boolean("Whether the briefing has finished audio now. When false the listening page says the audio is not ready.")),
-                new[] { "share", "readUrl", "listenUrl" }, true);
+                "url", Schema.String("The public link: one page to listen to and read the briefing. Anyone with the link can open it with no sign-in."),
+                "readUrl", Schema.String("Same value as url. Kept for older clients."),
+                "listenUrl", Schema.String("Same value as url. Kept for older clients."),
+                "audioReady", Schema.Boolean("Whether the briefing has finished audio now. When false the page shows the text alone until audio is made.")),
+                new[] { "share", "url", "readUrl", "listenUrl" }, true);
 
             tools.Add(new McpTool("share_briefing", "Share a briefing with a public link",
-                "Create public links for one of your ready briefings: a reading page and a listening page that anyone with the link can open with no sign-in. " +
-                "The links are returned once and cannot be read back later, so give them to the user now. Every share expires: expiresInDays is 1 to 14 (default 7), and a value outside that range is refused. " +
+                "Create a public link for one of your ready briefings: one page where anyone with the link can listen to it and read it with no sign-in. " +
+                "The link (url) is returned once and cannot be read back later, so give it to the user now. Every share expires: expiresInDays is 1 to 14 (default 7), and a value outside that range is refused. " +
                 "Only share when the user asks to.",
                 Schema.Object(Schema.Props(
                     "briefingId", Schema.String("Briefing ID (brf_...).", 64),
-                    "expiresInDays", Schema.Integer("Days until the links stop working. 1 to 14. Default 7.", MinExpiryDays, MaxExpiryDays),
+                    "expiresInDays", Schema.Integer("Days until the link stops working. 1 to 14. Default 7.", MinExpiryDays, MaxExpiryDays),
                     "showOwnerName", Schema.Boolean("Show your display name on the public pages. Default false. Your email address is never shown.")), new[] { "briefingId" }),
                 created, false, false,
                 async (a, c, t) =>
@@ -63,7 +64,7 @@ namespace MyMorningNews.McpServer.Tools
                     BriefingShareCreated s = await c.Briefings.ShareAsync(a.RequiredText("briefingId", 64), req, t).ConfigureAwait(false);
                     return new Dictionary<string, object?>(StringComparer.Ordinal)
                     {
-                        { "share", Share(s.Share) }, { "readUrl", s.ReadUrl }, { "listenUrl", s.ListenUrl }, { "audioReady", s.AudioReady }
+                        { "share", Share(s.Share) }, { "url", s.Url }, { "readUrl", s.ReadUrl }, { "listenUrl", s.ListenUrl }, { "audioReady", s.AudioReady }
                     };
                 }));
 
@@ -81,7 +82,7 @@ namespace MyMorningNews.McpServer.Tools
                 }));
 
             tools.Add(new McpTool("revoke_briefing_share", "Stop sharing a briefing link",
-                "Revoke one public share so its reading and listening links stop working at once. This cannot be undone; make a new share to share again.",
+                "Revoke one public share so its link stops working at once. This cannot be undone; make a new share to share again.",
                 Schema.Object(Schema.Props(
                     "briefingId", Schema.String("Briefing ID (brf_...).", 64),
                     "shareId", Schema.String("Share ID (shr_...), from list_briefing_shares or share_briefing.", 64)), new[] { "briefingId", "shareId" }),

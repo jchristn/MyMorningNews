@@ -1,7 +1,9 @@
 namespace MyMorningNews.Core.Briefings
 {
     using System;
+    using System.Collections.Generic;
     using System.Globalization;
+    using System.Linq;
     using System.Net;
     using System.Text;
     using System.Text.RegularExpressions;
@@ -62,31 +64,37 @@ namespace MyMorningNews.Core.Briefings
         private static readonly Regex _LeadingTitle = new Regex(@"\A\s*#\s+[^\n]*\n?", RegexOptions.Compiled);
 
         /// <summary>
-        /// The reading page.
+        /// The shared briefing page: one page to listen and to read. When the briefing has finished audio, a native
+        /// audio player with chapter links comes first, followed by the briefing text. Without audio it is the text alone.
         /// </summary>
         /// <param name="shared">The shared briefing.</param>
         /// <param name="links">Page addresses.</param>
+        /// <param name="startSeconds">Where playback starts (a chapter link), or null for the beginning. Default null.</param>
         /// <returns>HTML document.</returns>
         /// <exception cref="ArgumentNullException">An argument is null.</exception>
-        public static string Read(SharedBriefing shared, SharePageLinks links)
+        public static string Read(SharedBriefing shared, SharePageLinks links, double? startSeconds = null)
         {
             ArgumentNullException.ThrowIfNull(shared);
             ArgumentNullException.ThrowIfNull(links);
             Briefing b = shared.Briefing;
+            bool playable = shared.Audio != null && !String.IsNullOrEmpty(links.AudioPath);
             StringBuilder sb = new StringBuilder();
             sb.Append("<article>");
             AppendHeading(sb, shared, "Briefing");
-            if (b.ReadMinutes > 0) sb.Append("<p class=\"meta\">").Append(b.ReadMinutes.ToString(CultureInfo.InvariantCulture)).Append(" minute read</p>");
-            sb.Append("<p class=\"switch\"><a href=\"").Append(Enc(links.ListenPath)).Append("\">").Append(shared.Audio != null ? "Listen to this briefing" : "Listening page").Append("</a></p>");
-            sb.Append("<div class=\"content\">").Append(Content(b.Markdown)).Append("</div>");
+            List<string> meta = new List<string>();
+            if (playable && shared.Audio!.DurationSeconds >= 1) meta.Add(Clock(shared.Audio.DurationSeconds) + " of audio");
+            if (b.ReadMinutes > 0) meta.Add(b.ReadMinutes.ToString(CultureInfo.InvariantCulture) + " minute read");
+            if (meta.Any()) sb.Append("<p class=\"meta\">").Append(Enc(String.Join(" · ", meta))).Append("</p>");
+            if (playable) AppendAudio(sb, shared, links, startSeconds);
+            sb.Append("<div class=\"content\" id=\"read\">").Append(Content(b.Markdown)).Append("</div>");
             sb.Append("</article>");
-            string description = "A briefing" + (String.IsNullOrWhiteSpace(shared.TopicName) ? String.Empty : " on " + shared.TopicName!.Trim()) + ", researched and written by My Morning News.";
+            string description = (playable ? "Listen to or read a briefing" : "A briefing") + (String.IsNullOrWhiteSpace(shared.TopicName) ? String.Empty : " on " + shared.TopicName!.Trim()) + ", researched and written by My Morning News.";
             return Page(b.Title, description, links, sb.ToString(), true);
         }
 
         /// <summary>
-        /// The listening page: a native audio player with chapter links when the briefing has finished audio, and a
-        /// plain notice when it does not.
+        /// The address older shares handed out as a separate listening page. It renders the same single page as
+        /// <see cref="Read"/>, so links made before the two pages were joined keep working.
         /// </summary>
         /// <param name="shared">The shared briefing.</param>
         /// <param name="links">Page addresses.</param>
@@ -95,46 +103,7 @@ namespace MyMorningNews.Core.Briefings
         /// <exception cref="ArgumentNullException">An argument is null.</exception>
         public static string Listen(SharedBriefing shared, SharePageLinks links, double? startSeconds)
         {
-            ArgumentNullException.ThrowIfNull(shared);
-            ArgumentNullException.ThrowIfNull(links);
-            Briefing b = shared.Briefing;
-            StringBuilder sb = new StringBuilder();
-            sb.Append("<article>");
-            AppendHeading(sb, shared, "Audio briefing");
-            bool playable = shared.Audio != null && !String.IsNullOrEmpty(links.AudioPath);
-            if (playable)
-            {
-                double duration = shared.Audio!.DurationSeconds;
-                double start = startSeconds.HasValue && startSeconds.Value > 0 && (duration <= 0 || startSeconds.Value < duration) ? Math.Floor(startSeconds.Value) : 0;
-                if (duration >= 1) sb.Append("<p class=\"meta\">").Append(Enc(Clock(duration))).Append(" of audio</p>");
-                sb.Append("<audio controls preload=\"metadata\" src=\"").Append(Enc(links.AudioPath!));
-                if (start > 0) sb.Append("#t=").Append(start.ToString("0", CultureInfo.InvariantCulture));
-                sb.Append("\"");
-                if (!String.IsNullOrWhiteSpace(shared.Audio.ContentType)) sb.Append(" type=\"").Append(Enc(shared.Audio.ContentType)).Append("\"");
-                sb.Append(">Your browser cannot play this audio here. <a href=\"").Append(Enc(links.AudioPath!)).Append("\">Open the audio file</a>.</audio>");
-                if (shared.Chapters.Count > 1)
-                {
-                    sb.Append("<nav class=\"chapters\" aria-label=\"Chapters\"><h2>Chapters</h2><ol>");
-                    foreach (MediaChapter c in shared.Chapters)
-                    {
-                        double at = Math.Floor(Math.Max(0, c.StartSeconds));
-                        sb.Append("<li><a href=\"").Append(Enc(links.ListenPath)).Append("?t=").Append(at.ToString("0", CultureInfo.InvariantCulture)).Append("\"");
-                        if (start > 0 && Math.Abs(at - start) < 0.5) sb.Append(" aria-current=\"true\"");
-                        sb.Append("><span>").Append(Enc(c.Title)).Append("</span><span class=\"time\">").Append(Enc(Clock(at))).Append("</span></a></li>");
-                    }
-
-                    sb.Append("</ol></nav>");
-                }
-            }
-            else
-            {
-                sb.Append("<p class=\"notice\" role=\"status\">The audio for this briefing is not ready yet. You can read the briefing now, and this page will play the audio once it has been made.</p>");
-            }
-
-            sb.Append("<p class=\"switch\"><a href=\"").Append(Enc(links.ReadPath)).Append("\">Read this briefing</a></p>");
-            sb.Append("</article>");
-            string description = "Listen to a briefing" + (String.IsNullOrWhiteSpace(shared.TopicName) ? String.Empty : " on " + shared.TopicName!.Trim()) + ", researched and written by My Morning News.";
-            return Page(b.Title, description, links, sb.ToString(), true);
+            return Read(shared, links, startSeconds);
         }
 
         /// <summary>
@@ -175,6 +144,33 @@ namespace MyMorningNews.Core.Briefings
             string md = _LeadingTitle.Replace((markdown ?? String.Empty).Replace("\r\n", "\n"), String.Empty, 1);
             // SafeMarkdown encodes all text, so a literal <a href=" in its output can only be a link it wrote itself.
             return SafeMarkdown.ToHtml(md).Replace("<a href=\"", "<a rel=\"" + OutboundRel + "\" href=\"", StringComparison.Ordinal);
+        }
+
+        private static void AppendAudio(StringBuilder sb, SharedBriefing shared, SharePageLinks links, double? startSeconds)
+        {
+            double duration = shared.Audio!.DurationSeconds;
+            double start = startSeconds.HasValue && startSeconds.Value > 0 && (duration <= 0 || startSeconds.Value < duration) ? Math.Floor(startSeconds.Value) : 0;
+            sb.Append("<section class=\"listen\" id=\"listen\" aria-label=\"Listen\">");
+            sb.Append("<audio controls preload=\"metadata\" src=\"").Append(Enc(links.AudioPath!));
+            if (start > 0) sb.Append("#t=").Append(start.ToString("0", CultureInfo.InvariantCulture));
+            sb.Append("\"");
+            if (!String.IsNullOrWhiteSpace(shared.Audio.ContentType)) sb.Append(" type=\"").Append(Enc(shared.Audio.ContentType)).Append("\"");
+            sb.Append(">Your browser cannot play this audio here. <a href=\"").Append(Enc(links.AudioPath!)).Append("\">Open the audio file</a>.</audio>");
+            if (shared.Chapters.Count > 1)
+            {
+                sb.Append("<nav class=\"chapters\" aria-label=\"Chapters\"><h2>Chapters</h2><ol>");
+                foreach (MediaChapter c in shared.Chapters)
+                {
+                    double at = Math.Floor(Math.Max(0, c.StartSeconds));
+                    sb.Append("<li><a href=\"").Append(Enc(links.ReadPath)).Append("?t=").Append(at.ToString("0", CultureInfo.InvariantCulture)).Append("#listen\"");
+                    if (start > 0 && Math.Abs(at - start) < 0.5) sb.Append(" aria-current=\"true\"");
+                    sb.Append("><span>").Append(Enc(c.Title)).Append("</span><span class=\"time\">").Append(Enc(Clock(at))).Append("</span></a></li>");
+                }
+
+                sb.Append("</ol></nav>");
+            }
+
+            sb.Append("</section>");
         }
 
         private static void AppendHeading(StringBuilder sb, SharedBriefing shared, string kicker)

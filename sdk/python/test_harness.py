@@ -1194,7 +1194,7 @@ def t_briefing_shares(h: Harness) -> None:
         h.client.briefings.revoke_share(bid, sid, purge=True)
 
     h.on_cleanup("briefing share " + sid, cleanup)
-    check(created.secret and "/v1.0/public/shares/" in created.read_url and created.listen_url == created.read_url + "/listen", "both links returned once")
+    check(created.secret and "/v1.0/public/shares/" in created.url and created.read_url == created.url and created.listen_url == created.url, "one link returned once")
     eq(created.share.token_hash, "redacted", "hash is redacted")
     check(created.share.expires_utc, "a share always has an expiry")
     check(sid in ids(h.client.briefings.list_shares(bid).items), "listed")

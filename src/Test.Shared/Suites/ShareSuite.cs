@@ -66,7 +66,7 @@ namespace Test.Shared.Suites
             links.SignupUrl = "https://app.example.test/signup";
             Assert.True(SharePages.Read(shared, links).Contains("<a class=\"btn\" href=\"https://app.example.test/signup\" rel=\"noopener noreferrer\">Create your account</a>", StringComparison.Ordinal), "sign-up call to action when sign-up is open");
             string listen = SharePages.Listen(shared, links, null);
-            Assert.True(listen.Contains("not ready yet", StringComparison.Ordinal) && !listen.Contains("<audio", StringComparison.Ordinal) && listen.Contains("Read this briefing", StringComparison.Ordinal), "listening page without audio says so");
+            Assert.True(!listen.Contains("<audio", StringComparison.Ordinal) && listen.Contains("class=\"content\"", StringComparison.Ordinal), "without audio the page is the text alone");
             return Task.CompletedTask;
         }
 
@@ -89,7 +89,7 @@ namespace Test.Shared.Suites
 
             BriefingShareCreated created = (await f.User.Client.PostAsync(path, null, token).ConfigureAwait(false)).Expect(201, "create").Json<BriefingShareCreated>();
             Assert.True(created.Secret.StartsWith(BriefingShareService.SecretPrefix, StringComparison.Ordinal) && created.Share.TokenHash == "redacted" && created.Share.Id.StartsWith("shr_", StringComparison.Ordinal), "secret shown once, hash redacted");
-            Assert.True(created.ReadUrl.EndsWith("/v1.0/public/shares/" + created.Secret, StringComparison.Ordinal) && created.ListenUrl == created.ReadUrl + "/listen" && created.AudioReady, "one share yields both links");
+            Assert.True(created.Url.EndsWith("/v1.0/public/shares/" + created.Secret, StringComparison.Ordinal) && created.ReadUrl == created.Url && created.ListenUrl == created.Url && created.AudioReady, "one share yields one link");
             Assert.True(!created.Share.ShowOwnerName && created.Share.ViewCount == 0 && created.Share.LastViewedUtc == null, "name hidden by default, not opened yet");
 
             string pub = baseUrl + "/v1.0/public/shares/" + created.Secret;
@@ -101,7 +101,7 @@ namespace Test.Shared.Suites
                 && read.Body.Contains("© 2026 Lattice AI LLC", StringComparison.Ordinal) && read.Body.Contains("alt=\"My Morning News\"", StringComparison.Ordinal), "title, edition name, logo, copyright");
             Assert.True(read.Body.Contains("researched and written by My Morning News for one reader's own topic", StringComparison.Ordinal) && read.Body.Contains("Get a briefing like this on your own topics", StringComparison.Ordinal)
                 && read.Body.Contains("href=\"https://mymorningnews.ai\"", StringComparison.Ordinal), "both calls to action point at the marketing site while sign-up is closed");
-            Assert.True(read.Body.Contains("href=\"/v1.0/public/shares/" + created.Secret + "/listen\"", StringComparison.Ordinal), "reading page links to the listening page");
+            Assert.True(read.Body.Contains("<audio controls preload=\"metadata\"", StringComparison.Ordinal) && read.Body.Contains("class=\"content\"", StringComparison.Ordinal) && read.Body.IndexOf("<audio", StringComparison.Ordinal) < read.Body.IndexOf("class=\"content\"", StringComparison.Ordinal), "one page carries the player and then the text");
             Assert.True(!read.Body.Contains("<script", StringComparison.OrdinalIgnoreCase) && !read.Body.Contains("<iframe", StringComparison.OrdinalIgnoreCase) && read.Body.Contains("&lt;script&gt;alert(&#39;x&#39;)&lt;/script&gt;", StringComparison.Ordinal)
                 && !read.Body.Contains("href=\"javascript:", StringComparison.OrdinalIgnoreCase), "planted markup is shown as text");
             Assert.True(read.Body.Contains("<a rel=\"noopener noreferrer nofollow\" href=\"https://example.test/report\">source</a>", StringComparison.Ordinal), "outbound links carry rel");
@@ -110,9 +110,9 @@ namespace Test.Shared.Suites
 
             TestResponse listen = (await Bare(pub + "/listen", token).ConfigureAwait(false)).Expect(200, "listening page with no credentials");
             string audioPath = "/v1.0/public/shares/" + created.Secret + "/audio/briefing" + (m.ContentType == "audio/mpeg" ? ".mp3" : ".wav");
-            Assert.True(listen.Body.Contains("<audio controls preload=\"metadata\" src=\"" + audioPath + "\"", StringComparison.Ordinal) && listen.Body.Contains("href=\"/v1.0/public/shares/" + created.Secret + "\">Read this briefing</a>", StringComparison.Ordinal),
-                "player and link back to the reading page: " + (listen.Body.Contains("<audio", StringComparison.Ordinal) ? listen.Body.Substring(listen.Body.IndexOf("<audio", StringComparison.Ordinal), 160) : "no player"));
-            Assert.True(listen.Body.Contains("<nav class=\"chapters\"", StringComparison.Ordinal) && listen.Body.Contains("/listen?t=", StringComparison.Ordinal) && !listen.Body.Contains("<script", StringComparison.OrdinalIgnoreCase), "chapter links without script");
+            Assert.True(listen.Body.Contains("<audio controls preload=\"metadata\" src=\"" + audioPath + "\"", StringComparison.Ordinal) && listen.Body.Contains("class=\"content\"", StringComparison.Ordinal),
+                "the earlier listening address shows the same page, player and text: " + (listen.Body.Contains("<audio", StringComparison.Ordinal) ? listen.Body.Substring(listen.Body.IndexOf("<audio", StringComparison.Ordinal), 160) : "no player"));
+            Assert.True(listen.Body.Contains("<nav class=\"chapters\"", StringComparison.Ordinal) && listen.Body.Contains("/v1.0/public/shares/" + created.Secret + "?t=", StringComparison.Ordinal) && !listen.Body.Contains("<script", StringComparison.OrdinalIgnoreCase), "chapter links without script");
             Assert.True(listen.Headers["Content-Security-Policy"].Contains("media-src 'self'", StringComparison.Ordinal) && !listen.Headers.ContainsKey("Set-Cookie"), "listening page headers");
             TestResponse chapter = (await Bare(pub + "/listen?t=1", token).ConfigureAwait(false)).Expect(200, "chapter link");
             Assert.True(chapter.Body.Contains("#t=1\"", StringComparison.Ordinal) == (m.DurationSeconds > 1), "a chapter link starts playback at that time when it is inside the audio (" + m.DurationSeconds + " s)");
@@ -157,7 +157,7 @@ namespace Test.Shared.Suites
             string qpub = baseUrl + "/v1.0/public/shares/" + q.Secret;
             (await Bare(qpub, token).ConfigureAwait(false)).Expect(200, "reading page without audio");
             TestResponse qListen = (await Bare(qpub + "/listen", token).ConfigureAwait(false)).Expect(200, "listening page without audio");
-            Assert.True(qListen.Body.Contains("The audio for this briefing is not ready yet", StringComparison.Ordinal) && !qListen.Body.Contains("<audio", StringComparison.Ordinal), "says the audio is not ready");
+            Assert.True(!qListen.Body.Contains("<audio", StringComparison.Ordinal) && qListen.Body.Contains("class=\"content\"", StringComparison.Ordinal), "without audio the page is the text alone");
             (await Bare(qpub + "/audio/briefing.wav", token).ConfigureAwait(false)).Expect(404, "no audio to stream");
 
             ClientConfigResponse cfg = (await Bare(baseUrl + "/v1.0/api/client-config", token).ConfigureAwait(false)).Expect(200, "client config").Json<ClientConfigResponse>();

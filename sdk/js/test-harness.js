@@ -1358,7 +1358,7 @@ async function main() {
             await client.briefings.revokeShare(S.briefingId, id).catch(() => null);
             await client.briefings.revokeShare(S.briefingId, id, { purge: true });
         });
-        assert(created.secret && created.readUrl.includes('/v1.0/public/shares/') && created.listenUrl === created.readUrl + '/listen', 'both links returned once');
+        assert(created.secret && created.url.includes('/v1.0/public/shares/') && created.readUrl === created.url && created.listenUrl === created.url, 'one link returned once');
         assertEqual(created.share.tokenHash, 'redacted', 'hash redacted');
         assert(new Date(created.share.expiresUtc).getTime() > Date.now() + (max - 1) * 86400000, 'expiry stored');
         const byDefault = await client.briefings.share(S.briefingId);

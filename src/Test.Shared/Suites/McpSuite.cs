@@ -205,8 +205,8 @@ namespace Test.Shared.Suites
                 McpToolOutcome tooLong = await c.ToolAsync("share_briefing", new { briefingId = briefingId, expiresInDays = 15 }, token).ConfigureAwait(false);
                 Assert.True(tooLong.IsError, "share_briefing refuses 15 days: " + tooLong.Text);
                 McpToolOutcome shared = await c.ToolAsync("share_briefing", new { briefingId = briefingId, expiresInDays = 14 }, token).ConfigureAwait(false);
-                Assert.True(!shared.IsError && shared.Structured.GetProperty("readUrl").GetString()!.Contains("/v1.0/public/shares/mmns_", StringComparison.Ordinal)
-                    && shared.Structured.GetProperty("listenUrl").GetString()!.EndsWith("/listen", StringComparison.Ordinal) && shared.Structured.GetProperty("share").GetProperty("status").GetString() == "Live", "share_briefing: " + shared.Text);
+                Assert.True(!shared.IsError && shared.Structured.GetProperty("url").GetString()!.Contains("/v1.0/public/shares/mmns_", StringComparison.Ordinal)
+                    && shared.Structured.GetProperty("listenUrl").GetString() == shared.Structured.GetProperty("url").GetString() && shared.Structured.GetProperty("share").GetProperty("status").GetString() == "Live", "share_briefing: " + shared.Text);
                 Assert.True(!shared.Text.Contains("tokenHash", StringComparison.Ordinal), "the stored hash is left out");
                 string shareId = shared.Structured.GetProperty("share").GetProperty("id").GetString()!;
                 McpToolOutcome shares = await c.ToolAsync("list_briefing_shares", new { briefingId = briefingId }, token).ConfigureAwait(false);

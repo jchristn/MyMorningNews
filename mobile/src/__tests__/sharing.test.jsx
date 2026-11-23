@@ -16,8 +16,9 @@ const share = (extra = {}) => ({ id: 'shr_1', briefingId: 'brf_1', tokenHash: 'r
 const CREATED = {
   share: share({ id: 'shr_new', viewCount: 0, lastViewedUtc: null, expiresUtc: iso(NOW + 3 * DAY) }),
   secret: 'mmns_secret',
+  url: 'https://app.mymorningnews.ai/v1.0/public/shares/mmns_secret',
   readUrl: 'https://app.mymorningnews.ai/v1.0/public/shares/mmns_secret',
-  listenUrl: 'https://app.mymorningnews.ai/v1.0/public/shares/mmns_secret/listen',
+  listenUrl: 'https://app.mymorningnews.ai/v1.0/public/shares/mmns_secret',
   audioReady: false,
 };
 const base = (extra = {}) => ({
@@ -72,18 +73,15 @@ describe('Briefing reader: public share links', () => {
     await waitFor(() => expect(screen.getByTestId('share-created')).toBeTruthy());
     const post = server.calls.find((c) => c.key === 'POST /v1.0/api/briefings/brf_1/shares');
     expect(post.body).toEqual({ expiresInDays: 3, showOwnerName: false });
-    expect(screen.getByTestId('share-url-read').props.children).toBe(CREATED.readUrl);
-    expect(screen.getByTestId('share-url-listen').props.children).toBe(CREATED.listenUrl);
+    expect(screen.getByTestId('share-url').props.children).toBe(CREATED.url);
     expect(screen.getByTestId('share-expires').props.children).toMatch(/^Expires .*\d/);
     expect(screen.getByText(/no audio yet/)).toBeTruthy();
     expect(screen.getByText(/shown only once/)).toBeTruthy();
 
-    await fireEvent.press(screen.getByTestId('share-send-read'));
-    await waitFor(() => expect(sheet).toHaveBeenCalledWith(expect.objectContaining({ url: CREATED.readUrl, message: expect.stringContaining(CREATED.readUrl) })));
-    await fireEvent.press(screen.getByTestId('share-send-listen'));
-    await waitFor(() => expect(sheet).toHaveBeenLastCalledWith(expect.objectContaining({ url: CREATED.listenUrl })));
-    await fireEvent.press(screen.getByTestId('share-copy-listen'));
-    await waitFor(() => expect(clipboard).toHaveBeenCalledWith(CREATED.listenUrl));
+    await fireEvent.press(screen.getByTestId('share-send'));
+    await waitFor(() => expect(sheet).toHaveBeenCalledWith(expect.objectContaining({ url: CREATED.url, message: expect.stringContaining(CREATED.url) })));
+    await fireEvent.press(screen.getByTestId('share-copy'));
+    await waitFor(() => expect(clipboard).toHaveBeenCalledWith(CREATED.url));
     await waitFor(() => expect(screen.getByTestId('share-shr_new')).toBeTruthy());
   });
 

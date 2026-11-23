@@ -235,7 +235,7 @@ namespace MyMorningNews.Sdk.Resources
         /// <param name="id">Briefing identifier. The briefing must be ready.</param>
         /// <param name="request">Expiry in days and whether to show my name, or null for the defaults (7 days, name hidden).</param>
         /// <param name="token">Cancellation token.</param>
-        /// <returns>The BriefingShareCreated with ReadUrl and ListenUrl.</returns>
+        /// <returns>The BriefingShareCreated with Url, the single public link.</returns>
         /// <exception cref="ArgumentNullException">id is null or empty.</exception>
         /// <exception cref="MyMorningNewsException">The server returned an error: 400 ValidationFailed for an expiry outside 1 to 14 days, 409 SharingDisabled when sharing is turned off, 409 BriefingNotReady.</exception>
         public Task<BriefingShareCreated> ShareAsync(string id, BriefingShareCreateRequest? request = null, CancellationToken token = default)

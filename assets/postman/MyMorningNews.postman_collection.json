@@ -10692,7 +10692,7 @@
     },
     {
       "name": "Sharing",
-      "description": "Public share links for a briefing. One share yields a reading page and a listening page that anyone with the link can open with no sign-in. A share is made on purpose, never by default, always expires (1 to 14 days, 7 when not chosen), and can be revoked. The links are returned once; only a hash of the secret is stored. `sharing.enabled` turns the feature off for the whole server.",
+      "description": "Public share links for a briefing. One share yields one link to a single page where anyone can listen to the briefing and read it with no sign-in. A share is made on purpose, never by default, always expires (1 to 14 days, 7 when not chosen), and can be revoked. The links are returned once; only a hash of the secret is stored. `sharing.enabled` turns the feature off for the whole server.",
       "item": [
         {
           "name": "List the public share links of a briefing",
@@ -10797,7 +10797,7 @@
                 }
               ]
             },
-            "description": "**Share a briefing through public links.** Creates one share and returns its reading link and listening link once; only a hash of the secret is stored. Anyone with a link can open it with no sign-in until it expires or is revoked. expiresInDays is 1 to 14 (the server maximum, sharing.maxExpiryDays); omitted, it is 7 (sharing.defaultExpiryDays). A value outside the range is refused with 400 ValidationFailed. 409 SharingDisabled when sharing is turned off on the server, 409 BriefingNotReady when the briefing is not ready.\n\n- Auth: `Briefing:Update` (`ShareWrite`).\n- Response: BriefingShareCreated\n- Notes: The body is optional. `expiresInDays` must be from 1 to the server maximum (`sharing.maxExpiryDays`, 14 by default); omitted, it is `sharing.defaultExpiryDays` (7 by default, never more than the maximum). A value outside the range is refused with 400 `ValidationFailed`, with `minimum` and `maximum` in `details`; the server never adjusts it silently, and there is no share without an expiry. `showOwnerName` (default false) shows the sharing user's display name on the public pages; the email address is never shown. `readUrl`, `listenUrl`, and `secret` are returned only in this response.\n- Status: 201 Created; 400 ValidationFailed, BadRequest, TenantRequired; 401 Unauthorized; 403 Forbidden; 404 NotFound; 409 SharingDisabled, BriefingNotReady\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#post-v10apibriefingsidshares)",
+            "description": "**Share a briefing through public links.** Creates one share and returns its link once (one page to listen and to read); only a hash of the secret is stored. Anyone with a link can open it with no sign-in until it expires or is revoked. expiresInDays is 1 to 14 (the server maximum, sharing.maxExpiryDays); omitted, it is 7 (sharing.defaultExpiryDays). A value outside the range is refused with 400 ValidationFailed. 409 SharingDisabled when sharing is turned off on the server, 409 BriefingNotReady when the briefing is not ready.\n\n- Auth: `Briefing:Update` (`ShareWrite`).\n- Response: BriefingShareCreated\n- Notes: The body is optional. `expiresInDays` must be from 1 to the server maximum (`sharing.maxExpiryDays`, 14 by default); omitted, it is `sharing.defaultExpiryDays` (7 by default, never more than the maximum). A value outside the range is refused with 400 `ValidationFailed`, with `minimum` and `maximum` in `details`; the server never adjusts it silently, and there is no share without an expiry. `showOwnerName` (default false) shows the sharing user's display name on the public pages; the email address is never shown. `readUrl`, `listenUrl`, and `secret` are returned only in this response.\n- Status: 201 Created; 400 ValidationFailed, BadRequest, TenantRequired; 401 Unauthorized; 403 Forbidden; 404 NotFound; 409 SharingDisabled, BriefingNotReady\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#post-v10apibriefingsidshares)",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"expiresInDays\": 7,\n  \"showOwnerName\": false\n}",
@@ -13682,7 +13682,7 @@
           }
         },
         {
-          "name": "Shared briefing: reading page",
+          "name": "Shared briefing page",
           "request": {
             "method": "GET",
             "header": [],
@@ -13697,6 +13697,14 @@
                 "shares",
                 ":token"
               ],
+              "query": [
+                {
+                  "key": "t",
+                  "value": "1",
+                  "description": "integer. Start playback at this many seconds (a chapter link).",
+                  "disabled": true
+                }
+              ],
               "variable": [
                 {
                   "key": "token",
@@ -13705,14 +13713,14 @@
                 }
               ]
             },
-            "description": "**Shared briefing: reading page.** Server-rendered HTML. No authentication. 404 with the same page for every link that does not work.\n\n- Auth: None. The `{token}` path segment is the credential.\n- Response: text/html\n- Notes: The reading page of a shared briefing: title, topic or edition name, date, the briefing rendered from Markdown (raw HTML in the content is shown as text, and outbound links carry `rel=\"noopener noreferrer nofollow\"`), a link to the listening page, and an invitation to sign up. No authentication, no cookies, no script. Sent with `X-Robots-Tag: noindex, nofollow`, `Referrer-Policy: no-referrer`, `Cache-Control: no-store`, and a Content-Security-Policy that allows only same-origin images and audio. An unknown, revoked, or expired link, a deleted briefing or user, and a server with sharing turned off all get the same 404 page. Each successful open adds one to the share's `viewCount`.\n- Status: 200 OK; 404 NotFound; 429 TooManyRequests\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#get-v10publicsharestoken)",
+            "description": "**Shared briefing page.** Server-rendered HTML: one page to listen and to read, with an audio player and chapter links when the briefing has finished audio, then the briefing text. No authentication. t starts playback at that many seconds. 404 with the same page for every link that does not work.\n\n- Auth: None. The `{token}` path segment is the credential.\n- Response: text/html\n- Notes: The shared briefing page, for listening and reading: title, topic or edition name, date, a native audio player with chapter links when the briefing has finished audio (each chapter link reloads the page with `t`; a request with `t` is not counted as a new opening), then the briefing rendered from Markdown (raw HTML in the content is shown as text, and outbound links carry `rel=\"noopener noreferrer nofollow\"`), and an invitation to sign up. No authentication, no cookies, no script. Sent with `X-Robots-Tag: noindex, nofollow`, `Referrer-Policy: no-referrer`, `Cache-Control: no-store`, and a Content-Security-Policy that allows only same-origin images and audio. An unknown, revoked, or expired link, a deleted briefing or user, and a server with sharing turned off all get the same 404 page. Each successful open adds one to the share's `viewCount`.\n- Status: 200 OK; 404 NotFound; 429 TooManyRequests\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#get-v10publicsharestoken)",
             "auth": {
               "type": "noauth"
             }
           }
         },
         {
-          "name": "Shared briefing: listening page",
+          "name": "Shared briefing page (earlier listening address)",
           "request": {
             "method": "GET",
             "header": [],
@@ -13744,7 +13752,7 @@
                 }
               ]
             },
-            "description": "**Shared briefing: listening page.** Server-rendered HTML with an audio player and chapter links. No authentication. t starts playback at that many seconds. When the briefing has no finished audio the page says so.\n\n- Auth: None. The `{token}` path segment is the credential.\n- Response: text/html\n- Notes: The listening page: a native audio player and chapter links (each reloads the page with `t`). When the briefing has no finished audio the page says so and links to the reading page. Same headers and same 404 as the reading page. A request with `t` is not counted as a new opening.\n- Status: 200 OK; 404 NotFound; 429 TooManyRequests\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#get-v10publicsharestokenlisten)",
+            "description": "**Shared briefing page (earlier listening address).** Kept so links made when listening had its own page keep working. Renders the same single page as GET /v1.0/public/shares/{token}. No authentication. t starts playback at that many seconds.\n\n- Auth: None. The `{token}` path segment is the credential.\n- Response: text/html\n- Notes: The address earlier shares used for a separate listening page. It now renders the same single page as `GET /v1.0/public/shares/{token}`, with the same headers and the same 404, so those links keep working.\n- Status: 200 OK; 404 NotFound; 429 TooManyRequests\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#get-v10publicsharestokenlisten)",
             "auth": {
               "type": "noauth"
             }
@@ -13781,7 +13789,7 @@
                 }
               ]
             },
-            "description": "**Shared briefing: audio (Range supported).** The audio behind the listening page. No authentication. Supports a single Range header (206 Partial Content).\n\n- Auth: None. The `{token}` path segment is the credential.\n- Response: File bytes (the stored file's content type)\n- Notes: The audio behind the listening page. No authentication. Honors `Range`. The file name is for the browser and may be anything, for example `briefing.mp3`. 404 when the link does not work or the briefing has no finished audio.\n- Status: 200 OK; 206 Partial Content; 404 NotFound; 410 ArtifactExpired; 416 RangeNotSatisfiable\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#get-v10publicsharestokenaudiofile)",
+            "description": "**Shared briefing: audio (Range supported).** The audio behind the listening page. No authentication. Supports a single Range header (206 Partial Content).\n\n- Auth: None. The `{token}` path segment is the credential.\n- Response: File bytes (the stored file's content type)\n- Notes: The audio behind the shared briefing page. No authentication. Honors `Range`. The file name is for the browser and may be anything, for example `briefing.mp3`. 404 when the link does not work or the briefing has no finished audio.\n- Status: 200 OK; 206 Partial Content; 404 NotFound; 410 ArtifactExpired; 416 RangeNotSatisfiable\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#get-v10publicsharestokenaudiofile)",
             "auth": {
               "type": "noauth"
             }
@@ -14540,7 +14548,7 @@
                 }
               ]
             },
-            "description": "**Revoke a public share link.** Both links stop working at once. With purge=true, deletes a share that is already revoked or expired.\n\n- Auth: `Briefing:Update` (`ShareWrite`).\n- Response: No body\n- Notes: Revokes a live share; both links answer 404 at once. Revoking twice is harmless. `purge=true` deletes a share that is already revoked or expired, and is ignored for a live one (which is revoked instead).\n- Status: 204 No Content; 400 TenantRequired; 401 Unauthorized; 403 Forbidden; 404 NotFound\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#delete-v10apibriefingsidsharesshareid)"
+            "description": "**Revoke a public share link.** The link stops working at once. With purge=true, deletes a share that is already revoked or expired.\n\n- Auth: `Briefing:Update` (`ShareWrite`).\n- Response: No body\n- Notes: Revokes a live share; its link answers 404 at once. Revoking twice is harmless. `purge=true` deletes a share that is already revoked or expired, and is ignored for a live one (which is revoked instead).\n- Status: 204 No Content; 400 TenantRequired; 401 Unauthorized; 403 Forbidden; 404 NotFound\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#delete-v10apibriefingsidsharesshareid)"
           }
         },
         {

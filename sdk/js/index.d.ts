@@ -1309,9 +1309,11 @@ export interface BriefingShareCreated {
     share: BriefingShare;
     /** Shown once. */
     secret: string;
-    /** Public reading page; no sign-in needed. */
+    /** The public link: one page to listen to and read the briefing; no sign-in needed. */
+    url: string;
+    /** Same value as url; kept for older code. */
     readUrl: string;
-    /** Public listening page; no sign-in needed. */
+    /** Same value as url; kept for older code. */
     listenUrl: string;
     audioReady: boolean;
 }

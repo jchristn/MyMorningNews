@@ -2502,6 +2502,7 @@ class BriefingShareCreated(Model):
     _nested: ClassVar[Dict[str, str]] = {'share': 'BriefingShare'}
     share: Optional[BriefingShare] = None
     secret: Optional[str] = None
+    url: Optional[str] = None
     read_url: Optional[str] = None
     listen_url: Optional[str] = None
     audio_ready: Optional[bool] = None
@@ -4052,7 +4053,7 @@ class BriefingsResource(_Resource):
     def share(self, briefing_id: str, expires_in_days: Optional[int] = None, show_owner_name: bool = False) -> BriefingShareCreated:
         """Share a ready briefing through public links that anyone can open with no sign-in.
 
-        Returns a reading link (``read_url``) and a listening link (``listen_url``) once; only a hash is stored.
+        Returns one public link (``url``) for listening and reading, once; only a hash is stored.
         Every share expires: ``expires_in_days`` is 1 to 14 (the server maximum), and 7 when omitted.
 
         Raises:

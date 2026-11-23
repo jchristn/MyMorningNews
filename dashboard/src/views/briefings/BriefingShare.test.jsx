@@ -29,8 +29,9 @@ const share = (overrides = {}) => ({
 const CREATED = {
   share: share({ id: 'shr_new', viewCount: 0, lastViewedUtc: null, expiresUtc: iso(NOW + 3 * DAY) }),
   secret: 'mmns_secret',
+  url: 'https://app.example.test/v1.0/public/shares/mmns_secret',
   readUrl: 'https://app.example.test/v1.0/public/shares/mmns_secret',
-  listenUrl: 'https://app.example.test/v1.0/public/shares/mmns_secret/listen',
+  listenUrl: 'https://app.example.test/v1.0/public/shares/mmns_secret',
   audioReady: false
 };
 
@@ -64,7 +65,7 @@ describe('share helpers', () => {
 });
 
 describe('BriefingReader share', () => {
-  it('creates a share with a 1 to 14 day expiry and shows both links once with copy buttons and the expiry date', async () => {
+  it('creates a share with a 1 to 14 day expiry and shows the link once with a copy button and the expiry date', async () => {
     const api = renderRoute('/dashboard/briefings/brf_1', readerApi());
     await userEvent.click(await screen.findByRole('button', { name: 'Share' }));
     const dialog = await screen.findByRole('dialog');
@@ -72,25 +73,24 @@ describe('BriefingReader share', () => {
     await waitFor(() => expect(api.listBriefingShares).toHaveBeenCalledWith('brf_1', expect.anything()));
     expect(await within(dialog).findByText('This briefing has not been shared.')).toBeInTheDocument();
 
-    const days = within(dialog).getByLabelText('Days until the links expire');
+    const days = within(dialog).getByLabelText('Days until the link expires');
     expect(days).toHaveValue('7');
     expect(within(days).getAllByRole('option').map((o) => o.value)).toEqual(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14']);
     expect(within(dialog).getByText('From 1 to 14 days. Every share expires.')).toBeInTheDocument();
-    expect(within(dialog).getByLabelText('Show my name on the shared pages')).not.toBeChecked();
+    expect(within(dialog).getByLabelText('Show my name on the shared page')).not.toBeChecked();
 
     await userEvent.selectOptions(days, '3');
     api.listBriefingShares.mockResolvedValue(page([CREATED.share]));
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Create links' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Create link' }));
     await waitFor(() => expect(api.createBriefingShare).toHaveBeenCalledWith('brf_1', { expiresInDays: 3, showOwnerName: false }));
 
     const created = await within(dialog).findByTestId('share-created');
-    expect(within(created).getByLabelText('Reading link')).toHaveValue(CREATED.readUrl);
-    expect(within(created).getByLabelText('Listening link')).toHaveValue(CREATED.listenUrl);
-    expect(within(created).getAllByRole('button', { name: 'Copy link' })).toHaveLength(2);
+    expect(within(created).getByLabelText('Link')).toHaveValue(CREATED.url);
+    expect(within(created).getAllByRole('button', { name: 'Copy link' })).toHaveLength(1);
     expect(within(created).getByTestId('share-expires').textContent).toMatch(/^Expires .*\d/);
     expect(within(created).getByText(/no audio yet/)).toBeInTheDocument();
     expect(within(created).getByText(/shown only once/)).toBeInTheDocument();
-    expect(within(dialog).getByRole('button', { name: 'Create more links' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Create another link' })).toBeInTheDocument();
     expect(await within(dialog).findByTestId('share-shr_new')).toHaveTextContent('Live');
   });
 
@@ -114,7 +114,7 @@ describe('BriefingReader share', () => {
 
     await userEvent.click(within(liveRow).getByRole('button', { name: 'Revoke' }));
     await waitFor(() => expect(api.revokeBriefingShare).toHaveBeenCalledWith('brf_1', 'shr_1', { purge: false }));
-    expect(await screen.findByText('The links no longer work.')).toBeInTheDocument();
+    expect(await screen.findByText('The link no longer works.')).toBeInTheDocument();
 
     await userEvent.click(within(within(dialog).getByTestId('share-shr_old')).getByRole('button', { name: 'Remove from the list' }));
     await waitFor(() => expect(api.revokeBriefingShare).toHaveBeenCalledWith('brf_1', 'shr_old', { purge: true }));
@@ -127,7 +127,7 @@ describe('BriefingReader share', () => {
     renderRoute('/dashboard/briefings/brf_1', readerApi({ createBriefingShare }));
     await userEvent.click(await screen.findByRole('button', { name: 'Share' }));
     const dialog = await screen.findByRole('dialog');
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Create links' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Create link' }));
     expect(await within(dialog).findByRole('alert')).toBeInTheDocument();
     expect(within(dialog).queryByTestId('share-created')).toBeNull();
   });

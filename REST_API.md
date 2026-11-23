@@ -167,7 +167,7 @@ Routes under `/v1.0/public` take no headers at all. The token in the path is the
 
 - Every run and briefing email links to `/v1.0/public/feedback/{token}` (rating links, optionally preselected with `?a=<action>`; the page asks the reader to confirm the rating with one button, because opening a link records nothing and mail scanners open links on their own) and `/v1.0/public/unsubscribe/{token}`. Each token is tied to one recipient and the actions it allows, and expires.
 - `POST /v1.0/api/feed-tokens` creates a private podcast feed and returns its secret once; the feed URL is `/v1.0/public/feeds/{token}/podcast.xml`, and episode audio and chapters hang off the same token. Only a hash is stored, so a lost feed URL means creating a new token. Revoke with `DELETE /v1.0/api/feed-tokens/{id}`.
-- `POST /v1.0/api/briefings/{id}/shares` shares one briefing and returns two links once: `/v1.0/public/shares/{token}` (a reading page) and `/v1.0/public/shares/{token}/listen` (a listening page, with its audio at `/v1.0/public/shares/{token}/audio/{file}`). Anyone with a link can open it with no account. Every share expires: `expiresInDays` is 1 to 14 (7 when omitted), and a value outside that range is refused with 400. Only a hash is stored, so a lost link means creating a new share. Revoke with `DELETE /v1.0/api/briefings/{id}/shares/{shareId}`. Revoked, expired, and unknown links all answer the same 404 page.
+- `POST /v1.0/api/briefings/{id}/shares` shares one briefing and returns one link once, as `url`: `/v1.0/public/shares/{token}`, a single page to listen and to read (its audio is at `/v1.0/public/shares/{token}/audio/{file}`). `readUrl` and `listenUrl` carry the same value for older clients, and the earlier `/listen` address shows the same page. Anyone with the link can open it with no account. Every share expires: `expiresInDays` is 1 to 14 (7 when omitted), and a value outside that range is refused with 400. Only a hash is stored, so a lost link means creating a new share. Revoke with `DELETE /v1.0/api/briefings/{id}/shares/{shareId}`. Revoked, expired, and unknown links all answer the same 404 page.
 - `GET /v1.0/public/promo-codes/{code}` lets a sign-up page check a promotional code before an account exists.
 
 ## Authorization
@@ -466,7 +466,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [Media](#media) | 4 | Audio episodes made from briefings, with chapters. |
 | [Voices](#voices) | 8 | Text-to-speech voice profiles, with a test route that speaks a sample. Two more routes let anyone who can edit a topic choose its voice: one lists the voices a topic can use (the voice profiles, then the speech server's own voices with readable labels), and one speaks a short preview. |
 | [Podcast feeds](#podcast-feeds) | 3 | Private podcast feed tokens. The feed URL embeds the secret, which is shown once. |
-| [Sharing](#sharing) | 3 | Public share links for a briefing. One share yields a reading page and a listening page that anyone with the link can open with no sign-in. A share is made on purpose, never by default, always expires (1 to 14 days, 7 when not chosen), and can be revoked. The links are returned once; only a hash of the secret is stored. `sharing.enabled` turns the feature off for the whole server. |
+| [Sharing](#sharing) | 3 | Public share links for a briefing. One share yields one link to a single page where anyone can listen to the briefing and read it with no sign-in. A share is made on purpose, never by default, always expires (1 to 14 days, 7 when not chosen), and can be revoked. The links are returned once; only a hash of the secret is stored. `sharing.enabled` turns the feature off for the whole server. |
 | [Email](#email) | 8 | The email outbox, test and preview sends, resends, and the signed-in user's email preferences. |
 | [Feedback](#feedback) | 4 | Ratings and reasons on findings, predictions, suggestions, sources, domains, and briefings. Feedback drives learning and analytics. |
 | [Learning](#learning) | 11 | Preferences learned from feedback (or written by hand), their review flow, and ranking weight recommendations. |
@@ -7973,7 +7973,7 @@ curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/feed-tokens/fdt_mwpfadbe_Xc9v
 
 ## Sharing
 
-Public share links for a briefing. One share yields a reading page and a listening page that anyone with the link can open with no sign-in. A share is made on purpose, never by default, always expires (1 to 14 days, 7 when not chosen), and can be revoked. The links are returned once; only a hash of the secret is stored. `sharing.enabled` turns the feature off for the whole server.
+Public share links for a briefing. One share yields one link to a single page where anyone can listen to the briefing and read it with no sign-in. A share is made on purpose, never by default, always expires (1 to 14 days, 7 when not chosen), and can be revoked. The links are returned once; only a hash of the secret is stored. `sharing.enabled` turns the feature off for the whole server.
 
 | Method | Path | Summary |
 |---|---|---|
@@ -8010,7 +8010,7 @@ curl -s "http://127.0.0.1:12100/v1.0/api/briefings/brf_mwpf8b9c_Er6tY9uI2oPa5sDf
 
 ### POST /v1.0/api/briefings/{id}/shares
 
-**Share a briefing through public links.** Creates one share and returns its reading link and listening link once; only a hash of the secret is stored. Anyone with a link can open it with no sign-in until it expires or is revoked. expiresInDays is 1 to 14 (the server maximum, sharing.maxExpiryDays); omitted, it is 7 (sharing.defaultExpiryDays). A value outside the range is refused with 400 ValidationFailed. 409 SharingDisabled when sharing is turned off on the server, 409 BriefingNotReady when the briefing is not ready.
+**Share a briefing through public links.** Creates one share and returns its link once (one page to listen and to read); only a hash of the secret is stored. Anyone with a link can open it with no sign-in until it expires or is revoked. expiresInDays is 1 to 14 (the server maximum, sharing.maxExpiryDays); omitted, it is 7 (sharing.defaultExpiryDays). A value outside the range is refused with 400 ValidationFailed. 409 SharingDisabled when sharing is turned off on the server, 409 BriefingNotReady when the briefing is not ready.
 
 - Auth: `Briefing:Update` (`ShareWrite`).
 - Response: [`BriefingShareCreated`](#briefingsharecreated)
@@ -8046,11 +8046,11 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/briefings/brf_mwpf8b9c_Er6tY9uI
 
 ### DELETE /v1.0/api/briefings/{id}/shares/{shareId}
 
-**Revoke a public share link.** Both links stop working at once. With purge=true, deletes a share that is already revoked or expired.
+**Revoke a public share link.** The link stops working at once. With purge=true, deletes a share that is already revoked or expired.
 
 - Auth: `Briefing:Update` (`ShareWrite`).
 - Response: No body
-- Notes: Revokes a live share; both links answer 404 at once. Revoking twice is harmless. `purge=true` deletes a share that is already revoked or expired, and is ignored for a live one (which is revoked instead).
+- Notes: Revokes a live share; its link answers 404 at once. Revoking twice is harmless. `purge=true` deletes a share that is already revoked or expired, and is ignored for a live one (which is revoked instead).
 
 | Path parameter | Type | Postman variable |
 |---|---|---|
@@ -10035,8 +10035,8 @@ Routes reached from emails, podcast apps, and shared briefing links. They take n
 | GET | [`/v1.0/public/feeds/{token}/episodes/{file}`](#get-v10publicfeedstokenepisodesfile) | Podcast episode audio (Range supported) |
 | GET | [`/v1.0/public/feeds/{token}/chapters/{file}`](#get-v10publicfeedstokenchaptersfile) | Podcast episode chapters (Podcasting 2.0 JSON) |
 | GET | [`/v1.0/public/assets/{name}`](#get-v10publicassetsname) | Public artwork (glyph.png, logo.png) |
-| GET | [`/v1.0/public/shares/{token}`](#get-v10publicsharestoken) | Shared briefing: reading page |
-| GET | [`/v1.0/public/shares/{token}/listen`](#get-v10publicsharestokenlisten) | Shared briefing: listening page |
+| GET | [`/v1.0/public/shares/{token}`](#get-v10publicsharestoken) | Shared briefing page |
+| GET | [`/v1.0/public/shares/{token}/listen`](#get-v10publicsharestokenlisten) | Shared briefing page (earlier listening address) |
 | GET | [`/v1.0/public/shares/{token}/audio/{file}`](#get-v10publicsharestokenaudiofile) | Shared briefing: audio (Range supported) |
 | GET | [`/v1.0/public/feedback/{token}`](#get-v10publicfeedbacktoken) | Email feedback page |
 | POST | [`/v1.0/public/feedback/{token}`](#post-v10publicfeedbacktoken) | Submit email feedback (form post) |
@@ -10171,15 +10171,19 @@ curl -s "http://127.0.0.1:12100/v1.0/public/assets/logo.png" \
 
 ### GET /v1.0/public/shares/{token}
 
-**Shared briefing: reading page.** Server-rendered HTML. No authentication. 404 with the same page for every link that does not work.
+**Shared briefing page.** Server-rendered HTML: one page to listen and to read, with an audio player and chapter links when the briefing has finished audio, then the briefing text. No authentication. t starts playback at that many seconds. 404 with the same page for every link that does not work.
 
 - Auth: None. The `{token}` path segment is the credential.
 - Response: `text/html`
-- Notes: The reading page of a shared briefing: title, topic or edition name, date, the briefing rendered from Markdown (raw HTML in the content is shown as text, and outbound links carry `rel="noopener noreferrer nofollow"`), a link to the listening page, and an invitation to sign up. No authentication, no cookies, no script. Sent with `X-Robots-Tag: noindex, nofollow`, `Referrer-Policy: no-referrer`, `Cache-Control: no-store`, and a Content-Security-Policy that allows only same-origin images and audio. An unknown, revoked, or expired link, a deleted briefing or user, and a server with sharing turned off all get the same 404 page. Each successful open adds one to the share's `viewCount`.
+- Notes: The shared briefing page, for listening and reading: title, topic or edition name, date, a native audio player with chapter links when the briefing has finished audio (each chapter link reloads the page with `t`; a request with `t` is not counted as a new opening), then the briefing rendered from Markdown (raw HTML in the content is shown as text, and outbound links carry `rel="noopener noreferrer nofollow"`), and an invitation to sign up. No authentication, no cookies, no script. Sent with `X-Robots-Tag: noindex, nofollow`, `Referrer-Policy: no-referrer`, `Cache-Control: no-store`, and a Content-Security-Policy that allows only same-origin images and audio. An unknown, revoked, or expired link, a deleted briefing or user, and a server with sharing turned off all get the same 404 page. Each successful open adds one to the share's `viewCount`.
 
 | Path parameter | Type | Postman variable |
 |---|---|---|
 | `token` | string | `{{shareToken}}` |
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `t` | integer | Start playback at this many seconds (a chapter link). |
 
 | Status | Meaning |
 |---|---|
@@ -10193,11 +10197,11 @@ curl -s "http://127.0.0.1:12100/v1.0/public/shares/mmns_4kXw9RtB2nLq7VzC1mPe6YhD
 
 ### GET /v1.0/public/shares/{token}/listen
 
-**Shared briefing: listening page.** Server-rendered HTML with an audio player and chapter links. No authentication. t starts playback at that many seconds. When the briefing has no finished audio the page says so.
+**Shared briefing page (earlier listening address).** Kept so links made when listening had its own page keep working. Renders the same single page as GET /v1.0/public/shares/{token}. No authentication. t starts playback at that many seconds.
 
 - Auth: None. The `{token}` path segment is the credential.
 - Response: `text/html`
-- Notes: The listening page: a native audio player and chapter links (each reloads the page with `t`). When the briefing has no finished audio the page says so and links to the reading page. Same headers and same 404 as the reading page. A request with `t` is not counted as a new opening.
+- Notes: The address earlier shares used for a separate listening page. It now renders the same single page as `GET /v1.0/public/shares/{token}`, with the same headers and the same 404, so those links keep working.
 
 | Path parameter | Type | Postman variable |
 |---|---|---|
@@ -10223,7 +10227,7 @@ curl -s "http://127.0.0.1:12100/v1.0/public/shares/mmns_4kXw9RtB2nLq7VzC1mPe6YhD
 
 - Auth: None. The `{token}` path segment is the credential.
 - Response: File bytes (the stored file's content type)
-- Notes: The audio behind the listening page. No authentication. Honors `Range`. The file name is for the browser and may be anything, for example `briefing.mp3`. 404 when the link does not work or the briefing has no finished audio.
+- Notes: The audio behind the shared briefing page. No authentication. Honors `Range`. The file name is for the browser and may be anything, for example `briefing.mp3`. 404 when the link does not work or the briefing has no finished audio.
 
 | Path parameter | Type | Postman variable |
 |---|---|---|
@@ -11045,8 +11049,9 @@ Returned by [POST /v1.0/api/briefings/{id}/shares](#post-v10apibriefingsidshares
 |---|---|---|
 | `share` | [`BriefingShare`](#briefingshare) | Stored share (hash redacted). |
 | `secret` | string | The link secret. Shown once. |
-| `readUrl` | string | Public reading page URL. No sign-in is needed to open it. |
-| `listenUrl` | string | Public listening page URL. No sign-in is needed to open it. It plays audio once the briefing has audio. |
+| `url` | string | The public link: one page to listen to and read the briefing. No sign-in is needed to open it. It plays audio once the briefing has audio. |
+| `readUrl` | string | Same value as Url. Kept for clients written when reading and listening had separate links. |
+| `listenUrl` | string | Same value as Url. Kept for clients written when reading and listening had separate links. |
 | `audioReady` | boolean | Whether the briefing has finished audio right now. |
 
 #### BriefingShareCreateRequest

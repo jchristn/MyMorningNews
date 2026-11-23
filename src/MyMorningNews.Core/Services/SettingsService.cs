@@ -255,6 +255,13 @@ namespace MyMorningNews.Core.Services
             if (type == typeof(bool)) return Boolean.TryParse(raw, out bool b) ? b : null;
             if (type == typeof(double)) return Double.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out double d) ? d : null;
             if (type.IsEnum) return Enum.TryParse(type, raw, true, out object? e) ? e : null;
+            if (type == typeof(List<string>))
+            {
+                // A list comes as comma, semicolon, or whitespace separated values.
+                List<string> items = raw.Split(new[] { ',', ';', ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+                return items.Any() ? items : null;
+            }
+
             return null;
         }
 

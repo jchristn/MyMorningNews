@@ -5,7 +5,7 @@ import { KeyRound, RotateCcw, ShieldAlert } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext.jsx';
 import useLocalStorage from '../hooks/useLocalStorage.js';
-import { isHttpUrl, mcpSnippets, suggestMcpUrl } from '../utils/mcp.js';
+import { MCP_URL_PLACEHOLDER, isHttpUrl, mcpSnippets, suggestMcpUrl } from '../utils/mcp.js';
 import CopyButton from '../components/CopyButton.jsx';
 import FormField from '../components/FormField.jsx';
 import PageHeader from '../components/PageHeader.jsx';
@@ -37,7 +37,8 @@ export default function McpView() {
   const [stored, setStored] = useLocalStorage('mymorningnews.mcp.url', '');
   const [edited, setMcpUrl] = useState(null);
   const mcpUrl = edited ?? (stored || suggested);
-  // The server advertises its MCP endpoint in client config (Rest.McpPublicUrl); older servers do not.
+  // The server advertises its MCP endpoint in client config (mcpUrl). It leaves the value out when it knows no address a
+  // client could reach, and older servers never send it; the page then suggests a local address only for a local API.
   useEffect(() => {
     let live = true;
     if (!apiClient) return undefined;
@@ -56,7 +57,7 @@ export default function McpView() {
     setStored(value === suggested ? '' : value);
   };
   const valid = isHttpUrl(mcpUrl);
-  const snippets = mcpSnippets({ mcpUrl: valid ? mcpUrl : suggested, apiUrl: serverUrl, tenantId });
+  const snippets = mcpSnippets({ mcpUrl: valid ? mcpUrl : suggested || MCP_URL_PLACEHOLDER, apiUrl: serverUrl, tenantId });
   const prompts = ['topics', 'briefing', 'review'];
 
   return (

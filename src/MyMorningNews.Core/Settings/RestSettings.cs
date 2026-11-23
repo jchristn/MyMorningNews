@@ -92,7 +92,8 @@ namespace MyMorningNews.Core.Settings
 
         /// <summary>
         /// Public URL of the MCP server's Streamable HTTP endpoint, shown to users who connect an MCP client. Default
-        /// <c>http://127.0.0.1:12105/mcp</c>.
+        /// <c>http://127.0.0.1:12105/mcp</c>. A loopback value is published only while <see cref="PublicBaseUrl"/> is
+        /// loopback too; see <see cref="MyMorningNews.Core.Helpers.McpUrlResolver"/>.
         /// </summary>
         /// <exception cref="ArgumentNullException">Value is null or empty.</exception>
         [Setting(Description = "Public URL of the MCP server endpoint (shown in the app).", EnvironmentVariable = "MCP_PUBLIC_URL")]
@@ -101,6 +102,15 @@ namespace MyMorningNews.Core.Settings
             get { return _McpPublicUrl; }
             set { _McpPublicUrl = String.IsNullOrWhiteSpace(value) ? throw new ArgumentNullException(nameof(McpPublicUrl)) : value.Trim(); }
         }
+
+        /// <summary>
+        /// Whether a reverse proxy or load balancer routes <c>/mcp</c> on <see cref="PublicBaseUrl"/> to the MCP server
+        /// (the hosted overlays do when the <c>mcp</c> compose profile is on). When true and <see cref="McpPublicUrl"/>
+        /// is not a public address, clients are told the MCP endpoint is <see cref="PublicBaseUrl"/> plus <c>/mcp</c>.
+        /// Default false.
+        /// </summary>
+        [Setting(Description = "The public base URL routes /mcp to the MCP server.", EnvironmentVariable = "MCP_ON_PUBLIC_BASE_URL")]
+        public bool McpOnPublicBaseUrl { get; set; } = false;
 
         /// <summary>
         /// How often an event stream (for example run progress) checks for changes, in milliseconds. Default 1000.

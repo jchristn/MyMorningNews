@@ -18,6 +18,16 @@
 		reverse_proxy server:8000
 	}
 
+	# MCP server (Streamable HTTP), when the mcp compose profile is on (COMPOSE_PROFILES=mcp). Responses stream, so
+	# nothing is buffered. Without the profile there is no mcp container and these paths answer 502. The dashboard's
+	# own MCP page is /dashboard/mcp, so nothing else uses this path.
+	@mcp path /mcp /mcp/*
+	handle @mcp {
+		reverse_proxy mcp:8100 {
+			flush_interval -1
+		}
+	}
+
 	# Everything else is the dashboard.
 	handle {
 		reverse_proxy dashboard:80

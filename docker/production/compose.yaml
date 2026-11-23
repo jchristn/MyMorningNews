@@ -5,6 +5,7 @@
 # The deployment folder (for example ~/mymorningnews) holds only this file, update.sh, mymorningnews.json (from
 # docker/hosted/mymorningnews.json), and .env (from docker/.env.example, with real secrets).
 # Load balancer targets: 8000 (server, health GET /v1.0/api/health) and 8080 (dashboard, health GET /health).
+# With COMPOSE_PROFILES=mcp in .env, also 8100 (MCP server, paths /mcp and /mcp/*, health GET /).
 # (c) 2026 Lattice AI LLC.
 name: mymorningnews
 networks:
@@ -132,10 +133,9 @@ services:
     networks:
       default: null
     ports:
-      - host_ip: 127.0.0.1
-        mode: ingress
+      - mode: ingress
         protocol: tcp
-        published: "12105"
+        published: "8100"
         target: 8100
     profiles:
       - mcp
@@ -307,9 +307,12 @@ services:
       - MYMORNINGNEWS_TELEMETRY_PROMETHEUS_HOSTNAME=server
       - MYMORNINGNEWS_TTS_ENABLED=${MYMORNINGNEWS_TTS_ENABLED:-true}
       - OPENAI_API_KEY=${CLI_OPENAI_API_KEY:-}
+      - MYMORNINGNEWS_HOSTING_ANDROID_CERT_FINGERPRINTS=${MYMORNINGNEWS_HOSTING_ANDROID_CERT_FINGERPRINTS:-}
       - MYMORNINGNEWS_HOSTING_APPLE_TEAM_ID=${MYMORNINGNEWS_HOSTING_APPLE_TEAM_ID:-}
       - MYMORNINGNEWS_HOSTING_TURNSTILE_SECRET_KEY=${MYMORNINGNEWS_HOSTING_TURNSTILE_SECRET_KEY:-}
       - MYMORNINGNEWS_HOSTING_TURNSTILE_SITE_KEY=${MYMORNINGNEWS_HOSTING_TURNSTILE_SITE_KEY:-}
+      - MYMORNINGNEWS_MCP_ON_PUBLIC_BASE_URL=${MYMORNINGNEWS_MCP_ON_PUBLIC_BASE_URL:-false}
+      - MYMORNINGNEWS_MCP_PUBLIC_URL=${MYMORNINGNEWS_MCP_PUBLIC_URL:-}
     extra_hosts:
       - host.docker.internal:host-gateway
     healthcheck:

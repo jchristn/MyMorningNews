@@ -65,10 +65,13 @@ namespace Test.Shared.Suites
             string file = TempFile();
             try
             {
-                Dictionary<string, string> env = new Dictionary<string, string> { { "MYMORNINGNEWS_REST_PORT", "12345" }, { "MYMORNINGNEWS_DB_PASSWORD", "envpw" } };
+                Dictionary<string, string> env = new Dictionary<string, string> { { "MYMORNINGNEWS_REST_PORT", "12345" }, { "MYMORNINGNEWS_DB_PASSWORD", "envpw" }, { "MYMORNINGNEWS_HOSTING_ANDROID_CERT_FINGERPRINTS", "AA:BB, CC:DD" }, { "MYMORNINGNEWS_MCP_ON_PUBLIC_BASE_URL", "true" }, { "MYMORNINGNEWS_MCP_PUBLIC_URL", "https://mcp.example.test/mcp" } };
                 SettingsService s = new SettingsService(file, n => env.TryGetValue(n, out string? v) ? v : null);
                 Assert.Equal(12345, s.Current.Rest.Port, "port overridden");
                 Assert.Equal("envpw", s.Current.Database.Password, "password overridden");
+                Assert.True(s.Current.Hosting.AndroidCertificateFingerprints.SequenceEqual(new[] { "AA:BB", "CC:DD" }), "a list comes from a comma-separated variable");
+                Assert.True(s.Current.Rest.McpOnPublicBaseUrl && s.Current.Rest.McpPublicUrl == "https://mcp.example.test/mcp", "MCP address settings come from the environment");
+                Assert.True(s.OverriddenPaths.Contains("hosting.androidCertificateFingerprints") && s.OverriddenPaths.Contains("rest.mcpOnPublicBaseUrl"), "list and MCP overrides reported");
                 Assert.True(s.OverriddenPaths.Contains("rest.port") && s.OverriddenPaths.Contains("database.password"), "overrides reported");
                 SettingFieldDescriptor port = s.Describe().Fields.First(f => f.Path == "rest.port");
                 Assert.True(port.OverriddenByEnvironment && port.RestartRequired, "port descriptor flags");

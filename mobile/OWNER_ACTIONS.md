@@ -63,10 +63,13 @@ in the owner's `Lattice AI/APPLE.md`, and this app's store and hosting records i
 10. **Expo push access token for the server.** Create an Expo access token with push permissions and store it in the
     server's credential vault for the PushWorker (plan section 35.5). Enable "Enhanced push security" on the EAS
     project if you want the server to be the only sender.
-11. **Universal links.** Give the backend agent the Apple Team ID and, after the first Play upload, the Play App
-    Signing SHA-256 certificate fingerprint (Play Console > App integrity), so `app.mymorningnews.ai` can serve
-    `/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json` (plan section 33.3). The Apple file
-    must also list `/verify*` and `/reset-password*`, so the verification and reset emails open the app on iOS.
+11. **Universal links.** On the hosted server, set `MYMORNINGNEWS_HOSTING_APPLE_TEAM_ID=U34NDPAH3K` in `.env` now,
+    and after the first Play upload set `MYMORNINGNEWS_HOSTING_ANDROID_CERT_FINGERPRINTS` to the Play App Signing
+    SHA-256 certificate fingerprint (Play Console, Setup, App signing), then recreate the server (`./update.sh`).
+    `app.mymorningnews.ai` then serves `/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json`
+    (plan section 33.3); each answers 404 `NotConfigured` until its value is set. The Apple file lists `/verify*`
+    and `/reset-password*`, so the verification and reset emails open the app on iOS. Details and the check
+    commands are in `docs/HOSTING.md`, "Universal links".
 12. **Hosted service reachable.** `https://app.mymorningnews.ai` must be live (plan Phase 14 and `docs/HOSTING.md`)
     before TestFlight external testing or review: reviewers sign in against it.
 13. **Reviewer demo account.** On the hosted service, create a demo user with a topic and at least one briefing

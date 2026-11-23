@@ -6,17 +6,20 @@ export const DEFAULT_MCP_PORT = '12105';
 export const MCP_SERVER_NAME = 'mymorningnews';
 export const ACCESS_KEY_PLACEHOLDER = '<access key>';
 export const SECRET_KEY_PLACEHOLDER = '<secret key>';
+export const MCP_URL_PLACEHOLDER = '<MCP server URL>';
 export const SOURCE_PATH_PLACEHOLDER = '/path/to/MyMorningNews';
 
-const LOOPBACK = ['127.0.0.1', '[::1]'];
+const LOOPBACK = ['127.0.0.1', '[::1]', 'localhost'];
 
-// The Streamable HTTP URL to suggest for a REST API base URL. The MCP server listens on its own port, so a loopback
-// API on the default port maps to the default MCP URL; anything else falls back to the default too (the server does
-// not advertise its MCP URL), and the page lets the user change it.
+// The Streamable HTTP URL to suggest for a REST API base URL when the server's client config publishes none (mcpUrl
+// absent or null). A loopback API is a local install, whose MCP server listens on its own loopback port. For any other
+// API the address is unknown: a loopback URL would point at the reader's own machine, so the answer is '' and the page
+// asks for the address instead.
 export function suggestMcpUrl(apiUrl) {
   try {
     const url = new URL(String(apiUrl || ''));
-    if (LOOPBACK.includes(url.hostname) && (url.port || '') === DEFAULT_API_PORT) return 'http://127.0.0.1:' + DEFAULT_MCP_PORT + '/mcp';
+    if (LOOPBACK.includes(url.hostname)) return DEFAULT_MCP_URL;
+    if (url.protocol === 'http:' || url.protocol === 'https:') return '';
   } catch {
     // Not a URL; use the default.
   }

@@ -23,7 +23,9 @@ The settings live in `docker/hosted/mymorningnews.json`, mounted into the server
 changed in the dashboard under Server settings (saved back to that file), by editing the file and restarting the
 server (`docker compose -f compose.yaml -f hosted/compose.yaml restart server`), or with the `MYMORNINGNEWS_HOSTING_*`
 environment variables. An environment variable reaches the server only when the compose file passes it: the hosted
-overlay passes the Turnstile and Apple ones listed below, and the base `docker/compose.yaml` passes none, so add any
+overlays pass the Turnstile, universal link (`MYMORNINGNEWS_HOSTING_APPLE_TEAM_ID`,
+`MYMORNINGNEWS_HOSTING_ANDROID_CERT_FINGERPRINTS`), and MCP address (`MYMORNINGNEWS_MCP_ON_PUBLIC_BASE_URL`,
+`MYMORNINGNEWS_MCP_PUBLIC_URL`) ones, and the base `docker/compose.yaml` passes none of the hosting ones, so add any
 other one to the server's `environment:` list first. The overlay also sets `MYMORNINGNEWS_MODELS_ALLOW_AGENT_CLIS`
 to `false` (see [Agent CLIs](#agent-clis)).
 
@@ -52,7 +54,11 @@ Edit `.env`:
 - `MYMORNINGNEWS_EMAIL_PROVIDER=Mailgun`, plus `MYMORNINGNEWS_MAILGUN_DOMAIN` and `MYMORNINGNEWS_MAILGUN_API_KEY`.
 - `MYMORNINGNEWS_STORAGE_*` for S3.
 - `MYMORNINGNEWS_HOSTING_TURNSTILE_SITE_KEY` and `MYMORNINGNEWS_HOSTING_TURNSTILE_SECRET_KEY` if you use Turnstile.
-- `MYMORNINGNEWS_HOSTING_APPLE_TEAM_ID` once the Apple Developer account is approved (turns on iOS universal links).
+- `MYMORNINGNEWS_HOSTING_APPLE_TEAM_ID` (turns on iOS universal links) and
+  `MYMORNINGNEWS_HOSTING_ANDROID_CERT_FINGERPRINTS` (turns on Android app links). See
+  [Universal links](#universal-links).
+- Optional: `COMPOSE_PROFILES=mcp` and `MYMORNINGNEWS_MCP_ON_PUBLIC_BASE_URL=true` to run the MCP server at
+  `https://app.mymorningnews.ai/mcp`. See [MCP server](#mcp-server).
 - Change the Postgres and Grafana passwords.
 
 Then start the stack with the overlay:
@@ -78,10 +84,15 @@ filled-in `.env` into one folder, such as `~/mymorningnews`, and run `./update.s
 | Target group | Host port | Health check | Listener rule |
 |--------------|-----------|--------------|---------------|
 | API (server) | 8000 (HTTP, same port in the container) | `GET /v1.0/api/health`, 200 | Paths `/v1.0/*`, `/openapi.json`, `/swagger*`, `/.well-known/*` |
+| MCP server (optional, `COMPOSE_PROFILES=mcp`) | 8100 (HTTP, same port in the container) | `GET /`, 200 | Paths `/mcp`, `/mcp/*` |
 | Dashboard | 8080 (HTTP 80 in the container) | `GET /health`, 200 | Default (every other path) |
 
-- Allow both ports only from the load balancer's security group. Every other service stays on `127.0.0.1`.
-- The HTTPS listener forwards plain HTTP to both target groups. Redirect port 80 to 443 on the load balancer.
+Listener rules are matched in priority order, so the API and MCP path rules must come before the dashboard's default
+rule. A path with no rule falls through to the dashboard, which answers every unknown path with its single-page
+fallback (200, `text/html`); that is what `/mcp` returns when the MCP rule is missing.
+
+- Allow these ports only from the load balancer's security group. Every other service stays on `127.0.0.1`.
+- The HTTPS listener forwards plain HTTP to every target group. Redirect port 80 to 443 on the load balancer.
 - Set the idle timeout to about 120 seconds. Run progress streams send a keep-alive every 15 seconds, and a model
   connection test on the Setup page can take up to a minute.
 - `hosting.trustForwardedFor` (on in the hosted profile) takes the client address from the last `X-Forwarded-For`
@@ -183,9 +194,67 @@ tenant-configured URLs too.
 
 ## Universal links
 
-`/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json` are served once
-`hosting.appleTeamId` and `hosting.androidCertificateFingerprints` are set. Get the Android SHA-256 fingerprint from
-Google Play Console, under Setup, App signing.
+The server (not the dashboard) serves both files, before authentication, as `application/json` with no redirect:
+
+| File | Needs | Set it with |
+|---|---|---|
+| `/.well-known/apple-app-site-association` | `hosting.appleTeamId`: the 10-character Apple Team ID (`U34NDPAH3K` for Lattice AI LLC, the value in `mobile/eas.json`) | `MYMORNINGNEWS_HOSTING_APPLE_TEAM_ID` in `.env`, or Server settings |
+| `/.well-known/assetlinks.json` | `hosting.androidCertificateFingerprints`: the Play App Signing SHA-256 fingerprint, from Google Play Console under Setup, App signing (available after the first upload) | `MYMORNINGNEWS_HOSTING_ANDROID_CERT_FINGERPRINTS` in `.env` (comma-separated when there are several), or Server settings |
+
+Until its value is set, each file answers **404** with a JSON body, `{"error":"NotConfigured", ...}`, whose message
+names the setting. That is deliberate: a missing file tells iOS and Android that the domain claims no app, so links
+open in the browser, while a file with an empty or wrong identifier would be cached by Apple's servers as a failed
+association. The two files are independent, so iOS links can be turned on before the Android fingerprint exists.
+
+The reverse proxy must send `/.well-known/*` to the server: the Caddy overlay does, and behind a load balancer the
+API listener rule must include that path. If a request for either file returns the dashboard page (`text/html`), the
+rule is missing. To check:
+
+```bash
+curl -si https://app.mymorningnews.ai/.well-known/apple-app-site-association | head -n 12
+curl -si https://app.mymorningnews.ai/.well-known/assetlinks.json | head -n 12
+```
+
+Expect `200`, `content-type: application/json`, and the team ID or fingerprint in the body. After changing `.env`,
+recreate the server so it picks the value up (`docker compose up -d server` with the same `-f` flags, or
+`./update.sh` in the production folder). Apple fetches the file through its own cache, so a new or changed file can
+take up to a day or two to reach devices.
+
+## MCP server
+
+The MCP server (`jchristn77/mymorningnews-mcp`, Streamable HTTP on `/mcp`) is off by default. It has no privileges
+of its own: every call carries the caller's bearer token or access key to the REST API, and a request without
+credentials answers 401. To run it on the hosted origin:
+
+1. In `.env`, set `COMPOSE_PROFILES=mcp` and `MYMORNINGNEWS_MCP_ON_PUBLIC_BASE_URL=true`.
+2. Start it: `docker compose -f compose.yaml -f hosted/compose.yaml up -d` (or `./update.sh` in the production
+   folder).
+3. Route `/mcp` to it:
+   - Caddy overlay: nothing to do. `hosted/Caddyfile` forwards `/mcp` and `/mcp/*` to `mcp:8100` without buffering.
+     While the profile is off, those paths answer 502.
+   - Load balancer: `hosted/compose.elb.yaml` (and `production/compose.yaml`) publish the MCP server on host port
+     8100. Create a target group for it (HTTP 8100, health check `GET /`, 200), allow the port only from the load
+     balancer's security group, and add a listener rule for the paths `/mcp` and `/mcp/*` ahead of the default
+     rule.
+4. Check: `curl -si https://app.mymorningnews.ai/mcp | head -n 5` answers `401` with a `WWW-Authenticate` header (the
+   MCP server), not `200 text/html` (the dashboard).
+
+The dashboard's "Connect an assistant" page lives at `/dashboard/mcp`, so the two do not collide.
+
+The address the apps show comes from the public client configuration (`GET /v1.0/api/client-config`, `mcpUrl`):
+
+| Setting | Result |
+|---|---|
+| `rest.mcpPublicUrl` (`MYMORNINGNEWS_MCP_PUBLIC_URL`) is a public address | that address, as given |
+| otherwise, `rest.mcpOnPublicBaseUrl` (`MYMORNINGNEWS_MCP_ON_PUBLIC_BASE_URL`) is true | `rest.publicBaseUrl` plus `/mcp` |
+| otherwise, the MCP address and `rest.publicBaseUrl` are both loopback (a local install) | `http://127.0.0.1:12105/mcp` |
+| otherwise | `mcpUrl` is left out |
+
+A public server never publishes a loopback MCP address, because it would point each reader at their own machine.
+When `mcpUrl` is absent the dashboard asks for the address instead of guessing one.
+
+All MCP traffic reaches the API from the MCP container's address, so it shares one `hosting.requestsPerMinutePerIp`
+budget (600 a minute on the hosted profile). Raise the limit if many people use MCP at once.
 
 ## Operations
 

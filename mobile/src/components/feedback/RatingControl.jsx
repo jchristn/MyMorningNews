@@ -6,7 +6,9 @@ import { listItems } from '@/api/client';
 import { isNotAvailable } from '@/api/errors';
 import { feedbackApi } from '@/api/research';
 import { ACTION_ICONS, actionKey, actionOf, actionsFor, feedbackByTarget } from '@/lib/feedback';
+import { FeedbackQueueFullError } from '@/feedback/FeedbackQueue';
 import { useAuth } from '@/state/AuthContext';
+import { useFeedbackActions, useFeedbackSettled, usePendingFeedback } from '@/state/OfflineContext';
 import { useResource } from '@/state/useResource';
 import { useTheme } from '@/theme/ThemeContext';
 import { MIN_TOUCH, font, radius, spacing } from '@/theme/palette';
@@ -77,18 +79,41 @@ function RatingChip({ label, icon, selected, onPress, testID, compact, busy }) {
  * chips for list rows (each still labeled for screen readers).
  *
  * `current` is the current Feedback (or null) and `onChange(feedback | null)` receives the new one.
+ *
+ * Without a connection the rating goes to the offline feedback queue (plan section 35.4): the control shows the
+ * queued rating as selected with "Will send when online", and `onChange` runs when the queue has sent it.
  */
 export function RatingControl({ targetType, targetId, current, onChange, compact, title, testID }) {
   const p = useTheme();
   const { t } = useTranslation();
-  const { client } = useAuth();
+  const actions = useFeedbackActions();
+  const pending = usePendingFeedback(targetType, targetId);
   const [busy, setBusy] = useState(null);
   const [error, setError] = useState(null);
   const [sheet, setSheet] = useState(false);
-  const selected = actionOf(current);
+  // What the control shows: the queued change on top of the saved rating (a queued retraction shows no rating).
+  const shown = !pending ? current : pending.kind === 'retract' ? null : { ...(current || {}), targetType, targetId, reason: pending.reason || '' };
+  const selected = pending && pending.kind === 'submit' && pending.action ? pending.action : actionOf(shown);
+
+  useFeedbackSettled(({ item, outcome, feedback }) => {
+    if (outcome !== 'sent' || item.targetType !== targetType || item.targetId !== targetId) return;
+    if (item.kind === 'retract') onChange(null);
+    else if (feedback) onChange(feedback);
+  });
+
+  const guarded = async (fn) => {
+    try {
+      return await fn();
+    } catch (e) {
+      if (e instanceof FeedbackQueueFullError) throw new Error(t('mobile.connection.queueFull'));
+      throw e;
+    }
+  };
 
   const submit = async ({ action, reason }) => {
-    const saved = await feedbackApi.submit(client, { targetType, targetId, action, reason });
+    const result = await guarded(() => actions.submit({ targetType, targetId, action, reason }));
+    if (result.queued) return;
+    const saved = result.feedback;
     onChange(saved && typeof saved === 'object' ? saved : { targetType, targetId, reason, isCurrent: true });
   };
 
@@ -96,7 +121,7 @@ export function RatingControl({ targetType, targetId, current, onChange, compact
     setBusy(action);
     setError(null);
     try {
-      await submit({ action, reason: current && current.reason ? current.reason : undefined });
+      await submit({ action, reason: shown && shown.reason ? shown.reason : undefined });
     } catch (e) {
       setError(isNotAvailable(e) ? t('mobile.feedback.notAvailable') : e.message || t('mobile.feedback.failed'));
     } finally {
@@ -105,8 +130,9 @@ export function RatingControl({ targetType, targetId, current, onChange, compact
   };
 
   const retract = async () => {
-    await feedbackApi.retract(client, current.id);
-    onChange(null);
+    const saved = current && current.id ? current : null;
+    const result = await guarded(() => actions.retract({ id: saved ? saved.id : null, targetType, targetId }));
+    if (saved && !result.queued) onChange(null);
   };
 
   const id = testID || 'rating-' + targetId;
@@ -125,19 +151,27 @@ export function RatingControl({ targetType, targetId, current, onChange, compact
             onPress={() => void rate(action)}
           />
         ))}
-        <RatingChip compact={compact} testID={id + '-why'} label={current && current.reason ? t('mobile.feedback.editWhy') : t('mobile.feedback.tellWhy')} icon="chatbubble-ellipses-outline" selected={Boolean(current && current.reason)} onPress={() => setSheet(true)} />
+        <RatingChip compact={compact} testID={id + '-why'} label={shown && shown.reason ? t('mobile.feedback.editWhy') : t('mobile.feedback.tellWhy')} icon="chatbubble-ellipses-outline" selected={Boolean(shown && shown.reason)} onPress={() => setSheet(true)} />
       </ScrollView>
-      {current && current.reason && !compact ? (
+      {shown && shown.reason && !compact ? (
         <T variant="small" numberOfLines={2} testID={id + '-reason'}>
-          {t('mobile.feedback.yourReason', { reason: current.reason })}
+          {t('mobile.feedback.yourReason', { reason: shown.reason })}
         </T>
+      ) : null}
+      {pending ? (
+        <View testID={id + '-queued'} accessibilityLiveRegion="polite" style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
+          <Ionicons name="cloud-offline-outline" size={14} color={p.muted} />
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <T variant="small">{t('mobile.connection.queued')}</T>
+          </View>
+        </View>
       ) : null}
       {error ? (
         <T variant="small" style={{ color: p.danger }} accessibilityRole="alert">
           {error}
         </T>
       ) : null}
-      <WhySheet visible={sheet} targetType={targetType} current={current} title={title} onSave={submit} onRetract={current && current.id ? retract : null} onClose={() => setSheet(false)} />
+      <WhySheet visible={sheet} targetType={targetType} current={shown} title={title} onSave={submit} onRetract={(current && current.id) || (pending && pending.kind === 'submit') ? retract : null} onClose={() => setSheet(false)} />
     </View>
   );
 }

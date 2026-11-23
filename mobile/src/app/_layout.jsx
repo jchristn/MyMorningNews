@@ -6,10 +6,12 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { I18nextProvider } from 'react-i18next';
 import { LockGate } from '@/components/LockGate';
+import { UpdateGate } from '@/components/UpdateGate';
 import { applyDirection, deviceLocale, initI18n } from '@/i18n/runtime';
 import { PlayerProvider } from '@/player/PlayerContext';
 import { PushRegistrar } from '@/push/PushRegistrar';
 import { AuthProvider, useAuth } from '@/state/AuthContext';
+import { OfflineProvider } from '@/state/OfflineContext';
 import { PrefsProvider, usePrefs } from '@/state/PrefsContext';
 import { ServerProvider } from '@/state/ServerContext';
 import { ThemeProvider, useTheme } from '@/theme/ThemeContext';
@@ -46,12 +48,16 @@ function Root() {
       <ThemeProvider preference={prefs.theme}>
         <AuthProvider>
           <ServerProvider>
-            <PlayerProvider>
-              <PushRegistrar />
-              <LockGate enabled={prefs.biometricLock} timeoutSeconds={prefs.lockTimeoutSeconds}>
-                <Navigator />
-              </LockGate>
-            </PlayerProvider>
+            <UpdateGate>
+              <OfflineProvider>
+                <PlayerProvider>
+                  <PushRegistrar />
+                  <LockGate enabled={prefs.biometricLock} timeoutSeconds={prefs.lockTimeoutSeconds}>
+                    <Navigator />
+                  </LockGate>
+                </PlayerProvider>
+              </OfflineProvider>
+            </UpdateGate>
           </ServerProvider>
         </AuthProvider>
       </ThemeProvider>

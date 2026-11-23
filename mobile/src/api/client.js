@@ -54,6 +54,27 @@ export class ApiClient {
     this.fetchImpl = fetchImpl || ((...args) => fetch(...args));
     this.timeoutMs = timeoutMs || DEFAULT_TIMEOUT_MS;
     this.setupListeners = new Set();
+    this.networkListeners = new Set();
+  }
+
+  /**
+   * Call `listener(reached)` after every exchange: true when the server answered (any status), false when it could
+   * not be reached. The connection banner and the offline feedback queue follow it. Returns a function that removes
+   * the listener.
+   */
+  onNetwork(listener) {
+    this.networkListeners.add(listener);
+    return () => this.networkListeners.delete(listener);
+  }
+
+  notifyNetwork(reached) {
+    for (const listener of [...this.networkListeners]) {
+      try {
+        listener(reached);
+      } catch {
+        // A listener's failure never changes the result the caller gets.
+      }
+    }
   }
 
   /**
@@ -128,11 +149,13 @@ export class ApiClient {
     try {
       response = await this.fetchImpl(this.url(path, query), init);
     } catch (error) {
+      this.notifyNetwork(false);
       if (timedOut) throw new TimeoutError(limit);
       throw new NetworkError(error && error.message ? error.message : 'Network error', error);
     } finally {
       clearTimeout(timer);
     }
+    this.notifyNetwork(true);
     const text = response.status === 204 ? '' : await response.text();
     return { status: response.status, data: parseBody(text) };
   }

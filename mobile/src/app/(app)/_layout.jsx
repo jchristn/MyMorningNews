@@ -4,6 +4,7 @@ import { Redirect } from 'expo-router';
 import { BottomTabBar, Tabs } from 'expo-router/js-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTranslation } from 'react-i18next';
+import { ConnectionBanner } from '@/components/ConnectionBanner';
 import { MiniPlayer } from '@/components/player/MiniPlayer';
 import { SetupGate } from '@/components/SetupGate';
 import { LoadingState } from '@/components/states';
@@ -19,8 +20,8 @@ const ICONS = {
 };
 
 /**
- * Signed-in shell: five tabs (each a stack), with the mini player docked above the tab bar. The setup gate comes
- * first: until the tenant's model key and search are verified, a full-screen message replaces the tabs.
+ * Signed-in shell: five tabs (each a stack), with the connection banner and the mini player docked above the tab bar.
+ * The setup gate comes first: until the tenant's model key and search are verified, a full-screen message replaces the tabs.
  */
 export default function AppLayout() {
   const { state } = useAuth();
@@ -43,6 +44,7 @@ export default function AppLayout() {
       <Tabs
         tabBar={(props) => (
           <View>
+            <ConnectionBanner />
             <MiniPlayer />
             <BottomTabBar {...props} />
           </View>

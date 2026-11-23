@@ -2535,9 +2535,15 @@ class UsageReport(Model):
 
 @dataclass
 class UsageRow(Model):
-    """Aggregated model usage for one group."""
+    """Aggregated model usage for one group.
+
+    With Model grouping, ``key`` is the endpoint ID and the model name joined by ``|`` and ``model_endpoint_id`` and
+    ``model`` carry the two parts. In a grouped time series the key ``(other)`` combines the groups beyond ``top``.
+    """
     key: Optional[str] = None
     label: Optional[str] = None
+    model_endpoint_id: Optional[str] = None
+    model: Optional[str] = None
     calls: Optional[int] = None
     failures: Optional[int] = None
     input_tokens: Optional[int] = None
@@ -2556,17 +2562,24 @@ class UsageRow(Model):
 
 @dataclass
 class UsageTimeseries(Model):
-    """Gap-filled model usage time series."""
-    _nested: ClassVar[Dict[str, str]] = {'buckets': 'UsageBucket'}
+    """Gap-filled model usage time series.
+
+    ``group_by`` is None and ``groups`` is empty unless the series was requested with ``group_by``; then ``groups`` holds
+    the range totals per group (highest cost first, ``(other)`` last) and each bucket's ``rows`` the groups with calls in it.
+    """
+    _nested: ClassVar[Dict[str, str]] = {'buckets': 'UsageBucket', 'groups': 'UsageRow'}
     from_utc: Optional[str] = None
     to_utc: Optional[str] = None
     bucket_minutes: Optional[int] = None
+    group_by: Optional[str] = None
+    groups: Optional[List[UsageRow]] = None
     buckets: Optional[List[UsageBucket]] = None
 
 
 @dataclass
 class UsageBucket(Model):
-    """Model usage in one time bucket."""
+    """Model usage in one time bucket. The bucket's own fields cover every call in it; ``rows`` splits them by group."""
+    _nested: ClassVar[Dict[str, str]] = {'rows': 'UsageRow'}
     bucket_start_utc: Optional[str] = None
     bucket_end_utc: Optional[str] = None
     calls: Optional[int] = None
@@ -2574,8 +2587,13 @@ class UsageBucket(Model):
     input_tokens: Optional[int] = None
     output_tokens: Optional[int] = None
     cached_input_tokens: Optional[int] = None
+    cache_write_tokens: Optional[int] = None
+    reasoning_tokens: Optional[int] = None
+    tool_calls: Optional[int] = None
     cost_usd: Optional[float] = None
     average_time_to_first_token_ms: Optional[float] = None
+    p95_time_to_first_token_ms: Optional[float] = None
+    rows: Optional[List[UsageRow]] = None
 
 
 @dataclass
@@ -4286,6 +4304,7 @@ class UsageResource(_Resource):
 
     Filters: ``from_`` (sent as ``from``), ``to``, ``user_id``, ``topic_id``, ``model_endpoint_id``, ``include_dry_run``,
     ``top``, ``bucket_minutes``, ``all_tenants`` (global admins), ``group_by`` (UsageGroupBy), ``task``.
+    Grouping by Model keys each row by endpoint and model name (``key`` is ``<endpoint id>|<model>``).
     """
 
     def me(self, **filters: Any) -> UsageReport:
@@ -4297,7 +4316,13 @@ class UsageResource(_Resource):
         return self._one(UsageReport, "GET", API + "/usage/report", query=filters)
 
     def timeseries(self, **filters: Any) -> UsageTimeseries:
-        """Model usage and cost time series."""
+        """Model usage and cost time series.
+
+        Every bucket carries calls, failures, cost, token types (input, output, cached, cache-write, reasoning), tool
+        calls, and the average and 95th percentile time to first token. Pass ``group_by`` (any grouping except Day;
+        Tenant needs ``all_tenants``) to also get ``groups`` and per-bucket ``rows``; ``top`` (default 10) limits the
+        groups and the rest are combined under the key ``(other)``.
+        """
         return self._one(UsageTimeseries, "GET", API + "/usage/timeseries", query=filters)
 
 
@@ -4330,7 +4355,16 @@ class ModelEndpointsResource(_Resource):
         return self._one(ModelEndpoint, "POST", API + "/model-endpoints", body=_merge(body, fields))
 
     def update(self, endpoint_id: str, body: Optional[Mapping[str, Any]] = None, **fields: Any) -> ModelEndpoint:
-        """Update a model endpoint."""
+        """Update a model endpoint. Omitted fields are unchanged.
+
+        To set an optional value back to null, name it in ``clear_fields`` (JSON names: ``endpoint``, ``credentialId``,
+        ``authMethod``, ``model``, ``embeddingModel``, ``temperature``, ``reasoningEffort``, ``contextLength``,
+        ``inputCostPerMTok``, ``outputCostPerMTok``, ``cachedInputCostPerMTok``, ``cacheWriteCostPerMTok``), for example
+        ``update(endpoint_id, clear_fields=["temperature", "contextLength"])``.
+
+        Raises:
+            BadRequestError: A name cannot be cleared, or the same request also gives it a value.
+        """
         return self._one(ModelEndpoint, "PUT", API + "/model-endpoints/" + _seg(endpoint_id), body=_merge(body, fields))
 
     def delete(self, endpoint_id: str) -> None:
@@ -4495,7 +4529,14 @@ class VaultResource(_Resource):
         return self._one(VaultCredential, "POST", API + "/vault/credentials", body=_merge(body, fields))
 
     def update(self, credential_id: str, body: Optional[Mapping[str, Any]] = None, **fields: Any) -> VaultCredential:
-        """Update or rotate a credential (send ``secret`` to rotate)."""
+        """Update or rotate a credential (send ``secret`` to rotate). Omitted fields are unchanged.
+
+        To remove an optional value, name it in ``clear_fields`` (JSON names: ``headerName``, ``username``,
+        ``description``, ``expiresUtc``), for example ``update(credential_id, clear_fields=["expiresUtc"])``.
+
+        Raises:
+            BadRequestError: A name cannot be cleared, or the same request also gives it a value.
+        """
         return self._one(VaultCredential, "PUT", API + "/vault/credentials/" + _seg(credential_id), body=_merge(body, fields))
 
     def delete(self, credential_id: str) -> None:

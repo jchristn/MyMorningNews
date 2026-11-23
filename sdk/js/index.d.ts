@@ -1408,6 +1408,8 @@ export interface VaultCredentialUpsertRequest {
     description?: string;
     expiresUtc?: string;
     active?: boolean;
+    /** Optional values to clear to null on update: `headerName`, `username`, `description`, `expiresUtc`. An omitted property is left unchanged, so this is the only way to remove one. A name that also has a value in the same request, or any other name, is refused with 400. */
+    clearFields?: Array<'headerName' | 'username' | 'description' | 'expiresUtc'>;
 }
 
 export interface Device extends Record_ {
@@ -1768,21 +1770,86 @@ export declare class AnalyticsResource extends ResourceGroup {
 export interface UsageOptions {
     from?: string | Date;
     to?: string | Date;
-    groupBy?: 'User' | 'Model' | 'Task' | 'Provider' | 'Topic' | 'PromptKey' | 'Day' | 'Tenant';
+    /** Report grouping (default Model; `me` defaults to Task). On the time series it is optional: when set, the series carries `groups` and each bucket carries `rows`. `Day` is refused for a series and `Tenant` needs `allTenants`. */
+    groupBy?: UsageGroupBy;
     userId?: string;
     topicId?: string;
     modelEndpointId?: string;
     task?: string;
     includeDryRun?: boolean;
+    /** Most rows in a report (default 50), or most groups in a grouped time series (default 10); the rest of a series is combined under the key `(other)`. */
     top?: number;
     bucketMinutes?: number;
     allTenants?: boolean;
 }
 
+export type UsageGroupBy = 'User' | 'Model' | 'Task' | 'Provider' | 'Topic' | 'PromptKey' | 'Day' | 'Tenant';
+
+export interface UsageRow {
+    /** Group key. For Model grouping it is the endpoint ID and the model name joined by `|`; `(other)` combines groups beyond `top` in a grouped series. */
+    key: string;
+    label: string | null;
+    /** Set only for Model grouping. Null when the endpoint was deleted. */
+    modelEndpointId: string | null;
+    /** Set only for Model grouping. */
+    model: string | null;
+    calls: number;
+    failures: number;
+    inputTokens: number;
+    cachedInputTokens: number;
+    cacheWriteTokens: number;
+    outputTokens: number;
+    reasoningTokens: number;
+    totalTokens: number;
+    toolCalls: number;
+    costUsd: number;
+    averageDurationMs: number;
+    averageTimeToFirstTokenMs: number | null;
+    p95TimeToFirstTokenMs: number | null;
+    costShare: number;
+}
+
+export interface UsageReport {
+    fromUtc: string;
+    toUtc: string;
+    groupBy: UsageGroupBy;
+    totals: UsageRow;
+    rows: UsageRow[];
+}
+
+export interface UsageBucket {
+    bucketStartUtc: string;
+    bucketEndUtc: string;
+    calls: number;
+    failures: number;
+    inputTokens: number;
+    outputTokens: number;
+    cachedInputTokens: number;
+    cacheWriteTokens: number;
+    reasoningTokens: number;
+    toolCalls: number;
+    costUsd: number;
+    averageTimeToFirstTokenMs: number | null;
+    p95TimeToFirstTokenMs: number | null;
+    /** One row per group with calls in this bucket, in the order of the series `groups`. Empty when the series is not grouped. */
+    rows: UsageRow[];
+}
+
+export interface UsageTimeseries {
+    fromUtc: string;
+    toUtc: string;
+    bucketMinutes: number;
+    /** Null when the series is not grouped. */
+    groupBy: UsageGroupBy | null;
+    /** Range totals per group, highest cost first, `(other)` last. Empty when the series is not grouped. */
+    groups: UsageRow[];
+    buckets: UsageBucket[];
+}
+
 export declare class UsageResource extends ResourceGroup {
-    me(options?: UsageOptions): Promise<any>;
-    report(options?: UsageOptions): Promise<any>;
-    timeseries(options?: UsageOptions): Promise<any>;
+    me(options?: UsageOptions): Promise<UsageReport>;
+    report(options?: UsageOptions): Promise<UsageReport>;
+    timeseries(options?: UsageOptions): Promise<UsageTimeseries>;
 }
 
 export interface LlmCallListOptions extends ListOptions {
@@ -1838,6 +1905,8 @@ export interface ModelEndpointUpsertRequest {
     cachedInputCostPerMTok?: number;
     cacheWriteCostPerMTok?: number;
     active?: boolean;
+    /** Optional values to set back to null on update. An omitted property is left unchanged, so this is the only way to clear a number or enum. A name that also has a value in the same request, or any other name, is refused with 400. */
+    clearFields?: Array<'endpoint' | 'credentialId' | 'authMethod' | 'model' | 'embeddingModel' | 'temperature' | 'reasoningEffort' | 'contextLength' | 'inputCostPerMTok' | 'outputCostPerMTok' | 'cachedInputCostPerMTok' | 'cacheWriteCostPerMTok'>;
 }
 
 export declare class ModelEndpointsResource extends CrudResource<ModelEndpoint, ModelEndpoint, ModelEndpointUpsertRequest> {

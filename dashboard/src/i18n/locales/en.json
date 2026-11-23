@@ -1381,7 +1381,7 @@
     },
     "reveal": {
       "action": "Reveal",
-      "actionAdminOnly": "Reveal (administrators only)",
+      "actionRestricted": "Reveal (creator and administrators only)",
       "confirmTitle": "Reveal secret",
       "confirmMessage": "Show the plaintext of {name}? It is shown for {seconds} seconds and then hidden again.",
       "audited": "Reveals are audited: who revealed which credential and from where is recorded.",
@@ -1514,7 +1514,8 @@
       "signIn": "Sign-in",
       "secretSource": "Where the secret comes from",
       "howTo": "How to get it",
-      "cliNotice": "This runs the provider's command-line tool on the server. It answers chat prompts only, so it has no URL, tool calls, or embeddings."
+      "cliNotice": "This runs the provider's command-line tool on the server. It answers chat prompts only, so it has no URL, tool calls, or embeddings.",
+      "clearHint": "To remove an optional value, such as a price, the context length, or the temperature, empty the field and save."
     },
     "test": {
       "title": "Test model",
@@ -1832,7 +1833,8 @@
       "system": "System",
       "noTopic": "No topic",
       "none": "None",
-      "unknown": "Unknown"
+      "unknown": "Unknown",
+      "other": "Other"
     },
     "columns": {
       "cost": "Cost",
@@ -1863,8 +1865,6 @@
     },
     "charts": {
       "groupBy": "Group by",
-      "costOverTime": "Cost over time",
-      "costOverTimeHelp": "Estimated cost per bucket, computed when each call was logged.",
       "costByUser": "Cost by user",
       "costByUserHelp": "Top 20 users and their share of the cost. Select a row to filter the page to that user.",
       "costByModel": "Cost by model",
@@ -1889,11 +1889,17 @@
       "costByTenant": "Cost by tenant",
       "costByTenantHelp": "Every tenant ranked by cost, with its share of platform cost.",
       "tenantTrend": "Cost by tenant over time",
-      "tenantTrendHelp": "{count, plural, one {The range split into # window.} other {The range split into # windows.}} The top tenants are stacked; everyone else is grouped.",
-      "otherTenants": "Other tenants",
-      "platformTrend": "Platform cost over time",
+      "tenantTrendHelp": "The top tenants are stacked in each bucket; everyone else is combined as Other.",
+      "platformTrend": "Platform usage over time",
       "costByModel": "Platform cost by model",
       "breakdownHelp": "Every tenant with token types, cost share, and timing. Export CSV downloads this table."
+    },
+    "trend": {
+      "title": "Usage over time",
+      "help": "The selected measure in each bucket. Group it to compare users, models, tasks, topics, providers, or prompts; the largest groups are drawn and the rest are combined as Other.",
+      "none": "No grouping",
+      "measure": "Measure",
+      "ttft": "Time to first token"
     }
   },
   "markdown": {

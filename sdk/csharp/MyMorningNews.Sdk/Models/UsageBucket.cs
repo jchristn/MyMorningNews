@@ -4,6 +4,7 @@ namespace MyMorningNews.Sdk.Models
     // Source: src/MyMorningNews.Core/Responses/UsageBucket.cs
 
     using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Model usage in one time bucket.
@@ -46,6 +47,21 @@ namespace MyMorningNews.Sdk.Models
         public long CachedInputTokens { get; set; } = 0;
 
         /// <summary>
+        /// Cache-write tokens. Default 0.
+        /// </summary>
+        public long CacheWriteTokens { get; set; } = 0;
+
+        /// <summary>
+        /// Reasoning tokens. Default 0.
+        /// </summary>
+        public long ReasoningTokens { get; set; } = 0;
+
+        /// <summary>
+        /// Tool calls. Default 0.
+        /// </summary>
+        public long ToolCalls { get; set; } = 0;
+
+        /// <summary>
         /// Cost in USD. Default 0.
         /// </summary>
         public decimal CostUsd { get; set; } = 0;
@@ -54,6 +70,16 @@ namespace MyMorningNews.Sdk.Models
         /// Average time to first token.
         /// </summary>
         public double? AverageTimeToFirstTokenMs { get; set; } = null;
+
+        /// <summary>
+        /// 95th percentile time to first token. Null when no call in the bucket streamed.
+        /// </summary>
+        public double? P95TimeToFirstTokenMs { get; set; } = null;
+
+        /// <summary>
+        /// One row per group with calls in this bucket, in the same order as the series groups. Empty when the series is not grouped. The bucket's own fields always cover every call in the bucket, whatever the grouping.
+        /// </summary>
+        public List<UsageRow> Rows { get; set; } = new List<UsageRow>();
 
         /// <summary>
         /// Instantiate.

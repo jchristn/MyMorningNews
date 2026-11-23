@@ -56,6 +56,9 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             Helpers.Equal(v.Id, read.Id, "vault id");
             VaultCredentialResponse updated = await StepAsync(context, result, "PUT vault credential", () => c.Vault.UpdateAsync(v.Id, new VaultCredentialUpsertRequest { Description = "harness" }, token)).ConfigureAwait(false);
             Helpers.Equal("harness", updated.Description, "description");
+            VaultCredentialResponse cleared = await StepAsync(context, result, "PUT vault credential (clearFields)", () => c.Vault.UpdateAsync(v.Id, new VaultCredentialUpsertRequest { ClearFields = new List<string> { "description" } }, token)).ConfigureAwait(false);
+            Helpers.True(cleared.Description == null, "clearFields removes the description");
+            await StepAsync(context, result, "PUT vault credential clearFields=secret (400)", () => Helpers.ExpectErrorAsync(() => c.Vault.UpdateAsync(v.Id, new VaultCredentialUpsertRequest { ClearFields = new List<string> { "secret" } }, token), 400, "ValidationFailed")).ConfigureAwait(false);
             EnumerationResult<VaultCredentialResponse> list = await StepAsync(context, result, "GET vault credentials (kind filter)",
                 () => c.Vault.ListAsync(new VaultCredentialListOptions { Kind = VaultCredentialKindEnum.ApiKey, PageSize = 100 }, token)).ConfigureAwait(false);
             Helpers.Contains(list.Items, x => x.Id == v.Id, "the credential");

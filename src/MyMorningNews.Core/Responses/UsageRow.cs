@@ -8,7 +8,7 @@ namespace MyMorningNews.Core.Responses
     public class UsageRow
     {
         /// <summary>
-        /// Group key (user ID, model, task, and so on).
+        /// Group key (user ID, task, and so on). When grouping by Model the key is the endpoint identifier and the model name joined by a vertical bar, so two endpoints serving the same model name stay distinct. In a grouped time series, groups beyond the requested top are combined under the key (other).
         /// </summary>
         public string Key { get; set; } = String.Empty;
 
@@ -16,6 +16,17 @@ namespace MyMorningNews.Core.Responses
         /// Display label (for example the user email).
         /// </summary>
         public string? Label { get; set; } = null;
+
+        /// <summary>
+        /// Model endpoint identifier. Set only when grouping by Model, where the key is the endpoint identifier and the model name
+        /// joined by a vertical bar. Null for other groupings and for calls whose endpoint was deleted.
+        /// </summary>
+        public string? ModelEndpointId { get; set; } = null;
+
+        /// <summary>
+        /// Model name. Set only when grouping by Model; null for other groupings.
+        /// </summary>
+        public string? Model { get; set; } = null;
 
         /// <summary>
         /// Calls.

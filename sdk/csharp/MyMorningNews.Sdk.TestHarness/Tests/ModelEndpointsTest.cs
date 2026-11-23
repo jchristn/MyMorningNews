@@ -1,5 +1,6 @@
 namespace MyMorningNews.Sdk.TestHarness.Tests
 {
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
     using MyMorningNews.Sdk.Enums;
@@ -52,6 +53,12 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             ModelEndpoint read = await StepAsync(context, result, "GET model endpoint", () => c.ModelEndpoints.GetAsync(e.Id, token)).ConfigureAwait(false);
             Helpers.Equal("harness-model", read.Model, "model");
             ModelEndpoint updated = await StepAsync(context, result, "PUT model endpoint", () => c.ModelEndpoints.UpdateAsync(e.Id, new ModelEndpointUpsertRequest { MaxTokens = 512 }, token)).ConfigureAwait(false);
+            ModelEndpoint tuned = await StepAsync(context, result, "PUT model endpoint (optional values)", () => c.ModelEndpoints.UpdateAsync(e.Id, new ModelEndpointUpsertRequest { Temperature = 0.3, ContextLength = 4096 }, token)).ConfigureAwait(false);
+            Helpers.True(tuned.Temperature == 0.3 && tuned.ContextLength == 4096, "optional values set");
+            ModelEndpoint cleared = await StepAsync(context, result, "PUT model endpoint (clearFields)", () => c.ModelEndpoints.UpdateAsync(e.Id, new ModelEndpointUpsertRequest { ClearFields = new List<string> { "temperature", "contextLength" } }, token)).ConfigureAwait(false);
+            Helpers.True(cleared.Temperature == null && cleared.ContextLength == null && cleared.MaxTokens == 512, "clearFields sets optional values to null");
+            await StepAsync(context, result, "PUT model endpoint clearFields=name (400)", () => Helpers.ExpectErrorAsync(() => c.ModelEndpoints.UpdateAsync(e.Id, new ModelEndpointUpsertRequest { ClearFields = new List<string> { "name" } }, token), 400, "ValidationFailed")).ConfigureAwait(false);
+            await StepAsync(context, result, "PUT model endpoint value and clearFields (400)", () => Helpers.ExpectErrorAsync(() => c.ModelEndpoints.UpdateAsync(e.Id, new ModelEndpointUpsertRequest { ContextLength = 1, ClearFields = new List<string> { "contextLength" } }, token), 400, "ValidationFailed")).ConfigureAwait(false);
             Helpers.Equal(512, updated.MaxTokens, "max tokens");
             EnumerationResult<ModelEndpoint> list = await StepAsync(context, result, "GET model endpoints (provider filter)",
                 () => c.ModelEndpoints.ListAsync(new ModelEndpointListOptions { Provider = ModelProviderEnum.OpenAiCompatible, PageSize = 100 }, token)).ConfigureAwait(false);

@@ -1381,7 +1381,7 @@
     },
     "reveal": {
       "action": "Révéler",
-      "actionAdminOnly": "Révéler (administrateurs uniquement)",
+      "actionRestricted": "Révéler (créateur et administrateurs uniquement)",
       "confirmTitle": "Révéler le secret",
       "confirmMessage": "Afficher {name} en clair ? Il reste visible {seconds} secondes, puis il est de nouveau masqué.",
       "audited": "Les révélations sont auditées : qui a révélé quel identifiant et depuis où est enregistré.",
@@ -1514,7 +1514,8 @@
       "signIn": "Connexion",
       "secretSource": "Provenance du secret",
       "howTo": "Comment l’obtenir",
-      "cliNotice": "Cette option exécute l’outil en ligne de commande du fournisseur sur le serveur. Il répond uniquement aux prompts de chat : il n’a donc ni URL, ni appels d’outils, ni embeddings."
+      "cliNotice": "Cette option exécute l’outil en ligne de commande du fournisseur sur le serveur. Il répond uniquement aux prompts de chat : il n’a donc ni URL, ni appels d’outils, ni embeddings.",
+      "clearHint": "Pour retirer une valeur facultative, comme un prix, la longueur de contexte ou la température, videz le champ et enregistrez."
     },
     "test": {
       "title": "Tester le modèle",
@@ -1832,7 +1833,8 @@
       "system": "Système",
       "noTopic": "Aucun sujet",
       "none": "Aucun",
-      "unknown": "Inconnu"
+      "unknown": "Inconnu",
+      "other": "Autres"
     },
     "columns": {
       "cost": "Coût",
@@ -1863,8 +1865,6 @@
     },
     "charts": {
       "groupBy": "Regrouper par",
-      "costOverTime": "Coût dans le temps",
-      "costOverTimeHelp": "Coût estimé par intervalle, calculé à l’enregistrement de chaque appel.",
       "costByUser": "Coût par utilisateur",
       "costByUserHelp": "Les 20 premiers utilisateurs et leur part du coût. Sélectionnez une ligne pour filtrer la page sur cet utilisateur.",
       "costByModel": "Coût par modèle",
@@ -1889,11 +1889,17 @@
       "costByTenant": "Coût par locataire",
       "costByTenantHelp": "Tous les locataires classés par coût, avec leur part du coût de la plateforme.",
       "tenantTrend": "Coût par locataire dans le temps",
-      "tenantTrendHelp": "{count, plural, one {La période est divisée en # intervalle.} other {La période est divisée en # intervalles.}} Les principaux locataires sont empilés ; tous les autres sont regroupés.",
-      "otherTenants": "Autres locataires",
-      "platformTrend": "Coût de la plateforme dans le temps",
+      "tenantTrendHelp": "Les principaux locataires sont empilés dans chaque intervalle ; tous les autres sont réunis sous Autres.",
+      "platformTrend": "Utilisation de la plateforme dans le temps",
       "costByModel": "Coût de la plateforme par modèle",
       "breakdownHelp": "Tous les locataires avec les types de jetons, la part du coût et les durées. Exporter en CSV télécharge ce tableau."
+    },
+    "trend": {
+      "title": "Utilisation dans le temps",
+      "help": "La mesure sélectionnée pour chaque intervalle. Regroupez-la pour comparer les utilisateurs, les modèles, les tâches, les sujets, les fournisseurs ou les prompts ; les plus grands groupes sont tracés et le reste est réuni sous Autres.",
+      "none": "Sans regroupement",
+      "measure": "Mesure",
+      "ttft": "Délai avant le premier jeton"
     }
   },
   "markdown": {

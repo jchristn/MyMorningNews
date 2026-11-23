@@ -17,8 +17,8 @@ import LoadingState from '../components/LoadingState.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import { MODEL_TASKS, USAGE_GROUPS } from '../utils/enums.js';
 import useModelEndpoints from './models/useModelEndpoints.js';
-import { CostTrend, ExportCsvButton, RangeControl, UsageKpis, UsageTable } from './usage/UsageParts.jsx';
-import { cleanQuery, rowLabel, TOKEN_TYPES, tokenMix, topRows } from './usage/usageData.js';
+import { ExportCsvButton, RangeControl, TrendControls, UsageKpis, UsageTable, UsageTrend } from './usage/UsageParts.jsx';
+import { cleanQuery, rowLabel, TOKEN_TYPES, tokenMix, topRows, TREND_GROUPS, TREND_MEASURES, TREND_TOP } from './usage/usageData.js';
 
 const BASE_GROUPS = ['User', 'Model', 'Task', 'Topic'];
 const MIX_GROUPS = ['Model', 'Task', 'User'];
@@ -92,6 +92,10 @@ export default function UsageView() {
   const debouncedTopic = useDebounce(topicInput, 400);
   const [breakdownGroup, setBreakdownGroup] = useLocalStorage('mymorningnews.usage.breakdown', 'User');
   const [mixGroup, setMixGroup] = useLocalStorage('mymorningnews.usage.mix', 'Model');
+  const [storedTrendGroup, setTrendGroup] = useLocalStorage('mymorningnews.usage.trendGroup', '');
+  const [storedTrendMeasure, setTrendMeasure] = useLocalStorage('mymorningnews.usage.trendMeasure', 'cost');
+  const trendGroup = TREND_GROUPS.includes(storedTrendGroup) ? storedTrendGroup : '';
+  const trendMeasure = TREND_MEASURES.includes(storedTrendMeasure) ? storedTrendMeasure : 'cost';
   const [reports, setReports] = useState({});
   const [series, setSeries] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -124,6 +128,13 @@ export default function UsageView() {
   }, [range, filters]);
 
   const fetchGroup = useCallback((groupBy, base) => apiClient.getUsageReport({ ...base, groupBy }), [apiClient]);
+  // The trend: one line for everything, or the largest groups of the chosen grouping with the rest combined.
+  const fetchSeries = useCallback(
+    (base, bucketMinutes, groupBy) => apiClient.getUsageTimeseries(cleanQuery({ ...base, bucketMinutes, groupBy, top: groupBy ? TREND_TOP : '' })),
+    [apiClient]
+  );
+  const trendGroupRef = useRef(trendGroup);
+  const loadedTrendGroup = useRef(trendGroup);
 
   const load = useCallback(async () => {
     // Once the server has said the caller cannot read tenant usage, only the caller's own usage is loaded.
@@ -137,8 +148,10 @@ export default function UsageView() {
     try {
       // One request first, so a caller the role flags misjudge sees a single 403 rather than one per grouping.
       const model = await fetchGroup('Model', base);
-      const [timeseries, ...results] = await Promise.all([apiClient.getUsageTimeseries({ ...base, bucketMinutes: r.bucketMinutes }), ...groups.map((g) => fetchGroup(g, base))]);
+      const group = trendGroupRef.current;
+      const [timeseries, ...results] = await Promise.all([fetchSeries(base, r.bucketMinutes, group), ...groups.map((g) => fetchGroup(g, base))]);
       if (id !== requestId.current) return;
+      loadedTrendGroup.current = group;
       const next = { Model: model };
       groups.forEach((g, i) => (next[g] = results[i]));
       setSeries(timeseries);
@@ -154,11 +167,24 @@ export default function UsageView() {
     }
     // breakdownGroup and mixGroup are fetched lazily below when they change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiClient, range, filters, fetchGroup]);
+  }, [apiClient, range, filters, fetchGroup, fetchSeries]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  // A newly chosen trend grouping reloads only the time series.
+  useEffect(() => {
+    trendGroupRef.current = trendGroup;
+    if (memberMode || loading || loadedTrendGroup.current === trendGroup) return;
+    const id = requestId.current;
+    loadedTrendGroup.current = trendGroup;
+    fetchSeries(query.base, query.range.bucketMinutes, trendGroup)
+      .then((timeseries) => {
+        if (id === requestId.current && trendGroupRef.current === trendGroup) setSeries(timeseries);
+      })
+      .catch(setError);
+  }, [trendGroup, memberMode, loading, fetchSeries, query]);
 
   // Fetch a newly selected breakdown or mix grouping without reloading everything.
   useEffect(() => {
@@ -207,7 +233,7 @@ export default function UsageView() {
 
   const userRows = topRows(reports.User, 20).map((r) => ({ key: r.key, label: rowLabel(r, 'User', t), value: Number(r.costUsd) || 0, share: r.costShare, calls: r.calls, tokens: r.totalTokens }));
   const bars = (groupBy, limit = 10) =>
-    topRows(reports[groupBy], limit).map((r) => ({ key: r.key, label: rowLabel(r, groupBy, t), value: Number(r.costUsd) || 0 }));
+    topRows(reports[groupBy], limit).map((r) => ({ key: r.key, label: rowLabel(r, groupBy, t), value: Number(r.costUsd) || 0, endpointId: r.modelEndpointId || '' }));
   const mixRows = topRows(reports[mixGroup], 8);
   const ttftRows = topRows(reports.Model, 10).filter((r) => r.averageTimeToFirstTokenMs !== null && r.averageTimeToFirstTokenMs !== undefined);
   const toolRows = topRows(reports.Task, 11).some((r) => Number(r.toolCalls) > 0) ? topRows(reports.Task, 11) : [];
@@ -282,9 +308,14 @@ export default function UsageView() {
       <ErrorState error={error} onRetry={load} />
       <UsageKpis totals={totals} />
       <div className="chart-grid">
-        <ChartCard title={t('usage.charts.costOverTime')} subtitle={t('usage.charts.costOverTimeHelp')} className="wide">
+        <ChartCard
+          title={t('usage.trend.title')}
+          subtitle={t('usage.trend.help')}
+          className="wide"
+          controls={<TrendControls id="usage-trend" measure={trendMeasure} onMeasure={setTrendMeasure} groupBy={trendGroup} onGroupBy={setTrendGroup} groups={TREND_GROUPS} />}
+        >
           {!series && !error ? <LoadingState /> : null}
-          <CostTrend series={series} ariaLabel={t('usage.charts.costOverTime')} />
+          <UsageTrend series={series} ariaLabel={t('usage.trend.title')} measure={trendMeasure} />
         </ChartCard>
         <ChartCard title={t('usage.charts.costByUser')} subtitle={t('usage.charts.costByUserHelp')} className="wide">
           {reports.User ? empty(userRows) : <LoadingState />}
@@ -305,7 +336,7 @@ export default function UsageView() {
         </ChartCard>
         <ChartCard title={t('usage.charts.costByModel')}>
           {reports.Model ? empty(bars('Model')) : <LoadingState />}
-          <HorizontalBarChart ariaLabel={t('usage.charts.costByModel')} formatValue={(v) => f.usd(v)} items={bars('Model')} color="var(--chart-series-1)" />
+          <HorizontalBarChart ariaLabel={t('usage.charts.costByModel')} formatValue={(v) => f.usd(v)} items={bars('Model')} color="var(--chart-series-1)" onItemClick={(item) => item.endpointId && set('modelEndpointId', item.endpointId)} />
         </ChartCard>
         <ChartCard title={t('usage.charts.costByTask')}>
           {reports.Task ? empty(bars('Task', 11)) : <LoadingState />}

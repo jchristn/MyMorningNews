@@ -114,5 +114,14 @@ namespace MyMorningNews.Core.Requests
         /// Active.
         /// </summary>
         public bool? Active { get; set; } = null;
+
+        /// <summary>
+        /// Names of optional properties to clear to null on update: endpoint, credentialId, authMethod, model, embeddingModel,
+        /// temperature, reasoningEffort, contextLength, inputCostPerMTok, outputCostPerMTok, cachedInputCostPerMTok, cacheWriteCostPerMTok.
+        /// Names are matched without regard to case. A null or absent property means "leave unchanged", so this list is the
+        /// only way to set a number or enum back to null (an empty string also clears the text properties). Naming a property here
+        /// and giving it a value in the same request is refused, as is any other name. Null or empty (the default) clears nothing.
+        /// </summary>
+        public List<string>? ClearFields { get; set; } = null;
     }
 }

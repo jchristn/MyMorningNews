@@ -20,7 +20,9 @@ namespace MyMorningNews.Sdk.Options
         public DateTime? ToUtc { get; set; } = null;
 
         /// <summary>
-        /// Grouping (User, Model, Task, Provider, Topic, PromptKey, Day, or Tenant with AllTenants). Null uses the route default.
+        /// Grouping (User, Model, Task, Provider, Topic, PromptKey, Day, or Tenant with AllTenants). Null uses the route default:
+        /// Model for the report, Task for the caller's own usage, and no grouping for the time series. On the time series a grouping
+        /// adds Groups and a Rows list on each bucket; Day is refused there.
         /// </summary>
         public UsageGroupByEnum? GroupBy { get; set; } = null;
 
@@ -50,7 +52,8 @@ namespace MyMorningNews.Sdk.Options
         public bool? IncludeDryRun { get; set; } = null;
 
         /// <summary>
-        /// Maximum rows (server default 50, range 1 to 1000). Null by default.
+        /// Maximum rows in a report (server default 50), or maximum groups in a grouped time series (server default 10, the rest
+        /// combined under the key (other)). Range 1 to 1000. Null by default.
         /// </summary>
         public int? Top { get; set; } = null;
 

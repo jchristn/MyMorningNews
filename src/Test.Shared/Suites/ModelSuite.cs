@@ -11,6 +11,7 @@ namespace Test.Shared.Suites
     using MyMorningNews.Core.Models;
     using MyMorningNews.Core.Models.Results;
     using MyMorningNews.Core.Prompts;
+    using MyMorningNews.Core.Requests;
     using MyMorningNews.Core.Responses;
     using MyMorningNews.Core.Services;
     using MyMorningNews.Server;
@@ -53,7 +54,11 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "Prompts.DefaultUpgrade", "Uncustomized tenant prompts move to new defaults; customized prompts are kept", DefaultUpgradeAsync),
                 Cases.Case(S, "Accounting.Streaming", "Streamed calls record time to first token, chunks, token types, tool calls, attribution, and split cost", StreamingAccountingAsync),
                 Cases.Case(S, "Accounting.Guardrail", "Every model call carries the scope guardrail ahead of the prompt", GuardrailAsync),
-                Cases.Case(S, "Usage.Reports", "Usage reports rank users by cost, time series are gap-filled, and access is restricted", UsageReportsAsync)
+                Cases.Case(S, "Usage.Reports", "Usage reports rank users by cost, time series are gap-filled, and access is restricted", UsageReportsAsync),
+                Cases.Case(S, "Usage.GroupedSeries", "Time series group by a dimension with per-bucket rows and token, tool, and p95 fields; Model groups are keyed by endpoint", UsageGroupedSeriesAsync),
+                Cases.Case(S, "Endpoints.ClearFields", "clearFields sets optional endpoint values back to null and refuses unknown or conflicting names", EndpointClearFieldsAsync),
+                Cases.Case(S, "Vault.ClearFields", "clearFields removes optional credential values and refuses unknown, conflicting, or required names", VaultClearFieldsAsync),
+                Cases.Case(S, "Vault.CreatorReveal", "The creator can reveal a credential; other members and other tenants cannot; every reveal is audited", CreatorRevealAsync)
             });
         }
 
@@ -480,6 +485,155 @@ namespace Test.Shared.Suites
             (await ta.Client.GetAsync("/v1.0/api/usage/report?allTenants=true", token).ConfigureAwait(false)).Expect(403, "platform-wide needs global admin");
             UsageReport platform = (await admin.GetAsync("/v1.0/api/usage/report?allTenants=true&groupBy=Tenant", token).ConfigureAwait(false)).Expect(200, "platform").Json<UsageReport>();
             Assert.True(platform.Rows.Any(r => r.Key == t.Id && r.Calls == 5 && r.Label == t.Name), "per-tenant row");
+        }
+
+        private static async Task UsageGroupedSeriesAsync(CancellationToken token)
+        {
+            TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
+            Tenant t = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
+            TestUser ta = await TestFixtures.CreateUserAsync(admin, t.Id, true, token).ConfigureAwait(false);
+            ModelEndpoint first = await StubEndpointAsync(ta.Client, "stub-chat", null, null, token).ConfigureAwait(false);
+            ModelEndpoint second = await StubEndpointAsync(ta.Client, "stub-chat", null, null, token).ConfigureAwait(false);
+            MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+            ModelGateway gateway = server.Context.Models;
+            for (int i = 0; i < 3; i++)
+                await gateway.ChatAsync(new ModelCallRequest { TenantId = t.Id, UserId = ta.User.Id, Task = ModelTaskEnum.Synthesis, ModelEndpointId = first.Id, UserPrompt = "x" }, token).ConfigureAwait(false);
+            await gateway.ChatAsync(new ModelCallRequest { TenantId = t.Id, UserId = ta.User.Id, Task = ModelTaskEnum.Scoring, ModelEndpointId = second.Id, UserPrompt = "x" }, token).ConfigureAwait(false);
+            await gateway.ChatStructuredAsync<TextAnswerResult>(new ModelCallRequest { TenantId = t.Id, UserId = ta.User.Id, Task = ModelTaskEnum.QueryPlanning, ModelEndpointId = second.Id, UserPrompt = "x" }, token).ConfigureAwait(false);
+
+            UsageReport byModel = (await ta.Client.GetAsync("/v1.0/api/usage/report?groupBy=Model", token).ConfigureAwait(false)).Expect(200, "by model").Json<UsageReport>();
+            Assert.Equal(2, byModel.Rows.Count, "one row per endpoint for the same model name");
+            UsageRow firstRow = byModel.Rows.Single(r => r.ModelEndpointId == first.Id);
+            UsageRow secondRow = byModel.Rows.Single(r => r.ModelEndpointId == second.Id);
+            Assert.True(firstRow.Key == first.Id + "|stub-chat" && firstRow.Model == "stub-chat" && firstRow.Calls == 3, "first endpoint row (" + firstRow.Key + ")");
+            Assert.True(secondRow.Key == second.Id + "|stub-chat" && secondRow.Model == "stub-chat" && secondRow.Calls == 2, "second endpoint row (" + secondRow.Key + ")");
+            Assert.True(firstRow.Label == "stub-chat (" + first.Name + ")" && secondRow.Label == "stub-chat (" + second.Name + ")", "labels name the endpoint (" + firstRow.Label + ")");
+
+            string range = "&bucketMinutes=60&from=" + Uri.EscapeDataString(DateTime.UtcNow.AddHours(-6).ToString("o")) + "&to=" + Uri.EscapeDataString(DateTime.UtcNow.AddMinutes(1).ToString("o"));
+            UsageTimeseries plain = (await ta.Client.GetAsync("/v1.0/api/usage/timeseries?x=1" + range, token).ConfigureAwait(false)).Expect(200, "plain series").Json<UsageTimeseries>();
+            Assert.True(plain.GroupBy == null && plain.Groups.Count == 0 && plain.Buckets.All(b => b.Rows.Count == 0), "ungrouped series has no groups or rows");
+            Assert.Equal(5L, plain.Buckets.Sum(b => b.Calls), "ungrouped calls");
+            Assert.Equal(byModel.Totals.CacheWriteTokens, plain.Buckets.Sum(b => b.CacheWriteTokens), "cache-write tokens per bucket");
+            Assert.Equal(byModel.Totals.ReasoningTokens, plain.Buckets.Sum(b => b.ReasoningTokens), "reasoning tokens per bucket");
+            Assert.Equal(byModel.Totals.ToolCalls, plain.Buckets.Sum(b => b.ToolCalls), "tool calls per bucket");
+            Assert.True(plain.Buckets.Sum(b => b.ReasoningTokens) >= 1 && plain.Buckets.Sum(b => b.ToolCalls) >= 1, "structured call recorded reasoning and tool calls");
+            Assert.True(plain.Buckets.Any(b => b.P95TimeToFirstTokenMs.HasValue && b.P95TimeToFirstTokenMs.Value >= 0), "p95 time to first token on the bucket with a streamed call");
+            Assert.True(plain.Buckets.Where(b => b.Calls == 0).All(b => b.P95TimeToFirstTokenMs == null), "empty buckets carry no p95");
+
+            UsageTimeseries grouped = (await ta.Client.GetAsync("/v1.0/api/usage/timeseries?groupBy=Model" + range, token).ConfigureAwait(false)).Expect(200, "by model series").Json<UsageTimeseries>();
+            Assert.True(grouped.GroupBy == UsageGroupByEnum.Model && grouped.Groups.Count == 2, "two model groups");
+            Assert.True(grouped.Groups.Any(g => g.ModelEndpointId == first.Id && g.Calls == 3) && grouped.Groups.Any(g => g.ModelEndpointId == second.Id && g.Calls == 2), "group totals per endpoint");
+            Assert.Equal(5L, grouped.Buckets.Sum(b => b.Rows.Sum(r => r.Calls)), "bucket rows add up to the calls");
+            Assert.True(grouped.Buckets.All(b => b.Rows.Sum(r => r.Calls) == b.Calls), "rows in a bucket add up to the bucket");
+            Assert.True(grouped.Buckets.SelectMany(b => b.Rows).All(r => r.Model == "stub-chat" && r.Label != null && r.Label.StartsWith("stub-chat (", StringComparison.Ordinal)), "bucket rows carry the group label");
+            Assert.True(grouped.Buckets.Count >= 6 && grouped.Buckets.Count(b => b.Rows.Count == 0) >= 5, "empty buckets have no rows");
+
+            UsageTimeseries top = (await ta.Client.GetAsync("/v1.0/api/usage/timeseries?groupBy=Task&top=1" + range, token).ConfigureAwait(false)).Expect(200, "top one").Json<UsageTimeseries>();
+            Assert.True(top.Groups.Count == 2 && top.Groups[1].Key == "(other)" && top.Groups[1].Label == "Other", "groups beyond top are combined (" + String.Join(",", top.Groups.Select(g => g.Key)) + ")");
+            Assert.Equal(5L, top.Groups.Sum(g => g.Calls), "top and other cover every call");
+            Assert.Equal(5L, top.Buckets.Sum(b => b.Rows.Sum(r => r.Calls)), "bucket rows with other cover every call");
+            UsageTimeseries byUser = (await ta.Client.GetAsync("/v1.0/api/usage/timeseries?groupBy=User" + range, token).ConfigureAwait(false)).Expect(200, "by user series").Json<UsageTimeseries>();
+            Assert.True(byUser.Groups.Count == 1 && byUser.Groups[0].Key == ta.User.Id && byUser.Groups[0].Label == ta.User.Email && Math.Abs(byUser.Groups[0].CostShare - 1) < 0.001, "user group labeled");
+
+            (await ta.Client.GetAsync("/v1.0/api/usage/timeseries?groupBy=Day" + range, token).ConfigureAwait(false)).Expect(400, "day grouping refused");
+            (await ta.Client.GetAsync("/v1.0/api/usage/timeseries?groupBy=Tenant" + range, token).ConfigureAwait(false)).Expect(400, "tenant grouping needs allTenants");
+            UsageTimeseries platform = (await admin.GetAsync("/v1.0/api/usage/timeseries?allTenants=true&groupBy=Tenant&top=1000" + range, token).ConfigureAwait(false)).Expect(200, "platform series").Json<UsageTimeseries>();
+            Assert.True(platform.Groups.Any(g => g.Key == t.Id && g.Calls == 5 && g.Label == t.Name), "per-tenant group");
+        }
+
+        private static async Task EndpointClearFieldsAsync(CancellationToken token)
+        {
+            TestUser ta = await TenantAdminAsync(token).ConfigureAwait(false);
+            ModelEndpoint e = await StubEndpointAsync(ta.Client, "stub-chat", null, null, token).ConfigureAwait(false);
+            string path = "/v1.0/api/model-endpoints/" + e.Id;
+            e = (await ta.Client.PutAsync(path, new { temperature = 0.4, reasoningEffort = "High", contextLength = 8000, cachedInputCostPerMTok = 0.1, cacheWriteCostPerMTok = 1.25, apiKey = "sk-stub-clear-0001" }, token).ConfigureAwait(false))
+                .Expect(200, "set optional values").Json<ModelEndpoint>();
+            Assert.True(e.Temperature == 0.4 && e.ReasoningEffort == ReasoningEffortEnum.High && e.ContextLength == 8000 && e.CachedInputCostPerMTok == 0.1m && e.CacheWriteCostPerMTok == 1.25m && e.CredentialId != null, "values set");
+
+            ModelEndpoint untouched = (await ta.Client.PutAsync(path, new { name = e.Name }, token).ConfigureAwait(false)).Expect(200, "omitted values are kept").Json<ModelEndpoint>();
+            Assert.True(untouched.Temperature == 0.4 && untouched.ContextLength == 8000 && untouched.InputCostPerMTok == 1.0m, "absent properties are unchanged");
+
+            ModelEndpoint cleared = (await ta.Client.PutAsync(path, new { clearFields = new[] { "temperature", "ReasoningEffort", "contextlength", "inputCostPerMTok", "outputCostPerMTok", "cachedInputCostPerMTok", "cacheWriteCostPerMTok", "credentialId" } }, token).ConfigureAwait(false))
+                .Expect(200, "clear").Json<ModelEndpoint>();
+            Assert.True(cleared.Temperature == null && cleared.ReasoningEffort == null && cleared.ContextLength == null, "numbers and enum cleared");
+            Assert.True(cleared.InputCostPerMTok == null && cleared.OutputCostPerMTok == null && cleared.CachedInputCostPerMTok == null && cleared.CacheWriteCostPerMTok == null, "costs cleared");
+            Assert.True(cleared.CredentialId == null && cleared.Model == "stub-chat" && cleared.Endpoint == e.Endpoint, "credential cleared, other values kept");
+            ModelEndpoint read = (await ta.Client.GetAsync(path, token).ConfigureAwait(false)).Expect(200, "read").Json<ModelEndpoint>();
+            Assert.True(read.Temperature == null && read.ContextLength == null && read.InputCostPerMTok == null, "cleared values are stored");
+
+            ModelEndpoint mixed = (await ta.Client.PutAsync(path, new { contextLength = 4000, clearFields = new[] { "temperature" } }, token).ConfigureAwait(false)).Expect(200, "set one and clear another").Json<ModelEndpoint>();
+            Assert.True(mixed.ContextLength == 4000 && mixed.Temperature == null, "set and clear in one request");
+
+            TestResponse unknown = (await ta.Client.PutAsync(path, new { clearFields = new[] { "name" } }, token).ConfigureAwait(false)).Expect(400, "unknown name refused");
+            Assert.True(unknown.Body.Contains("cannot be cleared", StringComparison.Ordinal), "unknown name message");
+            (await ta.Client.PutAsync(path, new { clearFields = new[] { "maxTokens" } }, token).ConfigureAwait(false)).Expect(400, "required number refused");
+            TestResponse conflict = (await ta.Client.PutAsync(path, new { contextLength = 9000, clearFields = new[] { "contextLength" } }, token).ConfigureAwait(false)).Expect(400, "value and clear refused");
+            Assert.True(conflict.Body.Contains("not both", StringComparison.Ordinal), "conflict message");
+            (await ta.Client.PutAsync(path, new { clearFields = new[] { "endpoint" } }, token).ConfigureAwait(false)).Expect(400, "a compatible endpoint keeps its URL");
+            (await ta.Client.PutAsync(path, new { clearFields = new[] { "model" } }, token).ConfigureAwait(false)).Expect(400, "a chat endpoint keeps its model");
+            ModelEndpoint after = (await ta.Client.GetAsync(path, token).ConfigureAwait(false)).Expect(200, "read after refusals").Json<ModelEndpoint>();
+            Assert.True(after.ContextLength == 4000 && after.Endpoint == e.Endpoint && after.Model == "stub-chat", "refused requests change nothing");
+        }
+
+        private static async Task VaultClearFieldsAsync(CancellationToken token)
+        {
+            TestUser ta = await TenantAdminAsync(token).ConfigureAwait(false);
+            DateTime expires = DateTime.UtcNow.AddDays(30);
+            VaultCredentialResponse created = (await ta.Client.PostAsync("/v1.0/api/vault/credentials", new { name = "Clearable", secret = "sk-clear-9876", description = "to remove", username = "someone", expiresUtc = expires }, token).ConfigureAwait(false))
+                .Expect(201, "create").Json<VaultCredentialResponse>();
+            Assert.True(created.Description == "to remove" && created.Username == "someone" && created.ExpiresUtc.HasValue, "optional values stored");
+            string path = "/v1.0/api/vault/credentials/" + created.Id;
+            VaultCredentialResponse kept = (await ta.Client.PutAsync(path, new { name = "Clearable 2" }, token).ConfigureAwait(false)).Expect(200, "rename").Json<VaultCredentialResponse>();
+            Assert.True(kept.ExpiresUtc.HasValue && kept.Description == "to remove", "absent properties are unchanged");
+            VaultCredentialResponse cleared = (await ta.Client.PutAsync(path, new { clearFields = new[] { "expiresUtc", "Description", "username" } }, token).ConfigureAwait(false)).Expect(200, "clear").Json<VaultCredentialResponse>();
+            Assert.True(cleared.ExpiresUtc == null && cleared.Description == null && cleared.Username == null && cleared.Name == "Clearable 2" && cleared.SecretPreview == "****9876", "optional values cleared, the rest kept");
+            VaultCredentialResponse read = (await ta.Client.GetAsync(path, token).ConfigureAwait(false)).Expect(200, "read").Json<VaultCredentialResponse>();
+            Assert.True(read.ExpiresUtc == null && read.Description == null, "cleared values are stored");
+
+            (await ta.Client.PutAsync(path, new { clearFields = new[] { "secret" } }, token).ConfigureAwait(false)).Expect(400, "the secret cannot be cleared");
+            (await ta.Client.PutAsync(path, new { clearFields = new[] { "name" } }, token).ConfigureAwait(false)).Expect(400, "the name cannot be cleared");
+            (await ta.Client.PutAsync(path, new { description = "new", clearFields = new[] { "description" } }, token).ConfigureAwait(false)).Expect(400, "value and clear refused");
+            VaultCredentialResponse header = (await ta.Client.PostAsync("/v1.0/api/vault/credentials", new { name = "Header", kind = "CustomHeader", headerName = "X-Key", secret = "hdr-secret-1111" }, token).ConfigureAwait(false))
+                .Expect(201, "create header credential").Json<VaultCredentialResponse>();
+            (await ta.Client.PutAsync("/v1.0/api/vault/credentials/" + header.Id, new { clearFields = new[] { "headerName" } }, token).ConfigureAwait(false)).Expect(400, "a custom header keeps its header name");
+            VaultCredentialResponse rekinded = (await ta.Client.PutAsync("/v1.0/api/vault/credentials/" + header.Id, new { kind = "ApiKey", clearFields = new[] { "headerName" } }, token).ConfigureAwait(false))
+                .Expect(200, "header name cleared with a kind change").Json<VaultCredentialResponse>();
+            Assert.True(rekinded.HeaderName == null && rekinded.Kind == VaultCredentialKindEnum.ApiKey, "header name cleared");
+        }
+
+        private static async Task CreatorRevealAsync(CancellationToken token)
+        {
+            TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
+            Tenant t = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
+            TestUser ta = await TestFixtures.CreateUserAsync(admin, t.Id, true, token).ConfigureAwait(false);
+            TestUser creator = await TestFixtures.CreateUserAsync(admin, t.Id, false, token).ConfigureAwait(false);
+            TestUser other = await TestFixtures.CreateUserAsync(admin, t.Id, false, token).ConfigureAwait(false);
+            Tenant elsewhere = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
+            TestUser outsideAdmin = await TestFixtures.CreateUserAsync(admin, elsewhere.Id, true, token).ConfigureAwait(false);
+            TestUser outsideMember = await TestFixtures.CreateUserAsync(admin, elsewhere.Id, false, token).ConfigureAwait(false);
+            MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+            VaultCredential mine = await server.Context.Vault.CreateAsync(t.Id, creator.User.Id, new VaultCredentialUpsertRequest { Name = "Member key", Secret = "sk-member-4321" }, token).ConfigureAwait(false);
+            string reveal = "/v1.0/api/vault/credentials/" + mine.Id + "/reveal";
+
+            VaultRevealResponse own = (await creator.Client.PostAsync(reveal, null, token).ConfigureAwait(false)).Expect(200, "creator reveals").Json<VaultRevealResponse>();
+            Assert.Equal("sk-member-4321", own.Secret, "creator sees the secret");
+            (await other.Client.PostAsync(reveal, null, token).ConfigureAwait(false)).Expect(403, "another member of the tenant is refused");
+            VaultRevealResponse byAdmin = (await ta.Client.PostAsync(reveal, null, token).ConfigureAwait(false)).Expect(200, "tenant administrator reveals").Json<VaultRevealResponse>();
+            Assert.Equal("sk-member-4321", byAdmin.Secret, "administrator sees the secret");
+            TestResponse outsideAdminResponse = await outsideAdmin.Client.PostAsync(reveal, null, token).ConfigureAwait(false);
+            Assert.True(outsideAdminResponse.StatusCode == 404 || outsideAdminResponse.StatusCode == 403, "an administrator of another tenant is refused (" + outsideAdminResponse.StatusCode + ")");
+            Assert.True(!outsideAdminResponse.Body.Contains("sk-member-4321", StringComparison.Ordinal), "no secret for another tenant's administrator");
+            TestResponse outsideMemberResponse = await outsideMember.Client.PostAsync(reveal, null, token).ConfigureAwait(false);
+            Assert.True(outsideMemberResponse.StatusCode == 404 || outsideMemberResponse.StatusCode == 403, "a member of another tenant is refused (" + outsideMemberResponse.StatusCode + ")");
+            Assert.True(!outsideMemberResponse.Body.Contains("sk-member-4321", StringComparison.Ordinal), "no secret for another tenant's member");
+
+            VaultCredentialResponse adminOwned = (await ta.Client.PostAsync("/v1.0/api/vault/credentials", new { name = "Admin key", secret = "sk-admin-8765" }, token).ConfigureAwait(false)).Expect(201, "admin credential").Json<VaultCredentialResponse>();
+            (await creator.Client.PostAsync("/v1.0/api/vault/credentials/" + adminOwned.Id + "/reveal", null, token).ConfigureAwait(false)).Expect(403, "creating one credential does not open the others");
+
+            EnumerationResult<AuditRecord> audit = (await ta.Client.GetAsync("/v1.0/api/audit?eventType=CredentialRevealed&pageSize=100", token).ConfigureAwait(false)).Expect(200, "audit").Json<EnumerationResult<AuditRecord>>();
+            List<AuditRecord> reveals = audit.Items.Where(a => (a.Description ?? String.Empty).Contains(mine.Id, StringComparison.Ordinal) || (a.Reason ?? String.Empty).Contains(mine.Id, StringComparison.Ordinal)).ToList();
+            Assert.Equal(2, reveals.Count, "both reveals are audited and refusals are not recorded as reveals");
+            Assert.True(reveals.Any(a => a.UserId == creator.User.Id) && reveals.Any(a => a.UserId == ta.User.Id), "audit names who revealed");
         }
 
         private static async Task DefaultUpgradeAsync(CancellationToken token)

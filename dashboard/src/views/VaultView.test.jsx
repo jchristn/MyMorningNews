@@ -3,7 +3,7 @@ import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MEMBER_DETAILS } from '../test/fakeClient.js';
 import { forbidden, page, renderRoute } from '../test/renderRoute.jsx';
-import { RevealModal, REVEAL_SECONDS } from './VaultView.jsx';
+import { RevealModal, REVEAL_SECONDS, vaultUpdateBody } from './VaultView.jsx';
 
 const CREDENTIAL = {
   id: 'vlt_1',
@@ -64,9 +64,23 @@ describe('VaultView', () => {
     renderRoute('/dashboard/credentials-vault', { getTokenDetails: async () => MEMBER_DETAILS, listVaultCredentials: vi.fn(async () => page([CREDENTIAL])) });
     expect(await screen.findByText(/requires a tenant administrator/)).toBeInTheDocument();
     await openActions('qa-anthropic');
-    expect(screen.getByRole('menuitem', { name: 'Reveal (administrators only)' })).toBeDisabled();
+    expect(screen.getByRole('menuitem', { name: 'Reveal (creator and administrators only)' })).toBeDisabled();
     expect(screen.getByRole('menuitem', { name: 'Delete' })).toBeDisabled();
     expect(screen.getByRole('menuitem', { name: 'Where used' })).toBeEnabled();
+  });
+
+  it('lets a member reveal a credential they created, and nothing else', async () => {
+    const client = renderRoute('/dashboard/credentials-vault', {
+      getTokenDetails: async () => MEMBER_DETAILS,
+      listVaultCredentials: vi.fn(async () => page([{ ...CREDENTIAL, name: 'my-key', createdByUserId: MEMBER_DETAILS.userId }])),
+      revealVaultCredential: vi.fn(async () => ({ id: 'vlt_1', name: 'my-key', secret: 'sk-mine-1234' }))
+    });
+    await openActions('my-key');
+    expect(screen.getByRole('menuitem', { name: 'Delete' })).toBeDisabled();
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Reveal' }));
+    await userEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Reveal' }));
+    expect(await screen.findByText('sk-mine-1234')).toBeInTheDocument();
+    expect(client.revealVaultCredential).toHaveBeenCalledWith('vlt_1');
   });
 });
 
@@ -89,5 +103,25 @@ describe('RevealModal', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+describe('vault update body', () => {
+  const original = { ...CREDENTIAL, kind: 'CustomHeader', headerName: 'X-Key', description: 'old', expiresUtc: '2027-01-01T00:00:00.000Z' };
+  const form = { name: ' qa-anthropic ', kind: 'CustomHeader', provider: 'Anthropic', headerName: 'X-Key', username: '', secret: '', description: 'old', expiresUtc: '2027-01-01T00:00:00.000Z', active: true };
+
+  it('sends values that are set and clears nothing when nothing was emptied', () => {
+    expect(vaultUpdateBody(form, original)).toEqual({ name: 'qa-anthropic', kind: 'CustomHeader', provider: 'Anthropic', active: true, headerName: 'X-Key', description: 'old', expiresUtc: '2027-01-01T00:00:00.000Z' });
+  });
+
+  it('names emptied values, and values the new kind no longer uses, in clearFields', () => {
+    const body = vaultUpdateBody({ ...form, kind: 'ApiKey', description: '  ', expiresUtc: '' }, original);
+    expect(body.clearFields).toEqual(['headerName', 'description', 'expiresUtc']);
+    expect(body).not.toHaveProperty('expiresUtc');
+    expect(body).not.toHaveProperty('headerName');
+  });
+
+  it('does not clear a value the credential never had', () => {
+    expect(vaultUpdateBody({ ...form, expiresUtc: '', description: '' }, { ...original, expiresUtc: null, description: null }).clearFields).toBeUndefined();
   });
 });

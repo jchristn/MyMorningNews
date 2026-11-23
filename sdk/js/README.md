@@ -364,8 +364,12 @@ await client.analytics.relevance({ topicId, from: new Date(Date.now() - 30 * 864
 // also overview, accuracy, feedback (with byChannelDay), reasons, suggestions, quality, email,
 // or analytics.report(name, options)
 await client.usage.me();
-await client.usage.report({ groupBy: 'Model' });
+const byModel = await client.usage.report({ groupBy: 'Model' });
+// Model rows are per endpoint: key is '<endpointId>|<model>', with modelEndpointId, model, and a label that names the endpoint
 await client.usage.timeseries({ bucketMinutes: 60 });
+// each bucket: calls, failures, costUsd, input, output, cached, cacheWrite, and reasoning tokens, toolCalls, average and p95 time to first token
+const series = await client.usage.timeseries({ groupBy: 'Task', top: 5 }); // any grouping except Day
+// series.groups: range totals per group (the rest under '(other)'); series.buckets[i].rows: one row per group with calls in that bucket
 const calls = await client.llmCalls.list({ runId });
 const stageCalls = await client.llmCalls.list({ runStageId: stage.id });
 await client.llmCalls.get(calls.items[0].id);
@@ -375,6 +379,9 @@ await client.llmCalls.get(calls.items[0].id);
 
 ```js
 const ep = await client.modelEndpoints.create({ name: 'Local', provider: 'Ollama', endpoint: 'http://127.0.0.1:12120', model: 'llama3', supportsChat: true });
+await client.modelEndpoints.update(ep.id, { temperature: 0.2, contextLength: 8192 });
+// Omitted properties are unchanged; clearFields sets optional values back to null (a name with a value, or an unknown name, is a 400)
+await client.modelEndpoints.update(ep.id, { clearFields: ['temperature', 'contextLength', 'inputCostPerMTok'] });
 await client.modelEndpoints.validate(ep.id); // { reachable, succeeded, ... }; the endpoint's lastValidationSucceeded records it
 await client.modelEndpoints.models(ep.id);
 await client.modelEndpoints.test(ep.id, { prompt: 'Say hello.' }); // model call
@@ -399,6 +406,7 @@ await client.topics.update(topicId, { voice: 'bf_emma' }); // or { voiceProfileI
 await client.topics.update(topicId, { audioEnabled: true }); // every run briefing of the topic is made into audio automatically
 
 const cred = await client.vault.create({ name: 'Tavily', kind: 'ApiKey', provider: 'Tavily', secret: process.env.TAVILY_KEY });
+await client.vault.update(cred.id, { clearFields: ['expiresUtc', 'description'] }); // also headerName, username
 await client.vault.usage(cred.id); // secrets are never returned; reveal is in the C# SDK only
 ```
 

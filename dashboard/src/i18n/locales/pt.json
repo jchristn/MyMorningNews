@@ -1381,7 +1381,7 @@
     },
     "reveal": {
       "action": "Revelar",
-      "actionAdminOnly": "Revelar (somente administradores)",
+      "actionRestricted": "Revelar (somente o criador e os administradores)",
       "confirmTitle": "Revelar segredo",
       "confirmMessage": "Mostrar o texto simples de {name}? Ele fica visível por {seconds} segundos e depois é ocultado de novo.",
       "audited": "As revelações são auditadas: quem revelou qual credencial e de onde fica registrado.",
@@ -1514,7 +1514,8 @@
       "signIn": "Login",
       "secretSource": "De onde vem o segredo",
       "howTo": "Como obter",
-      "cliNotice": "Isto executa a ferramenta de linha de comando do provedor no servidor. Ela responde apenas a prompts de chat, então não tem URL, chamadas de ferramentas nem embeddings."
+      "cliNotice": "Isto executa a ferramenta de linha de comando do provedor no servidor. Ela responde apenas a prompts de chat, então não tem URL, chamadas de ferramentas nem embeddings.",
+      "clearHint": "Para remover um valor opcional, como um preço, o tamanho do contexto ou a temperatura, esvazie o campo e salve."
     },
     "test": {
       "title": "Testar modelo",
@@ -1832,7 +1833,8 @@
       "system": "Sistema",
       "noTopic": "Sem tema",
       "none": "Nenhum",
-      "unknown": "Desconhecido"
+      "unknown": "Desconhecido",
+      "other": "Outros"
     },
     "columns": {
       "cost": "Custo",
@@ -1863,8 +1865,6 @@
     },
     "charts": {
       "groupBy": "Agrupar por",
-      "costOverTime": "Custo ao longo do tempo",
-      "costOverTimeHelp": "Custo estimado por intervalo, calculado quando cada chamada foi registrada.",
       "costByUser": "Custo por usuário",
       "costByUserHelp": "Os 20 principais usuários e sua parcela do custo. Selecione uma linha para filtrar a página por esse usuário.",
       "costByModel": "Custo por modelo",
@@ -1889,11 +1889,17 @@
       "costByTenant": "Custo por locatário",
       "costByTenantHelp": "Todos os locatários ordenados por custo, com sua parcela do custo da plataforma.",
       "tenantTrend": "Custo por locatário ao longo do tempo",
-      "tenantTrendHelp": "{count, plural, one {O intervalo dividido em # período.} other {O intervalo dividido em # períodos.}} Os principais locatários aparecem empilhados; os demais são agrupados.",
-      "otherTenants": "Outros locatários",
-      "platformTrend": "Custo da plataforma ao longo do tempo",
+      "tenantTrendHelp": "Os principais locatários aparecem empilhados em cada intervalo; os demais são combinados como Outros.",
+      "platformTrend": "Uso da plataforma ao longo do tempo",
       "costByModel": "Custo da plataforma por modelo",
       "breakdownHelp": "Todos os locatários com tipos de token, parcela do custo e tempos. Exportar CSV baixa esta tabela."
+    },
+    "trend": {
+      "title": "Uso ao longo do tempo",
+      "help": "A medida selecionada em cada intervalo. Agrupe para comparar usuários, modelos, tarefas, tópicos, provedores ou prompts; os maiores grupos são desenhados e os demais são combinados como Outros.",
+      "none": "Sem agrupamento",
+      "measure": "Medida",
+      "ttft": "Tempo até o primeiro token"
     }
   },
   "markdown": {

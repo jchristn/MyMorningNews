@@ -19,6 +19,7 @@ import PageHeader from '../components/PageHeader.jsx';
 import AudioPlayer from '../components/AudioPlayer.jsx';
 import BriefingAudio, { playableEpisode } from './briefings/BriefingAudio.jsx';
 import BriefingMarkdown from './briefings/BriefingMarkdown.jsx';
+import BriefingShare from './briefings/BriefingShare.jsx';
 import useBriefingActions, { BriefingStatusBadge } from './briefings/briefingParts.jsx';
 
 const POLL_MS = 3000;
@@ -298,6 +299,7 @@ export default function TodayView() {
               <Link to={'/dashboard/briefings/' + encodeURIComponent(briefing.id)} className="button secondary small">
                 <BookOpen size={14} aria-hidden="true" /> {t('today.openReader')}
               </Link>
+              <BriefingShare briefing={briefing} />
               <button type="button" className="button secondary small" disabled={latest.filesExpired} onClick={() => actions.download(briefing, 'md')}>
                 <FileText size={14} aria-hidden="true" /> {t('briefings.download.md')}
               </button>

@@ -30,6 +30,7 @@ describe('TodayView', () => {
     expect(within(panel).getByRole('heading', { name: BRIEFING.title })).toBeInTheDocument();
     expect(within(panel).getByRole('region', { name: 'Top of the news' })).toHaveTextContent('Coding agents reached general availability.');
     expect(within(panel).getByRole('link', { name: 'Open in reader' })).toHaveAttribute('href', '/dashboard/briefings/brf_1');
+    expect(within(panel).getByRole('button', { name: 'Share' })).toBeEnabled();
     expect(screen.getByRole('link', { name: 'Run briefing: AI tools' })).toHaveAttribute('href', '/dashboard/briefings/brf_run');
     expect(screen.getByRole('link', { name: 'Report: heat pumps' })).toBeInTheDocument();
   });

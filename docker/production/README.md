@@ -21,5 +21,9 @@ Load balancer targets: port 8000 for the API (`/v1.0/*`, `/openapi.json`, `/swag
 check `GET /v1.0/api/health`) and port 8080 for the dashboard (every other path; health check `GET /health`). Allow
 both only from the load balancer's security group. See `docs/HOSTING.md`, "Behind a load balancer".
 
+Optional MCP server: put `COMPOSE_PROFILES=mcp` and `MYMORNINGNEWS_MCP_ON_PUBLIC_BASE_URL=true` in `.env`, run
+`./update.sh`, and add a third target on port 8100 for the paths `/mcp` and `/mcp/*` (health check `GET /`), listed
+before the dashboard's default rule. See `docs/HOSTING.md`, "MCP server".
+
 `compose.yaml` here is generated from `docker/compose.yaml` and `docker/hosted/compose.elb.yaml`; regenerate it when
 either changes (the command is at the top of the file).

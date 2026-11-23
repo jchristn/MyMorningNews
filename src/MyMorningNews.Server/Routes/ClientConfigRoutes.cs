@@ -5,6 +5,7 @@ namespace MyMorningNews.Server.Routes
     using System.Threading.Tasks;
     using MyMorningNews.Core;
     using MyMorningNews.Core.Enums;
+    using MyMorningNews.Core.Helpers;
     using MyMorningNews.Core.Responses;
     using WatsonWebserver;
     using WatsonWebserver.Core;
@@ -27,7 +28,7 @@ namespace MyMorningNews.Server.Routes
         {
             ArgumentNullException.ThrowIfNull(webserver);
             webserver.Routes.PreAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/client-config", ConfigAsync, null, openApiMetadata: Doc("Public client configuration", "Server",
-                "Feature flags, minimum app version, and legal links for the web and mobile apps. No authentication."));
+                "Feature flags, minimum app version, and legal links for the web and mobile apps. No authentication. mcpUrl is left out when the server knows no MCP address a client could reach (never a loopback address on a public server)."));
         }
 
         private async Task ConfigAsync(HttpContextBase ctx)
@@ -49,7 +50,7 @@ namespace MyMorningNews.Server.Routes
                 MinimumAppVersion = "0.1.0",
                 AppUrl = Server.SettingsService.Current.Rest.AppBaseUrl,
                 DeletionGraceDays = Server.SettingsService.Current.Hosting.DeletionGraceDays,
-                McpUrl = Server.SettingsService.Current.Rest.McpPublicUrl,
+                McpUrl = McpUrlResolver.Resolve(Server.SettingsService.Current.Rest),
                 Links = new Dictionary<string, string>
                 {
                     { "privacy", "https://mymorningnews.ai/privacy.html" },

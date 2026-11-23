@@ -166,7 +166,8 @@ namespace MyMorningNews.Core.Settings
         }
 
         /// <summary>
-        /// Apple Team ID for /.well-known/apple-app-site-association. Empty leaves the file out. Default empty.
+        /// Apple Team ID (10 characters) for /.well-known/apple-app-site-association. While it is empty the route
+        /// answers 404 <c>NotConfigured</c> as JSON, which iOS reads as "no universal links". Default empty.
         /// </summary>
         [Setting(Description = "Apple Team ID for universal links.", EnvironmentVariable = "HOSTING_APPLE_TEAM_ID")]
         public string AppleTeamId { get; set; } = String.Empty;
@@ -178,8 +179,11 @@ namespace MyMorningNews.Core.Settings
         public string MobileAppId { get; set; } = "ai.latticetech.mymorningnews";
 
         /// <summary>
-        /// SHA-256 signing certificate fingerprints for /.well-known/assetlinks.json (Play App Signing). Empty leaves the file out.
+        /// SHA-256 signing certificate fingerprints for /.well-known/assetlinks.json (Play App Signing), each 32
+        /// colon-separated hex bytes. While the list is empty the route answers 404 <c>NotConfigured</c> as JSON,
+        /// which Android reads as "no app links". The environment variable takes a comma-separated list. Default empty.
         /// </summary>
+        [Setting(Description = "Android signing certificate SHA-256 fingerprints for app links.", EnvironmentVariable = "HOSTING_ANDROID_CERT_FINGERPRINTS")]
         public List<string> AndroidCertificateFingerprints
         {
             get { return _AndroidCertificateFingerprints; }

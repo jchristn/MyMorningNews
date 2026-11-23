@@ -12,6 +12,7 @@ namespace Test.Shared.Suites
     using System.Threading;
     using System.Threading.Tasks;
     using MyMorningNews.Core.Enums;
+    using MyMorningNews.Core.Helpers;
     using MyMorningNews.Core.Models;
     using MyMorningNews.Core.Requests;
     using MyMorningNews.Core.Responses;
@@ -44,7 +45,8 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "Deletion", "Deleting signs out, signing in within the grace period cancels it, and the purge removes the account and its personal tenant", DeletionAsync),
                 Cases.Case(S, "Export", "The export is a ZIP of the profile, topics, and briefings", ExportAsync),
                 Cases.Case(S, "RequestLimit", "The per-address request limit answers 429 with Retry-After, spares health checks, and the limiter forgets idle addresses", RequestLimitAsync),
-                Cases.Case(S, "UniversalLinks", "The iOS and Android link files appear once configured", LinksAsync)
+                Cases.Case(S, "UniversalLinks", "The iOS and Android link files answer 404 NotConfigured as JSON until configured, then 200 application/json with no sign-in and no redirect", LinksAsync),
+                Cases.Case(S, "McpUrl", "Client config publishes a reachable MCP address, derives it from the public base URL when /mcp is routed there, and leaves it out instead of a loopback address on a public server", McpUrlAsync)
             });
         }
 
@@ -339,8 +341,17 @@ namespace Test.Shared.Suites
             {
                 h.AppleTeamId = String.Empty;
                 h.AndroidCertificateFingerprints = new List<string>();
-                (await anon.GetAsync("/.well-known/apple-app-site-association", token).ConfigureAwait(false)).Expect(404, "not configured");
-                (await anon.GetAsync("/.well-known/assetlinks.json", token).ConfigureAwait(false)).Expect(404, "not configured");
+                foreach (string file in new[] { "/.well-known/apple-app-site-association", "/.well-known/assetlinks.json" })
+                {
+                    TestResponse missing = (await anon.GetAsync(file, token).ConfigureAwait(false)).Expect(404, "not configured: " + file);
+                    Assert.True(missing.Body.Contains("NotConfigured", StringComparison.Ordinal) && missing.Body.Contains("MYMORNINGNEWS_HOSTING_", StringComparison.Ordinal), "the 404 names the setting to fill in: " + missing.Body);
+                    Assert.True(missing.Headers["Content-Type"].StartsWith("application/json", StringComparison.OrdinalIgnoreCase), "the 404 is JSON, not a page: " + missing.Headers["Content-Type"]);
+                }
+
+                h.AppleTeamId = "  ";
+                h.AndroidCertificateFingerprints = new List<string> { " ", String.Empty };
+                (await anon.GetAsync("/.well-known/apple-app-site-association", token).ConfigureAwait(false)).Expect(404, "a blank team ID is not configured");
+                (await anon.GetAsync("/.well-known/assetlinks.json", token).ConfigureAwait(false)).Expect(404, "blank fingerprints are not configured");
                 h.AppleTeamId = "ABCDE12345";
                 h.AndroidCertificateFingerprints = new List<string> { "aa:bb:cc" };
                 string apple = (await anon.GetAsync("/.well-known/apple-app-site-association", token).ConfigureAwait(false)).Expect(200, "apple").Body;
@@ -348,11 +359,72 @@ namespace Test.Shared.Suites
                     && apple.Contains("/verify*", StringComparison.Ordinal) && apple.Contains("/reset-password*", StringComparison.Ordinal) && apple.Contains("/signup*", StringComparison.Ordinal), "apple file, including the verify, reset, and sign-up links: " + apple);
                 string android = (await anon.GetAsync("/.well-known/assetlinks.json", token).ConfigureAwait(false)).Expect(200, "android").Body;
                 Assert.True(android.Contains("ai.latticetech.mymorningnews", StringComparison.Ordinal) && android.Contains("AA:BB:CC", StringComparison.Ordinal), "android file: " + android);
+                foreach (string file in new[] { "/.well-known/apple-app-site-association", "/.well-known/assetlinks.json" })
+                {
+                    TestResponse served = (await anon.GetAsync(file, token).ConfigureAwait(false)).Expect(200, "served without credentials or a redirect: " + file);
+                    Assert.True(served.Headers["Content-Type"].StartsWith("application/json", StringComparison.OrdinalIgnoreCase), "content type is application/json: " + served.Headers["Content-Type"]);
+                    Assert.True(!served.Headers.ContainsKey("Location"), "no redirect: " + file);
+                    using (JsonDocument parsed = JsonDocument.Parse(served.Body))
+                    {
+                        Assert.True(parsed.RootElement.ValueKind == (file.EndsWith(".json", StringComparison.Ordinal) ? JsonValueKind.Array : JsonValueKind.Object), "valid JSON of the expected shape: " + file);
+                    }
+                }
             }
             finally
             {
                 h.AppleTeamId = team;
                 h.AndroidCertificateFingerprints = prints;
+            }
+        }
+
+        private static async Task McpUrlAsync(CancellationToken token)
+        {
+            RestSettings local = new RestSettings();
+            Assert.Equal("http://127.0.0.1:12105/mcp", McpUrlResolver.Resolve(local) ?? "(null)", "a local install publishes the local MCP address");
+            RestSettings hosted = new RestSettings { PublicBaseUrl = "https://app.example.test/" };
+            Assert.True(McpUrlResolver.Resolve(hosted) == null, "a public server never publishes a loopback MCP address");
+            hosted.McpOnPublicBaseUrl = true;
+            Assert.Equal("https://app.example.test/mcp", McpUrlResolver.Resolve(hosted) ?? "(null)", "derived from the public base URL when /mcp is routed there");
+            hosted.McpPublicUrl = "https://mcp.example.test/mcp";
+            Assert.Equal("https://mcp.example.test/mcp", McpUrlResolver.Resolve(hosted) ?? "(null)", "an explicit public address wins");
+            hosted.McpOnPublicBaseUrl = false;
+            Assert.Equal("https://mcp.example.test/mcp", McpUrlResolver.Resolve(hosted) ?? "(null)", "an explicit public address needs no routing flag");
+            hosted.McpPublicUrl = "http://localhost:12105/mcp";
+            Assert.True(McpUrlResolver.Resolve(hosted) == null, "localhost counts as loopback");
+            Assert.True(McpUrlResolver.IsLoopback("http://[::1]:12105/mcp") && McpUrlResolver.IsLoopback("http://127.0.0.2/") && !McpUrlResolver.IsLoopback("https://app.example.test") && !McpUrlResolver.IsLoopback("nope") && !McpUrlResolver.IsLoopback(null), "loopback detection");
+
+            MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+            RestSettings rest = server.Context.SettingsService.Current.Rest;
+            string publicBase = rest.PublicBaseUrl;
+            string mcp = rest.McpPublicUrl;
+            bool routed = rest.McpOnPublicBaseUrl;
+            TestApiClient anon = await SharedTestServer.AnonymousClientAsync(token).ConfigureAwait(false);
+            try
+            {
+                rest.PublicBaseUrl = "http://127.0.0.1:12100";
+                rest.McpPublicUrl = "http://127.0.0.1:12105/mcp";
+                rest.McpOnPublicBaseUrl = false;
+                TestResponse localConfig = (await anon.GetAsync("/v1.0/api/client-config", token).ConfigureAwait(false)).Expect(200, "client config, local");
+                Assert.Equal("http://127.0.0.1:12105/mcp", localConfig.Json<ClientConfigResponse>().McpUrl ?? "(null)", "local install");
+
+                rest.PublicBaseUrl = "https://app.example.test";
+                TestResponse publicConfig = (await anon.GetAsync("/v1.0/api/client-config", token).ConfigureAwait(false)).Expect(200, "client config, public without an MCP address");
+                Assert.True(publicConfig.Json<ClientConfigResponse>().McpUrl == null, "no MCP address is published");
+                Assert.True(!publicConfig.Body.Contains("127.0.0.1:12105", StringComparison.Ordinal) && !publicConfig.Body.Contains("mcpUrl", StringComparison.Ordinal), "the loopback address is left out of the JSON: " + publicConfig.Body);
+
+                rest.McpOnPublicBaseUrl = true;
+                TestResponse routedConfig = (await anon.GetAsync("/v1.0/api/client-config", token).ConfigureAwait(false)).Expect(200, "client config, /mcp routed");
+                Assert.Equal("https://app.example.test/mcp", routedConfig.Json<ClientConfigResponse>().McpUrl ?? "(null)", "derived from the public base URL");
+
+                rest.McpPublicUrl = "https://mcp.example.test/mcp";
+                TestResponse explicitConfig = (await anon.GetAsync("/v1.0/api/client-config", token).ConfigureAwait(false)).Expect(200, "client config, explicit");
+                Assert.Equal("https://mcp.example.test/mcp", explicitConfig.Json<ClientConfigResponse>().McpUrl ?? "(null)", "explicit public address");
+            }
+            finally
+            {
+                rest.PublicBaseUrl = publicBase;
+                rest.McpPublicUrl = mcp;
+                rest.McpOnPublicBaseUrl = routed;
             }
         }
     }

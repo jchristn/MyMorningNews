@@ -67,9 +67,10 @@ namespace MyMorningNews.Sdk.Models
         public string AppUrl { get; set; } = "http://127.0.0.1:12101";
 
         /// <summary>
-        /// Public URL of the MCP server's Streamable HTTP endpoint. Default "http://127.0.0.1:12105/mcp".
+        /// Public URL of the MCP server's Streamable HTTP endpoint, or null when the server publishes none (it knows
+        /// no address a client could reach). Default null.
         /// </summary>
-        public string McpUrl { get; set; } = "http://127.0.0.1:12105/mcp";
+        public string? McpUrl { get; set; } = null;
 
         /// <summary>
         /// Cloudflare Turnstile site key for the sign-up form, or null when the check is off.

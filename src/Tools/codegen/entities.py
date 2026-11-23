@@ -363,6 +363,7 @@ ENTITIES = [
             f('WeightRecency', 'double', doc='Ranking weight override for recency.', nullable=True),
             f('SeedQueries', 'strings', doc='Seed search queries from refinement.'),
             # Migration 15 (hand-added after lastupdateutc): AgenticSearch bool, McpToolIds strings.
+            # Migration 22: VoiceProfileId. Migration 24: AudioEnabled bool (automatic audio for run briefings).
             f('BriefingTemplateId', doc='Topic-specific briefing template.', nullable=True, length=64),
             f('LastRunUtc', 'datetime', doc='UTC time of the last run.', nullable=True, sort=True),
             f('LastRefinedUtc', 'datetime', doc='UTC time the topic was last refined.', nullable=True),

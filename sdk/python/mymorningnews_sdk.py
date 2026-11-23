@@ -1410,6 +1410,8 @@ class Topic(Model):
     """MCP tool IDs (``mct_...``) the topic may use in agentic search; empty allows every enabled tool."""
     voice_profile_id: Optional[str] = None
     """Voice profile that reads the topic's run briefings aloud; None uses the workspace default voice."""
+    audio_enabled: Optional[bool] = None
+    """Automatic audio: every briefing of the topic's research runs is also made into audio (default False)."""
 
 
 @dataclass

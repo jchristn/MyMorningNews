@@ -77,7 +77,7 @@ namespace Test.Shared.Suites
             {
                 JsonElement tools = (await c.CallAsync("tools/list", null, token).ConfigureAwait(false)).GetProperty("tools");
                 List<string> names = tools.EnumerateArray().Select(t => t.GetProperty("name").GetString()!).ToList();
-                string[] planned = { "list_topics", "get_topic", "create_topic", "run_topic", "get_run", "get_run_costs", "list_findings", "get_finding", "search_findings", "get_latest_briefing", "get_briefing",
+                string[] planned = { "list_topics", "get_topic", "create_topic", "run_topic", "get_run", "get_run_costs", "list_schedules", "set_schedule", "remove_schedule", "list_findings", "get_finding", "search_findings", "get_latest_briefing", "get_briefing",
                     "list_predictions", "resolve_prediction", "list_suggestions", "update_suggestion_status", "submit_feedback", "list_learned_preferences", "accept_learned_preference", "get_analytics_summary" };
                 Assert.True(planned.All(names.Contains), "every planned tool: missing " + String.Join(", ", planned.Where(p => !names.Contains(p))));
                 Assert.Equal(McpSurface.AllTools().Count, names.Count, "tool count");
@@ -349,6 +349,28 @@ namespace Test.Shared.Suites
                 McpToolOutcome updated = await c.ToolAsync("update_topic", new { topicId = topicId, name = "AI coding tools", status = "Paused" }, token).ConfigureAwait(false);
                 Assert.True(!updated.IsError && updated.Str("name") == "AI coding tools" && updated.Str("status") == "Paused", "update_topic: " + updated.Text);
                 Assert.True((await c.ToolAsync("update_topic", new { topicId = topicId }, token).ConfigureAwait(false)).IsError, "nothing to change");
+
+                // Automatic audio and schedules: both questions an assistant is asked are answered with tools.
+                Assert.True(!updated.Structured.GetProperty("audioEnabled").GetBoolean(), "automatic audio starts off");
+                McpToolOutcome spoken = await c.ToolAsync("update_topic", new { topicId = topicId, audioEnabled = true }, token).ConfigureAwait(false);
+                Assert.True(!spoken.IsError && spoken.Structured.GetProperty("audioEnabled").GetBoolean(), "update_topic turns automatic audio on: " + spoken.Text);
+                Assert.True((await c.ToolAsync("set_schedule", new { intervalType = "DaysOfWeek" }, token).ConfigureAwait(false)).IsError, "a new schedule needs a topic or an edition");
+                Assert.True((await c.ToolAsync("set_schedule", new { topicId = topicId }, token).ConfigureAwait(false)).IsError, "a new schedule needs an interval type");
+                Assert.True((await c.ToolAsync("set_schedule", new { topicId = topicId, intervalType = "DaysOfWeek", daysOfWeek = new[] { "Someday" }, timesOfDay = new[] { "07:00" } }, token).ConfigureAwait(false)).IsError, "unknown day name");
+                Assert.True((await c.ToolAsync("set_schedule", new { topicId = topicId, intervalType = "DaysOfWeek", daysOfWeek = new[] { "Monday" }, timesOfDay = new[] { "25:00" } }, token).ConfigureAwait(false)).IsError, "the API's validation reaches the model");
+                McpToolOutcome schedule = await c.ToolAsync("set_schedule", new { topicId = topicId, name = "Twice a week", intervalType = "DaysOfWeek", daysOfWeek = new[] { "Monday", "Friday" }, timesOfDay = new[] { "07:00" }, timeZone = "America/New_York" }, token).ConfigureAwait(false);
+                Assert.True(!schedule.IsError && schedule.Str("ownerType") == "Topic" && schedule.Str("ownerId") == topicId && schedule.Str("timeZone") == "America/New_York" && schedule.Str("nextRunUtc") != null, "set_schedule adds: " + schedule.Text);
+                Assert.True(schedule.Structured.GetProperty("daysOfWeek").EnumerateArray().Select(x => x.GetString()).SequenceEqual(new[] { "Monday", "Friday" }), "days are spelled out: " + schedule.Text);
+                McpToolOutcome monthly = await c.ToolAsync("set_schedule", new { scheduleId = schedule.Str("id"), intervalType = "DaysOfMonth", daysOfMonth = new[] { 1, -1 }, timesOfDay = new[] { "06:30", "18:00" } }, token).ConfigureAwait(false);
+                Assert.True(!monthly.IsError && monthly.Str("intervalType") == "DaysOfMonth" && monthly.Structured.GetProperty("daysOfMonth").GetArrayLength() == 2 && monthly.Structured.GetProperty("timesOfDay").GetArrayLength() == 2 && monthly.Str("name") == "Twice a week",
+                    "set_schedule changes only what is sent: " + monthly.Text);
+                McpToolOutcome listed = await c.ToolAsync("list_schedules", new { topicId = topicId }, token).ConfigureAwait(false);
+                Assert.True(!listed.IsError && listed.Structured.GetProperty("totalCount").GetInt64() == 1 && listed.Structured.GetProperty("items")[0].GetProperty("id").GetString() == schedule.Str("id"), "list_schedules: " + listed.Text);
+                McpToolOutcome paused = await c.ToolAsync("set_schedule", new { scheduleId = schedule.Str("id"), enabled = false }, token).ConfigureAwait(false);
+                Assert.True(!paused.IsError && !paused.Structured.GetProperty("enabled").GetBoolean() && paused.Str("nextRunUtc") == null, "a paused schedule has no next run: " + paused.Text);
+                McpToolOutcome removed = await c.ToolAsync("remove_schedule", new { scheduleId = schedule.Str("id") }, token).ConfigureAwait(false);
+                Assert.True(!removed.IsError && removed.Structured.GetProperty("removed").GetBoolean(), "remove_schedule: " + removed.Text);
+                Assert.Equal(0L, (await c.ToolAsync("list_schedules", new { topicId = topicId }, token).ConfigureAwait(false)).Structured.GetProperty("totalCount").GetInt64(), "the schedule is gone");
                 McpToolOutcome dim = await c.ToolAsync("set_topic_dimension", new { topicId = topicId, name = "Pricing changes", weight = "High" }, token).ConfigureAwait(false);
                 Assert.True(!dim.IsError && dim.Str("weight") == "High", "add dimension: " + dim.Text);
                 McpToolOutcome renamed = await c.ToolAsync("set_topic_dimension", new { topicId = topicId, dimensionId = dim.Str("id"), name = "Pricing" }, token).ConfigureAwait(false);

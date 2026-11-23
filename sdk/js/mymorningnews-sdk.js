@@ -190,6 +190,7 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
  * @property {boolean} agenticSearch Agentic search: the research model searches and reads pages itself (web_search, fetch_url, and allowed MCP tools). Default false.
  * @property {string[]} mcpToolIds MCP tool IDs (`mct_...`) the topic may use in agentic search. Empty allows every enabled tool.
  * @property {string|null} voiceProfileId Voice profile that reads the topic's run briefings aloud, or null for the workspace default voice.
+ * @property {boolean} audioEnabled Automatic audio: every briefing of the topic's research runs is also made into audio, read in the topic's voice. Default false.
  * @property {string|null} lastRunUtc Last run.
  * @property {string|null} lastRefinedUtc Last refinement.
  * @property {boolean} active Active.

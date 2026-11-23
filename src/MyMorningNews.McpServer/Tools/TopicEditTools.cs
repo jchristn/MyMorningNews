@@ -28,14 +28,15 @@ namespace MyMorningNews.McpServer.Tools
                 new[] { "id", "kind", "value" }, true);
 
             tools.Add(new McpTool("update_topic", "Update a topic",
-                "Change a topic's name, description, brief, status (pause with Paused, resume with Active), or whether it emails after every run.",
+                "Change a topic's name, description, brief, status (pause with Paused, resume with Active), whether it emails after every run, or whether every run briefing is turned into audio automatically.",
                 Schema.Object(Schema.Props(
                     "topicId", Schema.String("Topic ID (top_...).", 64),
                     "name", Schema.String("New name.", 200),
                     "description", Schema.String("New description.", 2000),
                     "brief", Schema.String("New research brief: what to look for and why.", 8000),
                     "status", Schema.Choice("New status.", "Active", "Paused", "Archived"),
-                    "emailOnRun", Schema.Boolean("Email after every run.")), new[] { "topicId" }),
+                    "emailOnRun", Schema.Boolean("Email after every run."),
+                    "audioEnabled", Schema.Boolean("Turn every briefing of the topic's research runs into audio automatically, read in the topic's voice. Uses the plan's audio minutes.")), new[] { "topicId" }),
                 Shapes.TopicSchema, false, false,
                 async (a, c, t) =>
                 {
@@ -43,9 +44,9 @@ namespace MyMorningNews.McpServer.Tools
                     if (status == TopicStatusEnum.Draft) throw new McpToolException("status must be Active, Paused, or Archived.");
                     TopicUpsertRequest req = new TopicUpsertRequest
                     {
-                        Name = a.OptionalText("name", 200), Description = a.OptionalText("description", 2000), Brief = a.OptionalText("brief", 8000), Status = status, EmailOnRun = a.Flag("emailOnRun")
+                        Name = a.OptionalText("name", 200), Description = a.OptionalText("description", 2000), Brief = a.OptionalText("brief", 8000), Status = status, EmailOnRun = a.Flag("emailOnRun"), AudioEnabled = a.Flag("audioEnabled")
                     };
-                    if (req.Name == null && req.Description == null && req.Brief == null && req.Status == null && req.EmailOnRun == null) throw new McpToolException("Send at least one field to change.");
+                    if (req.Name == null && req.Description == null && req.Brief == null && req.Status == null && req.EmailOnRun == null && req.AudioEnabled == null) throw new McpToolException("Send at least one field to change.");
                     return Shapes.Topic(await c.Topics.UpdateAsync(a.RequiredText("topicId", 64), req, t).ConfigureAwait(false));
                 }));
 

@@ -9,6 +9,7 @@ namespace Test.Shared.Suites
     using System.Threading.Tasks;
     using System.Xml.Linq;
     using MyMorningNews.Core.Audio;
+    using MyMorningNews.Core.Entitlements;
     using MyMorningNews.Core.Enums;
     using MyMorningNews.Core.Models;
     using MyMorningNews.Core.Responses;
@@ -40,6 +41,7 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "Voices", "Voices are listed, managed by administrators, tested, and defaulted", VoicesAsync),
                 Cases.Case(S, "AvailableVoices", "Anyone in a workspace can list its voice profiles and the speech server's voices with readable labels, and hear a short preview", AvailableVoicesAsync),
                 Cases.Case(S, "TopicVoice", "A topic's voice is validated and stored, reads the topic's briefings aloud, cannot be set by someone else, and is cleared when the voice is deleted", TopicVoiceAsync),
+                Cases.Case(S, "TopicAudio", "A topic with automatic audio turns every run briefing into audio, is off by default, and automatic audio stops at the plan's audio minutes", TopicAudioAsync),
                 Cases.Case(S, "Feed", "A private feed lists episodes with enclosures that stream, and stops when revoked", FeedAsync)
             });
         }
@@ -335,6 +337,57 @@ namespace Test.Shared.Suites
             MediaAsset afterDelete = (await f.User.Client.PostAsync("/v1.0/api/briefings/" + runBriefing.Id + "/audio", null, token).ConfigureAwait(false)).Expect(202, "audio after the voice is gone").Json<MediaAsset>();
             Assert.Equal(fallback.Id, afterDelete.VoiceProfileId, "the workspace default reads it again");
             await EpisodeForAsync(f, runBriefing, token).ConfigureAwait(false);
+        }
+
+        private static async Task TopicAudioAsync(CancellationToken token)
+        {
+            PipelineFixture f = await PipelineSuite.FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
+            TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
+            string topicPath = "/v1.0/api/topics/" + f.Topic.Id;
+            Assert.True(!f.Topic.AudioEnabled, "automatic audio is off for a new topic");
+
+            // Off: the run briefing has no audio until someone asks for it.
+            Run first = await PipelineSuite.RunAsync(f, token).ConfigureAwait(false);
+            Briefing silent = (await f.User.Client.GetAsync("/v1.0/api/briefings?runId=" + first.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().Items.Single();
+            Assert.Equal(0L, (await f.User.Client.GetAsync("/v1.0/api/media?briefingId=" + silent.Id, token).ConfigureAwait(false)).Json<EnumerationResult<MediaAsset>>().TotalCount, "no audio while it is off");
+
+            // On: stored, kept by other edits and by a copy, and every run briefing is queued for audio by itself.
+            Topic on = (await f.User.Client.PutAsync(topicPath, new { audioEnabled = true }, token).ConfigureAwait(false)).Expect(200, "turn automatic audio on").Json<Topic>();
+            Assert.True(on.AudioEnabled, "stored");
+            Topic edited = (await f.User.Client.PutAsync(topicPath, new { noveltyPreference = 60 }, token).ConfigureAwait(false)).Expect(200, "another edit").Json<Topic>();
+            Assert.True(edited.AudioEnabled, "an edit that does not name it leaves it");
+            Topic copy = (await f.User.Client.PostAsync(topicPath + "/duplicate", null, token).ConfigureAwait(false)).Expect(201, "duplicate").Json<TopicDetailResponse>().Topic;
+            Assert.True(copy.AudioEnabled, "a copy keeps it");
+            Topic created = (await f.User.Client.PostAsync("/v1.0/api/topics", new { name = "Spoken " + Guid.NewGuid().ToString("N").Substring(0, 6), audioEnabled = true }, token).ConfigureAwait(false)).Expect(201, "create with audio").Json<Topic>();
+            Assert.True(created.AudioEnabled, "set on create");
+            TestUser member = await TestFixtures.CreateUserAsync(admin, f.User.User.TenantId, false, token).ConfigureAwait(false);
+            (await member.Client.PutAsync(topicPath, new { audioEnabled = false }, token).ConfigureAwait(false)).Expect(404, "another member's topic");
+
+            Run second = await PipelineSuite.RunAsync(f, token).ConfigureAwait(false);
+            Briefing spoken = (await f.User.Client.GetAsync("/v1.0/api/briefings?runId=" + second.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().Items.Single();
+            MediaAsset queued = (await f.User.Client.GetAsync("/v1.0/api/media?briefingId=" + spoken.Id, token).ConfigureAwait(false)).Json<EnumerationResult<MediaAsset>>().Items.Single();
+            Assert.True(queued.Kind == MediaKindEnum.BriefingAudio && queued.UserId == f.User.User.Id, "queued without anyone asking: " + queued.Kind);
+            MediaAsset made = await EpisodeForAsync(f, spoken, token).ConfigureAwait(false);
+            Assert.True(made.Status == MediaStatusEnum.Ready && made.DurationSeconds > 0, "episode made: " + made.Status + " " + made.ErrorMessage);
+
+            // Automatic audio respects the plan: once the month's audio minutes are used, briefings arrive without audio.
+            List<PlanResponse> plans = (await admin.GetAsync("/v1.0/api/admin/plans", token).ConfigureAwait(false)).Expect(200, "plans").Json<List<PlanResponse>>();
+            (await admin.PostAsync("/v1.0/api/admin/plan-assignments", new { tenantId = f.User.User.TenantId, userId = f.User.User.Id, planId = plans.Single(p => p.Plan.Key == "free").Plan.Id, durationDays = 30 }, token).ConfigureAwait(false))
+                .Expect(201, "grant free");
+            MediaAsset stored = (await f.Server.Context.Database.MediaAssets.ReadAsync(made.TenantId, made.Id, token).ConfigureAwait(false))!;
+            stored.DurationSeconds = 11 * 60;
+            await f.Server.Context.Database.MediaAssets.UpdateAsync(stored, token).ConfigureAwait(false);
+            UsageMeter meter = (await f.User.Client.GetAsync("/v1.0/api/account/usage", token).ConfigureAwait(false)).Expect(200, "meter").Json<UsageMeter>();
+            Assert.True(meter.AudioMinutesMax == 10 && meter.AudioMinutes >= 11, "the month's audio minutes are used: " + meter.AudioMinutes + " of " + meter.AudioMinutesMax);
+            EditionResponse e = (await f.User.Client.PostAsync("/v1.0/api/editions", new { name = "Capped audio", freshResearchBeforeCompose = false, audioEnabled = true, lookbackHours = 48 }, token).ConfigureAwait(false))
+                .Expect(201, "edition").Json<EditionResponse>();
+            (await f.User.Client.PutAsync("/v1.0/api/editions/" + e.Edition.Id + "/topics", new { topicIds = new[] { f.Topic.Id } }, token).ConfigureAwait(false)).Expect(200, "topics");
+            Briefing composing = (await f.User.Client.PostAsync("/v1.0/api/editions/" + e.Edition.Id + "/compose", null, token).ConfigureAwait(false)).Expect(202, "compose").Json<Briefing>();
+            Briefing capped = await BriefingWaiter.FinishAsync(f.Server, composing.TenantId, composing.Id, token).ConfigureAwait(false);
+            Assert.True(capped.Status == BriefingStatusEnum.Ready, "the briefing is still delivered: " + capped.ErrorMessage);
+            Assert.Equal(0L, (await f.User.Client.GetAsync("/v1.0/api/media?briefingId=" + capped.Id, token).ConfigureAwait(false)).Json<EnumerationResult<MediaAsset>>().TotalCount, "no automatic audio past the plan's minutes");
+            System.Text.Json.JsonElement refused = (await f.User.Client.PostAsync("/v1.0/api/briefings/" + capped.Id + "/audio", null, token).ConfigureAwait(false)).Expect(402, "asking by hand is refused the same way").Json<System.Text.Json.JsonElement>();
+            Assert.Equal("audio.monthlyMinutes.max", refused.GetProperty("details").GetProperty("key").GetString() ?? String.Empty, "names the limit");
         }
 
         private static async Task FeedAsync(CancellationToken token)

@@ -4629,6 +4629,13 @@
       "partialSuffix": "(certains appels non tarifés)"
     }
   },
+  "topicAudio": {
+    "title": "Audio",
+    "label": "Créer l’audio automatiquement",
+    "help": "Chaque briefing issu des recherches de ce sujet est aussi converti en audio, lu avec la voix du sujet. L’audio est décompté des minutes audio de votre forfait.",
+    "savedOn": "Chaque briefing de {name} sera désormais converti en audio",
+    "savedOff": "L’audio automatique est désactivé pour {name}"
+  },
   "topicVoice": {
     "title": "Voix",
     "help": "La voix qui lit à voix haute les briefings de ce sujet. Écoutez un extrait de chacune.",

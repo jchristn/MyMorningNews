@@ -269,6 +269,13 @@ namespace MyMorningNews.Core.Models
         public string? VoiceProfileId { get; set; } = null;
 
         /// <summary>
+        /// Turn every briefing of this topic's research runs (scheduled or started by hand, never dry runs) into audio
+        /// automatically, read in the topic's voice. Default false. Audio still needs speech turned on for the server and
+        /// room in the owner's plan; one-time reports follow their Podcast deliverable instead.
+        /// </summary>
+        public bool AudioEnabled { get; set; } = false;
+
+        /// <summary>
         /// MCP tool IDs (mct_...) this topic may use in agentic search. Empty allows every enabled tool.
         /// </summary>
         public List<string> McpToolIds

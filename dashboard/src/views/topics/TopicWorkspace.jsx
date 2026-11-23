@@ -31,6 +31,7 @@ import DeliverySettings from './DeliverySettings.jsx';
 import DimensionList from './DimensionList.jsx';
 import TopicModels from './TopicModels.jsx';
 import TopicPrompts from './TopicPrompts.jsx';
+import TopicAudio from './TopicAudio.jsx';
 import TopicSchedules from './TopicSchedules.jsx';
 import TopicSearchProviders from './TopicSearchProviders.jsx';
 import useTopicActions from './useTopicActions.jsx';
@@ -285,7 +286,15 @@ export default function TopicWorkspace() {
           </div>
         ) : null}
 
-        {tab === 'schedule' ? <TopicSchedules topicId={topic.id} onSaved={load} /> : null}
+        {tab === 'schedule' ? (
+          <div className="stack">
+            <TopicSchedules topicId={topic.id} onSaved={load} />
+            <fieldset>
+              <legend>{t('topicAudio.title')}</legend>
+              <TopicAudio topic={topic} onTopicUpdated={setTopic} idPrefix="schedule-audio" />
+            </fieldset>
+          </div>
+        ) : null}
 
         {tab === 'sources' ? (
           <div className="stack">

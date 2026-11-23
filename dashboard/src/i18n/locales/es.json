@@ -4629,6 +4629,13 @@
       "partialSuffix": "(algunas llamadas sin precio)"
     }
   },
+  "topicAudio": {
+    "title": "Audio",
+    "label": "Crear audio automáticamente",
+    "help": "Cada informe de las investigaciones de este tema también se convierte en audio, leído con la voz del tema. El audio cuenta para los minutos de audio de tu plan.",
+    "savedOn": "Cada informe de {name} se convertirá ahora en audio",
+    "savedOff": "El audio automático está desactivado para {name}"
+  },
   "topicVoice": {
     "title": "Voz",
     "help": "La voz que lee en voz alta los resúmenes informativos de este tema. Reproduce una muestra para escuchar cada una.",

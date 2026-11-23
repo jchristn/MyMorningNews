@@ -141,6 +141,9 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
                 Helpers.True(detail.Topic.AgenticSearch && detail.Topic.McpToolIds.Contains(echo.Id), "agentic fields read back");
                 Topic cleared = await StepAsync(context, result, "PUT topic clears mcpToolIds", () => c.Topics.UpdateAsync(topic.Id, new TopicUpsertRequest { AgenticSearch = false, McpToolIds = new List<string>() }, token)).ConfigureAwait(false);
                 Helpers.True(!cleared.AgenticSearch && cleared.McpToolIds.Count == 0, "agentic fields cleared");
+                Helpers.True(!cleared.AudioEnabled, "automatic audio is off by default");
+                Topic spoken = await StepAsync(context, result, "PUT topic turns automatic audio on", () => c.Topics.UpdateAsync(topic.Id, new TopicUpsertRequest { AudioEnabled = true }, token)).ConfigureAwait(false);
+                Helpers.True(spoken.AudioEnabled, "automatic audio turned on");
                 await StepAsync(context, result, "DELETE agentic topic", () => c.Topics.DeleteAsync(topic.Id, token)).ConfigureAwait(false);
                 context.Cleanup.Remove("topic:" + topic.Id);
 

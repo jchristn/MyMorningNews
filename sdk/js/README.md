@@ -396,6 +396,7 @@ const sample = await client.voices.test(v.id, { text: 'Good morning.' }); // aud
 const { voices } = await client.voices.available(); // voice profiles, then the speech server's voices, each with a label
 const preview = await client.voices.preview({ voice: 'bf_emma', text: 'Good morning.' }); // audio/wav, 20 a minute
 await client.topics.update(topicId, { voice: 'bf_emma' }); // or { voiceProfileId }, and '' to use the workspace default
+await client.topics.update(topicId, { audioEnabled: true }); // every run briefing of the topic is made into audio automatically
 
 const cred = await client.vault.create({ name: 'Tavily', kind: 'ApiKey', provider: 'Tavily', secret: process.env.TAVILY_KEY });
 await client.vault.usage(cred.id); // secrets are never returned; reveal is in the C# SDK only

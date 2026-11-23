@@ -15,6 +15,7 @@ A Postman collection with every route lives at [`assets/postman/MyMorningNews.po
 - [Rate limits](#rate-limits)
 - [Server-sent events](#server-sent-events)
 - [Run and stage cost](#run-and-stage-cost)
+- [Schedules and automatic audio](#schedules-and-automatic-audio)
 - [Range downloads](#range-downloads)
 - [Retention](#retention)
 - [IDs](#ids)
@@ -327,6 +328,18 @@ A call is unpriced when its endpoint has no input or output price and nothing el
 ### Older runs
 
 When the server upgraded, it matched calls logged before stage tracking to the stage that was running when each call was made. Calls it could not match appear under `unattributed` in the cost report.
+
+## Schedules and automatic audio
+
+A schedule (`/v1.0/api/schedules`) belongs to a topic (`ownerType` `Topic`, which starts research runs) or to an edition (`Edition`, which composes its briefing). `intervalType` is one of `EveryNMinutes`, `EveryNHours`, `EveryNDays`, `EveryNWeeks`, `DaysOfWeek`, `DaysOfMonth`, `Once`, `Cron`, or `Manual`, with `timesOfDay` (HH:mm), `daysOfWeekMask` (Sunday 1 to Saturday 64), `daysOfMonth` (1 to 31, or -1 for the last day), an IANA `timeZone`, optional `startUtc` and `endUtc`, and a `missedRunPolicy`. `POST /v1.0/api/schedules/preview` validates a schedule and lists its next runs before anything is saved. A plan can set the shortest interval (`schedule.minIntervalMinutes`).
+
+Three switches turn briefings into audio without anyone asking:
+
+- `audioEnabled` on a topic (`PUT /v1.0/api/topics/{id}`, default false): every briefing from the topic's research runs, scheduled or started by hand, is queued for audio in the topic's voice. Dry runs never make audio.
+- `audioEnabled` on an edition (`PUT /v1.0/api/editions/{id}`): every briefing the edition composes is queued for audio in the edition's voice. The seeded Morning News edition has it on.
+- `Podcast` among a one-time request's `deliverables`. Making that request a recurring topic turns the topic's `audioEnabled` on.
+
+Automatic audio needs speech turned on for the server (`tts.enabled`) and follows the owner's plan the same way `POST /v1.0/api/briefings/{id}/audio` does: when the plan has no audio (`audio.enabled`) or the month's minutes are used (`audio.monthlyMinutes.max`), the briefing is still delivered, without audio. Asking by hand at that point returns 402 `CapReached`.
 
 ## Range downloads
 
@@ -3658,7 +3671,7 @@ curl -s "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLmLdBrfbuN
 
 ### PUT /v1.0/api/topics/{id}
 
-**Update a topic.** Only the fields sent are changed. voiceProfileId sets the voice that reads the topic's briefings aloud (an empty string goes back to the workspace default); voice names a speech server voice from GET /v1.0/api/voices/available instead, and the server reuses or creates the voice profile for it.
+**Update a topic.** Only the fields sent are changed. audioEnabled turns every briefing of the topic's research runs into audio automatically. voiceProfileId sets the voice that reads the topic's briefings aloud (an empty string goes back to the workspace default); voice names a speech server voice from GET /v1.0/api/voices/available instead, and the server reuses or creates the voice profile for it.
 
 - Auth: `Topic:Update` (`TopicWrite`).
 - Response: [`Topic`](#topic)
@@ -14908,6 +14921,7 @@ Returned by [GET /v1.0/api/topics](#get-v10apitopics), [POST /v1.0/api/topics](#
 | `lastUpdateUtc` | date-time | UTC time of the last update. |
 | `agenticSearch` | boolean | Agentic search: when the research model supports tools, it searches and reads pages itself (web_search, fetch_url, and allowed MCP tools) before the usual reading and verification. Opt-in, default false. |
 | `voiceProfileId` | string | Voice profile that reads this topic's run briefings aloud. Null uses the workspace default voice. |
+| `audioEnabled` | boolean | Turn every briefing of this topic's research runs (scheduled or started by hand, never dry runs) into audio automatically, read in the topic's voice. Default false. Audio still needs speech turned on for the server and room in the owner's plan; one-time reports follow their Podcast deliverable instead. |
 | `mcpToolIds` | array of string | MCP tool IDs (mct_...) this topic may use in agentic search. Empty allows every enabled tool. |
 
 Example:
@@ -15112,6 +15126,7 @@ Request body of [POST /v1.0/api/topics](#post-v10apitopics), [PUT /v1.0/api/topi
 | `weightSource` | number | Ranking weight override for the source component (0 to 1); a negative value clears the override. |
 | `weightRecency` | number | Ranking weight override for the recency component (0 to 1); a negative value clears the override. |
 | `agenticSearch` | boolean | Turn agentic search on or off for this topic (the research model searches and reads pages itself). |
+| `audioEnabled` | boolean | Turn every briefing of this topic's research runs into audio automatically. May be null (unchanged; false on create). |
 | `mcpToolIds` | array of string | MCP tool IDs (mct_...) agentic search may use; an empty list allows every enabled tool. Null leaves it. |
 | `voiceProfileId` | string | Voice profile that reads this topic's run briefings aloud. It must exist in the workspace. An empty string clears it (the workspace default voice is used). Null leaves it. |
 | `voice` | string | A speech server voice ID from GET /v1.0/api/voices/available, such as af_heart, instead of voiceProfileId: the server reuses the workspace voice profile for that voice, or creates one, and stores it as the topic's voiceProfileId. Null leaves it. |

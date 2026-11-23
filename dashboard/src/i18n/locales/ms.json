@@ -4629,6 +4629,13 @@
       "partialSuffix": "(sesetengah panggilan tanpa harga)"
     }
   },
+  "topicAudio": {
+    "title": "Audio",
+    "label": "Hasilkan audio secara automatik",
+    "help": "Setiap taklimat daripada penyelidikan topik ini turut dijadikan audio, dibaca dengan suara topik. Audio dikira dalam minit audio pelan anda.",
+    "savedOn": "Setiap taklimat {name} kini akan dijadikan audio",
+    "savedOff": "Audio automatik dimatikan untuk {name}"
+  },
   "topicVoice": {
     "title": "Suara",
     "help": "Suara yang membacakan taklimat topik ini. Mainkan sampel untuk mendengar setiap suara.",

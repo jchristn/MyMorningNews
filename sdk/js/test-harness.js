@@ -2020,6 +2020,9 @@ async function main() {
             assert(read.topic.agenticSearch === true && read.topic.mcpToolIds.includes(echo.id), 'agentic fields read back');
             const cleared = await client.topics.update(topic.id, { agenticSearch: false, mcpToolIds: [] });
             assert(cleared.agenticSearch === false && cleared.mcpToolIds.length === 0, 'agentic fields cleared');
+            assert(cleared.audioEnabled === false, 'automatic audio is off by default');
+            const spoken = await client.topics.update(topic.id, { audioEnabled: true });
+            assert(spoken.audioEnabled === true, 'automatic audio turned on');
             await client.topics.remove(topic.id);
             await client.mcpServers.remove(server.id);
             assert(fake.requests() > 0, 'the server talked to the fake MCP server');

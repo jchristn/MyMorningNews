@@ -201,6 +201,7 @@ namespace MyMorningNews.Server
             _Context.Account = new AccountService(_Database, settings, email, tenantDefaults, _Context.PromoCodes, _Context.Accounts);
             MyMorningNews.Core.Entitlements.EntitlementService entitlements = _Context.Entitlements;
             AccountService account = _Context.Account;
+            briefings.AudioGate = (tenantId, userId, t) => entitlements.CheckAudioAsync(tenantId, userId, t);
             authentication.SignInGate = (user, t) => Task.FromResult(account.NeedsVerification(user) ? "Confirm your email address first: open the link we sent you, or ask for a new one." : (string?)null);
             authentication.OnSignIn = (user, t) => account.CancelDeletionAsync(user, t);
             _Models.PreCallCheck = (req, t) => String.IsNullOrEmpty(req.UserId) ? Task.CompletedTask : entitlements.CheckCostAsync(req.TenantId, req.UserId, t);

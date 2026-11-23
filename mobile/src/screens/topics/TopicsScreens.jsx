@@ -9,7 +9,7 @@ import { openLink } from '@/components/LegalFooter';
 import { Markdown } from '@/components/Markdown';
 import { ScheduleEditor, ScheduleSummary } from '@/components/ScheduleEditor';
 import { ActionError, EmptyState, ResourceView } from '@/components/states';
-import { Badge, Banner, Button, Card, ListRow, Screen, SectionHeader, T } from '@/components/ui';
+import { Badge, Banner, Button, Card, ListRow, Screen, SectionHeader, SwitchRow, T } from '@/components/ui';
 import { costLabel, costState } from '@/lib/costs';
 import { ACTIVE_RUN_STATUSES, DIMENSION_WEIGHT_TONES, RUN_STATUS_TONES, TOPIC_STATUS_TONES } from '@/lib/enums';
 import { formatDate, formatDateTime } from '@/lib/format';
@@ -91,7 +91,7 @@ export function TopicWorkspace({ id }) {
       {tab === 'findings' ? <FindingsList topicId={topic.id} embedded hrefFor={topicFindingHref} testID="topic-findings" /> : null}
       {tab === 'runs' ? <TopicRuns topicId={topic.id} /> : null}
       {tab === 'sources' ? <TopicSources topicId={topic.id} /> : null}
-      {tab === 'schedule' ? <TopicSchedule topic={topic} /> : null}
+      {tab === 'schedule' ? <TopicSchedule topic={topic} onTopicUpdated={(updated) => resource.setData({ ...resource.data, topic: updated })} /> : null}
     </View>
   );
 }
@@ -262,8 +262,40 @@ function TopicSources({ topicId }) {
   );
 }
 
-/** A topic's research schedules: summaries, edit, add, and delete. */
-export function TopicSchedule({ topic }) {
+/**
+ * Automatic audio for a topic: when on, every briefing from the topic's research runs is also made into audio. Saved
+ * on the topic right away; a failed save puts the switch back and says why.
+ */
+export function TopicAudioSwitch({ topic, onTopicUpdated }) {
+  const { t } = useTranslation();
+  const { client } = useAuth();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+  const [value, setValue] = useState(Boolean(topic.audioEnabled));
+  const change = async (next) => {
+    setBusy(true);
+    setError(null);
+    setValue(next);
+    try {
+      const updated = await topicsApi.update(client, topic.id, { audioEnabled: next });
+      if (updated && updated.id && onTopicUpdated) onTopicUpdated(updated);
+    } catch (e) {
+      setValue(!next);
+      setError(e);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Card testID="topic-audio">
+      <SwitchRow title={t('mobile.topics.audio.label')} detail={t('mobile.topics.audio.help')} value={value} disabled={busy} onValueChange={(v) => void change(v)} testID="topic-audio-switch" />
+      <ActionError error={error} />
+    </Card>
+  );
+}
+
+/** A topic's research schedules (summaries, edit, add, and delete) and whether its briefings are made into audio. */
+export function TopicSchedule({ topic, onTopicUpdated }) {
   const p = useTheme();
   const { t } = useTranslation();
   const { client } = useAuth();
@@ -296,6 +328,7 @@ export function TopicSchedule({ topic }) {
           </>
         )}
       </ResourceView>
+      <TopicAudioSwitch topic={topic} onTopicUpdated={onTopicUpdated} />
     </Screen>
   );
 }

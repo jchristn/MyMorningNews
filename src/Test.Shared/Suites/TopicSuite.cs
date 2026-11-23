@@ -260,6 +260,7 @@ namespace Test.Shared.Suites
 
             Topic converted = (await ta.Client.PostAsync("/v1.0/api/requests/" + r.Request.Id + "/convert", null, token).ConfigureAwait(false)).Expect(200, "convert").Json<Topic>();
             Assert.True(!converted.IsOneTime && converted.Status == TopicStatusEnum.Active && converted.Id == r.Request.TopicId, "now a recurring topic");
+            Assert.True(converted.AudioEnabled, "a request that asked for a podcast keeps automatic audio as a topic");
             (await ta.Client.PostAsync("/v1.0/api/requests/" + r.Request.Id + "/convert", null, token).ConfigureAwait(false)).Expect(409, "already converted");
             (await ta.Client.DeleteAsync("/v1.0/api/requests/" + r.Request.Id, token).ConfigureAwait(false)).Expect(204, "delete request");
             (await ta.Client.GetAsync("/v1.0/api/topics/" + converted.Id, token).ConfigureAwait(false)).Expect(200, "converted topic survives deletion");

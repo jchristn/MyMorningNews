@@ -147,6 +147,51 @@ namespace MyMorningNews.McpServer
         }
 
         /// <summary>
+        /// An optional whole number.
+        /// </summary>
+        /// <param name="name">Argument name.</param>
+        /// <param name="minimum">Minimum.</param>
+        /// <param name="maximum">Maximum.</param>
+        /// <returns>The value, or null when missing.</returns>
+        /// <exception cref="McpToolException">The value is outside the range.</exception>
+        public int? OptionalInteger(string name, int minimum, int maximum)
+        {
+            long? value = _Parameters?.GetInt64(name);
+            if (!value.HasValue) return null;
+            if (value.Value < minimum || value.Value > maximum) throw new McpToolException(name + " must be between " + minimum + " and " + maximum + ".");
+            return (int)value.Value;
+        }
+
+        /// <summary>
+        /// A list of whole numbers, or null when missing.
+        /// </summary>
+        /// <param name="name">Argument name.</param>
+        /// <param name="minimum">Minimum for each number.</param>
+        /// <param name="maximum">Maximum for each number.</param>
+        /// <param name="maxItems">Maximum items. Default 50.</param>
+        /// <returns>Values, or null when the argument was not sent.</returns>
+        /// <exception cref="McpToolException">Not an array of whole numbers in range, or too many items.</exception>
+        public List<int>? IntegerList(string name, int minimum, int maximum, int maxItems = 50)
+        {
+            if (_Parameters == null || !_Parameters.HasValue || !_Parameters.ContainsProperty(name)) return null;
+            List<int> list = new List<int>();
+            using (JsonDocument doc = JsonDocument.Parse(_Parameters.RawJson!))
+            {
+                if (!doc.RootElement.TryGetProperty(name, out JsonElement element) || element.ValueKind == JsonValueKind.Null) return null;
+                if (element.ValueKind != JsonValueKind.Array) throw new McpToolException(name + " must be an array of whole numbers.");
+                foreach (JsonElement item in element.EnumerateArray())
+                {
+                    if (item.ValueKind != JsonValueKind.Number || !item.TryGetInt32(out int n) || n < minimum || n > maximum)
+                        throw new McpToolException(name + " must hold whole numbers from " + minimum + " to " + maximum + ".");
+                    list.Add(n);
+                }
+            }
+
+            if (list.Count > maxItems) throw new McpToolException(name + " can hold at most " + maxItems + " items.");
+            return list;
+        }
+
+        /// <summary>
         /// A list of strings, or an empty list when missing.
         /// </summary>
         /// <param name="name">Argument name.</param>

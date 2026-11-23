@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import ErrorState from '../../components/ErrorState.jsx';
 import FormField from '../../components/FormField.jsx';
+import TopicAudio from './TopicAudio.jsx';
 import TopicVoice from './TopicVoice.jsx';
 
 export function emailOptionsFrom(topic) {
@@ -16,8 +17,8 @@ export function emailOptionsFrom(topic) {
   };
 }
 
-// Email recipients (saved as you add or remove them), the topic's email options (saved with Save), and the voice that
-// reads its briefings aloud (saved when chosen).
+// Email recipients (saved as you add or remove them), the topic's email options (saved with Save), automatic audio
+// (saved when switched), and the voice that reads its briefings aloud (saved when chosen).
 export default function DeliverySettings({ topic, recipients, onTopicUpdated, onRecipientsChanged, disabled = false, showSave = true, optionsRef }) {
   const { t } = useTranslation();
   const { apiClient, identity } = useAuth();
@@ -140,6 +141,11 @@ export default function DeliverySettings({ topic, recipients, onTopicUpdated, on
             </button>
           ) : null}
         </form>
+      </fieldset>
+
+      <fieldset>
+        <legend>{t('topicAudio.title')}</legend>
+        <TopicAudio topic={topic} onTopicUpdated={onTopicUpdated} disabled={disabled} idPrefix="delivery-audio" />
       </fieldset>
 
       <fieldset>

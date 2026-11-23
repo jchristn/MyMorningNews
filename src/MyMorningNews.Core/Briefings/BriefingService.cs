@@ -45,6 +45,13 @@ namespace MyMorningNews.Core.Briefings
         public Audio.AudioService? Audio { get; set; } = null;
 
         /// <summary>
+        /// Optional plan check before audio is queued automatically (tenant, the briefing's reader). Throws
+        /// <see cref="CapReachedException"/> to refuse: the briefing is still delivered, without audio, and the reason
+        /// is logged. Null means no plan limit. Set by the server.
+        /// </summary>
+        public Func<string, string, CancellationToken, Task>? AudioGate { get; set; } = null;
+
+        /// <summary>
         /// Notifications; when set, ready edition briefings and one-time reports are announced through it. The edition's
         /// email and push switches and a one-time request's Email deliverable are passed as further filters on top of
         /// the reader's notification preferences. Push payloads carry the briefing ID and the edition name, never
@@ -95,7 +102,8 @@ namespace MyMorningNews.Core.Briefings
 
         /// <summary>
         /// Compose the briefing for one run: the topic template or Run Briefing, or the One-time Report for one-time topics
-        /// (which also links the briefing to its request).
+        /// (which also links the briefing to its request). Audio is queued when the topic has AudioEnabled or its template
+        /// turns audio on, or, for a one-time request, when Podcast is among its deliverables.
         /// </summary>
         /// <param name="run">Run.</param>
         /// <param name="topic">Topic.</param>
@@ -144,7 +152,7 @@ namespace MyMorningNews.Core.Briefings
 
             bool wantsAudio = request != null
                 ? request.Deliverables.Any(d => String.Equals(d, "Podcast", StringComparison.OrdinalIgnoreCase))
-                : template.Definition.Audio.Enabled;
+                : topic.AudioEnabled || template.Definition.Audio.Enabled;
             if (wantsAudio) await QueueAudioAsync(composed, request != null ? MediaKindEnum.PodcastEpisode : MediaKindEnum.BriefingAudio, null, token).ConfigureAwait(false);
             if (Notifications != null && request != null && composed.Status == BriefingStatusEnum.Ready)
             {
@@ -536,7 +544,12 @@ namespace MyMorningNews.Core.Briefings
             if (Audio == null || b.Status != BriefingStatusEnum.Ready || b.IsDryRun) return;
             try
             {
+                if (AudioGate != null) await AudioGate(b.TenantId, b.UserId, token).ConfigureAwait(false);
                 await Audio.QueueForBriefingAsync(b, kind, voiceProfileId, false, token).ConfigureAwait(false);
+            }
+            catch (CapReachedException cap)
+            {
+                _Logging.Info(_Header + "no automatic audio for briefing " + b.Id + " (" + cap.Key + "): " + cap.Message);
             }
             catch (Exception ex) when (!(ex is OperationCanceledException))
             {

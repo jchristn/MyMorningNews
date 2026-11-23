@@ -3,7 +3,7 @@ import { briefingFileName, shareBriefingFile } from '@/lib/briefingFiles';
 import { applyFindingChanges, findingActions, findingListFlags, findingUpdate, performFindingAction } from '@/lib/findings';
 import { ApiClient } from '@/api/client';
 import { citationsUsed, isSafeUrl, parseBlocks, parseBriefing, parseInline, plainText } from '@/lib/markdown';
-import { isLocalDateTime, localToUtc, parseTimes, scheduleBody, scheduleForm, scheduleProblem, toggleDay, utcToLocal } from '@/lib/schedule';
+import { EDITABLE_INTERVALS, isLocalDateTime, localToUtc, parseMonthDays, parseTimes, scheduleBody, scheduleForm, scheduleProblem, toggleDay, utcToLocal } from '@/lib/schedule';
 import { answerBody, canAskMore, initialStep, nextStep, previousStep, questionRounds, stepAvailable, upsertById } from '@/lib/wizard';
 import { requestBody, confirmTime, canCancel, canConfirm, canConvert } from '@/screens/requests/RequestScreens';
 import { filterPredictions, predictionsQuery } from '@/screens/research/PredictionScreens';
@@ -92,7 +92,7 @@ describe('schedules', () => {
 
   it('sends only the fields an interval type uses', () => {
     const weekly = scheduleBody({ ...scheduleForm(null, 'UTC'), times: '18:00, 07:00' }, { ownerType: 'Topic', ownerId: 'top_1' });
-    expect(weekly).toEqual({ intervalType: 'DaysOfWeek', timeZone: 'UTC', enabled: true, ownerType: 'Topic', ownerId: 'top_1', daysOfWeekMask: 62, timesOfDay: ['07:00', '18:00'] });
+    expect(weekly).toEqual({ intervalType: 'DaysOfWeek', timeZone: 'UTC', enabled: true, ownerType: 'Topic', ownerId: 'top_1', daysOfWeekMask: 62, timesOfDay: ['07:00', '18:00'], missedRunPolicy: 'RunOnceOnRecovery' });
     expect(scheduleBody({ intervalType: 'EveryNHours', intervalValue: '500', minuteOffset: '75', timeZone: 'UTC', enabled: true })).toEqual({ intervalType: 'EveryNHours', timeZone: 'UTC', enabled: true, intervalValue: 168, minuteOffset: 59 });
     expect(scheduleBody({ intervalType: 'Once', runOnce: '2026-12-01 07:00', timeZone: 'UTC', enabled: true })).toMatchObject({ runOnceUtc: '2026-12-01T07:00:00.000Z' });
     expect(scheduleBody({ intervalType: 'Manual', timeZone: 'UTC', enabled: false })).toEqual({ intervalType: 'Manual', timeZone: 'UTC', enabled: false });
@@ -105,7 +105,26 @@ describe('schedules', () => {
     expect(scheduleProblem({ intervalType: 'Manual' })).toBeNull();
   });
 
+  it('offers every interval type the server has, each with its own fields', () => {
+    expect([...EDITABLE_INTERVALS].sort()).toEqual(['Cron', 'DaysOfMonth', 'DaysOfWeek', 'EveryNDays', 'EveryNHours', 'EveryNMinutes', 'EveryNWeeks', 'Manual', 'Once']);
+    expect(parseMonthDays('15, last 1; 40 x -1 15')).toEqual([1, 15, -1]);
+    const base = { timeZone: 'UTC', enabled: true };
+    expect(scheduleBody({ ...base, intervalType: 'EveryNWeeks', intervalValue: '2', daysOfWeekMask: 2, times: '06:30' })).toEqual({ intervalType: 'EveryNWeeks', timeZone: 'UTC', enabled: true, intervalValue: 2, daysOfWeekMask: 2, timesOfDay: ['06:30'] });
+    expect(scheduleBody({ ...base, intervalType: 'DaysOfMonth', monthDays: '1, -1', times: '08:00' })).toEqual({ intervalType: 'DaysOfMonth', timeZone: 'UTC', enabled: true, daysOfMonth: [1, -1], timesOfDay: ['08:00'] });
+    expect(scheduleBody({ ...base, intervalType: 'EveryNMinutes', intervalValue: '1' })).toEqual({ intervalType: 'EveryNMinutes', timeZone: 'UTC', enabled: true, intervalValue: 5 });
+    expect(scheduleBody({ ...base, intervalType: 'Cron', cronExpression: ' 0 7 * * 1-5 ', missedRunPolicy: 'Skip' })).toEqual({ intervalType: 'Cron', timeZone: 'UTC', enabled: true, cronExpression: '0 7 * * 1-5', missedRunPolicy: 'Skip' });
+    expect(scheduleBody({ ...base, intervalType: 'EveryNDays', intervalValue: 1, times: '07:00', start: '2026-12-01 00:00', end: '2026-12-31 23:59' })).toMatchObject({ startUtc: '2026-12-01T00:00:00.000Z', endUtc: '2026-12-31T23:59:00.000Z' });
+    expect(scheduleBody({ ...base, intervalType: 'Once', runOnce: '2026-12-01 07:00', start: '2026-12-01 00:00' }).startUtc).toBeUndefined();
+    expect(scheduleProblem({ intervalType: 'DaysOfMonth', monthDays: '0, 32', times: '07:00' })).toBe('monthDays');
+    expect(scheduleProblem({ intervalType: 'EveryNWeeks', daysOfWeekMask: 2, times: '' })).toBe('times');
+    expect(scheduleProblem({ intervalType: 'Cron', cronExpression: '0 7 * *' })).toBe('cron');
+    expect(scheduleProblem({ intervalType: 'Cron', cronExpression: '0 7 * * 1-5' })).toBeNull();
+    expect(scheduleProblem({ intervalType: 'EveryNMinutes', start: 'soon' })).toBe('window');
+    expect(scheduleProblem({ intervalType: 'EveryNMinutes', start: '', end: '2026-12-31 23:59' })).toBeNull();
+  });
+
   it('reads an existing schedule into the form', () => {
+    expect(scheduleForm({ intervalType: 'DaysOfMonth', daysOfMonth: [1, -1], timesOfDay: ['08:00'], cronExpression: null, startUtc: '2026-12-01T00:00:00Z', missedRunPolicy: 'Skip', timeZone: 'UTC' })).toMatchObject({ monthDays: '1, -1', start: '2026-12-01 00:00', end: '', missedRunPolicy: 'Skip' });
     expect(scheduleForm({ intervalType: 'DaysOfWeek', daysOfWeekMask: 127, timesOfDay: ['06:30'], timeZone: 'America/Los_Angeles', enabled: true })).toMatchObject({ daysOfWeekMask: 127, times: '06:30', timeZone: 'America/Los_Angeles' });
   });
 });

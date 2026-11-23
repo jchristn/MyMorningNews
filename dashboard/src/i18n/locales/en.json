@@ -4629,6 +4629,13 @@
       "partialSuffix": "(some calls unpriced)"
     }
   },
+  "topicAudio": {
+    "title": "Audio",
+    "label": "Make audio automatically",
+    "help": "Every briefing from this topic’s research runs is also made into audio, read in the topic’s voice. Audio counts toward the audio minutes of your plan.",
+    "savedOn": "Every briefing of {name} will now be made into audio",
+    "savedOff": "Automatic audio is off for {name}"
+  },
   "topicVoice": {
     "title": "Voice",
     "help": "The voice that reads this topic's briefings aloud. Play a sample to hear each one.",

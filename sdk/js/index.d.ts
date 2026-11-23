@@ -305,6 +305,8 @@ export interface Topic extends Record_ {
     mcpToolIds: string[];
     /** Voice profile that reads the topic's run briefings aloud, or null for the workspace default voice. */
     voiceProfileId: string | null;
+    /** Automatic audio: every briefing of the topic's research runs is also made into audio. Default false. */
+    audioEnabled: boolean;
     lastRunUtc: string | null;
     lastRefinedUtc: string | null;
 }
@@ -571,6 +573,8 @@ export interface TopicUpsertRequest {
     weightSource?: number;
     weightRecency?: number;
     agenticSearch?: boolean;
+    /** Turn every briefing of the topic's research runs into audio automatically. Uses the plan's audio minutes. */
+    audioEnabled?: boolean;
     /** IDs that do not start with `mct_` are dropped. */
     mcpToolIds?: string[];
     seedQueries?: string[];

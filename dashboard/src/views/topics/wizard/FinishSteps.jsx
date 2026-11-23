@@ -131,7 +131,8 @@ SourcesStep.propTypes = {
   busy: PropTypes.bool
 };
 
-// Step 6: the research schedule, email on every run, recipients, and the voice that reads the briefings aloud.
+// Step 6: the research schedule, email on every run, recipients, automatic audio, and the voice that reads the
+// briefings aloud.
 export function DeliveryStep({ data, recipients, onRecipientsChanged, dispatch, scheduleRef, optionsRef, busy }) {
   const { t } = useTranslation();
   return (
@@ -194,6 +195,7 @@ export function ReviewStep({ data, recipients, onApply, onPreview, preview, onPr
           { key: 'queries', label: t('wizard.context.seedQueries'), value: (topic.seedQueries || []).length > 0 ? f.list(topic.seedQueries) : null },
           { key: 'schedule', label: t('wizard.delivery.schedule'), value: schedules ? (schedules.length > 0 ? f.list(schedules.map((s) => describeSchedule(s, t, f))) : t('wizard.review.noSchedule')) : '...' },
           { key: 'email', label: t('delivery.emailOnRun'), value: topic.emailOnRun ? t('common.yes') : t('common.no') },
+          { key: 'audio', label: t('topicAudio.label'), value: topic.audioEnabled ? t('common.yes') : t('common.no') },
           { key: 'recipients', label: t('delivery.recipients'), value: recipients.length > 0 ? f.list(recipients.map((r) => r.email)) : null }
         ]}
       />

@@ -147,7 +147,7 @@ python3 src/Tools/mcpdocs/generate_mcp_api.py
 
 ## Tools
 
-27 tools. Every tool returns structured content that matches its output schema, and the same data as JSON text.
+30 tools. Every tool returns structured content that matches its output schema, and the same data as JSON text.
 
 | Tool | Title | Read only | Destructive |
 |---|---|---|---|
@@ -162,6 +162,9 @@ python3 src/Tools/mcpdocs/generate_mcp_api.py
 | [`remove_topic_dimension`](#remove_topic_dimension) | Remove a dimension | no | yes |
 | [`add_topic_constraint`](#add_topic_constraint) | Add a constraint | no | no |
 | [`remove_topic_constraint`](#remove_topic_constraint) | Remove a constraint | no | yes |
+| [`list_schedules`](#list_schedules) | List schedules | yes | no |
+| [`set_schedule`](#set_schedule) | Add or change a schedule | no | no |
+| [`remove_schedule`](#remove_schedule) | Remove a schedule | no | yes |
 | [`list_findings`](#list_findings) | List findings | yes | no |
 | [`search_findings`](#search_findings) | Search findings | yes | no |
 | [`get_finding`](#get_finding) | Read a finding with evidence | yes | no |
@@ -196,7 +199,7 @@ Output:
 
 | Name | Type | Always | Description |
 |---|---|---|---|
-| `items` | array of object with `id`, `name`, `status`, `description`, `isOneTime`, `emailOnRun`, `lastRunUtc`, `createdUtc` | yes | Items on this page. |
+| `items` | array of object with `id`, `name`, `status`, `description`, `isOneTime`, `emailOnRun`, `audioEnabled`, `lastRunUtc`, `createdUtc` | yes | Items on this page. |
 | `totalCount` | integer | yes | Items matching across all pages. |
 | `pageNumber` | integer | no | Page number (1-based). |
 | `totalPages` | integer | no | Pages available. |
@@ -215,7 +218,7 @@ Output:
 
 | Name | Type | Always | Description |
 |---|---|---|---|
-| `topic` | object with `id`, `name`, `status`, `description`, `isOneTime`, `emailOnRun`, `lastRunUtc`, `createdUtc` | yes |  |
+| `topic` | object with `id`, `name`, `status`, `description`, `isOneTime`, `emailOnRun`, `audioEnabled`, `lastRunUtc`, `createdUtc` | yes |  |
 | `brief` | string or null | no | The research brief. |
 | `dimensions` | array of object | no | Research dimensions. |
 | `constraints` | array of object | no | Constraints. |
@@ -238,7 +241,7 @@ Output:
 
 | Name | Type | Always | Description |
 |---|---|---|---|
-| `topic` | object with `id`, `name`, `status`, `description`, `isOneTime`, `emailOnRun`, `lastRunUtc`, `createdUtc` | yes |  |
+| `topic` | object with `id`, `name`, `status`, `description`, `isOneTime`, `emailOnRun`, `audioEnabled`, `lastRunUtc`, `createdUtc` | yes |  |
 | `brief` | string or null | no | The drafted brief. |
 | `dimensions` | array of string | no | Dimension names. |
 
@@ -306,7 +309,7 @@ Output:
 
 ### update_topic
 
-**Update a topic.** Change a topic's name, description, brief, status (pause with Paused, resume with Active), or whether it emails after every run.
+**Update a topic.** Change a topic's name, description, brief, status (pause with Paused, resume with Active), whether it emails after every run, or whether every run briefing is turned into audio automatically.
 
 Input:
 
@@ -318,6 +321,7 @@ Input:
 | `brief` | string (up to 8000) | no | New research brief: what to look for and why. |
 | `status` | string (`Active`, `Paused`, `Archived`) | no | New status. |
 | `emailOnRun` | boolean | no | Email after every run. |
+| `audioEnabled` | boolean | no | Turn every briefing of the topic's research runs into audio automatically, read in the topic's voice. Uses the plan's audio minutes. |
 
 Output:
 
@@ -329,6 +333,7 @@ Output:
 | `description` | string or null | no | Description. |
 | `isOneTime` | boolean | no | One-time report rather than recurring. |
 | `emailOnRun` | boolean | no | Emails after every run. |
+| `audioEnabled` | boolean | no | Every run briefing is turned into audio automatically. |
 | `lastRunUtc` | string or null | no | Last run (UTC). |
 | `createdUtc` | string | no | Created (UTC). |
 
@@ -404,6 +409,94 @@ Input:
 |---|---|---|---|
 | `topicId` | string (up to 64) | yes | Topic ID (top_...). |
 | `constraintId` | string (up to 64) | yes | Constraint ID. |
+
+Output:
+
+| Name | Type | Always | Description |
+|---|---|---|---|
+| `removed` | boolean | yes | True when removed. |
+
+### list_schedules
+
+**List schedules.** List your schedules, or only those of one topic or one edition, with what each does and when it runs next. A topic schedule starts research runs; an edition schedule composes the edition's briefing.
+
+Input:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `topicId` | string (up to 64) | no | Only this topic's schedules (top_...). |
+| `editionId` | string (up to 64) | no | Only this edition's schedules (edn_...). |
+| `pageSize` | integer (1 to 100) | no | Schedules per page. Default 25. |
+| `pageNumber` | integer (1 to 10000) | no | Page (1-based). Default 1. |
+
+Output:
+
+| Name | Type | Always | Description |
+|---|---|---|---|
+| `items` | array of object with `id`, `ownerType`, `ownerId`, `name`, `intervalType`, `intervalValue`, `minuteOffset`, `daysOfWeek`, `daysOfMonth`, `timesOfDay`, `cronExpression`, `timeZone`, `startUtc`, `endUtc`, `runOnceUtc`, `enabled`, `missedRunPolicy`, `nextRunUtc`, `lastRunUtc` | yes | Items on this page. |
+| `totalCount` | integer | yes | Items matching across all pages. |
+| `pageNumber` | integer | no | Page number (1-based). |
+| `totalPages` | integer | no | Pages available. |
+
+### set_schedule
+
+**Add or change a schedule.** Add a schedule to a topic (topicId) or an edition (editionId), or change one (scheduleId; only the fields sent change). Pick intervalType and send the fields it uses: DaysOfWeek (daysOfWeek, timesOfDay), EveryNDays (intervalValue, timesOfDay), EveryNWeeks (intervalValue, daysOfWeek, timesOfDay), DaysOfMonth (daysOfMonth, timesOfDay), EveryNHours (intervalValue, minuteOffset), EveryNMinutes (intervalValue), Once (runOnceUtc), Cron (cronExpression), or Manual (never fires by itself). Times of day are local to timeZone. The result's nextRunUtc shows when it fires next. The plan may limit how often a topic runs.
+
+Input:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `scheduleId` | string (up to 64) | no | Schedule to change (sch_...); omit to add one. |
+| `topicId` | string (up to 64) | no | Topic to schedule (top_...), when adding. |
+| `editionId` | string (up to 64) | no | Edition to schedule (edn_...), when adding. |
+| `name` | string (up to 200) | no | Label, for example 'Weekday mornings'. |
+| `intervalType` | string (`EveryNMinutes`, `EveryNHours`, `EveryNDays`, `EveryNWeeks`, `DaysOfWeek`, `DaysOfMonth`, `Once`, `Cron`, `Manual`) | no | How it repeats. Required when adding. |
+| `intervalValue` | integer (1 to 1440) | no | Every how many minutes, hours, days, or weeks. |
+| `minuteOffset` | integer (0 to 59) | no | Minute past the hour, for EveryNHours. |
+| `daysOfWeek` | array of string (`Sunday`, `Monday`, `Tuesday`, `Wednesday`, `Thursday`, `Friday`, `Saturday`) | no | Days it runs on, for DaysOfWeek and EveryNWeeks. |
+| `daysOfMonth` | array of integer (-1 to 31) | no | Days of the month, for DaysOfMonth: 1 to 31, or -1 for the last day. |
+| `timesOfDay` | array of string (up to 5) | no | Local times of day as 24-hour HH:mm, for example 07:00. |
+| `cronExpression` | string (up to 200) | no | Five-field cron expression, for Cron. |
+| `timeZone` | string (up to 64) | no | IANA time zone the times are in, for example America/New_York. Default UTC. |
+| `runOnceUtc` | string (up to 40) | no | When to run, for Once (ISO 8601, UTC). |
+| `startUtc` | string (up to 40) | no | Do not run before this time (ISO 8601, UTC). |
+| `endUtc` | string (up to 40) | no | Do not run after this time (ISO 8601, UTC). |
+| `enabled` | boolean | no | False pauses the schedule without removing it. Default true. |
+| `missedRunPolicy` | string (`Skip`, `RunOnceOnRecovery`) | no | What to do with a run missed while the server was down. Default RunOnceOnRecovery. |
+
+Output:
+
+| Name | Type | Always | Description |
+|---|---|---|---|
+| `id` | string | yes | Schedule ID (sch_...). |
+| `ownerType` | string | yes | Topic or Edition. |
+| `ownerId` | string | yes | The topic or edition it runs. |
+| `name` | string or null | no | Label. |
+| `intervalType` | string | yes | One of: EveryNMinutes, EveryNHours, EveryNDays, EveryNWeeks, DaysOfWeek, DaysOfMonth, Once, Cron, Manual. |
+| `intervalValue` | integer (0 to 100000) | no | Interval size for the EveryN types. |
+| `minuteOffset` | integer (0 to 59) | no | Minute past the hour for EveryNHours. |
+| `daysOfWeek` | array of string | no | Days of the week it runs on. |
+| `daysOfMonth` | array of integer (-1 to 31) | no | Days of the month (-1 is the last day). |
+| `timesOfDay` | array of string | no | Local times of day (HH:mm). |
+| `cronExpression` | string or null | no | Cron expression for the Cron type. |
+| `timeZone` | string | no | IANA time zone the times are in. |
+| `startUtc` | string or null | no | Not before (UTC). |
+| `endUtc` | string or null | no | Not after (UTC). |
+| `runOnceUtc` | string or null | no | Run time for the Once type (UTC). |
+| `enabled` | boolean | yes | Whether it fires. |
+| `missedRunPolicy` | string | no | One of: Skip, RunOnceOnRecovery. |
+| `nextRunUtc` | string or null | no | Next run (UTC); null when nothing is due. |
+| `lastRunUtc` | string or null | no | Last time it fired (UTC). |
+
+### remove_schedule
+
+**Remove a schedule.** Remove a schedule. The topic or edition stays and can still be run by hand. To pause instead, use set_schedule with enabled false.
+
+Input:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `scheduleId` | string (up to 64) | yes | Schedule ID (sch_...). |
 
 Output:
 

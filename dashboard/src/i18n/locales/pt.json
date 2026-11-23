@@ -4629,6 +4629,13 @@
       "partialSuffix": "(algumas chamadas sem preço)"
     }
   },
+  "topicAudio": {
+    "title": "Áudio",
+    "label": "Criar áudio automaticamente",
+    "help": "Cada briefing das pesquisas deste tópico também vira áudio, lido na voz do tópico. O áudio conta para os minutos de áudio do seu plano.",
+    "savedOn": "Cada briefing de {name} agora também será transformado em áudio",
+    "savedOff": "O áudio automático está desativado para {name}"
+  },
   "topicVoice": {
     "title": "Voz",
     "help": "A voz que lê em voz alta os boletins deste tema. Reproduza uma amostra para ouvir cada uma.",

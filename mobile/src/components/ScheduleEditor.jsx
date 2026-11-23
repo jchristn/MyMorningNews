@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { schedulesApi } from '@/api/research';
 import { intlLocale } from '@/i18n/locales';
 import { formatDate, formatDateTime } from '@/lib/format';
-import { EDITABLE_INTERVALS, EVERY_DAY_MASK, WEEKDAYS_MASK, hasDay, scheduleBody, scheduleForm, scheduleProblem, toggleDay } from '@/lib/schedule';
+import { EDITABLE_INTERVALS, EVERY_DAY_MASK, MISSED_RUN_POLICIES, WEEKDAYS_MASK, hasDay, scheduleBody, scheduleForm, scheduleProblem, toggleDay, usesDays, usesTimes, usesWindow } from '@/lib/schedule';
 import { useAuth } from '@/state/AuthContext';
 import { spacing } from '@/theme/palette';
 import { ButtonRow, ChipGroup } from './Chips';
@@ -71,10 +71,13 @@ export function ScheduleSummary({ schedule, onPress, testID }) {
   );
 }
 
+/** The interval size field's label per type. */
+const INTERVAL_LABELS = { EveryNDays: 'everyDays', EveryNHours: 'everyHours', EveryNWeeks: 'everyWeeks', EveryNMinutes: 'everyMinutes' };
+
 /**
- * The compact schedule editor (plan section 14): weekly days and times, every N days or hours, once, or manual, in an
- * IANA time zone, with "Preview next runs" from `POST /v1.0/api/schedules/preview`. Schedules of other types (every N
- * weeks, days of the month, cron) are shown and can be switched off or deleted; their details are edited on the web.
+ * The schedule editor (plan section 14), with every interval type the server has: weekly days and times, every N
+ * days, weeks, hours, or minutes, days of the month, once, cron, or manual, in an IANA time zone, with an optional
+ * start and end, what to do with a missed run, and "Preview next runs" from `POST /v1.0/api/schedules/preview`.
  *
  * `owner` is `{ ownerType, ownerId }` for a new schedule. `onSaved(schedule)` and `onRemoved(id)` report changes.
  */
@@ -90,10 +93,9 @@ export function ScheduleEditor({ schedule, owner, onSaved, onRemoved, onCancel }
     setPreview(null);
   };
   const type = form.intervalType;
-  const editable = EDITABLE_INTERVALS.includes(type);
-  const problem = editable ? scheduleProblem(form) : null;
+  const problem = scheduleProblem(form);
   const names = weekdayNames(i18n.language);
-  const body = () => (editable ? scheduleBody(form, schedule ? null : owner) : { enabled: form.enabled });
+  const body = () => scheduleBody(form, schedule ? null : owner);
 
   const act = async (kind, work) => {
     setBusy(kind);
@@ -121,14 +123,16 @@ export function ScheduleEditor({ schedule, owner, onSaved, onRemoved, onCancel }
       setPreview(await schedulesApi.preview(client, { ...scheduleBody(form, owner), previewCount: 5 }));
     });
 
-  const typeOptions = (editable ? EDITABLE_INTERVALS : [...EDITABLE_INTERVALS, type]).map((v) => ({ value: v, label: t('mobile.schedule.types.' + v), testID: 'interval-' + v }));
+  const typeOptions = EDITABLE_INTERVALS.map((v) => ({ value: v, label: t('mobile.schedule.types.' + v), testID: 'interval-' + v }));
 
   return (
     <Card testID="schedule-editor">
       <T variant="label">{t('mobile.schedule.repeat')}</T>
       <ChipGroup options={typeOptions} value={type} onChange={(v) => set({ intervalType: v })} accessibilityLabel={t('mobile.schedule.repeat')} />
-      {!editable ? <Banner kind="info">{t('mobile.schedule.webOnly', { summary: describeSchedule(schedule, t, i18n.language) })}</Banner> : null}
-      {type === 'DaysOfWeek' ? (
+      {INTERVAL_LABELS[type] ? (
+        <Field label={t('mobile.schedule.' + INTERVAL_LABELS[type])} value={String(form.intervalValue)} onChangeText={(v) => set({ intervalValue: v.replace(/[^0-9]/g, '') })} keyboardType="number-pad" testID="schedule-interval" />
+      ) : null}
+      {usesDays(type) ? (
         <>
           <T variant="label">{t('mobile.schedule.days')}</T>
           <ChipGroup
@@ -144,23 +148,37 @@ export function ScheduleEditor({ schedule, owner, onSaved, onRemoved, onCancel }
           />
         </>
       ) : null}
-      {type === 'EveryNDays' || type === 'EveryNHours' ? (
-        <Field
-          label={type === 'EveryNDays' ? t('mobile.schedule.everyDays') : t('mobile.schedule.everyHours')}
-          value={String(form.intervalValue)}
-          onChangeText={(v) => set({ intervalValue: v.replace(/[^0-9]/g, '') })}
-          keyboardType="number-pad"
-          testID="schedule-interval"
-        />
+      {type === 'DaysOfMonth' ? (
+        <Field label={t('mobile.schedule.monthDays')} hint={t('mobile.schedule.monthDaysHint')} value={form.monthDays} onChangeText={(v) => set({ monthDays: v })} autoCapitalize="none" autoCorrect={false} testID="schedule-month-days" />
       ) : null}
       {type === 'EveryNHours' ? <Field label={t('mobile.schedule.minuteOffset')} value={String(form.minuteOffset)} onChangeText={(v) => set({ minuteOffset: v.replace(/[^0-9]/g, '') })} keyboardType="number-pad" /> : null}
-      {type === 'DaysOfWeek' || type === 'EveryNDays' ? (
+      {usesTimes(type) ? (
         <Field label={t('mobile.schedule.times')} hint={t('mobile.schedule.timesHint')} value={form.times} onChangeText={(v) => set({ times: v })} autoCapitalize="none" autoCorrect={false} testID="schedule-times" />
       ) : null}
       {type === 'Once' ? (
         <Field label={t('mobile.schedule.once')} hint={t('mobile.schedule.onceHint')} value={form.runOnce} onChangeText={(v) => set({ runOnce: v })} placeholder="2026-12-01 07:00" autoCapitalize="none" autoCorrect={false} testID="schedule-once" />
       ) : null}
-      {type !== 'Manual' ? <Field label={t('mobile.schedule.timeZone')} value={form.timeZone} onChangeText={(v) => set({ timeZone: v.trim() })} autoCapitalize="none" autoCorrect={false} editable={editable} /> : null}
+      {type === 'Cron' ? (
+        <Field label={t('mobile.schedule.cron')} hint={t('mobile.schedule.cronHint')} value={form.cronExpression} onChangeText={(v) => set({ cronExpression: v })} placeholder="0 7 * * 1-5" autoCapitalize="none" autoCorrect={false} testID="schedule-cron" />
+      ) : null}
+      {type !== 'Manual' ? <Field label={t('mobile.schedule.timeZone')} value={form.timeZone} onChangeText={(v) => set({ timeZone: v.trim() })} autoCapitalize="none" autoCorrect={false} testID="schedule-time-zone" /> : null}
+      {usesWindow(type) ? (
+        <>
+          <Field label={t('mobile.schedule.start')} hint={t('mobile.schedule.windowHint')} value={form.start} onChangeText={(v) => set({ start: v })} placeholder="2026-12-01 07:00" autoCapitalize="none" autoCorrect={false} testID="schedule-start" />
+          <Field label={t('mobile.schedule.end')} hint={t('mobile.schedule.windowHint')} value={form.end} onChangeText={(v) => set({ end: v })} placeholder="2027-01-31 23:59" autoCapitalize="none" autoCorrect={false} testID="schedule-end" />
+        </>
+      ) : null}
+      {type !== 'Manual' ? (
+        <>
+          <T variant="label">{t('mobile.schedule.missed')}</T>
+          <ChipGroup
+            options={MISSED_RUN_POLICIES.map((v) => ({ value: v, label: t('mobile.schedule.missedPolicies.' + v), testID: 'missed-' + v }))}
+            value={form.missedRunPolicy}
+            onChange={(v) => set({ missedRunPolicy: v })}
+            accessibilityLabel={t('mobile.schedule.missed')}
+          />
+        </>
+      ) : null}
       <SwitchRow title={t('mobile.schedule.enabled')} value={form.enabled} onValueChange={(v) => set({ enabled: v })} testID="schedule-enabled" />
       {problem ? <T variant="small">{t('mobile.schedule.problems.' + problem)}</T> : null}
       {error ? <Banner kind="danger">{error}</Banner> : null}
@@ -183,7 +201,7 @@ export function ScheduleEditor({ schedule, owner, onSaved, onRemoved, onCancel }
         </View>
       ) : null}
       <ButtonRow>
-        {editable && type !== 'Manual' ? <Button title={t('mobile.schedule.preview')} kind="secondary" icon="eye-outline" busy={busy === 'preview'} disabled={Boolean(problem)} onPress={() => void runPreview()} testID="schedule-preview-button" /> : null}
+        {type !== 'Manual' ? <Button title={t('mobile.schedule.preview')} kind="secondary" icon="eye-outline" busy={busy === 'preview'} disabled={Boolean(problem)} onPress={() => void runPreview()} testID="schedule-preview-button" /> : null}
         <Button title={t('mobile.common.save')} busy={busy === 'save'} disabled={Boolean(problem) || Boolean(busy)} onPress={() => void save()} testID="schedule-save" />
         {schedule && onRemoved ? <Button title={t('mobile.common.delete')} kind="danger" busy={busy === 'remove'} onPress={() => void remove()} testID="schedule-delete" /> : null}
         {onCancel ? <Button title={t('mobile.common.cancel')} kind="ghost" onPress={onCancel} /> : null}

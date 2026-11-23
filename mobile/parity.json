@@ -166,7 +166,7 @@
         "DELETE /v1.0/api/schedules/{id}",
         "POST /v1.0/api/schedules/preview"
       ],
-      "notes": "Workspace tabs on mobile: Overview (Run now, dry run, pause or resume, refine, brief, dimensions, constraints), Findings, Runs, Sources, and Schedule (weekly, every N days or hours, once, manual, with next-run preview). Feedback, preferences, analytics, and per-topic prompts and models join with Phase 10 or stay on the web."
+      "notes": "Workspace tabs on mobile: Overview (Run now, dry run, pause or resume, refine, brief, dimensions, constraints), Findings, Runs, Sources, and Schedule (every interval type: weekly, every N days, weeks, hours, or minutes, days of the month, once, cron, manual, with an optional start and end, the missed-run policy, a next-run preview, and the switch that makes audio automatically for every run briefing). Feedback, preferences, analytics, and per-topic prompts and models join with Phase 10 or stay on the web."
     },
     {
       "route": "/runs",

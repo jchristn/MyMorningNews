@@ -6,8 +6,25 @@ export const DAY_BITS = [1, 2, 4, 8, 16, 32, 64];
 export const WEEKDAYS_MASK = 62;
 export const EVERY_DAY_MASK = 127;
 
-/** Interval types the compact mobile editor offers. Others (EveryNWeeks, DaysOfMonth, Cron) are shown and kept as is. */
-export const EDITABLE_INTERVALS = ['DaysOfWeek', 'EveryNDays', 'EveryNHours', 'Once', 'Manual'];
+/** Interval types the mobile editor offers: every type the server has, most used first. */
+export const EDITABLE_INTERVALS = ['DaysOfWeek', 'EveryNDays', 'EveryNWeeks', 'DaysOfMonth', 'EveryNHours', 'EveryNMinutes', 'Once', 'Cron', 'Manual'];
+
+/** What a schedule does with a run it missed while the server was down. */
+export const MISSED_RUN_POLICIES = ['RunOnceOnRecovery', 'Skip'];
+
+export const LAST_DAY_OF_MONTH = -1;
+
+const WITH_DAYS = ['DaysOfWeek', 'EveryNWeeks'];
+const WITH_TIMES = ['DaysOfWeek', 'EveryNDays', 'EveryNWeeks', 'DaysOfMonth'];
+
+/** True when the interval type runs on chosen days of the week. */
+export const usesDays = (type) => WITH_DAYS.includes(type);
+
+/** True when the interval type runs at chosen times of day. */
+export const usesTimes = (type) => WITH_TIMES.includes(type);
+
+/** True when the interval type can be limited to a start and end (every repeating type). */
+export const usesWindow = (type) => type !== 'Manual' && type !== 'Once';
 
 /** Inclusive bounds for the interval value per type. */
 export const INTERVAL_BOUNDS = { EveryNMinutes: [5, 1440], EveryNHours: [1, 168], EveryNDays: [1, 365], EveryNWeeks: [1, 52] };
@@ -44,6 +61,17 @@ export function parseTimes(text) {
     })
     .filter(Boolean);
   return [...new Set(times)].sort();
+}
+
+/** "1, 15, -1" (or "last") as sorted, unique days of the month, the last day (-1) at the end; invalid entries are dropped. */
+export function parseMonthDays(text) {
+  const days = String(text || '')
+    .split(/[\s,;]+/)
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean)
+    .map((s) => (s === 'last' ? LAST_DAY_OF_MONTH : /^-?\d+$/.test(s) ? Number(s) : NaN))
+    .filter((d) => d === LAST_DAY_OF_MONTH || (d >= 1 && d <= 31));
+  return [...new Set(days)].sort((a, b) => (a === LAST_DAY_OF_MONTH ? 1 : b === LAST_DAY_OF_MONTH ? -1 : a - b));
 }
 
 const LOCAL = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2})$/;
@@ -98,7 +126,9 @@ export function utcToLocal(iso, timeZone) {
 
 /** The editor's form for a schedule (or a new one: weekdays at 07:00 in the device zone). */
 export function scheduleForm(schedule, timeZone = deviceTimeZone()) {
-  if (!schedule) return { intervalType: 'DaysOfWeek', intervalValue: 1, minuteOffset: 0, daysOfWeekMask: WEEKDAYS_MASK, times: '07:00', runOnce: '', timeZone, enabled: true };
+  if (!schedule) {
+    return { intervalType: 'DaysOfWeek', intervalValue: 1, minuteOffset: 0, daysOfWeekMask: WEEKDAYS_MASK, times: '07:00', monthDays: '1', cronExpression: '', runOnce: '', start: '', end: '', timeZone, enabled: true, missedRunPolicy: 'RunOnceOnRecovery' };
+  }
   const zone = schedule.timeZone || 'UTC';
   return {
     intervalType: schedule.intervalType || 'Manual',
@@ -106,9 +136,14 @@ export function scheduleForm(schedule, timeZone = deviceTimeZone()) {
     minuteOffset: schedule.minuteOffset || 0,
     daysOfWeekMask: schedule.daysOfWeekMask || 0,
     times: (Array.isArray(schedule.timesOfDay) && schedule.timesOfDay.length ? schedule.timesOfDay : ['07:00']).join(', '),
+    monthDays: (Array.isArray(schedule.daysOfMonth) && schedule.daysOfMonth.length ? schedule.daysOfMonth : [1]).join(', '),
+    cronExpression: schedule.cronExpression || '',
     runOnce: utcToLocal(schedule.runOnceUtc, zone),
+    start: utcToLocal(schedule.startUtc, zone),
+    end: utcToLocal(schedule.endUtc, zone),
     timeZone: zone,
     enabled: schedule.enabled !== false,
+    missedRunPolicy: schedule.missedRunPolicy || 'RunOnceOnRecovery',
   };
 }
 
@@ -123,20 +158,32 @@ export function scheduleBody(form, owner) {
   const bounds = INTERVAL_BOUNDS[type];
   if (bounds) body.intervalValue = Math.min(bounds[1], Math.max(bounds[0], Math.round(Number(form.intervalValue) || bounds[0])));
   if (type === 'EveryNHours') body.minuteOffset = Math.min(59, Math.max(0, Math.round(Number(form.minuteOffset) || 0)));
-  if (type === 'DaysOfWeek' || type === 'EveryNWeeks') body.daysOfWeekMask = Number(form.daysOfWeekMask) || 0;
-  if (type === 'DaysOfWeek' || type === 'EveryNDays' || type === 'EveryNWeeks' || type === 'DaysOfMonth') body.timesOfDay = parseTimes(form.times);
+  if (usesDays(type)) body.daysOfWeekMask = Number(form.daysOfWeekMask) || 0;
+  if (type === 'DaysOfMonth') body.daysOfMonth = parseMonthDays(form.monthDays);
+  if (usesTimes(type)) body.timesOfDay = parseTimes(form.times);
+  if (type === 'Cron') body.cronExpression = String(form.cronExpression || '').trim();
   if (type === 'Once') {
     const once = localToUtc(form.runOnce, body.timeZone);
     if (once) body.runOnceUtc = once;
   }
+  if (usesWindow(type)) {
+    const start = localToUtc(form.start, body.timeZone);
+    const end = localToUtc(form.end, body.timeZone);
+    if (start) body.startUtc = start;
+    if (end) body.endUtc = end;
+  }
+  if (type !== 'Manual' && form.missedRunPolicy) body.missedRunPolicy = form.missedRunPolicy;
   return body;
 }
 
 /** Why a form cannot be saved yet (a catalog key under mobile.schedule.problems), or null. */
 export function scheduleProblem(form) {
   const type = form.intervalType;
-  if ((type === 'DaysOfWeek' || type === 'EveryNWeeks') && !(Number(form.daysOfWeekMask) > 0)) return 'days';
-  if ((type === 'DaysOfWeek' || type === 'EveryNDays') && parseTimes(form.times).length === 0) return 'times';
+  if (usesDays(type) && !(Number(form.daysOfWeekMask) > 0)) return 'days';
+  if (type === 'DaysOfMonth' && parseMonthDays(form.monthDays).length === 0) return 'monthDays';
+  if (usesTimes(type) && parseTimes(form.times).length === 0) return 'times';
+  if (type === 'Cron' && String(form.cronExpression || '').trim().split(/\s+/).filter(Boolean).length < 5) return 'cron';
   if (type === 'Once' && !isLocalDateTime(form.runOnce)) return 'once';
+  if (usesWindow(type) && [form.start, form.end].some((v) => String(v || '').trim() && !isLocalDateTime(v))) return 'window';
   return null;
 }

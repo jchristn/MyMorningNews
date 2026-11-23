@@ -404,6 +404,47 @@ describe('topics', () => {
     await waitFor(() => expect(server.count('POST /v1.0/api/schedules')).toBe(1));
     expect(server.calls.find((c) => c.key === 'POST /v1.0/api/schedules').body).toMatchObject({ ownerType: 'Topic', ownerId: 'top_1', intervalType: 'DaysOfWeek', daysOfWeekMask: 126, timesOfDay: ['07:00', '18:00'], enabled: true });
   });
+
+  it('adds a monthly schedule and a cron schedule from the phone', async () => {
+    const { server } = await renderSignedIn(<TopicWorkspace id="top_1" />, {
+      'GET /v1.0/api/topics/top_1': () => ({ body: detail }),
+      'GET /v1.0/api/schedules': () => page([]),
+      'POST /v1.0/api/schedules': (call) => ({ status: 201, body: { id: 'sch_' + call.body.intervalType, ...call.body } }),
+    });
+    await waitFor(() => expect(screen.getByTestId('topic-tab-schedule')).toBeTruthy());
+    await fireEvent.press(screen.getByTestId('topic-tab-schedule'));
+    await waitFor(() => expect(screen.getByTestId('add-schedule')).toBeTruthy());
+    await fireEvent.press(screen.getByTestId('add-schedule'));
+    await fireEvent.press(screen.getByTestId('interval-DaysOfMonth'));
+    await fireEvent.changeText(screen.getByTestId('schedule-month-days'), '1, 15, -1');
+    await fireEvent.press(screen.getByTestId('missed-Skip'));
+    await fireEvent.press(screen.getByTestId('schedule-save'));
+    await waitFor(() => expect(server.count('POST /v1.0/api/schedules')).toBe(1));
+    expect(server.calls.find((c) => c.key === 'POST /v1.0/api/schedules').body).toMatchObject({ intervalType: 'DaysOfMonth', daysOfMonth: [1, 15, -1], timesOfDay: ['07:00'], missedRunPolicy: 'Skip' });
+    await waitFor(() => expect(screen.getByTestId('add-schedule')).toBeTruthy());
+    await fireEvent.press(screen.getByTestId('add-schedule'));
+    await fireEvent.press(screen.getByTestId('interval-Cron'));
+    await fireEvent.changeText(screen.getByTestId('schedule-cron'), '0 7 * * 1-5');
+    await fireEvent.press(screen.getByTestId('schedule-save'));
+    await waitFor(() => expect(server.count('POST /v1.0/api/schedules')).toBe(2));
+    expect(server.calls.filter((c) => c.key === 'POST /v1.0/api/schedules')[1].body).toMatchObject({ intervalType: 'Cron', cronExpression: '0 7 * * 1-5' });
+  });
+
+  it('turns automatic audio on for a topic beside its schedule', async () => {
+    const { server } = await renderSignedIn(<TopicWorkspace id="top_1" />, {
+      'GET /v1.0/api/topics/top_1': () => ({ body: detail }),
+      'GET /v1.0/api/schedules': () => page([]),
+      'PUT /v1.0/api/topics/top_1': (call) => ({ body: { ...detail.topic, ...call.body } }),
+    });
+    await waitFor(() => expect(screen.getByTestId('topic-tab-schedule')).toBeTruthy());
+    await fireEvent.press(screen.getByTestId('topic-tab-schedule'));
+    await waitFor(() => expect(screen.getByTestId('topic-audio-switch')).toBeTruthy());
+    expect(screen.getByTestId('topic-audio-switch').props.value).toBe(false);
+    await fireEvent(screen.getByTestId('topic-audio-switch'), 'valueChange', true);
+    await waitFor(() => expect(server.count('PUT /v1.0/api/topics/top_1')).toBe(1));
+    expect(server.calls.find((c) => c.key === 'PUT /v1.0/api/topics/top_1').body).toEqual({ audioEnabled: true });
+    await waitFor(() => expect(screen.getByTestId('topic-audio-switch').props.value).toBe(true));
+  });
 });
 
 describe('runs', () => {

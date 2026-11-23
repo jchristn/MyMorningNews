@@ -273,7 +273,11 @@ COALESCE(SUM(reasoningtokens), 0) AS reasoning FROM llmcalls WHERE runid IS NOT 
             }),
             new SchemaMigration(23, "In-app notifications and per-kind, per-channel notification preferences", Concat(
                 NotificationQueries.Schema,
-                NotificationPreferenceQueries.Schema))
+                NotificationPreferenceQueries.Schema)),
+            new SchemaMigration(24, "Automatic audio per topic", new List<string>
+            {
+                "ALTER TABLE topics ADD COLUMN IF NOT EXISTS audioenabled BOOLEAN NOT NULL DEFAULT FALSE"
+            })
         };
 
         private static List<string> Concat(params IReadOnlyList<string>[] parts)

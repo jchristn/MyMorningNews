@@ -120,7 +120,7 @@ Users without a plan assignment get `hosting.defaultPlanKey` (Free on the hosted
 | `runs.daily.max` | manual and scheduled runs, counted since midnight UTC |
 | `topics.max` | creating, duplicating, and starting the wizard for a topic |
 | `schedule.minIntervalMinutes` | saving a schedule (400 with a message naming the limit) |
-| `audio.enabled`, `audio.monthlyMinutes.max` | making audio for a briefing |
+| `audio.enabled`, `audio.monthlyMinutes.max` | making audio for a briefing, by hand (402 `CapReached`) or automatically for a topic, an edition, or a one-time request (the briefing is delivered without audio) |
 | `endpoints.custom` | adding a model endpoint (administrators are exempt) |
 
 `GET /v1.0/api/account/usage` returns the usage meter the dashboard and mobile app show. Edit plan values in the

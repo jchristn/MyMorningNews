@@ -31,7 +31,7 @@ email. Your feedback teaches it what you care about, and it keeps score on its o
   dig into next.
 - Delivers it your way. Briefings follow Markdown templates you can edit. Editions combine several topics on
   their own schedule. Output is Markdown and HTML, audio from a local Kokoro voice (or any OpenAI-compatible speech
-  service), a private podcast feed, an email after every run with rating links (each opens a short page where you
+  service) made automatically for any topic or edition you switch it on for, a private podcast feed, an email after every run with rating links (each opens a short page where you
   confirm the rating, so mail scanners that open links cannot rate for you), and push notifications to the mobile app.
 - Learns from you. Rate anything and say why, on the web, in email, in the app, or through MCP. The system turns
   feedback into preferences you approve, and the Insights pages chart relevance, accuracy, feedback, cost, and usage.

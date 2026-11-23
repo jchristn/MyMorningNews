@@ -37,7 +37,7 @@ namespace MyMorningNews.Server.Routes
                 .WithParameter(QueryParam("status", typeof(TopicStatusEnum))).WithParameter(QueryParam("isOneTime", typeof(bool))).WithParameter(QueryParam("userId", typeof(string)))));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, B, CreateAsync, null, openApiMetadata: Doc("Create a topic without the wizard", "Topics").WithRequestBody(Body<TopicUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, B + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read a topic with dimensions, constraints, and recipients", "Topics"));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, B + "/{id}", UpdateAsync, null, openApiMetadata: Doc("Update a topic", "Topics", "Only the fields sent are changed. voiceProfileId sets the voice that reads the topic's briefings aloud (an empty string goes back to the workspace default); voice names a speech server voice from GET /v1.0/api/voices/available instead, and the server reuses or creates the voice profile for it.").WithRequestBody(Body<TopicUpsertRequest>()));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, B + "/{id}", UpdateAsync, null, openApiMetadata: Doc("Update a topic", "Topics", "Only the fields sent are changed. audioEnabled turns every briefing of the topic's research runs into audio automatically. voiceProfileId sets the voice that reads the topic's briefings aloud (an empty string goes back to the workspace default); voice names a speech server voice from GET /v1.0/api/voices/available instead, and the server reuses or creates the voice profile for it.").WithRequestBody(Body<TopicUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, B + "/{id}", DeleteAsync, null, openApiMetadata: Doc("Delete a topic and everything under it", "Topics"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, B + "/{id}/pause", PauseAsync, null, openApiMetadata: Doc("Pause a topic", "Topics"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, B + "/{id}/resume", ResumeAsync, null, openApiMetadata: Doc("Resume a paused or archived topic", "Topics"));
@@ -186,6 +186,7 @@ namespace MyMorningNews.Server.Routes
             copy.DisplayThreshold = source.DisplayThreshold;
             copy.SeedQueries = new List<string>(source.SeedQueries);
             copy.VoiceProfileId = source.VoiceProfileId;
+            copy.AudioEnabled = source.AudioEnabled;
             copy = await Server.Database.Topics.UpdateAsync(copy, ctx.Token).ConfigureAwait(false);
             Dictionary<string, string> dimensionMap = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (TopicDimension d in await Server.Refinement.DimensionsAsync(source.TenantId, source.Id, ctx.Token).ConfigureAwait(false))
@@ -525,6 +526,7 @@ namespace MyMorningNews.Server.Routes
             if (req.WeightSource.HasValue) topic.WeightSource = req.WeightSource.Value < 0 ? null : Math.Clamp(req.WeightSource.Value, 0, 1);
             if (req.WeightRecency.HasValue) topic.WeightRecency = req.WeightRecency.Value < 0 ? null : Math.Clamp(req.WeightRecency.Value, 0, 1);
             if (req.AgenticSearch.HasValue) topic.AgenticSearch = req.AgenticSearch.Value;
+            if (req.AudioEnabled.HasValue) topic.AudioEnabled = req.AudioEnabled.Value;
             if (req.McpToolIds != null) topic.McpToolIds = req.McpToolIds.Where(i => !String.IsNullOrWhiteSpace(i) && i.Trim().StartsWith(IdPrefixes.McpServerTool, StringComparison.Ordinal)).Select(i => i.Trim()).Distinct(StringComparer.Ordinal).Take(100).ToList();
             if (req.VoiceProfileId != null) topic.VoiceProfileId = req.VoiceProfileId.Length == 0 ? null : req.VoiceProfileId;
             if (req.SeedQueries != null) topic.SeedQueries = req.SeedQueries.Where(q => !String.IsNullOrWhiteSpace(q)).Select(q => q.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).Take(20).ToList();

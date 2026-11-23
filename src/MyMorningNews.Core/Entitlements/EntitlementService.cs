@@ -218,6 +218,24 @@ namespace MyMorningNews.Core.Entitlements
         }
 
         /// <summary>
+        /// Refuse when the user's plan has no audio or this month's audio minutes are used up. Called before audio is
+        /// queued, whether someone asked for it or a topic, an edition, or a one-time request makes it automatically.
+        /// </summary>
+        /// <param name="tenantId">Tenant.</param>
+        /// <param name="userId">User the audio is made for.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="CapReachedException">Audio is not in the plan (audio.enabled) or the monthly minutes are used (audio.monthlyMinutes.max).</exception>
+        public async Task CheckAudioAsync(string tenantId, string userId, CancellationToken token = default)
+        {
+            UsageMeter meter = await MeterAsync(tenantId, userId, token).ConfigureAwait(false);
+            if (!meter.AudioEnabled) throw new CapReachedException("audio.enabled", "false", null, "Audio is not included in the " + meter.PlanName + " plan.");
+            if (meter.AudioMinutesMax.HasValue && meter.AudioMinutes >= meter.AudioMinutesMax.Value)
+                throw new CapReachedException("audio.monthlyMinutes.max", meter.AudioMinutesMax.Value.ToString(CultureInfo.InvariantCulture), meter.ResetUtc,
+                    "You have used this month's " + meter.AudioMinutesMax.Value + " audio minutes. They reset on " + meter.ResetUtc.ToString("MMMM d", CultureInfo.InvariantCulture) + ".");
+        }
+
+        /// <summary>
         /// The usage meter for a user.
         /// </summary>
         /// <param name="tenantId">Tenant.</param>

@@ -192,8 +192,9 @@ namespace MyMorningNews.Core.Services
         }
 
         /// <summary>
-        /// Turn the request into a recurring topic with the same brief, dimensions, and constraints. A schedule is added
-        /// to the topic separately (plan section 14).
+        /// Turn the request into a recurring topic with the same brief, dimensions, and constraints. A request that asked
+        /// for a Podcast keeps automatic audio (the topic's AudioEnabled). A schedule is added to the topic separately
+        /// (plan section 14).
         /// </summary>
         /// <param name="tenantId">Tenant.</param>
         /// <param name="requestId">Request.</param>
@@ -207,6 +208,7 @@ namespace MyMorningNews.Core.Services
             if (!String.IsNullOrEmpty(rr.ConvertedTopicId)) throw new ConflictException("This request is already a recurring topic.");
             Topic topic = await _Database.Topics.ReadAsync(tenantId, rr.TopicId!, token).ConfigureAwait(false) ?? throw new KeyNotFoundException("The request topic was not found.");
             topic.IsOneTime = false;
+            if (rr.Deliverables.Any(d => String.Equals(d, "Podcast", StringComparison.OrdinalIgnoreCase))) topic.AudioEnabled = true;
             topic.Status = TopicStatusEnum.Active;
             topic.LastRefinedUtc = DateTime.UtcNow;
             topic = await _Database.Topics.UpdateAsync(topic, token).ConfigureAwait(false);

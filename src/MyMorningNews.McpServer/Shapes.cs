@@ -27,7 +27,7 @@ namespace MyMorningNews.McpServer
             return new Dictionary<string, object?>(StringComparer.Ordinal)
             {
                 { "id", t.Id }, { "name", t.Name }, { "status", t.Status.ToString() }, { "description", t.Description }, { "isOneTime", t.IsOneTime },
-                { "emailOnRun", t.EmailOnRun }, { "lastRunUtc", Iso(t.LastRunUtc) }, { "createdUtc", Iso(t.CreatedUtc) }
+                { "emailOnRun", t.EmailOnRun }, { "audioEnabled", t.AudioEnabled }, { "lastRunUtc", Iso(t.LastRunUtc) }, { "createdUtc", Iso(t.CreatedUtc) }
             };
         }
 
@@ -41,9 +41,56 @@ namespace MyMorningNews.McpServer
                 return Schema.Object(Schema.Props(
                     "id", Schema.String("Topic ID (top_...)."), "name", Schema.String("Name."), "status", Schema.String(Names<TopicStatusEnum>()),
                     "description", Schema.NullableString("Description."), "isOneTime", Schema.Boolean("One-time report rather than recurring."),
-                    "emailOnRun", Schema.Boolean("Emails after every run."), "lastRunUtc", Schema.NullableString("Last run (UTC)."), "createdUtc", Schema.String("Created (UTC).")),
+                    "emailOnRun", Schema.Boolean("Emails after every run."), "audioEnabled", Schema.Boolean("Every run briefing is turned into audio automatically."), "lastRunUtc", Schema.NullableString("Last run (UTC)."), "createdUtc", Schema.String("Created (UTC).")),
                     new[] { "id", "name", "status" }, true);
             }
+        }
+
+        /// <summary>
+        /// Shape a schedule. Days of the week are spelled out (Sunday to Saturday) instead of the API's bit mask.
+        /// </summary>
+        /// <param name="s">Schedule.</param>
+        /// <returns>Projection.</returns>
+        public static Dictionary<string, object?> Schedule(Schedule s)
+        {
+            ArgumentNullException.ThrowIfNull(s);
+            return new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                { "id", s.Id }, { "ownerType", s.OwnerType.ToString() }, { "ownerId", s.OwnerId }, { "name", s.Name }, { "intervalType", s.IntervalType.ToString() },
+                { "intervalValue", s.IntervalValue }, { "minuteOffset", s.MinuteOffset }, { "daysOfWeek", DayNames(s.DaysOfWeekMask) }, { "daysOfMonth", s.DaysOfMonth },
+                { "timesOfDay", s.TimesOfDay }, { "cronExpression", s.CronExpression }, { "timeZone", s.TimeZone }, { "startUtc", Iso(s.StartUtc) }, { "endUtc", Iso(s.EndUtc) },
+                { "runOnceUtc", Iso(s.RunOnceUtc) }, { "enabled", s.Enabled }, { "missedRunPolicy", s.MissedRunPolicy.ToString() }, { "nextRunUtc", Iso(s.NextRunUtc) }, { "lastRunUtc", Iso(s.LastRunUtc) }
+            };
+        }
+
+        /// <summary>
+        /// Schedule schema.
+        /// </summary>
+        public static Dictionary<string, object> ScheduleSchema
+        {
+            get
+            {
+                return Schema.Object(Schema.Props(
+                    "id", Schema.String("Schedule ID (sch_...)."), "ownerType", Schema.String("Topic or Edition."), "ownerId", Schema.String("The topic or edition it runs."),
+                    "name", Schema.NullableString("Label."), "intervalType", Schema.String(Names<IntervalTypeEnum>()), "intervalValue", Schema.Integer("Interval size for the EveryN types.", 0, 100000),
+                    "minuteOffset", Schema.Integer("Minute past the hour for EveryNHours.", 0, 59), "daysOfWeek", Schema.Array("Days of the week it runs on.", Schema.String("Day name.")),
+                    "daysOfMonth", Schema.Array("Days of the month (-1 is the last day).", Schema.Integer("Day.", -1, 31)), "timesOfDay", Schema.Array("Local times of day (HH:mm).", Schema.String("HH:mm.")),
+                    "cronExpression", Schema.NullableString("Cron expression for the Cron type."), "timeZone", Schema.String("IANA time zone the times are in."),
+                    "startUtc", Schema.NullableString("Not before (UTC)."), "endUtc", Schema.NullableString("Not after (UTC)."), "runOnceUtc", Schema.NullableString("Run time for the Once type (UTC)."),
+                    "enabled", Schema.Boolean("Whether it fires."), "missedRunPolicy", Schema.String(Names<MissedRunPolicyEnum>()),
+                    "nextRunUtc", Schema.NullableString("Next run (UTC); null when nothing is due."), "lastRunUtc", Schema.NullableString("Last time it fired (UTC).")),
+                    new[] { "id", "ownerType", "ownerId", "intervalType", "enabled" }, true);
+            }
+        }
+
+        /// <summary>
+        /// Day names (Sunday first) for a days-of-week bit mask (Sunday 1, Monday 2, ... Saturday 64).
+        /// </summary>
+        /// <param name="mask">Bit mask.</param>
+        /// <returns>Day names.</returns>
+        public static List<string> DayNames(int mask)
+        {
+            return Enum.GetValues<DayOfWeek>().Where(d => (mask & (1 << (int)d)) != 0).Select(d => d.ToString()).ToList();
         }
 
         /// <summary>

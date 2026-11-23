@@ -102,6 +102,11 @@ namespace MyMorningNews.Core.Requests
         public bool? AgenticSearch { get; set; } = null;
 
         /// <summary>
+        /// Turn every briefing of this topic's research runs into audio automatically. May be null (unchanged; false on create).
+        /// </summary>
+        public bool? AudioEnabled { get; set; } = null;
+
+        /// <summary>
         /// MCP tool IDs (mct_...) agentic search may use; an empty list allows every enabled tool. Null leaves it.
         /// </summary>
         public List<string>? McpToolIds { get; set; } = null;

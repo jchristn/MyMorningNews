@@ -4629,6 +4629,13 @@
       "partialSuffix": "(einige Aufrufe ohne Preis)"
     }
   },
+  "topicAudio": {
+    "title": "Audio",
+    "label": "Audio automatisch erstellen",
+    "help": "Jedes Briefing aus den Recherchen dieses Themas wird zusätzlich als Audio erstellt, gelesen mit der Stimme des Themas. Audio zählt zu den Audiominuten Ihres Tarifs.",
+    "savedOn": "Jedes Briefing von {name} wird jetzt auch als Audio erstellt",
+    "savedOff": "Automatisches Audio ist für {name} ausgeschaltet"
+  },
   "topicVoice": {
     "title": "Stimme",
     "help": "Die Stimme, die die Briefings dieses Themas vorliest. Spielen Sie eine Probe ab, um jede Stimme zu hören.",

@@ -79,6 +79,7 @@ namespace MyMorningNews.McpServer
             List<McpTool> tools = new List<McpTool>();
             tools.AddRange(TopicTools.Build());
             tools.AddRange(TopicEditTools.Build());
+            tools.AddRange(ScheduleTools.Build());
             tools.AddRange(FindingTools.Build());
             tools.AddRange(BriefingTools.Build());
             tools.AddRange(OutcomeTools.Build());

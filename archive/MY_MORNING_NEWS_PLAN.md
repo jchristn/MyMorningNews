@@ -1,6 +1,6 @@
 # My Morning News: Implementation Plan
 
-Status: Draft for approval. Nothing below is implemented yet. All open questions are decided (section 30). Implementation is under way; section 32 logs progress.
+Status: Archived 2026-11-23. This is the original implementation plan, kept as a historical design record. It is no longer maintained: its checkboxes and the section 32 log stop at the date of archiving, and later work (automatic audio per topic, public share links, run and audio worker signalling, the hosted MCP route, and the mobile update gate and offline feedback queue) is described in `CHANGELOG.md` and the documentation, not here.
 
 Repository: https://github.com/jchristn/MyMorningNews
 Initial version: `0.1.0-alpha` (set once at creation; never changed afterward without explicit approval, per `VERSIONING.md`).

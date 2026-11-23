@@ -3,7 +3,7 @@
 What the My Morning News benchmark suite measures and why, how each number is computed, what we expected round 0 to
 show, and where the suite stands. The operator's guide is [`benchmarks/README.md`](benchmarks/README.md), the curated
 numbers are in [`benchmarks/RESULTS.md`](benchmarks/RESULTS.md), and the fixes the suite found are ranked in
-[`IMPROVEMENTS.md`](IMPROVEMENTS.md). This plan follows the family-wide `BENCHMARKING.md` requirements (plan section 28).
+[`archive/IMPROVEMENTS.md`](archive/IMPROVEMENTS.md) (archived). This plan follows the family-wide `BENCHMARKING.md` requirements (plan section 28).
 
 (c) 2026 Lattice AI LLC
 

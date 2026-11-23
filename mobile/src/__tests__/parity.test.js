@@ -5,7 +5,7 @@ const { checkParity, planRoutes } = require('../../scripts/parity');
 
 const root = path.join(__dirname, '..', '..');
 const manifest = JSON.parse(fs.readFileSync(path.join(root, 'parity.json'), 'utf8'));
-const planFile = path.join(root, '..', 'MY_MORNING_NEWS_PLAN.md');
+const planFile = path.join(root, '..', 'archive', 'MY_MORNING_NEWS_PLAN.md');
 const plan = fs.existsSync(planFile) ? planRoutes(fs.readFileSync(planFile, 'utf8')) : [];
 
 describe('parity with the dashboard', () => {

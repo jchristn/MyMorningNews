@@ -2,7 +2,7 @@
 
 The operator's guide to the benchmark suite: how to stand up the isolated stack, run each command, and read the
 results. The plan, metric definitions, and hypotheses are in [`../BENCHMARKING.md`](../BENCHMARKING.md). Curated
-numbers are in [`RESULTS.md`](RESULTS.md), and ranked fixes in [`../IMPROVEMENTS.md`](../IMPROVEMENTS.md).
+numbers are in [`RESULTS.md`](RESULTS.md), and ranked fixes in [`../archive/IMPROVEMENTS.md`](../archive/IMPROVEMENTS.md) (archived).
 
 (c) 2026 Lattice AI LLC
 

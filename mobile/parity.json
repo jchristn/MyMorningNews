@@ -1,5 +1,5 @@
 {
-  "comment": "Every dashboard route (MY_MORNING_NEWS_PLAN.md section 25.4, plus the sign-in and account routes of section 33.1) mapped to a mobile screen. Status: implemented (the screen exists and works against the server today), planned (the screen or its scaffold exists, and the named plan phase delivers the server routes it needs), or not-applicable (operator and administrator pages that stay on the web, with a reason). Screen paths are relative to src/. npm run parity:check enforces this; npm run parity:strict (before store submission) also fails on planned.",
+  "comment": "Every dashboard route (archive/MY_MORNING_NEWS_PLAN.md section 25.4, plus the sign-in and account routes of section 33.1) mapped to a mobile screen. Status: implemented (the screen exists and works against the server today), planned (the screen or its scaffold exists, and the named plan phase delivers the server routes it needs), or not-applicable (operator and administrator pages that stay on the web, with a reason). Screen paths are relative to src/. npm run parity:check enforces this; npm run parity:strict (before store submission) also fails on planned.",
   "routes": [
     {
       "route": "/login",

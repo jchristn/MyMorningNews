@@ -5,6 +5,8 @@ simplicity (size and risk). Each names the evidence that motivated it and, once 
 thing per round and compare against the previous round. Numbers are from `benchmarks/RESULTS.md`; definitions are in
 `BENCHMARKING.md`.
 
+Status: Archived 2026-11-23. Candidates 3, 6, and 7 were built (see `CHANGELOG.md`). Candidates 1, 2, 4, and 5 were dropped by the owner and are not planned. The tables below are left as they stood before that work.
+
 (c) 2026 Lattice AI LLC
 
 ## Done

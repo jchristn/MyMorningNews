@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Parity check (plan section 35.3): every dashboard route in MY_MORNING_NEWS_PLAN.md section 25.4 (plus the account
+ * Parity check (plan section 35.3): every dashboard route in archive/MY_MORNING_NEWS_PLAN.md section 25.4 (plus the account
  * routes of section 33.1) is mapped in parity.json to a mobile screen as `implemented`, `planned` (with the plan phase
  * that delivers it), or `not-applicable` (with a reason).
  *
@@ -15,7 +15,7 @@ const path = require('path');
 
 const STATUSES = ['implemented', 'planned', 'not-applicable'];
 const mobileRoot = path.resolve(__dirname, '..');
-const planPath = path.resolve(mobileRoot, '..', 'MY_MORNING_NEWS_PLAN.md');
+const planPath = path.resolve(mobileRoot, '..', 'archive', 'MY_MORNING_NEWS_PLAN.md');
 
 /** Dashboard routes from the section 25.4 route inventory table (aliases excluded). */
 function planRoutes(planText) {
@@ -79,7 +79,7 @@ if (require.main === module) {
   const strict = process.argv.includes('--strict');
   const manifest = JSON.parse(fs.readFileSync(path.join(mobileRoot, 'parity.json'), 'utf8'));
   const plan = fs.existsSync(planPath) ? planRoutes(fs.readFileSync(planPath, 'utf8')) : [];
-  if (!plan.length) console.log('MY_MORNING_NEWS_PLAN.md not found; checking the manifest only.');
+  if (!plan.length) console.log('archive/MY_MORNING_NEWS_PLAN.md not found; checking the manifest only.');
   const problems = checkParity(manifest, { strict, plan });
   const counts = summary(manifest);
   if (problems.length) {

@@ -11,8 +11,8 @@ email. Your feedback teaches it what you care about, and it keeps score on its o
 
 > **Status: alpha (`0.1.0-alpha`).** The self-hosted product is feature complete for its first release and covered by
 > automated tests. The hosted service at `app.mymorningnews.ai` and the iOS and Android store listings open once the
-> owner's launch steps are done ([`OWNER_ACTIONS.md`](OWNER_ACTIONS.md)). Progress is tracked in
-> [`MY_MORNING_NEWS_PLAN.md`](MY_MORNING_NEWS_PLAN.md), section 32.
+> owner's launch steps are done ([`mobile/OWNER_ACTIONS.md`](mobile/OWNER_ACTIONS.md) for the apps,
+> [`docs/HOSTING.md`](docs/HOSTING.md) for the service). Changes are recorded in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## What it does
 

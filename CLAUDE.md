@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Guidance for agents working in this repository. The authoritative design is `MY_MORNING_NEWS_PLAN.md`. Keep its phase checkboxes and the section 32 progress log current, and commit and push to `origin/main` at the end of each phase.
+Guidance for agents working in this repository. The original implementation plan is archived at `archive/MY_MORNING_NEWS_PLAN.md` as a historical design record; references below to "plan section N" point into it. It is no longer maintained, so do not update it. Record changes in `CHANGELOG.md`, keep the documentation current, and commit and push to `origin/main` when a piece of work is complete and verified.
 
 ## Product
 
@@ -15,7 +15,7 @@ My Morning News: multi-tenant research assistant. Topics are refined through an 
 - `dashboard/`: React 19 + Vite dashboard.
 - `sdk/{csharp,js,python}`: SDKs with test harnesses.
 - `docker/`: compose stack, settings, factory reset, observability config. `docker/hosted/` is the hosted-service overlay (plan section 33).
-- `mobile/`: Expo app for iOS and Android, phone and tablet (plan section 35, Phase 16). JavaScript and JSX; reuses `dashboard/src/shared/` through `sharing.config.js`.
+- `mobile/`: Expo app for iOS and Android, phone and tablet (plan section 35, Phase 16). JavaScript and JSX. `sharing.config.js` is the hook for reusing dashboard code, but its `sharedDirs` list is empty and `dashboard/src/shared/` does not exist yet, so nothing is shared today.
 - The marketing website is a separate repository: `~/Websites/mymorningnews.ai` (`jchristn/mymorningnews.ai`, plan section 34). Keep its claims in step with shipped features.
 
 ## Build and test

@@ -1,7 +1,7 @@
 # Benchmark results
 
 The curated record of the benchmark suite, round by round. Plan and definitions: [`../BENCHMARKING.md`](../BENCHMARKING.md).
-How to run and read: [`README.md`](README.md). Ranked fixes: [`../IMPROVEMENTS.md`](../IMPROVEMENTS.md).
+How to run and read: [`README.md`](README.md). Ranked fixes: [`../archive/IMPROVEMENTS.md`](../archive/IMPROVEMENTS.md) (archived).
 
 (c) 2026 Lattice AI LLC
 
@@ -19,7 +19,7 @@ never fetched, tracking-parameter URLs are fetched once, seen pages are skipped,
 caught, every scripted misquote is rejected and every genuine quote accepted, the scope guardrail leads every model
 request, and every end-to-end check passes (briefing, email with open, feedback, and unsubscribe links, audio, and
 feedback recorded from an email link). The product beats the no-product floor by a wide margin everywhere (synthetic
-overall 0.855 against 0.537). Two design-level weaknesses show up, and both are candidates in `IMPROVEMENTS.md`: the
+overall 0.855 against 0.537). Two design-level weaknesses show up, and both are candidates in `archive/IMPROVEMENTS.md`: the
 composite score's neutral components lift weak model judgments over the display threshold (the empty-briefing probe
 fails, and an item the model scored 24 out of 100 is shown), and a reworded update with a new date is shown as a new,
 unlinked finding because updates are only looked for among near duplicates.

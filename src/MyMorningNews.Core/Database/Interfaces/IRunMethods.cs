@@ -102,6 +102,20 @@ namespace MyMorningNews.Core.Database.Interfaces
         Task<List<Run>> ClaimQueuedAsync(DateTime nowUtc, DateTime lockedUntilUtc, int limit, string workerId, IReadOnlyCollection<string>? tenantIds = null, CancellationToken token = default);
 
         /// <summary>
+        /// Claim queued runs in queue order into the free run slots and mark them Running. The number of Running runs
+        /// (all tenants) is counted and the claim made as one step that only one caller performs at a time, across
+        /// connections and processes, so the total never passes <paramref name="maxRunning"/> and no slot is claimed twice.
+        /// </summary>
+        /// <param name="nowUtc">Current time (UTC).</param>
+        /// <param name="lockedUntilUtc">Lock expiry (UTC), renewed while the run executes.</param>
+        /// <param name="maxRunning">Most runs that may be Running at once, counting those already Running. Zero or less claims nothing. At most 100 runs are claimed per call.</param>
+        /// <param name="workerId">Claiming worker.</param>
+        /// <param name="tenantIds">Only claim runs of these tenants, or null for any tenant. Running runs of every tenant still count.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Claimed runs; empty when no slot is free or nothing is queued.</returns>
+        Task<List<Run>> ClaimQueuedWithinLimitAsync(DateTime nowUtc, DateTime lockedUntilUtc, int maxRunning, string workerId, IReadOnlyCollection<string>? tenantIds = null, CancellationToken token = default);
+
+        /// <summary>
         /// Number of runs currently Running across all tenants.
         /// </summary>
         /// <param name="token">Cancellation token.</param>

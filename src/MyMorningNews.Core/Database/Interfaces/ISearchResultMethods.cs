@@ -87,5 +87,18 @@ namespace MyMorningNews.Core.Database.Interfaces
         /// <param name="token">Cancellation token.</param>
         /// <returns>Count.</returns>
         Task<long> CountAsync(SearchResultFilter filter, CancellationToken token = default);
+
+        /// <summary>
+        /// Of the given canonical URL hashes, those a finished run of the topic already fetched: a result with the
+        /// Fetched disposition whose run is Completed or PartiallySucceeded and not a dry run. Pages fetched by a failed,
+        /// cancelled, or dry run do not count. The whole history of the topic is checked; there is no row limit.
+        /// </summary>
+        /// <param name="tenantId">Tenant identifier.</param>
+        /// <param name="topicId">Topic identifier.</param>
+        /// <param name="canonicalUrlHashes">Hashes to check. Null or empty returns an empty set.</param>
+        /// <param name="excludeRunId">Run whose own results are ignored (the run asking), or null.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The subset of the given hashes that count as seen.</returns>
+        Task<HashSet<string>> SeenUrlHashesAsync(string tenantId, string topicId, IEnumerable<string>? canonicalUrlHashes, string? excludeRunId, CancellationToken token = default);
     }
 }

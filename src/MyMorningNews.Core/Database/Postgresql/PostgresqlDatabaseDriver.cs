@@ -235,6 +235,53 @@ namespace MyMorningNews.Core.Database.Postgresql
             return total;
         }
 
+        /// <summary>
+        /// Run a query in a transaction that first takes a transaction-level advisory lock, so callers using the same key
+        /// run the query one at a time across every connection and process. The query starts after the lock is held, so
+        /// it sees everything earlier holders committed.
+        /// </summary>
+        /// <typeparam name="T">Row type.</typeparam>
+        /// <param name="lockKey">Advisory lock key.</param>
+        /// <param name="sql">SQL.</param>
+        /// <param name="map">Row mapper.</param>
+        /// <param name="args">Parameter values.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Mapped rows.</returns>
+        /// <exception cref="ArgumentNullException">sql, map, or args is null.</exception>
+        public async Task<List<T>> QueryWithAdvisoryLockAsync<T>(long lockKey, string sql, Func<NpgsqlDataReader, T> map, object?[] args, CancellationToken token = default)
+        {
+            ArgumentNullException.ThrowIfNull(sql);
+            ArgumentNullException.ThrowIfNull(map);
+            ArgumentNullException.ThrowIfNull(args);
+            NpgsqlDataSource source = RequireDataSource();
+            List<T> rows = new List<T>();
+            using (NpgsqlConnection conn = await source.OpenConnectionAsync(token).ConfigureAwait(false))
+            using (NpgsqlTransaction tx = await conn.BeginTransactionAsync(token).ConfigureAwait(false))
+            {
+                using (NpgsqlCommand lockCmd = new NpgsqlCommand("SELECT pg_advisory_xact_lock($1)", conn, tx))
+                {
+                    AddParameters(lockCmd, new object?[] { lockKey });
+                    await lockCmd.ExecuteNonQueryAsync(token).ConfigureAwait(false);
+                }
+
+                using (NpgsqlCommand cmd = new NpgsqlCommand(sql, conn, tx))
+                {
+                    AddParameters(cmd, args);
+                    using (NpgsqlDataReader reader = await cmd.ExecuteReaderAsync(token).ConfigureAwait(false))
+                    {
+                        while (await reader.ReadAsync(token).ConfigureAwait(false))
+                        {
+                            rows.Add(map(reader));
+                        }
+                    }
+                }
+
+                await tx.CommitAsync(token).ConfigureAwait(false);
+            }
+
+            return rows;
+        }
+
         /// <inheritdoc />
         public override async Task<DataTable> ExecuteQueryAsync(string query, bool isTransaction = false, CancellationToken token = default)
         {

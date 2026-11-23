@@ -323,6 +323,7 @@ namespace MyMorningNews.Server
                 _Capture?.Dispose();
                 _Push?.Dispose();
                 _Context?.Setup?.Dispose();
+                _Context?.Scheduling?.Dispose();
                 _Refinement?.Dispose();
                 _Search?.Dispose();
                 _Fetch?.Dispose();

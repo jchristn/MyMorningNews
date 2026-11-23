@@ -277,6 +277,10 @@ COALESCE(SUM(reasoningtokens), 0) AS reasoning FROM llmcalls WHERE runid IS NOT 
             new SchemaMigration(24, "Automatic audio per topic", new List<string>
             {
                 "ALTER TABLE topics ADD COLUMN IF NOT EXISTS audioenabled BOOLEAN NOT NULL DEFAULT FALSE"
+            }),
+            new SchemaMigration(25, "Exact-title lookup for duplicate detection", new List<string>
+            {
+                "CREATE INDEX IF NOT EXISTS ix_findings_topic_titlehash ON findings (tenantid, topicid, (md5(lower(btrim(title)))))"
             })
         };
 

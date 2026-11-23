@@ -36,6 +36,7 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "FullRun", "A run searches, filters, fetches, extracts verified findings, scores, synthesizes, predicts, suggests, and reviews", FullRunAsync),
                 Cases.Case(S, "RunCosts", "Each stage records its model calls, tokens, and cost; stages add up to the run; the cost report breaks it down by stage, model, and task", RunCostsAsync),
                 Cases.Case(S, "SecondRunDedupe", "A later run skips seen pages and marks a repeated finding as a duplicate", SecondRunAsync),
+                Cases.Case(S, "LargeHistory", "With more than 1,000 later fetched results and findings, an old page is still skipped as seen and an old finding still catches its duplicate", LargeHistoryAsync),
                 Cases.Case(S, "SeenOnlyAfterFinishedRuns", "Pages fetched by a dry run or a failed run are not skipped as seen by the next run", SeenOnlyAfterFinishedRunsAsync),
                 Cases.Case(S, "Failures", "A critical failure fails the run; an optional failure leaves it partially succeeded", FailuresAsync),
                 Cases.Case(S, "ResearchApi", "Findings, evidence, predictions, suggestions, and run details are served, private, and deleted with their topic", ApiAsync),
@@ -221,6 +222,64 @@ namespace Test.Shared.Suites
             Assert.True(third.Status == RunStatusEnum.Completed && third.DuplicateCount == 1 && third.NewFindingCount == 0, "same story on a new page is a duplicate (dup " + third.DuplicateCount + ", new " + third.NewFindingCount + ")");
             EnumerationResult<Finding> withDup = (await f.User.Client.GetAsync("/v1.0/api/findings?runId=" + third.Id + "&includeDuplicates=true", token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>();
             Assert.True(withDup.Items.Count == 1 && withDup.Items[0].IsDuplicate && withDup.Items[0].DuplicateOfFindingId != null, "duplicate saved and linked");
+        }
+
+        private static async Task LargeHistoryAsync(CancellationToken token)
+        {
+            PipelineFixture f = await FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
+            Run first = await RunAsync(f, token).ConfigureAwait(false);
+            Assert.True(first.Status == RunStatusEnum.Completed && first.NewFindingCount == 2, "first run: " + first.Status + " " + first.ErrorMessage);
+            MyMorningNews.Core.Database.DatabaseDriverBase db = f.Server.Context.Database;
+            string tenant = f.Topic.TenantId;
+            List<SearchResult> fetched = (await db.SearchResults.EnumerateAsync(new SearchResultFilter { TenantId = tenant, RunId = first.Id, Disposition = SearchResultDispositionEnum.Fetched, PageSize = 10 }, token).ConfigureAwait(false)).Items;
+            List<Finding> original = (await db.Findings.EnumerateAsync(new FindingFilter { TenantId = tenant, RunId = first.Id, PageSize = 10 }, token).ConfigureAwait(false)).Items;
+            Assert.True(fetched.Count == 2 && original.Count == 2, "two pages and two findings to bury");
+
+            // Bury them under 1,100 newer fetched results and 1,100 newer findings of the same topic and finished run:
+            // more history than the 1,000 rows the stages used to load, newest first.
+            const int extra = 1100;
+            for (int start = 0; start < extra; start += 20)
+            {
+                await Task.WhenAll(Enumerable.Range(start, Math.Min(20, extra - start)).Select(async i =>
+                {
+                    await db.SearchResults.CreateAsync(new SearchResult
+                    {
+                        TenantId = tenant, SearchQueryId = fetched[0].SearchQueryId, RunId = first.Id, TopicId = f.Topic.Id, Url = "http://history.test/page-" + i, CanonicalUrlHash = "history" + i.ToString("D8"),
+                        Rank = 1, Disposition = SearchResultDispositionEnum.Fetched
+                    }, token).ConfigureAwait(false);
+                    await db.Findings.CreateAsync(new Finding
+                    {
+                        TenantId = tenant, RunId = first.Id, TopicId = f.Topic.Id, UserId = f.Topic.UserId, Title = "Unrelated ledger entry number " + i, Summary = "Filler " + i + ".", Tier = FindingTierEnum.BelowThreshold
+                    }, token).ConfigureAwait(false);
+                })).ConfigureAwait(false);
+            }
+
+            Assert.True(await db.SearchResults.CountAsync(new SearchResultFilter { TenantId = tenant, TopicId = f.Topic.Id, Disposition = SearchResultDispositionEnum.Fetched }, token).ConfigureAwait(false) == extra + 2
+                && await db.Findings.CountAsync(new FindingFilter { TenantId = tenant, TopicId = f.Topic.Id }, token).ConfigureAwait(false) == extra + 2, "history is larger than 1,000 rows");
+
+            HashSet<string> seen = await db.SearchResults.SeenUrlHashesAsync(tenant, f.Topic.Id, fetched.Select(r => r.CanonicalUrlHash).Append("never-fetched"), "run_other", token).ConfigureAwait(false);
+            Assert.True(seen.Count == 2 && fetched.All(r => seen.Contains(r.CanonicalUrlHash)), "the oldest pages are still reported as seen (" + seen.Count + ")");
+            Assert.True((await db.SearchResults.SeenUrlHashesAsync(tenant, f.Topic.Id, fetched.Select(r => r.CanonicalUrlHash), first.Id, token).ConfigureAwait(false)).Count == 0, "a run's own results are not its history");
+
+            DateTime since = DateTime.UtcNow.AddDays(-90);
+            List<Finding> newest = await db.Findings.DedupeHistoryAsync(tenant, f.Topic.Id, since, null, 100, token).ConfigureAwait(false);
+            Assert.True(newest.Count == 100 && !newest.Any(x => original.Any(o => o.Id == x.Id)), "the comparison window is the newest findings up to the stated limit");
+            List<Finding> exact = await db.Findings.DedupeTitleMatchesAsync(tenant, f.Topic.Id, new[] { "  " + original[0].Title.ToUpperInvariant() + " ", "No such title" }, since, null, token).ConfigureAwait(false);
+            Assert.True(exact.Count == 1 && exact[0].Id == original[0].Id, "an exact title repeat is found beyond the window, ignoring case and spacing (" + exact.Count + ")");
+            Assert.True((await db.Findings.DedupeTitleMatchesAsync(tenant, f.Topic.Id, new[] { original[0].Title }, since, first.Id, token).ConfigureAwait(false)).Count == 0, "the excluded run's findings are left out");
+            List<Finding> many = await db.Findings.ReadManyAsync(tenant, original.Select(o => o.Id).Append("fnd_missing"), token).ConfigureAwait(false);
+            Assert.True(many.Count == 2 && (await db.Findings.ReadManyAsync("ten_other", original.Select(o => o.Id), token).ConfigureAwait(false)).Count == 0, "findings are read by identifier within the tenant");
+
+            Run second = await RunAsync(f, token).ConfigureAwait(false);
+            List<SearchResult> results = (await f.User.Client.GetAsync("/v1.0/api/runs/" + second.Id + "/results", token).ConfigureAwait(false)).Json<List<SearchResult>>();
+            Assert.True(second.Status == RunStatusEnum.Completed && second.NewFindingCount == 0 && results.Count(r => r.Disposition == SearchResultDispositionEnum.SkippedSeen) == 2 && !results.Any(r => r.Disposition == SearchResultDispositionEnum.Fetched),
+                "old pages are skipped as seen, not fetched again: " + second.Status + " " + String.Join(", ", results.Select(r => r.Disposition)));
+
+            (await f.User.Client.PutAsync("/v1.0/api/search-providers/" + f.Provider.Id, new { endpoint = StubModelServer.Shared.BaseUrl + "/pipeline2" }, token).ConfigureAwait(false)).Expect(200, "switch provider");
+            Run third = await RunAsync(f, token).ConfigureAwait(false);
+            Assert.True(third.Status == RunStatusEnum.Completed && third.DuplicateCount == 1 && third.NewFindingCount == 0, "the same story on a new page is still a duplicate of the old finding (dup " + third.DuplicateCount + ", new " + third.NewFindingCount + ")");
+            EnumerationResult<Finding> withDup = (await f.User.Client.GetAsync("/v1.0/api/findings?runId=" + third.Id + "&includeDuplicates=true", token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>();
+            Assert.True(withDup.Items.Count == 1 && withDup.Items[0].IsDuplicate && original.Any(o => o.Id == withDup.Items[0].DuplicateOfFindingId), "the duplicate is linked to the old finding");
         }
 
         private static async Task SeenOnlyAfterFinishedRunsAsync(CancellationToken token)

@@ -24,6 +24,8 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
     {
         #region Private-Members
 
+        private const long _ClaimLockKey = 7231959012L;
+
         private static readonly Dictionary<string, string> _SortColumns = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "status", "status" },
@@ -220,6 +222,20 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             List<object?> args = new List<object?> { DateTime.SpecifyKind(nowUtc, DateTimeKind.Utc), DateTime.SpecifyKind(lockedUntilUtc, DateTimeKind.Utc), Math.Clamp(limit, 1, 100), workerId ?? String.Empty };
             if (scoped) args.Add(tenantIds!.ToArray());
             return await QueryAsync(sql, Map, token, args.ToArray()).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task<List<Run>> ClaimQueuedWithinLimitAsync(DateTime nowUtc, DateTime lockedUntilUtc, int maxRunning, string workerId, IReadOnlyCollection<string>? tenantIds = null, CancellationToken token = default)
+        {
+            // Counting the running runs and claiming into the free slots happen under one advisory lock, so two claimers
+            // (in this process or another) can never both fill the same free slot.
+            bool scoped = tenantIds != null;
+            string sql = "UPDATE runs SET status = 'Running', startedutc = $1, lockeduntilutc = $2, workerid = $4, lastupdateutc = $1 WHERE id IN (SELECT id FROM runs WHERE status = 'Queued' " +
+                (scoped ? "AND tenantid = ANY($5) " : String.Empty) + "ORDER BY queuedutc FOR UPDATE SKIP LOCKED " +
+                "LIMIT (SELECT LEAST(100, GREATEST(0, $3::bigint - COUNT(*))) FROM runs WHERE status = 'Running')) RETURNING " + RunQueries.Columns;
+            List<object?> args = new List<object?> { DateTime.SpecifyKind(nowUtc, DateTimeKind.Utc), DateTime.SpecifyKind(lockedUntilUtc, DateTimeKind.Utc), (long)Math.Max(0, maxRunning), workerId ?? String.Empty };
+            if (scoped) args.Add(tenantIds!.ToArray());
+            return await Driver.QueryWithAdvisoryLockAsync(_ClaimLockKey, sql, Map, args.ToArray(), token).ConfigureAwait(false);
         }
 
         /// <inheritdoc />

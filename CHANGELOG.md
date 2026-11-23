@@ -6,6 +6,9 @@ All notable changes to this project are documented here. The project follows [Se
 
 ### Added
 
+- Usage time series: optional `groupBy` returns per-group totals (`groups`) and per-bucket rows (`rows`), with the largest groups kept and the rest combined as `(other)`. Buckets now include cache-write tokens, reasoning tokens, tool calls, and p95 time to first token. Dashboard Usage and Admin Usage group the trend chart by user, model, task, topic, provider, or prompt and choose the measure; the per-tenant trend uses a single grouped series.
+- Model endpoint and vault credential updates accept `clearFields` to set optional values back to null; the dashboard forms clear a value when its field is emptied.
+- A vault credential can be revealed by the user who created it as well as by administrators; every reveal is audited.
 - Automatic audio per topic: switch it on beside a topic's schedule (dashboard, mobile, `audioEnabled` in the API and SDKs, `update_topic` in MCP) and every run briefing is also made into audio in the topic's voice. Automatic audio for topics, editions, and one-time requests now respects the plan's audio limits; past them the briefing arrives without audio. Schema migration 24.
 - Schedules everywhere: the mobile schedule editor offers every interval type, a start and end, and the missed-run policy, and the MCP server gains `list_schedules`, `set_schedule`, and `remove_schedule`.
 - Run queue: a queued run starts as soon as a slot frees or a run is queued in the same server process, instead of waiting for the rest of the batch and the next poll. `Scheduler.RunPollSeconds` remains the fallback for runs queued by another process. The concurrency limit is counted and claimed in one locked step, so `Pipeline.MaxConcurrentRuns` holds exactly across workers and processes.
@@ -44,6 +47,7 @@ All notable changes to this project are documented here. The project follows [Se
 
 ### Changed
 
+- Usage by model is keyed by endpoint and model name, so the same model on two endpoints is reported separately (`key` is `<endpointId>|<model>`; `modelEndpointId` and `model` carry the parts). Clients that treated the key as the model name need to read `model` instead.
 - The implementation plan and the benchmark improvements list moved to `archive/` as historical records. The root `OWNER_ACTIONS.md` was removed; `mobile/OWNER_ACTIONS.md` and `docs/HOSTING.md` hold the remaining owner steps.
 - The universal link files still answer 404 `NotConfigured` until configured, and the message now names the setting to fill in. `docs/HOSTING.md` documents this, the MCP server, and the load balancer rules.
 - Ranking: `Pipeline.RelevanceGateScore` (off by default) stops feedback, novelty, source, and recency from lifting a finding the model scored below it. Under the benchmark stub, 50 empties the off-topic briefing but hides three relevant pages on the live dataset; a paid round decides the default.

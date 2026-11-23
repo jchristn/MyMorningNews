@@ -6,6 +6,7 @@ namespace MyMorningNews.Core.Services
     using System.Threading.Tasks;
     using MyMorningNews.Core.Database;
     using MyMorningNews.Core.Exceptions;
+    using MyMorningNews.Core.Helpers;
     using MyMorningNews.Core.Models;
     using MyMorningNews.Core.Requests;
     using MyMorningNews.Core.Responses;
@@ -94,6 +95,8 @@ namespace MyMorningNews.Core.Services
         {
             ArgumentNullException.ThrowIfNull(credential);
             ArgumentNullException.ThrowIfNull(req);
+            string? clearError = ClearFieldList.Validate(req);
+            if (clearError != null) throw new ArgumentException(clearError, nameof(req));
             if (!String.IsNullOrWhiteSpace(req.Name)) credential.Name = req.Name.Trim();
             if (req.Kind.HasValue) credential.Kind = req.Kind.Value;
             if (req.Provider.HasValue) credential.Provider = req.Provider.Value;
@@ -102,6 +105,10 @@ namespace MyMorningNews.Core.Services
             if (req.Description != null) credential.Description = req.Description;
             if (req.ExpiresUtc.HasValue) credential.ExpiresUtc = req.ExpiresUtc;
             if (req.Active.HasValue) credential.Active = req.Active.Value;
+            if (ClearFieldList.Contains(req.ClearFields, "headerName")) credential.HeaderName = null;
+            if (ClearFieldList.Contains(req.ClearFields, "username")) credential.Username = null;
+            if (ClearFieldList.Contains(req.ClearFields, "description")) credential.Description = null;
+            if (ClearFieldList.Contains(req.ClearFields, "expiresUtc")) credential.ExpiresUtc = null;
             if (!String.IsNullOrEmpty(req.Secret))
             {
                 credential.SecretEncrypted = _Protector.Protect(req.Secret);

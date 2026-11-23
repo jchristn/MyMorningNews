@@ -2880,7 +2880,7 @@
     },
     {
       "name": "Vault",
-      "description": "Encrypted storage for API keys and tokens that model endpoints, search providers, and voices use. Lists and reads never include the secret; reveal is rate limited and audited.",
+      "description": "Encrypted storage for API keys and tokens that model endpoints, search providers, and voices use. Lists and reads never include the secret; reveal is limited to the credential's creator and administrators, rate limited, and audited.",
       "item": [
         {
           "name": "List vault credentials (no secrets)",
@@ -3072,7 +3072,7 @@
                 }
               ]
             },
-            "description": "**Update or rotate a credential.**\n\n- Auth: `VaultCredential:Admin` (`VaultWrite`).\n- Response: VaultCredentialResponse\n- Status: 200 OK; 400 BadRequest, TenantRequired; 401 Unauthorized; 403 Forbidden; 404 NotFound\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#put-v10apivaultcredentialsid)",
+            "description": "**Update or rotate a credential.** Null or absent properties are unchanged. To remove an optional value, name it in clearFields (headerName, username, description, expiresUtc); naming a property there and giving it a value in the same request is refused, as is any other name.\n\n- Auth: `VaultCredential:Admin` (`VaultWrite`).\n- Response: VaultCredentialResponse\n- Notes: A null or absent property is left unchanged, and a new `secret` rotates the stored value. To remove an optional value, list its name in `clearFields`, for example `{\"clearFields\": [\"expiresUtc\"]}`. Names that can be cleared: `headerName`, `username`, `description`, `expiresUtc`. Any other name, or a name that the same request also gives a value, returns 400 `ValidationFailed`, as does clearing `headerName` on a `CustomHeader` secret or `username` on a `BasicAuth` secret.\n- Status: 200 OK; 400 BadRequest, ValidationFailed, TenantRequired; 401 Unauthorized; 403 Forbidden; 404 NotFound\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#put-v10apivaultcredentialsid)",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Anthropic production key\",\n  \"kind\": \"ApiKey\",\n  \"provider\": \"Anthropic\",\n  \"secret\": \"sk-ant-REPLACE-ME\",\n  \"description\": \"Used by the default chat endpoint.\",\n  \"active\": true\n}",
@@ -3110,7 +3110,7 @@
                 }
               ]
             },
-            "description": "**Reveal a stored secret (audited).**\n\n- Auth: `VaultCredential:Admin` (`VaultReveal`).\n- Response: VaultRevealResponse\n- Status: 200 OK; 400 TenantRequired; 401 Unauthorized; 403 Forbidden; 404 NotFound; 409 Conflict; 429 TooManyRequests\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#post-v10apivaultcredentialsidreveal)"
+            "description": "**Reveal a stored secret (audited).** Allowed for the user who created the credential and for administrators. Every reveal is recorded in the audit log and is rate limited per user.\n\n- Auth: `VaultCredential:Read` (`VaultRead`); `VaultCredential:Admin` (`VaultReveal`).\n- Response: VaultRevealResponse\n- Notes: Allowed for the user who created the credential (`createdByUserId`) and for administrators. Anyone else in the tenant gets 403, and a credential in another tenant is 404. Every reveal writes a `CredentialRevealed` audit event.\n- Status: 200 OK; 400 TenantRequired; 401 Unauthorized; 403 Forbidden; 404 NotFound; 409 Conflict; 429 TooManyRequests\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#post-v10apivaultcredentialsidreveal)"
           }
         },
         {
@@ -3598,7 +3598,7 @@
                 }
               ]
             },
-            "description": "**Update a model endpoint.**\n\n- Auth: `ModelEndpoint:Update` (`ModelWrite`).\n- Response: ModelEndpoint\n- Status: 200 OK; 400 BadRequest, ValidationFailed, TenantRequired; 401 Unauthorized; 403 Forbidden; 404 NotFound\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#put-v10apimodel-endpointsid)",
+            "description": "**Update a model endpoint.** Null or absent properties are unchanged. To set an optional value back to null, name it in clearFields (endpoint, credentialId, authMethod, model, embeddingModel, temperature, reasoningEffort, contextLength, inputCostPerMTok, outputCostPerMTok, cachedInputCostPerMTok, cacheWriteCostPerMTok); naming a property there and giving it a value in the same request is refused, as is any other name.\n\n- Auth: `ModelEndpoint:Update` (`ModelWrite`).\n- Response: ModelEndpoint\n- Notes: A null or absent property is left unchanged. To set an optional value back to null, list its name in `clearFields`, for example `{\"clearFields\": [\"temperature\", \"contextLength\"]}`. Names that can be cleared: `endpoint`, `credentialId`, `authMethod`, `model`, `embeddingModel`, `temperature`, `reasoningEffort`, `contextLength`, `inputCostPerMTok`, `outputCostPerMTok`, `cachedInputCostPerMTok`, `cacheWriteCostPerMTok`. Any other name, or a name that the same request also gives a value, returns 400 `ValidationFailed`. The usual rules still apply after clearing (an OpenAI-compatible endpoint needs a URL, a chat endpoint needs a model).\n- Status: 200 OK; 400 BadRequest, ValidationFailed, TenantRequired; 401 Unauthorized; 403 Forbidden; 404 NotFound\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#put-v10apimodel-endpointsid)",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Local Ollama\",\n  \"provider\": \"Ollama\",\n  \"endpoint\": \"http://127.0.0.1:12120\",\n  \"model\": \"llama3.1:8b\",\n  \"embeddingModel\": \"all-minilm\",\n  \"supportsChat\": true,\n  \"supportsEmbeddings\": true,\n  \"maxTokens\": 4096,\n  \"timeoutMs\": 120000,\n  \"active\": true\n}",
@@ -4132,7 +4132,7 @@
                 }
               ]
             },
-            "description": "**Model usage and cost report.** Query: groupBy (User, Model, Task, Provider, Topic, PromptKey, Day, Tenant), from, to, userId, topicId, modelEndpointId, task, includeDryRun, top, allTenants (global administrators).\n\n- Auth: `Usage:Read` (`UsageRead`).\n- Response: UsageReport\n- Status: 200 OK; 400 BadRequest, TenantRequired; 401 Unauthorized; 403 Forbidden\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#get-v10apiusagereport)"
+            "description": "**Model usage and cost report.** Query: groupBy (User, Model, Task, Provider, Topic, PromptKey, Day, Tenant), from, to, userId, topicId, modelEndpointId, task, includeDryRun, top, allTenants (global administrators). Grouping by Model keys each row by endpoint and model name (key is the endpoint identifier and the model name joined by a vertical bar; modelEndpointId and model carry the parts), so the same model name on two endpoints is reported separately.\n\n- Auth: `Usage:Read` (`UsageRead`).\n- Response: UsageReport\n- Notes: With `groupBy=Model` each row is one endpoint and model name: `key` is the endpoint ID and the model name joined by `|`, and `modelEndpointId` and `model` carry the two parts, so the same model name served by two endpoints is reported as two rows.\n- Status: 200 OK; 400 BadRequest, TenantRequired; 401 Unauthorized; 403 Forbidden\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#get-v10apiusagereport)"
           }
         },
         {
@@ -4191,7 +4191,7 @@
                 {
                   "key": "top",
                   "value": "1",
-                  "description": "integer. Most rows to return. Default 50, maximum 1000.",
+                  "description": "integer. Groups to keep when `groupBy` is set, highest cost first. Default 10, maximum 1000. The remainder is combined under the key `(other)`.",
                   "disabled": true
                 },
                 {
@@ -4209,7 +4209,7 @@
                 {
                   "key": "groupBy",
                   "value": "User",
-                  "description": "enum (`User`, `Model`, `Task`, `Provider`, `Topic`, `PromptKey`, `Day`, `Tenant`). Row grouping. Tenant needs allTenants=true.",
+                  "description": "enum (`User`, `Model`, `Task`, `Provider`, `Topic`, `PromptKey`, `Day`, `Tenant`). Optional. Adds `groups` (range totals per group) and `rows` on each bucket. `Day` is refused, and `Tenant` needs `allTenants=true`. Omit for a series that is not grouped.",
                   "disabled": true
                 },
                 {
@@ -4220,7 +4220,7 @@
                 }
               ]
             },
-            "description": "**Model usage and cost time series.** Query: from, to, bucketMinutes (default 1440), and the same filters as the report.\n\n- Auth: `Usage:Read` (`UsageRead`).\n- Response: UsageTimeseries\n- Status: 200 OK; 400 BadRequest, TenantRequired; 401 Unauthorized; 403 Forbidden\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#get-v10apiusagetimeseries)"
+            "description": "**Model usage and cost time series.** Query: from, to, bucketMinutes (default 1440), and the same filters as the report. Every bucket carries cache-write tokens, reasoning tokens, tool calls, and the 95th percentile time to first token. Optional groupBy (User, Model, Task, Provider, Topic, PromptKey, or Tenant with allTenants; Day is refused) adds groups (range totals per group, highest cost first) and a rows list on each bucket; top (default 10 for a grouped series) limits the groups and the remainder is combined under the key (other). Without groupBy the series is not grouped.\n\n- Auth: `Usage:Read` (`UsageRead`).\n- Response: UsageTimeseries\n- Notes: Each bucket's own fields cover every call in the bucket. With `groupBy`, `groups` lists the range totals per group (highest cost first, limited to `top`, the remainder under the key `(other)`) and each bucket's `rows` holds one row per group that had calls in that bucket, in the same order. `groupBy=Day` returns 400.\n- Status: 200 OK; 400 BadRequest, TenantRequired; 401 Unauthorized; 403 Forbidden\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#get-v10apiusagetimeseries)"
           }
         },
         {

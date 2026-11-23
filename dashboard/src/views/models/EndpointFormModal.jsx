@@ -72,10 +72,18 @@ export function validateEndpointForm(form, t) {
   return errors;
 }
 
-// The request body for create and update. Empty optional fields are omitted so the server keeps its value. An agent
-// CLI endpoint has no URL, no embeddings, and no temperature; apiKey carries whatever secret the sign-in method needs
-// (an API key, a subscription token, or a sign-in file's contents).
-export function endpointBody(form) {
+// Optional values the server clears to null only when named in clearFields (an omitted value means "unchanged").
+const CLEARABLE_FIELDS = ['temperature', 'reasoningEffort', 'contextLength', 'inputCostPerMTok', 'outputCostPerMTok', 'cachedInputCostPerMTok', 'cacheWriteCostPerMTok'];
+
+function hasValue(v) {
+  return v !== null && v !== undefined && v !== '';
+}
+
+// The request body for create and update. Empty optional fields are omitted so the server keeps its value; on an
+// update, an optional field the endpoint had a value for and the form now leaves empty is named in clearFields so the
+// server sets it back to null. An agent CLI endpoint has no URL, no embeddings, and no temperature; apiKey carries
+// whatever secret the sign-in method needs (an API key, a subscription token, or a sign-in file's contents).
+export function endpointBody(form, original) {
   const cli = isAgentCli(form.provider);
   const body = {
     name: form.name.trim(),
@@ -97,6 +105,10 @@ export function endpointBody(form) {
   else if (form.keyMode === 'new' && form.apiKey.trim()) body.apiKey = form.apiKey.trim();
   else if (form.keyMode === 'vault') body.credentialId = form.credentialId;
   else if (form.keyMode === 'none') body.credentialId = '';
+  if (original) {
+    const clearFields = CLEARABLE_FIELDS.filter((key) => hasValue(original[key]) && !hasValue(body[key]) && form[key] === '');
+    if (clearFields.length > 0) body.clearFields = clearFields;
+  }
   return body;
 }
 
@@ -170,7 +182,7 @@ export default function EndpointFormModal({ state, onClose, onSaved }) {
     setSaving(true);
     setSaveError(null);
     try {
-      const body = endpointBody(form);
+      const body = endpointBody(form, isEdit ? state.endpoint : null);
       const saved = isEdit ? await apiClient.updateModelEndpoint(state.endpoint.id, body) : await apiClient.createModelEndpoint(body);
       onSaved(saved, isEdit);
     } catch (err) {
@@ -353,6 +365,7 @@ export default function EndpointFormModal({ state, onClose, onSaved }) {
         <fieldset className="form-field wide">
           <legend className="field-label">{t('models.form.pricing')}</legend>
           <span className="field-help muted">{t('models.form.pricingHelp')}</span>
+          {isEdit ? <span className="field-help muted">{t('models.form.clearHint')}</span> : null}
           <div className="form-grid compact">
             {number('inputCostPerMTok', t('models.form.inputCost'))}
             {number('outputCostPerMTok', t('models.form.outputCost'))}

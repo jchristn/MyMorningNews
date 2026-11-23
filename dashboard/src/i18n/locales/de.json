@@ -1381,7 +1381,7 @@
     },
     "reveal": {
       "action": "Anzeigen",
-      "actionAdminOnly": "Anzeigen (nur Administratoren)",
+      "actionRestricted": "Anzeigen (nur Ersteller und Administratoren)",
       "confirmTitle": "Geheimnis anzeigen",
       "confirmMessage": "Den Klartext von {name} anzeigen? Er wird {seconds} Sekunden lang angezeigt und dann wieder verborgen.",
       "audited": "Anzeigen wird protokolliert: Wer welche Zugangsdaten von wo angezeigt hat, wird aufgezeichnet.",
@@ -1514,7 +1514,8 @@
       "signIn": "Anmeldung",
       "secretSource": "Herkunft des Geheimnisses",
       "howTo": "So erhalten Sie es",
-      "cliNotice": "Hiermit wird das Befehlszeilentool des Anbieters auf dem Server ausgeführt. Es beantwortet nur Chat-Prompts und hat daher keine URL, keine Werkzeugaufrufe und keine Embeddings."
+      "cliNotice": "Hiermit wird das Befehlszeilentool des Anbieters auf dem Server ausgeführt. Es beantwortet nur Chat-Prompts und hat daher keine URL, keine Werkzeugaufrufe und keine Embeddings.",
+      "clearHint": "Um einen optionalen Wert wie einen Preis, die Kontextlänge oder die Temperatur zu entfernen, leeren Sie das Feld und speichern Sie."
     },
     "test": {
       "title": "Modell testen",
@@ -1832,7 +1833,8 @@
       "system": "System",
       "noTopic": "Kein Thema",
       "none": "Keine",
-      "unknown": "Unbekannt"
+      "unknown": "Unbekannt",
+      "other": "Sonstige"
     },
     "columns": {
       "cost": "Kosten",
@@ -1863,8 +1865,6 @@
     },
     "charts": {
       "groupBy": "Gruppieren nach",
-      "costOverTime": "Kosten im Zeitverlauf",
-      "costOverTimeHelp": "Geschätzte Kosten pro Intervall, berechnet bei der Protokollierung jedes Aufrufs.",
       "costByUser": "Kosten nach Benutzer",
       "costByUserHelp": "Die 20 wichtigsten Benutzer und ihr Kostenanteil. Wählen Sie eine Zeile, um die Seite nach diesem Benutzer zu filtern.",
       "costByModel": "Kosten nach Modell",
@@ -1889,11 +1889,17 @@
       "costByTenant": "Kosten nach Mandant",
       "costByTenantHelp": "Alle Mandanten nach Kosten sortiert, mit ihrem Anteil an den Plattformkosten.",
       "tenantTrend": "Kosten nach Mandant im Zeitverlauf",
-      "tenantTrendHelp": "{count, plural, one {Der Zeitraum ist in # Intervall aufgeteilt.} other {Der Zeitraum ist in # Intervalle aufgeteilt.}} Die größten Mandanten werden gestapelt; alle übrigen werden zusammengefasst.",
-      "otherTenants": "Andere Mandanten",
-      "platformTrend": "Plattformkosten im Zeitverlauf",
+      "tenantTrendHelp": "Die größten Mandanten werden in jedem Intervall gestapelt; alle übrigen werden als Sonstige zusammengefasst.",
+      "platformTrend": "Plattformnutzung im Zeitverlauf",
       "costByModel": "Plattformkosten nach Modell",
       "breakdownHelp": "Alle Mandanten mit Token-Typen, Kostenanteil und Zeiten. CSV exportieren lädt diese Tabelle herunter."
+    },
+    "trend": {
+      "title": "Nutzung im Zeitverlauf",
+      "help": "Die gewählte Messgröße pro Intervall. Gruppieren Sie sie, um Benutzer, Modelle, Aufgaben, Themen, Anbieter oder Prompts zu vergleichen; die größten Gruppen werden gezeichnet, der Rest wird als Sonstige zusammengefasst.",
+      "none": "Keine Gruppierung",
+      "measure": "Messgröße",
+      "ttft": "Zeit bis zum ersten Token"
     }
   },
   "markdown": {

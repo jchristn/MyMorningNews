@@ -7,32 +7,19 @@ import useLocalStorage from '../hooks/useLocalStorage.js';
 import ChartCard from '../charts/ChartCard.jsx';
 import HorizontalBarChart from '../charts/HorizontalBarChart.jsx';
 import RankedBarTable from '../charts/RankedBarTable.jsx';
-import StackedColumnChart from '../charts/StackedColumnChart.jsx';
-import { computeUsageRange, splitRange, USAGE_RANGES } from '../charts/ranges.js';
+import { coarseBucketMinutes, computeUsageRange, USAGE_RANGES } from '../charts/ranges.js';
 import ErrorState from '../components/ErrorState.jsx';
 import LoadingState from '../components/LoadingState.jsx';
 import PageHeader from '../components/PageHeader.jsx';
-import { CostTrend, ExportCsvButton, RangeControl, UsageKpis, UsageTable } from './usage/UsageParts.jsx';
-import { cleanQuery, rowLabel, topRows } from './usage/usageData.js';
+import { ExportCsvButton, RangeControl, TrendControls, UsageKpis, UsageTable, UsageTrend } from './usage/UsageParts.jsx';
+import { cleanQuery, rowLabel, topRows, TREND_MEASURES, TREND_TOP } from './usage/usageData.js';
 
-// The per-tenant trend is built from one tenant-grouped report per window, because the time series has no grouping.
-export const TREND_WINDOWS = 12;
+// The per-tenant trend is a time series grouped by tenant: the top tenants stacked in at most TREND_COLUMNS columns,
+// with everyone else combined by the server.
+export const TREND_COLUMNS = 12;
 export const TREND_TENANTS = 6;
-const SERIES_COLORS = ['var(--chart-series-1)', 'var(--chart-series-2)', 'var(--chart-series-3)', 'var(--chart-series-5)', 'var(--chart-series-6)', 'var(--chart-series-7)', 'var(--chart-series-8)'];
-
-// Stack the top tenants (by total cost) per window, with everyone else folded into "other".
-export function tenantTrend(windows, topKeys) {
-  return windows.map((w) => {
-    const values = {};
-    let other = 0;
-    for (const row of (w.report && w.report.rows) || []) {
-      const cost = Number(row.costUsd) || 0;
-      if (topKeys.includes(row.key)) values[row.key] = (values[row.key] || 0) + cost;
-      else other += cost;
-    }
-    return { from: w.from, to: w.to, values, other };
-  });
-}
+// Groupings the platform trend offers; an empty value is a single line for the whole platform.
+export const PLATFORM_TREND_GROUPS = ['', 'Model', 'Provider', 'Task'];
 
 export default function AdminUsageView() {
   const { t } = useTranslation();
@@ -43,7 +30,11 @@ export default function AdminUsageView() {
   const [byTenant, setByTenant] = useState(null);
   const [byModel, setByModel] = useState(null);
   const [series, setSeries] = useState(null);
-  const [windows, setWindows] = useState(null);
+  const [tenantSeries, setTenantSeries] = useState(null);
+  const [storedGroup, setTrendGroup] = useLocalStorage('mymorningnews.adminUsage.trendGroup', '');
+  const [storedMeasure, setTrendMeasure] = useLocalStorage('mymorningnews.adminUsage.trendMeasure', 'cost');
+  const trendGroup = PLATFORM_TREND_GROUPS.includes(storedGroup) ? storedGroup : '';
+  const trendMeasure = TREND_MEASURES.includes(storedMeasure) ? storedMeasure : 'cost';
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const requestId = useRef(0);
@@ -56,41 +47,30 @@ export default function AdminUsageView() {
     setLoading(true);
     setError(null);
     try {
-      const parts = splitRange(r, TREND_WINDOWS);
-      const [tenants, models, timeseries, ...trend] = await Promise.all([
+      const [tenants, models, timeseries, byTenantOverTime] = await Promise.all([
         apiClient.getUsageReport({ ...base, groupBy: 'Tenant' }),
         apiClient.getUsageReport({ ...base, groupBy: 'Model' }),
-        apiClient.getUsageTimeseries({ ...base, bucketMinutes: r.bucketMinutes }),
-        ...parts.map((p) => apiClient.getUsageReport({ ...base, from: p.from, to: p.to, groupBy: 'Tenant', top: 1000 }))
+        apiClient.getUsageTimeseries(cleanQuery({ ...base, bucketMinutes: r.bucketMinutes, groupBy: trendGroup, top: trendGroup ? TREND_TOP : '' })),
+        apiClient.getUsageTimeseries({ ...base, bucketMinutes: coarseBucketMinutes(r, TREND_COLUMNS), groupBy: 'Tenant', top: TREND_TENANTS })
       ]);
       if (id !== requestId.current) return;
       setByTenant(tenants);
       setByModel(models);
       setSeries(timeseries);
-      setWindows(parts.map((p, i) => ({ ...p, report: trend[i] })));
+      setTenantSeries(byTenantOverTime);
     } catch (err) {
       if (id === requestId.current) setError(err);
     } finally {
       if (id === requestId.current) setLoading(false);
     }
-  }, [apiClient, range, includeDryRun]);
+  }, [apiClient, range, includeDryRun, trendGroup]);
 
   useEffect(() => {
     load();
   }, [load]);
 
   const tenantRows = topRows(byTenant, 50).map((r) => ({ key: r.key, label: rowLabel(r, 'Tenant', t), sublabel: r.label && r.label !== r.key ? r.key : undefined, value: Number(r.costUsd) || 0, share: r.costShare, calls: r.calls, tokens: r.totalTokens }));
-  const topKeys = topRows(byTenant, TREND_TENANTS).map((r) => r.key);
-  const trend = windows ? tenantTrend(windows, topKeys) : [];
-  const hasOther = trend.some((w) => w.other > 0);
-  const trendSeries = [
-    ...topKeys.map((key, i) => ({ key, label: rowLabel((byTenant.rows || []).find((r) => r.key === key) || { key }, 'Tenant', t), color: SERIES_COLORS[i % SERIES_COLORS.length], values: trend.map((w) => w.values[key] || 0) })),
-    ...(hasOther ? [{ key: '__other', label: t('usage.admin.otherTenants'), color: 'var(--chart-series-8)', values: trend.map((w) => w.other) }] : [])
-  ];
-  const windowLabel = (w) => {
-    const days = (new Date(w.to).getTime() - new Date(w.from).getTime()) / 86400000;
-    return days < 1 ? f.dateTime(w.from, { month: 'short', day: 'numeric', hour: 'numeric' }) : f.date(w.from, { month: 'short', day: 'numeric' });
-  };
+  const tenantGroups = (tenantSeries && tenantSeries.groups) || [];
 
   return (
     <div className="page">
@@ -133,21 +113,17 @@ export default function AdminUsageView() {
             />
           ) : null}
         </ChartCard>
-        <ChartCard title={t('usage.admin.tenantTrend')} subtitle={t('usage.admin.tenantTrendHelp', { count: TREND_WINDOWS })} className="wide">
-          {!windows && !error ? <LoadingState /> : null}
-          {windows && trendSeries.length === 0 ? <div className="chart-empty">{t('usage.noData')}</div> : null}
-          {windows && trendSeries.length > 0 ? (
-            <StackedColumnChart
-              ariaLabel={t('usage.admin.tenantTrend')}
-              formatValue={(v) => f.usd(v)}
-              categories={trend.map((w) => ({ key: w.from, label: windowLabel(w) }))}
-              series={trendSeries}
-            />
-          ) : null}
+        <ChartCard title={t('usage.admin.tenantTrend')} subtitle={t('usage.admin.tenantTrendHelp')} className="wide">
+          {!tenantSeries && !error ? <LoadingState /> : null}
+          {tenantSeries && tenantGroups.length === 0 ? <div className="chart-empty">{t('usage.noData')}</div> : null}
+          {tenantSeries && tenantGroups.length > 0 ? <UsageTrend series={tenantSeries} ariaLabel={t('usage.admin.tenantTrend')} measure="cost" stacked /> : null}
         </ChartCard>
-        <ChartCard title={t('usage.admin.platformTrend')}>
+        <ChartCard
+          title={t('usage.admin.platformTrend')}
+          controls={<TrendControls id="platform-trend" measure={trendMeasure} onMeasure={setTrendMeasure} groupBy={trendGroup} onGroupBy={setTrendGroup} groups={PLATFORM_TREND_GROUPS} />}
+        >
           {!series && !error ? <LoadingState /> : null}
-          <CostTrend series={series} ariaLabel={t('usage.admin.platformTrend')} />
+          <UsageTrend series={series} ariaLabel={t('usage.admin.platformTrend')} measure={trendMeasure} />
         </ChartCard>
         <ChartCard title={t('usage.admin.costByModel')}>
           {!byModel && !error ? <LoadingState /> : null}

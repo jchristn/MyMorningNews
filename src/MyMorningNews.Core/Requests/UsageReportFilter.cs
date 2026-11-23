@@ -60,6 +60,11 @@ namespace MyMorningNews.Core.Requests
         public UsageGroupByEnum GroupBy { get; set; } = UsageGroupByEnum.Model;
 
         /// <summary>
+        /// Grouping for the time series, or null (the default) for an ungrouped series. Day is not accepted, because the series is already bucketed by time.
+        /// </summary>
+        public UsageGroupByEnum? SeriesGroupBy { get; set; } = null;
+
+        /// <summary>
         /// Maximum rows. Default 50.
         /// </summary>
         public int Top { get; set; } = 50;

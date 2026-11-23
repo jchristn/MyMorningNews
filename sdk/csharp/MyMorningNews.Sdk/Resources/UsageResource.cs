@@ -34,7 +34,8 @@ namespace MyMorningNews.Sdk.Resources
         }
 
         /// <summary>
-        /// Usage and cost report.
+        /// Usage and cost report. Grouping by Model keys each row by endpoint and model name: Key is the endpoint identifier and the
+        /// model name joined by a vertical bar, and ModelEndpointId and Model carry the two parts.
         /// </summary>
         /// <param name="options">Filters, or null.</param>
         /// <param name="token">Cancellation token.</param>
@@ -46,7 +47,10 @@ namespace MyMorningNews.Sdk.Resources
         }
 
         /// <summary>
-        /// Usage and cost time series.
+        /// Usage and cost time series. Every bucket carries calls, failures, cost, token types (input, output, cached, cache-write,
+        /// reasoning), tool calls, and the average and 95th percentile time to first token. Set GroupBy on the options (any grouping
+        /// except Day; Tenant needs AllTenants) to also get Groups on the series and Rows on each bucket; Top (server default 10)
+        /// limits the groups and the rest are combined under the key (other).
         /// </summary>
         /// <param name="options">Filters, or null.</param>
         /// <param name="token">Cancellation token.</param>

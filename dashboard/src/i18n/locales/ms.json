@@ -1381,7 +1381,7 @@
     },
     "reveal": {
       "action": "Dedahkan",
-      "actionAdminOnly": "Dedahkan (pentadbir sahaja)",
+      "actionRestricted": "Dedahkan (pencipta dan pentadbir sahaja)",
       "confirmTitle": "Dedahkan rahsia",
       "confirmMessage": "Tunjukkan teks biasa {name}? Ia ditunjukkan selama {seconds} saat dan kemudian disembunyikan semula.",
       "audited": "Pendedahan diaudit: siapa yang mendedahkan kelayakan mana dan dari mana direkodkan.",
@@ -1514,7 +1514,8 @@
       "signIn": "Log masuk",
       "secretSource": "Sumber rahsia",
       "howTo": "Cara mendapatkannya",
-      "cliNotice": "Ini menjalankan alat baris perintah penyedia pada pelayan. Ia hanya menjawab gesaan sembang, jadi ia tiada URL, panggilan alat atau pembenaman."
+      "cliNotice": "Ini menjalankan alat baris perintah penyedia pada pelayan. Ia hanya menjawab gesaan sembang, jadi ia tiada URL, panggilan alat atau pembenaman.",
+      "clearHint": "Untuk membuang nilai pilihan, seperti harga, panjang konteks atau suhu, kosongkan medan dan simpan."
     },
     "test": {
       "title": "Uji model",
@@ -1832,7 +1833,8 @@
       "system": "Sistem",
       "noTopic": "Tiada topik",
       "none": "Tiada",
-      "unknown": "Tidak diketahui"
+      "unknown": "Tidak diketahui",
+      "other": "Lain-lain"
     },
     "columns": {
       "cost": "Kos",
@@ -1863,8 +1865,6 @@
     },
     "charts": {
       "groupBy": "Kumpulkan mengikut",
-      "costOverTime": "Kos mengikut masa",
-      "costOverTimeHelp": "Anggaran kos bagi setiap baldi, dikira semasa setiap panggilan direkodkan.",
       "costByUser": "Kos mengikut pengguna",
       "costByUserHelp": "20 pengguna teratas dan bahagian kos mereka. Pilih baris untuk menapis halaman kepada pengguna itu.",
       "costByModel": "Kos mengikut model",
@@ -1889,11 +1889,17 @@
       "costByTenant": "Kos mengikut penyewa",
       "costByTenantHelp": "Setiap penyewa disusun mengikut kos, dengan bahagiannya daripada kos platform.",
       "tenantTrend": "Kos mengikut penyewa dari semasa ke semasa",
-      "tenantTrendHelp": "{count, plural, other {Julat dibahagikan kepada # tetingkap.}} Penyewa teratas disusun bertindan; selebihnya dikumpulkan.",
-      "otherTenants": "Penyewa lain",
-      "platformTrend": "Kos platform dari semasa ke semasa",
+      "tenantTrendHelp": "Penyewa teratas disusun bertindan dalam setiap baldi; selebihnya digabungkan sebagai Lain-lain.",
+      "platformTrend": "Penggunaan platform dari semasa ke semasa",
       "costByModel": "Kos platform mengikut model",
       "breakdownHelp": "Setiap penyewa dengan jenis token, bahagian kos dan masa. Eksport CSV memuat turun jadual ini."
+    },
+    "trend": {
+      "title": "Penggunaan mengikut masa",
+      "help": "Ukuran yang dipilih bagi setiap baldi. Kumpulkan untuk membandingkan pengguna, model, tugas, topik, pembekal atau prompt; kumpulan terbesar dilukis dan selebihnya digabungkan sebagai Lain-lain.",
+      "none": "Tanpa pengumpulan",
+      "measure": "Ukuran",
+      "ttft": "Masa ke token pertama"
     }
   },
   "markdown": {

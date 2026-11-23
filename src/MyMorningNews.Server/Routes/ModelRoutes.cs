@@ -33,7 +33,7 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, e, ListAsync, null, openApiMetadata: Paged(Doc("List model endpoints", "Models").WithParameter(QueryParam("active", typeof(bool))).WithParameter(QueryParam("supportsChat", typeof(bool))).WithParameter(QueryParam("supportsEmbeddings", typeof(bool))).WithParameter(QueryParam("provider", typeof(ModelProviderEnum)))));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, e, CreateAsync, null, openApiMetadata: Doc("Create a model endpoint", "Models").WithRequestBody(Body<ModelEndpointUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, e + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read a model endpoint", "Models"));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, e + "/{id}", UpdateAsync, null, openApiMetadata: Doc("Update a model endpoint", "Models").WithRequestBody(Body<ModelEndpointUpsertRequest>()));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, e + "/{id}", UpdateAsync, null, openApiMetadata: Doc("Update a model endpoint", "Models", "Null or absent properties are unchanged. To set an optional value back to null, name it in clearFields (endpoint, credentialId, authMethod, model, embeddingModel, temperature, reasoningEffort, contextLength, inputCostPerMTok, outputCostPerMTok, cachedInputCostPerMTok, cacheWriteCostPerMTok); naming a property there and giving it a value in the same request is refused, as is any other name.").WithRequestBody(Body<ModelEndpointUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, e + "/{id}", DeleteAsync, null, openApiMetadata: Doc("Delete a model endpoint", "Models"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, e + "/{id}/validate", ValidateAsync, null, openApiMetadata: Doc("Validate connectivity, tool support, and embeddings", "Models"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, e + "/{id}/models", ModelsAsync, null, openApiMetadata: Doc("List models offered by an endpoint", "Models"));
@@ -138,6 +138,9 @@ namespace MyMorningNews.Server.Routes
 
         private async Task<string?> ApplyAsync(ModelEndpoint e, ModelEndpointUpsertRequest req, string tenantId, HttpContextBase ctx)
         {
+            string? clearError = MyMorningNews.Core.Helpers.ClearFieldList.Validate(req);
+            if (clearError != null) return clearError;
+            List<string>? clear = req.ClearFields;
             bool platform = String.Equals(e.CredentialId, MyMorningNews.Core.Services.VaultService.PlatformAnthropicCredentialId, StringComparison.Ordinal);
             bool admin = Context(ctx).IsAdmin;
             if (String.Equals(req.CredentialId, MyMorningNews.Core.Services.VaultService.PlatformAnthropicCredentialId, StringComparison.Ordinal) && !platform && !admin)
@@ -152,6 +155,7 @@ namespace MyMorningNews.Server.Routes
             bool cli = AgentCliService.IsAgentCli(e.Provider);
             if (cli && !Server.Models.AgentClis.Allowed()) return "Agent CLIs are turned off on this server (Models.AllowAgentClis). Use a provider API key instead.";
             if (cli && !Server.Models.AgentClis.AllowedFor(Context(ctx).IsAdmin)) return "On this server, only administrators can connect agent CLIs. Use a provider API key instead.";
+            if (Clears(clear, "authMethod")) e.AuthMethod = null;
             if (req.AuthMethod.HasValue)
             {
                 if (!ModelCredentials.Accepts(e.Provider, req.AuthMethod.Value)) return e.Provider + " cannot sign in with " + AgentCliService.Describe(req.AuthMethod.Value, e.Provider) + ".";
@@ -163,9 +167,10 @@ namespace MyMorningNews.Server.Routes
             }
 
             if (req.Endpoint != null) e.Endpoint = req.Endpoint.Trim().Length == 0 ? null : req.Endpoint.Trim();
-            if (cli) e.Endpoint = null;
+            if (cli || Clears(clear, "endpoint")) e.Endpoint = null;
             if (e.Endpoint != null && !Uri.TryCreate(e.Endpoint, UriKind.Absolute, out Uri? _)) return "Endpoint must be an absolute URL.";
             if (e.Endpoint != null) await MyMorningNews.Core.Security.NetworkGuard.EnsureAllowedAsync(e.Endpoint, ctx.Token).ConfigureAwait(false);
+            if (Clears(clear, "credentialId")) e.CredentialId = null;
             if (req.CredentialId != null)
             {
                 if (req.CredentialId.Length == 0) e.CredentialId = null;
@@ -205,6 +210,15 @@ namespace MyMorningNews.Server.Routes
             if (req.CachedInputCostPerMTok.HasValue) e.CachedInputCostPerMTok = req.CachedInputCostPerMTok;
             if (req.CacheWriteCostPerMTok.HasValue) e.CacheWriteCostPerMTok = req.CacheWriteCostPerMTok;
             if (req.Active.HasValue) e.Active = req.Active.Value;
+            if (Clears(clear, "model")) e.Model = null;
+            if (Clears(clear, "embeddingModel")) e.EmbeddingModel = null;
+            if (Clears(clear, "temperature")) e.Temperature = null;
+            if (Clears(clear, "reasoningEffort")) e.ReasoningEffort = null;
+            if (Clears(clear, "contextLength")) e.ContextLength = null;
+            if (Clears(clear, "inputCostPerMTok")) e.InputCostPerMTok = null;
+            if (Clears(clear, "outputCostPerMTok")) e.OutputCostPerMTok = null;
+            if (Clears(clear, "cachedInputCostPerMTok")) e.CachedInputCostPerMTok = null;
+            if (Clears(clear, "cacheWriteCostPerMTok")) e.CacheWriteCostPerMTok = null;
             if (cli)
             {
                 e.SupportsTools = false;
@@ -216,6 +230,11 @@ namespace MyMorningNews.Server.Routes
             if (e.SupportsChat && !cli && String.IsNullOrEmpty(e.Model)) return "A chat model is required when the endpoint serves chat.";
             if (e.SupportsEmbeddings && String.IsNullOrEmpty(e.EmbeddingModel)) return "An embedding model is required when the endpoint serves embeddings.";
             return null;
+        }
+
+        private static bool Clears(List<string>? clear, string field)
+        {
+            return MyMorningNews.Core.Helpers.ClearFieldList.Contains(clear, field);
         }
 
         private async Task DeleteAsync(HttpContextBase ctx)

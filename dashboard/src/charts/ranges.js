@@ -35,15 +35,10 @@ export function computeUsageRange(rangeId, now = Date.now()) {
   return { from: new Date(start).toISOString(), to: new Date(end).toISOString(), bucketMinutes: range.bucketMinutes, count: range.count };
 }
 
-// Split a range into at most maxBuckets equal windows (used where the server has no per-group time series).
-export function splitRange(range, maxBuckets) {
-  const start = new Date(range.from).getTime();
-  const end = new Date(range.to).getTime();
-  const n = Math.max(1, Math.min(maxBuckets, range.count || maxBuckets));
-  const size = (end - start) / n;
-  const out = [];
-  for (let i = 0; i < n; i++) out.push({ from: new Date(start + i * size).toISOString(), to: new Date(start + (i + 1) * size).toISOString() });
-  return out;
+// A bucket width that shows a usage range in at most maxColumns columns: a whole multiple of the range's own bucket.
+export function coarseBucketMinutes(range, maxColumns) {
+  const count = Math.max(1, Number(range.count) || 1);
+  return range.bucketMinutes * Math.max(1, Math.ceil(count / Math.max(1, maxColumns)));
 }
 
 // Fill any missing buckets with zeros (the server already gap-fills; this guards partial responses).

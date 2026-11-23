@@ -11,7 +11,7 @@ namespace MyMorningNews.Core.Enums
         User,
 
         /// <summary>
-        /// Model name.
+        /// Model, keyed by endpoint and model name so the same model name on two endpoints is reported separately.
         /// </summary>
         Model,
 

@@ -323,8 +323,8 @@ summarize your topics, treat fetched pages as data rather than instructions, and
 requests.
 
 API keys for models, search, email, speech, and MCP servers are stored once, encrypted, in
-the credential vault, and referenced by what uses them. Reads return only the last four characters; tenant administrators can reveal a
-value through an audited, rate-limited action.
+the credential vault, and referenced by what uses them. Reads return only the last four characters; the user who stored a value and tenant
+administrators can reveal it through an audited, rate-limited action.
 
 ## Email
 

@@ -253,6 +253,21 @@ describe('endpoint form', () => {
     expect(endpointBody({ ...base, provider: 'OpenAi', temperature: '0.2' }).temperature).toBe(0.2);
   });
 
+  it('names emptied optional values in clearFields on an update and never on a create', () => {
+    const original = { ...ANTHROPIC, provider: 'OpenAi', temperature: 0.4, reasoningEffort: 'High', contextLength: 8000, inputCostPerMTok: 1, outputCostPerMTok: 2, cachedInputCostPerMTok: null, cacheWriteCostPerMTok: 0.5 };
+    const form = formFromEndpoint(original);
+    expect(endpointBody(form, original).clearFields).toBeUndefined();
+    const emptied = { ...form, temperature: '', reasoningEffort: '', contextLength: '', inputCostPerMTok: '', cachedInputCostPerMTok: '', maxTokens: '' };
+    const body = endpointBody(emptied, original);
+    // Only values the endpoint had are cleared; required numbers and values that were already empty are left alone.
+    expect(body.clearFields).toEqual(['temperature', 'reasoningEffort', 'contextLength', 'inputCostPerMTok']);
+    expect(body).not.toHaveProperty('temperature');
+    expect(body).not.toHaveProperty('contextLength');
+    expect(body.outputCostPerMTok).toBe(2);
+    expect(body.cacheWriteCostPerMTok).toBe(0.5);
+    expect(endpointBody(emptied).clearFields).toBeUndefined();
+  });
+
   it('requires a base URL for OpenAI-compatible endpoints and a model for chat', () => {
     const form = { ...formFromEndpoint(null), name: 'Local', provider: 'OpenAiCompatible', model: '' };
     const errors = validateEndpointForm(form, t);

@@ -1389,6 +1389,13 @@ def t_usage(h: Harness) -> None:
     ts = h.client.usage.timeseries(bucket_minutes=1440)
     eq(ts.bucket_minutes, 1440, "bucketMinutes")
     check(len(ts.buckets or []) >= 1, "gap-filled buckets")
+    check(ts.group_by is None and not ts.groups, "a plain series is not grouped")
+    check(all(b.cache_write_tokens is not None and b.reasoning_tokens is not None and b.tool_calls is not None and b.rows == [] for b in ts.buckets), "bucket measures")
+    grouped = h.client.usage.timeseries(bucket_minutes=1440, group_by=mmn.UsageGroupBy.MODEL, top=5, include_dry_run=True)
+    eq(grouped.group_by, "Model", "grouped series")
+    check(all(g.key == "(other)" or ("|" in g.key and g.model is not None) for g in grouped.groups), "model groups are keyed by endpoint and model")
+    eq(sum(r.calls for b in grouped.buckets for r in b.rows), sum(b.calls for b in grouped.buckets), "rows add up to the buckets")
+    expect_error(BadRequestError, lambda: h.client.usage.timeseries(group_by="Day"))
 
 
 @case("LLM calls: list and get")
@@ -1419,6 +1426,12 @@ def t_endpoints(h: Harness) -> None:
     u = h.client.model_endpoints.update(e.id, name=h.name("ollama-2"), provider="Ollama", endpoint="http://host.docker.internal:11434",
                                         embedding_model="all-minilm", supports_chat=False, supports_embeddings=True, timeout_ms=6000)
     eq(u.timeout_ms, 6000, "timeoutMs")
+    priced = h.client.model_endpoints.update(e.id, context_length=4096, input_cost_per_m_tok=1.5)
+    check(priced.context_length == 4096 and priced.input_cost_per_m_tok == 1.5, "optional values set")
+    cleared = h.client.model_endpoints.update(e.id, clear_fields=["contextLength", "inputCostPerMTok"])
+    check(cleared.context_length is None and cleared.input_cost_per_m_tok is None and cleared.timeout_ms == 6000, "clear_fields sets optional values to null")
+    expect_error(BadRequestError, lambda: h.client.model_endpoints.update(e.id, clear_fields=["name"]))
+    expect_error(BadRequestError, lambda: h.client.model_endpoints.update(e.id, context_length=1, clear_fields=["contextLength"]))
     check(e.id in ids(h.client.model_endpoints.list(provider="Ollama", page_size=100)), "listed by provider")
     expect_error(BadRequestError, lambda: h.client.model_endpoints.create(provider="Ollama"))
     h.state["endpoint"] = e.id
@@ -1684,6 +1697,9 @@ def t_vault(h: Harness) -> None:
     eq(h.client.vault.get(c.id).id, c.id, "get")
     u = h.client.vault.update(c.id, name=h.name("secret"), kind="ApiKey", provider="Custom", description="harness, updated")
     eq(u.description, "harness, updated", "description")
+    no_description = h.client.vault.update(c.id, clear_fields=["description"])
+    check(no_description.description is None, "clear_fields removes the description")
+    expect_error(BadRequestError, lambda: h.client.vault.update(c.id, clear_fields=["secret"]))
     eq(h.client.vault.usage(c.id), [], "unused")
     check(c.id in ids(h.client.vault.list(provider="Custom")), "listed by provider")
     h.client.vault.delete(c.id)

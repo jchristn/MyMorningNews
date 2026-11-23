@@ -5,6 +5,7 @@ namespace MyMorningNews.Server.Routes
     using System.Threading.Tasks;
     using MyMorningNews.Core.Enums;
     using MyMorningNews.Core.Exceptions;
+    using MyMorningNews.Core.Helpers;
     using MyMorningNews.Core.Models;
     using MyMorningNews.Core.Requests;
     using MyMorningNews.Core.Responses;
@@ -42,9 +43,9 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, b, ListAsync, null, openApiMetadata: Paged(Doc("List vault credentials (no secrets)", "Vault").WithParameter(QueryParam("active", typeof(bool))).WithParameter(QueryParam("kind", typeof(VaultCredentialKindEnum))).WithParameter(QueryParam("provider", typeof(VaultProviderEnum)))));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b, CreateAsync, null, openApiMetadata: Doc("Store a credential", "Vault").WithRequestBody(Body<VaultCredentialUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read a credential (no secret)", "Vault"));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, b + "/{id}", UpdateAsync, null, openApiMetadata: Doc("Update or rotate a credential", "Vault").WithRequestBody(Body<VaultCredentialUpsertRequest>()));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, b + "/{id}", UpdateAsync, null, openApiMetadata: Doc("Update or rotate a credential", "Vault", "Null or absent properties are unchanged. To remove an optional value, name it in clearFields (headerName, username, description, expiresUtc); naming a property there and giving it a value in the same request is refused, as is any other name.").WithRequestBody(Body<VaultCredentialUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, b + "/{id}", DeleteAsync, null, openApiMetadata: Doc("Delete a credential", "Vault"));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/reveal", RevealAsync, null, openApiMetadata: Doc("Reveal a stored secret (audited)", "Vault"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/reveal", RevealAsync, null, openApiMetadata: Doc("Reveal a stored secret (audited)", "Vault", "Allowed for the user who created the credential and for administrators. Every reveal is recorded in the audit log and is rate limited per user."));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}/usage", UsageAsync, null, openApiMetadata: Doc("Records that use a credential", "Vault"));
         }
 
@@ -106,6 +107,16 @@ namespace MyMorningNews.Server.Routes
             if (req == null) return;
             VaultCredential? v = await LoadAsync(ctx).ConfigureAwait(false);
             if (v == null) return;
+            string? clearError = ClearFieldList.Validate(req);
+            VaultCredentialKindEnum kind = req.Kind ?? v.Kind;
+            if (clearError == null && kind == VaultCredentialKindEnum.CustomHeader && ClearFieldList.Contains(req.ClearFields, "headerName")) clearError = "clearFields: CustomHeader secrets need a header name.";
+            if (clearError == null && kind == VaultCredentialKindEnum.BasicAuth && ClearFieldList.Contains(req.ClearFields, "username")) clearError = "clearFields: BasicAuth secrets need a username.";
+            if (clearError != null)
+            {
+                await SendErrorAsync(ctx, 400, "ValidationFailed", clearError).ConfigureAwait(false);
+                return;
+            }
+
             v = await Server.Vault.UpdateAsync(v, req, ctx.Token).ConfigureAwait(false);
             if (!String.IsNullOrEmpty(req.Secret))
             {
@@ -141,16 +152,18 @@ namespace MyMorningNews.Server.Routes
 
         private async Task RevealAsync(HttpContextBase ctx)
         {
-            if (!await AuthorizeAsync(ctx, RequestTypeEnum.VaultReveal, Param(ctx, "id")).ConfigureAwait(false)) return;
+            if (!await AuthorizeAsync(ctx, RequestTypeEnum.VaultRead, Param(ctx, "id")).ConfigureAwait(false)) return;
             RequestContext rc = Context(ctx);
+            VaultCredential? v = await LoadAsync(ctx).ConfigureAwait(false);
+            if (v == null) return;
+            bool creator = !String.IsNullOrEmpty(rc.UserId) && String.Equals(rc.UserId, v.CreatedByUserId, StringComparison.Ordinal);
+            if (!creator && !await AuthorizeAsync(ctx, RequestTypeEnum.VaultReveal, v.Id).ConfigureAwait(false)) return;
             if (!_RevealLimiter.TryAcquire((rc.UserId ?? rc.Authentication.PrincipalId ?? "unknown") + "|reveal"))
             {
                 await SendErrorAsync(ctx, 429, "TooManyRequests", "Too many reveals. Try again in a minute.").ConfigureAwait(false);
                 return;
             }
 
-            VaultCredential? v = await LoadAsync(ctx).ConfigureAwait(false);
-            if (v == null) return;
             string secret;
             try
             {
@@ -162,7 +175,7 @@ namespace MyMorningNews.Server.Routes
                 return;
             }
 
-            await Server.Audit.RecordAsync(AuditEventTypeEnum.CredentialRevealed, rc, 200, "Vault credential " + v.Id + " (" + v.Name + ") revealed.", ctx.Token).ConfigureAwait(false);
+            await Server.Audit.RecordAsync(AuditEventTypeEnum.CredentialRevealed, rc, 200, "Vault credential " + v.Id + " (" + v.Name + ") revealed" + (creator ? " by its creator." : "."), ctx.Token).ConfigureAwait(false);
             ctx.Response.Headers.Set("Cache-Control", "no-store");
             ctx.Response.Headers.Set("Pragma", "no-cache");
             await SendJsonAsync(ctx, 200, new VaultRevealResponse { Id = v.Id, Name = v.Name, Secret = secret, Username = v.Username, RevealedUtc = DateTime.UtcNow }).ConfigureAwait(false);

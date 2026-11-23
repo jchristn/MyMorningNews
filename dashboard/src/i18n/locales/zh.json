@@ -1381,7 +1381,7 @@
     },
     "reveal": {
       "action": "显示",
-      "actionAdminOnly": "显示（仅限管理员）",
+      "actionRestricted": "显示（仅限创建者和管理员）",
       "confirmTitle": "显示密钥",
       "confirmMessage": "显示 {name} 的明文？它将显示 {seconds} 秒后再次隐藏。",
       "audited": "显示操作会被审计：记录谁从何处显示了哪个凭据。",
@@ -1514,7 +1514,8 @@
       "signIn": "登录方式",
       "secretSource": "机密信息来源",
       "howTo": "获取方法",
-      "cliNotice": "此方式会在服务器上运行提供商的命令行工具。它只回答聊天提示，因此没有 URL、工具调用或嵌入。"
+      "cliNotice": "此方式会在服务器上运行提供商的命令行工具。它只回答聊天提示，因此没有 URL、工具调用或嵌入。",
+      "clearHint": "要移除可选值（例如价格、上下文长度或温度），请清空该字段并保存。"
     },
     "test": {
       "title": "测试模型",
@@ -1832,7 +1833,8 @@
       "system": "系统",
       "noTopic": "无主题",
       "none": "无",
-      "unknown": "未知"
+      "unknown": "未知",
+      "other": "其他"
     },
     "columns": {
       "cost": "费用",
@@ -1863,8 +1865,6 @@
     },
     "charts": {
       "groupBy": "分组依据",
-      "costOverTime": "费用趋势",
-      "costOverTimeHelp": "每个时间段的估算费用，在记录每次调用时计算。",
       "costByUser": "按用户统计费用",
       "costByUserHelp": "前 20 名用户及其费用占比。选择一行可将页面筛选为该用户。",
       "costByModel": "按模型统计费用",
@@ -1889,11 +1889,17 @@
       "costByTenant": "按租户统计费用",
       "costByTenantHelp": "按费用排列的所有租户及其在平台费用中的占比。",
       "tenantTrend": "按租户统计的费用趋势",
-      "tenantTrendHelp": "{count, plural, other {时间范围分为 # 个窗口。}}费用最高的租户堆叠显示；其余租户合并为一组。",
-      "otherTenants": "其他租户",
-      "platformTrend": "平台费用趋势",
+      "tenantTrendHelp": "每个时间段内费用最高的租户堆叠显示；其余租户合并为“其他”。",
+      "platformTrend": "平台用量趋势",
       "costByModel": "按模型统计平台费用",
       "breakdownHelp": "所有租户的令牌类型、费用占比和耗时。“导出 CSV”下载此表。"
+    },
+    "trend": {
+      "title": "用量趋势",
+      "help": "每个时间段内所选指标的数值。可按用户、模型、任务、主题、提供商或提示词分组进行比较；图中绘制最大的几组，其余合并为“其他”。",
+      "none": "不分组",
+      "measure": "指标",
+      "ttft": "首个令牌耗时"
     }
   },
   "markdown": {

@@ -103,6 +103,7 @@ namespace MyMorningNews.Core.Security
             { RequestTypeEnum.McpServerWrite, new RequiredPermission(ResourceTypeEnum.McpServer, OperationTypeEnum.Admin) },
             { RequestTypeEnum.VaultWrite, new RequiredPermission(ResourceTypeEnum.VaultCredential, OperationTypeEnum.Admin) },
             { RequestTypeEnum.VaultDelete, new RequiredPermission(ResourceTypeEnum.VaultCredential, OperationTypeEnum.Admin) },
+            // The reveal route also lets the credential's creator through with VaultRead; everyone else needs Admin.
             { RequestTypeEnum.VaultReveal, new RequiredPermission(ResourceTypeEnum.VaultCredential, OperationTypeEnum.Admin) },
             { RequestTypeEnum.ModelRead, new RequiredPermission(ResourceTypeEnum.ModelEndpoint, OperationTypeEnum.Read) },
             { RequestTypeEnum.ModelWrite, new RequiredPermission(ResourceTypeEnum.ModelEndpoint, OperationTypeEnum.Update) },

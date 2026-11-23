@@ -429,7 +429,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [Audit](#audit) | 4 | Security and administration events: sign-ins, denials, credential use, settings changes, vault reveals. |
 | [Request History](#request-history) | 5 | Captured REST requests with headers and bodies, for troubleshooting. Retention is set by RequestHistory.RetentionDays. |
 | [Settings](#settings) | 4 | Server settings. Secrets come back masked as ******** and a masked or empty secret is left unchanged on update. Some settings take effect only after a restart. |
-| [Vault](#vault) | 7 | Encrypted storage for API keys and tokens that model endpoints, search providers, and voices use. Lists and reads never include the secret; reveal is rate limited and audited. |
+| [Vault](#vault) | 7 | Encrypted storage for API keys and tokens that model endpoints, search providers, and voices use. Lists and reads never include the secret; reveal is limited to the credential's creator and administrators, rate limited, and audited. |
 | [Models](#models) | 13 | Model endpoints (Anthropic, OpenAI, Gemini, xAI, Ollama, compatible servers, and the agent CLIs in the server image: Claude Code, Codex, Gemini CLI, and Mux), task role assignments, and the accounting record of every model call. |
 | [Setup](#setup) | 5 | What the workspace still needs before people can use it (a chat model with a working key, and web search; embeddings and email are optional) and live checks that prove it. Until every required check is Ready, refinement sessions and research requests answer 409 SetupRequired. Options lists the model providers and how each signs in; connect stores the sign-in and points the chat tasks at the endpoint. Verify, options, connect, and model-key are for administrators. |
 | [Usage](#usage) | 3 | Model usage and cost, grouped or bucketed over time. Members see their own; administrators can see the tenant, and global administrators every tenant. |
@@ -2330,7 +2330,7 @@ curl -s "http://127.0.0.1:12100/v1.0/api/server-info" \
 
 ## Vault
 
-Encrypted storage for API keys and tokens that model endpoints, search providers, and voices use. Lists and reads never include the secret; reveal is rate limited and audited.
+Encrypted storage for API keys and tokens that model endpoints, search providers, and voices use. Lists and reads never include the secret; reveal is limited to the credential's creator and administrators, rate limited, and audited.
 
 | Method | Path | Summary |
 |---|---|---|
@@ -2428,10 +2428,11 @@ curl -s "http://127.0.0.1:12100/v1.0/api/vault/credentials/vlt_mwpf0312_Er2tY5uI
 
 ### PUT /v1.0/api/vault/credentials/{id}
 
-**Update or rotate a credential.**
+**Update or rotate a credential.** Null or absent properties are unchanged. To remove an optional value, name it in clearFields (headerName, username, description, expiresUtc); naming a property there and giving it a value in the same request is refused, as is any other name.
 
 - Auth: `VaultCredential:Admin` (`VaultWrite`).
 - Response: [`VaultCredentialResponse`](#vaultcredentialresponse)
+- Notes: A null or absent property is left unchanged, and a new `secret` rotates the stored value. To remove an optional value, list its name in `clearFields`, for example `{"clearFields": ["expiresUtc"]}`. Names that can be cleared: `headerName`, `username`, `description`, `expiresUtc`. Any other name, or a name that the same request also gives a value, returns 400 `ValidationFailed`, as does clearing `headerName` on a `CustomHeader` secret or `username` on a `BasicAuth` secret.
 
 | Path parameter | Type | Postman variable |
 |---|---|---|
@@ -2453,7 +2454,7 @@ Request body: [`VaultCredentialUpsertRequest`](#vaultcredentialupsertrequest).
 | Status | Meaning |
 |---|---|
 | 200 | OK |
-| 400 | Bad Request: `BadRequest`, `TenantRequired` |
+| 400 | Bad Request: `BadRequest`, `ValidationFailed`, `TenantRequired` |
 | 401 | Unauthorized |
 | 403 | Forbidden |
 | 404 | Not Found |
@@ -2490,10 +2491,11 @@ curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/vault/credentials/vlt_mwpf031
 
 ### POST /v1.0/api/vault/credentials/{id}/reveal
 
-**Reveal a stored secret (audited).**
+**Reveal a stored secret (audited).** Allowed for the user who created the credential and for administrators. Every reveal is recorded in the audit log and is rate limited per user.
 
-- Auth: `VaultCredential:Admin` (`VaultReveal`).
+- Auth: `VaultCredential:Read` (`VaultRead`); `VaultCredential:Admin` (`VaultReveal`).
 - Response: [`VaultRevealResponse`](#vaultrevealresponse)
+- Notes: Allowed for the user who created the credential (`createdByUserId`) and for administrators. Anyone else in the tenant gets 403, and a credential in another tenant is 404. Every reveal writes a `CredentialRevealed` audit event.
 
 | Path parameter | Type | Postman variable |
 |---|---|---|
@@ -2742,10 +2744,11 @@ curl -s "http://127.0.0.1:12100/v1.0/api/model-endpoints/mdl_mwpee2b8_Nm4qW7eR0t
 
 ### PUT /v1.0/api/model-endpoints/{id}
 
-**Update a model endpoint.**
+**Update a model endpoint.** Null or absent properties are unchanged. To set an optional value back to null, name it in clearFields (endpoint, credentialId, authMethod, model, embeddingModel, temperature, reasoningEffort, contextLength, inputCostPerMTok, outputCostPerMTok, cachedInputCostPerMTok, cacheWriteCostPerMTok); naming a property there and giving it a value in the same request is refused, as is any other name.
 
 - Auth: `ModelEndpoint:Update` (`ModelWrite`).
 - Response: [`ModelEndpoint`](#modelendpoint)
+- Notes: A null or absent property is left unchanged. To set an optional value back to null, list its name in `clearFields`, for example `{"clearFields": ["temperature", "contextLength"]}`. Names that can be cleared: `endpoint`, `credentialId`, `authMethod`, `model`, `embeddingModel`, `temperature`, `reasoningEffort`, `contextLength`, `inputCostPerMTok`, `outputCostPerMTok`, `cachedInputCostPerMTok`, `cacheWriteCostPerMTok`. Any other name, or a name that the same request also gives a value, returns 400 `ValidationFailed`. The usual rules still apply after clearing (an OpenAI-compatible endpoint needs a URL, a chat endpoint needs a model).
 
 | Path parameter | Type | Postman variable |
 |---|---|---|
@@ -3148,10 +3151,11 @@ Model usage and cost, grouped or bucketed over time. Members see their own; admi
 
 ### GET /v1.0/api/usage/report
 
-**Model usage and cost report.** Query: groupBy (User, Model, Task, Provider, Topic, PromptKey, Day, Tenant), from, to, userId, topicId, modelEndpointId, task, includeDryRun, top, allTenants (global administrators).
+**Model usage and cost report.** Query: groupBy (User, Model, Task, Provider, Topic, PromptKey, Day, Tenant), from, to, userId, topicId, modelEndpointId, task, includeDryRun, top, allTenants (global administrators). Grouping by Model keys each row by endpoint and model name (key is the endpoint identifier and the model name joined by a vertical bar; modelEndpointId and model carry the parts), so the same model name on two endpoints is reported separately.
 
 - Auth: `Usage:Read` (`UsageRead`).
 - Response: [`UsageReport`](#usagereport)
+- Notes: With `groupBy=Model` each row is one endpoint and model name: `key` is the endpoint ID and the model name joined by `|`, and `modelEndpointId` and `model` carry the two parts, so the same model name served by two endpoints is reported as two rows.
 
 | Query parameter | Type | Notes |
 |---|---|---|
@@ -3181,10 +3185,11 @@ curl -s "http://127.0.0.1:12100/v1.0/api/usage/report" \
 
 ### GET /v1.0/api/usage/timeseries
 
-**Model usage and cost time series.** Query: from, to, bucketMinutes (default 1440), and the same filters as the report.
+**Model usage and cost time series.** Query: from, to, bucketMinutes (default 1440), and the same filters as the report. Every bucket carries cache-write tokens, reasoning tokens, tool calls, and the 95th percentile time to first token. Optional groupBy (User, Model, Task, Provider, Topic, PromptKey, or Tenant with allTenants; Day is refused) adds groups (range totals per group, highest cost first) and a rows list on each bucket; top (default 10 for a grouped series) limits the groups and the remainder is combined under the key (other). Without groupBy the series is not grouped.
 
 - Auth: `Usage:Read` (`UsageRead`).
 - Response: [`UsageTimeseries`](#usagetimeseries)
+- Notes: Each bucket's own fields cover every call in the bucket. With `groupBy`, `groups` lists the range totals per group (highest cost first, limited to `top`, the remainder under the key `(other)`) and each bucket's `rows` holds one row per group that had calls in that bucket, in the same order. `groupBy=Day` returns 400.
 
 | Query parameter | Type | Notes |
 |---|---|---|
@@ -3194,10 +3199,10 @@ curl -s "http://127.0.0.1:12100/v1.0/api/usage/report" \
 | `topicId` | string | Only records for this topic. |
 | `modelEndpointId` | string | Only calls to this model endpoint. |
 | `includeDryRun` | boolean | Include dry runs and previews. |
-| `top` | integer | Most rows to return. Default 50, maximum 1000. |
+| `top` | integer | Groups to keep when `groupBy` is set, highest cost first. Default 10, maximum 1000. The remainder is combined under the key `(other)`. |
 | `bucketMinutes` | integer | Bucket width in minutes. Default 1440, maximum 43200. |
 | `allTenants` | boolean | Global administrators: true for every tenant. |
-| `groupBy` | enum (`User`, `Model`, `Task`, `Provider`, `Topic`, `PromptKey`, `Day`, `Tenant`) | Row grouping. Tenant needs allTenants=true. |
+| `groupBy` | enum (`User`, `Model`, `Task`, `Provider`, `Topic`, `PromptKey`, `Day`, `Tenant`) | Optional. Adds `groups` (range totals per group) and `rows` on each bucket. `Day` is refused, and `Tenant` needs `allTenants=true`. Omit for a series that is not grouped. |
 | `task` | enum (`Refinement`, `QueryPlanning`, `Extraction`, `Scoring`, `Synthesis`, `Prediction`, `Suggestion`, `Composition`, `PodcastScript`, `FeedbackAnalysis`, `Embedding`) | Model task. |
 
 | Status | Meaning |
@@ -12176,6 +12181,7 @@ Request body of [POST /v1.0/api/model-endpoints](#post-v10apimodel-endpoints), [
 | `cachedInputCostPerMTok` | number | Cached input (cache read) cost per million tokens. Null falls back to the input rate. |
 | `cacheWriteCostPerMTok` | number | Cache write cost per million tokens. Null falls back to the input rate. |
 | `active` | boolean | Active. |
+| `clearFields` | array of string | Names of optional properties to clear to null on update: endpoint, credentialId, authMethod, model, embeddingModel, temperature, reasoningEffort, contextLength, inputCostPerMTok, outputCostPerMTok, cachedInputCostPerMTok, cacheWriteCostPerMTok. Names are matched without regard to case. A null or absent property means "leave unchanged", so this list is the only way to set a number or enum back to null (an empty string also clears the text properties). Naming a property here and giving it a value in the same request is refused, as is any other name. Null or empty (the default) clears nothing. |
 
 #### ModelListItem
 
@@ -15149,8 +15155,13 @@ Model usage in one time bucket.
 | `inputTokens` | integer | Input tokens. |
 | `outputTokens` | integer | Output tokens. |
 | `cachedInputTokens` | integer | Cached input tokens. |
+| `cacheWriteTokens` | integer | Cache-write tokens. |
+| `reasoningTokens` | integer | Reasoning tokens. |
+| `toolCalls` | integer | Tool calls. |
 | `costUsd` | number | Cost in USD. |
 | `averageTimeToFirstTokenMs` | number | Average time to first token. |
+| `p95TimeToFirstTokenMs` | number | 95th percentile time to first token. Null when no call in the bucket streamed. |
+| `rows` | array of [`UsageRow`](#usagerow) | One row per group with calls in this bucket, in the same order as the series groups. Empty when the series is not grouped. The bucket's own fields always cover every call in the bucket, whatever the grouping. |
 
 #### UsageMeter
 
@@ -15196,8 +15207,10 @@ Aggregated model usage for one group.
 
 | Field | Type | Description |
 |---|---|---|
-| `key` | string | Group key (user ID, model, task, and so on). |
+| `key` | string | Group key (user ID, task, and so on). When grouping by Model the key is the endpoint identifier and the model name joined by a vertical bar, so two endpoints serving the same model name stay distinct. In a grouped time series, groups beyond the requested top are combined under the key (other). |
 | `label` | string | Display label (for example the user email). |
+| `modelEndpointId` | string | Model endpoint identifier. Set only when grouping by Model, where the key is the endpoint identifier and the model name joined by a vertical bar. Null for other groupings and for calls whose endpoint was deleted. |
+| `model` | string | Model name. Set only when grouping by Model; null for other groupings. |
 | `calls` | integer | Calls. |
 | `failures` | integer | Failed calls. |
 | `inputTokens` | integer | Input tokens. |
@@ -15224,6 +15237,8 @@ Returned by [GET /v1.0/api/usage/timeseries](#get-v10apiusagetimeseries).
 | `fromUtc` | date-time | Range start. |
 | `toUtc` | date-time | Range end. |
 | `bucketMinutes` | integer | Bucket width. |
+| `groupBy` | [`UsageGroupByEnum`](#usagegroupbyenum) | Grouping applied to the series, or null when the series is not grouped. |
+| `groups` | array of [`UsageRow`](#usagerow) | Range totals for each group, highest cost first, limited to the requested top; the remainder is combined into one row with the key (other), listed last. Empty when the series is not grouped. |
 | `buckets` | array of [`UsageBucket`](#usagebucket) | Buckets in ascending order, including empty ones. |
 
 #### UserCreateRequest
@@ -15386,6 +15401,7 @@ Request body of [POST /v1.0/api/vault/credentials](#post-v10apivaultcredentials)
 | `description` | string | Description. |
 | `expiresUtc` | date-time | Expiration. |
 | `active` | boolean | Active. |
+| `clearFields` | array of string | Names of optional properties to clear to null on update: headerName, username, description, expiresUtc. Names are matched without regard to case. A null or absent property means "leave unchanged", so this list is the only way to remove a value. Naming a property here and giving it a value in the same request is refused, as is any other name. Null or empty (the default) clears nothing. |
 
 #### VaultRevealResponse
 
@@ -16340,7 +16356,7 @@ Grouping for usage and cost reports.
 | Value | Description |
 |---|---|
 | `User` | Attributed user. |
-| `Model` | Model name. |
+| `Model` | Model, keyed by endpoint and model name so the same model name on two endpoints is reported separately. |
 | `Task` | Task role. |
 | `Provider` | Provider. |
 | `Topic` | Topic. |

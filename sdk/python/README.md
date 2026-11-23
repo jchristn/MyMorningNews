@@ -372,6 +372,10 @@ client.analytics.relevance(topic_id=tid, from_="2026-11-01T00:00:00Z")
 client.analytics.accuracy(); client.analytics.reasons()
 client.analytics.suggestions(); client.analytics.quality()
 client.usage.me(); client.usage.report(group_by="Model"); client.usage.timeseries(bucket_minutes=60)
+# Model rows are per endpoint: key is "<endpoint id>|<model>", with model_endpoint_id, model, and a label naming the endpoint.
+# Buckets carry cache_write_tokens, reasoning_tokens, tool_calls, and p95_time_to_first_token_ms.
+series = client.usage.timeseries(group_by="Task", top=5)   # any grouping except Day
+series.groups; series.buckets[0].rows                      # range totals per group ("(other)" for the rest); rows per bucket
 client.llm_calls.list(run_id=run_id); client.llm_calls.get(call_id)
 ```
 
@@ -380,6 +384,7 @@ client.llm_calls.list(run_id=run_id); client.llm_calls.get(call_id)
 ```python
 ep = client.model_endpoints.create(name="Local Ollama", provider="Ollama", endpoint="http://127.0.0.1:12120",
                                    embedding_model="all-minilm", supports_embeddings=True)
+client.model_endpoints.update(ep.id, clear_fields=["temperature", "contextLength"])   # omitted fields are unchanged; clear_fields sets optional values to null
 client.model_endpoints.validate(ep.id); client.model_endpoints.models(ep.id)   # ModelValidation.succeeded; ModelEndpoint.last_validation_succeeded records it
 client.model_endpoints.test(chat_endpoint_id, prompt="Say ok.")       # may spend tokens
 client.model_assignments.set(task="Scoring", topic_id=tid, model_endpoint_id=ep.id)
@@ -401,6 +406,7 @@ client.topics.update(topic_id, voice="bf_emma")  # or voice_profile_id=..., and 
 ```python
 cred = client.vault.create(name="Tavily", kind="ApiKey", provider="Tavily", secret="...")   # never returned
 client.vault.update(cred.id, secret="rotated"); client.vault.usage(cred.id)
+client.vault.update(cred.id, clear_fields=["expiresUtc", "description"])   # remove optional values (also headerName, username)
 
 d = client.devices.register("ExponentPushToken[...]", "ios", name="Phone")
 client.devices.test(d.id); client.devices.delete(d.id)

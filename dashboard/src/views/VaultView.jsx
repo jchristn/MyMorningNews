@@ -26,6 +26,25 @@ export const REVEAL_SECONDS = 30;
 
 const EMPTY = { name: '', kind: 'ApiKey', provider: 'Custom', headerName: '', username: '', secret: '', description: '', expiresUtc: '', active: true };
 
+// The update body for the edit form. A value the credential had and the form now leaves empty (or that its kind no
+// longer uses) is named in clearFields, because the server reads an omitted value as "unchanged".
+export function vaultUpdateBody(form, original) {
+  const body = { name: form.name.trim(), kind: form.kind, provider: form.provider, active: form.active };
+  const wanted = {
+    headerName: form.kind === 'CustomHeader' ? form.headerName.trim() : '',
+    username: form.kind === 'BasicAuth' ? form.username.trim() : '',
+    description: form.description.trim() ? form.description : '',
+    expiresUtc: form.expiresUtc || ''
+  };
+  const clearFields = [];
+  for (const [key, value] of Object.entries(wanted)) {
+    if (value) body[key] = value;
+    else if (original && original[key]) clearFields.push(key);
+  }
+  if (clearFields.length > 0) body.clearFields = clearFields;
+  return body;
+}
+
 function toLocalInput(iso) {
   if (!iso) return '';
   const d = new Date(iso);
@@ -137,7 +156,7 @@ WhereUsedModal.propTypes = { credential: PropTypes.object, onClose: PropTypes.fu
 
 export default function VaultView() {
   const { t } = useTranslation();
-  const { apiClient, isTenantAdmin } = useAuth();
+  const { apiClient, isTenantAdmin, identity } = useAuth();
   const { addNotification } = useApp();
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY);
@@ -152,13 +171,15 @@ export default function VaultView() {
   const [deleting, setDeleting] = useState(null);
   const [refresh, setRefresh] = useState(0);
   const canWrite = isTenantAdmin;
+  // The server lets a credential's creator reveal it as well as administrators, and audits every reveal.
+  const canReveal = (r) => canWrite || Boolean(identity && identity.userId && r.createdByUserId === identity.userId);
 
   const fetchPage = useCallback((q) => apiClient.listVaultCredentials(pagedQuery(q)), [apiClient]);
   const hideSecret = useCallback(() => setRevealed(null), []);
 
   function open(credential) {
     setSaveError(null);
-    setEditing(credential ? { mode: 'edit', id: credential.id } : { mode: 'create' });
+    setEditing(credential ? { mode: 'edit', id: credential.id, original: credential } : { mode: 'create' });
     setForm(
       credential
         ? {
@@ -190,7 +211,7 @@ export default function VaultView() {
         expiresUtc: form.expiresUtc || undefined
       };
       if (editing.mode === 'create') await apiClient.createVaultCredential({ ...body, secret: form.secret });
-      else await apiClient.updateVaultCredential(editing.id, { ...body, active: form.active });
+      else await apiClient.updateVaultCredential(editing.id, vaultUpdateBody(form, editing.original));
       addNotification(t('admin.saved'), 'success');
       setEditing(null);
       setForm(EMPTY);
@@ -254,7 +275,7 @@ export default function VaultView() {
           rowActions={(r) => [
             { key: 'edit', label: t('common.edit'), icon: Pencil, disabled: !canWrite, onClick: () => open(r) },
             { key: 'rotate', label: t('vault.rotate.action'), icon: RotateCw, disabled: !canWrite, onClick: () => { setNewSecret(''); setRotating(r); } },
-            { key: 'reveal', label: canWrite ? t('vault.reveal.action') : t('vault.reveal.actionAdminOnly'), icon: Eye, disabled: !canWrite, onClick: () => setConfirmReveal(r) },
+            { key: 'reveal', label: canReveal(r) ? t('vault.reveal.action') : t('vault.reveal.actionRestricted'), icon: Eye, disabled: !canReveal(r), onClick: () => setConfirmReveal(r) },
             { key: 'usage', label: t('vault.usage.action'), icon: Link2, onClick: () => setUsage(r) },
             { key: 'json', label: t('common.viewJson'), icon: Braces, onClick: () => setJson(r) },
             { key: 'delete', label: t('common.delete'), icon: Trash2, danger: true, disabled: !canWrite, onClick: () => setDeleting(r) }

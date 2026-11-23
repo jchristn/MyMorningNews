@@ -3245,6 +3245,8 @@ export class AnalyticsResource extends ResourceGroup {
 
 /**
  * Model usage and cost. Options: `from`, `to`, `groupBy`, `userId`, `topicId`, `modelEndpointId`, `task`, `includeDryRun`, `top`, `bucketMinutes`, `allTenants`.
+ * Grouping by `Model` keys each row by endpoint and model name: `key` is the endpoint ID and the model name joined by `|`,
+ * and `modelEndpointId` and `model` carry the two parts.
  */
 export class UsageResource extends ResourceGroup {
     /**
@@ -3266,7 +3268,11 @@ export class UsageResource extends ResourceGroup {
     }
 
     /**
-     * Usage and cost time series.
+     * Usage and cost time series. Every bucket carries calls, failures, cost, input, output, cached, cache-write, and
+     * reasoning tokens, tool calls, and the average and 95th percentile time to first token.
+     * With `groupBy` (any report grouping except `Day`; `Tenant` needs `allTenants`) the series also carries `groups`
+     * (range totals per group, highest cost first) and each bucket carries `rows` (one row per group with calls in it).
+     * `top` (default 10) limits the groups; the rest are combined under the key `(other)`.
      * @param {Record<string, any>} [options] Options (`bucketMinutes` default 1440).
      * @returns {Promise<object>} Series.
      */
@@ -3309,6 +3315,19 @@ export class ModelEndpointsResource extends CrudResource {
      */
     list(options = {}) {
         return super.list(options);
+    }
+
+    /**
+     * Update an endpoint. Omitted properties are unchanged. To set an optional value back to null, name it in
+     * `clearFields` (`endpoint`, `credentialId`, `authMethod`, `model`, `embeddingModel`, `temperature`, `reasoningEffort`,
+     * `contextLength`, `inputCostPerMTok`, `outputCostPerMTok`, `cachedInputCostPerMTok`, `cacheWriteCostPerMTok`),
+     * for example `{ clearFields: ['temperature', 'contextLength'] }`. A name that also has a value, or any other name, is refused with 400.
+     * @param {string} id Endpoint.
+     * @param {object} body Fields to change, with an optional `clearFields` list.
+     * @returns {Promise<ModelEndpoint>} Endpoint.
+     */
+    update(id, body) {
+        return super.update(id, body);
     }
 
     /**
@@ -3463,6 +3482,17 @@ export class VaultResource extends CrudResource {
      */
     create(body) {
         return super.create(body);
+    }
+
+    /**
+     * Update or rotate a credential. Omitted properties are unchanged. To remove an optional value, name it in
+     * `clearFields` (`headerName`, `username`, `description`, `expiresUtc`), for example `{ clearFields: ['expiresUtc'] }`.
+     * @param {string} id Credential.
+     * @param {{ name?: string, kind?: string, provider?: string, secret?: string, headerName?: string, username?: string, description?: string, expiresUtc?: string, active?: boolean, clearFields?: string[] }} body Body.
+     * @returns {Promise<VaultCredential>} Credential (no secret).
+     */
+    update(id, body) {
+        return super.update(id, body);
     }
 
     /**

@@ -4,6 +4,7 @@ namespace MyMorningNews.Sdk.Requests
     // Source: src/MyMorningNews.Core/Requests/VaultCredentialUpsertRequest.cs
 
     using System;
+    using System.Collections.Generic;
     using MyMorningNews.Sdk.Enums;
 
     /// <summary>
@@ -55,6 +56,11 @@ namespace MyMorningNews.Sdk.Requests
         /// Active.
         /// </summary>
         public bool? Active { get; set; } = null;
+
+        /// <summary>
+        /// Names of optional properties to clear to null on update: headerName, username, description, expiresUtc. Names are matched without regard to case. A null or absent property means "leave unchanged", so this list is the only way to remove a value. Naming a property here and giving it a value in the same request is refused, as is any other name. Null or empty (the default) clears nothing.
+        /// </summary>
+        public List<string>? ClearFields { get; set; } = null;
 
         /// <summary>
         /// Instantiate.

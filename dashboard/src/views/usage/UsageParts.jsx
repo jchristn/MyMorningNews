@@ -3,10 +3,11 @@ import { Clock, Coins, Download, Hash, Layers, TriangleAlert, Zap } from 'lucide
 import { useTranslation } from 'react-i18next';
 import useFormat from '../../hooks/useFormat.js';
 import LineChart from '../../charts/LineChart.jsx';
+import StackedColumnChart from '../../charts/StackedColumnChart.jsx';
 import { USAGE_RANGE_IDS } from '../../charts/ranges.js';
 import KpiTile from '../../components/KpiTile.jsx';
 import { downloadText, usageCsvFilename, usageReportCsv } from '../../utils/csv.js';
-import { failureRate, rowLabel } from './usageData.js';
+import { failureRate, measureLabel, measureValue, rowLabel, TREND_MEASURES, trendSeries } from './usageData.js';
 
 export function UsageKpis({ totals }) {
   const { t } = useTranslation();
@@ -58,33 +59,90 @@ export function ExportCsvButton({ report, prefix }) {
 
 ExportCsvButton.propTypes = { report: PropTypes.object, prefix: PropTypes.string.isRequired };
 
-// Cost (and calls) over time from the gap-filled time series.
-export function CostTrend({ series, ariaLabel }) {
+// Pickers for the trend chart: what to plot and, when groups are offered, how to split it.
+export function TrendControls({ id, measure, onMeasure, groupBy, onGroupBy, groups }) {
+  const { t } = useTranslation();
+  return (
+    <>
+      {groups && onGroupBy ? (
+        <label className="inline-field" htmlFor={id + '-group'}>
+          <span>{t('usage.charts.groupBy')}</span>
+          <select id={id + '-group'} value={groupBy || ''} onChange={(e) => onGroupBy(e.target.value)}>
+            {groups.map((g) => (
+              <option key={g || 'none'} value={g}>
+                {g ? t('usage.groups.' + g) : t('usage.trend.none')}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
+      {onMeasure ? (
+        <label className="inline-field" htmlFor={id + '-measure'}>
+          <span>{t('usage.trend.measure')}</span>
+          <select id={id + '-measure'} value={measure} onChange={(e) => onMeasure(e.target.value)}>
+            {TREND_MEASURES.map((m) => (
+              <option key={m} value={m}>
+                {measureLabel(m, t)}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
+    </>
+  );
+}
+
+TrendControls.propTypes = {
+  id: PropTypes.string.isRequired,
+  measure: PropTypes.string,
+  onMeasure: PropTypes.func,
+  groupBy: PropTypes.string,
+  onGroupBy: PropTypes.func,
+  groups: PropTypes.arrayOf(PropTypes.string)
+};
+
+// One measure over time from the gap-filled time series: a line per group when the series is grouped (or stacked
+// columns with stacked), otherwise a single line. The tooltip always carries the bucket's other measures.
+export function UsageTrend({ series, ariaLabel, measure = 'cost', stacked = false }) {
   const { t } = useTranslation();
   const f = useFormat();
   if (!series) return null;
-  const buckets = (series.buckets || []).map((b) => ({
-    startUtc: b.bucketStartUtc,
-    endUtc: b.bucketEndUtc,
-    extra: [
-      { label: t('usage.columns.calls'), value: f.number(b.calls) },
-      { label: t('usage.columns.failures'), value: f.number(b.failures) },
-      { label: t('usage.columns.tokens'), value: f.compact((b.inputTokens || 0) + (b.outputTokens || 0)) }
+  const source = series.buckets || [];
+  if (source.length === 0) return <div className="chart-empty">{t('usage.noData')}</div>;
+  const ms = (v) => (v === null || v === undefined ? '-' : f.duration(v));
+  const formatValue = measure === 'cost' ? (v) => f.usd(v) : measure === 'ttft' ? (v) => f.duration(v) : measure === 'calls' || measure === 'toolCalls' ? (v) => f.number(v) : (v) => f.compact(v);
+  const extra = (b) =>
+    [
+      { key: 'cost', label: t('usage.columns.cost'), value: f.usd(b.costUsd || 0) },
+      { key: 'calls', label: t('usage.columns.calls'), value: f.number(b.calls || 0) },
+      { key: 'failures', label: t('usage.columns.failures'), value: f.number(b.failures || 0) },
+      { key: 'tokens', label: t('usage.columns.tokens'), value: f.compact(measureValue(b, 'tokens')) },
+      { key: 'cacheWriteTokens', label: t('usage.columns.cacheWriteTokens'), value: f.compact(b.cacheWriteTokens || 0) },
+      { key: 'reasoningTokens', label: t('usage.columns.reasoningTokens'), value: f.compact(b.reasoningTokens || 0) },
+      { key: 'toolCalls', label: t('usage.columns.toolCalls'), value: f.number(b.toolCalls || 0) },
+      { key: 'ttft', label: t('usage.columns.p95Ttft'), value: ms(b.p95TimeToFirstTokenMs) }
     ]
-  }));
-  if (buckets.length === 0) return <div className="chart-empty">{t('usage.noData')}</div>;
+      // The plotted measure is already in the tooltip as a series line, unless the series is split into groups.
+      .filter((line) => line.key !== measure || Boolean(series.groupBy))
+      .map((line) => ({ label: line.label, value: line.value }));
+  const lines = trendSeries(series, measure, t);
+  if (stacked) {
+    const label = (b) => (series.bucketMinutes >= 1440 ? f.date(b.bucketStartUtc, { month: 'short', day: 'numeric' }) : f.dateTime(b.bucketStartUtc, { month: 'short', day: 'numeric', hour: 'numeric' }));
+    return <StackedColumnChart ariaLabel={ariaLabel} formatValue={formatValue} categories={source.map((b) => ({ key: b.bucketStartUtc, label: label(b), extra: extra(b) }))} series={lines} />;
+  }
   return (
     <LineChart
       ariaLabel={ariaLabel}
       bucketMinutes={series.bucketMinutes}
-      buckets={buckets}
-      formatValue={(v) => f.usd(v)}
-      series={[{ key: 'cost', label: t('usage.kpi.cost'), color: 'var(--chart-series-1)', values: (series.buckets || []).map((b) => Number(b.costUsd) || 0) }]}
+      buckets={source.map((b) => ({ startUtc: b.bucketStartUtc, endUtc: b.bucketEndUtc, extra: extra(b) }))}
+      formatValue={formatValue}
+      area={lines.length === 1}
+      series={lines}
     />
   );
 }
 
-CostTrend.propTypes = { series: PropTypes.object, ariaLabel: PropTypes.string.isRequired };
+UsageTrend.propTypes = { series: PropTypes.object, ariaLabel: PropTypes.string.isRequired, measure: PropTypes.string, stacked: PropTypes.bool };
 
 // The full report as a table: every token type, tool calls, cost, share, and timing.
 export function UsageTable({ report, onRowClick }) {

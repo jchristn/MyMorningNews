@@ -1496,7 +1496,15 @@ async function main() {
     await run('usage.me, report, timeseries', async () => {
         assert(typeof (await client.usage.me()) === 'object', 'me');
         assert(typeof (await client.usage.report({ groupBy: 'Model' })) === 'object', 'report');
-        assert(typeof (await client.usage.timeseries({ bucketMinutes: 1440 })) === 'object', 'timeseries');
+        const plain = await client.usage.timeseries({ bucketMinutes: 1440 });
+        // The server leaves null properties out of its JSON, so an absent value and null both mean "not grouped".
+        assert(plain.groupBy == null && Array.isArray(plain.groups) && plain.groups.length === 0, 'a plain series is not grouped');
+        assert(plain.buckets.length > 0 && plain.buckets.every((b) => typeof b.cacheWriteTokens === 'number' && typeof b.reasoningTokens === 'number' && typeof b.toolCalls === 'number' && Array.isArray(b.rows)), 'bucket measures');
+        const grouped = await client.usage.timeseries({ bucketMinutes: 1440, groupBy: 'Model', top: 5 });
+        assertEqual(grouped.groupBy, 'Model', 'grouped series');
+        assert(grouped.groups.every((g) => g.key === '(other)' || (g.key.includes('|') && typeof g.model === 'string')), 'model groups are keyed by endpoint and model');
+        assertEqual(grouped.buckets.reduce((n, b) => n + b.rows.reduce((m, r) => m + r.calls, 0), 0), grouped.buckets.reduce((n, b) => n + b.calls, 0), 'rows add up to the buckets');
+        await expectError(client.usage.timeseries({ groupBy: 'Day' }), 400, 'BadRequest');
         await expectError(client.usage.report({ groupBy: 'Tenant' }), 400, 'BadRequest');
     });
 
@@ -1517,7 +1525,12 @@ async function main() {
         S.endpointId = e.id;
         onCleanup('model endpoint', () => client.modelEndpoints.remove(e.id));
         assertEqual((await client.modelEndpoints.get(e.id)).id, e.id, 'read back');
-        const u = await client.modelEndpoints.update(e.id, { maxTokens: 512 });
+        const u = await client.modelEndpoints.update(e.id, { maxTokens: 512, temperature: 0.3, contextLength: 4096 });
+        assert(u.temperature === 0.3 && u.contextLength === 4096, 'optional values set');
+        const cleared = await client.modelEndpoints.update(e.id, { clearFields: ['temperature', 'contextLength'] });
+        assert(cleared.temperature == null && cleared.contextLength == null && cleared.maxTokens === 512, 'clearFields sets optional values to null');
+        await expectError(client.modelEndpoints.update(e.id, { clearFields: ['name'] }), 400, 'ValidationFailed');
+        await expectError(client.modelEndpoints.update(e.id, { contextLength: 1, clearFields: ['contextLength'] }), 400, 'ValidationFailed');
         assertEqual(u.maxTokens, 512, 'updated');
         const page = await client.modelEndpoints.list({ provider: 'OpenAiCompatible', pageSize: 100 });
         assert(page.items.some((x) => x.id === e.id), 'listed');
@@ -1746,6 +1759,9 @@ async function main() {
         assert(typeof c.secretPreview === 'string', 'masked preview');
         assertEqual((await client.vault.get(c.id)).id, c.id, 'read back');
         const u = await client.vault.update(c.id, { description: 'SDK harness, updated' });
+        const noDescription = await client.vault.update(c.id, { clearFields: ['description'] });
+        assert(noDescription.description == null, 'clearFields removes the description');
+        await expectError(client.vault.update(c.id, { clearFields: ['secret'] }), 400, 'ValidationFailed');
         assertEqual(u.description, 'SDK harness, updated', 'updated');
         assert((await client.vault.list({ kind: 'ApiKey', pageSize: 100 })).items.some((x) => x.id === c.id), 'listed');
         assert(Array.isArray(await client.vault.usage(c.id)), 'usage array');

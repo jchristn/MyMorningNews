@@ -1381,7 +1381,7 @@
     },
     "reveal": {
       "action": "Mostra",
-      "actionAdminOnly": "Mostra (solo amministratori)",
+      "actionRestricted": "Mostra (solo il creatore e gli amministratori)",
       "confirmTitle": "Mostra segreto",
       "confirmMessage": "Mostrare il testo in chiaro di {name}? Rimane visibile per {seconds} secondi e poi viene nascosto di nuovo.",
       "audited": "Le visualizzazioni sono sottoposte ad audit: vengono registrati chi ha mostrato quale credenziale e da dove.",
@@ -1514,7 +1514,8 @@
       "signIn": "Accesso",
       "secretSource": "Da dove proviene il segreto",
       "howTo": "Come ottenerlo",
-      "cliNotice": "Esegue lo strumento da riga di comando del provider sul server. Risponde solo ai prompt di chat, quindi non ha URL, chiamate agli strumenti né embedding."
+      "cliNotice": "Esegue lo strumento da riga di comando del provider sul server. Risponde solo ai prompt di chat, quindi non ha URL, chiamate agli strumenti né embedding.",
+      "clearHint": "Per rimuovere un valore facoltativo, come un prezzo, la lunghezza del contesto o la temperatura, svuota il campo e salva."
     },
     "test": {
       "title": "Testa modello",
@@ -1832,7 +1833,8 @@
       "system": "Sistema",
       "noTopic": "Nessun argomento",
       "none": "Nessuno",
-      "unknown": "Sconosciuto"
+      "unknown": "Sconosciuto",
+      "other": "Altri"
     },
     "columns": {
       "cost": "Costo",
@@ -1863,8 +1865,6 @@
     },
     "charts": {
       "groupBy": "Raggruppa per",
-      "costOverTime": "Costo nel tempo",
-      "costOverTimeHelp": "Costo stimato per intervallo, calcolato quando ogni chiamata è stata registrata.",
       "costByUser": "Costo per utente",
       "costByUserHelp": "I primi 20 utenti e la loro quota del costo. Seleziona una riga per filtrare la pagina su quell’utente.",
       "costByModel": "Costo per modello",
@@ -1889,11 +1889,17 @@
       "costByTenant": "Costo per tenant",
       "costByTenantHelp": "Tutti i tenant ordinati per costo, con la loro quota del costo della piattaforma.",
       "tenantTrend": "Costo per tenant nel tempo",
-      "tenantTrendHelp": "{count, plural, one {L’intervallo diviso in # finestra.} other {L’intervallo diviso in # finestre.}} I tenant principali sono impilati; tutti gli altri sono raggruppati.",
-      "otherTenants": "Altri tenant",
-      "platformTrend": "Costo della piattaforma nel tempo",
+      "tenantTrendHelp": "I tenant principali sono impilati in ogni intervallo; tutti gli altri sono riuniti in Altri.",
+      "platformTrend": "Utilizzo della piattaforma nel tempo",
       "costByModel": "Costo della piattaforma per modello",
       "breakdownHelp": "Tutti i tenant con tipi di token, quota del costo e tempistiche. Esporta CSV scarica questa tabella."
+    },
+    "trend": {
+      "title": "Utilizzo nel tempo",
+      "help": "La misura selezionata in ogni intervallo. Raggruppala per confrontare utenti, modelli, attività, argomenti, provider o prompt; vengono disegnati i gruppi più grandi e il resto è riunito in Altri.",
+      "none": "Nessun raggruppamento",
+      "measure": "Misura",
+      "ttft": "Tempo al primo token"
     }
   },
   "markdown": {

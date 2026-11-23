@@ -57,7 +57,7 @@ namespace Test.Shared.Suites
             SharePageLinks links = new SharePageLinks { ReadPath = "/v1.0/public/shares/mmns_x", ListenPath = "/v1.0/public/shares/mmns_x/listen", LogoUrl = "https://app.example.test/v1.0/public/assets/logo.png" };
             string page = SharePages.Read(shared, links);
             Assert.True(page.Contains("<h1>A &lt;b&gt;bold&lt;/b&gt; &quot;title&quot;</h1>", StringComparison.Ordinal) && page.Contains("Heat &lt;pumps&gt;", StringComparison.Ordinal) && !page.Contains("<b>bold", StringComparison.Ordinal), "title and topic escaped");
-            Assert.True(page.Contains("<html lang=\"en\">", StringComparison.Ordinal) && page.Contains("<meta name=\"robots\" content=\"noindex, nofollow\">", StringComparison.Ordinal)
+            Assert.True(page.Contains("<html lang=\"en\" data-theme=\"light\">", StringComparison.Ordinal) && page.Contains("<meta name=\"robots\" content=\"noindex, nofollow\">", StringComparison.Ordinal)
                 && page.Contains("property=\"og:image\" content=\"https://app.example.test/v1.0/public/assets/logo.png\"", StringComparison.Ordinal) && page.Contains("name=\"twitter:card\"", StringComparison.Ordinal), "language, robots, and link preview tags");
             Assert.True(page.Contains("© 2026 Lattice AI LLC", StringComparison.Ordinal) && page.Contains("Learn more at mymorningnews.ai", StringComparison.Ordinal) && page.Contains("href=\"https://mymorningnews.ai\"", StringComparison.Ordinal),
                 "copyright and the marketing call to action when sign-up is closed");
@@ -104,6 +104,15 @@ namespace Test.Shared.Suites
             Assert.True(read.Body.Contains("<audio controls preload=\"metadata\"", StringComparison.Ordinal) && read.Body.Contains("class=\"content\"", StringComparison.Ordinal) && read.Body.IndexOf("<audio", StringComparison.Ordinal) < read.Body.IndexOf("class=\"content\"", StringComparison.Ordinal), "one page carries the player and then the text");
             Assert.True(!read.Body.Contains("<script", StringComparison.OrdinalIgnoreCase) && !read.Body.Contains("<iframe", StringComparison.OrdinalIgnoreCase) && read.Body.Contains("&lt;script&gt;alert(&#39;x&#39;)&lt;/script&gt;", StringComparison.Ordinal)
                 && !read.Body.Contains("href=\"javascript:", StringComparison.OrdinalIgnoreCase), "planted markup is shown as text");
+            Assert.True(read.Body.Contains("<html lang=\"en\" data-theme=\"light\">", StringComparison.Ordinal) && !read.Body.Contains("prefers-color-scheme", StringComparison.Ordinal)
+                && read.Body.Contains("aria-label=\"Appearance\"", StringComparison.Ordinal) && read.Body.Contains("href=\"/v1.0/public/shares/" + created.Secret + "?theme=dark\">Dark</a>", StringComparison.Ordinal), "the page is light unless the visitor chooses dark, and offers both");
+            TestResponse dark = (await Bare(pub + "?theme=dark", token).ConfigureAwait(false)).Expect(200, "dark page with no credentials");
+            Assert.True(dark.Body.Contains("<html lang=\"en\" data-theme=\"dark\">", StringComparison.Ordinal) && dark.Body.Contains("?theme=dark\" aria-current=\"true\">Dark</a>", StringComparison.Ordinal)
+                && dark.Body.Contains("&amp;theme=dark#listen", StringComparison.Ordinal), "the dark choice is drawn, marked, and kept by chapter links");
+            Assert.True(read.Body.Contains("href=\"/v1.0/public/shares/" + created.Secret + "/markdown\" download>Download .md</a>", StringComparison.Ordinal), "the page offers the Markdown download");
+            TestResponse md = (await Bare(pub + "/markdown", token).ConfigureAwait(false)).Expect(200, "Markdown download with no credentials");
+            Assert.True(md.Headers["Content-Type"].StartsWith("text/markdown", StringComparison.Ordinal) && md.Headers["Content-Disposition"].StartsWith("attachment; filename=\"", StringComparison.Ordinal)
+                && md.Headers["Content-Disposition"].EndsWith(".md\"", StringComparison.Ordinal) && md.Body.Contains("<script>alert('x')</script>", StringComparison.Ordinal) && md.Headers["X-Content-Type-Options"] == "nosniff" && !md.Headers.ContainsKey("Set-Cookie"), "the briefing Markdown, as written, sent as an attachment that browsers will not render: " + md.Headers["Content-Disposition"]);
             Assert.True(read.Body.Contains("<a rel=\"noopener noreferrer nofollow\" href=\"https://example.test/report\">source</a>", StringComparison.Ordinal), "outbound links carry rel");
             Assert.True(!read.Body.Contains(f.User.User.Email, StringComparison.OrdinalIgnoreCase) && !read.Body.Contains(b.Id, StringComparison.Ordinal) && !read.Body.Contains(b.UserId, StringComparison.Ordinal)
                 && !read.Body.Contains(created.Share.Id, StringComparison.Ordinal) && !read.Body.Contains("Shared by", StringComparison.Ordinal), "no email, no identifiers, no name");
@@ -211,6 +220,7 @@ namespace Test.Shared.Suites
             await f.Server.Context.Database.BriefingShares.UpdateAsync(row, token).ConfigureAwait(false);
             TestResponse expired = (await Bare(pub, token).ConfigureAwait(false)).Expect(404, "expired reading page");
             (await Bare(pub + "/listen", token).ConfigureAwait(false)).Expect(404, "expired listening page");
+            (await Bare(pub + "/markdown", token).ConfigureAwait(false)).Expect(404, "expired Markdown download");
             (await Bare(pub + "/audio/briefing.wav", token).ConfigureAwait(false)).Expect(404, "expired audio");
             TestResponse unknown = (await Bare(baseUrl + "/v1.0/public/shares/mmns_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", token).ConfigureAwait(false)).Expect(404, "unknown link");
             Assert.True(expired.Body == unknown.Body && expired.Headers["Content-Type"].StartsWith("text/html", StringComparison.Ordinal), "expired and unknown links get the identical page");

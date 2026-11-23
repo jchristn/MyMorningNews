@@ -426,7 +426,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 
 ## Route reference
 
-316 routes in 48 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
+317 routes in 48 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
 
 | Group | Routes | What it covers |
 |---|---|---|
@@ -475,7 +475,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [Promotional codes](#promotional-codes) | 9 | Global administrators create, generate, and manage promotional codes that grant plans. |
 | [Plans](#plans) | 6 | Global administrators manage plans, their entitlement values, and per-user plan assignments. |
 | [Account](#account) | 10 | Sign-up, email verification, password reset, the signed-in user's plan, usage meter, data export, account deletion, and promotional code redemption. |
-| [Public](#public) | 14 | Routes reached from emails, podcast apps, and shared briefing links. They take no session; a token in the path is the credential. Feedback and unsubscribe pages are HTML forms. Shared briefing pages are server-rendered HTML with no script and no cookies. |
+| [Public](#public) | 15 | Routes reached from emails, podcast apps, and shared briefing links. They take no session; a token in the path is the credential. Feedback and unsubscribe pages are HTML forms. Shared briefing pages are server-rendered HTML with no script and no cookies. |
 | [OpenAPI](#openapi) | 2 | The OpenAPI 3 document and Swagger UI that Watson serves. They are not tagged in the document itself. |
 | [MCP servers](#mcp-servers) | 8 | Remote MCP tool servers that agentic research may call, their discovered tools, and the per-tool allow-list. |
 
@@ -10036,6 +10036,7 @@ Routes reached from emails, podcast apps, and shared briefing links. They take n
 | GET | [`/v1.0/public/feeds/{token}/chapters/{file}`](#get-v10publicfeedstokenchaptersfile) | Podcast episode chapters (Podcasting 2.0 JSON) |
 | GET | [`/v1.0/public/assets/{name}`](#get-v10publicassetsname) | Public artwork (glyph.png, logo.png) |
 | GET | [`/v1.0/public/shares/{token}`](#get-v10publicsharestoken) | Shared briefing page |
+| GET | [`/v1.0/public/shares/{token}/markdown`](#get-v10publicsharestokenmarkdown) | Shared briefing: download as Markdown |
 | GET | [`/v1.0/public/shares/{token}/listen`](#get-v10publicsharestokenlisten) | Shared briefing page (earlier listening address) |
 | GET | [`/v1.0/public/shares/{token}/audio/{file}`](#get-v10publicsharestokenaudiofile) | Shared briefing: audio (Range supported) |
 | GET | [`/v1.0/public/feedback/{token}`](#get-v10publicfeedbacktoken) | Email feedback page |
@@ -10184,6 +10185,7 @@ curl -s "http://127.0.0.1:12100/v1.0/public/assets/logo.png" \
 | Query parameter | Type | Notes |
 |---|---|---|
 | `t` | integer | Start playback at this many seconds (a chapter link). |
+| `theme` | string |  |
 
 | Status | Meaning |
 |---|---|
@@ -10195,9 +10197,32 @@ curl -s "http://127.0.0.1:12100/v1.0/public/assets/logo.png" \
 curl -s "http://127.0.0.1:12100/v1.0/public/shares/mmns_4kXw9RtB2nLq7VzC1mPe6YhD3sGa8JfU5oNi0TbK"
 ```
 
+### GET /v1.0/public/shares/{token}/markdown
+
+**Shared briefing: download as Markdown.** The briefing text as a Markdown file, sent as an attachment. No authentication. 404 with the same page for every link that does not work.
+
+- Auth: None. The `{token}` path segment is the credential.
+- Response: File bytes (the stored file's content type)
+- Notes: The briefing text as a Markdown file (`text/markdown`, sent as an attachment named after the briefing title). No authentication. Not counted as an opening. Same 404 as the page for a link that does not work.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `token` | string | `{{shareToken}}` |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 404 | Not Found |
+| 429 | Too Many Requests |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/public/shares/mmns_4kXw9RtB2nLq7VzC1mPe6YhD3sGa8JfU5oNi0TbK/markdown" \
+  -o output.bin
+```
+
 ### GET /v1.0/public/shares/{token}/listen
 
-**Shared briefing page (earlier listening address).** Kept so links made when listening had its own page keep working. Renders the same single page as GET /v1.0/public/shares/{token}. No authentication. t starts playback at that many seconds.
+**Shared briefing page (earlier listening address).** Kept so links made when listening had its own page keep working. Renders the same single page as GET /v1.0/public/shares/{token}. No authentication. t starts playback at that many seconds; theme=dark draws the page dark.
 
 - Auth: None. The `{token}` path segment is the credential.
 - Response: `text/html`
@@ -10210,6 +10235,7 @@ curl -s "http://127.0.0.1:12100/v1.0/public/shares/mmns_4kXw9RtB2nLq7VzC1mPe6YhD
 | Query parameter | Type | Notes |
 |---|---|---|
 | `t` | integer | Start playback at this many seconds (a chapter link). |
+| `theme` | string | Read by the handler; not declared in the OpenAPI document. |
 
 | Status | Meaning |
 |---|---|

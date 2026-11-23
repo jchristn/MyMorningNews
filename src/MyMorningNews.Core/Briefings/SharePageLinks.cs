@@ -24,6 +24,17 @@ namespace MyMorningNews.Core.Briefings
         public string? AudioPath { get; set; } = null;
 
         /// <summary>
+        /// Server path that downloads the briefing as a Markdown file, or null when the page offers no download.
+        /// Default null.
+        /// </summary>
+        public string? MarkdownPath { get; set; } = null;
+
+        /// <summary>
+        /// Whether the page is drawn in the dark theme. The page is light unless the visitor chooses dark. Default false.
+        /// </summary>
+        public bool Dark { get; set; } = false;
+
+        /// <summary>
         /// Path of the logo image.
         /// </summary>
         public string LogoPath { get; set; } = "/v1.0/public/assets/logo.png";

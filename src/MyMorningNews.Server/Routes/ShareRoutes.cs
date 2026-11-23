@@ -52,9 +52,11 @@ namespace MyMorningNews.Server.Routes
             const string p = "/v1.0/public/shares/{token}";
             webserver.Routes.PreAuthentication.Parameter.Add(HttpMethod.GET, p, ReadPageAsync, null, openApiMetadata: Doc("Shared briefing page", "Public",
                 "Server-rendered HTML: one page to listen and to read, with an audio player and chapter links when the briefing has finished audio, then the briefing text. No authentication. t starts playback at that many seconds. 404 with the same page for every link that does not work.")
-                .WithParameter(QueryParam("t", typeof(int))));
+                .WithParameter(QueryParam("t", typeof(int))).WithParameter(QueryParam("theme", typeof(string))));
+            webserver.Routes.PreAuthentication.Parameter.Add(HttpMethod.GET, p + "/markdown", MarkdownAsync, null, openApiMetadata: Doc("Shared briefing: download as Markdown", "Public",
+                "The briefing text as a Markdown file, sent as an attachment. No authentication. 404 with the same page for every link that does not work."));
             webserver.Routes.PreAuthentication.Parameter.Add(HttpMethod.GET, p + "/listen", ListenPageAsync, null, openApiMetadata: Doc("Shared briefing page (earlier listening address)", "Public",
-                "Kept so links made when listening had its own page keep working. Renders the same single page as GET /v1.0/public/shares/{token}. No authentication. t starts playback at that many seconds.")
+                "Kept so links made when listening had its own page keep working. Renders the same single page as GET /v1.0/public/shares/{token}. No authentication. t starts playback at that many seconds; theme=dark draws the page dark.")
                 .WithParameter(QueryParam("t", typeof(int))));
             webserver.Routes.PreAuthentication.Parameter.Add(HttpMethod.GET, p + "/audio/{file}", AudioAsync, null, openApiMetadata: Doc("Shared briefing: audio (Range supported)", "Public",
                 "The audio behind the listening page. No authentication. Supports a single Range header (206 Partial Content)."));
@@ -132,9 +134,27 @@ namespace MyMorningNews.Server.Routes
             SharedBriefing? shared = await Server.Shares.ResolveAsync(secret, ctx.Token).ConfigureAwait(false);
             if (shared == null) { await SendHtmlAsync(ctx, 404, SharePages.NotFound(Links(null, null))).ConfigureAwait(false); return; }
             int? start = QueryInt(ctx, "t");
-            // A chapter link reloads the page at another time; that is the same visit, not a new opening.
-            if (!start.HasValue) await Server.Shares.RecordViewAsync(shared.Share, ctx.Token).ConfigureAwait(false);
-            await SendHtmlAsync(ctx, 200, SharePages.Read(shared, Links(secret, shared), start)).ConfigureAwait(false);
+            string? theme = Query(ctx, "theme");
+            // A chapter link or a theme choice reloads the page; that is the same visit, not a new opening.
+            if (!start.HasValue && theme == null) await Server.Shares.RecordViewAsync(shared.Share, ctx.Token).ConfigureAwait(false);
+            await SendHtmlAsync(ctx, 200, SharePages.Read(shared, Links(secret, shared, IsDark(theme)), start)).ConfigureAwait(false);
+        }
+
+        private async Task MarkdownAsync(HttpContextBase ctx)
+        {
+            if (!await AllowAsync(ctx).ConfigureAwait(false)) return;
+            SharedBriefing? shared = await Server.Shares.ResolveAsync(Param(ctx, "token") ?? String.Empty, ctx.Token).ConfigureAwait(false);
+            if (shared == null) { await SendHtmlAsync(ctx, 404, SharePages.NotFound(Links(null, null))).ConfigureAwait(false); return; }
+            string name = TemplateParser.Slug(shared.Briefing.Title);
+            if (String.IsNullOrWhiteSpace(name)) name = "briefing";
+            ctx.Response.StatusCode = 200;
+            ctx.Response.ContentType = "text/markdown; charset=utf-8";
+            ctx.Response.Headers.Add("Content-Disposition", "attachment; filename=\"" + name.Replace("\"", String.Empty) + ".md\"");
+            ctx.Response.Headers.Add("Cache-Control", "no-store");
+            ctx.Response.Headers.Add("X-Robots-Tag", "noindex, nofollow");
+            ctx.Response.Headers.Add("Referrer-Policy", "no-referrer");
+            ctx.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+            await ctx.Response.Send(Encoding.UTF8.GetBytes(shared.Briefing.Markdown ?? String.Empty), ctx.Token).ConfigureAwait(false);
         }
 
         private async Task ListenPageAsync(HttpContextBase ctx)
@@ -144,9 +164,10 @@ namespace MyMorningNews.Server.Routes
             SharedBriefing? shared = await Server.Shares.ResolveAsync(secret, ctx.Token).ConfigureAwait(false);
             if (shared == null) { await SendHtmlAsync(ctx, 404, SharePages.NotFound(Links(null, null))).ConfigureAwait(false); return; }
             int? start = QueryInt(ctx, "t");
-            // A chapter link reloads the page at another time; that is the same visit, not a new opening.
-            if (!start.HasValue) await Server.Shares.RecordViewAsync(shared.Share, ctx.Token).ConfigureAwait(false);
-            await SendHtmlAsync(ctx, 200, SharePages.Listen(shared, Links(secret, shared), start)).ConfigureAwait(false);
+            string? theme = Query(ctx, "theme");
+            // A chapter link or a theme choice reloads the page; that is the same visit, not a new opening.
+            if (!start.HasValue && theme == null) await Server.Shares.RecordViewAsync(shared.Share, ctx.Token).ConfigureAwait(false);
+            await SendHtmlAsync(ctx, 200, SharePages.Listen(shared, Links(secret, shared, IsDark(theme)), start)).ConfigureAwait(false);
         }
 
         private async Task AudioAsync(HttpContextBase ctx)
@@ -158,7 +179,12 @@ namespace MyMorningNews.Server.Routes
             await SendArtifactAsync(ctx, Server.Artifacts, shared.AudioFile, false).ConfigureAwait(false);
         }
 
-        private SharePageLinks Links(string? secret, SharedBriefing? shared)
+        private static bool IsDark(string? theme)
+        {
+            return String.Equals(theme, "dark", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private SharePageLinks Links(string? secret, SharedBriefing? shared, bool dark = false)
         {
             string baseUrl = Server.Settings.Rest.PublicBaseUrl;
             string root = Uri.TryCreate(baseUrl, UriKind.Absolute, out Uri? u) ? u.AbsolutePath.TrimEnd('/') : String.Empty;
@@ -169,12 +195,14 @@ namespace MyMorningNews.Server.Routes
                 LogoUrl = baseUrl + "/v1.0/public/assets/logo.png",
                 SignupOpen = signup,
                 SignupUrl = signup ? Server.Settings.Rest.AppBaseUrl + "/signup" : Constants.MarketingSiteUrl,
-                SiteUrl = Constants.MarketingSiteUrl
+                SiteUrl = Constants.MarketingSiteUrl,
+                Dark = dark
             };
             if (secret != null)
             {
                 links.ReadPath = root + BriefingShareService.PagePath(secret);
                 links.ListenPath = links.ReadPath + "/listen";
+                if (shared != null) links.MarkdownPath = links.ReadPath + "/markdown";
                 if (shared != null && shared.AudioFile != null) links.AudioPath = links.ReadPath + "/audio/" + BriefingShareService.AudioFileName(shared.AudioFile);
             }
 

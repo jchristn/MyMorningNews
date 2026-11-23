@@ -29,9 +29,9 @@ namespace MyMorningNews.Core.Briefings
         public const string ContentSecurityPolicy = "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 
         private const string Css =
-            ":root{color-scheme:light dark;--bg:#f8fafc;--card:#ffffff;--fg:#0f172a;--muted:#475569;--line:#e2e8f0;--accent:#2563eb;--button:#2563eb;--button-hover:#1d4ed8;--soft:#eff6ff;--gold:#f2b705;--quote:#f1f5f9}" +
-            "@media (prefers-color-scheme:dark){:root{--bg:#0f172a;--card:#111c33;--fg:#e2e8f0;--muted:#94a3b8;--line:#26344f;--accent:#60a5fa;--soft:#16254a;--quote:#16213a}" +
-            ".brand img{filter:invert(1) hue-rotate(180deg)}}" +
+            ":root{color-scheme:light;--bg:#f8fafc;--card:#ffffff;--fg:#0f172a;--muted:#475569;--line:#e2e8f0;--accent:#2563eb;--button:#2563eb;--button-hover:#1d4ed8;--soft:#eff6ff;--gold:#f2b705;--quote:#f1f5f9}" +
+            ":root[data-theme=dark]{color-scheme:dark;--bg:#0f172a;--card:#111c33;--fg:#e2e8f0;--muted:#94a3b8;--line:#26344f;--accent:#60a5fa;--soft:#16254a;--quote:#16213a}" +
+            ":root[data-theme=dark] .brand img{filter:invert(1) hue-rotate(180deg)}" +
             "*{box-sizing:border-box}html{background:var(--bg);-webkit-text-size-adjust:100%}" +
             "body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif}" +
             "a{color:var(--accent)}a:focus-visible,audio:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:4px}" +
@@ -45,7 +45,10 @@ namespace MyMorningNews.Core.Briefings
             "main{padding:8px 0 40px}article{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:24px 20px;margin-top:20px}" +
             ".kicker{margin:0 0 6px;font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}" +
             "h1{font-size:28px;line-height:1.2;margin:0 0 8px}.meta{margin:0 0 4px;color:var(--muted);font-size:14px}" +
-            ".switch{margin:14px 0 0;font-size:15px;font-weight:600}" +
+            ".tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}" +
+            ".theme{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;font-size:14px;line-height:1.2}" +
+            ".theme a{padding:7px 12px;color:var(--fg);text-decoration:none}.theme a+a{border-left:1px solid var(--line)}.theme a:hover{background:var(--soft)}.theme a[aria-current]{background:var(--soft);font-weight:700}" +
+            ".actions{margin:14px 0 0;font-size:15px;font-weight:600}" +
             ".content{margin-top:20px;border-top:1px solid var(--line);padding-top:8px;font:17px/1.65 Georgia,'Times New Roman',serif;overflow-wrap:anywhere}" +
             ".content h1,.content h2,.content h3,.content h4{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.25}" +
             ".content h1{font-size:24px;margin:28px 0 8px}.content h2{font-size:21px;margin:28px 0 8px}.content h3{font-size:18px;margin:22px 0 6px}.content li{margin:4px 0}.content ul,.content ol{padding-left:22px}" +
@@ -86,6 +89,7 @@ namespace MyMorningNews.Core.Briefings
             if (b.ReadMinutes > 0) meta.Add(b.ReadMinutes.ToString(CultureInfo.InvariantCulture) + " minute read");
             if (meta.Any()) sb.Append("<p class=\"meta\">").Append(Enc(String.Join(" · ", meta))).Append("</p>");
             if (playable) AppendAudio(sb, shared, links, startSeconds);
+            if (!String.IsNullOrEmpty(links.MarkdownPath)) sb.Append("<p class=\"actions\"><a href=\"").Append(Enc(links.MarkdownPath!)).Append("\" download>Download .md</a></p>");
             sb.Append("<div class=\"content\" id=\"read\">").Append(Content(b.Markdown)).Append("</div>");
             sb.Append("</article>");
             string description = (playable ? "Listen to or read a briefing" : "A briefing") + (String.IsNullOrWhiteSpace(shared.TopicName) ? String.Empty : " on " + shared.TopicName!.Trim()) + ", researched and written by My Morning News.";
@@ -162,7 +166,7 @@ namespace MyMorningNews.Core.Briefings
                 foreach (MediaChapter c in shared.Chapters)
                 {
                     double at = Math.Floor(Math.Max(0, c.StartSeconds));
-                    sb.Append("<li><a href=\"").Append(Enc(links.ReadPath)).Append("?t=").Append(at.ToString("0", CultureInfo.InvariantCulture)).Append("#listen\"");
+                    sb.Append("<li><a href=\"").Append(Enc(links.ReadPath)).Append("?t=").Append(at.ToString("0", CultureInfo.InvariantCulture)).Append(links.Dark ? "&amp;theme=dark" : String.Empty).Append("#listen\"");
                     if (start > 0 && Math.Abs(at - start) < 0.5) sb.Append(" aria-current=\"true\"");
                     sb.Append("><span>").Append(Enc(c.Title)).Append("</span><span class=\"time\">").Append(Enc(Clock(at))).Append("</span></a></li>");
                 }
@@ -192,10 +196,10 @@ namespace MyMorningNews.Core.Briefings
             string cta = SafeMarkdown.IsSafeUrl(links.SignupUrl) ? links.SignupUrl : links.SiteUrl;
             string fullTitle = (String.IsNullOrWhiteSpace(title) ? "Briefing" : title.Trim()) + " | My Morning News";
             StringBuilder sb = new StringBuilder();
-            sb.Append("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n");
+            sb.Append("<!DOCTYPE html>\n<html lang=\"en\" data-theme=\"").Append(links.Dark ? "dark" : "light").Append("\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n");
             sb.Append("<title>").Append(Enc(fullTitle)).Append("</title>\n");
             sb.Append("<meta name=\"description\" content=\"").Append(Enc(description)).Append("\">\n");
-            sb.Append("<meta name=\"robots\" content=\"noindex, nofollow\">\n<meta name=\"referrer\" content=\"no-referrer\">\n<meta name=\"color-scheme\" content=\"light dark\">\n");
+            sb.Append("<meta name=\"robots\" content=\"noindex, nofollow\">\n<meta name=\"referrer\" content=\"no-referrer\">\n<meta name=\"color-scheme\" content=\"").Append(links.Dark ? "dark" : "light").Append("\">\n");
             sb.Append("<meta property=\"og:type\" content=\"article\">\n<meta property=\"og:site_name\" content=\"My Morning News\">\n");
             sb.Append("<meta property=\"og:title\" content=\"").Append(Enc(fullTitle)).Append("\">\n");
             sb.Append("<meta property=\"og:description\" content=\"").Append(Enc(description)).Append("\">\n");
@@ -212,7 +216,14 @@ namespace MyMorningNews.Core.Briefings
             sb.Append("<a class=\"skip\" href=\"#main\">Skip to content</a>\n");
             sb.Append("<header class=\"top\"><div class=\"wrap\"><a class=\"brand\" href=\"").Append(Enc(links.SiteUrl)).Append("\" rel=\"noopener noreferrer\"><img src=\"").Append(Enc(links.LogoPath))
                 .Append("\" alt=\"My Morning News\" width=\"108\" height=\"36\"></a>");
-            sb.Append("<a class=\"btn small\" href=\"").Append(Enc(cta)).Append("\" rel=\"noopener noreferrer\">").Append(links.SignupOpen ? "Get your own" : "Learn more").Append("</a></div></header>\n");
+            sb.Append("<div class=\"tools\">");
+            if (!String.IsNullOrEmpty(links.ReadPath))
+            {
+                sb.Append("<nav class=\"theme\" aria-label=\"Appearance\"><a href=\"").Append(Enc(links.ReadPath)).Append("\"").Append(links.Dark ? String.Empty : " aria-current=\"true\"").Append(">Light</a>");
+                sb.Append("<a href=\"").Append(Enc(links.ReadPath)).Append("?theme=dark\"").Append(links.Dark ? " aria-current=\"true\"" : String.Empty).Append(">Dark</a></nav>");
+            }
+
+            sb.Append("<a class=\"btn small\" href=\"").Append(Enc(cta)).Append("\" rel=\"noopener noreferrer\">").Append(links.SignupOpen ? "Get your own" : "Learn more").Append("</a></div></div></header>\n");
             sb.Append("<main id=\"main\"><div class=\"wrap\">\n");
             if (withPitch)
             {

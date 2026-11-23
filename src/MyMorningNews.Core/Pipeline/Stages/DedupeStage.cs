@@ -18,6 +18,10 @@ namespace MyMorningNews.Core.Pipeline.Stages
     /// similarity at or above DuplicateSimilarity is a duplicate and the band from BorderlineSimilarity is judged by
     /// research.dedupe-judge (Duplicate, Update, or Different). Without embeddings, word similarity of titles is used.
     /// Also records the highest similarity for the novelty score. Non-critical.
+    /// Earlier findings are those inside Pipeline.DedupeLookbackDays that are not from a dry run and not themselves
+    /// duplicates. With embeddings the nearest ones come from a vector search over that whole window and are read by
+    /// identifier. Without embeddings, exact title repeats are found by an indexed query over the whole window, and
+    /// word overlap is compared against the topic's most recent Pipeline.DedupeTextHistoryLimit findings.
     /// </summary>
     public class DedupeStage : IRunStage
     {
@@ -41,9 +45,7 @@ namespace MyMorningNews.Core.Pipeline.Stages
             double border = Math.Min(dup, services.Settings.Pipeline.BorderlineSimilarity);
             DateTime dedupeSince = ctx.NowUtc.AddDays(-services.Settings.Pipeline.DedupeLookbackDays);
             DateTime noveltySince = ctx.NowUtc.AddDays(-services.Settings.Pipeline.NoveltyLookbackDays);
-            List<Finding> recent = (await services.Database.Findings.EnumerateAsync(new FindingFilter { TenantId = ctx.Run.TenantId, TopicId = ctx.Topic.Id, IsDryRun = false, IsDuplicate = false, PageSize = 1000 }, token).ConfigureAwait(false)).Items
-                .Where(f => f.CreatedUtc >= dedupeSince && f.RunId != ctx.Run.Id).ToList();
-            Dictionary<string, Finding> byId = recent.ToDictionary(f => f.Id, f => f, StringComparer.Ordinal);
+            List<Finding>? recent = null;
 
             for (int i = 0; i < ctx.Candidates.Count; i++)
             {
@@ -60,6 +62,9 @@ namespace MyMorningNews.Core.Pipeline.Stages
                 if (c.Vector != null && ctx.EmbeddingModel != null)
                 {
                     List<EmbeddingMatch> near = await services.Database.Embeddings.NearestAsync(ctx.Run.TenantId, ctx.Topic.Id, "Finding", ctx.EmbeddingModel, c.Vector, dedupeSince, null, 5, token).ConfigureAwait(false);
+                    Dictionary<string, Finding> byId = (await services.Database.Findings.ReadManyAsync(ctx.Run.TenantId, near.Select(m => m.OwnerId), token).ConfigureAwait(false))
+                        .Where(f => f.TopicId == ctx.Topic.Id && !f.IsDryRun && !f.IsDuplicate && f.CreatedUtc >= dedupeSince && f.RunId != ctx.Run.Id)
+                        .ToDictionary(f => f.Id, f => f, StringComparer.Ordinal);
                     EmbeddingMatch? best = near.FirstOrDefault();
                     c.MaxSimilarity = near.Where(m => byId.TryGetValue(m.OwnerId, out Finding? f) && f.CreatedUtc >= noveltySince).Select(m => (double?)m.Similarity).DefaultIfEmpty(null).Max();
                     if (best == null || !byId.TryGetValue(best.OwnerId, out Finding? prior)) continue;
@@ -75,6 +80,7 @@ namespace MyMorningNews.Core.Pipeline.Stages
                 }
                 else
                 {
+                    if (recent == null) recent = await TextHistoryAsync(ctx, services, dedupeSince, token).ConfigureAwait(false);
                     Finding? prior = recent.Select(f => new { f, sim = PipelineServices.WordSimilarity(c.Extracted.Title, f.Title) }).Where(x => x.sim >= 0.8).OrderByDescending(x => x.sim).Select(x => x.f).FirstOrDefault();
                     if (prior != null)
                     {
@@ -123,6 +129,17 @@ namespace MyMorningNews.Core.Pipeline.Stages
             }
 
             return na == 0 || nb == 0 ? 0 : dot / (Math.Sqrt(na) * Math.Sqrt(nb));
+        }
+
+        private static async Task<List<Finding>> TextHistoryAsync(RunContext ctx, PipelineServices services, DateTime dedupeSince, CancellationToken token)
+        {
+            // Loaded once per run, and only when a candidate has no vector. Exact title repeats first, from the whole
+            // lookback window, then the bounded recent history for word overlap.
+            List<Finding> history = await services.Database.Findings.DedupeTitleMatchesAsync(ctx.Run.TenantId, ctx.Topic.Id, ctx.Candidates.Where(c => c.Vector == null || ctx.EmbeddingModel == null).Select(c => c.Extracted.Title), dedupeSince, ctx.Run.Id, token).ConfigureAwait(false);
+            HashSet<string> ids = new HashSet<string>(history.Select(f => f.Id), StringComparer.Ordinal);
+            foreach (Finding f in await services.Database.Findings.DedupeHistoryAsync(ctx.Run.TenantId, ctx.Topic.Id, dedupeSince, ctx.Run.Id, services.Settings.Pipeline.DedupeTextHistoryLimit, token).ConfigureAwait(false))
+                if (ids.Add(f.Id)) history.Add(f);
+            return history;
         }
 
         private static async Task JudgeAsync(RunContext ctx, PipelineServices services, Candidate c, Finding prior, CancellationToken token)

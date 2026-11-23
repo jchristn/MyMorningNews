@@ -9,6 +9,7 @@ namespace MyMorningNews.Core.Scheduling
     using MyMorningNews.Core.Database;
     using MyMorningNews.Core.Enums;
     using MyMorningNews.Core.Exceptions;
+    using MyMorningNews.Core.Helpers;
     using MyMorningNews.Core.Models;
     using MyMorningNews.Core.Pipeline;
     using MyMorningNews.Core.Settings;
@@ -19,9 +20,11 @@ namespace MyMorningNews.Core.Scheduling
     /// Schedules and the run queue (plan section 14.2): saves schedules with their next due time, fires due schedules and
     /// due one-time requests into queued runs (never two active runs per topic), and executes queued runs through an
     /// <see cref="IRunExecutor"/>. All claims use FOR UPDATE SKIP LOCKED, so several server instances can run the workers.
+    /// A run queued or finished in this process sets <see cref="RunSignal"/>, so the run worker claims the next run at once
+    /// instead of at its next poll; the poll remains the fallback for runs queued by another process.
     /// Thread safety: safe for concurrent use.
     /// </summary>
-    public class SchedulingService
+    public class SchedulingService : IDisposable
     {
         #region Public-Members
 
@@ -50,6 +53,12 @@ namespace MyMorningNews.Core.Scheduling
         public Func<Run, CancellationToken, Task>? OnRunFailed { get; set; } = null;
 
         /// <summary>
+        /// Set whenever a run is queued through this service or a run executed by it frees its slot. The run worker waits
+        /// on it between passes, with the poll interval as the timeout. Never null; owned and disposed by this service.
+        /// </summary>
+        public WorkSignal RunSignal { get; } = new WorkSignal();
+
+        /// <summary>
         /// Maximum schedules or requests claimed per tick. Default 100. Minimum 1, maximum 1000.
         /// </summary>
         public int ClaimBatchSize
@@ -67,6 +76,7 @@ namespace MyMorningNews.Core.Scheduling
         private readonly LoggingModule _Logging;
         private readonly string _Header = "[Scheduler] ";
         private int _ClaimBatchSize = 100;
+        private bool _Disposed = false;
 
         #endregion
 
@@ -234,29 +244,135 @@ namespace MyMorningNews.Core.Scheduling
         }
 
         /// <summary>
-        /// Claim queued runs of some tenants (or any tenant) up to the free concurrency and execute them.
+        /// Claim queued runs of some tenants (or any tenant) up to the free concurrency and execute them. One claim only:
+        /// returns after the claimed runs finish without looking for more. Never claims past Pipeline.MaxConcurrentRuns.
         /// </summary>
         /// <param name="executor">Executor.</param>
         /// <param name="workerId">Worker identity.</param>
         /// <param name="tenantIds">Only these tenants, or null for any tenant.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Runs executed.</returns>
+        /// <exception cref="ArgumentNullException">executor is null.</exception>
         public async Task<int> ExecuteQueuedAsync(IRunExecutor executor, string workerId, IReadOnlyCollection<string>? tenantIds, CancellationToken token = default)
         {
             ArgumentNullException.ThrowIfNull(executor);
-            DateTime now = DateTime.UtcNow;
-            await _Database.Runs.FailAbandonedAsync(now, token).ConfigureAwait(false);
-            long running = await _Database.Runs.CountRunningAsync(token).ConfigureAwait(false);
-            int free = (int)Math.Max(0, _Settings.Pipeline.MaxConcurrentRuns - running);
-            if (free == 0) return 0;
-            List<Run> runs = await _Database.Runs.ClaimQueuedAsync(now, now.AddMinutes(_Settings.Pipeline.RunTimeoutMinutes + 5), free, workerId, tenantIds, token).ConfigureAwait(false);
+            List<Run> runs = await ClaimAsync(workerId, tenantIds, token).ConfigureAwait(false);
             await Task.WhenAll(runs.Select(r => ExecuteAsync(r, executor, token))).ConfigureAwait(false);
             return runs.Count;
+        }
+
+        /// <summary>
+        /// Work the queue until it is idle: claim queued runs into the free slots, and claim again the moment a run
+        /// finishes or <see cref="RunSignal"/> is set, without waiting for the other claimed runs. Returns when nothing
+        /// claimed by this call is still executing and a claim finds nothing (the queue is empty, or other workers hold
+        /// every slot). Never claims past Pipeline.MaxConcurrentRuns.
+        /// </summary>
+        /// <param name="executor">Executor.</param>
+        /// <param name="workerId">Worker identity.</param>
+        /// <param name="tenantIds">Only these tenants, or null for any tenant.</param>
+        /// <param name="token">Cancellation token. On cancellation the runs already claimed are awaited before the exception leaves.</param>
+        /// <returns>Runs executed.</returns>
+        /// <exception cref="ArgumentNullException">executor is null.</exception>
+        /// <exception cref="OperationCanceledException">The token was cancelled.</exception>
+        public async Task<int> DrainQueuedAsync(IRunExecutor executor, string workerId, IReadOnlyCollection<string>? tenantIds, CancellationToken token = default)
+        {
+            ArgumentNullException.ThrowIfNull(executor);
+            List<Task> active = new List<Task>();
+            Task<bool>? wake = null;
+            int executed = 0;
+            using (CancellationTokenSource stopWaiting = CancellationTokenSource.CreateLinkedTokenSource(token))
+            {
+                try
+                {
+                    while (true)
+                    {
+                        token.ThrowIfCancellationRequested();
+                        if (wake != null && wake.IsCompleted)
+                        {
+                            // The signal this wait consumed is honored by the claim just below.
+                            await wake.ConfigureAwait(false);
+                            wake = null;
+                        }
+
+                        List<Run> claimed = await ClaimAsync(workerId, tenantIds, token).ConfigureAwait(false);
+                        foreach (Run run in claimed) active.Add(ExecuteAsync(run, executor, token));
+                        executed += claimed.Count;
+                        if (active.Count == 0) break;
+
+                        if (wake == null) wake = RunSignal.WaitAsync(Timeout.InfiniteTimeSpan, stopWaiting.Token);
+                        List<Task> waits = new List<Task>(active);
+                        waits.Add(wake);
+                        await Task.WhenAny(waits).ConfigureAwait(false);
+                        foreach (Task finished in active.Where(t => t.IsCompleted).ToList())
+                        {
+                            active.Remove(finished);
+                            await finished.ConfigureAwait(false);
+                        }
+                    }
+                }
+                finally
+                {
+                    stopWaiting.Cancel();
+                    if (wake != null)
+                    {
+                        try
+                        {
+                            // A signal that arrived after the last claim was consumed by the wait: hand it back.
+                            if (await wake.ConfigureAwait(false)) RunSignal.Signal();
+                        }
+                        catch (Exception ex) when (ex is OperationCanceledException || ex is ObjectDisposedException)
+                        {
+                        }
+                    }
+
+                    if (active.Count > 0)
+                    {
+                        try
+                        {
+                            await Task.WhenAll(active).ConfigureAwait(false);
+                        }
+                        catch (Exception ex)
+                        {
+                            // Only reached while another exception is already leaving this method.
+                            _Logging.Debug(_Header + "run ended while the queue pass was stopping: " + ex.Message);
+                        }
+                    }
+                }
+            }
+
+            return executed;
+        }
+
+        /// <summary>
+        /// Dispose.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Dispose.
+        /// </summary>
+        /// <param name="disposing">Disposing managed resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_Disposed) return;
+            if (disposing) RunSignal.Dispose();
+            _Disposed = true;
         }
 
         #endregion
 
         #region Private-Methods
+
+        private async Task<List<Run>> ClaimAsync(string workerId, IReadOnlyCollection<string>? tenantIds, CancellationToken token)
+        {
+            DateTime now = DateTime.UtcNow;
+            await _Database.Runs.FailAbandonedAsync(now, token).ConfigureAwait(false);
+            return await _Database.Runs.ClaimQueuedWithinLimitAsync(now, now.AddMinutes(_Settings.Pipeline.RunTimeoutMinutes + 5), _Settings.Pipeline.MaxConcurrentRuns, workerId, tenantIds, token).ConfigureAwait(false);
+        }
 
         private static string PlanIntervalMessage(int minutes)
         {
@@ -369,7 +485,7 @@ namespace MyMorningNews.Core.Scheduling
 
         private async Task<Run> EnqueueAsync(string tenantId, string topicId, string userId, RunTriggerEnum trigger, string? scheduleId, string? requestId, bool dryRun, DateTime nowUtc, CancellationToken token)
         {
-            return await _Database.Runs.CreateAsync(new Run
+            Run run = await _Database.Runs.CreateAsync(new Run
             {
                 TenantId = tenantId,
                 TopicId = topicId,
@@ -381,6 +497,8 @@ namespace MyMorningNews.Core.Scheduling
                 IsDryRun = dryRun,
                 QueuedUtc = nowUtc
             }, token).ConfigureAwait(false);
+            RunSignal.Signal();
+            return run;
         }
 
         private async Task ExecuteAsync(Run run, IRunExecutor executor, CancellationToken token)
@@ -422,6 +540,8 @@ namespace MyMorningNews.Core.Scheduling
             run.Summary = result?.Summary;
             run.ErrorMessage = error;
             await _Database.Runs.UpdateAsync(run, CancellationToken.None).ConfigureAwait(false);
+            // The slot is free from here: wake the worker to claim the next queued run before the bookkeeping below.
+            RunSignal.Signal();
             if (run.Status == RunStatusEnum.Failed && !run.IsDryRun && OnRunFailed != null)
             {
                 try

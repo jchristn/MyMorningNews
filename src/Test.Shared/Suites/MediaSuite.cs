@@ -35,6 +35,7 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "Script", "Scripts parse into chapters and speakers, are cleaned for speech, and split under the limit", ScriptAsync, "fast"),
                 Cases.Case(S, "Wav", "WAV segments join with exact durations", WavAsync, "fast"),
                 Cases.Case(S, "EditionAudio", "An edition with audio produces an episode with chapters aligned to its sections", EditionAudioAsync),
+                Cases.Case(S, "NoPollWait", "Queued audio wakes the media worker at once instead of waiting for its poll", NoPollWaitAsync),
                 Cases.Case(S, "ScriptFallback", "Without a script model the episode is spoken from the briefing text", ScriptFallbackAsync),
                 Cases.Case(S, "Failure", "Speech failures are retried and then marked failed", FailureAsync),
                 Cases.Case(S, "Voices", "Voices are listed, managed by administrators, tested, and defaulted", VoicesAsync),
@@ -113,6 +114,41 @@ namespace Test.Shared.Suites
             }
 
             throw new InvalidOperationException("No finished episode for briefing " + b.Id);
+        }
+
+        private static async Task NoPollWaitAsync(CancellationToken token)
+        {
+            PipelineFixture f = await PipelineSuite.FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
+            Briefing b = await EditionBriefingAsync(f, "Signalled Audio", false, token).ConfigureAwait(false);
+
+            // The server's own worker, limited to this tenant, with a poll far longer than the test: only the queue
+            // signal can start the episode in time. Nothing here calls ProcessQueuedAsync.
+            MyMorningNews.Server.Workers.MediaWorker worker = new MyMorningNews.Server.Workers.MediaWorker(f.Server.Context) { Interval = TimeSpan.FromSeconds(120), TenantIds = new[] { b.TenantId } };
+            using (CancellationTokenSource stop = CancellationTokenSource.CreateLinkedTokenSource(token))
+            {
+                Task loop = Task.Run(() => worker.RunAsync(stop.Token));
+                try
+                {
+                    await Task.Delay(1000, token).ConfigureAwait(false);
+                    System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
+                    MediaAsset queued = (await f.User.Client.PostAsync("/v1.0/api/briefings/" + b.Id + "/audio", new { }, token).ConfigureAwait(false)).Expect(202, "queue audio").Json<MediaAsset>();
+                    Assert.True(queued.Status == MediaStatusEnum.Queued, "queued: " + queued.Status);
+                    MediaAsset? m = null;
+                    while (sw.Elapsed < TimeSpan.FromSeconds(60))
+                    {
+                        m = await f.Server.Context.Database.MediaAssets.ReadAsync(queued.TenantId, queued.Id, token).ConfigureAwait(false);
+                        if (m != null && (m.Status == MediaStatusEnum.Ready || m.Status == MediaStatusEnum.Failed)) break;
+                        await Task.Delay(50, token).ConfigureAwait(false);
+                    }
+
+                    Assert.True(m != null && m.Status == MediaStatusEnum.Ready, "the episode is made without waiting for the " + worker.Interval.TotalSeconds + " second poll: " + m?.Status + " " + m?.ErrorMessage + " after " + sw.Elapsed.TotalSeconds.ToString("F1") + " s");
+                }
+                finally
+                {
+                    stop.Cancel();
+                    await loop.ConfigureAwait(false);
+                }
+            }
         }
 
         private static async Task EditionAudioAsync(CancellationToken token)

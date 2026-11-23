@@ -52,7 +52,8 @@ namespace MyMorningNews.Core.Pipeline
         public Dictionary<string, object?> BaseValues { get; set; } = new Dictionary<string, object?>();
 
         /// <summary>
-        /// Canonical URL hashes already fetched for this topic.
+        /// Canonical URL hashes among this run's search results that a finished, non-dry run of the topic already fetched.
+        /// Set by the Filter stage with a query for exactly this run's hashes, so no history size limit applies.
         /// </summary>
         public HashSet<string> SeenUrlHashes { get; set; } = new HashSet<string>(StringComparer.Ordinal);
 

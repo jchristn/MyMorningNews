@@ -273,7 +273,11 @@ COALESCE(SUM(reasoningtokens), 0) AS reasoning FROM llmcalls WHERE runid IS NOT 
             }),
             new SchemaMigration(23, "In-app notifications and per-kind, per-channel notification preferences", Concat(
                 NotificationQueries.Schema,
-                NotificationPreferenceQueries.Schema))
+                NotificationPreferenceQueries.Schema)),
+            new SchemaMigration(24, "Exact-title lookup for duplicate detection", new List<string>
+            {
+                "CREATE INDEX IF NOT EXISTS ix_findings_topic_titlehash ON findings (tenantid, topicid, (md5(lower(btrim(title)))))"
+            })
         };
 
         private static List<string> Concat(params IReadOnlyList<string>[] parts)

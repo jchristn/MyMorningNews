@@ -1,5 +1,6 @@
 namespace MyMorningNews.Core.Database.Interfaces
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
@@ -87,5 +88,41 @@ namespace MyMorningNews.Core.Database.Interfaces
         /// <param name="token">Cancellation token.</param>
         /// <returns>Count.</returns>
         Task<long> CountAsync(FindingFilter filter, CancellationToken token = default);
+
+        /// <summary>
+        /// Read several records by identifier in one query.
+        /// </summary>
+        /// <param name="tenantId">Tenant identifier; the lookup is constrained to this tenant.</param>
+        /// <param name="ids">Identifiers. Null or empty returns an empty list.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The records found, in no particular order; unknown identifiers are skipped.</returns>
+        Task<List<Finding>> ReadManyAsync(string tenantId, IEnumerable<string>? ids, CancellationToken token = default);
+
+        /// <summary>
+        /// Earlier findings of a topic that a new candidate can repeat: not from a dry run, not themselves duplicates,
+        /// created at or after <paramref name="sinceUtc"/>, and not from <paramref name="excludeRunId"/>. Newest first.
+        /// </summary>
+        /// <param name="tenantId">Tenant identifier.</param>
+        /// <param name="topicId">Topic identifier.</param>
+        /// <param name="sinceUtc">Oldest creation time included (UTC).</param>
+        /// <param name="excludeRunId">Run whose own findings are left out, or null.</param>
+        /// <param name="limit">Most records returned. Minimum 1, maximum 50000.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The newest matching findings, up to the limit.</returns>
+        Task<List<Finding>> DedupeHistoryAsync(string tenantId, string topicId, DateTime sinceUtc, string? excludeRunId, int limit, CancellationToken token = default);
+
+        /// <summary>
+        /// Earlier findings of a topic whose title equals one of the given titles, ignoring case and surrounding white
+        /// space, under the same rules as <see cref="DedupeHistoryAsync"/>. An indexed lookup over the whole window, with
+        /// no row limit, so an exact repeat is found however many findings the topic has.
+        /// </summary>
+        /// <param name="tenantId">Tenant identifier.</param>
+        /// <param name="topicId">Topic identifier.</param>
+        /// <param name="titles">Titles to look for. Null or empty returns an empty list.</param>
+        /// <param name="sinceUtc">Oldest creation time included (UTC).</param>
+        /// <param name="excludeRunId">Run whose own findings are left out, or null.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Matching findings, newest first.</returns>
+        Task<List<Finding>> DedupeTitleMatchesAsync(string tenantId, string topicId, IEnumerable<string>? titles, DateTime sinceUtc, string? excludeRunId, CancellationToken token = default);
     }
 }

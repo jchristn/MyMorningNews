@@ -92,5 +92,26 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// Existence check.
         /// </summary>
         public const string Exists = "SELECT 1 FROM findings WHERE id = $1 AND tenantid = $2 LIMIT 1";
+
+        /// <summary>
+        /// Select the records of tenant $1 whose identifier is in $2.
+        /// </summary>
+        public const string SelectMany = "SELECT " + Columns + " FROM findings WHERE tenantid = $1 AND id = ANY($2)";
+
+        /// <summary>
+        /// The newest $5 findings of topic $2 (tenant $1) a candidate can repeat: not dry, not duplicates, created at or
+        /// after $3, not from run $4. Served by ix_findings_topic_created.
+        /// </summary>
+        public const string SelectDedupeHistory = "SELECT " + Columns + " FROM findings WHERE tenantid = $1 AND topicid = $2 AND createdutc >= $3 AND runid <> $4 " +
+            "AND isdryrun = FALSE AND isduplicate = FALSE ORDER BY createdutc DESC, id DESC LIMIT $5";
+
+        /// <summary>
+        /// Findings of topic $2 (tenant $1) whose title equals one of $3 ignoring case and surrounding white space, under
+        /// the rules of <see cref="SelectDedupeHistory"/> ($4 oldest creation time, $5 excluded run). Served by
+        /// ix_findings_topic_titlehash; the hash only narrows the search and the stage compares the titles itself.
+        /// </summary>
+        public const string SelectDedupeTitleMatches = "SELECT " + Columns + " FROM findings WHERE tenantid = $1 AND topicid = $2 " +
+            "AND md5(lower(btrim(title))) = ANY(ARRAY(SELECT md5(lower(btrim(t))) FROM unnest($3::text[]) AS t)) AND createdutc >= $4 AND runid <> $5 " +
+            "AND isdryrun = FALSE AND isduplicate = FALSE ORDER BY createdutc DESC, id DESC";
     }
 }

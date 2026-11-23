@@ -205,6 +205,33 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             return counts.FirstOrDefault();
         }
 
+        /// <inheritdoc />
+        public async Task<List<Finding>> ReadManyAsync(string tenantId, IEnumerable<string>? ids, CancellationToken token = default)
+        {
+            if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            string[] wanted = (ids ?? Enumerable.Empty<string>()).Where(i => !String.IsNullOrEmpty(i)).Distinct(StringComparer.Ordinal).ToArray();
+            if (wanted.Length == 0) return new List<Finding>();
+            return await QueryAsync(FindingQueries.SelectMany, Map, token, tenantId, wanted).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task<List<Finding>> DedupeHistoryAsync(string tenantId, string topicId, DateTime sinceUtc, string? excludeRunId, int limit, CancellationToken token = default)
+        {
+            if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrWhiteSpace(topicId)) throw new ArgumentNullException(nameof(topicId));
+            return await QueryAsync(FindingQueries.SelectDedupeHistory, Map, token, tenantId, topicId, DateTime.SpecifyKind(sinceUtc, DateTimeKind.Utc), excludeRunId ?? String.Empty, Math.Clamp(limit, 1, 50000)).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task<List<Finding>> DedupeTitleMatchesAsync(string tenantId, string topicId, IEnumerable<string>? titles, DateTime sinceUtc, string? excludeRunId, CancellationToken token = default)
+        {
+            if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrWhiteSpace(topicId)) throw new ArgumentNullException(nameof(topicId));
+            string[] wanted = (titles ?? Enumerable.Empty<string>()).Where(t => !String.IsNullOrWhiteSpace(t)).Distinct(StringComparer.Ordinal).ToArray();
+            if (wanted.Length == 0) return new List<Finding>();
+            return await QueryAsync(FindingQueries.SelectDedupeTitleMatches, Map, token, tenantId, topicId, wanted, DateTime.SpecifyKind(sinceUtc, DateTimeKind.Utc), excludeRunId ?? String.Empty).ConfigureAwait(false);
+        }
+
         /// <summary>
         /// Map a data reader row (columns in <see cref="FindingQueries.Columns"/> order) to a model.
         /// </summary>

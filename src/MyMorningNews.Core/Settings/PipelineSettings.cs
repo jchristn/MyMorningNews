@@ -158,6 +158,20 @@ namespace MyMorningNews.Core.Settings
         }
 
         /// <summary>
+        /// Without embeddings: how many of the topic's most recent earlier findings (inside DedupeLookbackDays) are
+        /// compared with each new finding by word overlap. An earlier finding with exactly the same title is always found,
+        /// whatever this limit; only reworded repeats older than the newest findings counted here can be missed. With
+        /// embeddings the nearest earlier findings are found by vector search and this limit is not used. Default 5000.
+        /// Minimum 100, maximum 50000.
+        /// </summary>
+        [Setting(Description = "Without embeddings, the number of most recent earlier findings compared by word overlap for duplicates. Exact title repeats are always found.", Minimum = 100, Maximum = 50000)]
+        public int DedupeTextHistoryLimit
+        {
+            get { return _DedupeTextHistoryLimit; }
+            set { _DedupeTextHistoryLimit = Math.Clamp(value, 100, 50000); }
+        }
+
+        /// <summary>
         /// Days of earlier findings used for novelty. Default 30. Minimum 1, maximum 3650.
         /// </summary>
         [Setting(Description = "Days of earlier findings used for novelty.", Minimum = 1, Maximum = 3650)]
@@ -292,6 +306,7 @@ namespace MyMorningNews.Core.Settings
         private int _MaxDocumentCharacters = 24000;
         private int _MaxParallelFetches = 4;
         private int _DedupeLookbackDays = 90;
+        private int _DedupeTextHistoryLimit = 5000;
         private int _NoveltyLookbackDays = 30;
         private int _RecencyHalfLifeHours = 72;
         private int _DisplayThreshold = 40;

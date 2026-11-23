@@ -77,6 +77,14 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         public const string DeleteUnscoped = "DELETE FROM searchresults WHERE id = $1";
 
         /// <summary>
+        /// Of the hashes in $3, those fetched for topic $2 of tenant $1 by a finished, non-dry run other than $4. Served
+        /// by ix_searchresults_topic_hash.
+        /// </summary>
+        public const string SelectSeenUrlHashes = "SELECT DISTINCT s.canonicalurlhash FROM searchresults s JOIN runs r ON r.id = s.runid AND r.tenantid = s.tenantid " +
+            "WHERE s.tenantid = $1 AND s.topicid = $2 AND s.canonicalurlhash = ANY($3) AND s.disposition = 'Fetched' AND s.runid <> $4 " +
+            "AND r.isdryrun = FALSE AND r.status IN ('Completed', 'PartiallySucceeded')";
+
+        /// <summary>
         /// Existence check.
         /// </summary>
         public const string Exists = "SELECT 1 FROM searchresults WHERE id = $1 AND tenantid = $2 LIMIT 1";

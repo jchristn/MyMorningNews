@@ -1,24 +1,32 @@
 namespace MyMorningNews.Server.Workers
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.Threading;
     using System.Threading.Tasks;
     using MyMorningNews.Core.Telemetry;
 
     /// <summary>
-    /// Produces queued audio episodes (plan section 22).
+    /// Produces queued audio episodes (plan section 22). Between passes the loop waits for the audio service's queue
+    /// signal (audio queued in this process) with <see cref="Interval"/> as the fallback for audio queued by another
+    /// process and for retries.
     /// </summary>
     public class MediaWorker
     {
         /// <summary>
-        /// Time between passes. Default 10 seconds, minimum 1 second.
+        /// Longest time between passes when nothing signals new work. Default 10 seconds, minimum 1 second.
         /// </summary>
         public TimeSpan Interval
         {
             get { return _Interval; }
             set { _Interval = value < TimeSpan.FromSeconds(1) ? TimeSpan.FromSeconds(1) : value; }
         }
+
+        /// <summary>
+        /// Only produce audio of these tenants, or null (the default) for any tenant.
+        /// </summary>
+        public IReadOnlyCollection<string>? TenantIds { get; set; } = null;
 
         private readonly ServerContext _Server;
         private TimeSpan _Interval = TimeSpan.FromSeconds(10);
@@ -46,9 +54,9 @@ namespace MyMorningNews.Server.Workers
                 await RunOnceAsync(token).ConfigureAwait(false);
                 try
                 {
-                    await Task.Delay(Interval, token).ConfigureAwait(false);
+                    await _Server.Audio.QueueSignal.WaitAsync(Interval, token).ConfigureAwait(false);
                 }
-                catch (OperationCanceledException)
+                catch (Exception ex) when (ex is OperationCanceledException || ex is ObjectDisposedException)
                 {
                     return;
                 }
@@ -66,7 +74,7 @@ namespace MyMorningNews.Server.Workers
             string outcome = "success";
             try
             {
-                int done = await _Server.Audio.ProcessQueuedAsync(DateTime.UtcNow, token).ConfigureAwait(false);
+                int done = await _Server.Audio.ProcessQueuedAsync(DateTime.UtcNow, TenantIds, token).ConfigureAwait(false);
                 if (done > 0) _Server.Logging.Debug("[MediaWorker] finished " + done + " audio episodes");
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested)

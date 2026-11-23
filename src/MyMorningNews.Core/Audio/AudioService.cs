@@ -52,6 +52,12 @@ namespace MyMorningNews.Core.Audio
         public AudioMixer Mixer { get; }
 
         /// <summary>
+        /// Set whenever an episode is queued through this service. The media worker waits on it between passes, with its
+        /// poll interval as the timeout. Never null; owned and disposed by this service.
+        /// </summary>
+        public WorkSignal QueueSignal { get; } = new WorkSignal();
+
+        /// <summary>
         /// Notifications; when set, the owner is told once when a briefing's audio becomes ready (not for dry runs,
         /// voice previews, or voice tests, which make no stored audio). An edition's email and push switches are passed
         /// as further filters on top of the reader's notification preferences. May be null.
@@ -109,6 +115,7 @@ namespace MyMorningNews.Core.Audio
         private DateTime _VoiceListUtc = DateTime.MinValue;
         private bool _Disposed = false;
         private const string _Header = "[AudioService] ";
+        private const int _ClaimBatch = 2;
 
         #endregion
 
@@ -196,7 +203,7 @@ namespace MyMorningNews.Core.Audio
             }
 
             VoiceProfile? voice = await ResolveVoiceAsync(briefing.TenantId, chosen, token).ConfigureAwait(false);
-            return await _Database.MediaAssets.CreateAsync(new MediaAsset
+            MediaAsset queued = await _Database.MediaAssets.CreateAsync(new MediaAsset
             {
                 TenantId = briefing.TenantId,
                 UserId = briefing.UserId,
@@ -208,6 +215,8 @@ namespace MyMorningNews.Core.Audio
                 VoiceProfileId = voice?.Id,
                 Title = briefing.Title
             }, token).ConfigureAwait(false);
+            QueueSignal.Signal();
+            return queued;
         }
 
         /// <summary>
@@ -231,14 +240,19 @@ namespace MyMorningNews.Core.Audio
         public async Task<int> ProcessQueuedAsync(DateTime nowUtc, IReadOnlyCollection<string>? tenantIds, CancellationToken token = default)
         {
             await _Database.MediaAssets.RecoverAbandonedAsync(nowUtc, _Settings.Tts.MaxAttempts, token).ConfigureAwait(false);
-            List<MediaAsset> claimed = await _Database.MediaAssets.ClaimQueuedAsync(nowUtc, nowUtc.AddMinutes(30), 2, tenantIds, token).ConfigureAwait(false);
+            List<MediaAsset> claimed = await _Database.MediaAssets.ClaimQueuedAsync(nowUtc, nowUtc.AddMinutes(30), _ClaimBatch, tenantIds, token).ConfigureAwait(false);
             int done = 0;
+            bool retrying = false;
             foreach (MediaAsset m in claimed)
             {
                 token.ThrowIfCancellationRequested();
-                await ProduceAsync(m, token).ConfigureAwait(false);
+                if (!await ProduceAsync(m, token).ConfigureAwait(false)) retrying = true;
                 done++;
             }
+
+            // A full batch means more episodes may be waiting: ask for another pass at once rather than at the next
+            // poll. Not when an episode went back to the queue to retry, so retries keep the poll interval as their pause.
+            if (claimed.Count == _ClaimBatch && !retrying) QueueSignal.Signal();
 
             return done;
         }
@@ -609,13 +623,15 @@ namespace MyMorningNews.Core.Audio
             {
                 if (_OwnsTts && _Tts is IDisposable d) d.Dispose();
                 _Http.Dispose();
+                QueueSignal.Dispose();
             }
 
             _Disposed = true;
         }
 
-        private async Task ProduceAsync(MediaAsset m, CancellationToken token)
+        private async Task<bool> ProduceAsync(MediaAsset m, CancellationToken token)
         {
+            // Returns false when the episode went back to the queue for another attempt.
             try
             {
                 Briefing b = await _Database.Briefings.ReadAsync(m.TenantId, m.BriefingId, token).ConfigureAwait(false) ?? throw new InvalidOperationException("The briefing no longer exists.");
@@ -691,6 +707,7 @@ namespace MyMorningNews.Core.Audio
                 await _Database.Briefings.UpdateAsync(b, token).ConfigureAwait(false);
                 MyMorningNewsTelemetry.Increment(MyMorningNewsTelemetry.MediaEpisodes, "outcome", "ready", "format", mix.Extension);
                 await NotifyReadyAsync(m, b, token).ConfigureAwait(false);
+                return true;
             }
             catch (Exception ex) when (!(ex is OperationCanceledException && token.IsCancellationRequested))
             {
@@ -701,6 +718,7 @@ namespace MyMorningNews.Core.Audio
                 await _Database.MediaAssets.UpdateAsync(m, CancellationToken.None).ConfigureAwait(false);
                 MyMorningNewsTelemetry.Increment(MyMorningNewsTelemetry.MediaEpisodes, "outcome", retry ? "retry" : "failed", "format", "none");
                 _Logging.Warn(_Header + "audio " + m.Id + (retry ? " will retry: " : " failed: ") + ex.Message);
+                return !retry;
             }
         }
 

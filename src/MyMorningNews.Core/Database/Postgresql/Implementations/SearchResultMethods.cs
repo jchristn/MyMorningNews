@@ -172,6 +172,19 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             return counts.FirstOrDefault();
         }
 
+        /// <inheritdoc />
+        public async Task<HashSet<string>> SeenUrlHashesAsync(string tenantId, string topicId, IEnumerable<string>? canonicalUrlHashes, string? excludeRunId, CancellationToken token = default)
+        {
+            if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrWhiteSpace(topicId)) throw new ArgumentNullException(nameof(topicId));
+            string[] hashes = (canonicalUrlHashes ?? Enumerable.Empty<string>()).Where(h => !String.IsNullOrEmpty(h)).Distinct(StringComparer.Ordinal).ToArray();
+            HashSet<string> seen = new HashSet<string>(StringComparer.Ordinal);
+            if (hashes.Length == 0) return seen;
+            List<string> rows = await QueryAsync(SearchResultQueries.SelectSeenUrlHashes, r => r.GetString(0), token, tenantId, topicId, hashes, excludeRunId ?? String.Empty).ConfigureAwait(false);
+            foreach (string hash in rows) seen.Add(hash);
+            return seen;
+        }
+
         /// <summary>
         /// Map a data reader row (columns in <see cref="SearchResultQueries.Columns"/> order) to a model.
         /// </summary>

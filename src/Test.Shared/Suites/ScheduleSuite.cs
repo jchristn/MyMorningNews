@@ -2,16 +2,22 @@ namespace Test.Shared.Suites
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using MyMorningNews.Core.Database;
     using MyMorningNews.Core.Enums;
+    using MyMorningNews.Core.Helpers;
     using MyMorningNews.Core.Models;
     using MyMorningNews.Core.Pipeline;
     using MyMorningNews.Core.Requests;
     using MyMorningNews.Core.Responses;
     using MyMorningNews.Core.Scheduling;
+    using MyMorningNews.Core.Services;
+    using MyMorningNews.Core.Settings;
     using MyMorningNews.Server;
+    using SyslogLogging;
     using Test.Shared.Helpers;
     using Touchstone.Core;
 
@@ -40,6 +46,8 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "Api.Schedules", "Schedules are created, previewed, updated, and private to the topic owner", ApiAsync),
                 Cases.Case(S, "Scheduler.Tick", "Due schedules queue one run, overlapping and paused cases are skipped, missed runs follow the policy", TickAsync),
                 Cases.Case(S, "Runs.Execute", "Queued runs execute, fail, time out, and respect the concurrency limit", ExecuteAsync),
+                Cases.Case(S, "Runs.Signal", "A work signal collapses repeats, is kept until waited on, and times out when unset", WorkSignalAsync, "fast"),
+                Cases.Case(S, "Runs.NoPollWait", "Queued runs start when queued and when a slot frees, without waiting for the poll, and never pass the concurrency limit even with competing claimers", NoPollWaitAsync),
                 Cases.Case(S, "Runs.Api", "Run now, dry run, conflicts, and cancel work through the API", RunApiAsync),
                 Cases.Case(S, "Requests.Due", "A confirmed one-time request is queued when due and completes when delivered", RequestDueAsync)
             });
@@ -243,6 +251,175 @@ namespace Test.Shared.Suites
             await server.Context.Scheduling.TickAsync(now, token).ConfigureAwait(false);
             List<Run> recovered = await RunsAsync(server, recover, token).ConfigureAwait(false);
             Assert.True(recovered.Count == 1 && recovered[0].Status == RunStatusEnum.Queued, "missed run recovered once");
+        }
+
+        private static async Task WorkSignalAsync(CancellationToken token)
+        {
+            using (WorkSignal signal = new WorkSignal())
+            {
+                Assert.True(!await signal.WaitAsync(TimeSpan.Zero, token).ConfigureAwait(false), "unset at first");
+                signal.Signal();
+                signal.Signal();
+                signal.Signal();
+                Assert.True(await signal.WaitAsync(TimeSpan.Zero, token).ConfigureAwait(false), "a signal sent before the wait is kept");
+                Assert.True(!await signal.WaitAsync(TimeSpan.FromMilliseconds(20), token).ConfigureAwait(false), "repeats collapse into one wake and the wait times out");
+
+                Task<bool> waiting = signal.WaitAsync(TimeSpan.FromSeconds(30), token);
+                Assert.True(!waiting.IsCompleted, "waits while unset");
+                signal.Signal();
+                Assert.True(await waiting.ConfigureAwait(false), "a waiter wakes when signalled");
+
+                using (CancellationTokenSource cancel = CancellationTokenSource.CreateLinkedTokenSource(token))
+                {
+                    Task<bool> cancelled = signal.WaitAsync(Timeout.InfiniteTimeSpan, cancel.Token);
+                    cancel.Cancel();
+                    bool threw = false;
+                    try
+                    {
+                        await cancelled.ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        threw = true;
+                    }
+
+                    Assert.True(threw, "a wait ends on cancellation");
+                }
+
+                signal.Dispose();
+                signal.Signal();
+                bool disposed = false;
+                try
+                {
+                    await signal.WaitAsync(TimeSpan.Zero, token).ConfigureAwait(false);
+                }
+                catch (ObjectDisposedException)
+                {
+                    disposed = true;
+                }
+
+                Assert.True(disposed, "signalling after disposal is harmless and waiting is refused");
+            }
+        }
+
+        private static async Task NoPollWaitAsync(CancellationToken token)
+        {
+            // Its own database: the shared server's queue and concurrency count belong to every suite at once, and this
+            // case needs to know that only its own runs hold slots.
+            DatabaseSettings databaseSettings = TestDatabase.NewSettings("mmn_queue");
+            DatabaseDriverBase db = await DatabaseDriverFactory.CreateAndInitializeAsync(databaseSettings, token).ConfigureAwait(false);
+            try
+            {
+                using (LoggingModule logging = new LoggingModule())
+                {
+                    logging.Settings.EnableConsole = false;
+                    SeedService seed = new SeedService(db, logging);
+                    await seed.EnsureAsync(token).ConfigureAwait(false);
+                    ServerSettings settings = new ServerSettings();
+                    settings.Pipeline.MaxConcurrentRuns = 2;
+                    int running = 0;
+                    int peak = 0;
+                    int finished = 0;
+                    StubRunExecutor slow = new StubRunExecutor
+                    {
+                        Body = async (r, tk) =>
+                        {
+                            int now = Interlocked.Increment(ref running);
+                            int seen = Volatile.Read(ref peak);
+                            while (now > seen)
+                            {
+                                int was = Interlocked.CompareExchange(ref peak, now, seen);
+                                if (was == seen) break;
+                                seen = was;
+                            }
+
+                            await Task.Delay(150, tk).ConfigureAwait(false);
+                            Interlocked.Decrement(ref running);
+                            Interlocked.Increment(ref finished);
+                            return new RunResult { Summary = "ok", Delivered = true };
+                        }
+                    };
+
+                    using (SchedulingService first = new SchedulingService(db, settings, logging))
+                    using (SchedulingService second = new SchedulingService(db, settings, logging))
+                    {
+                        // The run worker's loop, with a poll far longer than the test: only the signal can start a run in time.
+                        TimeSpan poll = TimeSpan.FromSeconds(120);
+                        using (CancellationTokenSource stop = CancellationTokenSource.CreateLinkedTokenSource(token))
+                        {
+                            Task worker = Task.Run(async () =>
+                            {
+                                try
+                                {
+                                    while (!stop.Token.IsCancellationRequested)
+                                    {
+                                        await first.DrainQueuedAsync(slow, "signal-test", null, stop.Token).ConfigureAwait(false);
+                                        await first.RunSignal.WaitAsync(poll, stop.Token).ConfigureAwait(false);
+                                    }
+                                }
+                                catch (OperationCanceledException)
+                                {
+                                }
+                            });
+
+                            await Task.Delay(400, token).ConfigureAwait(false);
+                            Stopwatch sw = Stopwatch.StartNew();
+                            for (int i = 0; i < 6; i++)
+                                await first.RunNowAsync(new Topic { Id = "top_signal" + i, TenantId = seed.DefaultTenantId, Status = TopicStatusEnum.Active }, "usr_signal", false, DateTime.UtcNow, token).ConfigureAwait(false);
+                            while (Volatile.Read(ref finished) < 6 && sw.Elapsed < TimeSpan.FromSeconds(30)) await Task.Delay(20, token).ConfigureAwait(false);
+                            double seconds = sw.Elapsed.TotalSeconds;
+                            Assert.True(Volatile.Read(ref finished) == 6, "six queued runs finish long before the " + poll.TotalSeconds + " second poll (" + Volatile.Read(ref finished) + " finished in " + seconds.ToString("F1") + " s)");
+                            Assert.True(Volatile.Read(ref peak) == 2, "both slots are used and never more (peak " + Volatile.Read(ref peak) + ")");
+                            // Three rounds of two 150 ms runs; a pass that waited for its whole batch and then a poll could not do this.
+                            Assert.True(seconds < 10, "runs follow one another as slots free (" + seconds.ToString("F1") + " s)");
+
+                            stop.Cancel();
+                            await worker.ConfigureAwait(false);
+                        }
+
+                        List<Run> runs = (await db.Runs.EnumerateAsync(new RunFilter { TenantId = seed.DefaultTenantId, PageSize = 100 }, token).ConfigureAwait(false)).Items;
+                        Assert.True(runs.Count == 6 && runs.All(r => r.Status == RunStatusEnum.Completed && r.WorkerId == "signal-test"), "every run completed through the signalled worker");
+
+                        // Competing claimers, as several server processes would be: two services, four loops each, all
+                        // claiming at once. The limit is counted and claimed in one step, so the peak cannot pass it.
+                        Volatile.Write(ref peak, 0);
+                        Volatile.Write(ref finished, 0);
+                        for (int i = 0; i < 12; i++)
+                            await first.RunNowAsync(new Topic { Id = "top_compete" + i, TenantId = seed.DefaultTenantId, Status = TopicStatusEnum.Active }, "usr_signal", false, DateTime.UtcNow, token).ConfigureAwait(false);
+                        int largestClaim = 0;
+                        Stopwatch compete = Stopwatch.StartNew();
+                        List<Task> claimers = new List<Task>();
+                        for (int i = 0; i < 8; i++)
+                        {
+                            SchedulingService service = i % 2 == 0 ? first : second;
+                            claimers.Add(Task.Run(async () =>
+                            {
+                                while (Volatile.Read(ref finished) < 12 && compete.Elapsed < TimeSpan.FromSeconds(60))
+                                {
+                                    int executed = await service.ExecuteQueuedAsync(slow, "compete-test", null, token).ConfigureAwait(false);
+                                    int largest = Volatile.Read(ref largestClaim);
+                                    while (executed > largest)
+                                    {
+                                        int was = Interlocked.CompareExchange(ref largestClaim, executed, largest);
+                                        if (was == largest) break;
+                                        largest = was;
+                                    }
+                                }
+                            }));
+                        }
+
+                        await Task.WhenAll(claimers).ConfigureAwait(false);
+                        Assert.True(Volatile.Read(ref finished) == 12, "competing claimers finish every run (" + Volatile.Read(ref finished) + ")");
+                        Assert.True(Volatile.Read(ref peak) <= 2 && Volatile.Read(ref largestClaim) <= 2, "eight competing claimers never run more than two at once (peak " + Volatile.Read(ref peak) + ", largest claim " + Volatile.Read(ref largestClaim) + ")");
+                        Assert.True(await db.Runs.CountRunningAsync(token).ConfigureAwait(false) == 0, "no slot is left held");
+                    }
+                }
+            }
+            finally
+            {
+                await db.DisposeAsync().ConfigureAwait(false);
+                await TestDatabase.DropAsync(databaseSettings, CancellationToken.None).ConfigureAwait(false);
+            }
         }
 
         private static async Task<Run> QueueAsync(TestUser u, Topic topic, CancellationToken token)

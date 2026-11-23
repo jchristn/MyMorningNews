@@ -7,7 +7,9 @@ namespace MyMorningNews.Server.Workers
     using MyMorningNews.Core.Telemetry;
 
     /// <summary>
-    /// Executes queued runs up to Pipeline.MaxConcurrentRuns through the server run executor (plan section 14.2).
+    /// Executes queued runs up to Pipeline.MaxConcurrentRuns through the server run executor (plan section 14.2). A pass
+    /// keeps claiming as slots free; between passes the loop waits for the scheduling service's run signal (a run queued
+    /// or finished in this process) with Scheduler.RunPollSeconds as the fallback for runs queued by another process.
     /// Thread safety: one loop per instance; several instances (in one or many processes) can run safely because claims use FOR UPDATE SKIP LOCKED.
     /// </summary>
     public class RunWorker
@@ -38,9 +40,9 @@ namespace MyMorningNews.Server.Workers
                 await RunOnceAsync(token).ConfigureAwait(false);
                 try
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(_Server.Settings.Scheduler.RunPollSeconds), token).ConfigureAwait(false);
+                    await _Server.Scheduling.RunSignal.WaitAsync(TimeSpan.FromSeconds(_Server.Settings.Scheduler.RunPollSeconds), token).ConfigureAwait(false);
                 }
-                catch (OperationCanceledException)
+                catch (Exception ex) when (ex is OperationCanceledException || ex is ObjectDisposedException)
                 {
                     return;
                 }
@@ -48,7 +50,7 @@ namespace MyMorningNews.Server.Workers
         }
 
         /// <summary>
-        /// One iteration.
+        /// One pass: work the queue until it is idle.
         /// </summary>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Task.</returns>
@@ -58,7 +60,7 @@ namespace MyMorningNews.Server.Workers
             string outcome = "success";
             try
             {
-                await _Server.Scheduling.ExecuteQueuedAsync(_Server.RunExecutor, _WorkerId, token).ConfigureAwait(false);
+                await _Server.Scheduling.DrainQueuedAsync(_Server.RunExecutor, _WorkerId, null, token).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested)
             {

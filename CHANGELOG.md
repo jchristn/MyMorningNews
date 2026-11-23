@@ -6,6 +6,9 @@ All notable changes to this project are documented here. The project follows [Se
 
 ### Added
 
+- Public sharing for briefings. Share on a briefing creates two links, one to read and one to listen, that anyone can open without an account. Each share lasts 1 to 14 days (7 unless you choose), can be revoked, and shows how often it was opened. The links are shown once. Pages carry the product's branding and an invitation to sign up, no scripts, cookies, or trackers, and are not indexed. Administrators can turn sharing off with `sharing.enabled` and change the longest life with `sharing.maxExpiryDays`. Schema migration 26.
+  - New routes: `GET` and `POST /v1.0/api/briefings/{id}/shares`, `DELETE /v1.0/api/briefings/{id}/shares/{shareId}`, `GET /v1.0/public/shares/{token}`, `GET /v1.0/public/shares/{token}/listen`, `GET /v1.0/public/shares/{token}/audio/{file}`.
+  - Dashboard and mobile have a Share control on the briefing reader. The SDKs and the MCP server (`share_briefing`, `list_briefing_shares`, `revoke_briefing_share`) cover the same operations.
 - Usage time series: optional `groupBy` returns per-group totals (`groups`) and per-bucket rows (`rows`), with the largest groups kept and the rest combined as `(other)`. Buckets now include cache-write tokens, reasoning tokens, tool calls, and p95 time to first token. Dashboard Usage and Admin Usage group the trend chart by user, model, task, topic, provider, or prompt and choose the measure; the per-tenant trend uses a single grouped series.
 - Model endpoint and vault credential updates accept `clearFields` to set optional values back to null; the dashboard forms clear a value when its field is emptied.
 - A vault credential can be revealed by the user who created it as well as by administrators; every reveal is audited.

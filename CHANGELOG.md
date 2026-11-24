@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The project follows [Se
 
 ## [0.1.0-alpha] - Unreleased
 
+- Production server and dashboard deployed from `7415c6f` as `mobile-ux-20261124-1`, after green CI. Both architectures are published; authenticated sign-in, pagination, support-route protection, dashboard assets, health, and Apple universal links were verified.
+
 - Mobile sign-in holds the logo for 1.5 seconds, then fades it out, respecting reduced motion. Today says "Recent briefings" and the Briefings list defaults to Editions.
 - Mobile secondary screens share one native navigation stack, preserving the originating tab and nested detail history for Back, including Topics > System briefings. Direct detail links have a root-tab back destination.
 - Failed briefing details offer Share with Support. A new authenticated, ownership-checked endpoint queues an idempotent support email with the visible failure details and reporter email. Support delivery is configurable through Email.SupportRecipient; REST docs, Postman, and all SDKs include the operation.

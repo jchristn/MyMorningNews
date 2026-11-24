@@ -267,3 +267,8 @@ budget (600 a minute on the hosted profile). Raise the limit if many people use 
 - Back up the Postgres volume daily (`docker compose exec postgres pg_dump -U postgres mymorningnews`).
 - Update with `./update.sh` and the same `-f` flags.
 - The support address is hello@latticetech.ai.
+
+
+### Production deployment, 2026-11-24 UTC
+
+Server and dashboard run `mobile-ux-20261124-1` from commit `7415c6f`. The release adds failed-briefing support reports and the dedicated admin plan hub. Both application containers were replaced after a validated database/configuration backup; schema remains 38. Public health, authenticated Editions retrieval, pagination, support-route authorization, deployed dashboard assets, and Apple universal links passed. Support reports use the existing email outbox and `Email.SupportRecipient` (default `hello@latticetech.ai`). Android app-link certificates remain an existing configuration prerequisite.

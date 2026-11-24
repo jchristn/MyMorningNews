@@ -12,6 +12,10 @@ Updated November 24, 2026. **Server, dashboard and web billing are live. The ful
 - Per-user overrides have reasons/expiry; existing accounts retain captured policies. JSON signup policy and the switch enabling optional paid purchases are independent.
 - Signup codes capture complimentary grants or paid discount/custom-package offers. Paid benefits require verified purchase; a code/checkout redirect cannot grant paid access.
 
+## UX deployment, 2026-11-24 UTC
+
+Server and dashboard run `mobile-ux-20261124-1` from `7415c6f`. [Tests](https://github.com/jchristn/MyMorningNews/actions/runs/45450916934), [Dashboard](https://github.com/jchristn/MyMorningNews/actions/runs/45450916974), and [Mobile](https://github.com/jchristn/MyMorningNews/actions/runs/45450916757) CI all passed, including the benchmark gate and SDK harnesses. Local checks passed 283 server, 655 dashboard, and 526 mobile tests (six existing mobile skips). The images include the direct support-report endpoint and admin plan navigation; the mobile source includes the login logo, Editions default, shorter label, and shared navigation history. Production health, login, bounded collection retrieval, support-route protection, and matching dashboard assets passed. Schema remains 38. Store distribution is recorded below.
+
 ## Production release
 
 At 02:26 UTC, server/dashboard were replaced with `tiers-20261124-1`. Migrations 27 through 38 applied successfully; both containers and the public health endpoint are healthy. The final metadata-only server correction is deployed as `tiers-20261124-2`; its live OpenAPI callback schemas were verified. The MCP image is published; this EC2 stack did not run an MCP service before this release, and no new public MCP service was exposed.

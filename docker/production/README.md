@@ -27,3 +27,10 @@ before the dashboard's default rule. See `docs/HOSTING.md`, "MCP server".
 
 `compose.yaml` here is generated from `docker/compose.yaml` and `docker/hosted/compose.elb.yaml`; regenerate it when
 either changes (the command is at the top of the file).
+
+
+For application updates, take a database/configuration backup, retain the prior image references, pin the new
+server and dashboard tags in the host compose file, then run `docker compose pull server dashboard` and
+`docker compose up -d --no-deps server dashboard`. Verify both containers are healthy and check the public API
+and dashboard. The 2026-11-24 UX release uses `mobile-ux-20261124-1` for both services; the previous
+`enumeration-20261124-1` tags remain available for rollback. No compose topology or migration changed.

@@ -150,7 +150,8 @@
       "configuration": "कॉन्फ़िगरेशन",
       "observability": "निगरानी",
       "administration": "प्रशासन",
-      "settings": "सेटिंग्स"
+      "settings": "सेटिंग्स",
+      "plans": "प्लान"
     },
     "tabs": {
       "requests": "अनुरोध",
@@ -3750,7 +3751,8 @@
       "BriefingPublished": "ब्रीफ़िंग प्रकाशित",
       "RunFailed": "रन विफल",
       "PreferenceProposal": "प्राथमिकता प्रस्ताव",
-      "Test": "परीक्षण"
+      "Test": "परीक्षण",
+      "BriefingSupport": "ब्रीफिंग सहायता रिपोर्ट"
     },
     "chart": {
       "title": "स्थिति के अनुसार प्रति दिन संदेश",

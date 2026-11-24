@@ -1,6 +1,11 @@
 // ms: Malay strings for the app (the `mobile.*` namespace), complete against src/i18n/catalog/en.js.
 // Machine-translated and awaiting native review (docs/I18N.md). `npm run i18n:check` keeps it complete and valid.
 export const ms = {
+  supportReport: {
+    "action": "Kongsi dengan Sokongan",
+    "help": "Menghantar tajuk taklimat, ralat, pengecam, cap masa dan e-mel akaun anda kepada sokongan.",
+    "queued": "Laporan anda telah dimasukkan ke baris gilir untuk sokongan."
+  },
   dailyUsage: {
   "audioToday": "Audio dijana hari ini (minit)",
   "audioReserved": "Ditempah untuk penjanaan: {minutes} minit. Ditetapkan semula {date} (tengah malam UTC).",
@@ -433,7 +438,7 @@ export const ms = {
   today: {
     greeting: 'Selamat pagi, {name}.',
     latest: 'Taklimat terkini',
-    recentRuns: 'Taklimat topik terkini',
+    recentRuns: "Taklimat terkini",
     ask: 'Tanya sekali',
     more: 'Teroka',
     openBriefing: 'Buka taklimat {title}',

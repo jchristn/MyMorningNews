@@ -2106,6 +2106,8 @@ export interface BriefingProgress {
     lastUpdateUtc: string;
 }
 
+export interface SupportReportResponse { id: string; status: 'Queued' | 'Sending' | 'Sent'; }
+
 export declare class BriefingsResource extends ResourceGroup {
     list(options?: ListOptions): Promise<EnumerationResult<Briefing>>;
     get(id: string): Promise<BriefingDetail>;
@@ -2114,6 +2116,7 @@ export declare class BriefingsResource extends ResourceGroup {
     unpin(id: string): Promise<Briefing>;
     getProgress(id: string): Promise<BriefingProgress>;
     saveProgress(id: string, progress: { positionSeconds: number; durationSeconds?: number; completed?: boolean }): Promise<BriefingProgress>;
+    shareWithSupport(id: string): Promise<SupportReportResponse>;
     regenerate(id: string): Promise<Briefing>;
     generateAudio(id: string, body?: { voiceProfileId?: string }): Promise<MediaAsset>;
     listShares(id: string, options?: ListOptions): Promise<EnumerationResult<BriefingShare>>;

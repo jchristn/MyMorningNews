@@ -4,6 +4,11 @@ All notable changes to this project are documented here. The project follows [Se
 
 ## [0.1.0-alpha] - Unreleased
 
+- Mobile sign-in holds the logo for 1.5 seconds, then fades it out, respecting reduced motion. Today says "Recent briefings" and the Briefings list defaults to Editions.
+- Mobile secondary screens share one native navigation stack, preserving the originating tab and nested detail history for Back, including Topics > System briefings. Direct detail links have a root-tab back destination.
+- Failed briefing details offer Share with Support. A new authenticated, ownership-checked endpoint queues an idempotent support email with the visible failure details and reporter email. Support delivery is configurable through Email.SupportRecipient; REST docs, Postman, and all SDKs include the operation.
+- Global administrators have a dedicated Tiers and plans sidebar entry with plan editing, user assignment history, grants/revocations, and effective entitlement overrides together. Regression tests cover navigation history, logo timing, support access/delivery/retry behavior, and admin entitlement editing.
+
 - Enumeration release images are published for amd64 and arm64 as `enumeration-20261124-1`; server and dashboard are deployed. Approved mobile build 9 is released to internal TestFlight and Google Play testing with the same paginated API. Store distribution and remaining public-release prerequisites are recorded in `docs/PLATFORM_IMPLEMENTATION_STATUS.md`.
 - Marking a notification read returns its persisted timestamp, preserving exact idempotence across PostgreSQL timestamp precision. Benchmark feedback follows a syndicated finding to its canonical representative, and dashboard tests allow slower CI rendering without weakening assertions.
 - Benchmark fixtures explicitly enable history for cross-run comparisons and expect partial success when all page fetches fail, matching the current product policies.

@@ -80,6 +80,7 @@ export const routes = {
   briefing: (id) => '/v1.0/api/briefings/' + enc(id),
   briefingDownload: (id) => '/v1.0/api/briefings/' + enc(id) + '/download',
   briefingPin: (id) => '/v1.0/api/briefings/' + enc(id) + '/pin',
+  briefingSupport: (id) => '/v1.0/api/briefings/' + enc(id) + '/support',
   briefingRegenerate: (id) => '/v1.0/api/briefings/' + enc(id) + '/regenerate',
   briefingProgress: (id) => '/v1.0/api/briefings/' + enc(id) + '/progress',
   // Public share links for a briefing (plan section 36)

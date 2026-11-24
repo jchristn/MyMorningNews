@@ -1,6 +1,11 @@
 // ja: Japanese strings for the app (the `mobile.*` namespace), complete against src/i18n/catalog/en.js.
 // Machine-translated and awaiting native review (docs/I18N.md). `npm run i18n:check` keeps it complete and valid.
 export const ja = {
+  supportReport: {
+    "action": "サポートに共有",
+    "help": "ブリーフィングのタイトル、エラー、識別子、日時、アカウントのメールアドレスをサポートに送信します。",
+    "queued": "サポートへのレポートが送信待ちになりました。"
+  },
   dailyUsage: {
   "audioToday": "今日生成した音声（分）",
   "audioReserved": "生成用に予約済み：{minutes}分。{date}（UTC午前0時）にリセット。",
@@ -433,7 +438,7 @@ export const ja = {
   today: {
     greeting: 'おはようございます、{name} さん。',
     latest: '最新のブリーフィング',
-    recentRuns: '最近のトピックのブリーフィング',
+    recentRuns: "最近のブリーフィング",
     ask: '単発で依頼',
     more: '詳しく見る',
     openBriefing: 'ブリーフィング「{title}」を開く',

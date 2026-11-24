@@ -1,6 +1,11 @@
 // hi: Hindi strings for the app (the `mobile.*` namespace), complete against src/i18n/catalog/en.js.
 // Machine-translated and awaiting native review (docs/I18N.md). `npm run i18n:check` keeps it complete and valid.
 export const hi = {
+  supportReport: {
+    "action": "सहायता टीम के साथ साझा करें",
+    "help": "ब्रीफिंग का शीर्षक, त्रुटि, पहचानकर्ता, समय और आपके खाते का ईमेल सहायता टीम को भेजता है।",
+    "queued": "आपकी रिपोर्ट सहायता टीम को भेजने की कतार में है।"
+  },
   dailyUsage: {
   "audioToday": "आज बनाया गया ऑडियो (मिनट)",
   "audioReserved": "बनाने के लिए आरक्षित: {minutes} मिनट। रीसेट {date} (मध्यरात्रि UTC)।",
@@ -433,7 +438,7 @@ export const hi = {
   today: {
     greeting: 'सुप्रभात, {name}।',
     latest: 'नवीनतम ब्रीफ़िंग',
-    recentRuns: 'हाल की विषय ब्रीफ़िंग',
+    recentRuns: "हाल की ब्रीफिंग",
     ask: 'एक बार पूछें',
     more: 'एक्सप्लोर करें',
     openBriefing: 'ब्रीफ़िंग {title} खोलें',

@@ -150,7 +150,8 @@
       "configuration": "Конфигурация",
       "observability": "Наблюдаемость",
       "administration": "Администрирование",
-      "settings": "Настройки"
+      "settings": "Настройки",
+      "plans": "Тарифы"
     },
     "tabs": {
       "requests": "Запросы",
@@ -3750,7 +3751,8 @@
       "BriefingPublished": "Сводка опубликована",
       "RunFailed": "Запуск не удался",
       "PreferenceProposal": "Предложение предпочтения",
-      "Test": "Тест"
+      "Test": "Тест",
+      "BriefingSupport": "Отчёт о сводке в поддержку"
     },
     "chart": {
       "title": "Сообщения в день по статусам",

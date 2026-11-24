@@ -103,9 +103,10 @@ describe('PlansView', () => {
 });
 
 describe('Users page Plan panel', () => {
-  it('shows inherited limits, requires a reason, saves zero, and restores inheritance', async () => {
+  it.each(['/dashboard/admin/users', '/dashboard/admin/plans'])('edits and restores user entitlements from %s', async (route) => {
     let overridden = false;
-    const client = renderRoute('/dashboard/admin/users', {
+    const client = renderRoute(route, {
+      ...pickerOverrides,
       listUsers: vi.fn(async () => page([{ id: 'usr_c', email: 'cy@example.test', active: true, isAdmin: false, isTenantAdmin: false }])),
       listPlans: vi.fn(async () => enumerationResult([{ plan: { id: 'pln_free', name: 'Free' }, features: { 'customTopics.max': '5' } }])),
       listPlanAssignments: vi.fn(async () => enumerationResult([])),
@@ -113,9 +114,14 @@ describe('Users page Plan panel', () => {
       setUserEntitlement: vi.fn(async () => { overridden = true; }),
       clearUserEntitlement: vi.fn(async () => { overridden = false; }),
     });
-    const row = (await screen.findByText('cy@example.test')).closest('tr');
-    await userEvent.click(within(row).getByRole('button', { name: /actions/i }));
-    await userEvent.click(await screen.findByRole('menuitem', { name: 'Plan' }));
+    if (route.endsWith('/users')) {
+      const row = (await screen.findByText('cy@example.test')).closest('tr');
+      await userEvent.click(within(row).getByRole('button', { name: /actions/i }));
+      await userEvent.click(await screen.findByRole('menuitem', { name: 'Plan' }));
+    } else {
+      await screen.findByRole('option', { name: 'cy@example.test' });
+      fireEvent.change(screen.getByLabelText('User'), { target: { value: 'usr_c' } });
+    }
     await userEvent.click(await screen.findByRole('button', { name: 'Edit: Custom topics' }));
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
     fireEvent.change(screen.getByLabelText('Override value'), { target: { value: '0' } });

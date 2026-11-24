@@ -150,7 +150,8 @@
       "configuration": "配置",
       "observability": "可观测性",
       "administration": "管理",
-      "settings": "设置"
+      "settings": "设置",
+      "plans": "套餐"
     },
     "tabs": {
       "requests": "请求",
@@ -3750,7 +3751,8 @@
       "BriefingPublished": "简报已发布",
       "RunFailed": "运行失败",
       "PreferenceProposal": "偏好建议",
-      "Test": "测试"
+      "Test": "测试",
+      "BriefingSupport": "简报支持报告"
     },
     "chart": {
       "title": "按状态统计的每日邮件数",

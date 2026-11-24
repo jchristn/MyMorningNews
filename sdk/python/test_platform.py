@@ -27,6 +27,14 @@ class PlatformTest(unittest.TestCase):
         self.transport = Transport()
         self.api = MyMorningNewsClient('https://example.invalid', token='member', session=self.transport)
 
+    def test_failed_briefing_support(self):
+        self.transport.reply = {'id': 'eml_report', 'status': 'Queued'}
+        self.assertEqual(self.api.briefings.share_with_support('brf/one'), self.transport.reply)
+        request = self.transport.sent[-1]
+        self.assertEqual(request.method, 'POST')
+        self.assertEqual(urlparse(request.url).path, '/v1.0/api/briefings/brf%2Fone/support')
+        self.assertEqual(request.headers['Authorization'], 'Bearer member')
+
     def test_nested_billing_and_provider_shapes(self):
         self.transport.reply = {'enabled': False, 'offers': [{'key': 'paid-5-year', 'usdCents': 10000}], 'plan': {'subscriptionRequired': False, 'features': {'customTopics.max': '0'}}, 'subscriptions': [{'endsUtc': None}]}
         status = self.api.billing.status()

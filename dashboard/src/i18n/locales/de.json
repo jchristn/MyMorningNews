@@ -150,7 +150,8 @@
       "configuration": "Konfiguration",
       "observability": "Beobachtbarkeit",
       "administration": "Verwaltung",
-      "settings": "Einstellungen"
+      "settings": "Einstellungen",
+      "plans": "Tarife"
     },
     "tabs": {
       "requests": "Anfragen",
@@ -3750,7 +3751,8 @@
       "BriefingPublished": "Briefing veröffentlicht",
       "RunFailed": "Lauf fehlgeschlagen",
       "PreferenceProposal": "Präferenzvorschlag",
-      "Test": "Test"
+      "Test": "Test",
+      "BriefingSupport": "Briefing-Supportbericht"
     },
     "chart": {
       "title": "Nachrichten pro Tag nach Status",

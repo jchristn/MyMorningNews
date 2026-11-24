@@ -4,6 +4,7 @@ namespace MyMorningNews.Core.Email
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
+    using System.Net.Mail;
     using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
@@ -391,6 +392,37 @@ namespace MyMorningNews.Core.Email
         {
             string a = (address ?? String.Empty).Trim().ToLowerInvariant();
             return a.Contains('@') && !a.Contains(' ') && a.Length <= 320 ? a : String.Empty;
+        }
+
+        /// <summary>
+        /// Queue a failed briefing report once per briefing and reporting user. Includes only report identifiers,
+        /// timestamps, the displayed error, title, and reporting account email; never credentials or settings.
+        /// Delivery uses the configured support recipient and the normal retrying outbox.
+        /// </summary>
+        /// <param name="briefing">Failed briefing visible to the reporter.</param>
+        /// <param name="reporter">Reporting user.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The new or previously queued report.</returns>
+        /// <exception cref="ArgumentNullException">An argument is null.</exception>
+        public async Task<EmailMessage> SendBriefingSupportAsync(Briefing briefing, User reporter, CancellationToken token = default)
+        {
+            ArgumentNullException.ThrowIfNull(briefing);
+            ArgumentNullException.ThrowIfNull(reporter);
+            string key = "support:briefing:" + briefing.Id + ":" + reporter.Id;
+            EmailMessage? message = await CreateAsync(briefing.TenantId, Normalize(new MailAddress(_Settings.Email.SupportRecipient).Address), EmailTemplateEnum.BriefingSupport,
+                briefing.RunId, briefing.Id, briefing.TopicId, key, null, null, token).ConfigureAwait(false);
+            if (message == null) return (await _Database.EmailMessages.ReadByKeyAsync(briefing.TenantId, key, token).ConfigureAwait(false))!;
+            string subject = Subject("Failed briefing support report: " + briefing.Id);
+            EmailBuilder body = new EmailBuilder().Header(Logo(), "Failed briefing support report", null, null);
+            foreach (string line in new[] {
+                "Reported by: " + reporter.Email, "User: " + reporter.Id, "Workspace: " + briefing.TenantId,
+                "Briefing: " + briefing.Id, "Title: " + briefing.Title, "Status: " + briefing.Status,
+                "Kind: " + briefing.Kind, "Edition: " + briefing.EditionId, "Topic: " + briefing.TopicId,
+                "Run: " + briefing.RunId, "Research request: " + briefing.ResearchRequestId,
+                "Created (UTC): " + briefing.CreatedUtc.ToString("O"), "Last updated (UTC): " + briefing.LastUpdateUtc.ToString("O"),
+                "Error: " + briefing.ErrorMessage }) body.Paragraph(line);
+            await FinishAsync(message, new EmailPreview { Recipient = message.Recipient, Subject = subject, Html = body.Html(subject), Text = body.Text() }, token).ConfigureAwait(false);
+            return message;
         }
 
         #endregion

@@ -46,6 +46,13 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
                 await client.AdminCatalog.SaveResearchAsync("c1", new CatalogResearchRequest { Topic = new TopicUpsertRequest { HistoryMode = HistoryModeEnum.Off, AudioEnabled = false } }, token).ConfigureAwait(false);
                 Helpers.True(handler.Body.Contains("\"historyMode\":\"Off\"", StringComparison.Ordinal), "standalone comparison writes enum name");
                 Helpers.True(typeof(ProviderConnection).GetProperty("SecretEncrypted") == null, "write-only encrypted secret is absent from SDK model");
+                handler.Status = HttpStatusCode.Accepted;
+                handler.Reply = "{\"id\":\"eml_report\",\"status\":\"Queued\"}";
+                SupportReportResponse report = await client.Briefings.ShareWithSupportAsync("brf/one", token).ConfigureAwait(false);
+                Helpers.Equal("eml_report", report.Id, "support report identifier");
+                Helpers.Equal(EmailStatusEnum.Queued, report.Status, "asynchronous support delivery status");
+                Helpers.Equal("/v1.0/api/briefings/brf%2Fone/support", handler.Path, "escaped support path");
+                Helpers.Equal("POST", handler.Method, "support is an explicit action");
                 handler.Status = HttpStatusCode.NoContent;
                 await client.Catalog.UnsubscribeAsync("c1", token).ConfigureAwait(false);
             }

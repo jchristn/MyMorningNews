@@ -1,6 +1,6 @@
 // Email outbox helpers: stable enum codes from EmailStatusEnum and EmailTemplateEnum, tones, and chart shaping.
 export const EMAIL_STATUSES = ['Queued', 'Sending', 'Sent', 'Failed', 'Suppressed', 'Skipped'];
-export const EMAIL_TEMPLATES = ['RunDigest', 'BriefingPublished', 'RunFailed', 'PreferenceProposal', 'Test'];
+export const EMAIL_TEMPLATES = ['RunDigest', 'BriefingPublished', 'RunFailed', 'PreferenceProposal', 'Test', 'BriefingSupport'];
 
 export const EMAIL_STATUS_TONES = { Queued: 'info', Sending: 'info', Sent: 'success', Failed: 'danger', Suppressed: 'warning', Skipped: 'neutral' };
 

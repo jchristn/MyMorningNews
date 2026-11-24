@@ -508,3 +508,5 @@ The setup cases check the request paths, the `connect` body, and `SetupRequiredE
 - A running My Morning News server. The Docker stack in `docker/` serves it on `http://127.0.0.1:12100`.
 
 (c) 2026 Lattice AI LLC
+
+Failed briefings can be sent to the configured support recipient with `client.briefings.shareWithSupport(id)`. The authenticated POST returns a report ID and delivery status (202); repeated requests by the same user return the same report. A non-failed briefing returns 409 and unavailable support email returns 503.

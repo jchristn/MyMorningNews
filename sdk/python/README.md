@@ -503,3 +503,5 @@ Each case prints one line (`PASS`, `FAIL`, or `SKIP`, its name, and milliseconds
 MIT. See `LICENSE.md` at the repository root.
 
 (c) 2026 Lattice AI LLC
+
+Failed briefings can be sent to the configured support recipient with `client.briefings.share_with_support(briefing_id)`. The authenticated POST returns a report ID and delivery status (202); repeated requests by the same user return the same report. A non-failed briefing returns 409 and unavailable support email returns 503.

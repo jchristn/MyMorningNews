@@ -1,6 +1,11 @@
 // ar: Arabic strings for the app (the `mobile.*` namespace), complete against src/i18n/catalog/en.js.
 // Machine-translated and awaiting native review (docs/I18N.md). `npm run i18n:check` keeps it complete and valid.
 export const ar = {
+  supportReport: {
+    "action": "مشاركة مع الدعم",
+    "help": "يرسل عنوان الملخص والخطأ والمعرّفات والتواريخ والبريد الإلكتروني لحسابك إلى الدعم.",
+    "queued": "تمت إضافة تقريرك إلى قائمة الإرسال للدعم."
+  },
   dailyUsage: {
   "audioToday": "الصوت المُنشأ اليوم (بالدقائق)",
   "audioReserved": "محجوز للإنشاء: {minutes} دقيقة. يُعاد التعيين {date} (منتصف الليل UTC).",
@@ -433,7 +438,7 @@ export const ar = {
   today: {
     greeting: 'صباح الخير يا {name}.',
     latest: 'أحدث موجز',
-    recentRuns: 'موجزات المواضيع الأخيرة',
+    recentRuns: "الملخصات الأخيرة",
     ask: 'اطلب مرة واحدة',
     more: 'استكشاف',
     openBriefing: 'فتح الموجز {title}',

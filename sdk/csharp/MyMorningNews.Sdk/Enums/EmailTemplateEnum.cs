@@ -71,6 +71,11 @@ namespace MyMorningNews.Sdk.Enums
         /// <summary>
         /// A prediction is due for review.
         /// </summary>
-        PredictionDue
+        PredictionDue,
+
+        /// <summary>
+        /// A user-submitted failed briefing report for support.
+        /// </summary>
+        BriefingSupport
     }
 }

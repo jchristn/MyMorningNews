@@ -150,6 +150,8 @@ export const briefingsApi = {
   downloadUrl: (client, id, format) => client.url(routes.briefingDownload(id), { format }),
   pin: (client, id, pinned) => client.put(routes.briefingPin(id), { pinned: Boolean(pinned) }),
   /** Store fresh Markdown and HTML files after the old ones passed retention. */
+  /** Queue a failed briefing report for support. Idempotent per briefing and signed-in user. */
+  support: (client, id) => client.post(routes.briefingSupport(id), {}),
   regenerate: (client, id) => client.post(routes.briefingRegenerate(id), {}),
   /** `{ positionSeconds, completed }` */
   saveProgress: (client, id, progress) => client.put(routes.briefingProgress(id), progress),

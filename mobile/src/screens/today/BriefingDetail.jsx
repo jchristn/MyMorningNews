@@ -22,6 +22,7 @@ import { useResource } from '@/state/useResource';
 import { useTheme } from '@/theme/ThemeContext';
 import { spacing } from '@/theme/palette';
 import { DetailHeader } from '../common/DetailScreen';
+import { BriefingSupport } from './BriefingSupport';
 import { BriefingShare } from './BriefingShare';
 
 /**
@@ -232,6 +233,7 @@ export function BriefingDetail({ id }) {
                 </Banner>
               ) : null}
               {briefing.status === 'Failed' ? <Banner kind="danger" title={t('mobile.reader.failedTitle')}>{briefing.errorMessage || t('mobile.states.errorBody')}</Banner> : null}
+              {briefing.status === 'Failed' ? <BriefingSupport key={briefing.id} id={briefing.id} /> : null}
               <BriefingAudio detail={detail} onChanged={resource.setData} />
               <FileActions detail={detail} onChanged={resource.setData} />
               <BriefingShare detail={detail} />

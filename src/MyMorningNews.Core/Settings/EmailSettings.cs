@@ -12,6 +12,13 @@ namespace MyMorningNews.Core.Settings
         #region Public-Members
 
         /// <summary>
+        /// Destination for user-submitted failure reports. Default hello@latticetech.ai. Empty disables reports.
+        /// </summary>
+        [Setting(Description = "Support report recipient. Empty disables support reports.", EnvironmentVariable = "EMAIL_SUPPORT_RECIPIENT")]
+        public string SupportRecipient { get; set; } = "hello@latticetech.ai";
+
+
+        /// <summary>
         /// Send email. Default true.
         /// </summary>
         [Setting(Description = "Send email.", EnvironmentVariable = "EMAIL_ENABLED")]

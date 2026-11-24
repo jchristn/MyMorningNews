@@ -185,7 +185,7 @@ export function briefingQuery(filter) {
 export function BriefingsScreen() {
   const { t, i18n } = useTranslation();
   const { client } = useAuth();
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState('Edition');
   return (
     <ResourceListScreen
       testID="briefings-screen"

@@ -141,8 +141,9 @@ export const NAV_HUBS = [
   {
     key: 'administration',
     icon: UserCog,
-    tabs: ['users', 'tenants', 'credentials', 'roles', 'adminUsage', 'adminCatalog', 'plans', 'promoCodes']
+    tabs: ['users', 'tenants', 'credentials', 'roles', 'adminUsage', 'adminCatalog']
   },
+  { key: 'plans', icon: Gift, tabs: ['plans', 'promoCodes'] },
   { key: 'settings', icon: Settings, tabs: ['profile', 'billing', 'personalProviders', 'notifications', 'settings', 'serverInfo', 'setup'] }
 ];
 
@@ -151,7 +152,7 @@ export const NAV_SECTIONS = [
   { key: 'research', hubs: ['topics', 'research'] },
   { key: 'briefings', hubs: ['briefings', 'insights'] },
   { key: 'configuration', hubs: ['configuration'] },
-  { key: 'system', hubs: ['observability', 'administration', 'settings'] }
+  { key: 'system', hubs: ['observability', 'administration', 'plans', 'settings'] }
 ];
 
 export const SECTION_KEYS = NAV_SECTIONS.map((section) => section.key);
@@ -187,6 +188,8 @@ export const SETUP_ALLOWED_ROUTES = [
   'personalProviders',
   'catalog',
   'adminCatalog',
+  'plans',
+  'users',
   'setup',
   'models',
   'vault',

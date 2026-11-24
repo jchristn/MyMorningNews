@@ -1,6 +1,11 @@
 // ru: Russian strings for the app (the `mobile.*` namespace), complete against src/i18n/catalog/en.js.
 // Machine-translated and awaiting native review (docs/I18N.md). `npm run i18n:check` keeps it complete and valid.
 export const ru = {
+  supportReport: {
+    "action": "Отправить в поддержку",
+    "help": "Отправляет в поддержку название сводки, ошибку, идентификаторы, даты и адрес электронной почты аккаунта.",
+    "queued": "Ваш отчёт поставлен в очередь для поддержки."
+  },
   dailyUsage: {
   "audioToday": "Аудио за сегодня (минуты)",
   "audioReserved": "Зарезервировано для генерации: {minutes} минут. Сброс {date} (полночь UTC).",
@@ -433,7 +438,7 @@ export const ru = {
   today: {
     greeting: 'Доброе утро, {name}.',
     latest: 'Последняя сводка',
-    recentRuns: 'Недавние сводки по темам',
+    recentRuns: "Последние сводки",
     ask: 'Разовый запрос',
     more: 'Обзор',
     openBriefing: 'Открыть сводку {title}',

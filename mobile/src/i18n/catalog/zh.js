@@ -1,6 +1,11 @@
 // zh: Simplified Chinese strings for the app (the `mobile.*` namespace), complete against src/i18n/catalog/en.js.
 // Machine-translated and awaiting native review (docs/I18N.md). `npm run i18n:check` keeps it complete and valid.
 export const zh = {
+  supportReport: {
+    "action": "分享给支持团队",
+    "help": "将简报标题、错误、标识符、时间戳和您的账户邮箱发送给支持团队。",
+    "queued": "您的报告已加入支持发送队列。"
+  },
   dailyUsage: {
   "audioToday": "今日生成音频（分钟）",
   "audioReserved": "预留生成时长：{minutes} 分钟。{date}（UTC 午夜）重置。",
@@ -433,7 +438,7 @@ export const zh = {
   today: {
     greeting: '早上好，{name}。',
     latest: '最新简报',
-    recentRuns: '近期主题简报',
+    recentRuns: "最近的简报",
     ask: '单次提问',
     more: '探索',
     openBriefing: '打开简报 {title}',

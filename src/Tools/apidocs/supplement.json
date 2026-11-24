@@ -3896,6 +3896,19 @@
         "404": "NotFound"
       },
       "notes": "System administrator: inspect canonical issue projections."
+    },
+    "POST /v1.0/api/briefings/{id}/support": {
+      "response": "SupportReportResponse",
+      "status": {
+        "202": "Accepted",
+        "400": "TenantRequired",
+        "401": "Unauthorized",
+        "403": "Forbidden or UserRequired",
+        "404": "NotFound",
+        "409": "BriefingNotFailed",
+        "503": "SupportUnavailable or SupportDeliveryFailed"
+      },
+      "notes": "Requires a signed-in user with access to the failed briefing. Sends the displayed error, title, identifiers, timestamps, and reporter email to the server-configured support recipient. No request body. Repeated requests by the same user return the same report ID. Queued means accepted for asynchronous delivery, not delivery confirmation."
     }
   },
   "routeBodies": {
@@ -5810,6 +5823,10 @@
       "pageNumber": 1,
       "pageSize": 10,
       "order": "CreatedDescending"
+    },
+    "SupportReportResponse": {
+      "id": "eml_support",
+      "status": "Queued"
     }
   },
   "routeExamples": {

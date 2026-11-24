@@ -278,5 +278,15 @@ namespace MyMorningNews.Sdk.Resources
             if (newest == null) return null;
             return await GetAsync(newest.Id, token).ConfigureAwait(false);
         }
+        /// <summary>Queue a failed briefing report for support, once per briefing and reporting user.</summary>
+        /// <param name="id">Failed briefing identifier.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Report identifier and asynchronous delivery status.</returns>
+        /// <exception cref="ArgumentNullException">The identifier is null or empty.</exception>
+        /// <exception cref="MyMorningNewsException">The server rejected the report.</exception>
+        public Task<SupportReportResponse> ShareWithSupportAsync(string id, CancellationToken token = default)
+        {
+            return Client.SendAsync<SupportReportResponse>(HttpMethod.Post, "/v1.0/api/briefings/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/support", null, null, token);
+        }
     }
 }

@@ -4351,6 +4351,10 @@ class BriefingsResource(_Resource):
             body["durationSeconds"] = duration_seconds
         return self._json("PUT", API + "/briefings/" + _seg(briefing_id) + "/progress", body=body)
 
+    def share_with_support(self, briefing_id: str) -> Dict[str, Any]:
+        """Queue a failed briefing report for support (202). Repeats return the same id and status."""
+        return self._json("POST", API + "/briefings/" + _seg(briefing_id) + "/support")
+
     def regenerate(self, briefing_id: str) -> Briefing:
         """Store fresh Markdown and HTML files from the saved briefing (after ``GoneError``)."""
         return self._one(Briefing, "POST", API + "/briefings/" + _seg(briefing_id) + "/regenerate")

@@ -383,6 +383,12 @@ The same code runs a public service with sign-up, email verification, plans with
 and export, a platform model key that tenants cannot read, and private-network blocking. Turn it on with the
 `docker/hosted` overlay; [`docs/HOSTING.md`](docs/HOSTING.md) walks through it.
 
+Global administrators open **System > Tiers and plans** in the dashboard to view, create, and edit plans and
+their feature limits. Pick a tenant and user to view effective entitlements and assignment history, grant or
+revoke a plan, override an entitlement with a reason and optional expiry, or restore inheritance. The same user
+controls are available under **Administration > Users > Actions > Plan**. Tenant administrators and members
+cannot manage global plans or user entitlement overrides.
+
 ## Building from source
 
 ```bash

@@ -7,7 +7,7 @@ import { NAV_HUBS, canAccess, hubTabs, hubTarget, routeByKey, visibleNav } from 
 import HubTabs from './HubTabs.jsx';
 import Sidebar from './Sidebar.jsx';
 
-// The consolidated navigation: two standalone pages and eight hubs in four sections, each hub's pages as tabs.
+// The consolidated navigation: two standalone pages and nine hubs in four sections, each hub's pages as tabs.
 const authValue = { isAdmin: true, isTenantAdmin: true };
 vi.mock('../context/AuthContext.jsx', () => ({ useAuth: () => authValue }));
 const setupValue = { status: { ready: true }, gated: false };
@@ -26,6 +26,7 @@ const SIDEBAR_ITEMS = [
   'Configuration',
   'Observability',
   'Administration',
+  'Tiers and plans',
   'Settings'
 ];
 const SECTION_HEADINGS = ['Research', 'Briefings', 'Configuration', 'System'];
@@ -38,6 +39,7 @@ const HUB_NAMES = {
   configuration: 'Configuration',
   observability: 'Observability',
   administration: 'Administration',
+  plans: 'Tiers and plans',
   settings: 'Settings'
 };
 
@@ -48,7 +50,8 @@ const ADMIN_TABS = {
   insights: ['Overview', 'Relevance', 'Accuracy', 'Feedback', 'Email', 'Preferences', 'Usage'],
   configuration: ['Models', 'Prompts', 'Search providers', 'MCP servers', 'Connect an assistant', 'Voices', 'Email', 'Stored credentials'],
   observability: ['Health', 'Requests', 'Audit', 'API explorer'],
-  administration: ['Users', 'Tenants', 'Access keys', 'Roles', 'Usage', 'System catalog', 'Plans', 'Promo codes'],
+  administration: ['Users', 'Tenants', 'Access keys', 'Roles', 'Usage', 'System catalog'],
+  plans: ['Plans', 'Promo codes'],
   settings: ['Profile', 'Plans and billing', 'Your API keys', 'Notifications', 'Server settings', 'Server info', 'Setup']
 };
 
@@ -98,7 +101,7 @@ beforeEach(() => {
 });
 
 describe('sidebar hubs', () => {
-  it('lists exactly the two standalone pages and eight hubs for an administrator, under four section headings', () => {
+  it('lists exactly the two standalone pages and nine hubs for an administrator, under four section headings', () => {
     renderShell('/dashboard/home');
     expect(sidebarItems()).toEqual(SIDEBAR_ITEMS);
     expect(
@@ -125,16 +128,16 @@ describe('sidebar hubs', () => {
     expect(tabNames('Settings')).toEqual(['Profile', 'Plans and billing', 'Your API keys', 'Notifications', 'Server settings', 'Server info', 'Setup']);
   });
 
-  it('keeps every hub for a member, each opening the first page a member can use', () => {
+  it('keeps accessible hubs for a member, each opening the first page a member can use', () => {
     Object.assign(authValue, MEMBER);
     renderShell('/dashboard/home');
-    expect(sidebarItems()).toEqual(SIDEBAR_ITEMS);
+    expect(sidebarItems()).toEqual(SIDEBAR_ITEMS.filter(name => name !== 'Tiers and plans'));
     expect(sidebarLink('Administration')).toHaveAttribute('href', '/dashboard/admin/users');
     expect(sidebarLink('Settings')).toHaveAttribute('href', '/dashboard/profile');
   });
 
   it('gives a member fewer tabs and leaves out the pages only administrators can open', () => {
-    expect(visibleNav(MEMBER).sections.flatMap((section) => section.hubs.map((hub) => hub.key))).toEqual(NAV_HUBS.map((hub) => hub.key));
+    expect(visibleNav(MEMBER).sections.flatMap((section) => section.hubs.map((hub) => hub.key))).toEqual(NAV_HUBS.filter(hub => hub.key !== 'plans').map((hub) => hub.key));
     expect(
       hubTabs(
         NAV_HUBS.find((hub) => hub.key === 'administration'),
@@ -279,7 +282,8 @@ describe('setup gate in the hub navigation', () => {
       expect(sidebarLink(name)).toHaveAttribute('title', name + ' opens after setup is finished');
     }
     expect(sidebarLink('Topics')).toHaveAttribute('href', '/dashboard/catalog');
-    expect(sidebarLink('Administration')).toHaveAttribute('href', '/dashboard/admin/catalog');
+    expect(sidebarLink('Administration')).toHaveAttribute('href', '/dashboard/admin/users');
+    expect(sidebarLink('Tiers and plans')).toHaveAttribute('href', '/dashboard/admin/plans');
     expect(sidebarLink('Configuration')).not.toHaveClass('nav-item-blocked');
     expect(sidebarLink('Configuration')).toHaveAttribute('href', '/dashboard/models');
     expect(sidebarLink('Settings')).not.toHaveClass('nav-item-blocked');

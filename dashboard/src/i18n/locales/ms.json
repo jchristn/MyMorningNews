@@ -150,7 +150,8 @@
       "configuration": "Konfigurasi",
       "observability": "Kebolehcerapan",
       "administration": "Pentadbiran",
-      "settings": "Tetapan"
+      "settings": "Tetapan",
+      "plans": "Pelan"
     },
     "tabs": {
       "requests": "Permintaan",
@@ -3750,7 +3751,8 @@
       "BriefingPublished": "Taklimat diterbitkan",
       "RunFailed": "Larian gagal",
       "PreferenceProposal": "Cadangan keutamaan",
-      "Test": "Ujian"
+      "Test": "Ujian",
+      "BriefingSupport": "Laporan sokongan taklimat"
     },
     "chart": {
       "title": "Mesej sehari mengikut status",

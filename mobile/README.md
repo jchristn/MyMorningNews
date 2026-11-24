@@ -92,9 +92,13 @@ explains that the server asks for a check the app cannot show and opens the web 
 same origin on the hosted service) in the in-app browser, then the person comes back and signs in. Adding
 `react-native-webview` only for this was not worth a native module.
 
-Phones use five tabs (Today, Listen, Topics, Insights, Account), each a stack. Tablets and windows 768 points and
+Phones use five root tabs (Today, Listen, Topics, Insights, Account) inside one shared native stack.
+Secondary screens preserve the tab or detail that opened them: header Back, the iOS swipe gesture, and Android
+Back unwind that history. Direct detail links have a root-tab back destination. Tablets and windows 768 points and
 wider show split views (the briefing, finding, prediction, request, topic, and edition lists beside their detail, and
-the Account menu beside the chosen section) and keep the mini player as a persistent bar above the tabs.
+the Account menu beside the chosen section). The mini player stays above the tab bar on root pages and at the
+bottom on secondary pages. After sign-in, the logo holds for 1.5 seconds and fades for 600 ms; reduced motion
+skips the fade. The Briefings list opens with Editions selected.
 
 - **Listen:** ready episodes (tap to play, or open the briefing), the full player, downloads that play offline, and a
   link to the podcast feeds.
@@ -110,7 +114,11 @@ the Account menu beside the chosen section) and keep the mini player as a persis
 - **Briefing reader:** Markdown parsed by `src/lib/markdown.js` into native Text and View elements (no WebView and no
   HTML, so briefing content cannot run anything; links open only for http, https, and mailto), section navigation,
   citation numbers that jump to the Sources section, the findings and predictions it cites, pin, and share or save the
-  `.md` and `.html` files through the share sheet (`src/lib/briefingFiles.js`).
+  `.md` and `.html` files through the share sheet (`src/lib/briefingFiles.js`). Failed briefings offer **Share with
+  Support**: `POST /v1.0/api/briefings/{id}/support` queues the title, displayed error, identifiers, timestamps, and
+  reporting account email. The app reports acceptance or an error, and the server deduplicates repeated requests.
+  `Email.SupportRecipient` (`EMAIL_SUPPORT_RECIPIENT`) defaults to `hello@latticetech.ai`; an empty recipient or
+  disabled email returns 503. Delivery uses the normal outbox and retries.
 - **Topics:** the list, the compact wizard (Describe, Dimensions, Questions, Brief, Review; `src/lib/wizard.js`), and the
   workspace with Overview, Findings, Runs, Sources, and Schedule tabs; run detail with stages, totals, and a
   hand-rolled SVG stage chart; editions with settings, topics in order, schedule, Compose now, and Preview. Light and dark themes follow

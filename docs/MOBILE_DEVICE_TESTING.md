@@ -125,3 +125,15 @@ only after the owner's interface review (plan section 34.1).
   emulators show "Push notifications need a physical device".
 - Universal links need the hosted domain's association files; use the custom scheme locally.
 - Over-the-air updates are off in development and until the update certificate and EAS project exist.
+
+
+## Login, navigation, and support regression checks
+
+- Sign out and sign in. The logo stays visible for 1.5 seconds and fades out over 600 ms. Repeat with Reduce Motion enabled: the hold remains and the fade is skipped. Ensure normal navigation does not replay it.
+- On Today, verify "Recent briefings". Open Briefings and verify Editions is selected; switch to All and Topic runs and verify the list changes.
+- First visit Briefings, return, then select Topics > System briefings. Header Back, iOS swipe Back, and Android Back must return to Topics. Repeat nested briefing/finding details from Today, Listen, and Topics, checking each prior page and its scroll/filter state.
+- Open a briefing through an external link; Back must reach the root tabs. Check phone and tablet split views, plus mini-player visibility on root and secondary pages.
+- Open a failed briefing, tap Share with Support, and verify the queued confirmation. Confirm the report arrives through the configured email provider with the reporter email and failure details. Reopening and submitting again must not create another email. Ready briefings must not show the action.
+- With email disabled in a test environment, submission must show an error and permit retry. Re-enable email and retry. Use the File email provider for automated tests to avoid sending real mail.
+
+These checks require the updated mobile code and server support endpoint; committing source does not update an installed store build.

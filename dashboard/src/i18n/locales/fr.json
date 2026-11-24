@@ -150,7 +150,8 @@
       "configuration": "Configuration",
       "observability": "Observabilité",
       "administration": "Administration",
-      "settings": "Paramètres"
+      "settings": "Paramètres",
+      "plans": "Forfaits"
     },
     "tabs": {
       "requests": "Requêtes",
@@ -3750,7 +3751,8 @@
       "BriefingPublished": "Briefing publié",
       "RunFailed": "Échec d’exécution",
       "PreferenceProposal": "Proposition de préférence",
-      "Test": "Test"
+      "Test": "Test",
+      "BriefingSupport": "Rapport de briefing au support"
     },
     "chart": {
       "title": "Messages par jour et par statut",

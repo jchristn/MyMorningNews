@@ -150,7 +150,8 @@
       "configuration": "Configuración",
       "observability": "Observabilidad",
       "administration": "Administración",
-      "settings": "Ajustes"
+      "settings": "Ajustes",
+      "plans": "Planes"
     },
     "tabs": {
       "requests": "Solicitudes",
@@ -3750,7 +3751,8 @@
       "BriefingPublished": "Resumen informativo publicado",
       "RunFailed": "Ejecución fallida",
       "PreferenceProposal": "Propuesta de preferencia",
-      "Test": "Prueba"
+      "Test": "Prueba",
+      "BriefingSupport": "Informe de soporte de resumen"
     },
     "chart": {
       "title": "Mensajes por día según el estado",

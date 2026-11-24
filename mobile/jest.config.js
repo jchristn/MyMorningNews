@@ -18,7 +18,7 @@ module.exports = {
     '^react/(.*)$': local('react') + '/$1',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|react-native-.*|@react-native-async-storage/.*|i18next-icu|intl-messageformat|@formatjs/.*))',
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|standard-navigation|react-navigation|@react-navigation/.*|react-native-.*|@react-native-async-storage/.*|i18next-icu|intl-messageformat|@formatjs/.*))',
   ],
   clearMocks: true,
   testTimeout: 60000,

@@ -11,6 +11,7 @@ import StatusBadge from '../components/StatusBadge.jsx';
 import GrantPlanModal from './plans/GrantPlanModal.jsx';
 import PlanFormModal from './plans/PlanFormModal.jsx';
 import UserPlanAssignments from './plans/UserPlanAssignments.jsx';
+import UserEntitlements from './plans/UserEntitlements.jsx';
 import { FeatureList } from './plans/planParts.jsx';
 import UserPicker from './promo/UserPicker.jsx';
 import usePlans from './promo/usePlans.js';
@@ -68,7 +69,8 @@ export default function PlansView() {
         <h2>{t('plans.assignments.title')}</h2>
         <p className="muted small">{t('plans.assignments.help')}</p>
         <UserPicker value={who} onChange={setWho} idPrefix="assign" />
-        <UserPlanAssignments tenantId={who.tenantId} userId={who.userId} plans={plans} refreshSignal={refresh} />
+        {who.tenantId && who.userId ? <UserEntitlements key={who.tenantId + ':' + who.userId} tenantId={who.tenantId} userId={who.userId} plans={plans} refreshSignal={refresh} /> : null}
+        <UserPlanAssignments key={who.tenantId + ':' + who.userId} tenantId={who.tenantId} userId={who.userId} plans={plans} refreshSignal={refresh} onChanged={() => setRefresh(n => n + 1)} />
       </section>
       {editing ? (
         <PlanFormModal
@@ -84,6 +86,7 @@ export default function PlansView() {
       {granting ? (
         <GrantPlanModal
           plans={plans}
+          target={who.userId ? who : null}
           onClose={() => setGranting(false)}
           onGranted={(a, target) => {
             setGranting(false);

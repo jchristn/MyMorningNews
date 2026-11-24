@@ -1,6 +1,11 @@
 // fr: French strings for the app (the `mobile.*` namespace), complete against src/i18n/catalog/en.js.
 // Machine-translated and awaiting native review (docs/I18N.md). `npm run i18n:check` keeps it complete and valid.
 export const fr = {
+  supportReport: {
+    "action": "Partager avec l’assistance",
+    "help": "Envoie à l’assistance le titre du briefing, l’erreur, les identifiants, les dates et l’adresse e-mail de votre compte.",
+    "queued": "Votre rapport a été mis en attente pour l’assistance."
+  },
   dailyUsage: {
   "audioToday": "Audio généré aujourd’hui (minutes)",
   "audioReserved": "Réservé pour la génération : {minutes} minutes. Réinitialisation le {date} (minuit UTC).",
@@ -433,7 +438,7 @@ export const fr = {
   today: {
     greeting: 'Bonjour, {name}.',
     latest: 'Dernier briefing',
-    recentRuns: 'Briefings récents par sujet',
+    recentRuns: "Briefings récents",
     ask: 'Demande ponctuelle',
     more: 'Explorer',
     openBriefing: 'Ouvrir le briefing {title}',

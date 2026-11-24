@@ -4,11 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeContext';
 
 /**
- * The stack inside one tab, with themed headers. `titles` maps route names to header titles; routes not listed take
+ * A native stack with themed headers. `titles` maps route names to header titles; routes not listed take
  * their title from the screen (`<Stack.Screen options>`). `headerRight` maps route names to a component shown at the
  * end of that route's header (the notification bell on Today).
  */
-export function TabStack({ titles, modal = [], headerRight = {} }) {
+export function TabStack({ titles, modal = [], headerRight = {}, options = {} }) {
   const p = useTheme();
   const { t } = useTranslation();
   return (
@@ -22,7 +22,7 @@ export function TabStack({ titles, modal = [], headerRight = {} }) {
       }}
     >
       {Object.entries(titles).map(([name, title]) => (
-        <Stack.Screen key={name} name={name} options={{ title, presentation: modal.includes(name) ? 'modal' : undefined, headerRight: headerRight[name] }} />
+        <Stack.Screen key={name} name={name} options={{ title, presentation: modal.includes(name) ? 'modal' : undefined, headerRight: headerRight[name], ...options[name] }} />
       ))}
     </Stack>
   );

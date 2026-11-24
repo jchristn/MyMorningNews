@@ -3,6 +3,7 @@ namespace MyMorningNews.Server.Routes
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Net.Mail;
     using System.Threading.Tasks;
     using MyMorningNews.Core.Enums;
     using MyMorningNews.Core.Models;
@@ -50,6 +51,8 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, b + "/{id}/pin", PinAsync, null, openApiMetadata: Doc("Pin or unpin a briefing past the retention window", "Briefings")
                 .WithRequestBody(Body<BriefingPinRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/regenerate", RegenerateAsync, null, openApiMetadata: Doc("Store fresh Markdown and HTML files from the saved briefing", "Briefings"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/support", SupportAsync, null, openApiMetadata: Doc("Share a failed briefing with support", "Briefings",
+                "Queues the title, displayed error, identifiers, timestamps, and reporting account email for the configured support recipient. Idempotent per briefing and reporting user. Requires a signed-in user; only failed briefings can be reported. Returns 503 when email is unavailable."));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, b + "/{id}", DeleteAsync, null, openApiMetadata: Doc("Delete a briefing and its files", "Briefings"));
 
             const string a = "/v1.0/api/artifacts";
@@ -86,6 +89,21 @@ namespace MyMorningNews.Server.Routes
             EnumerationResult<Briefing> page = await Server.Database.Briefings.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false);
             foreach (Briefing x in page.Objects) x.Markdown = null;
             await SendJsonAsync(ctx, 200, page).ConfigureAwait(false);
+        }
+
+        private async Task SupportAsync(HttpContextBase ctx)
+        {
+            Briefing? briefing = await OwnedAsync(ctx, RequestTypeEnum.BriefingRead).ConfigureAwait(false);
+            if (briefing == null) return;
+            User? reporter = String.IsNullOrEmpty(Context(ctx).UserId) ? null : await Server.Database.Users.ReadAsync(briefing.TenantId, Context(ctx).UserId!, ctx.Token).ConfigureAwait(false);
+            if (reporter == null) { await SendErrorAsync(ctx, 403, "UserRequired", "Sign in as a user to send a support report.").ConfigureAwait(false); return; }
+            if (briefing.Status != BriefingStatusEnum.Failed) { await SendErrorAsync(ctx, 409, "BriefingNotFailed", "Only failed briefings can be shared with support.").ConfigureAwait(false); return; }
+            if (!Server.Settings.Email.Enabled || Server.Settings.Email.Provider == EmailProviderEnum.Disabled || !MailAddress.TryCreate(Server.Settings.Email.SupportRecipient, out _))
+            { await SendErrorAsync(ctx, 503, "SupportUnavailable", "Support email is not configured on this server.").ConfigureAwait(false); return; }
+            EmailMessage message = await Server.Email.SendBriefingSupportAsync(briefing, reporter, ctx.Token).ConfigureAwait(false);
+            if (message.Status == EmailStatusEnum.Failed || message.Status == EmailStatusEnum.Skipped)
+            { await SendErrorAsync(ctx, 503, "SupportDeliveryFailed", "The support report could not be delivered. Contact support directly.").ConfigureAwait(false); return; }
+            await SendJsonAsync(ctx, 202, new SupportReportResponse { Id = message.Id, Status = message.Status }).ConfigureAwait(false);
         }
 
         private async Task ReadAsync(HttpContextBase ctx)

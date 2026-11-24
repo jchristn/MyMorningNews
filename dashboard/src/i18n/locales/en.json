@@ -150,7 +150,8 @@
       "configuration": "Configuration",
       "observability": "Observability",
       "administration": "Administration",
-      "settings": "Settings"
+      "settings": "Settings",
+      "plans": "Tiers and plans"
     },
     "tabs": {
       "requests": "Requests",
@@ -3750,7 +3751,8 @@
       "BriefingPublished": "Briefing published",
       "RunFailed": "Run failed",
       "PreferenceProposal": "Preference proposal",
-      "Test": "Test"
+      "Test": "Test",
+      "BriefingSupport": "Briefing support report"
     },
     "chart": {
       "title": "Messages per day by status",

@@ -31,7 +31,7 @@ ROOTS = [
     "CatalogPublicationRequest", "CatalogResearchRequest", "CatalogSubscriptionRequest", "EntitlementOverrideRequest",
     "BillingCheckoutRequest", "BillingPurchaseRequest", "ProviderConnectionRequest", "FundingModeRequest",
     # Responses (every response DTO except the generic page, which the SDK hand-writes).
-    "AuthorizationFailureResponse", "BriefingDetailResponse", "ClientConfigResponse", "CredentialCreatedResponse",
+    "SupportReportResponse", "AuthorizationFailureResponse", "BriefingDetailResponse", "ClientConfigResponse", "CredentialCreatedResponse",
     "CredentialResponse", "DeleteManyResponse", "DownloadUrlResponse", "EditionResponse", "EffectivePermissionsResponse",
     "EmailPreferencesResponse", "ErrorResponse", "EvidenceView", "ExternalServiceInfo", "FindingDetailResponse",
     "HealthResponse", "MediaDetailResponse", "ModelListItem", "ModelTestResponse", "ModelValidationResponse",

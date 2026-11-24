@@ -8,6 +8,7 @@ namespace Test.Shared.Suites
     using MyMorningNews.Core.Briefings;
     using MyMorningNews.Core.Enums;
     using MyMorningNews.Core.Models;
+    using MyMorningNews.Core.Requests;
     using MyMorningNews.Core.Responses;
     using MyMorningNews.Server;
     using Test.Shared.Helpers;
@@ -29,6 +30,7 @@ namespace Test.Shared.Suites
         {
             return new TestSuiteDescriptor(S, "Briefings, templates, and editions", new[]
             {
+                Cases.Case(S, "SupportReport", "Failed briefing reports enforce ownership, queue once, escape details, and deliver through the support outbox", SupportReportAsync),
                 Cases.Case(S, "TemplateFormat", "Default templates parse; errors and warnings carry line numbers", TemplateFormatAsync, "fast"),
                 Cases.Case(S, "SafeMarkdown", "Markdown renders to HTML without letting markup or unsafe links through", SafeMarkdownAsync, "fast"),
                 Cases.Case(S, "RunBriefing", "A run composes a briefing with sections, numbered citations, items, and Markdown and HTML files", RunBriefingAsync),
@@ -38,6 +40,63 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "EditionSchedule", "New users get Morning News, and a due edition schedule queues a briefing", EditionScheduleAsync),
                 Cases.Case(S, "PinRegenerateDelete", "Briefings pin within the cap, regenerate expired files, and delete with their files", PinRegenerateDeleteAsync)
             });
+        }
+
+        private static async Task SupportReportAsync(CancellationToken token)
+        {
+            MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+            TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
+            Tenant tenant = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
+            TestUser owner = await TestFixtures.CreateUserAsync(admin, tenant.Id, false, token).ConfigureAwait(false);
+            TestUser other = await TestFixtures.CreateUserAsync(admin, tenant.Id, false, token).ConfigureAwait(false);
+            Briefing briefing = await server.Context.Database.Briefings.CreateAsync(new Briefing
+            {
+                TenantId = tenant.Id, UserId = owner.User.Id, Title = "Failed <briefing>",
+                Status = BriefingStatusEnum.Failed, ErrorMessage = "Model unavailable <script>error</script>"
+            }, token).ConfigureAwait(false);
+            string route = "/v1.0/api/briefings/" + briefing.Id + "/support";
+            bool enabled = server.Context.Settings.Email.Enabled;
+            EmailProviderEnum provider = server.Context.Settings.Email.Provider;
+            string recipient = server.Context.Settings.Email.SupportRecipient;
+            try
+            {
+                server.Context.Settings.Email.Enabled = true;
+                server.Context.Settings.Email.Provider = EmailProviderEnum.File;
+                server.Context.Settings.Email.SupportRecipient = "support@example.test";
+                (await other.Client.PostAsync(route, null, token).ConfigureAwait(false)).Expect(404, "another user cannot share this briefing");
+                Tenant anotherTenant = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
+                TestUser outsider = await TestFixtures.CreateUserAsync(admin, anotherTenant.Id, false, token).ConfigureAwait(false);
+                (await outsider.Client.PostAsync(route, null, token).ConfigureAwait(false)).Expect(404, "another tenant cannot share this briefing");
+                server.Context.Settings.Email.Enabled = false;
+                (await owner.Client.PostAsync(route, null, token).ConfigureAwait(false)).Expect(503, "disabled email is reported honestly");
+                server.Context.Settings.Email.Enabled = true;
+                server.Context.Settings.Email.SupportRecipient = "";
+                (await owner.Client.PostAsync(route, null, token).ConfigureAwait(false)).Expect(503, "missing recipient is unavailable");
+                server.Context.Settings.Email.SupportRecipient = "Support <support@example.test>";
+                SupportReportResponse report = (await owner.Client.PostAsync(route, null, token).ConfigureAwait(false)).Expect(202, "queue support report").Json<SupportReportResponse>();
+                SupportReportResponse duplicate = (await owner.Client.PostAsync(route, null, token).ConfigureAwait(false)).Expect(202, "repeat is idempotent").Json<SupportReportResponse>();
+                Assert.Equal(report.Id, duplicate.Id, "same report for repeated requests");
+                Assert.Equal(EmailStatusEnum.Queued, report.Status, "queued, not yet delivered");
+                List<EmailMessage> messages = (await server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenant.Id, BriefingId = briefing.Id }, token).ConfigureAwait(false)).Objects;
+                Assert.Equal(1, messages.Count, "only one email");
+                EmailMessage message = messages[0];
+                Assert.True(message.Recipient == "support@example.test" && message.Template == EmailTemplateEnum.BriefingSupport, "fixed configured recipient and template");
+                Assert.True(message.RenderedText!.Contains(owner.User.Email, StringComparison.Ordinal) && message.RenderedText.Contains(briefing.Id, StringComparison.Ordinal) && message.RenderedText.Contains(briefing.ErrorMessage!, StringComparison.Ordinal), "reporter and failure details forwarded");
+                Assert.True(message.RenderedHtml!.Contains("&lt;script&gt;", StringComparison.Ordinal) && !message.RenderedHtml.Contains("<script>", StringComparison.Ordinal), "HTML safely encoded");
+                Assert.True(!message.RenderedText.Contains(owner.Password, StringComparison.Ordinal), "no account password in report");
+                await server.Context.Email.DeliverDueAsync(DateTime.UtcNow, token).ConfigureAwait(false);
+                message = (await server.Context.Database.EmailMessages.ReadAsync(tenant.Id, message.Id, token).ConfigureAwait(false))!;
+                Assert.Equal(EmailStatusEnum.Sent, message.Status, "File provider delivered the support report without sending real mail");
+                briefing.Status = BriefingStatusEnum.Ready;
+                await server.Context.Database.Briefings.UpdateAsync(briefing, token).ConfigureAwait(false);
+                (await owner.Client.PostAsync(route, null, token).ConfigureAwait(false)).Expect(409, "ready briefings cannot be reported as failed");
+            }
+            finally
+            {
+                server.Context.Settings.Email.Enabled = enabled;
+                server.Context.Settings.Email.Provider = provider;
+                server.Context.Settings.Email.SupportRecipient = recipient;
+            }
         }
 
         private static Task TemplateFormatAsync(CancellationToken token)

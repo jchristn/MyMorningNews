@@ -1,6 +1,11 @@
 // pt: Portuguese strings for the app (the `mobile.*` namespace), complete against src/i18n/catalog/en.js.
 // Machine-translated and awaiting native review (docs/I18N.md). `npm run i18n:check` keeps it complete and valid.
 export const pt = {
+  supportReport: {
+    "action": "Compartilhar com o suporte",
+    "help": "Envia ao suporte o título, o erro, os identificadores, as datas e o e-mail da sua conta.",
+    "queued": "Seu relatório está na fila para o suporte."
+  },
   dailyUsage: {
   "audioToday": "Áudio gerado hoje (minutos)",
   "audioReserved": "Reservado para geração: {minutes} minutos. Reinicia em {date} (meia-noite UTC).",
@@ -433,7 +438,7 @@ export const pt = {
   today: {
     greeting: 'Bom dia, {name}.',
     latest: 'Boletim mais recente',
-    recentRuns: 'Boletins recentes dos temas',
+    recentRuns: "Briefings recentes",
     ask: 'Pedir uma vez',
     more: 'Explorar',
     openBriefing: 'Abrir o boletim {title}',

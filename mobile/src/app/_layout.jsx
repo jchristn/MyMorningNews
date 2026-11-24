@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { I18nextProvider } from 'react-i18next';
 import { LockGate } from '@/components/LockGate';
+import { LoginLogo } from '@/components/LoginLogo';
 import { PurchaseProvider } from '@/billing/PurchaseProvider';
 import { UpdateGate } from '@/components/UpdateGate';
 import { applyDirection, deviceLocale, initI18n } from '@/i18n/runtime';
@@ -29,6 +30,7 @@ function Navigator() {
     <>
       <StatusBar style={p.dark ? 'light' : 'dark'} />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: p.bg } }} />
+      {state.status === 'signedIn' ? <LoginLogo key={state.serverUrl + ':' + state.tenantId + ':' + state.user?.id} /> : null}
     </>
   );
 }

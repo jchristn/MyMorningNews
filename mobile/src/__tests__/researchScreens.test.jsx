@@ -61,6 +61,7 @@ describe('Today', () => {
     await waitFor(() => expect(screen.getByTestId('today-latest')).toBeTruthy());
     expect(screen.getByText('Morning News for Thursday, November 19, 2026')).toBeTruthy();
     expect(screen.getByText('AI developer tools run')).toBeTruthy();
+    expect(screen.getByText('Recent briefings')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('compose-now'));
     await waitFor(() => expect(screen.getByText('Composing your briefing')).toBeTruthy());
     await waitFor(() => expect(screen.getByText('Your briefing is ready')).toBeTruthy(), { timeout: 8000 });
@@ -79,10 +80,30 @@ describe('briefings', () => {
   it('lists briefings and filters by kind', async () => {
     const { server } = await renderSignedIn(<BriefingsScreen />, { 'GET /v1.0/api/briefings': () => page([readyBriefing]) });
     await waitFor(() => expect(screen.getByTestId('briefing-row-brf_1')).toBeTruthy());
+    expect(server.calls.find(c => c.key === 'GET /v1.0/api/briefings').url).toContain('kind=Edition');
     await fireEvent.press(screen.getByTestId('briefings-filter-Run'));
     await waitFor(() => expect(server.calls.some((c) => c.url.includes('kind=Run'))).toBe(true));
     await fireEvent.press(screen.getByTestId('briefings-filter-pinned'));
     await waitFor(() => expect(server.calls.some((c) => c.url.includes('pinned=true'))).toBe(true));
+  });
+
+  it('shares failed briefing details once, handles errors, and allows retry', async () => {
+    let attempts = 0;
+    const { server } = await renderSignedIn(<BriefingDetail id="brf_1" />, {
+      'GET /v1.0/api/briefings/brf_1': () => ({ body: { ...briefingDetail, briefing: { ...readyBriefing, status: 'Failed', errorMessage: 'Model unavailable' } } }),
+      'POST /v1.0/api/briefings/brf_1/support': () => ++attempts === 1
+        ? { status: 503, body: { error: 'SupportUnavailable', message: 'Support email is not configured on this server.' } }
+        : { status: 202, body: { id: 'eml_support', status: 'Queued' } },
+    });
+    await waitFor(() => expect(screen.getByText('Share with Support')).toBeTruthy());
+    expect(server.count('POST /v1.0/api/briefings/brf_1/support')).toBe(0);
+    await fireEvent.press(screen.getByTestId('briefing-support'));
+    await waitFor(() => expect(screen.getByText('Support email is not configured on this server.')).toBeTruthy());
+    expect(screen.getByTestId('briefing-support').props.accessibilityState.disabled).toBe(false);
+    await fireEvent.press(screen.getByTestId('briefing-support'));
+    await waitFor(() => expect(screen.getByText('Your report has been queued for support.')).toBeTruthy());
+    expect(screen.queryByTestId('briefing-support')).toBeNull();
+    expect(server.count('POST /v1.0/api/briefings/brf_1/support')).toBe(2);
   });
 
   it('reads a briefing: sections, citations that jump to Sources, linked items, pin, and share', async () => {
@@ -95,6 +116,7 @@ describe('briefings', () => {
     await waitFor(() => expect(screen.getByTestId('briefing-body')).toBeTruthy());
     expect(screen.getAllByText('Morning News for Thursday, November 19, 2026')).toHaveLength(1);
     expect(screen.getByTestId('section-nav')).toBeTruthy();
+    expect(screen.queryByTestId('briefing-support')).toBeNull();
     await fireEvent.press(screen.getByTestId('nav-h3'));
     await fireEvent.press(screen.getAllByTestId('cite-1')[0]);
     await waitFor(() => expect(screen.getByTestId('cited-source')).toBeTruthy());

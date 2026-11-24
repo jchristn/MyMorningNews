@@ -2926,6 +2926,11 @@ export class BriefingsResource extends ResourceGroup {
      * @param {string} id Briefing.
      * @returns {Promise<Briefing>} Briefing.
      */
+    /** Queue a failed briefing report for support (202); repeats return the same report ID. */
+    shareWithSupport(id) {
+        return this._req('POST', this._path(id, '/support'));
+    }
+
     regenerate(id) {
         return this._req('POST', this._path(id, '/regenerate'));
     }

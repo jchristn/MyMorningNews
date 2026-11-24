@@ -5,6 +5,11 @@
  * lacks a category its language needs, and on em-dashes.
  */
 export const en = {
+  supportReport: {
+    "action": "Share with Support",
+    "help": "Sends the briefing title, error, identifiers, timestamps, and your account email to support.",
+    "queued": "Your report has been queued for support."
+  },
   dailyUsage: {
   "audioToday": "Generated audio today (minutes)",
   "audioReserved": "Reserved for generation: {minutes} minutes. Resets {date} (midnight UTC).",
@@ -326,7 +331,7 @@ export const en = {
   today: {
     greeting: 'Good morning, {name}.',
     latest: 'Latest briefing',
-    recentRuns: 'Recent topic briefings',
+    recentRuns: 'Recent briefings',
     ask: 'Ask once',
     more: 'Explore',
     openBriefing: 'Open briefing {title}',

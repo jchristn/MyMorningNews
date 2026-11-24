@@ -150,7 +150,8 @@
       "configuration": "التكوين",
       "observability": "المراقبة",
       "administration": "الإدارة",
-      "settings": "الإعدادات"
+      "settings": "الإعدادات",
+      "plans": "الخطط"
     },
     "tabs": {
       "requests": "الطلبات",
@@ -3750,7 +3751,8 @@
       "BriefingPublished": "نُشر موجز",
       "RunFailed": "فشل التشغيل",
       "PreferenceProposal": "اقتراح تفضيل",
-      "Test": "اختبار"
+      "Test": "اختبار",
+      "BriefingSupport": "تقرير دعم الملخص"
     },
     "chart": {
       "title": "الرسائل يوميًا حسب الحالة",

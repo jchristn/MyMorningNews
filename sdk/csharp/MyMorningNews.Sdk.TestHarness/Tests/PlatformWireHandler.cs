@@ -10,6 +10,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
     {
         internal string Reply { get; set; } = "{}";
         internal HttpStatusCode Status { get; set; } = HttpStatusCode.OK;
+        internal string Method { get; private set; } = String.Empty;
         internal string Body { get; private set; } = String.Empty;
         internal string Path { get; private set; } = String.Empty;
         internal string? Authorization { get; private set; }
@@ -17,6 +18,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            Method = request.Method.Method;
             Path = request.RequestUri!.PathAndQuery;
             Body = request.Content == null ? String.Empty : await request.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             Authorization = request.Headers.Authorization?.ToString();

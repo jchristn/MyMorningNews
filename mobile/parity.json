@@ -60,7 +60,7 @@
       "route": "/home",
       "group": "Start",
       "status": "implemented",
-      "screen": "app/(app)/today/index.jsx",
+      "screen": "app/(app)/(tabs)/today/index.jsx",
       "api": [
         "GET /v1.0/api/analytics/overview",
         "GET /v1.0/api/editions",
@@ -72,7 +72,7 @@
       "route": "/today",
       "group": "Start",
       "status": "implemented",
-      "screen": "app/(app)/today/index.jsx",
+      "screen": "app/(app)/(tabs)/today/index.jsx",
       "api": [
         "GET /v1.0/api/editions",
         "GET /v1.0/api/briefings",
@@ -113,7 +113,7 @@
       "route": "/topics",
       "group": "Research",
       "status": "implemented",
-      "screen": "app/(app)/topics/index.jsx",
+      "screen": "app/(app)/(tabs)/topics/index.jsx",
       "api": [
         "GET /v1.0/api/topics"
       ],
@@ -324,7 +324,7 @@
       "route": "/listen",
       "group": "Briefings",
       "status": "implemented",
-      "screen": "app/(app)/listen/index.jsx",
+      "screen": "app/(app)/(tabs)/listen/index.jsx",
       "api": [
         "GET /v1.0/api/media",
         "GET /v1.0/api/media/{id}",

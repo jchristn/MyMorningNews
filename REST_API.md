@@ -431,7 +431,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 
 ## Route reference
 
-411 routes in 53 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
+412 routes in 53 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
 
 | Group | Routes | What it covers |
 |---|---|---|
@@ -464,7 +464,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [Sources](#sources) | 3 | Pages the pipeline fetched for your topics, with their extracted text. |
 | [Predictions](#predictions) | 6 | Forecasts the pipeline extracted, with confidence and a horizon. They are resolved by hand or by accepting a proposed review. |
 | [Suggestions](#suggestions) | 4 | Things worth digging into next, with a status you move through (accept, snooze, dismiss, done). |
-| [Briefings](#briefings) | 9 | Composed briefings with sections and items, their Markdown and HTML files, pinning past retention, and regeneration. |
+| [Briefings](#briefings) | 10 | Composed briefings with sections and items, their Markdown and HTML files, pinning past retention, and regeneration. |
 | [Artifacts](#artifacts) | 5 | Stored files: briefing Markdown and HTML, audio, and exports. Content streams with Range support. |
 | [Editions](#editions) | 9 | Recurring briefings that gather several topics, with a template, audio and email switches, and a lookback window. |
 | [Templates](#templates) | 12 | Briefing templates in Markdown. Every save is a version; templates can be validated, previewed, rolled back, reset, imported, and exported. |
@@ -7946,6 +7946,7 @@ Composed briefings with sections and items, their Markdown and HTML files, pinni
 | PUT | [`/v1.0/api/briefings/{id}/progress`](#put-v10apibriefingsidprogress) | Save where I stopped listening |
 | PUT | [`/v1.0/api/briefings/{id}/pin`](#put-v10apibriefingsidpin) | Pin or unpin a briefing past the retention window |
 | POST | [`/v1.0/api/briefings/{id}/regenerate`](#post-v10apibriefingsidregenerate) | Store fresh Markdown and HTML files from the saved briefing |
+| POST | [`/v1.0/api/briefings/{id}/support`](#post-v10apibriefingsidsupport) | Share a failed briefing with support |
 
 ### GET /v1.0/api/briefings
 
@@ -8215,6 +8216,33 @@ curl -s -X PUT "http://127.0.0.1:12100/v1.0/api/briefings/brf_mwpf8b9c_Er6tY9uI2
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/briefings/brf_mwpf8b9c_Er6tY9uI2oPa5sDf8Gh/regenerate" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/briefings/{id}/support
+
+**Share a failed briefing with support.** Queues the title, displayed error, identifiers, timestamps, and reporting account email for the configured support recipient. Idempotent per briefing and reporting user. Requires a signed-in user; only failed briefings can be reported. Returns 503 when email is unavailable.
+
+- Auth: `Briefing:Read` (`BriefingRead`).
+- Response: [`SupportReportResponse`](#supportreportresponse)
+- Notes: Requires a signed-in user with access to the failed briefing. Sends the displayed error, title, identifiers, timestamps, and reporter email to the server-configured support recipient. No request body. Repeated requests by the same user return the same report ID. Queued means accepted for asynchronous delivery, not delivery confirmation.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{briefingId}}` |
+
+| Status | Meaning |
+|---|---|
+| 202 | Accepted |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden: Forbidden or UserRequired |
+| 404 | Not Found |
+| 409 | Conflict: `BriefingNotFailed` |
+| 503 | Service Unavailable: SupportUnavailable or SupportDeliveryFailed |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/briefings/brf_mwpf8b9c_Er6tY9uI2oPa5sDf8Gh/support" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -9750,7 +9778,7 @@ The email outbox, test and preview sends, resends, and the signed-in user's emai
 | Query parameter | Type | Notes |
 |---|---|---|
 | `status` | enum (`Queued`, `Sending`, `Sent`, `Failed`, `Suppressed`, `Skipped`) |  |
-| `template` | enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`, `CapReached`, `AudioReady`, `PredictionDue`) | Email template. |
+| `template` | enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`, `CapReached`, `AudioReady`, `PredictionDue`, `BriefingSupport`) | Email template. |
 | `runId` | string | Only records from this run. |
 | `briefingId` | string | Only records for this briefing. |
 | `topicId` | string | Only records for this topic. |
@@ -9780,7 +9808,7 @@ curl -s "http://127.0.0.1:12100/v1.0/api/email-messages?pageSize=10" \
 | Query parameter | Type | Notes |
 |---|---|---|
 | `status` | enum (`Queued`, `Sending`, `Sent`, `Failed`, `Suppressed`, `Skipped`) |  |
-| `template` | enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`, `CapReached`, `AudioReady`, `PredictionDue`) | Email template. |
+| `template` | enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`, `CapReached`, `AudioReady`, `PredictionDue`, `BriefingSupport`) | Email template. |
 | `runId` | string | Only records from this run. |
 | `briefingId` | string | Only records for this briefing. |
 | `topicId` | string | Only records for this topic. |
@@ -15270,6 +15298,7 @@ Email delivery (plan section 23.6). Link base URLs come from Rest.PublicBaseUrl 
 
 | Field | Type | Description |
 |---|---|---|
+| `supportRecipient` | string | Destination for user-submitted failure reports. Default hello@latticetech.ai. Empty disables reports. |
 | `enabled` | boolean | Send email. Default true. |
 | `provider` | [`EmailProviderEnum`](#emailproviderenum) | Provider. Default File (written to FileDirectory) until Mailgun is configured. |
 | `fromAddress` | string | From address. Default briefings@example.test. |
@@ -18641,6 +18670,26 @@ Request body of [PUT /v1.0/api/suggestions/{id}/status](#put-v10apisuggestionsid
 | `status` | [`SuggestionStatusEnum`](#suggestionstatusenum) | New status. |
 | `snoozedUntilUtc` | date-time | Snooze until (for Snoozed). |
 
+#### SupportReportResponse
+
+Accepted support report. Repeated requests return the same report identifier and its delivery status.
+
+Returned by [POST /v1.0/api/briefings/{id}/support](#post-v10apibriefingsidsupport).
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Outbox message identifier. Default empty. |
+| `status` | [`EmailStatusEnum`](#emailstatusenum) | Current delivery status. Default Queued; acceptance does not imply completed delivery. |
+
+Example:
+
+```json
+{
+  "id": "eml_support",
+  "status": "Queued"
+}
+```
+
 #### TaskCost
 
 Cost of the calls made for one task role in a run.
@@ -19760,6 +19809,7 @@ Email template.
 | `CapReached` | A plan limit stopped a scheduled run (sent at most once per limit per month). |
 | `AudioReady` | The audio version of a briefing is ready. |
 | `PredictionDue` | A prediction is due for review. |
+| `BriefingSupport` | A user-submitted failed briefing report for support. |
 
 #### EnumerationOrderEnum
 

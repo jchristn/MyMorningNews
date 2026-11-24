@@ -60,3 +60,13 @@ test('shared audio uses authenticated ranges and cancellation', async () => {
     assert.equal(requests[0].headers.Authorization, 'Bearer member');
     assert.ok(requests[0].signal);
 });
+
+
+test('failed briefing support reports use an authenticated escaped POST', async () => {
+    const { api, requests, reply } = client();
+    reply({ id: 'eml_report', status: 'Queued' }, 202);
+    assert.deepEqual(await api.briefings.shareWithSupport('brf/one'), { id: 'eml_report', status: 'Queued' });
+    assert.equal(requests[0].method, 'POST');
+    assert.equal(requests[0].url.pathname, '/v1.0/api/briefings/brf%2Fone/support');
+    assert.equal(requests[0].headers.Authorization, 'Bearer member');
+});

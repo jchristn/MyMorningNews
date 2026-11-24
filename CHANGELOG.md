@@ -4,6 +4,7 @@ All notable changes to this project are documented here. The project follows [Se
 
 ## [0.1.0-alpha] - Unreleased
 
+- Marking a notification read returns its persisted timestamp, preserving exact idempotence across PostgreSQL timestamp precision. Benchmark feedback follows a syndicated finding to its canonical representative, and dashboard tests allow slower CI rendering without weakening assertions.
 - Benchmark fixtures explicitly enable history for cross-run comparisons and expect partial success when all page fetches fail, matching the current product policies.
 - Test runners now serialize xUnit collections that share a mutable test server, and limit dashboard workers to avoid contention.
 - Breaking collection retrieval contract: every application collection GET now uses `EnumerationQuery` and returns `{ success, objects, pageNumber, pageSize, totalRecords, totalPages, totalMs }`. The default page size is 10, capped at 1000. All 61 collections also accept POST `/enumerate`, with query-string overrides. Google `assetlinks.json` retains its required protocol array. Dashboard, mobile, SDKs, MCP projections, Postman, and reference documentation use the new envelope. Template visibility and promotional-code filtering/counts run in SQL; cross-tenant redemption enumeration no longer accumulates tenant pages. Regression tests cover paging, authorization, malformed input, and collections beyond 1000 records.

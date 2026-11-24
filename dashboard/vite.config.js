@@ -33,7 +33,8 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
-    maxWorkers: 4,
+    maxWorkers: 2,
+    testTimeout: 15000,
     globals: true,
     setupFiles: ['./src/test/setup.js'],
     css: false

@@ -265,7 +265,13 @@ namespace MyMorningNews.Benchmark.Runners
             {
                 List<FindingDto> findings = await client.GetRunFindingsAsync(run.Id, token).ConfigureAwait(false);
                 List<SearchResultDto> results = await client.GetResultsAsync(run.Id, token).ConfigureAwait(false);
-                FindingDto? target = findings.Where(x => !x.IsDuplicate).FirstOrDefault(x => ItemOf(corpus.Id, x, results) == f.Item);
+                FindingDto? target = findings.FirstOrDefault(x => ItemOf(corpus.Id, x, results) == f.Item);
+                // Concurrent extraction can select either syndicated copy as the representative.
+                // Feedback belongs on the canonical finding for the requested story.
+                HashSet<string> visited = new HashSet<string>(StringComparer.Ordinal);
+                while (target != null && target.IsDuplicate && visited.Add(target.Id))
+                    target = findings.FirstOrDefault(x => x.Id == target.DuplicateOfFindingId);
+                if (target?.IsDuplicate == true) target = null;
                 if (target == null)
                 {
                     ws.Notes.Add("Feedback after round " + round + " on " + f.Item + " was not given: the item produced no finding.");

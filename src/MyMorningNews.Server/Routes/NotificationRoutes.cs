@@ -98,6 +98,9 @@ namespace MyMorningNews.Server.Routes
             {
                 n.ReadUtc = DateTime.UtcNow;
                 n = await Server.Database.Notifications.UpdateAsync(n, ctx.Token).ConfigureAwait(false);
+                // PostgreSQL stores microseconds; return the persisted timestamp on the first read too.
+                n = await OwnedAsync(ctx, me).ConfigureAwait(false);
+                if (n == null) return;
             }
 
             await SendJsonAsync(ctx, 200, n).ConfigureAwait(false);

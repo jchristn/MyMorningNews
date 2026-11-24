@@ -158,7 +158,7 @@ namespace Test.Shared.Suites
             Assert.Equal(first.Id, again.Id, "the existing constraint is returned");
             TopicConstraint other = (await ta.Client.PostAsync("/v1.0/api/topics/" + topic.Id + "/constraints", new { kind = "BlockedDomain", value = "other.example" }, token).ConfigureAwait(false)).Expect(201, "another").Json<TopicConstraint>();
             (await ta.Client.PutAsync("/v1.0/api/topics/" + topic.Id + "/constraints/" + other.Id, new { value = "spam.example" }, token).ConfigureAwait(false)).Expect(409, "an update cannot make a duplicate");
-            List<TopicConstraint> all = (await ta.Client.GetAsync("/v1.0/api/topics/" + topic.Id + "/constraints?kind=BlockedDomain", token).ConfigureAwait(false)).Json<List<TopicConstraint>>();
+            List<TopicConstraint> all = (await ta.Client.GetAsync("/v1.0/api/topics/" + topic.Id + "/constraints?kind=BlockedDomain", token).ConfigureAwait(false)).Json<EnumerationResult<TopicConstraint>>().Objects;
             Assert.Equal(2, all.Count, "two blocked domains stored");
         }
 
@@ -243,7 +243,7 @@ namespace Test.Shared.Suites
             (await f.User.Client.PutAsync("/v1.0/api/topics/" + f.Topic.Id, new { maxEmailFindings = 1 }, token).ConfigureAwait(false)).Expect(200, "one finding per email");
             (await f.User.Client.PostAsync("/v1.0/api/topics/" + f.Topic.Id + "/recipients", new { email = f.User.User.Email }, token).ConfigureAwait(false)).Expect(201, "owner as recipient");
             Run run = await PipelineSuite.RunAsync(f, token).ConfigureAwait(false);
-            EmailMessage m = (await f.Server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = run.TenantId, RunId = run.Id, PageSize = 10 }, token).ConfigureAwait(false)).Items.Single();
+            EmailMessage m = (await f.Server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = run.TenantId, RunId = run.Id, PageSize = 10 }, token).ConfigureAwait(false)).Objects.Single();
             TimeZoneInfo zone = TimeZoneHelper.TryFind("Pacific/Honolulu")!;
             string local = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(run.CompletedUtc!.Value, DateTimeKind.Utc), zone).ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
             Assert.True(m.RenderedText!.Contains(local + " HST", StringComparison.Ordinal), "local time with its zone (" + local + " HST) in:\n" + m.RenderedText.Substring(0, Math.Min(400, m.RenderedText.Length)));
@@ -261,7 +261,7 @@ namespace Test.Shared.Suites
             Run run = await PipelineSuite.RunAsync(f, token).ConfigureAwait(false);
             Assert.True(run.Status == RunStatusEnum.PartiallySucceeded, "partially succeeded, not failed: " + run.Status + " " + run.ErrorMessage);
             Assert.True(run.Summary != null && run.Summary.Contains("Nothing new could be read", StringComparison.Ordinal), "the warning is in the summary: " + run.Summary);
-            List<RunStage> stages = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages", token).ConfigureAwait(false)).Json<List<RunStage>>();
+            List<RunStage> stages = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages?pageSize=1000", token).ConfigureAwait(false)).Json<EnumerationResult<RunStage>>().Objects;
             RunStage fetch = stages.Single(s => s.Stage == "Fetch");
             Assert.True(fetch.Status == StageStatusEnum.Succeeded && fetch.ItemsOut == 0 && fetch.ErrorMessage!.Contains("could be fetched", StringComparison.Ordinal), "fetch stage succeeded with a note");
             Assert.True(stages.Any(s => s.Stage == "Notify"), "the later stages still ran");

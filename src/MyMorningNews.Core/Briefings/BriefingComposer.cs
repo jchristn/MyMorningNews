@@ -85,7 +85,7 @@ namespace MyMorningNews.Core.Briefings
             foreach (Topic topic in scope.Topics)
             {
                 RunHistorySnapshot? snapshot = (await _Database.RunHistorySnapshots.EnumerateAsync(new RunHistorySnapshotFilter
-                { TenantId = scope.TenantId, TopicId = topic.Id, RunId = scope.RunId, ToUtc = scope.PeriodEndUtc, PageSize = 1 }, token).ConfigureAwait(false)).Items.FirstOrDefault();
+                { TenantId = scope.TenantId, TopicId = topic.Id, RunId = scope.RunId, ToUtc = scope.PeriodEndUtc, PageSize = 1 }, token).ConfigureAwait(false)).Objects.FirstOrDefault();
                 comparisons.Add("Topic: " + topic.Name + "\n" + HistoryContextService.Prompt(snapshot ?? new RunHistorySnapshot { Mode = "Off" }));
             }
             scope.HistoryInstructions = String.Join("\n\n", comparisons);
@@ -255,15 +255,15 @@ namespace MyMorningNews.Core.Briefings
             foreach (Topic t in scope.Topics)
             {
                 data.TopicsById[t.Id] = t;
-                List<Finding> findings = (await _Database.Findings.EnumerateAsync(new FindingFilter { TenantId = scope.TenantId, TopicId = t.Id, RunId = scope.RunId, IsDuplicate = false, Hidden = false, IsDryRun = scope.IsDryRun, PageSize = 500 }, token).ConfigureAwait(false)).Items;
+                List<Finding> findings = (await _Database.Findings.EnumerateAsync(new FindingFilter { TenantId = scope.TenantId, TopicId = t.Id, RunId = scope.RunId, IsDuplicate = false, Hidden = false, IsDryRun = scope.IsDryRun, PageSize = 500 }, token).ConfigureAwait(false)).Objects;
                 data.Findings.AddRange(findings.Where(f => f.Tier != FindingTierEnum.BelowThreshold && (scope.RunId != null || (f.CreatedUtc >= scope.PeriodStartUtc && f.CreatedUtc <= scope.PeriodEndUtc))));
-                List<Prediction> preds = (await _Database.Predictions.EnumerateAsync(new PredictionFilter { TenantId = scope.TenantId, TopicId = t.Id, IsDryRun = scope.IsDryRun, PageSize = 500 }, token).ConfigureAwait(false)).Items;
+                List<Prediction> preds = (await _Database.Predictions.EnumerateAsync(new PredictionFilter { TenantId = scope.TenantId, TopicId = t.Id, IsDryRun = scope.IsDryRun, PageSize = 500 }, token).ConfigureAwait(false)).Objects;
                 data.Predictions.AddRange(preds);
-                List<Suggestion> sugs = (await _Database.Suggestions.EnumerateAsync(new SuggestionFilter { TenantId = scope.TenantId, TopicId = t.Id, IsDryRun = scope.IsDryRun, PageSize = 500 }, token).ConfigureAwait(false)).Items;
+                List<Suggestion> sugs = (await _Database.Suggestions.EnumerateAsync(new SuggestionFilter { TenantId = scope.TenantId, TopicId = t.Id, IsDryRun = scope.IsDryRun, PageSize = 500 }, token).ConfigureAwait(false)).Objects;
                 data.Suggestions.AddRange(sugs.Where(s => scope.RunId == null || s.RunId == scope.RunId));
-                foreach (TopicDimension d in (await _Database.TopicDimensions.EnumerateAsync(new TopicDimensionFilter { TenantId = scope.TenantId, TopicId = t.Id, PageSize = 200 }, token).ConfigureAwait(false)).Items)
+                foreach (TopicDimension d in (await _Database.TopicDimensions.EnumerateAsync(new TopicDimensionFilter { TenantId = scope.TenantId, TopicId = t.Id, PageSize = 200 }, token).ConfigureAwait(false)).Objects)
                     data.Dimensions[d.Id] = d;
-                List<Run> runs = (await _Database.Runs.EnumerateAsync(new RunFilter { TenantId = scope.TenantId, TopicId = t.Id, PageSize = 100 }, token).ConfigureAwait(false)).Items;
+                List<Run> runs = (await _Database.Runs.EnumerateAsync(new RunFilter { TenantId = scope.TenantId, TopicId = t.Id, PageSize = 100 }, token).ConfigureAwait(false)).Objects;
                 data.Runs.AddRange(runs.Where(r => (scope.RunId == null ? (r.CompletedUtc >= scope.PeriodStartUtc && r.CompletedUtc <= scope.PeriodEndUtc) : r.Id == scope.RunId)
                     && (r.Status == RunStatusEnum.Completed || r.Status == RunStatusEnum.PartiallySucceeded || r.Status == RunStatusEnum.Running)));
             }

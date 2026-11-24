@@ -35,7 +35,7 @@ export default function OwnerSchedules({ ownerType, ownerId, single = false, onS
     setLoadError(null);
     try {
       const result = await apiClient.listSchedules({ ownerType, ownerId, pageSize: 50, sortBy: 'createdUtc', sortDirection: 'Ascending' });
-      const items = (result && result.items) || [];
+      const items = (result && result.objects) || [];
       setSchedules(items);
       if (single) {
         setEditing(items[0] ? { mode: 'edit', id: items[0].id } : { mode: 'create' });

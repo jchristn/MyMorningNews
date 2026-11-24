@@ -32,7 +32,7 @@ function EmailChart({ refreshSignal }) {
     try {
       const from = new Date(Date.now() - CHART_DAYS * 86400000).toISOString();
       const r = await apiClient.listEmailMessages({ pageSize: CHART_PAGE, fromUtc: from, sortBy: 'createdUtc', sortDirection: 'Descending' });
-      setMessages((r && r.items) || []);
+      setMessages((r && r.objects) || []);
     } catch (err) {
       setError(err);
     }

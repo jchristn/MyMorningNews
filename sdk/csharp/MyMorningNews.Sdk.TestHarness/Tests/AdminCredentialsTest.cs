@@ -76,7 +76,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             CredentialResponse updated = await StepAsync(context, result, "PUT credential", () => c.Admin.Credentials.UpdateAsync(tenant, cred.Id, new CredentialUpdateRequest { Name = cred.Name + "-edited" }, token)).ConfigureAwait(false);
             Helpers.Equal(cred.Name + "-edited", updated.Name, "credential name");
             EnumerationResult<CredentialResponse> list = await StepAsync(context, result, "GET credentials (user filter)", () => c.Admin.Credentials.ListAsync(tenant, new CredentialListOptions { UserId = user.Id }, token)).ConfigureAwait(false);
-            Helpers.Contains(list.Items, x => x.Id == cred.Id, "the credential");
+            Helpers.Contains(list.Objects, x => x.Id == cred.Id, "the credential");
 
             CredentialScopeAssignment scope = await StepAsync(context, result, "POST credential scope", () => c.Admin.Assignments.CreateCredentialScopeAsync(tenant, cred.Id, new AssignmentUpsertRequest
             {
@@ -85,7 +85,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
                 OperationTypes = new List<string> { "Read" }
             }, token)).ConfigureAwait(false);
             EnumerationResult<CredentialScopeAssignment> scopes = await StepAsync(context, result, "GET credential scopes", () => c.Admin.Assignments.ListCredentialScopesAsync(tenant, cred.Id, null, token)).ConfigureAwait(false);
-            Helpers.Contains(scopes.Items, s => s.Id == scope.Id, "the scope");
+            Helpers.Contains(scopes.Objects, s => s.Id == scope.Id, "the scope");
             EffectivePermissionsResponse effective = await StepAsync(context, result, "GET credential effective permissions", () => c.Admin.Credentials.GetEffectivePermissionsAsync(tenant, cred.Id, token)).ConfigureAwait(false);
             Helpers.Equal(PrincipalTypeEnum.Credential, effective.PrincipalType, "principal type");
             await StepAsync(context, result, "DELETE credential scope", () => c.Admin.Assignments.DeleteCredentialScopeAsync(tenant, cred.Id, scope.Id, token)).ConfigureAwait(false);

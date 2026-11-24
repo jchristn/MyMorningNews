@@ -58,7 +58,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             await StepAsync(context, result, "POST reject a non-proposed preference (409)", () => Helpers.ExpectErrorAsync(() => c.Preferences.RejectAsync(pref.Id, token), 409, "Conflict")).ConfigureAwait(false);
             EnumerationResult<LearnedPreference> prefs = await StepAsync(context, result, "GET preferences (topic filter)",
                 () => c.Preferences.ListAsync(new PreferenceListOptions { TopicId = topic.Id, Origin = PreferenceOriginEnum.User }, token)).ConfigureAwait(false);
-            Helpers.Contains(prefs.Items, p => p.Id == pref.Id, "the preference");
+            Helpers.Contains(prefs.Objects, p => p.Id == pref.Id, "the preference");
 
             await StepAsync(context, result, "POST feedback with an action that does not fit (400)", () => Helpers.ExpectErrorAsync(() => c.Feedback.SubmitAsync(new FeedbackCreateRequest
             {
@@ -95,7 +95,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
                 TargetType = FeedbackTargetTypeEnum.LearnedPreference,
                 TargetId = pref.Id
             }, token)).ConfigureAwait(false);
-            Helpers.Contains(list.Items, f => f.Id == fb.Id, "the feedback");
+            Helpers.Contains(list.Objects, f => f.Id == fb.Id, "the feedback");
             Feedback updated = await StepAsync(context, result, "PUT feedback reason", () => c.Feedback.UpdateAsync(fb.Id, new FeedbackUpdateRequest { Reason = "Edited reason." }, token)).ConfigureAwait(false);
             Helpers.Equal("Edited reason.", updated.Reason, "updated reason");
 

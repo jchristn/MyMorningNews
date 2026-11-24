@@ -66,7 +66,7 @@ export default function RequestActivityChart({ rangeId, onRangeChange, onBucketC
       totals={
         summary ? (
           <>
-            <span>{t('charts.totals.total', { count: f.number(summary.totalCount) })}</span>
+            <span>{t('charts.totals.total', { count: f.number(summary.totalRecords) })}</span>
             <span className="text-success">{t('charts.totals.success', { count: f.number(summary.totalSuccess) })}</span>
             <span className="text-danger">{t('charts.totals.failed', { count: f.number(summary.totalFailure) })}</span>
             <span>{t('charts.totals.avg', { value: f.duration(summary.averageDurationMs) })}</span>

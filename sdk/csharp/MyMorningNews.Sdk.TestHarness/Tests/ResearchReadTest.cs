@@ -38,30 +38,30 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             MyMorningNewsClient c = context.RequireAdmin();
             EnumerationResult<Finding> findings = await StepAsync(context, result, "GET findings (filters)",
                 () => c.Findings.ListAsync(new FindingListOptions { MinScore = 0, IncludeBelowThreshold = true, PageSize = 5 }, token)).ConfigureAwait(false);
-            if (findings.Items.Count > 0)
+            if (findings.Objects.Count > 0)
             {
-                FindingDetailResponse f = await StepAsync(context, result, "GET finding", () => c.Findings.GetAsync(findings.Items[0].Id, token)).ConfigureAwait(false);
-                Helpers.Equal(findings.Items[0].Id, f.Finding.Id, "finding id");
+                FindingDetailResponse f = await StepAsync(context, result, "GET finding", () => c.Findings.GetAsync(findings.Objects[0].Id, token)).ConfigureAwait(false);
+                Helpers.Equal(findings.Objects[0].Id, f.Finding.Id, "finding id");
             }
 
             await StepAsync(context, result, "GET unknown finding (404)", () => Helpers.ExpectErrorAsync(() => c.Findings.GetAsync("fnd_missing", token), 404)).ConfigureAwait(false);
 
             EnumerationResult<SourceItem> sources = await StepAsync(context, result, "GET sources", () => c.Sources.ListAsync(new SourceListOptions { PageSize = 5 }, token)).ConfigureAwait(false);
-            if (sources.Items.Count > 0)
-                await StepAsync(context, result, "GET source", () => c.Sources.GetAsync(sources.Items[0].Id, token)).ConfigureAwait(false);
+            if (sources.Objects.Count > 0)
+                await StepAsync(context, result, "GET source", () => c.Sources.GetAsync(sources.Objects[0].Id, token)).ConfigureAwait(false);
             await StepAsync(context, result, "GET unknown source (404)", () => Helpers.ExpectErrorAsync(() => c.Sources.GetAsync("src_missing", token), 404)).ConfigureAwait(false);
 
             EnumerationResult<Prediction> predictions = await StepAsync(context, result, "GET predictions", () => c.Predictions.ListAsync(new PredictionListOptions { PageSize = 5 }, token)).ConfigureAwait(false);
-            if (predictions.Items.Count > 0)
-                await StepAsync(context, result, "GET prediction", () => c.Predictions.GetAsync(predictions.Items[0].Id, token)).ConfigureAwait(false);
+            if (predictions.Objects.Count > 0)
+                await StepAsync(context, result, "GET prediction", () => c.Predictions.GetAsync(predictions.Objects[0].Id, token)).ConfigureAwait(false);
             await StepAsync(context, result, "POST resolve unknown prediction (404)", () => Helpers.ExpectErrorAsync(() => c.Predictions.ResolveAsync("prd_missing",
                 new PredictionResolveRequest { Status = PredictionStatusEnum.Accurate }, token), 404)).ConfigureAwait(false);
             await StepAsync(context, result, "POST accept unknown review (404)", () => Helpers.ExpectErrorAsync(() => c.Predictions.AcceptReviewAsync("prv_missing", token), 404)).ConfigureAwait(false);
 
             EnumerationResult<Suggestion> suggestions = await StepAsync(context, result, "GET suggestions", () => c.Suggestions.ListAsync(new SuggestionListOptions { PageSize = 5 }, token)).ConfigureAwait(false);
-            if (suggestions.Items.Count > 0)
+            if (suggestions.Objects.Count > 0)
             {
-                Suggestion s = suggestions.Items[0];
+                Suggestion s = suggestions.Objects[0];
                 await StepAsync(context, result, "GET suggestion", () => c.Suggestions.GetAsync(s.Id, token)).ConfigureAwait(false);
                 await StepAsync(context, result, "PUT suggestion status Snoozed without a time (400)", () => Helpers.ExpectErrorAsync(() => c.Suggestions.SetStatusAsync(s.Id,
                     new SuggestionStatusRequest { Status = SuggestionStatusEnum.Snoozed }, token), 400)).ConfigureAwait(false);
@@ -71,9 +71,9 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
                 new SuggestionStatusRequest { Status = SuggestionStatusEnum.Dismissed }, token), 404)).ConfigureAwait(false);
 
             EnumerationResult<ResearchRequest> requests = await StepAsync(context, result, "GET requests", () => c.Requests.ListAsync(new ResearchRequestListOptions { PageSize = 5 }, token)).ConfigureAwait(false);
-            if (requests.Items.Count > 0)
+            if (requests.Objects.Count > 0)
             {
-                ResearchRequestResponse rr = await StepAsync(context, result, "GET request", () => c.Requests.GetAsync(requests.Items.First().Id, token)).ConfigureAwait(false);
+                ResearchRequestResponse rr = await StepAsync(context, result, "GET request", () => c.Requests.GetAsync(requests.Objects.First().Id, token)).ConfigureAwait(false);
                 Helpers.NotNull(rr, "request detail");
             }
 

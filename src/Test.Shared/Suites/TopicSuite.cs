@@ -85,7 +85,7 @@ namespace Test.Shared.Suites
 
             TopicDetailResponse detail = (await u.Client.GetAsync("/v1.0/api/topics/" + a.Id, token).ConfigureAwait(false)).Expect(200, "detail").Json<TopicDetailResponse>();
             Assert.True(detail.Dimensions.Count == 1 && detail.Constraints.Count == 1 && detail.Recipients.Count == 1 && !detail.Recipients[0].Active, "detail");
-            List<TopicConstraint> feeds = (await u.Client.GetAsync("/v1.0/api/topics/" + a.Id + "/constraints?kind=FeedUrl", token).ConfigureAwait(false)).Json<List<TopicConstraint>>();
+            List<TopicConstraint> feeds = (await u.Client.GetAsync("/v1.0/api/topics/" + a.Id + "/constraints?kind=FeedUrl", token).ConfigureAwait(false)).Json<EnumerationResult<TopicConstraint>>().Objects;
             Assert.Equal(0, feeds.Count, "kind filter");
 
             (await u.Client.DeleteAsync("/v1.0/api/topics/" + a.Id + "/recipients/" + r.Id, token).ConfigureAwait(false)).Expect(204, "remove recipient");
@@ -105,11 +105,11 @@ namespace Test.Shared.Suites
             Topic mine = (await one.Client.PostAsync("/v1.0/api/topics", new { name = "Mine" }, token).ConfigureAwait(false)).Expect(201, "create").Json<Topic>();
             await two.Client.PostAsync("/v1.0/api/topics", new { name = "Theirs" }, token).ConfigureAwait(false);
             EnumerationResult<Topic> oneList = (await one.Client.GetAsync("/v1.0/api/topics", token).ConfigureAwait(false)).Expect(200, "list").Json<EnumerationResult<Topic>>();
-            Assert.True(oneList.Items.Count == 1 && oneList.Items[0].Id == mine.Id, "member sees own");
+            Assert.True(oneList.Objects.Count == 1 && oneList.Objects[0].Id == mine.Id, "member sees own");
             (await two.Client.GetAsync("/v1.0/api/topics/" + mine.Id, token).ConfigureAwait(false)).Expect(404, "other member cannot read");
             (await two.Client.DeleteAsync("/v1.0/api/topics/" + mine.Id, token).ConfigureAwait(false)).Expect(404, "other member cannot delete");
             EnumerationResult<Topic> all = (await ta.Client.GetAsync("/v1.0/api/topics", token).ConfigureAwait(false)).Expect(200, "admin list").Json<EnumerationResult<Topic>>();
-            Assert.Equal(2, all.Items.Count, "tenant admin sees all");
+            Assert.Equal(2, all.Objects.Count, "tenant admin sees all");
             (await ta.Client.GetAsync("/v1.0/api/topics/" + mine.Id, token).ConfigureAwait(false)).Expect(200, "tenant admin reads");
         }
 
@@ -179,7 +179,7 @@ namespace Test.Shared.Suites
             (await ta.Client.PostAsync(b + "/questions", null, token).ConfigureAwait(false)).Expect(409, "completed session is closed");
 
             EnumerationResult<LlmCall> calls = (await ta.Client.GetAsync("/v1.0/api/llm-calls?pageSize=50", token).ConfigureAwait(false)).Expect(200, "calls").Json<EnumerationResult<LlmCall>>();
-            List<LlmCall> mine = calls.Items.Where(c => c.RefinementSessionId == s.Session.Id).ToList();
+            List<LlmCall> mine = calls.Objects.Where(c => c.RefinementSessionId == s.Session.Id).ToList();
             Assert.True(mine.Count == 6 && mine.All(c => c.UserId == ta.User.Id && c.TopicId == s.Topic.Id && c.PromptTemplateVersionId != null), "six attributed calls (" + mine.Count + ")");
             Assert.True(mine.Any(c => c.PromptKey == "refinement.followup") && mine.Any(c => c.PromptKey == "refinement.sources"), "prompt keys recorded");
 
@@ -198,7 +198,7 @@ namespace Test.Shared.Suites
             RefinementStateResponse resumed = (await fresh.GetAsync("/v1.0/api/refinement-sessions/" + s.Session.Id, token).ConfigureAwait(false)).Expect(200, "resume").Json<RefinementStateResponse>();
             Assert.True(resumed.Dimensions.Count == 8 && resumed.Questions.Count == 5 && resumed.Messages.Count == 3 && resumed.Session.Step == RefinementStepEnum.Questions, "state persisted");
             EnumerationResult<RefinementSession> list = (await fresh.GetAsync("/v1.0/api/refinement-sessions?status=Active", token).ConfigureAwait(false)).Json<EnumerationResult<RefinementSession>>();
-            Assert.True(list.Items.Any(x => x.Id == s.Session.Id), "listed as active");
+            Assert.True(list.Objects.Any(x => x.Id == s.Session.Id), "listed as active");
         }
 
         private static async Task OutOfScopeAsync(CancellationToken token)
@@ -266,7 +266,7 @@ namespace Test.Shared.Suites
             (await ta.Client.GetAsync("/v1.0/api/topics/" + converted.Id, token).ConfigureAwait(false)).Expect(200, "converted topic survives deletion");
 
             EnumerationResult<LlmCall> calls = (await ta.Client.GetAsync("/v1.0/api/llm-calls?pageSize=50", token).ConfigureAwait(false)).Json<EnumerationResult<LlmCall>>();
-            Assert.True(calls.Items.Count(c => c.PromptKey == "refinement.quick" && c.UserId == ta.User.Id) == 2, "quick planning calls attributed");
+            Assert.True(calls.Objects.Count(c => c.PromptKey == "refinement.quick" && c.UserId == ta.User.Id) == 2, "quick planning calls attributed");
         }
 
         private static async Task RequestVariantsAsync(CancellationToken token)
@@ -295,7 +295,7 @@ namespace Test.Shared.Suites
             TestUser other = await TestFixtures.CreateUserAsync(await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false), quick.Request.TenantId, false, token).ConfigureAwait(false);
             (await other.Client.GetAsync("/v1.0/api/requests/" + quick.Request.Id, token).ConfigureAwait(false)).Expect(404, "private to the owner");
             EnumerationResult<ResearchRequest> list = (await ta.Client.GetAsync("/v1.0/api/requests?status=Cancelled", token).ConfigureAwait(false)).Json<EnumerationResult<ResearchRequest>>();
-            Assert.True(list.Items.Count == 1 && list.Items[0].Id == quick.Request.Id, "status filter");
+            Assert.True(list.Objects.Count == 1 && list.Objects[0].Id == quick.Request.Id, "status filter");
         }
     }
 }

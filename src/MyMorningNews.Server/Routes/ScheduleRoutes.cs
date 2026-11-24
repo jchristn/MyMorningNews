@@ -37,6 +37,8 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, B + "/preview", PreviewAsync, null, openApiMetadata: Doc("Validate a schedule and preview its next runs", "Schedules").WithRequestBody(Body<ScheduleUpsertRequest>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, B, ListAsync, null, openApiMetadata: Paged(Doc("List schedules", "Schedules").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))
                 .WithParameter(QueryParam("ownerType", typeof(ScheduleOwnerTypeEnum))).WithParameter(QueryParam("ownerId", typeof(string)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, B + "/enumerate", ctx => EnumerateAsync(ctx, ListAsync), null, openApiMetadata: Paged(Doc("List schedules", "Schedules").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))
+                .WithParameter(QueryParam("ownerType", typeof(ScheduleOwnerTypeEnum))).WithParameter(QueryParam("ownerId", typeof(string)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, B, CreateAsync, null, openApiMetadata: Doc("Create a schedule", "Schedules").WithRequestBody(Body<ScheduleUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, B + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read a schedule", "Schedules"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, B + "/{id}", UpdateAsync, null, openApiMetadata: Doc("Update a schedule", "Schedules").WithRequestBody(Body<ScheduleUpsertRequest>()));

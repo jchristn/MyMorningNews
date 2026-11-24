@@ -77,12 +77,13 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
  * A page of results.
  * @template T
  * @typedef {object} EnumerationResult
- * @property {T[]} items Items on this page.
+ * @property {boolean} success Whether enumeration succeeded.
+ * @property {T[]} objects Items on this page.
  * @property {number} pageNumber Page number.
  * @property {number} pageSize Page size.
- * @property {number} totalCount Total matching items.
+ * @property {number} totalRecords Total matching items.
  * @property {number} totalPages Total pages.
- * @property {number} durationMs Server query time.
+ * @property {number} totalMs Server query time.
  */
 
 /**
@@ -1622,7 +1623,7 @@ export async function* parseServerSentEvents(chunks) {
  * returns a plain array yields that array once.
  *
  * @template T
- * @param {(options: object) => Promise<EnumerationResult<T>|T[]>} listFn List method, for example `client.topics.list`.
+ * @param {(options: object) => Promise<EnumerationResult<T>>} listFn List method, for example `client.topics.list`.
  * @param {object} [options] List options and filters. `pageNumber` sets the first page (default 1). `pageSize` defaults to 100.
  * @param {object} [control] Iteration control.
  * @param {number} [control.maxItems] Stop after this many items.
@@ -1637,13 +1638,14 @@ export async function* paginate(listFn, options = {}, control = {}) {
     let yielded = 0;
     while (yielded < maxItems) {
         const page = await listFn({ ...options, pageNumber, pageSize });
-        const items = Array.isArray(page) ? page : (page?.items ?? []);
+        if (!page || !Array.isArray(page.objects)) throw new TypeError('Expected EnumerationResult');
+        const items = page.objects;
         for (const item of items) {
             if (yielded >= maxItems) return;
             yield item;
             yielded++;
         }
-        if (Array.isArray(page) || items.length === 0) return;
+        if (items.length === 0) return;
         const totalPages = Number(page.totalPages ?? 0);
         if (pageNumber >= totalPages) return;
         pageNumber++;
@@ -1873,10 +1875,10 @@ export class TopicsResource extends CrudResource {
     /**
      * List dimensions.
      * @param {string} id Topic.
-     * @returns {Promise<TopicDimension[]>} Dimensions.
+     * @returns {Promise<EnumerationResult<TopicDimension>>} Dimensions.
      */
-    listDimensions(id) {
-        return this._req('GET', this._path(id, '/dimensions'));
+    listDimensions(id, options = {}) {
+        return this._req('GET', this._path(id, '/dimensions'), { query: options });
     }
 
     /**
@@ -1914,10 +1916,10 @@ export class TopicsResource extends CrudResource {
      * List constraints.
      * @param {string} id Topic.
      * @param {{ kind?: string }} [options] Filter by kind.
-     * @returns {Promise<TopicConstraint[]>} Constraints.
+     * @returns {Promise<EnumerationResult<TopicConstraint>>} Constraints.
      */
     listConstraints(id, options = {}) {
-        return this._req('GET', this._path(id, '/constraints'), { query: { kind: options.kind } });
+        return this._req('GET', this._path(id, '/constraints'), { query: options });
     }
 
     /**
@@ -1954,10 +1956,10 @@ export class TopicsResource extends CrudResource {
     /**
      * List email recipients.
      * @param {string} id Topic.
-     * @returns {Promise<TopicRecipient[]>} Recipients.
+     * @returns {Promise<EnumerationResult<TopicRecipient>>} Recipients.
      */
-    listRecipients(id) {
-        return this._req('GET', this._path(id, '/recipients'));
+    listRecipients(id, options = {}) {
+        return this._req('GET', this._path(id, '/recipients'), { query: options });
     }
 
     /**
@@ -1983,10 +1985,10 @@ export class TopicsResource extends CrudResource {
     /**
      * Search providers a topic uses.
      * @param {string} id Topic.
-     * @returns {Promise<object[]>} Providers.
+     * @returns {Promise<EnumerationResult<object>>} Providers.
      */
-    getSearchProviders(id) {
-        return this._req('GET', this._path(id, '/search-providers'));
+    getSearchProviders(id, options = {}) {
+        return this._req('GET', this._path(id, '/search-providers'), { query: options });
     }
 
     /**
@@ -2287,29 +2289,29 @@ export class RunsResource extends ResourceGroup {
     /**
      * A run's stages in order.
      * @param {string} id Run.
-     * @returns {Promise<RunStage[]>} Stages.
+     * @returns {Promise<EnumerationResult<RunStage>>} Stages.
      */
-    stages(id) {
-        return this._req('GET', this._path(id, '/stages'));
+    stages(id, options = {}) {
+        return this._req('GET', this._path(id, '/stages'), { query: options });
     }
 
     /**
      * A run's search queries.
      * @param {string} id Run.
-     * @returns {Promise<object[]>} Queries.
+     * @returns {Promise<EnumerationResult<object>>} Queries.
      */
-    queries(id) {
-        return this._req('GET', this._path(id, '/queries'));
+    queries(id, options = {}) {
+        return this._req('GET', this._path(id, '/queries'), { query: options });
     }
 
     /**
      * A run's search results with dispositions.
      * @param {string} id Run.
      * @param {{ disposition?: string }} [options] Filter.
-     * @returns {Promise<object[]>} Results.
+     * @returns {Promise<EnumerationResult<object>>} Results.
      */
     results(id, options = {}) {
-        return this._req('GET', this._path(id, '/results'), { query: { disposition: options.disposition } });
+        return this._req('GET', this._path(id, '/results'), { query: options });
     }
 
     /**
@@ -2407,11 +2409,11 @@ export class RunsResource extends ResourceGroup {
      * A run's agentic tool calls (web_search, fetch_url, and MCP tools), in call order. Empty for runs without agentic
      * search.
      * @param {string} id Run.
-     * @returns {Promise<RunToolCall[]>} Tool calls.
+     * @returns {Promise<EnumerationResult<RunToolCall>>} Tool calls.
      * @throws {MyMorningNewsError} 404 when the run is not found.
      */
-    toolCalls(id) {
-        return this._req('GET', this._path(id, '/tool-calls'));
+    toolCalls(id, options = {}) {
+        return this._req('GET', this._path(id, '/tool-calls'), { query: options });
     }
 
     /**
@@ -3063,10 +3065,10 @@ export class TemplatesResource extends CrudResource {
     /**
      * List versions.
      * @param {string} id Template.
-     * @returns {Promise<object[]>} Versions.
+     * @returns {Promise<EnumerationResult<object>>} Versions.
      */
-    versions(id) {
-        return this._req('GET', this._path(id, '/versions'));
+    versions(id, options = {}) {
+        return this._req('GET', this._path(id, '/versions'), { query: options });
     }
 
     /**
@@ -3153,10 +3155,10 @@ export class PromptsResource extends ResourceGroup {
     /**
      * Version history.
      * @param {string} id Prompt template.
-     * @returns {Promise<object[]>} Versions.
+     * @returns {Promise<EnumerationResult<object>>} Versions.
      */
-    versions(id) {
-        return this._req('GET', this._path(id, '/versions'));
+    versions(id, options = {}) {
+        return this._req('GET', this._path(id, '/versions'), { query: options });
     }
 
     /**
@@ -3301,10 +3303,10 @@ export class ArtifactsResource extends ResourceGroup {
 export class FeedTokensResource extends ResourceGroup {
     /**
      * List my feed tokens (hashes are redacted).
-     * @returns {Promise<FeedToken[]>} Tokens.
+     * @returns {Promise<EnumerationResult<FeedToken>>} Tokens.
      */
-    list() {
-        return this._req('GET', this._base);
+    list(options = {}) {
+        return this._req('GET', this._base, { query: options });
     }
 
     /**
@@ -3634,10 +3636,10 @@ export class ModelEndpointsResource extends CrudResource {
     /**
      * List models offered by an endpoint (502 UpstreamError when it cannot be reached).
      * @param {string} id Endpoint.
-     * @returns {Promise<object[]>} Models.
+     * @returns {Promise<EnumerationResult<object>>} Models.
      */
-    models(id) {
-        return this._req('GET', this._path(id, '/models'));
+    models(id, options = {}) {
+        return this._req('GET', this._path(id, '/models'), { query: options });
     }
 
     /**
@@ -3789,10 +3791,10 @@ export class VaultResource extends CrudResource {
     /**
      * Records that use a credential.
      * @param {string} id Credential.
-     * @returns {Promise<object[]>} Usage.
+     * @returns {Promise<EnumerationResult<object>>} Usage.
      */
-    usage(id) {
-        return this._req('GET', this._path(id, '/usage'));
+    usage(id, options = {}) {
+        return this._req('GET', this._path(id, '/usage'), { query: options });
     }
 }
 
@@ -3867,10 +3869,10 @@ export class NotificationsResource extends ResourceGroup {
 export class DevicesResource extends ResourceGroup {
     /**
      * List my devices.
-     * @returns {Promise<Device[]>} Devices.
+     * @returns {Promise<EnumerationResult<Device>>} Devices.
      */
-    list() {
-        return this._req('GET', this._base);
+    list(options = {}) {
+        return this._req('GET', this._base, { query: options });
     }
 
     /**
@@ -4582,7 +4584,7 @@ export class MyMorningNewsClient {
     /**
      * Iterate over every item of a paged list. See {@link paginate}.
      * @template T
-     * @param {(options: object) => Promise<EnumerationResult<T>|T[]>} listFn List method.
+     * @param {(options: object) => Promise<EnumerationResult<T>>} listFn List method.
      * @param {object} [options] List options.
      * @param {{ maxItems?: number }} [control] Iteration control.
      * @returns {AsyncGenerator<T, void, unknown>} Items.

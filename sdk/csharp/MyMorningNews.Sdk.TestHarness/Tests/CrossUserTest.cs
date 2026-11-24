@@ -50,7 +50,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
                 await StepAsync(context, result, "PUT admin topic as demo (404)", () => Helpers.ExpectErrorAsync(() => demo.Topics.PauseAsync(topic.Id, token), 404)).ConfigureAwait(false);
                 EnumerationResult<Topic> list = await StepAsync(context, result, "GET topics as demo (userId filter ignored)",
                     () => demo.Topics.ListAsync(new TopicListOptions { UserId = context.AdminUserId, PageSize = 1000 }, token)).ConfigureAwait(false);
-                Helpers.DoesNotContain(list.Items, t => t.Id == topic.Id, "the admin topic in demo's list");
+                Helpers.DoesNotContain(list.Objects, t => t.Id == topic.Id, "the admin topic in demo's list");
                 await demo.LogoutAsync(token).ConfigureAwait(false);
             }
 

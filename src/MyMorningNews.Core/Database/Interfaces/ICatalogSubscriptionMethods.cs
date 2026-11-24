@@ -16,7 +16,7 @@ namespace MyMorningNews.Core.Database.Interfaces
         /// <summary>Reconcile eligible retained slots under the account subscription lock. Oldest eligible subscriptions are retained; previously suspended subscriptions restore on upgrade.</summary>
         Task ReconcileAsync(string tenantId, string userId, long? maximum, bool freeOnly, CancellationToken token = default);
         /// <summary>Page the caller's shared issues across eligible subscriptions using a content-only projection.</summary>
-        Task<EnumerationResult<CatalogIssueResponse>> IssuesAsync(string tenantId, string userId, bool freeOnly, EnumerationFilter filter, CancellationToken token = default, bool audioOnly = false);
+        Task<EnumerationResult<CatalogIssueResponse>> IssuesAsync(string tenantId, string userId, bool freeOnly, EnumerationQuery filter, CancellationToken token = default, bool audioOnly = false);
 
         /// <summary>Ready shared audio for reconciled subscriptions. Newest rendition per issue, maximum 1 to 500; optional ID authorizes one rendition.</summary>
         Task<List<MediaAsset>> FeedMediaAsync(string tenantId, string userId, bool freeOnly, int maximum, string? mediaId = null, CancellationToken token = default);

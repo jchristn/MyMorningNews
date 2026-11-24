@@ -139,7 +139,7 @@ namespace Test.Shared.Suites
             }
 
             EnumerationResult<AuditRecord> audit = (await ta.Client.GetAsync("/v1.0/api/audit?eventType=CredentialRevealed", token).ConfigureAwait(false)).Expect(200, "audit").Json<EnumerationResult<AuditRecord>>();
-            Assert.True(audit.Items.Any(a => a.Description != null && a.Description.Contains(created.Id, StringComparison.Ordinal) || a.Reason != null && a.Reason.Contains(created.Id, StringComparison.Ordinal)), "reveal audited");
+            Assert.True(audit.Objects.Any(a => a.Description != null && a.Description.Contains(created.Id, StringComparison.Ordinal) || a.Reason != null && a.Reason.Contains(created.Id, StringComparison.Ordinal)), "reveal audited");
             (await member.Client.PostAsync("/v1.0/api/vault/credentials/" + created.Id + "/reveal", null, token).ConfigureAwait(false)).Expect(403, "member reveal");
             (await member.Client.GetAsync("/v1.0/api/vault/credentials", token).ConfigureAwait(false)).Expect(200, "member reads metadata");
         }
@@ -148,18 +148,18 @@ namespace Test.Shared.Suites
         {
             TestUser ta = await TenantAdminAsync(token).ConfigureAwait(false);
             EnumerationResult<ModelEndpoint> endpoints = (await ta.Client.GetAsync("/v1.0/api/model-endpoints", token).ConfigureAwait(false)).Expect(200, "endpoints").Json<EnumerationResult<ModelEndpoint>>();
-            ModelEndpoint anthropic = endpoints.Items.First(e => e.Provider == ModelProviderEnum.Anthropic);
+            ModelEndpoint anthropic = endpoints.Objects.First(e => e.Provider == ModelProviderEnum.Anthropic);
             Assert.Equal("claude-opus-5-5", anthropic.Model, "default chat model");
             Assert.True(anthropic.InputCostPerMTok == 4m && anthropic.OutputCostPerMTok == 20m && anthropic.CachedInputCostPerMTok == 0.20m && anthropic.CacheWriteCostPerMTok == 5m, "default pricing seeded");
             Assert.True(anthropic.Temperature == null, "no temperature for Anthropic");
-            ModelEndpoint ollama = endpoints.Items.First(e => e.Provider == ModelProviderEnum.Ollama);
+            ModelEndpoint ollama = endpoints.Objects.First(e => e.Provider == ModelProviderEnum.Ollama);
             Assert.True(ollama.SupportsEmbeddings && !ollama.SupportsChat && ollama.EmbeddingModel == "all-minilm" && ollama.EmbeddingDimensions == 384, "embedding endpoint");
-            EnumerationResult<ModelAssignment> assignments = (await ta.Client.GetAsync("/v1.0/api/model-assignments", token).ConfigureAwait(false)).Expect(200, "assignments").Json<EnumerationResult<ModelAssignment>>();
-            Assert.Equal(Enum.GetValues<ModelTaskEnum>().Length, assignments.Items.Count, "one assignment per role");
-            Assert.True(assignments.Items.Single(a => a.Task == ModelTaskEnum.Embedding).ModelEndpointId == ollama.Id, "embedding on Ollama");
-            Assert.True(assignments.Items.Single(a => a.Task == ModelTaskEnum.Synthesis).ReasoningEffort == ReasoningEffortEnum.High, "synthesis effort high");
+            EnumerationResult<ModelAssignment> assignments = (await ta.Client.GetAsync("/v1.0/api/model-assignments?pageSize=1000", token).ConfigureAwait(false)).Expect(200, "assignments").Json<EnumerationResult<ModelAssignment>>();
+            Assert.Equal(Enum.GetValues<ModelTaskEnum>().Length, assignments.Objects.Count, "one assignment per role");
+            Assert.True(assignments.Objects.Single(a => a.Task == ModelTaskEnum.Embedding).ModelEndpointId == ollama.Id, "embedding on Ollama");
+            Assert.True(assignments.Objects.Single(a => a.Task == ModelTaskEnum.Synthesis).ReasoningEffort == ReasoningEffortEnum.High, "synthesis effort high");
             EnumerationResult<PromptTemplate> prompts = (await ta.Client.GetAsync("/v1.0/api/prompts?pageSize=100", token).ConfigureAwait(false)).Expect(200, "prompts").Json<EnumerationResult<PromptTemplate>>();
-            Assert.Equal(DefaultPromptCatalog.All().Count, (int)prompts.TotalCount, "prompts seeded");
+            Assert.Equal(DefaultPromptCatalog.All().Count, (int)prompts.TotalRecords, "prompts seeded");
         }
 
         private static async Task EndpointRulesAsync(CancellationToken token)
@@ -183,7 +183,7 @@ namespace Test.Shared.Suites
             ModelTestResponse r = (await ta.Client.PostAsync("/v1.0/api/model-endpoints/" + e.Id + "/test", new { prompt = "hello" }, token).ConfigureAwait(false)).Expect(200, "test").Json<ModelTestResponse>();
             Assert.True(r.Success && r.Text == "ready" && r.InputTokens == 12 && r.OutputTokens == 3, "test result: " + r.Error);
             EnumerationResult<LlmCall> calls = (await ta.Client.GetAsync("/v1.0/api/llm-calls?modelEndpointId=" + e.Id, token).ConfigureAwait(false)).Expect(200, "calls").Json<EnumerationResult<LlmCall>>();
-            LlmCall call = calls.Items.First();
+            LlmCall call = calls.Objects.First();
             Assert.True(call.Success && call.IsDryRun && call.InputTokens == 12 && call.PromptText == null, "logged without payload in list");
             Assert.True(call.EstimatedCostUsd.HasValue && call.EstimatedCostUsd.Value > 0, "cost estimated");
             LlmCall full = (await ta.Client.GetAsync("/v1.0/api/llm-calls/" + call.Id, token).ConfigureAwait(false)).Expect(200, "call").Json<LlmCall>();
@@ -258,7 +258,7 @@ namespace Test.Shared.Suites
             Assert.True(threw, "typed non-transient failure");
             Assert.Equal(before + 1, StubModelServer.Shared.Count("stub-error"), "not retried");
             EnumerationResult<LlmCall> calls = (await ta.Client.GetAsync("/v1.0/api/llm-calls?success=false", token).ConfigureAwait(false)).Expect(200, "calls").Json<EnumerationResult<LlmCall>>();
-            Assert.True(calls.Items.Any(c => c.ModelEndpointId == e.Id && c.ErrorMessage != null), "failure logged");
+            Assert.True(calls.Objects.Any(c => c.ModelEndpointId == e.Id && c.ErrorMessage != null), "failure logged");
         }
 
         private static async Task RefusalAsync(CancellationToken token)
@@ -312,7 +312,7 @@ namespace Test.Shared.Suites
             Assert.True(v.Reachable && v.SupportsTools == true && v.EmbeddingDimensions == 12, "validation: " + String.Join(" | ", v.Messages));
             ModelEndpoint after = (await ta.Client.GetAsync("/v1.0/api/model-endpoints/" + e.Id, token).ConfigureAwait(false)).Json<ModelEndpoint>();
             Assert.True(after.SupportsTools == true && after.EmbeddingDimensions == 12 && after.LastValidatedUtc.HasValue, "endpoint updated");
-            List<ModelListItem> models = (await ta.Client.GetAsync("/v1.0/api/model-endpoints/" + e.Id + "/models", token).ConfigureAwait(false)).Expect(200, "models").Json<List<ModelListItem>>();
+            List<ModelListItem> models = (await ta.Client.GetAsync("/v1.0/api/model-endpoints/" + e.Id + "/models", token).ConfigureAwait(false)).Expect(200, "models").Json<EnumerationResult<ModelListItem>>().Objects;
             Assert.True(models.Any(m => m.Name == "stub-chat"), "listed");
         }
 
@@ -353,7 +353,7 @@ namespace Test.Shared.Suites
         {
             TestUser ta = await TenantAdminAsync(token).ConfigureAwait(false);
             EnumerationResult<PromptTemplate> list = (await ta.Client.GetAsync("/v1.0/api/prompts?key=research.score", token).ConfigureAwait(false)).Expect(200, "find").Json<EnumerationResult<PromptTemplate>>();
-            PromptTemplate t = list.Items.Single();
+            PromptTemplate t = list.Objects.Single();
             PromptTemplateResponse original = (await ta.Client.GetAsync("/v1.0/api/prompts/" + t.Id, token).ConfigureAwait(false)).Expect(200, "read").Json<PromptTemplateResponse>();
             Assert.True(original.Content == original.DefaultContent && !t.IsCustomized, "starts at default");
             string bad = original.Content.Replace("{{candidate.title}}", "{{candidate.nonsense}}", StringComparison.Ordinal);
@@ -361,7 +361,7 @@ namespace Test.Shared.Suites
             string good = original.Content.Replace("You rank research findings", "You carefully rank research findings", StringComparison.Ordinal);
             PromptTemplateResponse saved = (await ta.Client.PutAsync("/v1.0/api/prompts/" + t.Id, new { content = good, changeNote = "careful" }, token).ConfigureAwait(false)).Expect(200, "save").Json<PromptTemplateResponse>();
             Assert.True(saved.Template.CurrentVersion == 2 && saved.Template.IsCustomized, "version 2 customized");
-            List<PromptTemplateVersion> versions = (await ta.Client.GetAsync("/v1.0/api/prompts/" + t.Id + "/versions", token).ConfigureAwait(false)).Expect(200, "versions").Json<List<PromptTemplateVersion>>();
+            List<PromptTemplateVersion> versions = (await ta.Client.GetAsync("/v1.0/api/prompts/" + t.Id + "/versions", token).ConfigureAwait(false)).Expect(200, "versions").Json<EnumerationResult<PromptTemplateVersion>>().Objects;
             Assert.Equal(2, versions.Count, "two versions");
             PromptTemplateResponse rolled = (await ta.Client.PostAsync("/v1.0/api/prompts/" + t.Id + "/rollback?version=1", null, token).ConfigureAwait(false)).Expect(200, "rollback").Json<PromptTemplateResponse>();
             Assert.True(rolled.Template.CurrentVersion == 3 && !rolled.Template.IsCustomized && rolled.Content == original.Content, "rolled back as version 3");
@@ -394,7 +394,7 @@ namespace Test.Shared.Suites
             LlmCall call = (await ta.Client.GetAsync("/v1.0/api/llm-calls/" + lab.LlmCallId, token).ConfigureAwait(false)).Expect(200, "lab call").Json<LlmCall>();
             Assert.True(lab.EstimatedCostUsd.HasValue && lab.EstimatedCostUsd.Value > 0 && lab.CachedInputTokens == 4 && lab.ReasoningTokens == 1, "lab returns cost and token types");
             EnumerationResult<LlmCall> byTopic = (await ta.Client.GetAsync("/v1.0/api/llm-calls?userId=" + ta.User.Id + "&topicId=nope", token).ConfigureAwait(false)).Json<EnumerationResult<LlmCall>>();
-            Assert.Equal(0, byTopic.Items.Count, "call log filters by user and topic");
+            Assert.Equal(0, byTopic.Objects.Count, "call log filters by user and topic");
             Assert.True(call.IsDryRun && call.PromptKey == "email.run-summary", "lab call logged as dry run");
             (await ta.Client.DeleteAsync("/v1.0/api/prompts/" + over.Template.Id, token).ConfigureAwait(false)).Expect(204, "delete override");
         }
@@ -483,7 +483,7 @@ namespace Test.Shared.Suites
             UsageReport mine = (await heavy.Client.GetAsync("/v1.0/api/usage/me", token).ConfigureAwait(false)).Expect(200, "own usage").Json<UsageReport>();
             Assert.True(mine.Totals.Calls == 3 && mine.Rows.All(r => r.Key == "Synthesis"), "own usage only");
             (await ta.Client.GetAsync("/v1.0/api/usage/report?allTenants=true", token).ConfigureAwait(false)).Expect(403, "platform-wide needs global admin");
-            UsageReport platform = (await admin.GetAsync("/v1.0/api/usage/report?allTenants=true&groupBy=Tenant", token).ConfigureAwait(false)).Expect(200, "platform").Json<UsageReport>();
+            UsageReport platform = (await admin.GetAsync("/v1.0/api/usage/report?allTenants=true&groupBy=Tenant&top=1000", token).ConfigureAwait(false)).Expect(200, "platform").Json<UsageReport>();
             Assert.True(platform.Rows.Any(r => r.Key == t.Id && r.Calls == 5 && r.Label == t.Name), "per-tenant row");
         }
 
@@ -631,7 +631,7 @@ namespace Test.Shared.Suites
             (await creator.Client.PostAsync("/v1.0/api/vault/credentials/" + adminOwned.Id + "/reveal", null, token).ConfigureAwait(false)).Expect(403, "creating one credential does not open the others");
 
             EnumerationResult<AuditRecord> audit = (await ta.Client.GetAsync("/v1.0/api/audit?eventType=CredentialRevealed&pageSize=100", token).ConfigureAwait(false)).Expect(200, "audit").Json<EnumerationResult<AuditRecord>>();
-            List<AuditRecord> reveals = audit.Items.Where(a => (a.Description ?? String.Empty).Contains(mine.Id, StringComparison.Ordinal) || (a.Reason ?? String.Empty).Contains(mine.Id, StringComparison.Ordinal)).ToList();
+            List<AuditRecord> reveals = audit.Objects.Where(a => (a.Description ?? String.Empty).Contains(mine.Id, StringComparison.Ordinal) || (a.Reason ?? String.Empty).Contains(mine.Id, StringComparison.Ordinal)).ToList();
             Assert.Equal(2, reveals.Count, "both reveals are audited and refusals are not recorded as reveals");
             Assert.True(reveals.Any(a => a.UserId == creator.User.Id) && reveals.Any(a => a.UserId == ta.User.Id), "audit names who revealed");
         }
@@ -640,8 +640,8 @@ namespace Test.Shared.Suites
         {
             TestUser ta = await TenantAdminAsync(token).ConfigureAwait(false);
             MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
-            PromptTemplate stale = (await ta.Client.GetAsync("/v1.0/api/prompts?key=research.extract", token).ConfigureAwait(false)).Json<EnumerationResult<PromptTemplate>>().Items.Single();
-            PromptTemplate custom = (await ta.Client.GetAsync("/v1.0/api/prompts?key=research.score", token).ConfigureAwait(false)).Json<EnumerationResult<PromptTemplate>>().Items.Single();
+            PromptTemplate stale = (await ta.Client.GetAsync("/v1.0/api/prompts?key=research.extract", token).ConfigureAwait(false)).Json<EnumerationResult<PromptTemplate>>().Objects.Single();
+            PromptTemplate custom = (await ta.Client.GetAsync("/v1.0/api/prompts?key=research.score", token).ConfigureAwait(false)).Json<EnumerationResult<PromptTemplate>>().Objects.Single();
             string defaultExtract = DefaultPromptCatalog.Get("research.extract")!.Content;
             string oldText = defaultExtract.Replace(" coding assistant", " assistant for coding", StringComparison.Ordinal);
             await server.Context.Prompts.SaveAsync(stale, oldText, "simulate an older default", null, token).ConfigureAwait(false);

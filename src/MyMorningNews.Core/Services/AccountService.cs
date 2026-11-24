@@ -386,7 +386,7 @@ namespace MyMorningNews.Core.Services
         private async Task RevokeSessionsAsync(User user, string reason, CancellationToken token)
         {
             DateTime now = DateTime.UtcNow;
-            foreach (AuthSession s in (await _Database.AuthSessions.EnumerateAsync(new AuthSessionFilter { TenantId = user.TenantId, UserId = user.Id, Active = true, PageSize = 1000 }, token).ConfigureAwait(false)).Items)
+            foreach (AuthSession s in (await _Database.AuthSessions.EnumerateAsync(new AuthSessionFilter { TenantId = user.TenantId, UserId = user.Id, Active = true, PageSize = 1000 }, token).ConfigureAwait(false)).Objects)
             {
                 s.RevokedUtc = now;
                 s.RevocationReason = reason;

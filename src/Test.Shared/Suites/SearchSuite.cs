@@ -82,9 +82,9 @@ namespace Test.Shared.Suites
         {
             TestUser ta = await AdminAsync(token).ConfigureAwait(false);
             EnumerationResult<SearchProvider> list = (await ta.Client.GetAsync("/v1.0/api/search-providers", token).ConfigureAwait(false)).Expect(200, "list").Json<EnumerationResult<SearchProvider>>();
-            Assert.True(list.Items.Count == 4, "four providers seeded (" + list.Items.Count + ")");
-            Assert.True(list.Items.Where(p => p.IsDefault).Select(p => p.Kind).OrderBy(k => k).SequenceEqual(new[] { SearchProviderKindEnum.Searxng, SearchProviderKindEnum.Rss }.OrderBy(k => k)), "SearXNG and RSS are defaults");
-            TestUser member = await TestFixtures.CreateUserAsync(await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false), list.Items[0].TenantId, false, token).ConfigureAwait(false);
+            Assert.True(list.Objects.Count == 4, "four providers seeded (" + list.Objects.Count + ")");
+            Assert.True(list.Objects.Where(p => p.IsDefault).Select(p => p.Kind).OrderBy(k => k).SequenceEqual(new[] { SearchProviderKindEnum.Searxng, SearchProviderKindEnum.Rss }.OrderBy(k => k)), "SearXNG and RSS are defaults");
+            TestUser member = await TestFixtures.CreateUserAsync(await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false), list.Objects[0].TenantId, false, token).ConfigureAwait(false);
             (await member.Client.GetAsync("/v1.0/api/search-providers", token).ConfigureAwait(false)).Expect(200, "members read providers");
             (await member.Client.PostAsync("/v1.0/api/search-providers", new { name = "x", kind = "Searxng" }, token).ConfigureAwait(false)).Expect(403, "members cannot add providers");
         }
@@ -158,10 +158,10 @@ namespace Test.Shared.Suites
         {
             TestUser ta = await AdminAsync(token).ConfigureAwait(false);
             Topic topic = (await ta.Client.PostAsync("/v1.0/api/topics", new { name = "Providers topic" }, token).ConfigureAwait(false)).Json<Topic>();
-            List<SearchProvider> defaults = (await ta.Client.GetAsync("/v1.0/api/topics/" + topic.Id + "/search-providers", token).ConfigureAwait(false)).Expect(200, "defaults").Json<List<SearchProvider>>();
+            List<SearchProvider> defaults = (await ta.Client.GetAsync("/v1.0/api/topics/" + topic.Id + "/search-providers", token).ConfigureAwait(false)).Expect(200, "defaults").Json<EnumerationResult<SearchProvider>>().Objects;
             Assert.Equal(2, defaults.Count, "defaults when nothing chosen");
             EnumerationResult<SearchProvider> all = (await ta.Client.GetAsync("/v1.0/api/search-providers", token).ConfigureAwait(false)).Json<EnumerationResult<SearchProvider>>();
-            SearchProvider hn = all.Items.Single(p => p.Kind == SearchProviderKindEnum.HackerNews);
+            SearchProvider hn = all.Objects.Single(p => p.Kind == SearchProviderKindEnum.HackerNews);
             List<SearchProvider> chosen = (await ta.Client.PutAsync("/v1.0/api/topics/" + topic.Id + "/search-providers", new[] { new { searchProviderId = hn.Id, enabled = true, maxResults = 3 } }, token).ConfigureAwait(false))
                 .Expect(200, "choose").Json<List<SearchProvider>>();
             Assert.True(chosen.Count == 1 && chosen[0].Id == hn.Id && chosen[0].MaxResults == 3, "chosen provider with limit");

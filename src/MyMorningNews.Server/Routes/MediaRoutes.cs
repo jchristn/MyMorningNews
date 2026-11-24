@@ -45,12 +45,16 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/media", ListAsync, null, openApiMetadata: Paged(Doc("List audio episodes", "Media").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))
                 .WithParameter(QueryParam("briefingId", typeof(string))).WithParameter(QueryParam("editionId", typeof(string))).WithParameter(QueryParam("status", typeof(MediaStatusEnum)))
                 .WithParameter(QueryParam("kind", typeof(MediaKindEnum)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/media" + "/enumerate", ctx => EnumerateAsync(ctx, ListAsync), null, openApiMetadata: Paged(Doc("List audio episodes", "Media").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))
+                .WithParameter(QueryParam("briefingId", typeof(string))).WithParameter(QueryParam("editionId", typeof(string))).WithParameter(QueryParam("status", typeof(MediaStatusEnum)))
+                .WithParameter(QueryParam("kind", typeof(MediaKindEnum)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/media/{id}", ReadAsync, null, openApiMetadata: Doc("Read an episode with its chapters", "Media"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/api/media/{id}", DeleteAsync, null, openApiMetadata: Doc("Delete an episode and its files", "Media"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/api/briefings/{id}/audio", GenerateAsync, null, openApiMetadata: Doc("Make (or remake) audio for a briefing", "Media",
                 "Returns 202 with the queued episode. 409 when audio for the briefing is already being made.").WithRequestBody(Body<AudioGenerateRequest>()));
 
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/voices", ListVoicesAsync, null, openApiMetadata: Paged(Doc("List voice profiles", "Voices")));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/voices" + "/enumerate", ctx => EnumerateAsync(ctx, ListVoicesAsync), null, openApiMetadata: Paged(Doc("List voice profiles", "Voices")).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/voices", CreateVoiceAsync, null, openApiMetadata: Doc("Create a voice profile", "Voices").WithRequestBody(Body<VoiceProfileUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/voices/{id}", ReadVoiceAsync, null, openApiMetadata: Doc("Read a voice profile", "Voices"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/api/voices/{id}", UpdateVoiceAsync, null, openApiMetadata: Doc("Update a voice profile", "Voices").WithRequestBody(Body<VoiceProfileUpsertRequest>()));
@@ -63,7 +67,8 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/voices/preview", PreviewVoiceAsync, null, openApiMetadata: Doc("Hear a short sample of a voice", "Voices",
                 "Speaks up to 300 characters with a speech server voice (voice) or a voice profile (voiceProfileId) and returns the audio (audio/wav). Anyone who can edit topics may call it, up to 20 times a minute. 409 when speech is turned off, 429 TooManyRequests over the limit, 502 TtsError when the speech endpoint fails.").WithRequestBody(Body<VoicePreviewRequest>()));
 
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/feed-tokens", ListTokensAsync, null, openApiMetadata: Doc("List my podcast feed tokens", "Podcast feeds"));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/feed-tokens", ListTokensAsync, null, openApiMetadata: Paged(Doc("List my podcast feed tokens", "Podcast feeds")));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/feed-tokens" + "/enumerate", ctx => EnumerateAsync(ctx, ListTokensAsync), null, openApiMetadata: Paged(Doc("List my podcast feed tokens", "Podcast feeds")).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/feed-tokens", CreateTokenAsync, null, openApiMetadata: Doc("Create a private podcast feed", "Podcast feeds",
                 "Returns the secret and feed URL once; only a hash is stored.").WithRequestBody(Body<FeedTokenCreateRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/api/feed-tokens/{id}", RevokeTokenAsync, null, openApiMetadata: Doc("Revoke a podcast feed token", "Podcast feeds", "Revokes an active token; with purge=true, deletes an already revoked one.").WithParameter(QueryParam("purge", typeof(bool))));
@@ -91,7 +96,7 @@ namespace MyMorningNews.Server.Routes
             };
             ApplyPaging(ctx, filter);
             EnumerationResult<MediaAsset> page = await Server.Database.MediaAssets.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false);
-            foreach (MediaAsset m in page.Items) m.ScriptMarkdown = null;
+            foreach (MediaAsset m in page.Objects) m.ScriptMarkdown = null;
             await SendJsonAsync(ctx, 200, page).ConfigureAwait(false);
         }
 
@@ -127,7 +132,7 @@ namespace MyMorningNews.Server.Routes
             if (!Server.Settings.Tts.Enabled) { await SendErrorAsync(ctx, 409, "AudioDisabled", "Audio is turned off on this server (tts.enabled).").ConfigureAwait(false); return; }
             if (b.Status != BriefingStatusEnum.Ready) { await SendErrorAsync(ctx, 409, "BriefingNotReady", "Audio is made from a ready briefing.").ConfigureAwait(false); return; }
             await Server.Entitlements.CheckAudioAsync(b.TenantId, b.UserId, ctx.Token).ConfigureAwait(false);
-            MediaAsset? busy = (await Server.Database.MediaAssets.EnumerateAsync(new MediaAssetFilter { TenantId = b.TenantId, BriefingId = b.Id, PageSize = 20 }, ctx.Token).ConfigureAwait(false)).Items
+            MediaAsset? busy = (await Server.Database.MediaAssets.EnumerateAsync(new MediaAssetFilter { TenantId = b.TenantId, BriefingId = b.Id, PageSize = 20 }, ctx.Token).ConfigureAwait(false)).Objects
                 .FirstOrDefault(x => x.Status == MediaStatusEnum.Queued || x.Status == MediaStatusEnum.Scripting || x.Status == MediaStatusEnum.Synthesizing);
             if (busy != null)
             {
@@ -257,10 +262,11 @@ namespace MyMorningNews.Server.Routes
             if (!await AuthorizeAsync(ctx, RequestTypeEnum.FeedTokenRead).ConfigureAwait(false)) return;
             string? tenantId = await RequireTenantAsync(ctx).ConfigureAwait(false);
             if (tenantId == null) return;
-            List<FeedToken> tokens = (await Server.Database.FeedTokens.EnumerateAsync(new FeedTokenFilter { TenantId = tenantId, UserId = Context(ctx).UserId, PageSize = 200 }, ctx.Token).ConfigureAwait(false)).Items
-                .OrderByDescending(t => t.CreatedUtc).ToList();
-            foreach (FeedToken t in tokens) t.TokenHash = "redacted";
-            await SendJsonAsync(ctx, 200, tokens).ConfigureAwait(false);
+            FeedTokenFilter query = new FeedTokenFilter { TenantId = tenantId, UserId = Context(ctx).UserId };
+            ApplyPaging(ctx, query);
+            EnumerationResult<FeedToken> page = await Server.Database.FeedTokens.EnumerateAsync(query, ctx.Token).ConfigureAwait(false);
+            foreach (FeedToken item in page.Objects) item.TokenHash = "redacted";
+            await SendJsonAsync(ctx, 200, page).ConfigureAwait(false);
         }
 
         private async Task CreateTokenAsync(HttpContextBase ctx)
@@ -418,7 +424,7 @@ namespace MyMorningNews.Server.Routes
 
         private async Task ClearOtherDefaultsAsync(VoiceProfile v, HttpContextBase ctx)
         {
-            foreach (VoiceProfile other in (await Server.Database.VoiceProfiles.EnumerateAsync(new VoiceProfileFilter { TenantId = v.TenantId, IsDefault = true, PageSize = 100 }, ctx.Token).ConfigureAwait(false)).Items.Where(o => o.Id != v.Id))
+            foreach (VoiceProfile other in (await Server.Database.VoiceProfiles.EnumerateAsync(new VoiceProfileFilter { TenantId = v.TenantId, IsDefault = true, PageSize = 100 }, ctx.Token).ConfigureAwait(false)).Objects.Where(o => o.Id != v.Id))
             {
                 other.IsDefault = false;
                 await Server.Database.VoiceProfiles.UpdateAsync(other, ctx.Token).ConfigureAwait(false);

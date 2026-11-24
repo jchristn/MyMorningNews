@@ -41,7 +41,7 @@ export function OverrideModal({ open, initialKey, content, fixedTopicId = null, 
     setCopyDraft(Boolean(content));
     apiClient
       .listPrompts({ tenantOnly: true, pageSize: 100, sortBy: 'key', sortDirection: 'Ascending' })
-      .then((r) => setKeys(((r && r.items) || []).map((p) => p.key)))
+      .then((r) => setKeys(((r && r.objects) || []).map((p) => p.key)))
       .catch(() => setKeys([]));
   }, [open, initialKey, content, fixedTopicId, apiClient]);
 

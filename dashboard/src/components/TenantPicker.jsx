@@ -22,7 +22,7 @@ export default function TenantPicker({ value, onChange }) {
     if (!isAdmin) return;
     apiClient
       .listTenants({ pageSize: 1000, sortBy: 'name', sortDirection: 'Ascending' })
-      .then((r) => setTenants(r.items || []))
+      .then((r) => setTenants(r.objects || []))
       .catch(() => setTenants([]));
   }, [apiClient, isAdmin]);
 

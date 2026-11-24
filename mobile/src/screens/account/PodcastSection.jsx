@@ -1,3 +1,4 @@
+import { enumerateObjects } from '@/api/enumeration';
 import React, { useState } from 'react';
 import { Linking, Platform, RefreshControl, Share, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
@@ -76,7 +77,7 @@ export function PodcastSection() {
   const { t, i18n } = useTranslation();
   const { client } = useAuth();
   const audio = useAudioEnabled();
-  const tokens = useResource(() => feedTokensApi.list(client), [client]);
+  const tokens = useResource(() => enumerateObjects((query) => feedTokensApi.list(client, query)), [client]);
   const editions = useResource(() => editionsApi.list(client, { pageNumber: 1, pageSize: 100 }), [client]);
   const [name, setName] = useState('');
   const [editionId, setEditionId] = useState('all');
@@ -86,7 +87,7 @@ export function PodcastSection() {
   const [created, setCreated] = useState(null);
   const editionList = listItems(editions.data);
   const editionName = (id) => (editionList.find((e) => e.id === id) || {}).name || null;
-  const list = sortFeedTokens(Array.isArray(tokens.data) ? tokens.data : listItems(tokens.data));
+  const list = sortFeedTokens(tokens.data || []);
 
   const create = async () => {
     setBusy('create');

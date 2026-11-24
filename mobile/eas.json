@@ -56,7 +56,7 @@
         "appleTeamId": "U34NDPAH3K"
       },
       "android": {
-        "serviceAccountKeyPath": "REPLACE_WITH_PATH_TO_PLAY_SERVICE_ACCOUNT_JSON",
+        "serviceAccountKeyPath": "./.credentials/play-service-account.json",
         "track": "internal",
         "releaseStatus": "draft"
       }
@@ -67,7 +67,7 @@
         "appleTeamId": "U34NDPAH3K"
       },
       "android": {
-        "serviceAccountKeyPath": "REPLACE_WITH_PATH_TO_PLAY_SERVICE_ACCOUNT_JSON",
+        "serviceAccountKeyPath": "./.credentials/play-service-account.json",
         "track": "production",
         "releaseStatus": "draft"
       }

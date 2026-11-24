@@ -48,7 +48,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             Helpers.True(queued.IsDryRun, "dry run");
             Run done = await StepAsync(context, result, "WaitAsync", () => c.Runs.WaitAsync(queued.Id, TimeSpan.FromMinutes(20), TimeSpan.FromSeconds(3), token)).ConfigureAwait(false);
             Helpers.True(RunsResource.IsTerminal(done.Status), "terminal status");
-            List<RunStage> stages = await StepAsync(context, result, "GET run stages", () => c.Runs.ListStagesAsync(done.Id, token)).ConfigureAwait(false);
+            List<RunStage> stages = (await StepAsync(context, result, "GET run stages", () => c.Runs.ListStagesAsync(done.Id, options: new MyMorningNews.Sdk.Options.EnumerationQuery { PageSize = 1000 }, token: token)).ConfigureAwait(false)).Objects;
             Helpers.True(stages.Count > 0, "stages recorded");
             await StepAsync(context, result, "DELETE topic", () => Fixtures.DeleteTopicAsync(context, c, topic.Id, token)).ConfigureAwait(false);
         }

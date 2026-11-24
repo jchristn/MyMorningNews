@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for LlmCall records. Null properties are not applied.
     /// </summary>
-    public class LlmCallFilter : EnumerationFilter
+    public class LlmCallFilter : EnumerationQuery
     {
         /// <summary>
         /// Match Task exactly when set.

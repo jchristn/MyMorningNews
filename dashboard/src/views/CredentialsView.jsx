@@ -48,7 +48,7 @@ export default function CredentialsView() {
   useEffect(() => {
     apiClient
       .listUsers(tenantId, { pageSize: 1000, sortBy: 'email', sortDirection: 'Ascending' })
-      .then((r) => setUsers(r.items || []))
+      .then((r) => setUsers(r.objects || []))
       .catch(() => setUsers([]));
   }, [apiClient, tenantId]);
 

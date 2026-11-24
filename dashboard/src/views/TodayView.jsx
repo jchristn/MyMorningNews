@@ -38,7 +38,7 @@ function useListAudio(items) {
       items.map((b) =>
         apiClient
           .listMedia({ briefingId: b.id, status: 'Ready', pageSize: 5, ...NEWEST })
-          .then((page) => [b.id, playableEpisode((page && page.items) || [], b)])
+          .then((page) => [b.id, playableEpisode((page && page.objects) || [], b)])
           .catch(() => [b.id, null])
       )
     ).then((pairs) => {
@@ -142,14 +142,14 @@ export default function TodayView() {
 
   const loadLatest = useCallback(async () => {
     const page = await apiClient.listBriefings({ kind: 'Edition', status: 'Ready', pageSize: 1, ...NEWEST });
-    const top = page && page.items && page.items[0];
+    const top = page && page.objects && page.objects[0];
     setLatest(top ? await apiClient.getBriefing(top.id) : null);
   }, [apiClient]);
 
   // Edition briefings still on the way. When one finishes, the latest briefing reloads.
   const loadPending = useCallback(async () => {
     const page = await apiClient.listBriefings({ kind: 'Edition', pageSize: 10, ...NEWEST });
-    const items = (page && page.items) || [];
+    const items = (page && page.objects) || [];
     const next = items.filter((b) => ACTIVE_BRIEFING_STATUSES.includes(b.status));
     const finished = pendingRef.current.filter((p) => !next.some((n) => n.id === p.id));
     pendingRef.current = next;
@@ -166,11 +166,11 @@ export default function TodayView() {
     setError(null);
     try {
       await Promise.all([
-        apiClient.listEditions({ pageSize: 100, sortBy: 'name', sortDirection: 'Ascending', mine: true }).then((r) => setEditions((r && r.items) || [])),
+        apiClient.listEditions({ pageSize: 100, sortBy: 'name', sortDirection: 'Ascending', mine: true }).then((r) => setEditions((r && r.objects) || [])),
         loadLatest(),
         loadPending(),
-        apiClient.listBriefings({ kind: 'Run', pageSize: 5, ...NEWEST }).then((r) => setRuns((r && r.items) || [])),
-        apiClient.listBriefings({ kind: 'OneTime', pageSize: 5, ...NEWEST }).then((r) => setOneTime((r && r.items) || []))
+        apiClient.listBriefings({ kind: 'Run', pageSize: 5, ...NEWEST }).then((r) => setRuns((r && r.objects) || [])),
+        apiClient.listBriefings({ kind: 'OneTime', pageSize: 5, ...NEWEST }).then((r) => setOneTime((r && r.objects) || []))
       ]);
     } catch (err) {
       setError(err);

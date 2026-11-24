@@ -45,7 +45,7 @@ namespace Test.Shared.Suites
             MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
             TestUser owner = await UserAsync(token).ConfigureAwait(false);
             TestUser thief = await UserAsync(token).ConfigureAwait(false);
-            Plan plan = (await server.Context.Database.Plans.EnumerateAsync(new PlanFilter { Key = "paid-5" }, token).ConfigureAwait(false)).Items.Single();
+            Plan plan = (await server.Context.Database.Plans.EnumerateAsync(new PlanFilter { Key = "paid-5" }, token).ConfigureAwait(false)).Objects.Single();
             BillingSubscription old = (await server.Context.Database.BillingSubscriptions.SaveVerifiedAsync(new BillingSubscription
             {
                 TenantId = owner.User.TenantId, UserId = owner.User.Id, Provider = "Google", Environment = "Production", ProviderId = "old-" + Guid.NewGuid().ToString("N"),
@@ -109,7 +109,7 @@ namespace Test.Shared.Suites
             MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
             TestUser owner = await UserAsync(token).ConfigureAwait(false);
             TestUser attacker = await UserAsync(token).ConfigureAwait(false);
-            Plan paid = (await server.Context.Database.Plans.EnumerateAsync(new PlanFilter { Key = "paid-5" }, token).ConfigureAwait(false)).Items.Single();
+            Plan paid = (await server.Context.Database.Plans.EnumerateAsync(new PlanFilter { Key = "paid-5" }, token).ConfigureAwait(false)).Objects.Single();
             BillingSubscription subscription = new BillingSubscription
             {
                 TenantId = owner.User.TenantId, UserId = owner.User.Id, Provider = "Apple", Environment = "Production",
@@ -132,7 +132,7 @@ namespace Test.Shared.Suites
             Assert.True(plan.BillingProvider == null, "revocation removed paid access");
             subscription.LastVerifiedUtc = DateTime.UtcNow;
             await server.Context.Database.BillingSubscriptions.SaveVerifiedAsync(subscription, token).ConfigureAwait(false);
-            Plan catalog = (await server.Context.Database.Plans.EnumerateAsync(new PlanFilter { Key = "catalog-only" }, token).ConfigureAwait(false)).Items.Single();
+            Plan catalog = (await server.Context.Database.Plans.EnumerateAsync(new PlanFilter { Key = "catalog-only" }, token).ConfigureAwait(false)).Objects.Single();
             await server.Context.Database.PlanAssignments.CreateAsync(new PlanAssignment { TenantId = owner.User.TenantId, UserId = owner.User.Id, PlanId = catalog.Id, Source = PlanSourceEnum.Admin, StartsUtc = DateTime.UtcNow.AddMinutes(-1) }, token).ConfigureAwait(false);
             plan = await server.Context.Entitlements.GetEffectiveAsync(owner.User.TenantId, owner.User.Id, token).ConfigureAwait(false);
             Assert.True(plan.Plan.Key == "catalog-only" && plan.BillingProvider == null, "explicit administrator assignment takes precedence");
@@ -187,7 +187,7 @@ namespace Test.Shared.Suites
                     (await dependency.PostAsync("/__control", new { subscriptionId = id, patch = new { status = "past_due" }, failures = true }, token).ConfigureAwait(false)).Expect(200, "provider outage");
                     await SendEventAsync(anonymous, Event("evt_failure", id), token).ConfigureAwait(false);
                     await server.Context.Billing.ProcessAsync(token).ConfigureAwait(false);
-                    BillingEvent retry = (await server.Context.Database.BillingEvents.EnumerateAsync(new BillingEventFilter { EventId = "evt_failure" }, token).ConfigureAwait(false)).Items.Single();
+                    BillingEvent retry = (await server.Context.Database.BillingEvents.EnumerateAsync(new BillingEventFilter { EventId = "evt_failure" }, token).ConfigureAwait(false)).Objects.Single();
                     Assert.True(retry.Status == "Pending" && retry.Attempts == 1 && retry.Error != null, "provider failure retained for retry");
                     (await dependency.PostAsync("/__control", new { failures = false }, token).ConfigureAwait(false)).Expect(200, "provider recovery");
                     retry.RetryUtc = DateTime.UtcNow.AddSeconds(-1);
@@ -198,7 +198,7 @@ namespace Test.Shared.Suites
                     EffectivePlan suspended = await server.Context.Entitlements.GetEffectiveAsync(user.User.TenantId, user.User.Id, token).ConfigureAwait(false);
                     Assert.True(suspended.BillingProvider == null, "delayed active event cannot override current past-due state");
                     TestUser offered = await UserAsync(token).ConfigureAwait(false);
-                    Plan custom = (await server.Context.Database.Plans.EnumerateAsync(new PlanFilter { Key = "complimentary-five" }, token).ConfigureAwait(false)).Items.Single();
+                    Plan custom = (await server.Context.Database.Plans.EnumerateAsync(new PlanFilter { Key = "complimentary-five" }, token).ConfigureAwait(false)).Objects.Single();
                     PromoCode offerCode = await server.Context.Database.PromoCodes.CreateAsync(new PromoCode { Code = "OFFER-" + Guid.NewGuid().ToString("N").Substring(0, 12).ToUpperInvariant(), PlanId = custom.Id, BenefitKind = "PaidOffer", BillingPlanKey = "paid-5", DiscountPercent = 25.5m, DiscountMonths = 3, NewAccountsOnly = true }, token).ConfigureAwait(false);
                     await server.Context.PromoCodes.RedeemAsync(offered.User.TenantId, offered.User.Id, offerCode.Code, PromoChannelEnum.Signup, true, token).ConfigureAwait(false);
                     (await offered.Client.PostAsync("/v1.0/api/account/billing/checkout", new { offerKey = "paid-5-month" }, token).ConfigureAwait(false)).Expect(200, "discounted checkout");
@@ -216,7 +216,7 @@ namespace Test.Shared.Suites
                     (await dependency.PostAsync("/__control", new { subscriptionId = offeredId, patch = new { metadata = new { userId = "another-application-user" } } }, token).ConfigureAwait(false)).Expect(200, "foreign application metadata");
                     await SendEventAsync(anonymous, Event("evt_foreign_application", offeredId), token).ConfigureAwait(false);
                     await server.Context.Billing.ProcessAsync(token).ConfigureAwait(false);
-                    BillingEvent ignored = (await server.Context.Database.BillingEvents.EnumerateAsync(new BillingEventFilter { EventId = "evt_foreign_application" }, token).ConfigureAwait(false)).Items.Single();
+                    BillingEvent ignored = (await server.Context.Database.BillingEvents.EnumerateAsync(new BillingEventFilter { EventId = "evt_foreign_application" }, token).ConfigureAwait(false)).Objects.Single();
                     Assert.Equal("Completed", ignored.Status, "authenticated unrelated purchase is ignored instead of retrying forever");
 
                 }

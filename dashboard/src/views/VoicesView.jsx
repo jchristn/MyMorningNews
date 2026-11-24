@@ -138,7 +138,7 @@ export default function VoicesView() {
     let cancelled = false;
     apiClient
       .listVaultCredentials({ pageSize: 200, sortBy: 'name', sortDirection: 'Ascending' })
-      .then((r) => !cancelled && setCredentials((r && r.items) || []))
+      .then((r) => !cancelled && setCredentials((r && r.objects) || []))
       .catch(() => {});
     return () => {
       cancelled = true;

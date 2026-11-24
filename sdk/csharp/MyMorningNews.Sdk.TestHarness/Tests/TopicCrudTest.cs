@@ -58,8 +58,8 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
 
             EnumerationResult<Topic> page = await StepAsync(context, result, "GET topics (search)",
                 () => c.Topics.ListAsync(new TopicListOptions { Search = renamed, Mine = true, PageSize = 50 }, token)).ConfigureAwait(false);
-            Helpers.Contains(page.Items, t => t.Id == topic.Id, "the topic in the list");
-            Helpers.True(page.TotalCount >= 1 && page.PageSize == 50, "page metadata");
+            Helpers.Contains(page.Objects, t => t.Id == topic.Id, "the topic in the list");
+            Helpers.True(page.TotalRecords >= 1 && page.PageSize == 50, "page metadata");
 
             Topic resumed = await StepAsync(context, result, "POST resume (draft with brief becomes Active)", () => c.Topics.ResumeAsync(topic.Id, token)).ConfigureAwait(false);
             Helpers.Equal(TopicStatusEnum.Active, resumed.Status, "resumed status");

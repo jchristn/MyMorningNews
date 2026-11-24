@@ -1,6 +1,7 @@
 namespace MyMorningNews.Server.Routes
 {
     using System;
+    using System.Linq;
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using MyMorningNews.Core.Enums;
@@ -31,17 +32,21 @@ namespace MyMorningNews.Server.Routes
             ArgumentNullException.ThrowIfNull(webserver);
             string e = "/v1.0/api/model-endpoints";
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, e, ListAsync, null, openApiMetadata: Paged(Doc("List model endpoints", "Models").WithParameter(QueryParam("active", typeof(bool))).WithParameter(QueryParam("supportsChat", typeof(bool))).WithParameter(QueryParam("supportsEmbeddings", typeof(bool))).WithParameter(QueryParam("provider", typeof(ModelProviderEnum)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, e + "/enumerate", ctx => EnumerateAsync(ctx, ListAsync), null, openApiMetadata: Paged(Doc("List model endpoints", "Models").WithParameter(QueryParam("active", typeof(bool))).WithParameter(QueryParam("supportsChat", typeof(bool))).WithParameter(QueryParam("supportsEmbeddings", typeof(bool))).WithParameter(QueryParam("provider", typeof(ModelProviderEnum)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, e, CreateAsync, null, openApiMetadata: Doc("Create a model endpoint", "Models").WithRequestBody(Body<ModelEndpointUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, e + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read a model endpoint", "Models"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, e + "/{id}", UpdateAsync, null, openApiMetadata: Doc("Update a model endpoint", "Models", "Null or absent properties are unchanged. To set an optional value back to null, name it in clearFields (endpoint, credentialId, authMethod, model, embeddingModel, temperature, reasoningEffort, contextLength, inputCostPerMTok, outputCostPerMTok, cachedInputCostPerMTok, cacheWriteCostPerMTok); naming a property there and giving it a value in the same request is refused, as is any other name.").WithRequestBody(Body<ModelEndpointUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, e + "/{id}", DeleteAsync, null, openApiMetadata: Doc("Delete a model endpoint", "Models"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, e + "/{id}/validate", ValidateAsync, null, openApiMetadata: Doc("Validate connectivity, tool support, and embeddings", "Models"));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, e + "/{id}/models", ModelsAsync, null, openApiMetadata: Doc("List models offered by an endpoint", "Models"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, e + "/{id}/models", ModelsAsync, null, openApiMetadata: Paged(Doc("List models offered by an endpoint", "Models")));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, e + "/{id}/models" + "/enumerate", ctx => EnumerateAsync(ctx, ModelsAsync), null, openApiMetadata: Paged(Doc("List models offered by an endpoint", "Models")).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, e + "/{id}/test", TestAsync, null, openApiMetadata: Doc("Send a sample prompt", "Models").WithRequestBody(Body<ModelTestRequest>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/model-assignments", ListAssignmentsAsync, null, openApiMetadata: Paged(Doc("List task role assignments", "Models").WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("task", typeof(ModelTaskEnum)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/model-assignments" + "/enumerate", ctx => EnumerateAsync(ctx, ListAssignmentsAsync), null, openApiMetadata: Paged(Doc("List task role assignments", "Models").WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("task", typeof(ModelTaskEnum)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.PUT, "/v1.0/api/model-assignments", UpsertAssignmentAsync, null, openApiMetadata: Doc("Assign a task role to an endpoint", "Models").WithRequestBody(Body<ModelAssignmentUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/api/model-assignments/{id}", DeleteAssignmentAsync, null, openApiMetadata: Doc("Remove a topic assignment override", "Models"));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/llm-calls", ListCallsAsync, null, openApiMetadata: Paged(Doc("List model calls", "Models").WithParameter(QueryParam("runId", typeof(string))).WithParameter(QueryParam("runStageId", typeof(string))).WithParameter(QueryParam("refinementSessionId", typeof(string))).WithParameter(QueryParam("briefingId", typeof(string))).WithParameter(QueryParam("modelEndpointId", typeof(string))).WithParameter(QueryParam("model", typeof(string))).WithParameter(QueryParam("promptKey", typeof(string))).WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("success", typeof(bool))).WithParameter(QueryParam("isDryRun", typeof(bool))).WithParameter(QueryParam("task", typeof(ModelTaskEnum)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/llm-calls" + "/enumerate", ctx => EnumerateAsync(ctx, ListCallsAsync), null, openApiMetadata: Paged(Doc("List model calls", "Models").WithParameter(QueryParam("runId", typeof(string))).WithParameter(QueryParam("runStageId", typeof(string))).WithParameter(QueryParam("refinementSessionId", typeof(string))).WithParameter(QueryParam("briefingId", typeof(string))).WithParameter(QueryParam("modelEndpointId", typeof(string))).WithParameter(QueryParam("model", typeof(string))).WithParameter(QueryParam("promptKey", typeof(string))).WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("success", typeof(bool))).WithParameter(QueryParam("isDryRun", typeof(bool))).WithParameter(QueryParam("task", typeof(ModelTaskEnum)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/llm-calls/{id}", ReadCallAsync, null, openApiMetadata: Doc("Read a model call with payloads", "Models"));
         }
 
@@ -262,7 +267,14 @@ namespace MyMorningNews.Server.Routes
             if (e == null) return;
             try
             {
-                await SendJsonAsync(ctx, 200, await Server.Models.ListModelsAsync(e, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
+                EnumerationQuery query = new EnumerationQuery();
+                ApplyPaging(ctx, query);
+                List<ModelListItem> models = await Server.Models.ListModelsAsync(e, ctx.Token).ConfigureAwait(false);
+                if (!String.IsNullOrWhiteSpace(query.Search)) models = models.Where(m => m.Name.Contains(query.Search, StringComparison.OrdinalIgnoreCase) || (m.DisplayName?.Contains(query.Search, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
+                models = query.SortDirection == SortDirectionEnum.Ascending ? models.OrderBy(m => m.Name, StringComparer.Ordinal).ToList() : models.OrderByDescending(m => m.Name, StringComparer.Ordinal).ToList();
+                long offset = (long)(query.PageNumber - 1) * query.PageSize;
+                List<ModelListItem> items = offset >= models.Count ? new List<ModelListItem>() : models.Skip((int)offset).Take(query.PageSize).ToList();
+                await SendJsonAsync(ctx, 200, EnumerationResult<ModelListItem>.Create(items, query, models.Count, 0)).ConfigureAwait(false);
             }
             catch (Exception ex) when (ex is ModelCallException || ex is VaultSecretUnavailableException || ex is ArgumentException)
             {
@@ -324,7 +336,7 @@ namespace MyMorningNews.Server.Routes
             if (!await AuthorizeAsync(ctx, RequestTypeEnum.ModelRead).ConfigureAwait(false)) return;
             string? tenantId = await RequireTenantAsync(ctx).ConfigureAwait(false);
             if (tenantId == null) return;
-            ModelAssignmentFilter filter = new ModelAssignmentFilter { TenantId = tenantId, TopicId = Query(ctx, "topicId"), Task = QueryEnum<ModelTaskEnum>(ctx, "task"), PageSize = 1000 };
+            ModelAssignmentFilter filter = new ModelAssignmentFilter { TenantId = tenantId, TopicId = Query(ctx, "topicId"), Task = QueryEnum<ModelTaskEnum>(ctx, "task") };
             ApplyPaging(ctx, filter);
             await SendJsonAsync(ctx, 200, await Server.Database.ModelAssignments.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }
@@ -351,7 +363,7 @@ namespace MyMorningNews.Server.Routes
             }
 
             EnumerationResult<ModelAssignment> existing = await Server.Database.ModelAssignments.EnumerateAsync(new ModelAssignmentFilter { TenantId = tenantId, Task = req.Task, PageSize = 100 }, ctx.Token).ConfigureAwait(false);
-            ModelAssignment? a = existing.Items.Find(x => String.Equals(x.TopicId, req.TopicId, StringComparison.Ordinal));
+            ModelAssignment? a = existing.Objects.Find(x => String.Equals(x.TopicId, req.TopicId, StringComparison.Ordinal));
             bool created = a == null;
             a ??= new ModelAssignment { TenantId = tenantId, Task = req.Task, TopicId = req.TopicId, ModelEndpointId = endpoint.Id };
             a.ModelEndpointId = endpoint.Id;
@@ -406,7 +418,7 @@ namespace MyMorningNews.Server.Routes
             };
             ApplyPaging(ctx, filter);
             EnumerationResult<LlmCall> page = await Server.Database.LlmCalls.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false);
-            foreach (LlmCall c in page.Items)
+            foreach (LlmCall c in page.Objects)
             {
                 c.PromptText = null;
                 c.ResponseText = null;

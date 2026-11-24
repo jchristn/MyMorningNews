@@ -100,13 +100,13 @@ export default function RequestHistoryView() {
     { key: 'sourceIp', header: t('requests.columns.sourceIp'), defaultHidden: true, render: (r) => <span className="mono">{r.sourceIp || ''}</span> }
   ];
 
-  const uniquePaths = page ? new Set(page.items.map((i) => i.routeTemplate || i.path)).size : null;
+  const uniquePaths = page ? new Set(page.objects.map((i) => i.routeTemplate || i.path)).size : null;
 
   return (
     <div className="page">
       <PageHeader title={t('nav.items.requests')} summary={t('routes.requests.summary')} />
       <div className="kpi-grid">
-        <KpiTile label={t('requests.kpi.retained')} value={page ? f.number(page.totalCount) : '...'} detail={t('requests.kpi.matchingFilters')} />
+        <KpiTile label={t('requests.kpi.retained')} value={page ? f.number(page.totalRecords) : '...'} detail={t('requests.kpi.matchingFilters')} />
         <KpiTile label={t('requests.kpi.failures')} value={summary ? f.number(summary.totalFailure) : '...'} tone={summary && summary.totalFailure > 0 ? 'danger' : 'neutral'} detail={t('charts.ranges.' + rangeId)} onClick={() => update('statusCode', '500')} />
         <KpiTile label={t('requests.kpi.successRate')} value={summary && summary.totalCount > 0 ? f.percent(summary.totalSuccess / summary.totalCount) : '...'} detail={t('charts.ranges.' + rangeId)} />
         <KpiTile label={t('requests.kpi.avgDuration')} value={summary ? f.duration(summary.averageDurationMs) : '...'} detail={t('charts.ranges.' + rangeId)} />
@@ -158,7 +158,7 @@ export default function RequestHistoryView() {
             <button type="button" className="button secondary small" onClick={clearFilters}>
               {t('common.clearFilters')}
             </button>
-            <button type="button" className="button danger small" onClick={() => setBulkOpen(true)} disabled={!page || page.totalCount === 0}>
+            <button type="button" className="button danger small" onClick={() => setBulkOpen(true)} disabled={!page || page.totalRecords === 0}>
               <Trash2 size={14} aria-hidden="true" /> {t('requests.bulk.button')}
             </button>
           </div>
@@ -201,7 +201,7 @@ export default function RequestHistoryView() {
       <ConfirmModal
         open={bulkOpen}
         title={t('requests.bulk.title')}
-        message={t('requests.bulk.message', { count: page ? page.totalCount : 0, filters: describeFilters() })}
+        message={t('requests.bulk.message', { count: page ? page.totalRecords : 0, filters: describeFilters() })}
         confirmLabel={t('requests.bulk.confirm')}
         danger
         onClose={() => setBulkOpen(false)}

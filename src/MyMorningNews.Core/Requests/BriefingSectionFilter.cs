@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for BriefingSection records. Null properties are not applied.
     /// </summary>
-    public class BriefingSectionFilter : EnumerationFilter
+    public class BriefingSectionFilter : EnumerationQuery
     {
         /// <summary>
         /// Match BriefingId exactly when set.

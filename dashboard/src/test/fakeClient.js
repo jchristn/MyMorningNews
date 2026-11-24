@@ -50,7 +50,7 @@ export const SETUP_OPTIONS = {
   ]
 };
 
-export const EMPTY_PAGE = { items: [], pageNumber: 1, pageSize: 10, totalCount: 0, totalPages: 0, durationMs: 1 };
+export const EMPTY_PAGE = { objects: [], pageNumber: 1, pageSize: 10, totalRecords: 0, totalPages: 0, totalMs: 1 };
 
 // A client whose named methods are spies. Methods not given in overrides resolve to an empty page so any view renders.
 export function fakeClient(overrides = {}) {

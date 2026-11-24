@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for BillingSubscription records. Null properties are not applied.
     /// </summary>
-    public class BillingSubscriptionFilter : EnumerationFilter
+    public class BillingSubscriptionFilter : EnumerationQuery
     {
         /// <summary>
         /// Match UserId exactly when set.

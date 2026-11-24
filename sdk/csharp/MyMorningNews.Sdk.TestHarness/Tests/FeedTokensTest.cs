@@ -46,16 +46,16 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             Helpers.True(created.FeedUrl.Contains("/v1.0/public/feeds/", System.StringComparison.Ordinal), "feed URL");
             Helpers.Equal("redacted", created.Token.TokenHash, "hash is redacted");
 
-            List<FeedToken> list = await StepAsync(context, result, "GET feed tokens", () => c.FeedTokens.ListAsync(token)).ConfigureAwait(false);
+            List<FeedToken> list = (await StepAsync(context, result, "GET feed tokens", () => c.FeedTokens.ListAsync(options: new MyMorningNews.Sdk.Options.EnumerationQuery { PageSize = 1000 }, token: token)).ConfigureAwait(false)).Objects;
             FeedToken? mine = list.FirstOrDefault(t => t.Id == id);
             Helpers.True(mine != null && mine.TokenHash == "redacted" && mine.RevokedUtc == null, "the active token, hash redacted");
 
             await StepAsync(context, result, "DELETE feed token (revoke)", () => c.FeedTokens.DeleteAsync(id, false, token)).ConfigureAwait(false);
-            List<FeedToken> afterRevoke = await StepAsync(context, result, "GET feed tokens after revoke", () => c.FeedTokens.ListAsync(token)).ConfigureAwait(false);
+            List<FeedToken> afterRevoke = (await StepAsync(context, result, "GET feed tokens after revoke", () => c.FeedTokens.ListAsync(options: new MyMorningNews.Sdk.Options.EnumerationQuery { PageSize = 1000 }, token: token)).ConfigureAwait(false)).Objects;
             Helpers.True(afterRevoke.Any(t => t.Id == id && t.RevokedUtc != null), "the token is revoked");
             await StepAsync(context, result, "DELETE feed token (purge)", () => c.FeedTokens.DeleteAsync(id, true, token)).ConfigureAwait(false);
             context.Cleanup.Remove("feedtoken:" + id);
-            List<FeedToken> afterPurge = await StepAsync(context, result, "GET feed tokens after purge", () => c.FeedTokens.ListAsync(token)).ConfigureAwait(false);
+            List<FeedToken> afterPurge = (await StepAsync(context, result, "GET feed tokens after purge", () => c.FeedTokens.ListAsync(options: new MyMorningNews.Sdk.Options.EnumerationQuery { PageSize = 1000 }, token: token)).ConfigureAwait(false)).Objects;
             Helpers.DoesNotContain(afterPurge, t => t.Id == id, "the purged token");
             await StepAsync(context, result, "DELETE purged feed token (404)", () => Helpers.ExpectErrorAsync(() => c.FeedTokens.DeleteAsync(id, true, token), 404)).ConfigureAwait(false);
         }

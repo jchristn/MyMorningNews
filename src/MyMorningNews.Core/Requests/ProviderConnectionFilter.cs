@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for ProviderConnection records. Null properties are not applied.
     /// </summary>
-    public class ProviderConnectionFilter : EnumerationFilter
+    public class ProviderConnectionFilter : EnumerationQuery
     {
         /// <summary>
         /// Match UserId exactly when set.

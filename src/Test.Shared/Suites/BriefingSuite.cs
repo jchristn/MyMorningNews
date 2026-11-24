@@ -90,8 +90,8 @@ namespace Test.Shared.Suites
         private static async Task<Briefing> RunBriefingForAsync(PipelineFixture f, Run run, CancellationToken token)
         {
             EnumerationResult<Briefing> list = (await f.User.Client.GetAsync("/v1.0/api/briefings?runId=" + run.Id, token).ConfigureAwait(false)).Expect(200, "briefings by run").Json<EnumerationResult<Briefing>>();
-            Assert.Equal(1, list.Items.Count, "one briefing for the run");
-            return list.Items[0];
+            Assert.Equal(1, list.Objects.Count, "one briefing for the run");
+            return list.Objects[0];
         }
 
         private static async Task RunBriefingAsync(CancellationToken token)
@@ -125,13 +125,13 @@ namespace Test.Shared.Suites
             Assert.True(html.Body.Contains("<h2>Sources</h2>", StringComparison.Ordinal) && html.Body.Contains("min read", StringComparison.Ordinal) && html.Body.Contains("© 2026 Lattice AI LLC", StringComparison.Ordinal), "html report");
             (await f.User.Client.GetAsync("/v1.0/api/briefings/" + listed.Id + "/download?format=pdf", token).ConfigureAwait(false)).Expect(400, "unknown format");
             EnumerationResult<LlmCall> calls = (await f.User.Client.GetAsync("/v1.0/api/llm-calls?pageSize=200", token).ConfigureAwait(false)).Json<EnumerationResult<LlmCall>>();
-            Assert.True(calls.Items.Count(c => c.BriefingId == listed.Id) >= 3 && calls.Items.Any(c => c.BriefingId == listed.Id && c.PromptKey == "briefing.compose"), "composition calls attributed to the briefing");
+            Assert.True(calls.Objects.Count(c => c.BriefingId == listed.Id) >= 3 && calls.Objects.Any(c => c.BriefingId == listed.Id && c.PromptKey == "briefing.compose"), "composition calls attributed to the briefing");
 
             TestUser other = await TestFixtures.CreateUserAsync(await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false), f.Topic.TenantId, false, token).ConfigureAwait(false);
             (await other.Client.GetAsync("/v1.0/api/briefings/" + listed.Id, token).ConfigureAwait(false)).Expect(404, "another member cannot read it");
-            Assert.Equal(0, (await other.Client.GetAsync("/v1.0/api/briefings", token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().Items.Count, "another member lists none");
+            Assert.Equal(0, (await other.Client.GetAsync("/v1.0/api/briefings", token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().Objects.Count, "another member lists none");
             TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
-            Assert.True((await admin.GetAsync("/v1.0/api/briefings?mine=true&pageSize=500", token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().Items.All(x => x.Id != listed.Id), "mine=true limits an administrator to their own");
+            Assert.True((await admin.GetAsync("/v1.0/api/briefings?mine=true&pageSize=500", token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().Objects.All(x => x.Id != listed.Id), "mine=true limits an administrator to their own");
         }
 
         private static async Task TemplatesApiAsync(CancellationToken token)
@@ -141,8 +141,8 @@ namespace Test.Shared.Suites
             TestUser ta = await TestFixtures.CreateUserAsync(admin, t.Id, true, token).ConfigureAwait(false);
             TestUser member = await TestFixtures.CreateUserAsync(admin, t.Id, false, token).ConfigureAwait(false);
             EnumerationResult<BriefingTemplate> list = (await member.Client.GetAsync("/v1.0/api/briefing-templates", token).ConfigureAwait(false)).Expect(200, "list").Json<EnumerationResult<BriefingTemplate>>();
-            Assert.True(list.Items.Count == 3 && list.Items.All(x => x.UserId == null && x.DefaultKey != null) && list.Items.Count(x => x.IsDefault) == 1, "three shared defaults");
-            BriefingTemplate morning = list.Items.Single(x => x.DefaultKey == "morning-news");
+            Assert.True(list.Objects.Count == 3 && list.Objects.All(x => x.UserId == null && x.DefaultKey != null) && list.Objects.Count(x => x.IsDefault) == 1, "three shared defaults");
+            BriefingTemplate morning = list.Objects.Single(x => x.DefaultKey == "morning-news");
 
             TemplateValidationResponse v = (await member.Client.PostAsync("/v1.0/api/briefing-templates/validate", new { content = "## A\n<!-- mmn:section source=nope -->" }, token).ConfigureAwait(false))
                 .Expect(200, "validate").Json<TemplateValidationResponse>();
@@ -157,7 +157,7 @@ namespace Test.Shared.Suites
             TemplateDetailResponse saved = (await member.Client.PutAsync("/v1.0/api/briefing-templates/" + created.Template.Id, new { content = mine.Replace("limit=3", "limit=4"), changeNote = "More" }, token).ConfigureAwait(false))
                 .Expect(200, "save").Json<TemplateDetailResponse>();
             Assert.True(saved.Template.CurrentVersion == 2 && saved.Sections[0].Directive.Limit == 4, "version 2");
-            List<BriefingTemplateVersion> versions = (await member.Client.GetAsync("/v1.0/api/briefing-templates/" + created.Template.Id + "/versions", token).ConfigureAwait(false)).Json<List<BriefingTemplateVersion>>();
+            List<BriefingTemplateVersion> versions = (await member.Client.GetAsync("/v1.0/api/briefing-templates/" + created.Template.Id + "/versions", token).ConfigureAwait(false)).Json<EnumerationResult<BriefingTemplateVersion>>().Objects;
             Assert.True(versions.Count == 2 && versions[0].Version == 2 && versions[0].ChangeNote == "More", "versions newest first");
             TemplateDetailResponse rolled = (await member.Client.PostAsync("/v1.0/api/briefing-templates/" + created.Template.Id + "/rollback", new { version = 1 }, token).ConfigureAwait(false))
                 .Expect(200, "rollback").Json<TemplateDetailResponse>();
@@ -165,9 +165,9 @@ namespace Test.Shared.Suites
             TestResponse export = (await member.Client.GetAsync("/v1.0/api/briefing-templates/" + created.Template.Id + "/export", token).ConfigureAwait(false)).Expect(200, "export");
             Assert.True(export.Body == mine && export.Headers["Content-Disposition"].Contains("my-brief.md", StringComparison.Ordinal), "export file");
             (await ta.Client.GetAsync("/v1.0/api/briefing-templates/" + created.Template.Id, token).ConfigureAwait(false)).Expect(200, "tenant admin can read it");
-            Assert.Equal(1, (await member.Client.GetAsync("/v1.0/api/briefing-templates?scope=mine", token).ConfigureAwait(false)).Json<EnumerationResult<BriefingTemplate>>().Items.Count, "scope mine");
-            Assert.Equal(3, (await member.Client.GetAsync("/v1.0/api/briefing-templates?scope=shared", token).ConfigureAwait(false)).Json<EnumerationResult<BriefingTemplate>>().Items.Count, "scope shared");
-            Assert.Equal(1, (await member.Client.GetAsync("/v1.0/api/briefing-templates?search=one-time", token).ConfigureAwait(false)).Json<EnumerationResult<BriefingTemplate>>().Items.Count, "search");
+            Assert.Equal(1, (await member.Client.GetAsync("/v1.0/api/briefing-templates?scope=mine", token).ConfigureAwait(false)).Json<EnumerationResult<BriefingTemplate>>().Objects.Count, "scope mine");
+            Assert.Equal(3, (await member.Client.GetAsync("/v1.0/api/briefing-templates?scope=shared", token).ConfigureAwait(false)).Json<EnumerationResult<BriefingTemplate>>().Objects.Count, "scope shared");
+            Assert.Equal(1, (await member.Client.GetAsync("/v1.0/api/briefing-templates?search=one-time", token).ConfigureAwait(false)).Json<EnumerationResult<BriefingTemplate>>().Objects.Count, "search");
             string other = mine.Replace("My Brief", "Front Matter Name");
             TemplateDetailResponse named = (await member.Client.PostAsync("/v1.0/api/briefing-templates", new { content = other, name = "Given Name" }, token).ConfigureAwait(false)).Expect(201, "create with a name").Json<TemplateDetailResponse>();
             TemplateDetailResponse kept = (await member.Client.PutAsync("/v1.0/api/briefing-templates/" + named.Template.Id, new { content = other.Replace("limit=3", "limit=5") }, token).ConfigureAwait(false)).Expect(200, "edit").Json<TemplateDetailResponse>();
@@ -231,7 +231,7 @@ namespace Test.Shared.Suites
             Briefing fb = await ComposeNowAsync(f, e2.Edition.Id, token).ConfigureAwait(false);
             Assert.True(fb.Status == BriefingStatusEnum.Ready && fb.ModelFallbacks == 1 && fb.Markdown!.Contains("## Highlights\n\n- **Heat pump rebates expand** [1]", StringComparison.Ordinal), "plain fallback: " + fb.Markdown);
 
-            long before = (await f.User.Client.GetAsync("/v1.0/api/briefings?editionId=" + e.Edition.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().TotalCount;
+            long before = (await f.User.Client.GetAsync("/v1.0/api/briefings?editionId=" + e.Edition.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().TotalRecords;
             Briefing preview = (await f.User.Client.PostAsync("/v1.0/api/editions/" + e.Edition.Id + "/preview", null, token).ConfigureAwait(false)).Expect(200, "preview").Json<Briefing>();
             Assert.True(preview.Markdown!.StartsWith("# Weekday Heat for ", StringComparison.Ordinal) && !preview.Markdown.Contains("## By topic", StringComparison.Ordinal) && preview.Markdown.Contains("## Dig into next", StringComparison.Ordinal),
                 "preview: findings only since the last edition, open suggestions still listed: " + preview.Markdown);
@@ -240,7 +240,7 @@ namespace Test.Shared.Suites
                 .Expect(200, "preview unsaved template").Json<Briefing>();
             Assert.True(custom.Markdown!.StartsWith("# Draft Weekday Heat", StringComparison.Ordinal) && custom.Markdown.Contains("## Next steps", StringComparison.Ordinal), "unsaved template previewed: " + custom.Markdown);
             (await f.User.Client.PostAsync("/v1.0/api/editions/" + e.Edition.Id + "/preview", new { templateContent = "## A\n<!-- mmn:section limit=0 -->" }, token).ConfigureAwait(false)).Expect(400, "invalid unsaved template");
-            long afterCount = (await f.User.Client.GetAsync("/v1.0/api/briefings?editionId=" + e.Edition.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().TotalCount;
+            long afterCount = (await f.User.Client.GetAsync("/v1.0/api/briefings?editionId=" + e.Edition.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().TotalRecords;
             Assert.Equal(before, afterCount, "preview saved nothing");
             (await f.User.Client.DeleteAsync("/v1.0/api/editions/" + e2.Edition.Id, token).ConfigureAwait(false)).Expect(204, "delete edition");
             Assert.True((await f.Server.Context.Database.Briefings.ReadAsync(fb.TenantId, fb.Id, token).ConfigureAwait(false)) != null, "its briefings stay");
@@ -254,8 +254,8 @@ namespace Test.Shared.Suites
             DateTime now = DateTime.UtcNow;
             Assert.True(waiting.Status == BriefingStatusEnum.Queued && waiting.ResearchDeadlineUtc > now.AddMinutes(30) && waiting.ComposeAfterUtc > now.AddSeconds(10), "put back to wait for research: " + waiting.Status + " " + waiting.ComposeAfterUtc);
             EnumerationResult<Run> runs = (await f.User.Client.GetAsync("/v1.0/api/runs?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Run>>();
-            Assert.True(runs.Items.Count == 1 && runs.Items[0].Trigger == RunTriggerEnum.Edition && runs.Items[0].Status == RunStatusEnum.Queued, "fresh research queued");
-            await RunWaiter.FinishAsync(f.Server, runs.Items[0], token).ConfigureAwait(false);
+            Assert.True(runs.Objects.Count == 1 && runs.Objects[0].Trigger == RunTriggerEnum.Edition && runs.Objects[0].Status == RunStatusEnum.Queued, "fresh research queued");
+            await RunWaiter.FinishAsync(f.Server, runs.Objects[0], token).ConfigureAwait(false);
 
             // The briefing queue is shared with suites running in parallel; another pass may be composing it, so wait for a final status.
             Briefing done = waiting;
@@ -268,7 +268,7 @@ namespace Test.Shared.Suites
             }
 
             string diag = done.Status == BriefingStatusEnum.Ready ? String.Empty : " composeAfter " + done.ComposeAfterUtc?.ToString("o") + " deadline " + done.ResearchDeadlineUtc?.ToString("o") + " now " + DateTime.UtcNow.ToString("o") + " runs " +
-                String.Join(",", (await f.User.Client.GetAsync("/v1.0/api/runs?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Run>>().Items.Select(r => r.Trigger + ":" + r.Status));
+                String.Join(",", (await f.User.Client.GetAsync("/v1.0/api/runs?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Run>>().Objects.Select(r => r.Trigger + ":" + r.Status));
             Assert.True(done.Status == BriefingStatusEnum.Ready && done.Markdown!.Contains("Heat pump rebates expand", StringComparison.Ordinal), "composed with the fresh findings: " + done.Status + " " + done.ErrorMessage + diag);
         }
 
@@ -278,8 +278,8 @@ namespace Test.Shared.Suites
             Tenant t = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
             TestUser u = await TestFixtures.CreateUserAsync(admin, t.Id, false, token).ConfigureAwait(false);
             EnumerationResult<Edition> mine = (await u.Client.GetAsync("/v1.0/api/editions", token).ConfigureAwait(false)).Expect(200, "editions").Json<EnumerationResult<Edition>>();
-            Assert.True(mine.Items.Count == 1 && mine.Items[0].Name == "Morning News", "Morning News seeded for a new user");
-            EditionResponse mn = (await u.Client.GetAsync("/v1.0/api/editions/" + mine.Items[0].Id, token).ConfigureAwait(false)).Json<EditionResponse>();
+            Assert.True(mine.Objects.Count == 1 && mine.Objects[0].Name == "Morning News", "Morning News seeded for a new user");
+            EditionResponse mn = (await u.Client.GetAsync("/v1.0/api/editions/" + mine.Objects[0].Id, token).ConfigureAwait(false)).Json<EditionResponse>();
             Assert.True(mn.Schedules.Count == 1 && mn.Schedules[0].DaysOfWeekMask == 127 && mn.Schedules[0].TimesOfDay.SequenceEqual(new[] { "06:30" }) && mn.Schedules[0].NextRunUtc.HasValue && mn.Topics.Count == 0,
                 "daily 06:30 schedule covering all topics");
 
@@ -289,11 +289,11 @@ namespace Test.Shared.Suites
             await server.Context.Database.Schedules.UpdateAsync(s, token).ConfigureAwait(false);
             await server.Context.Scheduling.TickAsync(DateTime.UtcNow, token).ConfigureAwait(false);
             EnumerationResult<Briefing> queued = (await u.Client.GetAsync("/v1.0/api/briefings?editionId=" + mn.Edition.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>();
-            Assert.True(queued.Items.Count == 1 && queued.Items[0].ScheduleId == s.Id && queued.Items[0].Status == BriefingStatusEnum.Queued, "schedule queued a briefing");
+            Assert.True(queued.Objects.Count == 1 && queued.Objects[0].ScheduleId == s.Id && queued.Objects[0].Status == BriefingStatusEnum.Queued, "schedule queued a briefing");
             Schedule next = (await server.Context.Database.Schedules.ReadAsync(t.Id, s.Id, token).ConfigureAwait(false))!;
             Assert.True(next.NextRunUtc > DateTime.UtcNow, "schedule advanced");
 
-            Briefing empty = await BriefingWaiter.FinishAsync(server, t.Id, queued.Items[0].Id, token).ConfigureAwait(false);
+            Briefing empty = await BriefingWaiter.FinishAsync(server, t.Id, queued.Objects[0].Id, token).ConfigureAwait(false);
             Assert.True(empty.Status == BriefingStatusEnum.Ready && empty.ItemCount == 0 && empty.Markdown!.Contains("Nothing new in this period", StringComparison.Ordinal), "an empty edition still arrives: " + empty.Markdown);
 
             Schedule created = (await u.Client.PostAsync("/v1.0/api/schedules", new { ownerType = "Edition", ownerId = mn.Edition.Id, intervalType = "EveryNHours", intervalValue = 12 }, token).ConfigureAwait(false))
@@ -312,7 +312,7 @@ namespace Test.Shared.Suites
             Briefing pinned = (await f.User.Client.PutAsync("/v1.0/api/briefings/" + b.Id + "/pin", new { pinned = true }, token).ConfigureAwait(false)).Expect(200, "pin").Json<Briefing>();
             Assert.True(pinned.Pinned, "pinned");
             EnumerationResult<Artifact> files = (await f.User.Client.GetAsync("/v1.0/api/artifacts?briefingId=" + b.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Artifact>>();
-            Assert.True(files.Items.Count == 2 && files.Items.All(a => a.Pinned), "files pinned with the briefing");
+            Assert.True(files.Objects.Count == 2 && files.Objects.All(a => a.Pinned), "files pinned with the briefing");
 
             int cap = f.Server.Context.Settings.Storage.MaxPinnedArtifacts;
             try
@@ -338,7 +338,7 @@ namespace Test.Shared.Suites
 
             (await f.User.Client.DeleteAsync("/v1.0/api/briefings/" + b.Id, token).ConfigureAwait(false)).Expect(204, "delete");
             (await f.User.Client.GetAsync("/v1.0/api/briefings/" + b.Id, token).ConfigureAwait(false)).Expect(404, "gone");
-            Assert.Equal(0, (await f.User.Client.GetAsync("/v1.0/api/artifacts?briefingId=" + b.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Artifact>>().Items.Count, "files deleted");
+            Assert.Equal(0, (await f.User.Client.GetAsync("/v1.0/api/artifacts?briefingId=" + b.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Artifact>>().Objects.Count, "files deleted");
         }
     }
 }

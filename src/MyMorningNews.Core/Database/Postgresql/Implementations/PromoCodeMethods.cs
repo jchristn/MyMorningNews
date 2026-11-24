@@ -256,6 +256,16 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
         private static string BuildWhere(PromoCodeFilter filter, List<object?> args)
         {
             List<string> clauses = new List<string>();
+            if (!String.IsNullOrWhiteSpace(filter.Status))
+            {
+                args.Add(filter.StatusAtUtc);
+                string now = "$" + args.Count;
+                args.Add(filter.Status);
+                clauses.Add("(CASE WHEN NOT enabled THEN 'disabled' WHEN startsutc > " + now
+                    + " THEN 'notstarted' WHEN expiresutc <= " + now
+                    + " THEN 'expired' WHEN maxredemptions IS NOT NULL AND redemptioncount >= maxredemptions"
+                    + " THEN 'exhausted' ELSE 'active' END) = $" + args.Count);
+            }
             if (!String.IsNullOrWhiteSpace(filter.Code))
             {
                 args.Add(filter.Code);
@@ -285,6 +295,16 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             {
                 args.Add("%" + EscapeLike(filter.Search.Trim()) + "%");
                 clauses.Add("(code ILIKE $" + args.Count + " OR description ILIKE $" + args.Count + ")");
+            }
+            if (filter.CreatedAfter.HasValue)
+            {
+                args.Add(DateTime.SpecifyKind(filter.CreatedAfter.Value, DateTimeKind.Utc));
+                clauses.Add("createdutc > $" + args.Count);
+            }
+            if (filter.CreatedBefore.HasValue)
+            {
+                args.Add(DateTime.SpecifyKind(filter.CreatedBefore.Value, DateTimeKind.Utc));
+                clauses.Add("createdutc < $" + args.Count);
             }
             if (filter.FromUtc.HasValue)
             {

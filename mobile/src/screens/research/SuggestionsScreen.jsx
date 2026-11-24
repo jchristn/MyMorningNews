@@ -105,7 +105,7 @@ export function SuggestionsScreen({ topicId }) {
     resource.setData((data) => {
       const next = listItems(data).map((x) => (x.id === updated.id ? updated : x));
       const shown = filter === 'all' ? next : next.filter((x) => x.status === filter);
-      return { ...(data && !Array.isArray(data) ? data : {}), items: shown };
+      return { ...(data && !Array.isArray(data) ? data : {}), objects: shown };
     });
   return (
     <Screen testID="suggestions-screen" refreshControl={<RefreshControl refreshing={resource.refreshing} onRefresh={resource.reload} tintColor={p.primary} />}>

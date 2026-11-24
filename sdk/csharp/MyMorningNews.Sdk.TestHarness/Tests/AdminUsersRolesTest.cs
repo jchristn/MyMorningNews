@@ -39,7 +39,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             MyMorningNewsClient c = context.RequireAdmin();
             string tenant = context.Environment.Tenant;
             EnumerationResult<Tenant> tenants = await StepAsync(context, result, "GET tenants", () => c.Admin.Tenants.ListAsync(new TenantListOptions { Active = true }, token)).ConfigureAwait(false);
-            Helpers.Contains(tenants.Items, t => t.Id == tenant, "the harness tenant");
+            Helpers.Contains(tenants.Objects, t => t.Id == tenant, "the harness tenant");
             Tenant self = await StepAsync(context, result, "GET tenant", () => c.Admin.Tenants.GetAsync(tenant, token)).ConfigureAwait(false);
             Helpers.True(self.IsProtected || self.Id == tenant, "tenant read");
             await StepAsync(context, result, "GET unknown tenant (404)", () => Helpers.ExpectErrorAsync(() => c.Admin.Tenants.GetAsync("ten_missing", token), 404)).ConfigureAwait(false);
@@ -57,7 +57,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             UserResponse updated = await StepAsync(context, result, "PUT user", () => c.Admin.Users.UpdateAsync(tenant, user.Id, new UserUpdateRequest { FirstName = "Edited", TimeZone = "UTC" }, token)).ConfigureAwait(false);
             Helpers.Equal("Edited", updated.FirstName, "first name");
             EnumerationResult<UserResponse> users = await StepAsync(context, result, "GET users (search)", () => c.Admin.Users.ListAsync(tenant, new UserListOptions { Search = user.Email, PageSize = 50 }, token)).ConfigureAwait(false);
-            Helpers.Contains(users.Items, u => u.Id == user.Id, "the user");
+            Helpers.Contains(users.Objects, u => u.Id == user.Id, "the user");
             await StepAsync(context, result, "POST user with a duplicate email (409)", () => Helpers.ExpectErrorAsync(() => c.Admin.Users.CreateAsync(tenant,
                 new UserCreateRequest { Email = user.Email, Password = password, Active = true }, token), 409)).ConfigureAwait(false);
 
@@ -82,8 +82,8 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             Permission perm2 = await StepAsync(context, result, "PUT permission", () => c.Admin.Permissions.UpdateAsync(tenant, perm.Id, new PermissionUpsertRequest { OperationTypes = new List<string> { "Read", "Update" } }, token)).ConfigureAwait(false);
             Helpers.Equal(2, perm2.OperationTypes.Count, "operation types");
             EnumerationResult<Permission> perms = await StepAsync(context, result, "GET permissions (tenant only)", () => c.Admin.Permissions.ListAsync(tenant, new PermissionListOptions { IncludeBuiltIn = false, PageSize = 500 }, token)).ConfigureAwait(false);
-            Helpers.Contains(perms.Items, p => p.Id == perm.Id, "the permission");
-            Helpers.True(perms.Items.All(p => !p.IsBuiltIn), "built-in permissions are left out");
+            Helpers.Contains(perms.Objects, p => p.Id == perm.Id, "the permission");
+            Helpers.True(perms.Objects.All(p => !p.IsBuiltIn), "built-in permissions are left out");
 
             UserRole role = await StepAsync(context, result, "POST role", () => c.Admin.Roles.CreateAsync(tenant, new RoleUpsertRequest
             {
@@ -97,8 +97,8 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             UserRole role2 = await StepAsync(context, result, "PUT role", () => c.Admin.Roles.UpdateAsync(tenant, role.Id, new RoleUpsertRequest { Description = "Edited" }, token)).ConfigureAwait(false);
             Helpers.Equal("Edited", role2.Description, "role description");
             EnumerationResult<UserRole> roles = await StepAsync(context, result, "GET roles", () => c.Admin.Roles.ListAsync(tenant, new RoleListOptions { PageSize = 500 }, token)).ConfigureAwait(false);
-            Helpers.Contains(roles.Items, r => r.Id == role.Id, "the role");
-            UserRole? builtIn = roles.Items.FirstOrDefault(r => r.IsBuiltIn);
+            Helpers.Contains(roles.Objects, r => r.Id == role.Id, "the role");
+            UserRole? builtIn = roles.Objects.FirstOrDefault(r => r.IsBuiltIn);
             if (builtIn != null)
                 await StepAsync(context, result, "PUT built-in role (409)", () => Helpers.ExpectErrorAsync(() => c.Admin.Roles.UpdateAsync(tenant, builtIn.Id, new RoleUpsertRequest { Description = "x" }, token), 409)).ConfigureAwait(false);
 
@@ -108,7 +108,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
                 ResourceScope = ResourceScopeEnum.Tenant
             }, token)).ConfigureAwait(false);
             EnumerationResult<UserRoleAssignment> assignments = await StepAsync(context, result, "GET user assignments", () => c.Admin.Assignments.ListUserAssignmentsAsync(tenant, user.Id, null, token)).ConfigureAwait(false);
-            Helpers.Contains(assignments.Items, a => a.Id == assignment.Id, "the assignment");
+            Helpers.Contains(assignments.Objects, a => a.Id == assignment.Id, "the assignment");
             EffectivePermissionsResponse effective = await StepAsync(context, result, "GET user effective permissions", () => c.Admin.Users.GetEffectivePermissionsAsync(tenant, user.Id, token)).ConfigureAwait(false);
             Helpers.Equal(user.Id, effective.PrincipalId, "principal");
             await StepAsync(context, result, "DELETE user assignment", () => c.Admin.Assignments.DeleteUserAssignmentAsync(tenant, user.Id, assignment.Id, token)).ConfigureAwait(false);

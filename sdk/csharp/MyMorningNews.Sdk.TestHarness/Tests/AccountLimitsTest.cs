@@ -44,7 +44,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             MyMorningNewsException protectedEx = await StepAsync(context, result, "POST account/delete as the administrator (409)", () => Helpers.ExpectErrorAsync(() => c.Account.DeleteAsync(token), 409, "Conflict")).ConfigureAwait(false);
             Helpers.NotEmpty(protectedEx.Message, "message");
 
-            List<PlanResponse> plans = await StepAsync(context, result, "GET admin/plans", () => c.Admin.Plans.ListAsync(token)).ConfigureAwait(false);
+            List<PlanResponse> plans = (await StepAsync(context, result, "GET admin/plans", () => c.Admin.Plans.ListAsync(options: new MyMorningNews.Sdk.Options.EnumerationQuery { PageSize = 1000 }, token: token)).ConfigureAwait(false)).Objects;
             PlanResponse? free = plans.FirstOrDefault(p => p.Plan.Key == "free");
             if (free == null) throw new SkipTestException("the server has no Free plan");
 

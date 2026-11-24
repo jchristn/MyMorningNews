@@ -1,3 +1,4 @@
+import { enumerationResult } from '../test/enumeration.js';
 // Regression tests for the dashboard findings of the 2026-11-20 simulated user testing session
 // (user-testing/2026-11-20-full-session.md). Each describe names its finding.
 import { describe, expect, it, vi } from 'vitest';
@@ -127,10 +128,10 @@ describe('UT-008: the wizard preview run shows progress and the result', () => {
     const stream = controllableStream();
     const client = renderRoute('/dashboard/topics/top_1/refine?session=rfs_1', {
       getRefinementSession: vi.fn(async () => review()),
-      listTopicRecipients: vi.fn(async () => []),
+      listTopicRecipients: vi.fn(async () => enumerationResult([])),
       runTopic: vi.fn(async () => ({ ...QUEUED, isDryRun: true })),
       getRun: vi.fn(async () => ({ ...QUEUED, isDryRun: true })),
-      listRunStages: vi.fn(async () => []),
+      listRunStages: vi.fn(async () => enumerationResult([])),
       streamRunEvents: stream.fn
     });
     await userEvent.click(await screen.findByTestId('preview-run'));
@@ -153,7 +154,7 @@ describe('UT-008: the wizard preview run shows progress and the result', () => {
   it('shows why the preview could not start', async () => {
     renderRoute('/dashboard/topics/top_1/refine?session=rfs_1', {
       getRefinementSession: vi.fn(async () => review()),
-      listTopicRecipients: vi.fn(async () => []),
+      listTopicRecipients: vi.fn(async () => enumerationResult([])),
       runTopic: vi.fn(async () => {
         throw new ApiError(429, { error: 'CapReached', message: 'Your plan allows 2 runs a day.' });
       })
@@ -164,7 +165,7 @@ describe('UT-008: the wizard preview run shows progress and the result', () => {
   });
 
   it('says what the dry run does without claiming it stays out of history', async () => {
-    renderRoute('/dashboard/topics/top_1/refine?session=rfs_1', { getRefinementSession: vi.fn(async () => review()), listTopicRecipients: vi.fn(async () => []) });
+    renderRoute('/dashboard/topics/top_1/refine?session=rfs_1', { getRefinementSession: vi.fn(async () => review()), listTopicRecipients: vi.fn(async () => enumerationResult([])) });
     expect(await screen.findByText(/It still shows in Runs, marked as a dry run/)).toBeInTheDocument();
   });
 });
@@ -179,7 +180,7 @@ describe('UT-009: the topic page follows Run now until the run ends', () => {
       listSchedules: vi.fn(async () => page([])),
       runTopic: vi.fn(async () => QUEUED),
       getRun: vi.fn(async () => QUEUED),
-      listRunStages: vi.fn(async () => []),
+      listRunStages: vi.fn(async () => enumerationResult([])),
       streamRunEvents: stream.fn
     });
     await userEvent.click(await screen.findByRole('button', { name: 'Run now' }));
@@ -202,7 +203,7 @@ describe('UT-010: Next on the Context step saves the brief', () => {
     const context = state({ session: { step: 'Context', round: 1 }, dimensions: [DIMENSION] });
     const client = renderRoute('/dashboard/topics/top_1/refine?session=rfs_1', {
       getRefinementSession: vi.fn(async () => context),
-      listTopicRecipients: vi.fn(async () => []),
+      listTopicRecipients: vi.fn(async () => enumerationResult([])),
       updateTopic: vi.fn(async (id, body) => ({ ...context.topic, ...body })),
       suggestSources: vi.fn(async () => [])
     });
@@ -222,7 +223,7 @@ describe('UT-010: Next on the Context step saves the brief', () => {
     const context = state({ session: { step: 'Context', round: 1 }, dimensions: [DIMENSION] });
     const client = renderRoute('/dashboard/topics/top_1/refine?session=rfs_1', {
       getRefinementSession: vi.fn(async () => context),
-      listTopicRecipients: vi.fn(async () => []),
+      listTopicRecipients: vi.fn(async () => enumerationResult([])),
       updateTopic: vi.fn(async () => {
         throw new ApiError(400, { error: 'ValidationFailed', message: 'The brief is too long.' });
       }),

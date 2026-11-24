@@ -30,7 +30,7 @@ export function useVoices() {
     let cancelled = false;
     apiClient
       .listVoices({ pageSize: 100, sortBy: 'name', sortDirection: 'Ascending' })
-      .then((r) => !cancelled && setVoices((r && r.items) || []))
+      .then((r) => !cancelled && setVoices((r && r.objects) || []))
       .catch(() => !cancelled && setVoices([]));
     return () => {
       cancelled = true;

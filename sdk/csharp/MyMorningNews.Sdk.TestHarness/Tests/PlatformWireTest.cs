@@ -32,9 +32,9 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
                 Helpers.Equal(10000, billing.Offers[0].UsdCents, "annual price");
                 Helpers.True(billing.Subscriptions[0].EndsUtc == null, "unknown end is not a fake expiry");
                 Helpers.Equal("Bearer member", handler.Authorization, "account-bound bearer");
-                handler.Reply = "{\"items\":[{\"id\":\"c1\",\"eligible\":true}],\"totalCount\":1}";
+                handler.Reply = "{\"objects\":[{\"id\":\"c1\",\"eligible\":true}],\"totalRecords\":1}";
                 EnumerationResult<CatalogEntryResponse> catalog = await client.Catalog.ListAsync(new CatalogListOptions { Category = "AI & science", PageSize = 3 }, token).ConfigureAwait(false);
-                Helpers.True(catalog.Items[0].Eligible, "public eligibility");
+                Helpers.True(catalog.Objects[0].Eligible, "public eligibility");
                 Helpers.True(handler.Path.Contains("category=AI%20%26%20science", StringComparison.Ordinal), "encoded category");
                 handler.Reply = "{\"positionSeconds\":12.5,\"completed\":false}";
                 BriefingProgress progress = await client.Catalog.SaveProgressAsync("cat/one", "issue?one", new BriefingProgressRequest { PositionSeconds = 12.5, Completed = false }, token).ConfigureAwait(false);

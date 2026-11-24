@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for RefreshToken records. Null properties are not applied.
     /// </summary>
-    public class RefreshTokenFilter : EnumerationFilter
+    public class RefreshTokenFilter : EnumerationQuery
     {
         /// <summary>
         /// Match UserId exactly when set.

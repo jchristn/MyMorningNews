@@ -46,8 +46,8 @@ namespace Test.Shared.Suites
             TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
             Tenant tenant = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
             TestUser user = await TestFixtures.CreateUserAsync(admin, tenant.Id, false, token).ConfigureAwait(false);
-            Plan custom = (await server.Context.Database.Plans.EnumerateAsync(new PlanFilter { Key = "complimentary-five" }, token).ConfigureAwait(false)).Items.Single();
-            Plan paid = (await server.Context.Database.Plans.EnumerateAsync(new PlanFilter { Key = "paid-5" }, token).ConfigureAwait(false)).Items.Single();
+            Plan custom = (await server.Context.Database.Plans.EnumerateAsync(new PlanFilter { Key = "complimentary-five" }, token).ConfigureAwait(false)).Objects.Single();
+            Plan paid = (await server.Context.Database.Plans.EnumerateAsync(new PlanFilter { Key = "paid-5" }, token).ConfigureAwait(false)).Objects.Single();
             PromoCodeStats code = await CreateCodeAsync(admin, new { code = Unique("PAID"), planId = custom.Id, benefitKind = "PaidOffer", billingPlanKey = "paid-5", discountPercent = 25.5, discountMonths = 3, durationDays = 0, maxRedemptions = 100 }, token).ConfigureAwait(false);
             PromoCheck preview = await server.Context.PromoCodes.CheckAsync(code.Code.Code, null, null, true, token).ConfigureAwait(false);
             Assert.True(preview.Valid && preview.BenefitKind == "PaidOffer" && preview.DiscountPercent == 25.5m && preview.Message.Contains("verified", StringComparison.Ordinal), "public preview explains payment requirement");
@@ -61,7 +61,7 @@ namespace Test.Shared.Suites
             Assert.Equal(1, outcomes.Count(x => x), "same-account concurrency consumes one code use");
             PromoCode stored = (await server.Context.Database.PromoCodes.ReadAsync(code.Code.Id, token).ConfigureAwait(false))!;
             Assert.Equal(1, stored.RedemptionCount, "counter matches committed redemption");
-            SignupBenefit benefit = (await server.Context.Database.SignupBenefits.EnumerateAsync(new SignupBenefitFilter { TenantId = tenant.Id, UserId = user.User.Id }, token).ConfigureAwait(false)).Items.Single();
+            SignupBenefit benefit = (await server.Context.Database.SignupBenefits.EnumerateAsync(new SignupBenefitFilter { TenantId = tenant.Id, UserId = user.User.Id }, token).ConfigureAwait(false)).Objects.Single();
             Assert.True(benefit.DiscountPercent == 25.5m && benefit.DiscountMonths == 3 && benefit.RedeemedUtc == null, "captured discount has no paid access");
             Assert.Equal(0L, await server.Context.Database.PlanAssignments.CountAsync(new PlanAssignmentFilter { TenantId = tenant.Id, UserId = user.User.Id }, token).ConfigureAwait(false), "no complimentary grant for paid code");
             stored.DiscountPercent = 90;
@@ -74,7 +74,7 @@ namespace Test.Shared.Suites
             Assert.True(await server.Context.Database.SignupBenefits.BindAsync(tenant.Id, user.User.Id, benefit.Id, subscription.Id, "paid-5", token).ConfigureAwait(false), "paid purchase activates captured custom tier");
             EffectivePlan effective = await server.Context.Entitlements.GetEffectiveAsync(tenant.Id, user.User.Id, token).ConfigureAwait(false);
             Assert.Equal(custom.Id, effective.Plan.Id, "custom package used with verified base subscription");
-            PromoRedemption redemption = (await server.Context.Database.PromoRedemptions.EnumerateAsync(new PromoRedemptionFilter { TenantId = tenant.Id, UserId = user.User.Id }, token).ConfigureAwait(false)).Items.Single();
+            PromoRedemption redemption = (await server.Context.Database.PromoRedemptions.EnumerateAsync(new PromoRedemptionFilter { TenantId = tenant.Id, UserId = user.User.Id }, token).ConfigureAwait(false)).Objects.Single();
             Assert.True(redemption.PlanAssignmentId == null && redemption.SignupBenefitId == benefit.Id, "redemption links offer instead of free grant");
             await server.Context.PromoCodes.RevokeAsync(redemption, token).ConfigureAwait(false);
             effective = await server.Context.Entitlements.GetEffectiveAsync(tenant.Id, user.User.Id, token).ConfigureAwait(false);
@@ -136,7 +136,7 @@ namespace Test.Shared.Suites
 
             PromoCodeStats stats = (await admin.GetAsync("/v1.0/api/admin/promo-codes/" + created.Code.Id, token).ConfigureAwait(false)).Expect(200, "stats").Json<PromoCodeStats>();
             Assert.True(stats.Code.RedemptionCount == 2 && stats.Remaining == 0 && stats.ActiveAssignments == 2 && stats.LastRedeemedUtc.HasValue, "usage tracked");
-            List<PromoRedemption> who = (await admin.GetAsync("/v1.0/api/admin/promo-codes/" + created.Code.Id + "/redemptions", token).ConfigureAwait(false)).Expect(200, "redemptions").Json<List<PromoRedemption>>();
+            List<PromoRedemption> who = (await admin.GetAsync("/v1.0/api/admin/promo-codes/" + created.Code.Id + "/redemptions", token).ConfigureAwait(false)).Expect(200, "redemptions").Json<EnumerationResult<PromoRedemption>>().Objects;
             Assert.True(who.Count == 2 && who.Any(r => r.UserId == a.User.Id && r.Email == a.User.Email && r.Channel == PromoChannelEnum.Account), "who redeemed");
         }
 
@@ -194,13 +194,13 @@ namespace Test.Shared.Suites
             Assert.True(batch.Count == 3 && batch.All(c => c.Code.StartsWith("VIP-", StringComparison.Ordinal) && c.Code.Length == 12 && c.MaxRedemptions == 1 && c.DurationDays == 90 && c.BatchId == batch[0].BatchId) && batch.Select(c => c.Code).Distinct().Count() == 3,
                 "three single-use codes in one batch");
             EnumerationResult<PromoCodeStats> listed = (await admin.GetAsync("/v1.0/api/admin/promo-codes?batchId=" + batch[0].BatchId, token).ConfigureAwait(false)).Expect(200, "list").Json<EnumerationResult<PromoCodeStats>>();
-            Assert.Equal(3, listed.Items.Count, "list by batch");
+            Assert.Equal(3, listed.Objects.Count, "list by batch");
 
             PromoRedemption applied = (await admin.PostAsync("/v1.0/api/admin/promo-codes/" + batch[0].Id + "/apply", new { tenantId = t.Id, userId = member.User.Id }, token).ConfigureAwait(false)).Expect(201, "apply").Json<PromoRedemption>();
             Assert.Equal(PromoChannelEnum.Admin, applied.Channel, "applied by an administrator");
             Assert.Equal("complimentary", (await member.Client.GetAsync("/v1.0/api/account/plan", token).ConfigureAwait(false)).Json<EffectivePlan>().Plan.Key, "member has the plan");
             (await admin.DeleteAsync("/v1.0/api/admin/promo-codes/" + batch[0].Id, token).ConfigureAwait(false)).Expect(409, "used codes are disabled, not deleted");
-            Assert.True((await admin.GetAsync("/v1.0/api/admin/promo-codes?status=exhausted&batchId=" + batch[0].BatchId, token).ConfigureAwait(false)).Json<EnumerationResult<PromoCodeStats>>().Items.Single().Code.Id == batch[0].Id, "status filter");
+            Assert.True((await admin.GetAsync("/v1.0/api/admin/promo-codes?status=exhausted&batchId=" + batch[0].BatchId, token).ConfigureAwait(false)).Json<EnumerationResult<PromoCodeStats>>().Objects.Single().Code.Id == batch[0].Id, "status filter");
             (await admin.PutAsync("/v1.0/api/admin/promo-codes/" + batch[0].Id, new { maxRedemptions = 0, enabled = false }, token).ConfigureAwait(false)).Expect(200, "unlimited and off");
             PromoRedemption revoked = (await admin.PostAsync("/v1.0/api/admin/promo-codes/" + batch[0].Id + "/redemptions/" + applied.Id + "/revoke", null, token).ConfigureAwait(false)).Expect(200, "revoke").Json<PromoRedemption>();
             Assert.True(revoked.RevokedUtc.HasValue, "revoked");
@@ -218,19 +218,19 @@ namespace Test.Shared.Suites
             TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
             Tenant t = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
             TestUser u = await TestFixtures.CreateUserAsync(admin, t.Id, false, token).ConfigureAwait(false);
-            List<PlanResponse> plans = (await admin.GetAsync("/v1.0/api/admin/plans", token).ConfigureAwait(false)).Expect(200, "plans").Json<List<PlanResponse>>();
+            List<PlanResponse> plans = (await admin.GetAsync("/v1.0/api/admin/plans", token).ConfigureAwait(false)).Expect(200, "plans").Json<EnumerationResult<PlanResponse>>().Objects;
             Assert.True(plans.Select(p => p.Plan.Key).Take(3).SequenceEqual(new[] { "free", "complimentary", "unlimited" }) && plans.Single(p => p.Plan.Key == "unlimited").Plan.IsDefault && plans.Single(p => p.Plan.Key == "free").Features["topics.max"] == "0",
                 "built-in plans with values");
             MyMorningNews.Server.MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
             Plan free = plans.Single(p => p.Plan.Key == "free").Plan;
-            List<PlanFeature> freeFeatures = (await server.Context.Database.PlanFeatures.EnumerateAsync(new MyMorningNews.Core.Requests.PlanFeatureFilter { PlanId = free.Id, PageSize = 100 }, token).ConfigureAwait(false)).Items;
+            List<PlanFeature> freeFeatures = (await server.Context.Database.PlanFeatures.EnumerateAsync(new MyMorningNews.Core.Requests.PlanFeatureFilter { PlanId = free.Id, PageSize = 100 }, token).ConfigureAwait(false)).Objects;
             PlanFeature oldDefault = freeFeatures.Single(f => f.Key == "audio.monthlyMinutes.max");
             PlanFeature untouched = freeFeatures.Single(f => f.Key == "artifacts.pinned.max");
             oldDefault.Value = "120";
             string keptValue = untouched.Value;
             await server.Context.Database.PlanFeatures.UpdateAsync(oldDefault, token).ConfigureAwait(false);
             await server.Context.Entitlements.EnsureDefaultsAsync(token).ConfigureAwait(false);
-            List<PlanFeature> after = (await server.Context.Database.PlanFeatures.EnumerateAsync(new MyMorningNews.Core.Requests.PlanFeatureFilter { PlanId = free.Id, PageSize = 100 }, token).ConfigureAwait(false)).Items;
+            List<PlanFeature> after = (await server.Context.Database.PlanFeatures.EnumerateAsync(new MyMorningNews.Core.Requests.PlanFeatureFilter { PlanId = free.Id, PageSize = 100 }, token).ConfigureAwait(false)).Objects;
             Assert.True(after.Single(f => f.Key == "audio.monthlyMinutes.max").Value == "unlimited" && after.Single(f => f.Key == "artifacts.pinned.max").Value == keptValue, "an old shipped default moves to the new one; other values stay");
             string key = "partner-" + Guid.NewGuid().ToString("N").Substring(0, 6);
             PlanResponse partner = (await admin.PostAsync("/v1.0/api/admin/plans", new { key = key, name = "Partner", features = new Dictionary<string, string> { { "topics.max", "12" }, { "audio.enabled", "false" } } }, token).ConfigureAwait(false))
@@ -253,7 +253,7 @@ namespace Test.Shared.Suites
             Assert.True(stacked.PlanNames[stacked.Upcoming[0].PlanId] == "Complimentary", "upcoming plan named");
             Assert.True(stacked.Upcoming.Count == 1 && Math.Abs((stacked.Upcoming[0].StartsUtc - stacked.EndsUtc!.Value).TotalSeconds) < 2 && Math.Abs((stacked.Upcoming[0].EndsUtc!.Value - stacked.EndsUtc.Value).TotalDays - 20) < 0.01,
                 "the second code starts when the first ends");
-            List<PlanAssignment> history = (await admin.GetAsync("/v1.0/api/admin/plan-assignments?tenantId=" + t.Id + "&userId=" + u.User.Id, token).ConfigureAwait(false)).Expect(200, "history").Json<List<PlanAssignment>>();
+            List<PlanAssignment> history = (await admin.GetAsync("/v1.0/api/admin/plan-assignments?tenantId=" + t.Id + "&userId=" + u.User.Id, token).ConfigureAwait(false)).Expect(200, "history").Json<EnumerationResult<PlanAssignment>>().Objects;
             Assert.Equal(3, history.Count, "every assignment kept");
         }
     }

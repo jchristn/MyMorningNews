@@ -24,6 +24,7 @@ namespace Test.Shared
                     AuthenticationSuite.Create(),
                     AuthorizationSuite.Create(),
                     ResourceSuite.Create(),
+                    EnumerationSuite.Create(),
                     ObservabilitySuite.Create(),
                     ModelSuite.Create(),
                     MobileSuite.Create(),

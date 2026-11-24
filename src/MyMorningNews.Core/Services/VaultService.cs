@@ -188,7 +188,7 @@ namespace MyMorningNews.Core.Services
         {
             List<VaultUsageItem> items = new List<VaultUsageItem>();
             EnumerationResult<ModelEndpoint> endpoints = await _Database.ModelEndpoints.EnumerateAsync(new ModelEndpointFilter { TenantId = tenantId, CredentialId = credentialId, PageSize = 1000 }, token).ConfigureAwait(false);
-            foreach (ModelEndpoint e in endpoints.Items) items.Add(new VaultUsageItem { ResourceType = "ModelEndpoint", ResourceId = e.Id, Name = e.Name });
+            foreach (ModelEndpoint e in endpoints.Objects) items.Add(new VaultUsageItem { ResourceType = "ModelEndpoint", ResourceId = e.Id, Name = e.Name });
             return items;
         }
 

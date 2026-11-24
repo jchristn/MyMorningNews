@@ -1,3 +1,4 @@
+import { enumerationResult } from '../test/enumeration.js';
 import { describe, expect, it, vi } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -49,9 +50,9 @@ describe('RunsView', () => {
       listTopics: vi.fn(async () => page([TOPIC])),
       listRuns: vi.fn(async () => page([PARTIAL_RUN])),
       getRun: vi.fn(async () => PARTIAL_RUN),
-      listRunStages: vi.fn(async () => STAGES),
-      listRunQueries: vi.fn(async () => [QUERY]),
-      listRunResults: vi.fn(async (id, disposition) => (disposition ? RESULTS.filter((r) => r.disposition === disposition) : RESULTS)),
+      listRunStages: vi.fn(async () => enumerationResult(STAGES)),
+      listRunQueries: vi.fn(async () => enumerationResult([QUERY])),
+      listRunResults: vi.fn(async (id, disposition) => (enumerationResult(disposition ? RESULTS.filter((r) => r.disposition === disposition) : RESULTS))),
       getSource: vi.fn(async () => SOURCE)
     });
     const drawer = await screen.findByTestId('run-detail');
@@ -77,14 +78,14 @@ describe('RunsView', () => {
     await userEvent.click(within(drawer).getByRole('tab', { name: 'Queries' }));
     const queries = await within(drawer).findByTestId('run-queries');
     expect(await within(queries).findByText('AI coding agent evals')).toBeInTheDocument();
-    expect(client.listRunQueries).toHaveBeenCalledWith('run_p');
+    expect(client.listRunQueries).toHaveBeenCalledWith('run_p', expect.objectContaining({ pageNumber: 1, pageSize: 100 }));
 
     await userEvent.click(within(drawer).getByRole('tab', { name: 'Results' }));
     const results = await within(drawer).findByTestId('run-results');
     expect(await within(results).findByText('Blocked domain', { selector: 'td .badge' })).toBeInTheDocument();
     expect(within(results).getByText('Blocked domain: 1')).toBeInTheDocument();
     await userEvent.selectOptions(within(results).getByLabelText('Filter results by disposition'), 'Fetched');
-    await waitFor(() => expect(client.listRunResults).toHaveBeenLastCalledWith('run_p', 'Fetched'));
+    await waitFor(() => expect(client.listRunResults).toHaveBeenLastCalledWith('run_p', 'Fetched', expect.objectContaining({ pageNumber: 1, pageSize: 100 })));
     await waitFor(() => expect(within(results).queryByText('Blocked post')).not.toBeInTheDocument());
     await userEvent.click(within(results).getByRole('button', { name: 'View source' }));
     const source = await screen.findByTestId('source-detail');

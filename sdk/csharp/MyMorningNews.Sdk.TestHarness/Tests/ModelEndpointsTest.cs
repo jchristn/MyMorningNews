@@ -62,14 +62,14 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             Helpers.Equal(512, updated.MaxTokens, "max tokens");
             EnumerationResult<ModelEndpoint> list = await StepAsync(context, result, "GET model endpoints (provider filter)",
                 () => c.ModelEndpoints.ListAsync(new ModelEndpointListOptions { Provider = ModelProviderEnum.OpenAiCompatible, PageSize = 100 }, token)).ConfigureAwait(false);
-            Helpers.Contains(list.Items, x => x.Id == e.Id, "the endpoint");
+            Helpers.Contains(list.Objects, x => x.Id == e.Id, "the endpoint");
 
             ModelValidationResponse v = await StepAsync(context, result, "POST validate (unreachable)", () => c.ModelEndpoints.ValidateAsync(e.Id, token)).ConfigureAwait(false);
             Helpers.True(!v.Reachable, "an unreachable endpoint is reported");
             Helpers.True(!v.Succeeded, "an unreachable endpoint does not succeed");
             ModelEndpoint checkedEndpoint = await StepAsync(context, result, "GET model endpoint (after validate)", () => c.ModelEndpoints.GetAsync(e.Id, token)).ConfigureAwait(false);
             Helpers.True(checkedEndpoint.LastValidationSucceeded == false, "the failed validation is recorded");
-            await StepAsync(context, result, "GET models (502)", () => Helpers.ExpectErrorAsync(() => c.ModelEndpoints.ListModelsAsync(e.Id, token), 502, "UpstreamError")).ConfigureAwait(false);
+            await StepAsync(context, result, "GET models (502)", () => Helpers.ExpectErrorAsync(() => c.ModelEndpoints.ListModelsAsync(e.Id, options: new MyMorningNews.Sdk.Options.EnumerationQuery { PageSize = 1000 }, token: token), 502, "UpstreamError")).ConfigureAwait(false);
             ModelTestResponse t = await StepAsync(context, result, "POST test (unreachable)", () => c.ModelEndpoints.TestAsync(e.Id, new ModelTestRequest { Prompt = "Say hi." }, token)).ConfigureAwait(false);
             Helpers.True(!t.Success && !System.String.IsNullOrEmpty(t.Error), "a failed test carries an error");
 
@@ -83,7 +83,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             context.Cleanup.Add("assignment:" + a.Id, ct => c.ModelEndpoints.DeleteAssignmentAsync(a.Id, ct));
             EnumerationResult<ModelAssignment> assignments = await StepAsync(context, result, "GET model-assignments (topic filter)",
                 () => c.ModelEndpoints.ListAssignmentsAsync(new ModelAssignmentListOptions { TopicId = topic.Id }, token)).ConfigureAwait(false);
-            Helpers.Contains(assignments.Items, x => x.Id == a.Id, "the assignment");
+            Helpers.Contains(assignments.Objects, x => x.Id == a.Id, "the assignment");
             await StepAsync(context, result, "DELETE model-assignment", () => c.ModelEndpoints.DeleteAssignmentAsync(a.Id, token)).ConfigureAwait(false);
             context.Cleanup.Remove("assignment:" + a.Id);
             await StepAsync(context, result, "PUT model-assignment with an unknown endpoint (400)", () => Helpers.ExpectErrorAsync(() => c.ModelEndpoints.SetAssignmentAsync(new ModelAssignmentUpsertRequest
@@ -95,10 +95,10 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
 
             EnumerationResult<LlmCall> calls = await StepAsync(context, result, "GET llm-calls (dry runs for the endpoint)",
                 () => c.LlmCalls.ListAsync(new LlmCallListOptions { ModelEndpointId = e.Id, PageSize = 5 }, token)).ConfigureAwait(false);
-            if (calls.Items.Count > 0)
+            if (calls.Objects.Count > 0)
             {
-                Helpers.True(calls.Items[0].PromptText == null, "lists leave payloads out");
-                LlmCall call = await StepAsync(context, result, "GET llm-call", () => c.LlmCalls.GetAsync(calls.Items[0].Id, token)).ConfigureAwait(false);
+                Helpers.True(calls.Objects[0].PromptText == null, "lists leave payloads out");
+                LlmCall call = await StepAsync(context, result, "GET llm-call", () => c.LlmCalls.GetAsync(calls.Objects[0].Id, token)).ConfigureAwait(false);
                 Helpers.Equal(e.Id, call.ModelEndpointId, "call endpoint");
             }
 

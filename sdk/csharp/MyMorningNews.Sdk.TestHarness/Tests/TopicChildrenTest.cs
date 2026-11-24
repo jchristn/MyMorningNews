@@ -47,7 +47,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             TopicDimension dim2 = await StepAsync(context, result, "PUT dimension", () => c.Topics.UpdateDimensionAsync(topic.Id, dim.Id, new DimensionUpsertRequest { Name = "Major releases", IsLocked = true }, token)).ConfigureAwait(false);
             Helpers.Equal("Major releases", dim2.Name, "dimension name");
             Helpers.True(dim2.IsLocked, "dimension locked");
-            List<TopicDimension> dims = await StepAsync(context, result, "GET dimensions", () => c.Topics.ListDimensionsAsync(topic.Id, token)).ConfigureAwait(false);
+            List<TopicDimension> dims = (await StepAsync(context, result, "GET dimensions", () => c.Topics.ListDimensionsAsync(topic.Id, options: new MyMorningNews.Sdk.Options.EnumerationQuery { PageSize = 1000 }, token: token)).ConfigureAwait(false)).Objects;
             Helpers.Contains(dims, d => d.Id == dim.Id, "the dimension");
 
             await StepAsync(context, result, "POST constraint with a bad feed URL (400)", () => Helpers.ExpectErrorAsync(() => c.Topics.CreateConstraintAsync(topic.Id,
@@ -56,19 +56,19 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
                 new ConstraintUpsertRequest { Kind = ConstraintKindEnum.IncludeKeyword, Value = "postgres", DimensionId = dim.Id }, token)).ConfigureAwait(false);
             TopicConstraint con2 = await StepAsync(context, result, "PUT constraint", () => c.Topics.UpdateConstraintAsync(topic.Id, con.Id, new ConstraintUpsertRequest { Value = "postgresql", Note = "spelled out" }, token)).ConfigureAwait(false);
             Helpers.Equal("postgresql", con2.Value, "constraint value");
-            List<TopicConstraint> keywords = await StepAsync(context, result, "GET constraints (kind filter)", () => c.Topics.ListConstraintsAsync(topic.Id, ConstraintKindEnum.IncludeKeyword, token)).ConfigureAwait(false);
+            List<TopicConstraint> keywords = (await StepAsync(context, result, "GET constraints (kind filter)", () => c.Topics.ListConstraintsAsync(topic.Id, ConstraintKindEnum.IncludeKeyword, options: new MyMorningNews.Sdk.Options.EnumerationQuery { PageSize = 1000 }, token: token)).ConfigureAwait(false)).Objects;
             Helpers.Contains(keywords, k => k.Id == con.Id, "the keyword constraint");
-            List<TopicConstraint> feeds = await StepAsync(context, result, "GET constraints (other kind)", () => c.Topics.ListConstraintsAsync(topic.Id, ConstraintKindEnum.FeedUrl, token)).ConfigureAwait(false);
+            List<TopicConstraint> feeds = (await StepAsync(context, result, "GET constraints (other kind)", () => c.Topics.ListConstraintsAsync(topic.Id, ConstraintKindEnum.FeedUrl, options: new MyMorningNews.Sdk.Options.EnumerationQuery { PageSize = 1000 }, token: token)).ConfigureAwait(false)).Objects;
             Helpers.DoesNotContain(feeds, k => k.Id == con.Id, "the keyword constraint under FeedUrl");
 
             string email = "sdk-csharp-" + Helpers.Unique() + "@example.com";
             TopicRecipient rec = await StepAsync(context, result, "POST recipient", () => c.Topics.AddRecipientAsync(topic.Id, new RecipientUpsertRequest { Email = email }, token)).ConfigureAwait(false);
             Helpers.Equal(email, rec.Email, "recipient email");
             await StepAsync(context, result, "POST recipient with a bad address (400)", () => Helpers.ExpectErrorAsync(() => c.Topics.AddRecipientAsync(topic.Id, new RecipientUpsertRequest { Email = "nope" }, token), 400)).ConfigureAwait(false);
-            List<TopicRecipient> recs = await StepAsync(context, result, "GET recipients", () => c.Topics.ListRecipientsAsync(topic.Id, token)).ConfigureAwait(false);
+            List<TopicRecipient> recs = (await StepAsync(context, result, "GET recipients", () => c.Topics.ListRecipientsAsync(topic.Id, options: new MyMorningNews.Sdk.Options.EnumerationQuery { PageSize = 1000 }, token: token)).ConfigureAwait(false)).Objects;
             Helpers.Contains(recs, r => r.Id == rec.Id, "the recipient");
 
-            List<SearchProvider> providers = await StepAsync(context, result, "GET topic search providers", () => c.Topics.GetSearchProvidersAsync(topic.Id, token)).ConfigureAwait(false);
+            List<SearchProvider> providers = (await StepAsync(context, result, "GET topic search providers", () => c.Topics.GetSearchProvidersAsync(topic.Id, options: new MyMorningNews.Sdk.Options.EnumerationQuery { PageSize = 1000 }, token: token)).ConfigureAwait(false)).Objects;
             await StepAsync(context, result, "PUT topic search providers with an unknown id (400)", () => Helpers.ExpectErrorAsync(() => c.Topics.SetSearchProvidersAsync(topic.Id,
                 new List<TopicSearchProviderRequest> { new TopicSearchProviderRequest { SearchProviderId = "spr_missing", Enabled = true } }, token), 400)).ConfigureAwait(false);
             if (providers.Count > 0)

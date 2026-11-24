@@ -274,7 +274,7 @@ namespace MyMorningNews.Sdk.Resources
             filter.SortBy = "createdUtc";
             filter.SortDirection = SortDirectionEnum.Descending;
             EnumerationResult<Briefing> page = await ListAsync(filter, token).ConfigureAwait(false);
-            Briefing? newest = page.Items.FirstOrDefault();
+            Briefing? newest = page.Objects.FirstOrDefault();
             if (newest == null) return null;
             return await GetAsync(newest.Id, token).ConfigureAwait(false);
         }

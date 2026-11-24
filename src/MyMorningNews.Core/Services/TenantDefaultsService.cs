@@ -110,7 +110,7 @@ namespace MyMorningNews.Core.Services
             while (true)
             {
                 EnumerationResult<Tenant> tenants = await _Database.Tenants.EnumerateAsync(new TenantFilter { PageNumber = page, PageSize = 200 }, token).ConfigureAwait(false);
-                foreach (Tenant t in tenants.Items) await EnsureAsync(t.Id, token).ConfigureAwait(false);
+                foreach (Tenant t in tenants.Objects) await EnsureAsync(t.Id, token).ConfigureAwait(false);
                 if (page >= tenants.TotalPages) break;
                 page++;
             }

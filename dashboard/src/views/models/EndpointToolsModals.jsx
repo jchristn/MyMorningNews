@@ -1,3 +1,4 @@
+import { enumerateObjects } from '../../utils/enumeration.js';
 import { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { CircleCheck, CircleX, Play } from 'lucide-react';
@@ -180,8 +181,7 @@ export function ModelsListModal({ endpoint, onClose, canWrite, onUse }) {
     setModels(null);
     setError(null);
     setFilter('');
-    apiClient
-      .listEndpointModels(endpointId)
+    enumerateObjects((query) => apiClient.listEndpointModels(endpointId, query))
       .then((r) => !cancelled && setModels(Array.isArray(r) ? r : []))
       .catch((err) => !cancelled && setError(err));
     return () => {

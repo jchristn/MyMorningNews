@@ -82,3 +82,6 @@ mobile/**/private-key*.pem
 
 # Private store submission details (names, phones, account IDs, reviewer password)
 *.local.md
+
+# Local Google Play submission credential, excluded from EAS source archives.
+mobile/.credentials/

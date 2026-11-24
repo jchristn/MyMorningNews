@@ -187,7 +187,7 @@ namespace MyMorningNews.Core.Briefings
                 {
                     shared.Audio = audio;
                     shared.AudioFile = file;
-                    shared.Chapters = (await _Database.MediaChapters.EnumerateAsync(new MediaChapterFilter { TenantId = audio.TenantId, MediaAssetId = audio.Id, PageSize = 200 }, token).ConfigureAwait(false)).Items
+                    shared.Chapters = (await _Database.MediaChapters.EnumerateAsync(new MediaChapterFilter { TenantId = audio.TenantId, MediaAssetId = audio.Id, PageSize = 200 }, token).ConfigureAwait(false)).Objects
                         .OrderBy(c => c.SortOrder).ToList();
                 }
             }
@@ -219,7 +219,7 @@ namespace MyMorningNews.Core.Briefings
         public async Task<List<BriefingShare>> ListAsync(Briefing briefing, string? userId, CancellationToken token = default)
         {
             ArgumentNullException.ThrowIfNull(briefing);
-            List<BriefingShare> shares = (await _Database.BriefingShares.EnumerateAsync(new BriefingShareFilter { TenantId = briefing.TenantId, BriefingId = briefing.Id, UserId = userId, PageSize = 200 }, token).ConfigureAwait(false)).Items;
+            List<BriefingShare> shares = (await _Database.BriefingShares.EnumerateAsync(new BriefingShareFilter { TenantId = briefing.TenantId, BriefingId = briefing.Id, UserId = userId, PageSize = 200 }, token).ConfigureAwait(false)).Objects;
             foreach (BriefingShare s in shares) s.TokenHash = "redacted";
             return shares;
         }
@@ -274,7 +274,7 @@ namespace MyMorningNews.Core.Briefings
 
         private async Task<MediaAsset?> ReadyAudioAsync(Briefing briefing, CancellationToken token)
         {
-            List<MediaAsset> all = (await _Database.MediaAssets.EnumerateAsync(new MediaAssetFilter { TenantId = briefing.TenantId, BriefingId = briefing.Id, Status = MediaStatusEnum.Ready, PageSize = 20 }, token).ConfigureAwait(false)).Items;
+            List<MediaAsset> all = (await _Database.MediaAssets.EnumerateAsync(new MediaAssetFilter { TenantId = briefing.TenantId, BriefingId = briefing.Id, Status = MediaStatusEnum.Ready, PageSize = 20 }, token).ConfigureAwait(false)).Objects;
             return all.Where(m => m.ArtifactId != null).OrderByDescending(m => m.Id == briefing.MediaAssetId).ThenByDescending(m => m.CreatedUtc).FirstOrDefault();
         }
 

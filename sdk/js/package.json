@@ -20,7 +20,8 @@
   ],
   "scripts": {
     "test": "node test-harness.js",
-    "check": "node --check mymorningnews-sdk.js && node --check test-harness.js"
+    "check": "node --check mymorningnews-sdk.js && node --check test-harness.js",
+    "test:unit": "node --test enumeration.test.js"
   },
   "keywords": [
     "mymorningnews",

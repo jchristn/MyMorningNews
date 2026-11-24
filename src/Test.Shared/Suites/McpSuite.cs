@@ -135,7 +135,7 @@ namespace Test.Shared.Suites
                 using (McpTestClient byKey = await ConnectAsync(host, null, token, keyHeaders).ConfigureAwait(false))
                 {
                     McpToolOutcome topics = await byKey.ToolAsync("list_topics", new { }, token).ConfigureAwait(false);
-                    Assert.True(!topics.IsError && topics.Structured.GetProperty("items").EnumerateArray().Any(t => t.GetProperty("id").GetString() == f.Topic.Id), "access key sees the owner's topic: " + topics.Text);
+                    Assert.True(!topics.IsError && topics.Structured.GetProperty("objects").EnumerateArray().Any(t => t.GetProperty("id").GetString() == f.Topic.Id), "access key sees the owner's topic: " + topics.Text);
                 }
 
                 using (McpTestClient byToken = await ConnectAsync(host, f.User.Client.Token, token).ConfigureAwait(false))
@@ -160,7 +160,7 @@ namespace Test.Shared.Suites
         {
             Run run = await PipelineSuite.RunAsync(f, token).ConfigureAwait(false);
             Assert.True(run.Status == RunStatusEnum.Completed, "run completed: " + run.Status);
-            Briefing b = (await f.User.Client.GetAsync("/v1.0/api/briefings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().Items.Single();
+            Briefing b = (await f.User.Client.GetAsync("/v1.0/api/briefings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().Objects.Single();
             await BriefingWaiter.FinishAsync(f.Server, b.TenantId, b.Id, token).ConfigureAwait(false);
             return run;
         }
@@ -173,7 +173,7 @@ namespace Test.Shared.Suites
             using (McpTestClient c = await ConnectAsync(host, f.User.Client.Token, token).ConfigureAwait(false))
             {
                 McpToolOutcome topics = await c.ToolAsync("list_topics", new { status = "Active" }, token).ConfigureAwait(false);
-                Assert.True(!topics.IsError && topics.Structured.GetProperty("totalCount").GetInt64() == 1 && topics.Structured.GetProperty("items")[0].GetProperty("id").GetString() == f.Topic.Id, "list_topics: " + topics.Text);
+                Assert.True(!topics.IsError && topics.Structured.GetProperty("totalRecords").GetInt64() == 1 && topics.Structured.GetProperty("objects")[0].GetProperty("id").GetString() == f.Topic.Id, "list_topics: " + topics.Text);
                 McpToolOutcome topic = await c.ToolAsync("get_topic", new { topicId = f.Topic.Id }, token).ConfigureAwait(false);
                 Assert.True(!topic.IsError && topic.Structured.GetProperty("dimensions").EnumerateArray().Any(d => d.GetProperty("name").GetString() == "Rebates"), "get_topic: " + topic.Text);
 
@@ -200,7 +200,7 @@ namespace Test.Shared.Suites
                 string briefingId = brief.GetProperty("briefing").GetProperty("id").GetString()!;
                 McpToolOutcome small = await c.ToolAsync("get_briefing", new { briefingId = briefingId, maxCharacters = 1000 }, token).ConfigureAwait(false);
                 Assert.True(!small.IsError && small.Structured.GetProperty("markdown").GetString()!.Length <= 1200 && small.Structured.GetProperty("items").GetArrayLength() >= 3, "get_briefing with a budget");
-                Assert.True((await c.ToolAsync("list_briefings", new { kind = "Run" }, token).ConfigureAwait(false)).Structured.GetProperty("totalCount").GetInt64() == 1, "list_briefings");
+                Assert.True((await c.ToolAsync("list_briefings", new { kind = "Run" }, token).ConfigureAwait(false)).Structured.GetProperty("totalRecords").GetInt64() == 1, "list_briefings");
 
                 McpToolOutcome tooLong = await c.ToolAsync("share_briefing", new { briefingId = briefingId, expiresInDays = 15 }, token).ConfigureAwait(false);
                 Assert.True(tooLong.IsError, "share_briefing refuses 15 days: " + tooLong.Text);
@@ -210,19 +210,19 @@ namespace Test.Shared.Suites
                 Assert.True(!shared.Text.Contains("tokenHash", StringComparison.Ordinal), "the stored hash is left out");
                 string shareId = shared.Structured.GetProperty("share").GetProperty("id").GetString()!;
                 McpToolOutcome shares = await c.ToolAsync("list_briefing_shares", new { briefingId = briefingId }, token).ConfigureAwait(false);
-                Assert.True(!shares.IsError && shares.Structured.GetProperty("totalCount").GetInt64() == 1 && shares.Structured.GetProperty("items")[0].GetProperty("id").GetString() == shareId, "list_briefing_shares: " + shares.Text);
+                Assert.True(!shares.IsError && shares.Structured.GetProperty("totalRecords").GetInt64() == 1 && shares.Structured.GetProperty("objects")[0].GetProperty("id").GetString() == shareId, "list_briefing_shares: " + shares.Text);
                 McpToolOutcome revoked = await c.ToolAsync("revoke_briefing_share", new { briefingId = briefingId, shareId = shareId }, token).ConfigureAwait(false);
                 Assert.True(!revoked.IsError && revoked.Structured.GetProperty("revoked").GetBoolean(), "revoke_briefing_share: " + revoked.Text);
-                Assert.Equal("Revoked", (await c.ToolAsync("list_briefing_shares", new { briefingId = briefingId }, token).ConfigureAwait(false)).Structured.GetProperty("items")[0].GetProperty("status").GetString(), "revoked share listed");
+                Assert.Equal("Revoked", (await c.ToolAsync("list_briefing_shares", new { briefingId = briefingId }, token).ConfigureAwait(false)).Structured.GetProperty("objects")[0].GetProperty("status").GetString(), "revoked share listed");
 
                 McpToolOutcome findings = await c.ToolAsync("list_findings", new { topicId = f.Topic.Id, minScore = 1 }, token).ConfigureAwait(false);
-                JsonElement items = findings.Structured.GetProperty("items");
+                JsonElement items = findings.Structured.GetProperty("objects");
                 Assert.True(!findings.IsError && items.GetArrayLength() >= 2, "list_findings: " + findings.Text);
                 string findingId = items[0].GetProperty("id").GetString()!;
                 McpToolOutcome search = await c.ToolAsync("search_findings", new { query = "rebates", topicId = f.Topic.Id }, token).ConfigureAwait(false);
-                Assert.True(!search.IsError && search.Structured.GetProperty("items").GetArrayLength() >= 1, "search_findings: " + search.Text);
+                Assert.True(!search.IsError && search.Structured.GetProperty("objects").GetArrayLength() >= 1, "search_findings: " + search.Text);
                 McpToolOutcome since = await c.ToolAsync("list_findings", new { since = DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-dd") }, token).ConfigureAwait(false);
-                Assert.Equal(0L, since.Structured.GetProperty("totalCount").GetInt64(), "since filter");
+                Assert.Equal(0L, since.Structured.GetProperty("totalRecords").GetInt64(), "since filter");
                 McpToolOutcome finding = await c.ToolAsync("get_finding", new { findingId = findingId }, token).ConfigureAwait(false);
                 Assert.True(!finding.IsError && finding.Structured.GetProperty("evidence").GetArrayLength() >= 1 && finding.Structured.GetProperty("evidence")[0].GetProperty("quote").GetString()!.Length > 0
                     && finding.Structured.GetProperty("scores").GetProperty("llm").GetDouble() > 0, "get_finding with evidence: " + finding.Text);
@@ -230,7 +230,7 @@ namespace Test.Shared.Suites
                 McpToolOutcome rated = await c.ToolAsync("submit_feedback", new { targetType = "Finding", targetId = findingId, rating = "not-relevant", reason = "Already covered elsewhere" }, token).ConfigureAwait(false);
                 Assert.True(!rated.IsError && rated.Str("channel") == "Mcp" && rated.Str("relevance") == "NotRelevant" && rated.Str("reason") == "Already covered elsewhere", "submit_feedback: " + rated.Text);
                 EnumerationResult<Feedback> stored = (await f.User.Client.GetAsync("/v1.0/api/feedback?targetId=" + findingId, token).ConfigureAwait(false)).Json<EnumerationResult<Feedback>>();
-                Assert.True(stored.Items.Any(x => x.Channel == FeedbackChannelEnum.Mcp && x.IsCurrent), "stored with the Mcp channel");
+                Assert.True(stored.Objects.Any(x => x.Channel == FeedbackChannelEnum.Mcp && x.IsCurrent), "stored with the Mcp channel");
                 McpToolOutcome wrongRating = await c.ToolAsync("submit_feedback", new { targetType = "Finding", targetId = findingId, rating = "accurate" }, token).ConfigureAwait(false);
                 Assert.True(wrongRating.IsError && wrongRating.Text.Contains("400", StringComparison.Ordinal), "rating checked against the type: " + wrongRating.Text);
                 McpToolOutcome empty = await c.ToolAsync("submit_feedback", new { targetType = "Finding", targetId = findingId }, token).ConfigureAwait(false);
@@ -238,17 +238,17 @@ namespace Test.Shared.Suites
 
                 McpToolOutcome hidden = await c.ToolAsync("update_finding", new { findingId = findingId, hidden = true }, token).ConfigureAwait(false);
                 Assert.True(!hidden.IsError && hidden.Structured.GetProperty("hidden").GetBoolean(), "update_finding: " + hidden.Text);
-                long visible = (await c.ToolAsync("list_findings", new { topicId = f.Topic.Id, minScore = 1 }, token).ConfigureAwait(false)).Structured.GetProperty("totalCount").GetInt64();
+                long visible = (await c.ToolAsync("list_findings", new { topicId = f.Topic.Id, minScore = 1 }, token).ConfigureAwait(false)).Structured.GetProperty("totalRecords").GetInt64();
                 Assert.Equal((long)items.GetArrayLength() - 1, visible, "hidden finding left out");
 
                 McpToolOutcome preds = await c.ToolAsync("list_predictions", new { topicId = f.Topic.Id, status = "Open" }, token).ConfigureAwait(false);
-                string predictionId = preds.Structured.GetProperty("items")[0].GetProperty("id").GetString()!;
+                string predictionId = preds.Structured.GetProperty("objects")[0].GetProperty("id").GetString()!;
                 McpToolOutcome resolved = await c.ToolAsync("resolve_prediction", new { predictionId = predictionId, outcome = "Accurate", note = "It happened." }, token).ConfigureAwait(false);
                 Assert.True(!resolved.IsError && resolved.Str("status") == "Accurate" && resolved.Structured.GetProperty("brierScore").ValueKind == JsonValueKind.Number, "resolve_prediction: " + resolved.Text);
                 Assert.True((await c.ToolAsync("resolve_prediction", new { predictionId = predictionId, outcome = "Open" }, token).ConfigureAwait(false)).IsError, "Open is not an outcome");
 
                 McpToolOutcome sugs = await c.ToolAsync("list_suggestions", new { topicId = f.Topic.Id }, token).ConfigureAwait(false);
-                string suggestionId = sugs.Structured.GetProperty("items")[0].GetProperty("id").GetString()!;
+                string suggestionId = sugs.Structured.GetProperty("objects")[0].GetProperty("id").GetString()!;
                 Assert.True((await c.ToolAsync("update_suggestion_status", new { suggestionId = suggestionId, status = "Snoozed" }, token).ConfigureAwait(false)).IsError, "snooze needs a time");
                 McpToolOutcome snoozed = await c.ToolAsync("update_suggestion_status", new { suggestionId = suggestionId, status = "Snoozed", snoozeDays = 3 }, token).ConfigureAwait(false);
                 Assert.True(!snoozed.IsError && snoozed.Str("status") == "Snoozed" && snoozed.Str("snoozedUntilUtc") != null, "update_suggestion_status: " + snoozed.Text);
@@ -259,7 +259,7 @@ namespace Test.Shared.Suites
                     Origin = PreferenceOriginEnum.Distilled, Confidence = 0.7, SupportCount = 3
                 }, token).ConfigureAwait(false);
                 McpToolOutcome prefs = await c.ToolAsync("list_learned_preferences", new { status = "Proposed" }, token).ConfigureAwait(false);
-                Assert.True(prefs.Structured.GetProperty("items").EnumerateArray().Any(p => p.GetProperty("id").GetString() == proposal.Id), "list_learned_preferences: " + prefs.Text);
+                Assert.True(prefs.Structured.GetProperty("objects").EnumerateArray().Any(p => p.GetProperty("id").GetString() == proposal.Id), "list_learned_preferences: " + prefs.Text);
                 McpToolOutcome accepted = await c.ToolAsync("accept_learned_preference", new { preferenceId = proposal.Id }, token).ConfigureAwait(false);
                 Assert.True(!accepted.IsError && accepted.Str("status") == "Active", "accept_learned_preference: " + accepted.Text);
 
@@ -291,7 +291,7 @@ namespace Test.Shared.Suites
                 Run run = await ResearchedAsync(f, token).ConfigureAwait(false);
                 JsonElement latest = (await c.CallAsync("resources/read", new { uri = "mmn://briefings/latest" }, token).ConfigureAwait(false)).GetProperty("contents")[0];
                 Assert.True(latest.GetProperty("mimeType").GetString() == "text/markdown" && latest.GetProperty("text").GetString()!.Contains("Heat pump rebates expand", StringComparison.Ordinal), "latest briefing resource");
-                Briefing b = (await f.User.Client.GetAsync("/v1.0/api/briefings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().Items.Single();
+                Briefing b = (await f.User.Client.GetAsync("/v1.0/api/briefings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().Objects.Single();
                 string byId = (await c.CallAsync("resources/read", new { uri = "mmn://briefings/" + b.Id }, token).ConfigureAwait(false)).GetProperty("contents")[0].GetProperty("text").GetString()!;
                 Assert.True(byId.Contains("Heat pump rebates expand", StringComparison.Ordinal), "briefing by ID");
                 string topicBrief = (await c.CallAsync("resources/read", new { uri = "mmn://topics/" + f.Topic.Id + "/brief" }, token).ConfigureAwait(false)).GetProperty("contents")[0].GetProperty("text").GetString()!;
@@ -312,7 +312,7 @@ namespace Test.Shared.Suites
         {
             PipelineFixture f = await PipelineSuite.FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
             Run run = await ResearchedAsync(f, token).ConfigureAwait(false);
-            Finding finding = (await f.User.Client.GetAsync("/v1.0/api/findings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().Items.First();
+            Finding finding = (await f.User.Client.GetAsync("/v1.0/api/findings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().Objects.First();
             TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
             Tenant other = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
             TestUser stranger = await TestFixtures.CreateUserAsync(admin, other.Id, true, token).ConfigureAwait(false);
@@ -323,8 +323,8 @@ namespace Test.Shared.Suites
                 {
                     using (McpTestClient c = await ConnectAsync(host, outsider.Client.Token, token).ConfigureAwait(false))
                     {
-                        Assert.Equal(0L, (await c.ToolAsync("list_topics", new { }, token).ConfigureAwait(false)).Structured.GetProperty("totalCount").GetInt64(), "no topics");
-                        Assert.Equal(0L, (await c.ToolAsync("list_findings", new { }, token).ConfigureAwait(false)).Structured.GetProperty("totalCount").GetInt64(), "no findings");
+                        Assert.Equal(0L, (await c.ToolAsync("list_topics", new { }, token).ConfigureAwait(false)).Structured.GetProperty("totalRecords").GetInt64(), "no topics");
+                        Assert.Equal(0L, (await c.ToolAsync("list_findings", new { }, token).ConfigureAwait(false)).Structured.GetProperty("totalRecords").GetInt64(), "no findings");
                         Assert.True((await c.ToolAsync("get_topic", new { topicId = f.Topic.Id }, token).ConfigureAwait(false)).IsError, "topic hidden");
                         Assert.True((await c.ToolAsync("get_finding", new { findingId = finding.Id }, token).ConfigureAwait(false)).IsError, "finding hidden");
                         Assert.True((await c.ToolAsync("get_run", new { runId = run.Id }, token).ConfigureAwait(false)).IsError, "run hidden");
@@ -378,12 +378,12 @@ namespace Test.Shared.Suites
                 Assert.True(!monthly.IsError && monthly.Str("intervalType") == "DaysOfMonth" && monthly.Structured.GetProperty("daysOfMonth").GetArrayLength() == 2 && monthly.Structured.GetProperty("timesOfDay").GetArrayLength() == 2 && monthly.Str("name") == "Twice a week",
                     "set_schedule changes only what is sent: " + monthly.Text);
                 McpToolOutcome listed = await c.ToolAsync("list_schedules", new { topicId = topicId }, token).ConfigureAwait(false);
-                Assert.True(!listed.IsError && listed.Structured.GetProperty("totalCount").GetInt64() == 1 && listed.Structured.GetProperty("items")[0].GetProperty("id").GetString() == schedule.Str("id"), "list_schedules: " + listed.Text);
+                Assert.True(!listed.IsError && listed.Structured.GetProperty("totalRecords").GetInt64() == 1 && listed.Structured.GetProperty("objects")[0].GetProperty("id").GetString() == schedule.Str("id"), "list_schedules: " + listed.Text);
                 McpToolOutcome paused = await c.ToolAsync("set_schedule", new { scheduleId = schedule.Str("id"), enabled = false }, token).ConfigureAwait(false);
                 Assert.True(!paused.IsError && !paused.Structured.GetProperty("enabled").GetBoolean() && paused.Str("nextRunUtc") == null, "a paused schedule has no next run: " + paused.Text);
                 McpToolOutcome removed = await c.ToolAsync("remove_schedule", new { scheduleId = schedule.Str("id") }, token).ConfigureAwait(false);
                 Assert.True(!removed.IsError && removed.Structured.GetProperty("removed").GetBoolean(), "remove_schedule: " + removed.Text);
-                Assert.Equal(0L, (await c.ToolAsync("list_schedules", new { topicId = topicId }, token).ConfigureAwait(false)).Structured.GetProperty("totalCount").GetInt64(), "the schedule is gone");
+                Assert.Equal(0L, (await c.ToolAsync("list_schedules", new { topicId = topicId }, token).ConfigureAwait(false)).Structured.GetProperty("totalRecords").GetInt64(), "the schedule is gone");
                 McpToolOutcome dim = await c.ToolAsync("set_topic_dimension", new { topicId = topicId, name = "Pricing changes", weight = "High" }, token).ConfigureAwait(false);
                 Assert.True(!dim.IsError && dim.Str("weight") == "High", "add dimension: " + dim.Text);
                 McpToolOutcome renamed = await c.ToolAsync("set_topic_dimension", new { topicId = topicId, dimensionId = dim.Str("id"), name = "Pricing" }, token).ConfigureAwait(false);
@@ -396,7 +396,7 @@ namespace Test.Shared.Suites
                 Assert.True(d.Topic.Name == "AI coding tools" && d.Dimensions.All(x => x.Id != dim.Str("id")) && d.Constraints.All(x => x.Value != "lowquality.test"), "changes persisted: " + d.Topic.Name + "; " + String.Join(",", d.Dimensions.Select(x => x.Id + "=" + x.Name)) + "; " + String.Join(",", d.Constraints.Select(x => x.Value)) + "; dim " + dim.Str("id"));
                 Assert.True(!String.IsNullOrWhiteSpace(d.Topic.Brief), "brief drafted");
                 EnumerationResult<LlmCall> calls = (await ta.Client.GetAsync("/v1.0/api/llm-calls?topicId=" + topicId, token).ConfigureAwait(false)).Json<EnumerationResult<LlmCall>>();
-                Assert.True(calls.Items.Count >= 2 && calls.Items.All(x => x.UserId == ta.User.Id), "wizard calls attributed to the caller");
+                Assert.True(calls.Objects.Count >= 2 && calls.Objects.All(x => x.UserId == ta.User.Id), "wizard calls attributed to the caller");
             }
         }
 
@@ -414,7 +414,7 @@ namespace Test.Shared.Suites
                 Assert.Equal(McpSurface.AllTools().Count, tools.GetProperty("tools").GetArrayLength(), "same tools over stdio");
                 JsonElement result = McpTestClient.Parse(await client.CallAsync<JsonElement>("tools/call", new Dictionary<string, object> { { "name", "list_topics" }, { "arguments", new { } } }, 30000, token).ConfigureAwait(false));
                 McpToolOutcome topics = McpTestClient.ToOutcome(result);
-                Assert.True(!topics.IsError && topics.Structured.GetProperty("items").EnumerateArray().Any(t => t.GetProperty("id").GetString() == f.Topic.Id), "list_topics over stdio: " + topics.Text);
+                Assert.True(!topics.IsError && topics.Structured.GetProperty("objects").EnumerateArray().Any(t => t.GetProperty("id").GetString() == f.Topic.Id), "list_topics over stdio: " + topics.Text);
             }
         }
     }

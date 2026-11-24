@@ -241,7 +241,7 @@ Every list route that returns a page takes the same query parameters and returns
 | Parameter | Type | Default | Notes |
 |---|---|---|---|
 | `pageNumber` | integer | 1 | One-based. |
-| `pageSize` | integer | 25 | 1 to 1000. |
+| `pageSize` | integer | 10 | 1 to 1000. |
 | `sortBy` | string | creation time | camelCase property name. Unknown values fall back to the default. |
 | `sortDirection` | `Descending` or `Ascending` | `Descending` | `asc` also works. |
 | `search` | string | none | Free text over the resource's searchable columns. |
@@ -252,14 +252,19 @@ Resource-specific filters (`topicId`, `status`, `tier`, and so on) are listed wi
 
 ```json
 {
-  "items": [ { "id": "edn_mwpee2a1_4mTmTABpYtKKeeb4bbQ", "name": "Morning News" } ],
+  "success": true,
+  "objects": [ { "id": "edn_mwpee2a1_4mTmTABpYtKKeeb4bbQ", "name": "Morning News" } ],
   "pageNumber": 1,
   "pageSize": 25,
-  "totalCount": 1,
+  "totalRecords": 1,
   "totalPages": 1,
-  "durationMs": 1.57
+  "totalMs": 1.57
 }
 ```
+
+Every collection GET builds an `EnumerationQuery` and returns an `EnumerationResult`. No application GET returns a bare array. The only exception is `/.well-known/assetlinks.json`, whose array is required by Google's app-link protocol.
+
+Every collection GET also supports `POST <collection-path>/enumerate` with the same query fields in a JSON object. Query-string values override body fields. Both forms enforce the same authorization and filters. `order` accepts `CreatedAscending` or `CreatedDescending`; `createdAfter` and `createdBefore` are exclusive UTC bounds. Invalid paging values or malformed bodies return 400; numeric page sizes are clamped to 1 through 1000.
 
 `totalPages` is zero when nothing matches. To read everything, keep requesting `pageNumber + 1` until it passes `totalPages`; the SDKs have a helper that does this.
 
@@ -426,7 +431,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 
 ## Route reference
 
-350 routes in 53 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
+411 routes in 53 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
 
 | Group | Routes | What it covers |
 |---|---|---|
@@ -434,52 +439,52 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [Server](#server) | 1 | Public client configuration that the dashboard and mobile app read before anyone signs in: feature flags, the minimum app version, legal links, and the MCP URL. |
 | [Token](#token) | 6 | Sessions. POST /v1.0/token exchanges login headers (an email and password, or an access key and secret) for a bearer token. The other routes validate, describe, refresh, and revoke the token you already hold. |
 | [Profile](#profile) | 3 | The signed-in user's own profile and password. Any authenticated user may call these for themselves. |
-| [Tenants](#tenants) | 5 | Control plane. Tenants isolate every record in the system. Global administrators manage all tenants; tenant administrators can read their own. |
-| [Users](#users) | 5 | Control plane. Users inside a tenant, with their administrator flags. Passwords are write-only. |
-| [Credentials](#credentials) | 5 | Control plane. Access keys for programs. The secret is returned once, when the credential is created. The auth mode decides how a credential may be used: direct headers, signed requests, session exchange, or a mix. |
-| [Roles](#roles) | 5 | Control plane. Built-in and tenant-defined roles. A role is a named set of permissions. |
-| [Permissions](#permissions) | 6 | Control plane. Permissions (resource types and operations, permit or deny) and the effective permissions a user or credential ends up with. |
-| [Assignments](#assignments) | 6 | Control plane. Role assignments for users and scope assignments for credentials, at tenant or resource scope. |
-| [Audit](#audit) | 4 | Security and administration events: sign-ins, denials, credential use, settings changes, vault reveals. |
-| [Request History](#request-history) | 5 | Captured REST requests with headers and bodies, for troubleshooting. Retention is set by RequestHistory.RetentionDays. |
+| [Tenants](#tenants) | 6 | Control plane. Tenants isolate every record in the system. Global administrators manage all tenants; tenant administrators can read their own. |
+| [Users](#users) | 6 | Control plane. Users inside a tenant, with their administrator flags. Passwords are write-only. |
+| [Credentials](#credentials) | 6 | Control plane. Access keys for programs. The secret is returned once, when the credential is created. The auth mode decides how a credential may be used: direct headers, signed requests, session exchange, or a mix. |
+| [Roles](#roles) | 6 | Control plane. Built-in and tenant-defined roles. A role is a named set of permissions. |
+| [Permissions](#permissions) | 7 | Control plane. Permissions (resource types and operations, permit or deny) and the effective permissions a user or credential ends up with. |
+| [Assignments](#assignments) | 8 | Control plane. Role assignments for users and scope assignments for credentials, at tenant or resource scope. |
+| [Audit](#audit) | 5 | Security and administration events: sign-ins, denials, credential use, settings changes, vault reveals. |
+| [Request History](#request-history) | 6 | Captured REST requests with headers and bodies, for troubleshooting. Retention is set by RequestHistory.RetentionDays. |
 | [Settings](#settings) | 4 | Server settings. Secrets come back masked as ******** and a masked or empty secret is left unchanged on update. Some settings take effect only after a restart. |
-| [Vault](#vault) | 7 | Encrypted storage for API keys and tokens that model endpoints, search providers, and voices use. Lists and reads never include the secret; reveal is limited to the credential's creator and administrators, rate limited, and audited. |
-| [Models](#models) | 13 | Model endpoints (Anthropic, OpenAI, Gemini, xAI, Ollama, compatible servers, and the agent CLIs in the server image: Claude Code, Codex, Gemini CLI, and Mux), task role assignments, and the accounting record of every model call. |
+| [Vault](#vault) | 9 | Encrypted storage for API keys and tokens that model endpoints, search providers, and voices use. Lists and reads never include the secret; reveal is limited to the credential's creator and administrators, rate limited, and audited. |
+| [Models](#models) | 17 | Model endpoints (Anthropic, OpenAI, Gemini, xAI, Ollama, compatible servers, and the agent CLIs in the server image: Claude Code, Codex, Gemini CLI, and Mux), task role assignments, and the accounting record of every model call. |
 | [Setup](#setup) | 5 | What the workspace still needs before people can use it (a chat model with a working key, and web search; embeddings and email are optional) and live checks that prove it. Until every required check is Ready, refinement sessions and research requests answer 409 SetupRequired. Options lists the model providers and how each signs in; connect stores the sign-in and points the chat tasks at the endpoint. Verify, options, connect, and model-key are for administrators. |
 | [Usage](#usage) | 3 | Model usage and cost, grouped or bucketed over time. Members see their own; administrators can see the tenant, and global administrators every tenant. |
-| [Devices](#devices) | 4 | Push notification devices registered by the mobile app for the signed-in user. |
-| [Notifications](#notifications) | 7 | The signed-in user's notifications. Preferences are one matrix: each kind of notification (run results, briefing ready, audio ready, run failed, plan limit reached, prediction due) on each channel (email, push to a registered phone or tablet, and the in-app list). Without a saved choice, email is on for run results, ready briefings, failed runs, and plan limits, and everything else is off. The in-app list holds the notifications for kinds turned on for that channel; they are kept for 90 days. A topic's email-on-run switch and an edition's email and push switches still apply on top of these preferences. |
-| [Topics](#topics) | 21 | The things a reader follows. A topic has a research brief, weighted dimensions, constraints (keywords, domains, feeds, tracked questions), and email recipients. |
-| [Refinement](#refinement) | 11 | The topic wizard. A session proposes dimensions, asks clarifying questions, drafts the brief and constraints, suggests sources, and then applies the topic. Generating steps call the configured model. |
-| [Requests](#requests) | 9 | One-time research requests: a report, podcast, or email summary produced once, now or at a set time. A request can later become a recurring topic. |
-| [Schedules](#schedules) | 6 | When topics, editions, and requests run. Interval, days-of-week, days-of-month, one-time, and cron schedules, each in a time zone. Preview validates a schedule and lists its next runs. |
-| [Runs](#runs) | 12 | Research runs and their stages, cost, search queries, search results, and model calls. Every run and every stage carries its estimated cost; see [Run and stage cost](#run-and-stage-cost). A run can be watched live over server-sent events, canceled, or retried from a later stage. |
-| [Search](#search) | 9 | Search providers (SearXNG, Tavily, You.com, RSS, Hacker News, arXiv, hosted model web search), per-topic provider choices, and test tools for queries and page fetches. |
-| [Findings](#findings) | 5 | Ranked results from runs, each backed by evidence. Findings can be pinned or hidden. |
-| [Sources](#sources) | 2 | Pages the pipeline fetched for your topics, with their extracted text. |
-| [Predictions](#predictions) | 5 | Forecasts the pipeline extracted, with confidence and a horizon. They are resolved by hand or by accepting a proposed review. |
-| [Suggestions](#suggestions) | 3 | Things worth digging into next, with a status you move through (accept, snooze, dismiss, done). |
-| [Briefings](#briefings) | 8 | Composed briefings with sections and items, their Markdown and HTML files, pinning past retention, and regeneration. |
-| [Artifacts](#artifacts) | 4 | Stored files: briefing Markdown and HTML, audio, and exports. Content streams with Range support. |
-| [Editions](#editions) | 8 | Recurring briefings that gather several topics, with a template, audio and email switches, and a lookback window. |
-| [Templates](#templates) | 10 | Briefing templates in Markdown. Every save is a version; templates can be validated, previewed, rolled back, reset, imported, and exported. |
-| [Media](#media) | 4 | Audio episodes made from briefings, with chapters. |
-| [Voices](#voices) | 8 | Text-to-speech voice profiles, with a test route that speaks a sample. Two more routes let anyone who can edit a topic choose its voice: one lists the voices a topic can use (the voice profiles, then the speech server's own voices with readable labels), and one speaks a short preview. |
-| [Podcast feeds](#podcast-feeds) | 3 | Private podcast feed tokens. The feed URL embeds the secret, which is shown once. |
-| [Sharing](#sharing) | 3 | Public share links for a briefing. One share yields one link to a single page where anyone can listen to the briefing and read it with no sign-in. A share is made on purpose, never by default, always expires (1 to 14 days, 7 when not chosen), and can be revoked. The links are returned once; only a hash of the secret is stored. `sharing.enabled` turns the feature off for the whole server. |
-| [Email](#email) | 8 | The email outbox, test and preview sends, resends, and the signed-in user's email preferences. |
-| [Feedback](#feedback) | 4 | Ratings and reasons on findings, predictions, suggestions, sources, domains, and briefings. Feedback drives learning and analytics. |
-| [Learning](#learning) | 11 | Preferences learned from feedback (or written by hand), their review flow, and ranking weight recommendations. |
+| [Devices](#devices) | 5 | Push notification devices registered by the mobile app for the signed-in user. |
+| [Notifications](#notifications) | 8 | The signed-in user's notifications. Preferences are one matrix: each kind of notification (run results, briefing ready, audio ready, run failed, plan limit reached, prediction due) on each channel (email, push to a registered phone or tablet, and the in-app list). Without a saved choice, email is on for run results, ready briefings, failed runs, and plan limits, and everything else is off. The in-app list holds the notifications for kinds turned on for that channel; they are kept for 90 days. A topic's email-on-run switch and an edition's email and push switches still apply on top of these preferences. |
+| [Topics](#topics) | 25 | The things a reader follows. A topic has a research brief, weighted dimensions, constraints (keywords, domains, feeds, tracked questions), and email recipients. |
+| [Refinement](#refinement) | 12 | The topic wizard. A session proposes dimensions, asks clarifying questions, drafts the brief and constraints, suggests sources, and then applies the topic. Generating steps call the configured model. |
+| [Requests](#requests) | 10 | One-time research requests: a report, podcast, or email summary produced once, now or at a set time. A request can later become a recurring topic. |
+| [Schedules](#schedules) | 7 | When topics, editions, and requests run. Interval, days-of-week, days-of-month, one-time, and cron schedules, each in a time zone. Preview validates a schedule and lists its next runs. |
+| [Runs](#runs) | 18 | Research runs and their stages, cost, search queries, search results, and model calls. Every run and every stage carries its estimated cost; see [Run and stage cost](#run-and-stage-cost). A run can be watched live over server-sent events, canceled, or retried from a later stage. |
+| [Search](#search) | 11 | Search providers (SearXNG, Tavily, You.com, RSS, Hacker News, arXiv, hosted model web search), per-topic provider choices, and test tools for queries and page fetches. |
+| [Findings](#findings) | 6 | Ranked results from runs, each backed by evidence. Findings can be pinned or hidden. |
+| [Sources](#sources) | 3 | Pages the pipeline fetched for your topics, with their extracted text. |
+| [Predictions](#predictions) | 6 | Forecasts the pipeline extracted, with confidence and a horizon. They are resolved by hand or by accepting a proposed review. |
+| [Suggestions](#suggestions) | 4 | Things worth digging into next, with a status you move through (accept, snooze, dismiss, done). |
+| [Briefings](#briefings) | 9 | Composed briefings with sections and items, their Markdown and HTML files, pinning past retention, and regeneration. |
+| [Artifacts](#artifacts) | 5 | Stored files: briefing Markdown and HTML, audio, and exports. Content streams with Range support. |
+| [Editions](#editions) | 9 | Recurring briefings that gather several topics, with a template, audio and email switches, and a lookback window. |
+| [Templates](#templates) | 12 | Briefing templates in Markdown. Every save is a version; templates can be validated, previewed, rolled back, reset, imported, and exported. |
+| [Media](#media) | 5 | Audio episodes made from briefings, with chapters. |
+| [Voices](#voices) | 9 | Text-to-speech voice profiles, with a test route that speaks a sample. Two more routes let anyone who can edit a topic choose its voice: one lists the voices a topic can use (the voice profiles, then the speech server's own voices with readable labels), and one speaks a short preview. |
+| [Podcast feeds](#podcast-feeds) | 4 | Private podcast feed tokens. The feed URL embeds the secret, which is shown once. |
+| [Sharing](#sharing) | 4 | Public share links for a briefing. One share yields one link to a single page where anyone can listen to the briefing and read it with no sign-in. A share is made on purpose, never by default, always expires (1 to 14 days, 7 when not chosen), and can be revoked. The links are returned once; only a hash of the secret is stored. `sharing.enabled` turns the feature off for the whole server. |
+| [Email](#email) | 9 | The email outbox, test and preview sends, resends, and the signed-in user's email preferences. |
+| [Feedback](#feedback) | 5 | Ratings and reasons on findings, predictions, suggestions, sources, domains, and briefings. Feedback drives learning and analytics. |
+| [Learning](#learning) | 12 | Preferences learned from feedback (or written by hand), their review flow, and ranking weight recommendations. |
 | [Analytics](#analytics) | 9 | Reports over relevance, accuracy, feedback, suggestions, reasons, quality, email, and runs. Defaults to the caller's data for the last 90 days. |
-| [Prompts](#prompts) | 9 | Prompt templates by key and scope, topic overrides, version history, rollback, reset, and the prompt lab. |
-| [Promotional codes](#promotional-codes) | 9 | Global administrators create, generate, and manage promotional codes that grant plans. |
-| [Plans](#plans) | 9 | Global administrators manage plans, their entitlement values, and per-user plan assignments. |
+| [Prompts](#prompts) | 11 | Prompt templates by key and scope, topic overrides, version history, rollback, reset, and the prompt lab. |
+| [Promotional codes](#promotional-codes) | 11 | Global administrators create, generate, and manage promotional codes that grant plans. |
+| [Plans](#plans) | 11 | Global administrators manage plans, their entitlement values, and per-user plan assignments. |
 | [Account](#account) | 10 | Sign-up, email verification, password reset, the signed-in user's plan, usage meter, data export, account deletion, and promotional code redemption. |
 | [Public](#public) | 15 | Routes reached from emails, podcast apps, and shared briefing links. They take no session; a token in the path is the credential. Feedback and unsubscribe pages are HTML forms. Shared briefing pages are server-rendered HTML with no script and no cookies. |
 | [OpenAPI](#openapi) | 2 | The OpenAPI 3 document and Swagger UI that Watson serves. They are not tagged in the document itself. |
-| [MCP servers](#mcp-servers) | 8 | Remote MCP tool servers that agentic research may call, their discovered tools, and the per-tool allow-list. |
-| [Catalog](#catalog) | 10 | System-wide publications and private subscriptions. Shared content is generated once; subscription and personal topic limits are separate. |
-| [Catalog administration](#catalog-administration) | 8 | Global administrators manage canonical publications, research, schedules, and lifecycle revisions. Tenant administrators cannot publish. |
+| [MCP servers](#mcp-servers) | 9 | Remote MCP tool servers that agentic research may call, their discovered tools, and the per-tool allow-list. |
+| [Catalog](#catalog) | 14 | System-wide publications and private subscriptions. Shared content is generated once; subscription and personal topic limits are separate. |
+| [Catalog administration](#catalog-administration) | 10 | Global administrators manage canonical publications, research, schedules, and lifecycle revisions. Tenant administrators cannot publish. |
 | [Billing](#billing) | 4 | Account-bound Stripe checkout and native Apple/Google verification. A redirect never grants access; verified provider state determines benefits. |
 | [Billing callbacks](#billing-callbacks) | 3 | Provider-authenticated callbacks. Ordinary bearer sessions do not authorize these routes. |
 | [Account providers](#account-providers) | 5 | Account-private encrypted model and speech connections, validation and explicit BYOK funding. No secret is returned. |
@@ -761,6 +766,7 @@ Control plane. Tenants isolate every record in the system. Global administrators
 |---|---|---|
 | GET | [`/v1.0/tenants`](#get-v10tenants) | List tenants |
 | POST | [`/v1.0/tenants`](#post-v10tenants) | Create a tenant |
+| POST | [`/v1.0/tenants/enumerate`](#post-v10tenantsenumerate) | List tenants |
 | GET | [`/v1.0/tenants/{tenantId}`](#get-v10tenantstenantid) | Read a tenant |
 | PUT | [`/v1.0/tenants/{tenantId}`](#put-v10tenantstenantid) | Update a tenant |
 | DELETE | [`/v1.0/tenants/{tenantId}`](#delete-v10tenantstenantid) | Delete a tenant and all of its data |
@@ -817,6 +823,37 @@ Request body: [`TenantUpsertRequest`](#tenantupsertrequest).
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/tenants" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/tenants/enumerate
+
+**List tenants.**
+
+- Auth: `Tenant:Read` (`TenantRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`Tenant`](#tenant)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `active` | boolean | Only active (true) or inactive (false) records. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/tenants/enumerate" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -914,6 +951,7 @@ Control plane. Users inside a tenant, with their administrator flags. Passwords 
 |---|---|---|
 | GET | [`/v1.0/tenants/{tenantId}/users`](#get-v10tenantstenantidusers) | List users |
 | POST | [`/v1.0/tenants/{tenantId}/users`](#post-v10tenantstenantidusers) | Create a user |
+| POST | [`/v1.0/tenants/{tenantId}/users/enumerate`](#post-v10tenantstenantidusersenumerate) | List users |
 | GET | [`/v1.0/tenants/{tenantId}/users/{userId}`](#get-v10tenantstenantidusersuserid) | Read a user |
 | PUT | [`/v1.0/tenants/{tenantId}/users/{userId}`](#put-v10tenantstenantidusersuserid) | Update a user |
 | DELETE | [`/v1.0/tenants/{tenantId}/users/{userId}`](#delete-v10tenantstenantidusersuserid) | Delete a user and their credentials |
@@ -987,6 +1025,44 @@ Request body: [`UserCreateRequest`](#usercreaterequest).
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/tenants/default/users" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/tenants/{tenantId}/users/enumerate
+
+**List users.**
+
+- Auth: `User:Read` (`UserRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`UserResponse`](#userresponse)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `tenantId` | string | `{{tenantId}}` |
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `active` | boolean | Only active (true) or inactive (false) records. |
+| `isAdmin` | boolean | Only global administrators (true) or others (false). |
+| `isTenantAdmin` | boolean | Only tenant administrators (true) or others (false). |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/tenants/default/users/enumerate" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -1085,6 +1161,7 @@ Control plane. Access keys for programs. The secret is returned once, when the c
 |---|---|---|
 | GET | [`/v1.0/tenants/{tenantId}/credentials`](#get-v10tenantstenantidcredentials) | List credentials |
 | POST | [`/v1.0/tenants/{tenantId}/credentials`](#post-v10tenantstenantidcredentials) | Create a credential (secret returned once) |
+| POST | [`/v1.0/tenants/{tenantId}/credentials/enumerate`](#post-v10tenantstenantidcredentialsenumerate) | List credentials |
 | GET | [`/v1.0/tenants/{tenantId}/credentials/{credentialId}`](#get-v10tenantstenantidcredentialscredentialid) | Read a credential |
 | PUT | [`/v1.0/tenants/{tenantId}/credentials/{credentialId}`](#put-v10tenantstenantidcredentialscredentialid) | Update a credential |
 | DELETE | [`/v1.0/tenants/{tenantId}/credentials/{credentialId}`](#delete-v10tenantstenantidcredentialscredentialid) | Delete a credential |
@@ -1153,6 +1230,43 @@ Request body: [`CredentialCreateRequest`](#credentialcreaterequest).
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/tenants/default/credentials" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/tenants/{tenantId}/credentials/enumerate
+
+**List credentials.**
+
+- Auth: `Credential:Read` (`CredentialRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`CredentialResponse`](#credentialresponse)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `tenantId` | string | `{{tenantId}}` |
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `active` | boolean | Only active (true) or inactive (false) records. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/tenants/default/credentials/enumerate" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -1250,6 +1364,7 @@ Control plane. Built-in and tenant-defined roles. A role is a named set of permi
 |---|---|---|
 | GET | [`/v1.0/tenants/{tenantId}/roles`](#get-v10tenantstenantidroles) | List roles (built-in and tenant) |
 | POST | [`/v1.0/tenants/{tenantId}/roles`](#post-v10tenantstenantidroles) | Create a tenant role |
+| POST | [`/v1.0/tenants/{tenantId}/roles/enumerate`](#post-v10tenantstenantidrolesenumerate) | List roles (built-in and tenant) |
 | GET | [`/v1.0/tenants/{tenantId}/roles/{roleId}`](#get-v10tenantstenantidrolesroleid) | Read a role with its permissions |
 | PUT | [`/v1.0/tenants/{tenantId}/roles/{roleId}`](#put-v10tenantstenantidrolesroleid) | Update a tenant role |
 | DELETE | [`/v1.0/tenants/{tenantId}/roles/{roleId}`](#delete-v10tenantstenantidrolesroleid) | Delete a tenant role |
@@ -1320,6 +1435,43 @@ Request body: [`RoleUpsertRequest`](#roleupsertrequest).
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/tenants/default/roles" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/tenants/{tenantId}/roles/enumerate
+
+**List roles (built-in and tenant).**
+
+- Auth: `Role:Read` (`RoleRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`UserRole`](#userrole)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `tenantId` | string | `{{tenantId}}` |
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `isBuiltIn` | boolean | Only built-in (true) or tenant (false) roles. |
+| `active` | boolean | Only active (true) or inactive (false) records. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/tenants/default/roles/enumerate" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -1422,6 +1574,7 @@ Control plane. Permissions (resource types and operations, permit or deny) and t
 |---|---|---|
 | GET | [`/v1.0/tenants/{tenantId}/permissions`](#get-v10tenantstenantidpermissions) | List permissions |
 | POST | [`/v1.0/tenants/{tenantId}/permissions`](#post-v10tenantstenantidpermissions) | Create a tenant permission |
+| POST | [`/v1.0/tenants/{tenantId}/permissions/enumerate`](#post-v10tenantstenantidpermissionsenumerate) | List permissions |
 | PUT | [`/v1.0/tenants/{tenantId}/permissions/{permissionId}`](#put-v10tenantstenantidpermissionspermissionid) | Update a tenant permission |
 | DELETE | [`/v1.0/tenants/{tenantId}/permissions/{permissionId}`](#delete-v10tenantstenantidpermissionspermissionid) | Delete a tenant permission |
 | GET | [`/v1.0/tenants/{tenantId}/users/{userId}/permissions`](#get-v10tenantstenantidusersuseridpermissions) | Effective permissions for a user |
@@ -1495,6 +1648,43 @@ Request body: [`PermissionUpsertRequest`](#permissionupsertrequest).
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/tenants/default/permissions" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/tenants/{tenantId}/permissions/enumerate
+
+**List permissions.**
+
+- Auth: `Permission:Read` (`PermissionRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`Permission`](#permission)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `tenantId` | string | `{{tenantId}}` |
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `includeBuiltIn` | boolean | Include the built-in permissions. |
+| `permissionType` | enum (`Permit`, `Deny`) | Permit or Deny. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/tenants/default/permissions/enumerate" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -1623,9 +1813,11 @@ Control plane. Role assignments for users and scope assignments for credentials,
 |---|---|---|
 | GET | [`/v1.0/tenants/{tenantId}/users/{userId}/assignments`](#get-v10tenantstenantidusersuseridassignments) | List a user's role assignments |
 | POST | [`/v1.0/tenants/{tenantId}/users/{userId}/assignments`](#post-v10tenantstenantidusersuseridassignments) | Assign a role to a user |
+| POST | [`/v1.0/tenants/{tenantId}/users/{userId}/assignments/enumerate`](#post-v10tenantstenantidusersuseridassignmentsenumerate) | List a user's role assignments |
 | DELETE | [`/v1.0/tenants/{tenantId}/users/{userId}/assignments/{assignmentId}`](#delete-v10tenantstenantidusersuseridassignmentsassignmentid) | Remove a role assignment |
 | GET | [`/v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes`](#get-v10tenantstenantidcredentialscredentialidscopes) | List a credential's scope assignments |
 | POST | [`/v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes`](#post-v10tenantstenantidcredentialscredentialidscopes) | Add a credential scope assignment |
+| POST | [`/v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes/enumerate`](#post-v10tenantstenantidcredentialscredentialidscopesenumerate) | List a credential's scope assignments |
 | DELETE | [`/v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes/{scopeId}`](#delete-v10tenantstenantidcredentialscredentialidscopesscopeid) | Remove a credential scope assignment |
 
 ### GET /v1.0/tenants/{tenantId}/users/{userId}/assignments
@@ -1688,6 +1880,39 @@ Request body: [`AssignmentUpsertRequest`](#assignmentupsertrequest).
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/tenants/default/users/usr_mwpentj7_Wc3S0yLg2bVfQ8nRk1a/assignments" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/tenants/{tenantId}/users/{userId}/assignments/enumerate
+
+**List a user's role assignments.**
+
+- Auth: `Assignment:Read` (`AssignmentRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`UserRoleAssignment`](#userroleassignment)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `tenantId` | string | `{{tenantId}}` |
+| `userId` | string | `{{memberUserId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/tenants/default/users/usr_mwpentj7_Wc3S0yLg2bVfQ8nRk1a/assignments/enumerate" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -1781,6 +2006,39 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/tenants/default/credentials/crd_mwp
   -H "Content-Type: application/json" --data-binary @body.json
 ```
 
+### POST /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes/enumerate
+
+**List a credential's scope assignments.**
+
+- Auth: `Assignment:Read` (`AssignmentRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`CredentialScopeAssignment`](#credentialscopeassignment)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `tenantId` | string | `{{tenantId}}` |
+| `credentialId` | string | `{{credentialId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/tenants/default/credentials/crd_mwpentjv_4mkfS1VdH2SfV90muUK/scopes/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
 ### DELETE /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes/{scopeId}
 
 **Remove a credential scope assignment.**
@@ -1814,6 +2072,7 @@ Security and administration events: sign-ins, denials, credential use, settings 
 |---|---|---|
 | GET | [`/v1.0/api/audit`](#get-v10apiaudit) | List audit records |
 | DELETE | [`/v1.0/api/audit`](#delete-v10apiaudit) | Delete audit records older than a cutoff |
+| POST | [`/v1.0/api/audit/enumerate`](#post-v10apiauditenumerate) | List audit records |
 | GET | [`/v1.0/api/audit/{id}`](#get-v10apiauditid) | Read an audit record |
 | DELETE | [`/v1.0/api/audit/{id}`](#delete-v10apiauditid) | Delete an audit record |
 
@@ -1867,6 +2126,41 @@ curl -s "http://127.0.0.1:12100/v1.0/api/audit?pageSize=10" \
 ```bash
 curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/audit" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/audit/enumerate
+
+**List audit records.**
+
+- Auth: `Audit:Read` (`AuditRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`AuditRecord`](#auditrecord)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `tenantId` | string | Global administrators: another tenant. Ignored for everyone else. |
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `principalId` | string | User, credential, or system principal. |
+| `authorizationResult` | string | Authorization outcome, for example Permitted or Denied. |
+| `eventType` | enum (`AuthSuccess`, `AuthFailure`, `SessionIssued`, `SessionRefreshed`, `SessionRevoked`, `CredentialCreated`, `CredentialUsed`, `CredentialRevoked`, `AuthorizationDenied`, `AuthorizationBypass`, `RoleChanged`, `PermissionChanged`, `AssignmentChanged`, `UserChanged`, `TenantChanged`, `SettingsChanged`, `RestartRequested`, `CredentialRevealed`, `VaultCredentialChanged`, `FeedTokenCreated`, `FeedTokenRevoked`, `PromoCodeChanged`, `PromoCodeRedeemed`, `PlanChanged`, `CredentialUpdated`, `ShareCreated`, `ShareRevoked`, `CatalogChanged`) | Audit event type. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/audit/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### GET /v1.0/api/audit/{id}
@@ -1923,6 +2217,7 @@ Captured REST requests with headers and bodies, for troubleshooting. Retention i
 |---|---|---|
 | GET | [`/v1.0/api/request-history`](#get-v10apirequest-history) | List captured requests |
 | DELETE | [`/v1.0/api/request-history`](#delete-v10apirequest-history) | Delete requests matching a filter |
+| POST | [`/v1.0/api/request-history/enumerate`](#post-v10apirequest-historyenumerate) | List captured requests |
 | GET | [`/v1.0/api/request-history/summary`](#get-v10apirequest-historysummary) | Time-bucketed request counts |
 | GET | [`/v1.0/api/request-history/{id}`](#get-v10apirequest-historyid) | Read a captured request with headers and bodies |
 | DELETE | [`/v1.0/api/request-history/{id}`](#delete-v10apirequest-historyid) | Delete a captured request |
@@ -1983,7 +2278,7 @@ curl -s "http://127.0.0.1:12100/v1.0/api/request-history?pageSize=10" \
 | `pageNumber` | integer | Read by the handler; not declared in the OpenAPI document. |
 | `pageSize` | integer | Read by the handler; not declared in the OpenAPI document. |
 | `sortBy` | string | Read by the handler; not declared in the OpenAPI document. |
-| `sortDirection` | SortDirectionEnum | Read by the handler; not declared in the OpenAPI document. |
+| `sortDirection` | [`SortDirectionEnum`](#sortdirectionenum) | Read by the handler; not declared in the OpenAPI document. |
 
 | Status | Meaning |
 |---|---|
@@ -1994,6 +2289,45 @@ curl -s "http://127.0.0.1:12100/v1.0/api/request-history?pageSize=10" \
 ```bash
 curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/request-history" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/request-history/enumerate
+
+**List captured requests.**
+
+- Auth: `RequestHistory:Read` (`RequestHistoryRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`RequestHistoryEntry`](#requesthistoryentry)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `tenantId` | string | Global administrators: another tenant. Ignored for everyone else. |
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `method` | string | HTTP method. |
+| `statusCode` | integer | Exact status code. |
+| `minStatusCode` | integer | Lowest status code to include. |
+| `maxStatusCode` | integer | Highest status code to include. |
+| `statusClass` | string | `2xx`, `4xx`, `5xx`, and so on; sets the minimum and maximum status code. |
+| `pathContains` | string | Substring of the request path. |
+| `bucketMinutes` | integer | Bucket width in minutes for time series. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/request-history/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### GET /v1.0/api/request-history/summary
@@ -2020,7 +2354,7 @@ curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/request-history" \
 | `pageNumber` | integer | Read by the handler; not declared in the OpenAPI document. |
 | `pageSize` | integer | Read by the handler; not declared in the OpenAPI document. |
 | `sortBy` | string | Read by the handler; not declared in the OpenAPI document. |
-| `sortDirection` | SortDirectionEnum | Read by the handler; not declared in the OpenAPI document. |
+| `sortDirection` | [`SortDirectionEnum`](#sortdirectionenum) | Read by the handler; not declared in the OpenAPI document. |
 
 | Status | Meaning |
 |---|---|
@@ -2356,11 +2690,13 @@ Encrypted storage for API keys and tokens that model endpoints, search providers
 |---|---|---|
 | GET | [`/v1.0/api/vault/credentials`](#get-v10apivaultcredentials) | List vault credentials (no secrets) |
 | POST | [`/v1.0/api/vault/credentials`](#post-v10apivaultcredentials) | Store a credential |
+| POST | [`/v1.0/api/vault/credentials/enumerate`](#post-v10apivaultcredentialsenumerate) | List vault credentials (no secrets) |
 | GET | [`/v1.0/api/vault/credentials/{id}`](#get-v10apivaultcredentialsid) | Read a credential (no secret) |
 | PUT | [`/v1.0/api/vault/credentials/{id}`](#put-v10apivaultcredentialsid) | Update or rotate a credential |
 | DELETE | [`/v1.0/api/vault/credentials/{id}`](#delete-v10apivaultcredentialsid) | Delete a credential |
 | POST | [`/v1.0/api/vault/credentials/{id}/reveal`](#post-v10apivaultcredentialsidreveal) | Reveal a stored secret (audited) |
 | GET | [`/v1.0/api/vault/credentials/{id}/usage`](#get-v10apivaultcredentialsidusage) | Records that use a credential |
+| POST | [`/v1.0/api/vault/credentials/{id}/usage/enumerate`](#post-v10apivaultcredentialsidusageenumerate) | Records that use a credential |
 
 ### GET /v1.0/api/vault/credentials
 
@@ -2418,6 +2754,40 @@ Request body: [`VaultCredentialUpsertRequest`](#vaultcredentialupsertrequest).
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/vault/credentials" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/api/vault/credentials/enumerate
+
+**List vault credentials (no secrets).**
+
+- Auth: `VaultCredential:Read` (`VaultRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`VaultCredentialResponse`](#vaultcredentialresponse)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `active` | boolean | Only active (true) or inactive (false) records. |
+| `kind` | enum (`ApiKey`, `BearerToken`, `BasicAuth`, `CustomHeader`, `ConnectionString`, `SignInFile`) | Only notifications of this kind. |
+| `provider` | enum (`Anthropic`, `OpenAi`, `Gemini`, `XAi`, `OllamaCloud`, `OpenAiCompatible`, `Tavily`, `YouCom`, `Mailgun`, `ElevenLabs`, `Mcp`, `Custom`) |  |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/vault/credentials/enumerate" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -2541,11 +2911,13 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/vault/credentials/vlt_mwpf0312_
 **Records that use a credential.**
 
 - Auth: `VaultCredential:Read` (`VaultRead`).
-- Response: array of [`VaultUsageItem`](#vaultusageitem)
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`VaultUsageItem`](#vaultusageitem)
 
 | Path parameter | Type | Postman variable |
 |---|---|---|
 | `id` | string | `{{vaultCredentialId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
 | Status | Meaning |
 |---|---|
@@ -2556,8 +2928,41 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/vault/credentials/vlt_mwpf0312_
 | 404 | Not Found |
 
 ```bash
-curl -s "http://127.0.0.1:12100/v1.0/api/vault/credentials/vlt_mwpf0312_Er2tY5uI8oPa1sDf4Gh/usage" \
+curl -s "http://127.0.0.1:12100/v1.0/api/vault/credentials/vlt_mwpf0312_Er2tY5uI8oPa1sDf4Gh/usage?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/vault/credentials/{id}/usage/enumerate
+
+**Records that use a credential.**
+
+- Auth: `VaultCredential:Read` (`VaultRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`VaultUsageItem`](#vaultusageitem)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{vaultCredentialId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/vault/credentials/vlt_mwpf0312_Er2tY5uI8oPa1sDf4Gh/usage/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ## Models
@@ -2568,14 +2973,18 @@ Model endpoints (Anthropic, OpenAI, Gemini, xAI, Ollama, compatible servers, and
 |---|---|---|
 | GET | [`/v1.0/api/model-endpoints`](#get-v10apimodel-endpoints) | List model endpoints |
 | POST | [`/v1.0/api/model-endpoints`](#post-v10apimodel-endpoints) | Create a model endpoint |
+| POST | [`/v1.0/api/model-endpoints/enumerate`](#post-v10apimodel-endpointsenumerate) | List model endpoints |
 | GET | [`/v1.0/api/model-assignments`](#get-v10apimodel-assignments) | List task role assignments |
 | PUT | [`/v1.0/api/model-assignments`](#put-v10apimodel-assignments) | Assign a task role to an endpoint |
+| POST | [`/v1.0/api/model-assignments/enumerate`](#post-v10apimodel-assignmentsenumerate) | List task role assignments |
 | GET | [`/v1.0/api/llm-calls`](#get-v10apillm-calls) | List model calls |
+| POST | [`/v1.0/api/llm-calls/enumerate`](#post-v10apillm-callsenumerate) | List model calls |
 | GET | [`/v1.0/api/model-endpoints/{id}`](#get-v10apimodel-endpointsid) | Read a model endpoint |
 | PUT | [`/v1.0/api/model-endpoints/{id}`](#put-v10apimodel-endpointsid) | Update a model endpoint |
 | DELETE | [`/v1.0/api/model-endpoints/{id}`](#delete-v10apimodel-endpointsid) | Delete a model endpoint |
 | POST | [`/v1.0/api/model-endpoints/{id}/validate`](#post-v10apimodel-endpointsidvalidate) | Validate connectivity, tool support, and embeddings |
 | GET | [`/v1.0/api/model-endpoints/{id}/models`](#get-v10apimodel-endpointsidmodels) | List models offered by an endpoint |
+| POST | [`/v1.0/api/model-endpoints/{id}/models/enumerate`](#post-v10apimodel-endpointsidmodelsenumerate) | List models offered by an endpoint |
 | POST | [`/v1.0/api/model-endpoints/{id}/test`](#post-v10apimodel-endpointsidtest) | Send a sample prompt |
 | DELETE | [`/v1.0/api/model-assignments/{id}`](#delete-v10apimodel-assignmentsid) | Remove a topic assignment override |
 | GET | [`/v1.0/api/llm-calls/{id}`](#get-v10apillm-callsid) | Read a model call with payloads |
@@ -2645,6 +3054,41 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/model-endpoints" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
 
+### POST /v1.0/api/model-endpoints/enumerate
+
+**List model endpoints.**
+
+- Auth: `ModelEndpoint:Read` (`ModelRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`ModelEndpoint`](#modelendpoint)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `active` | boolean | Only active (true) or inactive (false) records. |
+| `supportsChat` | boolean | Only endpoints that serve chat. |
+| `supportsEmbeddings` | boolean | Only endpoints that serve embeddings. |
+| `provider` | enum (`Anthropic`, `OpenAi`, `OpenAiCompatible`, `Ollama`, `Gemini`, `XAi`, `OllamaCloud`, `ClaudeCode`, `Codex`, `GeminiCli`, `Mux`) |  |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/model-endpoints/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
 ### GET /v1.0/api/model-assignments
 
 **List task role assignments.**
@@ -2702,6 +3146,39 @@ curl -s -X PUT "http://127.0.0.1:12100/v1.0/api/model-assignments" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
 
+### POST /v1.0/api/model-assignments/enumerate
+
+**List task role assignments.**
+
+- Auth: `ModelEndpoint:Read` (`ModelRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`ModelAssignment`](#modelassignment)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `topicId` | string | Only records for this topic. |
+| `task` | enum (`Refinement`, `QueryPlanning`, `Extraction`, `Scoring`, `Synthesis`, `Prediction`, `Suggestion`, `Composition`, `PodcastScript`, `FeedbackAnalysis`, `Embedding`) | Model task. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/model-assignments/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
 ### GET /v1.0/api/llm-calls
 
 **List model calls.**
@@ -2736,6 +3213,49 @@ Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`,
 ```bash
 curl -s "http://127.0.0.1:12100/v1.0/api/llm-calls?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/llm-calls/enumerate
+
+**List model calls.**
+
+- Auth: `LlmCall:Read` (`LlmCallRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`LlmCall`](#llmcall)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `runId` | string | Only records from this run. |
+| `runStageId` | string | Only model calls made in this run stage (`rst_...`, from `GET /v1.0/api/runs/{id}/stages` or a cost report's `stages[].runStageId`). |
+| `refinementSessionId` | string | Only calls made by this refinement session. |
+| `briefingId` | string | Only records for this briefing. |
+| `modelEndpointId` | string | Only calls to this model endpoint. |
+| `model` | string | Model name. |
+| `promptKey` | string | Only calls made with this prompt key. |
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `topicId` | string | Only records for this topic. |
+| `success` | boolean | Only successful (true) or failed (false) calls. |
+| `isDryRun` | boolean | Only dry-run (true) or real (false) calls. |
+| `task` | enum (`Refinement`, `QueryPlanning`, `Extraction`, `Scoring`, `Synthesis`, `Prediction`, `Suggestion`, `Composition`, `PodcastScript`, `FeedbackAnalysis`, `Embedding`) | Model task. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/llm-calls/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### GET /v1.0/api/model-endpoints/{id}
@@ -2858,11 +3378,13 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/model-endpoints/mdl_mwpee2b8_Nm
 **List models offered by an endpoint.**
 
 - Auth: `ModelEndpoint:Execute` (`ModelExecute`).
-- Response: array of [`ModelListItem`](#modellistitem)
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`ModelListItem`](#modellistitem)
 
 | Path parameter | Type | Postman variable |
 |---|---|---|
 | `id` | string | `{{modelEndpointId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
 | Status | Meaning |
 |---|---|
@@ -2874,8 +3396,42 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/model-endpoints/mdl_mwpee2b8_Nm
 | 502 | Bad Gateway: `UpstreamError` |
 
 ```bash
-curl -s "http://127.0.0.1:12100/v1.0/api/model-endpoints/mdl_mwpee2b8_Nm4qW7eR0tYu3iOp6As/models" \
+curl -s "http://127.0.0.1:12100/v1.0/api/model-endpoints/mdl_mwpee2b8_Nm4qW7eR0tYu3iOp6As/models?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/model-endpoints/{id}/models/enumerate
+
+**List models offered by an endpoint.**
+
+- Auth: `ModelEndpoint:Execute` (`ModelExecute`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`ModelListItem`](#modellistitem)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{modelEndpointId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 502 | Bad Gateway: `UpstreamError` |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/model-endpoints/mdl_mwpee2b8_Nm4qW7eR0tYu3iOp6As/models/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### POST /v1.0/api/model-endpoints/{id}/test
@@ -3276,6 +3832,7 @@ Push notification devices registered by the mobile app for the signed-in user.
 |---|---|---|
 | GET | [`/v1.0/api/devices`](#get-v10apidevices) | List my push devices |
 | POST | [`/v1.0/api/devices`](#post-v10apidevices) | Register a device for push notifications |
+| POST | [`/v1.0/api/devices/enumerate`](#post-v10apidevicesenumerate) | List my push devices |
 | DELETE | [`/v1.0/api/devices/{id}`](#delete-v10apidevicesid) | Remove a device |
 | POST | [`/v1.0/api/devices/{id}/test`](#post-v10apidevicesidtest) | Send a test notification to a device |
 
@@ -3284,7 +3841,9 @@ Push notification devices registered by the mobile app for the signed-in user.
 **List my push devices.**
 
 - Auth: Any authenticated principal (`DeviceRead`).
-- Response: array of [`Device`](#device)
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`Device`](#device)
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
 | Status | Meaning |
 |---|---|
@@ -3294,7 +3853,7 @@ Push notification devices registered by the mobile app for the signed-in user.
 | 403 | Forbidden |
 
 ```bash
-curl -s "http://127.0.0.1:12100/v1.0/api/devices" \
+curl -s "http://127.0.0.1:12100/v1.0/api/devices?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -3326,6 +3885,34 @@ Request body: [`DeviceRegisterRequest`](#deviceregisterrequest).
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/devices" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/api/devices/enumerate
+
+**List my push devices.**
+
+- Auth: Any authenticated principal (`DeviceRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`Device`](#device)
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/devices/enumerate" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -3385,6 +3972,7 @@ The signed-in user's notifications. Preferences are one matrix: each kind of not
 | Method | Path | Summary |
 |---|---|---|
 | GET | [`/v1.0/api/notifications`](#get-v10apinotifications) | List my in-app notifications |
+| POST | [`/v1.0/api/notifications/enumerate`](#post-v10apinotificationsenumerate) | List my in-app notifications |
 | GET | [`/v1.0/api/notifications/unread-count`](#get-v10apinotificationsunread-count) | Count my unread in-app notifications |
 | POST | [`/v1.0/api/notifications/read-all`](#post-v10apinotificationsread-all) | Mark all my in-app notifications as read |
 | GET | [`/v1.0/api/notifications/preferences`](#get-v10apinotificationspreferences) | My notification preferences |
@@ -3416,6 +4004,39 @@ Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`,
 ```bash
 curl -s "http://127.0.0.1:12100/v1.0/api/notifications?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/notifications/enumerate
+
+**List my in-app notifications.** Newest first. A notification is created only for kinds the user turned on for the in-app channel. Rows older than 90 days are removed.
+
+- Auth: Any authenticated principal.
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`Notification`](#notification)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `unread` | boolean | Only unread (true) or only read (false) notifications. |
+| `kind` | enum (`RunResults`, `BriefingReady`, `AudioReady`, `RunFailed`, `CapReached`, `PredictionDue`) | Only notifications of this kind. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/notifications/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### GET /v1.0/api/notifications/unread-count
@@ -3572,6 +4193,7 @@ The things a reader follows. A topic has a research brief, weighted dimensions, 
 |---|---|---|
 | GET | [`/v1.0/api/topics`](#get-v10apitopics) | List topics |
 | POST | [`/v1.0/api/topics`](#post-v10apitopics) | Create a topic without the wizard |
+| POST | [`/v1.0/api/topics/enumerate`](#post-v10apitopicsenumerate) | List topics |
 | GET | [`/v1.0/api/topics/{id}`](#get-v10apitopicsid) | Read a topic with dimensions, constraints, and recipients |
 | PUT | [`/v1.0/api/topics/{id}`](#put-v10apitopicsid) | Update a topic |
 | DELETE | [`/v1.0/api/topics/{id}`](#delete-v10apitopicsid) | Delete a topic and everything under it |
@@ -3582,14 +4204,17 @@ The things a reader follows. A topic has a research brief, weighted dimensions, 
 | POST | [`/v1.0/api/topics/{id}/refine`](#post-v10apitopicsidrefine) | Refine a topic again (starts a wizard session) |
 | GET | [`/v1.0/api/topics/{id}/dimensions`](#get-v10apitopicsiddimensions) | List dimensions |
 | POST | [`/v1.0/api/topics/{id}/dimensions`](#post-v10apitopicsiddimensions) | Add a dimension |
+| POST | [`/v1.0/api/topics/{id}/dimensions/enumerate`](#post-v10apitopicsiddimensionsenumerate) | List dimensions |
 | PUT | [`/v1.0/api/topics/{id}/dimensions/{dimensionId}`](#put-v10apitopicsiddimensionsdimensionid) | Update a dimension (it becomes yours and is kept on regeneration) |
 | DELETE | [`/v1.0/api/topics/{id}/dimensions/{dimensionId}`](#delete-v10apitopicsiddimensionsdimensionid) | Delete a dimension |
 | GET | [`/v1.0/api/topics/{id}/constraints`](#get-v10apitopicsidconstraints) | List constraints |
 | POST | [`/v1.0/api/topics/{id}/constraints`](#post-v10apitopicsidconstraints) | Add a constraint |
+| POST | [`/v1.0/api/topics/{id}/constraints/enumerate`](#post-v10apitopicsidconstraintsenumerate) | List constraints |
 | PUT | [`/v1.0/api/topics/{id}/constraints/{constraintId}`](#put-v10apitopicsidconstraintsconstraintid) | Update a constraint |
 | DELETE | [`/v1.0/api/topics/{id}/constraints/{constraintId}`](#delete-v10apitopicsidconstraintsconstraintid) | Delete a constraint |
 | GET | [`/v1.0/api/topics/{id}/recipients`](#get-v10apitopicsidrecipients) | List email recipients |
 | POST | [`/v1.0/api/topics/{id}/recipients`](#post-v10apitopicsidrecipients) | Add an email recipient |
+| POST | [`/v1.0/api/topics/{id}/recipients/enumerate`](#post-v10apitopicsidrecipientsenumerate) | List email recipients |
 | DELETE | [`/v1.0/api/topics/{id}/recipients/{recipientId}`](#delete-v10apitopicsidrecipientsrecipientid) | Remove an email recipient |
 
 ### GET /v1.0/api/topics
@@ -3656,6 +4281,41 @@ Request body: [`TopicUpsertRequest`](#topicupsertrequest).
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/topics" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/api/topics/enumerate
+
+**List topics.** Members see their own topics; tenant administrators see all unless userId is given.
+
+- Auth: `Topic:Read` (`TopicRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`Topic`](#topic)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `mine` | boolean | Administrators: true lists only your own records. |
+| `status` | enum (`Draft`, `Active`, `Paused`, `Archived`) |  |
+| `isOneTime` | boolean | Only one-time request topics (true) or recurring topics (false). |
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/topics/enumerate" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -3881,11 +4541,13 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLm
 **List dimensions.**
 
 - Auth: `Topic:Read` (`TopicRead`).
-- Response: array of [`TopicDimension`](#topicdimension)
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`TopicDimension`](#topicdimension)
 
 | Path parameter | Type | Postman variable |
 |---|---|---|
 | `id` | string | `{{topicId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
 | Status | Meaning |
 |---|---|
@@ -3896,7 +4558,7 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLm
 | 404 | Not Found |
 
 ```bash
-curl -s "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLmLdBrfbuN/dimensions" \
+curl -s "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLmLdBrfbuN/dimensions?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -3939,6 +4601,39 @@ Request body: [`DimensionUpsertRequest`](#dimensionupsertrequest).
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLmLdBrfbuN/dimensions" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/api/topics/{id}/dimensions/enumerate
+
+**List dimensions.**
+
+- Auth: `Topic:Read` (`TopicRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`TopicDimension`](#topicdimension)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{topicId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLmLdBrfbuN/dimensions/enumerate" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -4017,7 +4712,7 @@ curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5Mgs
 **List constraints.**
 
 - Auth: `Topic:Read` (`TopicRead`).
-- Response: array of [`TopicConstraint`](#topicconstraint)
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`TopicConstraint`](#topicconstraint)
 
 | Path parameter | Type | Postman variable |
 |---|---|---|
@@ -4026,6 +4721,8 @@ curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5Mgs
 | Query parameter | Type | Notes |
 |---|---|---|
 | `kind` | enum (`IncludeKeyword`, `ExcludeKeyword`, `IncludeEntity`, `ExcludeEntity`, `PreferredDomain`, `BlockedDomain`, `TrackedQuestion`, `FeedUrl`, `SeedUrl`) | Only notifications of this kind. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
 | Status | Meaning |
 |---|---|
@@ -4036,7 +4733,7 @@ curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5Mgs
 | 404 | Not Found |
 
 ```bash
-curl -s "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLmLdBrfbuN/constraints" \
+curl -s "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLmLdBrfbuN/constraints?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -4072,6 +4769,43 @@ Request body: [`ConstraintUpsertRequest`](#constraintupsertrequest).
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLmLdBrfbuN/constraints" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/api/topics/{id}/constraints/enumerate
+
+**List constraints.**
+
+- Auth: `Topic:Read` (`TopicRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`TopicConstraint`](#topicconstraint)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{topicId}}` |
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `kind` | enum (`IncludeKeyword`, `ExcludeKeyword`, `IncludeEntity`, `ExcludeEntity`, `PreferredDomain`, `BlockedDomain`, `TrackedQuestion`, `FeedUrl`, `SeedUrl`) | Only notifications of this kind. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLmLdBrfbuN/constraints/enumerate" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -4142,11 +4876,13 @@ curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5Mgs
 **List email recipients.**
 
 - Auth: `Topic:Read` (`TopicRead`).
-- Response: array of [`TopicRecipient`](#topicrecipient)
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`TopicRecipient`](#topicrecipient)
 
 | Path parameter | Type | Postman variable |
 |---|---|---|
 | `id` | string | `{{topicId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
 | Status | Meaning |
 |---|---|
@@ -4157,7 +4893,7 @@ curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5Mgs
 | 404 | Not Found |
 
 ```bash
-curl -s "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLmLdBrfbuN/recipients" \
+curl -s "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLmLdBrfbuN/recipients?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -4196,6 +4932,39 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLm
   -H "Content-Type: application/json" --data-binary @body.json
 ```
 
+### POST /v1.0/api/topics/{id}/recipients/enumerate
+
+**List email recipients.**
+
+- Auth: `Topic:Read` (`TopicRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`TopicRecipient`](#topicrecipient)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{topicId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLmLdBrfbuN/recipients/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
 ### DELETE /v1.0/api/topics/{id}/recipients/{recipientId}
 
 **Remove an email recipient.**
@@ -4229,6 +4998,7 @@ The topic wizard. A session proposes dimensions, asks clarifying questions, draf
 |---|---|---|
 | POST | [`/v1.0/api/refinement-sessions`](#post-v10apirefinement-sessions) | Start the wizard for a new topic |
 | GET | [`/v1.0/api/refinement-sessions`](#get-v10apirefinement-sessions) | List my refinement sessions |
+| POST | [`/v1.0/api/refinement-sessions/enumerate`](#post-v10apirefinement-sessionsenumerate) | List my refinement sessions |
 | GET | [`/v1.0/api/refinement-sessions/{id}`](#get-v10apirefinement-sessionsid) | Read the session state |
 | POST | [`/v1.0/api/refinement-sessions/{id}/dimensions`](#post-v10apirefinement-sessionsiddimensions) | Propose dimensions (keeps locked and your own) |
 | POST | [`/v1.0/api/refinement-sessions/{id}/questions`](#post-v10apirefinement-sessionsidquestions) | Ask the next round of questions |
@@ -4297,6 +5067,41 @@ Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`,
 ```bash
 curl -s "http://127.0.0.1:12100/v1.0/api/refinement-sessions?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/refinement-sessions/enumerate
+
+**List my refinement sessions.**
+
+- Auth: `RefinementSession:Read` (`RefinementRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`RefinementSession`](#refinementsession)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
+| `status` | enum (`Active`, `Completed`, `Abandoned`) |  |
+| `topicId` | string | Only records for this topic. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/refinement-sessions/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### GET /v1.0/api/refinement-sessions/{id}
@@ -4571,6 +5376,7 @@ One-time research requests: a report, podcast, or email summary produced once, n
 |---|---|---|
 | POST | [`/v1.0/api/requests`](#post-v10apirequests) | Create a one-time request |
 | GET | [`/v1.0/api/requests`](#get-v10apirequests) | List my one-time requests |
+| POST | [`/v1.0/api/requests/enumerate`](#post-v10apirequestsenumerate) | List my one-time requests |
 | GET | [`/v1.0/api/requests/{id}`](#get-v10apirequestsid) | Read a request with its plan and questions |
 | DELETE | [`/v1.0/api/requests/{id}`](#delete-v10apirequestsid) | Delete a request |
 | PUT | [`/v1.0/api/requests/{id}/questions/{questionId}`](#put-v10apirequestsidquestionsquestionid) | Answer a clarifying question |
@@ -4643,6 +5449,40 @@ Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`,
 ```bash
 curl -s "http://127.0.0.1:12100/v1.0/api/requests?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/requests/enumerate
+
+**List my one-time requests.**
+
+- Auth: `Topic:Read` (`ResearchRequestRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`ResearchRequest`](#researchrequest)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
+| `status` | enum (`Clarifying`, `Scheduled`, `Running`, `Completed`, `Failed`, `Cancelled`, `Declined`) |  |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/requests/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### GET /v1.0/api/requests/{id}
@@ -4843,6 +5683,7 @@ When topics, editions, and requests run. Interval, days-of-week, days-of-month, 
 | POST | [`/v1.0/api/schedules/preview`](#post-v10apischedulespreview) | Validate a schedule and preview its next runs |
 | GET | [`/v1.0/api/schedules`](#get-v10apischedules) | List schedules |
 | POST | [`/v1.0/api/schedules`](#post-v10apischedules) | Create a schedule |
+| POST | [`/v1.0/api/schedules/enumerate`](#post-v10apischedulesenumerate) | List schedules |
 | GET | [`/v1.0/api/schedules/{id}`](#get-v10apischedulesid) | Read a schedule |
 | PUT | [`/v1.0/api/schedules/{id}`](#put-v10apischedulesid) | Update a schedule |
 | DELETE | [`/v1.0/api/schedules/{id}`](#delete-v10apischedulesid) | Delete a schedule |
@@ -4951,6 +5792,41 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/schedules" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
 
+### POST /v1.0/api/schedules/enumerate
+
+**List schedules.**
+
+- Auth: `Schedule:Read` (`ScheduleRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`Schedule`](#schedule)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
+| `ownerType` | enum (`Topic`, `Edition`, `Request`) | What owns the schedule. |
+| `ownerId` | string | The topic, edition, or request the schedule belongs to. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/schedules/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
 ### GET /v1.0/api/schedules/{id}
 
 **Read a schedule.**
@@ -5049,7 +5925,9 @@ Research runs and their stages, cost, search queries, search results, and model 
 | Method | Path | Summary |
 |---|---|---|
 | GET | [`/v1.0/api/runs`](#get-v10apiruns) | List runs |
+| POST | [`/v1.0/api/runs/enumerate`](#post-v10apirunsenumerate) | List runs |
 | GET | [`/v1.0/api/runs/{id}/tool-calls`](#get-v10apirunsidtool-calls) | A run's agentic tool calls, in order |
+| POST | [`/v1.0/api/runs/{id}/tool-calls/enumerate`](#post-v10apirunsidtool-callsenumerate) | A run's agentic tool calls, in order |
 | GET | [`/v1.0/api/runs/{id}`](#get-v10apirunsid) | Read a run |
 | GET | [`/v1.0/api/runs/{id}/costs`](#get-v10apirunsidcosts) | What a run cost, by stage, model, and task |
 | POST | [`/v1.0/api/runs/{id}/cancel`](#post-v10apirunsidcancel) | Cancel a queued or running run |
@@ -5057,9 +5935,13 @@ Research runs and their stages, cost, search queries, search results, and model 
 | GET | [`/v1.0/api/runs/{id}/events`](#get-v10apirunsidevents) | Stream a run's progress (server-sent events) |
 | POST | [`/v1.0/api/topics/{id}/run`](#post-v10apitopicsidrun) | Run a topic now |
 | GET | [`/v1.0/api/runs/{id}/llm-calls`](#get-v10apirunsidllm-calls) | A run's model calls, oldest first |
+| POST | [`/v1.0/api/runs/{id}/llm-calls/enumerate`](#post-v10apirunsidllm-callsenumerate) | A run's model calls, oldest first |
 | GET | [`/v1.0/api/runs/{id}/stages`](#get-v10apirunsidstages) | A run's stages |
+| POST | [`/v1.0/api/runs/{id}/stages/enumerate`](#post-v10apirunsidstagesenumerate) | A run's stages |
 | GET | [`/v1.0/api/runs/{id}/queries`](#get-v10apirunsidqueries) | A run's search queries |
+| POST | [`/v1.0/api/runs/{id}/queries/enumerate`](#post-v10apirunsidqueriesenumerate) | A run's search queries |
 | GET | [`/v1.0/api/runs/{id}/results`](#get-v10apirunsidresults) | A run's search results with dispositions |
+| POST | [`/v1.0/api/runs/{id}/results/enumerate`](#post-v10apirunsidresultsenumerate) | A run's search results with dispositions |
 
 ### GET /v1.0/api/runs
 
@@ -5091,16 +5973,55 @@ curl -s "http://127.0.0.1:12100/v1.0/api/runs?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
+### POST /v1.0/api/runs/enumerate
+
+**List runs.**
+
+- Auth: `Run:Read` (`RunRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`Run`](#run)
+- Notes: `sortBy=estimatedCostUsd` lists the most expensive runs first (runs with no priced cost sort last) and `sortBy=durationMs` the longest; `queuedUtc`, `completedUtc`, `createdUtc` (the default), `lastUpdateUtc`, and `status` also work.
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
+| `topicId` | string | Only records for this topic. |
+| `status` | enum (`Queued`, `Running`, `Completed`, `PartiallySucceeded`, `Failed`, `Cancelled`, `Skipped`) |  |
+| `trigger` | enum (`Schedule`, `Manual`, `Request`, `Edition`, `Preview`) | What started the run. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/runs/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
 ### GET /v1.0/api/runs/{id}/tool-calls
 
 **A run's agentic tool calls, in order.**
 
 - Auth: `Run:Read` (`RunRead`).
-- Response: array of [`RunToolCall`](#runtoolcall)
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`RunToolCall`](#runtoolcall)
 
 | Path parameter | Type | Postman variable |
 |---|---|---|
 | `id` | string | `{{runId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
 | Status | Meaning |
 |---|---|
@@ -5110,8 +6031,40 @@ curl -s "http://127.0.0.1:12100/v1.0/api/runs?pageSize=10" \
 | 404 | Not Found |
 
 ```bash
-curl -s "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty/tool-calls" \
+curl -s "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty/tool-calls?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/runs/{id}/tool-calls/enumerate
+
+**A run's agentic tool calls, in order.**
+
+- Auth: `Run:Read` (`RunRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`RunToolCall`](#runtoolcall)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{runId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty/tool-calls/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### GET /v1.0/api/runs/{id}
@@ -5785,16 +6738,28 @@ curl -s "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty/l
   -H "Authorization: Bearer $TOKEN"
 ```
 
-### GET /v1.0/api/runs/{id}/stages
+### POST /v1.0/api/runs/{id}/llm-calls/enumerate
 
-**A run's stages.**
+**A run's model calls, oldest first.**
 
 - Auth: `Run:Read` (`RunRead`).
-- Response: array of [`RunStage`](#runstage)
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`LlmCall`](#llmcall)
 
 | Path parameter | Type | Postman variable |
 |---|---|---|
 | `id` | string | `{{runId}}` |
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `runStageId` | string | Only model calls made in this run stage (`rst_...`, from `GET /v1.0/api/runs/{id}/stages` or a cost report's `stages[].runStageId`). |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
 
 | Status | Meaning |
 |---|---|
@@ -5805,8 +6770,68 @@ curl -s "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty/l
 | 404 | Not Found |
 
 ```bash
-curl -s "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty/stages" \
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty/llm-calls/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### GET /v1.0/api/runs/{id}/stages
+
+**A run's stages.**
+
+- Auth: `Run:Read` (`RunRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`RunStage`](#runstage)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{runId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty/stages?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/runs/{id}/stages/enumerate
+
+**A run's stages.**
+
+- Auth: `Run:Read` (`RunRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`RunStage`](#runstage)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{runId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty/stages/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### GET /v1.0/api/runs/{id}/queries
@@ -5814,11 +6839,13 @@ curl -s "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty/s
 **A run's search queries.**
 
 - Auth: `Run:Read` (`RunRead`).
-- Response: array of [`SearchQuery`](#searchquery)
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`SearchQuery`](#searchquery)
 
 | Path parameter | Type | Postman variable |
 |---|---|---|
 | `id` | string | `{{runId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
 | Status | Meaning |
 |---|---|
@@ -5829,8 +6856,41 @@ curl -s "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty/s
 | 404 | Not Found |
 
 ```bash
-curl -s "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty/queries" \
+curl -s "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty/queries?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/runs/{id}/queries/enumerate
+
+**A run's search queries.**
+
+- Auth: `Run:Read` (`RunRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`SearchQuery`](#searchquery)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{runId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty/queries/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### GET /v1.0/api/runs/{id}/results
@@ -5838,7 +6898,7 @@ curl -s "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty/q
 **A run's search results with dispositions.**
 
 - Auth: `Run:Read` (`RunRead`).
-- Response: array of [`SearchResult`](#searchresult)
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`SearchResult`](#searchresult)
 
 | Path parameter | Type | Postman variable |
 |---|---|---|
@@ -5848,6 +6908,8 @@ curl -s "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty/q
 |---|---|---|
 | `disposition` | enum (`Pending`, `Fetched`, `SkippedSeen`, `SkippedBlocked`, `SkippedRobots`, `SkippedLimit`, `SkippedDuplicate`, `FetchFailed`) | What the pipeline did with each result. |
 
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
 | Status | Meaning |
 |---|---|
 | 200 | OK |
@@ -5857,8 +6919,45 @@ curl -s "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty/q
 | 404 | Not Found |
 
 ```bash
-curl -s "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty/results" \
+curl -s "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty/results?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/runs/{id}/results/enumerate
+
+**A run's search results with dispositions.**
+
+- Auth: `Run:Read` (`RunRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`SearchResult`](#searchresult)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{runId}}` |
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `disposition` | enum (`Pending`, `Fetched`, `SkippedSeen`, `SkippedBlocked`, `SkippedRobots`, `SkippedLimit`, `SkippedDuplicate`, `FetchFailed`) | What the pipeline did with each result. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/runs/run_mwpf3c4d_Kj2hG5fD8sAq1wEr7Ty/results/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ## Search
@@ -5869,6 +6968,7 @@ Search providers (SearXNG, Tavily, You.com, RSS, Hacker News, arXiv, hosted mode
 |---|---|---|
 | GET | [`/v1.0/api/search-providers`](#get-v10apisearch-providers) | List search providers |
 | POST | [`/v1.0/api/search-providers`](#post-v10apisearch-providers) | Add a search provider |
+| POST | [`/v1.0/api/search-providers/enumerate`](#post-v10apisearch-providersenumerate) | List search providers |
 | POST | [`/v1.0/api/fetch/test`](#post-v10apifetchtest) | Fetch a page as the research pipeline would |
 | GET | [`/v1.0/api/search-providers/{id}`](#get-v10apisearch-providersid) | Read a search provider |
 | PUT | [`/v1.0/api/search-providers/{id}`](#put-v10apisearch-providersid) | Update a search provider |
@@ -5876,6 +6976,7 @@ Search providers (SearXNG, Tavily, You.com, RSS, Hacker News, arXiv, hosted mode
 | POST | [`/v1.0/api/search-providers/{id}/test`](#post-v10apisearch-providersidtest) | Run a test query |
 | GET | [`/v1.0/api/topics/{id}/search-providers`](#get-v10apitopicsidsearch-providers) | Search providers a topic uses |
 | PUT | [`/v1.0/api/topics/{id}/search-providers`](#put-v10apitopicsidsearch-providers) | Choose a topic's search providers (empty uses the tenant defaults) |
+| POST | [`/v1.0/api/topics/{id}/search-providers/enumerate`](#post-v10apitopicsidsearch-providersenumerate) | Search providers a topic uses |
 
 ### GET /v1.0/api/search-providers
 
@@ -5932,6 +7033,38 @@ Request body: [`SearchProviderUpsertRequest`](#searchproviderupsertrequest).
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/search-providers" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/api/search-providers/enumerate
+
+**List search providers.**
+
+- Auth: `SearchProvider:Read` (`SearchProviderRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`SearchProvider`](#searchprovider)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `kind` | enum (`Searxng`, `Tavily`, `YouCom`, `Rss`, `HackerNews`, `Arxiv`, `HostedModelWebSearch`) | Only notifications of this kind. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/search-providers/enumerate" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -6090,11 +7223,13 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/search-providers/spv_mwpee2c4_R
 **Search providers a topic uses.**
 
 - Auth: `Topic:Read` (`TopicRead`).
-- Response: array of [`SearchProvider`](#searchprovider)
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`SearchProvider`](#searchprovider)
 
 | Path parameter | Type | Postman variable |
 |---|---|---|
 | `id` | string | `{{topicId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
 | Status | Meaning |
 |---|---|
@@ -6105,7 +7240,7 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/search-providers/spv_mwpee2c4_R
 | 404 | Not Found |
 
 ```bash
-curl -s "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLmLdBrfbuN/search-providers" \
+curl -s "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLmLdBrfbuN/search-providers?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -6146,6 +7281,39 @@ curl -s -X PUT "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLmL
   -H "Content-Type: application/json" --data-binary @body.json
 ```
 
+### POST /v1.0/api/topics/{id}/search-providers/enumerate
+
+**Search providers a topic uses.**
+
+- Auth: `Topic:Read` (`TopicRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`SearchProvider`](#searchprovider)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{topicId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLmLdBrfbuN/search-providers/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
 ## Findings
 
 Ranked results from runs, each backed by evidence. Findings can be pinned or hidden.
@@ -6153,6 +7321,7 @@ Ranked results from runs, each backed by evidence. Findings can be pinned or hid
 | Method | Path | Summary |
 |---|---|---|
 | GET | [`/v1.0/api/findings`](#get-v10apifindings) | List findings |
+| POST | [`/v1.0/api/findings/enumerate`](#post-v10apifindingsenumerate) | List findings |
 | GET | [`/v1.0/api/findings/{id}`](#get-v10apifindingsid) | Read a finding with its evidence |
 | PUT | [`/v1.0/api/findings/{id}`](#put-v10apifindingsid) | Pin or hide a finding |
 | DELETE | [`/v1.0/api/findings/{id}`](#delete-v10apifindingsid) | Delete a finding |
@@ -6193,6 +7362,50 @@ Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`,
 ```bash
 curl -s "http://127.0.0.1:12100/v1.0/api/findings?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/findings/enumerate
+
+**List findings.** Defaults: no duplicates, no dry runs, and no below-threshold findings unless tier=BelowThreshold, includeBelowThreshold=true, or includeDuplicates=true (duplicates are below threshold).
+
+- Auth: `Finding:Read` (`FindingRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`Finding`](#finding)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
+| `topicId` | string | Only records for this topic. |
+| `runId` | string | Only records from this run. |
+| `tier` | enum (`MustRead`, `WorthALook`, `Fyi`, `BelowThreshold`) | Finding tier. BelowThreshold also returns below-threshold findings. |
+| `category` | enum (`News`, `Release`, `Research`, `Opinion`, `Tutorial`, `Data`, `Other`) | Finding category. |
+| `includeDuplicates` | boolean | Include findings marked as duplicates. |
+| `includeDryRun` | boolean | Include dry runs and previews. |
+| `minScore` | integer | Lowest final score to include (0 to 100). |
+| `dimensionId` | string | Only findings matched to this dimension. |
+| `includeBelowThreshold` | boolean | Include findings under the display threshold. |
+| `includeHidden` | boolean | Include findings you hid. |
+| `pinned` | boolean | Only pinned (true) or unpinned (false) records. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/findings/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### GET /v1.0/api/findings/{id}
@@ -6308,6 +7521,7 @@ Pages the pipeline fetched for your topics, with their extracted text.
 | Method | Path | Summary |
 |---|---|---|
 | GET | [`/v1.0/api/sources`](#get-v10apisources) | List fetched sources for my topics |
+| POST | [`/v1.0/api/sources/enumerate`](#post-v10apisourcesenumerate) | List fetched sources for my topics |
 | GET | [`/v1.0/api/sources/{id}`](#get-v10apisourcesid) | Read a fetched source |
 
 ### GET /v1.0/api/sources
@@ -6336,6 +7550,41 @@ Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`,
 ```bash
 curl -s "http://127.0.0.1:12100/v1.0/api/sources?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/sources/enumerate
+
+**List fetched sources for my topics.** Newest first; content text is left out (read one source for it).
+
+- Auth: `Source:Read` (`SourceRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`SourceItem`](#sourceitem)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
+| `topicId` | string | Only records for this topic. |
+| `runId` | string | Only records from this run. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/sources/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### GET /v1.0/api/sources/{id}
@@ -6369,6 +7618,7 @@ Forecasts the pipeline extracted, with confidence and a horizon. They are resolv
 | Method | Path | Summary |
 |---|---|---|
 | GET | [`/v1.0/api/predictions`](#get-v10apipredictions) | List predictions |
+| POST | [`/v1.0/api/predictions/enumerate`](#post-v10apipredictionsenumerate) | List predictions |
 | GET | [`/v1.0/api/predictions/{id}`](#get-v10apipredictionsid) | Read a prediction with its reviews |
 | POST | [`/v1.0/api/predictions/{id}/resolve`](#post-v10apipredictionsidresolve) | Resolve a prediction |
 | POST | [`/v1.0/api/prediction-reviews/{id}/accept`](#post-v10apiprediction-reviewsidaccept) | Accept a proposed resolution |
@@ -6401,6 +7651,42 @@ Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`,
 ```bash
 curl -s "http://127.0.0.1:12100/v1.0/api/predictions?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/predictions/enumerate
+
+**List predictions.** Sort by horizonUtc, createdUtc, confidence, status, or brierScore.
+
+- Auth: `Prediction:Read` (`PredictionRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`Prediction`](#prediction)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
+| `topicId` | string | Only records for this topic. |
+| `status` | enum (`Open`, `ProposedResolved`, `Accurate`, `PartiallyAccurate`, `Inaccurate`, `Unresolvable`, `Withdrawn`) |  |
+| `includeDryRun` | boolean | Include dry runs and previews. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/predictions/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### GET /v1.0/api/predictions/{id}
@@ -6516,6 +7802,7 @@ Things worth digging into next, with a status you move through (accept, snooze, 
 | Method | Path | Summary |
 |---|---|---|
 | GET | [`/v1.0/api/suggestions`](#get-v10apisuggestions) | List suggestions |
+| POST | [`/v1.0/api/suggestions/enumerate`](#post-v10apisuggestionsenumerate) | List suggestions |
 | GET | [`/v1.0/api/suggestions/{id}`](#get-v10apisuggestionsid) | Read a suggestion |
 | PUT | [`/v1.0/api/suggestions/{id}/status`](#put-v10apisuggestionsidstatus) | Accept, snooze, dismiss, or complete a suggestion |
 
@@ -6547,6 +7834,43 @@ Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`,
 ```bash
 curl -s "http://127.0.0.1:12100/v1.0/api/suggestions?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/suggestions/enumerate
+
+**List suggestions.** Sort by createdUtc, priority, status, or title.
+
+- Auth: `Suggestion:Read` (`SuggestionRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`Suggestion`](#suggestion)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
+| `topicId` | string | Only records for this topic. |
+| `status` | enum (`New`, `Accepted`, `Snoozed`, `Dismissed`, `Done`) |  |
+| `priority` | enum (`High`, `Medium`, `Low`) | Suggestion priority. |
+| `includeDryRun` | boolean | Include dry runs and previews. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/suggestions/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### GET /v1.0/api/suggestions/{id}
@@ -6614,6 +7938,7 @@ Composed briefings with sections and items, their Markdown and HTML files, pinni
 | Method | Path | Summary |
 |---|---|---|
 | GET | [`/v1.0/api/briefings`](#get-v10apibriefings) | List briefings |
+| POST | [`/v1.0/api/briefings/enumerate`](#post-v10apibriefingsenumerate) | List briefings |
 | GET | [`/v1.0/api/briefings/{id}`](#get-v10apibriefingsid) | Read a briefing with its sections, items, and files |
 | DELETE | [`/v1.0/api/briefings/{id}`](#delete-v10apibriefingsid) | Delete a briefing and its files |
 | GET | [`/v1.0/api/briefings/{id}/download`](#get-v10apibriefingsiddownload) | Download a briefing as Markdown or HTML |
@@ -6653,6 +7978,46 @@ Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`,
 ```bash
 curl -s "http://127.0.0.1:12100/v1.0/api/briefings?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/briefings/enumerate
+
+**List briefings.** Newest first. Dry runs and previews are excluded unless includeDryRun=true.
+
+- Auth: `Briefing:Read` (`BriefingRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`Briefing`](#briefing)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
+| `kind` | enum (`Edition`, `Run`, `OneTime`) | Only notifications of this kind. |
+| `editionId` | string | Only records for this edition. |
+| `topicId` | string | Only records for this topic. |
+| `runId` | string | Only records from this run. |
+| `status` | enum (`Queued`, `Composing`, `Ready`, `Failed`) |  |
+| `pinned` | boolean | Only pinned (true) or unpinned (false) records. |
+| `includeDryRun` | boolean | Include dry runs and previews. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/briefings/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### GET /v1.0/api/briefings/{id}
@@ -6860,6 +8225,7 @@ Stored files: briefing Markdown and HTML, audio, and exports. Content streams wi
 | Method | Path | Summary |
 |---|---|---|
 | GET | [`/v1.0/api/artifacts`](#get-v10apiartifacts) | List stored files |
+| POST | [`/v1.0/api/artifacts/enumerate`](#post-v10apiartifactsenumerate) | List stored files |
 | GET | [`/v1.0/api/artifacts/{id}`](#get-v10apiartifactsid) | Read stored file metadata |
 | GET | [`/v1.0/api/artifacts/{id}/content`](#get-v10apiartifactsidcontent) | Stream a stored file |
 | GET | [`/v1.0/api/artifacts/{id}/download-url`](#get-v10apiartifactsiddownload-url) | A presigned download URL when the store offers one |
@@ -6891,6 +8257,42 @@ Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`,
 ```bash
 curl -s "http://127.0.0.1:12100/v1.0/api/artifacts?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/artifacts/enumerate
+
+**List stored files.**
+
+- Auth: `Briefing:Read` (`ArtifactRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`Artifact`](#artifact)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
+| `briefingId` | string | Only records for this briefing. |
+| `kind` | enum (`BriefingMarkdown`, `BriefingHtml`, `Audio`, `Chapters`, `Export`) | Only notifications of this kind. |
+| `pinned` | boolean | Only pinned (true) or unpinned (false) records. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/artifacts/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### GET /v1.0/api/artifacts/{id}
@@ -6982,6 +8384,7 @@ Recurring briefings that gather several topics, with a template, audio and email
 |---|---|---|
 | GET | [`/v1.0/api/editions`](#get-v10apieditions) | List my editions |
 | POST | [`/v1.0/api/editions`](#post-v10apieditions) | Create an edition |
+| POST | [`/v1.0/api/editions/enumerate`](#post-v10apieditionsenumerate) | List my editions |
 | GET | [`/v1.0/api/editions/{id}`](#get-v10apieditionsid) | Read an edition with its topics and schedules |
 | PUT | [`/v1.0/api/editions/{id}`](#put-v10apieditionsid) | Update an edition |
 | DELETE | [`/v1.0/api/editions/{id}`](#delete-v10apieditionsid) | Delete an edition (its briefings stay) |
@@ -7049,6 +8452,39 @@ Request body: [`EditionUpsertRequest`](#editionupsertrequest).
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/editions" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/api/editions/enumerate
+
+**List my editions.**
+
+- Auth: `Edition:Read` (`EditionRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`Edition`](#edition)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/editions/enumerate" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -7245,11 +8681,13 @@ Briefing templates in Markdown. Every save is a version; templates can be valida
 |---|---|---|
 | GET | [`/v1.0/api/briefing-templates`](#get-v10apibriefing-templates) | List briefing templates I can use |
 | POST | [`/v1.0/api/briefing-templates`](#post-v10apibriefing-templates) | Create (import) a template from Markdown |
+| POST | [`/v1.0/api/briefing-templates/enumerate`](#post-v10apibriefing-templatesenumerate) | List briefing templates I can use |
 | POST | [`/v1.0/api/briefing-templates/validate`](#post-v10apibriefing-templatesvalidate) | Validate template Markdown without saving |
 | GET | [`/v1.0/api/briefing-templates/{id}`](#get-v10apibriefing-templatesid) | Read a template with its current content |
 | PUT | [`/v1.0/api/briefing-templates/{id}`](#put-v10apibriefing-templatesid) | Save a new template version |
 | DELETE | [`/v1.0/api/briefing-templates/{id}`](#delete-v10apibriefing-templatesid) | Delete a template |
 | GET | [`/v1.0/api/briefing-templates/{id}/versions`](#get-v10apibriefing-templatesidversions) | List template versions |
+| POST | [`/v1.0/api/briefing-templates/{id}/versions/enumerate`](#post-v10apibriefing-templatesidversionsenumerate) | List template versions |
 | POST | [`/v1.0/api/briefing-templates/{id}/rollback`](#post-v10apibriefing-templatesidrollback) | Restore an earlier version |
 | POST | [`/v1.0/api/briefing-templates/{id}/reset`](#post-v10apibriefing-templatesidreset) | Reset a seeded template to the shipped default |
 | GET | [`/v1.0/api/briefing-templates/{id}/export`](#get-v10apibriefing-templatesidexport) | Export the current version as a Markdown file |
@@ -7306,6 +8744,39 @@ Request body: [`TemplateCreateRequest`](#templatecreaterequest).
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/briefing-templates" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/api/briefing-templates/enumerate
+
+**List briefing templates I can use.** Shared tenant templates plus my own.
+
+- Auth: `Template:Read` (`TemplateRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`BriefingTemplate`](#briefingtemplate)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `scope` | string | `all` (default), `shared`, or `mine`. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/briefing-templates/enumerate" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -7425,11 +8896,13 @@ curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/briefing-templates/btp_mwpee2
 **List template versions.**
 
 - Auth: `Template:Read` (`TemplateRead`).
-- Response: array of [`BriefingTemplateVersion`](#briefingtemplateversion)
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`BriefingTemplateVersion`](#briefingtemplateversion)
 
 | Path parameter | Type | Postman variable |
 |---|---|---|
 | `id` | string | `{{templateId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
 | Status | Meaning |
 |---|---|
@@ -7440,8 +8913,41 @@ curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/briefing-templates/btp_mwpee2
 | 404 | Not Found |
 
 ```bash
-curl -s "http://127.0.0.1:12100/v1.0/api/briefing-templates/btp_mwpee29z_Ty8uI1oP4aSd7fGh0Jk/versions" \
+curl -s "http://127.0.0.1:12100/v1.0/api/briefing-templates/btp_mwpee29z_Ty8uI1oP4aSd7fGh0Jk/versions?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/briefing-templates/{id}/versions/enumerate
+
+**List template versions.**
+
+- Auth: `Template:Read` (`TemplateRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`BriefingTemplateVersion`](#briefingtemplateversion)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{templateId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/briefing-templates/btp_mwpee29z_Ty8uI1oP4aSd7fGh0Jk/versions/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### POST /v1.0/api/briefing-templates/{id}/rollback
@@ -7533,6 +9039,7 @@ Audio episodes made from briefings, with chapters.
 | Method | Path | Summary |
 |---|---|---|
 | GET | [`/v1.0/api/media`](#get-v10apimedia) | List audio episodes |
+| POST | [`/v1.0/api/media/enumerate`](#post-v10apimediaenumerate) | List audio episodes |
 | GET | [`/v1.0/api/media/{id}`](#get-v10apimediaid) | Read an episode with its chapters |
 | DELETE | [`/v1.0/api/media/{id}`](#delete-v10apimediaid) | Delete an episode and its files |
 | POST | [`/v1.0/api/briefings/{id}/audio`](#post-v10apibriefingsidaudio) | Make (or remake) audio for a briefing |
@@ -7565,6 +9072,43 @@ Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`,
 ```bash
 curl -s "http://127.0.0.1:12100/v1.0/api/media?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/media/enumerate
+
+**List audio episodes.**
+
+- Auth: `Media:Read` (`MediaRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`MediaAsset`](#mediaasset)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
+| `briefingId` | string | Only records for this briefing. |
+| `editionId` | string | Only records for this edition. |
+| `status` | enum (`Queued`, `Scripting`, `Synthesizing`, `Ready`, `Failed`) |  |
+| `kind` | enum (`BriefingAudio`, `PodcastEpisode`) | Only notifications of this kind. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/media/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### GET /v1.0/api/media/{id}
@@ -7657,6 +9201,7 @@ Text-to-speech voice profiles, with a test route that speaks a sample. Two more 
 |---|---|---|
 | GET | [`/v1.0/api/voices`](#get-v10apivoices) | List voice profiles |
 | POST | [`/v1.0/api/voices`](#post-v10apivoices) | Create a voice profile |
+| POST | [`/v1.0/api/voices/enumerate`](#post-v10apivoicesenumerate) | List voice profiles |
 | GET | [`/v1.0/api/voices/available`](#get-v10apivoicesavailable) | List the voices a topic can use |
 | POST | [`/v1.0/api/voices/preview`](#post-v10apivoicespreview) | Hear a short sample of a voice |
 | GET | [`/v1.0/api/voices/{id}`](#get-v10apivoicesid) | Read a voice profile |
@@ -7715,6 +9260,34 @@ Request body: [`VoiceProfileUpsertRequest`](#voiceprofileupsertrequest).
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/voices" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/api/voices/enumerate
+
+**List voice profiles.**
+
+- Auth: `Voice:Read` (`VoiceRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`VoiceProfile`](#voiceprofile)
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/voices/enumerate" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -7904,6 +9477,7 @@ Private podcast feed tokens. The feed URL embeds the secret, which is shown once
 |---|---|---|
 | GET | [`/v1.0/api/feed-tokens`](#get-v10apifeed-tokens) | List my podcast feed tokens |
 | POST | [`/v1.0/api/feed-tokens`](#post-v10apifeed-tokens) | Create a private podcast feed |
+| POST | [`/v1.0/api/feed-tokens/enumerate`](#post-v10apifeed-tokensenumerate) | List my podcast feed tokens |
 | DELETE | [`/v1.0/api/feed-tokens/{id}`](#delete-v10apifeed-tokensid) | Revoke a podcast feed token |
 
 ### GET /v1.0/api/feed-tokens
@@ -7911,7 +9485,9 @@ Private podcast feed tokens. The feed URL embeds the secret, which is shown once
 **List my podcast feed tokens.**
 
 - Auth: `Media:Read` (`FeedTokenRead`).
-- Response: array of [`FeedToken`](#feedtoken)
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`FeedToken`](#feedtoken)
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
 | Status | Meaning |
 |---|---|
@@ -7921,7 +9497,7 @@ Private podcast feed tokens. The feed URL embeds the secret, which is shown once
 | 403 | Forbidden |
 
 ```bash
-curl -s "http://127.0.0.1:12100/v1.0/api/feed-tokens" \
+curl -s "http://127.0.0.1:12100/v1.0/api/feed-tokens?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -7950,6 +9526,34 @@ Request body: [`FeedTokenCreateRequest`](#feedtokencreaterequest).
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/feed-tokens" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/api/feed-tokens/enumerate
+
+**List my podcast feed tokens.**
+
+- Auth: `Media:Read` (`FeedTokenRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`FeedToken`](#feedtoken)
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/feed-tokens/enumerate" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -7990,6 +9594,7 @@ Public share links for a briefing. One share yields one link to a single page wh
 |---|---|---|
 | GET | [`/v1.0/api/briefings/{id}/shares`](#get-v10apibriefingsidshares) | List the public share links of a briefing |
 | POST | [`/v1.0/api/briefings/{id}/shares`](#post-v10apibriefingsidshares) | Share a briefing through public links |
+| POST | [`/v1.0/api/briefings/{id}/shares/enumerate`](#post-v10apibriefingsidsharesenumerate) | List the public share links of a briefing |
 | DELETE | [`/v1.0/api/briefings/{id}/shares/{shareId}`](#delete-v10apibriefingsidsharesshareid) | Revoke a public share link |
 
 ### GET /v1.0/api/briefings/{id}/shares
@@ -8055,6 +9660,40 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/briefings/brf_mwpf8b9c_Er6tY9uI
   -H "Content-Type: application/json" --data-binary @body.json
 ```
 
+### POST /v1.0/api/briefings/{id}/shares/enumerate
+
+**List the public share links of a briefing.** Newest first. Each share has its expiry, revocation time, view count, and the time it was last opened. The link secret is never returned here; it is shown once when the share is created.
+
+- Auth: `Briefing:Read` (`ShareRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`BriefingShare`](#briefingshare)
+- Notes: The owner of the briefing and tenant administrators can list its shares. `tokenHash` is always `redacted`, and the links themselves are never returned here. A share works while `revokedUtc` is null and `expiresUtc` is in the future. `viewCount` and `lastViewedUtc` say whether a link was opened; nothing else about visitors is recorded.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{briefingId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/briefings/brf_mwpf8b9c_Er6tY9uI2oPa5sDf8Gh/shares/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
 ### DELETE /v1.0/api/briefings/{id}/shares/{shareId}
 
 **Revoke a public share link.** The link stops working at once. With purge=true, deletes a share that is already revoked or expired.
@@ -8092,6 +9731,7 @@ The email outbox, test and preview sends, resends, and the signed-in user's emai
 | Method | Path | Summary |
 |---|---|---|
 | GET | [`/v1.0/api/email-messages`](#get-v10apiemail-messages) | List the email outbox |
+| POST | [`/v1.0/api/email-messages/enumerate`](#post-v10apiemail-messagesenumerate) | List the email outbox |
 | POST | [`/v1.0/api/email/test`](#post-v10apiemailtest) | Send a test email to me |
 | GET | [`/v1.0/api/email-preferences`](#get-v10apiemail-preferences) | My email preferences |
 | PUT | [`/v1.0/api/email-preferences`](#put-v10apiemail-preferences) | Change my email preferences |
@@ -8128,6 +9768,43 @@ Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`,
 ```bash
 curl -s "http://127.0.0.1:12100/v1.0/api/email-messages?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/email-messages/enumerate
+
+**List the email outbox.** Rendered bodies are left out; read one message for them.
+
+- Auth: `EmailMessage:Read` (`EmailRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`EmailMessage`](#emailmessage)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `status` | enum (`Queued`, `Sending`, `Sent`, `Failed`, `Suppressed`, `Skipped`) |  |
+| `template` | enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`, `CapReached`, `AudioReady`, `PredictionDue`) | Email template. |
+| `runId` | string | Only records from this run. |
+| `briefingId` | string | Only records for this briefing. |
+| `topicId` | string | Only records for this topic. |
+| `recipient` | string | Recipient email address. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/email-messages/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### POST /v1.0/api/email/test
@@ -8311,6 +9988,7 @@ Ratings and reasons on findings, predictions, suggestions, sources, domains, and
 |---|---|---|
 | POST | [`/v1.0/api/feedback`](#post-v10apifeedback) | Give feedback on an item |
 | GET | [`/v1.0/api/feedback`](#get-v10apifeedback) | List feedback |
+| POST | [`/v1.0/api/feedback/enumerate`](#post-v10apifeedbackenumerate) | List feedback |
 | PUT | [`/v1.0/api/feedback/{id}`](#put-v10apifeedbackid) | Edit the reason of my feedback |
 | DELETE | [`/v1.0/api/feedback/{id}`](#delete-v10apifeedbackid) | Retract my feedback (the earlier rating, if any, becomes current) |
 
@@ -8375,6 +10053,44 @@ Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`,
 ```bash
 curl -s "http://127.0.0.1:12100/v1.0/api/feedback?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/feedback/enumerate
+
+**List feedback.** Current ratings only unless includeHistory=true.
+
+- Auth: `Feedback:Read` (`FeedbackRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`Feedback`](#feedback)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
+| `targetType` | enum (`Finding`, `Prediction`, `PredictionReview`, `Suggestion`, `SourceItem`, `Domain`, `Briefing`, `BriefingSection`, `LearnedPreference`) | The rated item's type. |
+| `targetId` | string | The rated item. |
+| `topicId` | string | Only records for this topic. |
+| `channel` | enum (`Dashboard`, `Email`, `Mobile`, `Api`, `Mcp`) | Where the feedback came from. |
+| `includeHistory` | boolean | Include superseded ratings, not only the current one. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/feedback/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### PUT /v1.0/api/feedback/{id}
@@ -8442,6 +10158,7 @@ Preferences learned from feedback (or written by hand), their review flow, and r
 |---|---|---|
 | GET | [`/v1.0/api/learned-preferences`](#get-v10apilearned-preferences) | List learned preferences |
 | POST | [`/v1.0/api/learned-preferences`](#post-v10apilearned-preferences) | Write a preference (active at once) |
+| POST | [`/v1.0/api/learned-preferences/enumerate`](#post-v10apilearned-preferencesenumerate) | List learned preferences |
 | GET | [`/v1.0/api/learned-preferences/{id}`](#get-v10apilearned-preferencesid) | Read a preference with its supporting feedback |
 | PUT | [`/v1.0/api/learned-preferences/{id}`](#put-v10apilearned-preferencesid) | Edit a preference |
 | DELETE | [`/v1.0/api/learned-preferences/{id}`](#delete-v10apilearned-preferencesid) | Delete a preference |
@@ -8507,6 +10224,42 @@ Request body: [`PreferenceUpsertRequest`](#preferenceupsertrequest).
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/learned-preferences" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/api/learned-preferences/enumerate
+
+**List learned preferences.**
+
+- Auth: `LearnedPreference:Read` (`PreferenceRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`LearnedPreference`](#learnedpreference)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+| `mine` | boolean | Administrators: true lists only your own records. |
+| `topicId` | string | Only records for this topic. |
+| `status` | enum (`Proposed`, `Active`, `Rejected`, `Disabled`) |  |
+| `origin` | enum (`Distilled`, `User`) | Distilled from feedback, or written by a user. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/learned-preferences/enumerate" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -9020,12 +10773,14 @@ Prompt templates by key and scope, topic overrides, version history, rollback, r
 | Method | Path | Summary |
 |---|---|---|
 | GET | [`/v1.0/api/prompts`](#get-v10apiprompts) | List prompt templates |
+| POST | [`/v1.0/api/prompts/enumerate`](#post-v10apipromptsenumerate) | List prompt templates |
 | POST | [`/v1.0/api/prompts/lab`](#post-v10apipromptslab) | Run a prompt in the prompt lab |
 | POST | [`/v1.0/api/prompts/overrides`](#post-v10apipromptsoverrides) | Create a topic override of a prompt |
 | GET | [`/v1.0/api/prompts/{id}`](#get-v10apipromptsid) | Read a prompt template with its content |
 | PUT | [`/v1.0/api/prompts/{id}`](#put-v10apipromptsid) | Save a new version |
 | DELETE | [`/v1.0/api/prompts/{id}`](#delete-v10apipromptsid) | Delete a topic override |
 | GET | [`/v1.0/api/prompts/{id}/versions`](#get-v10apipromptsidversions) | Version history |
+| POST | [`/v1.0/api/prompts/{id}/versions/enumerate`](#post-v10apipromptsidversionsenumerate) | Version history |
 | POST | [`/v1.0/api/prompts/{id}/rollback`](#post-v10apipromptsidrollback) | Restore an earlier version (query: version) |
 | POST | [`/v1.0/api/prompts/{id}/reset`](#post-v10apipromptsidreset) | Restore the shipped default |
 
@@ -9056,6 +10811,42 @@ Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`,
 ```bash
 curl -s "http://127.0.0.1:12100/v1.0/api/prompts?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/prompts/enumerate
+
+**List prompt templates.**
+
+- Auth: `Prompt:Read` (`PromptRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`PromptTemplate`](#prompttemplate)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `key` | string | Prompt key, for example research.score. |
+| `topicId` | string | Only records for this topic. |
+| `isCustomized` | boolean | Only prompts changed from the shipped default. |
+| `tenantOnly` | boolean | Only tenant-level prompts, not topic overrides. |
+| `role` | enum (`Refinement`, `QueryPlanning`, `Extraction`, `Scoring`, `Synthesis`, `Prediction`, `Suggestion`, `Composition`, `PodcastScript`, `FeedbackAnalysis`, `Embedding`) | Model task the prompt serves. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/prompts/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### POST /v1.0/api/prompts/lab
@@ -9211,11 +11002,13 @@ curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/prompts/pmt_mwpee2d0_As4dF7gH
 **Version history.**
 
 - Auth: `Prompt:Read` (`PromptRead`).
-- Response: array of [`PromptTemplateVersion`](#prompttemplateversion)
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`PromptTemplateVersion`](#prompttemplateversion)
 
 | Path parameter | Type | Postman variable |
 |---|---|---|
 | `id` | string | `{{promptId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
 | Status | Meaning |
 |---|---|
@@ -9226,8 +11019,41 @@ curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/prompts/pmt_mwpee2d0_As4dF7gH
 | 404 | Not Found |
 
 ```bash
-curl -s "http://127.0.0.1:12100/v1.0/api/prompts/pmt_mwpee2d0_As4dF7gH0jKl3zXc6Vb/versions" \
+curl -s "http://127.0.0.1:12100/v1.0/api/prompts/pmt_mwpee2d0_As4dF7gH0jKl3zXc6Vb/versions?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/prompts/{id}/versions/enumerate
+
+**Version history.**
+
+- Auth: `Prompt:Read` (`PromptRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`PromptTemplateVersion`](#prompttemplateversion)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{promptId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/prompts/pmt_mwpee2d0_As4dF7gH0jKl3zXc6Vb/versions/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### POST /v1.0/api/prompts/{id}/rollback
@@ -9290,11 +11116,13 @@ Global administrators create, generate, and manage promotional codes that grant 
 |---|---|---|
 | GET | [`/v1.0/api/admin/promo-codes`](#get-v10apiadminpromo-codes) | List promotional codes with usage |
 | POST | [`/v1.0/api/admin/promo-codes`](#post-v10apiadminpromo-codes) | Create a promotional code |
+| POST | [`/v1.0/api/admin/promo-codes/enumerate`](#post-v10apiadminpromo-codesenumerate) | List promotional codes with usage |
 | POST | [`/v1.0/api/admin/promo-codes/generate`](#post-v10apiadminpromo-codesgenerate) | Generate promotional codes in bulk |
 | GET | [`/v1.0/api/admin/promo-codes/{id}`](#get-v10apiadminpromo-codesid) | Read a promotional code with usage |
 | PUT | [`/v1.0/api/admin/promo-codes/{id}`](#put-v10apiadminpromo-codesid) | Update a promotional code (limits, dates, plan, on or off) |
 | DELETE | [`/v1.0/api/admin/promo-codes/{id}`](#delete-v10apiadminpromo-codesid) | Delete an unused promotional code (disable a used one instead) |
 | GET | [`/v1.0/api/admin/promo-codes/{id}/redemptions`](#get-v10apiadminpromo-codesidredemptions) | Who redeemed a code and when |
+| POST | [`/v1.0/api/admin/promo-codes/{id}/redemptions/enumerate`](#post-v10apiadminpromo-codesidredemptionsenumerate) | Who redeemed a code and when |
 | POST | [`/v1.0/api/admin/promo-codes/{id}/redemptions/{redemptionId}/revoke`](#post-v10apiadminpromo-codesidredemptionsredemptionidrevoke) | Revoke a redemption (ends its plan now) |
 | POST | [`/v1.0/api/admin/promo-codes/{id}/apply`](#post-v10apiadminpromo-codesidapply) | Redeem a code for a user |
 
@@ -9359,6 +11187,40 @@ Request body: [`PromoCodeUpsertRequest`](#promocodeupsertrequest).
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/admin/promo-codes" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/api/admin/promo-codes/enumerate
+
+**List promotional codes with usage.** Global administrators only. status: active, disabled, notstarted, expired, or exhausted.
+
+- Auth: `Admin:Admin` (`PromoCodeAdmin`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`PromoCodeStats`](#promocodestats)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `status` | string |  |
+| `enabled` | boolean | Only enabled (true) or disabled (false) codes. |
+| `planId` | string | Only codes that grant this plan. |
+| `batchId` | string | Codes made by one generate call. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/admin/promo-codes/enumerate" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -9498,11 +11360,13 @@ curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/admin/promo-codes/prc_mwpff31
 **Who redeemed a code and when.**
 
 - Auth: `Admin:Admin` (`PromoCodeAdmin`).
-- Response: array of [`PromoRedemption`](#promoredemption)
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`PromoRedemption`](#promoredemption)
 
 | Path parameter | Type | Postman variable |
 |---|---|---|
 | `id` | string | `{{promoCodeId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
 | Status | Meaning |
 |---|---|
@@ -9512,8 +11376,40 @@ curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/admin/promo-codes/prc_mwpff31
 | 404 | Not Found |
 
 ```bash
-curl -s "http://127.0.0.1:12100/v1.0/api/admin/promo-codes/prc_mwpff31e_Lz2xC5vB8nMq1wEr4Ty/redemptions" \
+curl -s "http://127.0.0.1:12100/v1.0/api/admin/promo-codes/prc_mwpff31e_Lz2xC5vB8nMq1wEr4Ty/redemptions?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/admin/promo-codes/{id}/redemptions/enumerate
+
+**Who redeemed a code and when.**
+
+- Auth: `Admin:Admin` (`PromoCodeAdmin`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`PromoRedemption`](#promoredemption)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{promoCodeId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/admin/promo-codes/prc_mwpff31e_Lz2xC5vB8nMq1wEr4Ty/redemptions/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### POST /v1.0/api/admin/promo-codes/{id}/redemptions/{redemptionId}/revoke
@@ -9582,8 +11478,10 @@ Global administrators manage plans, their entitlement values, and per-user plan 
 |---|---|---|
 | GET | [`/v1.0/api/admin/plans`](#get-v10apiadminplans) | List plans with entitlement values |
 | POST | [`/v1.0/api/admin/plans`](#post-v10apiadminplans) | Create a plan |
+| POST | [`/v1.0/api/admin/plans/enumerate`](#post-v10apiadminplansenumerate) | List plans with entitlement values |
 | GET | [`/v1.0/api/admin/plan-assignments`](#get-v10apiadminplan-assignments) | A user's plan assignments |
 | POST | [`/v1.0/api/admin/plan-assignments`](#post-v10apiadminplan-assignments) | Give a user a plan |
+| POST | [`/v1.0/api/admin/plan-assignments/enumerate`](#post-v10apiadminplan-assignmentsenumerate) | A user's plan assignments |
 | GET | [`/v1.0/tenants/{tenantId}/users/{userId}/entitlements`](#get-v10tenantstenantidusersuseridentitlements) | Read a user's effective plan and overrides |
 | PUT | [`/v1.0/tenants/{tenantId}/users/{userId}/entitlements`](#put-v10tenantstenantidusersuseridentitlements) | Set one user entitlement override |
 | DELETE | [`/v1.0/tenants/{tenantId}/users/{userId}/entitlements/{featureKey}`](#delete-v10tenantstenantidusersuseridentitlementsfeaturekey) | Restore a user entitlement to its plan default |
@@ -9595,7 +11493,9 @@ Global administrators manage plans, their entitlement values, and per-user plan 
 **List plans with entitlement values.**
 
 - Auth: `Admin:Admin` (`PromoCodeAdmin`).
-- Response: array of [`PlanResponse`](#planresponse)
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`PlanResponse`](#planresponse)
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
 | Status | Meaning |
 |---|---|
@@ -9604,7 +11504,7 @@ Global administrators manage plans, their entitlement values, and per-user plan 
 | 403 | Forbidden |
 
 ```bash
-curl -s "http://127.0.0.1:12100/v1.0/api/admin/plans" \
+curl -s "http://127.0.0.1:12100/v1.0/api/admin/plans?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -9644,17 +11544,46 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/admin/plans" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
 
+### POST /v1.0/api/admin/plans/enumerate
+
+**List plans with entitlement values.**
+
+- Auth: `Admin:Admin` (`PromoCodeAdmin`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`PlanResponse`](#planresponse)
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/admin/plans/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
 ### GET /v1.0/api/admin/plan-assignments
 
 **A user's plan assignments.**
 
 - Auth: `Admin:Admin` (`PromoCodeAdmin`).
-- Response: array of [`PlanAssignment`](#planassignment)
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`PlanAssignment`](#planassignment)
 
 | Query parameter | Type | Notes |
 |---|---|---|
 | `tenantId` | string | Global administrators: another tenant. Ignored for everyone else. |
 | `userId` | string | Administrators: another user's records. Ignored for members. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
 | Status | Meaning |
 |---|---|
@@ -9664,7 +11593,7 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/admin/plans" \
 | 403 | Forbidden |
 
 ```bash
-curl -s "http://127.0.0.1:12100/v1.0/api/admin/plan-assignments" \
+curl -s "http://127.0.0.1:12100/v1.0/api/admin/plan-assignments?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -9696,6 +11625,39 @@ Request body: [`PlanGrantRequest`](#plangrantrequest).
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/admin/plan-assignments" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/api/admin/plan-assignments/enumerate
+
+**A user's plan assignments.**
+
+- Auth: `Admin:Admin` (`PromoCodeAdmin`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`PlanAssignment`](#planassignment)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `tenantId` | string | Global administrators: another tenant. Ignored for everyone else. |
+| `userId` | string | Administrators: another user's records. Ignored for members. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/admin/plan-assignments/enumerate" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -10540,6 +12502,7 @@ Remote MCP tool servers that agentic research may call, their discovered tools, 
 |---|---|---|
 | GET | [`/v1.0/api/mcp-servers`](#get-v10apimcp-servers) | List registered MCP servers |
 | POST | [`/v1.0/api/mcp-servers`](#post-v10apimcp-servers) | Register an MCP server |
+| POST | [`/v1.0/api/mcp-servers/enumerate`](#post-v10apimcp-serversenumerate) | List registered MCP servers |
 | GET | [`/v1.0/api/mcp-servers/{id}`](#get-v10apimcp-serversid) | Read an MCP server with its tools |
 | PUT | [`/v1.0/api/mcp-servers/{id}`](#put-v10apimcp-serversid) | Change an MCP server |
 | DELETE | [`/v1.0/api/mcp-servers/{id}`](#delete-v10apimcp-serversid) | Remove an MCP server and its tools |
@@ -10601,6 +12564,37 @@ Request body: [`McpServerUpsertRequest`](#mcpserverupsertrequest).
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/mcp-servers" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/api/mcp-servers/enumerate
+
+**List registered MCP servers.**
+
+- Auth: `McpServer:Read` (`McpServerRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`McpServer`](#mcpserver)
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `enabled` | boolean | Only enabled (true) or disabled (false) codes. |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/mcp-servers/enumerate" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -10777,11 +12771,15 @@ System-wide publications and private subscriptions. Shared content is generated 
 | Method | Path | Summary |
 |---|---|---|
 | GET | [`/v1.0/api/catalog`](#get-v10apicatalog) | Browse system briefings |
+| POST | [`/v1.0/api/catalog/enumerate`](#post-v10apicatalogenumerate) | Browse system briefings |
 | GET | [`/v1.0/api/catalog/subscriptions`](#get-v10apicatalogsubscriptions) | My system briefing subscriptions |
+| POST | [`/v1.0/api/catalog/subscriptions/enumerate`](#post-v10apicatalogsubscriptionsenumerate) | My system briefing subscriptions |
 | GET | [`/v1.0/api/catalog/issues`](#get-v10apicatalogissues) | Shared issues from all my subscriptions |
+| POST | [`/v1.0/api/catalog/issues/enumerate`](#post-v10apicatalogissuesenumerate) | Shared issues from all my subscriptions |
 | PUT | [`/v1.0/api/catalog/{id}/subscription`](#put-v10apicatalogidsubscription) | Subscribe to a system briefing |
 | DELETE | [`/v1.0/api/catalog/{id}/subscription`](#delete-v10apicatalogidsubscription) | Unsubscribe from a system briefing |
 | GET | [`/v1.0/api/catalog/{id}/issues`](#get-v10apicatalogidissues) | List subscribed system briefing issues |
+| POST | [`/v1.0/api/catalog/{id}/issues/enumerate`](#post-v10apicatalogidissuesenumerate) | List subscribed system briefing issues |
 | GET | [`/v1.0/api/catalog/{id}/issues/{issueId}`](#get-v10apicatalogidissuesissueid) | Read a subscribed system briefing issue |
 | GET | [`/v1.0/api/catalog/{id}/issues/{issueId}/audio`](#get-v10apicatalogidissuesissueidaudio) | Stream shared system briefing audio |
 | GET | [`/v1.0/api/catalog/{id}/issues/{issueId}/progress`](#get-v10apicatalogidissuesissueidprogress) | Read personal progress for a shared issue |
@@ -10815,6 +12813,41 @@ curl -s "http://127.0.0.1:12100/v1.0/api/catalog?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
+### POST /v1.0/api/catalog/enumerate
+
+**Browse system briefings.**
+
+- Auth: `Briefing:Read` (`BriefingRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`CatalogEntryResponse`](#catalogentryresponse)
+- Notes: Browse published system briefings and account eligibility.
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `category` | string | Finding category. |
+| `language` | string |  |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/catalog/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
 ### GET /v1.0/api/catalog/subscriptions
 
 **My system briefing subscriptions.**
@@ -10836,6 +12869,36 @@ Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`,
 ```bash
 curl -s "http://127.0.0.1:12100/v1.0/api/catalog/subscriptions?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/catalog/subscriptions/enumerate
+
+**My system briefing subscriptions.**
+
+- Auth: `Briefing:Read` (`BriefingRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`CatalogSubscription`](#catalogsubscription)
+- Notes: List private subscriptions, including suspended subscriptions.
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/catalog/subscriptions/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### GET /v1.0/api/catalog/issues
@@ -10863,6 +12926,40 @@ Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`,
 ```bash
 curl -s "http://127.0.0.1:12100/v1.0/api/catalog/issues?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/catalog/issues/enumerate
+
+**Shared issues from all my subscriptions.** Newest first. Content-only projection; suspended or retracted publications are excluded.
+
+- Auth: `Briefing:Read` (`BriefingRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`CatalogIssueResponse`](#catalogissueresponse)
+- Notes: List shared issues across all current subscriptions.
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `audioOnly` | boolean |  |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/catalog/issues/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### PUT /v1.0/api/catalog/{id}/subscription
@@ -10953,6 +13050,40 @@ Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`,
 ```bash
 curl -s "http://127.0.0.1:12100/v1.0/api/catalog/<publicationId>/issues?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/catalog/{id}/issues/enumerate
+
+**List subscribed system briefing issues.**
+
+- Auth: `Briefing:Read` (`BriefingRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`CatalogIssueResponse`](#catalogissueresponse)
+- Notes: List issues readable through this subscription.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{publicationId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/catalog/<publicationId>/issues/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### GET /v1.0/api/catalog/{id}/issues/{issueId}
@@ -11079,9 +13210,11 @@ Global administrators manage canonical publications, research, schedules, and li
 |---|---|---|
 | GET | [`/v1.0/api/admin/catalog`](#get-v10apiadmincatalog) | Manage system publications |
 | POST | [`/v1.0/api/admin/catalog`](#post-v10apiadmincatalog) | Create a canonical system topic and publication |
+| POST | [`/v1.0/api/admin/catalog/enumerate`](#post-v10apiadmincatalogenumerate) | Manage system publications |
 | GET | [`/v1.0/api/admin/catalog/{id}`](#get-v10apiadmincatalogid) | Read a system publication |
 | PUT | [`/v1.0/api/admin/catalog/{id}`](#put-v10apiadmincatalogid) | Publish, retire, retract, or edit a system publication |
 | GET | [`/v1.0/api/admin/catalog/{id}/issues`](#get-v10apiadmincatalogidissues) | Inspect canonical published issues |
+| POST | [`/v1.0/api/admin/catalog/{id}/issues/enumerate`](#post-v10apiadmincatalogidissuesenumerate) | Inspect canonical published issues |
 | GET | [`/v1.0/api/admin/catalog/{id}/research`](#get-v10apiadmincatalogidresearch) | Read canonical research and schedule settings |
 | PUT | [`/v1.0/api/admin/catalog/{id}/research`](#put-v10apiadmincatalogidresearch) | Configure canonical research and schedule |
 | POST | [`/v1.0/api/admin/catalog/{id}/run`](#post-v10apiadmincatalogidrun) | Research a system publication now |
@@ -11142,6 +13275,36 @@ Request body: [`CatalogPublicationRequest`](#catalogpublicationrequest).
 
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/admin/catalog" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/api/admin/catalog/enumerate
+
+**Manage system publications.**
+
+- Auth: `Topic:Update` (`TopicWrite`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`CatalogPublication`](#catalogpublication)
+- Notes: System administrator: list every publication lifecycle state.
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/admin/catalog/enumerate" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -11237,6 +13400,40 @@ Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`,
 ```bash
 curl -s "http://127.0.0.1:12100/v1.0/api/admin/catalog/<publicationId>/issues?pageSize=10" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/admin/catalog/{id}/issues/enumerate
+
+**Inspect canonical published issues.**
+
+- Auth: `Topic:Update` (`TopicWrite`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`CatalogIssueResponse`](#catalogissueresponse)
+- Notes: System administrator: inspect canonical issue projections.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{publicationId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+```json
+"EnumerationQuery"
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/admin/catalog/<publicationId>/issues/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### GET /v1.0/api/admin/catalog/{id}/research
@@ -11782,7 +13979,7 @@ Apple App Store settings for in-app subscriptions. An empty bundle id disables A
 
 A stored file: briefing Markdown or HTML, audio, chapters, or an export. Kept up to the retention window unless pinned.
 
-Returned by [GET /v1.0/api/artifacts](#get-v10apiartifacts), [GET /v1.0/api/artifacts/{id}](#get-v10apiartifactsid).
+Returned by [GET /v1.0/api/artifacts](#get-v10apiartifacts), [POST /v1.0/api/artifacts/enumerate](#post-v10apiartifactsenumerate), [GET /v1.0/api/artifacts/{id}](#get-v10apiartifactsid).
 
 | Field | Type | Description |
 |---|---|---|
@@ -11837,7 +14034,7 @@ Request body of [POST /v1.0/api/briefings/{id}/audio](#post-v10apibriefingsidaud
 
 Append-only security event: authentication, sessions, RBAC changes, denials, bypasses, settings changes.
 
-Returned by [GET /v1.0/api/audit](#get-v10apiaudit), [GET /v1.0/api/audit/{id}](#get-v10apiauditid).
+Returned by [GET /v1.0/api/audit](#get-v10apiaudit), [POST /v1.0/api/audit/enumerate](#post-v10apiauditenumerate), [GET /v1.0/api/audit/{id}](#get-v10apiauditid).
 
 | Field | Type | Description |
 |---|---|---|
@@ -12104,7 +14301,7 @@ A rate for one group.
 
 A composed briefing: an edition across topics, a single run, or a one-time report.
 
-Returned by [GET /v1.0/api/briefings](#get-v10apibriefings), [PUT /v1.0/api/briefings/{id}/pin](#put-v10apibriefingsidpin), [POST /v1.0/api/briefings/{id}/regenerate](#post-v10apibriefingsidregenerate), [POST /v1.0/api/editions/{id}/compose](#post-v10apieditionsidcompose), [POST /v1.0/api/editions/{id}/preview](#post-v10apieditionsidpreview).
+Returned by [GET /v1.0/api/briefings](#get-v10apibriefings), [POST /v1.0/api/briefings/enumerate](#post-v10apibriefingsenumerate), [PUT /v1.0/api/briefings/{id}/pin](#put-v10apibriefingsidpin), [POST /v1.0/api/briefings/{id}/regenerate](#post-v10apibriefingsidregenerate), [POST /v1.0/api/editions/{id}/compose](#post-v10apieditionsidcompose), [POST /v1.0/api/editions/{id}/preview](#post-v10apieditionsidpreview).
 
 | Field | Type | Description |
 |---|---|---|
@@ -12240,7 +14437,7 @@ One section of a composed briefing.
 
 A public share link for one briefing. One record yields two links: a reading page and a listening page. Only the SHA-256 hash of the link secret is stored. Every share expires.
 
-Returned by [GET /v1.0/api/briefings/{id}/shares](#get-v10apibriefingsidshares).
+Returned by [GET /v1.0/api/briefings/{id}/shares](#get-v10apibriefingsidshares), [POST /v1.0/api/briefings/{id}/shares/enumerate](#post-v10apibriefingsidsharesenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -12289,7 +14486,7 @@ Request body of [POST /v1.0/api/briefings/{id}/shares](#post-v10apibriefingsidsh
 
 A Markdown briefing template with front matter and section directives (plan section 21.1).
 
-Returned by [GET /v1.0/api/briefing-templates](#get-v10apibriefing-templates).
+Returned by [GET /v1.0/api/briefing-templates](#get-v10apibriefing-templates), [POST /v1.0/api/briefing-templates/enumerate](#post-v10apibriefing-templatesenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -12310,7 +14507,7 @@ Returned by [GET /v1.0/api/briefing-templates](#get-v10apibriefing-templates).
 
 One saved version of a briefing template.
 
-Returned by [GET /v1.0/api/briefing-templates/{id}/versions](#get-v10apibriefing-templatesidversions).
+Returned by [GET /v1.0/api/briefing-templates/{id}/versions](#get-v10apibriefing-templatesidversions), [POST /v1.0/api/briefing-templates/{id}/versions/enumerate](#post-v10apibriefing-templatesidversionsenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -12341,7 +14538,7 @@ Stated confidence against observed accuracy.
 
 Public catalog projection. Contains no canonical workspace, prompts, credentials, or research trace.
 
-Returned by [GET /v1.0/api/catalog](#get-v10apicatalog).
+Returned by [GET /v1.0/api/catalog](#get-v10apicatalog), [POST /v1.0/api/catalog/enumerate](#post-v10apicatalogenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -12379,7 +14576,7 @@ Example:
 
 Shared issue content projection. Always authorized through the caller's subscription.
 
-Returned by [GET /v1.0/api/catalog/issues](#get-v10apicatalogissues), [GET /v1.0/api/catalog/{id}/issues](#get-v10apicatalogidissues), [GET /v1.0/api/catalog/{id}/issues/{issueId}](#get-v10apicatalogidissuesissueid), [GET /v1.0/api/admin/catalog/{id}/issues](#get-v10apiadmincatalogidissues).
+Returned by [GET /v1.0/api/catalog/issues](#get-v10apicatalogissues), [POST /v1.0/api/catalog/issues/enumerate](#post-v10apicatalogissuesenumerate), [GET /v1.0/api/catalog/{id}/issues](#get-v10apicatalogidissues), [POST /v1.0/api/catalog/{id}/issues/enumerate](#post-v10apicatalogidissuesenumerate), [GET /v1.0/api/catalog/{id}/issues/{issueId}](#get-v10apicatalogidissuesissueid), [GET /v1.0/api/admin/catalog/{id}/issues](#get-v10apiadmincatalogidissues), [POST /v1.0/api/admin/catalog/{id}/issues/enumerate](#post-v10apiadmincatalogidissuesenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -12395,7 +14592,7 @@ Returned by [GET /v1.0/api/catalog/issues](#get-v10apicatalogissues), [GET /v1.0
 
 Explicit administrator publication of a canonical system topic. Reads use an allowlisted projection.
 
-Returned by [GET /v1.0/api/admin/catalog](#get-v10apiadmincatalog), [POST /v1.0/api/admin/catalog](#post-v10apiadmincatalog), [GET /v1.0/api/admin/catalog/{id}](#get-v10apiadmincatalogid), [PUT /v1.0/api/admin/catalog/{id}](#put-v10apiadmincatalogid).
+Returned by [GET /v1.0/api/admin/catalog](#get-v10apiadmincatalog), [POST /v1.0/api/admin/catalog](#post-v10apiadmincatalog), [POST /v1.0/api/admin/catalog/enumerate](#post-v10apiadmincatalogenumerate), [GET /v1.0/api/admin/catalog/{id}](#get-v10apiadmincatalogid), [PUT /v1.0/api/admin/catalog/{id}](#put-v10apiadmincatalogid).
 
 | Field | Type | Description |
 |---|---|---|
@@ -12458,7 +14655,7 @@ Returned by [GET /v1.0/api/admin/catalog/{id}/research](#get-v10apiadmincatalogi
 
 A user subscribes to a canonical publication; delivery and interaction state stay private.
 
-Returned by [GET /v1.0/api/catalog/subscriptions](#get-v10apicatalogsubscriptions), [PUT /v1.0/api/catalog/{id}/subscription](#put-v10apicatalogidsubscription).
+Returned by [GET /v1.0/api/catalog/subscriptions](#get-v10apicatalogsubscriptions), [POST /v1.0/api/catalog/subscriptions/enumerate](#post-v10apicatalogsubscriptionsenumerate), [PUT /v1.0/api/catalog/{id}/subscription](#put-v10apicatalogidsubscription).
 
 | Field | Type | Description |
 |---|---|---|
@@ -12623,7 +14820,7 @@ Request body of [POST /v1.0/tenants/{tenantId}/credentials](#post-v10tenantstena
 
 Credential as returned by the API. The secret is never included after creation.
 
-Returned by [GET /v1.0/tenants/{tenantId}/credentials](#get-v10tenantstenantidcredentials), [GET /v1.0/tenants/{tenantId}/credentials/{credentialId}](#get-v10tenantstenantidcredentialscredentialid), [PUT /v1.0/tenants/{tenantId}/credentials/{credentialId}](#put-v10tenantstenantidcredentialscredentialid).
+Returned by [GET /v1.0/tenants/{tenantId}/credentials](#get-v10tenantstenantidcredentials), [POST /v1.0/tenants/{tenantId}/credentials/enumerate](#post-v10tenantstenantidcredentialsenumerate), [GET /v1.0/tenants/{tenantId}/credentials/{credentialId}](#get-v10tenantstenantidcredentialscredentialid), [PUT /v1.0/tenants/{tenantId}/credentials/{credentialId}](#put-v10tenantstenantidcredentialscredentialid).
 
 | Field | Type | Description |
 |---|---|---|
@@ -12647,7 +14844,7 @@ Returned by [GET /v1.0/tenants/{tenantId}/credentials](#get-v10tenantstenantidcr
 
 Scope assignment for a credential, narrowing it below its owning user.
 
-Returned by [GET /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes](#get-v10tenantstenantidcredentialscredentialidscopes), [POST /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes](#post-v10tenantstenantidcredentialscredentialidscopes).
+Returned by [GET /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes](#get-v10tenantstenantidcredentialscredentialidscopes), [POST /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes](#post-v10tenantstenantidcredentialscredentialidscopes), [POST /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes/enumerate](#post-v10tenantstenantidcredentialscredentialidscopesenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -12709,7 +14906,7 @@ Returned by [DELETE /v1.0/api/audit](#delete-v10apiaudit), [DELETE /v1.0/api/req
 
 A mobile device registered for push notifications.
 
-Returned by [GET /v1.0/api/devices](#get-v10apidevices), [POST /v1.0/api/devices](#post-v10apidevices).
+Returned by [GET /v1.0/api/devices](#get-v10apidevices), [POST /v1.0/api/devices](#post-v10apidevices), [POST /v1.0/api/devices/enumerate](#post-v10apidevicesenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -12783,7 +14980,7 @@ Returned by [GET /v1.0/api/artifacts/{id}/download-url](#get-v10apiartifactsiddo
 
 A recurring briefing across topics with its own schedule, template, and delivery (plan section 21.3).
 
-Returned by [GET /v1.0/api/editions](#get-v10apieditions).
+Returned by [GET /v1.0/api/editions](#get-v10apieditions), [POST /v1.0/api/editions/enumerate](#post-v10apieditionsenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -12963,7 +15160,7 @@ Example:
 
 An outbound email in the outbox: rendered once, delivered by the worker with retries, idempotent per key.
 
-Returned by [GET /v1.0/api/email-messages](#get-v10apiemail-messages), [POST /v1.0/api/email/test](#post-v10apiemailtest), [GET /v1.0/api/email-messages/{id}](#get-v10apiemail-messagesid), [POST /v1.0/api/email-messages/{id}/resend](#post-v10apiemail-messagesidresend).
+Returned by [GET /v1.0/api/email-messages](#get-v10apiemail-messages), [POST /v1.0/api/email-messages/enumerate](#post-v10apiemail-messagesenumerate), [POST /v1.0/api/email/test](#post-v10apiemailtest), [GET /v1.0/api/email-messages/{id}](#get-v10apiemail-messagesid), [POST /v1.0/api/email-messages/{id}/resend](#post-v10apiemail-messagesidresend).
 
 | Field | Type | Description |
 |---|---|---|
@@ -13103,18 +15300,52 @@ Request body of [PUT /v1.0/tenants/{tenantId}/users/{userId}/entitlements](#put-
 | `reason` | string | Required explanation, retained in the audit trail. Maximum 1000 characters. |
 | `expiresUtc` | date-time | Optional UTC expiry. Null means no expiry. |
 
+#### EnumerationQuery
+
+Common paging, sorting, and date-range filter for list endpoints.
+
+Request body of [POST /v1.0/tenants/enumerate](#post-v10tenantsenumerate), [POST /v1.0/tenants/{tenantId}/users/enumerate](#post-v10tenantstenantidusersenumerate), [POST /v1.0/tenants/{tenantId}/credentials/enumerate](#post-v10tenantstenantidcredentialsenumerate), [POST /v1.0/tenants/{tenantId}/roles/enumerate](#post-v10tenantstenantidrolesenumerate), [POST /v1.0/tenants/{tenantId}/permissions/enumerate](#post-v10tenantstenantidpermissionsenumerate), [POST /v1.0/tenants/{tenantId}/users/{userId}/assignments/enumerate](#post-v10tenantstenantidusersuseridassignmentsenumerate), [POST /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes/enumerate](#post-v10tenantstenantidcredentialscredentialidscopesenumerate), [POST /v1.0/api/audit/enumerate](#post-v10apiauditenumerate) and 53 more.
+
+| Field | Type | Description |
+|---|---|---|
+| `tenantId` | string | Tenant scope. Set from the request context, never trusted from the caller for ordinary operations. |
+| `includeGlobal` | boolean | For entities with optional tenants (built-in roles and permissions): also include global rows with a null tenant. |
+| `allTenants` | boolean | For entities with optional tenants: ignore tenant scoping entirely. Control-plane use by global administrators only. |
+| `pageNumber` | integer | One-based page number. Default 1. Minimum 1. |
+| `pageSize` | integer | Page size. Default 10. Minimum 1, maximum 1000. |
+| `sortBy` | string | Sort field (camelCase property name). Unknown values fall back to the default sort. |
+| `sortDirection` | [`SortDirectionEnum`](#sortdirectionenum) | Sort direction. Default Descending. |
+| `search` | string | Free-text search over the entity's searchable columns. |
+| `fromUtc` | date-time | Inclusive lower bound on creation time (UTC). |
+| `toUtc` | date-time | Exclusive upper bound on creation time (UTC). |
+| `order` | [`EnumerationOrderEnum`](#enumerationorderenum) | Creation ordering, newest first by default. Sets the shared sorting fields. |
+| `createdAfter` | date-time | Exclusive creation lower bound; null leaves it unrestricted. |
+| `createdBefore` | date-time | Exclusive creation upper bound; null leaves it unrestricted. |
+| `offset` | integer |  |
+
+Example:
+
+```json
+{
+  "pageNumber": 1,
+  "pageSize": 10,
+  "order": "CreatedDescending"
+}
+```
+
 #### EnumerationResult
 
 One page of results.
 
 | Field | Type | Description |
 |---|---|---|
-| `items` | array of T | Items on this page. |
+| `success` | boolean | Whether enumeration succeeded. |
+| `objects` | array of T | Objects on this page. |
 | `pageNumber` | integer | One-based page number. |
 | `pageSize` | integer | Page size. |
-| `totalCount` | integer | Total matching records. |
+| `totalRecords` | integer | Total matching records. |
 | `totalPages` | integer | Total pages. |
-| `durationMs` | number | Query duration in milliseconds. |
+| `totalMs` | number | Query duration in milliseconds. |
 
 #### ErrorResponse
 
@@ -13189,7 +15420,7 @@ A bundled tool shown on the dashboard External Services card.
 
 A reader rating of an item with an optional reason. The newest rating per user and item is current.
 
-Returned by [POST /v1.0/api/feedback](#post-v10apifeedback), [GET /v1.0/api/feedback](#get-v10apifeedback), [PUT /v1.0/api/feedback/{id}](#put-v10apifeedbackid).
+Returned by [POST /v1.0/api/feedback](#post-v10apifeedback), [GET /v1.0/api/feedback](#get-v10apifeedback), [POST /v1.0/api/feedback/enumerate](#post-v10apifeedbackenumerate), [PUT /v1.0/api/feedback/{id}](#put-v10apifeedbackid).
 
 | Field | Type | Description |
 |---|---|---|
@@ -13259,7 +15490,7 @@ Request body of [PUT /v1.0/api/feedback/{id}](#put-v10apifeedbackid).
 
 A private podcast feed token. Only its SHA-256 hash is stored.
 
-Returned by [GET /v1.0/api/feed-tokens](#get-v10apifeed-tokens).
+Returned by [GET /v1.0/api/feed-tokens](#get-v10apifeed-tokens), [POST /v1.0/api/feed-tokens/enumerate](#post-v10apifeed-tokensenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -13335,7 +15566,7 @@ Request body of [POST /v1.0/api/fetch/test](#post-v10apifetchtest).
 
 A ranked research finding backed by verified evidence.
 
-Returned by [GET /v1.0/api/findings](#get-v10apifindings), [PUT /v1.0/api/findings/{id}](#put-v10apifindingsid).
+Returned by [GET /v1.0/api/findings](#get-v10apifindings), [POST /v1.0/api/findings/enumerate](#post-v10apifindingsenumerate), [PUT /v1.0/api/findings/{id}](#put-v10apifindingsid).
 
 | Field | Type | Description |
 |---|---|---|
@@ -13481,7 +15712,7 @@ Hosted service settings (plan section 33). Off for self-hosted installs.
 
 A preference the research agent follows: written by the reader or distilled from feedback and approved.
 
-Returned by [GET /v1.0/api/learned-preferences](#get-v10apilearned-preferences), [POST /v1.0/api/learned-preferences](#post-v10apilearned-preferences), [PUT /v1.0/api/learned-preferences/{id}](#put-v10apilearned-preferencesid), [POST /v1.0/api/learned-preferences/{id}/accept](#post-v10apilearned-preferencesidaccept), [POST /v1.0/api/learned-preferences/{id}/reject](#post-v10apilearned-preferencesidreject), [POST /v1.0/api/learned-preferences/{id}/disable](#post-v10apilearned-preferencesiddisable), [POST /v1.0/api/learned-preferences/{id}/enable](#post-v10apilearned-preferencesidenable), [POST /v1.0/api/topics/{id}/learn](#post-v10apitopicsidlearn).
+Returned by [GET /v1.0/api/learned-preferences](#get-v10apilearned-preferences), [POST /v1.0/api/learned-preferences](#post-v10apilearned-preferences), [POST /v1.0/api/learned-preferences/enumerate](#post-v10apilearned-preferencesenumerate), [PUT /v1.0/api/learned-preferences/{id}](#put-v10apilearned-preferencesid), [POST /v1.0/api/learned-preferences/{id}/accept](#post-v10apilearned-preferencesidaccept), [POST /v1.0/api/learned-preferences/{id}/reject](#post-v10apilearned-preferencesidreject), [POST /v1.0/api/learned-preferences/{id}/disable](#post-v10apilearned-preferencesiddisable), [POST /v1.0/api/learned-preferences/{id}/enable](#post-v10apilearned-preferencesidenable) and 1 more.
 
 | Field | Type | Description |
 |---|---|---|
@@ -13517,7 +15748,7 @@ Learning from feedback (plan section 18).
 
 One model call made through the model gateway, with tokens, latency, cost, and optional diagnostic payloads.
 
-Returned by [GET /v1.0/api/llm-calls](#get-v10apillm-calls), [GET /v1.0/api/llm-calls/{id}](#get-v10apillm-callsid), [GET /v1.0/api/runs/{id}/llm-calls](#get-v10apirunsidllm-calls).
+Returned by [GET /v1.0/api/llm-calls](#get-v10apillm-calls), [POST /v1.0/api/llm-calls/enumerate](#post-v10apillm-callsenumerate), [GET /v1.0/api/llm-calls/{id}](#get-v10apillm-callsid), [GET /v1.0/api/runs/{id}/llm-calls](#get-v10apirunsidllm-calls), [POST /v1.0/api/runs/{id}/llm-calls/enumerate](#post-v10apirunsidllm-callsenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -13582,7 +15813,7 @@ Logging settings.
 
 A remote MCP server registered by the tenant; its tools can be offered to agentic research.
 
-Returned by [GET /v1.0/api/mcp-servers](#get-v10apimcp-servers), [POST /v1.0/api/mcp-servers](#post-v10apimcp-servers), [PUT /v1.0/api/mcp-servers/{id}](#put-v10apimcp-serversid).
+Returned by [GET /v1.0/api/mcp-servers](#get-v10apimcp-servers), [POST /v1.0/api/mcp-servers](#post-v10apimcp-servers), [POST /v1.0/api/mcp-servers/enumerate](#post-v10apimcp-serversenumerate), [PUT /v1.0/api/mcp-servers/{id}](#put-v10apimcp-serversid).
 
 | Field | Type | Description |
 |---|---|---|
@@ -13662,7 +15893,7 @@ Request body of [PUT /v1.0/api/mcp-servers/{id}/tools/{toolId}](#put-v10apimcp-s
 
 An audio episode made from a briefing: script, synthesis status, stored audio, and chapters.
 
-Returned by [GET /v1.0/api/media](#get-v10apimedia), [POST /v1.0/api/briefings/{id}/audio](#post-v10apibriefingsidaudio).
+Returned by [GET /v1.0/api/media](#get-v10apimedia), [POST /v1.0/api/media/enumerate](#post-v10apimediaenumerate), [POST /v1.0/api/briefings/{id}/audio](#post-v10apibriefingsidaudio).
 
 | Field | Type | Description |
 |---|---|---|
@@ -13727,7 +15958,7 @@ Returned by [GET /v1.0/api/media/{id}](#get-v10apimediaid).
 
 Assignment of a pipeline task role to a model endpoint, tenant-wide or for one topic.
 
-Returned by [GET /v1.0/api/model-assignments](#get-v10apimodel-assignments), [PUT /v1.0/api/model-assignments](#put-v10apimodel-assignments).
+Returned by [GET /v1.0/api/model-assignments](#get-v10apimodel-assignments), [PUT /v1.0/api/model-assignments](#put-v10apimodel-assignments), [POST /v1.0/api/model-assignments/enumerate](#post-v10apimodel-assignmentsenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -13783,7 +16014,7 @@ Cost of the calls one model made in a run.
 
 A model provider endpoint reached through PolyPrompt.
 
-Returned by [GET /v1.0/api/model-endpoints](#get-v10apimodel-endpoints), [POST /v1.0/api/model-endpoints](#post-v10apimodel-endpoints), [GET /v1.0/api/model-endpoints/{id}](#get-v10apimodel-endpointsid), [PUT /v1.0/api/model-endpoints/{id}](#put-v10apimodel-endpointsid).
+Returned by [GET /v1.0/api/model-endpoints](#get-v10apimodel-endpoints), [POST /v1.0/api/model-endpoints](#post-v10apimodel-endpoints), [POST /v1.0/api/model-endpoints/enumerate](#post-v10apimodel-endpointsenumerate), [GET /v1.0/api/model-endpoints/{id}](#get-v10apimodel-endpointsid), [PUT /v1.0/api/model-endpoints/{id}](#put-v10apimodel-endpointsid).
 
 | Field | Type | Description |
 |---|---|---|
@@ -13850,7 +16081,7 @@ Request body of [POST /v1.0/api/model-endpoints](#post-v10apimodel-endpoints), [
 
 A model reported by an endpoint.
 
-Returned by [GET /v1.0/api/model-endpoints/{id}/models](#get-v10apimodel-endpointsidmodels).
+Returned by [GET /v1.0/api/model-endpoints/{id}/models](#get-v10apimodel-endpointsidmodels), [POST /v1.0/api/model-endpoints/{id}/models/enumerate](#post-v10apimodel-endpointsidmodelsenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -13925,7 +16156,7 @@ Returned by [POST /v1.0/api/model-endpoints/{id}/validate](#post-v10apimodel-end
 
 An in-app notification for one user, with the item it points to.
 
-Returned by [GET /v1.0/api/notifications](#get-v10apinotifications), [POST /v1.0/api/notifications/{id}/read](#post-v10apinotificationsidread).
+Returned by [GET /v1.0/api/notifications](#get-v10apinotifications), [POST /v1.0/api/notifications/enumerate](#post-v10apinotificationsenumerate), [POST /v1.0/api/notifications/{id}/read](#post-v10apinotificationsidread).
 
 | Field | Type | Description |
 |---|---|---|
@@ -14191,7 +16422,7 @@ Request body of [PUT /v1.0/api/me/password](#put-v10apimepassword).
 
 Permission: which operations are permitted or denied on which resource types.
 
-Returned by [GET /v1.0/tenants/{tenantId}/permissions](#get-v10tenantstenantidpermissions), [POST /v1.0/tenants/{tenantId}/permissions](#post-v10tenantstenantidpermissions), [PUT /v1.0/tenants/{tenantId}/permissions/{permissionId}](#put-v10tenantstenantidpermissionspermissionid).
+Returned by [GET /v1.0/tenants/{tenantId}/permissions](#get-v10tenantstenantidpermissions), [POST /v1.0/tenants/{tenantId}/permissions](#post-v10tenantstenantidpermissions), [POST /v1.0/tenants/{tenantId}/permissions/enumerate](#post-v10tenantstenantidpermissionsenumerate), [PUT /v1.0/tenants/{tenantId}/permissions/{permissionId}](#put-v10tenantstenantidpermissionspermissionid).
 
 | Field | Type | Description |
 |---|---|---|
@@ -14286,7 +16517,7 @@ A service plan. Code checks entitlement keys, never plan names, so billing is a 
 
 A plan given to a user for a period: by default, an administrator, a promotional code, or billing later.
 
-Returned by [GET /v1.0/api/admin/plan-assignments](#get-v10apiadminplan-assignments), [POST /v1.0/api/admin/plan-assignments](#post-v10apiadminplan-assignments).
+Returned by [GET /v1.0/api/admin/plan-assignments](#get-v10apiadminplan-assignments), [POST /v1.0/api/admin/plan-assignments](#post-v10apiadminplan-assignments), [POST /v1.0/api/admin/plan-assignments/enumerate](#post-v10apiadminplan-assignmentsenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -14323,7 +16554,7 @@ Request body of [POST /v1.0/api/admin/plan-assignments](#post-v10apiadminplan-as
 
 A plan with its entitlement values.
 
-Returned by [GET /v1.0/api/admin/plans](#get-v10apiadminplans), [POST /v1.0/api/admin/plans](#post-v10apiadminplans), [PUT /v1.0/api/admin/plans/{id}](#put-v10apiadminplansid).
+Returned by [GET /v1.0/api/admin/plans](#get-v10apiadminplans), [POST /v1.0/api/admin/plans](#post-v10apiadminplans), [POST /v1.0/api/admin/plans/enumerate](#post-v10apiadminplansenumerate), [PUT /v1.0/api/admin/plans/{id}](#put-v10apiadminplansid).
 
 | Field | Type | Description |
 |---|---|---|
@@ -14347,7 +16578,7 @@ Request body of [POST /v1.0/api/admin/plans](#post-v10apiadminplans), [PUT /v1.0
 
 A falsifiable prediction with a confidence and a horizon, graded later.
 
-Returned by [GET /v1.0/api/predictions](#get-v10apipredictions), [POST /v1.0/api/predictions/{id}/resolve](#post-v10apipredictionsidresolve), [POST /v1.0/api/prediction-reviews/{id}/accept](#post-v10apiprediction-reviewsidaccept), [POST /v1.0/api/prediction-reviews/{id}/reject](#post-v10apiprediction-reviewsidreject).
+Returned by [GET /v1.0/api/predictions](#get-v10apipredictions), [POST /v1.0/api/predictions/enumerate](#post-v10apipredictionsenumerate), [POST /v1.0/api/predictions/{id}/resolve](#post-v10apipredictionsidresolve), [POST /v1.0/api/prediction-reviews/{id}/accept](#post-v10apiprediction-reviewsidaccept), [POST /v1.0/api/prediction-reviews/{id}/reject](#post-v10apiprediction-reviewsidreject).
 
 | Field | Type | Description |
 |---|---|---|
@@ -14527,7 +16758,7 @@ Request body of [POST /v1.0/api/admin/promo-codes/generate](#post-v10apiadminpro
 
 Usage of one code.
 
-Returned by [GET /v1.0/api/admin/promo-codes](#get-v10apiadminpromo-codes), [POST /v1.0/api/admin/promo-codes](#post-v10apiadminpromo-codes), [GET /v1.0/api/admin/promo-codes/{id}](#get-v10apiadminpromo-codesid), [PUT /v1.0/api/admin/promo-codes/{id}](#put-v10apiadminpromo-codesid).
+Returned by [GET /v1.0/api/admin/promo-codes](#get-v10apiadminpromo-codes), [POST /v1.0/api/admin/promo-codes](#post-v10apiadminpromo-codes), [POST /v1.0/api/admin/promo-codes/enumerate](#post-v10apiadminpromo-codesenumerate), [GET /v1.0/api/admin/promo-codes/{id}](#get-v10apiadminpromo-codesid), [PUT /v1.0/api/admin/promo-codes/{id}](#put-v10apiadminpromo-codesid).
 
 | Field | Type | Description |
 |---|---|---|
@@ -14579,7 +16810,7 @@ Request body of [POST /v1.0/api/promo-codes/redeem](#post-v10apipromo-codesredee
 
 One use of a promotional code.
 
-Returned by [GET /v1.0/api/admin/promo-codes/{id}/redemptions](#get-v10apiadminpromo-codesidredemptions), [POST /v1.0/api/admin/promo-codes/{id}/redemptions/{redemptionId}/revoke](#post-v10apiadminpromo-codesidredemptionsredemptionidrevoke), [POST /v1.0/api/admin/promo-codes/{id}/apply](#post-v10apiadminpromo-codesidapply).
+Returned by [GET /v1.0/api/admin/promo-codes/{id}/redemptions](#get-v10apiadminpromo-codesidredemptions), [POST /v1.0/api/admin/promo-codes/{id}/redemptions/enumerate](#post-v10apiadminpromo-codesidredemptionsenumerate), [POST /v1.0/api/admin/promo-codes/{id}/redemptions/{redemptionId}/revoke](#post-v10apiadminpromo-codesidredemptionsredemptionidrevoke), [POST /v1.0/api/admin/promo-codes/{id}/apply](#post-v10apiadminpromo-codesidapply).
 
 | Field | Type | Description |
 |---|---|---|
@@ -14652,7 +16883,7 @@ Request body of [POST /v1.0/api/prompts/overrides](#post-v10apipromptsoverrides)
 
 Editable, versioned prompt used by one pipeline task. Tenant-wide, or overridden for one topic.
 
-Returned by [GET /v1.0/api/prompts](#get-v10apiprompts).
+Returned by [GET /v1.0/api/prompts](#get-v10apiprompts), [POST /v1.0/api/prompts/enumerate](#post-v10apipromptsenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -14698,7 +16929,7 @@ Request body of [PUT /v1.0/api/prompts/{id}](#put-v10apipromptsid).
 
 One saved version of a prompt template.
 
-Returned by [GET /v1.0/api/prompts/{id}/versions](#get-v10apipromptsidversions).
+Returned by [GET /v1.0/api/prompts/{id}/versions](#get-v10apipromptsidversions), [POST /v1.0/api/prompts/{id}/versions/enumerate](#post-v10apipromptsidversionsenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -14960,7 +17191,7 @@ Returned by [PUT /v1.0/api/refinement-sessions/{id}/questions/{questionId}](#put
 
 A topic refinement wizard session. The topic exists from the start in Draft status and holds the evolving dimensions, constraints, and brief.
 
-Returned by [GET /v1.0/api/refinement-sessions](#get-v10apirefinement-sessions).
+Returned by [GET /v1.0/api/refinement-sessions](#get-v10apirefinement-sessions), [POST /v1.0/api/refinement-sessions/enumerate](#post-v10apirefinement-sessionsenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -15059,7 +17290,7 @@ One time bucket in a request history summary.
 
 Captured HTTP request and response. Header and body values are diagnostic data; secrets are redacted before storage.
 
-Returned by [GET /v1.0/api/request-history](#get-v10apirequest-history), [GET /v1.0/api/request-history/{id}](#get-v10apirequest-historyid).
+Returned by [GET /v1.0/api/request-history](#get-v10apirequest-history), [POST /v1.0/api/request-history/enumerate](#post-v10apirequest-historyenumerate), [GET /v1.0/api/request-history/{id}](#get-v10apirequest-historyid).
 
 | Field | Type | Description |
 |---|---|---|
@@ -15114,7 +17345,7 @@ Returned by [GET /v1.0/api/request-history/summary](#get-v10apirequest-historysu
 
 A one-time request ("build me a podcast on X"): researched once, now or at a set time, and delivered as a report, podcast, or email.
 
-Returned by [GET /v1.0/api/requests](#get-v10apirequests).
+Returned by [GET /v1.0/api/requests](#get-v10apirequests), [POST /v1.0/api/requests/enumerate](#post-v10apirequestsenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -15229,7 +17460,7 @@ Request body of [POST /v1.0/tenants/{tenantId}/roles](#post-v10tenantstenantidro
 
 A research run for a topic or one-time request, from queued to finished.
 
-Returned by [GET /v1.0/api/runs](#get-v10apiruns), [GET /v1.0/api/runs/{id}](#get-v10apirunsid), [POST /v1.0/api/runs/{id}/cancel](#post-v10apirunsidcancel), [POST /v1.0/api/runs/{id}/retry](#post-v10apirunsidretry), [POST /v1.0/api/topics/{id}/run](#post-v10apitopicsidrun), [POST /v1.0/api/admin/catalog/{id}/run](#post-v10apiadmincatalogidrun).
+Returned by [GET /v1.0/api/runs](#get-v10apiruns), [POST /v1.0/api/runs/enumerate](#post-v10apirunsenumerate), [GET /v1.0/api/runs/{id}](#get-v10apirunsid), [POST /v1.0/api/runs/{id}/cancel](#post-v10apirunsidcancel), [POST /v1.0/api/runs/{id}/retry](#post-v10apirunsidretry), [POST /v1.0/api/topics/{id}/run](#post-v10apitopicsidrun), [POST /v1.0/api/admin/catalog/{id}/run](#post-v10apiadmincatalogidrun).
 
 | Field | Type | Description |
 |---|---|---|
@@ -15350,7 +17581,7 @@ Returned by [GET /v1.0/api/analytics/runs](#get-v10apianalyticsruns).
 
 One stage of a research run (plan section 16).
 
-Returned by [GET /v1.0/api/runs/{id}/stages](#get-v10apirunsidstages).
+Returned by [GET /v1.0/api/runs/{id}/stages](#get-v10apirunsidstages), [POST /v1.0/api/runs/{id}/stages/enumerate](#post-v10apirunsidstagesenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -15381,7 +17612,7 @@ Returned by [GET /v1.0/api/runs/{id}/stages](#get-v10apirunsidstages).
 
 One tool execution in an agentic research loop.
 
-Returned by [GET /v1.0/api/runs/{id}/tool-calls](#get-v10apirunsidtool-calls).
+Returned by [GET /v1.0/api/runs/{id}/tool-calls](#get-v10apirunsidtool-calls), [POST /v1.0/api/runs/{id}/tool-calls/enumerate](#post-v10apirunsidtool-callsenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -15404,7 +17635,7 @@ Returned by [GET /v1.0/api/runs/{id}/tool-calls](#get-v10apirunsidtool-calls).
 
 When research runs for a topic, an edition composes, or a one-time request runs. Times are computed in the schedule time zone.
 
-Returned by [GET /v1.0/api/schedules](#get-v10apischedules), [POST /v1.0/api/schedules](#post-v10apischedules), [GET /v1.0/api/schedules/{id}](#get-v10apischedulesid), [PUT /v1.0/api/schedules/{id}](#put-v10apischedulesid).
+Returned by [GET /v1.0/api/schedules](#get-v10apischedules), [POST /v1.0/api/schedules](#post-v10apischedules), [POST /v1.0/api/schedules/enumerate](#post-v10apischedulesenumerate), [GET /v1.0/api/schedules/{id}](#get-v10apischedulesid), [PUT /v1.0/api/schedules/{id}](#put-v10apischedulesid).
 
 | Field | Type | Description |
 |---|---|---|
@@ -15576,7 +17807,7 @@ Returned by [POST /v1.0/api/search-providers/{id}/test](#post-v10apisearch-provi
 
 A web search source: SearXNG, Tavily, You.com, RSS, Hacker News, or arXiv.
 
-Returned by [GET /v1.0/api/search-providers](#get-v10apisearch-providers), [POST /v1.0/api/search-providers](#post-v10apisearch-providers), [GET /v1.0/api/search-providers/{id}](#get-v10apisearch-providersid), [PUT /v1.0/api/search-providers/{id}](#put-v10apisearch-providersid), [GET /v1.0/api/topics/{id}/search-providers](#get-v10apitopicsidsearch-providers), [PUT /v1.0/api/topics/{id}/search-providers](#put-v10apitopicsidsearch-providers).
+Returned by [GET /v1.0/api/search-providers](#get-v10apisearch-providers), [POST /v1.0/api/search-providers](#post-v10apisearch-providers), [POST /v1.0/api/search-providers/enumerate](#post-v10apisearch-providersenumerate), [GET /v1.0/api/search-providers/{id}](#get-v10apisearch-providersid), [PUT /v1.0/api/search-providers/{id}](#put-v10apisearch-providersid), [GET /v1.0/api/topics/{id}/search-providers](#get-v10apitopicsidsearch-providers), [PUT /v1.0/api/topics/{id}/search-providers](#put-v10apitopicsidsearch-providers), [POST /v1.0/api/topics/{id}/search-providers/enumerate](#post-v10apitopicsidsearch-providersenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -15617,7 +17848,7 @@ Request body of [POST /v1.0/api/search-providers](#post-v10apisearch-providers),
 
 A search query planned for a run and its outcome per provider.
 
-Returned by [GET /v1.0/api/runs/{id}/queries](#get-v10apirunsidqueries).
+Returned by [GET /v1.0/api/runs/{id}/queries](#get-v10apirunsidqueries), [POST /v1.0/api/runs/{id}/queries/enumerate](#post-v10apirunsidqueriesenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -15642,7 +17873,7 @@ Returned by [GET /v1.0/api/runs/{id}/queries](#get-v10apirunsidqueries).
 
 A search result considered by a run, with what happened to it.
 
-Returned by [GET /v1.0/api/runs/{id}/results](#get-v10apirunsidresults).
+Returned by [GET /v1.0/api/runs/{id}/results](#get-v10apirunsidresults), [POST /v1.0/api/runs/{id}/results/enumerate](#post-v10apirunsidresultsenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -16256,7 +18487,7 @@ Returned by [POST /v1.0/api/refinement-sessions/{id}/sources](#post-v10apirefine
 
 A fetched document, shared across runs in a tenant and reused while its content is unchanged.
 
-Returned by [GET /v1.0/api/sources](#get-v10apisources), [GET /v1.0/api/sources/{id}](#get-v10apisourcesid).
+Returned by [GET /v1.0/api/sources](#get-v10apisources), [POST /v1.0/api/sources/enumerate](#post-v10apisourcesenumerate), [GET /v1.0/api/sources/{id}](#get-v10apisourcesid).
 
 | Field | Type | Description |
 |---|---|---|
@@ -16359,7 +18590,7 @@ Stripe settings for web subscriptions. An empty secret key disables Stripe.
 
 Something worth digging into, linked to findings.
 
-Returned by [GET /v1.0/api/suggestions](#get-v10apisuggestions), [GET /v1.0/api/suggestions/{id}](#get-v10apisuggestionsid), [PUT /v1.0/api/suggestions/{id}/status](#put-v10apisuggestionsidstatus).
+Returned by [GET /v1.0/api/suggestions](#get-v10apisuggestions), [POST /v1.0/api/suggestions/enumerate](#post-v10apisuggestionsenumerate), [GET /v1.0/api/suggestions/{id}](#get-v10apisuggestionsid), [PUT /v1.0/api/suggestions/{id}/status](#put-v10apisuggestionsidstatus).
 
 | Field | Type | Description |
 |---|---|---|
@@ -16559,7 +18790,7 @@ Returned by [POST /v1.0/api/briefing-templates/validate](#post-v10apibriefing-te
 
 Tenant: the hard isolation boundary for all data.
 
-Returned by [GET /v1.0/tenants](#get-v10tenants), [POST /v1.0/tenants](#post-v10tenants), [GET /v1.0/tenants/{tenantId}](#get-v10tenantstenantid), [PUT /v1.0/tenants/{tenantId}](#put-v10tenantstenantid).
+Returned by [GET /v1.0/tenants](#get-v10tenants), [POST /v1.0/tenants](#post-v10tenants), [POST /v1.0/tenants/enumerate](#post-v10tenantsenumerate), [GET /v1.0/tenants/{tenantId}](#get-v10tenantstenantid), [PUT /v1.0/tenants/{tenantId}](#put-v10tenantstenantid).
 
 | Field | Type | Description |
 |---|---|---|
@@ -16683,7 +18914,7 @@ Example:
 
 A research topic: what a reader wants to follow, with its brief, dimensions, constraints, and delivery options.
 
-Returned by [GET /v1.0/api/topics](#get-v10apitopics), [POST /v1.0/api/topics](#post-v10apitopics), [PUT /v1.0/api/topics/{id}](#put-v10apitopicsid), [POST /v1.0/api/topics/{id}/pause](#post-v10apitopicsidpause), [POST /v1.0/api/topics/{id}/resume](#post-v10apitopicsidresume), [POST /v1.0/api/topics/{id}/archive](#post-v10apitopicsidarchive), [POST /v1.0/api/requests/{id}/convert](#post-v10apirequestsidconvert).
+Returned by [GET /v1.0/api/topics](#get-v10apitopics), [POST /v1.0/api/topics](#post-v10apitopics), [POST /v1.0/api/topics/enumerate](#post-v10apitopicsenumerate), [PUT /v1.0/api/topics/{id}](#put-v10apitopicsid), [POST /v1.0/api/topics/{id}/pause](#post-v10apitopicsidpause), [POST /v1.0/api/topics/{id}/resume](#post-v10apitopicsidresume), [POST /v1.0/api/topics/{id}/archive](#post-v10apitopicsidarchive), [POST /v1.0/api/requests/{id}/convert](#post-v10apirequestsidconvert).
 
 | Field | Type | Description |
 |---|---|---|
@@ -16760,7 +18991,7 @@ Example:
 
 A rule or source on a topic: include or exclude terms and entities, domains, tracked questions, feeds, seed URLs.
 
-Returned by [GET /v1.0/api/topics/{id}/constraints](#get-v10apitopicsidconstraints), [POST /v1.0/api/topics/{id}/constraints](#post-v10apitopicsidconstraints), [PUT /v1.0/api/topics/{id}/constraints/{constraintId}](#put-v10apitopicsidconstraintsconstraintid).
+Returned by [GET /v1.0/api/topics/{id}/constraints](#get-v10apitopicsidconstraints), [POST /v1.0/api/topics/{id}/constraints](#post-v10apitopicsidconstraints), [POST /v1.0/api/topics/{id}/constraints/enumerate](#post-v10apitopicsidconstraintsenumerate), [PUT /v1.0/api/topics/{id}/constraints/{constraintId}](#put-v10apitopicsidconstraintsconstraintid).
 
 | Field | Type | Description |
 |---|---|---|
@@ -16812,7 +19043,7 @@ Returned by [GET /v1.0/api/topics/{id}](#get-v10apitopicsid), [POST /v1.0/api/to
 
 A facet of a topic that research searches, reads, and ranks against.
 
-Returned by [GET /v1.0/api/topics/{id}/dimensions](#get-v10apitopicsiddimensions), [POST /v1.0/api/topics/{id}/dimensions](#post-v10apitopicsiddimensions), [PUT /v1.0/api/topics/{id}/dimensions/{dimensionId}](#put-v10apitopicsiddimensionsdimensionid).
+Returned by [GET /v1.0/api/topics/{id}/dimensions](#get-v10apitopicsiddimensions), [POST /v1.0/api/topics/{id}/dimensions](#post-v10apitopicsiddimensions), [POST /v1.0/api/topics/{id}/dimensions/enumerate](#post-v10apitopicsiddimensionsenumerate), [PUT /v1.0/api/topics/{id}/dimensions/{dimensionId}](#put-v10apitopicsiddimensionsdimensionid).
 
 | Field | Type | Description |
 |---|---|---|
@@ -16863,7 +19094,7 @@ Example:
 
 An email recipient for a topic.
 
-Returned by [GET /v1.0/api/topics/{id}/recipients](#get-v10apitopicsidrecipients), [POST /v1.0/api/topics/{id}/recipients](#post-v10apitopicsidrecipients).
+Returned by [GET /v1.0/api/topics/{id}/recipients](#get-v10apitopicsidrecipients), [POST /v1.0/api/topics/{id}/recipients](#post-v10apitopicsidrecipients), [POST /v1.0/api/topics/{id}/recipients/enumerate](#post-v10apitopicsidrecipientsenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -17086,7 +19317,7 @@ Request body of [POST /v1.0/tenants/{tenantId}/users](#post-v10tenantstenantidus
 
 User as returned by the API (no password material).
 
-Returned by [GET /v1.0/api/me](#get-v10apime), [PUT /v1.0/api/me](#put-v10apime), [GET /v1.0/tenants/{tenantId}/users](#get-v10tenantstenantidusers), [POST /v1.0/tenants/{tenantId}/users](#post-v10tenantstenantidusers), [GET /v1.0/tenants/{tenantId}/users/{userId}](#get-v10tenantstenantidusersuserid), [PUT /v1.0/tenants/{tenantId}/users/{userId}](#put-v10tenantstenantidusersuserid).
+Returned by [GET /v1.0/api/me](#get-v10apime), [PUT /v1.0/api/me](#put-v10apime), [GET /v1.0/tenants/{tenantId}/users](#get-v10tenantstenantidusers), [POST /v1.0/tenants/{tenantId}/users](#post-v10tenantstenantidusers), [POST /v1.0/tenants/{tenantId}/users/enumerate](#post-v10tenantstenantidusersenumerate), [GET /v1.0/tenants/{tenantId}/users/{userId}](#get-v10tenantstenantidusersuserid), [PUT /v1.0/tenants/{tenantId}/users/{userId}](#put-v10tenantstenantidusersuserid).
 
 | Field | Type | Description |
 |---|---|---|
@@ -17128,7 +19359,7 @@ Example:
 
 Role grouping permissions. Built-in roles have a null tenant and are protected.
 
-Returned by [GET /v1.0/tenants/{tenantId}/roles](#get-v10tenantstenantidroles), [POST /v1.0/tenants/{tenantId}/roles](#post-v10tenantstenantidroles), [PUT /v1.0/tenants/{tenantId}/roles/{roleId}](#put-v10tenantstenantidrolesroleid).
+Returned by [GET /v1.0/tenants/{tenantId}/roles](#get-v10tenantstenantidroles), [POST /v1.0/tenants/{tenantId}/roles](#post-v10tenantstenantidroles), [POST /v1.0/tenants/{tenantId}/roles/enumerate](#post-v10tenantstenantidrolesenumerate), [PUT /v1.0/tenants/{tenantId}/roles/{roleId}](#put-v10tenantstenantidrolesroleid).
 
 | Field | Type | Description |
 |---|---|---|
@@ -17147,7 +19378,7 @@ Returned by [GET /v1.0/tenants/{tenantId}/roles](#get-v10tenantstenantidroles), 
 
 Assignment of a role to a user at tenant or resource scope.
 
-Returned by [GET /v1.0/tenants/{tenantId}/users/{userId}/assignments](#get-v10tenantstenantidusersuseridassignments), [POST /v1.0/tenants/{tenantId}/users/{userId}/assignments](#post-v10tenantstenantidusersuseridassignments).
+Returned by [GET /v1.0/tenants/{tenantId}/users/{userId}/assignments](#get-v10tenantstenantidusersuseridassignments), [POST /v1.0/tenants/{tenantId}/users/{userId}/assignments](#post-v10tenantstenantidusersuseridassignments), [POST /v1.0/tenants/{tenantId}/users/{userId}/assignments/enumerate](#post-v10tenantstenantidusersuseridassignmentsenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -17186,7 +19417,7 @@ Request body of [PUT /v1.0/tenants/{tenantId}/users/{userId}](#put-v10tenantsten
 
 Vault credential as returned by the API (never the secret).
 
-Returned by [GET /v1.0/api/vault/credentials](#get-v10apivaultcredentials), [POST /v1.0/api/vault/credentials](#post-v10apivaultcredentials), [GET /v1.0/api/vault/credentials/{id}](#get-v10apivaultcredentialsid), [PUT /v1.0/api/vault/credentials/{id}](#put-v10apivaultcredentialsid).
+Returned by [GET /v1.0/api/vault/credentials](#get-v10apivaultcredentials), [POST /v1.0/api/vault/credentials](#post-v10apivaultcredentials), [POST /v1.0/api/vault/credentials/enumerate](#post-v10apivaultcredentialsenumerate), [GET /v1.0/api/vault/credentials/{id}](#get-v10apivaultcredentialsid), [PUT /v1.0/api/vault/credentials/{id}](#put-v10apivaultcredentialsid).
 
 | Field | Type | Description |
 |---|---|---|
@@ -17244,7 +19475,7 @@ Returned by [POST /v1.0/api/vault/credentials/{id}/reveal](#post-v10apivaultcred
 
 A record that references a vault credential.
 
-Returned by [GET /v1.0/api/vault/credentials/{id}/usage](#get-v10apivaultcredentialsidusage).
+Returned by [GET /v1.0/api/vault/credentials/{id}/usage](#get-v10apivaultcredentialsidusage), [POST /v1.0/api/vault/credentials/{id}/usage/enumerate](#post-v10apivaultcredentialsidusageenumerate).
 
 | Field | Type | Description |
 |---|---|---|
@@ -17268,7 +19499,7 @@ Request body of [POST /v1.0/api/voices/preview](#post-v10apivoicespreview).
 
 A text-to-speech voice: provider, endpoint, voices for narrator and two-host formats, and speed.
 
-Returned by [GET /v1.0/api/voices](#get-v10apivoices), [POST /v1.0/api/voices](#post-v10apivoices), [GET /v1.0/api/voices/{id}](#get-v10apivoicesid), [PUT /v1.0/api/voices/{id}](#put-v10apivoicesid).
+Returned by [GET /v1.0/api/voices](#get-v10apivoices), [POST /v1.0/api/voices](#post-v10apivoices), [POST /v1.0/api/voices/enumerate](#post-v10apivoicesenumerate), [GET /v1.0/api/voices/{id}](#get-v10apivoicesid), [PUT /v1.0/api/voices/{id}](#put-v10apivoicesid).
 
 | Field | Type | Description |
 |---|---|---|
@@ -17529,6 +19760,15 @@ Email template.
 | `CapReached` | A plan limit stopped a scheduled run (sent at most once per limit per month). |
 | `AudioReady` | The audio version of a briefing is ready. |
 | `PredictionDue` | A prediction is due for review. |
+
+#### EnumerationOrderEnum
+
+Ordering of enumeration records by their creation time.
+
+| Value | Description |
+|---|---|
+| `CreatedAscending` | Oldest records first. |
+| `CreatedDescending` | Newest records first (the default). |
 
 #### FeedbackChannelEnum
 
@@ -18113,6 +20353,15 @@ How a model provider is reached, for grouping choices on the Setup page.
 | `Api` | A hosted model API used with an API key. |
 | `AgentCli` | An agent CLI in the server image, used with a subscription sign-in or an API key. |
 | `SelfHosted` | A model server you run yourself, such as Ollama. |
+
+#### SortDirectionEnum
+
+Sort direction for enumeration.
+
+| Value | Description |
+|---|---|
+| `Descending` | Newest or largest first. |
+| `Ascending` | Oldest or smallest first. |
 
 #### StageStatusEnum
 

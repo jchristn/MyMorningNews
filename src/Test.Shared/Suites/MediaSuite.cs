@@ -110,7 +110,7 @@ namespace Test.Shared.Suites
             {
                 int done = await f.Server.Context.Audio.ProcessQueuedAsync(DateTime.UtcNow, new[] { b.TenantId }, token).ConfigureAwait(false);
                 EnumerationResult<MediaAsset> list = (await f.User.Client.GetAsync("/v1.0/api/media?briefingId=" + b.Id, token).ConfigureAwait(false)).Json<EnumerationResult<MediaAsset>>();
-                MediaAsset? m = list.Items.OrderByDescending(x => x.CreatedUtc).FirstOrDefault();
+                MediaAsset? m = list.Objects.OrderByDescending(x => x.CreatedUtc).FirstOrDefault();
                 if (m != null && (m.Status == MediaStatusEnum.Ready || m.Status == MediaStatusEnum.Failed)) return m;
                 if (done == 0) await Task.Delay(50, token).ConfigureAwait(false);
             }
@@ -186,12 +186,12 @@ namespace Test.Shared.Suites
             await EpisodeForAsync(f, b, token).ConfigureAwait(false);
             (await f.User.Client.DeleteAsync("/v1.0/api/media/" + m.Id, token).ConfigureAwait(false)).Expect(204, "delete episode");
             (await f.User.Client.DeleteAsync("/v1.0/api/briefings/" + b.Id, token).ConfigureAwait(false)).Expect(204, "delete the briefing");
-            Assert.Equal(0, (await f.User.Client.GetAsync("/v1.0/api/media?briefingId=" + b.Id, token).ConfigureAwait(false)).Json<EnumerationResult<MediaAsset>>().Items.Count, "its episodes go with it");
+            Assert.Equal(0, (await f.User.Client.GetAsync("/v1.0/api/media?briefingId=" + b.Id, token).ConfigureAwait(false)).Json<EnumerationResult<MediaAsset>>().Objects.Count, "its episodes go with it");
             (await f.User.Client.GetAsync(d.AudioPath!, token).ConfigureAwait(false)).Expect(404, "its audio file is gone");
 
-            Run run = (await f.User.Client.GetAsync("/v1.0/api/runs?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Run>>().Items.First();
-            Briefing runBriefing = (await f.User.Client.GetAsync("/v1.0/api/briefings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().Items.Single();
-            Assert.Equal(0, (await f.User.Client.GetAsync("/v1.0/api/media?briefingId=" + runBriefing.Id, token).ConfigureAwait(false)).Json<EnumerationResult<MediaAsset>>().Items.Count, "run briefings have no audio unless the template turns it on");
+            Run run = (await f.User.Client.GetAsync("/v1.0/api/runs?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Run>>().Objects.First();
+            Briefing runBriefing = (await f.User.Client.GetAsync("/v1.0/api/briefings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().Objects.Single();
+            Assert.Equal(0, (await f.User.Client.GetAsync("/v1.0/api/media?briefingId=" + runBriefing.Id, token).ConfigureAwait(false)).Json<EnumerationResult<MediaAsset>>().Objects.Count, "run briefings have no audio unless the template turns it on");
         }
 
         private static async Task ScriptFallbackAsync(CancellationToken token)
@@ -231,14 +231,14 @@ namespace Test.Shared.Suites
             TestUser ta = await TestFixtures.CreateUserAsync(admin, t.Id, true, token).ConfigureAwait(false);
             TestUser member = await TestFixtures.CreateUserAsync(admin, t.Id, false, token).ConfigureAwait(false);
             EnumerationResult<VoiceProfile> list = (await member.Client.GetAsync("/v1.0/api/voices", token).ConfigureAwait(false)).Expect(200, "list").Json<EnumerationResult<VoiceProfile>>();
-            Assert.True(list.Items.Count == 1 && list.Items[0].Name == AudioService.DefaultVoiceName && list.Items[0].IsDefault && list.Items[0].SecondaryVoice == "am_michael", "default voice seeded");
+            Assert.True(list.Objects.Count == 1 && list.Objects[0].Name == AudioService.DefaultVoiceName && list.Objects[0].IsDefault && list.Objects[0].SecondaryVoice == "am_michael", "default voice seeded");
             (await member.Client.PostAsync("/v1.0/api/voices", new { name = "Mine", voice = "af_sky" }, token).ConfigureAwait(false)).Expect(403, "members cannot add voices");
-            TestResponse sample = (await member.Client.PostAsync("/v1.0/api/voices/" + list.Items[0].Id + "/test", new { text = "Testing one two." }, token).ConfigureAwait(false)).Expect(200, "test voice");
+            TestResponse sample = (await member.Client.PostAsync("/v1.0/api/voices/" + list.Objects[0].Id + "/test", new { text = "Testing one two." }, token).ConfigureAwait(false)).Expect(200, "test voice");
             Assert.True(sample.Headers["Content-Type"].StartsWith("audio/wav", StringComparison.Ordinal) && sample.Body.StartsWith("RIFF", StringComparison.Ordinal), "sample audio");
             VoiceProfile v = (await ta.Client.PostAsync("/v1.0/api/voices", new { name = "Bright", voice = "af_bella", speed = 3.0, isDefault = true }, token).ConfigureAwait(false)).Expect(201, "create").Json<VoiceProfile>();
             Assert.True(v.Speed == 2.0 && v.IsDefault && v.Model == "kokoro", "speed clamped, default model");
             EnumerationResult<VoiceProfile> after = (await member.Client.GetAsync("/v1.0/api/voices", token).ConfigureAwait(false)).Json<EnumerationResult<VoiceProfile>>();
-            Assert.True(after.Items.Count(x => x.IsDefault) == 1 && after.Items.Single(x => x.IsDefault).Id == v.Id, "one default");
+            Assert.True(after.Objects.Count(x => x.IsDefault) == 1 && after.Objects.Single(x => x.IsDefault).Id == v.Id, "one default");
             (await ta.Client.PutAsync("/v1.0/api/voices/" + v.Id, new { endpoint = "ftp://bad" }, token).ConfigureAwait(false)).Expect(400, "endpoint validated");
             (await ta.Client.PutAsync("/v1.0/api/voices/" + v.Id, new { credentialId = "crd_missing" }, token).ConfigureAwait(false)).Expect(400, "credential validated");
             (await ta.Client.DeleteAsync("/v1.0/api/voices/" + v.Id, token).ConfigureAwait(false)).Expect(204, "delete");
@@ -271,7 +271,7 @@ namespace Test.Shared.Suites
             (await member.Client.PostAsync("/v1.0/api/voices/preview", new { voice = "nobody" }, token).ConfigureAwait(false)).Expect(400, "a voice the server does not offer");
             (await member.Client.PostAsync("/v1.0/api/voices/preview", new { }, token).ConfigureAwait(false)).Expect(400, "a voice is required");
             (await member.Client.PostAsync("/v1.0/api/voices/preview", new { voiceProfileId = "vce_missing" }, token).ConfigureAwait(false)).Expect(404, "unknown voice profile");
-            Assert.Equal(1L, (await member.Client.GetAsync("/v1.0/api/voices", token).ConfigureAwait(false)).Json<EnumerationResult<VoiceProfile>>().TotalCount, "listing and previewing create no voice profiles");
+            Assert.Equal(1L, (await member.Client.GetAsync("/v1.0/api/voices", token).ConfigureAwait(false)).Json<EnumerationResult<VoiceProfile>>().TotalRecords, "listing and previewing create no voice profiles");
 
             // A speech server without a voice listing: the configured default voices are offered.
             string endpoint = server.Context.Settings.Tts.Endpoint;
@@ -304,7 +304,7 @@ namespace Test.Shared.Suites
             TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
             string topicPath = "/v1.0/api/topics/" + f.Topic.Id;
             Assert.True(f.Topic.VoiceProfileId == null, "a new topic uses the workspace default voice");
-            VoiceProfile fallback = (await f.User.Client.GetAsync("/v1.0/api/voices", token).ConfigureAwait(false)).Json<EnumerationResult<VoiceProfile>>().Items.Single();
+            VoiceProfile fallback = (await f.User.Client.GetAsync("/v1.0/api/voices", token).ConfigureAwait(false)).Json<EnumerationResult<VoiceProfile>>().Objects.Single();
 
             // Validation: the profile must exist in this workspace, and a server voice must be one the server offers.
             ErrorResponse bad = (await f.User.Client.PutAsync(topicPath, new { voiceProfileId = "vce_missing" }, token).ConfigureAwait(false)).Expect(400, "unknown voice profile").Json<ErrorResponse>();
@@ -315,13 +315,13 @@ namespace Test.Shared.Suites
             (await f.User.Client.PutAsync(topicPath, new { voiceProfileId = theirs.Id }, token).ConfigureAwait(false)).Expect(400, "another workspace's voice profile");
             (await f.User.Client.PutAsync(topicPath, new { voice = "nobody" }, token).ConfigureAwait(false)).Expect(400, "a voice the speech server does not offer");
             (await f.User.Client.PostAsync("/v1.0/api/topics", new { name = "Bad voice " + Guid.NewGuid().ToString("N").Substring(0, 6), voice = "nobody" }, token).ConfigureAwait(false)).Expect(400, "create validates too");
-            Assert.Equal(1L, (await f.User.Client.GetAsync("/v1.0/api/topics", token).ConfigureAwait(false)).Json<EnumerationResult<Topic>>().TotalCount, "a refused create leaves no topic behind");
+            Assert.Equal(1L, (await f.User.Client.GetAsync("/v1.0/api/topics", token).ConfigureAwait(false)).Json<EnumerationResult<Topic>>().TotalRecords, "a refused create leaves no topic behind");
 
             // Someone who cannot edit the topic cannot set its voice.
             TestUser member = await TestFixtures.CreateUserAsync(admin, f.User.User.TenantId, false, token).ConfigureAwait(false);
             (await member.Client.PutAsync(topicPath, new { voice = "bf_emma" }, token).ConfigureAwait(false)).Expect(404, "another member's topic");
             (await outsider.Client.PutAsync(topicPath, new { voice = "bf_emma" }, token).ConfigureAwait(false)).Expect(404, "another workspace's topic");
-            Assert.Equal(1L, (await f.User.Client.GetAsync("/v1.0/api/voices", token).ConfigureAwait(false)).Json<EnumerationResult<VoiceProfile>>().TotalCount, "refused requests create no voice profiles");
+            Assert.Equal(1L, (await f.User.Client.GetAsync("/v1.0/api/voices", token).ConfigureAwait(false)).Json<EnumerationResult<VoiceProfile>>().TotalRecords, "refused requests create no voice profiles");
 
             // Choosing a speech server voice creates a profile for it once and reuses it afterwards.
             Topic chosen = (await f.User.Client.PutAsync(topicPath, new { voice = "bf_emma" }, token).ConfigureAwait(false)).Expect(200, "choose a server voice").Json<Topic>();
@@ -330,7 +330,7 @@ namespace Test.Shared.Suites
                 "a profile named after the voice: " + emma.Name);
             Topic second = (await f.User.Client.PostAsync("/v1.0/api/topics", new { name = "Second " + Guid.NewGuid().ToString("N").Substring(0, 6), voice = "bf_emma" }, token).ConfigureAwait(false)).Expect(201, "create with a voice").Json<Topic>();
             Assert.Equal(emma.Id, second.VoiceProfileId, "the same voice reuses its profile");
-            Assert.Equal(2L, (await f.User.Client.GetAsync("/v1.0/api/voices", token).ConfigureAwait(false)).Json<EnumerationResult<VoiceProfile>>().TotalCount, "one profile per voice");
+            Assert.Equal(2L, (await f.User.Client.GetAsync("/v1.0/api/voices", token).ConfigureAwait(false)).Json<EnumerationResult<VoiceProfile>>().TotalRecords, "one profile per voice");
             AvailableVoicesResponse available = (await f.User.Client.GetAsync("/v1.0/api/voices/available", token).ConfigureAwait(false)).Json<AvailableVoicesResponse>();
             Assert.True(available.Voices.Count(v => v.Voice == "bf_emma") == 1 && available.Voices.Single(v => v.Voice == "bf_emma").VoiceProfileId == emma.Id, "the voice is now listed once, as a profile");
             Topic copy = (await f.User.Client.PostAsync(topicPath + "/duplicate", null, token).ConfigureAwait(false)).Expect(201, "duplicate").Json<TopicDetailResponse>().Topic;
@@ -342,8 +342,8 @@ namespace Test.Shared.Suites
 
             // The topic's briefing is read in the topic's voice; an explicit voice and an edition's voice still win.
             await PipelineSuite.RunAsync(f, token).ConfigureAwait(false);
-            Run run = (await f.User.Client.GetAsync("/v1.0/api/runs?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Run>>().Items.First();
-            Briefing runBriefing = (await f.User.Client.GetAsync("/v1.0/api/briefings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().Items.Single();
+            Run run = (await f.User.Client.GetAsync("/v1.0/api/runs?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Run>>().Objects.First();
+            Briefing runBriefing = (await f.User.Client.GetAsync("/v1.0/api/briefings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().Objects.Single();
             MediaAsset queued = (await f.User.Client.PostAsync("/v1.0/api/briefings/" + runBriefing.Id + "/audio", null, token).ConfigureAwait(false)).Expect(202, "audio for the run briefing").Json<MediaAsset>();
             Assert.Equal(emma.Id, queued.VoiceProfileId, "queued with the topic's voice");
             int before = StubModelServer.Shared.SpeechRequests.Count;
@@ -354,7 +354,7 @@ namespace Test.Shared.Suites
             Assert.Equal(fallback.Id, explicitVoice.VoiceProfileId, "a voice named in the request wins");
             await EpisodeForAsync(f, runBriefing, token).ConfigureAwait(false);
             Briefing editionBriefing = await EditionBriefingAsync(f, "Voice Heat", true, token).ConfigureAwait(false);
-            MediaAsset editionAudio = (await f.User.Client.GetAsync("/v1.0/api/media?briefingId=" + editionBriefing.Id, token).ConfigureAwait(false)).Json<EnumerationResult<MediaAsset>>().Items.Single();
+            MediaAsset editionAudio = (await f.User.Client.GetAsync("/v1.0/api/media?briefingId=" + editionBriefing.Id, token).ConfigureAwait(false)).Json<EnumerationResult<MediaAsset>>().Objects.Single();
             Assert.Equal(fallback.Id, editionAudio.VoiceProfileId, "an edition keeps its own voice (here the workspace default)");
             await EpisodeForAsync(f, editionBriefing, token).ConfigureAwait(false);
 
@@ -384,8 +384,8 @@ namespace Test.Shared.Suites
 
             // Off: the run briefing has no audio until someone asks for it.
             Run first = await PipelineSuite.RunAsync(f, token).ConfigureAwait(false);
-            Briefing silent = (await f.User.Client.GetAsync("/v1.0/api/briefings?runId=" + first.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().Items.Single();
-            Assert.Equal(0L, (await f.User.Client.GetAsync("/v1.0/api/media?briefingId=" + silent.Id, token).ConfigureAwait(false)).Json<EnumerationResult<MediaAsset>>().TotalCount, "no audio while it is off");
+            Briefing silent = (await f.User.Client.GetAsync("/v1.0/api/briefings?runId=" + first.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().Objects.Single();
+            Assert.Equal(0L, (await f.User.Client.GetAsync("/v1.0/api/media?briefingId=" + silent.Id, token).ConfigureAwait(false)).Json<EnumerationResult<MediaAsset>>().TotalRecords, "no audio while it is off");
 
             // On: stored, kept by other edits and by a copy, and every run briefing is queued for audio by itself.
             Topic on = (await f.User.Client.PutAsync(topicPath, new { audioEnabled = true }, token).ConfigureAwait(false)).Expect(200, "turn automatic audio on").Json<Topic>();
@@ -400,8 +400,8 @@ namespace Test.Shared.Suites
             (await member.Client.PutAsync(topicPath, new { audioEnabled = false }, token).ConfigureAwait(false)).Expect(404, "another member's topic");
 
             Run second = await PipelineSuite.RunAsync(f, token).ConfigureAwait(false);
-            Briefing spoken = (await f.User.Client.GetAsync("/v1.0/api/briefings?runId=" + second.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().Items.Single();
-            MediaAsset queued = (await f.User.Client.GetAsync("/v1.0/api/media?briefingId=" + spoken.Id, token).ConfigureAwait(false)).Json<EnumerationResult<MediaAsset>>().Items.Single();
+            Briefing spoken = (await f.User.Client.GetAsync("/v1.0/api/briefings?runId=" + second.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().Objects.Single();
+            MediaAsset queued = (await f.User.Client.GetAsync("/v1.0/api/media?briefingId=" + spoken.Id, token).ConfigureAwait(false)).Json<EnumerationResult<MediaAsset>>().Objects.Single();
             Assert.True(queued.Kind == MediaKindEnum.BriefingAudio && queued.UserId == f.User.User.Id, "queued without anyone asking: " + queued.Kind);
             MediaAsset made = await EpisodeForAsync(f, spoken, token).ConfigureAwait(false);
             Assert.True(made.Status == MediaStatusEnum.Ready && made.DurationSeconds > 0, "episode made: " + made.Status + " " + made.ErrorMessage);
@@ -420,7 +420,7 @@ namespace Test.Shared.Suites
             Briefing composing = (await f.User.Client.PostAsync("/v1.0/api/editions/" + e.Edition.Id + "/compose", null, token).ConfigureAwait(false)).Expect(202, "compose").Json<Briefing>();
             Briefing capped = await BriefingWaiter.FinishAsync(f.Server, composing.TenantId, composing.Id, token).ConfigureAwait(false);
             Assert.True(capped.Status == BriefingStatusEnum.Ready, "the briefing is still delivered: " + capped.ErrorMessage);
-            Assert.Equal(0L, (await f.User.Client.GetAsync("/v1.0/api/media?briefingId=" + capped.Id, token).ConfigureAwait(false)).Json<EnumerationResult<MediaAsset>>().TotalCount, "no automatic audio past the plan's minutes");
+            Assert.Equal(0L, (await f.User.Client.GetAsync("/v1.0/api/media?briefingId=" + capped.Id, token).ConfigureAwait(false)).Json<EnumerationResult<MediaAsset>>().TotalRecords, "no automatic audio past the plan's minutes");
             System.Text.Json.JsonElement refused = (await f.User.Client.PostAsync("/v1.0/api/briefings/" + capped.Id + "/audio", null, token).ConfigureAwait(false)).Expect(402, "asking by hand is refused the same way").Json<System.Text.Json.JsonElement>();
             Assert.Equal("audio.monthlyMinutes.max", refused.GetProperty("details").GetProperty("key").GetString() ?? String.Empty, "names the limit");
         }
@@ -432,7 +432,7 @@ namespace Test.Shared.Suites
             MediaAsset m = await EpisodeForAsync(f, b, token).ConfigureAwait(false);
             FeedTokenCreated created = (await f.User.Client.PostAsync("/v1.0/api/feed-tokens", new { name = "Overcast" }, token).ConfigureAwait(false)).Expect(201, "token").Json<FeedTokenCreated>();
             Assert.True(created.Secret.StartsWith(AudioService.FeedTokenPrefix, StringComparison.Ordinal) && created.FeedUrl.EndsWith("/podcast.xml", StringComparison.Ordinal) && created.Token.TokenHash == "redacted", "secret shown once, hash redacted");
-            List<FeedToken> tokens = (await f.User.Client.GetAsync("/v1.0/api/feed-tokens", token).ConfigureAwait(false)).Json<List<FeedToken>>();
+            List<FeedToken> tokens = (await f.User.Client.GetAsync("/v1.0/api/feed-tokens", token).ConfigureAwait(false)).Json<EnumerationResult<FeedToken>>().Objects;
             Assert.True(tokens.Count == 1 && tokens[0].TokenPrefix == created.Secret.Substring(0, 10) && tokens[0].TokenHash == "redacted", "listed without the hash");
 
             TestApiClient anon = new TestApiClient(await SharedTestServer.GetBaseUrlAsync(token).ConfigureAwait(false));
@@ -459,11 +459,11 @@ namespace Test.Shared.Suites
             Assert.True(!(await anon.GetAsync("/v1.0/public/feeds/" + theirs.Secret + "/podcast.xml", token).ConfigureAwait(false)).Body.Contains(m.Id, StringComparison.Ordinal), "another user's feed lacks my episode");
 
             (await f.User.Client.DeleteAsync("/v1.0/api/feed-tokens/" + created.Token.Id, token).ConfigureAwait(false)).Expect(204, "revoke");
-            Assert.True((await f.User.Client.GetAsync("/v1.0/api/feed-tokens", token).ConfigureAwait(false)).Json<List<FeedToken>>().Single().RevokedUtc.HasValue, "revoked token listed");
+            Assert.True((await f.User.Client.GetAsync("/v1.0/api/feed-tokens", token).ConfigureAwait(false)).Json<EnumerationResult<FeedToken>>().Objects.Single().RevokedUtc.HasValue, "revoked token listed");
             (await anon.GetAsync(path + "/podcast.xml", token).ConfigureAwait(false)).Expect(404, "revoked feed");
             (await anon.GetAsync(episodePath, token).ConfigureAwait(false)).Expect(404, "revoked episode");
             (await f.User.Client.DeleteAsync("/v1.0/api/feed-tokens/" + created.Token.Id + "?purge=true", token).ConfigureAwait(false)).Expect(204, "purge revoked token");
-            Assert.Equal(0, (await f.User.Client.GetAsync("/v1.0/api/feed-tokens", token).ConfigureAwait(false)).Json<List<FeedToken>>().Count, "purged");
+            Assert.Equal(0, (await f.User.Client.GetAsync("/v1.0/api/feed-tokens", token).ConfigureAwait(false)).Json<EnumerationResult<FeedToken>>().Objects.Count, "purged");
             ClientConfigResponse cfg = (await anon.GetAsync("/v1.0/api/client-config", token).ConfigureAwait(false)).Expect(200, "client config").Json<ClientConfigResponse>();
             Assert.True(cfg.AudioEnabled && cfg.EmailEnabled, "client config reports audio and email");
 

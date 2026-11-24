@@ -34,12 +34,14 @@ namespace MyMorningNews.Server.Routes
             ArgumentNullException.ThrowIfNull(webserver);
             string b = "/v1.0/api/prompts";
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, b, ListAsync, null, openApiMetadata: Paged(Doc("List prompt templates", "Prompts").WithParameter(QueryParam("key", typeof(string))).WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("isCustomized", typeof(bool))).WithParameter(QueryParam("tenantOnly", typeof(bool))).WithParameter(QueryParam("role", typeof(ModelTaskEnum)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b + "/enumerate", ctx => EnumerateAsync(ctx, ListAsync), null, openApiMetadata: Paged(Doc("List prompt templates", "Prompts").WithParameter(QueryParam("key", typeof(string))).WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("isCustomized", typeof(bool))).WithParameter(QueryParam("tenantOnly", typeof(bool))).WithParameter(QueryParam("role", typeof(ModelTaskEnum)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b + "/lab", LabAsync, null, openApiMetadata: Doc("Run a prompt in the prompt lab", "Prompts").WithRequestBody(Body<PromptLabRequest>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b + "/overrides", CreateOverrideAsync, null, openApiMetadata: Doc("Create a topic override of a prompt", "Prompts").WithRequestBody(Body<PromptOverrideRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read a prompt template with its content", "Prompts"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, b + "/{id}", SaveAsync, null, openApiMetadata: Doc("Save a new version", "Prompts").WithRequestBody(Body<PromptTemplateSaveRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, b + "/{id}", DeleteAsync, null, openApiMetadata: Doc("Delete a topic override", "Prompts"));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}/versions", VersionsAsync, null, openApiMetadata: Doc("Version history", "Prompts"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}/versions", VersionsAsync, null, openApiMetadata: Paged(Doc("Version history", "Prompts")));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/versions" + "/enumerate", ctx => EnumerateAsync(ctx, VersionsAsync), null, openApiMetadata: Paged(Doc("Version history", "Prompts")).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/rollback", RollbackAsync, null, openApiMetadata: Doc("Restore an earlier version (query: version)", "Prompts").WithParameter(QueryParam("version", typeof(int))));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/reset", ResetAsync, null, openApiMetadata: Doc("Restore the shipped default", "Prompts"));
         }
@@ -49,7 +51,7 @@ namespace MyMorningNews.Server.Routes
             if (!await AuthorizeAsync(ctx, RequestTypeEnum.PromptRead).ConfigureAwait(false)) return;
             string? tenantId = await RequireTenantAsync(ctx).ConfigureAwait(false);
             if (tenantId == null) return;
-            PromptTemplateFilter filter = new PromptTemplateFilter { TenantId = tenantId, Key = Query(ctx, "key"), TopicId = Query(ctx, "topicId"), Role = QueryEnum<ModelTaskEnum>(ctx, "role"), IsCustomized = QueryBool(ctx, "isCustomized"), TenantOnly = QueryBool(ctx, "tenantOnly"), PageSize = 100, SortBy = "key", SortDirection = SortDirectionEnum.Ascending };
+            PromptTemplateFilter filter = new PromptTemplateFilter { TenantId = tenantId, Key = Query(ctx, "key"), TopicId = Query(ctx, "topicId"), Role = QueryEnum<ModelTaskEnum>(ctx, "role"), IsCustomized = QueryBool(ctx, "isCustomized"), TenantOnly = QueryBool(ctx, "tenantOnly"), SortBy = "key", SortDirection = SortDirectionEnum.Ascending };
             ApplyPaging(ctx, filter);
             EnumerationResult<PromptTemplate> page = await Server.Database.PromptTemplates.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 200, page).ConfigureAwait(false);
@@ -110,7 +112,9 @@ namespace MyMorningNews.Server.Routes
             if (!await AuthorizeAsync(ctx, RequestTypeEnum.PromptRead, Param(ctx, "id")).ConfigureAwait(false)) return;
             PromptTemplate? t = await LoadAsync(ctx).ConfigureAwait(false);
             if (t == null) return;
-            await SendJsonAsync(ctx, 200, await Server.Prompts.VersionsAsync(t, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
+            PromptTemplateVersionFilter query = new PromptTemplateVersionFilter { TenantId = t.TenantId, PromptTemplateId = t.Id, SortBy = "version" };
+            ApplyPaging(ctx, query);
+            await SendJsonAsync(ctx, 200, await Server.Database.PromptTemplateVersions.EnumerateAsync(query, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         private async Task RollbackAsync(HttpContextBase ctx)

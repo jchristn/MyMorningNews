@@ -37,6 +37,7 @@ namespace MyMorningNews.Server.Routes
         {
             ArgumentNullException.ThrowIfNull(webserver);
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantId}/users", ListAsync, null, openApiMetadata: Paged(Doc("List users", "Users").WithParameter(QueryParam("active", typeof(bool))).WithParameter(QueryParam("isAdmin", typeof(bool))).WithParameter(QueryParam("isTenantAdmin", typeof(bool)))));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/tenants/{tenantId}/users" + "/enumerate", ctx => EnumerateAsync(ctx, ListAsync), null, openApiMetadata: Paged(Doc("List users", "Users").WithParameter(QueryParam("active", typeof(bool))).WithParameter(QueryParam("isAdmin", typeof(bool))).WithParameter(QueryParam("isTenantAdmin", typeof(bool)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/tenants/{tenantId}/users", CreateAsync, null, openApiMetadata: Doc("Create a user", "Users").WithRequestBody(Body<UserCreateRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/tenants/{tenantId}/users/{userId}", ReadAsync, null, openApiMetadata: Doc("Read a user", "Users"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/tenants/{tenantId}/users/{userId}", UpdateAsync, null, openApiMetadata: Doc("Update a user", "Users").WithRequestBody(Body<UserUpdateRequest>()));
@@ -287,7 +288,7 @@ namespace MyMorningNews.Server.Routes
         private async Task<User?> FindByEmailAsync(string tenantId, string email, CancellationToken token)
         {
             EnumerationResult<User> found = await Server.Database.Users.EnumerateAsync(new UserFilter { TenantId = tenantId, Email = email, PageSize = 1 }, token).ConfigureAwait(false);
-            return found.Items.Count > 0 ? found.Items[0] : null;
+            return found.Objects.Count > 0 ? found.Objects[0] : null;
         }
 
         private async Task ChangedAsync(HttpContextBase ctx, string description, int status)

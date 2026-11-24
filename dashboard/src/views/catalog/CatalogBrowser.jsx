@@ -54,13 +54,13 @@ export default function CatalogBrowser() {
       />
       <ErrorState error={error} onRetry={load} />
       {!page && !error ? <LoadingState /> : null}
-      {page?.items.length === 0 ? (
+      {page?.objects.length === 0 ? (
         <section className="panel">
           <p className="muted">{t('catalog.empty')}</p>
         </section>
       ) : null}
       <div className="plan-grid">
-        {page?.items.map((entry) => (
+        {page?.objects.map((entry) => (
           <section className="panel stack" key={entry.id}>
             <div className="section-title">
               <h2 dir="auto">{entry.title}</h2>

@@ -58,13 +58,13 @@ namespace MyMorningNews.Core.Billing
         /// <summary>Read this account's verified subscriptions, including expired and revoked records.</summary>
         public async Task<List<BillingSubscription>> SubscriptionsAsync(string tenantId, string userId, CancellationToken token = default)
         {
-            return (await _Database.BillingSubscriptions.EnumerateAsync(new BillingSubscriptionFilter { TenantId = tenantId, UserId = userId, PageSize = 1000 }, token).ConfigureAwait(false)).Items;
+            return (await _Database.BillingSubscriptions.EnumerateAsync(new BillingSubscriptionFilter { TenantId = tenantId, UserId = userId, PageSize = 1000 }, token).ConfigureAwait(false)).Objects;
         }
 
         /// <summary>Captured signup offer for the account. An offer is informational until its verified subscription is bound.</summary>
         public async Task<SignupBenefit?> BenefitAsync(string tenantId, string userId, CancellationToken token = default)
         {
-            return (await _Database.SignupBenefits.EnumerateAsync(new SignupBenefitFilter { TenantId = tenantId, UserId = userId, Active = true, PageSize = 1 }, token).ConfigureAwait(false)).Items.FirstOrDefault(b => !b.RevokedUtc.HasValue);
+            return (await _Database.SignupBenefits.EnumerateAsync(new SignupBenefitFilter { TenantId = tenantId, UserId = userId, Active = true, PageSize = 1 }, token).ConfigureAwait(false)).Objects.FirstOrDefault(b => !b.RevokedUtc.HasValue);
         }
 
         /// <summary>Create or reuse one allowlisted Stripe checkout operation. Retries share the server-generated idempotency key.</summary>
@@ -227,7 +227,7 @@ namespace MyMorningNews.Core.Billing
         public async Task PrepareDeletionAsync(string tenantId, string userId, CancellationToken token = default)
         {
             BillingAccount account = await AccountAsync(tenantId, userId, token).ConfigureAwait(false);
-            List<BillingCheckout> checkouts = (await _Database.BillingCheckouts.EnumerateAsync(new BillingCheckoutFilter { TenantId = tenantId, UserId = userId, Status = "Pending", Active = true, PageSize = 1000 }, token).ConfigureAwait(false)).Items;
+            List<BillingCheckout> checkouts = (await _Database.BillingCheckouts.EnumerateAsync(new BillingCheckoutFilter { TenantId = tenantId, UserId = userId, Status = "Pending", Active = true, PageSize = 1000 }, token).ConfigureAwait(false)).Objects;
             foreach (BillingCheckout checkout in checkouts)
             {
                 if (String.IsNullOrWhiteSpace(checkout.SessionId) && checkout.ExpiresUtc > DateTime.UtcNow)
@@ -388,7 +388,7 @@ namespace MyMorningNews.Core.Billing
 
         private async Task<Plan> PlanAsync(string key, CancellationToken token)
         {
-            return (await _Database.Plans.EnumerateAsync(new PlanFilter { Key = key, PageSize = 1, Active = true }, token).ConfigureAwait(false)).Items.FirstOrDefault()
+            return (await _Database.Plans.EnumerateAsync(new PlanFilter { Key = key, PageSize = 1, Active = true }, token).ConfigureAwait(false)).Objects.FirstOrDefault()
                 ?? throw new InvalidOperationException("The purchased entitlement package is unavailable.");
         }
 

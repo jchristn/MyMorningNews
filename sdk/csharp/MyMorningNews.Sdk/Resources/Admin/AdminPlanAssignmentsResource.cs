@@ -1,6 +1,7 @@
 namespace MyMorningNews.Sdk.Resources.Admin
 {
     using System;
+    using MyMorningNews.Sdk.Options;
     using System.Collections.Generic;
     using System.Net.Http;
     using System.Threading;
@@ -32,11 +33,12 @@ namespace MyMorningNews.Sdk.Resources.Admin
         /// <returns>A list of PlanAssignment items.</returns>
         /// <exception cref="ArgumentNullException">tenantId or userId is null or empty.</exception>
         /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
-        public Task<List<PlanAssignment>> ListAsync(string tenantId, string userId, CancellationToken token = default)
+        /// <param name="options">Pagination, sorting, and filters; null uses defaults.</param>
+        public Task<EnumerationResult<PlanAssignment>> ListAsync(string tenantId, string userId, EnumerationQuery? options = null, CancellationToken token = default)
         {
             if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));
             if (String.IsNullOrWhiteSpace(userId)) throw new ArgumentNullException(nameof(userId));
-            return Client.SendAsync<List<PlanAssignment>>(HttpMethod.Get, "/v1.0/api/admin/plan-assignments", Query("tenantId", tenantId, "userId", userId), null, token);
+            return Client.SendAsync<EnumerationResult<PlanAssignment>>(HttpMethod.Get, "/v1.0/api/admin/plan-assignments", MergeQuery(options, Query("tenantId", tenantId, "userId", userId)), null, token);
         }
 
         /// <summary>

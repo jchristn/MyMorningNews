@@ -25,7 +25,7 @@ export default function TopicPrompts({ topicId }) {
     setError(null);
     try {
       const page = await apiClient.listPrompts({ topicId, pageSize: 100, sortBy: 'key', sortDirection: 'Ascending' });
-      setItems(((page && page.items) || []).filter((p) => p.topicId === topicId));
+      setItems(((page && page.objects) || []).filter((p) => p.topicId === topicId));
     } catch (err) {
       setError(err);
     }

@@ -91,54 +91,54 @@ namespace MyMorningNews.Core.Services
             if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));
             if (String.IsNullOrWhiteSpace(userId)) throw new ArgumentNullException(nameof(userId));
 
-            await DrainAsync(async () => (await _Database.Topics.EnumerateAsync(new TopicFilter { TenantId = tenantId, UserId = userId, PageSize = _Page }, token).ConfigureAwait(false)).Items,
+            await DrainAsync(async () => (await _Database.Topics.EnumerateAsync(new TopicFilter { TenantId = tenantId, UserId = userId, PageSize = _Page }, token).ConfigureAwait(false)).Objects,
                 async t =>
                 {
                     await _Briefings.DeleteTopicFilesAsync(tenantId, t.Id, token).ConfigureAwait(false);
                     await _Database.Topics.DeleteCascadeAsync(tenantId, t.Id, token).ConfigureAwait(false);
                 }, token).ConfigureAwait(false);
-            await DrainAsync(async () => (await _Database.Editions.EnumerateAsync(new EditionFilter { TenantId = tenantId, UserId = userId, PageSize = _Page }, token).ConfigureAwait(false)).Items,
+            await DrainAsync(async () => (await _Database.Editions.EnumerateAsync(new EditionFilter { TenantId = tenantId, UserId = userId, PageSize = _Page }, token).ConfigureAwait(false)).Objects,
                 e => _Briefings.DeleteEditionAsync(e, token), token).ConfigureAwait(false);
-            await DrainAsync(async () => (await _Database.Briefings.EnumerateAsync(new BriefingFilter { TenantId = tenantId, UserId = userId, PageSize = _Page }, token).ConfigureAwait(false)).Items,
+            await DrainAsync(async () => (await _Database.Briefings.EnumerateAsync(new BriefingFilter { TenantId = tenantId, UserId = userId, PageSize = _Page }, token).ConfigureAwait(false)).Objects,
                 b => _Briefings.DeleteBriefingAsync(b, token), token).ConfigureAwait(false);
-            await DrainAsync(async () => (await _Database.Artifacts.EnumerateAsync(new ArtifactFilter { TenantId = tenantId, UserId = userId, PageSize = _Page }, token).ConfigureAwait(false)).Items,
+            await DrainAsync(async () => (await _Database.Artifacts.EnumerateAsync(new ArtifactFilter { TenantId = tenantId, UserId = userId, PageSize = _Page }, token).ConfigureAwait(false)).Objects,
                 async a =>
                 {
                     await _Artifacts.DeleteContentAsync(a, token).ConfigureAwait(false);
                     await _Database.Artifacts.DeleteAsync(tenantId, a.Id, token).ConfigureAwait(false);
                 }, token).ConfigureAwait(false);
-            await DrainAsync(async () => (await _Database.FeedTokens.EnumerateAsync(new FeedTokenFilter { TenantId = tenantId, UserId = userId, PageSize = _Page }, token).ConfigureAwait(false)).Items,
+            await DrainAsync(async () => (await _Database.FeedTokens.EnumerateAsync(new FeedTokenFilter { TenantId = tenantId, UserId = userId, PageSize = _Page }, token).ConfigureAwait(false)).Objects,
                 f => _Database.FeedTokens.DeleteAsync(tenantId, f.Id, token), token).ConfigureAwait(false);
-            await DrainAsync(async () => (await _Database.EmailActionTokens.EnumerateAsync(new EmailActionTokenFilter { TenantId = tenantId, UserId = userId, PageSize = _Page }, token).ConfigureAwait(false)).Items,
+            await DrainAsync(async () => (await _Database.EmailActionTokens.EnumerateAsync(new EmailActionTokenFilter { TenantId = tenantId, UserId = userId, PageSize = _Page }, token).ConfigureAwait(false)).Objects,
                 x => _Database.EmailActionTokens.DeleteAsync(tenantId, x.Id, token), token).ConfigureAwait(false);
-            await DrainAsync(async () => (await _Database.LearnedPreferences.EnumerateAsync(new LearnedPreferenceFilter { TenantId = tenantId, UserId = userId, PageSize = _Page }, token).ConfigureAwait(false)).Items,
+            await DrainAsync(async () => (await _Database.LearnedPreferences.EnumerateAsync(new LearnedPreferenceFilter { TenantId = tenantId, UserId = userId, PageSize = _Page }, token).ConfigureAwait(false)).Objects,
                 async p =>
                 {
-                    foreach (LearnedPreferenceFeedback link in (await _Database.LearnedPreferenceFeedback.EnumerateAsync(new LearnedPreferenceFeedbackFilter { TenantId = tenantId, LearnedPreferenceId = p.Id, PageSize = 1000 }, token).ConfigureAwait(false)).Items)
+                    foreach (LearnedPreferenceFeedback link in (await _Database.LearnedPreferenceFeedback.EnumerateAsync(new LearnedPreferenceFeedbackFilter { TenantId = tenantId, LearnedPreferenceId = p.Id, PageSize = 1000 }, token).ConfigureAwait(false)).Objects)
                         await _Database.LearnedPreferenceFeedback.DeleteAsync(tenantId, link.Id, token).ConfigureAwait(false);
                     await _Database.LearnedPreferences.DeleteAsync(tenantId, p.Id, token).ConfigureAwait(false);
                 }, token).ConfigureAwait(false);
-            await DrainAsync(async () => (await _Database.Feedback.EnumerateAsync(new FeedbackFilter { TenantId = tenantId, UserId = userId, PageSize = _Page }, token).ConfigureAwait(false)).Items,
+            await DrainAsync(async () => (await _Database.Feedback.EnumerateAsync(new FeedbackFilter { TenantId = tenantId, UserId = userId, PageSize = _Page }, token).ConfigureAwait(false)).Objects,
                 async f =>
                 {
-                    foreach (FeedbackReasonTag tag in (await _Database.FeedbackReasonTags.EnumerateAsync(new FeedbackReasonTagFilter { TenantId = tenantId, FeedbackId = f.Id, PageSize = 100 }, token).ConfigureAwait(false)).Items)
+                    foreach (FeedbackReasonTag tag in (await _Database.FeedbackReasonTags.EnumerateAsync(new FeedbackReasonTagFilter { TenantId = tenantId, FeedbackId = f.Id, PageSize = 100 }, token).ConfigureAwait(false)).Objects)
                         await _Database.FeedbackReasonTags.DeleteAsync(tenantId, tag.Id, token).ConfigureAwait(false);
-                    foreach (LearnedPreferenceFeedback link in (await _Database.LearnedPreferenceFeedback.EnumerateAsync(new LearnedPreferenceFeedbackFilter { TenantId = tenantId, FeedbackId = f.Id, PageSize = 100 }, token).ConfigureAwait(false)).Items)
+                    foreach (LearnedPreferenceFeedback link in (await _Database.LearnedPreferenceFeedback.EnumerateAsync(new LearnedPreferenceFeedbackFilter { TenantId = tenantId, FeedbackId = f.Id, PageSize = 100 }, token).ConfigureAwait(false)).Objects)
                         await _Database.LearnedPreferenceFeedback.DeleteAsync(tenantId, link.Id, token).ConfigureAwait(false);
                     await _Database.Feedback.DeleteAsync(tenantId, f.Id, token).ConfigureAwait(false);
                 }, token).ConfigureAwait(false);
-            await DrainAsync(async () => (await _Database.LearningCheckpoints.EnumerateAsync(new LearningCheckpointFilter { TenantId = tenantId, UserId = userId, PageSize = _Page }, token).ConfigureAwait(false)).Items,
+            await DrainAsync(async () => (await _Database.LearningCheckpoints.EnumerateAsync(new LearningCheckpointFilter { TenantId = tenantId, UserId = userId, PageSize = _Page }, token).ConfigureAwait(false)).Objects,
                 c => _Database.LearningCheckpoints.DeleteAsync(tenantId, c.Id, token), token).ConfigureAwait(false);
-            await DrainAsync(async () => (await _Database.BriefingTemplates.EnumerateAsync(new BriefingTemplateFilter { TenantId = tenantId, UserId = userId, PageSize = _Page }, token).ConfigureAwait(false)).Items,
+            await DrainAsync(async () => (await _Database.BriefingTemplates.EnumerateAsync(new BriefingTemplateFilter { TenantId = tenantId, UserId = userId, PageSize = _Page }, token).ConfigureAwait(false)).Objects,
                 async t =>
                 {
-                    foreach (BriefingTemplateVersion v in (await _Database.BriefingTemplateVersions.EnumerateAsync(new BriefingTemplateVersionFilter { TenantId = tenantId, TemplateId = t.Id, PageSize = 1000 }, token).ConfigureAwait(false)).Items)
+                    foreach (BriefingTemplateVersion v in (await _Database.BriefingTemplateVersions.EnumerateAsync(new BriefingTemplateVersionFilter { TenantId = tenantId, TemplateId = t.Id, PageSize = 1000 }, token).ConfigureAwait(false)).Objects)
                         await _Database.BriefingTemplateVersions.DeleteAsync(tenantId, v.Id, token).ConfigureAwait(false);
                     await _Database.BriefingTemplates.DeleteAsync(tenantId, t.Id, token).ConfigureAwait(false);
                 }, token).ConfigureAwait(false);
-            await DrainAsync(async () => (await _Database.PlanAssignments.EnumerateAsync(new PlanAssignmentFilter { TenantId = tenantId, UserId = userId, PageSize = _Page }, token).ConfigureAwait(false)).Items,
+            await DrainAsync(async () => (await _Database.PlanAssignments.EnumerateAsync(new PlanAssignmentFilter { TenantId = tenantId, UserId = userId, PageSize = _Page }, token).ConfigureAwait(false)).Objects,
                 p => _Database.PlanAssignments.DeleteAsync(tenantId, p.Id, token), token).ConfigureAwait(false);
-            await DrainAsync(async () => (await _Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenantId, UserId = userId, PageSize = _Page }, token).ConfigureAwait(false)).Items,
+            await DrainAsync(async () => (await _Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenantId, UserId = userId, PageSize = _Page }, token).ConfigureAwait(false)).Objects,
                 async m =>
                 {
                     m.UserId = null;

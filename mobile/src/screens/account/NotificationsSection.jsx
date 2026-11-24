@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Linking, RefreshControl, Switch, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { listItems } from '@/api/client';
+import { enumerateObjects } from '@/api/enumeration';
 import { NOTIFICATION_CHANNELS, NOTIFICATION_KINDS, devicesApi, notificationsApi } from '@/api/account';
 import { isNotAvailable } from '@/api/errors';
 import { ResourceView } from '@/components/states';
@@ -103,11 +103,10 @@ export function NotificationsSection() {
 
   useEffect(() => {
     let alive = true;
-    devicesApi
-      .list(client)
+    enumerateObjects((query) => devicesApi.list(client, query))
       .then((result) => {
         if (!alive) return;
-        setDevices(listItems(result));
+        setDevices(result);
         setDevicesAvailable(true);
       })
       .catch((error) => {

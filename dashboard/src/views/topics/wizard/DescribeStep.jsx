@@ -36,14 +36,14 @@ export default function DescribeStep({ data, initialText = '', onStart, busy = f
     let cancelled = false;
     apiClient
       .listModelEndpoints({ pageSize: 100 })
-      .then((r) => !cancelled && setEndpoints(((r && r.items) || []).filter((e) => e.active !== false && e.supportsChat !== false)))
+      .then((r) => !cancelled && setEndpoints(((r && r.objects) || []).filter((e) => e.active !== false && e.supportsChat !== false)))
       .catch(() => {});
     // One-time requests keep their clarifying questions in a session too; those are not wizard sessions.
     Promise.all([apiClient.listRefinementSessions({ status: 'Active', pageSize: 25, sortBy: 'createdUtc', sortDirection: 'Descending' }), apiClient.listTopics({ isOneTime: true, pageSize: 1000 })])
       .then(([sessions, oneTime]) => {
         if (cancelled) return;
-        const skip = new Set(((oneTime && oneTime.items) || []).map((x) => x.id));
-        setResumable(((sessions && sessions.items) || []).filter((s) => !skip.has(s.topicId)).slice(0, 8));
+        const skip = new Set(((oneTime && oneTime.objects) || []).map((x) => x.id));
+        setResumable(((sessions && sessions.objects) || []).filter((s) => !skip.has(s.topicId)).slice(0, 8));
       })
       .catch(() => {});
     return () => {

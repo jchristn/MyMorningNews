@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for VaultCredential records. Null properties are not applied.
     /// </summary>
-    public class VaultCredentialFilter : EnumerationFilter
+    public class VaultCredentialFilter : EnumerationQuery
     {
         /// <summary>
         /// Match Name exactly when set.

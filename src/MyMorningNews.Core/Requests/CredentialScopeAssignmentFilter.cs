@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for CredentialScopeAssignment records. Null properties are not applied.
     /// </summary>
-    public class CredentialScopeAssignmentFilter : EnumerationFilter
+    public class CredentialScopeAssignmentFilter : EnumerationQuery
     {
         /// <summary>
         /// Match CredentialId exactly when set.

@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for RunStage records. Null properties are not applied.
     /// </summary>
-    public class RunStageFilter : EnumerationFilter
+    public class RunStageFilter : EnumerationQuery
     {
         /// <summary>
         /// Match RunId exactly when set.

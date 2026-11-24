@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for EditionTopic records. Null properties are not applied.
     /// </summary>
-    public class EditionTopicFilter : EnumerationFilter
+    public class EditionTopicFilter : EnumerationQuery
     {
         /// <summary>
         /// Match EditionId exactly when set.

@@ -76,9 +76,10 @@ namespace MyMorningNews.Sdk.Resources
         /// <returns>A list of RunStage items.</returns>
         /// <exception cref="ArgumentNullException">id is null or empty.</exception>
         /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
-        public Task<List<RunStage>> ListStagesAsync(string id, CancellationToken token = default)
+        /// <param name="options">Pagination, sorting, and filters; null uses defaults.</param>
+        public Task<EnumerationResult<RunStage>> ListStagesAsync(string id, EnumerationQuery? options = null, CancellationToken token = default)
         {
-            return Client.SendAsync<List<RunStage>>(HttpMethod.Get, "/v1.0/api/runs/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/stages", null, null, token);
+            return Client.SendAsync<EnumerationResult<RunStage>>(HttpMethod.Get, "/v1.0/api/runs/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/stages", (options ?? new EnumerationQuery()).ToQuery(), null, token);
         }
 
         /// <summary>
@@ -89,9 +90,10 @@ namespace MyMorningNews.Sdk.Resources
         /// <returns>A list of SearchQuery items.</returns>
         /// <exception cref="ArgumentNullException">id is null or empty.</exception>
         /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
-        public Task<List<SearchQuery>> ListQueriesAsync(string id, CancellationToken token = default)
+        /// <param name="options">Pagination, sorting, and filters; null uses defaults.</param>
+        public Task<EnumerationResult<SearchQuery>> ListQueriesAsync(string id, EnumerationQuery? options = null, CancellationToken token = default)
         {
-            return Client.SendAsync<List<SearchQuery>>(HttpMethod.Get, "/v1.0/api/runs/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/queries", null, null, token);
+            return Client.SendAsync<EnumerationResult<SearchQuery>>(HttpMethod.Get, "/v1.0/api/runs/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/queries", (options ?? new EnumerationQuery()).ToQuery(), null, token);
         }
 
         /// <summary>
@@ -103,9 +105,10 @@ namespace MyMorningNews.Sdk.Resources
         /// <returns>A list of SearchResult items.</returns>
         /// <exception cref="ArgumentNullException">id is null or empty.</exception>
         /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
-        public Task<List<SearchResult>> ListResultsAsync(string id, SearchResultDispositionEnum? disposition = null, CancellationToken token = default)
+        /// <param name="options">Pagination, sorting, and filters; null uses defaults.</param>
+        public Task<EnumerationResult<SearchResult>> ListResultsAsync(string id, SearchResultDispositionEnum? disposition = null, EnumerationQuery? options = null, CancellationToken token = default)
         {
-            return Client.SendAsync<List<SearchResult>>(HttpMethod.Get, "/v1.0/api/runs/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/results", Query("disposition", disposition), null, token);
+            return Client.SendAsync<EnumerationResult<SearchResult>>(HttpMethod.Get, "/v1.0/api/runs/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/results", MergeQuery(options, Query("disposition", disposition)), null, token);
         }
 
         /// <summary>
@@ -143,9 +146,10 @@ namespace MyMorningNews.Sdk.Resources
         /// <returns>The tool calls.</returns>
         /// <exception cref="ArgumentNullException">id is null or empty.</exception>
         /// <exception cref="MyMorningNewsException">The server returned an error (404 when the run is not found).</exception>
-        public Task<List<RunToolCall>> ListToolCallsAsync(string id, CancellationToken token = default)
+        /// <param name="options">Pagination, sorting, and filters; null uses defaults.</param>
+        public Task<EnumerationResult<RunToolCall>> ListToolCallsAsync(string id, EnumerationQuery? options = null, CancellationToken token = default)
         {
-            return Client.SendAsync<List<RunToolCall>>(HttpMethod.Get, "/v1.0/api/runs/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/tool-calls", null, null, token);
+            return Client.SendAsync<EnumerationResult<RunToolCall>>(HttpMethod.Get, "/v1.0/api/runs/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/tool-calls", (options ?? new EnumerationQuery()).ToQuery(), null, token);
         }
 
         /// <summary>

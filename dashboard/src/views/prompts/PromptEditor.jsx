@@ -1,3 +1,4 @@
+import { enumerateObjects } from '../../utils/enumeration.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link, useNavigate } from 'react-router-dom';
@@ -60,7 +61,7 @@ export default function PromptEditor({ promptId }) {
 
   const loadVersions = useCallback(async () => {
     try {
-      const list = await apiClient.listPromptVersions(promptId);
+      const list = await enumerateObjects((query) => apiClient.listPromptVersions(promptId, query));
       setVersions((Array.isArray(list) ? list : []).slice().sort((a, b) => b.version - a.version));
     } catch {
       setVersions([]);

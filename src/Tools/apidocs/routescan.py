@@ -243,6 +243,9 @@ def scan():
             handler_expr = args[2]
             hm = re.search(r"=>\s*(\w+)\(", handler_expr)
             handler = hm.group(1) if hm else handler_expr.strip()
+            twin = re.search(r"EnumerateAsync\(ctx,\s*(\w+)\)", handler_expr)
+            if twin:
+                handler = twin.group(1)
             line = text.count("\n", 0, pos) + 1
             if paths is None:
                 routes["?" + verb + " " + args[1]] = {"error": "unresolved path expression", "file": path.name, "line": line}
@@ -260,7 +263,8 @@ def scan():
                     "line": line,
                     "handler": handler,
                     "declaredBody": (re.search(r"Body<(.+?)>\(\)", meta).group(1) if re.search(r"Body<(.+?)>\(\)", meta) else None),
-                    "declaredQuery": re.findall(r"QueryParam\(\s*\"(\w+)\"", meta) + (["pageNumber", "pageSize", "sortBy", "sortDirection", "search", "fromUtc", "toUtc"] if "Paged(" in meta else []),
+                    "paged": "Paged(" in meta,
+                    "declaredQuery": re.findall(r"QueryParam\(\s*\"(\w+)\"", meta) + (["pageNumber", "pageSize", "sortBy", "sortDirection", "search", "fromUtc", "toUtc", "order", "createdAfter", "createdBefore"] if "Paged(" in meta else []),
                     **facts,
                 }
     return routes

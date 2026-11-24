@@ -1,3 +1,4 @@
+import { enumerateObjects } from '../../utils/enumeration.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link, useNavigate } from 'react-router-dom';
@@ -49,7 +50,7 @@ function PreviewPanel({ template, dirty }) {
       .listEditions({ pageSize: 200, sortBy: 'name', sortDirection: 'Ascending' })
       .then((r) => {
         if (cancelled) return;
-        const items = (r && r.items) || [];
+        const items = (r && r.objects) || [];
         setEditions(items);
         const using = items.find((e) => e.briefingTemplateId === template.id) || (template.isDefault ? items.find((e) => !e.briefingTemplateId) : null);
         setEditionId((using || items[0] || { id: '' }).id);
@@ -152,8 +153,8 @@ export default function TemplateEditor({ templateId }) {
 
   const loadVersions = useCallback(async () => {
     try {
-      const list = await apiClient.listBriefingTemplateVersions(templateId);
-      setVersions((Array.isArray(list) ? list : (list && list.items) || []).slice().sort((a, b) => b.version - a.version));
+      const list = await enumerateObjects((query) => apiClient.listBriefingTemplateVersions(templateId, query));
+      setVersions((Array.isArray(list) ? list : (list && list.objects) || []).slice().sort((a, b) => b.version - a.version));
     } catch {
       setVersions([]);
     }

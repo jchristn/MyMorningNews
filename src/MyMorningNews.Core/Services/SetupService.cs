@@ -223,7 +223,7 @@ namespace MyMorningNews.Core.Services
                 {
                     TenantId = tenantId, Provider = provider, PageSize = 100, SortBy = "createdUtc", SortDirection = SortDirectionEnum.Ascending
                 }, token).ConfigureAwait(false);
-                endpoint = same.Items.FirstOrDefault(e => e.SupportsChat && !IsPlatform(e));
+                endpoint = same.Objects.FirstOrDefault(e => e.SupportsChat && !IsPlatform(e));
             }
 
             bool create = endpoint == null;
@@ -613,7 +613,7 @@ namespace MyMorningNews.Core.Services
             SetupCheck check = new SetupCheck { Key = "search", Kind = SetupCheckKindEnum.Search, Required = true };
             await _Search.EnsureDefaultsAsync(tenantId, token).ConfigureAwait(false);
             List<SearchProvider> providers = (await _Database.SearchProviders.EnumerateAsync(new SearchProviderFilter { TenantId = tenantId, PageSize = 100 }, token).ConfigureAwait(false))
-                .Items.Where(p => p.Active && p.IsDefault && IsWebSearch(p.Kind)).ToList();
+                .Objects.Where(p => p.Active && p.IsDefault && IsWebSearch(p.Kind)).ToList();
             if (providers.Count == 0)
             {
                 check.State = SetupCheckStateEnum.Missing;
@@ -817,7 +817,7 @@ namespace MyMorningNews.Core.Services
             for (int i = 2; i < 100; i++)
             {
                 EnumerationResult<VaultCredential> found = await _Database.VaultCredentials.EnumerateAsync(new VaultCredentialFilter { TenantId = tenantId, Name = candidate, PageSize = 1 }, token).ConfigureAwait(false);
-                if (!found.Items.Any(v => String.Equals(v.Name, candidate, StringComparison.OrdinalIgnoreCase))) return candidate;
+                if (!found.Objects.Any(v => String.Equals(v.Name, candidate, StringComparison.OrdinalIgnoreCase))) return candidate;
                 candidate = (name.Length > 100 ? name.Substring(0, 100) : name) + " " + i;
             }
 
@@ -942,7 +942,7 @@ namespace MyMorningNews.Core.Services
         {
             if (String.Equals(credentialId, VaultService.PlatformAnthropicCredentialId, StringComparison.Ordinal)) return;
             EnumerationResult<ModelEndpoint> users = await _Database.ModelEndpoints.EnumerateAsync(new ModelEndpointFilter { TenantId = tenantId, CredentialId = credentialId, PageSize = 1 }, token).ConfigureAwait(false);
-            if (users.Items.Count > 0) return;
+            if (users.Objects.Count > 0) return;
             await _Database.VaultCredentials.DeleteAsync(tenantId, credentialId, token).ConfigureAwait(false);
         }
 
@@ -951,7 +951,7 @@ namespace MyMorningNews.Core.Services
             foreach (ModelTaskEnum task in ChatTasks)
             {
                 EnumerationResult<ModelAssignment> existing = await _Database.ModelAssignments.EnumerateAsync(new ModelAssignmentFilter { TenantId = tenantId, Task = task, PageSize = 100 }, token).ConfigureAwait(false);
-                ModelAssignment? a = existing.Items.FirstOrDefault(x => x.TopicId == null);
+                ModelAssignment? a = existing.Objects.FirstOrDefault(x => x.TopicId == null);
                 if (a == null)
                 {
                     await _Database.ModelAssignments.CreateAsync(new ModelAssignment { TenantId = tenantId, Task = task, ModelEndpointId = endpointId }, token).ConfigureAwait(false);
@@ -970,7 +970,7 @@ namespace MyMorningNews.Core.Services
         {
             EnumerationResult<ModelEndpoint> all = await _Database.ModelEndpoints.EnumerateAsync(new ModelEndpointFilter { TenantId = tenantId, PageSize = 1000 }, token).ConfigureAwait(false);
             string candidate = name;
-            for (int i = 2; all.Items.Any(e => String.Equals(e.Name, candidate, StringComparison.OrdinalIgnoreCase)); i++) candidate = name + " " + i;
+            for (int i = 2; all.Objects.Any(e => String.Equals(e.Name, candidate, StringComparison.OrdinalIgnoreCase)); i++) candidate = name + " " + i;
             return candidate;
         }
 

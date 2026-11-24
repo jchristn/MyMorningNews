@@ -201,12 +201,12 @@ namespace MyMorningNews.Core.Pipeline
         {
             List<AgentTool> tools = new List<AgentTool>();
             if (services.Mcp == null) return tools;
-            List<McpServer> servers = (await services.Database.McpServers.EnumerateAsync(new McpServerFilter { TenantId = ctx.Run.TenantId, Enabled = true, PageSize = 50 }, token).ConfigureAwait(false)).Items;
+            List<McpServer> servers = (await services.Database.McpServers.EnumerateAsync(new McpServerFilter { TenantId = ctx.Run.TenantId, Enabled = true, PageSize = 50 }, token).ConfigureAwait(false)).Objects;
             HashSet<string> allowed = new HashSet<string>(ctx.Topic.McpToolIds, StringComparer.Ordinal);
             HashSet<string> names = new HashSet<string>(StringComparer.Ordinal) { "web_search", "fetch_url", ModelGateway.SubmitToolName };
             foreach (McpServer server in servers)
             {
-                List<McpServerTool> serverTools = (await services.Database.McpServerTools.EnumerateAsync(new McpServerToolFilter { TenantId = ctx.Run.TenantId, McpServerId = server.Id, Enabled = true, PageSize = 200 }, token).ConfigureAwait(false)).Items;
+                List<McpServerTool> serverTools = (await services.Database.McpServerTools.EnumerateAsync(new McpServerToolFilter { TenantId = ctx.Run.TenantId, McpServerId = server.Id, Enabled = true, PageSize = 200 }, token).ConfigureAwait(false)).Objects;
                 foreach (McpServerTool t in serverTools.Where(t => allowed.Count == 0 || allowed.Contains(t.Id)))
                 {
                     string name = ("mcp_" + _Unsafe.Replace(server.Name, "_") + "_" + _Unsafe.Replace(t.Name, "_")).ToLowerInvariant();

@@ -84,7 +84,7 @@ namespace Test.Shared.Suites
             stored.Markdown = (stored.Markdown ?? String.Empty) + "\n\n## Injected\n\nText <script>alert('x')</script> and <iframe src=\"https://evil.test\"></iframe>.\n\n[click](javascript:alert(1)) [source](https://example.test/report)\n";
             await f.Server.Context.Database.Briefings.UpdateAsync(stored, token).ConfigureAwait(false);
 
-            Assert.Equal(0L, (await f.User.Client.GetAsync(path, token).ConfigureAwait(false)).Expect(200, "empty list").Json<EnumerationResult<BriefingShare>>().TotalCount, "nothing is shared by default");
+            Assert.Equal(0L, (await f.User.Client.GetAsync(path, token).ConfigureAwait(false)).Expect(200, "empty list").Json<EnumerationResult<BriefingShare>>().TotalRecords, "nothing is shared by default");
             (await Bare(baseUrl + "/v1.0/public/shares/mmns_" + b.Id, token).ConfigureAwait(false)).Expect(404, "a briefing is never public by its identifier");
 
             BriefingShareCreated created = (await f.User.Client.PostAsync(path, null, token).ConfigureAwait(false)).Expect(201, "create").Json<BriefingShareCreated>();
@@ -133,7 +133,7 @@ namespace Test.Shared.Suites
             Assert.True(part.Headers["Content-Range"] == "bytes 0-9/" + m.Bytes && part.Headers["Content-Length"] == "10", "ranged bytes: " + part.Headers["Content-Range"]);
             (await Bare(baseUrl + audioPath, token, "bytes=" + (m.Bytes + 10) + "-").ConfigureAwait(false)).Expect(416, "range past the end");
 
-            BriefingShare listed = (await f.User.Client.GetAsync(path, token).ConfigureAwait(false)).Expect(200, "list").Json<EnumerationResult<BriefingShare>>().Items.Single();
+            BriefingShare listed = (await f.User.Client.GetAsync(path, token).ConfigureAwait(false)).Expect(200, "list").Json<EnumerationResult<BriefingShare>>().Objects.Single();
             Assert.True(listed.ViewCount == 2 && listed.LastViewedUtc.HasValue && listed.TokenHash == "redacted" && listed.TokenPrefix == created.Secret.Substring(0, 10), "two openings counted (chapter reloads and audio are not): " + listed.ViewCount);
 
             // The owner's name appears only when asked for, and the email address never does.
@@ -191,7 +191,7 @@ namespace Test.Shared.Suites
             (await f.User.Client.PostAsync(path, new { expiresInDays = 0 }, token).ConfigureAwait(false)).Expect(400, "0 days refused");
             (await f.User.Client.PostAsync(path, new { expiresInDays = -3 }, token).ConfigureAwait(false)).Expect(400, "negative days refused");
             (await f.User.Client.PostAsync(path, "{\"expiresInDays\":\"never\"}", token).ConfigureAwait(false)).Expect(400, "a non-number is refused");
-            Assert.Equal(1L, (await f.User.Client.GetAsync(path, token).ConfigureAwait(false)).Json<EnumerationResult<BriefingShare>>().TotalCount, "refused requests create nothing");
+            Assert.Equal(1L, (await f.User.Client.GetAsync(path, token).ConfigureAwait(false)).Json<EnumerationResult<BriefingShare>>().TotalRecords, "refused requests create nothing");
 
             BriefingShareCreated longest = (await f.User.Client.PostAsync(path, new { expiresInDays = 14 }, token).ConfigureAwait(false)).Expect(201, "14 days accepted").Json<BriefingShareCreated>();
             Assert.True(Math.Abs((longest.Share.ExpiresUtc - DateTime.UtcNow.AddDays(14)).TotalMinutes) < 5, "14 days stored");
@@ -227,10 +227,10 @@ namespace Test.Shared.Suites
             Assert.True(expired.Body.Contains("This link is not available", StringComparison.Ordinal) && expired.Body.Contains("alt=\"My Morning News\"", StringComparison.Ordinal) && expired.Body.Contains("© 2026 Lattice AI LLC", StringComparison.Ordinal)
                 && !expired.Body.Contains(b.Title, StringComparison.Ordinal), "branded 404 that reveals nothing");
             Assert.True(expired.Headers["X-Robots-Tag"].Contains("noindex", StringComparison.Ordinal) && expired.Headers["Referrer-Policy"] == "no-referrer", "404 headers");
-            BriefingShare listed = (await f.User.Client.GetAsync(path, token).ConfigureAwait(false)).Json<EnumerationResult<BriefingShare>>().Items.Single(x => x.Id == shortest.Share.Id);
+            BriefingShare listed = (await f.User.Client.GetAsync(path, token).ConfigureAwait(false)).Json<EnumerationResult<BriefingShare>>().Objects.Single(x => x.Id == shortest.Share.Id);
             Assert.True(listed.ExpiresUtc < DateTime.UtcNow && !listed.RevokedUtc.HasValue, "an expired share stays listed with its expiry");
             (await f.User.Client.DeleteAsync(path + "/" + shortest.Share.Id + "?purge=true", token).ConfigureAwait(false)).Expect(204, "purge an expired share");
-            Assert.True((await f.User.Client.GetAsync(path, token).ConfigureAwait(false)).Json<EnumerationResult<BriefingShare>>().Items.All(x => x.Id != shortest.Share.Id), "purged");
+            Assert.True((await f.User.Client.GetAsync(path, token).ConfigureAwait(false)).Json<EnumerationResult<BriefingShare>>().Objects.All(x => x.Id != shortest.Share.Id), "purged");
             await DrainEmailAsync(f, token).ConfigureAwait(false);
         }
 
@@ -262,7 +262,7 @@ namespace Test.Shared.Suites
                 TestResponse refused = (await f.User.Client.PostAsync(path, new { expiresInDays = 7 }, token).ConfigureAwait(false)).Expect(409, "create while sharing is off");
                 Assert.Equal("SharingDisabled", refused.Json<ErrorResponse>().Error, "error code");
                 Assert.True(!(await Bare(baseUrl + "/v1.0/api/client-config", token).ConfigureAwait(false)).Json<ClientConfigResponse>().SharingEnabled, "client config reports sharing off");
-                Assert.Equal(2L, (await f.User.Client.GetAsync(path, token).ConfigureAwait(false)).Expect(200, "list while off").Json<EnumerationResult<BriefingShare>>().TotalCount, "shares can still be listed");
+                Assert.Equal(2L, (await f.User.Client.GetAsync(path, token).ConfigureAwait(false)).Expect(200, "list while off").Json<EnumerationResult<BriefingShare>>().TotalRecords, "shares can still be listed");
             }
             finally
             {
@@ -279,7 +279,7 @@ namespace Test.Shared.Suites
             TestResponse unknown = (await Bare(baseUrl + "/v1.0/public/shares/mmns_nope", token).ConfigureAwait(false)).Expect(404, "unknown");
             Assert.True(revoked.Body == unknown.Body, "revoked and unknown links get the identical page");
             (await Bare(pubTwo, token).ConfigureAwait(false)).Expect(200, "the other share still works");
-            List<BriefingShare> after = (await f.User.Client.GetAsync(path, token).ConfigureAwait(false)).Json<EnumerationResult<BriefingShare>>().Items;
+            List<BriefingShare> after = (await f.User.Client.GetAsync(path, token).ConfigureAwait(false)).Json<EnumerationResult<BriefingShare>>().Objects;
             Assert.True(after.Single(x => x.Id == one.Share.Id).RevokedUtc.HasValue && !after.Single(x => x.Id == two.Share.Id).RevokedUtc.HasValue, "revocation recorded on one share only");
             (await f.User.Client.DeleteAsync(path + "/" + one.Share.Id, token).ConfigureAwait(false)).Expect(204, "revoking twice is harmless");
             (await f.User.Client.DeleteAsync(path + "/" + one.Share.Id + "?purge=true", token).ConfigureAwait(false)).Expect(204, "purge the revoked share");
@@ -326,17 +326,17 @@ namespace Test.Shared.Suites
             (await f.User.Client.DeleteAsync("/v1.0/api/briefings/" + second.Id + "/shares/" + mine.Share.Id, token).ConfigureAwait(false)).Expect(404, "wrong briefing");
 
             (await Bare(baseUrl + "/v1.0/public/shares/" + mine.Secret, token).ConfigureAwait(false)).Expect(200, "still live after every refused attempt");
-            Assert.Equal(1L, (await f.User.Client.GetAsync(path, token).ConfigureAwait(false)).Json<EnumerationResult<BriefingShare>>().TotalCount, "nothing was added or removed");
+            Assert.Equal(1L, (await f.User.Client.GetAsync(path, token).ConfigureAwait(false)).Json<EnumerationResult<BriefingShare>>().TotalRecords, "nothing was added or removed");
 
             // A tenant administrator of the same tenant can see and revoke it.
             TestUser tenantAdmin = await TestFixtures.CreateUserAsync(admin, b.TenantId, true, token).ConfigureAwait(false);
-            Assert.Equal(1L, (await tenantAdmin.Client.GetAsync(path, token).ConfigureAwait(false)).Expect(200, "tenant administrator lists").Json<EnumerationResult<BriefingShare>>().TotalCount, "tenant administrator sees the share");
+            Assert.Equal(1L, (await tenantAdmin.Client.GetAsync(path, token).ConfigureAwait(false)).Expect(200, "tenant administrator lists").Json<EnumerationResult<BriefingShare>>().TotalRecords, "tenant administrator sees the share");
             (await tenantAdmin.Client.DeleteAsync(path + "/" + mine.Share.Id, token).ConfigureAwait(false)).Expect(204, "tenant administrator revokes");
             (await Bare(baseUrl + "/v1.0/public/shares/" + mine.Secret, token).ConfigureAwait(false)).Expect(404, "revoked by the administrator");
 
             // The link secret never reaches request history.
             await Task.Delay(300, token).ConfigureAwait(false);
-            List<RequestHistoryEntry> history = (await f.Server.Context.Database.RequestHistory.EnumerateAsync(new RequestHistoryFilter { PageSize = 1000 }, token).ConfigureAwait(false)).Items;
+            List<RequestHistoryEntry> history = (await f.Server.Context.Database.RequestHistory.EnumerateAsync(new RequestHistoryFilter { PageSize = 1000 }, token).ConfigureAwait(false)).Objects;
             Assert.True(history.All(e => !(e.Path ?? String.Empty).Contains(mine.Secret, StringComparison.Ordinal) && !(e.Url ?? String.Empty).Contains(mine.Secret, StringComparison.Ordinal)
                 && !(e.ResponseBody ?? String.Empty).Contains(mine.Secret, StringComparison.Ordinal)), "request history holds no link secret");
             await DrainEmailAsync(f, token).ConfigureAwait(false);

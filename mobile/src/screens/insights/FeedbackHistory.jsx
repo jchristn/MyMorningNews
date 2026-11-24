@@ -63,7 +63,7 @@ export function FeedbackHistory() {
     if (!result || !result.queued) await resource.reload();
   };
   const items = listItems(resource.data);
-  const total = resource.data && typeof resource.data.totalCount === 'number' ? resource.data.totalCount : items.length;
+  const total = resource.data && typeof resource.data.totalRecords === 'number' ? resource.data.totalRecords : items.length;
   return (
     <View style={{ gap: spacing.sm }} testID="feedback-history">
       <ChipGroup

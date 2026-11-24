@@ -36,6 +36,9 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, b, ListAsync, null, openApiMetadata: Paged(Doc("List the email outbox", "Email", "Rendered bodies are left out; read one message for them.")
                 .WithParameter(QueryParam("status", typeof(EmailStatusEnum))).WithParameter(QueryParam("template", typeof(EmailTemplateEnum))).WithParameter(QueryParam("runId", typeof(string)))
                 .WithParameter(QueryParam("briefingId", typeof(string))).WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("recipient", typeof(string)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b + "/enumerate", ctx => EnumerateAsync(ctx, ListAsync), null, openApiMetadata: Paged(Doc("List the email outbox", "Email", "Rendered bodies are left out; read one message for them.")
+                .WithParameter(QueryParam("status", typeof(EmailStatusEnum))).WithParameter(QueryParam("template", typeof(EmailTemplateEnum))).WithParameter(QueryParam("runId", typeof(string)))
+                .WithParameter(QueryParam("briefingId", typeof(string))).WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("recipient", typeof(string)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read an email with its rendered HTML and text", "Email"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/resend", ResendAsync, null, openApiMetadata: Doc("Send an email again", "Email"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, b + "/{id}", DeleteAsync, null, openApiMetadata: Doc("Delete an email from the outbox", "Email"));
@@ -68,7 +71,7 @@ namespace MyMorningNews.Server.Routes
             };
             ApplyPaging(ctx, filter);
             EnumerationResult<EmailMessage> page = await Server.Database.EmailMessages.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false);
-            foreach (EmailMessage m in page.Items) { m.RenderedHtml = null; m.RenderedText = null; }
+            foreach (EmailMessage m in page.Objects) { m.RenderedHtml = null; m.RenderedText = null; }
             await SendJsonAsync(ctx, 200, page).ConfigureAwait(false);
         }
 
@@ -101,7 +104,7 @@ namespace MyMorningNews.Server.Routes
         {
             EmailMessage? m = await VisibleAsync(ctx, RequestTypeEnum.EmailWrite).ConfigureAwait(false);
             if (m == null) return;
-            foreach (EmailActionToken t in (await Server.Database.EmailActionTokens.EnumerateAsync(new EmailActionTokenFilter { TenantId = m.TenantId, EmailMessageId = m.Id, PageSize = 1000 }, ctx.Token).ConfigureAwait(false)).Items)
+            foreach (EmailActionToken t in (await Server.Database.EmailActionTokens.EnumerateAsync(new EmailActionTokenFilter { TenantId = m.TenantId, EmailMessageId = m.Id, PageSize = 1000 }, ctx.Token).ConfigureAwait(false)).Objects)
                 await Server.Database.EmailActionTokens.DeleteAsync(t.TenantId, t.Id, ctx.Token).ConfigureAwait(false);
             await Server.Database.EmailMessages.DeleteAsync(m.TenantId, m.Id, ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 204, null).ConfigureAwait(false);
@@ -163,7 +166,7 @@ namespace MyMorningNews.Server.Routes
         {
             string address = await MyAddressAsync(ctx, tenantId).ConfigureAwait(false) ?? String.Empty;
             List<EmailSuppression> rows = address.Length == 0 ? new List<EmailSuppression>()
-                : (await Server.Database.EmailSuppressions.EnumerateAsync(new EmailSuppressionFilter { TenantId = tenantId, Recipient = address, PageSize = 500 }, ctx.Token).ConfigureAwait(false)).Items;
+                : (await Server.Database.EmailSuppressions.EnumerateAsync(new EmailSuppressionFilter { TenantId = tenantId, Recipient = address, PageSize = 500 }, ctx.Token).ConfigureAwait(false)).Objects;
             bool all = rows.Any(r => r.Category == EmailCategoryEnum.All);
             // The three switches are the email cells of the notification preference matrix (one store, no drift).
             User? me = await Server.Database.Users.ReadAsync(tenantId, Context(ctx).UserId ?? String.Empty, ctx.Token).ConfigureAwait(false);

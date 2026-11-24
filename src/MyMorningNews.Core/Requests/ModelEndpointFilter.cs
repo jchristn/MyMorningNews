@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for ModelEndpoint records. Null properties are not applied.
     /// </summary>
-    public class ModelEndpointFilter : EnumerationFilter
+    public class ModelEndpointFilter : EnumerationQuery
     {
         /// <summary>
         /// Match Provider exactly when set.

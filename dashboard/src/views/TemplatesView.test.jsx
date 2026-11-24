@@ -1,3 +1,4 @@
+import { enumerationResult } from '../test/enumeration.js';
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -13,10 +14,10 @@ function templateApi(overrides = {}) {
   return {
     listBriefingTemplates: vi.fn(async () => page([TEMPLATE, MINE])),
     getBriefingTemplate: vi.fn(async () => templateDetail()),
-    listBriefingTemplateVersions: vi.fn(async () => [
+    listBriefingTemplateVersions: vi.fn(async () => enumerationResult([
       { id: 'btv_1', templateId: 'btp_1', version: 1, content: TEMPLATE_CONTENT, createdUtc: '2026-11-18T06:30:00Z' },
       { id: 'btv_2', templateId: 'btp_1', version: 2, content: TEMPLATE_CONTENT, changeNote: 'Shorter intro', createdUtc: '2026-11-19T06:30:00Z' }
-    ]),
+    ])),
     validateBriefingTemplate: vi.fn(async () => ({ valid: true, name: 'Morning News', title: '{{edition.name}}', problems: [], sections: TEMPLATE_SECTIONS, audio: { enabled: false, format: 'narrator', targetMinutes: 8 } })),
     listEditions: vi.fn(async () => page([EDITION])),
     ...overrides

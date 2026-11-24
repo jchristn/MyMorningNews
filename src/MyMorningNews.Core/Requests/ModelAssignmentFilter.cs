@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for ModelAssignment records. Null properties are not applied.
     /// </summary>
-    public class ModelAssignmentFilter : EnumerationFilter
+    public class ModelAssignmentFilter : EnumerationQuery
     {
         /// <summary>
         /// Match Task exactly when set.

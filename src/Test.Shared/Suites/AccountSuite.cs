@@ -134,7 +134,7 @@ namespace Test.Shared.Suites
 
         private static async Task<string> LinkTokenAsync(MyMorningNewsServer server, string tenantId, EmailTemplateEnum template, CancellationToken token)
         {
-            List<EmailMessage> mail = (await server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenantId, PageSize = 100 }, token).ConfigureAwait(false)).Items;
+            List<EmailMessage> mail = (await server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenantId, PageSize = 100 }, token).ConfigureAwait(false)).Objects;
             EmailMessage? m = mail.Where(x => x.Template == template).OrderByDescending(x => x.CreatedUtc).FirstOrDefault();
             Assert.True(m != null && !String.IsNullOrEmpty(m.RenderedText), template + " email was written");
             Match match = Regex.Match(m!.RenderedText!, "token=([A-Za-z0-9%_\\-\\.~]+)");
@@ -176,7 +176,7 @@ namespace Test.Shared.Suites
                 Assert.True(user.SelfSignup && !user.EmailVerifiedUtc.HasValue && user.IsTenantAdmin && !user.IsAdmin && user.TermsVersion == h.TermsVersion && user.TermsAcceptedUtc.HasValue && user.TimeZone == "America/Chicago",
                     "unverified self sign-up user who accepted the terms");
                 Assert.True(tenant.IsPersonal && tenant.Name.EndsWith("(personal)", StringComparison.Ordinal), "personal tenant");
-                List<ModelEndpoint> endpoints = (await server.Context.Database.ModelEndpoints.EnumerateAsync(new ModelEndpointFilter { TenantId = tenant.Id, PageSize = 50 }, token).ConfigureAwait(false)).Items;
+                List<ModelEndpoint> endpoints = (await server.Context.Database.ModelEndpoints.EnumerateAsync(new ModelEndpointFilter { TenantId = tenant.Id, PageSize = 50 }, token).ConfigureAwait(false)).Objects;
                 Assert.True(endpoints.Any(e => e.Provider == ModelProviderEnum.Anthropic && e.CredentialId == VaultService.PlatformAnthropicCredentialId), "the personal tenant uses the platform key by reference");
                 long vault = await server.Context.Database.VaultCredentials.CountAsync(new VaultCredentialFilter { TenantId = tenant.Id }, token).ConfigureAwait(false);
                 Assert.Equal(0L, vault, "no copy of the platform key in the tenant vault");
@@ -201,7 +201,7 @@ namespace Test.Shared.Suites
                 Assert.True(verified.EmailVerifiedUtc.HasValue, "verified");
                 TokenResponse session = (await SignInAsync(anon, email, Password, token).ConfigureAwait(false)).Expect(200, "sign in without a tenant").Json<TokenResponse>();
                 Assert.Equal(tenant.Id, session.TenantId, "signed in to the personal tenant");
-                List<EmailMessage> mail = (await server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenant.Id, PageSize = 100 }, token).ConfigureAwait(false)).Items;
+                List<EmailMessage> mail = (await server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenant.Id, PageSize = 100 }, token).ConfigureAwait(false)).Objects;
                 Assert.True(mail.Any(m => m.Template == EmailTemplateEnum.Welcome), "welcome email after verifying");
                 return true;
             }, token).ConfigureAwait(false);
@@ -252,7 +252,7 @@ namespace Test.Shared.Suites
                 (await signedIn.GetAsync("/v1.0/api/me", token).ConfigureAwait(false)).Expect(401, "old sessions end");
                 (await SignInAsync(anon, user.Email, Password, token).ConfigureAwait(false)).Expect(401, "old password refused");
                 (await SignInAsync(anon, user.Email, next, token).ConfigureAwait(false)).Expect(200, "new password works");
-                List<EmailMessage> mail = (await server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = user.TenantId, PageSize = 100 }, token).ConfigureAwait(false)).Items;
+                List<EmailMessage> mail = (await server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = user.TenantId, PageSize = 100 }, token).ConfigureAwait(false)).Objects;
                 Assert.True(mail.Any(m => m.Template == EmailTemplateEnum.PasswordChanged), "confirmation email");
                 return true;
             }, token).ConfigureAwait(false);

@@ -43,11 +43,11 @@ function TemplatesList() {
   const fetchPage = useCallback(
     async (q) => {
       const result = await apiClient.listBriefingTemplates({ pageSize: 1000 });
-      const items = (result && result.items) || [];
+      const items = (result && result.objects) || [];
       setAll(items);
       const filtered = filterTemplates(items, q.filters || {});
       const start = (q.pageNumber - 1) * q.pageSize;
-      return { items: filtered.slice(start, start + q.pageSize), pageNumber: q.pageNumber, pageSize: q.pageSize, totalCount: filtered.length, totalPages: Math.max(1, Math.ceil(filtered.length / q.pageSize)) };
+      return { objects: filtered.slice(start, start + q.pageSize), pageNumber: q.pageNumber, pageSize: q.pageSize, totalRecords: filtered.length, totalPages: Math.max(1, Math.ceil(filtered.length / q.pageSize)) };
     },
     [apiClient]
   );

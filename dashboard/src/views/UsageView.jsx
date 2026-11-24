@@ -117,7 +117,7 @@ export default function UsageView() {
     if (!isTenantAdmin) return;
     apiClient
       .listUsers(identity ? identity.tenantId : 'default', { pageSize: 1000, sortBy: 'email', sortDirection: 'Ascending' })
-      .then((r) => setUsers((r && r.items) || []))
+      .then((r) => setUsers((r && r.objects) || []))
       .catch(() => setUsers([]));
   }, [apiClient, isTenantAdmin, identity]);
 

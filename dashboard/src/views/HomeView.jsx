@@ -66,17 +66,17 @@ export default function HomeView() {
         .catch(() => setOverview(false)),
       apiClient
         .listTopics({ isOneTime: false, pageSize: 1 })
-        .then((r) => setTopicCount(r && typeof r.totalCount === 'number' ? r.totalCount : 0))
+        .then((r) => setTopicCount(r && typeof r.totalRecords === 'number' ? r.totalRecords : 0))
         .catch(() => setTopicCount(null)),
       isTenantAdmin
         ? Promise.all([apiClient.listUsers(tenantId, { pageSize: 1 }), apiClient.listTenants({ pageSize: 1 })])
-            .then(([u, ten]) => setCounts({ users: u.totalCount, tenants: ten.totalCount }))
+            .then(([u, ten]) => setCounts({ users: u.totalRecords, tenants: ten.totalRecords }))
             .catch((e) => (nextErrors.counts = e))
         : Promise.resolve(),
       isTenantAdmin
         ? apiClient
             .getRequestHistory({ minStatusCode: 400, pageSize: 6, sortBy: 'createdUtc', sortDirection: 'Descending' })
-            .then((r) => setFailures(r.items))
+            .then((r) => setFailures(r.objects))
             .catch((e) => (nextErrors.failures = e))
         : Promise.resolve()
     ]);
@@ -94,7 +94,7 @@ export default function HomeView() {
     if (!isAdmin || !ownTenantId) return undefined;
     Promise.resolve()
       .then(() => apiClient.getTenant(ownTenantId))
-      .then((x) => live && setTenant(x && typeof x === 'object' && !Array.isArray(x.items) ? x : null))
+      .then((x) => live && setTenant(x && typeof x === 'object' && !Array.isArray(x.objects) ? x : null))
       .catch(() => live && setTenant(null));
     return () => {
       live = false;
@@ -108,7 +108,7 @@ export default function HomeView() {
   const showPasswordStep = isAdmin && Boolean(profile && profile.isProtected);
 
   const hello = greeting(profile, loadedAt || new Date(), timeZone);
-  const failureRate = summary && summary.totalCount > 0 ? summary.totalFailure / summary.totalCount : 0;
+  const failureRate = summary && summary.totalRecords > 0 ? summary.totalFailure / summary.totalRecords : 0;
 
   return (
     <div className="page">
@@ -134,7 +134,7 @@ export default function HomeView() {
         />
         {isTenantAdmin ? (
           <>
-            <KpiTile icon={History} label={t('home.kpi.requests')} value={summary ? f.number(summary.totalCount) : '...'} detail={t('charts.ranges.' + rangeId)} onClick={() => navigate('/dashboard/requests')} />
+            <KpiTile icon={History} label={t('home.kpi.requests')} value={summary ? f.number(summary.totalRecords) : '...'} detail={t('charts.ranges.' + rangeId)} onClick={() => navigate('/dashboard/requests')} />
             <KpiTile
               icon={CircleAlert}
               label={t('home.kpi.failureRate')}

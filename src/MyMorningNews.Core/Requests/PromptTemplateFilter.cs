@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for PromptTemplate records. Null properties are not applied.
     /// </summary>
-    public class PromptTemplateFilter : EnumerationFilter
+    public class PromptTemplateFilter : EnumerationQuery
     {
         /// <summary>
         /// Match Key exactly when set.

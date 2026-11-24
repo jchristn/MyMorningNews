@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for Permission records. Null properties are not applied.
     /// </summary>
-    public class PermissionFilter : EnumerationFilter
+    public class PermissionFilter : EnumerationQuery
     {
         /// <summary>
         /// Match Name exactly when set.

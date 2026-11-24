@@ -75,7 +75,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
                 Helpers.True(!On(mirrored, NotificationKindEnum.BriefingReady, NotificationChannelEnum.Email) && On(mirrored, NotificationKindEnum.RunResults, NotificationChannelEnum.Email), "the matrix shows what the older route saved");
 
                 EnumerationResult<Notification> list = await StepAsync(context, result, "GET notifications", () => c.Notifications.ListAsync(new NotificationListOptions { Unread = true, Kind = NotificationKindEnum.AudioReady, PageSize = 10 }, token)).ConfigureAwait(false);
-                Helpers.True(list.Items.Count == 0 && list.TotalCount == 0, "a new member has no notifications");
+                Helpers.True(list.Objects.Count == 0 && list.TotalRecords == 0, "a new member has no notifications");
                 NotificationCountResponse unread = await StepAsync(context, result, "GET notifications/unread-count", () => c.Notifications.UnreadCountAsync(token)).ConfigureAwait(false);
                 Helpers.Equal(0L, unread.Count, "none unread");
                 NotificationCountResponse marked = await StepAsync(context, result, "POST notifications/read-all", () => c.Notifications.MarkAllReadAsync(token)).ConfigureAwait(false);

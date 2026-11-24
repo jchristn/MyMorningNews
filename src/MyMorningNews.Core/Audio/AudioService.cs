@@ -197,7 +197,7 @@ namespace MyMorningNews.Core.Audio
             ArgumentNullException.ThrowIfNull(briefing);
             if (!_Settings.Tts.Enabled) return null;
             if (briefing.Status != BriefingStatusEnum.Ready || String.IsNullOrWhiteSpace(briefing.Markdown)) throw new ConflictException("Audio is made from a ready briefing.");
-            List<MediaAsset> existing = (await _Database.MediaAssets.EnumerateAsync(new MediaAssetFilter { TenantId = briefing.TenantId, BriefingId = briefing.Id, PageSize = 20 }, token).ConfigureAwait(false)).Items;
+            List<MediaAsset> existing = (await _Database.MediaAssets.EnumerateAsync(new MediaAssetFilter { TenantId = briefing.TenantId, BriefingId = briefing.Id, PageSize = 20 }, token).ConfigureAwait(false)).Objects;
             MediaAsset? live = existing.Where(m => m.Status != MediaStatusEnum.Failed).OrderByDescending(m => m.CreatedUtc).FirstOrDefault();
             if (live != null && !force) return live;
             if (live != null && live.Status != MediaStatusEnum.Ready) throw new ConflictException("Audio for this briefing is already being made.");
@@ -278,7 +278,7 @@ namespace MyMorningNews.Core.Audio
         public async Task<List<MediaChapter>> ChaptersAsync(MediaAsset asset, CancellationToken token = default)
         {
             ArgumentNullException.ThrowIfNull(asset);
-            return (await _Database.MediaChapters.EnumerateAsync(new MediaChapterFilter { TenantId = asset.TenantId, MediaAssetId = asset.Id, PageSize = 200 }, token).ConfigureAwait(false)).Items
+            return (await _Database.MediaChapters.EnumerateAsync(new MediaChapterFilter { TenantId = asset.TenantId, MediaAssetId = asset.Id, PageSize = 200 }, token).ConfigureAwait(false)).Objects
                 .OrderBy(c => c.SortOrder).ToList();
         }
 
@@ -560,7 +560,7 @@ namespace MyMorningNews.Core.Audio
         {
             ArgumentNullException.ThrowIfNull(ft);
             MediaAssetFilter filter = new MediaAssetFilter { TenantId = ft.TenantId, UserId = ft.UserId, EditionId = ft.EditionId, Active = true, Status = MediaStatusEnum.Ready, PageSize = Math.Clamp(max, 1, 500) };
-            List<MediaAsset> media = (await _Database.MediaAssets.EnumerateAsync(filter, token).ConfigureAwait(false)).Items;
+            List<MediaAsset> media = (await _Database.MediaAssets.EnumerateAsync(filter, token).ConfigureAwait(false)).Objects;
             if (ft.EditionId == null)
             {
                 EffectivePlan plan = await _Catalog.ReconcileAsync(ft.TenantId, ft.UserId, token).ConfigureAwait(false);
@@ -730,7 +730,7 @@ namespace MyMorningNews.Core.Audio
 
                 MixResult mix = await Mixer.MixAsync(audio, token).ConfigureAwait(false);
                 List<ChapterEntry> chapters = Chapters(parts, segments, mix.SegmentDurations);
-                List<BriefingSection> sections = (await _Database.BriefingSections.EnumerateAsync(new BriefingSectionFilter { TenantId = b.TenantId, BriefingId = b.Id, PageSize = 100 }, token).ConfigureAwait(false)).Items;
+                List<BriefingSection> sections = (await _Database.BriefingSections.EnumerateAsync(new BriefingSectionFilter { TenantId = b.TenantId, BriefingId = b.Id, PageSize = 100 }, token).ConfigureAwait(false)).Objects;
                 string fileBase = (b.ComposedUtc ?? DateTime.UtcNow).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "-" + TemplateParser.Slug(b.Title);
                 Artifact audioFile = await _Artifacts.SaveAsync(new ArtifactWrite
                 {
@@ -881,9 +881,9 @@ namespace MyMorningNews.Core.Audio
 
         private async Task<List<VoiceProfile>> ProfilesAsync(string tenantId, CancellationToken token)
         {
-            List<VoiceProfile> all = (await _Database.VoiceProfiles.EnumerateAsync(new VoiceProfileFilter { TenantId = tenantId, PageSize = 1000 }, token).ConfigureAwait(false)).Items;
+            List<VoiceProfile> all = (await _Database.VoiceProfiles.EnumerateAsync(new VoiceProfileFilter { TenantId = tenantId, PageSize = 1000 }, token).ConfigureAwait(false)).Objects;
             if (all.Count == 0 && await EnsureDefaultVoiceAsync(tenantId, token).ConfigureAwait(false))
-                all = (await _Database.VoiceProfiles.EnumerateAsync(new VoiceProfileFilter { TenantId = tenantId, PageSize = 1000 }, token).ConfigureAwait(false)).Items;
+                all = (await _Database.VoiceProfiles.EnumerateAsync(new VoiceProfileFilter { TenantId = tenantId, PageSize = 1000 }, token).ConfigureAwait(false)).Objects;
             return all;
         }
 
@@ -1003,9 +1003,9 @@ namespace MyMorningNews.Core.Audio
                 if (chosen != null) return chosen;
             }
 
-            List<VoiceProfile> all = (await _Database.VoiceProfiles.EnumerateAsync(new VoiceProfileFilter { TenantId = tenantId, PageSize = 100 }, token).ConfigureAwait(false)).Items;
+            List<VoiceProfile> all = (await _Database.VoiceProfiles.EnumerateAsync(new VoiceProfileFilter { TenantId = tenantId, PageSize = 100 }, token).ConfigureAwait(false)).Objects;
             if (all.Count == 0 && await EnsureDefaultVoiceAsync(tenantId, token).ConfigureAwait(false))
-                all = (await _Database.VoiceProfiles.EnumerateAsync(new VoiceProfileFilter { TenantId = tenantId, PageSize = 100 }, token).ConfigureAwait(false)).Items;
+                all = (await _Database.VoiceProfiles.EnumerateAsync(new VoiceProfileFilter { TenantId = tenantId, PageSize = 100 }, token).ConfigureAwait(false)).Objects;
             return all.FirstOrDefault(x => x.IsDefault) ?? all.OrderBy(x => x.CreatedUtc).FirstOrDefault();
         }
 

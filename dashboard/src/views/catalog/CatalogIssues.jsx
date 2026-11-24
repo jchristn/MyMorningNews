@@ -39,9 +39,9 @@ export function CatalogIssues({ publicationId = null, compact = false }) {
       </div>
       <ErrorState error={error} onRetry={load} />
       {!page && !error ? <LoadingState /> : null}
-      {page?.items.length === 0 ? <p className="muted">{t('catalog.noIssues')}</p> : null}
+      {page?.objects.length === 0 ? <p className="muted">{t('catalog.noIssues')}</p> : null}
       <ul className="event-list recent-briefings">
-        {page?.items.map((issue) => (
+        {page?.objects.map((issue) => (
           <li key={issue.id}>
             <div className="recent-briefing-row">
               <Link to={'/dashboard/catalog/' + issue.publicationId + '/issues/' + issue.id}>{issue.title}</Link>

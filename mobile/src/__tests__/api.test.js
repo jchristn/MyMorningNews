@@ -11,9 +11,9 @@ describe('ApiClient', () => {
     expect(buildQuery({})).toBe('');
   });
 
-  it('reads paged and bare list responses', () => {
-    expect(listItems({ items: [1, 2], totalCount: 2 })).toEqual([1, 2]);
-    expect(listItems([3])).toEqual([3]);
+  it('reads enumeration objects and rejects bare lists', () => {
+    expect(listItems({ objects: [1, 2], totalRecords: 2 })).toEqual([1, 2]);
+    expect(listItems([3])).toEqual([]);
     expect(listItems(null)).toEqual([]);
   });
 

@@ -12,10 +12,13 @@ namespace MyMorningNews.Core.Responses
     {
         #region Public-Members
 
+        /// <summary>Whether enumeration succeeded.</summary>
+        public bool Success { get; set; } = true;
+
         /// <summary>
-        /// Items on this page.
+        /// Objects on this page.
         /// </summary>
-        public List<T> Items { get; set; } = new List<T>();
+        public List<T> Objects { get; set; } = new List<T>();
 
         /// <summary>
         /// One-based page number.
@@ -25,12 +28,12 @@ namespace MyMorningNews.Core.Responses
         /// <summary>
         /// Page size.
         /// </summary>
-        public int PageSize { get; set; } = 25;
+        public int PageSize { get; set; } = 10;
 
         /// <summary>
         /// Total matching records.
         /// </summary>
-        public long TotalCount { get; set; } = 0;
+        public long TotalRecords { get; set; } = 0;
 
         /// <summary>
         /// Total pages.
@@ -40,7 +43,7 @@ namespace MyMorningNews.Core.Responses
         /// <summary>
         /// Query duration in milliseconds.
         /// </summary>
-        public double DurationMs { get; set; } = 0;
+        public double TotalMs { get; set; } = 0;
 
         #endregion
 
@@ -49,24 +52,24 @@ namespace MyMorningNews.Core.Responses
         /// <summary>
         /// Create a result page.
         /// </summary>
-        /// <param name="items">Items.</param>
+        /// <param name="items">Objects.</param>
         /// <param name="filter">Filter used.</param>
         /// <param name="totalCount">Total matching records.</param>
         /// <param name="durationMs">Duration in milliseconds.</param>
         /// <returns>Result page.</returns>
         /// <exception cref="ArgumentNullException">items or filter is null.</exception>
-        public static EnumerationResult<T> Create(List<T> items, EnumerationFilter filter, long totalCount, double durationMs)
+        public static EnumerationResult<T> Create(List<T> items, EnumerationQuery filter, long totalCount, double durationMs)
         {
             ArgumentNullException.ThrowIfNull(items);
             ArgumentNullException.ThrowIfNull(filter);
             return new EnumerationResult<T>
             {
-                Items = items,
+                Objects = items,
                 PageNumber = filter.PageNumber,
                 PageSize = filter.PageSize,
-                TotalCount = totalCount,
+                TotalRecords = totalCount,
                 TotalPages = (int)Math.Ceiling(totalCount / (double)filter.PageSize),
-                DurationMs = Math.Round(durationMs, 2)
+                TotalMs = Math.Round(durationMs, 2)
             };
         }
 
@@ -82,12 +85,12 @@ namespace MyMorningNews.Core.Responses
             ArgumentNullException.ThrowIfNull(map);
             return new EnumerationResult<TOut>
             {
-                Items = Items.ConvertAll(new Converter<T, TOut>(map)),
+                Objects = Objects.ConvertAll(new Converter<T, TOut>(map)),
                 PageNumber = PageNumber,
                 PageSize = PageSize,
-                TotalCount = TotalCount,
+                TotalRecords = TotalRecords,
                 TotalPages = TotalPages,
-                DurationMs = DurationMs
+                TotalMs = TotalMs
             };
         }
 

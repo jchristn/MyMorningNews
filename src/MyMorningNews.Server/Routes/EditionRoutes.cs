@@ -32,6 +32,7 @@ namespace MyMorningNews.Server.Routes
             ArgumentNullException.ThrowIfNull(webserver);
             const string b = "/v1.0/api/editions";
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, b, ListAsync, null, openApiMetadata: Paged(Doc("List my editions", "Editions").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b + "/enumerate", ctx => EnumerateAsync(ctx, ListAsync), null, openApiMetadata: Paged(Doc("List my editions", "Editions").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b, CreateAsync, null, openApiMetadata: Doc("Create an edition", "Editions").WithRequestBody(Body<EditionUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read an edition with its topics and schedules", "Editions"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, b + "/{id}", UpdateAsync, null, openApiMetadata: Doc("Update an edition", "Editions").WithRequestBody(Body<EditionUpsertRequest>()));
@@ -114,7 +115,7 @@ namespace MyMorningNews.Server.Routes
         {
             Edition? e = await OwnedAsync(ctx, RequestTypeEnum.BriefingWrite).ConfigureAwait(false);
             if (e == null) return;
-            Briefing? active = (await Server.Database.Briefings.EnumerateAsync(new BriefingFilter { TenantId = e.TenantId, EditionId = e.Id, PageSize = 20 }, ctx.Token).ConfigureAwait(false)).Items
+            Briefing? active = (await Server.Database.Briefings.EnumerateAsync(new BriefingFilter { TenantId = e.TenantId, EditionId = e.Id, PageSize = 20 }, ctx.Token).ConfigureAwait(false)).Objects
                 .FirstOrDefault(x => x.Status == BriefingStatusEnum.Queued || x.Status == BriefingStatusEnum.Composing);
             if (active != null)
             {
@@ -146,7 +147,7 @@ namespace MyMorningNews.Server.Routes
                     return false;
                 }
 
-                List<Edition> mine = (await Server.Database.Editions.EnumerateAsync(new EditionFilter { TenantId = e.TenantId, UserId = e.UserId, PageSize = 1000 }, ctx.Token).ConfigureAwait(false)).Items;
+                List<Edition> mine = (await Server.Database.Editions.EnumerateAsync(new EditionFilter { TenantId = e.TenantId, UserId = e.UserId, PageSize = 1000 }, ctx.Token).ConfigureAwait(false)).Objects;
                 if (mine.Any(x => x.Id != e.Id && String.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase)))
                 {
                     await SendErrorAsync(ctx, 409, "Conflict", "You already have an edition named '" + name + "'.").ConfigureAwait(false);
@@ -189,9 +190,9 @@ namespace MyMorningNews.Server.Routes
 
         private async Task<EditionResponse> DescribeAsync(Edition e, HttpContextBase ctx)
         {
-            List<EditionTopic> topics = (await Server.Database.EditionTopics.EnumerateAsync(new EditionTopicFilter { TenantId = e.TenantId, EditionId = e.Id, PageSize = 500 }, ctx.Token).ConfigureAwait(false)).Items
+            List<EditionTopic> topics = (await Server.Database.EditionTopics.EnumerateAsync(new EditionTopicFilter { TenantId = e.TenantId, EditionId = e.Id, PageSize = 500 }, ctx.Token).ConfigureAwait(false)).Objects
                 .OrderBy(t => t.SortOrder).ToList();
-            List<Schedule> schedules = (await Server.Database.Schedules.EnumerateAsync(new ScheduleFilter { TenantId = e.TenantId, OwnerType = ScheduleOwnerTypeEnum.Edition, OwnerId = e.Id, PageSize = 100 }, ctx.Token).ConfigureAwait(false)).Items;
+            List<Schedule> schedules = (await Server.Database.Schedules.EnumerateAsync(new ScheduleFilter { TenantId = e.TenantId, OwnerType = ScheduleOwnerTypeEnum.Edition, OwnerId = e.Id, PageSize = 100 }, ctx.Token).ConfigureAwait(false)).Objects;
             List<string> covered = (await Server.Briefings.EditionTopicsAsync(e, ctx.Token).ConfigureAwait(false)).Select(t => t.Id).ToList();
             return new EditionResponse { Edition = e, Topics = topics, Schedules = schedules, CoveredTopicIds = covered };
         }

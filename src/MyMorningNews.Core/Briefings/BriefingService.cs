@@ -296,12 +296,12 @@ namespace MyMorningNews.Core.Briefings
         public async Task<List<Topic>> EditionTopicsAsync(Edition edition, CancellationToken token = default)
         {
             ArgumentNullException.ThrowIfNull(edition);
-            List<EditionTopic> links = (await _Database.EditionTopics.EnumerateAsync(new EditionTopicFilter { TenantId = edition.TenantId, EditionId = edition.Id, PageSize = 200 }, token).ConfigureAwait(false)).Items
+            List<EditionTopic> links = (await _Database.EditionTopics.EnumerateAsync(new EditionTopicFilter { TenantId = edition.TenantId, EditionId = edition.Id, PageSize = 200 }, token).ConfigureAwait(false)).Objects
                 .OrderBy(l => l.SortOrder).ToList();
             List<Topic> topics = new List<Topic>();
             if (links.Count == 0)
             {
-                topics = (await _Database.Topics.EnumerateAsync(new TopicFilter { TenantId = edition.TenantId, UserId = edition.UserId, PageSize = 500 }, token).ConfigureAwait(false)).Items
+                topics = (await _Database.Topics.EnumerateAsync(new TopicFilter { TenantId = edition.TenantId, UserId = edition.UserId, PageSize = 500 }, token).ConfigureAwait(false)).Objects
                     .Where(t => !t.IsOneTime && t.Status == TopicStatusEnum.Active).OrderBy(t => t.Name, StringComparer.OrdinalIgnoreCase).ToList();
                 return topics;
             }
@@ -334,7 +334,7 @@ namespace MyMorningNews.Core.Briefings
                 if (t == null || t.UserId != edition.UserId) throw new ArgumentException("Topic " + id + " was not found among the edition owner's topics.", nameof(topicIds));
             }
 
-            foreach (EditionTopic old in (await _Database.EditionTopics.EnumerateAsync(new EditionTopicFilter { TenantId = edition.TenantId, EditionId = edition.Id, PageSize = 500 }, token).ConfigureAwait(false)).Items)
+            foreach (EditionTopic old in (await _Database.EditionTopics.EnumerateAsync(new EditionTopicFilter { TenantId = edition.TenantId, EditionId = edition.Id, PageSize = 500 }, token).ConfigureAwait(false)).Objects)
                 await _Database.EditionTopics.DeleteAsync(edition.TenantId, old.Id, token).ConfigureAwait(false);
             List<EditionTopic> links = new List<EditionTopic>();
             for (int i = 0; i < ids.Count; i++)
@@ -389,7 +389,7 @@ namespace MyMorningNews.Core.Briefings
         {
             if (await _Database.Editions.CountAsync(new EditionFilter { TenantId = tenantId }, token).ConfigureAwait(false) > 0) return 0;
             int created = 0;
-            foreach (User u in (await _Database.Users.EnumerateAsync(new UserFilter { TenantId = tenantId, PageSize = 1000 }, token).ConfigureAwait(false)).Items.Where(u => u.Active))
+            foreach (User u in (await _Database.Users.EnumerateAsync(new UserFilter { TenantId = tenantId, PageSize = 1000 }, token).ConfigureAwait(false)).Objects.Where(u => u.Active))
                 if (await EnsureDefaultEditionAsync(tenantId, u.Id, token).ConfigureAwait(false) != null) created++;
             if (created > 0) _Logging.Info(_Header + "seeded " + created + " Morning News editions for tenant " + tenantId);
             return created;
@@ -404,9 +404,9 @@ namespace MyMorningNews.Core.Briefings
         public async Task DeleteEditionAsync(Edition edition, CancellationToken token = default)
         {
             ArgumentNullException.ThrowIfNull(edition);
-            foreach (Schedule s in (await _Database.Schedules.EnumerateAsync(new ScheduleFilter { TenantId = edition.TenantId, OwnerType = ScheduleOwnerTypeEnum.Edition, OwnerId = edition.Id, PageSize = 100 }, token).ConfigureAwait(false)).Items)
+            foreach (Schedule s in (await _Database.Schedules.EnumerateAsync(new ScheduleFilter { TenantId = edition.TenantId, OwnerType = ScheduleOwnerTypeEnum.Edition, OwnerId = edition.Id, PageSize = 100 }, token).ConfigureAwait(false)).Objects)
                 await _Database.Schedules.DeleteAsync(edition.TenantId, s.Id, token).ConfigureAwait(false);
-            foreach (EditionTopic l in (await _Database.EditionTopics.EnumerateAsync(new EditionTopicFilter { TenantId = edition.TenantId, EditionId = edition.Id, PageSize = 500 }, token).ConfigureAwait(false)).Items)
+            foreach (EditionTopic l in (await _Database.EditionTopics.EnumerateAsync(new EditionTopicFilter { TenantId = edition.TenantId, EditionId = edition.Id, PageSize = 500 }, token).ConfigureAwait(false)).Objects)
                 await _Database.EditionTopics.DeleteAsync(edition.TenantId, l.Id, token).ConfigureAwait(false);
             await _Database.Editions.DeleteAsync(edition.TenantId, edition.Id, token).ConfigureAwait(false);
         }
@@ -420,22 +420,22 @@ namespace MyMorningNews.Core.Briefings
         public async Task DeleteBriefingAsync(Briefing briefing, CancellationToken token = default)
         {
             ArgumentNullException.ThrowIfNull(briefing);
-            foreach (Artifact a in (await _Database.Artifacts.EnumerateAsync(new ArtifactFilter { TenantId = briefing.TenantId, BriefingId = briefing.Id, PageSize = 100 }, token).ConfigureAwait(false)).Items)
+            foreach (Artifact a in (await _Database.Artifacts.EnumerateAsync(new ArtifactFilter { TenantId = briefing.TenantId, BriefingId = briefing.Id, PageSize = 100 }, token).ConfigureAwait(false)).Objects)
             {
                 await _Artifacts.DeleteContentAsync(a, token).ConfigureAwait(false);
                 await _Database.Artifacts.DeleteAsync(a.TenantId, a.Id, token).ConfigureAwait(false);
             }
 
-            foreach (MediaAsset m in (await _Database.MediaAssets.EnumerateAsync(new MediaAssetFilter { TenantId = briefing.TenantId, BriefingId = briefing.Id, PageSize = 100 }, token).ConfigureAwait(false)).Items)
+            foreach (MediaAsset m in (await _Database.MediaAssets.EnumerateAsync(new MediaAssetFilter { TenantId = briefing.TenantId, BriefingId = briefing.Id, PageSize = 100 }, token).ConfigureAwait(false)).Objects)
             {
-                foreach (MediaChapter c in (await _Database.MediaChapters.EnumerateAsync(new MediaChapterFilter { TenantId = m.TenantId, MediaAssetId = m.Id, PageSize = 500 }, token).ConfigureAwait(false)).Items)
+                foreach (MediaChapter c in (await _Database.MediaChapters.EnumerateAsync(new MediaChapterFilter { TenantId = m.TenantId, MediaAssetId = m.Id, PageSize = 500 }, token).ConfigureAwait(false)).Objects)
                     await _Database.MediaChapters.DeleteAsync(c.TenantId, c.Id, token).ConfigureAwait(false);
                 await _Database.MediaAssets.DeleteAsync(m.TenantId, m.Id, token).ConfigureAwait(false);
             }
 
-            foreach (BriefingItem i in (await _Database.BriefingItems.EnumerateAsync(new BriefingItemFilter { TenantId = briefing.TenantId, BriefingId = briefing.Id, PageSize = 1000 }, token).ConfigureAwait(false)).Items)
+            foreach (BriefingItem i in (await _Database.BriefingItems.EnumerateAsync(new BriefingItemFilter { TenantId = briefing.TenantId, BriefingId = briefing.Id, PageSize = 1000 }, token).ConfigureAwait(false)).Objects)
                 await _Database.BriefingItems.DeleteAsync(i.TenantId, i.Id, token).ConfigureAwait(false);
-            foreach (BriefingSection s in (await _Database.BriefingSections.EnumerateAsync(new BriefingSectionFilter { TenantId = briefing.TenantId, BriefingId = briefing.Id, PageSize = 100 }, token).ConfigureAwait(false)).Items)
+            foreach (BriefingSection s in (await _Database.BriefingSections.EnumerateAsync(new BriefingSectionFilter { TenantId = briefing.TenantId, BriefingId = briefing.Id, PageSize = 100 }, token).ConfigureAwait(false)).Objects)
                 await _Database.BriefingSections.DeleteAsync(s.TenantId, s.Id, token).ConfigureAwait(false);
             await _Database.Briefings.DeleteAsync(briefing.TenantId, briefing.Id, token).ConfigureAwait(false);
         }
@@ -450,9 +450,9 @@ namespace MyMorningNews.Core.Briefings
         public async Task<int> DeleteTopicFilesAsync(string tenantId, string topicId, CancellationToken token = default)
         {
             HashSet<string> seen = new HashSet<string>(StringComparer.Ordinal);
-            List<Artifact> files = (await _Database.Artifacts.EnumerateAsync(new ArtifactFilter { TenantId = tenantId, TopicId = topicId, PageSize = 1000 }, token).ConfigureAwait(false)).Items;
-            foreach (Briefing b in (await _Database.Briefings.EnumerateAsync(new BriefingFilter { TenantId = tenantId, TopicId = topicId, PageSize = 1000 }, token).ConfigureAwait(false)).Items)
-                files.AddRange((await _Database.Artifacts.EnumerateAsync(new ArtifactFilter { TenantId = tenantId, BriefingId = b.Id, PageSize = 100 }, token).ConfigureAwait(false)).Items);
+            List<Artifact> files = (await _Database.Artifacts.EnumerateAsync(new ArtifactFilter { TenantId = tenantId, TopicId = topicId, PageSize = 1000 }, token).ConfigureAwait(false)).Objects;
+            foreach (Briefing b in (await _Database.Briefings.EnumerateAsync(new BriefingFilter { TenantId = tenantId, TopicId = topicId, PageSize = 1000 }, token).ConfigureAwait(false)).Objects)
+                files.AddRange((await _Database.Artifacts.EnumerateAsync(new ArtifactFilter { TenantId = tenantId, BriefingId = b.Id, PageSize = 100 }, token).ConfigureAwait(false)).Objects);
             int removed = 0;
             foreach (Artifact a in files.Where(f => seen.Add(f.Id)))
             {

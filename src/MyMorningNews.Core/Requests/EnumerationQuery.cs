@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Common paging, sorting, and date-range filter for list endpoints.
     /// </summary>
-    public class EnumerationFilter
+    public class EnumerationQuery
     {
         #region Public-Members
 
@@ -41,7 +41,7 @@ namespace MyMorningNews.Core.Requests
         }
 
         /// <summary>
-        /// Page size. Default 25. Minimum 1, maximum 1000.
+        /// Page size. Default 10. Minimum 1, maximum 1000.
         /// </summary>
         public int PageSize
         {
@@ -80,12 +80,29 @@ namespace MyMorningNews.Core.Requests
         /// </summary>
         public DateTime? ToUtc { get; set; } = null;
 
+        /// <summary>Creation ordering, newest first by default. Sets the shared sorting fields.</summary>
+        public EnumerationOrderEnum Order
+        {
+            get { return SortDirection == SortDirectionEnum.Ascending ? EnumerationOrderEnum.CreatedAscending : EnumerationOrderEnum.CreatedDescending; }
+            set { SortBy = "createdUtc"; SortDirection = value == EnumerationOrderEnum.CreatedAscending ? SortDirectionEnum.Ascending : SortDirectionEnum.Descending; }
+        }
+
+        /// <summary>Exclusive creation lower bound; null leaves it unrestricted.</summary>
+        public DateTime? CreatedAfter { get; set; } = null;
+
+        /// <summary>Exclusive creation upper bound; null leaves it unrestricted.</summary>
+        public DateTime? CreatedBefore { get; set; } = null;
+
+        /// <summary>Overflow-safe database offset.</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public long Offset { get { return (long)(PageNumber - 1) * PageSize; } }
+
         #endregion
 
         #region Private-Members
 
         private int _PageNumber = 1;
-        private int _PageSize = 25;
+        private int _PageSize = 10;
 
         #endregion
     }

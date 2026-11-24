@@ -1,3 +1,4 @@
+import { enumerateObjects } from '../utils/enumeration.js';
 import { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
@@ -126,8 +127,7 @@ function WhereUsedModal({ credential, onClose }) {
     if (!credential) return;
     setItems(null);
     setError(null);
-    apiClient
-      .getVaultCredentialUsage(credential.id)
+    enumerateObjects((query) => apiClient.getVaultCredentialUsage(credential.id, query))
       .then((r) => setItems(Array.isArray(r) ? r : []))
       .catch(setError);
   }, [apiClient, credential]);

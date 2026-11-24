@@ -350,6 +350,16 @@ SELECT " + AudioReservationQueries.Columns + " FROM valid WHERE EXISTS (SELECT 1
                 args.Add(filter.Active.Value);
                 clauses.Add("active = $" + args.Count);
             }
+            if (filter.CreatedAfter.HasValue)
+            {
+                args.Add(DateTime.SpecifyKind(filter.CreatedAfter.Value, DateTimeKind.Utc));
+                clauses.Add("createdutc > $" + args.Count);
+            }
+            if (filter.CreatedBefore.HasValue)
+            {
+                args.Add(DateTime.SpecifyKind(filter.CreatedBefore.Value, DateTimeKind.Utc));
+                clauses.Add("createdutc < $" + args.Count);
+            }
             if (filter.FromUtc.HasValue)
             {
                 args.Add(DateTime.SpecifyKind(filter.FromUtc.Value, DateTimeKind.Utc));

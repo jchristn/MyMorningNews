@@ -194,13 +194,13 @@ namespace MyMorningNews.Core.Services
             EnumerationResult<UserRoleAssignment> assignments = await _Database.UserRoleAssignments.EnumerateAsync(filter, token).ConfigureAwait(false);
 
             List<EffectiveGrant> grants = new List<EffectiveGrant>();
-            if (assignments.Items.Count == 0)
+            if (assignments.Objects.Count == 0)
             {
                 grants.AddRange(await ExpandRoleAsync(tenantId, null, BuiltInRoles.TenantMember, ResourceScopeEnum.Tenant, null, true, token).ConfigureAwait(false));
             }
             else
             {
-                foreach (UserRoleAssignment a in assignments.Items)
+                foreach (UserRoleAssignment a in assignments.Objects)
                 {
                     grants.AddRange(await ExpandRoleAsync(tenantId, a.RoleId, a.RoleName, a.ResourceScope, a.ResourceId, a.InheritsToChildren, token).ConfigureAwait(false));
                 }
@@ -234,7 +234,7 @@ namespace MyMorningNews.Core.Services
             EnumerationResult<CredentialScopeAssignment> assignments = await _Database.CredentialScopeAssignments.EnumerateAsync(filter, token).ConfigureAwait(false);
 
             List<EffectiveGrant> grants;
-            if (assignments.Items.Count == 0)
+            if (assignments.Objects.Count == 0)
             {
                 grants = ownerIsAdmin
                     ? new List<EffectiveGrant> { new EffectiveGrant { ResourceType = ResourceTypeEnum.All, Operation = OperationTypeEnum.All, Source = "owner:administrator" } }
@@ -243,7 +243,7 @@ namespace MyMorningNews.Core.Services
             else
             {
                 List<EffectiveGrant> credential = new List<EffectiveGrant>();
-                foreach (CredentialScopeAssignment a in assignments.Items)
+                foreach (CredentialScopeAssignment a in assignments.Objects)
                 {
                     if (!String.IsNullOrEmpty(a.RoleId) || !String.IsNullOrEmpty(a.RoleName))
                         credential.AddRange(await ExpandRoleAsync(tenantId, a.RoleId, a.RoleName, a.ResourceScope, a.ResourceId, true, token).ConfigureAwait(false));
@@ -336,7 +336,7 @@ namespace MyMorningNews.Core.Services
             {
                 UserRoleFilter rf = new UserRoleFilter { TenantId = tenantId, IncludeGlobal = true, Name = roleName, PageSize = 10 };
                 EnumerationResult<UserRole> roles = await _Database.Roles.EnumerateAsync(rf, token).ConfigureAwait(false);
-                role = roles.Items.OrderBy(r => r.TenantId == null ? 1 : 0).FirstOrDefault();
+                role = roles.Objects.OrderBy(r => r.TenantId == null ? 1 : 0).FirstOrDefault();
             }
 
             List<EffectiveGrant> grants = new List<EffectiveGrant>();
@@ -354,7 +354,7 @@ namespace MyMorningNews.Core.Services
             if (!role.Active) return grants;
             RolePermissionMapFilter mf = new RolePermissionMapFilter { TenantId = role.TenantId, IncludeGlobal = role.TenantId != null, RoleId = role.Id, Active = true, PageSize = 1000 };
             EnumerationResult<RolePermissionMap> maps = await _Database.RolePermissionMaps.EnumerateAsync(mf, token).ConfigureAwait(false);
-            foreach (RolePermissionMap map in maps.Items)
+            foreach (RolePermissionMap map in maps.Objects)
             {
                 Permission? permission = await _Database.Permissions.ReadByIdAsync(map.PermissionId, token).ConfigureAwait(false);
                 if (permission == null || !permission.Active) continue;

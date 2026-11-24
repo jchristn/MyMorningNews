@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for LearnedPreference records. Null properties are not applied.
     /// </summary>
-    public class LearnedPreferenceFilter : EnumerationFilter
+    public class LearnedPreferenceFilter : EnumerationQuery
     {
         /// <summary>
         /// Match UserId exactly when set.

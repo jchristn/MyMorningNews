@@ -1,3 +1,4 @@
+import { enumerateObjects } from '../../utils/enumeration.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import useInterval from '../../hooks/useInterval.js';
@@ -22,9 +23,9 @@ export default function useLiveRun(runId, { initialRun = null, onFinished } = {}
   const reload = useCallback(async () => {
     if (!runId) return;
     try {
-      const [r, s] = await Promise.all([apiClient.getRun(runId), apiClient.listRunStages(runId).catch(() => null)]);
+      const [r, s] = await Promise.all([apiClient.getRun(runId), enumerateObjects((query) => apiClient.listRunStages(runId, query)).catch(() => null)]);
       if (r) setRun(r);
-      if (s) setStages(Array.isArray(s) ? s : s.items || []);
+      if (s) setStages(Array.isArray(s) ? s : s.objects || []);
       setError(null);
     } catch (err) {
       setError(err);

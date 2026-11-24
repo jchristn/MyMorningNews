@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for Artifact records. Null properties are not applied.
     /// </summary>
-    public class ArtifactFilter : EnumerationFilter
+    public class ArtifactFilter : EnumerationQuery
     {
         /// <summary>
         /// Match UserId exactly when set.

@@ -73,7 +73,7 @@ export default function BriefingAudio({ briefing, compact = false, onSectionChan
   const loadEpisodes = useCallback(async () => {
     try {
       const page = await apiClient.listMedia({ briefingId, ...NEWEST });
-      setEpisodes((page && page.items) || []);
+      setEpisodes((page && page.objects) || []);
       setError(null);
     } catch (err) {
       setError(err);

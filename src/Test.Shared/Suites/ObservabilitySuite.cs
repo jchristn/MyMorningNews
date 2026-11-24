@@ -153,13 +153,13 @@ namespace Test.Shared.Suites
             TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
             string marker = "marker" + Guid.NewGuid().ToString("N").Substring(0, 8);
             (await admin.GetAsync("/v1.0/tenants/default/users?search=" + marker, token).ConfigureAwait(false)).Expect(200, "marked request");
-            EnumerationResult<RequestHistoryEntry> page = await WaitForHistoryAsync(admin, "pathContains=/users&pageSize=50", p => p.Items.Any(i => i.Url.Contains(marker, StringComparison.Ordinal)), token).ConfigureAwait(false);
-            RequestHistoryEntry? summary = page.Items.FirstOrDefault(i => i.Url.Contains(marker, StringComparison.Ordinal));
+            EnumerationResult<RequestHistoryEntry> page = await WaitForHistoryAsync(admin, "pathContains=/users&pageSize=50", p => p.Objects.Any(i => i.Url.Contains(marker, StringComparison.Ordinal)), token).ConfigureAwait(false);
+            RequestHistoryEntry? summary = page.Objects.FirstOrDefault(i => i.Url.Contains(marker, StringComparison.Ordinal));
             Assert.NotNull(summary, "captured request");
             Assert.True(summary!.RequestBody == null && summary.ResponseBody == null, "list omits bodies");
             RequestHistoryEntry full = (await admin.GetAsync("/v1.0/api/request-history/" + summary.Id, token).ConfigureAwait(false)).Expect(200, "read entry").Json<RequestHistoryEntry>();
             Assert.Equal("[redacted]", full.RequestHeaders.First(h => h.Key.Equals("Authorization", StringComparison.OrdinalIgnoreCase)).Value, "authorization redacted");
-            Assert.True(full.ResponseBody != null && full.ResponseBody.Contains("items", StringComparison.Ordinal), "response body captured");
+            Assert.True(full.ResponseBody != null && full.ResponseBody.Contains("objects", StringComparison.Ordinal), "response body captured");
             Assert.Equal("/v1.0/tenants/{tenantId}/users", full.RouteTemplate, "route template");
             (await admin.DeleteAsync("/v1.0/api/request-history/" + summary.Id, token).ConfigureAwait(false)).Expect(204, "delete entry");
         }
@@ -177,9 +177,9 @@ namespace Test.Shared.Suites
             TestResponse unknown = await admin.GetAsync("/v1.0/api/tenants-does-not-exist", token).ConfigureAwait(false);
             Assert.True(unknown.StatusCode == 404 && unknown.Body.Contains("RouteNotFound", StringComparison.Ordinal), "unknown routes are RouteNotFound");
             EnumerationResult<RequestHistoryEntry> failures = (await admin.GetAsync("/v1.0/api/request-history?statusClass=4xx&pageSize=100", token).ConfigureAwait(false)).Expect(200, "4xx").Json<EnumerationResult<RequestHistoryEntry>>();
-            Assert.True(failures.Items.Count > 0 && failures.Items.All(e => e.StatusCode >= 400 && e.StatusCode <= 499), "status class filter");
+            Assert.True(failures.Objects.Count > 0 && failures.Objects.All(e => e.StatusCode >= 400 && e.StatusCode <= 499), "status class filter");
             EnumerationResult<RequestHistoryEntry> ok = (await admin.GetAsync("/v1.0/api/request-history?maxStatusCode=299&pageSize=100", token).ConfigureAwait(false)).Expect(200, "2xx").Json<EnumerationResult<RequestHistoryEntry>>();
-            Assert.True(ok.Items.All(e => e.StatusCode <= 299), "max status filter");
+            Assert.True(ok.Objects.All(e => e.StatusCode <= 299), "max status filter");
         }
 
         private static async Task HistoryScopedAsync(CancellationToken token)
@@ -188,8 +188,8 @@ namespace Test.Shared.Suites
             Tenant t = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
             TestUser ta = await TestFixtures.CreateUserAsync(admin, t.Id, true, token).ConfigureAwait(false);
             await ta.Client.GetAsync("/v1.0/api/me", token).ConfigureAwait(false);
-            EnumerationResult<RequestHistoryEntry> page = await WaitForHistoryAsync(ta.Client, "pageSize=100", p => p.TotalCount > 0, token).ConfigureAwait(false);
-            Assert.True(page.Items.All(i => i.TenantId == t.Id), "only own tenant");
+            EnumerationResult<RequestHistoryEntry> page = await WaitForHistoryAsync(ta.Client, "pageSize=100", p => p.TotalRecords > 0, token).ConfigureAwait(false);
+            Assert.True(page.Objects.All(i => i.TenantId == t.Id), "only own tenant");
         }
 
         private static async Task SettingsAsync(CancellationToken token)

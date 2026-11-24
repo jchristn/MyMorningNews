@@ -41,25 +41,32 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, a, ListAsync, null, openApiMetadata: Paged(Doc("List promotional codes with usage", "Promotional codes", "Global administrators only. status: active, disabled, notstarted, expired, or exhausted.")
                 .WithParameter(QueryParam("status", typeof(string)))
                 .WithParameter(QueryParam("enabled", typeof(bool))).WithParameter(QueryParam("planId", typeof(string))).WithParameter(QueryParam("batchId", typeof(string)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, a + "/enumerate", ctx => EnumerateAsync(ctx, ListAsync), null, openApiMetadata: Paged(Doc("List promotional codes with usage", "Promotional codes", "Global administrators only. status: active, disabled, notstarted, expired, or exhausted.")
+                .WithParameter(QueryParam("status", typeof(string)))
+                .WithParameter(QueryParam("enabled", typeof(bool))).WithParameter(QueryParam("planId", typeof(string))).WithParameter(QueryParam("batchId", typeof(string)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, a, CreateAsync, null, openApiMetadata: Doc("Create a promotional code", "Promotional codes").WithRequestBody(Body<PromoCodeUpsertRequest>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, a + "/generate", GenerateAsync, null, openApiMetadata: Doc("Generate promotional codes in bulk", "Promotional codes").WithRequestBody(Body<PromoCodeGenerateRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, a + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read a promotional code with usage", "Promotional codes"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, a + "/{id}", UpdateAsync, null, openApiMetadata: Doc("Update a promotional code (limits, dates, plan, on or off)", "Promotional codes").WithRequestBody(Body<PromoCodeUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, a + "/{id}", DeleteAsync, null, openApiMetadata: Doc("Delete an unused promotional code (disable a used one instead)", "Promotional codes",
                 "force=true also revokes and removes its redemptions (for test codes); the plan assignments stay, revoked, for history.").WithParameter(QueryParam("force", typeof(bool))));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, a + "/{id}/redemptions", RedemptionsAsync, null, openApiMetadata: Doc("Who redeemed a code and when", "Promotional codes"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, a + "/{id}/redemptions", RedemptionsAsync, null, openApiMetadata: Paged(Doc("Who redeemed a code and when", "Promotional codes")));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, a + "/{id}/redemptions" + "/enumerate", ctx => EnumerateAsync(ctx, RedemptionsAsync), null, openApiMetadata: Paged(Doc("Who redeemed a code and when", "Promotional codes")).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, a + "/{id}/redemptions/{redemptionId}/revoke", RevokeAsync, null, openApiMetadata: Doc("Revoke a redemption (ends its plan now)", "Promotional codes"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, a + "/{id}/apply", ApplyAsync, null, openApiMetadata: Doc("Redeem a code for a user", "Promotional codes").WithRequestBody(Body<PromoApplyRequest>()));
 
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/admin/plans", ListPlansAsync, null, openApiMetadata: Doc("List plans with entitlement values", "Plans"));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/admin/plans", ListPlansAsync, null, openApiMetadata: Paged(Doc("List plans with entitlement values", "Plans")));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/admin/plans" + "/enumerate", ctx => EnumerateAsync(ctx, ListPlansAsync), null, openApiMetadata: Paged(Doc("List plans with entitlement values", "Plans")).WithRequestBody(Body<EnumerationQuery>()));
             const string userLimits = "/v1.0/tenants/{tenantId}/users/{userId}/entitlements";
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, userLimits, UserEntitlementsAsync, null, openApiMetadata: Doc("Read a user's effective plan and overrides", "Plans", "Global administrators only."));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, userLimits, SetOverrideAsync, null, openApiMetadata: Doc("Set one user entitlement override", "Plans", "Global administrators only. Zero is a real limit; unlimited removes the quantity cap.").WithRequestBody(Body<EntitlementOverrideRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, userLimits + "/{featureKey}", DeleteOverrideAsync, null, openApiMetadata: Doc("Restore a user entitlement to its plan default", "Plans", "Global administrators only."));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/admin/plans", CreatePlanAsync, null, openApiMetadata: Doc("Create a plan", "Plans").WithRequestBody(Body<PlanUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/api/admin/plans/{id}", UpdatePlanAsync, null, openApiMetadata: Doc("Update a plan and its values", "Plans").WithRequestBody(Body<PlanUpsertRequest>()));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/admin/plan-assignments", ListAssignmentsAsync, null, openApiMetadata: Doc("A user's plan assignments", "Plans")
-                .WithParameter(QueryParam("tenantId", typeof(string))).WithParameter(QueryParam("userId", typeof(string))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/admin/plan-assignments", ListAssignmentsAsync, null, openApiMetadata: Paged(Doc("A user's plan assignments", "Plans")
+                .WithParameter(QueryParam("tenantId", typeof(string))).WithParameter(QueryParam("userId", typeof(string)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/admin/plan-assignments" + "/enumerate", ctx => EnumerateAsync(ctx, ListAssignmentsAsync), null, openApiMetadata: Paged(Doc("A user's plan assignments", "Plans")
+                .WithParameter(QueryParam("tenantId", typeof(string))).WithParameter(QueryParam("userId", typeof(string)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/admin/plan-assignments", GrantAsync, null, openApiMetadata: Doc("Give a user a plan", "Plans").WithRequestBody(Body<PlanGrantRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/api/admin/plan-assignments/{id}", RevokeAssignmentAsync, null, openApiMetadata: Doc("Revoke a plan assignment", "Plans")
                 .WithParameter(QueryParam("tenantId", typeof(string))));
@@ -75,25 +82,11 @@ namespace MyMorningNews.Server.Routes
             if (!await AdminAsync(ctx).ConfigureAwait(false)) return;
             PromoCodeFilter filter = new PromoCodeFilter { Enabled = QueryBool(ctx, "enabled"), PlanId = Query(ctx, "planId"), BatchId = Query(ctx, "batchId"), Search = Query(ctx, "search") };
             ApplyPaging(ctx, filter);
-            string? status = Query(ctx, "status")?.Trim().ToLowerInvariant();
-            EnumerationResult<PromoCode> page;
-            if (String.IsNullOrEmpty(status))
-            {
-                page = await Server.Database.PromoCodes.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false);
-            }
-            else
-            {
-                int number = filter.PageNumber;
-                int size = filter.PageSize;
-                filter.PageNumber = 1;
-                filter.PageSize = 10000;
-                DateTime now = DateTime.UtcNow;
-                List<PromoCode> all = (await Server.Database.PromoCodes.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false)).Items.Where(c => StatusOf(c, now) == status).ToList();
-                page = new EnumerationResult<PromoCode> { Items = all.Skip((number - 1) * size).Take(size).ToList(), PageNumber = number, PageSize = size, TotalCount = all.Count, TotalPages = Math.Max(1, (int)Math.Ceiling(all.Count / (double)size)) };
-            }
+            filter.Status = Query(ctx, "status")?.Trim().ToLowerInvariant();
+            EnumerationResult<PromoCode> page = await Server.Database.PromoCodes.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false);
             List<PromoCodeStats> stats = new List<PromoCodeStats>();
-            foreach (PromoCode pc in page.Items) stats.Add(await Server.PromoCodes.StatsAsync(pc, ctx.Token).ConfigureAwait(false));
-            await SendJsonAsync(ctx, 200, new EnumerationResult<PromoCodeStats> { Items = stats, PageNumber = page.PageNumber, PageSize = page.PageSize, TotalCount = page.TotalCount, TotalPages = page.TotalPages }).ConfigureAwait(false);
+            foreach (PromoCode pc in page.Objects) stats.Add(await Server.PromoCodes.StatsAsync(pc, ctx.Token).ConfigureAwait(false));
+            await SendJsonAsync(ctx, 200, new EnumerationResult<PromoCodeStats> { Objects = stats, PageNumber = page.PageNumber, PageSize = page.PageSize, TotalRecords = page.TotalRecords, TotalPages = page.TotalPages, TotalMs = page.TotalMs }).ConfigureAwait(false);
         }
 
         private async Task CreateAsync(HttpContextBase ctx)
@@ -157,10 +150,15 @@ namespace MyMorningNews.Server.Routes
             if (pc == null) return;
             bool force = QueryBool(ctx, "force") == true;
             if (pc.RedemptionCount > 0 && !force) { await SendErrorAsync(ctx, 409, "Conflict", "This code has been used; disable it instead so its history stays, or delete with force=true to revoke and remove its redemptions.").ConfigureAwait(false); return; }
-            foreach (PromoRedemption r in await Server.PromoCodes.RedemptionsAsync(pc, ctx.Token).ConfigureAwait(false))
+            while (true)
             {
-                await Server.PromoCodes.RevokeAsync(r, ctx.Token).ConfigureAwait(false);
-                await Server.Database.PromoRedemptions.DeleteAsync(r.TenantId, r.Id, ctx.Token).ConfigureAwait(false);
+                EnumerationResult<PromoRedemption> page = await Server.Database.PromoRedemptions.EnumerateAsync(new PromoRedemptionFilter { AllTenants = true, PromoCodeId = pc.Id }, ctx.Token).ConfigureAwait(false);
+                if (page.Objects.Count == 0) break;
+                foreach (PromoRedemption r in page.Objects)
+                {
+                    await Server.PromoCodes.RevokeAsync(r, ctx.Token).ConfigureAwait(false);
+                    await Server.Database.PromoRedemptions.DeleteAsync(r.TenantId, r.Id, ctx.Token).ConfigureAwait(false);
+                }
             }
 
             await Server.Database.PromoCodes.DeleteAsync(pc.Id, ctx.Token).ConfigureAwait(false);
@@ -172,15 +170,17 @@ namespace MyMorningNews.Server.Routes
         {
             PromoCode? pc = await CodeAsync(ctx).ConfigureAwait(false);
             if (pc == null) return;
-            await SendJsonAsync(ctx, 200, await Server.PromoCodes.RedemptionsAsync(pc, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
+            PromoRedemptionFilter query = new PromoRedemptionFilter { AllTenants = true, PromoCodeId = pc.Id };
+            ApplyPaging(ctx, query);
+            await SendJsonAsync(ctx, 200, await Server.Database.PromoRedemptions.EnumerateAsync(query, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         private async Task RevokeAsync(HttpContextBase ctx)
         {
             PromoCode? pc = await CodeAsync(ctx).ConfigureAwait(false);
             if (pc == null) return;
-            PromoRedemption? r = (await Server.PromoCodes.RedemptionsAsync(pc, ctx.Token).ConfigureAwait(false)).FirstOrDefault(x => x.Id == Param(ctx, "redemptionId"));
-            if (r == null) { await SendNotFoundAsync(ctx, "Redemption").ConfigureAwait(false); return; }
+            PromoRedemption? r = await Server.Database.PromoRedemptions.ReadByIdAsync(Param(ctx, "redemptionId") ?? String.Empty, ctx.Token).ConfigureAwait(false);
+            if (r == null || r.PromoCodeId != pc.Id) { await SendNotFoundAsync(ctx, "Redemption").ConfigureAwait(false); return; }
             r = await Server.PromoCodes.RevokeAsync(r, ctx.Token).ConfigureAwait(false);
             await AuditAsync(ctx, AuditEventTypeEnum.PromoCodeRedeemed, 200, "Redemption " + r.Id + " of " + pc.Code + " revoked for user " + r.UserId + ".").ConfigureAwait(false);
             await SendJsonAsync(ctx, 200, r).ConfigureAwait(false);
@@ -202,10 +202,12 @@ namespace MyMorningNews.Server.Routes
         private async Task ListPlansAsync(HttpContextBase ctx)
         {
             if (!await AdminAsync(ctx).ConfigureAwait(false)) return;
-            List<PlanResponse> plans = new List<PlanResponse>();
-            foreach (Plan p in (await Server.Database.Plans.EnumerateAsync(new PlanFilter { PageSize = 1000 }, ctx.Token).ConfigureAwait(false)).Items.OrderBy(p => p.SortOrder))
-                plans.Add(await DescribePlanAsync(p, ctx).ConfigureAwait(false));
-            await SendJsonAsync(ctx, 200, plans).ConfigureAwait(false);
+            PlanFilter query = new PlanFilter { SortBy = "sortOrder", SortDirection = SortDirectionEnum.Ascending };
+            ApplyPaging(ctx, query);
+            EnumerationResult<Plan> page = await Server.Database.Plans.EnumerateAsync(query, ctx.Token).ConfigureAwait(false);
+            List<PlanResponse> items = new List<PlanResponse>();
+            foreach (Plan plan in page.Objects) items.Add(await DescribePlanAsync(plan, ctx).ConfigureAwait(false));
+            await SendJsonAsync(ctx, 200, EnumerationResult<PlanResponse>.Create(items, query, page.TotalRecords, page.TotalMs)).ConfigureAwait(false);
         }
 
         private async Task UserEntitlementsAsync(HttpContextBase ctx)
@@ -234,7 +236,7 @@ namespace MyMorningNews.Server.Routes
             string key = (req.FeatureKey ?? String.Empty).Trim();
             if (key == "topics.max") key = "customTopics.max";
             string value = PlanFeatureCatalog.Normalize(key, req.Value);
-            EntitlementOverride? item = (await Server.Database.EntitlementOverrides.EnumerateAsync(new EntitlementOverrideFilter { TenantId = tenantId, UserId = userId, FeatureKey = key, PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Items.FirstOrDefault();
+            EntitlementOverride? item = (await Server.Database.EntitlementOverrides.EnumerateAsync(new EntitlementOverrideFilter { TenantId = tenantId, UserId = userId, FeatureKey = key, PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Objects.FirstOrDefault();
             bool create = item == null;
             item ??= new EntitlementOverride { TenantId = tenantId, UserId = userId, FeatureKey = key };
             item.Value = value;
@@ -256,7 +258,7 @@ namespace MyMorningNews.Server.Routes
             string key = Param(ctx, "featureKey") ?? String.Empty;
             if (key == "topics.max") key = "customTopics.max";
             if (await Server.Database.Users.ReadAsync(tenantId, userId, ctx.Token).ConfigureAwait(false) == null) { await SendNotFoundAsync(ctx, "User").ConfigureAwait(false); return; }
-            EntitlementOverride? item = (await Server.Database.EntitlementOverrides.EnumerateAsync(new EntitlementOverrideFilter { TenantId = tenantId, UserId = userId, FeatureKey = key, PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Items.FirstOrDefault();
+            EntitlementOverride? item = (await Server.Database.EntitlementOverrides.EnumerateAsync(new EntitlementOverrideFilter { TenantId = tenantId, UserId = userId, FeatureKey = key, PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Objects.FirstOrDefault();
             if (item != null) await Server.Database.EntitlementOverrides.DeleteAsync(tenantId, item.Id, ctx.Token).ConfigureAwait(false);
             await AuditAsync(ctx, AuditEventTypeEnum.PlanChanged, 204, "Restored plan inheritance for " + key + " for " + userId + ".").ConfigureAwait(false);
             await SendJsonAsync(ctx, 204, null).ConfigureAwait(false);
@@ -275,7 +277,7 @@ namespace MyMorningNews.Server.Routes
                 return;
             }
 
-            if ((await Server.Database.Plans.EnumerateAsync(new PlanFilter { Key = key, PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Items.Count > 0) { await SendErrorAsync(ctx, 409, "Conflict", "A plan with that key exists.").ConfigureAwait(false); return; }
+            if ((await Server.Database.Plans.EnumerateAsync(new PlanFilter { Key = key, PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Objects.Count > 0) { await SendErrorAsync(ctx, 409, "Conflict", "A plan with that key exists.").ConfigureAwait(false); return; }
             Plan p = await Server.Database.Plans.CreateAsync(new Plan { Key = key, Name = req.Name.Trim(), Description = req.Description, SortOrder = 10 }, ctx.Token).ConfigureAwait(false);
             await SetFeaturesAsync(p, req.Features, ctx).ConfigureAwait(false);
             await AuditAsync(ctx, AuditEventTypeEnum.PlanChanged, 201, "Plan " + key + " created.").ConfigureAwait(false);
@@ -305,7 +307,9 @@ namespace MyMorningNews.Server.Routes
             string? tenantId = Query(ctx, "tenantId");
             string? userId = Query(ctx, "userId");
             if (tenantId == null || userId == null) { await SendErrorAsync(ctx, 400, "ValidationFailed", "tenantId and userId are required.").ConfigureAwait(false); return; }
-            await SendJsonAsync(ctx, 200, await Server.Entitlements.AssignmentsAsync(tenantId, userId, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
+            PlanAssignmentFilter query = new PlanAssignmentFilter { TenantId = tenantId, UserId = userId, SortBy = "startsUtc" };
+            ApplyPaging(ctx, query);
+            await SendJsonAsync(ctx, 200, await Server.Database.PlanAssignments.EnumerateAsync(query, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         private async Task GrantAsync(HttpContextBase ctx)
@@ -409,7 +413,7 @@ namespace MyMorningNews.Server.Routes
             if (planId != null || create)
             {
                 Plan? plan = planId != null ? await Server.Database.Plans.ReadAsync(planId, ctx.Token).ConfigureAwait(false)
-                    : (await Server.Database.Plans.EnumerateAsync(new PlanFilter { Key = "complimentary", PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Items.FirstOrDefault();
+                    : (await Server.Database.Plans.EnumerateAsync(new PlanFilter { Key = "complimentary", PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Objects.FirstOrDefault();
                 if (plan == null) { await SendErrorAsync(ctx, 400, "ValidationFailed", "The plan was not found.").ConfigureAwait(false); return false; }
                 pc.PlanId = plan.Id;
             }
@@ -443,7 +447,7 @@ namespace MyMorningNews.Server.Routes
         private async Task SetFeaturesAsync(Plan p, Dictionary<string, string>? features, HttpContextBase ctx)
         {
             if (features == null) return;
-            List<PlanFeature> have = (await Server.Database.PlanFeatures.EnumerateAsync(new PlanFeatureFilter { PlanId = p.Id, PageSize = 500 }, ctx.Token).ConfigureAwait(false)).Items;
+            List<PlanFeature> have = (await Server.Database.PlanFeatures.EnumerateAsync(new PlanFeatureFilter { PlanId = p.Id, PageSize = 500 }, ctx.Token).ConfigureAwait(false)).Objects;
             foreach (KeyValuePair<string, string> kv in features)
             {
                 string key = (kv.Key ?? String.Empty).Trim();
@@ -474,7 +478,7 @@ namespace MyMorningNews.Server.Routes
 
         private async Task<PlanResponse> DescribePlanAsync(Plan p, HttpContextBase ctx)
         {
-            Dictionary<string, string> features = (await Server.Database.PlanFeatures.EnumerateAsync(new PlanFeatureFilter { PlanId = p.Id, PageSize = 500 }, ctx.Token).ConfigureAwait(false)).Items
+            Dictionary<string, string> features = (await Server.Database.PlanFeatures.EnumerateAsync(new PlanFeatureFilter { PlanId = p.Id, PageSize = 500 }, ctx.Token).ConfigureAwait(false)).Objects
                 .ToDictionary(f => f.Key, f => f.Value, StringComparer.Ordinal);
             return new PlanResponse { Plan = p, Features = features };
         }

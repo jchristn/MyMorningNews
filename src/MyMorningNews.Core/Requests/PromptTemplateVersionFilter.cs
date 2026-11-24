@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for PromptTemplateVersion records. Null properties are not applied.
     /// </summary>
-    public class PromptTemplateVersionFilter : EnumerationFilter
+    public class PromptTemplateVersionFilter : EnumerationQuery
     {
         /// <summary>
         /// Match PromptTemplateId exactly when set.

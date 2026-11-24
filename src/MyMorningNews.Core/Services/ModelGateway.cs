@@ -132,14 +132,14 @@ namespace MyMorningNews.Core.Services
             {
                 EnumerationResult<ModelAssignment> assignments = await _Database.ModelAssignments.EnumerateAsync(
                     new ModelAssignmentFilter { TenantId = tenantId, Task = task, PageSize = 100 }, token).ConfigureAwait(false);
-                assignment = assignments.Items.FirstOrDefault(a => topicId != null && a.TopicId == topicId && a.Active)
-                    ?? assignments.Items.FirstOrDefault(a => a.TopicId == null && a.Active);
+                assignment = assignments.Objects.FirstOrDefault(a => topicId != null && a.TopicId == topicId && a.Active)
+                    ?? assignments.Objects.FirstOrDefault(a => a.TopicId == null && a.Active);
                 if (assignment != null) endpoint = await _Database.ModelEndpoints.ReadAsync(tenantId, assignment.ModelEndpointId, token).ConfigureAwait(false);
                 if (endpoint == null || !endpoint.Active)
                 {
                     EnumerationResult<ModelEndpoint> all = await _Database.ModelEndpoints.EnumerateAsync(
                         new ModelEndpointFilter { TenantId = tenantId, Active = true, PageSize = 100, SortBy = "createdUtc", SortDirection = SortDirectionEnum.Ascending }, token).ConfigureAwait(false);
-                    endpoint = all.Items.FirstOrDefault(e => embedding ? e.SupportsEmbeddings : e.SupportsChat);
+                    endpoint = all.Objects.FirstOrDefault(e => embedding ? e.SupportsEmbeddings : e.SupportsChat);
                 }
             }
 
@@ -628,7 +628,6 @@ namespace MyMorningNews.Core.Services
                     await foreach (ModelInformation m in client.ListModelsAsync(token).ConfigureAwait(false))
                     {
                         items.Add(new ModelListItem { Name = m.Name, DisplayName = m.DisplayName, InputTokenLimit = m.InputTokenLimit, OutputTokenLimit = m.OutputTokenLimit, SupportsTools = m.SupportsTools });
-                        if (items.Count >= 500) break;
                     }
                 }
             }

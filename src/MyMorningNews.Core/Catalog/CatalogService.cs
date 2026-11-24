@@ -67,7 +67,7 @@ namespace MyMorningNews.Core.Catalog
             EffectivePlan plan = await ReconcileAsync(tenantId, userId, token).ConfigureAwait(false);
             if (FreeOnly(plan) && !publication.FreeEligible) return null;
             CatalogSubscription? subscription = (await _Database.CatalogSubscriptions.EnumerateAsync(new CatalogSubscriptionFilter
-            { TenantId = tenantId, UserId = userId, PublicationId = publicationId, Active = true, Suspended = false, PageSize = 1 }, token).ConfigureAwait(false)).Items.FirstOrDefault();
+            { TenantId = tenantId, UserId = userId, PublicationId = publicationId, Active = true, Suspended = false, PageSize = 1 }, token).ConfigureAwait(false)).Objects.FirstOrDefault();
             return subscription == null ? null : publication;
         }
 
@@ -91,7 +91,7 @@ namespace MyMorningNews.Core.Catalog
         {
             ArgumentNullException.ThrowIfNull(publication);
             return (await _Database.MediaAssets.EnumerateAsync(new MediaAssetFilter
-            { TenantId = publication.OwnerTenantId, BriefingId = issueId, Status = MediaStatusEnum.Ready, Active = true, PageSize = 1 }, token).ConfigureAwait(false)).Items.FirstOrDefault();
+            { TenantId = publication.OwnerTenantId, BriefingId = issueId, Status = MediaStatusEnum.Ready, Active = true, PageSize = 1 }, token).ConfigureAwait(false)).Objects.FirstOrDefault();
         }
     }
 }

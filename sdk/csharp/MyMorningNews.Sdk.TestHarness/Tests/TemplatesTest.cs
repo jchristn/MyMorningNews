@@ -38,7 +38,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
         {
             MyMorningNewsClient c = context.RequireAdmin();
             EnumerationResult<BriefingTemplate> shared = await StepAsync(context, result, "GET templates (shared)", () => c.Templates.ListAsync(new TemplateListOptions { Scope = "shared" }, token)).ConfigureAwait(false);
-            BriefingTemplate? source = shared.Items.FirstOrDefault();
+            BriefingTemplate? source = shared.Objects.FirstOrDefault();
             if (source == null) throw new SkipTestException("The tenant has no shared template to copy.");
             string original = await StepAsync(context, result, "GET template export", () => c.Templates.ExportAsync(source.Id, token)).ConfigureAwait(false);
             Helpers.True(original.StartsWith("---", StringComparison.Ordinal), "export is Markdown with front matter");
@@ -63,13 +63,13 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             string changed = original.Replace("## Sources", "## Sources and notes", StringComparison.Ordinal);
             TemplateDetailResponse saved = await StepAsync(context, result, "PUT template (new version)", () => c.Templates.UpdateAsync(id, new TemplateSaveRequest { Content = changed, ChangeNote = "harness" }, token)).ConfigureAwait(false);
             Helpers.True(saved.Template.CurrentVersion > v1, "the version number grows");
-            List<BriefingTemplateVersion> versions = await StepAsync(context, result, "GET template versions", () => c.Templates.ListVersionsAsync(id, token)).ConfigureAwait(false);
+            List<BriefingTemplateVersion> versions = (await StepAsync(context, result, "GET template versions", () => c.Templates.ListVersionsAsync(id, options: new MyMorningNews.Sdk.Options.EnumerationQuery { PageSize = 1000 }, token: token)).ConfigureAwait(false)).Objects;
             Helpers.True(versions.Count >= 2, "two versions");
             TemplateDetailResponse rolled = await StepAsync(context, result, "POST rollback", () => c.Templates.RollbackAsync(id, v1, token)).ConfigureAwait(false);
             Helpers.Equal(read.Content, rolled.Content, "rollback restores the first content");
 
             EnumerationResult<BriefingTemplate> mine = await StepAsync(context, result, "GET templates (mine)", () => c.Templates.ListAsync(new TemplateListOptions { Scope = "mine", PageSize = 1000 }, token)).ConfigureAwait(false);
-            Helpers.Contains(mine.Items, t => t.Id == id, "the template");
+            Helpers.Contains(mine.Objects, t => t.Id == id, "the template");
 
             await StepAsync(context, result, "DELETE template", () => c.Templates.DeleteAsync(id, token)).ConfigureAwait(false);
             context.Cleanup.Remove("template:" + id);

@@ -453,8 +453,8 @@ export class ApiClient {
   revealVaultCredential(id) {
     return this._request('POST', '/v1.0/api/vault/credentials/' + enc(id) + '/reveal', { cache: 'no-store' });
   }
-  getVaultCredentialUsage(id) {
-    return this._request('GET', '/v1.0/api/vault/credentials/' + enc(id) + '/usage');
+  getVaultCredentialUsage(id, query) {
+    return this._request('GET', '/v1.0/api/vault/credentials/' + enc(id) + '/usage', { query });
   }
 
   // Model endpoints, task role assignments, and the model call log
@@ -476,8 +476,8 @@ export class ApiClient {
   validateModelEndpoint(id) {
     return this._request('POST', '/v1.0/api/model-endpoints/' + enc(id) + '/validate');
   }
-  listEndpointModels(id) {
-    return this._request('GET', '/v1.0/api/model-endpoints/' + enc(id) + '/models');
+  listEndpointModels(id, query) {
+    return this._request('GET', '/v1.0/api/model-endpoints/' + enc(id) + '/models', { query });
   }
   testModelEndpoint(id, body) {
     return this._request('POST', '/v1.0/api/model-endpoints/' + enc(id) + '/test', { body: body || {} });
@@ -511,8 +511,8 @@ export class ApiClient {
   deletePrompt(id) {
     return this._request('DELETE', '/v1.0/api/prompts/' + enc(id));
   }
-  listPromptVersions(id) {
-    return this._request('GET', '/v1.0/api/prompts/' + enc(id) + '/versions');
+  listPromptVersions(id, query) {
+    return this._request('GET', '/v1.0/api/prompts/' + enc(id) + '/versions', { query });
   }
   rollbackPrompt(id, version) {
     return this._request('POST', '/v1.0/api/prompts/' + enc(id) + '/rollback', { query: { version } });
@@ -569,8 +569,8 @@ export class ApiClient {
   refineTopic(id) {
     return this._request('POST', '/v1.0/api/topics/' + enc(id) + '/refine');
   }
-  listTopicDimensions(topicId) {
-    return this._request('GET', '/v1.0/api/topics/' + enc(topicId) + '/dimensions');
+  listTopicDimensions(topicId, query) {
+    return this._request('GET', '/v1.0/api/topics/' + enc(topicId) + '/dimensions', { query });
   }
   createTopicDimension(topicId, body) {
     return this._request('POST', '/v1.0/api/topics/' + enc(topicId) + '/dimensions', { body });
@@ -581,8 +581,8 @@ export class ApiClient {
   deleteTopicDimension(topicId, dimensionId) {
     return this._request('DELETE', '/v1.0/api/topics/' + enc(topicId) + '/dimensions/' + enc(dimensionId));
   }
-  listTopicConstraints(topicId, kind) {
-    return this._request('GET', '/v1.0/api/topics/' + enc(topicId) + '/constraints', { query: { kind } });
+  listTopicConstraints(topicId, kind, query) {
+    return this._request('GET', '/v1.0/api/topics/' + enc(topicId) + '/constraints', { query: { ...query, kind } });
   }
   createTopicConstraint(topicId, body) {
     return this._request('POST', '/v1.0/api/topics/' + enc(topicId) + '/constraints', { body });
@@ -593,8 +593,8 @@ export class ApiClient {
   deleteTopicConstraint(topicId, constraintId) {
     return this._request('DELETE', '/v1.0/api/topics/' + enc(topicId) + '/constraints/' + enc(constraintId));
   }
-  listTopicRecipients(topicId) {
-    return this._request('GET', '/v1.0/api/topics/' + enc(topicId) + '/recipients');
+  listTopicRecipients(topicId, query) {
+    return this._request('GET', '/v1.0/api/topics/' + enc(topicId) + '/recipients', { query });
   }
   addTopicRecipient(topicId, body) {
     return this._request('POST', '/v1.0/api/topics/' + enc(topicId) + '/recipients', { body });
@@ -768,14 +768,14 @@ export class ApiClient {
   }
 
   // Run drill-down: stages in order, the queries the run sent, and the results with their dispositions.
-  listRunStages(id) {
-    return this._request('GET', '/v1.0/api/runs/' + enc(id) + '/stages');
+  listRunStages(id, query) {
+    return this._request('GET', '/v1.0/api/runs/' + enc(id) + '/stages', { query });
   }
-  listRunQueries(id) {
-    return this._request('GET', '/v1.0/api/runs/' + enc(id) + '/queries');
+  listRunQueries(id, query) {
+    return this._request('GET', '/v1.0/api/runs/' + enc(id) + '/queries', { query });
   }
-  listRunResults(id, disposition) {
-    return this._request('GET', '/v1.0/api/runs/' + enc(id) + '/results', { query: { disposition } });
+  listRunResults(id, disposition, query) {
+    return this._request('GET', '/v1.0/api/runs/' + enc(id) + '/results', { query: { ...query, disposition } });
   }
   // What a run cost: totals, each stage, each model, and each task role (RunCostReport). Current while the run is going.
   getRunCosts(id) {
@@ -955,8 +955,8 @@ export class ApiClient {
   }
 
   // Private podcast feed tokens. Create returns { token, secret, feedUrl } once; only a hash is stored.
-  listFeedTokens() {
-    return this._request('GET', '/v1.0/api/feed-tokens');
+  listFeedTokens(query) {
+    return this._request('GET', '/v1.0/api/feed-tokens', { query });
   }
   createFeedToken({ name, editionId } = {}) {
     return this._request('POST', '/v1.0/api/feed-tokens', { body: { name: name || '', editionId: editionId || null } });
@@ -1015,8 +1015,8 @@ export class ApiClient {
   deleteBriefingTemplate(id) {
     return this._request('DELETE', '/v1.0/api/briefing-templates/' + enc(id));
   }
-  listBriefingTemplateVersions(id) {
-    return this._request('GET', '/v1.0/api/briefing-templates/' + enc(id) + '/versions');
+  listBriefingTemplateVersions(id, query) {
+    return this._request('GET', '/v1.0/api/briefing-templates/' + enc(id) + '/versions', { query });
   }
   rollbackBriefingTemplate(id, version) {
     return this._request('POST', '/v1.0/api/briefing-templates/' + enc(id) + '/rollback', { body: { version: Number(version) } });
@@ -1050,8 +1050,8 @@ export class ApiClient {
   deletePromoCode(id) {
     return this._request('DELETE', '/v1.0/api/admin/promo-codes/' + enc(id));
   }
-  listPromoRedemptions(id) {
-    return this._request('GET', '/v1.0/api/admin/promo-codes/' + enc(id) + '/redemptions');
+  listPromoRedemptions(id, query) {
+    return this._request('GET', '/v1.0/api/admin/promo-codes/' + enc(id) + '/redemptions', { query });
   }
   revokePromoRedemption(id, redemptionId) {
     return this._request('POST', '/v1.0/api/admin/promo-codes/' + enc(id) + '/redemptions/' + enc(redemptionId) + '/revoke');
@@ -1063,8 +1063,8 @@ export class ApiClient {
   getUserEntitlements(tenantId, userId) { return this._request('GET', '/v1.0/tenants/' + enc(tenantId) + '/users/' + enc(userId) + '/entitlements'); }
   setUserEntitlement(tenantId, userId, body) { return this._request('PUT', '/v1.0/tenants/' + enc(tenantId) + '/users/' + enc(userId) + '/entitlements', { body }); }
   clearUserEntitlement(tenantId, userId, featureKey) { return this._request('DELETE', '/v1.0/tenants/' + enc(tenantId) + '/users/' + enc(userId) + '/entitlements/' + enc(featureKey)); }
-  listPlans() {
-    return this._request('GET', '/v1.0/api/admin/plans');
+  listPlans(query) {
+    return this._request('GET', '/v1.0/api/admin/plans', { query });
   }
   createPlan(body) {
     return this._request('POST', '/v1.0/api/admin/plans', { body });
@@ -1073,8 +1073,8 @@ export class ApiClient {
   updatePlan(id, body) {
     return this._request('PUT', '/v1.0/api/admin/plans/' + enc(id), { body });
   }
-  listPlanAssignments(tenantId, userId) {
-    return this._request('GET', '/v1.0/api/admin/plan-assignments', { query: { tenantId, userId } });
+  listPlanAssignments(tenantId, userId, query) {
+    return this._request('GET', '/v1.0/api/admin/plan-assignments', { query: { ...query, tenantId, userId } });
   }
   grantPlan(body) {
     return this._request('POST', '/v1.0/api/admin/plan-assignments', { body });
@@ -1151,8 +1151,8 @@ export class ApiClient {
   testSearchProvider(id, body) {
     return this._request('POST', '/v1.0/api/search-providers/' + enc(id) + '/test', { body: body || {} });
   }
-  listTopicSearchProviders(topicId) {
-    return this._request('GET', '/v1.0/api/topics/' + enc(topicId) + '/search-providers');
+  listTopicSearchProviders(topicId, query) {
+    return this._request('GET', '/v1.0/api/topics/' + enc(topicId) + '/search-providers', { query });
   }
   // body: [{ searchProviderId, enabled, maxResults }]; an empty list goes back to the tenant defaults.
   setTopicSearchProviders(topicId, body) {
@@ -1186,8 +1186,8 @@ export class ApiClient {
   setMcpToolEnabled(id, toolId, enabled) {
     return this._request('PUT', '/v1.0/api/mcp-servers/' + enc(id) + '/tools/' + enc(toolId), { body: { enabled } });
   }
-  listRunToolCalls(id) {
-    return this._request('GET', '/v1.0/api/runs/' + enc(id) + '/tool-calls');
+  listRunToolCalls(id, query) {
+    return this._request('GET', '/v1.0/api/runs/' + enc(id) + '/tool-calls', { query });
   }
 
   // Email (Phase 9). Administrators see the whole outbox; members see email sent to them. List items omit bodies.

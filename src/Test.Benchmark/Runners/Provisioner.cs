@@ -203,6 +203,7 @@ namespace MyMorningNews.Benchmark.Runners
                 { "brief", corpus.Topic.Brief },
                 { "status", "Active" },
                 { "noveltyPreference", corpus.Topic.NoveltyPreference },
+                { "historyMode", "PreviousIssue" },
                 { "seedQueries", corpus.Topic.SeedQueries },
                 { "emailOnRun", true },
                 { "emailWhenEmpty", true }
@@ -357,7 +358,7 @@ namespace MyMorningNews.Benchmark.Runners
             Dictionary<string, string> byTask = new Dictionary<string, string>(StringComparer.Ordinal);
             using (JsonDocument doc = JsonDocument.Parse(r.Body))
             {
-                JsonElement items = doc.RootElement.ValueKind == JsonValueKind.Array ? doc.RootElement : doc.RootElement.GetProperty("items");
+                JsonElement items = doc.RootElement.GetProperty("objects");
                 foreach (JsonElement a in items.EnumerateArray())
                 {
                     string task = a.TryGetProperty("task", out JsonElement t) ? t.GetString() ?? String.Empty : String.Empty;

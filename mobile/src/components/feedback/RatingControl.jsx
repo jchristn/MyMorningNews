@@ -33,7 +33,7 @@ export function useFeedbackMap(targetType, query) {
   const set = (targetId, feedback) =>
     resource.setData((data) => {
       const items = listItems(data).filter((f) => f.targetId !== targetId);
-      return { items: feedback ? [...items, feedback] : items };
+      return { objects: feedback ? [...items, feedback] : items };
     });
   return { map, set, available: resource.status !== 'notAvailable' };
 }

@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for McpServer records. Null properties are not applied.
     /// </summary>
-    public class McpServerFilter : EnumerationFilter
+    public class McpServerFilter : EnumerationQuery
     {
         /// <summary>
         /// Match Transport exactly when set.

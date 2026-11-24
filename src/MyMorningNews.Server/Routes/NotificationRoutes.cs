@@ -33,6 +33,9 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, b, ListAsync, null, openApiMetadata: Paged(Doc("List my in-app notifications", "Notifications",
                 "Newest first. A notification is created only for kinds the user turned on for the in-app channel. Rows older than 90 days are removed.")
                 .WithParameter(QueryParam("unread", typeof(bool))).WithParameter(QueryParam("kind", typeof(NotificationKindEnum)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b + "/enumerate", ctx => EnumerateAsync(ctx, ListAsync), null, openApiMetadata: Paged(Doc("List my in-app notifications", "Notifications",
+                "Newest first. A notification is created only for kinds the user turned on for the in-app channel. Rows older than 90 days are removed.")
+                .WithParameter(QueryParam("unread", typeof(bool))).WithParameter(QueryParam("kind", typeof(NotificationKindEnum)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, b + "/unread-count", UnreadCountAsync, null, openApiMetadata: Doc("Count my unread in-app notifications", "Notifications"));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b + "/read-all", ReadAllAsync, null, openApiMetadata: Doc("Mark all my in-app notifications as read", "Notifications",
                 "Returns how many were marked."));

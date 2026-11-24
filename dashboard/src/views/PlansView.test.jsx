@@ -1,3 +1,4 @@
+import { enumerationResult } from '../test/enumeration.js';
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -19,7 +20,7 @@ const pickerOverrides = {
 
 describe('PlansView', () => {
   it('lists plans with their entitlement values', async () => {
-    renderRoute('/dashboard/admin/plans', { listPlans: vi.fn(async () => PLANS) });
+    renderRoute('/dashboard/admin/plans', { listPlans: vi.fn(async () => enumerationResult(PLANS)) });
     expect(await screen.findByRole('heading', { name: 'Complimentary' })).toBeInTheDocument();
     expect(screen.getAllByText('Topics', { selector: 'dt' }).length).toBe(3);
     expect(screen.getByText('30.00')).toBeInTheDocument();
@@ -28,7 +29,7 @@ describe('PlansView', () => {
   });
 
   it('edits a plan and sends an empty value for a cleared key', async () => {
-    const client = renderRoute('/dashboard/admin/plans', { listPlans: vi.fn(async () => PLANS), updatePlan: vi.fn(async () => PLANS[0]) });
+    const client = renderRoute('/dashboard/admin/plans', { listPlans: vi.fn(async () => enumerationResult(PLANS)), updatePlan: vi.fn(async () => PLANS[0]) });
     await userEvent.click(await screen.findByRole('button', { name: 'Edit Free' }));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByLabelText('Key')).toBeDisabled();
@@ -46,7 +47,7 @@ describe('PlansView', () => {
   });
 
   it('creates a plan after checking the key', async () => {
-    const client = renderRoute('/dashboard/admin/plans', { listPlans: vi.fn(async () => PLANS), createPlan: vi.fn(async (b) => ({ plan: { id: 'pln_new', ...b }, features: b.features })) });
+    const client = renderRoute('/dashboard/admin/plans', { listPlans: vi.fn(async () => enumerationResult(PLANS)), createPlan: vi.fn(async (b) => ({ plan: { id: 'pln_new', ...b }, features: b.features })) });
     await screen.findByRole('heading', { name: 'Free' });
     await userEvent.click(screen.getByRole('button', { name: 'New plan' }));
     const dialog = await screen.findByRole('dialog');
@@ -63,9 +64,9 @@ describe('PlansView', () => {
   it('grants a plan to a picked user and lists their assignments with revoke', async () => {
     const client = renderRoute('/dashboard/admin/plans', {
       ...pickerOverrides,
-      listPlans: vi.fn(async () => PLANS),
+      listPlans: vi.fn(async () => enumerationResult(PLANS)),
       grantPlan: vi.fn(async (b) => ({ id: 'pla_2', ...b })),
-      listPlanAssignments: vi.fn(async () => ASSIGNMENTS),
+      listPlanAssignments: vi.fn(async () => enumerationResult(ASSIGNMENTS)),
       revokePlanAssignment: vi.fn(async () => null)
     });
     await screen.findByRole('heading', { name: 'Free' });
@@ -79,7 +80,7 @@ describe('PlansView', () => {
     await userEvent.click(within(dialog).getByRole('button', { name: 'Grant' }));
     await waitFor(() => expect(client.grantPlan).toHaveBeenCalledWith({ tenantId: 'default', userId: 'usr_c', planId: 'pln_comp', durationDays: 14, note: 'Pilot' }));
     expect(await screen.findByText('Promotional code SPRING-26.')).toBeInTheDocument();
-    expect(client.listPlanAssignments).toHaveBeenCalledWith('default', 'usr_c');
+    expect(client.listPlanAssignments).toHaveBeenCalledWith('default', 'usr_c', expect.objectContaining({ pageNumber: 1, pageSize: 100 }));
     expect(screen.getByText('Current')).toBeInTheDocument();
     expect(screen.getByText('Revoked', { selector: '.badge' })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Revoke' }));
@@ -106,8 +107,8 @@ describe('Users page Plan panel', () => {
     let overridden = false;
     const client = renderRoute('/dashboard/admin/users', {
       listUsers: vi.fn(async () => page([{ id: 'usr_c', email: 'cy@example.test', active: true, isAdmin: false, isTenantAdmin: false }])),
-      listPlans: vi.fn(async () => [{ plan: { id: 'pln_free', name: 'Free' }, features: { 'customTopics.max': '5' } }]),
-      listPlanAssignments: vi.fn(async () => []),
+      listPlans: vi.fn(async () => enumerationResult([{ plan: { id: 'pln_free', name: 'Free' }, features: { 'customTopics.max': '5' } }])),
+      listPlanAssignments: vi.fn(async () => enumerationResult([])),
       getUserEntitlements: vi.fn(async () => ({ plan: { id: 'pln_free', name: 'Free' }, features: { 'customTopics.max': overridden ? '0' : '5' }, featureSources: { 'customTopics.max': overridden ? 'userOverride' : 'plan' } })),
       setUserEntitlement: vi.fn(async () => { overridden = true; }),
       clearUserEntitlement: vi.fn(async () => { overridden = false; }),
@@ -128,15 +129,15 @@ describe('Users page Plan panel', () => {
   it('opens a user plan panel for global administrators', async () => {
     const client = renderRoute('/dashboard/admin/users', {
       listUsers: vi.fn(async () => page([{ id: 'usr_c', email: 'cy@example.test', active: true, isAdmin: false, isTenantAdmin: false }])),
-      listPlans: vi.fn(async () => PLANS),
-      listPlanAssignments: vi.fn(async () => ASSIGNMENTS)
+      listPlans: vi.fn(async () => enumerationResult(PLANS)),
+      listPlanAssignments: vi.fn(async () => enumerationResult(ASSIGNMENTS))
     });
     const row = (await screen.findByText('cy@example.test')).closest('tr');
     await userEvent.click(within(row).getByRole('button', { name: /actions/i }));
     await userEvent.click(await screen.findByRole('menuitem', { name: 'Plan' }));
     expect(await screen.findByText('Plan for cy@example.test')).toBeInTheDocument();
     expect(await screen.findByText('Promotional code SPRING-26.')).toBeInTheDocument();
-    expect(client.listPlanAssignments).toHaveBeenCalledWith('default', 'usr_c');
+    expect(client.listPlanAssignments).toHaveBeenCalledWith('default', 'usr_c', expect.objectContaining({ pageNumber: 1, pageSize: 100 }));
   });
 });
 

@@ -40,7 +40,7 @@ export default function RunsTable({ topicId = null, tableKey = 'runs', toolbar =
     let cancelled = false;
     apiClient
       .listTopics({ pageSize: 1000, sortBy: 'name', sortDirection: 'Ascending' })
-      .then((r) => !cancelled && setTopics((r && r.items) || []))
+      .then((r) => !cancelled && setTopics((r && r.objects) || []))
       .catch(() => {});
     return () => {
       cancelled = true;
@@ -158,7 +158,7 @@ export default function RunsTable({ topicId = null, tableKey = 'runs', toolbar =
         refreshSignal={refresh + refreshSignal}
         defaultSort={{ key: 'queuedUtc', direction: 'desc' }}
         onRowClick={(r) => setOpenId(r.id)}
-        onLoaded={(page) => setActive(((page && page.items) || []).some(isActiveRun))}
+        onLoaded={(page) => setActive(((page && page.objects) || []).some(isActiveRun))}
         toolbar={toolbar}
         rowActions={(r) => [
           { key: 'view', label: t('common.view'), icon: Eye, onClick: () => setOpenId(r.id) },

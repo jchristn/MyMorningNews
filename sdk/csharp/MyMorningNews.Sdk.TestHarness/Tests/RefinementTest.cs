@@ -70,7 +70,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
 
             EnumerationResult<RefinementSession> list = await StepAsync(context, result, "GET refinement-sessions (topic filter)",
                 () => c.Refinement.ListAsync(new RefinementSessionListOptions { TopicId = topicId }, token)).ConfigureAwait(false);
-            Helpers.Contains(list.Items, s => s.Id == sessionId, "the session");
+            Helpers.Contains(list.Objects, s => s.Id == sessionId, "the session");
 
             RefinementStateResponse accepted = await StepAsync(context, result, "POST sources/accept", () => c.Refinement.AcceptSourcesAsync(sessionId, new SourceAcceptRequest
             {

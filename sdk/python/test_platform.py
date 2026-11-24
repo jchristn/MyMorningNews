@@ -42,9 +42,9 @@ class PlatformTest(unittest.TestCase):
         self.assertFalse(hasattr(connections.connections[0], 'secret_encrypted'))
 
     def test_scoped_catalog_paging_progress_and_ranges(self):
-        self.transport.reply = {'items': [{'id': 'cat1', 'eligible': True}], 'pageNumber': 2, 'totalCount': 1}
+        self.transport.reply = {'objects': [{'id': 'cat1', 'eligible': True}], 'pageNumber': 2, 'totalRecords': 1}
         page = self.api.catalog.list(page_number=2, category='AI & science')
-        self.assertTrue(page.items[0].eligible)
+        self.assertTrue(page.objects[0].eligible)
         request = self.transport.sent[-1]
         self.assertEqual(parse_qs(urlparse(request.url).query)['pageNumber'], ['2'])
         self.assertEqual(request.headers['Authorization'], 'Bearer member')

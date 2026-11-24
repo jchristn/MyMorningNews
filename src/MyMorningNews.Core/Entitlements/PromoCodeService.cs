@@ -190,47 +190,10 @@ namespace MyMorningNews.Core.Entitlements
         public async Task<PromoCodeStats> StatsAsync(PromoCode pc, CancellationToken token = default)
         {
             ArgumentNullException.ThrowIfNull(pc);
-            DateTime now = DateTime.UtcNow;
-            List<PromoRedemption> rs = await RedemptionsAsync(pc, token).ConfigureAwait(false);
-            int active = 0;
-            foreach (PromoRedemption r in rs.Where(r => !r.RevokedUtc.HasValue))
-            {
-                PlanAssignment? a = r.PlanAssignmentId == null ? null : await _Database.PlanAssignments.ReadAsync(r.TenantId, r.PlanAssignmentId, token).ConfigureAwait(false);
-                if (a != null && !a.RevokedUtc.HasValue && (!a.EndsUtc.HasValue || a.EndsUtc > now)) active++;
-            }
-
-            return new PromoCodeStats
-            {
-                Code = pc,
-                PlanName = (await _Database.Plans.ReadAsync(pc.PlanId, token).ConfigureAwait(false))?.Name,
-                Remaining = pc.MaxRedemptions.HasValue ? Math.Max(0, pc.MaxRedemptions.Value - pc.RedemptionCount) : null,
-                ActiveAssignments = active,
-                Revoked = rs.Count(r => r.RevokedUtc.HasValue),
-                LastRedeemedUtc = rs.Count == 0 ? null : rs.Max(r => r.CreatedUtc)
-            };
-        }
-
-        /// <summary>
-        /// All redemptions of a code across tenants, newest first.
-        /// </summary>
-        /// <param name="pc">Code.</param>
-        /// <param name="token">Cancellation token.</param>
-        /// <returns>Redemptions.</returns>
-        public async Task<List<PromoRedemption>> RedemptionsAsync(PromoCode pc, CancellationToken token = default)
-        {
-            ArgumentNullException.ThrowIfNull(pc);
-            List<PromoRedemption> all = new List<PromoRedemption>();
-            int page = 1;
-            while (true)
-            {
-                EnumerationResult<Tenant> tenants = await _Database.Tenants.EnumerateAsync(new TenantFilter { PageNumber = page, PageSize = 200 }, token).ConfigureAwait(false);
-                foreach (Tenant t in tenants.Items)
-                    all.AddRange((await _Database.PromoRedemptions.EnumerateAsync(new PromoRedemptionFilter { TenantId = t.Id, PromoCodeId = pc.Id, PageSize = 10000 }, token).ConfigureAwait(false)).Items);
-                if (page >= tenants.TotalPages) break;
-                page++;
-            }
-
-            return all.OrderByDescending(r => r.CreatedUtc).ToList();
+            PromoCodeStats stats = await _Database.PromoRedemptions.StatsAsync(pc, token).ConfigureAwait(false);
+            stats.PlanName = (await _Database.Plans.ReadAsync(pc.PlanId, token).ConfigureAwait(false))?.Name;
+            stats.Remaining = pc.MaxRedemptions.HasValue ? Math.Max(0, pc.MaxRedemptions.Value - pc.RedemptionCount) : null;
+            return stats;
         }
 
         private async Task<string?> ReasonAsync(PromoCode? pc, string? tenantId, string? userId, bool newAccount, DateTime now, CancellationToken token)

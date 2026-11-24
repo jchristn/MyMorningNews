@@ -149,7 +149,7 @@ except CapReachedError as ex:
 
 ## Pagination
 
-List methods return a `Page` with `items`, `page_number`, `page_size`, `total_count`, `total_pages`, `duration_ms`, and `has_more`. They accept `page_number`, `page_size`, `sort_by`, `sort_direction` (`Ascending` or `Descending`), `search`, `from_utc`, `to_utc`, and typed filters per route.
+List methods return an `EnumerationResult` (`Page` alias) with `success`, `objects`, `page_number`, `page_size`, `total_records`, `total_pages`, `total_ms`, and `has_more`. They accept `page_number`, `page_size`, `sort_by`, `sort_direction` (`Ascending` or `Descending`), `search`, `from_utc`, `to_utc`, and typed filters per route.
 
 ```python
 from mymorningnews_sdk import iterate, SortDirection
@@ -342,7 +342,7 @@ client.templates.reset(seeded_template_id)
 ### prompts
 
 ```python
-p = client.prompts.list(key="briefing.compose").items[0]
+p = client.prompts.list(key="briefing.compose").objects[0]
 client.prompts.get(p.id).variables
 override = client.prompts.create_override("briefing.compose", tid, content)
 client.prompts.update(override.template.id, content=edited, change_note="Tighter")
@@ -425,8 +425,8 @@ client.devices.test(d.id); client.devices.delete(d.id)
 prefs = client.notifications.preferences()              # 18 cells (kind by channel) plus channel availability
 client.notifications.set_preference("AudioReady", "Push", True)   # or set_preferences([...], unsubscribe_topic_ids=[...])
 page = client.notifications.list(unread=True)           # in-app notifications, newest first
-client.notifications.unread_count(); client.notifications.mark_read(page.items[0].id)
-client.notifications.mark_all_read(); client.notifications.delete(page.items[0].id)
+client.notifications.unread_count(); client.notifications.mark_read(page.objects[0].id)
+client.notifications.mark_all_read(); client.notifications.delete(page.objects[0].id)
 
 client.account.plan(); client.account.redeem("SPRING-2026")
 meter = client.account.usage()          # UsageMeter: plan_key, topics, topics_max, runs_today, month_to_date_cost_usd, reset_utc, ...

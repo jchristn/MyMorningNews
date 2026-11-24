@@ -292,6 +292,16 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 args.Add("%" + EscapeLike(filter.Search.Trim()) + "%");
                 clauses.Add("(path ILIKE $" + args.Count + " OR reason ILIKE $" + args.Count + ")");
             }
+            if (filter.CreatedAfter.HasValue)
+            {
+                args.Add(DateTime.SpecifyKind(filter.CreatedAfter.Value, DateTimeKind.Utc));
+                clauses.Add("createdutc > $" + args.Count);
+            }
+            if (filter.CreatedBefore.HasValue)
+            {
+                args.Add(DateTime.SpecifyKind(filter.CreatedBefore.Value, DateTimeKind.Utc));
+                clauses.Add("createdutc < $" + args.Count);
+            }
             if (filter.FromUtc.HasValue)
             {
                 args.Add(DateTime.SpecifyKind(filter.FromUtc.Value, DateTimeKind.Utc));

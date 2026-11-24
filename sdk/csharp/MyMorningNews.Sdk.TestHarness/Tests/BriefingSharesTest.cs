@@ -41,7 +41,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             ClientConfigResponse config = await StepAsync(context, result, "GET client config", () => c.GetClientConfigAsync(token)).ConfigureAwait(false);
             EnumerationResult<Briefing> page = await StepAsync(context, result, "GET briefings (ready)",
                 () => c.Briefings.ListAsync(new BriefingListOptions { Status = BriefingStatusEnum.Ready, PageSize = 1 }, token)).ConfigureAwait(false);
-            Briefing? ready = page.Items.FirstOrDefault();
+            Briefing? ready = page.Objects.FirstOrDefault();
             if (ready == null || !config.SharingEnabled) return;
 
             int max = config.SharingMaxExpiryDays;
@@ -60,12 +60,12 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             Helpers.True(created.Share.ExpiresUtc > System.DateTime.UtcNow.AddDays(max - 1) && !created.Share.ShowOwnerName, "expiry stored, name hidden by default");
 
             EnumerationResult<BriefingShare> list = await StepAsync(context, result, "GET shares", () => c.Briefings.ListSharesAsync(ready.Id, null, token)).ConfigureAwait(false);
-            BriefingShare? mine = list.Items.FirstOrDefault(s => s.Id == id);
+            BriefingShare? mine = list.Objects.FirstOrDefault(s => s.Id == id);
             Helpers.True(mine != null && mine.TokenHash == "redacted" && mine.RevokedUtc == null && mine.ViewCount == 0, "the live share, hash redacted, not opened");
 
             await StepAsync(context, result, "DELETE share (revoke)", () => c.Briefings.RevokeShareAsync(ready.Id, id, false, token)).ConfigureAwait(false);
             EnumerationResult<BriefingShare> afterRevoke = await StepAsync(context, result, "GET shares after revoke", () => c.Briefings.ListSharesAsync(ready.Id, null, token)).ConfigureAwait(false);
-            Helpers.True(afterRevoke.Items.Any(s => s.Id == id && s.RevokedUtc != null), "the share is revoked");
+            Helpers.True(afterRevoke.Objects.Any(s => s.Id == id && s.RevokedUtc != null), "the share is revoked");
             await StepAsync(context, result, "DELETE share (purge)", () => c.Briefings.RevokeShareAsync(ready.Id, id, true, token)).ConfigureAwait(false);
             context.Cleanup.Remove("share:" + id);
             await StepAsync(context, result, "DELETE purged share (404)", () => Helpers.ExpectErrorAsync(() => c.Briefings.RevokeShareAsync(ready.Id, id, true, token), 404)).ConfigureAwait(false);

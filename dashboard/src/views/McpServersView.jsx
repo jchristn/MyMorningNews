@@ -108,7 +108,7 @@ export default function McpServersView() {
     if (!editing) return;
     apiClient
       .listVaultCredentials({ pageSize: 100 })
-      .then((r) => setCredentials(r && Array.isArray(r.items) ? r.items : []))
+      .then((r) => setCredentials(r && Array.isArray(r.objects) ? r.objects : []))
       .catch(() => setCredentials([]));
   }, [apiClient, editing]);
 

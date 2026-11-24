@@ -82,7 +82,7 @@ namespace MyMorningNews.Core.Entitlements
         {
             Plan? free = plans.FirstOrDefault(p => p.Key == "free");
             if (free == null) return;
-            List<PlanFeature> features = (await _Database.PlanFeatures.EnumerateAsync(new PlanFeatureFilter { PlanId = free.Id, PageSize = 500 }, token).ConfigureAwait(false)).Items;
+            List<PlanFeature> features = (await _Database.PlanFeatures.EnumerateAsync(new PlanFeatureFilter { PlanId = free.Id, PageSize = 500 }, token).ConfigureAwait(false)).Objects;
             if (features.Any(f => f.Key == "customResearch.enabled")) return;
             Plan? legacy = plans.FirstOrDefault(p => p.Key == "legacy-free");
             if (legacy == null)
@@ -93,22 +93,22 @@ namespace MyMorningNews.Core.Entitlements
             Dictionary<string, string> values = new Dictionary<string, string>(Tier("legacy-free", "Legacy Free", "", 100, "1", "5", "unlimited", true, false).Features, StringComparer.Ordinal);
             foreach (PlanFeature feature in features) values[feature.Key] = feature.Value;
             values["customTopics.max"] = values["topics.max"];
-            List<PlanFeature> existing = (await _Database.PlanFeatures.EnumerateAsync(new PlanFeatureFilter { PlanId = legacy.Id, PageSize = 500 }, token).ConfigureAwait(false)).Items;
+            List<PlanFeature> existing = (await _Database.PlanFeatures.EnumerateAsync(new PlanFeatureFilter { PlanId = legacy.Id, PageSize = 500 }, token).ConfigureAwait(false)).Objects;
             foreach (KeyValuePair<string, string> value in values.Where(v => !existing.Any(f => f.Key == v.Key)))
                 await _Database.PlanFeatures.CreateAsync(new PlanFeature { PlanId = legacy.Id, Key = value.Key, Value = value.Value }, token).ConfigureAwait(false);
             for (int page = 1; ; page++)
             {
                 EnumerationResult<Tenant> tenants = await _Database.Tenants.EnumerateAsync(new TenantFilter { PageNumber = page, PageSize = 1000 }, token).ConfigureAwait(false);
-                foreach (Tenant tenant in tenants.Items)
+                foreach (Tenant tenant in tenants.Objects)
                 {
                     for (int userPage = 1; ; userPage++)
                     {
                         EnumerationResult<User> users = await _Database.Users.EnumerateAsync(new UserFilter { TenantId = tenant.Id, PageNumber = userPage, PageSize = 1000 }, token).ConfigureAwait(false);
-                        foreach (User user in users.Items)
+                        foreach (User user in users.Objects)
                         {
                             if (_Settings.Hosting.DefaultPlanKey == "free" && await _Database.AccountPlanPolicies.CountAsync(new AccountPlanPolicyFilter { TenantId = tenant.Id, UserId = user.Id }, token).ConfigureAwait(false) == 0)
                                 await _Database.AccountPlanPolicies.CreateAsync(new AccountPlanPolicy { TenantId = tenant.Id, UserId = user.Id, DefaultPlanId = legacy.Id, SubscriptionRequired = false, FundingMode = "Platform" }, token).ConfigureAwait(false);
-                            List<PlanAssignment> assignments = (await _Database.PlanAssignments.EnumerateAsync(new PlanAssignmentFilter { TenantId = tenant.Id, UserId = user.Id, PlanId = free.Id, PageSize = 1000 }, token).ConfigureAwait(false)).Items;
+                            List<PlanAssignment> assignments = (await _Database.PlanAssignments.EnumerateAsync(new PlanAssignmentFilter { TenantId = tenant.Id, UserId = user.Id, PlanId = free.Id, PageSize = 1000 }, token).ConfigureAwait(false)).Objects;
                             foreach (PlanAssignment assignment in assignments)
                             {
                                 assignment.PlanId = legacy.Id;
@@ -149,7 +149,7 @@ namespace MyMorningNews.Core.Entitlements
         public async Task<int> EnsureDefaultsAsync(CancellationToken token = default)
         {
             int created = 0;
-            List<Plan> plans = (await _Database.Plans.EnumerateAsync(new PlanFilter { PageSize = 1000 }, token).ConfigureAwait(false)).Items;
+            List<Plan> plans = (await _Database.Plans.EnumerateAsync(new PlanFilter { PageSize = 1000 }, token).ConfigureAwait(false)).Objects;
             await PreserveLegacyFreeAsync(plans, token).ConfigureAwait(false);
             foreach (PlanSeed seed in BuiltIn)
             {
@@ -161,7 +161,7 @@ namespace MyMorningNews.Core.Entitlements
                     created++;
                 }
 
-                List<PlanFeature> have = (await _Database.PlanFeatures.EnumerateAsync(new PlanFeatureFilter { PlanId = plan.Id, PageSize = 500 }, token).ConfigureAwait(false)).Items;
+                List<PlanFeature> have = (await _Database.PlanFeatures.EnumerateAsync(new PlanFeatureFilter { PlanId = plan.Id, PageSize = 500 }, token).ConfigureAwait(false)).Objects;
                 foreach (KeyValuePair<string, string> kv in seed.Features.Where(kv => have.All(h => h.Key != kv.Key)))
                     await _Database.PlanFeatures.CreateAsync(new PlanFeature { PlanId = plan.Id, Key = kv.Key, Value = kv.Value }, token).ConfigureAwait(false);
                 if (ReplacedDefaults.TryGetValue(seed.Key, out IReadOnlyDictionary<string, string>? old))
@@ -355,7 +355,7 @@ namespace MyMorningNews.Core.Entitlements
             _CostCache.TryRemove(tenantId + "|" + userId, out CachedCost? _);
             decimal spent = await MonthToDateCostAsync(tenantId, userId, token).ConfigureAwait(false);
             decimal? cap = Limit(plan, "usage.monthlyCostUsd.max");
-            List<MediaAsset> audio = (await _Database.MediaAssets.EnumerateAsync(new MediaAssetFilter { TenantId = tenantId, UserId = userId, FromUtc = monthStart, PageSize = 5000 }, token).ConfigureAwait(false)).Items;
+            List<MediaAsset> audio = (await _Database.MediaAssets.EnumerateAsync(new MediaAssetFilter { TenantId = tenantId, UserId = userId, FromUtc = monthStart, PageSize = 5000 }, token).ConfigureAwait(false)).Objects;
             AudioUsageSummary dailyAudio = await _Database.AudioReservations.UsageAsync(tenantId, userId, now.Date, token).ConfigureAwait(false);
             return new UsageMeter
             {
@@ -396,7 +396,7 @@ namespace MyMorningNews.Core.Entitlements
         public async Task<EffectivePlan> GetEffectiveAsync(string tenantId, string userId, CancellationToken token = default)
         {
             DateTime now = DateTime.UtcNow;
-            AccountPlanPolicy? policy = (await _Database.AccountPlanPolicies.EnumerateAsync(new AccountPlanPolicyFilter { TenantId = tenantId, UserId = userId, PageSize = 1 }, token).ConfigureAwait(false)).Items.FirstOrDefault();
+            AccountPlanPolicy? policy = (await _Database.AccountPlanPolicies.EnumerateAsync(new AccountPlanPolicyFilter { TenantId = tenantId, UserId = userId, PageSize = 1 }, token).ConfigureAwait(false)).Objects.FirstOrDefault();
             List<PlanAssignment> all = await AssignmentsAsync(tenantId, userId, token).ConfigureAwait(false);
             List<PlanAssignment> live = all.Where(a => !a.RevokedUtc.HasValue && (!a.EndsUtc.HasValue || a.EndsUtc > now)).ToList();
             PlanAssignment? current = live.Where(a => a.StartsUtc <= now && a.Source != PlanSourceEnum.Billing).OrderByDescending(a => a.Source == PlanSourceEnum.Admin).ThenByDescending(a => a.StartsUtc).ThenByDescending(a => a.Id, StringComparer.Ordinal).FirstOrDefault();
@@ -404,15 +404,15 @@ namespace MyMorningNews.Core.Entitlements
             BillingSubscription? billing = null;
             if (current?.Source != PlanSourceEnum.Admin)
             {
-                List<BillingSubscription> paid = (await _Database.BillingSubscriptions.EnumerateAsync(new BillingSubscriptionFilter { TenantId = tenantId, UserId = userId, Active = true, PageSize = 1000 }, token).ConfigureAwait(false)).Items;
-                List<Plan> packages = (await _Database.Plans.EnumerateAsync(new PlanFilter { PageSize = 1000 }, token).ConfigureAwait(false)).Items;
+                List<BillingSubscription> paid = (await _Database.BillingSubscriptions.EnumerateAsync(new BillingSubscriptionFilter { TenantId = tenantId, UserId = userId, Active = true, PageSize = 1000 }, token).ConfigureAwait(false)).Objects;
+                List<Plan> packages = (await _Database.Plans.EnumerateAsync(new PlanFilter { PageSize = 1000 }, token).ConfigureAwait(false)).Objects;
                 billing = paid.Where(b => MyMorningNews.Core.Billing.BillingService.Entitled(b, now) && (b.Environment == "Production" || _Settings.Billing.AllowSandbox))
                     .OrderByDescending(b => packages.FirstOrDefault(p => p.Id == b.PlanId)?.SortOrder ?? 0).ThenByDescending(b => b.LastVerifiedUtc).FirstOrDefault();
                 if (billing != null)
                 {
                     plan = packages.FirstOrDefault(p => p.Id == billing.PlanId);
                     current = null;
-                    SignupBenefit? benefit = (await _Database.SignupBenefits.EnumerateAsync(new SignupBenefitFilter { TenantId = tenantId, UserId = userId, Active = true, PageSize = 1 }, token).ConfigureAwait(false)).Items.FirstOrDefault();
+                    SignupBenefit? benefit = (await _Database.SignupBenefits.EnumerateAsync(new SignupBenefitFilter { TenantId = tenantId, UserId = userId, Active = true, PageSize = 1 }, token).ConfigureAwait(false)).Objects.FirstOrDefault();
                     if (benefit != null && !benefit.RevokedUtc.HasValue && benefit.RedeemedSubscriptionId == billing.Id && benefit.RedeemedUtc.HasValue
                         && benefit.BillingPlanKey == plan?.Key && (!benefit.DurationDays.HasValue || benefit.RedeemedUtc.Value.AddDays(benefit.DurationDays.Value) > now))
                     {
@@ -429,16 +429,16 @@ namespace MyMorningNews.Core.Entitlements
             }
 
             if (current?.Source != PlanSourceEnum.Admin && billing == null && policy?.FundingMode == "Personal")
-                plan = (await _Database.Plans.EnumerateAsync(new PlanFilter { Key = "byok", Active = true, PageSize = 1 }, token).ConfigureAwait(false)).Items.FirstOrDefault()
+                plan = (await _Database.Plans.EnumerateAsync(new PlanFilter { Key = "byok", Active = true, PageSize = 1 }, token).ConfigureAwait(false)).Objects.FirstOrDefault()
                     ?? throw new InvalidOperationException("The BYOK package is unavailable.");
 
-            Dictionary<string, string> features = (await _Database.PlanFeatures.EnumerateAsync(new PlanFeatureFilter { PlanId = plan.Id, PageSize = 500 }, token).ConfigureAwait(false)).Items
+            Dictionary<string, string> features = (await _Database.PlanFeatures.EnumerateAsync(new PlanFeatureFilter { PlanId = plan.Id, PageSize = 500 }, token).ConfigureAwait(false)).Objects
                 .ToDictionary(f => f.Key, f => f.Value, StringComparer.Ordinal);
             EffectivePlan result = new EffectivePlan { Plan = plan, Features = features, Assignment = current, EndsUtc = billing?.EndsUtc ?? current?.EndsUtc, BillingSubscriptionId = billing?.Id, BillingProvider = billing?.Provider, Upcoming = live.Where(a => a.StartsUtc > now).OrderBy(a => a.StartsUtc).ToList() };
             result.SubscriptionRequired = policy?.SubscriptionRequired ?? _Settings.Hosting.DefaultPlanKey != "unlimited";
             result.FundingMode = plan.Key == "byok" ? "Personal" : billing != null ? "Platform" : policy?.FundingMode == "SelfHosted" ? "SelfHosted" : policy == null && _Settings.Hosting.DefaultPlanKey == "unlimited" ? "SelfHosted" : "Platform";
             foreach (string key in features.Keys) result.FeatureSources[key] = "plan";
-            List<EntitlementOverride> overrides = (await _Database.EntitlementOverrides.EnumerateAsync(new EntitlementOverrideFilter { TenantId = tenantId, UserId = userId, Active = true, PageSize = 500 }, token).ConfigureAwait(false)).Items;
+            List<EntitlementOverride> overrides = (await _Database.EntitlementOverrides.EnumerateAsync(new EntitlementOverrideFilter { TenantId = tenantId, UserId = userId, Active = true, PageSize = 500 }, token).ConfigureAwait(false)).Objects;
             foreach (EntitlementOverride item in overrides.Where(o => !o.ExpiresUtc.HasValue || o.ExpiresUtc > now).OrderBy(o => o.LastUpdateUtc).ThenBy(o => o.FeatureKey == "customTopics.max"))
             {
                 result.Features[item.FeatureKey] = PlanFeatureCatalog.Normalize(item.FeatureKey, item.Value);
@@ -467,7 +467,7 @@ namespace MyMorningNews.Core.Entitlements
         public async Task<AccountPlanPolicy> CaptureSignupPolicyAsync(string tenantId, string userId, CancellationToken token = default)
         {
             token.ThrowIfCancellationRequested();
-            AccountPlanPolicy? existing = (await _Database.AccountPlanPolicies.EnumerateAsync(new AccountPlanPolicyFilter { TenantId = tenantId, UserId = userId, PageSize = 1 }, token).ConfigureAwait(false)).Items.FirstOrDefault();
+            AccountPlanPolicy? existing = (await _Database.AccountPlanPolicies.EnumerateAsync(new AccountPlanPolicyFilter { TenantId = tenantId, UserId = userId, PageSize = 1 }, token).ConfigureAwait(false)).Objects.FirstOrDefault();
             if (existing != null) return existing;
             Plan plan = await SignupPlanAsync(token).ConfigureAwait(false);
             string key = plan.Key;
@@ -488,7 +488,7 @@ namespace MyMorningNews.Core.Entitlements
         public async Task<Plan> SignupPlanAsync(CancellationToken token = default)
         {
             string key = _Settings.Hosting.NewUsersRequireSubscription ? _Settings.Hosting.DefaultPlanKey : _Settings.Hosting.NonBilledPlanKey;
-            return (await _Database.Plans.EnumerateAsync(new PlanFilter { Key = key, Active = true, PageSize = 1 }, token).ConfigureAwait(false)).Items.FirstOrDefault()
+            return (await _Database.Plans.EnumerateAsync(new PlanFilter { Key = key, Active = true, PageSize = 1 }, token).ConfigureAwait(false)).Objects.FirstOrDefault()
                 ?? throw new InvalidOperationException("The configured signup plan is unavailable: " + key + ".");
         }
 
@@ -499,11 +499,11 @@ namespace MyMorningNews.Core.Entitlements
         /// <returns>Plan.</returns>
         public async Task<Plan> DefaultPlanAsync(CancellationToken token = default)
         {
-            List<Plan> plans = (await _Database.Plans.EnumerateAsync(new PlanFilter { PageSize = 1000 }, token).ConfigureAwait(false)).Items;
+            List<Plan> plans = (await _Database.Plans.EnumerateAsync(new PlanFilter { PageSize = 1000 }, token).ConfigureAwait(false)).Objects;
             if (plans.Count == 0)
             {
                 await EnsureDefaultsAsync(token).ConfigureAwait(false);
-                plans = (await _Database.Plans.EnumerateAsync(new PlanFilter { PageSize = 1000 }, token).ConfigureAwait(false)).Items;
+                plans = (await _Database.Plans.EnumerateAsync(new PlanFilter { PageSize = 1000 }, token).ConfigureAwait(false)).Objects;
             }
 
             return plans.FirstOrDefault(p => p.Key == _Settings.Hosting.DefaultPlanKey) ?? plans.FirstOrDefault(p => p.IsDefault) ?? plans.OrderBy(p => p.SortOrder).First();
@@ -518,7 +518,7 @@ namespace MyMorningNews.Core.Entitlements
         /// <returns>Assignments.</returns>
         public async Task<List<PlanAssignment>> AssignmentsAsync(string tenantId, string userId, CancellationToken token = default)
         {
-            return (await _Database.PlanAssignments.EnumerateAsync(new PlanAssignmentFilter { TenantId = tenantId, UserId = userId, PageSize = 500 }, token).ConfigureAwait(false)).Items
+            return (await _Database.PlanAssignments.EnumerateAsync(new PlanAssignmentFilter { TenantId = tenantId, UserId = userId, PageSize = 500 }, token).ConfigureAwait(false)).Objects
                 .OrderByDescending(a => a.StartsUtc).ToList();
         }
     }

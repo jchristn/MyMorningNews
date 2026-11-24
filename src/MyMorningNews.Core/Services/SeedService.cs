@@ -113,7 +113,7 @@ namespace MyMorningNews.Core.Services
             foreach (BuiltInRoleDefinition def in BuiltInRoles.All)
             {
                 EnumerationResult<UserRole> existing = await _Database.Roles.EnumerateAsync(new UserRoleFilter { TenantId = null, Name = def.Name, PageSize = 2 }, token).ConfigureAwait(false);
-                UserRole? role = existing.Items.FirstOrDefault();
+                UserRole? role = existing.Objects.FirstOrDefault();
                 if (role == null)
                 {
                     role = await _Database.Roles.CreateAsync(new UserRole
@@ -137,7 +137,7 @@ namespace MyMorningNews.Core.Services
                 }
 
                 EnumerationResult<RolePermissionMap> maps = await _Database.RolePermissionMaps.EnumerateAsync(new RolePermissionMapFilter { TenantId = null, RoleId = role.Id, PageSize = 1000 }, token).ConfigureAwait(false);
-                foreach (RolePermissionMap map in maps.Items)
+                foreach (RolePermissionMap map in maps.Objects)
                 {
                     Permission? permission = await _Database.Permissions.ReadByIdAsync(map.PermissionId, token).ConfigureAwait(false);
                     if (permission != null && permission.IsBuiltIn && permission.TenantId == null)

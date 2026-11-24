@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for TopicDimension records. Null properties are not applied.
     /// </summary>
-    public class TopicDimensionFilter : EnumerationFilter
+    public class TopicDimensionFilter : EnumerationQuery
     {
         /// <summary>
         /// Match TopicId exactly when set.

@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for EmailSuppression records. Null properties are not applied.
     /// </summary>
-    public class EmailSuppressionFilter : EnumerationFilter
+    public class EmailSuppressionFilter : EnumerationQuery
     {
         /// <summary>
         /// Match Recipient exactly when set.

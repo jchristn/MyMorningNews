@@ -174,9 +174,9 @@ namespace Test.Shared.Suites
                 await server.Context.Scheduling.TickAsync(now, token).ConfigureAwait(false);
             }
 
-            List<Run> runs = (await server.Context.Database.Runs.EnumerateAsync(new MyMorningNews.Core.Requests.RunFilter { TenantId = topic.TenantId, TopicId = topic.Id, PageSize = 10 }, token).ConfigureAwait(false)).Items;
+            List<Run> runs = (await server.Context.Database.Runs.EnumerateAsync(new MyMorningNews.Core.Requests.RunFilter { TenantId = topic.TenantId, TopicId = topic.Id, PageSize = 10 }, token).ConfigureAwait(false)).Objects;
             Assert.True(runs.Count == 2 && runs.All(r => r.Status == RunStatusEnum.Skipped && r.SkippedReason!.StartsWith("CostCapReached", StringComparison.Ordinal)), "skipped with the reason: " + String.Join(" | ", runs.Select(r => r.Status + " " + r.SkippedReason)));
-            List<EmailMessage> mail = (await server.Context.Database.EmailMessages.EnumerateAsync(new MyMorningNews.Core.Requests.EmailMessageFilter { TenantId = topic.TenantId, PageSize = 50 }, token).ConfigureAwait(false)).Items;
+            List<EmailMessage> mail = (await server.Context.Database.EmailMessages.EnumerateAsync(new MyMorningNews.Core.Requests.EmailMessageFilter { TenantId = topic.TenantId, PageSize = 50 }, token).ConfigureAwait(false)).Objects;
             Assert.Equal(1, mail.Count(m => m.Template == EmailTemplateEnum.CapReached), "one notice this month");
         }
 

@@ -36,23 +36,23 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
         {
             MyMorningNewsClient c = context.RequireAdmin();
             EnumerationResult<Run> runs = await StepAsync(context, result, "GET runs", () => c.Runs.ListAsync(new RunListOptions { PageSize = 1 }, token)).ConfigureAwait(false);
-            if (runs.Items.Count == 0) throw new SkipTestException("No runs to read model calls from.");
+            if (runs.Objects.Count == 0) throw new SkipTestException("No runs to read model calls from.");
             EnumerationResult<LlmCall> calls;
             try
             {
-                calls = await c.Runs.ListLlmCallsAsync(runs.Items[0].Id, new ListOptions { PageSize = 5 }, token).ConfigureAwait(false);
+                calls = await c.Runs.ListLlmCallsAsync(runs.Objects[0].Id, new ListOptions { PageSize = 5 }, token).ConfigureAwait(false);
             }
             catch (MyMorningNewsException ex) when (ex.StatusCode == 404)
             {
                 throw new SkipTestException("The server does not serve runs/{id}/llm-calls yet.");
             }
 
-            Helpers.True(calls.Items.All(x => x.RunId == runs.Items[0].Id), "calls belong to the run");
+            Helpers.True(calls.Objects.All(x => x.RunId == runs.Objects[0].Id), "calls belong to the run");
             await StepAsync(context, result, "PUT unknown finding (404)", () => Helpers.ExpectErrorAsync(() => c.Findings.UpdateAsync("fnd_missing", new FindingUpdateRequest { Pinned = true }, token), 404)).ConfigureAwait(false);
             await StepAsync(context, result, "GET unknown evidence (404)", () => Helpers.ExpectErrorAsync(() => c.Findings.GetEvidenceAsync("evd_missing", token), 404)).ConfigureAwait(false);
 
             EnumerationResult<Finding> findings = await StepAsync(context, result, "GET findings (include hidden)", () => c.Findings.ListAsync(new FindingListOptions { IncludeHidden = true, PageSize = 1 }, token)).ConfigureAwait(false);
-            Finding? f = findings.Items.FirstOrDefault();
+            Finding? f = findings.Objects.FirstOrDefault();
             if (f == null) return;
             bool wasPinned = f.Pinned;
             Finding toggled = await StepAsync(context, result, "PUT finding pinned", () => c.Findings.UpdateAsync(f.Id, new FindingUpdateRequest { Pinned = !wasPinned }, token)).ConfigureAwait(false);

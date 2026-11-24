@@ -38,7 +38,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
         {
             MyMorningNewsClient c = context.RequireAdmin();
             string tenant = context.Environment.Tenant;
-            List<PlanResponse> plans = await StepAsync(context, result, "GET admin/plans", () => c.Admin.Plans.ListAsync(token)).ConfigureAwait(false);
+            List<PlanResponse> plans = (await StepAsync(context, result, "GET admin/plans", () => c.Admin.Plans.ListAsync(options: new MyMorningNews.Sdk.Options.EnumerationQuery { PageSize = 1000 }, token: token)).ConfigureAwait(false)).Objects;
             Helpers.True(plans.Count > 0, "plans exist");
 
             await StepAsync(context, result, "POST promo code with a bad code (400)", () => Helpers.ExpectErrorAsync(() => c.Admin.PromoCodes.CreateAsync(new PromoCodeUpsertRequest { Code = "!" }, token), 400, "ValidationFailed")).ConfigureAwait(false);
@@ -64,7 +64,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             PromoCodeStats updated = await StepAsync(context, result, "PUT promo code", () => c.Admin.PromoCodes.UpdateAsync(id, new PromoCodeUpsertRequest { MaxRedemptions = 2 }, token)).ConfigureAwait(false);
             Helpers.Equal(2, updated.Code.MaxRedemptions ?? 0, "updated limit");
             EnumerationResult<PromoCodeStats> list = await StepAsync(context, result, "GET promo codes (active)", () => c.Admin.PromoCodes.ListAsync(new PromoCodeListOptions { Status = "active", Search = code }, token)).ConfigureAwait(false);
-            Helpers.Contains(list.Items, s => s.Code.Id == id, "the code");
+            Helpers.Contains(list.Objects, s => s.Code.Id == id, "the code");
             PromoCheck check = await StepAsync(context, result, "GET public promo-code check", () => c.Account.CheckPromoCodeAsync(code, token)).ConfigureAwait(false);
             Helpers.True(check.Valid, "the code checks as valid");
 
@@ -72,22 +72,22 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             PromoRedemption redemption = await StepAsync(context, result, "POST apply promo code to the user", () => c.Admin.PromoCodes.ApplyAsync(id, new PromoApplyRequest { TenantId = tenant, UserId = user.Id }, token)).ConfigureAwait(false);
             Helpers.Equal(user.Id, redemption.UserId, "redeemed for the user");
             await StepAsync(context, result, "POST apply again (per-user limit, 409)", () => Helpers.ExpectErrorAsync(() => c.Admin.PromoCodes.ApplyAsync(id, new PromoApplyRequest { TenantId = tenant, UserId = user.Id }, token), 409, "PromoCodeInvalid")).ConfigureAwait(false);
-            List<PromoRedemption> redemptions = await StepAsync(context, result, "GET redemptions", () => c.Admin.PromoCodes.ListRedemptionsAsync(id, token)).ConfigureAwait(false);
+            List<PromoRedemption> redemptions = (await StepAsync(context, result, "GET redemptions", () => c.Admin.PromoCodes.ListRedemptionsAsync(id, options: new MyMorningNews.Sdk.Options.EnumerationQuery { PageSize = 1000 }, token: token)).ConfigureAwait(false)).Objects;
             Helpers.Contains(redemptions, r => r.Id == redemption.Id, "the redemption");
-            List<PlanAssignment> assignments = await StepAsync(context, result, "GET plan-assignments for the user", () => c.Admin.PlanAssignments.ListAsync(tenant, user.Id, token)).ConfigureAwait(false);
+            List<PlanAssignment> assignments = (await StepAsync(context, result, "GET plan-assignments for the user", () => c.Admin.PlanAssignments.ListAsync(tenant, user.Id, options: new MyMorningNews.Sdk.Options.EnumerationQuery { PageSize = 1000 }, token: token)).ConfigureAwait(false)).Objects;
             Helpers.Contains(assignments, a => a.Id == redemption.PlanAssignmentId, "the promo plan assignment");
 
             await StepAsync(context, result, "DELETE used promo code without force (409)", () => Helpers.ExpectErrorAsync(() => c.Admin.PromoCodes.DeleteAsync(id, false, token), 409, "Conflict")).ConfigureAwait(false);
             await StepAsync(context, result, "DELETE promo code with force", () => c.Admin.PromoCodes.DeleteAsync(id, true, token)).ConfigureAwait(false);
             context.Cleanup.Remove("promo:" + id);
             await StepAsync(context, result, "GET deleted promo code (404)", () => Helpers.ExpectErrorAsync(() => c.Admin.PromoCodes.GetAsync(id, token), 404)).ConfigureAwait(false);
-            List<PlanAssignment> after = await StepAsync(context, result, "GET plan-assignments after force delete", () => c.Admin.PlanAssignments.ListAsync(tenant, user.Id, token)).ConfigureAwait(false);
+            List<PlanAssignment> after = (await StepAsync(context, result, "GET plan-assignments after force delete", () => c.Admin.PlanAssignments.ListAsync(tenant, user.Id, options: new MyMorningNews.Sdk.Options.EnumerationQuery { PageSize = 1000 }, token: token)).ConfigureAwait(false)).Objects;
             Helpers.True(after.Where(a => a.Id == redemption.PlanAssignmentId).All(a => a.RevokedUtc != null), "force delete revokes the plan assignment");
             await StepAsync(context, result, "DELETE user", () => Fixtures.DeleteUserAsync(context, c, user.Id, token)).ConfigureAwait(false);
 
             using (MyMorningNewsClient anon = context.NewClient())
             {
-                await StepAsync(context, result, "GET admin/plans without credentials (401)", () => Helpers.ExpectErrorAsync(() => anon.Admin.Plans.ListAsync(token), 401)).ConfigureAwait(false);
+                await StepAsync(context, result, "GET admin/plans without credentials (401)", () => Helpers.ExpectErrorAsync(() => anon.Admin.Plans.ListAsync(options: new MyMorningNews.Sdk.Options.EnumerationQuery { PageSize = 1000 }, token: token), 401)).ConfigureAwait(false);
             }
         }
     }

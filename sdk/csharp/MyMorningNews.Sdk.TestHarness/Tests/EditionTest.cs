@@ -60,7 +60,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             Helpers.NotEmpty(preview.Title, "preview title");
 
             EnumerationResult<Edition> list = await StepAsync(context, result, "GET editions", () => c.Editions.ListAsync(new EditionListOptions { Mine = true, PageSize = 100 }, token)).ConfigureAwait(false);
-            Helpers.Contains(list.Items, x => x.Id == id, "the edition");
+            Helpers.Contains(list.Objects, x => x.Id == id, "the edition");
 
             await StepAsync(context, result, "DELETE edition", () => c.Editions.DeleteAsync(id, token)).ConfigureAwait(false);
             context.Cleanup.Remove("edition:" + id);

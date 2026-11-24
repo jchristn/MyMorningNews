@@ -121,8 +121,8 @@ export default function DataTable({
     onRowClick(row);
   }
 
-  const items = result ? result.items || [] : [];
-  const total = result ? result.totalCount || 0 : 0;
+  const items = result ? result.objects || [] : [];
+  const total = result ? result.totalRecords || 0 : 0;
   const totalPages = result ? Math.max(1, result.totalPages || 1) : 1;
   const from = total === 0 ? 0 : (pageNumber - 1) * effectivePageSize + 1;
   const to = Math.min(total, pageNumber * effectivePageSize);

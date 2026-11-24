@@ -1,3 +1,4 @@
+import { enumerationResult } from '../../test/enumeration.js';
 import { describe, expect, it, vi } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -13,7 +14,7 @@ function profileApi(overrides = {}) {
   return {
     getMe: vi.fn(async () => ME),
     listEditions: vi.fn(async () => page([EDITION])),
-    listFeedTokens: vi.fn(async () => [FEED_TOKEN, REVOKED]),
+    listFeedTokens: vi.fn(async () => enumerationResult([FEED_TOKEN, REVOKED])),
     ...overrides
   };
 }
@@ -81,7 +82,7 @@ describe('Profile podcast feeds', () => {
   });
 
   it('shows the empty state', async () => {
-    renderRoute('/dashboard/profile', profileApi({ listFeedTokens: vi.fn(async () => []) }));
+    renderRoute('/dashboard/profile', profileApi({ listFeedTokens: vi.fn(async () => enumerationResult([])) }));
     expect(await screen.findByText('No podcast feeds')).toBeInTheDocument();
   });
 });

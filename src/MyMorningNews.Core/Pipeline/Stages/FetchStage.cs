@@ -67,7 +67,7 @@ namespace MyMorningNews.Core.Pipeline.Stages
 
         private static async Task<SourceItem?> ReadOrFetchAsync(RunContext ctx, PipelineServices services, SearchResult r, List<string> blocked, CancellationToken token)
         {
-            SourceItem? existing = (await services.Database.SourceItems.EnumerateAsync(new SourceItemFilter { TenantId = ctx.Run.TenantId, CanonicalUrlHash = r.CanonicalUrlHash, PageSize = 1 }, token).ConfigureAwait(false)).Items.FirstOrDefault();
+            SourceItem? existing = (await services.Database.SourceItems.EnumerateAsync(new SourceItemFilter { TenantId = ctx.Run.TenantId, CanonicalUrlHash = r.CanonicalUrlHash, PageSize = 1 }, token).ConfigureAwait(false)).Objects.FirstOrDefault();
             if (existing != null && !String.IsNullOrWhiteSpace(existing.ContentText) && existing.FetchedUtc > ctx.NowUtc.AddDays(-7))
             {
                 existing.TimesSeen++;

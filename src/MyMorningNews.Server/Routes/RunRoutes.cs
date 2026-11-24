@@ -33,6 +33,8 @@ namespace MyMorningNews.Server.Routes
             ArgumentNullException.ThrowIfNull(webserver);
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/runs", ListAsync, null, openApiMetadata: Paged(Doc("List runs", "Runs").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))
                 .WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("status", typeof(RunStatusEnum))).WithParameter(QueryParam("trigger", typeof(RunTriggerEnum)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/runs" + "/enumerate", ctx => EnumerateAsync(ctx, ListAsync), null, openApiMetadata: Paged(Doc("List runs", "Runs").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))
+                .WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("status", typeof(RunStatusEnum))).WithParameter(QueryParam("trigger", typeof(RunTriggerEnum)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}", ReadAsync, null, openApiMetadata: Doc("Read a run", "Runs",
                 "The run includes its estimated cost (estimatedCostUsd), tokens, and model call counts; unpricedCallCount says how many calls had no price. They update after every stage while the run is going."));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}/costs", CostsAsync, null, openApiMetadata: Doc("What a run cost, by stage, model, and task", "Runs",
@@ -185,7 +187,7 @@ namespace MyMorningNews.Server.Routes
                     if (!await ctx.Response.SendEvent(new ServerSentEvent { Id = (++sequence).ToString(CultureInfo.InvariantCulture), Event = "run", Data = runJson }, false, ctx.Token).ConfigureAwait(false)) return;
                 }
 
-                List<RunStage> stages = (await Server.Database.RunStages.EnumerateAsync(new RunStageFilter { TenantId = run.TenantId, RunId = run.Id, PageSize = 100 }, ctx.Token).ConfigureAwait(false)).Items
+                List<RunStage> stages = (await Server.Database.RunStages.EnumerateAsync(new RunStageFilter { TenantId = run.TenantId, RunId = run.Id, PageSize = 100 }, ctx.Token).ConfigureAwait(false)).Objects
                     .OrderBy(s => s.SortOrder).ToList();
                 foreach (RunStage stage in stages)
                 {

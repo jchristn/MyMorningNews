@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for BillingEvent records. Null properties are not applied.
     /// </summary>
-    public class BillingEventFilter : EnumerationFilter
+    public class BillingEventFilter : EnumerationQuery
     {
         /// <summary>
         /// Match Provider exactly when set.

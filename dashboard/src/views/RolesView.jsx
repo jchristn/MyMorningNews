@@ -57,7 +57,7 @@ function RolesTab({ tenantId }) {
   useEffect(() => {
     apiClient
       .listPermissions(tenantId, { pageSize: 1000, includeBuiltIn: false })
-      .then((r) => setPermissions(r.items || []))
+      .then((r) => setPermissions(r.objects || []))
       .catch(() => setPermissions([]));
   }, [apiClient, tenantId, refresh]);
 
@@ -357,14 +357,14 @@ function AssignmentsTab({ tenantId }) {
   useEffect(() => {
     Promise.all([apiClient.listUsers(tenantId, { pageSize: 1000, sortBy: 'email', sortDirection: 'Ascending' }), apiClient.listRoles(tenantId, { pageSize: 1000 })])
       .then(([u, r]) => {
-        setUsers(u.items || []);
-        setRoles(r.items || []);
-        if (u.items && u.items.length > 0) setUserId((current) => current || u.items[0].id);
+        setUsers(u.objects || []);
+        setRoles(r.objects || []);
+        if (u.objects && u.objects.length > 0) setUserId((current) => current || u.objects[0].id);
       })
       .catch(setError);
   }, [apiClient, tenantId]);
 
-  const fetchPage = useCallback((q) => (userId ? apiClient.listAssignments(tenantId, userId, pagedQuery(q)) : Promise.resolve({ items: [], totalCount: 0, totalPages: 1 })), [apiClient, tenantId, userId]);
+  const fetchPage = useCallback((q) => (userId ? apiClient.listAssignments(tenantId, userId, pagedQuery(q)) : Promise.resolve({ objects: [], totalRecords: 0, totalPages: 1 })), [apiClient, tenantId, userId]);
   const roleName = (id, name) => {
     const r = roles.find((x) => x.id === id);
     return r ? r.name : name || id;

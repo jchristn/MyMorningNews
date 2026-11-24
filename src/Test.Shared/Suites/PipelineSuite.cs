@@ -131,7 +131,7 @@ namespace Test.Shared.Suites
             Run run = await RunAsync(f, token).ConfigureAwait(false);
             Assert.True(run.Status == RunStatusEnum.Completed && run.EstimatedCostUsd > 0 && run.LlmCallCount > 0 && run.UnpricedCallCount == 0, "a priced run: " + run.Status + " " + run.EstimatedCostUsd + " " + run.LlmCallCount);
 
-            List<RunStage> stages = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages", token).ConfigureAwait(false)).Expect(200, "stages").Json<List<RunStage>>();
+            List<RunStage> stages = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages?pageSize=1000", token).ConfigureAwait(false)).Expect(200, "stages").Json<EnumerationResult<RunStage>>().Objects;
             Assert.Equal(run.LlmCallCount, stages.Sum(s => s.LlmCallCount), "every call belongs to a stage");
             Assert.Equal(run.EstimatedCostUsd, stages.Sum(s => s.EstimatedCostUsd ?? 0), "stage costs add up to the run");
             Assert.Equal(run.InputTokens, stages.Sum(s => s.InputTokens), "stage tokens add up to the run");
@@ -149,14 +149,14 @@ namespace Test.Shared.Suites
             Assert.True(report.CostPerNewFindingUsd.HasValue && Math.Abs(report.CostPerNewFindingUsd.Value - report.Totals.EstimatedCostUsd!.Value / run.NewFindingCount) < 0.000001m, "cost per new finding");
 
             EnumerationResult<LlmCall> extractCalls = (await f.User.Client.GetAsync("/v1.0/api/llm-calls?runStageId=" + extract.Id + "&pageSize=100", token).ConfigureAwait(false)).Expect(200, "calls by stage").Json<EnumerationResult<LlmCall>>();
-            Assert.True(extractCalls.Items.Count == extract.LlmCallCount && extractCalls.Items.All(c => c.RunStageId == extract.Id && c.RunId == run.Id), "calls filter by stage");
+            Assert.True(extractCalls.Objects.Count == extract.LlmCallCount && extractCalls.Objects.All(c => c.RunStageId == extract.Id && c.RunId == run.Id), "calls filter by stage");
             EnumerationResult<LlmCall> scoped = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/llm-calls?runStageId=" + extract.Id + "&pageSize=100", token).ConfigureAwait(false)).Expect(200, "run calls by stage").Json<EnumerationResult<LlmCall>>();
-            Assert.Equal(extract.LlmCallCount, scoped.Items.Count, "the run's own call list filters by stage");
+            Assert.Equal(extract.LlmCallCount, scoped.Objects.Count, "the run's own call list filters by stage");
             MyMorningNews.Core.Analytics.RunsReport analytics = (await f.User.Client.GetAsync("/v1.0/api/analytics/runs?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Expect(200, "analytics").Json<MyMorningNews.Core.Analytics.RunsReport>();
             Assert.True(analytics.TotalCostUsd == run.EstimatedCostUsd && analytics.Runs.Single(r => r.RunId == run.Id).EstimatedCostUsd == run.EstimatedCostUsd
                 && analytics.Stages.Single(s => s.Stage == "Extract").TotalCostUsd == extract.EstimatedCostUsd, "analytics carry run, day, and stage cost");
             EnumerationResult<Run> byCost = (await f.User.Client.GetAsync("/v1.0/api/runs?sortBy=estimatedCostUsd&sortDirection=Descending", token).ConfigureAwait(false)).Expect(200, "runs by cost").Json<EnumerationResult<Run>>();
-            Assert.True(byCost.Items.Count > 0 && byCost.Items[0].EstimatedCostUsd >= byCost.Items[byCost.Items.Count - 1].EstimatedCostUsd.GetValueOrDefault(), "runs sort by cost");
+            Assert.True(byCost.Objects.Count > 0 && byCost.Objects[0].EstimatedCostUsd >= byCost.Objects[byCost.Objects.Count - 1].EstimatedCostUsd.GetValueOrDefault(), "runs sort by cost");
 
             TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
             Tenant other = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
@@ -174,19 +174,19 @@ namespace Test.Shared.Suites
 
             Run run = await RunAsync(f, token).ConfigureAwait(false);
             Assert.True(run.Status == RunStatusEnum.Completed, "completed: " + run.Status + " " + run.ErrorMessage + " " + run.Summary);
-            List<RunStage> stages = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages", token).ConfigureAwait(false)).Expect(200, "stages").Json<List<RunStage>>();
+            List<RunStage> stages = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages?pageSize=1000", token).ConfigureAwait(false)).Expect(200, "stages").Json<EnumerationResult<RunStage>>().Objects;
             Assert.True(stages.Count == 15 && stages.All(s => s.Status == StageStatusEnum.Succeeded), "all stages succeeded: " + String.Join(", ", stages.Select(s => s.Stage + "=" + s.Status + (s.ErrorMessage == null ? String.Empty : "(" + s.ErrorMessage + ")"))));
             Assert.True(stages.Single(s => s.Stage == "Extract").ErrorMessage!.Contains("could not be verified", StringComparison.Ordinal), "unverified quotes noted");
 
-            List<SearchResult> results = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/results", token).ConfigureAwait(false)).Json<List<SearchResult>>();
+            List<SearchResult> results = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/results", token).ConfigureAwait(false)).Json<EnumerationResult<SearchResult>>().Objects;
             Assert.True(results.Count(r => r.Disposition == SearchResultDispositionEnum.Fetched) == 2 && results.Count(r => r.Disposition == SearchResultDispositionEnum.SkippedDuplicate) == 2 && !results.Any(r => r.Url.Contains("blocked.test", StringComparison.Ordinal)),
                 "blocked domains excluded at search; repeats across queries skipped: " + String.Join(", ", results.Select(r => r.Disposition)));
 
             EnumerationResult<Finding> findings = (await f.User.Client.GetAsync("/v1.0/api/findings?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>();
-            Assert.True(findings.Items.Count == 2, "two verified findings, unsupported claim discarded (" + findings.Items.Count + ")");
-            Finding top = findings.Items[0];
+            Assert.True(findings.Objects.Count == 2, "two verified findings, unsupported claim discarded (" + findings.Objects.Count + ")");
+            Finding top = findings.Objects[0];
             Assert.True(top.Title == "Heat pump rebates expand" && top.Rank == 1 && top.LlmScore == 92 && top.Tier != FindingTierEnum.BelowThreshold && top.DimensionId != null && top.RecencyScore > 90, "top finding ranked and scored");
-            Assert.True(findings.Items[1].RelevanceScore < top.RelevanceScore, "ordered by relevance");
+            Assert.True(findings.Objects[1].RelevanceScore < top.RelevanceScore, "ordered by relevance");
             Assert.True(run.NewFindingCount == 2 && run.SourceCount == 2 && run.InputTokens > 0 && run.EstimatedCostUsd > 0 && run.ContextSnapshotHash != null, "run totals");
             Assert.True(run.Summary!.StartsWith("Rebates expanded", StringComparison.Ordinal) && run.Summary.Contains("Incentives", StringComparison.Ordinal), "synthesized summary");
 
@@ -195,16 +195,16 @@ namespace Test.Shared.Suites
                 "verified evidence with source");
 
             EnumerationResult<Prediction> preds = (await f.User.Client.GetAsync("/v1.0/api/predictions?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Prediction>>();
-            Assert.True(preds.Items.Any(p => p.Statement.StartsWith("California will open", StringComparison.Ordinal) && p.Status == PredictionStatusEnum.Open && p.HorizonUtc.Year == 2027), "new prediction");
+            Assert.True(preds.Objects.Any(p => p.Statement.StartsWith("California will open", StringComparison.Ordinal) && p.Status == PredictionStatusEnum.Open && p.HorizonUtc.Year == 2027), "new prediction");
             PredictionDetailResponse reviewed = (await f.User.Client.GetAsync("/v1.0/api/predictions/" + open.Id, token).ConfigureAwait(false)).Json<PredictionDetailResponse>();
             Assert.True(reviewed.Prediction.Status == PredictionStatusEnum.ProposedResolved && reviewed.Reviews.Count == 1 && reviewed.Reviews[0].ProposedStatus == PredictionStatusEnum.Accurate && reviewed.Reviews[0].FindingIds.Contains(top.Id), "review proposed with evidence");
             Prediction accepted = (await f.User.Client.PostAsync("/v1.0/api/prediction-reviews/" + reviewed.Reviews[0].Id + "/accept", null, token).ConfigureAwait(false)).Expect(200, "accept").Json<Prediction>();
             Assert.True(accepted.Status == PredictionStatusEnum.Accurate && accepted.ResolvedBy == "AgentConfirmed" && Math.Abs(accepted.BrierScore!.Value - 0.04) < 0.0001, "accepted with Brier score");
 
             EnumerationResult<Suggestion> sugs = (await f.User.Client.GetAsync("/v1.0/api/suggestions?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Suggestion>>();
-            Assert.True(sugs.Items.Count == 1 && sugs.Items[0].Priority == SuggestionPriorityEnum.High && sugs.Items[0].FindingIds.Contains(top.Id), "suggestion linked");
+            Assert.True(sugs.Objects.Count == 1 && sugs.Objects[0].Priority == SuggestionPriorityEnum.High && sugs.Objects[0].FindingIds.Contains(top.Id), "suggestion linked");
             EnumerationResult<LlmCall> calls = (await f.User.Client.GetAsync("/v1.0/api/llm-calls?pageSize=100", token).ConfigureAwait(false)).Json<EnumerationResult<LlmCall>>();
-            Assert.True(calls.Items.Where(c => c.RunId == run.Id).Select(c => c.PromptKey).Distinct().Count() >= 7, "calls attributed to the run");
+            Assert.True(calls.Objects.Where(c => c.RunId == run.Id).Select(c => c.PromptKey).Distinct().Count() >= 7, "calls attributed to the run");
         }
 
         private static async Task SecondRunAsync(CancellationToken token)
@@ -215,14 +215,14 @@ namespace Test.Shared.Suites
             Assert.True(first.Status == RunStatusEnum.Completed, "first run: " + first.ErrorMessage);
             Run second = await RunAsync(f, token).ConfigureAwait(false);
             Assert.True(second.Status == RunStatusEnum.Completed && second.NewFindingCount == 0 && second.Summary!.StartsWith("Nothing new", StringComparison.Ordinal), "seen pages skipped: " + second.Summary);
-            List<SearchResult> results = (await f.User.Client.GetAsync("/v1.0/api/runs/" + second.Id + "/results", token).ConfigureAwait(false)).Json<List<SearchResult>>();
+            List<SearchResult> results = (await f.User.Client.GetAsync("/v1.0/api/runs/" + second.Id + "/results", token).ConfigureAwait(false)).Json<EnumerationResult<SearchResult>>().Objects;
             Assert.True(results.Count(r => r.Disposition == SearchResultDispositionEnum.SkippedSeen) == 2, "skipped as seen");
 
             (await f.User.Client.PutAsync("/v1.0/api/search-providers/" + f.Provider.Id, new { endpoint = StubModelServer.Shared.BaseUrl + "/pipeline2" }, token).ConfigureAwait(false)).Expect(200, "switch provider");
             Run third = await RunAsync(f, token).ConfigureAwait(false);
             Assert.True(third.Status == RunStatusEnum.Completed && third.DuplicateCount == 1 && third.NewFindingCount == 0, "same story on a new page is a duplicate (dup " + third.DuplicateCount + ", new " + third.NewFindingCount + ")");
             EnumerationResult<Finding> withDup = (await f.User.Client.GetAsync("/v1.0/api/findings?runId=" + third.Id + "&includeDuplicates=true", token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>();
-            Assert.True(withDup.Items.Count == 1 && withDup.Items[0].IsDuplicate && withDup.Items[0].DuplicateOfFindingId != null, "duplicate saved and linked");
+            Assert.True(withDup.Objects.Count == 1 && withDup.Objects[0].IsDuplicate && withDup.Objects[0].DuplicateOfFindingId != null, "duplicate saved and linked");
         }
 
         private static async Task LargeHistoryAsync(CancellationToken token)
@@ -233,8 +233,8 @@ namespace Test.Shared.Suites
             Assert.True(first.Status == RunStatusEnum.Completed && first.NewFindingCount == 2, "first run: " + first.Status + " " + first.ErrorMessage);
             MyMorningNews.Core.Database.DatabaseDriverBase db = f.Server.Context.Database;
             string tenant = f.Topic.TenantId;
-            List<SearchResult> fetched = (await db.SearchResults.EnumerateAsync(new SearchResultFilter { TenantId = tenant, RunId = first.Id, Disposition = SearchResultDispositionEnum.Fetched, PageSize = 10 }, token).ConfigureAwait(false)).Items;
-            List<Finding> original = (await db.Findings.EnumerateAsync(new FindingFilter { TenantId = tenant, RunId = first.Id, PageSize = 10 }, token).ConfigureAwait(false)).Items;
+            List<SearchResult> fetched = (await db.SearchResults.EnumerateAsync(new SearchResultFilter { TenantId = tenant, RunId = first.Id, Disposition = SearchResultDispositionEnum.Fetched, PageSize = 10 }, token).ConfigureAwait(false)).Objects;
+            List<Finding> original = (await db.Findings.EnumerateAsync(new FindingFilter { TenantId = tenant, RunId = first.Id, PageSize = 10 }, token).ConfigureAwait(false)).Objects;
             Assert.True(fetched.Count == 2 && original.Count == 2, "two pages and two findings to bury");
 
             // Bury them under 1,100 newer fetched results and 1,100 newer findings of the same topic and finished run:
@@ -273,7 +273,7 @@ namespace Test.Shared.Suites
             Assert.True(many.Count == 2 && (await db.Findings.ReadManyAsync("ten_other", original.Select(o => o.Id), token).ConfigureAwait(false)).Count == 0, "findings are read by identifier within the tenant");
 
             Run second = await RunAsync(f, token).ConfigureAwait(false);
-            List<SearchResult> results = (await f.User.Client.GetAsync("/v1.0/api/runs/" + second.Id + "/results", token).ConfigureAwait(false)).Json<List<SearchResult>>();
+            List<SearchResult> results = (await f.User.Client.GetAsync("/v1.0/api/runs/" + second.Id + "/results", token).ConfigureAwait(false)).Json<EnumerationResult<SearchResult>>().Objects;
             Assert.True(second.Status == RunStatusEnum.Completed && second.NewFindingCount == 0 && results.Count(r => r.Disposition == SearchResultDispositionEnum.SkippedSeen) == 2 && !results.Any(r => r.Disposition == SearchResultDispositionEnum.Fetched),
                 "old pages are skipped as seen, not fetched again: " + second.Status + " " + String.Join(", ", results.Select(r => r.Disposition)));
 
@@ -281,7 +281,7 @@ namespace Test.Shared.Suites
             Run third = await RunAsync(f, token).ConfigureAwait(false);
             Assert.True(third.Status == RunStatusEnum.Completed && third.DuplicateCount == 1 && third.NewFindingCount == 0, "the same story on a new page is still a duplicate of the old finding (dup " + third.DuplicateCount + ", new " + third.NewFindingCount + ")");
             EnumerationResult<Finding> withDup = (await f.User.Client.GetAsync("/v1.0/api/findings?runId=" + third.Id + "&includeDuplicates=true", token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>();
-            Assert.True(withDup.Items.Count == 1 && withDup.Items[0].IsDuplicate && original.Any(o => o.Id == withDup.Items[0].DuplicateOfFindingId), "the duplicate is linked to the old finding");
+            Assert.True(withDup.Objects.Count == 1 && withDup.Objects[0].IsDuplicate && original.Any(o => o.Id == withDup.Objects[0].DuplicateOfFindingId), "the duplicate is linked to the old finding");
         }
 
         private static async Task SeenOnlyAfterFinishedRunsAsync(CancellationToken token)
@@ -292,7 +292,7 @@ namespace Test.Shared.Suites
             Run dry = await RunWaiter.FinishAsync(f.Server, queued, token).ConfigureAwait(false);
             Assert.True(dry.Status == RunStatusEnum.Completed && dry.IsDryRun, "dry run: " + dry.Status + " " + dry.ErrorMessage);
             Run real = await RunAsync(f, token).ConfigureAwait(false);
-            List<SearchResult> afterDry = (await f.User.Client.GetAsync("/v1.0/api/runs/" + real.Id + "/results", token).ConfigureAwait(false)).Json<List<SearchResult>>();
+            List<SearchResult> afterDry = (await f.User.Client.GetAsync("/v1.0/api/runs/" + real.Id + "/results", token).ConfigureAwait(false)).Json<EnumerationResult<SearchResult>>().Objects;
             Assert.True(real.NewFindingCount == 2 && afterDry.Count(r => r.Disposition == SearchResultDispositionEnum.Fetched) == 2 && !afterDry.Any(r => r.Disposition == SearchResultDispositionEnum.SkippedSeen),
                 "a dry run does not use up pages (found by the benchmark suite): " + real.NewFindingCount + " new, " + String.Join(", ", afterDry.Select(r => r.Disposition)));
 
@@ -302,11 +302,11 @@ namespace Test.Shared.Suites
             Assert.True(failed.Status == RunStatusEnum.Failed && failed.ErrorMessage!.Contains("Extract", StringComparison.Ordinal), "extraction failure fails the run: " + failed.Status + " " + failed.ErrorMessage);
             (await g.User.Client.PutAsync("/v1.0/api/topics/" + g.Topic.Id, new { brief = "Track residential heat pump rebates." }, token).ConfigureAwait(false)).Expect(200, "fix brief");
             Run recovered = await RunAsync(g, token).ConfigureAwait(false);
-            List<SearchResult> afterFailure = (await g.User.Client.GetAsync("/v1.0/api/runs/" + recovered.Id + "/results", token).ConfigureAwait(false)).Json<List<SearchResult>>();
+            List<SearchResult> afterFailure = (await g.User.Client.GetAsync("/v1.0/api/runs/" + recovered.Id + "/results", token).ConfigureAwait(false)).Json<EnumerationResult<SearchResult>>().Objects;
             Assert.True(recovered.Status == RunStatusEnum.Completed && recovered.NewFindingCount == 2 && afterFailure.Count(r => r.Disposition == SearchResultDispositionEnum.Fetched) == 2,
                 "the run after a failure recovers its pages (found by the benchmark suite): " + recovered.Status + ", " + recovered.NewFindingCount + " new, " + String.Join(", ", afterFailure.Select(r => r.Disposition)));
             Run third = await RunAsync(g, token).ConfigureAwait(false);
-            List<SearchResult> afterSuccess = (await g.User.Client.GetAsync("/v1.0/api/runs/" + third.Id + "/results", token).ConfigureAwait(false)).Json<List<SearchResult>>();
+            List<SearchResult> afterSuccess = (await g.User.Client.GetAsync("/v1.0/api/runs/" + third.Id + "/results", token).ConfigureAwait(false)).Json<EnumerationResult<SearchResult>>().Objects;
             Assert.True(afterSuccess.Count(r => r.Disposition == SearchResultDispositionEnum.SkippedSeen) == 2, "pages from a completed run are still skipped as seen");
         }
 
@@ -316,13 +316,13 @@ namespace Test.Shared.Suites
             (await dead.User.Client.PutAsync("/v1.0/api/search-providers/" + dead.Provider.Id, new { endpoint = "http://127.0.0.1:1" }, token).ConfigureAwait(false)).Expect(200, "break provider");
             Run failed = await RunAsync(dead, token).ConfigureAwait(false);
             Assert.True(failed.Status == RunStatusEnum.Failed && failed.ErrorMessage!.Contains("Search failed", StringComparison.Ordinal), "critical failure: " + failed.ErrorMessage);
-            List<RunStage> stages = (await dead.User.Client.GetAsync("/v1.0/api/runs/" + failed.Id + "/stages", token).ConfigureAwait(false)).Json<List<RunStage>>();
+            List<RunStage> stages = (await dead.User.Client.GetAsync("/v1.0/api/runs/" + failed.Id + "/stages?pageSize=1000", token).ConfigureAwait(false)).Json<EnumerationResult<RunStage>>().Objects;
             Assert.True(stages.Last().Stage == "Search" && stages.Last().Status == StageStatusEnum.Failed, "stopped at search");
 
             PipelineFixture partial = await FixtureAsync("Track heat pump rebates. FAILPREDICT", "/pipeline", token).ConfigureAwait(false);
             Run run = await RunAsync(partial, token).ConfigureAwait(false);
             Assert.True(run.Status == RunStatusEnum.PartiallySucceeded && run.NewFindingCount == 2 && run.Summary!.Contains("Predict", StringComparison.Ordinal), "optional failure: " + run.Status + " " + run.Summary);
-            List<RunStage> ps = (await partial.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages", token).ConfigureAwait(false)).Json<List<RunStage>>();
+            List<RunStage> ps = (await partial.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages?pageSize=1000", token).ConfigureAwait(false)).Json<EnumerationResult<RunStage>>().Objects;
             Assert.True(ps.Single(s => s.Stage == "Predict").Status == StageStatusEnum.Failed && ps.Single(s => s.Stage == "Suggest").Status == StageStatusEnum.Succeeded, "later stages still ran");
         }
 
@@ -331,54 +331,54 @@ namespace Test.Shared.Suites
             PipelineFixture f = await FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
             Run run = await RunAsync(f, token).ConfigureAwait(false);
             EnumerationResult<Finding> high = (await f.User.Client.GetAsync("/v1.0/api/findings?topicId=" + f.Topic.Id + "&minScore=70", token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>();
-            Assert.True(high.Items.All(x => x.RelevanceScore >= 70) && high.Items.Count >= 1 && high.TotalCount == high.Items.Count, "min score filtered in the query, total matches");
+            Assert.True(high.Objects.All(x => x.RelevanceScore >= 70) && high.Objects.Count >= 1 && high.TotalRecords == high.Objects.Count, "min score filtered in the query, total matches");
             EnumerationResult<SourceItem> sources = (await f.User.Client.GetAsync("/v1.0/api/sources?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Expect(200, "sources").Json<EnumerationResult<SourceItem>>();
-            Assert.True(sources.TotalCount == 2 && sources.Items.All(x => x.ContentText == null && x.CanonicalUrl.Contains("/news/", StringComparison.Ordinal)), "sources listed without content");
-            Assert.Equal(1L, (await f.User.Client.GetAsync("/v1.0/api/sources?topicId=" + f.Topic.Id + "&search=b.html", token).ConfigureAwait(false)).Json<EnumerationResult<SourceItem>>().TotalCount, "source search");
+            Assert.True(sources.TotalRecords == 2 && sources.Objects.All(x => x.ContentText == null && x.CanonicalUrl.Contains("/news/", StringComparison.Ordinal)), "sources listed without content");
+            Assert.Equal(1L, (await f.User.Client.GetAsync("/v1.0/api/sources?topicId=" + f.Topic.Id + "&search=b.html", token).ConfigureAwait(false)).Json<EnumerationResult<SourceItem>>().TotalRecords, "source search");
             Assert.Equal("a\tb\nc", MyMorningNews.Core.Pipeline.Stages.FetchStage.Clean("a\u0000\tb\nc\u0007"), "NUL and control characters removed");
-            List<SearchQuery> queries = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/queries", token).ConfigureAwait(false)).Expect(200, "queries").Json<List<SearchQuery>>();
+            List<SearchQuery> queries = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/queries", token).ConfigureAwait(false)).Expect(200, "queries").Json<EnumerationResult<SearchQuery>>().Objects;
             Assert.True(queries.Count == 2 && queries.All(q => q.Succeeded && q.Provider == "Searxng"), "queries recorded");
             EnumerationResult<Suggestion> sugs = (await f.User.Client.GetAsync("/v1.0/api/suggestions?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Suggestion>>();
-            (await f.User.Client.PutAsync("/v1.0/api/suggestions/" + sugs.Items[0].Id + "/status", new { status = "Snoozed" }, token).ConfigureAwait(false)).Expect(400, "snooze needs a time");
-            Suggestion snoozed = (await f.User.Client.PutAsync("/v1.0/api/suggestions/" + sugs.Items[0].Id + "/status", new { status = "Snoozed", snoozedUntilUtc = DateTime.UtcNow.AddDays(3) }, token).ConfigureAwait(false))
+            (await f.User.Client.PutAsync("/v1.0/api/suggestions/" + sugs.Objects[0].Id + "/status", new { status = "Snoozed" }, token).ConfigureAwait(false)).Expect(400, "snooze needs a time");
+            Suggestion snoozed = (await f.User.Client.PutAsync("/v1.0/api/suggestions/" + sugs.Objects[0].Id + "/status", new { status = "Snoozed", snoozedUntilUtc = DateTime.UtcNow.AddDays(3) }, token).ConfigureAwait(false))
                 .Expect(200, "snooze").Json<Suggestion>();
             Assert.True(snoozed.Status == SuggestionStatusEnum.Snoozed && snoozed.SnoozedUntilUtc.HasValue && snoozed.StatusChangedUtc.HasValue, "snoozed");
             EnumerationResult<Prediction> preds = (await f.User.Client.GetAsync("/v1.0/api/predictions?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Prediction>>();
-            (await f.User.Client.PostAsync("/v1.0/api/predictions/" + preds.Items[0].Id + "/resolve", new { status = "Open" }, token).ConfigureAwait(false)).Expect(400, "open is not a resolution");
-            Prediction resolved = (await f.User.Client.PostAsync("/v1.0/api/predictions/" + preds.Items[0].Id + "/resolve", new { status = "Inaccurate", note = "Did not happen." }, token).ConfigureAwait(false))
+            (await f.User.Client.PostAsync("/v1.0/api/predictions/" + preds.Objects[0].Id + "/resolve", new { status = "Open" }, token).ConfigureAwait(false)).Expect(400, "open is not a resolution");
+            Prediction resolved = (await f.User.Client.PostAsync("/v1.0/api/predictions/" + preds.Objects[0].Id + "/resolve", new { status = "Inaccurate", note = "Did not happen." }, token).ConfigureAwait(false))
                 .Expect(200, "resolve").Json<Prediction>();
             Assert.True(resolved.Status == PredictionStatusEnum.Inaccurate && resolved.ResolvedBy == "User" && Math.Abs(resolved.BrierScore!.Value - 0.49) < 0.0001, "resolved with Brier score");
 
             TestUser other = await TestFixtures.CreateUserAsync(await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false), f.Topic.TenantId, false, token).ConfigureAwait(false);
             EnumerationResult<Finding> theirs = (await other.Client.GetAsync("/v1.0/api/findings", token).ConfigureAwait(false)).Expect(200, "member list").Json<EnumerationResult<Finding>>();
-            Assert.Equal(0, theirs.Items.Count, "another member sees none");
-            Assert.Equal(0L, (await other.Client.GetAsync("/v1.0/api/sources", token).ConfigureAwait(false)).Json<EnumerationResult<SourceItem>>().TotalCount, "another member sees no sources");
-            (await other.Client.GetAsync("/v1.0/api/findings/" + high.Items[0].Id, token).ConfigureAwait(false)).Expect(404, "finding private");
-            (await other.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages", token).ConfigureAwait(false)).Expect(404, "run private");
-            (await other.Client.GetAsync("/v1.0/api/sources/" + sources.Items[0].Id, token).ConfigureAwait(false)).Expect(404, "source private to the member whose topics found it");
-            (await f.User.Client.GetAsync("/v1.0/api/sources/" + sources.Items[0].Id, token).ConfigureAwait(false)).Expect(200, "owner reads the source");
+            Assert.Equal(0, theirs.Objects.Count, "another member sees none");
+            Assert.Equal(0L, (await other.Client.GetAsync("/v1.0/api/sources", token).ConfigureAwait(false)).Json<EnumerationResult<SourceItem>>().TotalRecords, "another member sees no sources");
+            (await other.Client.GetAsync("/v1.0/api/findings/" + high.Objects[0].Id, token).ConfigureAwait(false)).Expect(404, "finding private");
+            (await other.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages?pageSize=1000", token).ConfigureAwait(false)).Expect(404, "run private");
+            (await other.Client.GetAsync("/v1.0/api/sources/" + sources.Objects[0].Id, token).ConfigureAwait(false)).Expect(404, "source private to the member whose topics found it");
+            (await f.User.Client.GetAsync("/v1.0/api/sources/" + sources.Objects[0].Id, token).ConfigureAwait(false)).Expect(200, "owner reads the source");
 
-            FindingDetailResponse detail = (await f.User.Client.GetAsync("/v1.0/api/findings/" + high.Items[0].Id, token).ConfigureAwait(false)).Json<FindingDetailResponse>();
+            FindingDetailResponse detail = (await f.User.Client.GetAsync("/v1.0/api/findings/" + high.Objects[0].Id, token).ConfigureAwait(false)).Json<FindingDetailResponse>();
             string evidenceId = detail.Evidence[0].Evidence.Id;
             EvidenceView ev = (await f.User.Client.GetAsync("/v1.0/api/evidence/" + evidenceId, token).ConfigureAwait(false)).Expect(200, "evidence").Json<EvidenceView>();
             Assert.True(ev.Evidence.Id == evidenceId && !String.IsNullOrEmpty(ev.SourceUrl), "evidence with its source");
             (await other.Client.GetAsync("/v1.0/api/evidence/" + evidenceId, token).ConfigureAwait(false)).Expect(404, "evidence private");
             EnumerationResult<LlmCall> runCalls = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/llm-calls?pageSize=500", token).ConfigureAwait(false)).Expect(200, "run calls").Json<EnumerationResult<LlmCall>>();
-            Assert.True(runCalls.Items.Count > 0 && runCalls.Items.All(c => c.RunId == run.Id) && runCalls.Items.SequenceEqual(runCalls.Items.OrderBy(c => c.CreatedUtc)), "run calls oldest first");
+            Assert.True(runCalls.Objects.Count > 0 && runCalls.Objects.All(c => c.RunId == run.Id) && runCalls.Objects.SequenceEqual(runCalls.Objects.OrderBy(c => c.CreatedUtc)), "run calls oldest first");
             (await other.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/llm-calls", token).ConfigureAwait(false)).Expect(404, "run calls private");
 
-            string fid = high.Items[0].Id;
+            string fid = high.Objects[0].Id;
             (await f.User.Client.PutAsync("/v1.0/api/findings/" + fid, new { }, token).ConfigureAwait(false)).Expect(400, "nothing to change");
             Finding pinned = (await f.User.Client.PutAsync("/v1.0/api/findings/" + fid, new { pinned = true }, token).ConfigureAwait(false)).Expect(200, "pin").Json<Finding>();
             Assert.True(pinned.Pinned && !pinned.Hidden, "pinned");
-            Assert.Equal(1L, (await f.User.Client.GetAsync("/v1.0/api/findings?topicId=" + f.Topic.Id + "&pinned=true", token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().TotalCount, "pinned filter");
-            long before = (await f.User.Client.GetAsync("/v1.0/api/findings?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().TotalCount;
+            Assert.Equal(1L, (await f.User.Client.GetAsync("/v1.0/api/findings?topicId=" + f.Topic.Id + "&pinned=true", token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().TotalRecords, "pinned filter");
+            long before = (await f.User.Client.GetAsync("/v1.0/api/findings?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().TotalRecords;
             (await f.User.Client.PutAsync("/v1.0/api/findings/" + fid, new { hidden = true }, token).ConfigureAwait(false)).Expect(200, "hide");
-            Assert.Equal(before - 1, (await f.User.Client.GetAsync("/v1.0/api/findings?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().TotalCount, "hidden left out");
-            Assert.Equal(before, (await f.User.Client.GetAsync("/v1.0/api/findings?topicId=" + f.Topic.Id + "&includeHidden=true", token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().TotalCount, "includeHidden");
+            Assert.Equal(before - 1, (await f.User.Client.GetAsync("/v1.0/api/findings?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().TotalRecords, "hidden left out");
+            Assert.Equal(before, (await f.User.Client.GetAsync("/v1.0/api/findings?topicId=" + f.Topic.Id + "&includeHidden=true", token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().TotalRecords, "includeHidden");
             (await other.Client.PutAsync("/v1.0/api/findings/" + fid, new { hidden = false }, token).ConfigureAwait(false)).Expect(404, "others cannot change it");
             (await other.Client.DeleteAsync("/v1.0/api/findings/" + fid, token).ConfigureAwait(false)).Expect(404, "others cannot delete it");
-            string doomed = (await f.User.Client.GetAsync("/v1.0/api/findings?topicId=" + f.Topic.Id + "&includeBelowThreshold=true&includeHidden=true&pageSize=100", token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().Items.First(x => x.Id != fid).Id;
+            string doomed = (await f.User.Client.GetAsync("/v1.0/api/findings?topicId=" + f.Topic.Id + "&includeBelowThreshold=true&includeHidden=true&pageSize=100", token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().Objects.First(x => x.Id != fid).Id;
             (await f.User.Client.DeleteAsync("/v1.0/api/findings/" + doomed, token).ConfigureAwait(false)).Expect(204, "delete finding");
             (await f.User.Client.GetAsync("/v1.0/api/findings/" + doomed, token).ConfigureAwait(false)).Expect(404, "gone");
             Assert.Equal(0L, await f.Server.Context.Database.FindingEvidence.CountAsync(new FindingEvidenceFilter { TenantId = f.Topic.TenantId, FindingId = doomed }, token).ConfigureAwait(false), "evidence links removed");
@@ -391,14 +391,14 @@ namespace Test.Shared.Suites
             (await f.User.Client.DeleteAsync("/v1.0/api/topics/" + f.Topic.Id, token).ConfigureAwait(false)).Expect(204, "delete topic");
             Assert.True(await f.Server.Context.Database.Schedules.ReadAsync(f.Topic.TenantId, sched.Id, token).ConfigureAwait(false) == null, "schedule deleted with the topic");
             Assert.True(await f.Server.Context.Database.Runs.ReadAsync(f.Topic.TenantId, run.Id, token).ConfigureAwait(false) == null, "runs deleted with the topic");
-            Assert.True(await f.Server.Context.Database.Findings.ReadAsync(f.Topic.TenantId, high.Items[0].Id, token).ConfigureAwait(false) == null, "findings deleted with the topic");
+            Assert.True(await f.Server.Context.Database.Findings.ReadAsync(f.Topic.TenantId, high.Objects[0].Id, token).ConfigureAwait(false) == null, "findings deleted with the topic");
             Assert.Equal(0L, await f.Server.Context.Database.Briefings.CountAsync(new MyMorningNews.Core.Requests.BriefingFilter { TenantId = f.Topic.TenantId, TopicId = f.Topic.Id }, token).ConfigureAwait(false), "briefings deleted with the topic");
             Assert.Equal(0L, await f.Server.Context.Database.SearchResults.CountAsync(new SearchResultFilter { TenantId = f.Topic.TenantId, RunId = run.Id }, token).ConfigureAwait(false), "search results deleted with the topic");
             Assert.Equal(0L, await f.Server.Context.Database.RunStages.CountAsync(new RunStageFilter { TenantId = f.Topic.TenantId, RunId = run.Id }, token).ConfigureAwait(false), "run stages deleted with the topic");
             Assert.Equal(0L, await f.Server.Context.Database.Feedback.CountAsync(new FeedbackFilter { TenantId = f.Topic.TenantId, TopicId = f.Topic.Id }, token).ConfigureAwait(false), "feedback deleted with the topic");
             Assert.Equal(0L, await f.Server.Context.Database.LearnedPreferences.CountAsync(new LearnedPreferenceFilter { TenantId = f.Topic.TenantId, TopicId = f.Topic.Id }, token).ConfigureAwait(false), "preferences deleted with the topic");
             EnumerationResult<LlmCall> kept = (await f.User.Client.GetAsync("/v1.0/api/llm-calls?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<LlmCall>>();
-            Assert.True(kept.Items.Count > 0, "model call records kept for cost accounting");
+            Assert.True(kept.Objects.Count > 0, "model call records kept for cost accounting");
         }
 
         private static async Task AgenticAsync(CancellationToken token)
@@ -408,19 +408,19 @@ namespace Test.Shared.Suites
             Assert.True(on.AgenticSearch, "agentic search on");
             Run run = await RunAsync(f, token).ConfigureAwait(false);
             Assert.True(run.Status == RunStatusEnum.Completed, "completed: " + run.Status + " " + run.ErrorMessage + " " + run.Summary);
-            List<RunToolCall> calls = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/tool-calls", token).ConfigureAwait(false)).Expect(200, "tool calls").Json<List<RunToolCall>>();
+            List<RunToolCall> calls = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/tool-calls", token).ConfigureAwait(false)).Expect(200, "tool calls").Json<EnumerationResult<RunToolCall>>().Objects;
             Assert.True(calls.Count == 2 && calls[0].Tool == "web_search" && calls[1].Tool == "fetch_url" && calls.All(c => c.Succeeded && c.ResultCharacters > 0), "web_search then fetch_url, logged: " + String.Join(",", calls.Select(c => c.Tool + "=" + c.Succeeded + ":" + c.ErrorMessage)));
-            List<SearchQuery> queries = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/queries", token).ConfigureAwait(false)).Json<List<SearchQuery>>();
+            List<SearchQuery> queries = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/queries", token).ConfigureAwait(false)).Json<EnumerationResult<SearchQuery>>().Objects;
             Assert.True(queries.Any(q => q.Rationale == "Agentic search"), "the agent's searches are recorded");
-            List<RunStage> stages = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages", token).ConfigureAwait(false)).Json<List<RunStage>>();
+            List<RunStage> stages = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages?pageSize=1000", token).ConfigureAwait(false)).Json<EnumerationResult<RunStage>>().Objects;
             Assert.True(stages.Single(st => st.Stage == "Search").ErrorMessage!.Contains("Agentic search", StringComparison.Ordinal), "search stage says it ran agentically");
             EnumerationResult<Finding> found = (await f.User.Client.GetAsync("/v1.0/api/findings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>();
-            Assert.True(found.TotalCount >= 1, "findings extracted from the picked pages");
+            Assert.True(found.TotalRecords >= 1, "findings extracted from the picked pages");
             EnumerationResult<LlmCall> llm = (await f.User.Client.GetAsync("/v1.0/api/llm-calls?runId=" + run.Id + "&promptKey=research.agentic-search", token).ConfigureAwait(false)).Json<EnumerationResult<LlmCall>>();
-            Assert.True(llm.Items.Count == 1 && llm.Items[0].ToolNames.Contains("web_search") && llm.Items[0].ToolNames.Contains("fetch_url"), "one model call record with the tools it used");
+            Assert.True(llm.Objects.Count == 1 && llm.Objects[0].ToolNames.Contains("web_search") && llm.Objects[0].ToolNames.Contains("fetch_url"), "one model call record with the tools it used");
 
             Run plain = await RunWithoutAgentAsync(f, token).ConfigureAwait(false);
-            Assert.Equal(0, (await f.User.Client.GetAsync("/v1.0/api/runs/" + plain.Id + "/tool-calls", token).ConfigureAwait(false)).Json<List<RunToolCall>>().Count, "off again: fixed query plan, no tool calls");
+            Assert.Equal(0, (await f.User.Client.GetAsync("/v1.0/api/runs/" + plain.Id + "/tool-calls", token).ConfigureAwait(false)).Json<EnumerationResult<RunToolCall>>().Objects.Count, "off again: fixed query plan, no tool calls");
         }
 
         private static async Task<Run> RunWithoutAgentAsync(PipelineFixture f, CancellationToken token)
@@ -479,7 +479,7 @@ namespace Test.Shared.Suites
             PipelineFixture f = await FixtureAsync("Track heat pump rebates. FAILPREDICT", "/pipeline", token).ConfigureAwait(false);
             Run run = await RunAsync(f, token).ConfigureAwait(false);
             Assert.Equal(RunStatusEnum.PartiallySucceeded, run.Status, "predict failed first");
-            List<RunStage> before = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages", token).ConfigureAwait(false)).Json<List<RunStage>>();
+            List<RunStage> before = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages?pageSize=1000", token).ConfigureAwait(false)).Json<EnumerationResult<RunStage>>().Objects;
             (await f.User.Client.PutAsync("/v1.0/api/topics/" + f.Topic.Id, new { brief = "Track heat pump rebates." }, token).ConfigureAwait(false)).Expect(200, "fix the brief");
 
             (await f.User.Client.PostAsync("/v1.0/api/runs/" + run.Id + "/retry?fromStage=Bogus", null, token).ConfigureAwait(false)).Expect(400, "unknown stage");
@@ -491,12 +491,12 @@ namespace Test.Shared.Suites
 
             Run done = await RunWaiter.FinishAsync(f.Server, queued, token).ConfigureAwait(false);
             Assert.True(done.Status == RunStatusEnum.Completed && done.ResumeFromStage == null && done.NewFindingCount == run.NewFindingCount, "completed: " + done.Status + " " + done.Summary);
-            List<RunStage> after = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages", token).ConfigureAwait(false)).Json<List<RunStage>>();
+            List<RunStage> after = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages?pageSize=1000", token).ConfigureAwait(false)).Json<EnumerationResult<RunStage>>().Objects;
             Assert.True(after.Count == 15 && after.All(x => x.Status == StageStatusEnum.Succeeded), "every stage succeeded: " + String.Join(",", after.Select(x => x.Stage + "=" + x.Status)));
             Assert.True(after.Single(x => x.Stage == "Synthesize").Id == before.Single(x => x.Stage == "Synthesize").Id && after.Single(x => x.Stage == "Predict").Id != before.Single(x => x.Stage == "Predict").Id,
                 "earlier stages kept, later stages rerun");
-            Assert.True((await f.User.Client.GetAsync("/v1.0/api/predictions?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Prediction>>().Items.Any(x => x.RunId == run.Id), "predictions made on retry");
-            Assert.Equal(run.NewFindingCount, (await f.User.Client.GetAsync("/v1.0/api/findings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().TotalCount, "no new findings from a tail retry");
+            Assert.True((await f.User.Client.GetAsync("/v1.0/api/predictions?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Prediction>>().Objects.Any(x => x.RunId == run.Id), "predictions made on retry");
+            Assert.Equal(run.NewFindingCount, (await f.User.Client.GetAsync("/v1.0/api/findings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().TotalRecords, "no new findings from a tail retry");
 
             Run fresh = (await f.User.Client.PostAsync("/v1.0/api/runs/" + run.Id + "/retry?fromStage=Search", null, token).ConfigureAwait(false)).Expect(202, "retry from a research stage").Json<Run>();
             Assert.True(fresh.Id != run.Id && fresh.TopicId == f.Topic.Id && fresh.Status == RunStatusEnum.Queued, "a new run of the topic");
@@ -560,7 +560,7 @@ namespace Test.Shared.Suites
         {
             PipelineFixture f = await FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
             Run run = await RunAsync(f, token).ConfigureAwait(false);
-            Finding finding = (await f.User.Client.GetAsync("/v1.0/api/findings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().Items.First();
+            Finding finding = (await f.User.Client.GetAsync("/v1.0/api/findings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().Objects.First();
             (await f.User.Client.PostAsync("/v1.0/api/feedback", new { targetType = "Finding", targetId = finding.Id, relevance = "Relevant", reason = "Useful" }, token).ConfigureAwait(false)).Expect(201, "feedback");
             (await f.User.Client.PostAsync("/v1.0/api/editions", new { name = "Doomed edition" }, token).ConfigureAwait(false)).Expect(201, "edition");
             (await f.User.Client.PostAsync("/v1.0/api/feed-tokens", new { name = "doomed feed" }, token).ConfigureAwait(false)).Expect(201, "feed token");

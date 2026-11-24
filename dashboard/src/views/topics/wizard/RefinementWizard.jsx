@@ -1,3 +1,4 @@
+import { enumerateObjects } from '../../../utils/enumeration.js';
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -67,7 +68,7 @@ export default function RefinementWizard({ mode }) {
         return;
       }
       const active = await apiClient.listRefinementSessions({ status: 'Active', pageSize: 100, sortBy: 'createdUtc', sortDirection: 'Descending' });
-      const found = ((active && active.items) || []).find((s) => s.topicId === topicId);
+      const found = ((active && active.objects) || []).find((s) => s.topicId === topicId);
       if (found) {
         setParamsRef.current({ session: found.id }, { replace: true });
         return;
@@ -86,8 +87,7 @@ export default function RefinementWizard({ mode }) {
   const topicKey = data ? data.topic.id : null;
   useEffect(() => {
     if (!topicKey) return;
-    apiClient
-      .listTopicRecipients(topicKey)
+    enumerateObjects((query) => apiClient.listTopicRecipients(topicKey, query))
       .then((r) => setRecipients(Array.isArray(r) ? r : []))
       .catch(() => setRecipients([]));
   }, [apiClient, topicKey]);

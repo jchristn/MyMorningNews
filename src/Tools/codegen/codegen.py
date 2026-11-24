@@ -276,7 +276,7 @@ def gen_filter(e):
     fields = [f for f in e.all_fields() if f.filter and f.name not in ('TenantId',)]
     lines = ['namespace MyMorningNews.Core.Requests', '{', '    using System;', '    using MyMorningNews.Core.Enums;', '']
     lines += ['    /// <summary>', '    /// Enumeration filter for ' + e.name + ' records. Null properties are not applied.', '    /// </summary>',
-              '    public class ' + e.name + 'Filter : EnumerationFilter', '    {']
+              '    public class ' + e.name + 'Filter : EnumerationQuery', '    {']
     for f in fields:
         t = f.cs_base
         if f.type in ('strings', 'ints'):
@@ -592,6 +592,10 @@ def gen_impl(e):
         L += ['            if (!String.IsNullOrWhiteSpace(filter.Search))', '            {',
               '                args.Add("%" + EscapeLike(filter.Search.Trim()) + "%");',
               '                clauses.Add("(' + ' OR '.join(f.column + ' ILIKE $" + args.Count + "' for f in searchable) + ')");', '            }']
+    for field, operator in [('CreatedAfter', '>'), ('CreatedBefore', '<')]:
+        L += ['            if (filter.' + field + '.HasValue)', '            {',
+              '                args.Add(DateTime.SpecifyKind(filter.' + field + '.Value, DateTimeKind.Utc));',
+              '                clauses.Add("createdutc ' + operator + ' $" + args.Count);', '            }']
     L += ['            if (filter.FromUtc.HasValue)', '            {', '                args.Add(DateTime.SpecifyKind(filter.FromUtc.Value, DateTimeKind.Utc));',
           '                clauses.Add("createdutc >= $" + args.Count);', '            }',
           '            if (filter.ToUtc.HasValue)', '            {', '                args.Add(DateTime.SpecifyKind(filter.ToUtc.Value, DateTimeKind.Utc));',

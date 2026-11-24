@@ -135,9 +135,9 @@ function assertEqual(actual, expected, message) {
 }
 
 function assertPage(page, what) {
-    assert(page && Array.isArray(page.items), what + ' returns a page with items');
+    assert(page && Array.isArray(page.objects), what + ' returns a page with items');
     assert(typeof page.pageNumber === 'number' && typeof page.pageSize === 'number', what + ' has pageNumber and pageSize');
-    assert(typeof page.totalCount === 'number' && typeof page.totalPages === 'number', what + ' has totalCount and totalPages');
+    assert(typeof page.totalRecords === 'number' && typeof page.totalPages === 'number', what + ' has totalCount and totalPages');
 }
 
 async function expectError(promise, status, code) {
@@ -262,7 +262,7 @@ async function startFakeMcpServer() {
  */
 async function linkToken(outbox, template) {
     const page = await outbox.email.list({ template, pageSize: 20 });
-    const latest = [...page.items].sort((a, b) => String(b.createdUtc).localeCompare(String(a.createdUtc)))[0];
+    const latest = [...page.objects].sort((a, b) => String(b.createdUtc).localeCompare(String(a.createdUtc)))[0];
     assert(latest, 'a ' + template + ' email is in the outbox');
     const full = await outbox.email.get(latest.id);
     const m = /token=([A-Za-z0-9%_\-.~]+)/.exec(full.renderedText ?? '');
@@ -389,11 +389,11 @@ async function main() {
         assertPage(first, 'prompts.list');
         const ids = [];
         for await (const p of paginate(client.prompts.list, { pageSize: 3 })) ids.push(p.id);
-        assertEqual(ids.length, first.totalCount, 'items yielded across pages');
+        assertEqual(ids.length, first.totalRecords, 'items yielded across pages');
         assertEqual(new Set(ids).size, ids.length, 'no duplicates across pages');
         let limited = 0;
         for await (const _ of client.paginate(client.prompts.list, { pageSize: 2 }, { maxItems: 3 })) limited++;
-        assertEqual(limited, Math.min(3, first.totalCount), 'maxItems stops early');
+        assertEqual(limited, Math.min(3, first.totalRecords), 'maxItems stops early');
     });
 
     await run('request rejects a bad range before sending', async () => {
@@ -459,7 +459,7 @@ async function main() {
             baseUrl: 'http://127.0.0.1:1', accessKey: 'ak_test', secretKey: 'secret_test', tenantId: 'default', signedRequests: true,
             fetch: async (url, init) => {
                 seen.push({ url, init });
-                return new Response('{"items":[],"pageNumber":1,"pageSize":1,"totalCount":0,"totalPages":0,"durationMs":0}', { status: 200, headers: { 'content-type': 'application/json' } });
+                return new Response('{"objects":[],"pageNumber":1,"pageSize":1,"totalRecords":0,"totalPages":0,"totalMs":0}', { status: 200, headers: { 'content-type': 'application/json' } });
             }
         });
         await fake.topics.list({ pageSize: 1, search: 'a b' });
@@ -546,9 +546,9 @@ async function main() {
         if (!S.topic) skip('no topic');
         const page = await client.topics.list({ search: S.topic.name, pageSize: 50 });
         assertPage(page, 'topics.list');
-        assert(page.items.some((t) => t.id === S.topic.id), 'topic listed');
+        assert(page.objects.some((t) => t.id === S.topic.id), 'topic listed');
         const drafts = await client.topics.list({ status: 'Draft', mine: true, pageSize: 100 });
-        assert(drafts.items.every((t) => t.status === 'Draft'), 'status filter applied');
+        assert(drafts.objects.every((t) => t.status === 'Draft'), 'status filter applied');
     });
 
     await run('topics.resume a draft without a brief is a typed 409', async () => {
@@ -567,7 +567,7 @@ async function main() {
         if (!S.topic) skip('no topic');
         const d = await client.topics.addDimension(S.topic.id, { name: name('dimension'), description: 'SDK dimension', weight: 'High', includeTerms: ['alpha'] });
         assert(d.id, 'dimension ID');
-        const list = await client.topics.listDimensions(S.topic.id);
+        const list = (await client.topics.listDimensions(S.topic.id)).objects;
         assert(list.some((x) => x.id === d.id), 'dimension listed');
         const u = await client.topics.updateDimension(S.topic.id, d.id, { weight: 'Low', excludeTerms: ['beta'] });
         assertEqual(u.weight, 'Low', 'weight updated');
@@ -581,14 +581,14 @@ async function main() {
         if (!S.topic) skip('no topic');
         const c = await client.topics.addConstraint(S.topic.id, { kind: 'IncludeKeyword', value: 'sdk-keyword', note: 'harness', dimensionId: S.dimensionId });
         assertEqual(c.kind, 'IncludeKeyword', 'kind');
-        const byKind = await client.topics.listConstraints(S.topic.id, { kind: 'IncludeKeyword' });
+        const byKind = (await client.topics.listConstraints(S.topic.id, { kind: 'IncludeKeyword' })).objects;
         assert(byKind.some((x) => x.id === c.id), 'constraint listed by kind');
-        const other = await client.topics.listConstraints(S.topic.id, { kind: 'BlockedDomain' });
+        const other = (await client.topics.listConstraints(S.topic.id, { kind: 'BlockedDomain' })).objects;
         assert(!other.some((x) => x.id === c.id), 'kind filter excludes it');
         const u = await client.topics.updateConstraint(S.topic.id, c.id, { value: 'sdk-keyword-2' });
         assertEqual(u.value, 'sdk-keyword-2', 'value updated');
         await client.topics.removeConstraint(S.topic.id, c.id);
-        assert(!(await client.topics.listConstraints(S.topic.id)).some((x) => x.id === c.id), 'constraint removed');
+        assert(!((await client.topics.listConstraints(S.topic.id)).objects).some((x) => x.id === c.id), 'constraint removed');
         await expectError(client.topics.addConstraint(S.topic.id, { kind: 'FeedUrl', value: 'not a url' }), 400, 'ValidationFailed');
     });
 
@@ -596,9 +596,9 @@ async function main() {
         if (!S.topic) skip('no topic');
         const r = await client.topics.addRecipient(S.topic.id, { email: 'sdk-js-' + STAMP + '@example.test' });
         assert(r.id, 'recipient ID');
-        assert((await client.topics.listRecipients(S.topic.id)).some((x) => x.id === r.id), 'recipient listed');
+        assert(((await client.topics.listRecipients(S.topic.id)).objects).some((x) => x.id === r.id), 'recipient listed');
         await client.topics.removeRecipient(S.topic.id, r.id);
-        assert(!(await client.topics.listRecipients(S.topic.id)).some((x) => x.id === r.id), 'recipient removed');
+        assert(!((await client.topics.listRecipients(S.topic.id)).objects).some((x) => x.id === r.id), 'recipient removed');
         await expectError(client.topics.addRecipient(S.topic.id, { email: 'nope' }), 400, 'ValidationFailed');
     });
 
@@ -615,7 +615,7 @@ async function main() {
 
     await run('topics.getSearchProviders', async () => {
         if (!S.topic) skip('no topic');
-        const p = await client.topics.getSearchProviders(S.topic.id);
+        const p = (await client.topics.getSearchProviders(S.topic.id)).objects;
         assert(Array.isArray(p), 'providers array');
     });
 
@@ -656,7 +656,7 @@ async function main() {
             const err = await expectError(demo.topics.get(S.topic.id));
             assert(err.status === 404 || err.status === 403, 'read is 404 or 403 (got ' + err.status + ')');
             const page = await demo.topics.list({ search: S.topic.name, pageSize: 100 });
-            assert(!page.items.some((t) => t.id === S.topic.id), 'topic not listed for demo');
+            assert(!page.objects.some((t) => t.id === S.topic.id), 'topic not listed for demo');
             const upd = await expectError(demo.topics.update(S.topic.id, { description: 'hijack' }));
             assert(upd.status === 404 || upd.status === 403, 'update is 404 or 403');
         } finally {
@@ -684,7 +684,7 @@ async function main() {
         assertEqual(again.session.id, state.session.id, 'read back');
         const page = await client.refinement.list({ topicId: state.topic.id });
         assertPage(page, 'refinement.list');
-        assert(page.items.some((s) => s.id === state.session.id), 'session listed');
+        assert(page.objects.some((s) => s.id === state.session.id), 'session listed');
         await client.refinement.abandon(state.session.id);
         await expectError(client.refinement.get(state.session.id), 404, 'NotFound');
         await expectError(client.topics.get(state.topic.id), 404, 'NotFound');
@@ -748,7 +748,7 @@ async function main() {
         const u = await client.schedules.update(s.id, { name: name('schedule-renamed'), timesOfDay: ['06:45'] });
         assertEqual(u.timesOfDay[0], '06:45', 'times updated');
         const page = await client.schedules.list({ ownerType: 'Topic', ownerId: S.topic.id });
-        assert(page.items.some((x) => x.id === s.id), 'schedule listed');
+        assert(page.objects.some((x) => x.id === s.id), 'schedule listed');
         await client.schedules.remove(s.id);
         await expectError(client.schedules.get(s.id), 404, 'NotFound');
     });
@@ -765,12 +765,12 @@ async function main() {
         assertPage(page, 'runs.list');
         await expectError(client.runs.get(bogus('run')), 404, 'NotFound');
         await expectError(client.runs.stages(bogus('run')), 404, 'NotFound');
-        const r = page.items.find((x) => RunsResource.isTerminal(x.status));
+        const r = page.objects.find((x) => RunsResource.isTerminal(x.status));
         if (!r) skip('no finished run to read');
         assertEqual((await client.runs.get(r.id)).id, r.id, 'run read back');
-        assert(Array.isArray(await client.runs.stages(r.id)), 'stages array');
-        assert(Array.isArray(await client.runs.queries(r.id)), 'queries array');
-        assert(Array.isArray(await client.runs.results(r.id)), 'results array');
+        assert(Array.isArray((await client.runs.stages(r.id)).objects), 'stages array');
+        assert(Array.isArray((await client.runs.queries(r.id)).objects), 'queries array');
+        assert(Array.isArray((await client.runs.results(r.id)).objects), 'results array');
         const topicExists = await client.topics.get(r.topicId).then(() => true, (err) => {
             if (err instanceof MyMorningNewsError && err.status === 404) return false;
             throw err;
@@ -790,19 +790,19 @@ async function main() {
         await expectError(client.runs.llmCalls(bogus('run')), 404, 'NotFound');
         const page = await client.runs.list({ pageSize: 20 });
         let checked = 0;
-        for (const r of page.items) {
+        for (const r of page.objects) {
             const calls = await client.runs.llmCalls(r.id, { pageSize: 50 });
             assertPage(calls, 'runs.llmCalls');
-            assert(calls.items.every((c) => c.runId === r.id), 'calls belong to the run');
-            for (let i = 1; i < calls.items.length; i++) assert(calls.items[i - 1].createdUtc <= calls.items[i].createdUtc, 'oldest first');
-            if (calls.items.length > 1) {
+            assert(calls.objects.every((c) => c.runId === r.id), 'calls belong to the run');
+            for (let i = 1; i < calls.objects.length; i++) assert(calls.objects[i - 1].createdUtc <= calls.objects[i].createdUtc, 'oldest first');
+            if (calls.objects.length > 1) {
                 const desc = await client.runs.llmCalls(r.id, { pageSize: 50, sortDirection: 'Descending' });
-                assert(desc.items[0].createdUtc >= desc.items[desc.items.length - 1].createdUtc, 'sortDirection honoured');
+                assert(desc.objects[0].createdUtc >= desc.objects[desc.objects.length - 1].createdUtc, 'sortDirection honoured');
                 checked++;
                 break;
             }
         }
-        if (page.items.length === 0) skip('no runs');
+        if (page.objects.length === 0) skip('no runs');
         verbose('runs with several model calls checked: ' + checked);
     });
 
@@ -862,21 +862,21 @@ async function main() {
         await expectError(client.runs.costs(bogus('run')), 404, 'NotFound');
         const byCost = await client.runs.list({ pageSize: 5, sortBy: 'estimatedCostUsd', sortDirection: 'Descending' });
         assertPage(byCost, 'runs.list sorted by cost');
-        const priced = byCost.items.filter((r) => r.estimatedCostUsd !== null && r.estimatedCostUsd !== undefined);
+        const priced = byCost.objects.filter((r) => r.estimatedCostUsd !== null && r.estimatedCostUsd !== undefined);
         for (let i = 1; i < priced.length; i++) assert(priced[i - 1].estimatedCostUsd >= priced[i].estimatedCostUsd, 'most expensive first');
-        const r = (await client.runs.list({ pageSize: 25 })).items.find((x) => RunsResource.isTerminal(x.status));
+        const r = (await client.runs.list({ pageSize: 25 })).objects.find((x) => RunsResource.isTerminal(x.status));
         if (!r) skip('no finished run to cost');
         const costs = await client.runs.costs(r.id);
         assertEqual(costs.runId, r.id, 'report run');
         assertEqual(costs.currency, 'USD', 'currency');
-        const stages = await client.runs.stages(r.id);
+        const stages = (await client.runs.stages(r.id)).objects;
         assertEqual(costs.stages.length, stages.length, 'a cost row per stage');
         const stageCalls = costs.stages.reduce((n, s) => n + s.llmCallCount, 0) + (costs.unattributed ? costs.unattributed.llmCallCount : 0);
         assertEqual(stageCalls, costs.totals.llmCallCount, 'stage and unattributed calls add up to the total');
         const costed = stages.find((s) => s.llmCallCount > 0);
         if (costed) {
             const calls = await client.llmCalls.list({ runStageId: costed.id, pageSize: 100 });
-            assert(calls.items.every((c) => c.runStageId === costed.id), 'calls belong to the stage');
+            assert(calls.objects.every((c) => c.runStageId === costed.id), 'calls belong to the stage');
         } else {
             verbose('run ' + r.id + ' has no stage with model calls');
         }
@@ -1011,7 +1011,7 @@ async function main() {
         assertEqual(probe.code, 'NotFound', 'NotFound code');
         await expectError(client.runs.retry(bogus('run')), 404, 'NotFound');
         await expectError(client.runs.retry(bogus('run'), { fromStage: 'Synthesize' }), 404, 'NotFound');
-        const all = (await client.runs.list({ pageSize: 100 })).items;
+        const all = (await client.runs.list({ pageSize: 100 })).objects;
         const unfinished = all.find((r) => !RunsResource.isTerminal(r.status));
         if (unfinished) await expectError(client.runs.retry(unfinished.id), 409, 'Conflict');
         else verbose('no unfinished run for the live 409 check');
@@ -1033,7 +1033,7 @@ async function main() {
         assertEqual(last.event, 'done', 'a finished run ends with done');
         assertEqual(last.data.id, finished.id, 'done carries the run');
         assert(events.slice(0, -1).every((e) => e.event === 'stage'), 'stages come before done');
-        const stages = await client.runs.stages(finished.id);
+        const stages = (await client.runs.stages(finished.id)).objects;
         assertEqual(events.length - 1, stages.length, 'one stage event per stage');
         const final = await client.runs.follow(finished.id);
         assertEqual(final.id, finished.id, 'follow returns the finished run');
@@ -1053,7 +1053,7 @@ async function main() {
         if (followed) assert(seenEvents.includes('done'), 'followed to done');
         const done = await client.runs.wait(queued.id, { timeoutMs: 15 * 60000, intervalMs: 5000 });
         assert(RunsResource.isTerminal(done.status), 'terminal');
-        assert(Array.isArray(await client.runs.stages(done.id)), 'stages');
+        assert(Array.isArray((await client.runs.stages(done.id)).objects), 'stages');
     }, { skip: withRun });
 
     // ---- Findings, sources, predictions, suggestions ---------------------------------------------------------------
@@ -1062,9 +1062,9 @@ async function main() {
         const page = await client.findings.list({ pageSize: 5, minScore: 0, includeDryRun: true });
         assertPage(page, 'findings.list');
         await expectError(client.findings.get(bogus('fnd')), 404, 'NotFound');
-        if (page.items.length > 0) {
-            const d = await client.findings.get(page.items[0].id);
-            assertEqual(d.finding.id, page.items[0].id, 'finding read back');
+        if (page.objects.length > 0) {
+            const d = await client.findings.get(page.objects[0].id);
+            assertEqual(d.finding.id, page.objects[0].id, 'finding read back');
             assert(Array.isArray(d.evidence), 'evidence array');
         }
     });
@@ -1077,13 +1077,13 @@ async function main() {
         await expectError(client.findings.getEvidence(bogus('evd')), 404, 'NotFound');
         const hidden = await client.findings.list({ includeHidden: true, pinned: true, includeBelowThreshold: true, pageSize: 5 });
         assertPage(hidden, 'findings.list with includeHidden and pinned');
-        assert(hidden.items.every((f) => f.pinned === true), 'pinned filter applied');
+        assert(hidden.objects.every((f) => f.pinned === true), 'pinned filter applied');
     });
 
     await run('findings pin and hide on a real finding', async () => {
         const page = await client.findings.list({ includeBelowThreshold: true, includeDryRun: true, pageSize: 1 });
-        if (page.items.length === 0) skip('no findings to edit');
-        const f = page.items[0];
+        if (page.objects.length === 0) skip('no findings to edit');
+        const f = page.objects[0];
         const was = { pinned: Boolean(f.pinned), hidden: Boolean(f.hidden) };
         try {
             await expectError(client.findings.update(f.id, {}), 400, 'ValidationFailed');
@@ -1091,9 +1091,9 @@ async function main() {
             assertEqual((await client.findings.unpin(f.id)).pinned, false, 'unpinned');
             assertEqual((await client.findings.hide(f.id)).hidden, true, 'hidden');
             const def = await client.findings.list({ runId: f.runId, includeBelowThreshold: true, includeDryRun: true, pageSize: 200 });
-            assert(!def.items.some((x) => x.id === f.id), 'hidden finding left out by default');
+            assert(!def.objects.some((x) => x.id === f.id), 'hidden finding left out by default');
             const all = await client.findings.list({ runId: f.runId, includeBelowThreshold: true, includeDryRun: true, includeHidden: true, pageSize: 200 });
-            assert(all.items.some((x) => x.id === f.id), 'includeHidden lists it');
+            assert(all.objects.some((x) => x.id === f.id), 'includeHidden lists it');
             assertEqual((await client.findings.unhide(f.id)).hidden, false, 'shown again');
             const d = await client.findings.get(f.id);
             if (d.evidence.length > 0) {
@@ -1109,7 +1109,7 @@ async function main() {
         const page = await client.sources.list({ pageSize: 5 });
         assertPage(page, 'sources.list');
         await expectError(client.sources.get(bogus('src')), 404, 'NotFound');
-        if (page.items.length > 0) assertEqual((await client.sources.get(page.items[0].id)).id, page.items[0].id, 'source read back');
+        if (page.objects.length > 0) assertEqual((await client.sources.get(page.objects[0].id)).id, page.objects[0].id, 'source read back');
     });
 
     await run('predictions.list, get, resolve, reviews', async () => {
@@ -1119,7 +1119,7 @@ async function main() {
         await expectError(client.predictions.resolve(bogus('prd'), { status: 'Accurate' }), 404, 'NotFound');
         await expectError(client.predictions.acceptReview(bogus('prv')), 404, 'NotFound');
         await expectError(client.predictions.rejectReview(bogus('prv')), 404, 'NotFound');
-        if (page.items.length > 0) assertEqual((await client.predictions.get(page.items[0].id)).prediction.id, page.items[0].id, 'prediction read back');
+        if (page.objects.length > 0) assertEqual((await client.predictions.get(page.objects[0].id)).prediction.id, page.objects[0].id, 'prediction read back');
     });
 
     await run('suggestions.list, get, setStatus', async () => {
@@ -1127,7 +1127,7 @@ async function main() {
         assertPage(page, 'suggestions.list');
         await expectError(client.suggestions.get(bogus('sug')), 404, 'NotFound');
         await expectError(client.suggestions.setStatus(bogus('sug'), 'Dismissed'), 404, 'NotFound');
-        if (page.items.length > 0) assertEqual((await client.suggestions.get(page.items[0].id)).id, page.items[0].id, 'suggestion read back');
+        if (page.objects.length > 0) assertEqual((await client.suggestions.get(page.objects[0].id)).id, page.objects[0].id, 'suggestion read back');
     });
 
     // ---- Learned preferences and feedback --------------------------------------------------------------------------
@@ -1143,7 +1143,7 @@ async function main() {
         const u = await client.preferences.update(p.id, { statement: name('preference') + ': prefer official changelogs', kind: 'Prefer' });
         assertEqual(u.kind, 'Prefer', 'kind updated');
         const page = await client.preferences.list({ topicId: S.topic.id });
-        assert(page.items.some((x) => x.id === p.id), 'listed by topic');
+        assert(page.objects.some((x) => x.id === p.id), 'listed by topic');
         assertEqual((await client.preferences.disable(p.id)).status, 'Disabled', 'disabled');
         assertEqual((await client.preferences.enable(p.id)).status, 'Active', 'enabled');
         await expectError(client.preferences.accept(p.id), 409, 'Conflict');
@@ -1164,12 +1164,12 @@ async function main() {
         assertEqual(f.reason, 'SDK harness reason', 'reason saved');
         assertEqual(f.isCurrent, true, 'current');
         const page = await client.feedback.list({ targetType: 'Domain', targetId: target.id });
-        assert(page.items.some((x) => x.id === f.id), 'feedback listed');
+        assert(page.objects.some((x) => x.id === f.id), 'feedback listed');
         const u = await client.feedback.update(f.id, { reason: 'SDK harness reason, edited' });
         assertEqual(u.reason, 'SDK harness reason, edited', 'reason edited');
         await client.feedback.remove(f.id);
         const after = await client.feedback.list({ targetId: target.id, includeHistory: true });
-        assert(!after.items.some((x) => x.id === f.id), 'feedback retracted');
+        assert(!after.objects.some((x) => x.id === f.id), 'feedback retracted');
         await expectError(client.feedback.update(f.id, { reason: 'gone' }), 404, 'NotFound');
     });
 
@@ -1178,7 +1178,7 @@ async function main() {
         onCleanup('mcp feedback', () => client.feedback.remove(f.id));
         assertEqual(f.channel, 'Mcp', 'channel saved');
         const page = await client.feedback.list({ channel: 'Mcp', targetId: f.targetId });
-        assert(page.items.some((x) => x.id === f.id), 'listed by channel');
+        assert(page.objects.some((x) => x.id === f.id), 'listed by channel');
         await client.feedback.remove(f.id);
     });
 
@@ -1209,7 +1209,7 @@ async function main() {
         const saved = await client.templates.update(id, { content: templateMarkdown(tname, ' Keep it brief.'), changeNote: 'SDK edit' });
         assertEqual(saved.template.currentVersion, v1 + 1, 'new version');
         assert(saved.content.includes('Keep it brief.'), 'content saved');
-        const versions = await client.templates.versions(id);
+        const versions = (await client.templates.versions(id)).objects;
         assert(Array.isArray(versions) && versions.length >= 2, 'two versions');
         const rolled = await client.templates.rollback(id, v1);
         assert(!rolled.content.includes('Keep it brief.'), 'rolled back');
@@ -1219,7 +1219,7 @@ async function main() {
         assert(exported.text.includes('mmn:section'), 'export text');
         await expectError(client.templates.reset(id), 409, 'Conflict');
         const mine = await client.templates.list({ scope: 'mine', search: tname });
-        assert(mine.items.some((x) => x.id === id), 'listed in my templates');
+        assert(mine.objects.some((x) => x.id === id), 'listed in my templates');
     });
 
     // ---- Prompts ---------------------------------------------------------------------------------------------------
@@ -1227,12 +1227,12 @@ async function main() {
     await run('prompts.list, get, versions', async () => {
         const page = await client.prompts.list({ key: 'briefing.compose', tenantOnly: true });
         assertPage(page, 'prompts.list');
-        assert(page.items.length >= 1, 'tenant prompt present');
-        S.promptId = page.items[0].id;
+        assert(page.objects.length >= 1, 'tenant prompt present');
+        S.promptId = page.objects[0].id;
         const p = await client.prompts.get(S.promptId);
         assertEqual(p.template.key, 'briefing.compose', 'key');
         assert(p.content.length > 0 && Array.isArray(p.variables), 'content and variables');
-        assert(Array.isArray(await client.prompts.versions(S.promptId)), 'versions');
+        assert(Array.isArray((await client.prompts.versions(S.promptId)).objects), 'versions');
         await expectError(client.prompts.get(bogus('pmt')), 404, 'NotFound');
     });
 
@@ -1284,7 +1284,7 @@ async function main() {
         assertEqual(t.coveredTopicIds.length, 0, 'archived topic is not covered');
         assertEqual((await client.editions.get(S.editionId)).edition.id, S.editionId, 'read back');
         const page = await client.editions.list({ pageSize: 100 });
-        assert(page.items.some((x) => x.id === S.editionId), 'edition listed');
+        assert(page.objects.some((x) => x.id === S.editionId), 'edition listed');
     });
 
     await run('editions.preview (empty edition, no model calls)', async () => {
@@ -1310,15 +1310,15 @@ async function main() {
         const d = await poll(() => client.briefings.get(queued.id), (x) => x.briefing.status === 'Ready' || x.briefing.status === 'Failed', 90000, 1000);
         assertEqual(d.briefing.status, 'Ready', 'briefing composed (error: ' + d.briefing.errorMessage + ')');
         const calls = await client.llmCalls.list({ briefingId: queued.id });
-        assertEqual(calls.totalCount, 0, 'composing an empty edition made no model calls');
+        assertEqual(calls.totalRecords, 0, 'composing an empty edition made no model calls');
     });
 
     await run('briefings.list, get, download Markdown and HTML', async () => {
         if (!S.briefingId) skip('no briefing');
         const page = await client.briefings.list({ editionId: S.editionId });
         assertPage(page, 'briefings.list');
-        assert(page.items.some((b) => b.id === S.briefingId), 'briefing listed');
-        assert(page.items.every((b) => b.markdown === null || b.markdown === undefined), 'list leaves Markdown out');
+        assert(page.objects.some((b) => b.id === S.briefingId), 'briefing listed');
+        assert(page.objects.every((b) => b.markdown === null || b.markdown === undefined), 'list leaves Markdown out');
         const d = await client.briefings.get(S.briefingId);
         assert(d.files.length >= 2, 'Markdown and HTML files stored');
         const md = await client.briefings.download(S.briefingId);
@@ -1369,12 +1369,12 @@ async function main() {
         assert(new Date(byDefault.share.expiresUtc).getTime() <= Date.now() + max * 86400000 + 60000, 'a share always has an expiry');
         const page = await client.briefings.listShares(S.briefingId);
         assertPage(page, 'briefings.listShares');
-        assert(page.items.some((s) => s.id === id && s.tokenHash === 'redacted' && !s.revokedUtc), 'share listed, redacted');
+        assert(page.objects.some((s) => s.id === id && s.tokenHash === 'redacted' && !s.revokedUtc), 'share listed, redacted');
         await client.briefings.revokeShare(S.briefingId, id);
-        const revoked = (await client.briefings.listShares(S.briefingId)).items.find((s) => s.id === id);
+        const revoked = (await client.briefings.listShares(S.briefingId)).objects.find((s) => s.id === id);
         assert(revoked && revoked.revokedUtc, 'revoked');
         await client.briefings.revokeShare(S.briefingId, id, { purge: true });
-        assert(!(await client.briefings.listShares(S.briefingId)).items.some((s) => s.id === id), 'purged');
+        assert(!(await client.briefings.listShares(S.briefingId)).objects.some((s) => s.id === id), 'purged');
         await expectError(client.briefings.revokeShare(S.briefingId, id), 404, 'NotFound');
     });
 
@@ -1391,8 +1391,8 @@ async function main() {
         if (!S.briefingId) skip('no briefing');
         const page = await client.artifacts.list({ briefingId: S.briefingId });
         assertPage(page, 'artifacts.list');
-        assert(page.items.length >= 1, 'artifact listed');
-        const a = page.items[0];
+        assert(page.objects.length >= 1, 'artifact listed');
+        const a = page.objects[0];
         assertEqual((await client.artifacts.get(a.id)).id, a.id, 'metadata read back');
         const c = await client.artifacts.content(a.id);
         assertEqual(c.data.byteLength, a.bytes, 'content size matches metadata');
@@ -1454,16 +1454,16 @@ async function main() {
         });
         assert(created.secret && created.feedUrl, 'secret and URL returned once');
         assertEqual(created.token.tokenHash, 'redacted', 'hash redacted');
-        const listed = await client.feedTokens.list();
+        const listed = (await client.feedTokens.list()).objects;
         assert(listed.some((t) => t.id === id && t.tokenHash === 'redacted'), 'token listed, redacted');
         const xml = await client.publicApi.podcastFeed(created.secret);
         assert(xml.includes('<rss'), 'RSS feed');
         await client.feedTokens.revoke(id);
-        const revoked = (await client.feedTokens.list()).find((t) => t.id === id);
+        const revoked = ((await client.feedTokens.list()).objects).find((t) => t.id === id);
         assert(revoked && revoked.revokedUtc, 'revoked');
         await expectError(client.publicApi.podcastFeed(created.secret), 404, 'NotFound');
         await client.feedTokens.purge(id);
-        assert(!(await client.feedTokens.list()).some((t) => t.id === id), 'purged');
+        assert(!((await client.feedTokens.list()).objects).some((t) => t.id === id), 'purged');
     });
 
     await run('publicApi.checkPromoCode and asset', async () => {
@@ -1482,8 +1482,8 @@ async function main() {
         onCleanup('email', () => client.email.removeMessage(m.id));
         assertEqual(m.template, 'Test', 'test template');
         const page = await client.email.listMessages({ template: 'Test', pageSize: 20 });
-        assert(page.items.some((x) => x.id === m.id), 'listed in the outbox');
-        assert(page.items.every((x) => x.renderedHtml === null || x.renderedHtml === undefined), 'list leaves bodies out');
+        assert(page.objects.some((x) => x.id === m.id), 'listed in the outbox');
+        assert(page.objects.every((x) => x.renderedHtml === null || x.renderedHtml === undefined), 'list leaves bodies out');
         const sent = await poll(() => client.email.getMessage(m.id), (x) => x.status !== 'Queued' && x.status !== 'Sending', 30000, 1000);
         assert(typeof sent.renderedHtml === 'string' && sent.renderedHtml.length > 0, 'rendered body on read');
         if (sent.status === 'Queued' || sent.status === 'Sending') skip('email still sending after 30 s');
@@ -1545,9 +1545,9 @@ async function main() {
         const page = await client.llmCalls.list({ pageSize: 2 });
         assertPage(page, 'llmCalls.list');
         await expectError(client.llmCalls.get(bogus('llm')), 404, 'NotFound');
-        if (page.items.length > 0) {
-            const c = await client.llmCalls.get(page.items[0].id);
-            assertEqual(c.id, page.items[0].id, 'call read back');
+        if (page.objects.length > 0) {
+            const c = await client.llmCalls.get(page.objects[0].id);
+            assertEqual(c.id, page.objects[0].id, 'call read back');
         }
     });
 
@@ -1566,7 +1566,7 @@ async function main() {
         await expectError(client.modelEndpoints.update(e.id, { contextLength: 1, clearFields: ['contextLength'] }), 400, 'ValidationFailed');
         assertEqual(u.maxTokens, 512, 'updated');
         const page = await client.modelEndpoints.list({ provider: 'OpenAiCompatible', pageSize: 100 });
-        assert(page.items.some((x) => x.id === e.id), 'listed');
+        assert(page.objects.some((x) => x.id === e.id), 'listed');
         const v = await client.modelEndpoints.validate(e.id);
         assertEqual(v.reachable, false, 'fake endpoint is unreachable');
         assertEqual(v.succeeded, false, 'validation of a fake endpoint does not succeed');
@@ -1574,7 +1574,7 @@ async function main() {
         const t = await client.modelEndpoints.test(e.id, { prompt: 'ping' });
         assertEqual(t.success, false, 'test fails on a fake endpoint');
         try {
-            const models = await client.modelEndpoints.models(e.id);
+            const models = (await client.modelEndpoints.models(e.id)).objects;
             assert(Array.isArray(models), 'models array');
         } catch (err) {
             assert(err instanceof MyMorningNewsError && err.status === 502, 'models is a typed 502 when unreachable');
@@ -1588,11 +1588,11 @@ async function main() {
         onCleanup('model assignment', () => client.modelAssignments.remove(a.id));
         assertEqual(a.topicId, S.topic.id, 'topic override');
         const page = await client.modelAssignments.list({ topicId: S.topic.id });
-        assert(page.items.some((x) => x.id === a.id), 'listed');
+        assert(page.objects.some((x) => x.id === a.id), 'listed');
         const again = await client.modelAssignments.upsert({ task: 'Synthesis', topicId: S.topic.id, modelEndpointId: S.endpointId, modelOverride: 'sdk-other' });
         assertEqual(again.id, a.id, 'upsert updates in place');
         await client.modelAssignments.remove(a.id);
-        const tenantDefault = (await client.modelAssignments.list({ pageSize: 100 })).items.find((x) => !x.topicId);
+        const tenantDefault = (await client.modelAssignments.list({ pageSize: 100 })).objects.find((x) => !x.topicId);
         if (tenantDefault) await expectError(client.modelAssignments.remove(tenantDefault.id), 409, 'Conflict');
     });
 
@@ -1685,7 +1685,7 @@ async function main() {
         });
         const removeUser = async () => {
             const eds = await client.editions.list({ userId: user.id, pageSize: 100 });
-            for (const ed of eds.items.filter((x) => x.userId === user.id)) await client.editions.remove(ed.id);
+            for (const ed of eds.objects.filter((x) => x.userId === user.id)) await client.editions.remove(ed.id);
             await client.request('DELETE', '/v1.0/tenants/' + encodeURIComponent(tenant) + '/users/' + encodeURIComponent(user.id));
         };
         onCleanup('setup user', removeUser);
@@ -1742,7 +1742,7 @@ async function main() {
         assertEqual((await client.searchProviders.get(p.id)).id, p.id, 'read back');
         const u = await client.searchProviders.update(p.id, { maxResults: 7 });
         assertEqual(u.maxResults, 7, 'updated');
-        assert((await client.searchProviders.list({ kind: 'Rss', pageSize: 100 })).items.some((x) => x.id === p.id), 'listed');
+        assert((await client.searchProviders.list({ kind: 'Rss', pageSize: 100 })).objects.some((x) => x.id === p.id), 'listed');
         const outcome = await client.searchProviders.test(p.id);
         assert(outcome && typeof outcome === 'object', 'test outcome');
         if (S.topic) {
@@ -1759,14 +1759,14 @@ async function main() {
     // ---- Voices ----------------------------------------------------------------------------------------------------
 
     await run('voices CRUD and test', async () => {
-        const existing = (await client.voices.list({ pageSize: 100 })).items.find((v) => v.provider === 'OpenAiCompatibleSpeech' && v.endpoint);
+        const existing = (await client.voices.list({ pageSize: 100 })).objects.find((v) => v.provider === 'OpenAiCompatibleSpeech' && v.endpoint);
         const v = await client.voices.create({ name: name('voice'), provider: 'OpenAiCompatibleSpeech', endpoint: existing?.endpoint ?? undefined, model: existing?.model ?? 'kokoro', voice: existing?.voice ?? 'af_heart', speed: 1, isDefault: false });
         onCleanup('voice', () => client.voices.remove(v.id));
         assertEqual(v.isDefault, false, 'not default');
         assertEqual((await client.voices.get(v.id)).id, v.id, 'read back');
         const u = await client.voices.update(v.id, { speed: 1.1 });
         assert(Math.abs(u.speed - 1.1) < 0.001, 'speed updated');
-        assert((await client.voices.list({ pageSize: 100 })).items.some((x) => x.id === v.id), 'listed');
+        assert((await client.voices.list({ pageSize: 100 })).objects.some((x) => x.id === v.id), 'listed');
         try {
             const audio = await client.voices.test(v.id, { text: 'SDK harness test.' });
             assert(audio.data.byteLength > 0, 'audio bytes');
@@ -1796,8 +1796,8 @@ async function main() {
         assert(noDescription.description == null, 'clearFields removes the description');
         await expectError(client.vault.update(c.id, { clearFields: ['secret'] }), 400, 'ValidationFailed');
         assertEqual(u.description, 'SDK harness, updated', 'updated');
-        assert((await client.vault.list({ kind: 'ApiKey', pageSize: 100 })).items.some((x) => x.id === c.id), 'listed');
-        assert(Array.isArray(await client.vault.usage(c.id)), 'usage array');
+        assert((await client.vault.list({ kind: 'ApiKey', pageSize: 100 })).objects.some((x) => x.id === c.id), 'listed');
+        assert(Array.isArray((await client.vault.usage(c.id)).objects), 'usage array');
         await client.vault.remove(c.id);
         await expectError(client.vault.get(c.id), 404, 'NotFound');
         const err = await expectError(client.vault.create({ name: name('vault-bad'), kind: 'ApiKey', provider: 'Custom' }), 400, 'ValidationFailed');
@@ -1812,9 +1812,9 @@ async function main() {
         onCleanup('device', () => client.devices.remove(d.id));
         const again = await client.devices.register({ expoPushToken: token, platform: 'ios', name: name('device-renamed') });
         assertEqual(again.id, d.id, 'same device on re-register');
-        assert((await client.devices.list()).some((x) => x.id === d.id), 'listed');
+        assert(((await client.devices.list()).objects).some((x) => x.id === d.id), 'listed');
         await client.devices.remove(d.id);
-        assert(!(await client.devices.list()).some((x) => x.id === d.id), 'removed');
+        assert(!((await client.devices.list()).objects).some((x) => x.id === d.id), 'removed');
         await expectError(client.devices.register({ expoPushToken: token, platform: 'windows' }), 400, 'BadRequest');
         await expectError(client.devices.remove(d.id), 404, 'NotFound');
     });
@@ -1827,7 +1827,7 @@ async function main() {
         assertEqual(before.preferences.length, 18, 'six kinds on three channels');
         assertEqual(before.channels.map((c) => c.channel).join(','), 'Email,Push,InApp', 'channel order');
         assert(before.channels[2].available === true, 'in-app is always available');
-        if ((await client.devices.list()).length === 0) {
+        if (((await client.devices.list()).objects).length === 0) {
             assert(before.channels[1].available === false && ['NoDevice', 'PushNotConfigured'].includes(before.channels[1].reason), 'push needs a device');
         }
         assert(typeof before.address === 'string' && Array.isArray(before.unsubscribedTopicIds), 'address and topic list');
@@ -1855,12 +1855,12 @@ async function main() {
 
     await run('notifications list, unread count, read, read all, remove', async () => {
         const page = await client.notifications.list({ pageSize: 5 });
-        assert(Array.isArray(page.items) && typeof page.totalCount === 'number', 'page shape');
+        assert(Array.isArray(page.objects) && typeof page.totalRecords === 'number', 'page shape');
         const unread = await client.notifications.list({ unread: true, kind: 'AudioReady', pageSize: 100 });
-        assert(unread.items.every((n) => n.kind === 'AudioReady' && !n.readUtc), 'filters apply');
+        assert(unread.objects.every((n) => n.kind === 'AudioReady' && !n.readUtc), 'filters apply');
         const count = await client.notifications.unreadCount();
-        assert(typeof count.count === 'number' && count.count >= unread.items.length, 'unread count');
-        for (const n of page.items.filter((x) => !x.readUtc).slice(0, 1)) {
+        assert(typeof count.count === 'number' && count.count >= unread.objects.length, 'unread count');
+        for (const n of page.objects.filter((x) => !x.readUtc).slice(0, 1)) {
             assert((await client.notifications.markRead(n.id)).readUtc, 'marked read');
         }
         const marked = await client.notifications.markAllRead();
@@ -1886,7 +1886,7 @@ async function main() {
         assert(typeof mine.planKey === 'string' && mine.planKey.length > 0, 'admin plan key');
         await expectError(client.account.delete(), 409, 'Conflict');
         const plans = await client.request('GET', '/v1.0/api/admin/plans');
-        const free = plans.find((p) => p.plan.key === 'free');
+        const free = plans.objects.find((p) => p.plan.key === 'free');
         if (!free) skip('the server has no Free plan');
         const tenant = OPTS.tenant;
         const email = 'sdk-js-cap-' + STAMP + '@example.com';
@@ -1896,7 +1896,7 @@ async function main() {
         });
         const removeUser = async () => {
             const eds = await client.editions.list({ userId: user.id, pageSize: 100 });
-            for (const e of eds.items.filter((x) => x.userId === user.id)) await client.editions.remove(e.id);
+            for (const e of eds.objects.filter((x) => x.userId === user.id)) await client.editions.remove(e.id);
             await client.request('DELETE', '/v1.0/tenants/' + encodeURIComponent(tenant) + '/users/' + encodeURIComponent(user.id));
         };
         onCleanup('cap user', removeUser);
@@ -1971,12 +1971,12 @@ async function main() {
             await expectError(anon.account.resetPassword('not-a-token', 'a long new password'), 400, 'LinkInvalid');
 
             const tenants = await client.request('GET', '/v1.0/tenants', { query: { pageSize: 1000 } });
-            const personal = tenants.items.find((t) => t.name === display + ' (personal)');
+            const personal = tenants.objects.find((t) => t.name === display + ' (personal)');
             if (!personal) throw new Error('the personal tenant was not found');
             onCleanup('personal tenant', () => client.request('DELETE', '/v1.0/tenants/' + encodeURIComponent(personal.id)));
             assert(personal.isPersonal === true, 'personal tenant');
             const users = await client.request('GET', '/v1.0/tenants/' + encodeURIComponent(personal.id) + '/users');
-            const signedUp = users.items.find((x) => x.email === email);
+            const signedUp = users.objects.find((x) => x.email === email);
             const key = await client.request('POST', '/v1.0/tenants/' + encodeURIComponent(personal.id) + '/credentials', {
                 body: { userId: signedUp.id, name: name('outbox'), authMode: 'Hybrid' }
             });
@@ -2015,9 +2015,9 @@ async function main() {
         await expectError(client.mcpServers.create({ name: name('mcp'), url: 'ftp://127.0.0.1/mcp' }), 400, 'ValidationFailed');
         await expectError(client.runs.toolCalls(bogus('run')), 404);
         const runs = await client.runs.list({ pageSize: 1 });
-        if (runs.items.length > 0) {
-            const calls = await client.runs.toolCalls(runs.items[0].id);
-            assert(Array.isArray(calls) && calls.every((x) => x.runId === runs.items[0].id), 'tool calls belong to the run');
+        if (runs.objects.length > 0) {
+            const calls = (await client.runs.toolCalls(runs.objects[0].id)).objects;
+            assert(Array.isArray(calls) && calls.every((x) => x.runId === runs.objects[0].id), 'tool calls belong to the run');
         }
 
         const dead = await client.mcpServers.create({ name: name('mcp-dead'), url: 'http://127.0.0.1:9/mcp', enabled: false });
@@ -2030,7 +2030,7 @@ async function main() {
         await expectError(client.mcpServers.setToolEnabled(dead.id, bogus('mct'), true), 404);
         const disabled = await client.mcpServers.list({ enabled: false, pageSize: 100 });
         assertPage(disabled, 'mcpServers.list');
-        assert(disabled.items.some((s) => s.id === dead.id), 'the disabled server is listed');
+        assert(disabled.objects.some((s) => s.id === dead.id), 'the disabled server is listed');
         await client.mcpServers.remove(dead.id);
         await expectError(client.mcpServers.get(dead.id), 404);
 

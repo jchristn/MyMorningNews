@@ -40,9 +40,9 @@ namespace MyMorningNews.Server.Routes
             List<BillingOfferResponse> offers = new List<BillingOfferResponse>();
             foreach (MyMorningNews.Core.Settings.BillingOfferSettings offer in Server.Settings.Billing.Offers.Where(o => o.Active))
             {
-                Plan? package = (await Server.Database.Plans.EnumerateAsync(new PlanFilter { Key = offer.PlanKey, Active = true, PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Items.FirstOrDefault();
+                Plan? package = (await Server.Database.Plans.EnumerateAsync(new PlanFilter { Key = offer.PlanKey, Active = true, PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Objects.FirstOrDefault();
                 if (package == null) continue;
-                List<PlanFeature> features = (await Server.Database.PlanFeatures.EnumerateAsync(new PlanFeatureFilter { PlanId = package.Id, PageSize = 500 }, ctx.Token).ConfigureAwait(false)).Items;
+                List<PlanFeature> features = (await Server.Database.PlanFeatures.EnumerateAsync(new PlanFeatureFilter { PlanId = package.Id, PageSize = 500 }, ctx.Token).ConfigureAwait(false)).Objects;
                 offers.Add(new BillingOfferResponse { Key = offer.Key, PlanKey = offer.PlanKey, Interval = offer.Interval, UsdCents = offer.UsdCents, AppleProductId = offer.AppleProductId, GoogleProductId = offer.GoogleProductId, GoogleBasePlanId = offer.GoogleBasePlanId,
                     PlanName = package.Name,
                     CustomTopics = features.FirstOrDefault(f => f.Key == "customTopics.max")?.Value,

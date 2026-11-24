@@ -34,7 +34,7 @@ namespace MyMorningNews.Core.Pipeline.Stages
         public async Task<StageOutcome> ExecuteAsync(RunContext ctx, PipelineServices services, CancellationToken token)
         {
             if (ctx.Run.IsDryRun || ctx.Findings.Count == 0) return StageOutcome.Of(0, 0);
-            List<Prediction> open = (await services.Database.Predictions.EnumerateAsync(new PredictionFilter { TenantId = ctx.Run.TenantId, TopicId = ctx.Topic.Id, Status = PredictionStatusEnum.Open, IsDryRun = false, PageSize = 50 }, token).ConfigureAwait(false)).Items;
+            List<Prediction> open = (await services.Database.Predictions.EnumerateAsync(new PredictionFilter { TenantId = ctx.Run.TenantId, TopicId = ctx.Topic.Id, Status = PredictionStatusEnum.Open, IsDryRun = false, PageSize = 50 }, token).ConfigureAwait(false)).Objects;
             if (open.Count == 0) return StageOutcome.Of(0, 0);
             StructuredCallResult<PredictionReviewResult> result = await services.CallAsync<PredictionReviewResult>(ctx, "research.review-predictions", new Dictionary<string, object?>
             {

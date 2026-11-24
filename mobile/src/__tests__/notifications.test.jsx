@@ -47,7 +47,7 @@ function matrixHandlers(initial, order = []) {
       for (const change of call.body.preferences || []) current = withCell(current, change.kind, change.channel, change.enabled);
       return { body: current };
     },
-    'GET /v1.0/api/devices': () => ({ body: [] }),
+    'GET /v1.0/api/devices': () => ({ body: page([]).body }),
   };
 }
 
@@ -176,7 +176,7 @@ describe('Account: notifications matrix', () => {
 
   it('only saves when this device is already registered, and never prompts on its own', async () => {
     const order = [];
-    const { server } = await renderSignedIn(<NotificationsSection />, { ...matrixHandlers(matrix({ on: ['BriefingReady:Push'], channels: [{ channel: 'Email', available: true }, { channel: 'Push', available: true }, { channel: 'InApp', available: true }] }), order), 'GET /v1.0/api/devices': () => ({ body: [{ id: 'dev_1', platform: 'ios', name: 'iPhone' }] }) }, { prefs: { pushEnabled: true, pushDeviceId: 'dev_1' } });
+    const { server } = await renderSignedIn(<NotificationsSection />, { ...matrixHandlers(matrix({ on: ['BriefingReady:Push'], channels: [{ channel: 'Email', available: true }, { channel: 'Push', available: true }, { channel: 'InApp', available: true }] }), order), 'GET /v1.0/api/devices': () => ({ body: page([{ id: 'dev_1', platform: 'ios', name: 'iPhone' }]).body }) }, { prefs: { pushEnabled: true, pushDeviceId: 'dev_1' } });
     await waitFor(() => expect(cell('BriefingReady', 'Push').props.value).toBe(true));
     expect(preparePush).not.toHaveBeenCalled();
     await fireEvent(cell('AudioReady', 'Push'), 'valueChange', true);

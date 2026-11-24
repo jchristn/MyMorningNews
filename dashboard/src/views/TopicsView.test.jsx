@@ -1,3 +1,4 @@
+import { enumerationResult } from '../test/enumeration.js';
 import { describe, expect, it, vi } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -53,7 +54,7 @@ describe('Refinement wizard', () => {
       startRefinement: vi.fn(async () => started),
       getRefinementSession: vi.fn(async () => started),
       proposeDimensions: vi.fn(async () => proposed),
-      listTopicRecipients: vi.fn(async () => []),
+      listTopicRecipients: vi.fn(async () => enumerationResult([])),
       updateTopicDimension: vi.fn(async (topicId, id, body) => ({ ...DIMENSION, ...body }))
     });
     await userEvent.type(await screen.findByLabelText('What do you want to stay on top of?'), 'AI developer tools');
@@ -76,7 +77,7 @@ describe('Refinement wizard', () => {
     });
     const client = renderRoute('/dashboard/topics/top_1/refine?session=rfs_1', {
       getRefinementSession: vi.fn(async () => resumed),
-      listTopicRecipients: vi.fn(async () => []),
+      listTopicRecipients: vi.fn(async () => enumerationResult([])),
       answerQuestion: vi.fn(async (sid, qid, body) => ({ ...question(qid, qid === 'q1' ? 'SingleChoice' : 'Scale'), question: { ...question(qid, 'Scale').question, answered: true, answerText: body.answerText || null } }))
     });
     const first = await screen.findByTestId('question-q1');
@@ -99,7 +100,7 @@ describe('Refinement wizard', () => {
       .mockResolvedValueOnce(state());
     renderRoute('/dashboard/topics/top_1/refine?session=rfs_1', {
       getRefinementSession: vi.fn(async () => state({ dimensions: [] })),
-      listTopicRecipients: vi.fn(async () => []),
+      listTopicRecipients: vi.fn(async () => enumerationResult([])),
       proposeDimensions
     });
     await userEvent.click((await screen.findAllByRole('button', { name: 'Propose dimensions' }))[0]);
@@ -115,7 +116,7 @@ describe('Refinement wizard', () => {
   it('shows a stored failure and an out-of-scope reason with Rephrase', async () => {
     renderRoute('/dashboard/topics/top_1/refine?session=rfs_1', {
       getRefinementSession: vi.fn(async () => state({ session: { outOfScopeReason: 'Tracking a private person is out of scope.', lastError: 'Model timed out' }, dimensions: [] })),
-      listTopicRecipients: vi.fn(async () => [])
+      listTopicRecipients: vi.fn(async () => enumerationResult([]))
     });
     const notice = await screen.findByTestId('out-of-scope');
     expect(within(notice).getByText('Tracking a private person is out of scope.')).toBeInTheDocument();
@@ -129,7 +130,7 @@ describe('Refinement wizard', () => {
       getTopic: vi.fn(async () => ({ topic: TOPIC, dimensions: [], constraints: [], recipients: [] })),
       refineTopic: vi.fn(async () => state({ topic: { status: 'Active', brief: '# b' } })),
       getRefinementSession: vi.fn(async () => state({ topic: { status: 'Active', brief: '# b' } })),
-      listTopicRecipients: vi.fn(async () => [])
+      listTopicRecipients: vi.fn(async () => enumerationResult([]))
     });
     await userEvent.click(await screen.findByRole('button', { name: 'Start refining' }));
     await waitFor(() => expect(client.refineTopic).toHaveBeenCalledWith('top_1'));

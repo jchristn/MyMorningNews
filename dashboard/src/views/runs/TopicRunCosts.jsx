@@ -32,7 +32,7 @@ export default function TopicRunCosts({ topicId, refreshSignal = 0, onOpenRun })
     try {
       const page = await apiClient.listRuns({ topicId, pageNumber: 1, pageSize: RUN_LIMIT + 5, sortBy: 'queuedUtc', sortDirection: 'Descending' });
       if (id !== requestId.current) return;
-      setRuns(((page && page.items) || []).filter((r) => !isActiveRun(r)));
+      setRuns(((page && page.objects) || []).filter((r) => !isActiveRun(r)));
       setError(null);
     } catch (err) {
       if (id === requestId.current) setError(err);

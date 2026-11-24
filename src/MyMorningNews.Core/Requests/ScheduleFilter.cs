@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for Schedule records. Null properties are not applied.
     /// </summary>
-    public class ScheduleFilter : EnumerationFilter
+    public class ScheduleFilter : EnumerationQuery
     {
         /// <summary>
         /// Match OwnerType exactly when set.

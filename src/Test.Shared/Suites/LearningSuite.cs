@@ -61,7 +61,7 @@ namespace Test.Shared.Suites
 
         private static async Task<List<Finding>> FindingsAsync(PipelineFixture f, Run run, CancellationToken token)
         {
-            return (await f.User.Client.GetAsync("/v1.0/api/findings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().Items;
+            return (await f.User.Client.GetAsync("/v1.0/api/findings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().Objects;
         }
 
         private static async Task<Feedback> RateAsync(TestUser u, string type, string id, string action, string? reason, CancellationToken token)
@@ -96,9 +96,9 @@ namespace Test.Shared.Suites
             Assert.True(again.SourceScore("127.0.0.1", false, false) > 50 && again.SourceScore("unknown.test", false, false) == 50 && again.SourceScore("127.0.0.1", false, true) == 0, "domain reputation: " + again.SourceScore("127.0.0.1", false, false));
 
             Run second = await PipelineSuite.RunAsync(f, token).ConfigureAwait(false);
-            LlmCall plan = (await f.Server.Context.Database.LlmCalls.EnumerateAsync(new LlmCallFilter { TenantId = f.Topic.TenantId, RunId = second.Id, PromptKey = "research.queries", PageSize = 1 }, token).ConfigureAwait(false)).Items.Single();
+            LlmCall plan = (await f.Server.Context.Database.LlmCalls.EnumerateAsync(new LlmCallFilter { TenantId = f.Topic.TenantId, RunId = second.Id, PromptKey = "research.queries", PageSize = 1 }, token).ConfigureAwait(false)).Objects.Single();
             Assert.True(plan.PromptText!.Contains("Prefer source: Prefer primary sources such as regulators", StringComparison.Ordinal), "active preference in the next run's prompt");
-            LlmCall score = (await f.Server.Context.Database.LlmCalls.EnumerateAsync(new LlmCallFilter { TenantId = f.Topic.TenantId, RunId = first.Id, PromptKey = "research.score", PageSize = 1 }, token).ConfigureAwait(false)).Items.First();
+            LlmCall score = (await f.Server.Context.Database.LlmCalls.EnumerateAsync(new LlmCallFilter { TenantId = f.Topic.TenantId, RunId = first.Id, PromptKey = "research.score", PageSize = 1 }, token).ConfigureAwait(false)).Objects.First();
             Run third = await PipelineSuite.RunAsync(f, token).ConfigureAwait(false);
             Assert.True(third.Status == RunStatusEnum.Completed, "later run completes");
             AnalyticsScope scope = new AnalyticsScope { TenantId = f.Topic.TenantId, UserId = f.Topic.UserId, TopicId = f.Topic.Id };
@@ -114,9 +114,9 @@ namespace Test.Shared.Suites
             List<Finding> found = await FindingsAsync(f, run, token).ConfigureAwait(false);
             await RateAsync(f.User, "Finding", found[0].Id, "not-relevant", "Too basic, I know how they work", token).ConfigureAwait(false);
             await RateAsync(f.User, "Finding", found[1].Id, "somewhat", "Basic but has a date", token).ConfigureAwait(false);
-            Prediction p = (await f.User.Client.GetAsync("/v1.0/api/predictions?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Prediction>>().Items.First();
+            Prediction p = (await f.User.Client.GetAsync("/v1.0/api/predictions?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Prediction>>().Objects.First();
             await RateAsync(f.User, "Prediction", p.Id, "not-relevant", "Explainer level prediction", token).ConfigureAwait(false);
-            Suggestion s = (await f.User.Client.GetAsync("/v1.0/api/suggestions?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Suggestion>>().Items.First();
+            Suggestion s = (await f.User.Client.GetAsync("/v1.0/api/suggestions?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Suggestion>>().Objects.First();
             await RateAsync(f.User, "Suggestion", s.Id, "not-useful", null, token).ConfigureAwait(false);
             return f;
         }
@@ -126,10 +126,10 @@ namespace Test.Shared.Suites
             PipelineFixture f = await RatedFixtureAsync(token).ConfigureAwait(false);
             TestResponse learned = (await f.User.Client.PostAsync("/v1.0/api/topics/" + f.Topic.Id + "/learn", null, token).ConfigureAwait(false)).Expect(200, "learn now");
             Assert.True(learned.Body.Contains("\"proposed\":1", StringComparison.Ordinal), "one proposal (the unsupported one is dropped): " + learned.Body);
-            List<FeedbackReasonTag> tags = (await f.Server.Context.Database.FeedbackReasonTags.EnumerateAsync(new FeedbackReasonTagFilter { TenantId = f.Topic.TenantId, TopicId = f.Topic.Id, PageSize = 50 }, token).ConfigureAwait(false)).Items;
+            List<FeedbackReasonTag> tags = (await f.Server.Context.Database.FeedbackReasonTags.EnumerateAsync(new FeedbackReasonTagFilter { TenantId = f.Topic.TenantId, TopicId = f.Topic.Id, PageSize = 50 }, token).ConfigureAwait(false)).Objects;
             Assert.True(tags.Count == 3 && tags.Any(t => t.Tag == "too basic"), "reasons tagged (the rating without a reason is not): " + tags.Count);
             EnumerationResult<LearnedPreference> prefs = (await f.User.Client.GetAsync("/v1.0/api/learned-preferences?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<LearnedPreference>>();
-            LearnedPreference lp = prefs.Items.Single();
+            LearnedPreference lp = prefs.Objects.Single();
             Assert.True(lp.Status == PreferenceStatusEnum.Proposed && lp.Origin == PreferenceOriginEnum.Distilled && lp.Kind == PreferenceKindEnum.Avoid && lp.SupportCount == 3 && lp.Confidence == 0.8, "proposed with support");
             PreferenceDetailResponse d = (await f.User.Client.GetAsync("/v1.0/api/learned-preferences/" + lp.Id, token).ConfigureAwait(false)).Expect(200, "detail").Json<PreferenceDetailResponse>();
             Assert.Equal(3, d.Support.Count, "supporting feedback listed");
@@ -155,7 +155,7 @@ namespace Test.Shared.Suites
             Assert.Equal(PreferenceStatusEnum.Active, (await f.User.Client.PostAsync("/v1.0/api/learned-preferences/" + lp.Id + "/enable", null, token).ConfigureAwait(false)).Expect(200, "enable").Json<LearnedPreference>().Status, "enabled");
             TestUser other = await TestFixtures.CreateUserAsync(await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false), f.Topic.TenantId, false, token).ConfigureAwait(false);
             (await other.Client.GetAsync("/v1.0/api/learned-preferences/" + lp.Id, token).ConfigureAwait(false)).Expect(404, "private");
-            Assert.Equal(0, (await other.Client.GetAsync("/v1.0/api/learned-preferences", token).ConfigureAwait(false)).Json<EnumerationResult<LearnedPreference>>().Items.Count, "other member lists none");
+            Assert.Equal(0, (await other.Client.GetAsync("/v1.0/api/learned-preferences", token).ConfigureAwait(false)).Json<EnumerationResult<LearnedPreference>>().Objects.Count, "other member lists none");
             (await f.User.Client.DeleteAsync("/v1.0/api/learned-preferences/" + lp.Id, token).ConfigureAwait(false)).Expect(204, "delete");
         }
 
@@ -163,9 +163,9 @@ namespace Test.Shared.Suites
         {
             PipelineFixture f = await RatedFixtureAsync(token).ConfigureAwait(false);
             await f.Server.Context.Learning.LearnAsync(f.Topic.TenantId, f.Topic.UserId, f.Topic.Id, DateTime.UtcNow, token).ConfigureAwait(false);
-            LearnedPreference lp = (await f.User.Client.GetAsync("/v1.0/api/learned-preferences?status=Proposed&topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<LearnedPreference>>().Items.Single();
+            LearnedPreference lp = (await f.User.Client.GetAsync("/v1.0/api/learned-preferences?status=Proposed&topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<LearnedPreference>>().Objects.Single();
             Run run = await PipelineSuite.RunAsync(f, token).ConfigureAwait(false);
-            EmailMessage m = (await f.Server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = run.TenantId, RunId = run.Id, PageSize = 5 }, token).ConfigureAwait(false)).Items.Single();
+            EmailMessage m = (await f.Server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = run.TenantId, RunId = run.Id, PageSize = 5 }, token).ConfigureAwait(false)).Objects.Single();
             Assert.True(m.RenderedHtml!.Contains("What we learned from your feedback", StringComparison.Ordinal) && m.RenderedHtml.Contains(lp.Statement, StringComparison.Ordinal), "proposal in the digest");
             Match apply = Regex.Match(m.RenderedText!, @"Apply: (https?://\S+/v1\.0/public/feedback/[A-Za-z0-9_\-]+)\?a=apply");
             Assert.True(apply.Success, "apply link");
@@ -188,7 +188,7 @@ namespace Test.Shared.Suites
             Assert.Equal("Changed my mind after reading", edited.Reason, "reason edited");
             (await f.User.Client.DeleteAsync("/v1.0/api/feedback/" + second.Id, token).ConfigureAwait(false)).Expect(204, "retract");
             EnumerationResult<Feedback> current = (await f.User.Client.GetAsync("/v1.0/api/feedback?targetType=Finding&targetId=" + x.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Feedback>>();
-            Assert.True(current.Items.Count == 1 && current.Items[0].Id == first.Id && current.Items[0].Relevance == RelevanceRatingEnum.Relevant, "earlier rating is current again");
+            Assert.True(current.Objects.Count == 1 && current.Objects[0].Id == first.Id && current.Objects[0].Relevance == RelevanceRatingEnum.Relevant, "earlier rating is current again");
             TestUser other = await TestFixtures.CreateUserAsync(await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false), f.Topic.TenantId, false, token).ConfigureAwait(false);
             (await other.Client.DeleteAsync("/v1.0/api/feedback/" + first.Id, token).ConfigureAwait(false)).Expect(404, "cannot retract someone else's");
         }
@@ -223,7 +223,7 @@ namespace Test.Shared.Suites
 
             FeedbackReport fb = (await f.User.Client.GetAsync("/v1.0/api/analytics/feedback" + q, token).ConfigureAwait(false)).Expect(200, "feedback").Json<FeedbackReport>();
             Assert.True(fb.Total == 2 && fb.WithReason == 2 && fb.ByChannel.Single().Key == "Dashboard" && fb.ByTargetType.Single().Key == "Finding", "feedback volume");
-            Suggestion s = (await f.User.Client.GetAsync("/v1.0/api/suggestions" + q, token).ConfigureAwait(false)).Json<EnumerationResult<Suggestion>>().Items.First();
+            Suggestion s = (await f.User.Client.GetAsync("/v1.0/api/suggestions" + q, token).ConfigureAwait(false)).Json<EnumerationResult<Suggestion>>().Objects.First();
             await f.User.Client.PutAsync("/v1.0/api/suggestions/" + s.Id + "/status", new { status = "Done" }, token).ConfigureAwait(false);
             SuggestionReport sug = (await f.User.Client.GetAsync("/v1.0/api/analytics/suggestions" + q, token).ConfigureAwait(false)).Expect(200, "suggestions").Json<SuggestionReport>();
             Assert.True(sug.Total == 1 && sug.Done == 1 && sug.MeanDaysToDecision.HasValue && sug.ByPriority.Single().Rate == 1, "suggestion outcomes");

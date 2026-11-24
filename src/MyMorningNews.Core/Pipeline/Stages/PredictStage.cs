@@ -34,7 +34,7 @@ namespace MyMorningNews.Core.Pipeline.Stages
         public async Task<StageOutcome> ExecuteAsync(RunContext ctx, PipelineServices services, CancellationToken token)
         {
             if (ctx.Findings.Count == 0) return StageOutcome.Of(0, 0);
-            List<Prediction> all = (await services.Database.Predictions.EnumerateAsync(new PredictionFilter { TenantId = ctx.Run.TenantId, TopicId = ctx.Topic.Id, IsDryRun = false, PageSize = 200 }, token).ConfigureAwait(false)).Items;
+            List<Prediction> all = (await services.Database.Predictions.EnumerateAsync(new PredictionFilter { TenantId = ctx.Run.TenantId, TopicId = ctx.Topic.Id, IsDryRun = false, PageSize = 200 }, token).ConfigureAwait(false)).Objects;
             List<Prediction> open = all.Where(p => p.Status == PredictionStatusEnum.Open || p.Status == PredictionStatusEnum.ProposedResolved).ToList();
             int accurate = all.Count(p => p.Status == PredictionStatusEnum.Accurate);
             int partial = all.Count(p => p.Status == PredictionStatusEnum.PartiallyAccurate);

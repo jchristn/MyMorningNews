@@ -45,5 +45,15 @@ namespace MyMorningNews.Sdk.Resources
 
             return query;
         }
+        /// <summary>Merge common enumeration options with resource filters.</summary>
+        /// <param name="options">Enumeration query.</param>
+        /// <param name="filters">Resource filters.</param>
+        /// <returns>Combined query.</returns>
+        protected static Dictionary<string, string> MergeQuery(Options.EnumerationQuery? options, Dictionary<string, string> filters)
+        {
+            Dictionary<string, string> query = (options ?? new Options.EnumerationQuery()).ToQuery();
+            foreach (KeyValuePair<string, string> item in filters) query[item.Key] = item.Value;
+            return query;
+        }
     }
 }

@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for SearchResult records. Null properties are not applied.
     /// </summary>
-    public class SearchResultFilter : EnumerationFilter
+    public class SearchResultFilter : EnumerationQuery
     {
         /// <summary>
         /// Match SearchQueryId exactly when set.

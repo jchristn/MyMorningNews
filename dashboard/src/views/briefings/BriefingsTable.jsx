@@ -42,11 +42,11 @@ export default function BriefingsTable({ tableKey = 'briefings', extraFilters = 
     let cancelled = false;
     apiClient
       .listEditions({ pageSize: 200 })
-      .then((r) => !cancelled && setEditions((r && r.items) || []))
+      .then((r) => !cancelled && setEditions((r && r.objects) || []))
       .catch(() => {});
     apiClient
       .listTopics({ pageSize: 1000, sortBy: 'name', sortDirection: 'Ascending' })
-      .then((r) => !cancelled && setTopics((r && r.items) || []))
+      .then((r) => !cancelled && setTopics((r && r.objects) || []))
       .catch(() => {});
     return () => {
       cancelled = true;

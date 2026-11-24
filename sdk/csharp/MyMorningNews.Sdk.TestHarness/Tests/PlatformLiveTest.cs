@@ -23,7 +23,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             ProviderConnectionsResponse providers = await client.Providers.ListAsync(token).ConfigureAwait(false);
             Helpers.NotEmpty(providers.Plan.Plan.Id, "provider response carries effective plan");
             EnumerationResult<CatalogEntryResponse> catalog = await client.Catalog.ListAsync(new CatalogListOptions { PageSize = 2 }, token).ConfigureAwait(false);
-            Helpers.True(catalog.Items.Count <= 2, "catalog pagination is honored");
+            Helpers.True(catalog.Objects.Count <= 2, "catalog pagination is honored");
             await client.Catalog.SubscriptionsAsync(null, token).ConfigureAwait(false);
             await client.Catalog.AllIssuesAsync(null, token).ConfigureAwait(false);
             UsageMeter usage = await client.Account.GetUsageAsync(token).ConfigureAwait(false);

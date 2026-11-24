@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for PlanAssignment records. Null properties are not applied.
     /// </summary>
-    public class PlanAssignmentFilter : EnumerationFilter
+    public class PlanAssignmentFilter : EnumerationQuery
     {
         /// <summary>
         /// Match UserId exactly when set.

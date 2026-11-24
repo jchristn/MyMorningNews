@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for PromoRedemption records. Null properties are not applied.
     /// </summary>
-    public class PromoRedemptionFilter : EnumerationFilter
+    public class PromoRedemptionFilter : EnumerationQuery
     {
         /// <summary>
         /// Match PromoCodeId exactly when set.

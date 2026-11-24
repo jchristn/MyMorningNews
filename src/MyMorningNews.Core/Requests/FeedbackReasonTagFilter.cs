@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for FeedbackReasonTag records. Null properties are not applied.
     /// </summary>
-    public class FeedbackReasonTagFilter : EnumerationFilter
+    public class FeedbackReasonTagFilter : EnumerationQuery
     {
         /// <summary>
         /// Match FeedbackId exactly when set.

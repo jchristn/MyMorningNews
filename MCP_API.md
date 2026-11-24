@@ -147,7 +147,7 @@ python3 src/Tools/mcpdocs/generate_mcp_api.py
 
 ## Tools
 
-33 tools. Every tool returns structured content that matches its output schema, and the same data as JSON text.
+42 tools. Every tool returns structured content that matches its output schema, and the same data as JSON text.
 
 | Tool | Title | Read only | Destructive |
 |---|---|---|---|
@@ -184,6 +184,15 @@ python3 src/Tools/mcpdocs/generate_mcp_api.py
 | [`accept_learned_preference`](#accept_learned_preference) | Accept a proposed preference | no | no |
 | [`reject_learned_preference`](#reject_learned_preference) | Reject a proposed preference | no | no |
 | [`get_analytics_summary`](#get_analytics_summary) | Summarize research quality | yes | no |
+| [`get_account_plan`](#get_account_plan) | Read my plan | yes | no |
+| [`get_account_usage`](#get_account_usage) | Read my usage | yes | no |
+| [`list_system_briefings`](#list_system_briefings) | Browse system briefings | yes | no |
+| [`list_system_subscriptions`](#list_system_subscriptions) | Read my system subscriptions | yes | no |
+| [`subscribe_system_briefing`](#subscribe_system_briefing) | Subscribe to a system briefing | no | no |
+| [`unsubscribe_system_briefing`](#unsubscribe_system_briefing) | Unsubscribe from a system briefing | no | yes |
+| [`list_system_issues`](#list_system_issues) | List shared briefing issues | yes | no |
+| [`get_system_issue`](#get_system_issue) | Read a shared briefing | yes | no |
+| [`set_topic_history`](#set_topic_history) | Set briefing comparison context | no | no |
 
 ### list_topics
 
@@ -202,8 +211,11 @@ Output:
 
 | Name | Type | Always | Description |
 |---|---|---|---|
-| `items` | array of object with `id`, `name`, `status`, `description`, `isOneTime`, `emailOnRun`, `audioEnabled`, `lastRunUtc`, `createdUtc` | yes | Items on this page. |
-| `totalCount` | integer | yes | Items matching across all pages. |
+| `success` | boolean | no | Whether enumeration succeeded. |
+| `pageSize` | integer (1 to 1000) | no | Maximum objects on this page. |
+| `totalMs` | number | no | Enumeration duration in milliseconds. |
+| `objects` | array of object with `id`, `name`, `status`, `description`, `isOneTime`, `historyMode`, `historyCount`, `historySinceUtc`, `historyBriefingId`, `emailOnRun`, `audioEnabled`, `lastRunUtc`, `createdUtc` | yes | Items on this page. |
+| `totalRecords` | integer | yes | Items matching across all pages. |
 | `pageNumber` | integer | no | Page number (1-based). |
 | `totalPages` | integer | no | Pages available. |
 
@@ -221,7 +233,7 @@ Output:
 
 | Name | Type | Always | Description |
 |---|---|---|---|
-| `topic` | object with `id`, `name`, `status`, `description`, `isOneTime`, `emailOnRun`, `audioEnabled`, `lastRunUtc`, `createdUtc` | yes |  |
+| `topic` | object with `id`, `name`, `status`, `description`, `isOneTime`, `historyMode`, `historyCount`, `historySinceUtc`, `historyBriefingId`, `emailOnRun`, `audioEnabled`, `lastRunUtc`, `createdUtc` | yes |  |
 | `brief` | string or null | no | The research brief. |
 | `dimensions` | array of object | no | Research dimensions. |
 | `constraints` | array of object | no | Constraints. |
@@ -244,7 +256,7 @@ Output:
 
 | Name | Type | Always | Description |
 |---|---|---|---|
-| `topic` | object with `id`, `name`, `status`, `description`, `isOneTime`, `emailOnRun`, `audioEnabled`, `lastRunUtc`, `createdUtc` | yes |  |
+| `topic` | object with `id`, `name`, `status`, `description`, `isOneTime`, `historyMode`, `historyCount`, `historySinceUtc`, `historyBriefingId`, `emailOnRun`, `audioEnabled`, `lastRunUtc`, `createdUtc` | yes |  |
 | `brief` | string or null | no | The drafted brief. |
 | `dimensions` | array of string | no | Dimension names. |
 
@@ -335,6 +347,10 @@ Output:
 | `status` | string | yes | One of: Draft, Active, Paused, Archived. |
 | `description` | string or null | no | Description. |
 | `isOneTime` | boolean | no | One-time report rather than recurring. |
+| `historyMode` | string | no | One of: Off, PreviousIssue, RecentIssues, SinceDate, SpecificIssue. |
+| `historyCount` | integer (1 to 20) | no | Maximum baseline issues. |
+| `historySinceUtc` | string or null | no | Earliest baseline time. |
+| `historyBriefingId` | string or null | no | Selected baseline issue. |
 | `emailOnRun` | boolean | no | Emails after every run. |
 | `audioEnabled` | boolean | no | Every run briefing is turned into audio automatically. |
 | `lastRunUtc` | string or null | no | Last run (UTC). |
@@ -436,8 +452,11 @@ Output:
 
 | Name | Type | Always | Description |
 |---|---|---|---|
-| `items` | array of object with `id`, `ownerType`, `ownerId`, `name`, `intervalType`, `intervalValue`, `minuteOffset`, `daysOfWeek`, `daysOfMonth`, `timesOfDay`, `cronExpression`, `timeZone`, `startUtc`, `endUtc`, `runOnceUtc`, `enabled`, `missedRunPolicy`, `nextRunUtc`, `lastRunUtc` | yes | Items on this page. |
-| `totalCount` | integer | yes | Items matching across all pages. |
+| `success` | boolean | no | Whether enumeration succeeded. |
+| `pageSize` | integer (1 to 1000) | no | Maximum objects on this page. |
+| `totalMs` | number | no | Enumeration duration in milliseconds. |
+| `objects` | array of object with `id`, `ownerType`, `ownerId`, `name`, `intervalType`, `intervalValue`, `minuteOffset`, `daysOfWeek`, `daysOfMonth`, `timesOfDay`, `cronExpression`, `timeZone`, `startUtc`, `endUtc`, `runOnceUtc`, `enabled`, `missedRunPolicy`, `nextRunUtc`, `lastRunUtc` | yes | Items on this page. |
+| `totalRecords` | integer | yes | Items matching across all pages. |
 | `pageNumber` | integer | no | Page number (1-based). |
 | `totalPages` | integer | no | Pages available. |
 
@@ -529,8 +548,11 @@ Output:
 
 | Name | Type | Always | Description |
 |---|---|---|---|
-| `items` | array of object with `id`, `topicId`, `runId`, `title`, `summary`, `whyItMatters`, `category`, `tier`, `relevanceScore`, `confidence`, `isDuplicate`, `pinned`, `hidden`, `publishedUtc`, `createdUtc` | yes | Items on this page. |
-| `totalCount` | integer | yes | Items matching across all pages. |
+| `success` | boolean | no | Whether enumeration succeeded. |
+| `pageSize` | integer (1 to 1000) | no | Maximum objects on this page. |
+| `totalMs` | number | no | Enumeration duration in milliseconds. |
+| `objects` | array of object with `id`, `topicId`, `runId`, `title`, `summary`, `whyItMatters`, `category`, `tier`, `relevanceScore`, `confidence`, `isDuplicate`, `pinned`, `hidden`, `publishedUtc`, `createdUtc` | yes | Items on this page. |
+| `totalRecords` | integer | yes | Items matching across all pages. |
 | `pageNumber` | integer | no | Page number (1-based). |
 | `totalPages` | integer | no | Pages available. |
 
@@ -557,8 +579,11 @@ Output:
 
 | Name | Type | Always | Description |
 |---|---|---|---|
-| `items` | array of object with `id`, `topicId`, `runId`, `title`, `summary`, `whyItMatters`, `category`, `tier`, `relevanceScore`, `confidence`, `isDuplicate`, `pinned`, `hidden`, `publishedUtc`, `createdUtc` | yes | Items on this page. |
-| `totalCount` | integer | yes | Items matching across all pages. |
+| `success` | boolean | no | Whether enumeration succeeded. |
+| `pageSize` | integer (1 to 1000) | no | Maximum objects on this page. |
+| `totalMs` | number | no | Enumeration duration in milliseconds. |
+| `objects` | array of object with `id`, `topicId`, `runId`, `title`, `summary`, `whyItMatters`, `category`, `tier`, `relevanceScore`, `confidence`, `isDuplicate`, `pinned`, `hidden`, `publishedUtc`, `createdUtc` | yes | Items on this page. |
+| `totalRecords` | integer | yes | Items matching across all pages. |
 | `pageNumber` | integer | no | Page number (1-based). |
 | `totalPages` | integer | no | Pages available. |
 
@@ -633,8 +658,11 @@ Output:
 
 | Name | Type | Always | Description |
 |---|---|---|---|
-| `items` | array of object with `id`, `title`, `kind`, `status`, `topicId`, `editionId`, `runId`, `itemCount`, `wordCount`, `readMinutes`, `hasAudio`, `pinned`, `composedUtc`, `createdUtc` | yes | Items on this page. |
-| `totalCount` | integer | yes | Items matching across all pages. |
+| `success` | boolean | no | Whether enumeration succeeded. |
+| `pageSize` | integer (1 to 1000) | no | Maximum objects on this page. |
+| `totalMs` | number | no | Enumeration duration in milliseconds. |
+| `objects` | array of object with `id`, `title`, `kind`, `status`, `topicId`, `editionId`, `runId`, `itemCount`, `wordCount`, `readMinutes`, `hasAudio`, `pinned`, `composedUtc`, `createdUtc` | yes | Items on this page. |
+| `totalRecords` | integer | yes | Items matching across all pages. |
 | `pageNumber` | integer | no | Page number (1-based). |
 | `totalPages` | integer | no | Pages available. |
 
@@ -718,8 +746,11 @@ Output:
 
 | Name | Type | Always | Description |
 |---|---|---|---|
-| `items` | array of object with `id`, `briefingId`, `status`, `expiresUtc`, `revokedUtc`, `showOwnerName`, `viewCount`, `lastViewedUtc`, `createdUtc` | yes | Items on this page. |
-| `totalCount` | integer | yes | Items matching across all pages. |
+| `success` | boolean | no | Whether enumeration succeeded. |
+| `pageSize` | integer (1 to 1000) | no | Maximum objects on this page. |
+| `totalMs` | number | no | Enumeration duration in milliseconds. |
+| `objects` | array of object with `id`, `briefingId`, `status`, `expiresUtc`, `revokedUtc`, `showOwnerName`, `viewCount`, `lastViewedUtc`, `createdUtc` | yes | Items on this page. |
+| `totalRecords` | integer | yes | Items matching across all pages. |
 | `pageNumber` | integer | no | Page number (1-based). |
 | `totalPages` | integer | no | Pages available. |
 
@@ -758,8 +789,11 @@ Output:
 
 | Name | Type | Always | Description |
 |---|---|---|---|
-| `items` | array of object with `id`, `topicId`, `statement`, `rationale`, `confidence`, `horizonUtc`, `status`, `resolvedUtc`, `resolutionNote`, `brierScore` | yes | Items on this page. |
-| `totalCount` | integer | yes | Items matching across all pages. |
+| `success` | boolean | no | Whether enumeration succeeded. |
+| `pageSize` | integer (1 to 1000) | no | Maximum objects on this page. |
+| `totalMs` | number | no | Enumeration duration in milliseconds. |
+| `objects` | array of object with `id`, `topicId`, `statement`, `rationale`, `confidence`, `horizonUtc`, `status`, `resolvedUtc`, `resolutionNote`, `brierScore` | yes | Items on this page. |
+| `totalRecords` | integer | yes | Items matching across all pages. |
 | `pageNumber` | integer | no | Page number (1-based). |
 | `totalPages` | integer | no | Pages available. |
 
@@ -807,8 +841,11 @@ Output:
 
 | Name | Type | Always | Description |
 |---|---|---|---|
-| `items` | array of object with `id`, `topicId`, `title`, `description`, `rationale`, `priority`, `effort`, `status`, `snoozedUntilUtc`, `createdUtc` | yes | Items on this page. |
-| `totalCount` | integer | yes | Items matching across all pages. |
+| `success` | boolean | no | Whether enumeration succeeded. |
+| `pageSize` | integer (1 to 1000) | no | Maximum objects on this page. |
+| `totalMs` | number | no | Enumeration duration in milliseconds. |
+| `objects` | array of object with `id`, `topicId`, `title`, `description`, `rationale`, `priority`, `effort`, `status`, `snoozedUntilUtc`, `createdUtc` | yes | Items on this page. |
+| `totalRecords` | integer | yes | Items matching across all pages. |
 | `pageNumber` | integer | no | Page number (1-based). |
 | `totalPages` | integer | no | Pages available. |
 
@@ -884,8 +921,11 @@ Output:
 
 | Name | Type | Always | Description |
 |---|---|---|---|
-| `items` | array of object with `id`, `topicId`, `kind`, `statement`, `status`, `origin`, `supportCount`, `confidence` | yes | Items on this page. |
-| `totalCount` | integer | yes | Items matching across all pages. |
+| `success` | boolean | no | Whether enumeration succeeded. |
+| `pageSize` | integer (1 to 1000) | no | Maximum objects on this page. |
+| `totalMs` | number | no | Enumeration duration in milliseconds. |
+| `objects` | array of object with `id`, `topicId`, `kind`, `statement`, `status`, `origin`, `supportCount`, `confidence` | yes | Items on this page. |
+| `totalRecords` | integer | yes | Items matching across all pages. |
 | `pageNumber` | integer | no | Page number (1-based). |
 | `totalPages` | integer | no | Pages available. |
 
@@ -962,6 +1002,177 @@ Output:
 | `briefingsReady` | integer | no | Briefings composed. |
 | `emails` | object | no | Emails: sent, failed. |
 | `model` | object | no | Model use: calls, costUsd. |
+
+### get_account_plan
+
+**Read my plan.** Read your effective plan, funding mode, inherited allowances and per-user override sources. No purchase is made.
+
+Input:
+
+None.
+
+Output:
+
+None.
+
+### get_account_usage
+
+**Read my usage.** Read custom topic and system subscription counts, daily generated and reserved audio seconds, and the UTC reset. Audio playback is free.
+
+Input:
+
+None.
+
+Output:
+
+None.
+
+### list_system_briefings
+
+**Browse system briefings.** Browse published system-wide briefings with eligibility and subscription status. Canonical prompts and research internals are excluded.
+
+Input:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `pageNumber` | integer (1 to 10000) | no | Page, default 1. |
+| `pageSize` | integer (1 to 100) | no | Results per page, default 20. |
+
+Output:
+
+| Name | Type | Always | Description |
+|---|---|---|---|
+| `success` | boolean | no | Whether enumeration succeeded. |
+| `pageSize` | integer (1 to 1000) | no | Maximum objects on this page. |
+| `totalMs` | number | no | Enumeration duration in milliseconds. |
+| `objects` | array of object | yes | Items on this page. |
+| `totalRecords` | integer | yes | Items matching across all pages. |
+| `pageNumber` | integer | no | Page number (1-based). |
+| `totalPages` | integer | no | Pages available. |
+
+### list_system_subscriptions
+
+**Read my system subscriptions.** List your private catalog subscriptions, delivery preferences and suspension status.
+
+Input:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `pageNumber` | integer (1 to 10000) | no | Page, default 1. |
+| `pageSize` | integer (1 to 100) | no | Results per page, default 20. |
+
+Output:
+
+| Name | Type | Always | Description |
+|---|---|---|---|
+| `success` | boolean | no | Whether enumeration succeeded. |
+| `pageSize` | integer (1 to 1000) | no | Maximum objects on this page. |
+| `totalMs` | number | no | Enumeration duration in milliseconds. |
+| `objects` | array of object | yes | Items on this page. |
+| `totalRecords` | integer | yes | Items matching across all pages. |
+| `pageNumber` | integer | no | Page number (1-based). |
+| `totalPages` | integer | no | Pages available. |
+
+### subscribe_system_briefing
+
+**Subscribe to a system briefing.** Subscribe to an eligible system briefing or update its delivery preferences. This uses the system subscription allowance, without creating custom research or a paid purchase.
+
+Input:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `publicationId` | string (up to 64) | yes | System publication ID. |
+| `emailEnabled` | boolean | no | Email new issues; default true. |
+| `pushEnabled` | boolean | no | Notify mobile devices; default true. |
+
+Output:
+
+None.
+
+### unsubscribe_system_briefing
+
+**Unsubscribe from a system briefing.** Stop receiving a shared briefing and release its subscription slot. Shared issues remain owned by the platform.
+
+Input:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `publicationId` | string (up to 64) | yes | System publication ID. |
+
+Output:
+
+None.
+
+### list_system_issues
+
+**List shared briefing issues.** List readable issues from all your current system subscriptions. Suspended and retracted publications are excluded.
+
+Input:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `pageNumber` | integer (1 to 10000) | no | Page, default 1. |
+| `pageSize` | integer (1 to 100) | no | Results per page, default 20. |
+
+Output:
+
+| Name | Type | Always | Description |
+|---|---|---|---|
+| `success` | boolean | no | Whether enumeration succeeded. |
+| `pageSize` | integer (1 to 1000) | no | Maximum objects on this page. |
+| `totalMs` | number | no | Enumeration duration in milliseconds. |
+| `objects` | array of object | yes | Items on this page. |
+| `totalRecords` | integer | yes | Items matching across all pages. |
+| `pageNumber` | integer | no | Page number (1-based). |
+| `totalPages` | integer | no | Pages available. |
+
+### get_system_issue
+
+**Read a shared briefing.** Read one shared issue as Markdown through your subscription. No subscriber list or canonical workspace data is exposed.
+
+Input:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `publicationId` | string (up to 64) | yes | System publication ID. |
+| `issueId` | string (up to 64) | yes | Issue ID. |
+| `maxCharacters` | integer (1000 to 200000) | no | Maximum Markdown characters, default 20000. |
+
+Output:
+
+None.
+
+### set_topic_history
+
+**Set briefing comparison context.** Choose whether future research compares earlier briefings to identify changes. Off produces standalone briefings. Only owned issues may be selected; the server freezes a bounded baseline for each run.
+
+Input:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `topicId` | string (up to 64) | yes | Owned topic ID. |
+| `mode` | string (`Off`, `PreviousIssue`, `RecentIssues`, `SinceDate`, `SpecificIssue`) | yes | Comparison mode. |
+| `count` | integer (1 to 20) | no | Maximum baseline issues, default 5. |
+| `sinceUtc` | string | no | Start timestamp for SinceDate. |
+| `briefingId` | string (up to 64) | no | Baseline issue for SpecificIssue. |
+
+Output:
+
+| Name | Type | Always | Description |
+|---|---|---|---|
+| `id` | string | yes | Topic ID (top_...). |
+| `name` | string | yes | Name. |
+| `status` | string | yes | One of: Draft, Active, Paused, Archived. |
+| `description` | string or null | no | Description. |
+| `isOneTime` | boolean | no | One-time report rather than recurring. |
+| `historyMode` | string | no | One of: Off, PreviousIssue, RecentIssues, SinceDate, SpecificIssue. |
+| `historyCount` | integer (1 to 20) | no | Maximum baseline issues. |
+| `historySinceUtc` | string or null | no | Earliest baseline time. |
+| `historyBriefingId` | string or null | no | Selected baseline issue. |
+| `emailOnRun` | boolean | no | Emails after every run. |
+| `audioEnabled` | boolean | no | Every run briefing is turned into audio automatically. |
+| `lastRunUtc` | string or null | no | Last run (UTC). |
+| `createdUtc` | string | no | Created (UTC). |
 
 ## Resources
 

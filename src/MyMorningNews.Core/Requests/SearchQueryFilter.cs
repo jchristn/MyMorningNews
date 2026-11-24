@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for SearchQuery records. Null properties are not applied.
     /// </summary>
-    public class SearchQueryFilter : EnumerationFilter
+    public class SearchQueryFilter : EnumerationQuery
     {
         /// <summary>
         /// Match RunId exactly when set.

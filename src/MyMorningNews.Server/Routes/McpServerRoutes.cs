@@ -33,6 +33,7 @@ namespace MyMorningNews.Server.Routes
         {
             ArgumentNullException.ThrowIfNull(webserver);
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, B, ListAsync, null, openApiMetadata: Paged(Doc("List registered MCP servers", "MCP servers").WithParameter(QueryParam("enabled", typeof(bool)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, B + "/enumerate", ctx => EnumerateAsync(ctx, ListAsync), null, openApiMetadata: Paged(Doc("List registered MCP servers", "MCP servers").WithParameter(QueryParam("enabled", typeof(bool)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, B, CreateAsync, null, openApiMetadata: Doc("Register an MCP server", "MCP servers",
                 "Streamable HTTP or SSE URL; the credential comes from the vault and is sent in HeaderName with HeaderPrefix. stdio servers are not supported from the container.").WithRequestBody(Body<McpServerUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, B + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read an MCP server with its tools", "MCP servers"));
@@ -42,7 +43,8 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, B + "/{id}/discover", DiscoverAsync, null, openApiMetadata: Doc("Discover the server's tools and save them", "MCP servers",
                 "New tools start disabled; existing tools keep their setting; tools the server no longer lists are removed."));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, B + "/{id}/tools/{toolId}", ToolAsync, null, openApiMetadata: Doc("Turn a tool on or off for agentic research", "MCP servers").WithRequestBody(Body<McpToolUpdateRequest>()));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}/tool-calls", RunToolCallsAsync, null, openApiMetadata: Doc("A run's agentic tool calls, in order", "Runs"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/runs/{id}/tool-calls", RunToolCallsAsync, null, openApiMetadata: Paged(Doc("A run's agentic tool calls, in order", "Runs")));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/api/runs/{id}/tool-calls" + "/enumerate", ctx => EnumerateAsync(ctx, RunToolCallsAsync), null, openApiMetadata: Paged(Doc("A run's agentic tool calls, in order", "Runs")).WithRequestBody(Body<EnumerationQuery>()));
         }
 
         private async Task ListAsync(HttpContextBase ctx)
@@ -107,7 +109,7 @@ namespace MyMorningNews.Server.Routes
                 await Server.Database.McpServerTools.DeleteAsync(server.TenantId, t.Id, ctx.Token).ConfigureAwait(false);
             if (removedIds.Count > 0)
             {
-                foreach (Topic topic in (await Server.Database.Topics.EnumerateAsync(new TopicFilter { TenantId = server.TenantId, PageSize = 1000 }, ctx.Token).ConfigureAwait(false)).Items.Where(x => x.McpToolIds.Any(removedIds.Contains)))
+                foreach (Topic topic in (await Server.Database.Topics.EnumerateAsync(new TopicFilter { TenantId = server.TenantId, PageSize = 1000 }, ctx.Token).ConfigureAwait(false)).Objects.Where(x => x.McpToolIds.Any(removedIds.Contains)))
                 {
                     topic.McpToolIds = topic.McpToolIds.Where(id => !removedIds.Contains(id)).ToList();
                     await Server.Database.Topics.UpdateAsync(topic, ctx.Token).ConfigureAwait(false);
@@ -196,9 +198,9 @@ namespace MyMorningNews.Server.Routes
             if (tenantId == null) return;
             Run? run = await Server.Database.Runs.ReadAsync(tenantId, Param(ctx, "id") ?? String.Empty, ctx.Token).ConfigureAwait(false);
             if (run == null || !IsOwnerOrAdmin(ctx, run.UserId)) { await SendNotFoundAsync(ctx, "Run").ConfigureAwait(false); return; }
-            List<RunToolCall> calls = (await Server.Database.RunToolCalls.EnumerateAsync(new RunToolCallFilter { TenantId = tenantId, RunId = run.Id, PageSize = 500 }, ctx.Token).ConfigureAwait(false)).Items
-                .OrderBy(c => c.SortOrder).ToList();
-            await SendJsonAsync(ctx, 200, calls).ConfigureAwait(false);
+            RunToolCallFilter query = new RunToolCallFilter { TenantId = tenantId, RunId = run.Id, SortBy = "sortOrder", SortDirection = SortDirectionEnum.Ascending };
+            ApplyPaging(ctx, query);
+            await SendJsonAsync(ctx, 200, await Server.Database.RunToolCalls.EnumerateAsync(query, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         private async Task<bool> ApplyAsync(HttpContextBase ctx, McpServer server, McpServerUpsertRequest req)
@@ -247,7 +249,7 @@ namespace MyMorningNews.Server.Routes
 
         private async Task<List<McpServerTool>> ToolsAsync(McpServer server, HttpContextBase ctx)
         {
-            return (await Server.Database.McpServerTools.EnumerateAsync(new McpServerToolFilter { TenantId = server.TenantId, McpServerId = server.Id, PageSize = 500 }, ctx.Token).ConfigureAwait(false)).Items
+            return (await Server.Database.McpServerTools.EnumerateAsync(new McpServerToolFilter { TenantId = server.TenantId, McpServerId = server.Id, PageSize = 500 }, ctx.Token).ConfigureAwait(false)).Objects
                 .OrderBy(t => t.Name, StringComparer.Ordinal).ToList();
         }
     }

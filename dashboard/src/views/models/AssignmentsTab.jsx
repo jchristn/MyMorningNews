@@ -129,7 +129,7 @@ export default function AssignmentsTab({ endpoints, canWrite, initialTopicId }) 
     let live = true;
     Promise.resolve()
       .then(() => apiClient.listTopics({ pageSize: 1000, sortBy: 'name', sortDirection: 'Ascending' }))
-      .then((r) => live && setTopics((r && r.items) || []))
+      .then((r) => live && setTopics((r && r.objects) || []))
       .catch(() => live && setTopics([]));
     return () => {
       live = false;
@@ -140,7 +140,7 @@ export default function AssignmentsTab({ endpoints, canWrite, initialTopicId }) 
   const load = useCallback(async () => {
     try {
       const page = await apiClient.listModelAssignments({ pageSize: 1000 });
-      const items = page && page.items ? page.items : [];
+      const items = page && page.objects ? page.objects : [];
       setAssignments(items);
       const next = {};
       for (const task of MODEL_TASKS) next[task] = draftFrom(items.find((a) => a.task === task && !a.topicId));

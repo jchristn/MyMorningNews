@@ -1,3 +1,4 @@
+import { enumerateObjects } from '@/api/enumeration';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import { router } from 'expo-router';
@@ -37,13 +38,13 @@ export function dispositionCounts(results) {
 export async function loadRun(client, id) {
   const run = await runsApi.get(client, id);
   const [stages, costs, queries, results, findings] = await Promise.all([
-    runsApi.stages(client, id).catch(() => []),
+    enumerateObjects((query) => runsApi.stages(client, id, query)).catch(() => []),
     runsApi.costs(client, id).catch(() => null),
-    runsApi.queries(client, id).catch(() => []),
-    runsApi.results(client, id).catch(() => []),
+    enumerateObjects((query) => runsApi.queries(client, id, query)).catch(() => []),
+    enumerateObjects((query) => runsApi.results(client, id, undefined, query)).catch(() => []),
     findingsApi.list(client, { runId: id, pageNumber: 1, pageSize: 20, sortBy: 'relevanceScore', sortDirection: 'Descending', includeDryRun: run.isDryRun || undefined }).catch(() => null),
   ]);
-  return { run, stages: Array.isArray(stages) ? stages : listItems(stages), costs: costs && costs.totals ? costs : null, queries: listItems(queries), results: listItems(results), findings: listItems(findings) };
+  return { run, stages, costs: costs && costs.totals ? costs : null, queries, results, findings: listItems(findings) };
 }
 
 /**

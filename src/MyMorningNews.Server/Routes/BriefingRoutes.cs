@@ -36,6 +36,10 @@ namespace MyMorningNews.Server.Routes
                 .WithParameter(QueryParam("kind", typeof(BriefingKindEnum))).WithParameter(QueryParam("editionId", typeof(string))).WithParameter(QueryParam("topicId", typeof(string)))
                 .WithParameter(QueryParam("runId", typeof(string))).WithParameter(QueryParam("status", typeof(BriefingStatusEnum))).WithParameter(QueryParam("pinned", typeof(bool)))
                 .WithParameter(QueryParam("includeDryRun", typeof(bool)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b + "/enumerate", ctx => EnumerateAsync(ctx, ListAsync), null, openApiMetadata: Paged(Doc("List briefings", "Briefings", "Newest first. Dry runs and previews are excluded unless includeDryRun=true.").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))
+                .WithParameter(QueryParam("kind", typeof(BriefingKindEnum))).WithParameter(QueryParam("editionId", typeof(string))).WithParameter(QueryParam("topicId", typeof(string)))
+                .WithParameter(QueryParam("runId", typeof(string))).WithParameter(QueryParam("status", typeof(BriefingStatusEnum))).WithParameter(QueryParam("pinned", typeof(bool)))
+                .WithParameter(QueryParam("includeDryRun", typeof(bool)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read a briefing with its sections, items, and files", "Briefings"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}/download", DownloadAsync, null, openApiMetadata: Doc("Download a briefing as Markdown or HTML", "Briefings",
                 "format=md (default) or html. 410 ArtifactExpired when the file passed retention; regenerate to restore it.").WithParameter(QueryParam("format", typeof(string))));
@@ -51,6 +55,8 @@ namespace MyMorningNews.Server.Routes
             const string a = "/v1.0/api/artifacts";
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, a, ListArtifactsAsync, null, openApiMetadata: Paged(Doc("List stored files", "Artifacts").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))
                 .WithParameter(QueryParam("briefingId", typeof(string))).WithParameter(QueryParam("kind", typeof(ArtifactKindEnum))).WithParameter(QueryParam("pinned", typeof(bool)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, a + "/enumerate", ctx => EnumerateAsync(ctx, ListArtifactsAsync), null, openApiMetadata: Paged(Doc("List stored files", "Artifacts").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))
+                .WithParameter(QueryParam("briefingId", typeof(string))).WithParameter(QueryParam("kind", typeof(ArtifactKindEnum))).WithParameter(QueryParam("pinned", typeof(bool)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, a + "/{id}", ReadArtifactAsync, null, openApiMetadata: Doc("Read stored file metadata", "Artifacts"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, a + "/{id}/content", ContentAsync, null, openApiMetadata: Doc("Stream a stored file", "Artifacts",
                 "Supports a single Range header (206 Partial Content) for audio seeking. download=true sends it as an attachment.").WithParameter(QueryParam("download", typeof(bool))));
@@ -78,7 +84,7 @@ namespace MyMorningNews.Server.Routes
             if (String.IsNullOrEmpty(filter.SortBy)) filter.SortBy = "createdUtc";
 
             EnumerationResult<Briefing> page = await Server.Database.Briefings.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false);
-            foreach (Briefing x in page.Items) x.Markdown = null;
+            foreach (Briefing x in page.Objects) x.Markdown = null;
             await SendJsonAsync(ctx, 200, page).ConfigureAwait(false);
         }
 
@@ -87,16 +93,16 @@ namespace MyMorningNews.Server.Routes
             Briefing? br = await OwnedAsync(ctx, RequestTypeEnum.BriefingRead).ConfigureAwait(false);
             if (br == null) return;
             BriefingDetailResponse detail = new BriefingDetailResponse { Briefing = br };
-            detail.Sections = (await Server.Database.BriefingSections.EnumerateAsync(new BriefingSectionFilter { TenantId = br.TenantId, BriefingId = br.Id, PageSize = 100 }, ctx.Token).ConfigureAwait(false)).Items
+            detail.Sections = (await Server.Database.BriefingSections.EnumerateAsync(new BriefingSectionFilter { TenantId = br.TenantId, BriefingId = br.Id, PageSize = 100 }, ctx.Token).ConfigureAwait(false)).Objects
                 .OrderBy(s => s.SortOrder).ToList();
-            detail.Items = (await Server.Database.BriefingItems.EnumerateAsync(new BriefingItemFilter { TenantId = br.TenantId, BriefingId = br.Id, PageSize = 1000 }, ctx.Token).ConfigureAwait(false)).Items
+            detail.Items = (await Server.Database.BriefingItems.EnumerateAsync(new BriefingItemFilter { TenantId = br.TenantId, BriefingId = br.Id, PageSize = 1000 }, ctx.Token).ConfigureAwait(false)).Objects
                 .OrderBy(i => detail.Sections.FindIndex(s => s.Id == i.SectionId)).ThenBy(i => i.SortOrder).ToList();
-            detail.Files = (await Server.Database.Artifacts.EnumerateAsync(new ArtifactFilter { TenantId = br.TenantId, BriefingId = br.Id, PageSize = 100 }, ctx.Token).ConfigureAwait(false)).Items;
+            detail.Files = (await Server.Database.Artifacts.EnumerateAsync(new ArtifactFilter { TenantId = br.TenantId, BriefingId = br.Id, PageSize = 100 }, ctx.Token).ConfigureAwait(false)).Objects;
             detail.FilesExpired = br.Status == BriefingStatusEnum.Ready && !br.IsDryRun &&
                 new[] { br.MarkdownArtifactId, br.HtmlArtifactId }.Any(id => id == null || detail.Files.FirstOrDefault(f => f.Id == id)?.DeletedUtc != null || detail.Files.All(f => f.Id != id));
             if (br.EditionId != null) detail.EditionName = (await Server.Database.Editions.ReadAsync(br.TenantId, br.EditionId, ctx.Token).ConfigureAwait(false))?.Name;
             if (br.TopicId != null) detail.TopicName = (await Server.Database.Topics.ReadAsync(br.TenantId, br.TopicId, ctx.Token).ConfigureAwait(false))?.Name;
-            detail.Audio = (await Server.Database.MediaAssets.EnumerateAsync(new MediaAssetFilter { TenantId = br.TenantId, BriefingId = br.Id, PageSize = 20 }, ctx.Token).ConfigureAwait(false)).Items
+            detail.Audio = (await Server.Database.MediaAssets.EnumerateAsync(new MediaAssetFilter { TenantId = br.TenantId, BriefingId = br.Id, PageSize = 20 }, ctx.Token).ConfigureAwait(false)).Objects
                 .OrderByDescending(m => m.CreatedUtc).FirstOrDefault();
             if (detail.Audio != null) detail.Audio.ScriptMarkdown = null;
             foreach (BriefingItem item in detail.Items)
@@ -175,7 +181,7 @@ namespace MyMorningNews.Server.Routes
 
         private async Task<BriefingProgress?> FindProgressAsync(Briefing br, string userId, HttpContextBase ctx)
         {
-            return (await Server.Database.BriefingProgress.EnumerateAsync(new BriefingProgressFilter { TenantId = br.TenantId, UserId = userId, BriefingId = br.Id, PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Items.FirstOrDefault();
+            return (await Server.Database.BriefingProgress.EnumerateAsync(new BriefingProgressFilter { TenantId = br.TenantId, UserId = userId, BriefingId = br.Id, PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Objects.FirstOrDefault();
         }
 
         private async Task PinAsync(HttpContextBase ctx)

@@ -1,3 +1,4 @@
+import { enumerationResult } from '../../test/enumeration.js';
 import { describe, expect, it, vi } from 'vitest';
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -68,7 +69,7 @@ function openRun(overrides = {}) {
     listTopics: vi.fn(async () => page([TOPIC])),
     listRuns: vi.fn(async () => page([PRICED])),
     getRun: vi.fn(async () => PRICED),
-    listRunStages: vi.fn(async () => STAGES),
+    listRunStages: vi.fn(async () => enumerationResult(STAGES)),
     getRunCosts: vi.fn(async () => REPORT),
     ...overrides
   });
@@ -261,7 +262,7 @@ describe('Live run cost', () => {
         })
     );
     const report = vi.fn(async () => ({ ...REPORT, runId: 'run_1', totals: totals({ estimatedCostUsd: 0.05, llmCallCount: 1, unpricedCallCount: 0, failedCallCount: 0 }), stages: [] }));
-    renderRoute('/dashboard/runs?run=run_1', { listRuns: vi.fn(async () => page([queued])), getRun: vi.fn(async () => queued), listRunStages: vi.fn(async () => []), getRunCosts: report, streamRunEvents: stream });
+    renderRoute('/dashboard/runs?run=run_1', { listRuns: vi.fn(async () => page([queued])), getRun: vi.fn(async () => queued), listRunStages: vi.fn(async () => enumerationResult([])), getRunCosts: report, streamRunEvents: stream });
     await waitFor(() => expect(stream).toHaveBeenCalled());
     await waitFor(() => expect(report).toHaveBeenCalledTimes(1));
     const header = screen.getByTestId('run-cost-header');

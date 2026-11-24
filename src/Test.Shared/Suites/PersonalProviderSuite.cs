@@ -78,7 +78,7 @@ namespace Test.Shared.Suites
             ModelCallRequest request = new ModelCallRequest { TenantId = tenant.Id, UserId = owner.User.Id, Task = ModelTaskEnum.QueryPlanning, UserPrompt = "Say ready", MaxTokens = 64 };
             ModelCallResult result = await server.Context.Models.ChatAsync(request, token).ConfigureAwait(false);
             Assert.True(result.Text.Contains("ready", StringComparison.Ordinal), "normal research uses private model");
-            LlmCall recorded = (await server.Context.Database.LlmCalls.EnumerateAsync(new LlmCallFilter { TenantId = tenant.Id, UserId = owner.User.Id, PageSize = 10 }, token).ConfigureAwait(false)).Items.First(c => !c.IsDryRun);
+            LlmCall recorded = (await server.Context.Database.LlmCalls.EnumerateAsync(new LlmCallFilter { TenantId = tenant.Id, UserId = owner.User.Id, PageSize = 10 }, token).ConfigureAwait(false)).Objects.First(c => !c.IsDryRun);
             Assert.True(recorded.ProviderConnectionId == connection.Id && recorded.ModelEndpointId == null && recorded.Model == "private-test", "accounting retains private connection attribution without a shared endpoint foreign key");
             bool originalLocal = server.Context.Settings.Tts.AllowLocalForByok;
             try

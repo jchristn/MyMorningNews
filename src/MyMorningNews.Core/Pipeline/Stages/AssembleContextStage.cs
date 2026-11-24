@@ -36,8 +36,8 @@ namespace MyMorningNews.Core.Pipeline.Stages
         public async Task<StageOutcome> ExecuteAsync(RunContext ctx, PipelineServices services, CancellationToken token)
         {
             string tenant = ctx.Run.TenantId;
-            ctx.Dimensions = (await services.Database.TopicDimensions.EnumerateAsync(new TopicDimensionFilter { TenantId = tenant, TopicId = ctx.Topic.Id, PageSize = 500 }, token).ConfigureAwait(false)).Items.OrderBy(d => d.SortOrder).ToList();
-            ctx.Constraints = (await services.Database.TopicConstraints.EnumerateAsync(new TopicConstraintFilter { TenantId = tenant, TopicId = ctx.Topic.Id, PageSize = 500 }, token).ConfigureAwait(false)).Items;
+            ctx.Dimensions = (await services.Database.TopicDimensions.EnumerateAsync(new TopicDimensionFilter { TenantId = tenant, TopicId = ctx.Topic.Id, PageSize = 500 }, token).ConfigureAwait(false)).Objects.OrderBy(d => d.SortOrder).ToList();
+            ctx.Constraints = (await services.Database.TopicConstraints.EnumerateAsync(new TopicConstraintFilter { TenantId = tenant, TopicId = ctx.Topic.Id, PageSize = 500 }, token).ConfigureAwait(false)).Objects;
             ctx.Providers = await services.Search.ProvidersForTopicAsync(tenant, ctx.Topic.Id, token).ConfigureAwait(false);
             ctx.SinceUtc = ctx.Topic.LastRunUtc;
 

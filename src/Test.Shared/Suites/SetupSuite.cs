@@ -84,7 +84,7 @@ namespace Test.Shared.Suites
             ErrorResponse request = (await ta.Client.PostAsync("/v1.0/api/requests", new { requestText = "A podcast about heat pumps", deliverables = new[] { "Podcast" } }, token).ConfigureAwait(false))
                 .Expect(409, "request refused").Json<ErrorResponse>();
             Assert.Equal("SetupRequired", request.Error, "request error code");
-            long topics = (await ta.Client.GetAsync("/v1.0/api/topics", token).ConfigureAwait(false)).Expect(200, "topics").Json<EnumerationResult<Topic>>().TotalCount;
+            long topics = (await ta.Client.GetAsync("/v1.0/api/topics", token).ConfigureAwait(false)).Expect(200, "topics").Json<EnumerationResult<Topic>>().TotalRecords;
             Assert.Equal(0L, topics, "no draft topic is left behind");
         }
 
@@ -104,10 +104,10 @@ namespace Test.Shared.Suites
                 "a stored key that fails is reported: " + failed.State + " " + failed.Message);
             Assert.True(!after.Ready, "still not ready");
 
-            List<VaultCredentialResponse> creds = (await ta.Client.GetAsync("/v1.0/api/vault/credentials", token).ConfigureAwait(false)).Expect(200, "credentials").Json<EnumerationResult<VaultCredentialResponse>>().Items;
+            List<VaultCredentialResponse> creds = (await ta.Client.GetAsync("/v1.0/api/vault/credentials", token).ConfigureAwait(false)).Expect(200, "credentials").Json<EnumerationResult<VaultCredentialResponse>>().Objects;
             Assert.True(creds.Count == 1 && creds[0].Name == "Anthropic API key" && creds[0].SecretPreview == "****0001", "one credential, secret hidden but for its last four");
             (await ta.Client.PostAsync("/v1.0/api/setup/model-key", new { modelEndpointId = model.ResourceId, apiKey = "sk-ant-test-0002" }, token).ConfigureAwait(false)).Expect(200, "rotate key");
-            creds = (await ta.Client.GetAsync("/v1.0/api/vault/credentials", token).ConfigureAwait(false)).Expect(200, "credentials").Json<EnumerationResult<VaultCredentialResponse>>().Items;
+            creds = (await ta.Client.GetAsync("/v1.0/api/vault/credentials", token).ConfigureAwait(false)).Expect(200, "credentials").Json<EnumerationResult<VaultCredentialResponse>>().Objects;
             Assert.True(creds.Count == 1 && creds[0].SecretPreview == "****0002", "a second key rotates the same credential");
 
             ErrorResponse wizard = (await ta.Client.PostAsync("/v1.0/api/refinement-sessions", new { seedText = "Heat pump rebates" }, token).ConfigureAwait(false))
@@ -137,7 +137,7 @@ namespace Test.Shared.Suites
             model = (await StatusAsync(ta, token).ConfigureAwait(false)).Checks.Single(c => c.Kind == SetupCheckKindEnum.Model);
             Assert.Equal(SetupCheckStateEnum.Ready, model.State, "a successful call proves the endpoint works");
 
-            List<SearchProvider> providers = (await ta.Client.GetAsync("/v1.0/api/search-providers", token).ConfigureAwait(false)).Expect(200, "providers").Json<EnumerationResult<SearchProvider>>().Items;
+            List<SearchProvider> providers = (await ta.Client.GetAsync("/v1.0/api/search-providers", token).ConfigureAwait(false)).Expect(200, "providers").Json<EnumerationResult<SearchProvider>>().Objects;
             SearchProvider searx = providers.First(p => p.Kind == SearchProviderKindEnum.Searxng);
             (await ta.Client.PutAsync("/v1.0/api/search-providers/" + searx.Id, new { endpoint = StubModelServer.Shared.BaseUrl + "/setup" }, token).ConfigureAwait(false)).Expect(200, "point SearXNG at the stub");
             SetupStatusResponse verified = (await ta.Client.PostAsync("/v1.0/api/setup/verify", null, token).ConfigureAwait(false)).Expect(200, "verify").Json<SetupStatusResponse>();
@@ -211,7 +211,7 @@ namespace Test.Shared.Suites
             await WithFakeClisAsync(async (server, homes) =>
             {
                 TestUser ta = (await WorkspaceAsync(token).ConfigureAwait(false))[0];
-                List<SearchProvider> providers = (await ta.Client.GetAsync("/v1.0/api/search-providers", token).ConfigureAwait(false)).Expect(200, "providers").Json<EnumerationResult<SearchProvider>>().Items;
+                List<SearchProvider> providers = (await ta.Client.GetAsync("/v1.0/api/search-providers", token).ConfigureAwait(false)).Expect(200, "providers").Json<EnumerationResult<SearchProvider>>().Objects;
                 SearchProvider searx = providers.First(p => p.Kind == SearchProviderKindEnum.Searxng);
                 (await ta.Client.PutAsync("/v1.0/api/search-providers/" + searx.Id, new { endpoint = StubModelServer.Shared.BaseUrl + "/setup" }, token).ConfigureAwait(false)).Expect(200, "isolated search dependency");
                 ErrorResponse wrongKind = (await ta.Client.PostAsync("/v1.0/api/setup/connect", new { provider = "ClaudeCode", authMethod = "AccessToken", secret = "sk-ant-api03-abc" }, token).ConfigureAwait(false))
@@ -228,7 +228,7 @@ namespace Test.Shared.Suites
                     .Expect(200, "good token").Json<SetupStatusResponse>();
                 SetupCheck ok = good.Checks.Single(c => c.Kind == SetupCheckKindEnum.Model);
                 Assert.True(ok.State == SetupCheckStateEnum.Ready && ok.AuthMethod == ModelAuthMethodEnum.AccessToken && ok.ResourceId == failed.ResourceId, "the same endpoint is fixed in place: " + ok.State + " " + ok.Message);
-                List<VaultCredentialResponse> creds = (await ta.Client.GetAsync("/v1.0/api/vault/credentials", token).ConfigureAwait(false)).Expect(200, "credentials").Json<EnumerationResult<VaultCredentialResponse>>().Items;
+                List<VaultCredentialResponse> creds = (await ta.Client.GetAsync("/v1.0/api/vault/credentials", token).ConfigureAwait(false)).Expect(200, "credentials").Json<EnumerationResult<VaultCredentialResponse>>().Objects;
                 Assert.True(creds.Count(c => c.Name == "Claude Code token") == 1 && creds.Single(c => c.Name == "Claude Code token").Kind == VaultCredentialKindEnum.BearerToken, "one token credential, rotated in place");
                 ModelEndpoint e = (await ta.Client.GetAsync("/v1.0/api/model-endpoints/" + ok.ResourceId, token).ConfigureAwait(false)).Expect(200, "endpoint").Json<ModelEndpoint>();
                 Assert.True(e.SupportsTools == false && !e.SupportsEmbeddings && e.Endpoint == null, "agent CLIs answer in JSON, without tools or embeddings");
@@ -240,7 +240,7 @@ namespace Test.Shared.Suites
                     .Expect(200, "failed change").Json<SetupStatusResponse>();
                 Assert.True(change.Connection != null && !change.Connection.Succeeded && change.Connection.KeptPrevious && change.Ready, "the failed change is reported and the working token is kept: succeeded=" + change.Connection?.Succeeded + ", kept=" + change.Connection?.KeptPrevious + ", ready=" + change.Ready + ", checks=" + String.Join(";", change.Checks.Select(c => c.Kind + ":" + c.State + ":" + c.Message)));
                 Assert.Equal(SetupCheckStateEnum.Ready, change.Checks.Single(c => c.Kind == SetupCheckKindEnum.Model).State, "still ready");
-                creds = (await ta.Client.GetAsync("/v1.0/api/vault/credentials", token).ConfigureAwait(false)).Expect(200, "credentials").Json<EnumerationResult<VaultCredentialResponse>>().Items;
+                creds = (await ta.Client.GetAsync("/v1.0/api/vault/credentials", token).ConfigureAwait(false)).Expect(200, "credentials").Json<EnumerationResult<VaultCredentialResponse>>().Objects;
                 Assert.True(creds.Count(c => c.Kind == VaultCredentialKindEnum.BearerToken) == 1 && creds.Single(c => c.Kind == VaultCredentialKindEnum.BearerToken).SecretPreview.EndsWith("good", StringComparison.Ordinal),
                     "the rejected token was not kept");
                 (await ta.Client.PostAsync("/v1.0/api/model-endpoints/" + ok.ResourceId + "/test", new { }, token).ConfigureAwait(false)).Expect(200, "the working token still answers");
@@ -433,7 +433,7 @@ namespace Test.Shared.Suites
                 RefinementStateResponse session = (await ta.Client.PostAsync("/v1.0/api/refinement-sessions", new { seedText = "Heat pump rebates" }, token).ConfigureAwait(false)).Expect(201, "wizard starts").Json<RefinementStateResponse>();
                 (await ta.Client.PostAsync("/v1.0/api/refinement-sessions/" + session.Session.Id + "/dimensions", new { }, token).ConfigureAwait(false)).Expect(200, "a model step runs on the operator's model");
                 EnumerationResult<LlmCall> calls = (await ta.Client.GetAsync("/v1.0/api/llm-calls?pageSize=5", token).ConfigureAwait(false)).Expect(200, "calls").Json<EnumerationResult<LlmCall>>();
-                Assert.True(calls.Items.Count > 0 && calls.Items.All(c => c.TenantId == ta.User.TenantId), "the calls are logged in the workspace that made them");
+                Assert.True(calls.Objects.Count > 0 && calls.Objects.All(c => c.TenantId == ta.User.TenantId), "the calls are logged in the workspace that made them");
             }
             finally
             {

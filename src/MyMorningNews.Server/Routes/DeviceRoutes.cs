@@ -30,7 +30,8 @@ namespace MyMorningNews.Server.Routes
         public override void Register(Webserver webserver)
         {
             ArgumentNullException.ThrowIfNull(webserver);
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/devices", ListAsync, null, openApiMetadata: Doc("List my push devices", "Devices"));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/devices", ListAsync, null, openApiMetadata: Paged(Doc("List my push devices", "Devices")));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/devices" + "/enumerate", ctx => EnumerateAsync(ctx, ListAsync), null, openApiMetadata: Paged(Doc("List my push devices", "Devices")).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/devices", RegisterAsync, null, openApiMetadata: Doc("Register a device for push notifications", "Devices",
                 "Returns 201 for a new device, or 200 with the existing device when the same token is registered again. Push is a choice per kind of notification " +
                 "(PUT /v1.0/api/notifications/preferences): save the kinds to push before registering. A user who registers a device without any push choice gets the kinds " +
@@ -56,8 +57,9 @@ namespace MyMorningNews.Server.Routes
         {
             string? userId = await RequireUserAsync(ctx, RequestTypeEnum.DeviceRead).ConfigureAwait(false);
             if (userId == null) return;
-            EnumerationResult<Device> devices = await Server.Database.Devices.EnumerateAsync(new DeviceFilter { TenantId = Context(ctx).TenantId, UserId = userId, PageSize = 100 }, ctx.Token).ConfigureAwait(false);
-            await SendJsonAsync(ctx, 200, devices.Items).ConfigureAwait(false);
+            DeviceFilter query = new DeviceFilter { TenantId = Context(ctx).TenantId, UserId = userId };
+            ApplyPaging(ctx, query);
+            await SendJsonAsync(ctx, 200, await Server.Database.Devices.EnumerateAsync(query, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         private async Task RegisterAsync(HttpContextBase ctx)
@@ -82,7 +84,7 @@ namespace MyMorningNews.Server.Routes
 
             string tenantId = Context(ctx).TenantId!;
             EnumerationResult<Device> existing = await Server.Database.Devices.EnumerateAsync(new DeviceFilter { TenantId = tenantId, UserId = userId, ExpoPushToken = pushToken, PageSize = 1 }, ctx.Token).ConfigureAwait(false);
-            Device? device = existing.Items.FirstOrDefault();
+            Device? device = existing.Objects.FirstOrDefault();
             if (device != null)
             {
                 device.Platform = platform;

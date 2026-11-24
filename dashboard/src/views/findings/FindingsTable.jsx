@@ -43,7 +43,7 @@ export default function FindingsTable({ topicId = null, runId = null, tableKey =
     let cancelled = false;
     apiClient
       .listTopics({ pageSize: 1000, sortBy: 'name', sortDirection: 'Ascending' })
-      .then((r) => !cancelled && setTopics((r && r.items) || []))
+      .then((r) => !cancelled && setTopics((r && r.objects) || []))
       .catch(() => {});
     return () => {
       cancelled = true;

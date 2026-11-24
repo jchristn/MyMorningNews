@@ -33,7 +33,7 @@ namespace MyMorningNews.Core.Pipeline.Stages
         public async Task<StageOutcome> ExecuteAsync(RunContext ctx, PipelineServices services, CancellationToken token)
         {
             if (ctx.Findings.Count == 0) return StageOutcome.Of(0, 0);
-            List<Suggestion> history = ctx.CompareHistory ? (await services.Database.Suggestions.EnumerateAsync(new SuggestionFilter { TenantId = ctx.Run.TenantId, TopicId = ctx.Topic.Id, IsDryRun = false, PageSize = 50 }, token).ConfigureAwait(false)).Items : new List<Suggestion>();
+            List<Suggestion> history = ctx.CompareHistory ? (await services.Database.Suggestions.EnumerateAsync(new SuggestionFilter { TenantId = ctx.Run.TenantId, TopicId = ctx.Topic.Id, IsDryRun = false, PageSize = 50 }, token).ConfigureAwait(false)).Objects : new List<Suggestion>();
             StructuredCallResult<SuggestionResult> result = await services.CallAsync<SuggestionResult>(ctx, "research.suggest", new Dictionary<string, object?>
             {
                 { "findings", PipelineServices.FormatFindings(ctx.Findings, 25) },

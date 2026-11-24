@@ -141,7 +141,7 @@ namespace MyMorningNews.Core.Services
             ArgumentNullException.ThrowIfNull(user);
             string address = EmailService.Normalize(user.Email);
             List<EmailSuppression> rows = address.Length == 0 ? new List<EmailSuppression>()
-                : (await _Database.EmailSuppressions.EnumerateAsync(new EmailSuppressionFilter { TenantId = user.TenantId, Recipient = address, PageSize = 500 }, token).ConfigureAwait(false)).Items;
+                : (await _Database.EmailSuppressions.EnumerateAsync(new EmailSuppressionFilter { TenantId = user.TenantId, Recipient = address, PageSize = 500 }, token).ConfigureAwait(false)).Objects;
             long devices = await _Database.Devices.CountAsync(new DeviceFilter { TenantId = user.TenantId, UserId = user.Id, Active = true }, token).ConfigureAwait(false);
 
             NotificationUnavailableReasonEnum? email = null;

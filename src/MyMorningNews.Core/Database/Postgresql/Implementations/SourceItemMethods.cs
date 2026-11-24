@@ -223,7 +223,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             List<SourceItem> items = await QueryAsync("SELECT " + cols + " FROM sourceitems s WHERE " + where + " ORDER BY s.createdutc DESC, s.id DESC LIMIT $" + (args.Count - 1) + " OFFSET $" + args.Count, Map, token, args.ToArray()).ConfigureAwait(false);
             foreach (SourceItem i in items) i.ContentText = null;
             long count = total.FirstOrDefault();
-            return new EnumerationResult<SourceItem> { Items = items, PageNumber = page, PageSize = size, TotalCount = count, TotalPages = count == 0 ? 0 : (int)Math.Ceiling(count / (double)size), DurationMs = Math.Round(sw.Elapsed.TotalMilliseconds, 2) };
+            return new EnumerationResult<SourceItem> { Objects = items, PageNumber = page, PageSize = size, TotalRecords = count, TotalPages = count == 0 ? 0 : (int)Math.Ceiling(count / (double)size), TotalMs = Math.Round(sw.Elapsed.TotalMilliseconds, 2) };
         }
 
         /// <summary>
@@ -285,6 +285,16 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             {
                 args.Add("%" + EscapeLike(filter.Search.Trim()) + "%");
                 clauses.Add("(title ILIKE $" + args.Count + ")");
+            }
+            if (filter.CreatedAfter.HasValue)
+            {
+                args.Add(DateTime.SpecifyKind(filter.CreatedAfter.Value, DateTimeKind.Utc));
+                clauses.Add("createdutc > $" + args.Count);
+            }
+            if (filter.CreatedBefore.HasValue)
+            {
+                args.Add(DateTime.SpecifyKind(filter.CreatedBefore.Value, DateTimeKind.Utc));
+                clauses.Add("createdutc < $" + args.Count);
             }
             if (filter.FromUtc.HasValue)
             {

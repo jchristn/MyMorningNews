@@ -83,7 +83,10 @@ export interface RequestOptions {
 
 export type SortDirection = 'Ascending' | 'Descending';
 
-export interface ListOptions {
+export interface EnumerationQuery {
+    order?: 'CreatedAscending' | 'CreatedDescending';
+    createdAfter?: string;
+    createdBefore?: string;
     pageNumber?: number;
     pageSize?: number;
     sortBy?: string;
@@ -94,13 +97,16 @@ export interface ListOptions {
     [filter: string]: unknown;
 }
 
+export interface ListOptions extends EnumerationQuery {}
+
 export interface EnumerationResult<T> {
-    items: T[];
+    success: boolean;
+    objects: T[];
     pageNumber: number;
     pageSize: number;
-    totalCount: number;
+    totalRecords: number;
     totalPages: number;
-    durationMs: number;
+    totalMs: number;
 }
 
 export interface DownloadResult {
@@ -1903,7 +1909,7 @@ export interface PaginateControl {
 
 /** Iterate over every item of a paged list. A list method that returns an array yields it once. */
 export declare function paginate<T>(
-    listFn: (options: any) => Promise<EnumerationResult<T> | T[]>,
+    listFn: (options: any) => Promise<EnumerationResult<T>>,
     options?: ListOptions,
     control?: PaginateControl
 ): AsyncGenerator<T, void, unknown>;
@@ -1935,18 +1941,18 @@ export declare class TopicsResource extends CrudResource<Topic, TopicDetail, Top
     dryRun(id: string): Promise<Run>;
     learn(id: string): Promise<{ proposed: number; preferences: LearnedPreference[] }>;
     rankingRecommendation(id: string): Promise<any>;
-    listDimensions(id: string): Promise<TopicDimension[]>;
+    listDimensions(id: string, options?: EnumerationQuery): Promise<EnumerationResult<TopicDimension>>;
     addDimension(id: string, body: { name: string; description?: string; rationale?: string; weight?: DimensionWeight; includeTerms?: string[]; excludeTerms?: string[]; isLocked?: boolean; sortOrder?: number }): Promise<TopicDimension>;
     updateDimension(id: string, dimensionId: string, body: Partial<{ name: string; description: string; rationale: string; weight: DimensionWeight; includeTerms: string[]; excludeTerms: string[]; isLocked: boolean; sortOrder: number }>): Promise<TopicDimension>;
     removeDimension(id: string, dimensionId: string): Promise<null>;
-    listConstraints(id: string, options?: { kind?: ConstraintKind }): Promise<TopicConstraint[]>;
+    listConstraints(id: string, options?: EnumerationQuery & { kind?: ConstraintKind }): Promise<EnumerationResult<TopicConstraint>>;
     addConstraint(id: string, body: { kind: ConstraintKind; value: string; note?: string; dimensionId?: string; isLocked?: boolean }): Promise<TopicConstraint>;
     updateConstraint(id: string, constraintId: string, body: Partial<{ kind: ConstraintKind; value: string; note: string; dimensionId: string; isLocked: boolean }>): Promise<TopicConstraint>;
     removeConstraint(id: string, constraintId: string): Promise<null>;
-    listRecipients(id: string): Promise<TopicRecipient[]>;
+    listRecipients(id: string, options?: EnumerationQuery): Promise<EnumerationResult<TopicRecipient>>;
     addRecipient(id: string, body: { email: string; active?: boolean }): Promise<TopicRecipient>;
     removeRecipient(id: string, recipientId: string): Promise<null>;
-    getSearchProviders(id: string): Promise<any[]>;
+    getSearchProviders(id: string, options?: EnumerationQuery): Promise<EnumerationResult<SearchProvider>>;
     setSearchProviders(id: string, providers: { searchProviderId: string; enabled?: boolean; maxResults?: number }[]): Promise<any[]>;
 }
 
@@ -2013,9 +2019,9 @@ export declare class RunsResource extends ResourceGroup {
     start(topicId: string, options?: { dryRun?: boolean }): Promise<Run>;
     /** Totals, stages, models, and tasks. Current while the run is going. 404 for an unknown run. */
     costs(id: string): Promise<RunCostReport>;
-    stages(id: string): Promise<RunStage[]>;
-    queries(id: string): Promise<any[]>;
-    results(id: string, options?: { disposition?: string }): Promise<any[]>;
+    stages(id: string, options?: EnumerationQuery): Promise<EnumerationResult<RunStage>>;
+    queries(id: string, options?: EnumerationQuery): Promise<EnumerationResult<any>>;
+    results(id: string, options?: EnumerationQuery & { disposition?: string }): Promise<EnumerationResult<any>>;
     /** 202 with the queued run. 409 when the run is not finished, 400 for an unknown stage. Real research and model calls. */
     retry(id: string, options?: { fromStage?: ResumableStage | string }): Promise<Run>;
     /** Server-sent events: the current run and stages first, then changes, pings, and done (or timeout). */
@@ -2025,7 +2031,7 @@ export declare class RunsResource extends ResourceGroup {
     /** Paged, oldest first unless sortDirection is given. */
     llmCalls(id: string, options?: ListOptions): Promise<EnumerationResult<LlmCall>>;
     /** Agentic tool calls in call order. 404 for an unknown run. */
-    toolCalls(id: string): Promise<RunToolCall[]>;
+    toolCalls(id: string, options?: EnumerationQuery): Promise<EnumerationResult<RunToolCall>>;
     emailPreview(id: string): Promise<any>;
     cancel(id: string): Promise<Run>;
     /** Polls `GET /runs/{id}` until a terminal status. Rejects with code `Timeout`. */
@@ -2121,7 +2127,7 @@ export declare class BriefingsResource extends ResourceGroup {
 }
 
 export declare class TemplatesResource extends CrudResource<BriefingTemplate, TemplateDetail, { content: string; name?: string; shared?: boolean }, { content: string; changeNote?: string }, TemplateDetail, TemplateDetail> {
-    versions(id: string): Promise<any[]>;
+    versions(id: string, options?: EnumerationQuery): Promise<EnumerationResult<any>>;
     validate(content: string | { content: string }): Promise<TemplateValidation>;
     rollback(id: string, version: number): Promise<TemplateDetail>;
     reset(id: string): Promise<TemplateDetail>;
@@ -2133,7 +2139,7 @@ export declare class PromptsResource extends ResourceGroup {
     get(id: string): Promise<PromptTemplateResponse>;
     update(id: string, body: { content: string; changeNote?: string }): Promise<PromptTemplateResponse>;
     remove(id: string): Promise<null>;
-    versions(id: string): Promise<any[]>;
+    versions(id: string, options?: EnumerationQuery): Promise<EnumerationResult<any>>;
     rollback(id: string, version: number): Promise<PromptTemplateResponse>;
     reset(id: string): Promise<PromptTemplateResponse>;
     createOverride(body: { key: string; topicId: string; content?: string }): Promise<PromptTemplateResponse>;
@@ -2156,7 +2162,7 @@ export declare class ArtifactsResource extends ResourceGroup {
 }
 
 export declare class FeedTokensResource extends ResourceGroup {
-    list(): Promise<FeedToken[]>;
+    list(options?: EnumerationQuery): Promise<EnumerationResult<FeedToken>>;
     create(body?: { name?: string; editionId?: string }): Promise<FeedTokenCreated>;
     remove(id: string, options?: { purge?: boolean }): Promise<null>;
     revoke(id: string): Promise<null>;
@@ -2341,7 +2347,7 @@ export interface ModelEndpointUpsertRequest {
 
 export declare class ModelEndpointsResource extends CrudResource<ModelEndpoint, ModelEndpoint, ModelEndpointUpsertRequest> {
     validate(id: string): Promise<ModelValidation>;
-    models(id: string): Promise<any[]>;
+    models(id: string, options?: EnumerationQuery): Promise<EnumerationResult<any>>;
     test(id: string, body?: { prompt?: string; model?: string }): Promise<ModelTestResult>;
 }
 
@@ -2389,7 +2395,7 @@ export declare class VoicesResource extends CrudResource<VoiceProfile, VoiceProf
 }
 
 export declare class VaultResource extends CrudResource<VaultCredential, VaultCredential, VaultCredentialUpsertRequest> {
-    usage(id: string): Promise<any[]>;
+    usage(id: string, options?: EnumerationQuery): Promise<EnumerationResult<any>>;
 }
 
 export declare class NotificationsResource extends ResourceGroup {
@@ -2403,7 +2409,7 @@ export declare class NotificationsResource extends ResourceGroup {
 }
 
 export declare class DevicesResource extends ResourceGroup {
-    list(): Promise<Device[]>;
+    list(options?: EnumerationQuery): Promise<EnumerationResult<Device>>;
     register(body: { expoPushToken: string; platform: 'ios' | 'android'; name?: string; locale?: string }): Promise<Device>;
     create(body: { expoPushToken: string; platform: 'ios' | 'android'; name?: string; locale?: string }): Promise<Device>;
     remove(id: string): Promise<null>;
@@ -2612,7 +2618,7 @@ export declare class MyMorningNewsClient {
     me(): Promise<UserProfile>;
     updateMe(body: { firstName?: string; lastName?: string; timeZone?: string; locale?: string }): Promise<UserProfile>;
     changePassword(currentPassword: string, newPassword: string): Promise<any>;
-    paginate<T>(listFn: (options: any) => Promise<EnumerationResult<T> | T[]>, options?: ListOptions, control?: PaginateControl): AsyncGenerator<T, void, unknown>;
+    paginate<T>(listFn: (options: any) => Promise<EnumerationResult<T>>, options?: ListOptions, control?: PaginateControl): AsyncGenerator<T, void, unknown>;
     request<T = any>(method: string, path: string, options?: RequestOptions): Promise<T>;
 }
 

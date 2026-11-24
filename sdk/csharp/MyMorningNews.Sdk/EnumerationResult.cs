@@ -8,10 +8,13 @@ namespace MyMorningNews.Sdk
     /// <typeparam name="T">Item type.</typeparam>
     public class EnumerationResult<T>
     {
+        /// <summary>Whether enumeration succeeded.</summary>
+        public bool Success { get; set; } = true;
+
         /// <summary>
-        /// Items on this page. Never null.
+        /// Objects on this page. Never null.
         /// </summary>
-        public List<T> Items { get; set; } = new List<T>();
+        public List<T> Objects { get; set; } = new List<T>();
 
         /// <summary>
         /// One-based page number. Default 1.
@@ -19,14 +22,14 @@ namespace MyMorningNews.Sdk
         public int PageNumber { get; set; } = 1;
 
         /// <summary>
-        /// Page size. Default 25.
+        /// Page size. Default 10.
         /// </summary>
-        public int PageSize { get; set; } = 25;
+        public int PageSize { get; set; } = 10;
 
         /// <summary>
-        /// Items matching the filter across all pages.
+        /// Objects matching the filter across all pages.
         /// </summary>
-        public long TotalCount { get; set; } = 0;
+        public long TotalRecords { get; set; } = 0;
 
         /// <summary>
         /// Pages available at this page size.
@@ -36,7 +39,7 @@ namespace MyMorningNews.Sdk
         /// <summary>
         /// Server time spent on the query, in milliseconds.
         /// </summary>
-        public double DurationMs { get; set; } = 0;
+        public double TotalMs { get; set; } = 0;
 
         /// <summary>
         /// Instantiate.

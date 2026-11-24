@@ -13,7 +13,7 @@ function serverFake() {
     if (filters.name) rows = rows.filter((r) => r.name.includes(filters.name));
     if (sortBy === 'name' && sortDirection === 'desc') rows.reverse();
     const start = (pageNumber - 1) * pageSize;
-    return { items: rows.slice(start, start + pageSize), pageNumber, pageSize, totalCount: rows.length, totalPages: Math.ceil(rows.length / pageSize) };
+    return { objects: rows.slice(start, start + pageSize), pageNumber, pageSize, totalRecords: rows.length, totalPages: Math.ceil(rows.length / pageSize) };
   });
 }
 
@@ -71,7 +71,7 @@ describe('DataTable', () => {
   });
 
   it('renders the empty state and the error state', async () => {
-    render(<DataTable tableKey="empty" columns={COLUMNS} fetchPage={async () => ({ items: [], totalCount: 0, totalPages: 0 })} rowKey={(r) => r.id} emptyTitle="Nothing yet" />);
+    render(<DataTable tableKey="empty" columns={COLUMNS} fetchPage={async () => ({ objects: [], totalRecords: 0, totalPages: 0 })} rowKey={(r) => r.id} emptyTitle="Nothing yet" />);
     expect(await screen.findByText('Nothing yet')).toBeInTheDocument();
     const failing = vi.fn(async () => {
       throw new ApiError(500, { error: 'InternalError', message: 'boom', requestId: 'req_42' });

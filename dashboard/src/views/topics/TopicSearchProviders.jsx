@@ -1,3 +1,4 @@
+import { enumerateObjects } from '../../utils/enumeration.js';
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
@@ -23,10 +24,10 @@ export default function TopicSearchProviders({ topicId }) {
 
   useEffect(() => {
     let live = true;
-    Promise.all([apiClient.listSearchProviders({ pageSize: 100 }), apiClient.listTopicSearchProviders(topicId)])
+    Promise.all([apiClient.listSearchProviders({ pageSize: 100 }), enumerateObjects((query) => apiClient.listTopicSearchProviders(topicId, query))])
       .then(([all, used]) => {
         if (!live) return;
-        setProviders((all && Array.isArray(all.items) ? all.items : []).filter((p) => p.active));
+        setProviders((all && Array.isArray(all.objects) ? all.objects : []).filter((p) => p.active));
         setChosen(new Set((Array.isArray(used) ? used : []).map((p) => p.id)));
       })
       .catch((err) => {

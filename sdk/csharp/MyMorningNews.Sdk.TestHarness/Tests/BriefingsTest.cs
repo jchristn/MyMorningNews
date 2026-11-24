@@ -39,10 +39,10 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             await StepAsync(context, result, "GET unknown briefing download (404)", () => Helpers.ExpectErrorAsync(() => c.Briefings.DownloadAsync("brf_missing", "md", null, token), 404)).ConfigureAwait(false);
             EnumerationResult<Briefing> page = await StepAsync(context, result, "GET briefings (ready)",
                 () => c.Briefings.ListAsync(new BriefingListOptions { Status = BriefingStatusEnum.Ready, PageSize = 10 }, token)).ConfigureAwait(false);
-            Helpers.True(page.Items.All(b => b.Markdown == null), "lists leave Markdown out");
+            Helpers.True(page.Objects.All(b => b.Markdown == null), "lists leave Markdown out");
             await StepAsync(context, result, "GetLatestAsync", () => c.Briefings.GetLatestAsync(null, token)).ConfigureAwait(false);
 
-            Briefing? ready = page.Items.FirstOrDefault(b => b.MarkdownArtifactId != null);
+            Briefing? ready = page.Objects.FirstOrDefault(b => b.MarkdownArtifactId != null);
             if (ready == null) return;
             BriefingDetailResponse detail = await StepAsync(context, result, "GET briefing", () => c.Briefings.GetAsync(ready.Id, token)).ConfigureAwait(false);
             Helpers.Equal(ready.Id, detail.Briefing.Id, "briefing id");

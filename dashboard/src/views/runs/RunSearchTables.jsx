@@ -1,3 +1,4 @@
+import { enumerateObjects } from '../../utils/enumeration.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { ExternalLink, FileText } from 'lucide-react';
@@ -36,7 +37,7 @@ export function RunQueriesTable({ runId }) {
   const { t } = useTranslation();
   const f = useFormat();
   const { apiClient } = useAuth();
-  const { items, error, reload, clearError } = useRunList(() => apiClient.listRunQueries(runId), runId);
+  const { items, error, reload, clearError } = useRunList(() => enumerateObjects((query) => apiClient.listRunQueries(runId, query)), runId);
   return (
     <div className="stack" data-testid="run-queries">
       <ErrorState error={error} inline onRetry={reload} onDismiss={clearError} />
@@ -100,7 +101,7 @@ export function RunResultsTable({ runId }) {
   const { apiClient } = useAuth();
   const [disposition, setDisposition] = useState('');
   const [sourceId, setSourceId] = useState(null);
-  const { items: loaded, error, reload, clearError } = useRunList(() => apiClient.listRunResults(runId, disposition || undefined), runId + '|' + disposition);
+  const { items: loaded, error, reload, clearError } = useRunList(() => enumerateObjects((query) => apiClient.listRunResults(runId, disposition || undefined, query)), runId + '|' + disposition);
   // Group by query, then by the provider's rank.
   const items = useMemo(
     () => (loaded ? [...loaded].sort((a, b) => String(a.searchQueryId || '').localeCompare(String(b.searchQueryId || '')) || (a.rank || 0) - (b.rank || 0)) : null),

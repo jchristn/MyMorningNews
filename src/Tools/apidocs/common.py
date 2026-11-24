@@ -28,14 +28,15 @@ SUPPLEMENT = HERE / "supplement.json"
 DEFAULT_URL = "http://127.0.0.1:12100/openapi.json"
 PARAM_NOTES = {
     "pageNumber": "One-based page. Default 1.",
-    "pageSize": "Items per page. Default 25, maximum 1000.",
+    "pageSize": "Items per page. Default 10, minimum 1, maximum 1000.",
     "sortBy": "camelCase property to sort by. Unknown values use the default sort.",
     "sortDirection": "`Descending` (default) or `Ascending`.",
     "search": "Free text over the resource's searchable columns.",
     "fromUtc": "Created at or after this time (inclusive).",
     "toUtc": "Created before this time (exclusive).",
 }
-PAGING = ["pageNumber", "pageSize", "sortBy", "sortDirection", "search", "fromUtc", "toUtc"]
+PARAM_NOTES.update({"order": "CreatedDescending (default) or CreatedAscending.", "createdAfter": "Exclusive creation lower bound (UTC).", "createdBefore": "Exclusive creation upper bound (UTC)."})
+PAGING = ["order", "createdAfter", "createdBefore", "pageNumber", "pageSize", "sortBy", "sortDirection", "search", "fromUtc", "toUtc"]
 
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(ROOT / "sdk" / "csharp" / "tools"))

@@ -249,7 +249,7 @@ namespace MyMorningNews.Benchmark.Client
                 if (doc.RootElement.ValueKind == JsonValueKind.Array) return r.Json<List<IdDto>>();
             }
 
-            return r.Json<PageDto<IdDto>>().Items;
+            return r.Json<PageDto<IdDto>>().Objects;
         }
 
         /// <summary>
@@ -332,7 +332,7 @@ namespace MyMorningNews.Benchmark.Client
         /// <returns>Result.</returns>
         public Task<ApiResult> ModelAssignmentsAsync(CancellationToken token)
         {
-            return GetAsync("/v1.0/api/model-assignments", token);
+            return GetAsync("/v1.0/api/model-assignments?pageSize=1000", token);
         }
 
         /// <summary>
@@ -457,6 +457,17 @@ namespace MyMorningNews.Benchmark.Client
             }
         }
 
+        private async Task<List<T>> ReadAllAsync<T>(string path, CancellationToken token)
+        {
+            List<T> objects = new List<T>();
+            for (int number = 1; ; number++)
+            {
+                PageDto<T> page = (await GetAsync(path + (path.Contains('?') ? "&" : "?") + "pageSize=100&pageNumber=" + number, token).ConfigureAwait(false)).Expect(200).Json<PageDto<T>>();
+                objects.AddRange(page.Objects);
+                if (number >= page.TotalPages || page.Objects.Count == 0) return objects;
+            }
+        }
+
         /// <summary>
         /// A run's stages.
         /// </summary>
@@ -465,7 +476,7 @@ namespace MyMorningNews.Benchmark.Client
         /// <returns>Stages in order.</returns>
         public async Task<List<RunStageDto>> GetStagesAsync(string runId, CancellationToken token)
         {
-            return (await GetAsync("/v1.0/api/runs/" + runId + "/stages", token).ConfigureAwait(false)).Expect(200).Json<List<RunStageDto>>().OrderBy(s => s.SortOrder).ToList();
+            return (await ReadAllAsync<RunStageDto>("/v1.0/api/runs/" + runId + "/stages", token).ConfigureAwait(false)).OrderBy(s => s.SortOrder).ToList();
         }
 
         /// <summary>
@@ -476,7 +487,7 @@ namespace MyMorningNews.Benchmark.Client
         /// <returns>Results.</returns>
         public async Task<List<SearchResultDto>> GetResultsAsync(string runId, CancellationToken token)
         {
-            return (await GetAsync("/v1.0/api/runs/" + runId + "/results", token).ConfigureAwait(false)).Expect(200).Json<List<SearchResultDto>>();
+            return await ReadAllAsync<SearchResultDto>("/v1.0/api/runs/" + runId + "/results", token).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -487,13 +498,7 @@ namespace MyMorningNews.Benchmark.Client
         /// <returns>Calls.</returns>
         public async Task<List<LlmCallDto>> GetRunCallsAsync(string runId, CancellationToken token)
         {
-            ApiResult r = (await GetAsync("/v1.0/api/runs/" + runId + "/llm-calls", token).ConfigureAwait(false)).Expect(200);
-            using (JsonDocument doc = JsonDocument.Parse(r.Body))
-            {
-                if (doc.RootElement.ValueKind == JsonValueKind.Array) return r.Json<List<LlmCallDto>>();
-            }
-
-            return r.Json<PageDto<LlmCallDto>>().Items;
+            return await ReadAllAsync<LlmCallDto>("/v1.0/api/runs/" + runId + "/llm-calls", token).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -505,7 +510,7 @@ namespace MyMorningNews.Benchmark.Client
         public async Task<List<FindingDto>> GetRunFindingsAsync(string runId, CancellationToken token)
         {
             ApiResult r = (await GetAsync("/v1.0/api/findings?runId=" + runId + "&includeDuplicates=true&includeBelowThreshold=true&includeDryRun=true&includeHidden=true&pageSize=1000", token).ConfigureAwait(false)).Expect(200);
-            return r.Json<PageDto<FindingDto>>().Items;
+            return r.Json<PageDto<FindingDto>>().Objects;
         }
 
         /// <summary>
@@ -540,7 +545,7 @@ namespace MyMorningNews.Benchmark.Client
         /// <returns>Briefings.</returns>
         public async Task<List<BriefingDto>> GetRunBriefingsAsync(string runId, CancellationToken token)
         {
-            return (await GetAsync("/v1.0/api/briefings?runId=" + runId + "&pageSize=100", token).ConfigureAwait(false)).Expect(200).Json<PageDto<BriefingDto>>().Items;
+            return (await GetAsync("/v1.0/api/briefings?runId=" + runId + "&pageSize=100", token).ConfigureAwait(false)).Expect(200).Json<PageDto<BriefingDto>>().Objects;
         }
 
         /// <summary>
@@ -584,7 +589,7 @@ namespace MyMorningNews.Benchmark.Client
         /// <returns>Episodes.</returns>
         public async Task<List<MediaDto>> GetMediaAsync(string briefingId, CancellationToken token)
         {
-            return (await GetAsync("/v1.0/api/media?briefingId=" + briefingId + "&pageSize=100", token).ConfigureAwait(false)).Expect(200).Json<PageDto<MediaDto>>().Items;
+            return (await GetAsync("/v1.0/api/media?briefingId=" + briefingId + "&pageSize=100", token).ConfigureAwait(false)).Expect(200).Json<PageDto<MediaDto>>().Objects;
         }
 
         /// <summary>
@@ -595,7 +600,7 @@ namespace MyMorningNews.Benchmark.Client
         /// <returns>Messages.</returns>
         public async Task<List<EmailMessageDto>> GetRunEmailsAsync(string runId, CancellationToken token)
         {
-            return (await GetAsync("/v1.0/api/email-messages?runId=" + runId + "&pageSize=100", token).ConfigureAwait(false)).Expect(200).Json<PageDto<EmailMessageDto>>().Items;
+            return (await GetAsync("/v1.0/api/email-messages?runId=" + runId + "&pageSize=100", token).ConfigureAwait(false)).Expect(200).Json<PageDto<EmailMessageDto>>().Objects;
         }
 
         /// <summary>

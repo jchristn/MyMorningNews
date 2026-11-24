@@ -115,7 +115,7 @@ Network failures surface as `HttpRequestException`, timeouts as `TimeoutExceptio
 
 ## Pagination and filters
 
-List methods take an options object derived from `ListOptions` (`PageNumber`, `PageSize` 1 to 1000, `SortBy`, `SortDirection`, `Search`, `FromUtc`, `ToUtc`) and return `EnumerationResult<T>` (`Items`, `PageNumber`, `PageSize`, `TotalCount`, `TotalPages`, `DurationMs`). Owned resources use `OwnedListOptions`, which adds `UserId` and `Mine` for administrators. Each resource has typed filters, for example `FindingListOptions.Tier`, `BriefingListOptions.Pinned`, or `RequestHistoryListOptions.StatusClass`.
+List methods take an options object derived from `EnumerationQuery` (`ListOptions` is a convenience subclass) (`PageNumber`, `PageSize` 1 to 1000, `SortBy`, `SortDirection`, `Search`, `FromUtc`, `ToUtc`) and return `EnumerationResult<T>` (`Success`, `Objects`, `PageNumber`, `PageSize`, `TotalRecords`, `TotalPages`, `TotalMs`). Owned resources use `OwnedListOptions`, which adds `UserId` and `Mine` for administrators. Each resource has typed filters, for example `FindingListOptions.Tier`, `BriefingListOptions.Pinned`, or `RequestHistoryListOptions.StatusClass`.
 
 ```csharp
 int page = 1;
@@ -123,7 +123,7 @@ EnumerationResult<Run> runs;
 do
 {
     runs = await client.Runs.ListAsync(new RunListOptions { TopicId = topicId, PageNumber = page++, PageSize = 100 });
-    foreach (Run r in runs.Items) Console.WriteLine(r.Id + " " + r.Status);
+    foreach (Run r in runs.Objects) Console.WriteLine(r.Id + " " + r.Status);
 }
 while (runs.PageNumber < runs.TotalPages);
 ```

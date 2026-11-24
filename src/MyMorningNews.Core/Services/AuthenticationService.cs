@@ -380,9 +380,9 @@ namespace MyMorningNews.Core.Services
         private async Task<User?> FindUserByEmailAsync(string tenantId, string email, CancellationToken token)
         {
             EnumerationResult<User> users = await _Database.Users.EnumerateAsync(new UserFilter { TenantId = tenantId, Email = email.Trim().ToLowerInvariant(), PageSize = 2 }, token).ConfigureAwait(false);
-            if (users.Items.Count == 0)
+            if (users.Objects.Count == 0)
                 users = await _Database.Users.EnumerateAsync(new UserFilter { TenantId = tenantId, Email = email.Trim(), PageSize = 2 }, token).ConfigureAwait(false);
-            return users.Items.FirstOrDefault();
+            return users.Objects.FirstOrDefault();
         }
 
         private async Task<LoginResult> ResolveTenantAsync(string email, string password, string? sourceIp, CancellationToken token)
@@ -456,7 +456,7 @@ namespace MyMorningNews.Core.Services
         private async Task<Credential?> FindCredentialAsync(string tenantId, string accessKey, CancellationToken token)
         {
             EnumerationResult<Credential> creds = await _Database.Credentials.EnumerateAsync(new CredentialFilter { TenantId = tenantId, AccessKey = accessKey, PageSize = 2 }, token).ConfigureAwait(false);
-            return creds.Items.FirstOrDefault();
+            return creds.Objects.FirstOrDefault();
         }
 
         private async Task<LoginResult> IssueSessionAsync(Tenant tenant, User user, Credential? credential, AuthSchemeEnum scheme, string? sourceIp, string? userAgent, CancellationToken token)

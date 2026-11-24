@@ -1,3 +1,4 @@
+import { enumerateObjects } from '../../utils/enumeration.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -92,7 +93,7 @@ export default function PromoCodeDetail() {
   const load = useCallback(async () => {
     setError(null);
     try {
-      const [s, r] = await Promise.all([apiClient.getPromoCode(id), apiClient.listPromoRedemptions(id)]);
+      const [s, r] = await Promise.all([apiClient.getPromoCode(id), enumerateObjects((query) => apiClient.listPromoRedemptions(id, query))]);
       setStats(s);
       setRedemptions(Array.isArray(r) ? r : []);
       setRefresh((n) => n + 1);
@@ -121,7 +122,7 @@ export default function PromoCodeDetail() {
         return true;
       });
       const start = (q.pageNumber - 1) * q.pageSize;
-      return { items: rows.slice(start, start + q.pageSize), pageNumber: q.pageNumber, pageSize: q.pageSize, totalCount: rows.length, totalPages: Math.max(1, Math.ceil(rows.length / q.pageSize)) };
+      return { objects: rows.slice(start, start + q.pageSize), pageNumber: q.pageNumber, pageSize: q.pageSize, totalRecords: rows.length, totalPages: Math.max(1, Math.ceil(rows.length / q.pageSize)) };
     },
     [sorted]
   );

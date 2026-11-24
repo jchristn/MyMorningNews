@@ -6,8 +6,14 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for PromoCode records. Null properties are not applied.
     /// </summary>
-    public class PromoCodeFilter : EnumerationFilter
+    public class PromoCodeFilter : EnumerationQuery
     {
+        /// <summary>Computed status: active, disabled, notstarted, expired, or exhausted. Null includes all.</summary>
+        public string? Status { get; set; } = null;
+
+        /// <summary>UTC instant used consistently for status filtering and counting.</summary>
+        public DateTime StatusAtUtc { get; set; } = DateTime.UtcNow;
+
         /// <summary>
         /// Match Code exactly when set.
         /// </summary>

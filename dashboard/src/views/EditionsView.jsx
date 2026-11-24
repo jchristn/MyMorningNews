@@ -46,7 +46,7 @@ function EditionsList() {
       .then((r) => {
         if (!live) return;
         const map = {};
-        for (const u of (r && r.items) || []) map[u.id] = u.email;
+        for (const u of (r && r.objects) || []) map[u.id] = u.email;
         setOwners(map);
       })
       .catch(() => live && setOwners({}));

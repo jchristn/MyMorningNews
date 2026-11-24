@@ -111,9 +111,10 @@ namespace MyMorningNews.Sdk.Resources
         /// <returns>A list of VaultUsageItem items.</returns>
         /// <exception cref="ArgumentNullException">id is null or empty.</exception>
         /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
-        public Task<List<VaultUsageItem>> GetUsageAsync(string id, CancellationToken token = default)
+        /// <param name="options">Pagination, sorting, and filters; null uses defaults.</param>
+        public Task<EnumerationResult<VaultUsageItem>> GetUsageAsync(string id, EnumerationQuery? options = null, CancellationToken token = default)
         {
-            return Client.SendAsync<List<VaultUsageItem>>(HttpMethod.Get, "/v1.0/api/vault/credentials/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/usage", null, null, token);
+            return Client.SendAsync<EnumerationResult<VaultUsageItem>>(HttpMethod.Get, "/v1.0/api/vault/credentials/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/usage", (options ?? new EnumerationQuery()).ToQuery(), null, token);
         }
     }
 }

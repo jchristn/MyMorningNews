@@ -99,7 +99,7 @@ export default function TopicWorkspace() {
     try {
       const [d, s] = await Promise.all([apiClient.getTopic(id), apiClient.listSchedules({ ownerType: 'Topic', ownerId: id, pageSize: 50 }).catch(() => null)]);
       setDetail(d);
-      setSchedules((s && s.items) || []);
+      setSchedules((s && s.objects) || []);
     } catch (err) {
       setError(err);
     }
@@ -114,7 +114,7 @@ export default function TopicWorkspace() {
     let live = true;
     apiClient
       .listEditions({ pageSize: MAX_EDITIONS })
-      .then((page) => Promise.all(((page && page.items) || []).slice(0, MAX_EDITIONS).map((e) => apiClient.getEdition(e.id).catch(() => null))))
+      .then((page) => Promise.all(((page && page.objects) || []).slice(0, MAX_EDITIONS).map((e) => apiClient.getEdition(e.id).catch(() => null))))
       .then((details) => live && setEditions(coveringEditions(details, id)))
       .catch(() => live && setEditions([]));
     return () => {

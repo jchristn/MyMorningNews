@@ -98,9 +98,10 @@ namespace MyMorningNews.Sdk.Resources
         /// <returns>A list of BriefingTemplateVersion items.</returns>
         /// <exception cref="ArgumentNullException">id is null or empty.</exception>
         /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
-        public Task<List<BriefingTemplateVersion>> ListVersionsAsync(string id, CancellationToken token = default)
+        /// <param name="options">Pagination, sorting, and filters; null uses defaults.</param>
+        public Task<EnumerationResult<BriefingTemplateVersion>> ListVersionsAsync(string id, EnumerationQuery? options = null, CancellationToken token = default)
         {
-            return Client.SendAsync<List<BriefingTemplateVersion>>(HttpMethod.Get, "/v1.0/api/briefing-templates/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/versions", null, null, token);
+            return Client.SendAsync<EnumerationResult<BriefingTemplateVersion>>(HttpMethod.Get, "/v1.0/api/briefing-templates/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/versions", (options ?? new EnumerationQuery()).ToQuery(), null, token);
         }
 
         /// <summary>

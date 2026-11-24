@@ -12,6 +12,11 @@ namespace MyMorningNews.Core.Security
     {
         #region Public-Members
 
+        /// <summary>Validated scalar body filters for a POST enumeration. Querystring values take precedence.</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public Dictionary<string, string?> EnumerationParameters { get; set; } = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+
+
         /// <summary>
         /// Request identifier, returned in the X-Request-Id response header.
         /// </summary>

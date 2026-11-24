@@ -467,7 +467,7 @@ namespace MyMorningNews.McpServer
             ArgumentNullException.ThrowIfNull(shape);
             return new Dictionary<string, object?>(StringComparer.Ordinal)
             {
-                { "items", page.Items.Select(shape).ToList() }, { "totalCount", page.TotalCount }, { "pageNumber", page.PageNumber }, { "totalPages", page.TotalPages }
+                { "objects", page.Objects.Select(shape).ToList() }, { "totalRecords", page.TotalRecords }, { "pageNumber", page.PageNumber }, { "totalPages", page.TotalPages }, { "pageSize", page.PageSize }, { "success", page.Success }, { "totalMs", page.TotalMs }
             };
         }
 

@@ -28,7 +28,7 @@ export function renderRoute(path, overrides = {}) {
 export const forbidden = () => Promise.reject(new ApiError(403, { error: 'Forbidden', message: 'Forbidden' }));
 
 export function page(items) {
-  return { items, pageNumber: 1, pageSize: 25, totalCount: items.length, totalPages: 1, durationMs: 1 };
+  return { objects: items, pageNumber: 1, pageSize: 25, totalRecords: items.length, totalPages: 1, totalMs: 1 };
 }
 
 export function usageRow(key, overrides = {}) {

@@ -20,7 +20,7 @@ export default function UserPicker({ value, onChange, idPrefix = 'pick' }) {
   useEffect(() => {
     apiClient
       .listTenants({ pageSize: 1000, sortBy: 'name', sortDirection: 'Ascending' })
-      .then((r) => setTenants((r && r.items) || []))
+      .then((r) => setTenants((r && r.objects) || []))
       .catch(() => setTenants([]));
   }, [apiClient]);
 
@@ -30,7 +30,7 @@ export default function UserPicker({ value, onChange, idPrefix = 'pick' }) {
     setLoading(true);
     apiClient
       .listUsers(tenantId, { pageSize: 50, search: debounced || undefined, sortBy: 'email', sortDirection: 'Ascending' })
-      .then((r) => live && setUsers((r && r.items) || []))
+      .then((r) => live && setUsers((r && r.objects) || []))
       .catch(() => live && setUsers([]))
       .finally(() => live && setLoading(false));
     return () => {

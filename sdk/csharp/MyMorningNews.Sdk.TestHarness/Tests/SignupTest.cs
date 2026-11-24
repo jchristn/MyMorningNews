@@ -91,7 +91,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
                     await StepAsync(context, result, "POST public/password/reset bad token (400 LinkInvalid)", () => Helpers.ExpectErrorAsync(() => anon.Account.ResetPasswordAsync("not-a-token", "a long new password", token), 400, "LinkInvalid")).ConfigureAwait(false);
 
                     EnumerationResult<Tenant> tenants = await StepAsync(context, result, "GET tenants (find the personal tenant)", () => c.Admin.Tenants.ListAsync(new TenantListOptions { PageSize = 1000 }, token)).ConfigureAwait(false);
-                    Tenant? personal = tenants.Items.FirstOrDefault(t => t.Name == display + " (personal)");
+                    Tenant? personal = tenants.Objects.FirstOrDefault(t => t.Name == display + " (personal)");
                     if (personal == null) throw new SkipTestException("could not find the personal tenant in the first 1000 tenants");
                     tenantId = personal.Id;
                     string tid = personal.Id;
@@ -99,7 +99,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
                     Helpers.True(personal.IsPersonal, "personal tenant");
 
                     EnumerationResult<UserResponse> users = await StepAsync(context, result, "GET personal tenant users", () => c.Admin.Users.ListAsync(tid, null, token)).ConfigureAwait(false);
-                    UserResponse signedUp = users.Items.Single(u => u.Email == email);
+                    UserResponse signedUp = users.Objects.Single(u => u.Email == email);
                     CredentialCreatedResponse key = await StepAsync(context, result, "POST credential for the new user", () => c.Admin.Credentials.CreateAsync(tid, new CredentialCreateRequest
                     {
                         UserId = signedUp.Id,
@@ -154,7 +154,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
         private static async Task<string> LinkTokenAsync(MyMorningNewsClient outbox, EmailTemplateEnum template, CancellationToken token)
         {
             EnumerationResult<EmailMessage> mail = await outbox.Email.ListAsync(new EmailMessageListOptions { Template = template, PageSize = 20 }, token).ConfigureAwait(false);
-            EmailMessage? latest = mail.Items.OrderByDescending(m => m.CreatedUtc).FirstOrDefault();
+            EmailMessage? latest = mail.Objects.OrderByDescending(m => m.CreatedUtc).FirstOrDefault();
             if (latest == null) throw new HarnessAssertionException("no " + template + " email in the personal tenant's outbox");
             EmailMessage full = await outbox.Email.GetAsync(latest.Id, token).ConfigureAwait(false);
             Match match = Regex.Match(full.RenderedText ?? String.Empty, "token=([A-Za-z0-9%_\\-\\.~]+)");

@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for SourceItem records. Null properties are not applied.
     /// </summary>
-    public class SourceItemFilter : EnumerationFilter
+    public class SourceItemFilter : EnumerationQuery
     {
         /// <summary>
         /// Match CanonicalUrlHash exactly when set.

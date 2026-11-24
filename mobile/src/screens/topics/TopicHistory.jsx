@@ -21,7 +21,7 @@ export function TopicHistory({ topic, onSaved, disabled }) {
     if (form.mode !== 'SpecificIssue') return;
     let live = true;
     briefingsApi.list(client, { topicId: topic.id, status: 'Ready', pageSize: 100 }).then((page) => {
-      if (live) { setIssues(page.items || []); setError(null); }
+      if (live) { setIssues(page.objects || []); setError(null); }
     }).catch((e) => { if (live) setError(e); });
     return () => { live = false; };
   }, [client, topic.id, form.mode]);

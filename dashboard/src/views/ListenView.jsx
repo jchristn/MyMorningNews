@@ -79,7 +79,7 @@ export default function ListenView() {
   const bump = useCallback(() => setRefresh((n) => n + 1), []);
 
   const fetchPage = useCallback((q) => apiClient.listMedia(pagedQuery(q)), [apiClient]);
-  const onLoaded = useCallback((data) => setHasActive(Boolean(data && Array.isArray(data.items) && data.items.some((m) => ACTIVE_MEDIA_STATUSES.includes(m.status)))), []);
+  const onLoaded = useCallback((data) => setHasActive(Boolean(data && Array.isArray(data.objects) && data.objects.some((m) => ACTIVE_MEDIA_STATUSES.includes(m.status)))), []);
   useInterval(bump, hasActive ? POLL_MS : null);
 
   async function remake(m) {

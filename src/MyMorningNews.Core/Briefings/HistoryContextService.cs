@@ -62,7 +62,7 @@ namespace MyMorningNews.Core.Briefings
         {
             ArgumentNullException.ThrowIfNull(topic);
             ArgumentNullException.ThrowIfNull(run);
-            RunHistorySnapshot? saved = (await _Database.RunHistorySnapshots.EnumerateAsync(new RunHistorySnapshotFilter { TenantId = run.TenantId, RunId = run.Id, PageSize = 1 }, token).ConfigureAwait(false)).Items.FirstOrDefault();
+            RunHistorySnapshot? saved = (await _Database.RunHistorySnapshots.EnumerateAsync(new RunHistorySnapshotFilter { TenantId = run.TenantId, RunId = run.Id, PageSize = 1 }, token).ConfigureAwait(false)).Objects.FirstOrDefault();
             if (saved != null) return saved;
             await ValidateAsync(topic, token).ConfigureAwait(false);
             if (run.TenantId != topic.TenantId || run.TopicId != topic.Id || run.UserId != topic.UserId)
@@ -88,7 +88,7 @@ namespace MyMorningNews.Core.Briefings
                         IsDryRun = false, FromUtc = topic.HistoryMode == HistoryModeEnum.SinceDate ? topic.HistorySinceUtc : null,
                         ToUtc = cutoff, SortBy = "createdUtc", SortDirection = SortDirectionEnum.Descending, PageNumber = page, PageSize = 50
                     }, token).ConfigureAwait(false);
-                    selected.AddRange(rows.Items.Where(b => b.RunId != run.Id && Usable(b, topic)).Take(limit - selected.Count));
+                    selected.AddRange(rows.Objects.Where(b => b.RunId != run.Id && Usable(b, topic)).Take(limit - selected.Count));
                     if (page >= rows.TotalPages) break;
                     page++;
                 }

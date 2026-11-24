@@ -56,7 +56,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             Helpers.Equal(7, spu.MaxResults, "max results");
             EnumerationResult<SearchProvider> list = await StepAsync(context, result, "GET search providers (kind filter)",
                 () => c.SearchProviders.ListAsync(new SearchProviderListOptions { Kind = SearchProviderKindEnum.Searxng, PageSize = 100 }, token)).ConfigureAwait(false);
-            Helpers.Contains(list.Items, x => x.Id == p.Id, "the provider");
+            Helpers.Contains(list.Objects, x => x.Id == p.Id, "the provider");
             SearchOutcome outcome = await StepAsync(context, result, "POST search provider test (unreachable)", () => c.SearchProviders.TestAsync(p.Id, new SearchTestRequest { Query = "postgres", MaxResults = 3 }, token)).ConfigureAwait(false);
             Helpers.True(!outcome.Success, "an unreachable provider fails its test");
             await StepAsync(context, result, "DELETE search provider", () => c.SearchProviders.DeleteAsync(p.Id, token)).ConfigureAwait(false);
@@ -79,7 +79,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             VoiceProfile vr = await StepAsync(context, result, "GET voice", () => c.Voices.GetAsync(v.Id, token)).ConfigureAwait(false);
             Helpers.Equal("alloy", vr.Voice, "voice");
             EnumerationResult<VoiceProfile> voices = await StepAsync(context, result, "GET voices", () => c.Voices.ListAsync(new VoiceListOptions { PageSize = 100 }, token)).ConfigureAwait(false);
-            Helpers.Contains(voices.Items, x => x.Id == v.Id, "the voice");
+            Helpers.Contains(voices.Objects, x => x.Id == v.Id, "the voice");
             await StepAsync(context, result, "POST voice test (unreachable, 502)", () => Helpers.ExpectErrorAsync(() => c.Voices.TestAsync(v.Id, new VoiceTestRequest { Text = "Hello." }, token), 502, "TtsError")).ConfigureAwait(false);
             AvailableVoicesResponse available = await StepAsync(context, result, "GET voices available", () => c.Voices.GetAvailableAsync(token)).ConfigureAwait(false);
             Helpers.Contains(available.Voices, x => x.VoiceProfileId == v.Id && x.Voice == "alloy", "the voice profile among the available voices");

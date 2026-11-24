@@ -28,7 +28,7 @@ export default function AgenticSearchSettings({ topic, onTopicUpdated }) {
     apiClient
       .listMcpServers({ pageSize: 100 })
       .then(async (page) => {
-        const servers = (page && Array.isArray(page.items) ? page.items : []).filter((s) => s.enabled);
+        const servers = (page && Array.isArray(page.objects) ? page.objects : []).filter((s) => s.enabled);
         const details = await Promise.all(servers.map((s) => apiClient.getMcpServer(s.id).catch(() => null)));
         const list = [];
         details.forEach((d) => {

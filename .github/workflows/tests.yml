@@ -145,6 +145,11 @@ jobs:
       - name: C# harness
         shell: bash
         run: ./sdk/csharp/run-tests.sh 2>&1 | tee .run/sdk-csharp.txt
+      - name: SDK enumeration wire contracts
+        run: |
+          node --test sdk/js/enumeration.test.js
+          python3 -m pip install -r sdk/python/requirements.txt
+          cd sdk/python && python3 -m unittest test_platform test_enumeration
       - name: JavaScript harness
         shell: bash
         run: ./sdk/js/run-tests.sh 2>&1 | tee .run/sdk-js.txt
@@ -153,6 +158,8 @@ jobs:
         run: ./sdk/python/run-tests.sh 2>&1 | tee .run/sdk-python.txt
       - name: MCP reference is current
         run: python3 src/Tools/mcpdocs/generate_mcp_api.py --check
+      - name: Collection retrieval contract
+        run: python3 src/Tools/apidocs/check_enumeration.py
       - name: REST reference and Postman collection are current
         run: |
           python3 src/Tools/apidocs/generate_rest_api.py --check

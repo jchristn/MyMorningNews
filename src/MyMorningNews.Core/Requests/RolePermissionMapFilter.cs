@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for RolePermissionMap records. Null properties are not applied.
     /// </summary>
-    public class RolePermissionMapFilter : EnumerationFilter
+    public class RolePermissionMapFilter : EnumerationQuery
     {
         /// <summary>
         /// Match RoleId exactly when set.

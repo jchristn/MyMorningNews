@@ -36,7 +36,7 @@ namespace MyMorningNews.Core.Services
         /// <summary>List only the signed-in account's connections. Encrypted secrets are JsonIgnored.</summary>
         public async Task<List<ProviderConnection>> ListAsync(string tenantId, string userId, CancellationToken token = default)
         {
-            return (await _Database.ProviderConnections.EnumerateAsync(new ProviderConnectionFilter { TenantId = tenantId, UserId = userId, PageSize = 10 }, token).ConfigureAwait(false)).Items;
+            return (await _Database.ProviderConnections.EnumerateAsync(new ProviderConnectionFilter { TenantId = tenantId, UserId = userId, PageSize = 10 }, token).ConfigureAwait(false)).Objects;
         }
 
         /// <summary>Save one connection per kind. Existing credentials are retained only for an unchanged provider and URL.</summary>
@@ -100,14 +100,14 @@ namespace MyMorningNews.Core.Services
             {
                 RequireEnabled(before);
                 if (! (await ListAsync(tenantId, userId, token).ConfigureAwait(false)).Any(c => c.Kind == "Chat" && c.Active && c.ValidatedUtc.HasValue)) throw new InvalidOperationException("Connect and test a personal model key first.");
-                List<BillingSubscription> paid = (await _Database.BillingSubscriptions.EnumerateAsync(new BillingSubscriptionFilter { TenantId = tenantId, UserId = userId, Active = true, PageSize = 1000 }, token).ConfigureAwait(false)).Items;
+                List<BillingSubscription> paid = (await _Database.BillingSubscriptions.EnumerateAsync(new BillingSubscriptionFilter { TenantId = tenantId, UserId = userId, Active = true, PageSize = 1000 }, token).ConfigureAwait(false)).Objects;
                 if (paid.Any(p => BillingService.Entitled(p, DateTime.UtcNow))) throw new InvalidOperationException("Manage your existing paid subscription before switching to BYOK. You can switch when its paid period ends.");
             }
-            AccountPlanPolicy? policy = (await _Database.AccountPlanPolicies.EnumerateAsync(new AccountPlanPolicyFilter { TenantId = tenantId, UserId = userId, PageSize = 1 }, token).ConfigureAwait(false)).Items.FirstOrDefault();
+            AccountPlanPolicy? policy = (await _Database.AccountPlanPolicies.EnumerateAsync(new AccountPlanPolicyFilter { TenantId = tenantId, UserId = userId, PageSize = 1 }, token).ConfigureAwait(false)).Objects.FirstOrDefault();
             if (policy == null)
             {
                 await _Entitlements.CaptureSignupPolicyAsync(tenantId, userId, token).ConfigureAwait(false);
-                policy = (await _Database.AccountPlanPolicies.EnumerateAsync(new AccountPlanPolicyFilter { TenantId = tenantId, UserId = userId, PageSize = 1 }, token).ConfigureAwait(false)).Items.Single();
+                policy = (await _Database.AccountPlanPolicies.EnumerateAsync(new AccountPlanPolicyFilter { TenantId = tenantId, UserId = userId, PageSize = 1 }, token).ConfigureAwait(false)).Objects.Single();
             }
             policy.FundingMode = mode;
             await _Database.AccountPlanPolicies.UpdateAsync(policy, token).ConfigureAwait(false);
@@ -132,7 +132,7 @@ namespace MyMorningNews.Core.Services
                 : (await ListAsync(request.TenantId, request.UserId, token).ConfigureAwait(false)).FirstOrDefault(c => c.Kind == kind && c.Active);
             if (connection == null && kind == "Embedding" && !explicitPersonal)
             {
-                ModelEndpoint? local = (await _Database.ModelEndpoints.EnumerateAsync(new ModelEndpointFilter { TenantId = request.TenantId, Active = true, PageSize = 1000 }, token).ConfigureAwait(false)).Items
+                ModelEndpoint? local = (await _Database.ModelEndpoints.EnumerateAsync(new ModelEndpointFilter { TenantId = request.TenantId, Active = true, PageSize = 1000 }, token).ConfigureAwait(false)).Objects
                     .FirstOrDefault(e => e.Provider == ModelProviderEnum.Ollama && e.SupportsEmbeddings && String.IsNullOrEmpty(e.CredentialId) && !String.IsNullOrWhiteSpace(e.EmbeddingModel));
                 if (local != null) return new ResolvedModel(local, local.EmbeddingModel!, null);
             }

@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for RefinementMessage records. Null properties are not applied.
     /// </summary>
-    public class RefinementMessageFilter : EnumerationFilter
+    public class RefinementMessageFilter : EnumerationQuery
     {
         /// <summary>
         /// Match SessionId exactly when set.

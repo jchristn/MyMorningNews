@@ -30,19 +30,25 @@ namespace MyMorningNews.Server.Routes
             ArgumentNullException.ThrowIfNull(webserver);
             const string path = "/v1.0/api/catalog";
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, path, ListAsync, null, openApiMetadata: Paged(Doc("Browse system briefings", "Catalog").WithParameter(QueryParam("category", typeof(string))).WithParameter(QueryParam("language", typeof(string)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, path + "/enumerate", ctx => EnumerateAsync(ctx, ListAsync), null, openApiMetadata: Paged(Doc("Browse system briefings", "Catalog").WithParameter(QueryParam("category", typeof(string))).WithParameter(QueryParam("language", typeof(string)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, path + "/subscriptions", SubscriptionsAsync, null, openApiMetadata: Paged(Doc("My system briefing subscriptions", "Catalog")));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, path + "/subscriptions" + "/enumerate", ctx => EnumerateAsync(ctx, SubscriptionsAsync), null, openApiMetadata: Paged(Doc("My system briefing subscriptions", "Catalog")).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, path + "/{id}/subscription", SubscribeAsync, null, openApiMetadata: Doc("Subscribe to a system briefing", "Catalog", "Idempotent. System subscriptions have a separate plan limit from custom topics.").WithRequestBody(Body<CatalogSubscriptionRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, path + "/{id}/subscription", UnsubscribeAsync, null, openApiMetadata: Doc("Unsubscribe from a system briefing", "Catalog"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, path + "/{id}/issues", IssuesAsync, null, openApiMetadata: Paged(Doc("List subscribed system briefing issues", "Catalog")));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, path + "/{id}/issues" + "/enumerate", ctx => EnumerateAsync(ctx, IssuesAsync), null, openApiMetadata: Paged(Doc("List subscribed system briefing issues", "Catalog")).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, path + "/{id}/issues/{issueId}", IssueAsync, null, openApiMetadata: Doc("Read a subscribed system briefing issue", "Catalog"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, path + "/{id}/issues/{issueId}/audio", AudioAsync, null, openApiMetadata: Doc("Stream shared system briefing audio", "Catalog", "Supports byte ranges. Replaying shared audio does not consume personal generation minutes."));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, path + "/{id}/issues/{issueId}/progress", ProgressAsync, null, openApiMetadata: Doc("Read personal progress for a shared issue", "Catalog"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, path + "/{id}/issues/{issueId}/progress", SaveProgressAsync, null, openApiMetadata: Doc("Save personal progress for a shared issue", "Catalog").WithRequestBody(Body<BriefingProgressRequest>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, path + "/issues", AllIssuesAsync, null, openApiMetadata: Paged(Doc("Shared issues from all my subscriptions", "Catalog", "Newest first. Content-only projection; suspended or retracted publications are excluded.")).WithParameter(QueryParam("audioOnly", typeof(bool))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, path + "/issues" + "/enumerate", ctx => EnumerateAsync(ctx, AllIssuesAsync), null, openApiMetadata: Paged(Doc("Shared issues from all my subscriptions", "Catalog", "Newest first. Content-only projection; suspended or retracted publications are excluded.")).WithParameter(QueryParam("audioOnly", typeof(bool))).WithRequestBody(Body<EnumerationQuery>()));
             const string admin = "/v1.0/api/admin/catalog";
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, admin, AdminListAsync, null, openApiMetadata: Paged(Doc("Manage system publications", "Catalog administration")));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, admin + "/enumerate", ctx => EnumerateAsync(ctx, AdminListAsync), null, openApiMetadata: Paged(Doc("Manage system publications", "Catalog administration")).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, admin + "/{id}", AdminReadAsync, null, openApiMetadata: Doc("Read a system publication", "Catalog administration"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, admin + "/{id}/issues", AdminIssuesAsync, null, openApiMetadata: Paged(Doc("Inspect canonical published issues", "Catalog administration")));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, admin + "/{id}/issues" + "/enumerate", ctx => EnumerateAsync(ctx, AdminIssuesAsync), null, openApiMetadata: Paged(Doc("Inspect canonical published issues", "Catalog administration")).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, admin + "/{id}/research", ResearchAsync, null, openApiMetadata: Doc("Read canonical research and schedule settings", "Catalog administration"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, admin + "/{id}/research", SaveResearchAsync, null, openApiMetadata: Doc("Configure canonical research and schedule", "Catalog administration", "Topic and schedule ownership come exclusively from the publication.").WithRequestBody(Body<CatalogResearchRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, admin + "/{id}/run", RunAsync, null, openApiMetadata: Doc("Research a system publication now", "Catalog administration"));
@@ -77,10 +83,10 @@ namespace MyMorningNews.Server.Routes
             ApplyPaging(ctx, filter);
             EnumerationResult<CatalogPublication> page = await Server.Database.CatalogPublications.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false);
             List<CatalogEntryResponse> entries = new List<CatalogEntryResponse>();
-            foreach (CatalogPublication publication in page.Items)
+            foreach (CatalogPublication publication in page.Objects)
             {
                 CatalogSubscription? subscription = (await Server.Database.CatalogSubscriptions.EnumerateAsync(new CatalogSubscriptionFilter
-                { TenantId = tenantId, UserId = userId, PublicationId = publication.Id, Active = true, PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Items.FirstOrDefault();
+                { TenantId = tenantId, UserId = userId, PublicationId = publication.Id, Active = true, PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Objects.FirstOrDefault();
                 entries.Add(new CatalogEntryResponse
                 {
                     Id = publication.Id, Title = publication.Title, Description = publication.Description, Category = publication.Category,
@@ -89,7 +95,7 @@ namespace MyMorningNews.Server.Routes
                     PublishedUtc = publication.PublishedUtc, SortOrder = publication.SortOrder
                 });
             }
-            await SendJsonAsync(ctx, 200, EnumerationResult<CatalogEntryResponse>.Create(entries, filter, page.TotalCount, page.DurationMs)).ConfigureAwait(false);
+            await SendJsonAsync(ctx, 200, EnumerationResult<CatalogEntryResponse>.Create(entries, filter, page.TotalRecords, page.TotalMs)).ConfigureAwait(false);
         }
 
         private async Task SubscriptionsAsync(HttpContextBase ctx)
@@ -114,7 +120,7 @@ namespace MyMorningNews.Server.Routes
         {
             if (!await MemberAsync(ctx).ConfigureAwait(false)) return;
             CatalogSubscription? subscription = (await Server.Database.CatalogSubscriptions.EnumerateAsync(new CatalogSubscriptionFilter
-            { TenantId = Context(ctx).TenantId, UserId = Context(ctx).UserId, PublicationId = Param(ctx, "id"), PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Items.FirstOrDefault();
+            { TenantId = Context(ctx).TenantId, UserId = Context(ctx).UserId, PublicationId = Param(ctx, "id"), PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Objects.FirstOrDefault();
             if (subscription != null)
             {
                 subscription.Active = false;
@@ -135,10 +141,10 @@ namespace MyMorningNews.Server.Routes
         {
             if (!await MemberAsync(ctx).ConfigureAwait(false)) return;
             EffectivePlan plan = await _Catalog.ReconcileAsync(Context(ctx).TenantId!, Context(ctx).UserId!, ctx.Token).ConfigureAwait(false);
-            EnumerationFilter filter = new EnumerationFilter();
+            EnumerationQuery filter = new EnumerationQuery();
             ApplyPaging(ctx, filter);
             EnumerationResult<CatalogIssueResponse> page = await Server.Database.CatalogSubscriptions.IssuesAsync(Context(ctx).TenantId!, Context(ctx).UserId!, CatalogService.FreeOnly(plan), filter, ctx.Token, QueryBool(ctx, "audioOnly") == true).ConfigureAwait(false);
-            foreach (CatalogIssueResponse issue in page.Items)
+            foreach (CatalogIssueResponse issue in page.Objects)
             {
                 CatalogPublication? publication = await _Catalog.ReadableAsync(Context(ctx).TenantId!, Context(ctx).UserId!, issue.PublicationId, ctx.Token).ConfigureAwait(false);
                 if (publication == null) continue;
@@ -171,12 +177,12 @@ namespace MyMorningNews.Server.Routes
             ApplyPaging(ctx, filter);
             EnumerationResult<Briefing> page = await Server.Database.Briefings.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false);
             List<CatalogIssueResponse> issues = new List<CatalogIssueResponse>();
-            foreach (Briefing briefing in page.Items)
+            foreach (Briefing briefing in page.Objects)
             {
                 CatalogIssueResponse? issue = await _Catalog.IssueAsync(publication, briefing.Id, ctx.Token).ConfigureAwait(false);
                 if (issue != null) { issue.Markdown = null; issues.Add(issue); }
             }
-            await SendJsonAsync(ctx, 200, EnumerationResult<CatalogIssueResponse>.Create(issues, filter, page.TotalCount, page.DurationMs)).ConfigureAwait(false);
+            await SendJsonAsync(ctx, 200, EnumerationResult<CatalogIssueResponse>.Create(issues, filter, page.TotalRecords, page.TotalMs)).ConfigureAwait(false);
         }
 
         private async Task IssueAsync(HttpContextBase ctx)
@@ -212,7 +218,7 @@ namespace MyMorningNews.Server.Routes
             if (await _Catalog.IssueAsync(publication, issueId, ctx.Token).ConfigureAwait(false) == null)
             { await SendNotFoundAsync(ctx, "Issue").ConfigureAwait(false); return; }
             BriefingProgress? progress = (await Server.Database.BriefingProgress.EnumerateAsync(new BriefingProgressFilter
-            { TenantId = Context(ctx).TenantId, UserId = Context(ctx).UserId, BriefingId = issueId, PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Items.FirstOrDefault();
+            { TenantId = Context(ctx).TenantId, UserId = Context(ctx).UserId, BriefingId = issueId, PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Objects.FirstOrDefault();
             await SendJsonAsync(ctx, 200, progress ?? new BriefingProgress { TenantId = Context(ctx).TenantId!, UserId = Context(ctx).UserId!, BriefingId = issueId }).ConfigureAwait(false);
         }
 
@@ -263,7 +269,7 @@ namespace MyMorningNews.Server.Routes
             Topic topic = await Server.Database.Topics.ReadAsync(publication.OwnerTenantId, publication.TopicId, ctx.Token).ConfigureAwait(false)
                 ?? throw new KeyNotFoundException("The canonical topic is unavailable.");
             Schedule? schedule = (await Server.Database.Schedules.EnumerateAsync(new ScheduleFilter
-            { TenantId = topic.TenantId, OwnerType = ScheduleOwnerTypeEnum.Topic, OwnerId = topic.Id, PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Items.FirstOrDefault();
+            { TenantId = topic.TenantId, OwnerType = ScheduleOwnerTypeEnum.Topic, OwnerId = topic.Id, PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Objects.FirstOrDefault();
             return new CatalogResearchResponse { Topic = topic, Schedule = schedule };
         }
 

@@ -83,7 +83,7 @@ namespace MyMorningNews.Core.Feedback
             int created = 0;
             if (topic != null)
             {
-                List<Models.Feedback> items = (await _Database.Feedback.EnumerateAsync(new FeedbackFilter { TenantId = tenantId, UserId = userId, TopicId = topicId, IsCurrent = true, PageSize = 100 }, token).ConfigureAwait(false)).Items
+                List<Models.Feedback> items = (await _Database.Feedback.EnumerateAsync(new FeedbackFilter { TenantId = tenantId, UserId = userId, TopicId = topicId, IsCurrent = true, PageSize = 100 }, token).ConfigureAwait(false)).Objects
                     .OrderByDescending(f => f.CreatedUtc).ToList();
                 Dictionary<string, string> titles = await TitlesAsync(tenantId, items, token).ConfigureAwait(false);
                 try
@@ -97,7 +97,7 @@ namespace MyMorningNews.Core.Feedback
                 }
             }
 
-            LearningCheckpoint? cp = (await _Database.LearningCheckpoints.EnumerateAsync(new LearningCheckpointFilter { TenantId = tenantId, UserId = userId, TopicId = topicId, PageSize = 1 }, token).ConfigureAwait(false)).Items.FirstOrDefault();
+            LearningCheckpoint? cp = (await _Database.LearningCheckpoints.EnumerateAsync(new LearningCheckpointFilter { TenantId = tenantId, UserId = userId, TopicId = topicId, PageSize = 1 }, token).ConfigureAwait(false)).Objects.FirstOrDefault();
             if (cp == null)
             {
                 await _Database.LearningCheckpoints.CreateAsync(new LearningCheckpoint { TenantId = tenantId, UserId = userId, TopicId = topicId, LastFeedbackUtc = newestUtc, LastRunUtc = DateTime.UtcNow, Proposed = created }, token).ConfigureAwait(false);
@@ -123,7 +123,7 @@ namespace MyMorningNews.Core.Feedback
         /// <returns>Lines.</returns>
         public async Task<List<string>> ExemplarsAsync(string tenantId, string userId, string topicId, CancellationToken token = default)
         {
-            List<Models.Feedback> rated = (await _Database.Feedback.EnumerateAsync(new FeedbackFilter { TenantId = tenantId, UserId = userId, TopicId = topicId, TargetType = FeedbackTargetTypeEnum.Finding, IsCurrent = true, PageSize = 200 }, token).ConfigureAwait(false)).Items
+            List<Models.Feedback> rated = (await _Database.Feedback.EnumerateAsync(new FeedbackFilter { TenantId = tenantId, UserId = userId, TopicId = topicId, TargetType = FeedbackTargetTypeEnum.Finding, IsCurrent = true, PageSize = 200 }, token).ConfigureAwait(false)).Objects
                 .Where(f => f.Relevance.HasValue).OrderByDescending(f => f.CreatedUtc).ToList();
             List<Models.Feedback> pick = rated.Where(f => f.Relevance == RelevanceRatingEnum.Relevant).Take(5).Concat(rated.Where(f => f.Relevance == RelevanceRatingEnum.NotRelevant).Take(5)).ToList();
             Dictionary<string, string> titles = await TitlesAsync(tenantId, pick, token).ConfigureAwait(false);
@@ -141,7 +141,7 @@ namespace MyMorningNews.Core.Feedback
         /// <returns>Lines such as "Avoid: funding news under 100 million dollars".</returns>
         public async Task<List<string>> ActivePreferencesAsync(string tenantId, string userId, string topicId, CancellationToken token = default)
         {
-            List<LearnedPreference> prefs = (await _Database.LearnedPreferences.EnumerateAsync(new LearnedPreferenceFilter { TenantId = tenantId, UserId = userId, Status = PreferenceStatusEnum.Active, PageSize = 200 }, token).ConfigureAwait(false)).Items
+            List<LearnedPreference> prefs = (await _Database.LearnedPreferences.EnumerateAsync(new LearnedPreferenceFilter { TenantId = tenantId, UserId = userId, Status = PreferenceStatusEnum.Active, PageSize = 200 }, token).ConfigureAwait(false)).Objects
                 .Where(p => p.TopicId == null || p.TopicId == topicId).OrderBy(p => p.Kind).ThenBy(p => p.CreatedUtc).ToList();
             return prefs.Select(p => Label(p.Kind) + ": " + p.Statement.Trim()).ToList();
         }
@@ -165,7 +165,7 @@ namespace MyMorningNews.Core.Feedback
 
         private async Task TagAsync(Topic topic, List<Models.Feedback> items, Dictionary<string, string> titles, CancellationToken token)
         {
-            List<FeedbackReasonTag> existing = (await _Database.FeedbackReasonTags.EnumerateAsync(new FeedbackReasonTagFilter { TenantId = topic.TenantId, TopicId = topic.Id, PageSize = 1000 }, token).ConfigureAwait(false)).Items;
+            List<FeedbackReasonTag> existing = (await _Database.FeedbackReasonTags.EnumerateAsync(new FeedbackReasonTagFilter { TenantId = topic.TenantId, TopicId = topic.Id, PageSize = 1000 }, token).ConfigureAwait(false)).Objects;
             HashSet<string> tagged = new HashSet<string>(existing.Select(t => t.FeedbackId), StringComparer.Ordinal);
             List<Models.Feedback> untagged = items.Where(f => !String.IsNullOrWhiteSpace(f.Reason) && !tagged.Contains(f.Id)).Take(40).ToList();
             if (untagged.Count == 0) return;
@@ -183,8 +183,8 @@ namespace MyMorningNews.Core.Feedback
         private async Task<int> DistillAsync(Topic topic, string userId, List<Models.Feedback> items, Dictionary<string, string> titles, CancellationToken token)
         {
             if (items.Count < 3) return 0;
-            List<FeedbackReasonTag> tags = (await _Database.FeedbackReasonTags.EnumerateAsync(new FeedbackReasonTagFilter { TenantId = topic.TenantId, TopicId = topic.Id, PageSize = 1000 }, token).ConfigureAwait(false)).Items;
-            List<LearnedPreference> existing = (await _Database.LearnedPreferences.EnumerateAsync(new LearnedPreferenceFilter { TenantId = topic.TenantId, UserId = userId, PageSize = 500 }, token).ConfigureAwait(false)).Items
+            List<FeedbackReasonTag> tags = (await _Database.FeedbackReasonTags.EnumerateAsync(new FeedbackReasonTagFilter { TenantId = topic.TenantId, TopicId = topic.Id, PageSize = 1000 }, token).ConfigureAwait(false)).Objects;
+            List<LearnedPreference> existing = (await _Database.LearnedPreferences.EnumerateAsync(new LearnedPreferenceFilter { TenantId = topic.TenantId, UserId = userId, PageSize = 500 }, token).ConfigureAwait(false)).Objects
                 .Where(p => p.TopicId == null || p.TopicId == topic.Id).ToList();
             StructuredCallResult<PreferenceProposalResult> result = await CallAsync<PreferenceProposalResult>(topic, "feedback.distill-preferences", new Dictionary<string, object?>(StringComparer.Ordinal)
             {

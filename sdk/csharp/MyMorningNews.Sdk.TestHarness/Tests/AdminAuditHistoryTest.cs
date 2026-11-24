@@ -34,17 +34,17 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
         {
             MyMorningNewsClient c = context.RequireAdmin();
             EnumerationResult<AuditRecord> audit = await StepAsync(context, result, "GET audit", () => c.Admin.Audit.ListAsync(new AuditListOptions { TenantId = context.Environment.Tenant, PageSize = 10 }, token)).ConfigureAwait(false);
-            Helpers.True(audit.Items.Count > 0, "the harness produced audit records");
-            AuditRecord record = await StepAsync(context, result, "GET audit record", () => c.Admin.Audit.GetAsync(audit.Items[0].Id, token)).ConfigureAwait(false);
-            Helpers.Equal(audit.Items[0].Id, record.Id, "audit id");
+            Helpers.True(audit.Objects.Count > 0, "the harness produced audit records");
+            AuditRecord record = await StepAsync(context, result, "GET audit record", () => c.Admin.Audit.GetAsync(audit.Objects[0].Id, token)).ConfigureAwait(false);
+            Helpers.Equal(audit.Objects[0].Id, record.Id, "audit id");
             await StepAsync(context, result, "GET unknown audit record (404)", () => Helpers.ExpectErrorAsync(() => c.Admin.Audit.GetAsync("aud_missing", token), 404)).ConfigureAwait(false);
 
             EnumerationResult<RequestHistoryEntry> history = await StepAsync(context, result, "GET request-history (2xx, topics)",
                 () => c.Admin.RequestHistory.ListAsync(new RequestHistoryListOptions { StatusClass = "2xx", PathContains = "/topics", PageSize = 5 }, token)).ConfigureAwait(false);
-            if (history.Items.Count > 0)
+            if (history.Objects.Count > 0)
             {
-                RequestHistoryEntry entry = await StepAsync(context, result, "GET request-history entry", () => c.Admin.RequestHistory.GetAsync(history.Items[0].Id, token)).ConfigureAwait(false);
-                Helpers.Equal(history.Items[0].Id, entry.Id, "history id");
+                RequestHistoryEntry entry = await StepAsync(context, result, "GET request-history entry", () => c.Admin.RequestHistory.GetAsync(history.Objects[0].Id, token)).ConfigureAwait(false);
+                Helpers.Equal(history.Objects[0].Id, entry.Id, "history id");
             }
 
             RequestHistorySummary summary = await StepAsync(context, result, "GET request-history/summary", () => c.Admin.RequestHistory.GetSummaryAsync(new RequestHistoryListOptions

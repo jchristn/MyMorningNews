@@ -25,7 +25,7 @@ export default function NotificationsView() {
       if (ids.length === 0) return;
       const page = await apiClient.listTopics({ pageSize: 1000 }).catch(() => null);
       const names = {};
-      for (const topic of (page && page.items) || []) names[topic.id] = topic.name;
+      for (const topic of (page && page.objects) || []) names[topic.id] = topic.name;
       setTopics(names);
     },
     [apiClient]

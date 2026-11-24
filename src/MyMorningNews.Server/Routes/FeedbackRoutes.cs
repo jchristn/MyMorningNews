@@ -45,6 +45,9 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/feedback", ListAsync, null, openApiMetadata: Paged(Doc("List feedback", "Feedback", "Current ratings only unless includeHistory=true.").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))
                 .WithParameter(QueryParam("targetType", typeof(FeedbackTargetTypeEnum))).WithParameter(QueryParam("targetId", typeof(string))).WithParameter(QueryParam("topicId", typeof(string)))
                 .WithParameter(QueryParam("channel", typeof(FeedbackChannelEnum))).WithParameter(QueryParam("includeHistory", typeof(bool)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/feedback" + "/enumerate", ctx => EnumerateAsync(ctx, ListAsync), null, openApiMetadata: Paged(Doc("List feedback", "Feedback", "Current ratings only unless includeHistory=true.").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))
+                .WithParameter(QueryParam("targetType", typeof(FeedbackTargetTypeEnum))).WithParameter(QueryParam("targetId", typeof(string))).WithParameter(QueryParam("topicId", typeof(string)))
+                .WithParameter(QueryParam("channel", typeof(FeedbackChannelEnum))).WithParameter(QueryParam("includeHistory", typeof(bool)))).WithRequestBody(Body<EnumerationQuery>()));
 
             webserver.Routes.PreAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/public/feedback/{token}", FeedbackPageAsync, null, openApiMetadata: Doc("Email feedback page", "Public").WithParameter(QueryParam("a", typeof(string))));
             webserver.Routes.PreAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/public/feedback/{token}", FeedbackSubmitAsync, null, openApiMetadata: Doc("Submit email feedback (form post)", "Public"));

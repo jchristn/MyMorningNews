@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for NotificationPreference records. Null properties are not applied.
     /// </summary>
-    public class NotificationPreferenceFilter : EnumerationFilter
+    public class NotificationPreferenceFilter : EnumerationQuery
     {
         /// <summary>
         /// Match UserId exactly when set.

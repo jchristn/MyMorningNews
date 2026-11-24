@@ -62,7 +62,7 @@ namespace Test.Shared.Suites
 
         private static async Task<List<Notification>> ListAsync(TestUser user, string query, CancellationToken token)
         {
-            return (await user.Client.GetAsync(N + query, token).ConfigureAwait(false)).Expect(200, "list").Json<EnumerationResult<Notification>>().Items;
+            return (await user.Client.GetAsync(N + query, token).ConfigureAwait(false)).Expect(200, "list").Json<EnumerationResult<Notification>>().Objects;
         }
 
         private static async Task<long> UnreadAsync(TestUser user, CancellationToken token)
@@ -84,7 +84,7 @@ namespace Test.Shared.Suites
 
         private static async Task<List<EmailMessage>> MailAsync(MyMorningNewsServer server, string tenantId, EmailTemplateEnum template, CancellationToken token)
         {
-            return (await server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenantId, Template = template, PageSize = 100 }, token).ConfigureAwait(false)).Items;
+            return (await server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenantId, Template = template, PageSize = 100 }, token).ConfigureAwait(false)).Objects;
         }
 
         private static async Task DefaultsAsync(CancellationToken token)
@@ -243,7 +243,7 @@ namespace Test.Shared.Suites
             Assert.Equal(2L, await UnreadAsync(user, token).ConfigureAwait(false), "two unread");
             Assert.Equal(1, (await ListAsync(user, "?kind=RunFailed", token).ConfigureAwait(false)).Count, "filter by kind");
             EnumerationResult<Notification> paged = (await user.Client.GetAsync(N + "?pageSize=1", token).ConfigureAwait(false)).Expect(200, "paged").Json<EnumerationResult<Notification>>();
-            Assert.True(paged.Items.Count == 1 && paged.TotalCount == 2 && paged.TotalPages == 2, "paged");
+            Assert.True(paged.Objects.Count == 1 && paged.TotalRecords == 2 && paged.TotalPages == 2, "paged");
 
             Assert.Equal(0, (await ListAsync(other, String.Empty, token).ConfigureAwait(false)).Count, "another user sees none of them");
             Assert.Equal(0, (await ListAsync(other, "?userId=" + user.User.Id, token).ConfigureAwait(false)).Count, "even when asking for my user ID");
@@ -366,7 +366,7 @@ namespace Test.Shared.Suites
             {
                 int done = await f.Server.Context.Audio.ProcessQueuedAsync(DateTime.UtcNow, new[] { b.TenantId }, token).ConfigureAwait(false);
                 EnumerationResult<MediaAsset> list = (await f.User.Client.GetAsync("/v1.0/api/media?briefingId=" + b.Id, token).ConfigureAwait(false)).Json<EnumerationResult<MediaAsset>>();
-                MediaAsset? m = list.Items.OrderByDescending(x => x.CreatedUtc).FirstOrDefault();
+                MediaAsset? m = list.Objects.OrderByDescending(x => x.CreatedUtc).FirstOrDefault();
                 if (m != null && (m.Status == MediaStatusEnum.Ready || m.Status == MediaStatusEnum.Failed)) return m;
                 if (done == 0) await Task.Delay(50, token).ConfigureAwait(false);
             }
@@ -430,20 +430,20 @@ namespace Test.Shared.Suites
             string tenantId = f.Topic.TenantId;
             string address = f.User.User.Email.ToLowerInvariant();
             Run run = await PipelineSuite.RunAsync(f, token).ConfigureAwait(false);
-            EmailMessage digest = (await f.Server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenantId, RunId = run.Id, PageSize = 10 }, token).ConfigureAwait(false)).Items.Single();
+            EmailMessage digest = (await f.Server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenantId, RunId = run.Id, PageSize = 10 }, token).ConfigureAwait(false)).Objects.Single();
             Assert.True(digest.Template == EmailTemplateEnum.RunDigest && digest.Status == EmailStatusEnum.Queued && digest.Recipient == address && digest.IdempotencyKey == "run:" + run.Id + ":" + address
                 && digest.Subject.StartsWith("[My Morning News] " + f.Topic.Name + ": 2 new (", StringComparison.Ordinal), "the run digest is unchanged: " + digest.Subject);
             Assert.True(digest.RenderedText!.Contains("Unsubscribe from this topic: http", StringComparison.Ordinal) && digest.RenderedText.Contains("Email preferences: " + f.Server.Context.Settings.Rest.AppBaseUrl + "/dashboard/notifications", StringComparison.Ordinal),
                 "its footer links to the one preferences page");
 
             Briefing b = await EditionBriefingAsync(f, "Default edition", true, token).ConfigureAwait(false);
-            EmailMessage briefing = (await f.Server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenantId, BriefingId = b.Id, Template = EmailTemplateEnum.BriefingPublished, PageSize = 10 }, token).ConfigureAwait(false)).Items.Single();
+            EmailMessage briefing = (await f.Server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenantId, BriefingId = b.Id, Template = EmailTemplateEnum.BriefingPublished, PageSize = 10 }, token).ConfigureAwait(false)).Objects.Single();
             Assert.True(briefing.Status == EmailStatusEnum.Queued && briefing.Subject == "[My Morning News] " + b.Title && briefing.IdempotencyKey == "briefing:" + b.Id + ":" + address, "the briefing email is unchanged");
 
             Run failed = new Run { Id = "run_" + Guid.NewGuid().ToString("N").Substring(0, 20), TenantId = tenantId, TopicId = f.Topic.Id, UserId = f.User.User.Id, Status = RunStatusEnum.Failed };
             await f.Server.Context.Scheduling.OnRunFailed!(failed, token).ConfigureAwait(false);
             await f.Server.Context.Scheduling.OnRunFailed!(failed, token).ConfigureAwait(false);
-            EmailMessage failure = (await f.Server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenantId, RunId = failed.Id, PageSize = 10 }, token).ConfigureAwait(false)).Items.Single();
+            EmailMessage failure = (await f.Server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenantId, RunId = failed.Id, PageSize = 10 }, token).ConfigureAwait(false)).Objects.Single();
             Assert.True(failure.Template == EmailTemplateEnum.RunFailed && failure.Status == EmailStatusEnum.Queued && failure.Recipient == address && failure.RenderedText!.Contains("/dashboard/runs?id=" + failed.Id, StringComparison.Ordinal)
                 && failure.RenderedText.Contains(f.Topic.Name, StringComparison.Ordinal), "a failed run emails its owner once: " + failure.Subject);
 
@@ -454,11 +454,11 @@ namespace Test.Shared.Suites
             await SetAsync(f.User, NotificationKindEnum.RunResults, NotificationChannelEnum.Email, false, token).ConfigureAwait(false);
             (await f.User.Client.PutAsync("/v1.0/api/email-preferences", new { failureEmails = false }, token).ConfigureAwait(false)).Expect(200, "failure emails off through the old route");
             Run second = await PipelineSuite.RunAsync(f, token).ConfigureAwait(false);
-            List<EmailMessage> held = (await f.Server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenantId, RunId = second.Id, PageSize = 10 }, token).ConfigureAwait(false)).Items;
+            List<EmailMessage> held = (await f.Server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenantId, RunId = second.Id, PageSize = 10 }, token).ConfigureAwait(false)).Objects;
             Assert.True(held.Count == 0 || held.All(x => x.Status == EmailStatusEnum.Suppressed), "no digest once run results email is off: " + String.Join(",", held.Select(x => x.Status)));
             Run failedAgain = new Run { Id = "run_" + Guid.NewGuid().ToString("N").Substring(0, 20), TenantId = tenantId, TopicId = f.Topic.Id, UserId = f.User.User.Id, Status = RunStatusEnum.Failed };
             await f.Server.Context.Scheduling.OnRunFailed!(failedAgain, token).ConfigureAwait(false);
-            List<EmailMessage> heldFailure = (await f.Server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenantId, RunId = failedAgain.Id, PageSize = 10 }, token).ConfigureAwait(false)).Items;
+            List<EmailMessage> heldFailure = (await f.Server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenantId, RunId = failedAgain.Id, PageSize = 10 }, token).ConfigureAwait(false)).Objects;
             Assert.Equal(0, heldFailure.Count, "no failure email once it is off");
         }
     }

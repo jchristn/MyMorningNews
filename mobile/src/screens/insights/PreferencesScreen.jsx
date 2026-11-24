@@ -177,10 +177,10 @@ export function PreferencesScreen() {
   const replace = (updated) =>
     resource.setData((data) => {
       const next = listItems(data).map((x) => (x.id === updated.id ? updated : x));
-      return { ...(data && !Array.isArray(data) ? data : {}), items: status === 'all' ? next : next.filter((x) => x.status === status) };
+      return { ...(data && !Array.isArray(data) ? data : {}), objects: status === 'all' ? next : next.filter((x) => x.status === status) };
     });
-  const removed = (id) => resource.setData((data) => ({ ...(data && !Array.isArray(data) ? data : {}), items: listItems(data).filter((x) => x.id !== id) }));
-  const created = (pref) => resource.setData((data) => ({ ...(data && !Array.isArray(data) ? data : {}), items: [pref, ...listItems(data)] }));
+  const removed = (id) => resource.setData((data) => ({ ...(data && !Array.isArray(data) ? data : {}), objects: listItems(data).filter((x) => x.id !== id) }));
+  const created = (pref) => resource.setData((data) => ({ ...(data && !Array.isArray(data) ? data : {}), objects: [pref, ...listItems(data)] }));
   return (
     <Screen testID="preferences-screen" refreshControl={<RefreshControl refreshing={resource.refreshing} onRefresh={resource.reload} tintColor={p.primary} />}>
       <T variant="muted">{t('mobile.preferences.intro')}</T>

@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for UserRole records. Null properties are not applied.
     /// </summary>
-    public class UserRoleFilter : EnumerationFilter
+    public class UserRoleFilter : EnumerationQuery
     {
         /// <summary>
         /// Match Name exactly when set.

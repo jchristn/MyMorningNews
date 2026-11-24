@@ -6,8 +6,14 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for SearchProvider records. Null properties are not applied.
     /// </summary>
-    public class SearchProviderFilter : EnumerationFilter
+    public class SearchProviderFilter : EnumerationQuery
     {
+        /// <summary>
+        /// Select active providers effective for this topic, including tenant defaults when no links exist.
+        /// Null leaves topic selection unrestricted.
+        /// </summary>
+        public string? TopicId { get; set; } = null;
+
         /// <summary>
         /// Match Kind exactly when set.
         /// </summary>

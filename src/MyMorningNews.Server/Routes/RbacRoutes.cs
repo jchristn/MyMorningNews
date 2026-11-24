@@ -34,18 +34,22 @@ namespace MyMorningNews.Server.Routes
             ArgumentNullException.ThrowIfNull(webserver);
             string t = "/v1.0/tenants/{tenantId}";
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, t + "/roles", ListRolesAsync, null, openApiMetadata: Paged(Doc("List roles (built-in and tenant)", "Roles").WithParameter(QueryParam("isBuiltIn", typeof(bool))).WithParameter(QueryParam("active", typeof(bool)))));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, t + "/roles" + "/enumerate", ctx => EnumerateAsync(ctx, ListRolesAsync), null, openApiMetadata: Paged(Doc("List roles (built-in and tenant)", "Roles").WithParameter(QueryParam("isBuiltIn", typeof(bool))).WithParameter(QueryParam("active", typeof(bool)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, t + "/roles", CreateRoleAsync, null, openApiMetadata: Doc("Create a tenant role", "Roles").WithRequestBody(Body<RoleUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, t + "/roles/{roleId}", ReadRoleAsync, null, openApiMetadata: Doc("Read a role with its permissions", "Roles"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, t + "/roles/{roleId}", UpdateRoleAsync, null, openApiMetadata: Doc("Update a tenant role", "Roles").WithRequestBody(Body<RoleUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, t + "/roles/{roleId}", DeleteRoleAsync, null, openApiMetadata: Doc("Delete a tenant role", "Roles"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, t + "/permissions", ListPermissionsAsync, null, openApiMetadata: Paged(Doc("List permissions", "Permissions").WithParameter(QueryParam("includeBuiltIn", typeof(bool))).WithParameter(QueryParam("permissionType", typeof(PermissionTypeEnum)))));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, t + "/permissions" + "/enumerate", ctx => EnumerateAsync(ctx, ListPermissionsAsync), null, openApiMetadata: Paged(Doc("List permissions", "Permissions").WithParameter(QueryParam("includeBuiltIn", typeof(bool))).WithParameter(QueryParam("permissionType", typeof(PermissionTypeEnum)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, t + "/permissions", CreatePermissionAsync, null, openApiMetadata: Doc("Create a tenant permission", "Permissions").WithRequestBody(Body<PermissionUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, t + "/permissions/{permissionId}", UpdatePermissionAsync, null, openApiMetadata: Doc("Update a tenant permission", "Permissions").WithRequestBody(Body<PermissionUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, t + "/permissions/{permissionId}", DeletePermissionAsync, null, openApiMetadata: Doc("Delete a tenant permission", "Permissions"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, t + "/users/{userId}/assignments", ListAssignmentsAsync, null, openApiMetadata: Paged(Doc("List a user's role assignments", "Assignments")));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, t + "/users/{userId}/assignments" + "/enumerate", ctx => EnumerateAsync(ctx, ListAssignmentsAsync), null, openApiMetadata: Paged(Doc("List a user's role assignments", "Assignments")).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, t + "/users/{userId}/assignments", CreateAssignmentAsync, null, openApiMetadata: Doc("Assign a role to a user", "Assignments").WithRequestBody(Body<AssignmentUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, t + "/users/{userId}/assignments/{assignmentId}", DeleteAssignmentAsync, null, openApiMetadata: Doc("Remove a role assignment", "Assignments"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, t + "/credentials/{credentialId}/scopes", ListScopesAsync, null, openApiMetadata: Paged(Doc("List a credential's scope assignments", "Assignments")));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, t + "/credentials/{credentialId}/scopes" + "/enumerate", ctx => EnumerateAsync(ctx, ListScopesAsync), null, openApiMetadata: Paged(Doc("List a credential's scope assignments", "Assignments")).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, t + "/credentials/{credentialId}/scopes", CreateScopeAsync, null, openApiMetadata: Doc("Add a credential scope assignment", "Assignments").WithRequestBody(Body<AssignmentUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, t + "/credentials/{credentialId}/scopes/{scopeId}", DeleteScopeAsync, null, openApiMetadata: Doc("Remove a credential scope assignment", "Assignments"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, t + "/users/{userId}/permissions", UserPermissionsAsync, null, openApiMetadata: Doc("Effective permissions for a user", "Permissions"));
@@ -119,7 +123,7 @@ namespace MyMorningNews.Server.Routes
             EnumerationResult<RolePermissionMap> maps = await Server.Database.RolePermissionMaps.EnumerateAsync(
                 new RolePermissionMapFilter { TenantId = role.TenantId, RoleId = role.Id, PageSize = 1000 }, ctx.Token).ConfigureAwait(false);
             List<Permission> permissions = new List<Permission>();
-            foreach (RolePermissionMap map in maps.Items)
+            foreach (RolePermissionMap map in maps.Objects)
             {
                 Permission? p = await Server.Database.Permissions.ReadByIdAsync(map.PermissionId, ctx.Token).ConfigureAwait(false);
                 if (p != null) permissions.Add(p);
@@ -512,7 +516,7 @@ namespace MyMorningNews.Server.Routes
 
             EnumerationResult<RolePermissionMap> existing = await Server.Database.RolePermissionMaps.EnumerateAsync(
                 new RolePermissionMapFilter { TenantId = tenantId, RoleId = role.Id, PageSize = 1000 }, token).ConfigureAwait(false);
-            foreach (RolePermissionMap map in existing.Items) await Server.Database.RolePermissionMaps.DeleteAsync(tenantId, map.Id, token).ConfigureAwait(false);
+            foreach (RolePermissionMap map in existing.Objects) await Server.Database.RolePermissionMaps.DeleteAsync(tenantId, map.Id, token).ConfigureAwait(false);
             foreach (Permission p in permissions)
                 await Server.Database.RolePermissionMaps.CreateAsync(new RolePermissionMap { TenantId = tenantId, RoleId = role.Id, PermissionId = p.Id }, token).ConfigureAwait(false);
             return null;

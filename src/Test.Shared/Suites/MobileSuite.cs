@@ -134,9 +134,9 @@ namespace Test.Shared.Suites
             Assert.True(again.Id == created.Id && again.Name == "Renamed", "idempotent");
             (await owner.Client.PostAsync("/v1.0/api/devices", new DeviceRegisterRequest { ExpoPushToken = "garbage", Platform = "ios" }, token).ConfigureAwait(false)).Expect(400, "bad token");
             (await owner.Client.PostAsync("/v1.0/api/devices", new DeviceRegisterRequest { ExpoPushToken = push, Platform = "windows" }, token).ConfigureAwait(false)).Expect(400, "bad platform");
-            List<Device> mine = (await owner.Client.GetAsync("/v1.0/api/devices", token).ConfigureAwait(false)).Expect(200, "list").Json<List<Device>>();
+            List<Device> mine = (await owner.Client.GetAsync("/v1.0/api/devices", token).ConfigureAwait(false)).Expect(200, "list").Json<EnumerationResult<Device>>().Objects;
             Assert.Equal(1, mine.Count, "one device");
-            List<Device> theirs = (await other.Client.GetAsync("/v1.0/api/devices", token).ConfigureAwait(false)).Expect(200, "other list").Json<List<Device>>();
+            List<Device> theirs = (await other.Client.GetAsync("/v1.0/api/devices", token).ConfigureAwait(false)).Expect(200, "other list").Json<EnumerationResult<Device>>().Objects;
             Assert.Equal(0, theirs.Count, "devices are private");
             (await other.Client.DeleteAsync("/v1.0/api/devices/" + created.Id, token).ConfigureAwait(false)).Expect(404, "cannot delete another user's device");
             (await owner.Client.DeleteAsync("/v1.0/api/devices/" + created.Id, token).ConfigureAwait(false)).Expect(204, "delete");
@@ -161,7 +161,7 @@ namespace Test.Shared.Suites
 
             PushResult all = await server.Context.Push.SendToUserAsync(t.Id, user.User.Id, new PushMessage { Title = "Ready", Body = "Your briefing is ready.", ChannelId = "briefings" }, token).ConfigureAwait(false);
             Assert.True(all.Accepted == 1 && all.Removed == 1, "dead device pruned (accepted " + all.Accepted + ", removed " + all.Removed + ")");
-            List<Device> remaining = (await user.Client.GetAsync("/v1.0/api/devices", token).ConfigureAwait(false)).Json<List<Device>>();
+            List<Device> remaining = (await user.Client.GetAsync("/v1.0/api/devices", token).ConfigureAwait(false)).Json<EnumerationResult<Device>>().Objects;
             Assert.True(remaining.Count == 1 && remaining[0].Id == live.Id, "only the live device remains");
 
             server.Context.SettingsService.Current.Push.Enabled = false;

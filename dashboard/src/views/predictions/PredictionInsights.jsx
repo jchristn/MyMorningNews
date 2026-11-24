@@ -25,7 +25,7 @@ export default function PredictionInsights({ topicId = null, refreshSignal = 0 }
     setError(null);
     try {
       const page = await apiClient.listPredictions({ topicId: topicId || undefined, pageSize: 1000 });
-      setItems((page && page.items) || []);
+      setItems((page && page.objects) || []);
     } catch (err) {
       setError(err);
     } finally {

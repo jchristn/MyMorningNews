@@ -70,7 +70,7 @@ namespace MyMorningNews.Core.Services
             if (String.IsNullOrWhiteSpace(userId)) throw new ArgumentNullException(nameof(userId));
             ArgumentNullException.ThrowIfNull(message);
             EnumerationResult<Device> devices = await _Database.Devices.EnumerateAsync(new DeviceFilter { TenantId = tenantId, UserId = userId, PageSize = 100 }, token).ConfigureAwait(false);
-            return await SendAsync(devices.Items, message, token).ConfigureAwait(false);
+            return await SendAsync(devices.Objects, message, token).ConfigureAwait(false);
         }
 
         /// <summary>

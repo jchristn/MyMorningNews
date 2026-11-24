@@ -1,6 +1,7 @@
 namespace MyMorningNews.Sdk.Resources.Admin
 {
     using System;
+    using MyMorningNews.Sdk.Options;
     using System.Collections.Generic;
     using System.Net.Http;
     using System.Threading;
@@ -29,9 +30,10 @@ namespace MyMorningNews.Sdk.Resources.Admin
         /// <param name="token">Cancellation token.</param>
         /// <returns>A list of PlanResponse items.</returns>
         /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
-        public Task<List<PlanResponse>> ListAsync(CancellationToken token = default)
+        /// <param name="options">Pagination, sorting, and filters; null uses defaults.</param>
+        public Task<EnumerationResult<PlanResponse>> ListAsync(EnumerationQuery? options = null, CancellationToken token = default)
         {
-            return Client.SendAsync<List<PlanResponse>>(HttpMethod.Get, "/v1.0/api/admin/plans", null, null, token);
+            return Client.SendAsync<EnumerationResult<PlanResponse>>(HttpMethod.Get, "/v1.0/api/admin/plans", (options ?? new EnumerationQuery()).ToQuery(), null, token);
         }
 
         /// <summary>

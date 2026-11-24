@@ -35,17 +35,17 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
         {
             MyMorningNewsClient c = context.RequireAdmin();
             EnumerationResult<MediaAsset> media = await StepAsync(context, result, "GET media", () => c.Media.ListAsync(new MediaListOptions { PageSize = 5 }, token)).ConfigureAwait(false);
-            if (media.Items.Count > 0)
+            if (media.Objects.Count > 0)
             {
-                MediaDetailResponse m = await StepAsync(context, result, "GET media item", () => c.Media.GetAsync(media.Items[0].Id, token)).ConfigureAwait(false);
-                Helpers.Equal(media.Items[0].Id, m.Media.Id, "media id");
+                MediaDetailResponse m = await StepAsync(context, result, "GET media item", () => c.Media.GetAsync(media.Objects[0].Id, token)).ConfigureAwait(false);
+                Helpers.Equal(media.Objects[0].Id, m.Media.Id, "media id");
             }
 
             await StepAsync(context, result, "GET unknown media (404)", () => Helpers.ExpectErrorAsync(() => c.Media.GetAsync("med_missing", token), 404)).ConfigureAwait(false);
             await StepAsync(context, result, "GET unknown artifact (404)", () => Helpers.ExpectErrorAsync(() => c.Artifacts.GetAsync("art_missing", token), 404)).ConfigureAwait(false);
 
             EnumerationResult<Artifact> files = await StepAsync(context, result, "GET artifacts", () => c.Artifacts.ListAsync(new ArtifactListOptions { PageSize = 20 }, token)).ConfigureAwait(false);
-            Artifact? file = files.Items.FirstOrDefault(a => a.DeletedUtc == null && a.Bytes >= 16);
+            Artifact? file = files.Objects.FirstOrDefault(a => a.DeletedUtc == null && a.Bytes >= 16);
             if (file == null) return;
             Artifact meta = await StepAsync(context, result, "GET artifact", () => c.Artifacts.GetAsync(file.Id, token)).ConfigureAwait(false);
             Helpers.Equal(file.Bytes, meta.Bytes, "artifact size");

@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for PredictionReview records. Null properties are not applied.
     /// </summary>
-    public class PredictionReviewFilter : EnumerationFilter
+    public class PredictionReviewFilter : EnumerationQuery
     {
         /// <summary>
         /// Match PredictionId exactly when set.

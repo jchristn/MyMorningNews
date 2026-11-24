@@ -71,7 +71,7 @@ namespace Test.Shared.Suites
             (await member.Client.GetAsync("/v1.0/api/briefings/" + issue.Id, token).ConfigureAwait(false)).Expect(404, "ordinary tenant route remains isolated");
             (await member.Client.GetAsync(path + "/issues/" + dry.Id, token).ConfigureAwait(false)).Expect(404, "dry run excluded");
             EnumerationResult<CatalogEntryResponse> catalog = (await member.Client.GetAsync("/v1.0/api/catalog", token).ConfigureAwait(false)).Expect(200, "catalog").Json<EnumerationResult<CatalogEntryResponse>>();
-            Assert.True(catalog.Items.Any(x => x.Id == publication.Id && x.Subscribed), "subscription reflected");
+            Assert.True(catalog.Objects.Any(x => x.Id == publication.Id && x.Subscribed), "subscription reflected");
             publication = (await admin.PutAsync("/v1.0/api/admin/catalog/" + publication.Id, new { title = publication.Title, status = "Retired", freeEligible = true, revision = publication.Revision }, token).ConfigureAwait(false)).Expect(200, "retire").Json<CatalogPublication>();
             (await member.Client.GetAsync(issuePath, token).ConfigureAwait(false)).Expect(200, "retired issue retained");
             (await admin.PutAsync("/v1.0/api/admin/catalog/" + publication.Id, new { title = publication.Title, status = "Published", revision = 1 }, token).ConfigureAwait(false)).Expect(409, "stale edit blocked");
@@ -171,19 +171,19 @@ namespace Test.Shared.Suites
             CatalogDeliveryService delivery = new CatalogDeliveryService(server.Context.Database, server.Context.Settings, server.Context.Email, server.Context.Push);
             await Task.WhenAll(Enumerable.Range(0, 4).Select(_ => delivery.ProcessAsync(token))).ConfigureAwait(false);
             await delivery.ProcessAsync(token).ConfigureAwait(false);
-            List<EmailMessage> emails = (await server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenant.Id, BriefingId = issue.Id }, token).ConfigureAwait(false)).Items;
+            List<EmailMessage> emails = (await server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenant.Id, BriefingId = issue.Id }, token).ConfigureAwait(false)).Objects;
             Assert.Equal(2, emails.Count, "one email per subscriber after concurrent workers and replay");
             Assert.True(emails.All(e => e.Status == EmailStatusEnum.Queued && e.RenderedHtml!.Contains("/dashboard/catalog/" + publication.Id + "/issues/" + issue.Id, StringComparison.Ordinal)), "interrupted rendering resumes with subscriber reader links");
             Assert.True(emails.All(e => !e.RenderedHtml!.Contains(owner.Id, StringComparison.Ordinal)), "canonical identity never leaks into email");
             foreach (TestUser user in new[] { first, second })
             {
-                List<Notification> notices = (await server.Context.Database.Notifications.EnumerateAsync(new NotificationFilter { TenantId = tenant.Id, UserId = user.User.Id }, token).ConfigureAwait(false)).Items;
+                List<Notification> notices = (await server.Context.Database.Notifications.EnumerateAsync(new NotificationFilter { TenantId = tenant.Id, UserId = user.User.Id }, token).ConfigureAwait(false)).Objects;
                 Assert.Equal(1, notices.Count, "one private in-app notification");
                 Assert.True(notices[0].CatalogPublicationId == publication.Id && notices[0].BriefingId == issue.Id, "subscriber-safe deep link identity");
             }
             (await second.Client.DeleteAsync(subscription, token).ConfigureAwait(false)).Expect(204, "unsubscribe before email worker sends");
             await server.Context.Email.DeliverDueAsync(DateTime.UtcNow, token).ConfigureAwait(false);
-            emails = (await server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenant.Id, BriefingId = issue.Id }, token).ConfigureAwait(false)).Items;
+            emails = (await server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenant.Id, BriefingId = issue.Id }, token).ConfigureAwait(false)).Objects;
             Assert.Equal(EmailStatusEnum.Sent, emails.Single(e => e.UserId == first.User.Id).Status, "subscribed recipient delivered to file provider");
             Assert.Equal(EmailStatusEnum.Suppressed, emails.Single(e => e.UserId == second.User.Id).Status, "queued message suppressed after unsubscribe");
         }

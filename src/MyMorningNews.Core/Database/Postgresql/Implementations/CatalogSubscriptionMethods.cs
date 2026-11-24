@@ -80,7 +80,7 @@ RETURNING id", r => r.GetString(0), new object?[] { tenantId, userId, maximum, f
         }
 
         /// <inheritdoc />
-        public async Task<EnumerationResult<CatalogIssueResponse>> IssuesAsync(string tenantId, string userId, bool freeOnly, EnumerationFilter filter, CancellationToken token = default, bool audioOnly = false)
+        public async Task<EnumerationResult<CatalogIssueResponse>> IssuesAsync(string tenantId, string userId, bool freeOnly, EnumerationQuery filter, CancellationToken token = default, bool audioOnly = false)
         {
             ArgumentNullException.ThrowIfNull(filter);
             string from = @" FROM catalogsubscriptions s JOIN catalogpublications p ON p.id = s.publicationid
@@ -282,6 +282,16 @@ RETURNING " + CatalogSubscriptionQueries.Columns;
             {
                 args.Add(filter.Active.Value);
                 clauses.Add("active = $" + args.Count);
+            }
+            if (filter.CreatedAfter.HasValue)
+            {
+                args.Add(DateTime.SpecifyKind(filter.CreatedAfter.Value, DateTimeKind.Utc));
+                clauses.Add("createdutc > $" + args.Count);
+            }
+            if (filter.CreatedBefore.HasValue)
+            {
+                args.Add(DateTime.SpecifyKind(filter.CreatedBefore.Value, DateTimeKind.Utc));
+                clauses.Add("createdutc < $" + args.Count);
             }
             if (filter.FromUtc.HasValue)
             {

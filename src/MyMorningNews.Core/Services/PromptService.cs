@@ -253,7 +253,7 @@ namespace MyMorningNews.Core.Services
             ArgumentNullException.ThrowIfNull(template);
             EnumerationResult<PromptTemplateVersion> versions = await _Database.PromptTemplateVersions.EnumerateAsync(
                 new PromptTemplateVersionFilter { TenantId = template.TenantId, PromptTemplateId = template.Id, PageSize = 1000, SortBy = "version" }, token).ConfigureAwait(false);
-            return versions.Items;
+            return versions.Objects;
         }
 
         /// <summary>
@@ -268,7 +268,7 @@ namespace MyMorningNews.Core.Services
         {
             EnumerationResult<PromptTemplate> found = await _Database.PromptTemplates.EnumerateAsync(
                 new PromptTemplateFilter { TenantId = tenantId, Key = key, PageSize = 100 }, token).ConfigureAwait(false);
-            return found.Items.FirstOrDefault(t => String.Equals(t.TopicId, topicId, StringComparison.Ordinal));
+            return found.Objects.FirstOrDefault(t => String.Equals(t.TopicId, topicId, StringComparison.Ordinal));
         }
 
         #endregion

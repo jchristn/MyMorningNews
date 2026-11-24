@@ -74,7 +74,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             Helpers.Equal(2, updated.IntervalValue, "interval value");
             EnumerationResult<Schedule> list = await StepAsync(context, result, "GET schedules (owner filter)",
                 () => c.Schedules.ListAsync(new ScheduleListOptions { OwnerType = ScheduleOwnerTypeEnum.Topic, OwnerId = topic.Id }, token)).ConfigureAwait(false);
-            Helpers.Contains(list.Items, x => x.Id == s.Id, "the schedule");
+            Helpers.Contains(list.Objects, x => x.Id == s.Id, "the schedule");
 
             await StepAsync(context, result, "DELETE schedule", () => c.Schedules.DeleteAsync(s.Id, token)).ConfigureAwait(false);
             context.Cleanup.Remove("schedule:" + s.Id);

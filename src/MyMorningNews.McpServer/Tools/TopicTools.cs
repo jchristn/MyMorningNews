@@ -150,7 +150,7 @@ namespace MyMorningNews.McpServer.Tools
                 {
                     string id = a.RequiredText("runId", 64);
                     Run run = await c.Runs.GetAsync(id, t).ConfigureAwait(false);
-                    List<RunStage> stages = await c.Runs.ListStagesAsync(id, t).ConfigureAwait(false);
+                    List<RunStage> stages = (await c.Runs.ListStagesAsync(id, new MyMorningNews.Sdk.Options.EnumerationQuery { PageSize = 1000 }, t).ConfigureAwait(false)).Objects;
                     return new Dictionary<string, object?>(StringComparer.Ordinal)
                     {
                         { "run", Shapes.Run(run) },

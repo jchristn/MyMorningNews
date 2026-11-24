@@ -169,7 +169,7 @@ export function ReviewStep({ data, recipients, onApply, onPreview, preview, onPr
     let cancelled = false;
     apiClient
       .listSchedules({ ownerType: 'Topic', ownerId: topic.id, pageSize: 50 })
-      .then((r) => !cancelled && setSchedules((r && r.items) || []))
+      .then((r) => !cancelled && setSchedules((r && r.objects) || []))
       .catch(() => !cancelled && setSchedules([]));
     return () => {
       cancelled = true;

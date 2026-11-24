@@ -36,13 +36,16 @@ namespace MyMorningNews.Server.Routes
             const string b = "/v1.0/api/briefing-templates";
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, b, ListAsync, null, openApiMetadata: Paged(Doc("List briefing templates I can use", "Templates", "Shared tenant templates plus my own.").WithParameter(QueryParam("userId", typeof(string)))
                 .WithParameter(QueryParam("scope", typeof(string)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b + "/enumerate", ctx => EnumerateAsync(ctx, ListAsync), null, openApiMetadata: Paged(Doc("List briefing templates I can use", "Templates", "Shared tenant templates plus my own.").WithParameter(QueryParam("userId", typeof(string)))
+                .WithParameter(QueryParam("scope", typeof(string)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b, CreateAsync, null, openApiMetadata: Doc("Create (import) a template from Markdown", "Templates").WithRequestBody(Body<TemplateCreateRequest>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b + "/validate", ValidateAsync, null, openApiMetadata: Doc("Validate template Markdown without saving", "Templates")
                 .WithRequestBody(Body<TemplateValidateRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read a template with its current content", "Templates"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, b + "/{id}", SaveAsync, null, openApiMetadata: Doc("Save a new template version", "Templates").WithRequestBody(Body<TemplateSaveRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, b + "/{id}", DeleteAsync, null, openApiMetadata: Doc("Delete a template", "Templates"));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}/versions", VersionsAsync, null, openApiMetadata: Doc("List template versions", "Templates"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}/versions", VersionsAsync, null, openApiMetadata: Paged(Doc("List template versions", "Templates")));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/versions" + "/enumerate", ctx => EnumerateAsync(ctx, VersionsAsync), null, openApiMetadata: Paged(Doc("List template versions", "Templates")).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/rollback", RollbackAsync, null, openApiMetadata: Doc("Restore an earlier version", "Templates")
                 .WithRequestBody(Body<TemplateRollbackRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/reset", ResetAsync, null, openApiMetadata: Doc("Reset a seeded template to the shipped default", "Templates"));
@@ -54,30 +57,19 @@ namespace MyMorningNews.Server.Routes
             if (!await AuthorizeAsync(ctx, RequestTypeEnum.TemplateRead).ConfigureAwait(false)) return;
             string? tenantId = await RequireTenantAsync(ctx).ConfigureAwait(false);
             if (tenantId == null) return;
-            Stopwatch sw = Stopwatch.StartNew();
             RequestContext rc = Context(ctx);
-            BriefingTemplateFilter filter = new BriefingTemplateFilter { TenantId = tenantId, PageSize = 1000 };
-            List<BriefingTemplate> all = (await Server.Database.BriefingTemplates.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false)).Items
-                .Where(t => t.UserId == null || t.UserId == rc.UserId || ((rc.IsAdmin || rc.IsTenantAdmin) && Query(ctx, "userId") == t.UserId))
-                .OrderBy(t => t.UserId == null ? 0 : 1).ThenBy(t => t.Name, StringComparer.OrdinalIgnoreCase).ToList();
             string scope = (Query(ctx, "scope") ?? "all").Trim().ToLowerInvariant();
-            if (scope == "shared") all = all.Where(t => t.UserId == null).ToList();
-            else if (scope == "mine") all = all.Where(t => t.UserId != null).ToList();
-            string? search = Query(ctx, "search");
-            if (!String.IsNullOrWhiteSpace(search))
-                all = all.Where(t => t.Name.Contains(search.Trim(), StringComparison.OrdinalIgnoreCase) || (t.Description ?? String.Empty).Contains(search.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
-            EnumerationFilter paging = new EnumerationFilter();
-            ApplyPaging(ctx, paging);
-            List<BriefingTemplate> page = all.Skip((paging.PageNumber - 1) * paging.PageSize).Take(paging.PageSize).ToList();
-            await SendJsonAsync(ctx, 200, new EnumerationResult<BriefingTemplate>
+            BriefingTemplateFilter query = new BriefingTemplateFilter
             {
-                Items = page,
-                PageNumber = paging.PageNumber,
-                PageSize = paging.PageSize,
-                TotalCount = all.Count,
-                TotalPages = all.Count == 0 ? 0 : (int)Math.Ceiling(all.Count / (double)paging.PageSize),
-                DurationMs = Math.Round(sw.Elapsed.TotalMilliseconds, 2)
-            }).ConfigureAwait(false);
+                TenantId = tenantId,
+                VisibleToUserId = rc.UserId ?? String.Empty,
+                AdditionalUserId = rc.IsAdmin || rc.IsTenantAdmin ? Query(ctx, "userId") : null,
+                Shared = scope == "shared" ? true : scope == "mine" ? false : null,
+                SortBy = "name",
+                SortDirection = SortDirectionEnum.Ascending
+            };
+            ApplyPaging(ctx, query);
+            await SendJsonAsync(ctx, 200, await Server.Database.BriefingTemplates.EnumerateAsync(query, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         private async Task CreateAsync(HttpContextBase ctx)
@@ -144,7 +136,9 @@ namespace MyMorningNews.Server.Routes
         {
             BriefingTemplate? t = await VisibleAsync(ctx, RequestTypeEnum.TemplateRead, false).ConfigureAwait(false);
             if (t == null) return;
-            await SendJsonAsync(ctx, 200, await Server.Briefings.Templates.VersionsAsync(t, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
+            BriefingTemplateVersionFilter query = new BriefingTemplateVersionFilter { TenantId = t.TenantId, TemplateId = t.Id, SortBy = "version" };
+            ApplyPaging(ctx, query);
+            await SendJsonAsync(ctx, 200, await Server.Database.BriefingTemplateVersions.EnumerateAsync(query, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         private async Task RollbackAsync(HttpContextBase ctx)

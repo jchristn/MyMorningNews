@@ -605,49 +605,51 @@ class Model:
 
 
 @dataclass
-class Page(Generic[T]):
+class EnumerationResult(Generic[T]):
     """One page of a list endpoint.
 
     Attributes:
-        items: The items on this page.
+        objects: The objects on this page.
         page_number: 1-based page number.
         page_size: Requested page size.
-        total_count: Total matching records.
+        total_records: Total matching records.
         total_pages: Total pages at this page size.
-        duration_ms: Server-side query time in milliseconds.
+        total_ms: Server-side query time in milliseconds.
         raw: The full JSON object.
     """
 
-    items: List[T] = field(default_factory=list)
+    success: bool = True
+    objects: List[T] = field(default_factory=list)
     page_number: int = 1
     page_size: int = 0
-    total_count: int = 0
+    total_records: int = 0
     total_pages: int = 0
-    duration_ms: float = 0.0
+    total_ms: float = 0.0
     raw: Dict[str, Any] = field(default_factory=dict, repr=False, compare=False)
 
     @classmethod
     def from_dict(cls, data: Any, item_cls: Optional[Type[Any]] = None) -> "Page[Any]":
-        """Build a page from the list envelope ``{ items, pageNumber, ... }``.
+        """Build a page from the list envelope ``{ objects, pageNumber, ... }``.
 
         Args:
             data: Decoded JSON object.
-            item_cls: Model class for the items, or None to keep dicts.
+            item_cls: Model class for the objects, or None to keep dicts.
 
         Returns:
             The page.
         """
-        if not isinstance(data, Mapping):
-            data = {}
-        raw_items = data.get("items") or []
-        items = [item_cls.from_dict(x) if item_cls is not None and isinstance(x, Mapping) else x for x in raw_items]
+        if not isinstance(data, Mapping) or not isinstance(data.get("objects"), list):
+            raise TypeError("Expected EnumerationResult with objects")
+        raw_objects = data["objects"]
+        objects = [item_cls.from_dict(x) if item_cls is not None and isinstance(x, Mapping) else x for x in raw_objects]
         return cls(
-            items=items,
+            success=bool(data.get("success", True)),
+            objects=objects,
             page_number=int(data.get("pageNumber") or 1),
             page_size=int(data.get("pageSize") or 0),
-            total_count=int(data.get("totalCount") or 0),
+            total_records=int(data.get("totalRecords") or 0),
             total_pages=int(data.get("totalPages") or 0),
-            duration_ms=float(data.get("durationMs") or 0.0),
+            total_ms=float(data.get("totalMs") or 0.0),
             raw=dict(data),
         )
 
@@ -657,12 +659,32 @@ class Page(Generic[T]):
         return self.page_number < self.total_pages
 
     def __iter__(self) -> Iterator[T]:
-        """Iterate the items on this page."""
-        return iter(self.items)
+        """Iterate the objects on this page."""
+        return iter(self.objects)
 
     def __len__(self) -> int:
-        """Number of items on this page."""
-        return len(self.items)
+        """Number of objects on this page."""
+        return len(self.objects)
+
+
+# Compatibility name for callers; the wire contract is always EnumerationResult.
+Page = EnumerationResult
+
+
+@dataclass
+class EnumerationQuery:
+    """Common bounded query; expand to_keyword_arguments() into any collection method."""
+    page_number: int = 1
+    page_size: int = 10
+    order: Optional[str] = None
+    created_after: Optional[str] = None
+    created_before: Optional[str] = None
+    search: Optional[str] = None
+
+    def to_keyword_arguments(self) -> Dict[str, Any]:
+        return {"page_number": max(1, self.page_number), "page_size": min(1000, max(1, self.page_size)),
+                "order": self.order, "created_after": self.created_after,
+                "created_before": self.created_before, "search": self.search}
 
 
 @dataclass
@@ -3707,9 +3729,9 @@ class TopicsResource(_Resource):
 
     # Dimensions
 
-    def dimensions(self, topic_id: str) -> List[TopicDimension]:
+    def dimensions(self, topic_id: str, **filters: Any) -> Page[TopicDimension]:
         """List a topic's dimensions."""
-        return self._many(TopicDimension, "GET", API + "/topics/" + _seg(topic_id) + "/dimensions")
+        return self._page(TopicDimension, API + "/topics/" + _seg(topic_id) + "/dimensions", filters)
 
     def add_dimension(self, topic_id: str, body: Optional[Mapping[str, Any]] = None, **fields: Any) -> TopicDimension:
         """Add a dimension (``name`` required; ``weight``, ``include_terms``, ``exclude_terms``, ``is_locked``, ...)."""
@@ -3725,9 +3747,9 @@ class TopicsResource(_Resource):
 
     # Constraints
 
-    def constraints(self, topic_id: str, kind: Optional[Union[str, ConstraintKind]] = None) -> List[TopicConstraint]:
+    def constraints(self, topic_id: str, kind: Optional[Union[str, ConstraintKind]] = None, **filters: Any) -> Page[TopicConstraint]:
         """List a topic's constraints, optionally of one ``kind``."""
-        return self._many(TopicConstraint, "GET", API + "/topics/" + _seg(topic_id) + "/constraints", query={"kind": kind})
+        return self._page(TopicConstraint, API + "/topics/" + _seg(topic_id) + "/constraints", {**filters, **{"kind": kind}})
 
     def add_constraint(self, topic_id: str, body: Optional[Mapping[str, Any]] = None, **fields: Any) -> TopicConstraint:
         """Add a constraint (``kind`` and ``value`` required)."""
@@ -3743,9 +3765,9 @@ class TopicsResource(_Resource):
 
     # Recipients
 
-    def recipients(self, topic_id: str) -> List[TopicRecipient]:
+    def recipients(self, topic_id: str, **filters: Any) -> Page[TopicRecipient]:
         """List a topic's email recipients."""
-        return self._many(TopicRecipient, "GET", API + "/topics/" + _seg(topic_id) + "/recipients")
+        return self._page(TopicRecipient, API + "/topics/" + _seg(topic_id) + "/recipients", filters)
 
     def add_recipient(self, topic_id: str, email: str, active: bool = True) -> TopicRecipient:
         """Add an email recipient."""
@@ -3757,9 +3779,9 @@ class TopicsResource(_Resource):
 
     # Search providers
 
-    def search_providers(self, topic_id: str) -> List[SearchProvider]:
+    def search_providers(self, topic_id: str, **filters: Any) -> Page[SearchProvider]:
         """Search providers the topic uses (the tenant defaults when none are chosen)."""
-        return self._many(SearchProvider, "GET", API + "/topics/" + _seg(topic_id) + "/search-providers")
+        return self._page(SearchProvider, API + "/topics/" + _seg(topic_id) + "/search-providers", filters)
 
     def set_search_providers(self, topic_id: str, providers: Sequence[Union[str, Mapping[str, Any]]]) -> List[SearchProvider]:
         """Choose a topic's search providers. An empty list restores the tenant defaults.
@@ -3935,29 +3957,29 @@ class RunsResource(_Resource):
         """
         return self._one(RunCostReport, "GET", API + "/runs/" + _seg(run_id) + "/costs")
 
-    def stages(self, run_id: str) -> List[RunStage]:
+    def stages(self, run_id: str, **filters: Any) -> Page[RunStage]:
         """A run's pipeline stages in order."""
-        return self._many(RunStage, "GET", API + "/runs/" + _seg(run_id) + "/stages")
+        return self._page(RunStage, API + "/runs/" + _seg(run_id) + "/stages", filters)
 
-    def queries(self, run_id: str) -> List[SearchQuery]:
+    def queries(self, run_id: str, **filters: Any) -> Page[SearchQuery]:
         """A run's search queries."""
-        return self._many(SearchQuery, "GET", API + "/runs/" + _seg(run_id) + "/queries")
+        return self._page(SearchQuery, API + "/runs/" + _seg(run_id) + "/queries", filters)
 
-    def results(self, run_id: str, disposition: Optional[Union[str, SearchResultDisposition]] = None) -> List[SearchResult]:
+    def results(self, run_id: str, disposition: Optional[Union[str, SearchResultDisposition]] = None, **filters: Any) -> Page[SearchResult]:
         """A run's search results with their dispositions, optionally filtered by ``disposition``."""
-        return self._many(SearchResult, "GET", API + "/runs/" + _seg(run_id) + "/results", query={"disposition": disposition})
+        return self._page(SearchResult, API + "/runs/" + _seg(run_id) + "/results", {**filters, **{"disposition": disposition}})
 
     def llm_calls(self, run_id: str, **filters: Any) -> Page[LlmCall]:
         """A run's model calls, oldest first (paging filters)."""
         return self._page(LlmCall, API + "/runs/" + _seg(run_id) + "/llm-calls", filters)
 
-    def tool_calls(self, run_id: str) -> List[RunToolCall]:
+    def tool_calls(self, run_id: str, **filters: Any) -> Page[RunToolCall]:
         """A run's agentic tool calls (web_search, fetch_url, and MCP tools), in call order.
 
         Raises:
             NotFoundError: The run does not exist or belongs to another user.
         """
-        return self._many(RunToolCall, "GET", API + "/runs/" + _seg(run_id) + "/tool-calls")
+        return self._page(RunToolCall, API + "/runs/" + _seg(run_id) + "/tool-calls", filters)
 
     def email_preview(self, run_id: str) -> Dict[str, Any]:
         """Render the run digest email without sending it. May call a model for the lead paragraph.
@@ -4420,9 +4442,9 @@ class TemplatesResource(_Resource):
         """Delete a template."""
         self._json("DELETE", API + "/briefing-templates/" + _seg(template_id))
 
-    def versions(self, template_id: str) -> List[BriefingTemplateVersion]:
+    def versions(self, template_id: str, **filters: Any) -> Page[BriefingTemplateVersion]:
         """List template versions."""
-        return self._many(BriefingTemplateVersion, "GET", API + "/briefing-templates/" + _seg(template_id) + "/versions")
+        return self._page(BriefingTemplateVersion, API + "/briefing-templates/" + _seg(template_id) + "/versions", filters)
 
     def validate(self, content: str) -> TemplateValidation:
         """Validate template Markdown without saving."""
@@ -4464,9 +4486,9 @@ class PromptsResource(_Resource):
         """Delete a topic override. Tenant prompts cannot be deleted (:class:`ConflictError`); reset them."""
         self._json("DELETE", API + "/prompts/" + _seg(prompt_id))
 
-    def versions(self, prompt_id: str) -> List[PromptTemplateVersion]:
+    def versions(self, prompt_id: str, **filters: Any) -> Page[PromptTemplateVersion]:
         """Version history, newest first."""
-        return self._many(PromptTemplateVersion, "GET", API + "/prompts/" + _seg(prompt_id) + "/versions")
+        return self._page(PromptTemplateVersion, API + "/prompts/" + _seg(prompt_id) + "/versions", filters)
 
     def rollback(self, prompt_id: str, version: int) -> PromptTemplateDetail:
         """Restore an earlier version."""
@@ -4544,9 +4566,9 @@ class ArtifactsResource(_Resource):
 class FeedTokensResource(_Resource):
     """Private podcast feed tokens under ``/v1.0/api/feed-tokens``."""
 
-    def list(self) -> List[FeedToken]:
+    def list(self, **filters: Any) -> Page[FeedToken]:
         """List my feed tokens (not paged; ``token_hash`` is redacted)."""
-        return self._many(FeedToken, "GET", API + "/feed-tokens")
+        return self._page(FeedToken, API + "/feed-tokens", filters)
 
     def create(self, name: Optional[str] = None, edition_id: Optional[str] = None) -> FeedTokenCreated:
         """Create a private podcast feed. The ``secret`` and ``feed_url`` are returned only once."""
@@ -4725,9 +4747,9 @@ class ModelEndpointsResource(_Resource):
         """Validate connectivity, tool support, and embeddings. Contacts the provider."""
         return self._one(ModelValidation, "POST", API + "/model-endpoints/" + _seg(endpoint_id) + "/validate")
 
-    def models(self, endpoint_id: str) -> List[ModelListItem]:
+    def models(self, endpoint_id: str, **filters: Any) -> Page[ModelListItem]:
         """List models the endpoint offers. Contacts the provider."""
-        return self._many(ModelListItem, "GET", API + "/model-endpoints/" + _seg(endpoint_id) + "/models")
+        return self._page(ModelListItem, API + "/model-endpoints/" + _seg(endpoint_id) + "/models", filters)
 
     def test(self, endpoint_id: str, prompt: Optional[str] = None, model: Optional[str] = None) -> ModelTestResult:
         """Send a sample prompt (recorded as a dry run). Contacts the provider and may spend tokens.
@@ -4897,9 +4919,9 @@ class VaultResource(_Resource):
         """
         self._json("DELETE", API + "/vault/credentials/" + _seg(credential_id))
 
-    def usage(self, credential_id: str) -> List[VaultUsageItem]:
+    def usage(self, credential_id: str, **filters: Any) -> Page[VaultUsageItem]:
         """Records that use the credential."""
-        return self._many(VaultUsageItem, "GET", API + "/vault/credentials/" + _seg(credential_id) + "/usage")
+        return self._page(VaultUsageItem, API + "/vault/credentials/" + _seg(credential_id) + "/usage", filters)
 
 
 class NotificationsResource(_Resource):
@@ -4968,9 +4990,9 @@ class NotificationsResource(_Resource):
 class DevicesResource(_Resource):
     """Push notification devices under ``/v1.0/api/devices``."""
 
-    def list(self) -> List[Device]:
-        """List my push devices (not paged)."""
-        return self._many(Device, "GET", API + "/devices")
+    def list(self, **filters: Any) -> Page[Device]:
+        """List my push devices (paginated)."""
+        return self._page(Device, API + "/devices", filters)
 
     def create(self, expo_push_token: str, platform: str, name: Optional[str] = None, locale: Optional[str] = None) -> Device:
         """Register a device (``platform`` is ``ios`` or ``android``; the token must be an Expo push token)."""
@@ -5812,7 +5834,7 @@ def iterate(list_fn: Callable[..., Any], page_size: int = 100, max_pages: Option
         if isinstance(result, list):
             yield from result
             return
-        items = list(result.items)
+        items = list(result.objects)
         yield from items
         fetched += 1
         if not items or number >= result.total_pages or (max_pages is not None and fetched >= max_pages):

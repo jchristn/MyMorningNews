@@ -127,8 +127,8 @@ namespace MyMorningNews.Core.Search
         /// <returns>Providers with per-topic result limits applied.</returns>
         public async Task<List<SearchProvider>> ProvidersForTopicAsync(string tenantId, string topicId, CancellationToken token = default)
         {
-            List<TopicSearchProvider> links = (await _Database.TopicSearchProviders.EnumerateAsync(new TopicSearchProviderFilter { TenantId = tenantId, TopicId = topicId, PageSize = 100 }, token).ConfigureAwait(false)).Items;
-            List<SearchProvider> all = (await _Database.SearchProviders.EnumerateAsync(new SearchProviderFilter { TenantId = tenantId, PageSize = 100 }, token).ConfigureAwait(false)).Items;
+            List<TopicSearchProvider> links = (await _Database.TopicSearchProviders.EnumerateAsync(new TopicSearchProviderFilter { TenantId = tenantId, TopicId = topicId, PageSize = 100 }, token).ConfigureAwait(false)).Objects;
+            List<SearchProvider> all = (await _Database.SearchProviders.EnumerateAsync(new SearchProviderFilter { TenantId = tenantId, PageSize = 100 }, token).ConfigureAwait(false)).Objects;
             if (links.Count == 0) return all.Where(p => p.IsDefault && p.Active).ToList();
             List<SearchProvider> chosen = new List<SearchProvider>();
             foreach (TopicSearchProvider link in links.Where(l => l.Enabled))

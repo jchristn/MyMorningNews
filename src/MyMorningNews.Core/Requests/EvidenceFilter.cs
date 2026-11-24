@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for Evidence records. Null properties are not applied.
     /// </summary>
-    public class EvidenceFilter : EnumerationFilter
+    public class EvidenceFilter : EnumerationQuery
     {
         /// <summary>
         /// Match SourceItemId exactly when set.

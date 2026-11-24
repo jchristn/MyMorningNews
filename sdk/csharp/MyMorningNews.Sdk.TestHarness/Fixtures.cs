@@ -118,7 +118,7 @@ namespace MyMorningNews.Sdk.TestHarness
             ArgumentNullException.ThrowIfNull(client);
             ArgumentNullException.ThrowIfNull(userId);
             EnumerationResult<Edition> editions = await client.Editions.ListAsync(new EditionListOptions { UserId = userId, PageSize = 100 }, token).ConfigureAwait(false);
-            foreach (Edition e in editions.Items.Where(x => x.UserId == userId))
+            foreach (Edition e in editions.Objects.Where(x => x.UserId == userId))
                 await client.Editions.DeleteAsync(e.Id, token).ConfigureAwait(false);
         }
     }

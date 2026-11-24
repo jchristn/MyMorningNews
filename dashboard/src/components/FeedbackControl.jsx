@@ -92,7 +92,7 @@ export default function FeedbackControl({ targetType, targetId, actions = null, 
     let live = true;
     apiClient
       .listFeedback({ targetType, targetId, pageSize: 1 })
-      .then((r) => live && setMine((r && r.items && r.items[0]) || null))
+      .then((r) => live && setMine((r && r.objects && r.objects[0]) || null))
       .catch(() => live && setMine(null));
     return () => {
       live = false;
@@ -185,7 +185,7 @@ export function useFeedbackMap(targetType, topicId = null) {
     apiClient
       .listFeedback({ targetType, topicId: topicId || undefined, pageSize: 1000 })
       .then((r) => {
-        if (live) setMap(feedbackByTarget(r && r.items));
+        if (live) setMap(feedbackByTarget(r && r.objects));
       })
       .catch(() => live && setMap(new Map()));
     return () => {

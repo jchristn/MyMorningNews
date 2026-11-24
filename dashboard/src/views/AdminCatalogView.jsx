@@ -45,9 +45,9 @@ function CatalogAdminList() {
       <ErrorState error={error} onRetry={load} />
       {!page && !error ? <LoadingState /> : null}
       <section className="panel stack">
-        {page?.items.length === 0 ? <p className="muted">{t('catalog.empty')}</p> : null}
+        {page?.objects.length === 0 ? <p className="muted">{t('catalog.empty')}</p> : null}
         <ul className="event-list">
-          {page?.items.map((entry) => (
+          {page?.objects.map((entry) => (
             <li key={entry.id}>
               <Link to={'/dashboard/admin/catalog/' + entry.id}>{entry.title}</Link>
               <span className="muted small">{t('catalog.' + entry.status)}</span>

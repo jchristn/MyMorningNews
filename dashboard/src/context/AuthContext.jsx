@@ -76,7 +76,7 @@ export function AuthProvider({ children, clientFactory = createClient }) {
     }
     try {
       const me = await apiClient.getMe();
-      const next = me && typeof me === 'object' && !Array.isArray(me.items) ? me : null;
+      const next = me && typeof me === 'object' && !Array.isArray(me.objects) ? me : null;
       setProfile(next);
       return next;
     } catch {

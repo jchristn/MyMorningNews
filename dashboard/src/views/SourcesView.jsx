@@ -33,7 +33,7 @@ export default function SourcesView() {
     let live = true;
     apiClient
       .listTopics({ pageSize: 1000, sortBy: 'name', sortDirection: 'Ascending' })
-      .then((r) => live && setTopics((r && r.items) || []))
+      .then((r) => live && setTopics((r && r.objects) || []))
       .catch(() => live && setTopics([]));
     return () => {
       live = false;
@@ -52,7 +52,7 @@ export default function SourcesView() {
   // The runs the listed sources were first seen in, read once each, so the column can name the run's topic and time.
   const loadRuns = useCallback(
     (result) => {
-      const ids = Array.from(new Set(((result && result.items) || []).map((r) => r.firstSeenRunId).filter(Boolean))).filter((id) => !requestedRuns.current.has(id));
+      const ids = Array.from(new Set(((result && result.objects) || []).map((r) => r.firstSeenRunId).filter(Boolean))).filter((id) => !requestedRuns.current.has(id));
       for (const id of ids) {
         requestedRuns.current.add(id);
         apiClient

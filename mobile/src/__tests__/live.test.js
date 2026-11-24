@@ -84,7 +84,7 @@ live('live server contracts', () => {
     const again = await devicesApi.register(auth.client, { expoPushToken: token, platform: 'ios', name: 'Live test', locale: 'en' });
     expect(again.id).toBe(device.id);
     const list = await devicesApi.list(auth.client);
-    expect((list.items || list).some((d) => d.id === device.id)).toBe(true);
+    expect((list.objects || list).some((d) => d.id === device.id)).toBe(true);
     // A made-up token is rejected by Expo, and the server prunes the device it belongs to, so removing it afterwards
     // finds nothing (404 for the item) unless the push service kept it.
     const sent = await devicesApi.test(auth.client, device.id);
@@ -95,7 +95,7 @@ live('live server contracts', () => {
     await expect(accountApi.usage(auth.client, { groupBy: 'Task' })).resolves.toMatchObject({ totals: expect.any(Object), rows: expect.any(Array) });
     await expect(topicsApi.list(auth.client, { pageNumber: 1, pageSize: 5 })).resolves.toMatchObject({ items: expect.any(Array) });
     const briefings = await briefingsApi.list(auth.client, {}).catch((e) => e);
-    expect(Array.isArray(briefings.items) || isNotAvailable(briefings)).toBe(true);
+    expect(Array.isArray(briefings.objects) || isNotAvailable(briefings)).toBe(true);
     await auth.signOut();
   });
 

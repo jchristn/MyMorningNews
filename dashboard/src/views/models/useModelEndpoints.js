@@ -11,7 +11,7 @@ export default function useModelEndpoints(refreshSignal = 0) {
   const reload = useCallback(async () => {
     try {
       const page = await apiClient.listModelEndpoints({ pageSize: 1000, sortBy: 'name', sortDirection: 'Ascending' });
-      setEndpoints(page && page.items ? page.items : []);
+      setEndpoints(page && page.objects ? page.objects : []);
       setError(null);
     } catch (err) {
       setError(err);

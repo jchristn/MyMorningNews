@@ -51,7 +51,7 @@ namespace MyMorningNews.Core.Analytics
             {
                 TenantId = scope.TenantId, UserId = scope.UserId, TopicId = scope.TopicId, IsDuplicate = false, IsDryRun = false, ExcludeTier = FindingTierEnum.BelowThreshold,
                 FromUtc = scope.FromUtc, ToUtc = scope.ToUtc, PageSize = 5000
-            }, token).ConfigureAwait(false)).Items;
+            }, token).ConfigureAwait(false)).Objects;
             Dictionary<string, Models.Feedback> ratings = (await CurrentAsync(scope, FeedbackTargetTypeEnum.Finding, token).ConfigureAwait(false))
                 .Where(f => f.Relevance.HasValue).GroupBy(f => f.TargetId).ToDictionary(g => g.Key, g => g.OrderByDescending(x => x.CreatedUtc).First(), StringComparer.Ordinal);
             List<Finding> rated = shown.Where(f => ratings.ContainsKey(f.Id)).ToList();
@@ -92,7 +92,7 @@ namespace MyMorningNews.Core.Analytics
             List<Prediction> preds = (await _Database.Predictions.EnumerateAsync(new PredictionFilter
             {
                 TenantId = scope.TenantId, UserId = scope.UserId, TopicId = scope.TopicId, IsDryRun = false, FromUtc = scope.FromUtc, ToUtc = scope.ToUtc, PageSize = 5000
-            }, token).ConfigureAwait(false)).Items;
+            }, token).ConfigureAwait(false)).Objects;
             DateTime now = DateTime.UtcNow;
             List<Prediction> resolved = preds.Where(IsGraded).ToList();
             AccuracyReport r = new AccuracyReport
@@ -123,7 +123,7 @@ namespace MyMorningNews.Core.Analytics
             int decided = 0;
             foreach (Prediction p in preds)
             {
-                foreach (PredictionReview rv in (await _Database.PredictionReviews.EnumerateAsync(new PredictionReviewFilter { TenantId = scope.TenantId, PredictionId = p.Id, PageSize = 50 }, token).ConfigureAwait(false)).Items.Where(x => x.AcceptedByUser.HasValue))
+                foreach (PredictionReview rv in (await _Database.PredictionReviews.EnumerateAsync(new PredictionReviewFilter { TenantId = scope.TenantId, PredictionId = p.Id, PageSize = 50 }, token).ConfigureAwait(false)).Objects.Where(x => x.AcceptedByUser.HasValue))
                 {
                     decided++;
                     if (rv.AcceptedByUser == true) accepted++;
@@ -162,7 +162,7 @@ namespace MyMorningNews.Core.Analytics
             List<EmailActionToken> tokens = (await _Database.EmailActionTokens.EnumerateAsync(new EmailActionTokenFilter
             {
                 TenantId = scope.TenantId, UserId = scope.UserId, Kind = ActionTokenKindEnum.Feedback, FromUtc = scope.FromUtc, ToUtc = scope.ToUtc, PageSize = 10000
-            }, token).ConfigureAwait(false)).Items;
+            }, token).ConfigureAwait(false)).Objects;
             r.EmailLinkOpens = tokens.Sum(t => t.OpenCount);
             r.EmailLinkSubmits = tokens.Sum(t => t.SubmitCount);
             return r;
@@ -211,7 +211,7 @@ namespace MyMorningNews.Core.Analytics
             List<EmailActionToken> tokens = (await _Database.EmailActionTokens.EnumerateAsync(new EmailActionTokenFilter
             {
                 TenantId = scope.TenantId, UserId = scope.UserId, Kind = ActionTokenKindEnum.Feedback, FromUtc = scope.FromUtc, ToUtc = scope.ToUtc, PageSize = 10000
-            }, token).ConfigureAwait(false)).Items;
+            }, token).ConfigureAwait(false)).Objects;
             r.FeedbackLinkOpens = tokens.Sum(t => t.OpenCount);
             r.FeedbackLinkSubmits = tokens.Sum(t => t.SubmitCount);
             string? recipient = null;
@@ -244,7 +244,7 @@ namespace MyMorningNews.Core.Analytics
             List<Suggestion> all = (await _Database.Suggestions.EnumerateAsync(new SuggestionFilter
             {
                 TenantId = scope.TenantId, UserId = scope.UserId, TopicId = scope.TopicId, IsDryRun = false, FromUtc = scope.FromUtc, ToUtc = scope.ToUtc, PageSize = 5000
-            }, token).ConfigureAwait(false)).Items;
+            }, token).ConfigureAwait(false)).Objects;
             List<Suggestion> decided = all.Where(s => s.Status != SuggestionStatusEnum.New && s.StatusChangedUtc.HasValue).ToList();
             Func<Suggestion, bool> good = s => s.Status == SuggestionStatusEnum.Done || s.Status == SuggestionStatusEnum.Accepted;
             return new SuggestionReport
@@ -273,7 +273,7 @@ namespace MyMorningNews.Core.Analytics
             List<FeedbackReasonTag> tags = (await _Database.FeedbackReasonTags.EnumerateAsync(new FeedbackReasonTagFilter
             {
                 TenantId = scope.TenantId, TopicId = scope.TopicId, FromUtc = scope.FromUtc, ToUtc = scope.ToUtc, PageSize = 10000
-            }, token).ConfigureAwait(false)).Items.Where(t => scope.UserId == null || mine.Contains(t.FeedbackId)).ToList();
+            }, token).ConfigureAwait(false)).Objects.Where(t => scope.UserId == null || mine.Contains(t.FeedbackId)).ToList();
             DateTime recent = DateTime.UtcNow.AddDays(-30);
             return new ReasonReport
             {
@@ -292,11 +292,11 @@ namespace MyMorningNews.Core.Analytics
         public async Task<QualityReport> QualityAsync(AnalyticsScope scope, CancellationToken token = default)
         {
             ArgumentNullException.ThrowIfNull(scope);
-            List<Run> runs = (await _Database.Runs.EnumerateAsync(new RunFilter { TenantId = scope.TenantId, UserId = scope.UserId, TopicId = scope.TopicId, FromUtc = scope.FromUtc, ToUtc = scope.ToUtc, PageSize = 2000 }, token).ConfigureAwait(false)).Items;
+            List<Run> runs = (await _Database.Runs.EnumerateAsync(new RunFilter { TenantId = scope.TenantId, UserId = scope.UserId, TopicId = scope.TopicId, FromUtc = scope.FromUtc, ToUtc = scope.ToUtc, PageSize = 2000 }, token).ConfigureAwait(false)).Objects;
             List<QuoteCount> counts = new List<QuoteCount>();
             foreach (Run run in runs)
             {
-                RunStage? extract = (await _Database.RunStages.EnumerateAsync(new RunStageFilter { TenantId = scope.TenantId, RunId = run.Id, PageSize = 50 }, token).ConfigureAwait(false)).Items.FirstOrDefault(s => s.Stage == "Extract");
+                RunStage? extract = (await _Database.RunStages.EnumerateAsync(new RunStageFilter { TenantId = scope.TenantId, RunId = run.Id, PageSize = 50 }, token).ConfigureAwait(false)).Objects.FirstOrDefault(s => s.Stage == "Extract");
                 if (extract?.ErrorMessage == null) continue;
                 int total;
                 int failed;
@@ -305,7 +305,7 @@ namespace MyMorningNews.Core.Analytics
                 if (m.Success) { failed = int.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture); total = int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture); }
                 else if (a.Success) { failed = 0; total = int.Parse(a.Groups[1].Value, CultureInfo.InvariantCulture); }
                 else continue;
-                LlmCall? call = (await _Database.LlmCalls.EnumerateAsync(new LlmCallFilter { TenantId = scope.TenantId, RunId = run.Id, PromptKey = "research.extract", PageSize = 1 }, token).ConfigureAwait(false)).Items.FirstOrDefault();
+                LlmCall? call = (await _Database.LlmCalls.EnumerateAsync(new LlmCallFilter { TenantId = scope.TenantId, RunId = run.Id, PromptKey = "research.extract", PageSize = 1 }, token).ConfigureAwait(false)).Objects.FirstOrDefault();
                 counts.Add(new QuoteCount { Model = call?.Model ?? "unknown", Day = Day(run.CreatedUtc), Total = total, Verified = total - failed });
             }
 
@@ -446,7 +446,7 @@ namespace MyMorningNews.Core.Analytics
             {
                 TenantId = scope.TenantId, UserId = scope.UserId, TopicId = scope.TopicId, TargetType = type, IsCurrent = true,
                 FromUtc = ignorePeriod ? null : scope.FromUtc, ToUtc = ignorePeriod ? null : scope.ToUtc, PageSize = 10000
-            }, token).ConfigureAwait(false)).Items;
+            }, token).ConfigureAwait(false)).Objects;
         }
 
         private async Task<Dictionary<string, string>> TopicNamesAsync(string tenantId, IEnumerable<string> ids, CancellationToken token)

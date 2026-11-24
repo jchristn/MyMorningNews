@@ -36,6 +36,8 @@ namespace MyMorningNews.Server.Routes
             const string p = "/v1.0/api/learned-preferences";
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, p, ListAsync, null, openApiMetadata: Paged(Doc("List learned preferences", "Learning").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))
                 .WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("status", typeof(PreferenceStatusEnum))).WithParameter(QueryParam("origin", typeof(PreferenceOriginEnum)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, p + "/enumerate", ctx => EnumerateAsync(ctx, ListAsync), null, openApiMetadata: Paged(Doc("List learned preferences", "Learning").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))
+                .WithParameter(QueryParam("topicId", typeof(string))).WithParameter(QueryParam("status", typeof(PreferenceStatusEnum))).WithParameter(QueryParam("origin", typeof(PreferenceOriginEnum)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, p, CreateAsync, null, openApiMetadata: Doc("Write a preference (active at once)", "Learning").WithRequestBody(Body<PreferenceUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, p + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read a preference with its supporting feedback", "Learning"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, p + "/{id}", UpdateAsync, null, openApiMetadata: Doc("Edit a preference", "Learning").WithRequestBody(Body<PreferenceUpsertRequest>()));
@@ -111,7 +113,7 @@ namespace MyMorningNews.Server.Routes
             LearnedPreference? lp = await OwnedAsync(ctx, RequestTypeEnum.PreferenceRead).ConfigureAwait(false);
             if (lp == null) return;
             List<Feedback> support = new List<Feedback>();
-            foreach (LearnedPreferenceFeedback link in (await Server.Database.LearnedPreferenceFeedback.EnumerateAsync(new LearnedPreferenceFeedbackFilter { TenantId = lp.TenantId, LearnedPreferenceId = lp.Id, PageSize = 200 }, ctx.Token).ConfigureAwait(false)).Items)
+            foreach (LearnedPreferenceFeedback link in (await Server.Database.LearnedPreferenceFeedback.EnumerateAsync(new LearnedPreferenceFeedbackFilter { TenantId = lp.TenantId, LearnedPreferenceId = lp.Id, PageSize = 200 }, ctx.Token).ConfigureAwait(false)).Objects)
             {
                 Feedback? f = await Server.Database.Feedback.ReadAsync(lp.TenantId, link.FeedbackId, ctx.Token).ConfigureAwait(false);
                 if (f != null) support.Add(f);
@@ -147,7 +149,7 @@ namespace MyMorningNews.Server.Routes
         {
             LearnedPreference? lp = await OwnedAsync(ctx, RequestTypeEnum.PreferenceWrite).ConfigureAwait(false);
             if (lp == null) return;
-            foreach (LearnedPreferenceFeedback link in (await Server.Database.LearnedPreferenceFeedback.EnumerateAsync(new LearnedPreferenceFeedbackFilter { TenantId = lp.TenantId, LearnedPreferenceId = lp.Id, PageSize = 500 }, ctx.Token).ConfigureAwait(false)).Items)
+            foreach (LearnedPreferenceFeedback link in (await Server.Database.LearnedPreferenceFeedback.EnumerateAsync(new LearnedPreferenceFeedbackFilter { TenantId = lp.TenantId, LearnedPreferenceId = lp.Id, PageSize = 500 }, ctx.Token).ConfigureAwait(false)).Objects)
                 await Server.Database.LearnedPreferenceFeedback.DeleteAsync(link.TenantId, link.Id, ctx.Token).ConfigureAwait(false);
             await Server.Database.LearnedPreferences.DeleteAsync(lp.TenantId, lp.Id, ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 204, null).ConfigureAwait(false);
@@ -177,7 +179,7 @@ namespace MyMorningNews.Server.Routes
             Topic? topic = await Server.Database.Topics.ReadAsync(tenantId, Param(ctx, "id") ?? String.Empty, ctx.Token).ConfigureAwait(false);
             if (topic == null || !IsOwnerOrAdmin(ctx, topic.UserId)) { await SendNotFoundAsync(ctx, "Topic").ConfigureAwait(false); return; }
             int proposed = await Server.Learning.LearnAsync(tenantId, topic.UserId, topic.Id, DateTime.UtcNow, ctx.Token).ConfigureAwait(false);
-            List<LearnedPreference> prefs = (await Server.Database.LearnedPreferences.EnumerateAsync(new LearnedPreferenceFilter { TenantId = tenantId, UserId = topic.UserId, TopicId = topic.Id, PageSize = 100 }, ctx.Token).ConfigureAwait(false)).Items;
+            List<LearnedPreference> prefs = (await Server.Database.LearnedPreferences.EnumerateAsync(new LearnedPreferenceFilter { TenantId = tenantId, UserId = topic.UserId, TopicId = topic.Id, PageSize = 100 }, ctx.Token).ConfigureAwait(false)).Objects;
             await SendJsonAsync(ctx, 200, new { proposed = proposed, preferences = prefs }).ConfigureAwait(false);
         }
 
@@ -217,9 +219,9 @@ namespace MyMorningNews.Server.Routes
                 }
             }
 
-            foreach (FeedbackReasonTag t in (await Server.Database.FeedbackReasonTags.EnumerateAsync(new FeedbackReasonTagFilter { TenantId = f.TenantId, FeedbackId = f.Id, PageSize = 50 }, ctx.Token).ConfigureAwait(false)).Items)
+            foreach (FeedbackReasonTag t in (await Server.Database.FeedbackReasonTags.EnumerateAsync(new FeedbackReasonTagFilter { TenantId = f.TenantId, FeedbackId = f.Id, PageSize = 50 }, ctx.Token).ConfigureAwait(false)).Objects)
                 await Server.Database.FeedbackReasonTags.DeleteAsync(t.TenantId, t.Id, ctx.Token).ConfigureAwait(false);
-            foreach (LearnedPreferenceFeedback l in (await Server.Database.LearnedPreferenceFeedback.EnumerateAsync(new LearnedPreferenceFeedbackFilter { TenantId = f.TenantId, FeedbackId = f.Id, PageSize = 50 }, ctx.Token).ConfigureAwait(false)).Items)
+            foreach (LearnedPreferenceFeedback l in (await Server.Database.LearnedPreferenceFeedback.EnumerateAsync(new LearnedPreferenceFeedbackFilter { TenantId = f.TenantId, FeedbackId = f.Id, PageSize = 50 }, ctx.Token).ConfigureAwait(false)).Objects)
                 await Server.Database.LearnedPreferenceFeedback.DeleteAsync(l.TenantId, l.Id, ctx.Token).ConfigureAwait(false);
             await Server.Database.Feedback.DeleteAsync(f.TenantId, f.Id, ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 204, null).ConfigureAwait(false);

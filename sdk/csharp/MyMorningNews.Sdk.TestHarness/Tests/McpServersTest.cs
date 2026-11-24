@@ -42,12 +42,12 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             MyMorningNewsClient c = context.RequireAdmin();
             await StepAsync(context, result, "POST mcp-servers without a url (400)", () => Helpers.ExpectErrorAsync(() => c.McpServers.CreateAsync(new McpServerUpsertRequest { Name = context.Name("mcp") }, token), 400, "ValidationFailed")).ConfigureAwait(false);
             await StepAsync(context, result, "POST mcp-servers with a non-http url (400)", () => Helpers.ExpectErrorAsync(() => c.McpServers.CreateAsync(new McpServerUpsertRequest { Name = context.Name("mcp"), Url = "ftp://127.0.0.1/mcp" }, token), 400, "ValidationFailed")).ConfigureAwait(false);
-            await StepAsync(context, result, "GET runs/{missing}/tool-calls (404)", () => Helpers.ExpectErrorAsync(() => c.Runs.ListToolCallsAsync("run_missing_" + Helpers.Unique(), token), 404)).ConfigureAwait(false);
+            await StepAsync(context, result, "GET runs/{missing}/tool-calls (404)", () => Helpers.ExpectErrorAsync(() => c.Runs.ListToolCallsAsync("run_missing_" + Helpers.Unique(), options: new MyMorningNews.Sdk.Options.EnumerationQuery { PageSize = 1000 }, token: token), 404)).ConfigureAwait(false);
             EnumerationResult<Run> runs = await StepAsync(context, result, "GET runs (for tool calls)", () => c.Runs.ListAsync(new RunListOptions { PageSize = 1 }, token)).ConfigureAwait(false);
-            if (runs.Items.Count > 0)
+            if (runs.Objects.Count > 0)
             {
-                List<RunToolCall> calls = await StepAsync(context, result, "GET runs/{id}/tool-calls", () => c.Runs.ListToolCallsAsync(runs.Items[0].Id, token)).ConfigureAwait(false);
-                Helpers.True(calls.All(x => x.RunId == runs.Items[0].Id), "tool calls belong to the run");
+                List<RunToolCall> calls = (await StepAsync(context, result, "GET runs/{id}/tool-calls", () => c.Runs.ListToolCallsAsync(runs.Objects[0].Id, options: new MyMorningNews.Sdk.Options.EnumerationQuery { PageSize = 1000 }, token: token)).ConfigureAwait(false)).Objects;
+                Helpers.True(calls.All(x => x.RunId == runs.Objects[0].Id), "tool calls belong to the run");
             }
 
             McpServer dead = await StepAsync(context, result, "POST mcp-servers (unreachable)", () => c.McpServers.CreateAsync(new McpServerUpsertRequest
@@ -67,7 +67,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             Helpers.True(!String.IsNullOrEmpty(deadRead.Server.LastError), "lastError is saved");
             await StepAsync(context, result, "PUT mcp-servers/{id}/tools/{missing} (404)", () => Helpers.ExpectErrorAsync(() => c.McpServers.SetToolEnabledAsync(dead.Id, "mct_missing_" + Helpers.Unique(), true, token), 404)).ConfigureAwait(false);
             EnumerationResult<McpServer> disabled = await StepAsync(context, result, "GET mcp-servers?enabled=false", () => c.McpServers.ListAsync(new McpServerListOptions { Enabled = false, PageSize = 100 }, token)).ConfigureAwait(false);
-            Helpers.Contains(disabled.Items, s => s.Id == dead.Id, "the disabled server");
+            Helpers.Contains(disabled.Objects, s => s.Id == dead.Id, "the disabled server");
             await StepAsync(context, result, "DELETE mcp-servers/{id}", () => c.McpServers.DeleteAsync(dead.Id, token)).ConfigureAwait(false);
             context.Cleanup.Remove("mcp:" + dead.Id);
             await StepAsync(context, result, "GET deleted mcp server (404)", () => Helpers.ExpectErrorAsync(() => c.McpServers.GetAsync(dead.Id, token), 404)).ConfigureAwait(false);
@@ -99,7 +99,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
                 Helpers.Equal("Token ", renamed.HeaderPrefix, "header prefix");
                 await StepAsync(context, result, "PUT mcp-servers/{id} with an empty name (400)", () => Helpers.ExpectErrorAsync(() => c.McpServers.UpdateAsync(server.Id, new McpServerUpsertRequest { Name = " " }, token), 400, "ValidationFailed")).ConfigureAwait(false);
                 EnumerationResult<McpServer> enabled = await StepAsync(context, result, "GET mcp-servers?enabled=true", () => c.McpServers.ListAsync(new McpServerListOptions { Enabled = true, PageSize = 100 }, token)).ConfigureAwait(false);
-                Helpers.Contains(enabled.Items, s => s.Id == server.Id, "the server");
+                Helpers.Contains(enabled.Objects, s => s.Id == server.Id, "the server");
 
                 McpServerTestResponse ok = await StepAsync(context, result, "POST mcp-servers/{id}/test (fake)", () => c.McpServers.TestAsync(server.Id, token)).ConfigureAwait(false);
                 if (!ok.Success)

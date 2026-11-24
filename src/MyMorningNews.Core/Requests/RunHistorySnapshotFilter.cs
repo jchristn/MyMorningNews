@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for RunHistorySnapshot records. Null properties are not applied.
     /// </summary>
-    public class RunHistorySnapshotFilter : EnumerationFilter
+    public class RunHistorySnapshotFilter : EnumerationQuery
     {
         /// <summary>
         /// Match RunId exactly when set.

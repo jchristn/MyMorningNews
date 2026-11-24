@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for MediaAsset records. Null properties are not applied.
     /// </summary>
-    public class MediaAssetFilter : EnumerationFilter
+    public class MediaAssetFilter : EnumerationQuery
     {
         /// <summary>
         /// Match UserId exactly when set.

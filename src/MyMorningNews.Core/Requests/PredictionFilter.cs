@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for Prediction records. Null properties are not applied.
     /// </summary>
-    public class PredictionFilter : EnumerationFilter
+    public class PredictionFilter : EnumerationQuery
     {
         /// <summary>
         /// Match RunId exactly when set.

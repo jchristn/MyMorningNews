@@ -419,7 +419,7 @@ def t_signed_live(h: Harness) -> str:
         eq(signed.token_details().scheme, "AccessKeySignature", "server saw a signature, not a secret")
         eq(signed.me().id, user_id, "GET with no query")
         page = signed.topics.list(search=h.prefix + " a&b=c/d", page_size=1, sort_direction="Descending")
-        check(isinstance(page.items, list), "GET with an encoded query string")
+        check(isinstance(page.objects, list), "GET with an encoded query string")
         t = signed.topics.create(name=h.name("signed-topic"), description="Signed POST with a JSON body: caf\u00e9")
         h.on_cleanup("topic " + t.id, lambda: h.client.topics.delete(t.id))
         eq(signed.topics.update(t.id, description="signed PUT").description, "signed PUT", "PUT with a body")
@@ -496,7 +496,7 @@ def t_topic_list(h: Harness) -> None:
     tid = h.need("topic")
     page = h.client.topics.list(search=h.prefix, page_size=10, sort_by="createdUtc", sort_direction=mmn.SortDirection.DESCENDING)
     check(tid in ids(page), "created topic is listed")
-    check(page.total_count >= 1 and page.page_number == 1, "paging metadata")
+    check(page.total_records >= 1 and page.page_number == 1, "paging metadata")
 
 
 @case("Pagination: iterate walks every page")
@@ -548,8 +548,8 @@ def t_topic_providers(h: Harness) -> None:
     tid = h.need("topic")
     defaults = h.client.topics.search_providers(tid)
     check(len(defaults) >= 1, "tenant defaults apply")
-    chosen = h.client.topics.set_search_providers(tid, [defaults[0].id])
-    eq(ids(chosen), [defaults[0].id], "only the chosen provider")
+    chosen = h.client.topics.set_search_providers(tid, [defaults.objects[0].id])
+    eq(ids(chosen), [defaults.objects[0].id], "only the chosen provider")
     h.client.topics.set_search_providers(tid, [])
     check(len(h.client.topics.search_providers(tid)) >= 1, "reset to defaults")
 
@@ -662,7 +662,7 @@ def t_refinement_llm(h: Harness) -> None:
 def t_requests(h: Harness) -> None:
     h.need("tenant")
     page = h.client.requests.list(page_size=5)
-    check(isinstance(page.items, list), "page of requests")
+    check(isinstance(page.objects, list), "page of requests")
     expect_error(NotFoundError, lambda: h.client.requests.get("rrq_missing"))
 
 
@@ -721,8 +721,8 @@ def t_schedules(h: Harness) -> None:
 def t_runs(h: Harness) -> str:
     h.need("tenant")
     page = h.client.runs.list(page_size=5, sort_by="createdUtc", sort_direction="Descending")
-    check(isinstance(page.items, list), "page of runs")
-    done = [r for r in page.items if r.status in mmn.TERMINAL_RUN_STATUSES]
+    check(isinstance(page.objects, list), "page of runs")
+    done = [r for r in page.objects if r.status in mmn.TERMINAL_RUN_STATUSES]
     if not done:
         raise Skip("no finished run is visible")
     r = h.client.runs.get(done[0].id)
@@ -732,8 +732,8 @@ def t_runs(h: Harness) -> str:
     check(isinstance(h.client.runs.results(r.id), list), "results list")
     calls = h.client.runs.llm_calls(r.id, page_size=50)
     check(isinstance(calls, mmn.Page), "run model calls are paged")
-    eq(all(c.run_id == r.id for c in calls.items), True, "every call belongs to the run")
-    stamps = [c.created_utc or "" for c in calls.items]
+    eq(all(c.run_id == r.id for c in calls.objects), True, "every call belongs to the run")
+    stamps = [c.created_utc or "" for c in calls.objects]
     eq(stamps, sorted(stamps), "oldest first")
     waited = h.client.runs.wait(r.id, timeout=10, interval=0.5)
     check(waited.status in mmn.TERMINAL_RUN_STATUSES, "wait returns a finished run at once")
@@ -828,7 +828,7 @@ def t_run_events_404(h: Harness) -> None:
 def t_run_retry_409(h: Harness) -> str:
     h.need("tenant")
     _events_route_or_skip(h)
-    active = [r for r in h.client.runs.list(page_size=50).items if r.status not in mmn.TERMINAL_RUN_STATUSES]
+    active = [r for r in h.client.runs.list(page_size=50).objects if r.status not in mmn.TERMINAL_RUN_STATUSES]
     if not active:
         raise Skip("no queued or running run is visible (making one would start a paid run)")
     ex = expect_error(ConflictError, lambda: h.client.runs.retry(active[0].id, from_stage="Notify"), code="Conflict")
@@ -840,7 +840,7 @@ def t_run_retry_409(h: Harness) -> str:
 def t_run_events_replay(h: Harness) -> str:
     h.need("tenant")
     _events_route_or_skip(h)
-    done_runs = [r for r in h.client.runs.list(page_size=20).items if r.status in mmn.TERMINAL_RUN_STATUSES]
+    done_runs = [r for r in h.client.runs.list(page_size=20).objects if r.status in mmn.TERMINAL_RUN_STATUSES]
     if not done_runs:
         raise Skip("no finished run is visible")
     r = done_runs[0]
@@ -904,7 +904,7 @@ def t_run_costs_offline(h: Harness) -> None:
             r.status_code = 200
             r.headers["Content-Type"] = "application/json"
             body: Dict[str, Any] = {"runId": "run_x", "currency": "USD", "totals": {}, "stages": []} if "/costs" in str(request.url) \
-                else {"items": [], "pageNumber": 1, "pageSize": 10, "totalCount": 0, "totalPages": 0}
+                else {"objects": [], "pageNumber": 1, "pageSize": 10, "totalRecords": 0, "totalPages": 0}
             r._content = json.dumps(body).encode("utf-8")
             return r
 
@@ -926,9 +926,9 @@ def t_run_costs(h: Harness) -> str:
     h.need("tenant")
     expect_error(NotFoundError, lambda: h.client.runs.costs("run_missing"), code="NotFound")
     by_cost = h.client.runs.list(page_size=5, sort_by="estimatedCostUsd", sort_direction="Descending")
-    priced = [r.estimated_cost_usd for r in by_cost.items if r.estimated_cost_usd is not None]
+    priced = [r.estimated_cost_usd for r in by_cost.objects if r.estimated_cost_usd is not None]
     eq(priced, sorted(priced, reverse=True), "most expensive first")
-    done = [r for r in h.client.runs.list(page_size=25).items if r.status in mmn.TERMINAL_RUN_STATUSES]
+    done = [r for r in h.client.runs.list(page_size=25).objects if r.status in mmn.TERMINAL_RUN_STATUSES]
     if not done:
         raise Skip("no finished run is visible")
     r = done[0]
@@ -942,7 +942,7 @@ def t_run_costs(h: Harness) -> str:
     costed = next((s for s in stages if (s.llm_call_count or 0) > 0), None)
     if costed is not None:
         calls = h.client.llm_calls.list(run_stage_id=costed.id, page_size=100)
-        eq(all(c.run_stage_id == costed.id for c in calls.items), True, "calls belong to the stage")
+        eq(all(c.run_stage_id == costed.id for c in calls.objects), True, "calls belong to the stage")
     total = costs.totals.estimated_cost_usd if costs.totals else None
     return r.id + " cost " + ("unpriced" if total is None else "$" + format(total, ".4f"))
 
@@ -956,7 +956,7 @@ def t_run_live(h: Harness) -> str:
     final = h.client.runs.wait(run.id, timeout=1800, interval=5)
     check(final.status in mmn.TERMINAL_RUN_STATUSES, "finished")
     check(len(h.client.runs.stages(run.id)) >= 1, "stages recorded")
-    check(h.client.runs.llm_calls(run.id).total_count >= 1, "model calls recorded for the run")
+    check(h.client.runs.llm_calls(run.id).total_records >= 1, "model calls recorded for the run")
     replay = list(h.client.runs.events(run.id, timeout=120))
     eq(replay[-1].event, "done", "finished run stream ends with done")
     resumed = h.client.runs.retry(run.id, from_stage="Notify")
@@ -976,12 +976,12 @@ def t_findings(h: Harness) -> str:
     h.need("tenant")
     page = h.client.findings.list(page_size=3, include_dry_run=True)
     expect_error(NotFoundError, lambda: h.client.findings.get("fnd_missing"))
-    if not page.items:
+    if not page.objects:
         return "no findings to read"
-    d = h.client.findings.get(page.items[0].id)
-    eq(d.finding.id, page.items[0].id, "finding detail")
+    d = h.client.findings.get(page.objects[0].id)
+    eq(d.finding.id, page.objects[0].id, "finding detail")
     check(isinstance(d.evidence, list), "evidence list")
-    return "read " + page.items[0].id
+    return "read " + page.objects[0].id
 
 
 @case("Findings: pin, hide, include_hidden, delete")
@@ -989,8 +989,8 @@ def t_findings_edit(h: Harness) -> str:
     h.need("tenant")
     expect_error(NotFoundError, lambda: h.client.findings.update("fnd_missing", pinned=True))
     expect_error(NotFoundError, lambda: h.client.findings.delete("fnd_missing"))
-    check(isinstance(h.client.findings.list(include_hidden=True, pinned=True, page_size=5).items, list), "include_hidden and pinned filters")
-    mine = [f for f in h.client.findings.list(page_size=50, include_dry_run=True, include_hidden=True).items if f.user_id == h.state.get("user_id")]
+    check(isinstance(h.client.findings.list(include_hidden=True, pinned=True, page_size=5).objects, list), "include_hidden and pinned filters")
+    mine = [f for f in h.client.findings.list(page_size=50, include_dry_run=True, include_hidden=True).objects if f.user_id == h.state.get("user_id")]
     if not mine:
         raise Skip("no findings of my own to edit")
     f = mine[0]
@@ -1011,7 +1011,7 @@ def t_findings_edit(h: Harness) -> str:
 def t_evidence(h: Harness) -> str:
     h.need("tenant")
     expect_error(NotFoundError, lambda: h.client.evidence.get("evd_missing"))
-    for f in h.client.findings.list(page_size=10, include_dry_run=True).items:
+    for f in h.client.findings.list(page_size=10, include_dry_run=True).objects:
         d = h.client.findings.get(f.id)
         for view in d.evidence or []:
             if view.evidence is not None and view.evidence.id:
@@ -1027,10 +1027,10 @@ def t_sources(h: Harness) -> str:
     h.need("tenant")
     page = h.client.sources.list(page_size=3)
     expect_error(NotFoundError, lambda: h.client.sources.get("src_missing"))
-    if not page.items:
+    if not page.objects:
         return "no sources to read"
-    eq(h.client.sources.get(page.items[0].id).id, page.items[0].id, "source")
-    return "read " + page.items[0].id
+    eq(h.client.sources.get(page.objects[0].id).id, page.objects[0].id, "source")
+    return "read " + page.objects[0].id
 
 
 @case("Predictions: list, get, resolve and review 404s")
@@ -1041,11 +1041,11 @@ def t_predictions(h: Harness) -> str:
     expect_error(NotFoundError, lambda: h.client.predictions.resolve("prd_missing", mmn.PredictionStatus.ACCURATE, note="x"))
     expect_error(NotFoundError, lambda: h.client.predictions.accept_review("prv_missing"))
     expect_error(NotFoundError, lambda: h.client.predictions.reject_review("prv_missing"))
-    if not page.items:
+    if not page.objects:
         return "no predictions to read"
-    d = h.client.predictions.get(page.items[0].id)
-    eq(d.prediction.id, page.items[0].id, "prediction detail")
-    return "read " + page.items[0].id
+    d = h.client.predictions.get(page.objects[0].id)
+    eq(d.prediction.id, page.objects[0].id, "prediction detail")
+    return "read " + page.objects[0].id
 
 
 @case("Suggestions: list, get, set_status 404")
@@ -1054,10 +1054,10 @@ def t_suggestions(h: Harness) -> str:
     page = h.client.suggestions.list(page_size=3, include_dry_run=True)
     expect_error(NotFoundError, lambda: h.client.suggestions.get("sug_missing"))
     expect_error(NotFoundError, lambda: h.client.suggestions.set_status("sug_missing", mmn.SuggestionStatus.DISMISSED))
-    if not page.items:
+    if not page.objects:
         return "no suggestions to read"
-    eq(h.client.suggestions.get(page.items[0].id).id, page.items[0].id, "suggestion")
-    return "read " + page.items[0].id
+    eq(h.client.suggestions.get(page.objects[0].id).id, page.objects[0].id, "suggestion")
+    return "read " + page.objects[0].id
 
 
 # ---------------------------------------------------------------------------
@@ -1180,9 +1180,9 @@ def t_briefing_shares(h: Harness) -> None:
     if cfg.sharing_enabled is False:
         raise Skip("sharing is turned off on this server")
     page = h.client.briefings.list(page_size=1, status="Ready")
-    if not page.items:
+    if not page.objects:
         raise Skip("no ready briefing is visible")
-    bid = page.items[0].id
+    bid = page.objects[0].id
     longest = cfg.sharing_max_expiry_days or 14
     expect_error(BadRequestError, lambda: h.client.briefings.share(bid, expires_in_days=longest + 1))
     expect_error(BadRequestError, lambda: h.client.briefings.share(bid, expires_in_days=0))
@@ -1197,12 +1197,12 @@ def t_briefing_shares(h: Harness) -> None:
     check(created.secret and "/v1.0/public/shares/" in created.url and created.read_url == created.url and created.listen_url == created.url, "one link returned once")
     eq(created.share.token_hash, "redacted", "hash is redacted")
     check(created.share.expires_utc, "a share always has an expiry")
-    check(sid in ids(h.client.briefings.list_shares(bid).items), "listed")
+    check(sid in ids(h.client.briefings.list_shares(bid).objects), "listed")
     h.client.briefings.revoke_share(bid, sid)
-    revoked = [s for s in h.client.briefings.list_shares(bid).items if s.id == sid]
+    revoked = [s for s in h.client.briefings.list_shares(bid).objects if s.id == sid]
     check(revoked and revoked[0].revoked_utc, "revokedUtc set")
     h.client.briefings.revoke_share(bid, sid, purge=True)
-    check(sid not in ids(h.client.briefings.list_shares(bid).items), "purged")
+    check(sid not in ids(h.client.briefings.list_shares(bid).objects), "purged")
     expect_error(NotFoundError, lambda: h.client.briefings.revoke_share(bid, sid))
 
 
@@ -1218,9 +1218,9 @@ def t_briefings(h: Harness) -> str:
     h.need("tenant")
     expect_error(NotFoundError, lambda: h.client.briefings.get("brf_missing"))
     page = h.client.briefings.list(page_size=10, status="Ready")
-    if not page.items:
+    if not page.objects:
         raise Skip("no ready briefing is visible")
-    b = page.items[0]
+    b = page.objects[0]
     d = h.client.briefings.get(b.id)
     eq(d.briefing.id, b.id, "detail")
     if d.files_expired:
@@ -1242,7 +1242,7 @@ def t_artifacts(h: Harness) -> str:
     h.need("tenant")
     expect_error(NotFoundError, lambda: h.client.artifacts.get("art_missing"))
     page = h.client.artifacts.list(page_size=10)
-    live = [a for a in page.items if not a.deleted_utc and (a.bytes or 0) > 16]
+    live = [a for a in page.objects if not a.deleted_utc and (a.bytes or 0) > 16]
     if not live:
         raise Skip("no stored files are visible")
     a = live[0]
@@ -1263,19 +1263,19 @@ def t_media(h: Harness) -> str:
     h.need("tenant")
     expect_error(NotFoundError, lambda: h.client.media.get("med_missing"))
     page = h.client.media.list(page_size=5)
-    if not page.items:
+    if not page.objects:
         return "no audio episodes to read"
-    d = h.client.media.get(page.items[0].id)
-    eq(d.media.id, page.items[0].id, "episode")
-    return "read " + page.items[0].id
+    d = h.client.media.get(page.objects[0].id)
+    eq(d.media.id, page.objects[0].id, "episode")
+    return "read " + page.objects[0].id
 
 
 @case("Templates: list, get, export, validate")
 def t_templates_read(h: Harness) -> None:
     h.need("tenant")
     page = h.client.templates.list(scope="shared")
-    check(page.items, "shared templates exist")
-    seeded = page.items[0]
+    check(page.objects, "shared templates exist")
+    seeded = page.objects[0]
     d = h.client.templates.get(seeded.id)
     check(d.content, "content")
     ex = h.client.templates.export(seeded.id)
@@ -1310,8 +1310,8 @@ def t_templates_write(h: Harness) -> None:
 def t_prompts_read(h: Harness) -> None:
     h.need("tenant")
     page = h.client.prompts.list(tenant_only=True, page_size=50)
-    check(page.items, "prompts exist")
-    p = page.items[0]
+    check(page.objects, "prompts exist")
+    p = page.objects[0]
     d = h.client.prompts.get(p.id)
     eq(d.template.key, p.key, "key")
     check(d.content, "content")
@@ -1437,10 +1437,10 @@ def t_llm_calls(h: Harness) -> str:
     h.need("tenant")
     page = h.client.llm_calls.list(page_size=2)
     expect_error(NotFoundError, lambda: h.client.llm_calls.get("llm_missing"))
-    if not page.items:
+    if not page.objects:
         return "no model calls recorded"
-    c = h.client.llm_calls.get(page.items[0].id)
-    eq(c.id, page.items[0].id, "call detail")
+    c = h.client.llm_calls.get(page.objects[0].id)
+    eq(c.id, page.objects[0].id, "call detail")
     return "read " + c.id
 
 
@@ -1490,8 +1490,8 @@ def t_endpoint_validate(h: Harness) -> str:
 @case("Model endpoints: test sends a sample prompt", needs_run=True)
 def t_endpoint_test(h: Harness) -> None:
     page = h.client.model_endpoints.list(supports_chat=True)
-    check(page.items, "a chat endpoint exists")
-    r = h.client.model_endpoints.test(page.items[0].id, prompt="Reply with the single word ok.")
+    check(page.objects, "a chat endpoint exists")
+    r = h.client.model_endpoints.test(page.objects[0].id, prompt="Reply with the single word ok.")
     check(r.success is True, "test call succeeded: " + str(r.error))
 
 
@@ -1620,7 +1620,7 @@ def t_setup(h: Harness) -> None:
                             body={"email": email, "password": password, "first_name": "SDK", "last_name": "Harness", "active": True})
 
     def remove_user() -> None:
-        for ed in h.client.editions.list(user_id=user["id"], page_size=100).items:
+        for ed in h.client.editions.list(user_id=user["id"], page_size=100).objects:
             if ed.user_id == user["id"]:
                 h.client.editions.delete(ed.id)
         h.client.request("DELETE", "/v1.0/tenants/" + tenant + "/users/" + user["id"])
@@ -1734,7 +1734,7 @@ def t_vault(h: Harness) -> None:
     no_description = h.client.vault.update(c.id, clear_fields=["description"])
     check(no_description.description is None, "clear_fields removes the description")
     expect_error(BadRequestError, lambda: h.client.vault.update(c.id, clear_fields=["secret"]))
-    eq(h.client.vault.usage(c.id), [], "unused")
+    eq(h.client.vault.usage(c.id).objects, [], "unused")
     check(c.id in ids(h.client.vault.list(provider="Custom")), "listed by provider")
     h.client.vault.delete(c.id)
     expect_error(NotFoundError, lambda: h.client.vault.get(c.id))
@@ -1773,11 +1773,11 @@ def t_notification_prefs(h: Harness) -> None:
 def t_notifications(h: Harness) -> None:
     h.need("tenant")
     page = h.client.notifications.list(page_size=5)
-    check(page.items is not None and page.total_count is not None, "page shape")
+    check(page.objects is not None and page.total_records is not None, "page shape")
     unread = h.client.notifications.list(unread=True, kind="AudioReady", page_size=100)
-    check(all(n.kind == "AudioReady" and not n.read_utc for n in unread.items), "filters apply")
-    check(h.client.notifications.unread_count() >= len(unread.items), "unread count")
-    for n in [x for x in page.items if not x.read_utc][:1]:
+    check(all(n.kind == "AudioReady" and not n.read_utc for n in unread.objects), "filters apply")
+    check(h.client.notifications.unread_count() >= len(unread.objects), "unread count")
+    for n in [x for x in page.objects if not x.read_utc][:1]:
         check(h.client.notifications.mark_read(n.id).read_utc, "marked read")
     check(h.client.notifications.mark_all_read() >= 0, "read-all count")
     eq(h.client.notifications.unread_count(), 0, "none unread after read-all")
@@ -1890,7 +1890,7 @@ def _start_fake_mcp() -> Tuple[ThreadingHTTPServer, str]:
 def _link_token(outbox: MyMorningNewsClient, template: str) -> str:
     """The newest link token in an outbox for a template."""
     page = outbox.email.list(template=template, page_size=20)
-    items = sorted(page.items, key=lambda m: str(m.created_utc or ""), reverse=True)
+    items = sorted(page.objects, key=lambda m: str(m.created_utc or ""), reverse=True)
     check(items, "a " + template + " email is in the outbox")
     full = outbox.email.get(items[0].id)
     m = re.search(r"token=([A-Za-z0-9%_\-.~]+)", full.get("renderedText") or "")
@@ -1907,7 +1907,7 @@ def t_account_limits(h: Harness) -> None:
     check(mine.plan_key, "admin plan key")
     expect_error(ConflictError, h.client.account.delete, code="Conflict")
     plans = h.client.request("GET", "/v1.0/api/admin/plans")
-    free = next((p for p in plans if p["plan"]["key"] == "free"), None)
+    free = next((p for p in plans["objects"] if p["plan"]["key"] == "free"), None)
     if free is None:
         raise Skip("the server has no Free plan")
     email = "sdk-python-cap-" + uuid.uuid4().hex[:8] + "@example.com"
@@ -1916,7 +1916,7 @@ def t_account_limits(h: Harness) -> None:
                             body={"email": email, "password": password, "first_name": "SDK", "last_name": "Harness", "active": True})
 
     def remove_user() -> None:
-        for e in h.client.editions.list(user_id=user["id"], page_size=100).items:
+        for e in h.client.editions.list(user_id=user["id"], page_size=100).objects:
             if e.user_id == user["id"]:
                 h.client.editions.delete(e.id)
         h.client.request("DELETE", "/v1.0/tenants/" + tenant + "/users/" + user["id"])
@@ -2001,13 +2001,13 @@ def t_signup(h: Harness) -> None:
             expect_error(BadRequestError, lambda: anon.account.reset_password("not-a-token", "a long new password"), code="LinkInvalid")
 
             tenants = h.client.request("GET", "/v1.0/tenants", query={"page_size": 1000})
-            personal = next((t for t in tenants["items"] if t["name"] == display + " (personal)"), None)
+            personal = next((t for t in tenants["objects"] if t["name"] == display + " (personal)"), None)
             check(personal is not None, "the personal tenant exists")
             pid = personal["id"]
             h.on_cleanup("personal tenant", lambda: h.client.request("DELETE", "/v1.0/tenants/" + pid))
             check(personal.get("isPersonal") is True, "personal tenant")
             users = h.client.request("GET", "/v1.0/tenants/" + pid + "/users")
-            signed_up = next(x for x in users["items"] if x["email"] == email)
+            signed_up = next(x for x in users["objects"] if x["email"] == email)
             key = h.client.request("POST", "/v1.0/tenants/" + pid + "/credentials", body={"user_id": signed_up["id"], "name": h.name("outbox"), "auth_mode": "Hybrid"})
             with MyMorningNewsClient(h.config.base_url, access_key=key["credential"]["accessKey"], secret_key=key["secretKey"], tenant_id=pid) as outbox:
                 verify_token = _link_token(outbox, "VerifyEmail")
@@ -2043,9 +2043,9 @@ def t_mcp_servers(h: Harness) -> str:
     expect_error(BadRequestError, lambda: c.mcp_servers.create(name=h.name("mcp"), url="ftp://127.0.0.1/mcp"), code="ValidationFailed")
     expect_error(NotFoundError, lambda: c.runs.tool_calls("run_sdkpythondoesnotexist"))
     runs = c.runs.list(page_size=1)
-    if runs.items:
-        calls = c.runs.tool_calls(runs.items[0].id)
-        check(all(x.run_id == runs.items[0].id for x in calls), "tool calls belong to the run")
+    if runs.objects:
+        calls = c.runs.tool_calls(runs.objects[0].id)
+        check(all(x.run_id == runs.objects[0].id for x in calls), "tool calls belong to the run")
 
     dead = c.mcp_servers.create(name=h.name("mcp-dead"), url="http://127.0.0.1:9/mcp", enabled=False)
     h.on_cleanup("mcp server (dead)", lambda: c.mcp_servers.delete(dead.id))
@@ -2056,7 +2056,7 @@ def t_mcp_servers(h: Harness) -> str:
     eq(bad.status, 502, "status")
     check(c.mcp_servers.get(dead.id).server.last_error, "lastError is saved")
     expect_error(NotFoundError, lambda: c.mcp_servers.set_tool_enabled(dead.id, "mct_sdkpythondoesnotexist", True))
-    check(dead.id in ids(c.mcp_servers.list(enabled=False, page_size=100).items), "the disabled server is listed")
+    check(dead.id in ids(c.mcp_servers.list(enabled=False, page_size=100).objects), "the disabled server is listed")
     c.mcp_servers.delete(dead.id)
     expect_error(NotFoundError, lambda: c.mcp_servers.get(dead.id))
 

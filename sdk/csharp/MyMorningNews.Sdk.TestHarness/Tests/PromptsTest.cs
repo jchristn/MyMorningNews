@@ -37,11 +37,11 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
         {
             MyMorningNewsClient c = context.RequireAdmin();
             EnumerationResult<PromptTemplate> page = await StepAsync(context, result, "GET prompts (tenant only)", () => c.Prompts.ListAsync(new PromptListOptions { TenantOnly = true, PageSize = 100 }, token)).ConfigureAwait(false);
-            PromptTemplate? first = page.Items.FirstOrDefault(p => p.TopicId == null);
+            PromptTemplate? first = page.Objects.FirstOrDefault(p => p.TopicId == null);
             if (first == null) throw new SkipTestException("The tenant has no prompts.");
             PromptTemplateResponse prompt = await StepAsync(context, result, "GET prompt", () => c.Prompts.GetAsync(first.Id, token)).ConfigureAwait(false);
             Helpers.NotEmpty(prompt.Content, "prompt content");
-            List<PromptTemplateVersion> versions = await StepAsync(context, result, "GET prompt versions", () => c.Prompts.ListVersionsAsync(first.Id, token)).ConfigureAwait(false);
+            List<PromptTemplateVersion> versions = (await StepAsync(context, result, "GET prompt versions", () => c.Prompts.ListVersionsAsync(first.Id, options: new MyMorningNews.Sdk.Options.EnumerationQuery { PageSize = 1000 }, token: token)).ConfigureAwait(false)).Objects;
             Helpers.True(versions.Count >= 1, "at least one version");
             await StepAsync(context, result, "DELETE tenant prompt (409)", () => Helpers.ExpectErrorAsync(() => c.Prompts.DeleteAsync(first.Id, token), 409, "Conflict")).ConfigureAwait(false);
 
@@ -65,7 +65,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             await StepAsync(context, result, "POST override rollback to a missing version (404)", () => Helpers.ExpectErrorAsync(() => c.Prompts.RollbackAsync(ovId, 9999, token), 404)).ConfigureAwait(false);
             await StepAsync(context, result, "POST override reset", () => c.Prompts.ResetAsync(ovId, token)).ConfigureAwait(false);
             EnumerationResult<PromptTemplate> overrides = await StepAsync(context, result, "GET prompts (topic filter)", () => c.Prompts.ListAsync(new PromptListOptions { TopicId = topic.Id }, token)).ConfigureAwait(false);
-            Helpers.Contains(overrides.Items, p => p.Id == ovId, "the override");
+            Helpers.Contains(overrides.Objects, p => p.Id == ovId, "the override");
 
             await StepAsync(context, result, "DELETE override", () => c.Prompts.DeleteAsync(ovId, token)).ConfigureAwait(false);
             context.Cleanup.Remove("prompt:" + ovId);

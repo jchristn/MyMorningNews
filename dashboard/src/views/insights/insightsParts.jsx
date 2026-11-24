@@ -17,7 +17,7 @@ export function useTopics() {
     let live = true;
     apiClient
       .listTopics({ pageSize: 1000, sortBy: 'name', sortDirection: 'Ascending' })
-      .then((r) => live && setTopics((r && r.items) || []))
+      .then((r) => live && setTopics((r && r.objects) || []))
       .catch(() => live && setTopics([]));
     return () => {
       live = false;

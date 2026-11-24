@@ -111,9 +111,10 @@ namespace MyMorningNews.Sdk.Resources
         /// <returns>A list of ModelListItem items.</returns>
         /// <exception cref="ArgumentNullException">id is null or empty.</exception>
         /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
-        public Task<List<ModelListItem>> ListModelsAsync(string id, CancellationToken token = default)
+        /// <param name="options">Pagination, sorting, and filters; null uses defaults.</param>
+        public Task<EnumerationResult<ModelListItem>> ListModelsAsync(string id, EnumerationQuery? options = null, CancellationToken token = default)
         {
-            return Client.SendAsync<List<ModelListItem>>(HttpMethod.Get, "/v1.0/api/model-endpoints/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/models", null, null, token);
+            return Client.SendAsync<EnumerationResult<ModelListItem>>(HttpMethod.Get, "/v1.0/api/model-endpoints/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/models", (options ?? new EnumerationQuery()).ToQuery(), null, token);
         }
 
         /// <summary>

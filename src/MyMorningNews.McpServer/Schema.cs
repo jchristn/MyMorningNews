@@ -164,10 +164,13 @@ namespace MyMorningNews.McpServer
         public static Dictionary<string, object> Page(object item)
         {
             return Object(Props(
-                "items", Array("Items on this page.", item),
-                "totalCount", Integer("Items matching across all pages.", 0, long.MaxValue),
+                "success", Boolean("Whether enumeration succeeded."),
+                "pageSize", Integer("Maximum objects on this page.", 1, 1000),
+                "totalMs", Number("Enumeration duration in milliseconds."),
+                "objects", Array("Items on this page.", item),
+                "totalRecords", Integer("Items matching across all pages.", 0, long.MaxValue),
                 "pageNumber", Integer("Page number (1-based).", 1, int.MaxValue),
-                "totalPages", Integer("Pages available.", 0, int.MaxValue)), new[] { "items", "totalCount" });
+                "totalPages", Integer("Pages available.", 0, int.MaxValue)), new[] { "objects", "totalRecords" });
         }
     }
 }

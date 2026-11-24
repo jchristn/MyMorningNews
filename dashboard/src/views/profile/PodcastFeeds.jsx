@@ -1,3 +1,4 @@
+import { enumerateObjects } from '../../utils/enumeration.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Plus, Rss, ShieldAlert, Trash2 } from 'lucide-react';
@@ -82,8 +83,8 @@ export default function PodcastFeeds() {
 
   const load = useCallback(async () => {
     try {
-      const list = await apiClient.listFeedTokens();
-      setTokens(Array.isArray(list) ? list : (list && list.items) || []);
+      const list = await enumerateObjects((query) => apiClient.listFeedTokens(query));
+      setTokens(Array.isArray(list) ? list : (list && list.objects) || []);
       setError(null);
     } catch (err) {
       setError(err);
@@ -95,7 +96,7 @@ export default function PodcastFeeds() {
     let cancelled = false;
     apiClient
       .listEditions({ pageSize: 100, sortBy: 'name', sortDirection: 'Ascending' })
-      .then((r) => !cancelled && setEditions((r && r.items) || []))
+      .then((r) => !cancelled && setEditions((r && r.objects) || []))
       .catch(() => {});
     return () => {
       cancelled = true;

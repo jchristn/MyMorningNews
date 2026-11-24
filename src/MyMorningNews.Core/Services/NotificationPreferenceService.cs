@@ -158,7 +158,7 @@ namespace MyMorningNews.Core.Services
         public async Task<List<NotificationPreferenceCell>> ReadAllAsync(User user, CancellationToken token = default)
         {
             ArgumentNullException.ThrowIfNull(user);
-            List<NotificationPreference> rows = (await _Database.NotificationPreferences.EnumerateAsync(new NotificationPreferenceFilter { TenantId = user.TenantId, UserId = user.Id, PageSize = 200 }, token).ConfigureAwait(false)).Items;
+            List<NotificationPreference> rows = (await _Database.NotificationPreferences.EnumerateAsync(new NotificationPreferenceFilter { TenantId = user.TenantId, UserId = user.Id, PageSize = 200 }, token).ConfigureAwait(false)).Objects;
             HashSet<NotificationKindEnum> optedOut = await EarlierOptOutsAsync(user, token).ConfigureAwait(false);
             List<NotificationPreferenceCell> cells = new List<NotificationPreferenceCell>();
             foreach (NotificationKindEnum kind in Kinds)
@@ -210,7 +210,7 @@ namespace MyMorningNews.Core.Services
             EmailCategoryEnum? category = CategoryFor(kind);
             string address = EmailService.Normalize(user.Email);
             if (channel != NotificationChannelEnum.Email || !category.HasValue || address.Length == 0) return;
-            List<EmailSuppression> earlier = (await _Database.EmailSuppressions.EnumerateAsync(new EmailSuppressionFilter { TenantId = user.TenantId, Recipient = address, Category = category.Value, PageSize = 500 }, token).ConfigureAwait(false)).Items;
+            List<EmailSuppression> earlier = (await _Database.EmailSuppressions.EnumerateAsync(new EmailSuppressionFilter { TenantId = user.TenantId, Recipient = address, Category = category.Value, PageSize = 500 }, token).ConfigureAwait(false)).Objects;
             foreach (EmailSuppression s in earlier.Where(s => s.TopicId == null))
                 await _Database.EmailSuppressions.DeleteAsync(s.TenantId, s.Id, token).ConfigureAwait(false);
         }
@@ -272,7 +272,7 @@ namespace MyMorningNews.Core.Services
 
         private async Task<NotificationPreference?> ReadRowAsync(User user, NotificationKindEnum kind, NotificationChannelEnum channel, CancellationToken token)
         {
-            return (await _Database.NotificationPreferences.EnumerateAsync(new NotificationPreferenceFilter { TenantId = user.TenantId, UserId = user.Id, Kind = kind, Channel = channel, PageSize = 1 }, token).ConfigureAwait(false)).Items.FirstOrDefault();
+            return (await _Database.NotificationPreferences.EnumerateAsync(new NotificationPreferenceFilter { TenantId = user.TenantId, UserId = user.Id, Kind = kind, Channel = channel, PageSize = 1 }, token).ConfigureAwait(false)).Objects.FirstOrDefault();
         }
 
         private async Task<HashSet<NotificationKindEnum>> EarlierOptOutsAsync(User user, CancellationToken token)
@@ -280,7 +280,7 @@ namespace MyMorningNews.Core.Services
             HashSet<NotificationKindEnum> kinds = new HashSet<NotificationKindEnum>();
             string address = EmailService.Normalize(user.Email);
             if (address.Length == 0) return kinds;
-            List<EmailSuppression> rows = (await _Database.EmailSuppressions.EnumerateAsync(new EmailSuppressionFilter { TenantId = user.TenantId, Recipient = address, PageSize = 500 }, token).ConfigureAwait(false)).Items;
+            List<EmailSuppression> rows = (await _Database.EmailSuppressions.EnumerateAsync(new EmailSuppressionFilter { TenantId = user.TenantId, Recipient = address, PageSize = 500 }, token).ConfigureAwait(false)).Objects;
             foreach (EmailSuppression s in rows.Where(s => s.TopicId == null))
             {
                 NotificationKindEnum? kind = KindFor(s.Category);

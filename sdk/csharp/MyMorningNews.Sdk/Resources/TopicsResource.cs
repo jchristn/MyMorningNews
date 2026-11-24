@@ -204,9 +204,10 @@ namespace MyMorningNews.Sdk.Resources
         /// <returns>A list of TopicDimension items.</returns>
         /// <exception cref="ArgumentNullException">id is null or empty.</exception>
         /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
-        public Task<List<TopicDimension>> ListDimensionsAsync(string id, CancellationToken token = default)
+        /// <param name="options">Pagination, sorting, and filters; null uses defaults.</param>
+        public Task<EnumerationResult<TopicDimension>> ListDimensionsAsync(string id, EnumerationQuery? options = null, CancellationToken token = default)
         {
-            return Client.SendAsync<List<TopicDimension>>(HttpMethod.Get, "/v1.0/api/topics/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/dimensions", null, null, token);
+            return Client.SendAsync<EnumerationResult<TopicDimension>>(HttpMethod.Get, "/v1.0/api/topics/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/dimensions", (options ?? new EnumerationQuery()).ToQuery(), null, token);
         }
 
         /// <summary>
@@ -263,9 +264,10 @@ namespace MyMorningNews.Sdk.Resources
         /// <returns>A list of TopicConstraint items.</returns>
         /// <exception cref="ArgumentNullException">id is null or empty.</exception>
         /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
-        public Task<List<TopicConstraint>> ListConstraintsAsync(string id, ConstraintKindEnum? kind = null, CancellationToken token = default)
+        /// <param name="options">Pagination, sorting, and filters; null uses defaults.</param>
+        public Task<EnumerationResult<TopicConstraint>> ListConstraintsAsync(string id, ConstraintKindEnum? kind = null, EnumerationQuery? options = null, CancellationToken token = default)
         {
-            return Client.SendAsync<List<TopicConstraint>>(HttpMethod.Get, "/v1.0/api/topics/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/constraints", Query("kind", kind), null, token);
+            return Client.SendAsync<EnumerationResult<TopicConstraint>>(HttpMethod.Get, "/v1.0/api/topics/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/constraints", MergeQuery(options, Query("kind", kind)), null, token);
         }
 
         /// <summary>
@@ -321,9 +323,10 @@ namespace MyMorningNews.Sdk.Resources
         /// <returns>A list of TopicRecipient items.</returns>
         /// <exception cref="ArgumentNullException">id is null or empty.</exception>
         /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
-        public Task<List<TopicRecipient>> ListRecipientsAsync(string id, CancellationToken token = default)
+        /// <param name="options">Pagination, sorting, and filters; null uses defaults.</param>
+        public Task<EnumerationResult<TopicRecipient>> ListRecipientsAsync(string id, EnumerationQuery? options = null, CancellationToken token = default)
         {
-            return Client.SendAsync<List<TopicRecipient>>(HttpMethod.Get, "/v1.0/api/topics/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/recipients", null, null, token);
+            return Client.SendAsync<EnumerationResult<TopicRecipient>>(HttpMethod.Get, "/v1.0/api/topics/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/recipients", (options ?? new EnumerationQuery()).ToQuery(), null, token);
         }
 
         /// <summary>
@@ -363,9 +366,10 @@ namespace MyMorningNews.Sdk.Resources
         /// <returns>A list of SearchProvider items.</returns>
         /// <exception cref="ArgumentNullException">id is null or empty.</exception>
         /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
-        public Task<List<SearchProvider>> GetSearchProvidersAsync(string id, CancellationToken token = default)
+        /// <param name="options">Pagination, sorting, and filters; null uses defaults.</param>
+        public Task<EnumerationResult<SearchProvider>> GetSearchProvidersAsync(string id, EnumerationQuery? options = null, CancellationToken token = default)
         {
-            return Client.SendAsync<List<SearchProvider>>(HttpMethod.Get, "/v1.0/api/topics/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/search-providers", null, null, token);
+            return Client.SendAsync<EnumerationResult<SearchProvider>>(HttpMethod.Get, "/v1.0/api/topics/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/search-providers", (options ?? new EnumerationQuery()).ToQuery(), null, token);
         }
 
         /// <summary>

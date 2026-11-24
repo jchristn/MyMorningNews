@@ -64,7 +64,7 @@ namespace Test.Shared.Suites
             Assert.Equal("mixed.case@example.test", u.Email, "email normalized");
             Assert.True(!(await admin.GetAsync("/v1.0/tenants/" + t.Id + "/users/" + u.Id, token).ConfigureAwait(false)).Body.Contains("password", StringComparison.OrdinalIgnoreCase), "no password material returned");
             EnumerationResult<UserResponse> list = (await admin.GetAsync("/v1.0/tenants/" + t.Id + "/users?search=mixed", token).ConfigureAwait(false)).Expect(200, "list").Json<EnumerationResult<UserResponse>>();
-            Assert.Equal(1L, list.TotalCount, "search finds the user");
+            Assert.Equal(1L, list.TotalRecords, "search finds the user");
             UserResponse updated = (await admin.PutAsync("/v1.0/tenants/" + t.Id + "/users/" + u.Id, new { lastName = "Last", locale = "ja" }, token).ConfigureAwait(false)).Expect(200, "update").Json<UserResponse>();
             Assert.True(updated.LastName == "Last" && updated.Locale == "ja", "fields updated");
             (await admin.DeleteAsync("/v1.0/tenants/" + t.Id + "/users/" + u.Id, token).ConfigureAwait(false)).Expect(204, "delete");
@@ -115,8 +115,8 @@ namespace Test.Shared.Suites
             CredentialCreatedResponse c = (await ta.Client.PostAsync("/v1.0/tenants/" + t.Id + "/credentials", new { name = "one" }, token).ConfigureAwait(false))
                 .Expect(201, "create").Json<CredentialCreatedResponse>();
             EnumerationResult<CredentialResponse> list = (await ta.Client.GetAsync("/v1.0/tenants/" + t.Id + "/credentials", token).ConfigureAwait(false)).Expect(200, "list").Json<EnumerationResult<CredentialResponse>>();
-            Assert.True(list.Items.Any(x => x.Id == c.Credential.Id), "listed");
-            Assert.True(list.Items.All(x => !String.IsNullOrEmpty(x.SecretKeyPreview)), "previews only");
+            Assert.True(list.Objects.Any(x => x.Id == c.Credential.Id), "listed");
+            Assert.True(list.Objects.All(x => !String.IsNullOrEmpty(x.SecretKeyPreview)), "previews only");
             CredentialResponse upd = (await ta.Client.PutAsync("/v1.0/tenants/" + t.Id + "/credentials/" + c.Credential.Id, new { name = "renamed", active = false }, token).ConfigureAwait(false))
                 .Expect(200, "update").Json<CredentialResponse>();
             Assert.True(upd.Name == "renamed" && !upd.Active, "updated");

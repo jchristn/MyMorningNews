@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for LearningCheckpoint records. Null properties are not applied.
     /// </summary>
-    public class LearningCheckpointFilter : EnumerationFilter
+    public class LearningCheckpointFilter : EnumerationQuery
     {
         /// <summary>
         /// Match UserId exactly when set.

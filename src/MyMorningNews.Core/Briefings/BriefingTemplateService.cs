@@ -39,7 +39,7 @@ namespace MyMorningNews.Core.Briefings
             int changed = 0;
             foreach (KeyValuePair<string, string> d in DefaultTemplateCatalog.All())
             {
-                BriefingTemplate? existing = (await _Database.BriefingTemplates.EnumerateAsync(new BriefingTemplateFilter { TenantId = tenantId, DefaultKey = d.Key, PageSize = 1 }, token).ConfigureAwait(false)).Items
+                BriefingTemplate? existing = (await _Database.BriefingTemplates.EnumerateAsync(new BriefingTemplateFilter { TenantId = tenantId, DefaultKey = d.Key, PageSize = 1 }, token).ConfigureAwait(false)).Objects
                     .FirstOrDefault(t => t.UserId == null);
                 if (existing == null)
                 {
@@ -174,7 +174,7 @@ namespace MyMorningNews.Core.Briefings
         public async Task<List<BriefingTemplateVersion>> VersionsAsync(BriefingTemplate template, CancellationToken token = default)
         {
             ArgumentNullException.ThrowIfNull(template);
-            return (await _Database.BriefingTemplateVersions.EnumerateAsync(new BriefingTemplateVersionFilter { TenantId = template.TenantId, TemplateId = template.Id, PageSize = 1000 }, token).ConfigureAwait(false)).Items
+            return (await _Database.BriefingTemplateVersions.EnumerateAsync(new BriefingTemplateVersionFilter { TenantId = template.TenantId, TemplateId = template.Id, PageSize = 1000 }, token).ConfigureAwait(false)).Objects
                 .OrderByDescending(v => v.Version).ToList();
         }
 
@@ -252,7 +252,7 @@ namespace MyMorningNews.Core.Briefings
 
         private async Task<BriefingTemplate?> FindDefaultAsync(string tenantId, string key, CancellationToken token)
         {
-            return (await _Database.BriefingTemplates.EnumerateAsync(new BriefingTemplateFilter { TenantId = tenantId, DefaultKey = key, PageSize = 10 }, token).ConfigureAwait(false)).Items
+            return (await _Database.BriefingTemplates.EnumerateAsync(new BriefingTemplateFilter { TenantId = tenantId, DefaultKey = key, PageSize = 10 }, token).ConfigureAwait(false)).Objects
                 .FirstOrDefault(t => t.UserId == null);
         }
 
@@ -284,7 +284,7 @@ namespace MyMorningNews.Core.Briefings
 
         private async Task<bool> NameTakenAsync(string tenantId, string? userId, string name, string? exceptId, CancellationToken token)
         {
-            List<BriefingTemplate> all = (await _Database.BriefingTemplates.EnumerateAsync(new BriefingTemplateFilter { TenantId = tenantId, PageSize = 1000 }, token).ConfigureAwait(false)).Items;
+            List<BriefingTemplate> all = (await _Database.BriefingTemplates.EnumerateAsync(new BriefingTemplateFilter { TenantId = tenantId, PageSize = 1000 }, token).ConfigureAwait(false)).Objects;
             return all.Any(t => t.UserId == userId && t.Id != exceptId && String.Equals(t.Name, name, StringComparison.OrdinalIgnoreCase));
         }
     }

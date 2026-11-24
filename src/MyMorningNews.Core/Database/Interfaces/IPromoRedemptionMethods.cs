@@ -4,6 +4,7 @@ namespace MyMorningNews.Core.Database.Interfaces
     using System.Threading;
     using System.Threading.Tasks;
     using MyMorningNews.Core.Models;
+    using MyMorningNews.Core.Entitlements;
     using MyMorningNews.Core.Requests;
     using MyMorningNews.Core.Responses;
 
@@ -87,5 +88,10 @@ namespace MyMorningNews.Core.Database.Interfaces
         /// <param name="token">Cancellation token.</param>
         /// <returns>Count.</returns>
         Task<long> CountAsync(PromoRedemptionFilter filter, CancellationToken token = default);
+        /// <summary>Compute cross-tenant statistics for a code without retrieving redemption collections.</summary>
+        /// <param name="code">Code.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Aggregate statistics.</returns>
+        Task<PromoCodeStats> StatsAsync(PromoCode code, CancellationToken token = default);
     }
 }

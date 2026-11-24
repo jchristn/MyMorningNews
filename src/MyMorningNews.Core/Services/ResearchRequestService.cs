@@ -252,7 +252,7 @@ namespace MyMorningNews.Core.Services
                 if (response.Topic != null)
                 {
                     response.Dimensions = await _Refinement.DimensionsAsync(tenantId, response.Topic.Id, token).ConfigureAwait(false);
-                    RefinementSession? session = (await _Database.RefinementSessions.EnumerateAsync(new RefinementSessionFilter { TenantId = tenantId, TopicId = response.Topic.Id, PageSize = 1 }, token).ConfigureAwait(false)).Items.FirstOrDefault();
+                    RefinementSession? session = (await _Database.RefinementSessions.EnumerateAsync(new RefinementSessionFilter { TenantId = tenantId, TopicId = response.Topic.Id, PageSize = 1 }, token).ConfigureAwait(false)).Objects.FirstOrDefault();
                     if (session != null)
                     {
                         response.RefinementSessionId = session.Id;
@@ -371,7 +371,7 @@ namespace MyMorningNews.Core.Services
         private async Task<RefinementSession> SessionAsync(string tenantId, ResearchRequest rr, CancellationToken token)
         {
             if (String.IsNullOrEmpty(rr.TopicId)) throw new KeyNotFoundException("The request has no plan.");
-            return (await _Database.RefinementSessions.EnumerateAsync(new RefinementSessionFilter { TenantId = tenantId, TopicId = rr.TopicId, PageSize = 1 }, token).ConfigureAwait(false)).Items.FirstOrDefault()
+            return (await _Database.RefinementSessions.EnumerateAsync(new RefinementSessionFilter { TenantId = tenantId, TopicId = rr.TopicId, PageSize = 1 }, token).ConfigureAwait(false)).Objects.FirstOrDefault()
                 ?? throw new KeyNotFoundException("The request session was not found.");
         }
 

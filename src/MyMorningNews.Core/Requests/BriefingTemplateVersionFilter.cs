@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for BriefingTemplateVersion records. Null properties are not applied.
     /// </summary>
-    public class BriefingTemplateVersionFilter : EnumerationFilter
+    public class BriefingTemplateVersionFilter : EnumerationQuery
     {
         /// <summary>
         /// Match TemplateId exactly when set.

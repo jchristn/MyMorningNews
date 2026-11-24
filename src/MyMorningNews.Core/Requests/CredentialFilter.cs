@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for Credential records. Null properties are not applied.
     /// </summary>
-    public class CredentialFilter : EnumerationFilter
+    public class CredentialFilter : EnumerationQuery
     {
         /// <summary>
         /// Match UserId exactly when set.

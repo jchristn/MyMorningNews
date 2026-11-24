@@ -5,7 +5,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Filter for request history listing, deletion, and summaries.
     /// </summary>
-    public class RequestHistoryFilter : EnumerationFilter
+    public class RequestHistoryFilter : EnumerationQuery
     {
         #region Public-Members
 

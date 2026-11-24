@@ -1,3 +1,4 @@
+import { enumerateObjects } from '../../utils/enumeration.js';
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext.jsx';
 
@@ -8,8 +9,7 @@ export default function usePlans() {
   const [error, setError] = useState(null);
   const [loaded, setLoaded] = useState(false);
   const reload = useCallback(() => {
-    apiClient
-      .listPlans()
+    enumerateObjects((query) => apiClient.listPlans(query))
       .then((p) => {
         setPlans(Array.isArray(p) ? p : []);
         setError(null);

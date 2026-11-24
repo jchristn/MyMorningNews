@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for CatalogPublication records. Null properties are not applied.
     /// </summary>
-    public class CatalogPublicationFilter : EnumerationFilter
+    public class CatalogPublicationFilter : EnumerationQuery
     {
         /// <summary>
         /// Match Category exactly when set.

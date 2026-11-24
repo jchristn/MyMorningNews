@@ -342,7 +342,7 @@ namespace MyMorningNews.Core.Email
         public async Task<bool> IsSuppressedAsync(string tenantId, string recipient, EmailCategoryEnum category, string? topicId, CancellationToken token = default)
         {
             string address = Normalize(recipient);
-            List<EmailSuppression> rows = (await _Database.EmailSuppressions.EnumerateAsync(new EmailSuppressionFilter { TenantId = tenantId, Recipient = address, PageSize = 500 }, token).ConfigureAwait(false)).Items;
+            List<EmailSuppression> rows = (await _Database.EmailSuppressions.EnumerateAsync(new EmailSuppressionFilter { TenantId = tenantId, Recipient = address, PageSize = 500 }, token).ConfigureAwait(false)).Objects;
             if (rows.Any(r => r.Category == EmailCategoryEnum.All || (r.Category == category && r.TopicId != null && r.TopicId == topicId))) return true;
             NotificationKindEnum? kind = NotificationPreferenceService.KindFor(category);
             User? user = kind.HasValue ? await UserByAddressAsync(tenantId, address, token).ConfigureAwait(false) : null;
@@ -374,7 +374,7 @@ namespace MyMorningNews.Core.Email
                 return;
             }
 
-            List<EmailSuppression> rows = (await _Database.EmailSuppressions.EnumerateAsync(new EmailSuppressionFilter { TenantId = tenantId, Recipient = r, PageSize = 500 }, token).ConfigureAwait(false)).Items
+            List<EmailSuppression> rows = (await _Database.EmailSuppressions.EnumerateAsync(new EmailSuppressionFilter { TenantId = tenantId, Recipient = r, PageSize = 500 }, token).ConfigureAwait(false)).Objects
                 .Where(x => x.Category == category && x.TopicId == topicId).ToList();
             if (suppressed && rows.Count == 0)
                 await _Database.EmailSuppressions.CreateAsync(new EmailSuppression { TenantId = tenantId, Recipient = r, Category = category, TopicId = topicId, Source = source }, token).ConfigureAwait(false);
@@ -427,7 +427,7 @@ namespace MyMorningNews.Core.Email
                 existing.Status = EmailStatusEnum.Queued;
                 return existing;
             }
-            User? user = (await _Database.Users.EnumerateAsync(new UserFilter { TenantId = tenantId, Email = recipient, PageSize = 1 }, token).ConfigureAwait(false)).Items.FirstOrDefault();
+            User? user = (await _Database.Users.EnumerateAsync(new UserFilter { TenantId = tenantId, Email = recipient, PageSize = 1 }, token).ConfigureAwait(false)).Objects.FirstOrDefault();
             bool suppressed = category.HasValue && await IsSuppressedAsync(tenantId, recipient, category.Value, suppressionTopicId, token).ConfigureAwait(false);
             if (!suppressed && preference.HasValue && user != null) suppressed = !await Preferences.IsEnabledAsync(user, preference.Value, NotificationChannelEnum.Email, token).ConfigureAwait(false);
             EmailMessage m = new EmailMessage
@@ -476,19 +476,19 @@ namespace MyMorningNews.Core.Email
         private async Task<DigestContent> DigestAsync(Run run, Topic topic, bool writeLead, CancellationToken token)
         {
             DigestContent c = new DigestContent();
-            c.Findings = (await _Database.Findings.EnumerateAsync(new FindingFilter { TenantId = run.TenantId, RunId = run.Id, IsDuplicate = false, Hidden = false, ExcludeTier = FindingTierEnum.BelowThreshold, PageSize = 200 }, token).ConfigureAwait(false)).Items
+            c.Findings = (await _Database.Findings.EnumerateAsync(new FindingFilter { TenantId = run.TenantId, RunId = run.Id, IsDuplicate = false, Hidden = false, ExcludeTier = FindingTierEnum.BelowThreshold, PageSize = 200 }, token).ConfigureAwait(false)).Objects
                 .OrderBy(f => f.Rank <= 0 ? int.MaxValue : f.Rank).ThenByDescending(f => f.RelevanceScore).Take(topic.MaxEmailFindings).ToList();
-            List<Prediction> preds = (await _Database.Predictions.EnumerateAsync(new PredictionFilter { TenantId = run.TenantId, TopicId = topic.Id, IsDryRun = false, PageSize = 500 }, token).ConfigureAwait(false)).Items;
+            List<Prediction> preds = (await _Database.Predictions.EnumerateAsync(new PredictionFilter { TenantId = run.TenantId, TopicId = topic.Id, IsDryRun = false, PageSize = 500 }, token).ConfigureAwait(false)).Objects;
             c.NewPredictions = preds.Where(p => p.RunId == run.Id && p.Status == PredictionStatusEnum.Open).OrderByDescending(p => p.Confidence).Take(5).ToList();
             c.ToGrade = preds.Where(p => p.Status == PredictionStatusEnum.ProposedResolved || (p.Status == PredictionStatusEnum.Open && p.HorizonUtc <= DateTime.UtcNow)).OrderBy(p => p.HorizonUtc).Take(5).ToList();
             foreach (Prediction p in c.ToGrade.Where(p => p.Status == PredictionStatusEnum.ProposedResolved))
             {
-                PredictionReview? review = (await _Database.PredictionReviews.EnumerateAsync(new PredictionReviewFilter { TenantId = run.TenantId, PredictionId = p.Id, PageSize = 10 }, token).ConfigureAwait(false)).Items
+                PredictionReview? review = (await _Database.PredictionReviews.EnumerateAsync(new PredictionReviewFilter { TenantId = run.TenantId, PredictionId = p.Id, PageSize = 10 }, token).ConfigureAwait(false)).Objects
                     .OrderByDescending(r => r.CreatedUtc).FirstOrDefault();
                 if (review != null) c.Reviews[p.Id] = review;
             }
 
-            c.Suggestions = (await _Database.Suggestions.EnumerateAsync(new SuggestionFilter { TenantId = run.TenantId, TopicId = topic.Id, Status = SuggestionStatusEnum.New, IsDryRun = false, PageSize = 50 }, token).ConfigureAwait(false)).Items
+            c.Suggestions = (await _Database.Suggestions.EnumerateAsync(new SuggestionFilter { TenantId = run.TenantId, TopicId = topic.Id, Status = SuggestionStatusEnum.New, IsDryRun = false, PageSize = 50 }, token).ConfigureAwait(false)).Objects
                 .Where(s => s.RunId == run.Id).OrderBy(s => (int)s.Priority).Take(5).ToList();
             foreach (Finding f in c.Findings.Where(f => f.SourceItemId != null))
             {
@@ -496,7 +496,7 @@ namespace MyMorningNews.Core.Email
                 if (s != null) c.Sources[f.Id] = s;
             }
 
-            c.Proposals = (await _Database.LearnedPreferences.EnumerateAsync(new LearnedPreferenceFilter { TenantId = run.TenantId, UserId = topic.UserId, Status = PreferenceStatusEnum.Proposed, PageSize = 20 }, token).ConfigureAwait(false)).Items
+            c.Proposals = (await _Database.LearnedPreferences.EnumerateAsync(new LearnedPreferenceFilter { TenantId = run.TenantId, UserId = topic.UserId, Status = PreferenceStatusEnum.Proposed, PageSize = 20 }, token).ConfigureAwait(false)).Objects
                 .Where(p => p.TopicId == null || p.TopicId == topic.Id).OrderByDescending(p => p.Confidence).Take(3).ToList();
             c.Lead = writeLead ? await LeadAsync(run, topic, c, token).ConfigureAwait(false) : FallbackLead(run, c);
             return c;
@@ -526,7 +526,7 @@ namespace MyMorningNews.Core.Email
             User? owner = await _Database.Users.ReadAsync(tenantId, topic.UserId, token).ConfigureAwait(false);
             TimeZoneInfo? ownerZone = TimeZoneHelper.TryFind(owner?.TimeZone);
             if (ownerZone != null) return ownerZone;
-            Schedule? schedule = (await _Database.Schedules.EnumerateAsync(new ScheduleFilter { TenantId = tenantId, OwnerType = ScheduleOwnerTypeEnum.Topic, OwnerId = topic.Id, PageSize = 10 }, token).ConfigureAwait(false)).Items
+            Schedule? schedule = (await _Database.Schedules.EnumerateAsync(new ScheduleFilter { TenantId = tenantId, OwnerType = ScheduleOwnerTypeEnum.Topic, OwnerId = topic.Id, PageSize = 10 }, token).ConfigureAwait(false)).Objects
                 .FirstOrDefault(x => !String.IsNullOrWhiteSpace(x.TimeZone));
             TimeZoneInfo? scheduleZone = TimeZoneHelper.TryFind(schedule?.TimeZone);
             if (scheduleZone != null) return scheduleZone;
@@ -634,9 +634,9 @@ namespace MyMorningNews.Core.Email
         private async Task<EmailPreview> RenderBriefingAsync(Briefing br, EmailMessage m, string userId, bool issueTokens, CancellationToken token)
         {
             string app = _Settings.Rest.AppBaseUrl;
-            List<BriefingSection> sections = (await _Database.BriefingSections.EnumerateAsync(new BriefingSectionFilter { TenantId = br.TenantId, BriefingId = br.Id, PageSize = 100 }, token).ConfigureAwait(false)).Items
+            List<BriefingSection> sections = (await _Database.BriefingSections.EnumerateAsync(new BriefingSectionFilter { TenantId = br.TenantId, BriefingId = br.Id, PageSize = 100 }, token).ConfigureAwait(false)).Objects
                 .OrderBy(s => s.SortOrder).ToList();
-            List<BriefingItem> items = (await _Database.BriefingItems.EnumerateAsync(new BriefingItemFilter { TenantId = br.TenantId, BriefingId = br.Id, PageSize = 1000 }, token).ConfigureAwait(false)).Items;
+            List<BriefingItem> items = (await _Database.BriefingItems.EnumerateAsync(new BriefingItemFilter { TenantId = br.TenantId, BriefingId = br.Id, PageSize = 1000 }, token).ConfigureAwait(false)).Objects;
             string subject = Subject(br.Title);
             string opening = sections.FirstOrDefault(s => s.Source == "opening")?.Markdown ?? String.Empty;
             EmailBuilder b = new EmailBuilder().Preheader(FirstParagraph(SafeMarkdown.ToText(opening)) ?? br.Title)
@@ -689,7 +689,7 @@ namespace MyMorningNews.Core.Email
 
         private async Task<List<string>> RecipientsAsync(Topic topic, CancellationToken token)
         {
-            List<string> list = (await _Database.TopicRecipients.EnumerateAsync(new TopicRecipientFilter { TenantId = topic.TenantId, TopicId = topic.Id, PageSize = 200 }, token).ConfigureAwait(false)).Items
+            List<string> list = (await _Database.TopicRecipients.EnumerateAsync(new TopicRecipientFilter { TenantId = topic.TenantId, TopicId = topic.Id, PageSize = 200 }, token).ConfigureAwait(false)).Objects
                 .Where(r => r.Active).Select(r => Normalize(r.Email)).Where(r => r.Length > 0).Distinct(StringComparer.Ordinal).ToList();
             if (list.Count > 0) return list;
             User? owner = await _Database.Users.ReadAsync(topic.TenantId, topic.UserId, token).ConfigureAwait(false);

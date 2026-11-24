@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for AccountPlanPolicy records. Null properties are not applied.
     /// </summary>
-    public class AccountPlanPolicyFilter : EnumerationFilter
+    public class AccountPlanPolicyFilter : EnumerationQuery
     {
         /// <summary>
         /// Match UserId exactly when set.

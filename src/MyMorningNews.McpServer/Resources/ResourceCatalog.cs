@@ -38,9 +38,9 @@ namespace MyMorningNews.McpServer.Resources
                 {
                     string id = Variable(v, "id");
                     Run run = await c.Runs.GetAsync(id, t).ConfigureAwait(false);
-                    List<RunStage> stages = await c.Runs.ListStagesAsync(id, t).ConfigureAwait(false);
+                    List<RunStage> stages = (await c.Runs.ListStagesAsync(id, new MyMorningNews.Sdk.Options.EnumerationQuery { PageSize = 1000 }, t).ConfigureAwait(false)).Objects;
                     EnumerationResult<Finding> top = await c.Findings.ListAsync(new FindingListOptions { RunId = id, PageSize = 10 }, t).ConfigureAwait(false);
-                    return RunMarkdown(run, stages, top.Items);
+                    return RunMarkdown(run, stages, top.Objects);
                 })
             };
         }

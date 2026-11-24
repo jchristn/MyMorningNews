@@ -41,12 +41,14 @@ namespace MyMorningNews.Server.Routes
             ArgumentNullException.ThrowIfNull(webserver);
             string b = "/v1.0/api/vault/credentials";
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, b, ListAsync, null, openApiMetadata: Paged(Doc("List vault credentials (no secrets)", "Vault").WithParameter(QueryParam("active", typeof(bool))).WithParameter(QueryParam("kind", typeof(VaultCredentialKindEnum))).WithParameter(QueryParam("provider", typeof(VaultProviderEnum)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b + "/enumerate", ctx => EnumerateAsync(ctx, ListAsync), null, openApiMetadata: Paged(Doc("List vault credentials (no secrets)", "Vault").WithParameter(QueryParam("active", typeof(bool))).WithParameter(QueryParam("kind", typeof(VaultCredentialKindEnum))).WithParameter(QueryParam("provider", typeof(VaultProviderEnum)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b, CreateAsync, null, openApiMetadata: Doc("Store a credential", "Vault").WithRequestBody(Body<VaultCredentialUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read a credential (no secret)", "Vault"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, b + "/{id}", UpdateAsync, null, openApiMetadata: Doc("Update or rotate a credential", "Vault", "Null or absent properties are unchanged. To remove an optional value, name it in clearFields (headerName, username, description, expiresUtc); naming a property there and giving it a value in the same request is refused, as is any other name.").WithRequestBody(Body<VaultCredentialUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, b + "/{id}", DeleteAsync, null, openApiMetadata: Doc("Delete a credential", "Vault"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/reveal", RevealAsync, null, openApiMetadata: Doc("Reveal a stored secret (audited)", "Vault", "Allowed for the user who created the credential and for administrators. Every reveal is recorded in the audit log and is rate limited per user."));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}/usage", UsageAsync, null, openApiMetadata: Doc("Records that use a credential", "Vault"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}/usage", UsageAsync, null, openApiMetadata: Paged(Doc("Records that use a credential", "Vault")));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/usage" + "/enumerate", ctx => EnumerateAsync(ctx, UsageAsync), null, openApiMetadata: Paged(Doc("Records that use a credential", "Vault")).WithRequestBody(Body<EnumerationQuery>()));
         }
 
         private async Task ListAsync(HttpContextBase ctx)
@@ -121,7 +123,7 @@ namespace MyMorningNews.Server.Routes
             if (!String.IsNullOrEmpty(req.Secret))
             {
                 EnumerationResult<ModelEndpoint> rotated = await Server.Database.ModelEndpoints.EnumerateAsync(new ModelEndpointFilter { TenantId = v.TenantId, CredentialId = v.Id, PageSize = 1000 }, ctx.Token).ConfigureAwait(false);
-                foreach (ModelEndpoint e in rotated.Items)
+                foreach (ModelEndpoint e in rotated.Objects)
                 {
                     e.LastValidationSucceeded = null;
                     await Server.Database.ModelEndpoints.UpdateAsync(e, ctx.Token).ConfigureAwait(false);
@@ -138,7 +140,7 @@ namespace MyMorningNews.Server.Routes
             VaultCredential? v = await LoadAsync(ctx).ConfigureAwait(false);
             if (v == null) return;
             EnumerationResult<ModelEndpoint> users = await Server.Database.ModelEndpoints.EnumerateAsync(new ModelEndpointFilter { TenantId = v.TenantId, CredentialId = v.Id, PageSize = 1000 }, ctx.Token).ConfigureAwait(false);
-            foreach (ModelEndpoint e in users.Items)
+            foreach (ModelEndpoint e in users.Objects)
             {
                 e.CredentialId = null;
                 e.LastValidationSucceeded = null;
@@ -186,7 +188,10 @@ namespace MyMorningNews.Server.Routes
             if (!await AuthorizeAsync(ctx, RequestTypeEnum.VaultRead, Param(ctx, "id")).ConfigureAwait(false)) return;
             VaultCredential? v = await LoadAsync(ctx).ConfigureAwait(false);
             if (v == null) return;
-            await SendJsonAsync(ctx, 200, await Server.Vault.WhereUsedAsync(v.TenantId, v.Id, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
+            ModelEndpointFilter query = new ModelEndpointFilter { TenantId = v.TenantId, CredentialId = v.Id };
+            ApplyPaging(ctx, query);
+            EnumerationResult<ModelEndpoint> page = await Server.Database.ModelEndpoints.EnumerateAsync(query, ctx.Token).ConfigureAwait(false);
+            await SendJsonAsync(ctx, 200, page.Map(e => new VaultUsageItem { ResourceType = "ModelEndpoint", ResourceId = e.Id, Name = e.Name })).ConfigureAwait(false);
         }
     }
 }

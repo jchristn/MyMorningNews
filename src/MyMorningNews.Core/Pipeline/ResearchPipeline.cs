@@ -198,7 +198,7 @@ namespace MyMorningNews.Core.Pipeline
 
             IRunStage? assemble = Stages.FirstOrDefault(s => s.Name == "AssembleContext");
             if (assemble != null) await assemble.ExecuteAsync(ctx, _Services, token).ConfigureAwait(false);
-            ctx.Findings = (await _Services.Database.Findings.EnumerateAsync(new FindingFilter { TenantId = run.TenantId, RunId = run.Id, IsDuplicate = false, PageSize = 1000 }, token).ConfigureAwait(false)).Items
+            ctx.Findings = (await _Services.Database.Findings.EnumerateAsync(new FindingFilter { TenantId = run.TenantId, RunId = run.Id, IsDuplicate = false, PageSize = 1000 }, token).ConfigureAwait(false)).Objects
                 .OrderBy(f => f.Rank <= 0 ? int.MaxValue : f.Rank).ToList();
             int synthesize = Stages.ToList().FindIndex(s => s.Name == FirstResumableStage);
             if (start > synthesize && !String.IsNullOrWhiteSpace(run.Summary))
@@ -208,7 +208,7 @@ namespace MyMorningNews.Core.Pipeline
                 ctx.Summary = cut >= 0 ? summary.Substring(0, cut) : summary;
             }
 
-            foreach (RunStage old in (await _Services.Database.RunStages.EnumerateAsync(new RunStageFilter { TenantId = run.TenantId, RunId = run.Id, PageSize = 100 }, token).ConfigureAwait(false)).Items.Where(s => s.SortOrder >= start))
+            foreach (RunStage old in (await _Services.Database.RunStages.EnumerateAsync(new RunStageFilter { TenantId = run.TenantId, RunId = run.Id, PageSize = 100 }, token).ConfigureAwait(false)).Objects.Where(s => s.SortOrder >= start))
                 await _Services.Database.RunStages.DeleteAsync(run.TenantId, old.Id, token).ConfigureAwait(false);
             _Services.Logging.Info("[ResearchPipeline] retrying run " + run.Id + " from " + from);
             return start;
@@ -282,8 +282,8 @@ namespace MyMorningNews.Core.Pipeline
                 {
                     TenantId = tenantId, RunId = runId, RunStageId = runStageId, PageSize = 1000, PageNumber = page
                 }, token).ConfigureAwait(false);
-                all.AddRange(batch.Items);
-                if (batch.Items.Count < 1000) break;
+                all.AddRange(batch.Objects);
+                if (batch.Objects.Count < 1000) break;
             }
 
             return all;

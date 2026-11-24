@@ -10,6 +10,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
     using MyMorningNews.Core.Database.Interfaces;
     using MyMorningNews.Core.Database.Postgresql.Queries;
     using MyMorningNews.Core.Enums;
+    using MyMorningNews.Core.Entitlements;
     using MyMorningNews.Core.Helpers;
     using MyMorningNews.Core.Models;
     using MyMorningNews.Core.Requests;
@@ -187,6 +188,17 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             return obj;
         }
 
+        /// <inheritdoc />
+        public async Task<PromoCodeStats> StatsAsync(PromoCode code, CancellationToken token = default)
+        {
+            ArgumentNullException.ThrowIfNull(code);
+            List<PromoCodeStats> rows = await QueryAsync(
+                "SELECT COUNT(*) FILTER (WHERE r.revokedutc IS NULL AND a.id IS NOT NULL AND a.revokedutc IS NULL AND (a.endsutc IS NULL OR a.endsutc > NOW()))::int, " +
+                "COUNT(*) FILTER (WHERE r.revokedutc IS NOT NULL)::int, MAX(r.createdutc) FROM promoredemptions r LEFT JOIN planassignments a ON a.id = r.planassignmentid AND a.tenantid = r.tenantid WHERE r.promocodeid = $1",
+                r => new PromoCodeStats { Code = code, ActiveAssignments = r.GetInt32(0), Revoked = r.GetInt32(1), LastRedeemedUtc = r.IsDBNull(2) ? null : r.GetDateTime(2) }, token, code.Id).ConfigureAwait(false);
+            return rows.Single();
+        }
+
         #endregion
 
         #region Private-Methods
@@ -194,9 +206,12 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
         private static string BuildWhere(PromoRedemptionFilter filter, List<object?> args)
         {
             List<string> clauses = new List<string>();
-            if (String.IsNullOrWhiteSpace(filter.TenantId)) throw new ArgumentNullException(nameof(filter) + ".TenantId");
-            args.Add(filter.TenantId);
-            clauses.Add("tenantid = $" + args.Count);
+            if (!filter.AllTenants)
+            {
+                if (String.IsNullOrWhiteSpace(filter.TenantId)) throw new ArgumentNullException(nameof(filter) + ".TenantId");
+                args.Add(filter.TenantId);
+                clauses.Add("tenantid = $" + args.Count);
+            }
             if (!String.IsNullOrWhiteSpace(filter.PromoCodeId))
             {
                 args.Add(filter.PromoCodeId);
@@ -226,6 +241,16 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             {
                 args.Add("%" + EscapeLike(filter.Search.Trim()) + "%");
                 clauses.Add("(email ILIKE $" + args.Count + ")");
+            }
+            if (filter.CreatedAfter.HasValue)
+            {
+                args.Add(DateTime.SpecifyKind(filter.CreatedAfter.Value, DateTimeKind.Utc));
+                clauses.Add("createdutc > $" + args.Count);
+            }
+            if (filter.CreatedBefore.HasValue)
+            {
+                args.Add(DateTime.SpecifyKind(filter.CreatedBefore.Value, DateTimeKind.Utc));
+                clauses.Add("createdutc < $" + args.Count);
             }
             if (filter.FromUtc.HasValue)
             {

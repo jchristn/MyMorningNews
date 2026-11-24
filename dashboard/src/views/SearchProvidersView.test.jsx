@@ -1,3 +1,4 @@
+import { enumerationResult } from '../test/enumeration.js';
 import { describe, expect, it, vi } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -28,7 +29,7 @@ describe('Topic search providers', () => {
     renderRoute('/dashboard/topics/top_1?tab=sources', {
       getTopic: vi.fn(async () => ({ topic: { id: 'top_1', name: 'Grid', status: 'Active', userId: 'usr_admin', mcpToolIds: [] }, dimensions: [], constraints: [], recipients: [] })),
       listSearchProviders: vi.fn(async () => page([SEARX, HN])),
-      listTopicSearchProviders: vi.fn(async () => [SEARX]),
+      listTopicSearchProviders: vi.fn(async () => enumerationResult([SEARX])),
       setTopicSearchProviders
     });
     const hn = await screen.findByLabelText(/Hacker News/);

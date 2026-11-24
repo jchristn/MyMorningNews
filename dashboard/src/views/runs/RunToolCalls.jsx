@@ -1,3 +1,4 @@
+import { enumerateObjects } from '../../utils/enumeration.js';
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
@@ -20,8 +21,7 @@ export default function RunToolCalls({ runId }) {
   useEffect(() => {
     setCalls(null);
     setError(null);
-    apiClient
-      .listRunToolCalls(runId)
+    enumerateObjects((query) => apiClient.listRunToolCalls(runId, query))
       .then((r) => setCalls(Array.isArray(r) ? r : []))
       .catch(setError);
   }, [apiClient, runId]);

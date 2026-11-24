@@ -203,6 +203,13 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             if (String.IsNullOrWhiteSpace(filter.TenantId)) throw new ArgumentNullException(nameof(filter) + ".TenantId");
             args.Add(filter.TenantId);
             clauses.Add("tenantid = $" + args.Count);
+            if (!String.IsNullOrWhiteSpace(filter.TopicId))
+            {
+                args.Add(filter.TopicId);
+                string topic = "$" + args.Count;
+                string links = "topicsearchproviders l WHERE l.tenantid = searchproviders.tenantid AND l.topicid = " + topic;
+                clauses.Add("active = TRUE AND ((EXISTS (SELECT 1 FROM " + links + " AND l.searchproviderid = searchproviders.id AND l.enabled = TRUE)) OR (isdefault = TRUE AND NOT EXISTS (SELECT 1 FROM " + links + ")))" );
+            }
             if (filter.Kind.HasValue)
             {
                 args.Add(filter.Kind.Value.ToString());
@@ -227,6 +234,16 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             {
                 args.Add("%" + EscapeLike(filter.Search.Trim()) + "%");
                 clauses.Add("(name ILIKE $" + args.Count + ")");
+            }
+            if (filter.CreatedAfter.HasValue)
+            {
+                args.Add(DateTime.SpecifyKind(filter.CreatedAfter.Value, DateTimeKind.Utc));
+                clauses.Add("createdutc > $" + args.Count);
+            }
+            if (filter.CreatedBefore.HasValue)
+            {
+                args.Add(DateTime.SpecifyKind(filter.CreatedBefore.Value, DateTimeKind.Utc));
+                clauses.Add("createdutc < $" + args.Count);
             }
             if (filter.FromUtc.HasValue)
             {

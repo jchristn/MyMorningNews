@@ -121,7 +121,7 @@ namespace MyMorningNews.Benchmark.Runners
                         ApiResult page = await ctx.Admin.Anonymous().SendAsync(HttpMethod.Get, path + "?a=" + link.Groups[2].Value, null, token).ConfigureAwait(false);
                         ApiResult submit = await ctx.Admin.PostFormAsync(path, new Dictionary<string, string> { { "a", link.Groups[2].Value } }, token).ConfigureAwait(false);
                         ApiResult recorded = await user.GetAsync("/v1.0/api/feedback?topicId=" + ws.TopicId + "&channel=Email&pageSize=50", token).ConfigureAwait(false);
-                        long count = recorded.Success ? recorded.Json<PageDto<IdDto>>().TotalCount : 0;
+                        long count = recorded.Success ? recorded.Json<PageDto<IdDto>>().TotalRecords : 0;
                         linkProbe.Score = page.Status == 200 && submit.Status == 200 && count > 0 ? 1 : 0;
                         linkProbe.Detail = "page " + page.Status + ", submit " + submit.Status + " (" + link.Groups[2].Value + "), " + count + " email feedback record(s)";
                     }

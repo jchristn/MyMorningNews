@@ -18,10 +18,9 @@ export function buildQuery(query) {
   return parts.length ? '?' + parts.join('&') : '';
 }
 
-/** Items of a list response: the server's paged `{ items, ... }` shape, or a bare array. */
+/** Objects on the current EnumerationResult page. */
 export function listItems(result) {
-  if (Array.isArray(result)) return result;
-  if (result && Array.isArray(result.items)) return result.items;
+  if (result && Array.isArray(result.objects)) return result.objects;
   return [];
 }
 

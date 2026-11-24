@@ -42,6 +42,8 @@ namespace MyMorningNews.Server.Routes
             const string b = "/v1.0/api/briefings/{id}/shares";
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b, ListAsync, null, openApiMetadata: Paged(Doc("List the public share links of a briefing", "Sharing",
                 "Newest first. Each share has its expiry, revocation time, view count, and the time it was last opened. The link secret is never returned here; it is shown once when the share is created.")));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/enumerate", ctx => EnumerateAsync(ctx, ListAsync), null, openApiMetadata: Paged(Doc("List the public share links of a briefing", "Sharing",
+                "Newest first. Each share has its expiry, revocation time, view count, and the time it was last opened. The link secret is never returned here; it is shown once when the share is created.")).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b, CreateAsync, null, openApiMetadata: Doc("Share a briefing through public links", "Sharing",
                 "Creates one share and returns its link once (one page to listen and to read); only a hash of the secret is stored. Anyone with a link can open it with no sign-in until it expires or is revoked. " +
                 "expiresInDays is 1 to 14 (the server maximum, sharing.maxExpiryDays); omitted, it is 7 (sharing.defaultExpiryDays). A value outside the range is refused with 400 ValidationFailed. " +
@@ -69,7 +71,7 @@ namespace MyMorningNews.Server.Routes
             BriefingShareFilter filter = new BriefingShareFilter { TenantId = br.TenantId, BriefingId = br.Id };
             ApplyPaging(ctx, filter);
             EnumerationResult<BriefingShare> page = await Server.Database.BriefingShares.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false);
-            foreach (BriefingShare s in page.Items) s.TokenHash = "redacted";
+            foreach (BriefingShare s in page.Objects) s.TokenHash = "redacted";
             await SendJsonAsync(ctx, 200, page).ConfigureAwait(false);
         }
 

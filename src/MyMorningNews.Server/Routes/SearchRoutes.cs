@@ -8,6 +8,7 @@ namespace MyMorningNews.Server.Routes
     using MyMorningNews.Core.Fetch;
     using MyMorningNews.Core.Models;
     using MyMorningNews.Core.Requests;
+    using MyMorningNews.Core.Responses;
     using MyMorningNews.Core.Search;
     using WatsonWebserver;
     using WatsonWebserver.Core;
@@ -32,12 +33,14 @@ namespace MyMorningNews.Server.Routes
         {
             ArgumentNullException.ThrowIfNull(webserver);
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, B, ListAsync, null, openApiMetadata: Paged(Doc("List search providers", "Search").WithParameter(QueryParam("kind", typeof(SearchProviderKindEnum)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, B + "/enumerate", ctx => EnumerateAsync(ctx, ListAsync), null, openApiMetadata: Paged(Doc("List search providers", "Search").WithParameter(QueryParam("kind", typeof(SearchProviderKindEnum)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, B, CreateAsync, null, openApiMetadata: Doc("Add a search provider", "Search").WithRequestBody(Body<SearchProviderUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, B + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read a search provider", "Search"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, B + "/{id}", UpdateAsync, null, openApiMetadata: Doc("Update a search provider", "Search").WithRequestBody(Body<SearchProviderUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, B + "/{id}", DeleteAsync, null, openApiMetadata: Doc("Delete a search provider", "Search"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, B + "/{id}/test", TestAsync, null, openApiMetadata: Doc("Run a test query", "Search").WithRequestBody(Body<SearchTestRequest>()));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/topics/{id}/search-providers", TopicProvidersAsync, null, openApiMetadata: Doc("Search providers a topic uses", "Search"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, "/v1.0/api/topics/{id}/search-providers", TopicProvidersAsync, null, openApiMetadata: Paged(Doc("Search providers a topic uses", "Search")));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/api/topics/{id}/search-providers" + "/enumerate", ctx => EnumerateAsync(ctx, TopicProvidersAsync), null, openApiMetadata: Paged(Doc("Search providers a topic uses", "Search")).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/api/topics/{id}/search-providers", SetTopicProvidersAsync, null, openApiMetadata: Doc("Choose a topic's search providers (empty uses the tenant defaults)", "Search")
                 .WithRequestBody(Body<List<TopicSearchProviderRequest>>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/fetch/test", FetchTestAsync, null, openApiMetadata: Doc("Fetch a page as the research pipeline would", "Search").WithRequestBody(Body<FetchTestRequest>()));
@@ -124,7 +127,15 @@ namespace MyMorningNews.Server.Routes
             if (!await AuthorizeAsync(ctx, RequestTypeEnum.TopicRead).ConfigureAwait(false)) return;
             Topic? topic = await TopicAsync(ctx).ConfigureAwait(false);
             if (topic == null) return;
-            await SendJsonAsync(ctx, 200, await Server.Search.ProvidersForTopicAsync(topic.TenantId, topic.Id, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
+            SearchProviderFilter query = new SearchProviderFilter { TenantId = topic.TenantId, TopicId = topic.Id };
+            ApplyPaging(ctx, query);
+            EnumerationResult<SearchProvider> page = await Server.Database.SearchProviders.EnumerateAsync(query, ctx.Token).ConfigureAwait(false);
+            foreach (SearchProvider provider in page.Objects)
+            {
+                TopicSearchProvider? link = (await Server.Database.TopicSearchProviders.EnumerateAsync(new TopicSearchProviderFilter { TenantId = topic.TenantId, TopicId = topic.Id, SearchProviderId = provider.Id, PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Objects.FirstOrDefault();
+                if (link?.MaxResults != null) provider.MaxResults = Math.Clamp(link.MaxResults.Value, 1, 50);
+            }
+            await SendJsonAsync(ctx, 200, page).ConfigureAwait(false);
         }
 
         private async Task SetTopicProvidersAsync(HttpContextBase ctx)
@@ -134,14 +145,14 @@ namespace MyMorningNews.Server.Routes
             if (topic == null) return;
             List<TopicSearchProviderRequest>? req = await ReadBodyAsync<List<TopicSearchProviderRequest>>(ctx).ConfigureAwait(false);
             if (req == null) return;
-            HashSet<string> valid = new HashSet<string>((await Server.Database.SearchProviders.EnumerateAsync(new SearchProviderFilter { TenantId = topic.TenantId, PageSize = 100 }, ctx.Token).ConfigureAwait(false)).Items.Select(p => p.Id), StringComparer.Ordinal);
+            HashSet<string> valid = new HashSet<string>((await Server.Database.SearchProviders.EnumerateAsync(new SearchProviderFilter { TenantId = topic.TenantId, PageSize = 100 }, ctx.Token).ConfigureAwait(false)).Objects.Select(p => p.Id), StringComparer.Ordinal);
             if (req.Any(r => !valid.Contains(r.SearchProviderId)))
             {
                 await SendErrorAsync(ctx, 400, "ValidationFailed", "Every searchProviderId must be one of this tenant's providers.").ConfigureAwait(false);
                 return;
             }
 
-            foreach (TopicSearchProvider existing in (await Server.Database.TopicSearchProviders.EnumerateAsync(new TopicSearchProviderFilter { TenantId = topic.TenantId, TopicId = topic.Id, PageSize = 100 }, ctx.Token).ConfigureAwait(false)).Items)
+            foreach (TopicSearchProvider existing in (await Server.Database.TopicSearchProviders.EnumerateAsync(new TopicSearchProviderFilter { TenantId = topic.TenantId, TopicId = topic.Id, PageSize = 100 }, ctx.Token).ConfigureAwait(false)).Objects)
                 await Server.Database.TopicSearchProviders.DeleteAsync(topic.TenantId, existing.Id, ctx.Token).ConfigureAwait(false);
             foreach (TopicSearchProviderRequest r in req.GroupBy(r => r.SearchProviderId).Select(g => g.First()))
             {

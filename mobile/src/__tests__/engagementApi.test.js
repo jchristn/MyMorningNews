@@ -71,10 +71,10 @@ describe('account, audio, feedback, learning, and analytics API', () => {
   });
 
   it('reads the current rating on one item', async () => {
-    const { client, last } = recorder({ items: [{ id: 'fbk_old', isCurrent: false }, { id: 'fbk_2', isCurrent: true, relevance: 'Relevant' }] });
+    const { client, last } = recorder({ objects: [{ id: 'fbk_old', isCurrent: false }, { id: 'fbk_2', isCurrent: true, relevance: 'Relevant' }] });
     expect(await feedbackApi.current(client, 'Finding', 'fnd_1')).toMatchObject({ id: 'fbk_2' });
     expect(last().query).toBe('targetType=Finding&targetId=fnd_1&pageNumber=1&pageSize=5');
-    const empty = recorder({ items: [] });
+    const empty = recorder({ objects: [] });
     expect(await feedbackApi.current(empty.client, 'Finding', 'fnd_1')).toBeNull();
   });
 });

@@ -54,15 +54,15 @@ namespace MyMorningNews.Core.Services
         {
             ArgumentNullException.ThrowIfNull(user);
             string t = user.TenantId;
-            List<Topic> topics = (await _Database.Topics.EnumerateAsync(new TopicFilter { TenantId = t, UserId = user.Id, PageSize = _Page }, token).ConfigureAwait(false)).Items;
+            List<Topic> topics = (await _Database.Topics.EnumerateAsync(new TopicFilter { TenantId = t, UserId = user.Id, PageSize = _Page }, token).ConfigureAwait(false)).Objects;
             List<Dictionary<string, object?>> topicDocs = new List<Dictionary<string, object?>>();
             foreach (Topic topic in topics)
             {
                 topicDocs.Add(new Dictionary<string, object?>
                 {
                     { "topic", topic },
-                    { "dimensions", (await _Database.TopicDimensions.EnumerateAsync(new TopicDimensionFilter { TenantId = t, TopicId = topic.Id, PageSize = _Page }, token).ConfigureAwait(false)).Items },
-                    { "constraints", (await _Database.TopicConstraints.EnumerateAsync(new TopicConstraintFilter { TenantId = t, TopicId = topic.Id, PageSize = _Page }, token).ConfigureAwait(false)).Items }
+                    { "dimensions", (await _Database.TopicDimensions.EnumerateAsync(new TopicDimensionFilter { TenantId = t, TopicId = topic.Id, PageSize = _Page }, token).ConfigureAwait(false)).Objects },
+                    { "constraints", (await _Database.TopicConstraints.EnumerateAsync(new TopicConstraintFilter { TenantId = t, TopicId = topic.Id, PageSize = _Page }, token).ConfigureAwait(false)).Objects }
                 });
             }
 
@@ -77,12 +77,12 @@ namespace MyMorningNews.Core.Services
                         { "createdUtc", user.CreatedUtc }, { "termsVersion", user.TermsVersion }, { "termsAcceptedUtc", user.TermsAcceptedUtc }
                     }));
                     Write(zip, "topics.json", Serializer.Serialize(topicDocs));
-                    Write(zip, "findings.json", Serializer.Serialize((await _Database.Findings.EnumerateAsync(new FindingFilter { TenantId = t, UserId = user.Id, PageSize = 5000 }, token).ConfigureAwait(false)).Items));
-                    Write(zip, "predictions.json", Serializer.Serialize((await _Database.Predictions.EnumerateAsync(new PredictionFilter { TenantId = t, UserId = user.Id, PageSize = 5000 }, token).ConfigureAwait(false)).Items));
-                    Write(zip, "suggestions.json", Serializer.Serialize((await _Database.Suggestions.EnumerateAsync(new SuggestionFilter { TenantId = t, UserId = user.Id, PageSize = 5000 }, token).ConfigureAwait(false)).Items));
-                    Write(zip, "feedback.json", Serializer.Serialize((await _Database.Feedback.EnumerateAsync(new FeedbackFilter { TenantId = t, UserId = user.Id, PageSize = 5000 }, token).ConfigureAwait(false)).Items));
-                    Write(zip, "preferences.json", Serializer.Serialize((await _Database.LearnedPreferences.EnumerateAsync(new LearnedPreferenceFilter { TenantId = t, UserId = user.Id, PageSize = 5000 }, token).ConfigureAwait(false)).Items));
-                    List<Briefing> briefings = (await _Database.Briefings.EnumerateAsync(new BriefingFilter { TenantId = t, UserId = user.Id, PageSize = 5000 }, token).ConfigureAwait(false)).Items;
+                    Write(zip, "findings.json", Serializer.Serialize((await _Database.Findings.EnumerateAsync(new FindingFilter { TenantId = t, UserId = user.Id, PageSize = 5000 }, token).ConfigureAwait(false)).Objects));
+                    Write(zip, "predictions.json", Serializer.Serialize((await _Database.Predictions.EnumerateAsync(new PredictionFilter { TenantId = t, UserId = user.Id, PageSize = 5000 }, token).ConfigureAwait(false)).Objects));
+                    Write(zip, "suggestions.json", Serializer.Serialize((await _Database.Suggestions.EnumerateAsync(new SuggestionFilter { TenantId = t, UserId = user.Id, PageSize = 5000 }, token).ConfigureAwait(false)).Objects));
+                    Write(zip, "feedback.json", Serializer.Serialize((await _Database.Feedback.EnumerateAsync(new FeedbackFilter { TenantId = t, UserId = user.Id, PageSize = 5000 }, token).ConfigureAwait(false)).Objects));
+                    Write(zip, "preferences.json", Serializer.Serialize((await _Database.LearnedPreferences.EnumerateAsync(new LearnedPreferenceFilter { TenantId = t, UserId = user.Id, PageSize = 5000 }, token).ConfigureAwait(false)).Objects));
+                    List<Briefing> briefings = (await _Database.Briefings.EnumerateAsync(new BriefingFilter { TenantId = t, UserId = user.Id, PageSize = 5000 }, token).ConfigureAwait(false)).Objects;
                     HashSet<string> names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                     foreach (Briefing b in briefings.Where(b => !String.IsNullOrWhiteSpace(b.Markdown)))
                     {

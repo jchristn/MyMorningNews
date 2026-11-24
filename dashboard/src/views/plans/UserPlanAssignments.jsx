@@ -1,3 +1,4 @@
+import { enumerateObjects } from '../../utils/enumeration.js';
 import { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Undo2 } from 'lucide-react';
@@ -35,7 +36,7 @@ export default function UserPlanAssignments({ tenantId, userId, plans = [], refr
     if (!tenantId || !userId) return;
     setError(null);
     try {
-      const list = await apiClient.listPlanAssignments(tenantId, userId);
+      const list = await enumerateObjects((query) => apiClient.listPlanAssignments(tenantId, userId, query));
       setItems((Array.isArray(list) ? list : []).sort((a, b) => String(b.startsUtc).localeCompare(String(a.startsUtc))));
     } catch (err) {
       setError(err);

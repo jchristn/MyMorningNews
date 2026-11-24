@@ -1,3 +1,4 @@
+import { enumerateObjects } from '../../utils/enumeration.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
@@ -59,9 +60,9 @@ export default function RunDetailDrawer({ runId, topicLabel, onClose, onChanged,
   const load = useCallback(async () => {
     if (!runId) return;
     try {
-      const [r, s] = await Promise.all([apiClient.getRun(runId), apiClient.listRunStages(runId).catch(() => null)]);
+      const [r, s] = await Promise.all([apiClient.getRun(runId), enumerateObjects((query) => apiClient.listRunStages(runId, query)).catch(() => null)]);
       setRun(r);
-      if (s) setStages(Array.isArray(s) ? s : s.items || []);
+      if (s) setStages(Array.isArray(s) ? s : s.objects || []);
       setError(null);
     } catch (err) {
       setError(err);

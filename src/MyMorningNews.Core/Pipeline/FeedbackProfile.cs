@@ -43,7 +43,7 @@ namespace MyMorningNews.Core.Pipeline
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(ctx);
             FeedbackProfile profile = new FeedbackProfile();
-            List<Models.Feedback> rated = (await services.Database.Feedback.EnumerateAsync(new FeedbackFilter { TenantId = ctx.Run.TenantId, UserId = ctx.Topic.UserId, TopicId = ctx.Topic.Id, IsCurrent = true, PageSize = 1000 }, token).ConfigureAwait(false)).Items
+            List<Models.Feedback> rated = (await services.Database.Feedback.EnumerateAsync(new FeedbackFilter { TenantId = ctx.Run.TenantId, UserId = ctx.Topic.UserId, TopicId = ctx.Topic.Id, IsCurrent = true, PageSize = 1000 }, token).ConfigureAwait(false)).Objects
                 .Where(f => f.Relevance.HasValue).ToList();
             foreach (Models.Feedback f in rated.Where(f => f.TargetType == FeedbackTargetTypeEnum.Finding))
             {
@@ -55,7 +55,7 @@ namespace MyMorningNews.Core.Pipeline
                 if (!String.IsNullOrWhiteSpace(s?.Domain)) profile.AddDomain(s!.Domain!, Ranker.ReputationPoints(f.Relevance.Value));
             }
 
-            List<Models.Feedback> sourceRatings = (await services.Database.Feedback.EnumerateAsync(new FeedbackFilter { TenantId = ctx.Run.TenantId, UserId = ctx.Topic.UserId, IsCurrent = true, PageSize = 1000 }, token).ConfigureAwait(false)).Items
+            List<Models.Feedback> sourceRatings = (await services.Database.Feedback.EnumerateAsync(new FeedbackFilter { TenantId = ctx.Run.TenantId, UserId = ctx.Topic.UserId, IsCurrent = true, PageSize = 1000 }, token).ConfigureAwait(false)).Objects
                 .Where(f => f.Relevance.HasValue && (f.TargetType == FeedbackTargetTypeEnum.SourceItem || f.TargetType == FeedbackTargetTypeEnum.Domain)).ToList();
             foreach (Models.Feedback f in sourceRatings.Where(f => f.TargetType == FeedbackTargetTypeEnum.SourceItem))
             {

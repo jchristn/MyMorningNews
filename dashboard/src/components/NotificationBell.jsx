@@ -44,7 +44,7 @@ export default function NotificationBell() {
     setError(null);
     try {
       const page = await apiClient.listNotifications({ pageSize: PAGE_SIZE });
-      const rows = (page && page.items) || [];
+      const rows = (page && page.objects) || [];
       setItems(rows);
       if (rows.length === 0) {
         const prefs = await apiClient.getNotificationPreferences().catch(() => null);

@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for AudioReservation records. Null properties are not applied.
     /// </summary>
-    public class AudioReservationFilter : EnumerationFilter
+    public class AudioReservationFilter : EnumerationQuery
     {
         /// <summary>
         /// Match UserId exactly when set.

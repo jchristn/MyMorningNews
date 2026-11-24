@@ -25,7 +25,7 @@ export default function TopicModels({ topicId }) {
     let live = true;
     apiClient
       .listModelAssignments({ pageSize: 1000 })
-      .then((page) => live && setAssignments((page && page.items) || []))
+      .then((page) => live && setAssignments((page && page.objects) || []))
       .catch((err) => {
         if (!live) return;
         setAssignments([]);

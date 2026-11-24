@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for AccountToken records. Null properties are not applied.
     /// </summary>
-    public class AccountTokenFilter : EnumerationFilter
+    public class AccountTokenFilter : EnumerationQuery
     {
         /// <summary>
         /// Match UserId exactly when set.

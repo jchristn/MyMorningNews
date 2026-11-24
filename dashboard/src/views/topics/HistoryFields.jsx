@@ -20,7 +20,7 @@ export default function HistoryFields({ topicId, value, onChange, disabled, cata
     listing
       .then((page) => {
         if (live) {
-          setIssues(page.items || []);
+          setIssues(page.objects || []);
           setError(null);
         }
       })

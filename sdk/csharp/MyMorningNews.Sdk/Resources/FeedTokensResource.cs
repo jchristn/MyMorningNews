@@ -1,6 +1,7 @@
 namespace MyMorningNews.Sdk.Resources
 {
     using System;
+    using MyMorningNews.Sdk.Options;
     using System.Collections.Generic;
     using System.Net.Http;
     using System.Threading;
@@ -28,9 +29,10 @@ namespace MyMorningNews.Sdk.Resources
         /// <param name="token">Cancellation token.</param>
         /// <returns>A list of FeedToken items.</returns>
         /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
-        public Task<List<FeedToken>> ListAsync(CancellationToken token = default)
+        /// <param name="options">Pagination, sorting, and filters; null uses defaults.</param>
+        public Task<EnumerationResult<FeedToken>> ListAsync(EnumerationQuery? options = null, CancellationToken token = default)
         {
-            return Client.SendAsync<List<FeedToken>>(HttpMethod.Get, "/v1.0/api/feed-tokens", null, null, token);
+            return Client.SendAsync<EnumerationResult<FeedToken>>(HttpMethod.Get, "/v1.0/api/feed-tokens", (options ?? new EnumerationQuery()).ToQuery(), null, token);
         }
 
         /// <summary>

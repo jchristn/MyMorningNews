@@ -33,7 +33,7 @@ export const setupApi = {
 /** Push devices (contract C). */
 export const devicesApi = {
   register: (client, { expoPushToken, platform, name, locale }) => client.post(routes.devices, { expoPushToken, platform, name, locale }),
-  list: (client) => client.get(routes.devices),
+  list: (client, query) => client.get(routes.devices, query),
   remove: (client, id) => client.delete(routes.device(id)),
   test: (client, id) => client.post(routes.deviceTest(id), {}),
 };
@@ -79,13 +79,13 @@ export const notificationsApi = {
 };
 
 /**
- * Private podcast feeds (Phase 8). `list()` is a bare array of tokens (`{ id, name, editionId?, tokenPrefix,
+ * Private podcast feeds (Phase 8). `list()` returns an EnumerationResult of tokens (`{ id, name, editionId?, tokenPrefix,
  * lastUsedUtc?, revokedUtc?, createdUtc }`); `create()` returns `{ token, secret, feedUrl }`, and the secret and URL
  * are shown only once (the server keeps a hash). `revoke(id)` revokes an active token; `revoke(id, { purge: true })`
  * deletes one that is already revoked.
  */
 export const feedTokensApi = {
-  list: (client) => client.get(routes.feedTokens),
+  list: (client, query) => client.get(routes.feedTokens, query),
   create: (client, { name, editionId }) => client.post(routes.feedTokens, { name, editionId: editionId || undefined }),
   revoke: (client, id, { purge = false } = {}) => client.delete(routes.feedToken(id), { query: purge ? { purge: true } : undefined }),
 };

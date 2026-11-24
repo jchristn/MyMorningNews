@@ -16,7 +16,7 @@ export function useModelKeyProblems({ tasks = CHAT_TASKS, refreshSignal = 0 } = 
 
   useEffect(() => {
     let live = true;
-    const list = (promise) => promise.then((r) => (r && Array.isArray(r.items) ? r.items : [])).catch(() => null);
+    const list = (promise) => promise.then((r) => (r && Array.isArray(r.objects) ? r.objects : [])).catch(() => null);
     Promise.all([
       list(apiClient.listModelEndpoints({ pageSize: 1000 })),
       list(apiClient.listModelAssignments({ pageSize: 1000 })),

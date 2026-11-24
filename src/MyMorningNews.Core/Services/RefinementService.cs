@@ -162,7 +162,7 @@ namespace MyMorningNews.Core.Services
                 Dimensions = await DimensionsAsync(tenantId, topic.Id, token).ConfigureAwait(false),
                 Constraints = await ConstraintsAsync(tenantId, topic.Id, token).ConfigureAwait(false),
                 Questions = await QuestionsAsync(tenantId, session.Id, null, token).ConfigureAwait(false),
-                Messages = (await _Database.RefinementMessages.EnumerateAsync(new RefinementMessageFilter { TenantId = tenantId, SessionId = session.Id, PageSize = _MaxChildren }, token).ConfigureAwait(false)).Items
+                Messages = (await _Database.RefinementMessages.EnumerateAsync(new RefinementMessageFilter { TenantId = tenantId, SessionId = session.Id, PageSize = _MaxChildren }, token).ConfigureAwait(false)).Objects
             };
             return state;
         }
@@ -290,7 +290,7 @@ namespace MyMorningNews.Core.Services
             ArgumentNullException.ThrowIfNull(answer);
             RefinementQuestion question = await _Database.RefinementQuestions.ReadAsync(tenantId, questionId, token).ConfigureAwait(false) ?? throw new KeyNotFoundException("Question " + questionId + " was not found.");
             if (!String.Equals(question.SessionId, sessionId, StringComparison.Ordinal)) throw new KeyNotFoundException("Question " + questionId + " was not found in this session.");
-            List<RefinementQuestionOption> options = (await _Database.RefinementQuestionOptions.EnumerateAsync(new RefinementQuestionOptionFilter { TenantId = tenantId, QuestionId = questionId, PageSize = 100 }, token).ConfigureAwait(false)).Items;
+            List<RefinementQuestionOption> options = (await _Database.RefinementQuestionOptions.EnumerateAsync(new RefinementQuestionOptionFilter { TenantId = tenantId, QuestionId = questionId, PageSize = 100 }, token).ConfigureAwait(false)).Objects;
 
             if (answer.Skipped)
             {
@@ -333,7 +333,7 @@ namespace MyMorningNews.Core.Services
             return new RefinementQuestionResponse
             {
                 Question = question,
-                Options = (await _Database.RefinementQuestionOptions.EnumerateAsync(new RefinementQuestionOptionFilter { TenantId = tenantId, QuestionId = questionId, PageSize = 100 }, token).ConfigureAwait(false)).Items
+                Options = (await _Database.RefinementQuestionOptions.EnumerateAsync(new RefinementQuestionOptionFilter { TenantId = tenantId, QuestionId = questionId, PageSize = 100 }, token).ConfigureAwait(false)).Objects
             };
         }
 
@@ -478,7 +478,7 @@ namespace MyMorningNews.Core.Services
 
         private async Task<bool> RefinesExistingTopicAsync(RefinementSession session, CancellationToken token)
         {
-            List<RefinementMessage> messages = (await _Database.RefinementMessages.EnumerateAsync(new RefinementMessageFilter { TenantId = session.TenantId, SessionId = session.Id, PageSize = 20 }, token).ConfigureAwait(false)).Items;
+            List<RefinementMessage> messages = (await _Database.RefinementMessages.EnumerateAsync(new RefinementMessageFilter { TenantId = session.TenantId, SessionId = session.Id, PageSize = 20 }, token).ConfigureAwait(false)).Objects;
             return messages.Any(m => m.Role == MessageRoleEnum.System && m.Content.StartsWith(_ExistingTopicPrefix, StringComparison.Ordinal));
         }
 
@@ -653,12 +653,12 @@ namespace MyMorningNews.Core.Services
         /// <returns>Questions in round and display order.</returns>
         public async Task<List<RefinementQuestionResponse>> QuestionsAsync(string tenantId, string sessionId, int? round, CancellationToken token = default)
         {
-            List<RefinementQuestion> questions = (await _Database.RefinementQuestions.EnumerateAsync(new RefinementQuestionFilter { TenantId = tenantId, SessionId = sessionId, Round = round, PageSize = _MaxChildren }, token).ConfigureAwait(false)).Items
+            List<RefinementQuestion> questions = (await _Database.RefinementQuestions.EnumerateAsync(new RefinementQuestionFilter { TenantId = tenantId, SessionId = sessionId, Round = round, PageSize = _MaxChildren }, token).ConfigureAwait(false)).Objects
                 .OrderBy(q => q.Round).ThenBy(q => q.SortOrder).ToList();
             List<RefinementQuestionResponse> result = new List<RefinementQuestionResponse>();
             foreach (RefinementQuestion q in questions)
             {
-                List<RefinementQuestionOption> options = (await _Database.RefinementQuestionOptions.EnumerateAsync(new RefinementQuestionOptionFilter { TenantId = tenantId, QuestionId = q.Id, PageSize = 100 }, token).ConfigureAwait(false)).Items
+                List<RefinementQuestionOption> options = (await _Database.RefinementQuestionOptions.EnumerateAsync(new RefinementQuestionOptionFilter { TenantId = tenantId, QuestionId = q.Id, PageSize = 100 }, token).ConfigureAwait(false)).Objects
                     .OrderBy(o => o.SortOrder).ToList();
                 result.Add(new RefinementQuestionResponse { Question = q, Options = options });
             }
@@ -712,7 +712,7 @@ namespace MyMorningNews.Core.Services
         /// <returns>Dimensions.</returns>
         public async Task<List<TopicDimension>> DimensionsAsync(string tenantId, string topicId, CancellationToken token = default)
         {
-            return (await _Database.TopicDimensions.EnumerateAsync(new TopicDimensionFilter { TenantId = tenantId, TopicId = topicId, PageSize = _MaxChildren }, token).ConfigureAwait(false)).Items
+            return (await _Database.TopicDimensions.EnumerateAsync(new TopicDimensionFilter { TenantId = tenantId, TopicId = topicId, PageSize = _MaxChildren }, token).ConfigureAwait(false)).Objects
                 .OrderBy(d => d.SortOrder).ToList();
         }
 
@@ -725,7 +725,7 @@ namespace MyMorningNews.Core.Services
         /// <returns>Constraints.</returns>
         public async Task<List<TopicConstraint>> ConstraintsAsync(string tenantId, string topicId, CancellationToken token = default)
         {
-            return (await _Database.TopicConstraints.EnumerateAsync(new TopicConstraintFilter { TenantId = tenantId, TopicId = topicId, PageSize = _MaxChildren }, token).ConfigureAwait(false)).Items;
+            return (await _Database.TopicConstraints.EnumerateAsync(new TopicConstraintFilter { TenantId = tenantId, TopicId = topicId, PageSize = _MaxChildren }, token).ConfigureAwait(false)).Objects;
         }
 
         /// <summary>

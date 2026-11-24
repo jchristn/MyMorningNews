@@ -1,3 +1,4 @@
+import { enumerationResult } from '../../test/enumeration.js';
 import { describe, expect, it, vi } from 'vitest';
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -30,7 +31,7 @@ describe('Live run progress', () => {
       listTopics: vi.fn(async () => page([TOPIC])),
       listRuns: vi.fn(async () => page([QUEUED])),
       getRun: vi.fn(async () => QUEUED),
-      listRunStages: vi.fn(async () => []),
+      listRunStages: vi.fn(async () => enumerationResult([])),
       streamRunEvents: stream.fn
     });
     const drawer = await screen.findByTestId('run-detail');
@@ -102,7 +103,7 @@ describe('Retry from a stage', () => {
     const client = renderRoute('/dashboard/runs?run=run_p', {
       listRuns: vi.fn(async () => page([PARTIAL_RUN])),
       getRun: vi.fn(async () => PARTIAL_RUN),
-      listRunStages: vi.fn(async () => STAGES),
+      listRunStages: vi.fn(async () => enumerationResult(STAGES)),
       retryRun: vi.fn(async () => requeued),
       streamRunEvents: stream.fn
     });
@@ -127,7 +128,7 @@ describe('Retry from a stage', () => {
     const client = renderRoute('/dashboard/runs?run=run_p', {
       listRuns: vi.fn(async () => page([PARTIAL_RUN])),
       getRun: vi.fn(async (id) => (id === 'run_new' ? fresh : PARTIAL_RUN)),
-      listRunStages: vi.fn(async () => STAGES),
+      listRunStages: vi.fn(async () => enumerationResult(STAGES)),
       retryRun: vi.fn(async () => fresh)
     });
     await screen.findByTestId('run-detail');
@@ -144,7 +145,7 @@ describe('Retry from a stage', () => {
     const client = renderRoute('/dashboard/runs?run=run_p', {
       listRuns: vi.fn(async () => page([PARTIAL_RUN])),
       getRun: vi.fn(async () => ({ ...PARTIAL_RUN, status: 'Failed' })),
-      listRunStages: vi.fn(async () => [{ ...STAGES[1], status: 'Failed', errorMessage: 'Search provider down' }]),
+      listRunStages: vi.fn(async () => enumerationResult([{ ...STAGES[1], status: 'Failed', errorMessage: 'Search provider down' }])),
       retryRun: vi.fn(async () => {
         throw new ApiError(409, { error: 'Conflict', message: 'Only a finished run can be retried; this one is Running.' });
       })

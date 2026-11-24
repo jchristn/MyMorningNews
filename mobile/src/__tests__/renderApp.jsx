@@ -74,7 +74,7 @@ export async function renderSignedIn(ui, handlers = {}, options = {}) {
 
 /** A paged list response like the server's. */
 export function page(items) {
-  return { body: { items, pageNumber: 1, pageSize: items.length || 10, totalCount: items.length, totalPages: 1 } };
+  return { body: { objects: items, pageNumber: 1, pageSize: items.length || 10, totalRecords: items.length, totalPages: 1 } };
 }
 
 /** The server's 502 when no model key is configured. */

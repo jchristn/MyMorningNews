@@ -184,7 +184,7 @@ namespace Test.Shared.Suites
             Schedule upd = (await u.Client.PutAsync("/v1.0/api/schedules/" + s.Id, new { enabled = false }, token).ConfigureAwait(false)).Expect(200, "disable").Json<Schedule>();
             Assert.True(!upd.Enabled && upd.NextRunUtc == null, "disabled schedules have no next run");
             EnumerationResult<Schedule> list = (await u.Client.GetAsync("/v1.0/api/schedules?ownerId=" + topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Schedule>>();
-            Assert.Equal(1, list.Items.Count, "listed by owner");
+            Assert.Equal(1, list.Objects.Count, "listed by owner");
 
             TestUser other = await TestFixtures.CreateUserAsync(await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false), topic.TenantId, false, token).ConfigureAwait(false);
             (await other.Client.PostAsync("/v1.0/api/schedules", new { ownerId = topic.Id, intervalType = "Manual" }, token).ConfigureAwait(false)).Expect(404, "cannot schedule another user's topic");
@@ -203,7 +203,7 @@ namespace Test.Shared.Suites
 
         private static async Task<List<Run>> RunsAsync(MyMorningNewsServer server, Topic topic, CancellationToken token)
         {
-            return (await server.Context.Database.Runs.EnumerateAsync(new RunFilter { TenantId = topic.TenantId, TopicId = topic.Id, PageSize = 100 }, token).ConfigureAwait(false)).Items;
+            return (await server.Context.Database.Runs.EnumerateAsync(new RunFilter { TenantId = topic.TenantId, TopicId = topic.Id, PageSize = 100 }, token).ConfigureAwait(false)).Objects;
         }
 
         private static async Task TickAsync(CancellationToken token)
@@ -377,7 +377,7 @@ namespace Test.Shared.Suites
                             await worker.ConfigureAwait(false);
                         }
 
-                        List<Run> runs = (await db.Runs.EnumerateAsync(new RunFilter { TenantId = seed.DefaultTenantId, PageSize = 100 }, token).ConfigureAwait(false)).Items;
+                        List<Run> runs = (await db.Runs.EnumerateAsync(new RunFilter { TenantId = seed.DefaultTenantId, PageSize = 100 }, token).ConfigureAwait(false)).Objects;
                         Assert.True(runs.Count == 6 && runs.All(r => r.Status == RunStatusEnum.Completed && r.WorkerId == "signal-test"), "every run completed through the signalled worker");
 
                         // Competing claimers, as several server processes would be: two services, four loops each, all
@@ -530,7 +530,7 @@ namespace Test.Shared.Suites
             Run dry = (await u.Client.PostAsync("/v1.0/api/topics/" + draft.Id + "/run?dryRun=true", null, token).ConfigureAwait(false)).Expect(202, "dry run allowed").Json<Run>();
             Assert.True(dry.IsDryRun, "dry run flag");
             EnumerationResult<Run> list = (await u.Client.GetAsync("/v1.0/api/runs?topicId=" + topic.Id, token).ConfigureAwait(false)).Expect(200, "list").Json<EnumerationResult<Run>>();
-            Assert.Equal(1, list.Items.Count, "runs by topic");
+            Assert.Equal(1, list.Objects.Count, "runs by topic");
             TestUser other = await TestFixtures.CreateUserAsync(await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false), topic.TenantId, false, token).ConfigureAwait(false);
             (await other.Client.GetAsync("/v1.0/api/runs/" + run.Id, token).ConfigureAwait(false)).Expect(404, "runs are private");
             await server.Context.Scheduling.CancelAsync(dry, DateTime.UtcNow, token).ConfigureAwait(false);

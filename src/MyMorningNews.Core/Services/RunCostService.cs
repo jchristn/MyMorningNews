@@ -53,12 +53,12 @@ namespace MyMorningNews.Core.Services
             for (int page = 1; page <= 100; page++)
             {
                 EnumerationResult<LlmCall> batch = await _Database.LlmCalls.EnumerateAsync(new LlmCallFilter { TenantId = run.TenantId, RunId = run.Id, PageSize = 1000, PageNumber = page }, token).ConfigureAwait(false);
-                calls.AddRange(batch.Items);
-                if (batch.Items.Count < 1000) break;
+                calls.AddRange(batch.Objects);
+                if (batch.Objects.Count < 1000) break;
             }
 
             List<RunStage> stages = (await _Database.RunStages.EnumerateAsync(new RunStageFilter { TenantId = run.TenantId, RunId = run.Id, PageSize = 100 }, token).ConfigureAwait(false))
-                .Items.OrderBy(s => s.SortOrder).ThenBy(s => s.CreatedUtc).ToList();
+                .Objects.OrderBy(s => s.SortOrder).ThenBy(s => s.CreatedUtc).ToList();
 
             RunCostReport report = new RunCostReport { RunId = run.Id, TopicId = run.TopicId, Status = run.Status };
             Fill(report.Totals, calls);

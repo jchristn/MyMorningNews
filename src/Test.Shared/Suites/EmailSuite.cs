@@ -64,7 +64,7 @@ namespace Test.Shared.Suites
 
         private static async Task<List<EmailMessage>> RunEmailsAsync(PipelineFixture f, Run run, CancellationToken token)
         {
-            return (await f.Server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = run.TenantId, RunId = run.Id, PageSize = 50 }, token).ConfigureAwait(false)).Items;
+            return (await f.Server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = run.TenantId, RunId = run.Id, PageSize = 50 }, token).ConfigureAwait(false)).Objects;
         }
 
         private static string Link(string text, string pattern)
@@ -80,7 +80,7 @@ namespace Test.Shared.Suites
             (await f.User.Client.PostAsync("/v1.0/api/topics/" + f.Topic.Id + "/recipients", new { email = "Partner@Example.Test" }, token).ConfigureAwait(false)).Expect(201, "recipient");
             (await f.User.Client.PostAsync("/v1.0/api/topics/" + f.Topic.Id + "/recipients", new { email = f.User.User.Email }, token).ConfigureAwait(false)).Expect(201, "owner as recipient");
             Run run = await PipelineSuite.RunAsync(f, token).ConfigureAwait(false);
-            List<RunStage> stages = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages", token).ConfigureAwait(false)).Json<List<RunStage>>();
+            List<RunStage> stages = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/stages?pageSize=1000", token).ConfigureAwait(false)).Json<EnumerationResult<RunStage>>().Objects;
             Assert.True(stages.Last().Stage == "Notify" && stages.Last().Status == StageStatusEnum.Succeeded && stages.Last().ItemsOut == 2, "notify stage queued two");
             List<EmailMessage> emails = await RunEmailsAsync(f, run, token).ConfigureAwait(false);
             Assert.True(emails.Count == 2 && emails.All(e => e.Status == EmailStatusEnum.Queued && e.Template == EmailTemplateEnum.RunDigest) && emails.Any(e => e.Recipient == "partner@example.test"), "one per recipient, addresses normalized");
@@ -123,7 +123,7 @@ namespace Test.Shared.Suites
             Run run = await PipelineSuite.RunAsync(f, token).ConfigureAwait(false);
             EmailMessage m = (await RunEmailsAsync(f, run, token).ConfigureAwait(false)).Single();
             Assert.True(m.RenderedHtml!.Contains("Predictions to grade", StringComparison.Ordinal) && m.RenderedHtml.Contains("A rebate portal will launch", StringComparison.Ordinal), "due prediction listed to grade");
-            Finding top = (await f.User.Client.GetAsync("/v1.0/api/findings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().Items.First();
+            Finding top = (await f.User.Client.GetAsync("/v1.0/api/findings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().Objects.First();
             TestApiClient anon = new TestApiClient(await SharedTestServer.GetBaseUrlAsync(token).ConfigureAwait(false));
             string Path(string url) => new Uri(url).PathAndQuery;
 
@@ -140,12 +140,12 @@ namespace Test.Shared.Suites
             TestResponse thanks = (await anon.SendAsync(HttpMethod.Post, post, "a=relevant&reason=Exactly+what+I+track", new Dictionary<string, string>(), token).ConfigureAwait(false)).Expect(200, "submit");
             Assert.True(thanks.Body.Contains("Thank you", StringComparison.Ordinal) && thanks.Body.Contains("help tune future runs", StringComparison.Ordinal), "thanks page");
             EnumerationResult<Feedback> fb = (await f.User.Client.GetAsync("/v1.0/api/feedback?targetType=Finding&targetId=" + top.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Feedback>>();
-            Assert.True(fb.Items.Count == 1 && fb.Items[0].Relevance == RelevanceRatingEnum.Relevant && fb.Items[0].Reason == "Exactly what I track" && fb.Items[0].Channel == FeedbackChannelEnum.Email && fb.Items[0].EmailMessageId == m.Id,
+            Assert.True(fb.Objects.Count == 1 && fb.Objects[0].Relevance == RelevanceRatingEnum.Relevant && fb.Objects[0].Reason == "Exactly what I track" && fb.Objects[0].Channel == FeedbackChannelEnum.Email && fb.Objects[0].EmailMessageId == m.Id,
                 "feedback recorded with the reason, channel, and email");
             (await anon.SendAsync(HttpMethod.Post, post, "a=not-relevant", new Dictionary<string, string>(), token).ConfigureAwait(false)).Expect(200, "change answer");
             EnumerationResult<Feedback> history = (await f.User.Client.GetAsync("/v1.0/api/feedback?targetType=Finding&targetId=" + top.Id + "&includeHistory=true", token).ConfigureAwait(false)).Json<EnumerationResult<Feedback>>();
-            Assert.True(history.Items.Count == 2 && history.Items.Count(x => x.IsCurrent) == 1 && history.Items.Single(x => x.IsCurrent).Relevance == RelevanceRatingEnum.NotRelevant
-                && history.Items.Single(x => x.IsCurrent).SupersedesFeedbackId == history.Items.Single(x => !x.IsCurrent).Id, "newest wins, history kept");
+            Assert.True(history.Objects.Count == 2 && history.Objects.Count(x => x.IsCurrent) == 1 && history.Objects.Single(x => x.IsCurrent).Relevance == RelevanceRatingEnum.NotRelevant
+                && history.Objects.Single(x => x.IsCurrent).SupersedesFeedbackId == history.Objects.Single(x => !x.IsCurrent).Id, "newest wins, history kept");
             (await anon.SendAsync(HttpMethod.Post, post, "a=accurate", new Dictionary<string, string>(), token).ConfigureAwait(false)).Expect(400, "an action the token does not allow is refused");
 
             string grade = Path(Link(m.RenderedText!, @"https?://\S+/v1\.0/public/feedback/[A-Za-z0-9_\-]+\?a=accurate"));
@@ -155,7 +155,7 @@ namespace Test.Shared.Suites
 
             string done = Path(Link(m.RenderedText!, @"https?://\S+/v1\.0/public/feedback/[A-Za-z0-9_\-]+\?a=done"));
             (await anon.SendAsync(HttpMethod.Post, done.Split('?')[0], "a=done", new Dictionary<string, string>(), token).ConfigureAwait(false)).Expect(200, "done");
-            Suggestion s = (await f.User.Client.GetAsync("/v1.0/api/suggestions?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Suggestion>>().Items.First();
+            Suggestion s = (await f.User.Client.GetAsync("/v1.0/api/suggestions?topicId=" + f.Topic.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Suggestion>>().Objects.First();
             Assert.Equal(SuggestionStatusEnum.Done, s.Status, "Done from email completes the suggestion");
 
             TestResponse bad = (await anon.GetAsync("/v1.0/public/feedback/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA?a=relevant", token).ConfigureAwait(false)).Expect(404, "unknown token");
@@ -237,8 +237,8 @@ namespace Test.Shared.Suites
             PipelineFixture f = await PipelineSuite.FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
             Run run = await PipelineSuite.RunAsync(f, token).ConfigureAwait(false);
             EnumerationResult<EmailMessage> outbox = (await f.User.Client.GetAsync("/v1.0/api/email-messages?runId=" + run.Id, token).ConfigureAwait(false)).Expect(200, "outbox").Json<EnumerationResult<EmailMessage>>();
-            Assert.True(outbox.Items.Count == 1 && outbox.Items[0].RenderedHtml == null, "listed without bodies");
-            EmailMessage full = (await f.User.Client.GetAsync("/v1.0/api/email-messages/" + outbox.Items[0].Id, token).ConfigureAwait(false)).Expect(200, "read").Json<EmailMessage>();
+            Assert.True(outbox.Objects.Count == 1 && outbox.Objects[0].RenderedHtml == null, "listed without bodies");
+            EmailMessage full = (await f.User.Client.GetAsync("/v1.0/api/email-messages/" + outbox.Objects[0].Id, token).ConfigureAwait(false)).Expect(200, "read").Json<EmailMessage>();
             Assert.True(full.RenderedHtml!.Contains("<html", StringComparison.Ordinal), "read has the body");
             (await f.User.Client.PostAsync("/v1.0/api/email-messages/" + full.Id + "/resend", null, token).ConfigureAwait(false)).Expect(409, "already queued");
             await f.Server.Context.Email.DeliverDueAsync(DateTime.UtcNow, token).ConfigureAwait(false);
@@ -250,13 +250,13 @@ namespace Test.Shared.Suites
             EmailPreview preview = (await f.User.Client.GetAsync("/v1.0/api/runs/" + run.Id + "/email-preview", token).ConfigureAwait(false)).Expect(200, "preview").Json<EmailPreview>();
             Assert.Equal(summariesBefore, await f.Server.Context.Database.LlmCalls.CountAsync(new LlmCallFilter { TenantId = run.TenantId, RunId = run.Id, PromptKey = "email.run-summary" }, token).ConfigureAwait(false), "a preview makes no model call");
             Assert.True(preview.Subject.Contains(f.Topic.Name, StringComparison.Ordinal) && preview.Html.Contains("/v1.0/public/feedback/preview", StringComparison.Ordinal), "preview with sample links");
-            Assert.Equal(1, (await f.User.Client.GetAsync("/v1.0/api/email-messages?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<EmailMessage>>().Items.Count, "preview saved nothing");
+            Assert.Equal(1, (await f.User.Client.GetAsync("/v1.0/api/email-messages?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<EmailMessage>>().Objects.Count, "preview saved nothing");
 
             EmailPreferencesResponse prefs = (await f.User.Client.PutAsync("/v1.0/api/email-preferences", new { briefingEmails = false }, token).ConfigureAwait(false)).Expect(200, "preferences").Json<EmailPreferencesResponse>();
             Assert.True(prefs.RunEmails && !prefs.BriefingEmails && prefs.FailureEmails, "briefing emails off");
             (await f.User.Client.PutAsync("/v1.0/api/email-preferences", new { briefingEmails = true }, token).ConfigureAwait(false)).Expect(200, "back on");
 
-            Finding finding = (await f.User.Client.GetAsync("/v1.0/api/findings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().Items.First();
+            Finding finding = (await f.User.Client.GetAsync("/v1.0/api/findings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().Objects.First();
             Feedback given = (await f.User.Client.PostAsync("/v1.0/api/feedback", new { targetType = "Finding", targetId = finding.Id, action = "somewhat", reason = "Close" }, token).ConfigureAwait(false))
                 .Expect(201, "dashboard feedback").Json<Feedback>();
             Assert.True(given.Relevance == RelevanceRatingEnum.SomewhatRelevant && given.Channel == FeedbackChannelEnum.Dashboard && given.TopicId == f.Topic.Id, "feedback from the dashboard");
@@ -266,7 +266,7 @@ namespace Test.Shared.Suites
             TestUser other = await TestFixtures.CreateUserAsync(await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false), f.Topic.TenantId, false, token).ConfigureAwait(false);
             (await other.Client.PostAsync("/v1.0/api/feedback", new { targetType = "Finding", targetId = finding.Id, action = "relevant" }, token).ConfigureAwait(false)).Expect(404, "not someone else's finding");
             (await other.Client.GetAsync("/v1.0/api/email-messages/" + full.Id, token).ConfigureAwait(false)).Expect(404, "another member cannot read my email");
-            Assert.Equal(0, (await other.Client.GetAsync("/v1.0/api/email-messages", token).ConfigureAwait(false)).Json<EnumerationResult<EmailMessage>>().Items.Count(x => x.Id == full.Id), "and does not list it");
+            Assert.Equal(0, (await other.Client.GetAsync("/v1.0/api/email-messages", token).ConfigureAwait(false)).Json<EnumerationResult<EmailMessage>>().Objects.Count(x => x.Id == full.Id), "and does not list it");
         }
 
         private static async Task BriefingEmailAsync(CancellationToken token)
@@ -278,7 +278,7 @@ namespace Test.Shared.Suites
             (await f.User.Client.PutAsync("/v1.0/api/editions/" + e.Edition.Id + "/topics", new { topicIds = new[] { f.Topic.Id } }, token).ConfigureAwait(false)).Expect(200, "topics");
             Briefing queued = (await f.User.Client.PostAsync("/v1.0/api/editions/" + e.Edition.Id + "/compose", null, token).ConfigureAwait(false)).Expect(202, "compose").Json<Briefing>();
             await BriefingWaiter.FinishAsync(f.Server, queued.TenantId, queued.Id, token).ConfigureAwait(false);
-            List<EmailMessage> mails = (await f.Server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = queued.TenantId, BriefingId = queued.Id, PageSize = 10 }, token).ConfigureAwait(false)).Items;
+            List<EmailMessage> mails = (await f.Server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = queued.TenantId, BriefingId = queued.Id, PageSize = 10 }, token).ConfigureAwait(false)).Objects;
             Assert.True(mails.Count == 1 && mails[0].Template == EmailTemplateEnum.BriefingPublished && mails[0].Subject == "[My Morning News] " + (await f.Server.Context.Database.Briefings.ReadAsync(queued.TenantId, queued.Id, token).ConfigureAwait(false))!.Title,
                 "briefing email queued: " + String.Join(",", mails.Select(x => x.Subject)));
             string mailHtml = mails[0].RenderedHtml ?? String.Empty;

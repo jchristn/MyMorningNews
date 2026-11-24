@@ -34,11 +34,11 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
         {
             MyMorningNewsClient c = context.RequireAdmin();
             EnumerationResult<EmailMessage> page = await StepAsync(context, result, "GET email-messages", () => c.Email.ListAsync(new EmailMessageListOptions { PageSize = 5 }, token)).ConfigureAwait(false);
-            if (page.Items.Count > 0)
+            if (page.Objects.Count > 0)
             {
-                Helpers.True(page.Items[0].RenderedHtml == null, "lists leave rendered bodies out");
-                EmailMessage m = await StepAsync(context, result, "GET email-message", () => c.Email.GetAsync(page.Items[0].Id, token)).ConfigureAwait(false);
-                Helpers.Equal(page.Items[0].Id, m.Id, "message id");
+                Helpers.True(page.Objects[0].RenderedHtml == null, "lists leave rendered bodies out");
+                EmailMessage m = await StepAsync(context, result, "GET email-message", () => c.Email.GetAsync(page.Objects[0].Id, token)).ConfigureAwait(false);
+                Helpers.Equal(page.Objects[0].Id, m.Id, "message id");
             }
 
             await StepAsync(context, result, "GET unknown email-message (404)", () => Helpers.ExpectErrorAsync(() => c.Email.GetAsync("eml_missing", token), 404)).ConfigureAwait(false);

@@ -1,3 +1,4 @@
+import { enumerateObjects } from '../../utils/enumeration.js';
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { ListTree } from 'lucide-react';
@@ -136,7 +137,7 @@ export default function EndpointFormModal({ state, onClose, onSaved }) {
     setModelsError(null);
     apiClient
       .listVaultCredentials({ pageSize: 1000, sortBy: 'name', sortDirection: 'Ascending' })
-      .then((r) => setCredentials(r.items || []))
+      .then((r) => setCredentials(r.objects || []))
       .catch(() => setCredentials([]));
     // Which CLIs the server can run, and its container name for the sign-in commands. Optional: the editor works
     // without it.
@@ -167,7 +168,7 @@ export default function EndpointFormModal({ state, onClose, onSaved }) {
     setLoadingModels(true);
     setModelsError(null);
     try {
-      const list = await apiClient.listEndpointModels(state.endpoint.id);
+      const list = await enumerateObjects((query) => apiClient.listEndpointModels(state.endpoint.id, query));
       setModelOptions(Array.isArray(list) ? list : []);
     } catch (err) {
       setModelsError(err);

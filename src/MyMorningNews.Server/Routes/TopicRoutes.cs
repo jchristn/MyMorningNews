@@ -35,6 +35,8 @@ namespace MyMorningNews.Server.Routes
             ArgumentNullException.ThrowIfNull(webserver);
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, B, ListAsync, null, openApiMetadata: Paged(Doc("List topics", "Topics", "Members see their own topics; tenant administrators see all unless userId is given.").WithParameter(QueryParam("mine", typeof(bool)))
                 .WithParameter(QueryParam("status", typeof(TopicStatusEnum))).WithParameter(QueryParam("isOneTime", typeof(bool))).WithParameter(QueryParam("userId", typeof(string)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, B + "/enumerate", ctx => EnumerateAsync(ctx, ListAsync), null, openApiMetadata: Paged(Doc("List topics", "Topics", "Members see their own topics; tenant administrators see all unless userId is given.").WithParameter(QueryParam("mine", typeof(bool)))
+                .WithParameter(QueryParam("status", typeof(TopicStatusEnum))).WithParameter(QueryParam("isOneTime", typeof(bool))).WithParameter(QueryParam("userId", typeof(string)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, B, CreateAsync, null, openApiMetadata: Doc("Create a topic without the wizard", "Topics").WithRequestBody(Body<TopicUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, B + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read a topic with dimensions, constraints, and recipients", "Topics"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, B + "/{id}", UpdateAsync, null, openApiMetadata: Doc("Update a topic", "Topics", "Only the fields sent are changed. audioEnabled turns every briefing of the topic's research runs into audio automatically. voiceProfileId sets the voice that reads the topic's briefings aloud (an empty string goes back to the workspace default); voice names a speech server voice from GET /v1.0/api/voices/available instead, and the server reuses or creates the voice profile for it.").WithRequestBody(Body<TopicUpsertRequest>()));
@@ -45,17 +47,20 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, B + "/{id}/duplicate", DuplicateAsync, null, openApiMetadata: Doc("Duplicate a topic as a draft", "Topics"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, B + "/{id}/refine", RefineAsync, null, openApiMetadata: Doc("Refine a topic again (starts a wizard session)", "Topics"));
 
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, B + "/{id}/dimensions", ListDimensionsAsync, null, openApiMetadata: Doc("List dimensions", "Topics"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, B + "/{id}/dimensions", ListDimensionsAsync, null, openApiMetadata: Paged(Doc("List dimensions", "Topics")));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, B + "/{id}/dimensions" + "/enumerate", ctx => EnumerateAsync(ctx, ListDimensionsAsync), null, openApiMetadata: Paged(Doc("List dimensions", "Topics")).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, B + "/{id}/dimensions", CreateDimensionAsync, null, openApiMetadata: Doc("Add a dimension", "Topics").WithRequestBody(Body<DimensionUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, B + "/{id}/dimensions/{dimensionId}", UpdateDimensionAsync, null, openApiMetadata: Doc("Update a dimension (it becomes yours and is kept on regeneration)", "Topics").WithRequestBody(Body<DimensionUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, B + "/{id}/dimensions/{dimensionId}", DeleteDimensionAsync, null, openApiMetadata: Doc("Delete a dimension", "Topics"));
 
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, B + "/{id}/constraints", ListConstraintsAsync, null, openApiMetadata: Doc("List constraints", "Topics").WithParameter(QueryParam("kind", typeof(ConstraintKindEnum))));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, B + "/{id}/constraints", ListConstraintsAsync, null, openApiMetadata: Paged(Doc("List constraints", "Topics").WithParameter(QueryParam("kind", typeof(ConstraintKindEnum)))));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, B + "/{id}/constraints" + "/enumerate", ctx => EnumerateAsync(ctx, ListConstraintsAsync), null, openApiMetadata: Paged(Doc("List constraints", "Topics").WithParameter(QueryParam("kind", typeof(ConstraintKindEnum)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, B + "/{id}/constraints", CreateConstraintAsync, null, openApiMetadata: Doc("Add a constraint", "Topics", "Adding a constraint the topic already has (same kind, same value ignoring case) returns the existing one with 200 instead of a copy.").WithRequestBody(Body<ConstraintUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, B + "/{id}/constraints/{constraintId}", UpdateConstraintAsync, null, openApiMetadata: Doc("Update a constraint", "Topics").WithRequestBody(Body<ConstraintUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, B + "/{id}/constraints/{constraintId}", DeleteConstraintAsync, null, openApiMetadata: Doc("Delete a constraint", "Topics"));
 
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, B + "/{id}/recipients", ListRecipientsAsync, null, openApiMetadata: Doc("List email recipients", "Topics"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, B + "/{id}/recipients", ListRecipientsAsync, null, openApiMetadata: Paged(Doc("List email recipients", "Topics")));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, B + "/{id}/recipients" + "/enumerate", ctx => EnumerateAsync(ctx, ListRecipientsAsync), null, openApiMetadata: Paged(Doc("List email recipients", "Topics")).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, B + "/{id}/recipients", AddRecipientAsync, null, openApiMetadata: Doc("Add an email recipient", "Topics").WithRequestBody(Body<RecipientUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, B + "/{id}/recipients/{recipientId}", DeleteRecipientAsync, null, openApiMetadata: Doc("Remove an email recipient", "Topics"));
         }
@@ -233,7 +238,9 @@ namespace MyMorningNews.Server.Routes
             if (!await AuthorizeAsync(ctx, RequestTypeEnum.TopicRead).ConfigureAwait(false)) return;
             Topic? topic = await OwnedTopicAsync(ctx).ConfigureAwait(false);
             if (topic == null) return;
-            await SendJsonAsync(ctx, 200, await Server.Refinement.DimensionsAsync(topic.TenantId, topic.Id, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
+            TopicDimensionFilter query = new TopicDimensionFilter { TenantId = topic.TenantId, TopicId = topic.Id, SortBy = "sortOrder", SortDirection = SortDirectionEnum.Ascending };
+            ApplyPaging(ctx, query);
+            await SendJsonAsync(ctx, 200, await Server.Database.TopicDimensions.EnumerateAsync(query, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         private async Task CreateDimensionAsync(HttpContextBase ctx)
@@ -287,9 +294,9 @@ namespace MyMorningNews.Server.Routes
             if (!await AuthorizeAsync(ctx, RequestTypeEnum.TopicRead).ConfigureAwait(false)) return;
             Topic? topic = await OwnedTopicAsync(ctx).ConfigureAwait(false);
             if (topic == null) return;
-            ConstraintKindEnum? kind = QueryEnum<ConstraintKindEnum>(ctx, "kind");
-            List<TopicConstraint> items = await Server.Refinement.ConstraintsAsync(topic.TenantId, topic.Id, ctx.Token).ConfigureAwait(false);
-            await SendJsonAsync(ctx, 200, kind.HasValue ? items.Where(c => c.Kind == kind.Value).ToList() : items).ConfigureAwait(false);
+            TopicConstraintFilter query = new TopicConstraintFilter { TenantId = topic.TenantId, TopicId = topic.Id, Kind = QueryEnum<ConstraintKindEnum>(ctx, "kind") };
+            ApplyPaging(ctx, query);
+            await SendJsonAsync(ctx, 200, await Server.Database.TopicConstraints.EnumerateAsync(query, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         private async Task CreateConstraintAsync(HttpContextBase ctx)
@@ -368,7 +375,9 @@ namespace MyMorningNews.Server.Routes
             if (!await AuthorizeAsync(ctx, RequestTypeEnum.TopicRead).ConfigureAwait(false)) return;
             Topic? topic = await OwnedTopicAsync(ctx).ConfigureAwait(false);
             if (topic == null) return;
-            await SendJsonAsync(ctx, 200, await RecipientsAsync(topic, ctx).ConfigureAwait(false)).ConfigureAwait(false);
+            TopicRecipientFilter query = new TopicRecipientFilter { TenantId = topic.TenantId, TopicId = topic.Id };
+            ApplyPaging(ctx, query);
+            await SendJsonAsync(ctx, 200, await Server.Database.TopicRecipients.EnumerateAsync(query, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         private async Task AddRecipientAsync(HttpContextBase ctx)
@@ -435,7 +444,7 @@ namespace MyMorningNews.Server.Routes
 
         private async Task<List<TopicRecipient>> RecipientsAsync(Topic topic, HttpContextBase ctx)
         {
-            return (await Server.Database.TopicRecipients.EnumerateAsync(new TopicRecipientFilter { TenantId = topic.TenantId, TopicId = topic.Id, PageSize = 200 }, ctx.Token).ConfigureAwait(false)).Items;
+            return (await Server.Database.TopicRecipients.EnumerateAsync(new TopicRecipientFilter { TenantId = topic.TenantId, TopicId = topic.Id, PageSize = 200 }, ctx.Token).ConfigureAwait(false)).Objects;
         }
 
         private async Task<TopicConstraint?> SameConstraintAsync(Topic topic, ConstraintKindEnum kind, string value, string? exceptId, HttpContextBase ctx)

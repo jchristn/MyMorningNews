@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for AuditRecord records. Null properties are not applied.
     /// </summary>
-    public class AuditRecordFilter : EnumerationFilter
+    public class AuditRecordFilter : EnumerationQuery
     {
         /// <summary>
         /// Match EventType exactly when set.

@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for Tenant records. Null properties are not applied.
     /// </summary>
-    public class TenantFilter : EnumerationFilter
+    public class TenantFilter : EnumerationQuery
     {
         /// <summary>
         /// Match Active exactly when set.

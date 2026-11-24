@@ -114,9 +114,10 @@ namespace MyMorningNews.Sdk.Resources.Admin
         /// <returns>A list of PromoRedemption items.</returns>
         /// <exception cref="ArgumentNullException">id is null or empty.</exception>
         /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
-        public Task<List<PromoRedemption>> ListRedemptionsAsync(string id, CancellationToken token = default)
+        /// <param name="options">Pagination, sorting, and filters; null uses defaults.</param>
+        public Task<EnumerationResult<PromoRedemption>> ListRedemptionsAsync(string id, EnumerationQuery? options = null, CancellationToken token = default)
         {
-            return Client.SendAsync<List<PromoRedemption>>(HttpMethod.Get, "/v1.0/api/admin/promo-codes/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/redemptions", null, null, token);
+            return Client.SendAsync<EnumerationResult<PromoRedemption>>(HttpMethod.Get, "/v1.0/api/admin/promo-codes/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/redemptions", (options ?? new EnumerationQuery()).ToQuery(), null, token);
         }
 
         /// <summary>

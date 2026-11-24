@@ -6,7 +6,7 @@ import { routes } from './routes';
 // "This arrives in a later server update".
 //
 // List calls take the shared list contract (pageNumber, pageSize, sortBy, sortDirection, search, fromUtc, toUtc, plus
-// typed filters) and return `{ items, pageNumber, pageSize, totalCount, totalPages }`. Detail reads return wrapper
+// typed filters) and return `{ objects, pageNumber, pageSize, totalRecords, totalPages }`. Detail reads return wrapper
 // objects such as `{ topic, dimensions, constraints, recipients }` or `{ briefing, sections, items, files }`.
 
 /** Topics with their dimensions and constraints (Phase 4). */
@@ -88,10 +88,10 @@ export const runsApi = {
   list: (client, query) => client.get(routes.runs, query),
   get: (client, id) => client.get(routes.run(id)),
   cancel: (client, id) => client.post(routes.runCancel(id), {}),
-  /** Stages in order (a bare array). */
-  stages: (client, id) => client.get(routes.runStages(id)),
-  queries: (client, id) => client.get(routes.runQueries(id)),
-  results: (client, id, disposition) => client.get(routes.runResults(id), disposition ? { disposition } : undefined),
+  /** Stages in order (EnumerationResult). */
+  stages: (client, id, query) => client.get(routes.runStages(id), query),
+  queries: (client, id, query) => client.get(routes.runQueries(id), query),
+  results: (client, id, disposition, query) => client.get(routes.runResults(id), { ...query, disposition }),
   /** What the run cost (RunCostReport): totals, each stage, each model, and each task role. Current while it runs. */
   costs: (client, id) => client.get(routes.runCosts(id)),
 };
@@ -196,7 +196,7 @@ export const feedbackApi = {
   /** The current rating on one item, or null. */
   current: async (client, targetType, targetId) => {
     const result = await client.get(routes.feedback, { targetType, targetId, pageNumber: 1, pageSize: 5 });
-    const items = Array.isArray(result) ? result : (result && result.items) || [];
+    const items = (result && result.objects) || [];
     return items.find((f) => f.isCurrent !== false) || null;
   },
   update: (client, id, reason) => client.put(routes.feedbackItem(id), { reason: reason || '' }),

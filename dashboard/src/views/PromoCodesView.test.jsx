@@ -1,3 +1,4 @@
+import { enumerationResult } from '../test/enumeration.js';
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -7,7 +8,7 @@ import { PLANS, REDEMPTIONS, promoStats } from '../test/promoFixtures.js';
 import { ApiError } from '../utils/api.js';
 
 const listOverrides = (items) => ({
-  listPlans: vi.fn(async () => PLANS),
+  listPlans: vi.fn(async () => enumerationResult(PLANS)),
   listPromoCodes: vi.fn(async () => page(items))
 });
 
@@ -116,9 +117,9 @@ describe('PromoCodesView list', () => {
 
 describe('PromoCodesView detail', () => {
   const detailOverrides = (extra = {}) => ({
-    listPlans: vi.fn(async () => PLANS),
+    listPlans: vi.fn(async () => enumerationResult(PLANS)),
     getPromoCode: vi.fn(async () => promoStats()),
-    listPromoRedemptions: vi.fn(async () => REDEMPTIONS),
+    listPromoRedemptions: vi.fn(async () => enumerationResult(REDEMPTIONS)),
     ...extra
   });
 

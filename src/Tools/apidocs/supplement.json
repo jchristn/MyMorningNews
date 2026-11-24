@@ -433,7 +433,7 @@
       }
     },
     "GET /v1.0/api/devices": {
-      "response": "List<Device>",
+      "response": "EnumerationResult<Device>",
       "status": {
         "200": "OK",
         "400": "BadRequest",
@@ -1045,7 +1045,7 @@
       "notes": "Send `voice` (a speech server voice from the available list) or `voiceProfileId` (a voice profile, spoken with its own endpoint, model, and speed). `text` is cut to 300 characters; without it a default sentence is spoken. Each user may ask for 20 previews a minute. 400 when neither is given or the speech server does not offer the voice, 404 for an unknown voice profile, 409 when speech is turned off on the server, 502 `TtsError` when the speech endpoint fails. Needs permission to edit topics."
     },
     "GET /v1.0/api/feed-tokens": {
-      "response": "List<FeedToken>",
+      "response": "EnumerationResult<FeedToken>",
       "status": {
         "200": "OK",
         "400": "TenantRequired",
@@ -1228,7 +1228,7 @@
       }
     },
     "GET /v1.0/api/model-endpoints/{id}/models": {
-      "response": "List<ModelListItem>",
+      "response": "EnumerationResult<ModelListItem>",
       "status": {
         "200": "OK",
         "400": "TenantRequired",
@@ -1344,7 +1344,7 @@
       }
     },
     "GET /v1.0/api/admin/promo-codes/{id}/redemptions": {
-      "response": "List<PromoRedemption>",
+      "response": "EnumerationResult<PromoRedemption>",
       "status": {
         "200": "OK",
         "403": "Forbidden",
@@ -1369,7 +1369,7 @@
       }
     },
     "GET /v1.0/api/admin/plans": {
-      "response": "List<PlanResponse>",
+      "response": "EnumerationResult<PlanResponse>",
       "status": {
         "200": "OK",
         "403": "Forbidden"
@@ -1394,7 +1394,7 @@
       }
     },
     "GET /v1.0/api/admin/plan-assignments": {
-      "response": "List<PlanAssignment>",
+      "response": "EnumerationResult<PlanAssignment>",
       "status": {
         "200": "OK",
         "400": "ValidationFailed",
@@ -1496,7 +1496,7 @@
       }
     },
     "GET /v1.0/api/prompts/{id}/versions": {
-      "response": "List<PromptTemplateVersion>",
+      "response": "EnumerationResult<PromptTemplateVersion>",
       "status": {
         "200": "OK",
         "400": "TenantRequired",
@@ -1942,7 +1942,7 @@
       }
     },
     "GET /v1.0/api/runs/{id}/stages": {
-      "response": "List<RunStage>",
+      "response": "EnumerationResult<RunStage>",
       "status": {
         "200": "OK",
         "400": "TenantRequired",
@@ -1951,7 +1951,7 @@
       }
     },
     "GET /v1.0/api/runs/{id}/queries": {
-      "response": "List<SearchQuery>",
+      "response": "EnumerationResult<SearchQuery>",
       "status": {
         "200": "OK",
         "400": "TenantRequired",
@@ -1960,7 +1960,7 @@
       }
     },
     "GET /v1.0/api/runs/{id}/results": {
-      "response": "List<SearchResult>",
+      "response": "EnumerationResult<SearchResult>",
       "status": {
         "200": "OK",
         "400": "TenantRequired",
@@ -2225,7 +2225,7 @@
       }
     },
     "GET /v1.0/api/topics/{id}/search-providers": {
-      "response": "List<SearchProvider>",
+      "response": "EnumerationResult<SearchProvider>",
       "status": {
         "200": "OK",
         "400": "TenantRequired",
@@ -2332,7 +2332,7 @@
       }
     },
     "GET /v1.0/api/briefing-templates/{id}/versions": {
-      "response": "List<BriefingTemplateVersion>",
+      "response": "EnumerationResult<BriefingTemplateVersion>",
       "status": {
         "200": "OK",
         "400": "TenantRequired",
@@ -2549,7 +2549,7 @@
       }
     },
     "GET /v1.0/api/topics/{id}/dimensions": {
-      "response": "List<TopicDimension>",
+      "response": "EnumerationResult<TopicDimension>",
       "status": {
         "200": "OK",
         "400": "TenantRequired",
@@ -2585,7 +2585,7 @@
       }
     },
     "GET /v1.0/api/topics/{id}/constraints": {
-      "response": "List<TopicConstraint>",
+      "response": "EnumerationResult<TopicConstraint>",
       "status": {
         "200": "OK",
         "400": "TenantRequired",
@@ -2622,7 +2622,7 @@
       }
     },
     "GET /v1.0/api/topics/{id}/recipients": {
-      "response": "List<TopicRecipient>",
+      "response": "EnumerationResult<TopicRecipient>",
       "status": {
         "200": "OK",
         "400": "TenantRequired",
@@ -2799,7 +2799,7 @@
       "notes": "Allowed for the user who created the credential (`createdByUserId`) and for administrators. Anyone else in the tenant gets 403, and a credential in another tenant is 404. Every reveal writes a `CredentialRevealed` audit event."
     },
     "GET /v1.0/api/vault/credentials/{id}/usage": {
-      "response": "List<VaultUsageItem>",
+      "response": "EnumerationResult<VaultUsageItem>",
       "status": {
         "200": "OK",
         "400": "TenantRequired",
@@ -2963,7 +2963,7 @@
       }
     },
     "GET /v1.0/api/runs/{id}/tool-calls": {
-      "response": "List<RunToolCall>",
+      "response": "EnumerationResult<RunToolCall>",
       "status": {
         "200": "OK",
         "403": "Forbidden",
@@ -3386,6 +3386,516 @@
         "502": "BillingVerificationFailed"
       },
       "notes": "Requires an authentic provider signature or Google OIDC identity. Do not use a session token. Provider sandbox and webhook tests are separate from general collection runs."
+    },
+    "POST /v1.0/api/audit/enumerate": {
+      "response": "EnumerationResult<AuditRecord>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/briefings/enumerate": {
+      "response": "EnumerationResult<Briefing>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/artifacts/enumerate": {
+      "response": "EnumerationResult<Artifact>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/tenants/{tenantId}/credentials/enumerate": {
+      "response": "EnumerationResult<CredentialResponse>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/devices/enumerate": {
+      "response": "EnumerationResult<Device>",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/notifications/enumerate": {
+      "response": "EnumerationResult<Notification>",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/editions/enumerate": {
+      "response": "EnumerationResult<Edition>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/email-messages/enumerate": {
+      "response": "EnumerationResult<EmailMessage>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/feedback/enumerate": {
+      "response": "EnumerationResult<Feedback>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/learned-preferences/enumerate": {
+      "response": "EnumerationResult<LearnedPreference>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/media/enumerate": {
+      "response": "EnumerationResult<MediaAsset>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/voices/enumerate": {
+      "response": "EnumerationResult<VoiceProfile>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/feed-tokens/enumerate": {
+      "response": "EnumerationResult<FeedToken>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/briefings/{id}/shares/enumerate": {
+      "response": "EnumerationResult<BriefingShare>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "The owner of the briefing and tenant administrators can list its shares. `tokenHash` is always `redacted`, and the links themselves are never returned here. A share works while `revokedUtc` is null and `expiresUtc` is in the future. `viewCount` and `lastViewedUtc` say whether a link was opened; nothing else about visitors is recorded."
+    },
+    "POST /v1.0/api/model-endpoints/enumerate": {
+      "response": "EnumerationResult<ModelEndpoint>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/model-endpoints/{id}/models/enumerate": {
+      "response": "EnumerationResult<ModelListItem>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "502": "UpstreamError"
+      }
+    },
+    "POST /v1.0/api/model-assignments/enumerate": {
+      "response": "EnumerationResult<ModelAssignment>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/llm-calls/enumerate": {
+      "response": "EnumerationResult<LlmCall>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/admin/promo-codes/enumerate": {
+      "response": "EnumerationResult<PromoCodeStats>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/admin/promo-codes/{id}/redemptions/enumerate": {
+      "response": "EnumerationResult<PromoRedemption>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/admin/plans/enumerate": {
+      "response": "EnumerationResult<PlanResponse>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/admin/plan-assignments/enumerate": {
+      "response": "EnumerationResult<PlanAssignment>",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/prompts/enumerate": {
+      "response": "EnumerationResult<PromptTemplate>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/prompts/{id}/versions/enumerate": {
+      "response": "EnumerationResult<PromptTemplateVersion>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/tenants/{tenantId}/roles/enumerate": {
+      "response": "EnumerationResult<UserRole>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/tenants/{tenantId}/permissions/enumerate": {
+      "response": "EnumerationResult<Permission>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/tenants/{tenantId}/users/{userId}/assignments/enumerate": {
+      "response": "EnumerationResult<UserRoleAssignment>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes/enumerate": {
+      "response": "EnumerationResult<CredentialScopeAssignment>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/refinement-sessions/enumerate": {
+      "response": "EnumerationResult<RefinementSession>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/request-history/enumerate": {
+      "response": "EnumerationResult<RequestHistoryEntry>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/requests/enumerate": {
+      "response": "EnumerationResult<ResearchRequest>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/findings/enumerate": {
+      "response": "EnumerationResult<Finding>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/runs/{id}/llm-calls/enumerate": {
+      "response": "EnumerationResult<LlmCall>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/runs/{id}/stages/enumerate": {
+      "response": "EnumerationResult<RunStage>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/runs/{id}/queries/enumerate": {
+      "response": "EnumerationResult<SearchQuery>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/runs/{id}/results/enumerate": {
+      "response": "EnumerationResult<SearchResult>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/predictions/enumerate": {
+      "response": "EnumerationResult<Prediction>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/suggestions/enumerate": {
+      "response": "EnumerationResult<Suggestion>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/sources/enumerate": {
+      "response": "EnumerationResult<SourceItem>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/runs/enumerate": {
+      "response": "EnumerationResult<Run>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      },
+      "notes": "`sortBy=estimatedCostUsd` lists the most expensive runs first (runs with no priced cost sort last) and `sortBy=durationMs` the longest; `queuedUtc`, `completedUtc`, `createdUtc` (the default), `lastUpdateUtc`, and `status` also work."
+    },
+    "POST /v1.0/api/schedules/enumerate": {
+      "response": "EnumerationResult<Schedule>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/search-providers/enumerate": {
+      "response": "EnumerationResult<SearchProvider>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/topics/{id}/search-providers/enumerate": {
+      "response": "EnumerationResult<SearchProvider>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/briefing-templates/enumerate": {
+      "response": "EnumerationResult<BriefingTemplate>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/briefing-templates/{id}/versions/enumerate": {
+      "response": "EnumerationResult<BriefingTemplateVersion>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/tenants/enumerate": {
+      "response": "EnumerationResult<Tenant>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/topics/enumerate": {
+      "response": "EnumerationResult<Topic>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/topics/{id}/dimensions/enumerate": {
+      "response": "EnumerationResult<TopicDimension>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/topics/{id}/constraints/enumerate": {
+      "response": "EnumerationResult<TopicConstraint>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/topics/{id}/recipients/enumerate": {
+      "response": "EnumerationResult<TopicRecipient>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/tenants/{tenantId}/users/enumerate": {
+      "response": "EnumerationResult<UserResponse>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/vault/credentials/enumerate": {
+      "response": "EnumerationResult<VaultCredentialResponse>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/vault/credentials/{id}/usage/enumerate": {
+      "response": "EnumerationResult<VaultUsageItem>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/mcp-servers/enumerate": {
+      "response": "EnumerationResult<McpServer>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/runs/{id}/tool-calls/enumerate": {
+      "response": "EnumerationResult<RunToolCall>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/catalog/enumerate": {
+      "response": "EnumerationResult<CatalogEntryResponse>",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "Browse published system briefings and account eligibility."
+    },
+    "POST /v1.0/api/catalog/subscriptions/enumerate": {
+      "response": "EnumerationResult<CatalogSubscription>",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "List private subscriptions, including suspended subscriptions."
+    },
+    "POST /v1.0/api/catalog/{id}/issues/enumerate": {
+      "response": "EnumerationResult<CatalogIssueResponse>",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "List issues readable through this subscription."
+    },
+    "POST /v1.0/api/catalog/issues/enumerate": {
+      "response": "EnumerationResult<CatalogIssueResponse>",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "List shared issues across all current subscriptions."
+    },
+    "POST /v1.0/api/admin/catalog/enumerate": {
+      "response": "EnumerationResult<CatalogPublication>",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "System administrator: list every publication lifecycle state."
+    },
+    "POST /v1.0/api/admin/catalog/{id}/issues/enumerate": {
+      "response": "EnumerationResult<CatalogIssueResponse>",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "System administrator: inspect canonical issue projections."
     }
   },
   "routeBodies": {
@@ -3395,7 +3905,68 @@
         "enabled": true,
         "maxResults": 20
       }
-    ]
+    ],
+    "POST /v1.0/api/audit/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/briefings/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/artifacts/enumerate": "EnumerationQuery",
+    "POST /v1.0/tenants/{tenantId}/credentials/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/devices/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/notifications/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/editions/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/email-messages/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/feedback/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/learned-preferences/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/media/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/voices/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/feed-tokens/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/briefings/{id}/shares/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/model-endpoints/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/model-endpoints/{id}/models/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/model-assignments/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/llm-calls/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/admin/promo-codes/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/admin/promo-codes/{id}/redemptions/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/admin/plans/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/admin/plan-assignments/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/prompts/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/prompts/{id}/versions/enumerate": "EnumerationQuery",
+    "POST /v1.0/tenants/{tenantId}/roles/enumerate": "EnumerationQuery",
+    "POST /v1.0/tenants/{tenantId}/permissions/enumerate": "EnumerationQuery",
+    "POST /v1.0/tenants/{tenantId}/users/{userId}/assignments/enumerate": "EnumerationQuery",
+    "POST /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/refinement-sessions/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/request-history/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/requests/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/findings/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/runs/{id}/llm-calls/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/runs/{id}/stages/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/runs/{id}/queries/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/runs/{id}/results/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/predictions/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/suggestions/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/sources/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/runs/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/schedules/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/search-providers/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/topics/{id}/search-providers/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/briefing-templates/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/briefing-templates/{id}/versions/enumerate": "EnumerationQuery",
+    "POST /v1.0/tenants/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/topics/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/topics/{id}/dimensions/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/topics/{id}/constraints/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/topics/{id}/recipients/enumerate": "EnumerationQuery",
+    "POST /v1.0/tenants/{tenantId}/users/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/vault/credentials/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/vault/credentials/{id}/usage/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/mcp-servers/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/runs/{id}/tool-calls/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/catalog/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/catalog/subscriptions/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/catalog/{id}/issues/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/catalog/issues/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/admin/catalog/enumerate": "EnumerationQuery",
+    "POST /v1.0/api/admin/catalog/{id}/issues/enumerate": "EnumerationQuery"
   },
   "captures": {
     "POST /v1.0/tenants/{tenantId}/credentials": {
@@ -3465,40 +4036,82 @@
       "scopeId": "id"
     },
     "GET /v1.0/api/audit": {
-      "auditId": "items.0.id"
+      "auditId": "objects.0.id"
     },
     "GET /v1.0/api/request-history": {
-      "requestHistoryId": "items.0.id"
+      "requestHistoryId": "objects.0.id"
     },
     "GET /v1.0/api/llm-calls": {
-      "llmCallId": "items.0.id"
+      "llmCallId": "objects.0.id"
     },
     "GET /v1.0/api/prompts": {
-      "promptId": "items.0.id"
+      "promptId": "objects.0.id"
     },
     "GET /v1.0/api/email-messages": {
-      "emailMessageId": "items.0.id"
+      "emailMessageId": "objects.0.id"
     },
     "GET /v1.0/api/findings": {
-      "findingId": "items.0.id"
+      "findingId": "objects.0.id"
     },
     "GET /v1.0/api/sources": {
-      "sourceId": "items.0.id"
+      "sourceId": "objects.0.id"
     },
     "GET /v1.0/api/predictions": {
-      "predictionId": "items.0.id"
+      "predictionId": "objects.0.id"
     },
     "GET /v1.0/api/suggestions": {
-      "suggestionId": "items.0.id"
+      "suggestionId": "objects.0.id"
     },
     "GET /v1.0/api/briefings": {
-      "briefingId": "items.0.id"
+      "briefingId": "objects.0.id"
     },
     "GET /v1.0/api/artifacts": {
-      "artifactId": "items.0.id"
+      "artifactId": "objects.0.id"
     },
     "GET /v1.0/api/media": {
-      "mediaId": "items.0.id"
+      "mediaId": "objects.0.id"
+    },
+    "POST /v1.0/api/audit/enumerate": {
+      "auditId": "objects.0.id"
+    },
+    "POST /v1.0/api/briefings/enumerate": {
+      "briefingId": "objects.0.id"
+    },
+    "POST /v1.0/api/artifacts/enumerate": {
+      "artifactId": "objects.0.id"
+    },
+    "POST /v1.0/api/email-messages/enumerate": {
+      "emailMessageId": "objects.0.id"
+    },
+    "POST /v1.0/api/media/enumerate": {
+      "mediaId": "objects.0.id"
+    },
+    "POST /v1.0/api/llm-calls/enumerate": {
+      "llmCallId": "objects.0.id"
+    },
+    "POST /v1.0/api/admin/plans/enumerate": {
+      "planId": "0.plan.id"
+    },
+    "POST /v1.0/api/prompts/enumerate": {
+      "promptId": "objects.0.id"
+    },
+    "POST /v1.0/api/request-history/enumerate": {
+      "requestHistoryId": "objects.0.id"
+    },
+    "POST /v1.0/api/findings/enumerate": {
+      "findingId": "objects.0.id"
+    },
+    "POST /v1.0/api/runs/{id}/stages/enumerate": {
+      "runStageId": "0.id"
+    },
+    "POST /v1.0/api/predictions/enumerate": {
+      "predictionId": "objects.0.id"
+    },
+    "POST /v1.0/api/suggestions/enumerate": {
+      "suggestionId": "objects.0.id"
+    },
+    "POST /v1.0/api/sources/enumerate": {
+      "sourceId": "objects.0.id"
     }
   },
   "variableDefaults": {
@@ -3538,7 +4151,251 @@
       "currentPassword": "{{password}}",
       "newPassword": "{{password}}"
     },
-    "PUT /v1.0/api/settings": "{{settingsJson}}"
+    "PUT /v1.0/api/settings": "{{settingsJson}}",
+    "POST /v1.0/api/audit/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/briefings/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/artifacts/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/tenants/{tenantId}/credentials/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/devices/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/notifications/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/editions/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/email-messages/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/feedback/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/learned-preferences/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/media/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/voices/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/feed-tokens/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/briefings/{id}/shares/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/model-endpoints/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/model-endpoints/{id}/models/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/model-assignments/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/llm-calls/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/admin/promo-codes/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/admin/promo-codes/{id}/redemptions/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/admin/plans/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/admin/plan-assignments/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/prompts/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/prompts/{id}/versions/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/tenants/{tenantId}/roles/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/tenants/{tenantId}/permissions/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/tenants/{tenantId}/users/{userId}/assignments/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/refinement-sessions/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/request-history/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/requests/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/findings/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/runs/{id}/llm-calls/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/runs/{id}/stages/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/runs/{id}/queries/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/runs/{id}/results/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/predictions/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/suggestions/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/sources/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/runs/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/schedules/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/search-providers/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/topics/{id}/search-providers/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/briefing-templates/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/briefing-templates/{id}/versions/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/tenants/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/topics/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/topics/{id}/dimensions/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/topics/{id}/constraints/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/topics/{id}/recipients/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/tenants/{tenantId}/users/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/vault/credentials/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/vault/credentials/{id}/usage/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/mcp-servers/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/runs/{id}/tool-calls/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/catalog/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/catalog/subscriptions/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/catalog/{id}/issues/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/catalog/issues/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/admin/catalog/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    },
+    "POST /v1.0/api/admin/catalog/{id}/issues/enumerate": {
+      "pageNumber": 1,
+      "pageSize": 10
+    }
   },
   "postmanAuth": {
     "POST /v1.0/api/settings/restart": "adminApiKey"
@@ -3562,6 +4419,10 @@
       "version": "1"
     },
     "GET /v1.0/api/admin/plan-assignments": {
+      "tenantId": "{{tenantId}}",
+      "userId": "{{userId}}"
+    },
+    "POST /v1.0/api/admin/plan-assignments/enumerate": {
       "tenantId": "{{tenantId}}",
       "userId": "{{userId}}"
     }
@@ -4460,7 +5321,10 @@
       ]
     },
     "EnumerationResult<Edition>": {
-      "items": [
+      "pageNumber": 1,
+      "pageSize": 1,
+      "totalPages": 1,
+      "objects": [
         {
           "id": "edn_mwpee2a1_4mTmTABpYtKKeeb4bbQ",
           "tenantId": "default",
@@ -4479,11 +5343,9 @@
           "lastUpdateUtc": "2026-11-20T19:54:30.026288Z"
         }
       ],
-      "pageNumber": 1,
-      "pageSize": 1,
-      "totalCount": 1,
-      "totalPages": 1,
-      "durationMs": 1.57
+      "totalRecords": 1,
+      "totalMs": 1.57,
+      "success": true
     },
     "EffectivePlan": {
       "plan": {
@@ -4943,6 +5805,11 @@
         }
       ],
       "localSpeechAvailable": false
+    },
+    "EnumerationQuery": {
+      "pageNumber": 1,
+      "pageSize": 10,
+      "order": "CreatedDescending"
     }
   },
   "routeExamples": {

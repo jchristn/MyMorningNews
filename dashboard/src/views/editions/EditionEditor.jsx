@@ -106,8 +106,8 @@ export default function EditionEditor({ editionId = null }) {
         apiClient.listTopics({ isOneTime: false, pageSize: 1000, sortBy: 'name', sortDirection: 'Ascending' }),
         creating ? Promise.resolve(null) : apiClient.getEdition(editionId)
       ]);
-      setTemplates((tpl && tpl.items) || []);
-      setTopics(((top && top.items) || []).filter((x) => !x.isOneTime));
+      setTemplates((tpl && tpl.objects) || []);
+      setTopics(((top && top.objects) || []).filter((x) => !x.isOneTime));
       if (ed) apply(ed);
     } catch (err) {
       setLoadError(err);

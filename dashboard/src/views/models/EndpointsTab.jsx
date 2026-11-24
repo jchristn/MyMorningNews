@@ -55,7 +55,7 @@ export default function EndpointsTab({ canWrite, canExecute, focusId, onChanged 
     let live = true;
     apiClient
       .listVaultCredentials({ pageSize: 1000 })
-      .then((r) => live && setCredentials((r && r.items) || []))
+      .then((r) => live && setCredentials((r && r.objects) || []))
       .catch(() => live && setCredentials(null));
     return () => {
       live = false;

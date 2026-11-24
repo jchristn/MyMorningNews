@@ -117,6 +117,7 @@ namespace MyMorningNews.Server.Routes
             ArgumentNullException.ThrowIfNull(metadata);
             metadata.WithParameter(QueryParam("pageNumber", typeof(int))).WithParameter(QueryParam("pageSize", typeof(int)))
                 .WithParameter(QueryParam("sortBy", typeof(string))).WithParameter(QueryParam("sortDirection", typeof(SortDirectionEnum)))
+                .WithParameter(QueryParam("order", typeof(EnumerationOrderEnum))).WithParameter(QueryParam("createdAfter", typeof(DateTime))).WithParameter(QueryParam("createdBefore", typeof(DateTime)))
                 .WithParameter(QueryParam("search", typeof(string))).WithParameter(QueryParam("fromUtc", typeof(DateTime))).WithParameter(QueryParam("toUtc", typeof(DateTime)));
             return metadata;
         }
@@ -137,6 +138,8 @@ namespace MyMorningNews.Server.Routes
                 return;
             }
 
+            if (ctx.Request.Method == HttpMethod.GET && body is System.Collections.IEnumerable && body is not string && body is not System.Collections.IDictionary && ctx.Request.Url.RawWithoutQuery != "/.well-known/assetlinks.json")
+                throw new InvalidOperationException("Collection retrievals must return EnumerationResult<T>.");
             ctx.Response.ContentType = "application/json";
             await ctx.Response.Send(Serializer.Serialize(body), ctx.Token).ConfigureAwait(false);
         }
@@ -429,7 +432,8 @@ namespace MyMorningNews.Server.Routes
         protected static string? Query(HttpContextBase ctx, string name)
         {
             string? value = ctx.Request.Query?.Elements?[name];
-            if (String.IsNullOrWhiteSpace(value)) return null;
+            if (String.IsNullOrWhiteSpace(value))
+                return ctx.Metadata is RequestContext rc && rc.EnumerationParameters.TryGetValue(name, out string? bodyValue) ? bodyValue : null;
             string decoded = WebUtility.UrlDecode(value).Trim();
             return decoded.Length == 0 ? null : decoded;
         }
@@ -485,25 +489,57 @@ namespace MyMorningNews.Server.Routes
             return value != null && Enum.TryParse(value, true, out T e) ? e : null;
         }
 
+        /// <summary>Validate an enumeration body and invoke its shared GET handler.</summary>
+        /// <param name="ctx">HTTP context.</param>
+        /// <param name="handler">Collection handler.</param>
+        /// <returns>Request completion.</returns>
+        protected static async Task EnumerateAsync(HttpContextBase ctx, Func<HttpContextBase, Task> handler)
+        {
+            Dictionary<string, System.Text.Json.JsonElement>? body = await ReadBodyAsync<Dictionary<string, System.Text.Json.JsonElement>>(ctx).ConfigureAwait(false);
+            if (body == null) return;
+            foreach (KeyValuePair<string, System.Text.Json.JsonElement> entry in body)
+            {
+                if (entry.Value.ValueKind == System.Text.Json.JsonValueKind.Array || entry.Value.ValueKind == System.Text.Json.JsonValueKind.Object)
+                {
+                    await SendErrorAsync(ctx, 400, "BadRequest", "Enumeration filters must be scalar values.").ConfigureAwait(false);
+                    return;
+                }
+                Context(ctx).EnumerationParameters[entry.Key] = entry.Value.ValueKind == System.Text.Json.JsonValueKind.Null ? null : entry.Value.ToString();
+            }
+            await handler(ctx).ConfigureAwait(false);
+        }
+
         /// <summary>
         /// Apply paging, sorting, search, and date range from the query string.
         /// </summary>
         /// <param name="ctx">HTTP context.</param>
         /// <param name="filter">Filter to populate.</param>
-        protected static void ApplyPaging(HttpContextBase ctx, EnumerationFilter filter)
+        protected static void ApplyPaging(HttpContextBase ctx, EnumerationQuery filter)
         {
             ArgumentNullException.ThrowIfNull(filter);
+            foreach (string name in new[] { "pageNumber", "pageSize" })
+                if (Query(ctx, name) != null && !QueryInt(ctx, name).HasValue)
+                    throw new ArgumentException(name + " must be a whole number within the 32-bit range.");
+            foreach (string name in new[] { "createdAfter", "createdBefore", "fromUtc", "toUtc" })
+                if (Query(ctx, name) != null && !QueryDate(ctx, name).HasValue)
+                    throw new ArgumentException(name + " must be a valid UTC date and time.");
+            if (Query(ctx, "order") != null && !QueryEnum<EnumerationOrderEnum>(ctx, "order").HasValue)
+                throw new ArgumentException("order must be CreatedAscending or CreatedDescending.");
             int? page = QueryInt(ctx, "pageNumber");
             if (page.HasValue) filter.PageNumber = page.Value;
             int? size = QueryInt(ctx, "pageSize");
             if (size.HasValue) filter.PageSize = size.Value;
-            filter.SortBy = Query(ctx, "sortBy");
+            filter.SortBy = Query(ctx, "sortBy") ?? filter.SortBy;
             SortDirectionEnum? dir = QueryEnum<SortDirectionEnum>(ctx, "sortDirection");
             if (dir.HasValue) filter.SortDirection = dir.Value;
             else if (String.Equals(Query(ctx, "sortDirection"), "asc", StringComparison.OrdinalIgnoreCase)) filter.SortDirection = SortDirectionEnum.Ascending;
             filter.Search = Query(ctx, "search");
             filter.FromUtc = QueryDate(ctx, "fromUtc");
             filter.ToUtc = QueryDate(ctx, "toUtc");
+            EnumerationOrderEnum? order = QueryEnum<EnumerationOrderEnum>(ctx, "order");
+            if (order.HasValue) filter.Order = order.Value;
+            filter.CreatedAfter = QueryDate(ctx, "createdAfter");
+            filter.CreatedBefore = QueryDate(ctx, "createdBefore");
         }
 
         /// <summary>

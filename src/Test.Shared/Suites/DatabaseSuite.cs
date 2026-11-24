@@ -88,9 +88,9 @@ namespace Test.Shared.Suites
                     EnumerationResult<UserRole> rolesBefore = await db.Roles.EnumerateAsync(new UserRoleFilter { TenantId = null, PageSize = 100 }, token).ConfigureAwait(false);
                     await seed.EnsureAsync(token).ConfigureAwait(false);
                     EnumerationResult<UserRole> rolesAfter = await db.Roles.EnumerateAsync(new UserRoleFilter { TenantId = null, PageSize = 100 }, token).ConfigureAwait(false);
-                    Assert.Equal(BuiltInRoles.All.Count, (int)rolesAfter.TotalCount, "one row per built-in role");
-                    foreach (UserRole r in rolesBefore.Items)
-                        Assert.True(rolesAfter.Items.Exists(x => x.Id == r.Id), "role " + r.Name + " keeps its id");
+                    Assert.Equal(BuiltInRoles.All.Count, (int)rolesAfter.TotalRecords, "one row per built-in role");
+                    foreach (UserRole r in rolesBefore.Objects)
+                        Assert.True(rolesAfter.Objects.Exists(x => x.Id == r.Id), "role " + r.Name + " keeps its id");
                     Assert.Equal(1L, await db.Users.CountAsync(new UserFilter { TenantId = "default" }, token).ConfigureAwait(false), "one default admin");
                     Assert.True(await db.Tenants.ExistsAsync("default", token).ConfigureAwait(false), "default tenant");
                 }
@@ -109,7 +109,7 @@ namespace Test.Shared.Suites
                 await db.Users.CreateAsync(new User { TenantId = b.Id, Email = "b@example.test", PasswordSha256 = SecretHasher.Sha256Hex("x") }, token).ConfigureAwait(false);
                 Assert.True(await db.Users.ReadAsync(b.Id, ua.Id, token).ConfigureAwait(false) == null, "user A not readable in tenant B");
                 EnumerationResult<User> inB = await db.Users.EnumerateAsync(new UserFilter { TenantId = b.Id }, token).ConfigureAwait(false);
-                Assert.True(inB.Items.TrueForAll(u => u.TenantId == b.Id) && inB.TotalCount == 1, "enumeration stays in tenant");
+                Assert.True(inB.Objects.TrueForAll(u => u.TenantId == b.Id) && inB.TotalRecords == 1, "enumeration stays in tenant");
                 Assert.True(!await db.Users.DeleteAsync(b.Id, ua.Id, token).ConfigureAwait(false), "cross-tenant delete affects nothing");
                 return true;
             }, token).ConfigureAwait(false);
@@ -138,12 +138,12 @@ namespace Test.Shared.Suites
                 for (int i = 0; i < 7; i++)
                     await db.Users.CreateAsync(new User { TenantId = t.Id, Email = "p" + i + "@example.test", PasswordSha256 = "x" }, token).ConfigureAwait(false);
                 EnumerationResult<User> page = await db.Users.EnumerateAsync(new UserFilter { TenantId = t.Id, PageSize = 3, PageNumber = 2, SortBy = "email", SortDirection = MyMorningNews.Core.Enums.SortDirectionEnum.Ascending }, token).ConfigureAwait(false);
-                Assert.Equal(7L, page.TotalCount, "total");
+                Assert.Equal(7L, page.TotalRecords, "total");
                 Assert.Equal(3, page.TotalPages, "pages");
-                Assert.Equal(3, page.Items.Count, "page size");
-                Assert.Equal("p3@example.test", page.Items[0].Email, "sorted second page starts at p3");
+                Assert.Equal(3, page.Objects.Count, "page size");
+                Assert.Equal("p3@example.test", page.Objects[0].Email, "sorted second page starts at p3");
                 EnumerationResult<User> search = await db.Users.EnumerateAsync(new UserFilter { TenantId = t.Id, Search = "p5@" }, token).ConfigureAwait(false);
-                Assert.Equal(1L, search.TotalCount, "search");
+                Assert.Equal(1L, search.TotalRecords, "search");
                 return true;
             }, token).ConfigureAwait(false);
         }

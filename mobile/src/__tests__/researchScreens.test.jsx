@@ -452,13 +452,13 @@ describe('runs', () => {
     const { server } = await renderSignedIn(<RunDetail id="run_1" />, {
       'GET /v1.0/api/runs/run_1': () => ({ body: { ...run, status: 'Running', completedUtc: undefined } }),
       'GET /v1.0/api/runs/run_1/stages': () => ({
-        body: [
+        body: page([
           { id: 'rst_1', stage: 'PlanQueries', status: 'Succeeded', durationMs: 1200, itemsIn: 1, itemsOut: 8, sortOrder: 2 },
           { id: 'rst_2', stage: 'Search', status: 'Running', durationMs: 3000, itemsIn: 8, itemsOut: 40, sortOrder: 3 },
-        ],
+        ]).body,
       }),
-      'GET /v1.0/api/runs/run_1/queries': () => ({ body: [{ id: 'sqy_1', queryText: 'coding agents release', resultCount: 10, provider: 'Searxng', succeeded: true }] }),
-      'GET /v1.0/api/runs/run_1/results': () => ({ body: [{ id: 'srs_1', disposition: 'Fetched' }, { id: 'srs_2', disposition: 'SkippedSeen' }] }),
+      'GET /v1.0/api/runs/run_1/queries': () => ({ body: page([{ id: 'sqy_1', queryText: 'coding agents release', resultCount: 10, provider: 'Searxng', succeeded: true }]).body }),
+      'GET /v1.0/api/runs/run_1/results': () => ({ body: page([{ id: 'srs_1', disposition: 'Fetched' }, { id: 'srs_2', disposition: 'SkippedSeen' }]).body }),
       'GET /v1.0/api/findings': () => page([finding]),
       'POST /v1.0/api/runs/run_1/cancel': () => ({ body: { ...run, status: 'Running', cancelRequested: true } }),
     });
@@ -479,11 +479,11 @@ describe('runs', () => {
     await renderSignedIn(<RunDetail id="run_1" />, {
       'GET /v1.0/api/runs/run_1': () => ({ body: { ...run, llmCallCount: 6, unpricedCallCount: 1 } }),
       'GET /v1.0/api/runs/run_1/stages': () => ({
-        body: [
+        body: page([
           { id: 'rst_1', stage: 'Search', status: 'Succeeded', durationMs: 1200, itemsIn: 1, itemsOut: 8, sortOrder: 2, llmCallCount: 0, estimatedCostUsd: null },
           { id: 'rst_2', stage: 'Extract', status: 'Succeeded', durationMs: 3000, itemsIn: 8, itemsOut: 4, sortOrder: 5 },
           { id: 'rst_3', stage: 'Predict', status: 'Succeeded', durationMs: 900, itemsIn: 4, itemsOut: 2, sortOrder: 11 },
-        ],
+        ]).body,
       }),
       'GET /v1.0/api/runs/run_1/costs': () => ({
         body: {
@@ -499,8 +499,8 @@ describe('runs', () => {
           byTask: [],
         },
       }),
-      'GET /v1.0/api/runs/run_1/queries': () => ({ body: [] }),
-      'GET /v1.0/api/runs/run_1/results': () => ({ body: [] }),
+      'GET /v1.0/api/runs/run_1/queries': () => ({ body: page([]).body }),
+      'GET /v1.0/api/runs/run_1/results': () => ({ body: page([]).body }),
       'GET /v1.0/api/findings': () => page([]),
     });
     await waitFor(() => expect(screen.getByTestId('run-cost')).toBeTruthy());

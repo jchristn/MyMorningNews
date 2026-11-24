@@ -34,7 +34,7 @@ const topic = await client.topics.create({ name: 'Vector databases', description
 await client.topics.addDimension(topic.id, { name: 'Releases', weight: 'High' });
 
 const page = await client.findings.list({ topicId: topic.id, minScore: 60, pageSize: 20 });
-for (const f of page.items) console.log(f.relevanceScore, f.title);
+for (const f of page.objects) console.log(f.relevanceScore, f.title);
 
 await client.logout();
 ```
@@ -137,7 +137,7 @@ try {
 
 ## Lists and pagination
 
-List methods take `pageNumber`, `pageSize`, `sortBy`, `sortDirection` (`Ascending` or `Descending`), `search`, `fromUtc`, `toUtc` (strings or `Date`), and the typed filters of each route. They return `{ items, pageNumber, pageSize, totalCount, totalPages, durationMs }`.
+List methods take `pageNumber`, `pageSize`, `sortBy`, `sortDirection` (`Ascending` or `Descending`), `search`, `fromUtc`, `toUtc` (strings or `Date`), and the typed filters of each route. They return `{ objects, pageNumber, pageSize, totalRecords, totalPages, durationMs }`.
 
 `paginate(listFn, options, { maxItems })` is an async generator over every page. Methods are bound, so they can be passed directly:
 
@@ -252,7 +252,7 @@ await client.schedules.update(s.id, { enabled: false });
 
 ```js
 const top = await client.findings.list({ topicId, tier: 'MustRead', sortBy: 'RelevanceScore' });
-const detail = await client.findings.get(top.items[0].id); // with evidence
+const detail = await client.findings.get(top.objects[0].id); // with evidence
 await client.findings.pin(findingId); await client.findings.unpin(findingId);
 await client.findings.hide(findingId);                     // left out of lists, briefings, and emails
 await client.findings.list({ includeHidden: true, pinned: true });
@@ -332,8 +332,8 @@ await client.prompts.lab({ key: 'briefing.compose', variables: { 'edition.name':
 const episodes = await client.media.list({ status: 'Ready' });
 const audio = await client.media.download(episodeId, { range: { start: 0 } });
 const files = await client.artifacts.list({ briefingId });
-const url = await client.artifacts.downloadUrl(files.items[0].id);
-const bytes = await client.artifacts.download(files.items[0].id);
+const url = await client.artifacts.downloadUrl(files.objects[0].id);
+const bytes = await client.artifacts.download(files.objects[0].id);
 ```
 
 ### briefings: public share links
@@ -386,7 +386,7 @@ const series = await client.usage.timeseries({ groupBy: 'Task', top: 5 }); // an
 // series.groups: range totals per group (the rest under '(other)'); series.buckets[i].rows: one row per group with calls in that bucket
 const calls = await client.llmCalls.list({ runId });
 const stageCalls = await client.llmCalls.list({ runStageId: stage.id });
-await client.llmCalls.get(calls.items[0].id);
+await client.llmCalls.get(calls.objects[0].id);
 ```
 
 ### modelEndpoints, modelAssignments
@@ -435,9 +435,9 @@ const prefs = await client.notifications.getPreferences(); // 18 cells (kind by 
 await client.notifications.updatePreferences({ preferences: [{ kind: 'AudioReady', channel: 'Push', enabled: true }] });
 const unread = await client.notifications.list({ unread: true }); // in-app notifications, newest first
 await client.notifications.unreadCount();
-await client.notifications.markRead(unread.items[0].id);
+await client.notifications.markRead(unread.objects[0].id);
 await client.notifications.markAllRead();
-await client.notifications.remove(unread.items[0].id);
+await client.notifications.remove(unread.objects[0].id);
 
 const plan = await client.account.plan();
 await client.account.redeem('WELCOME'); // 409 PromoCodeInvalid with details.reason when it cannot be redeemed

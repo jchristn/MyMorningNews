@@ -1,3 +1,4 @@
+import { enumerationResult } from '../test/enumeration.js';
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -24,10 +25,10 @@ function promptApi(overrides = {}) {
   return {
     listPrompts: vi.fn(async () => page([TEMPLATE, { ...TEMPLATE, id: 'pmt_2', key: 'research.score', topicId: 'top_1', isCustomized: false, currentVersion: 1 }])),
     getPrompt: vi.fn(async () => ({ template: TEMPLATE, content: V2, variables: ['topic.brief', 'candidate.title'], defaultContent: V1 })),
-    listPromptVersions: vi.fn(async () => [
+    listPromptVersions: vi.fn(async () => enumerationResult([
       { id: 'pmv_1', version: 1, content: V1, changeNote: null, createdUtc: '2026-11-19T10:00:00Z' },
       { id: 'pmv_2', version: 2, content: V2, changeNote: 'Stricter', createdUtc: '2026-11-19T11:00:00Z' }
-    ]),
+    ])),
     listModelEndpoints: vi.fn(async () => page([{ id: 'mdl_1', name: 'Anthropic', model: 'claude-opus-5-5', supportsChat: true }])),
     ...overrides
   };

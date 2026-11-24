@@ -151,8 +151,8 @@ namespace MyMorningNews.Core.Analytics
                 token.ThrowIfCancellationRequested();
                 filter.PageNumber = page;
                 EnumerationResult<Run> result = await _Database.Runs.EnumerateAsync(filter, token).ConfigureAwait(false);
-                all.AddRange(result.Items);
-                if (result.Items.Count < _PageSize) break;
+                all.AddRange(result.Objects);
+                if (result.Objects.Count < _PageSize) break;
             }
 
             return all;
@@ -167,8 +167,8 @@ namespace MyMorningNews.Core.Analytics
                 token.ThrowIfCancellationRequested();
                 filter.PageNumber = page;
                 EnumerationResult<RunStage> result = await _Database.RunStages.EnumerateAsync(filter, token).ConfigureAwait(false);
-                all.AddRange(result.Items);
-                if (result.Items.Count < _PageSize) break;
+                all.AddRange(result.Objects);
+                if (result.Objects.Count < _PageSize) break;
             }
 
             return all;
@@ -186,8 +186,8 @@ namespace MyMorningNews.Core.Analytics
                 token.ThrowIfCancellationRequested();
                 filter.PageNumber = page;
                 EnumerationResult<Finding> result = await _Database.Findings.EnumerateAsync(filter, token).ConfigureAwait(false);
-                all.AddRange(result.Items);
-                if (result.Items.Count < _PageSize) break;
+                all.AddRange(result.Objects);
+                if (result.Objects.Count < _PageSize) break;
             }
 
             return all;
@@ -202,8 +202,8 @@ namespace MyMorningNews.Core.Analytics
                 token.ThrowIfCancellationRequested();
                 filter.PageNumber = page;
                 EnumerationResult<SearchResult> result = await _Database.SearchResults.EnumerateAsync(filter, token).ConfigureAwait(false);
-                all.AddRange(result.Items);
-                if (result.Items.Count < _PageSize) break;
+                all.AddRange(result.Objects);
+                if (result.Objects.Count < _PageSize) break;
             }
 
             return all;

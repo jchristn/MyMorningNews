@@ -72,7 +72,7 @@ export function ShareDialog({ briefing, open, onClose, config = null }) {
   const load = useCallback(async () => {
     try {
       const page = await apiClient.listBriefingShares(briefingId, { pageSize: 100 });
-      setShares((page && page.items) || []);
+      setShares((page && page.objects) || []);
       setError(null);
     } catch (err) {
       setError(err);

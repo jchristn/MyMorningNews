@@ -61,10 +61,10 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             await StepAsync(context, result, "PUT vault credential clearFields=secret (400)", () => Helpers.ExpectErrorAsync(() => c.Vault.UpdateAsync(v.Id, new VaultCredentialUpsertRequest { ClearFields = new List<string> { "secret" } }, token), 400, "ValidationFailed")).ConfigureAwait(false);
             EnumerationResult<VaultCredentialResponse> list = await StepAsync(context, result, "GET vault credentials (kind filter)",
                 () => c.Vault.ListAsync(new VaultCredentialListOptions { Kind = VaultCredentialKindEnum.ApiKey, PageSize = 100 }, token)).ConfigureAwait(false);
-            Helpers.Contains(list.Items, x => x.Id == v.Id, "the credential");
+            Helpers.Contains(list.Objects, x => x.Id == v.Id, "the credential");
             VaultRevealResponse revealed = await StepAsync(context, result, "POST reveal", () => c.Vault.RevealAsync(v.Id, token)).ConfigureAwait(false);
             Helpers.True(revealed.Secret == secret, "revealed secret matches");
-            List<VaultUsageItem> usage = await StepAsync(context, result, "GET usage", () => c.Vault.GetUsageAsync(v.Id, token)).ConfigureAwait(false);
+            List<VaultUsageItem> usage = (await StepAsync(context, result, "GET usage", () => c.Vault.GetUsageAsync(v.Id, options: new MyMorningNews.Sdk.Options.EnumerationQuery { PageSize = 1000 }, token: token)).ConfigureAwait(false)).Objects;
             Helpers.Equal(0, usage.Count, "unused credential");
             await StepAsync(context, result, "DELETE vault credential", () => c.Vault.DeleteAsync(v.Id, token)).ConfigureAwait(false);
             context.Cleanup.Remove("vault:" + v.Id);
@@ -80,7 +80,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
             context.Cleanup.Add("device:" + d.Id, ct => c.Devices.DeleteAsync(d.Id, ct));
             Device again = await StepAsync(context, result, "POST device again (same token)", () => c.Devices.RegisterAsync(new DeviceRegisterRequest { ExpoPushToken = pushToken, Platform = "android" }, token)).ConfigureAwait(false);
             Helpers.Equal(d.Id, again.Id, "re-registering returns the same device");
-            List<Device> devices = await StepAsync(context, result, "GET devices", () => c.Devices.ListAsync(token)).ConfigureAwait(false);
+            List<Device> devices = (await StepAsync(context, result, "GET devices", () => c.Devices.ListAsync(options: new MyMorningNews.Sdk.Options.EnumerationQuery { PageSize = 1000 }, token: token)).ConfigureAwait(false)).Objects;
             Helpers.Contains(devices, x => x.Id == d.Id && x.Platform == "android", "the device, updated");
             await StepAsync(context, result, "DELETE device", () => c.Devices.DeleteAsync(d.Id, token)).ConfigureAwait(false);
             context.Cleanup.Remove("device:" + d.Id);

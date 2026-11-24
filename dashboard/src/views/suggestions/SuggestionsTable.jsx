@@ -72,7 +72,7 @@ export default function SuggestionsTable({ topicId = null, tableKey = 'suggestio
     let cancelled = false;
     apiClient
       .listTopics({ pageSize: 1000, sortBy: 'name', sortDirection: 'Ascending' })
-      .then((r) => !cancelled && setTopics((r && r.items) || []))
+      .then((r) => !cancelled && setTopics((r && r.objects) || []))
       .catch(() => {});
     return () => {
       cancelled = true;

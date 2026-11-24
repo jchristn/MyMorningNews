@@ -87,7 +87,7 @@ describe('Account: podcast feeds', () => {
     const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
     const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' });
     const { server } = await renderSignedIn(<PodcastSection />, {
-      'GET /v1.0/api/feed-tokens': () => ({ body: [token] }),
+      'GET /v1.0/api/feed-tokens': () => ({ body: page([token]).body }),
       'GET /v1.0/api/editions': () => page([{ id: 'edn_1', name: 'Morning News' }]),
       'POST /v1.0/api/feed-tokens': () => ({ status: 201, body: created }),
     });
@@ -115,7 +115,7 @@ describe('Account: podcast feeds', () => {
   it('revokes after a confirmation, and deletes a revoked feed', async () => {
     let tokens = [token, { id: 'fdt_9', name: 'Old', revokedUtc: NOW, createdUtc: NOW }];
     const { server } = await renderSignedIn(<PodcastSection />, {
-      'GET /v1.0/api/feed-tokens': () => ({ body: tokens }),
+      'GET /v1.0/api/feed-tokens': () => page(tokens),
       'GET /v1.0/api/editions': () => page([]),
       'DELETE /v1.0/api/feed-tokens/fdt_1': () => {
         tokens = tokens.map((x) => (x.id === 'fdt_1' ? { ...x, revokedUtc: NOW } : x));
@@ -135,7 +135,7 @@ describe('Account: podcast feeds', () => {
   });
 
   it('has no feeds when the server has audio off', async () => {
-    await renderSignedIn(<PodcastSection />, { 'GET /v1.0/api/client-config': config({ audioEnabled: false }), 'GET /v1.0/api/feed-tokens': () => ({ body: [] }) });
+    await renderSignedIn(<PodcastSection />, { 'GET /v1.0/api/client-config': config({ audioEnabled: false }), 'GET /v1.0/api/feed-tokens': () => ({ body: page([]).body }) });
     await waitFor(() => expect(screen.getByText('Audio is turned off on this server, so there are no podcast feeds.')).toBeTruthy());
     expect(screen.queryByTestId('feed-create')).toBeNull();
   });
@@ -511,7 +511,7 @@ describe('Insights', () => {
       }),
       'GET /v1.0/api/analytics/reasons': () => ({ body: { tags: [{ key: 'too basic', count: 3 }], byWeek: [] } }),
       'GET /v1.0/api/analytics/suggestions': () => ({ body: { total: 4, new: 1, accepted: 1, done: 1, dismissed: 1, snoozed: 0, meanDaysToDecision: 2.5, byPriority: [] } }),
-      'GET /v1.0/api/feedback': () => ({ body: { items, pageNumber: 1, pageSize: 50, totalCount: items.length, totalPages: 1 } }),
+      'GET /v1.0/api/feedback': () => ({ body: { objects: items, pageNumber: 1, pageSize: 50, totalRecords: items.length, totalPages: 1 } }),
       'PUT /v1.0/api/feedback/fbk_1': (call) => {
         items = items.map((x) => (x.id === 'fbk_1' ? { ...x, reason: call.body.reason } : x));
         return { body: items[0] };

@@ -50,7 +50,7 @@ namespace Test.Shared.Suites
             (await member.Client.PostAsync("/v1.0/tenants/default/roles", new { name = "x" }, token).ConfigureAwait(false)).Expect(403, "member creates role");
             EnumerationResult<AuditRecord> audit = (await admin.GetAsync("/v1.0/api/audit?eventType=AuthorizationDenied&userId=" + member.User.Id, token).ConfigureAwait(false))
                 .Expect(200, "audit").Json<EnumerationResult<AuditRecord>>();
-            Assert.True(audit.TotalCount >= 3, "denials persisted (" + audit.TotalCount + ")");
+            Assert.True(audit.TotalRecords >= 3, "denials persisted (" + audit.TotalRecords + ")");
         }
 
         private static async Task MemberSelfAsync(CancellationToken token)
@@ -122,7 +122,7 @@ namespace Test.Shared.Suites
         {
             TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
             EnumerationResult<UserRole> roles = (await admin.GetAsync("/v1.0/tenants/default/roles?isBuiltIn=true&pageSize=50", token).ConfigureAwait(false)).Expect(200, "roles").Json<EnumerationResult<UserRole>>();
-            UserRole tenantAdmin = roles.Items.First(r => r.Name == "TenantAdmin");
+            UserRole tenantAdmin = roles.Objects.First(r => r.Name == "TenantAdmin");
             (await admin.PutAsync("/v1.0/tenants/default/roles/" + tenantAdmin.Id, new { description = "changed" }, token).ConfigureAwait(false)).Expect(409, "edit built-in");
             (await admin.DeleteAsync("/v1.0/tenants/default/roles/" + tenantAdmin.Id, token).ConfigureAwait(false)).Expect(409, "delete built-in");
             (await admin.PostAsync("/v1.0/tenants/default/roles", new { name = "TenantAdmin" }, token).ConfigureAwait(false)).Expect(409, "reserved name");

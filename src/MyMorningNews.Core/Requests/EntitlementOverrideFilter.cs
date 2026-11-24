@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Requests
     /// <summary>
     /// Enumeration filter for EntitlementOverride records. Null properties are not applied.
     /// </summary>
-    public class EntitlementOverrideFilter : EnumerationFilter
+    public class EntitlementOverrideFilter : EnumerationQuery
     {
         /// <summary>
         /// Match UserId exactly when set.

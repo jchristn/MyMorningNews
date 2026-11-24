@@ -202,6 +202,23 @@ class Builder(object):
             caps = self.captures(o)
             if caps:
                 events.append({"listen": "test", "script": js(capture_script(caps))})
+        if isinstance(o.response, str) and o.response.startswith("EnumerationResult<"):
+            events.append({"listen": "test", "script": js([
+                "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                "  const page = pm.response.json();",
+                "  pm.test('EnumerationResult with bounded objects and exact metadata', function () {",
+                "    pm.expect(Array.isArray(page)).to.eql(false);",
+                "    pm.expect(page.success).to.eql(true);",
+                "    pm.expect(page.objects).to.be.an('array');",
+                "    pm.expect(page.pageSize).to.be.within(1, 1000);",
+                "    pm.expect(page.pageNumber).to.be.at.least(1);",
+                "    pm.expect(page.objects.length).to.be.at.most(page.pageSize);",
+                "    pm.expect(page.totalPages).to.eql(Math.ceil(page.totalRecords / page.pageSize));",
+                "    pm.expect(page.totalMs).to.be.at.least(0);",
+                "    pm.expect(page).not.to.have.property('items');",
+                "  });",
+                "}",
+            ])})
         if o.body_schema is not None:
             req["header"].append({"key": "Content-Type", "value": "application/json", "type": "text"})
             req["body"] = self.body(o)
@@ -344,7 +361,7 @@ def collection_description(info, count):
         "",
         "**Other credentials.** The Authentication examples folder shows an access key and secret, a signed request (MMN1-HMAC-SHA256, with a pre-request script you can copy), and the administration key (x-api-key).",
         "",
-        "**Conventions.** Lists take pageNumber, pageSize, sortBy, sortDirection, search, fromUtc, and toUtc, and return { items, pageNumber, pageSize, totalCount, totalPages, durationMs }. Errors are { error, message, requestId, details }. Optional query parameters are included but disabled; enable the ones you need.",
+        "**Conventions.** Lists take pageNumber, pageSize, sortBy, sortDirection, search, fromUtc, and toUtc, and return { success, objects, pageNumber, pageSize, totalRecords, totalPages, totalMs }. Errors are { error, message, requestId, details }. Optional query parameters are included but disabled; enable the ones you need.",
         "",
         "**Running the whole collection.** The folders run top to bottom on a fresh stack: each folder creates its records and uses them, the Cleanup folder then deletes them (newest first), and the Run last folder signs out and restarts the server. Change my password sends the current password as the new one, and Update server settings sends back the settings that Read server settings returned, so a run leaves the administrator's password and the server's settings as they were. Requests for records a fresh stack does not have yet (runs, findings, briefings, audio) answer 404 until a run has produced some.",
         "",

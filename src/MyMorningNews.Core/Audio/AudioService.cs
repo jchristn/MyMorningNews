@@ -13,7 +13,9 @@ namespace MyMorningNews.Core.Audio
     using System.Threading.Tasks;
     using System.Xml.Linq;
     using MyMorningNews.Core.Briefings;
+    using MyMorningNews.Core.Catalog;
     using MyMorningNews.Core.Database;
+    using MyMorningNews.Core.Entitlements;
     using MyMorningNews.Core.Enums;
     using MyMorningNews.Core.Exceptions;
     using MyMorningNews.Core.Helpers;
@@ -35,6 +37,9 @@ namespace MyMorningNews.Core.Audio
     public class AudioService : IDisposable
     {
         #region Public-Members
+
+        /// <summary>Optional account-funded speech resolver. A null result uses the selected workspace voice.</summary>
+        public Func<string, string?, string, string, CancellationToken, Task<TtsRequest?>>? AccountSpeechResolver { get; set; }
 
         /// <summary>
         /// Name of the seeded voice profile.
@@ -97,6 +102,8 @@ namespace MyMorningNews.Core.Audio
         #region Private-Members
 
         private readonly DatabaseDriverBase _Database;
+        private readonly MyMorningNews.Core.Entitlements.AudioQuotaService _Quota;
+        private readonly CatalogService _Catalog;
         private readonly ModelGateway _Models;
         private readonly PromptService _Prompts;
         private readonly ArtifactService _Artifacts;
@@ -145,6 +152,8 @@ namespace MyMorningNews.Core.Audio
             _OwnsTts = tts == null;
             _Tts = tts ?? new OpenAiCompatibleSpeechProvider();
             Mixer = new AudioMixer(settings.Tts);
+            _Quota = new MyMorningNews.Core.Entitlements.AudioQuotaService(database, settings);
+            _Catalog = new CatalogService(database, new EntitlementService(database, settings));
         }
 
         #endregion
@@ -203,7 +212,8 @@ namespace MyMorningNews.Core.Audio
             }
 
             VoiceProfile? voice = await ResolveVoiceAsync(briefing.TenantId, chosen, token).ConfigureAwait(false);
-            MediaAsset queued = await _Database.MediaAssets.CreateAsync(new MediaAsset
+            if (AccountSpeechResolver != null) await AccountSpeechResolver(briefing.TenantId, briefing.UserId, voice?.Voice ?? _Settings.Tts.Voice, String.Empty, token).ConfigureAwait(false);
+            MediaAsset queued = new MediaAsset
             {
                 TenantId = briefing.TenantId,
                 UserId = briefing.UserId,
@@ -214,7 +224,8 @@ namespace MyMorningNews.Core.Audio
                 Format = template.Audio.Format,
                 VoiceProfileId = voice?.Id,
                 Title = briefing.Title
-            }, token).ConfigureAwait(false);
+            };
+            queued = await _Quota.QueueAsync(queued, template.Audio.TargetMinutes, force, token).ConfigureAwait(false);
             QueueSignal.Signal();
             return queued;
         }
@@ -240,6 +251,7 @@ namespace MyMorningNews.Core.Audio
         public async Task<int> ProcessQueuedAsync(DateTime nowUtc, IReadOnlyCollection<string>? tenantIds, CancellationToken token = default)
         {
             await _Database.MediaAssets.RecoverAbandonedAsync(nowUtc, _Settings.Tts.MaxAttempts, token).ConfigureAwait(false);
+            await _Database.AudioReservations.RecoverAsync(nowUtc, token).ConfigureAwait(false);
             List<MediaAsset> claimed = await _Database.MediaAssets.ClaimQueuedAsync(nowUtc, nowUtc.AddMinutes(30), _ClaimBatch, tenantIds, token).ConfigureAwait(false);
             int done = 0;
             bool retrying = false;
@@ -296,6 +308,7 @@ namespace MyMorningNews.Core.Audio
                 await _Database.Briefings.UpdateAsync(b, token).ConfigureAwait(false);
             }
 
+            await _Database.AudioReservations.ReleaseAsync(asset.TenantId, asset.UserId, asset.Id, token).ConfigureAwait(false);
             await _Database.MediaAssets.DeleteAsync(asset.TenantId, asset.Id, token).ConfigureAwait(false);
         }
 
@@ -305,16 +318,43 @@ namespace MyMorningNews.Core.Audio
         /// <param name="voice">Voice profile.</param>
         /// <param name="text">Text (up to MaxSegmentCharacters).</param>
         /// <param name="token">Cancellation token.</param>
+        /// <param name="userId">Owning account for funded speech routing, or null for operator checks.</param>
         /// <returns>Audio.</returns>
         /// <exception cref="TtsException">The provider failed.</exception>
-        public async Task<TtsResult> SampleAsync(VoiceProfile voice, string text, CancellationToken token = default)
+        public async Task<TtsResult> SampleAsync(VoiceProfile voice, string text, CancellationToken token = default, string? userId = null)
         {
             ArgumentNullException.ThrowIfNull(voice);
             if (voice.Provider == TtsProviderEnum.Disabled) throw new ConflictException("This voice is disabled.");
             string t = SpeechScript.Clean(text);
             if (t.Length == 0) t = "Good morning. Here is what moved in your topics.";
             if (t.Length > _Settings.Tts.MaxSegmentCharacters) t = t.Substring(0, _Settings.Tts.MaxSegmentCharacters);
-            return await _Tts.SynthesizeAsync(await RequestAsync(voice, voice.Voice, t, token).ConfigureAwait(false), token).ConfigureAwait(false);
+            AudioReservation? reservation = String.IsNullOrWhiteSpace(userId) ? null
+                : await _Quota.ReserveSampleAsync(voice.TenantId, userId, IdGenerator.GenerateMediaAssetId(), Math.Max(10, t.Length / 8 + 10), token).ConfigureAwait(false);
+            try
+            {
+                TtsResult result = await _Tts.SynthesizeAsync(await RequestAsync(voice, voice.Voice, t, token, userId).ConfigureAwait(false), token).ConfigureAwait(false);
+                if (reservation != null)
+                {
+                    WavInfo wav = WavAudio.Parse(result.Audio) ?? throw new TtsException("The speech provider returned audio whose duration cannot be measured.");
+                    await _Quota.CommitSampleAsync(reservation, wav.DurationSeconds, token).ConfigureAwait(false);
+                }
+                return result;
+            }
+            finally
+            {
+                if (reservation != null) await _Database.AudioReservations.ReleaseAsync(reservation.TenantId, reservation.UserId, reservation.OperationId, CancellationToken.None).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>Probe an explicitly account-owned speech request with fixed short text. The caller must resolve the private connection and rate-limit probes. No platform credentials are added.</summary>
+        public async Task ProbePersonalSpeechAsync(TtsRequest request, CancellationToken token = default)
+        {
+            ArgumentNullException.ThrowIfNull(request);
+            request.Text = "Your private speech connection is ready.";
+            request.Format = "wav";
+            TtsResult result = await _Tts.SynthesizeAsync(request, token).ConfigureAwait(false);
+            WavInfo? wav = WavAudio.Parse(result.Audio);
+            if (wav == null || wav.DurationSeconds <= 0) throw new TtsException("The speech provider did not return valid audio.");
         }
 
         /// <summary>
@@ -365,13 +405,14 @@ namespace MyMorningNews.Core.Audio
         /// <param name="tenantId">Tenant.</param>
         /// <param name="req">Voice or voice profile, and optional text (cut to <see cref="PreviewMaxCharacters"/>).</param>
         /// <param name="token">Cancellation token.</param>
+        /// <param name="userId">Owning account for funded speech routing, or null for operator checks.</param>
         /// <returns>Audio.</returns>
         /// <exception cref="ArgumentNullException">tenantId or req is null.</exception>
         /// <exception cref="ArgumentException">Neither a voice nor a voice profile was given, or the speech server does not offer the voice.</exception>
         /// <exception cref="KeyNotFoundException">The voice profile does not exist in the tenant.</exception>
         /// <exception cref="ConflictException">Speech is turned off, or the voice profile is disabled.</exception>
         /// <exception cref="TtsException">The speech server failed.</exception>
-        public async Task<TtsResult> PreviewAsync(string tenantId, VoicePreviewRequest req, CancellationToken token = default)
+        public async Task<TtsResult> PreviewAsync(string tenantId, VoicePreviewRequest req, CancellationToken token = default, string? userId = null)
         {
             if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));
             ArgumentNullException.ThrowIfNull(req);
@@ -393,7 +434,7 @@ namespace MyMorningNews.Core.Audio
                 profile = new VoiceProfile { TenantId = tenantId, Name = voice, Model = _Settings.Tts.Model, Voice = voice };
             }
 
-            return await SampleAsync(profile, text, token).ConfigureAwait(false);
+            return await SampleAsync(profile, text, token, userId).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -497,6 +538,8 @@ namespace MyMorningNews.Core.Audio
             if (String.IsNullOrWhiteSpace(secret) || !secret.StartsWith(FeedTokenPrefix, StringComparison.Ordinal)) return null;
             FeedToken? ft = await _Database.FeedTokens.ReadByHashAsync(Hash(secret), token).ConfigureAwait(false);
             if (ft == null || ft.RevokedUtc.HasValue || !ft.Active) return null;
+            User? owner = await _Database.Users.ReadAsync(ft.TenantId, ft.UserId, token).ConfigureAwait(false);
+            if (owner == null || !owner.Active) return null;
             if (!ft.LastUsedUtc.HasValue || ft.LastUsedUtc.Value < DateTime.UtcNow.AddMinutes(-5))
             {
                 ft.LastUsedUtc = DateTime.UtcNow;
@@ -516,9 +559,27 @@ namespace MyMorningNews.Core.Audio
         public async Task<List<MediaAsset>> FeedEpisodesAsync(FeedToken ft, int max, CancellationToken token = default)
         {
             ArgumentNullException.ThrowIfNull(ft);
-            MediaAssetFilter filter = new MediaAssetFilter { TenantId = ft.TenantId, UserId = ft.UserId, EditionId = ft.EditionId, Status = MediaStatusEnum.Ready, PageSize = Math.Clamp(max, 1, 500) };
-            return (await _Database.MediaAssets.EnumerateAsync(filter, token).ConfigureAwait(false)).Items
-                .Where(m => m.ArtifactId != null).OrderByDescending(m => m.CompletedUtc ?? m.CreatedUtc).ToList();
+            MediaAssetFilter filter = new MediaAssetFilter { TenantId = ft.TenantId, UserId = ft.UserId, EditionId = ft.EditionId, Active = true, Status = MediaStatusEnum.Ready, PageSize = Math.Clamp(max, 1, 500) };
+            List<MediaAsset> media = (await _Database.MediaAssets.EnumerateAsync(filter, token).ConfigureAwait(false)).Items;
+            if (ft.EditionId == null)
+            {
+                EffectivePlan plan = await _Catalog.ReconcileAsync(ft.TenantId, ft.UserId, token).ConfigureAwait(false);
+                if (EntitlementService.Allowed(plan, "catalog.audio.enabled"))
+                    media.AddRange(await _Database.CatalogSubscriptions.FeedMediaAsync(ft.TenantId, ft.UserId, CatalogService.FreeOnly(plan), max, null, token).ConfigureAwait(false));
+            }
+            return media.Where(m => m.ArtifactId != null).OrderByDescending(m => m.CompletedUtc ?? m.CreatedUtc).ThenByDescending(m => m.Id).Take(Math.Clamp(max, 1, 500)).ToList();
+        }
+
+        /// <summary>Authorize one feed enclosure or chapter request against current ownership, subscription and publication eligibility.</summary>
+        public async Task<MediaAsset?> ReadFeedMediaAsync(FeedToken ft, string mediaId, CancellationToken token = default)
+        {
+            ArgumentNullException.ThrowIfNull(ft);
+            MediaAsset? owned = await _Database.MediaAssets.ReadAsync(ft.TenantId, mediaId, token).ConfigureAwait(false);
+            if (owned != null && owned.UserId == ft.UserId && owned.Active && owned.Status == MediaStatusEnum.Ready && (ft.EditionId == null || owned.EditionId == ft.EditionId)) return owned;
+            if (ft.EditionId != null) return null;
+            EffectivePlan plan = await _Catalog.ReconcileAsync(ft.TenantId, ft.UserId, token).ConfigureAwait(false);
+            if (!EntitlementService.Allowed(plan, "catalog.audio.enabled")) return null;
+            return (await _Database.CatalogSubscriptions.FeedMediaAsync(ft.TenantId, ft.UserId, CatalogService.FreeOnly(plan), 1, mediaId, token).ConfigureAwait(false)).FirstOrDefault();
         }
 
         /// <summary>
@@ -639,6 +700,7 @@ namespace MyMorningNews.Core.Audio
                 if (voice.Provider == TtsProviderEnum.Disabled) throw new InvalidOperationException("The voice '" + voice.Name + "' is disabled.");
                 BriefingTemplateDefinition template = await TemplateAsync(b, token).ConfigureAwait(false);
 
+                await _Quota.ReserveAsync(m, template.Audio.TargetMinutes, token).ConfigureAwait(false);
                 string script = await ScriptAsync(m, b, template, token).ConfigureAwait(false);
                 m.ScriptMarkdown = script;
                 m.Status = MediaStatusEnum.Synthesizing;
@@ -657,7 +719,7 @@ namespace MyMorningNews.Core.Audio
                         try
                         {
                             string v = seg.Speaker == "HOST_B" ? (voice.SecondaryVoice ?? voice.Voice) : voice.Voice;
-                            audio[i] = await SynthesizeWithRetryAsync(voice, v, seg.Text, token).ConfigureAwait(false);
+                            audio[i] = await SynthesizeWithRetryAsync(voice, v, seg.Text, token, m.UserId).ConfigureAwait(false);
                         }
                         finally
                         {
@@ -702,9 +764,8 @@ namespace MyMorningNews.Core.Audio
                 m.ErrorMessage = null;
                 m.LockedUntilUtc = null;
                 m.CompletedUtc = DateTime.UtcNow;
-                await _Database.MediaAssets.UpdateAsync(m, token).ConfigureAwait(false);
+                await _Quota.CommitAsync(m, mix.DurationSeconds, token).ConfigureAwait(false);
                 b.MediaAssetId = m.Id;
-                await _Database.Briefings.UpdateAsync(b, token).ConfigureAwait(false);
                 MyMorningNewsTelemetry.Increment(MyMorningNewsTelemetry.MediaEpisodes, "outcome", "ready", "format", mix.Extension);
                 await NotifyReadyAsync(m, b, token).ConfigureAwait(false);
                 return true;
@@ -716,6 +777,7 @@ namespace MyMorningNews.Core.Audio
                 m.ErrorMessage = ex.Message;
                 m.LockedUntilUtc = null;
                 await _Database.MediaAssets.UpdateAsync(m, CancellationToken.None).ConfigureAwait(false);
+                if (!retry) await _Database.AudioReservations.ReleaseAsync(m.TenantId, m.UserId, m.Id, CancellationToken.None).ConfigureAwait(false);
                 MyMorningNewsTelemetry.Increment(MyMorningNewsTelemetry.MediaEpisodes, "outcome", retry ? "retry" : "failed", "format", "none");
                 _Logging.Warn(_Header + "audio " + m.Id + (retry ? " will retry: " : " failed: ") + ex.Message);
                 return !retry;
@@ -779,9 +841,9 @@ namespace MyMorningNews.Core.Audio
             return SpeechScript.FromBriefing(b.Markdown, m.Format, intro);
         }
 
-        private async Task<byte[]> SynthesizeWithRetryAsync(VoiceProfile voice, string v, string text, CancellationToken token)
+        private async Task<byte[]> SynthesizeWithRetryAsync(VoiceProfile voice, string v, string text, CancellationToken token, string? userId)
         {
-            TtsRequest req = await RequestAsync(voice, v, text, token).ConfigureAwait(false);
+            TtsRequest req = await RequestAsync(voice, v, text, token, userId).ConfigureAwait(false);
             for (int attempt = 1; ; attempt++)
             {
                 try
@@ -797,8 +859,13 @@ namespace MyMorningNews.Core.Audio
             }
         }
 
-        private async Task<TtsRequest> RequestAsync(VoiceProfile voice, string v, string text, CancellationToken token)
+        private async Task<TtsRequest> RequestAsync(VoiceProfile voice, string v, string text, CancellationToken token, string? userId)
         {
+            if (AccountSpeechResolver != null)
+            {
+                TtsRequest? personal = await AccountSpeechResolver(voice.TenantId, userId, v, text, token).ConfigureAwait(false);
+                if (personal != null) return personal;
+            }
             return new TtsRequest
             {
                 Endpoint = String.IsNullOrWhiteSpace(voice.Endpoint) ? _Settings.Tts.Endpoint : voice.Endpoint,

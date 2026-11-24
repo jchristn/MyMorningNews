@@ -34,7 +34,7 @@ namespace MyMorningNews.Server.Services
         /// <summary>
         /// Path prefixes whose response bodies are never stored (for example credential reveal).
         /// </summary>
-        public List<string> RedactedResponsePathPrefixes { get; set; } = new List<string> { "/v1.0/api/vault/", "/v1.0/token", "/v1.0/public/shares/" };
+        public List<string> RedactedResponsePathPrefixes { get; set; } = new List<string> { "/v1.0/api/account/providers", "/v1.0/api/account/billing", "/v1.0/public/billing/", "/v1.0/api/vault/", "/v1.0/token", "/v1.0/public/shares/" };
 
         /// <summary>
         /// Path endings whose response bodies are never stored: creating a share returns its link secret once.
@@ -44,13 +44,13 @@ namespace MyMorningNews.Server.Services
         /// <summary>
         /// Path prefixes whose request bodies are never stored.
         /// </summary>
-        public List<string> RedactedRequestPathPrefixes { get; set; } = new List<string> { "/v1.0/api/me/password", "/v1.0/api/vault/" };
+        public List<string> RedactedRequestPathPrefixes { get; set; } = new List<string> { "/v1.0/api/account/providers", "/v1.0/api/account/billing", "/v1.0/public/billing/", "/v1.0/api/me/password", "/v1.0/api/vault/" };
 
         #endregion
 
         #region Private-Members
 
-        private static readonly string[] _SecretHeaders = new[] { "authorization", "proxy-authorization", "cookie", "set-cookie", "x-password", "x-secret-key", "x-signature" };
+        private static readonly string[] _SecretHeaders = new[] { "authorization", "proxy-authorization", "cookie", "set-cookie", "x-password", "x-secret-key", "x-signature", "stripe-signature" };
         private readonly DatabaseDriverBase _Database;
         private readonly RequestHistorySettings _Settings;
         private readonly LoggingModule _Logging;

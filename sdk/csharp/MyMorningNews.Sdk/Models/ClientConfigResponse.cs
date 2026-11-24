@@ -27,6 +27,16 @@ namespace MyMorningNews.Sdk.Models
         public bool SignupEnabled { get; set; } = false;
 
         /// <summary>
+        /// Whether newly created accounts require subscriptions for paid access. Existing accounts use their own policy. Default true.
+        /// </summary>
+        public bool NewUsersRequireSubscription { get; set; } = true;
+
+        /// <summary>
+        /// Default plan key for newly registered non-billed accounts; null when subscriptions are required.
+        /// </summary>
+        public string? NonBilledPlanKey { get; set; } = null;
+
+        /// <summary>
         /// Whether the server sends push notifications. Default false.
         /// </summary>
         public bool PushEnabled { get; set; } = false;
@@ -67,8 +77,7 @@ namespace MyMorningNews.Sdk.Models
         public string AppUrl { get; set; } = "http://127.0.0.1:12101";
 
         /// <summary>
-        /// Public URL of the MCP server's Streamable HTTP endpoint, or null when the server publishes none (it knows
-        /// no address a client could reach). Default null.
+        /// Public URL of the MCP server's Streamable HTTP endpoint, or null (left out of the JSON) when the server knows no address a client could reach, for example a public server whose MCP URL is still a loopback address. Default null.
         /// </summary>
         public string? McpUrl { get; set; } = null;
 

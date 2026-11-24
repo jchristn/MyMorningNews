@@ -1,0 +1,112 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Stripe subscription dependency subset",
+    "version": "2025-09-30.clover",
+    "description": "Local protocol subset for My Morning News. Sources: https://docs.stripe.com/api/checkout/sessions/create and https://docs.stripe.com/api/subscriptions/retrieve. Not an official provider-owned mock."
+  },
+  "servers": [
+    {
+      "url": "https://api.stripe.com"
+    }
+  ],
+  "paths": {
+    "/v1/checkout/sessions": {
+      "post": {
+        "summary": "Create a subscription Checkout Session",
+        "responses": {
+          "200": {
+            "description": "Provider response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Invalid credential"
+          },
+          "404": {
+            "description": "Unknown object"
+          },
+          "500": {
+            "description": "Provider failure"
+          }
+        }
+      }
+    },
+    "/v1/billing_portal/sessions": {
+      "post": {
+        "summary": "Create a customer portal session",
+        "responses": {
+          "200": {
+            "description": "Provider response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Invalid credential"
+          },
+          "404": {
+            "description": "Unknown object"
+          },
+          "500": {
+            "description": "Provider failure"
+          }
+        }
+      }
+    },
+    "/v1/subscriptions/{subscriptionId}": {
+      "get": {
+        "summary": "Read authoritative subscription state",
+        "responses": {
+          "200": {
+            "description": "Provider response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Invalid credential"
+          },
+          "404": {
+            "description": "Unknown object"
+          },
+          "500": {
+            "description": "Provider failure"
+          }
+        },
+        "parameters": [
+          {
+            "name": "subscriptionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

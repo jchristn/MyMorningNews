@@ -14,6 +14,14 @@ email. Your feedback teaches it what you care about, and it keeps score on its o
 > owner's launch steps are done ([`mobile/OWNER_ACTIONS.md`](mobile/OWNER_ACTIONS.md) for the apps,
 > [`docs/HOSTING.md`](docs/HOSTING.md) for the service). Changes are recorded in [`CHANGELOG.md`](CHANGELOG.md).
 
+## Packages and shared briefings
+
+Hosted accounts can subscribe to administrator-published system briefings. New production accounts receive up to five selected system subscriptions without billing or custom research. Paid packages include 5 custom topics and 30 generated audio minutes/day ($10/month or $100/year), or 20 custom topics and 100 minutes/day ($30/month or $300/year), plus system subscriptions. Playback is free; generation resets at midnight UTC. There is no trial.
+
+Connect private model and speech keys for unlimited BYOK usage, or run the Docker stack with unlimited self-hosted allowances. Administrators can assign custom packages and override individual limits. The non-billed `complimentary-five` package provides any five system subscriptions, five custom topics and unlimited audio. Server JSON controls new-account billing policy independently from whether optional purchases are enabled.
+
+Topics can use selected earlier briefings as comparison context or produce standalone issues. See the [full implementation plan](docs/PLATFORM_TIERS_AND_SHARED_BRIEFINGS_PLAN.md), [operator guide](docs/PLATFORM_OPERATIONS.md), and [release status](docs/PLATFORM_IMPLEMENTATION_STATUS.md) for setup, verification and native-store availability.
+
 ## What it does
 
 - Refines a topic with you. Start from a sentence ("AI developer tools", "heat pump rebates in Colorado"). The

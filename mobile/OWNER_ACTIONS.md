@@ -5,7 +5,11 @@ metadata, privacy answers, age rating, screenshots, and review notes are a separ
 [`APP_STORE_SUBMISSION.md`](../APP_STORE_SUBMISSION.md) at the repository root. Never paste passwords, private keys,
 or tokens into this repository; they go into the consoles, EAS, or the password manager.
 
-## Status (2026-11-21)
+## Current release
+
+See [platform release status](../docs/PLATFORM_IMPLEMENTATION_STATUS.md) for build 7, subscription products, and the remaining Google Cloud/store validation work. The record below describes initial provisioning.
+
+## Initial provisioning (2026-11-21)
 
 | Item | Value |
 |------|-------|

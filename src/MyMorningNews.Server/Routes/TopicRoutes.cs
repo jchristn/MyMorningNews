@@ -82,7 +82,6 @@ namespace MyMorningNews.Server.Routes
                 return;
             }
 
-            await CheckTopicLimitAsync(tenantId, rc.UserId, ctx.Token).ConfigureAwait(false);
 
             TopicUpsertRequest? req = await ReadBodyAsync<TopicUpsertRequest>(ctx).ConfigureAwait(false);
             if (req == null) return;
@@ -95,8 +94,12 @@ namespace MyMorningNews.Server.Routes
             string? toolError = await CheckToolIdsAsync(tenantId, req.McpToolIds, ctx).ConfigureAwait(false);
             if (toolError != null) { await SendErrorAsync(ctx, 400, "ValidationFailed", toolError).ConfigureAwait(false); return; }
             if (!await ResolveVoiceAsync(tenantId, req, ctx).ConfigureAwait(false)) return;
+            Topic proposed = new Topic { TenantId = tenantId, UserId = rc.UserId, Name = req.Name };
+            Apply(proposed, req);
+            await new MyMorningNews.Core.Briefings.HistoryContextService(Server.Database).ValidateAsync(proposed, ctx.Token).ConfigureAwait(false);
             Topic topic = await Server.Refinement.CreateTopicAsync(tenantId, rc.UserId, req.Name, req.Description, false, ctx.Token).ConfigureAwait(false);
             Apply(topic, req);
+            await new MyMorningNews.Core.Briefings.HistoryContextService(Server.Database).ValidateAsync(topic, ctx.Token).ConfigureAwait(false);
             topic = await Server.Database.Topics.UpdateAsync(topic, ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 201, topic).ConfigureAwait(false);
         }
@@ -121,6 +124,7 @@ namespace MyMorningNews.Server.Routes
             if (!await ResolveVoiceAsync(topic.TenantId, req, ctx).ConfigureAwait(false)) return;
             string oldName = topic.Name;
             Apply(topic, req);
+            await new MyMorningNews.Core.Briefings.HistoryContextService(Server.Database).ValidateAsync(topic, ctx.Token).ConfigureAwait(false);
             if (!String.Equals(oldName, topic.Name, StringComparison.Ordinal)) topic.Slug = await Server.Refinement.UniqueSlugAsync(topic.TenantId, topic.Name, ctx.Token).ConfigureAwait(false);
             topic = await Server.Database.Topics.UpdateAsync(topic, ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 200, topic).ConfigureAwait(false);
@@ -173,7 +177,6 @@ namespace MyMorningNews.Server.Routes
             Topic? source = await OwnedTopicAsync(ctx).ConfigureAwait(false);
             if (source == null) return;
             RequestContext rc = Context(ctx);
-            await CheckTopicLimitAsync(source.TenantId, rc.UserId ?? source.UserId, ctx.Token).ConfigureAwait(false);
             Topic copy = await Server.Refinement.CreateTopicAsync(source.TenantId, rc.UserId ?? source.UserId, source.Name + " (copy)", source.Description, false, ctx.Token).ConfigureAwait(false);
             copy.Brief = source.Brief;
             copy.AudienceLevel = source.AudienceLevel;
@@ -187,6 +190,10 @@ namespace MyMorningNews.Server.Routes
             copy.SeedQueries = new List<string>(source.SeedQueries);
             copy.VoiceProfileId = source.VoiceProfileId;
             copy.AudioEnabled = source.AudioEnabled;
+            copy.HistoryMode = source.HistoryMode == HistoryModeEnum.SpecificIssue ? HistoryModeEnum.Off : source.HistoryMode;
+            copy.HistoryCount = source.HistoryCount;
+            copy.HistorySinceUtc = source.HistorySinceUtc;
+            copy.HistoryTokenBudget = source.HistoryTokenBudget;
             copy = await Server.Database.Topics.UpdateAsync(copy, ctx.Token).ConfigureAwait(false);
             Dictionary<string, string> dimensionMap = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (TopicDimension d in await Server.Refinement.DimensionsAsync(source.TenantId, source.Id, ctx.Token).ConfigureAwait(false))
@@ -506,7 +513,7 @@ namespace MyMorningNews.Server.Routes
             return true;
         }
 
-        private static void Apply(Topic topic, TopicUpsertRequest req)
+        internal static void Apply(Topic topic, TopicUpsertRequest req)
         {
             if (!String.IsNullOrWhiteSpace(req.Name)) topic.Name = req.Name.Trim().Length > 200 ? req.Name.Trim().Substring(0, 200) : req.Name.Trim();
             if (req.Description != null) topic.Description = req.Description;
@@ -527,6 +534,11 @@ namespace MyMorningNews.Server.Routes
             if (req.WeightRecency.HasValue) topic.WeightRecency = req.WeightRecency.Value < 0 ? null : Math.Clamp(req.WeightRecency.Value, 0, 1);
             if (req.AgenticSearch.HasValue) topic.AgenticSearch = req.AgenticSearch.Value;
             if (req.AudioEnabled.HasValue) topic.AudioEnabled = req.AudioEnabled.Value;
+            if (req.HistoryMode.HasValue) topic.HistoryMode = req.HistoryMode.Value;
+            if (req.HistoryCount.HasValue) topic.HistoryCount = req.HistoryCount.Value;
+            if (req.HistorySinceUtc.HasValue) topic.HistorySinceUtc = req.HistorySinceUtc;
+            if (req.HistoryBriefingId != null) topic.HistoryBriefingId = String.IsNullOrWhiteSpace(req.HistoryBriefingId) ? null : req.HistoryBriefingId;
+            if (req.HistoryTokenBudget.HasValue) topic.HistoryTokenBudget = req.HistoryTokenBudget.Value;
             if (req.McpToolIds != null) topic.McpToolIds = req.McpToolIds.Where(i => !String.IsNullOrWhiteSpace(i) && i.Trim().StartsWith(IdPrefixes.McpServerTool, StringComparison.Ordinal)).Select(i => i.Trim()).Distinct(StringComparer.Ordinal).Take(100).ToList();
             if (req.VoiceProfileId != null) topic.VoiceProfileId = req.VoiceProfileId.Length == 0 ? null : req.VoiceProfileId;
             if (req.SeedQueries != null) topic.SeedQueries = req.SeedQueries.Where(q => !String.IsNullOrWhiteSpace(q)).Select(q => q.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).Take(20).ToList();

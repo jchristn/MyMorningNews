@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { RefreshControl, View } from 'react-native';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { planApi } from '@/api/account';
 import { listItems } from '@/api/client';
 import { runsApi, schedulesApi, sourcesApi, topicsApi } from '@/api/research';
 import { ButtonRow, ChipGroup } from '@/components/Chips';
@@ -22,6 +23,7 @@ import { spacing } from '@/theme/palette';
 import { DetailHeader, ItemCard } from '../common/DetailScreen';
 import { ResourceListScreen } from '../common/ResourceListScreen';
 import { FindingsList } from '../research/FindingScreens';
+import { TopicHistory } from './TopicHistory';
 
 export const topicHref = (id) => '/topics/' + encodeURIComponent(id);
 export const runHref = (id) => '/topics/runs/' + encodeURIComponent(id);
@@ -34,6 +36,8 @@ export const WORKSPACE_TABS = ['overview', 'findings', 'runs', 'sources', 'sched
 export function TopicsScreen() {
   const { t, i18n } = useTranslation();
   const { client } = useAuth();
+  const plan = useResource(() => planApi.get(client), [client]);
+  const customAllowed = plan.data?.features?.['customResearch.enabled'] !== 'false';
   return (
     <ResourceListScreen
       testID="topics-screen"
@@ -42,7 +46,8 @@ export function TopicsScreen() {
       feature={t('mobile.features.topics')}
       header={
         <ButtonRow>
-          <Button title={t('mobile.topics.new')} icon="add" onPress={() => router.push('/topics/new')} style={{ flexGrow: 1 }} testID="new-topic" />
+          <Button title={t('mobile.catalog.title')} icon="library-outline" kind="secondary" onPress={() => router.push('/today/catalog')} />
+          <Button title={t('mobile.topics.new')} disabled={!customAllowed} icon="add" onPress={() => router.push('/topics/new')} style={{ flexGrow: 1 }} testID="new-topic" />
           <Button title={t('mobile.editions.title')} icon="calendar-outline" kind="secondary" onPress={() => router.push('/topics/editions')} style={{ flexGrow: 1 }} testID="open-editions" />
         </ButtonRow>
       }
@@ -173,6 +178,7 @@ function TopicOverview({ resource }) {
         <T variant="small">{[topic.lastRunUtc ? t('mobile.topics.lastRun', { date: formatDateTime(topic.lastRunUtc, i18n.language) }) : t('mobile.topics.neverRun'), t('mobile.enums.audience.' + topic.audienceLevel), t('mobile.enums.horizon.' + topic.horizon)].join(' · ')}</T>
         {topic.brief ? <Markdown text={topic.brief} testID="topic-brief" /> : <T variant="muted">{topic.description || t('mobile.topics.noBrief')}</T>}
       </Card>
+      <TopicHistory key={topic.id + topic.lastUpdateUtc} topic={topic} onSaved={(updated) => resource.setData({ ...detail, topic: updated })} />
       <SectionHeader title={t('mobile.topics.dimensions', { count: (detail.dimensions || []).length })} />
       {(detail.dimensions || []).length ? (
         <Card>

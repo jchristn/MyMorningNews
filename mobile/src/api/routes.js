@@ -115,5 +115,11 @@ export const routes = {
   analytics: (name) => '/v1.0/api/analytics/' + enc(name),
   // Plans and promotional codes (plan section 33.2)
   accountPlan: '/v1.0/api/account/plan',
+  accountBilling: '/v1.0/api/account/billing',
+  accountPurchase: '/v1.0/api/account/billing/purchases',
+  accountProviders: '/v1.0/api/account/providers',
+  accountProvider: (id) => '/v1.0/api/account/providers/' + encodeURIComponent(id),
+  accountProviderTest: (id) => '/v1.0/api/account/providers/' + encodeURIComponent(id) + '/test',
+  accountFunding: '/v1.0/api/account/funding',
   promoRedeem: '/v1.0/api/promo-codes/redeem',
 };

@@ -107,29 +107,41 @@ namespace MyMorningNews.Core.Services
                 return;
             }
 
+            if (!String.IsNullOrWhiteSpace(request.PromoCode))
+            {
+                PromoCheck check = await _Promo.CheckAsync(request.PromoCode, null, null, true, token).ConfigureAwait(false);
+                if (!check.Valid) throw new ArgumentException(check.Message);
+            }
+
             string display = String.IsNullOrWhiteSpace(request.DisplayName) ? email.Substring(0, email.IndexOf('@')) : request.DisplayName.Trim();
+            EntitlementService entitlements = new EntitlementService(_Database, _Settings);
+            await entitlements.SignupPlanAsync(token).ConfigureAwait(false);
             if (display.Length > 128) display = display.Substring(0, 128);
             Tenant tenant = await _Database.Tenants.CreateAsync(new Tenant
             {
                 Name = (display.Length > 117 ? display.Substring(0, 117).TrimEnd() : display) + " (personal)", Description = "Personal tenant created by sign-up.", TimeZone = String.IsNullOrWhiteSpace(request.TimeZone) ? "UTC" : request.TimeZone.Trim(), IsPersonal = true
             }, token).ConfigureAwait(false);
-            DateTime now = DateTime.UtcNow;
-            User user = await _Database.Users.CreateAsync(new User
+            User user;
+            try
             {
-                TenantId = tenant.Id, Email = email, FirstName = display, PasswordSha256 = SecretHasher.Sha256Hex(request.Password!), IsTenantAdmin = true,
-                TimeZone = tenant.TimeZone, Locale = String.IsNullOrWhiteSpace(request.Locale) ? "en" : request.Locale.Trim(), SelfSignup = true,
-                EmailVerifiedUtc = h.RequireEmailVerification ? null : now, TermsVersion = h.TermsVersion, TermsAcceptedUtc = now
-            }, token).ConfigureAwait(false);
-            await _TenantDefaults.EnsureAsync(tenant.Id, token).ConfigureAwait(false);
-            if (!String.IsNullOrWhiteSpace(request.PromoCode))
-            {
-                try
+                DateTime now = DateTime.UtcNow;
+                user = await _Database.Users.CreateAsync(new User
                 {
+                    TenantId = tenant.Id, Email = email, FirstName = display, PasswordSha256 = SecretHasher.Sha256Hex(request.Password!), IsTenantAdmin = true,
+                    TimeZone = tenant.TimeZone, Locale = String.IsNullOrWhiteSpace(request.Locale) ? "en" : request.Locale.Trim(), SelfSignup = true,
+                    EmailVerifiedUtc = h.RequireEmailVerification ? null : now, TermsVersion = h.TermsVersion, TermsAcceptedUtc = now
+                }, token).ConfigureAwait(false);
+                await _TenantDefaults.EnsureAsync(tenant.Id, token).ConfigureAwait(false);
+                await entitlements.CaptureSignupPolicyAsync(tenant.Id, user.Id, token).ConfigureAwait(false);
+                if (!String.IsNullOrWhiteSpace(request.PromoCode))
                     await _Promo.RedeemAsync(tenant.Id, user.Id, request.PromoCode, PromoChannelEnum.Signup, true, token).ConfigureAwait(false);
-                }
-                catch (PromoCodeException)
-                {
-                }
+            }
+            catch (Exception ex)
+            {
+                // Nothing is sent until initialization and atomic code redemption succeed.
+                await _Database.Tenants.DeleteAsync(tenant.Id, CancellationToken.None).ConfigureAwait(false);
+                if (ex is PromoCodeException) throw new ArgumentException(ex.Message, nameof(request.PromoCode), ex);
+                throw;
             }
 
             if (h.RequireEmailVerification) await SendVerificationAsync(user, sourceIp, token).ConfigureAwait(false);
@@ -234,6 +246,7 @@ namespace MyMorningNews.Core.Services
         {
             ArgumentNullException.ThrowIfNull(user);
             if (user.IsProtected || user.IsAdmin) throw new ConflictException("This account is protected and cannot be deleted.");
+            await _Data.StopBillingAsync(user.TenantId, user.Id, token).ConfigureAwait(false);
             DateTime now = DateTime.UtcNow;
             DateTime purge = now.AddDays(_Settings.Hosting.DeletionGraceDays);
             user.DeletionRequestedUtc = now;
@@ -250,7 +263,8 @@ namespace MyMorningNews.Core.Services
                 new List<string>
                 {
                     "We received your request to delete your My Morning News account. Your topics, briefings, findings, feedback, and audio will be permanently deleted on " + purge.ToString("MMMM d, yyyy", System.Globalization.CultureInfo.InvariantCulture) + ".",
-                    "Changed your mind? Sign in before then and the deletion is cancelled."
+                    "Changed your mind? Sign in before then and the deletion is cancelled. This does not restart canceled subscription renewals.",
+                    "Web and Google Play renewals have been stopped. If you subscribed through Apple, cancel in Settings > Apple Account > Subscriptions; deleting this account does not cancel an Apple subscription."
                 },
                 new EmailLink("Sign in to keep my account", _Settings.Rest.AppBaseUrl + "/login"), "deletion:" + user.Id + ":" + now.Ticks, token).ConfigureAwait(false);
             return purge;

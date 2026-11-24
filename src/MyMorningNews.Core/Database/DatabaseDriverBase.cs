@@ -17,6 +17,14 @@ namespace MyMorningNews.Core.Database
         #region Public-Members
 
         /// <summary>
+        /// Application entitlement resolver for atomic topic creation and restoration. Null leaves embedded database callers unrestricted.
+        /// Arguments are tenant, user, one-time flag, cancellation. Null result is unlimited; zero denies creation.
+        /// Set once during server startup. All writes still acquire the account lock before checking slot counts.
+        /// </summary>
+        public Func<string, string, bool, CancellationToken, Task<long?>>? TopicSlotLimit { get; set; } = null;
+
+
+        /// <summary>
         /// Database type.
         /// </summary>
         public abstract DatabaseTypeEnum DatabaseType { get; }
@@ -365,6 +373,59 @@ namespace MyMorningNews.Core.Database
         /// Service plans.
         /// </summary>
         public IPlanMethods Plans { get; protected set; } = null!;
+
+        /// <summary>Immutable historical briefing context for research runs.</summary>
+        public IRunHistorySnapshotMethods RunHistorySnapshots { get; protected set; } = null!;
+
+        /// <summary>Private account provider connections.</summary>
+        public IProviderConnectionMethods ProviderConnections { get; protected set; } = null!;
+
+        /// <summary>
+        /// AccountPlanPolicy persistence.
+        /// </summary>
+        public IAccountPlanPolicyMethods AccountPlanPolicies { get; protected set; } = null!;
+
+        /// <summary>
+        /// EntitlementOverride persistence.
+        /// </summary>
+        public IEntitlementOverrideMethods EntitlementOverrides { get; protected set; } = null!;
+
+        /// <summary>
+        /// CatalogPublication persistence.
+        /// </summary>
+        public ICatalogPublicationMethods CatalogPublications { get; protected set; } = null!;
+
+        /// <summary>
+        /// CatalogSubscription persistence.
+        /// </summary>
+        public ICatalogSubscriptionMethods CatalogSubscriptions { get; protected set; } = null!;
+
+        /// <summary>Durable catalog delivery queue.</summary>
+        public ICatalogDeliveryMethods CatalogDeliveries { get; protected set; } = null!;
+
+        /// <summary>
+        /// AudioReservation persistence.
+        /// </summary>
+        public IAudioReservationMethods AudioReservations { get; protected set; } = null!;
+
+        /// <summary>
+        /// BillingSubscription persistence.
+        /// </summary>
+        public IBillingSubscriptionMethods BillingSubscriptions { get; protected set; } = null!;
+
+        /// <summary>BillingAccount persistence.</summary>
+        public IBillingAccountMethods BillingAccounts { get; protected set; } = null!;
+
+        /// <summary>BillingCheckout persistence.</summary>
+        public IBillingCheckoutMethods BillingCheckouts { get; protected set; } = null!;
+
+        /// <summary>BillingEvent persistence.</summary>
+        public IBillingEventMethods BillingEvents { get; protected set; } = null!;
+
+        /// <summary>
+        /// SignupBenefit persistence.
+        /// </summary>
+        public ISignupBenefitMethods SignupBenefits { get; protected set; } = null!;
 
         /// <summary>
         /// Plan entitlement values.

@@ -211,6 +211,9 @@ namespace Test.Shared.Suites
             await WithFakeClisAsync(async (server, homes) =>
             {
                 TestUser ta = (await WorkspaceAsync(token).ConfigureAwait(false))[0];
+                List<SearchProvider> providers = (await ta.Client.GetAsync("/v1.0/api/search-providers", token).ConfigureAwait(false)).Expect(200, "providers").Json<EnumerationResult<SearchProvider>>().Items;
+                SearchProvider searx = providers.First(p => p.Kind == SearchProviderKindEnum.Searxng);
+                (await ta.Client.PutAsync("/v1.0/api/search-providers/" + searx.Id, new { endpoint = StubModelServer.Shared.BaseUrl + "/setup" }, token).ConfigureAwait(false)).Expect(200, "isolated search dependency");
                 ErrorResponse wrongKind = (await ta.Client.PostAsync("/v1.0/api/setup/connect", new { provider = "ClaudeCode", authMethod = "AccessToken", secret = "sk-ant-api03-abc" }, token).ConfigureAwait(false))
                     .Expect(400, "an API key pasted as a token").Json<ErrorResponse>();
                 Assert.True(wrongKind.Message.Contains("Anthropic API key", StringComparison.Ordinal) && wrongKind.Details != null && wrongKind.Details["field"] == "secret", "caught, on the secret field: " + wrongKind.Message);
@@ -235,7 +238,7 @@ namespace Test.Shared.Suites
                 // Changing a working sign-in to one that fails keeps the working one.
                 SetupStatusResponse change = (await ta.Client.PostAsync("/v1.0/api/setup/connect", new { provider = "ClaudeCode", authMethod = "AccessToken", secret = "sk-ant-oat01-revoked" }, token).ConfigureAwait(false))
                     .Expect(200, "failed change").Json<SetupStatusResponse>();
-                Assert.True(change.Connection != null && !change.Connection.Succeeded && change.Connection.KeptPrevious && change.Ready, "the failed change is reported and the working token is kept");
+                Assert.True(change.Connection != null && !change.Connection.Succeeded && change.Connection.KeptPrevious && change.Ready, "the failed change is reported and the working token is kept: succeeded=" + change.Connection?.Succeeded + ", kept=" + change.Connection?.KeptPrevious + ", ready=" + change.Ready + ", checks=" + String.Join(";", change.Checks.Select(c => c.Kind + ":" + c.State + ":" + c.Message)));
                 Assert.Equal(SetupCheckStateEnum.Ready, change.Checks.Single(c => c.Kind == SetupCheckKindEnum.Model).State, "still ready");
                 creds = (await ta.Client.GetAsync("/v1.0/api/vault/credentials", token).ConfigureAwait(false)).Expect(200, "credentials").Json<EnumerationResult<VaultCredentialResponse>>().Items;
                 Assert.True(creds.Count(c => c.Kind == VaultCredentialKindEnum.BearerToken) == 1 && creds.Single(c => c.Kind == VaultCredentialKindEnum.BearerToken).SecretPreview.EndsWith("good", StringComparison.Ordinal),

@@ -5,6 +5,7 @@ namespace MyMorningNews.Core.Database.Interfaces
     using System.Threading;
     using System.Threading.Tasks;
     using MyMorningNews.Core.Models;
+    using MyMorningNews.Core.Enums;
     using MyMorningNews.Core.Requests;
     using MyMorningNews.Core.Responses;
 
@@ -14,6 +15,9 @@ namespace MyMorningNews.Core.Database.Interfaces
     /// </summary>
     public interface IPromoCodeMethods
     {
+        /// <summary>Atomically enforce code and per-account limits and create either a complimentary assignment or a paid offer snapshot. Returns null if no longer eligible.</summary>
+        Task<PromoRedemption?> RedeemAsync(string tenantId, string userId, string codeId, PromoChannelEnum channel, bool newAccount, CancellationToken token = default);
+
         /// <summary>
         /// Create a record. An empty identifier is backfilled.
         /// </summary>

@@ -1503,3 +1503,11 @@ table {
 .cell-id-short {
   max-width: clamp(100px, 9vw, 170px);
 }
+
+/* Text badges need readable contrast even when status colors are optimized for charts. */
+[data-theme="light"] .badge-success { color: #08723d; }
+[data-theme="light"] .badge-warning { color: #805000; }
+[data-theme="light"] .badge-danger { color: #bb212d; }
+[data-theme="light"] .badge-info { color: #006782; }
+
+[data-theme="dark"] .badge-accent { color: #d0c0ff; }

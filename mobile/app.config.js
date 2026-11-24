@@ -41,7 +41,7 @@ const IOS_BUNDLE_ID = LOCAL_TEAM_ID ? BUNDLE_ID + '.dev' : BUNDLE_ID;
 // without the owner's approval.
 const RELEASE_VERSION = '0.1.0-alpha';
 const STORE_VERSION = '0.1.0';
-const BUILD_NUMBER = 6;
+const BUILD_NUMBER = 8;
 
 const ASSOCIATED_DOMAIN = 'app.mymorningnews.ai';
 const BRAND_BLUE = '#2563eb';
@@ -138,6 +138,7 @@ module.exports = () => {
     },
     plugins: [
       'expo-router',
+      'expo-iap',
       [
         'expo-splash-screen',
         {

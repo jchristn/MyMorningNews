@@ -1,6 +1,8 @@
 namespace MyMorningNews.Core.Services
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Reflection;
     using MyMorningNews.Core.Settings;
 
@@ -9,6 +11,7 @@ namespace MyMorningNews.Core.Services
     /// </summary>
     public class SettingField
     {
+        private readonly List<PropertyInfo> _Parents;
         /// <summary>
         /// Group property on the root settings object.
         /// </summary>
@@ -47,16 +50,33 @@ namespace MyMorningNews.Core.Services
         /// <param name="attribute">Metadata.</param>
         /// <exception cref="ArgumentNullException">An argument is null.</exception>
         public SettingField(PropertyInfo group, PropertyInfo property, SettingAttribute attribute)
+            : this(new[] { group }, property, attribute)
         {
-            ArgumentNullException.ThrowIfNull(group);
+        }
+
+        /// <summary>Construct metadata for a nested settings leaf. Parent properties start at ServerSettings and cannot be empty.</summary>
+        public SettingField(IEnumerable<PropertyInfo> parents, PropertyInfo property, SettingAttribute attribute)
+        {
+            ArgumentNullException.ThrowIfNull(parents);
             ArgumentNullException.ThrowIfNull(property);
             ArgumentNullException.ThrowIfNull(attribute);
-            Group = group;
+            _Parents = parents.ToList();
+            if (_Parents.Count == 0) throw new ArgumentException("A settings group is required.", nameof(parents));
+            Group = _Parents[0];
             Property = property;
             Attribute = attribute;
-            GroupName = Camel(group.Name);
+            GroupName = Camel(Group.Name);
             Name = Camel(property.Name);
-            Path = GroupName + "." + Name;
+            Path = String.Join(".", _Parents.Select(p => Camel(p.Name))) + "." + Name;
+        }
+
+        /// <summary>Locate this leaf's containing object in a settings tree. Throws ArgumentException for a null group.</summary>
+        public object Container(ServerSettings settings)
+        {
+            ArgumentNullException.ThrowIfNull(settings);
+            object current = settings;
+            foreach (PropertyInfo parent in _Parents) current = parent.GetValue(current) ?? throw new ArgumentException("Settings group " + parent.Name + " cannot be null.");
+            return current;
         }
 
         private static string Camel(string name)

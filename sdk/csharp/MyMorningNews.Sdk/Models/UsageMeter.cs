@@ -11,6 +11,36 @@ namespace MyMorningNews.Sdk.Models
     public class UsageMeter
     {
         /// <summary>
+        /// Exact successfully generated audio seconds during the current UTC day. Default 0.
+        /// </summary>
+        public double AudioGeneratedSecondsToday { get; set; } = 0;
+
+        /// <summary>
+        /// Seconds reserved for queued or running generation during this UTC day. Default 0.
+        /// </summary>
+        public long AudioReservedSecondsToday { get; set; } = 0;
+
+        /// <summary>
+        /// Daily generation cap in seconds, or null for unlimited. Playback consumes no generation allowance.
+        /// </summary>
+        public long? AudioDailySecondsMax { get; set; } = null;
+
+        /// <summary>
+        /// Next daily reset at midnight UTC.
+        /// </summary>
+        public DateTime AudioResetUtc { get; set; }
+
+        /// <summary>
+        /// Active system subscriptions, separate from custom topics. Default 0.
+        /// </summary>
+        public long SystemSubscriptions { get; set; } = 0;
+
+        /// <summary>
+        /// System subscription limit, or null for unlimited.
+        /// </summary>
+        public long? SystemSubscriptionsMax { get; set; } = null;
+
+        /// <summary>
         /// Plan key.
         /// </summary>
         public string PlanKey { get; set; } = String.Empty;

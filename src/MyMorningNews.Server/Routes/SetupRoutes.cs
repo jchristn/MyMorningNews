@@ -1,6 +1,8 @@
 namespace MyMorningNews.Server.Routes
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
     using MyMorningNews.Core.Enums;
     using MyMorningNews.Core.Requests;
@@ -47,6 +49,22 @@ namespace MyMorningNews.Server.Routes
         {
             string? tenantId = await RequireTenantAsync(ctx).ConfigureAwait(false);
             if (tenantId == null) return;
+            if (!Context(ctx).IsAdmin && !String.IsNullOrEmpty(Context(ctx).UserId))
+            {
+                MyMorningNews.Core.Entitlements.EffectivePlan plan = await Server.Entitlements.GetEffectiveAsync(tenantId, Context(ctx).UserId!, ctx.Token).ConfigureAwait(false);
+                if (plan.FundingMode == "Personal")
+                {
+                    bool connected = (await Server.PersonalProviders.ListAsync(tenantId, Context(ctx).UserId!, ctx.Token).ConfigureAwait(false)).Any(c => c.Kind == "Chat" && c.Active && c.ValidatedUtc.HasValue);
+                    await SendJsonAsync(ctx, 200, new SetupStatusResponse { Ready = connected, CanConfigure = false, Checks = new List<SetupCheck> { new SetupCheck { Key = "personal:chat", Kind = SetupCheckKindEnum.Model, Required = true, State = connected ? SetupCheckStateEnum.Ready : SetupCheckStateEnum.Missing, Message = "Manage and test your personal model key in Account > Your API keys." } } }).ConfigureAwait(false);
+                    return;
+                }
+                if (!MyMorningNews.Core.Entitlements.EntitlementService.Allowed(plan, "customResearch.enabled")
+                    && !MyMorningNews.Core.Entitlements.EntitlementService.Allowed(plan, "oneTimeResearch.enabled"))
+                {
+                    await SendJsonAsync(ctx, 200, new SetupStatusResponse { Ready = true, CanConfigure = false }).ConfigureAwait(false);
+                    return;
+                }
+            }
             await SendJsonAsync(ctx, 200, await Server.Setup.GetStatusAsync(tenantId, CanConfigure(ctx), ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }
 

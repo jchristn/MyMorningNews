@@ -18,6 +18,10 @@ import SetupGate from './components/SetupGate.jsx';
 import { ALL_ROUTES, allowedBeforeSetup } from './utils/navigation.js';
 
 const VIEWS = {
+  billing: lazy(() => import('./views/AccountBillingView.jsx')),
+  personalProviders: lazy(() => import('./views/PersonalProvidersView.jsx')),
+  adminCatalog: lazy(() => import('./views/AdminCatalogView.jsx')),
+  catalog: lazy(() => import('./views/CatalogView.jsx')),
   home: lazy(() => import('./views/HomeView.jsx')),
   setup: lazy(() => import('./views/SetupView.jsx')),
   today: lazy(() => import('./views/TodayView.jsx')),

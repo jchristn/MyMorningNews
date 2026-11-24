@@ -48,7 +48,12 @@
     "Account": "Sign-up, email verification, password reset, the signed-in user's plan, usage meter, data export, account deletion, and promotional code redemption.",
     "Public": "Routes reached from emails, podcast apps, and shared briefing links. They take no session; a token in the path is the credential. Feedback and unsubscribe pages are HTML forms. Shared briefing pages are server-rendered HTML with no script and no cookies.",
     "OpenAPI": "The OpenAPI 3 document and Swagger UI that Watson serves. They are not tagged in the document itself.",
-    "MCP servers": "Remote MCP tool servers that agentic research may call, their discovered tools, and the per-tool allow-list."
+    "MCP servers": "Remote MCP tool servers that agentic research may call, their discovered tools, and the per-tool allow-list.",
+    "Catalog": "System-wide publications and private subscriptions. Shared content is generated once; subscription and personal topic limits are separate.",
+    "Catalog administration": "Global administrators manage canonical publications, research, schedules, and lifecycle revisions. Tenant administrators cannot publish.",
+    "Billing": "Account-bound Stripe checkout and native Apple/Google verification. A redirect never grants access; verified provider state determines benefits.",
+    "Billing callbacks": "Provider-authenticated callbacks. Ordinary bearer sessions do not authorize these routes.",
+    "Account providers": "Account-private encrypted model and speech connections, validation and explicit BYOK funding. No secret is returned."
   },
   "pathVariables": {
     "/v1.0/api/notifications/{id}": "notificationId",
@@ -75,7 +80,10 @@
     "/v1.0/public/promo-codes/{code}": "promoCode",
     "/v1.0/tenants/{tenantId}/users/{userId}": "memberUserId",
     "/v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes/{scopeId}": "scopeId",
-    "/v1.0/api/mcp-servers/{id}": "mcpServerId"
+    "/v1.0/api/mcp-servers/{id}": "mcpServerId",
+    "/v1.0/api/catalog/{id}": "publicationId",
+    "/v1.0/api/admin/catalog/{id}": "publicationId",
+    "/v1.0/api/account/providers/{id}": "providerConnectionId"
   },
   "parameters": {
     "active": "Only active (true) or inactive (false) records.",
@@ -247,323 +255,3138 @@
     "toolId": "mct_mwpff31e_Zx9cVb7nMl3kJh5gF2D"
   },
   "routes": {
-    "GET /v1.0/api/audit": {"response": "EnumerationResult<AuditRecord>", "status": {"200": "OK", "403": "Forbidden"}},
-    "DELETE /v1.0/api/audit": {"response": "DeleteManyResponse", "status": {"200": "OK", "400": "BadRequest", "403": "Forbidden"}},
-    "GET /v1.0/api/audit/{id}": {"response": "AuditRecord", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/api/audit/{id}": {"response": "none", "status": {"204": "No Content", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/briefings": {"response": "EnumerationResult<Briefing>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "GET /v1.0/api/briefings/{id}": {"response": "BriefingDetailResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/briefings/{id}/download": {"response": "file", "status": {"200": "OK", "206": "Partial Content", "400": "ValidationFailed, TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "Conflict (the briefing is not ready)", "410": "ArtifactExpired", "416": "RangeNotSatisfiable"}, "notes": "Query `format` is `md` (default) or `html`. The file is sent as an attachment and honors `Range`."},
-    "PUT /v1.0/api/briefings/{id}/pin": {"response": "Briefing", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/briefings/{id}/regenerate": {"response": "Briefing", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/api/briefings/{id}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/artifacts": {"response": "EnumerationResult<Artifact>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "GET /v1.0/api/artifacts/{id}": {"response": "Artifact", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/artifacts/{id}/content": {"response": "file", "status": {"200": "OK", "206": "Partial Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound", "410": "ArtifactExpired", "416": "RangeNotSatisfiable"}, "notes": "Streams the stored file with its own content type. Pass `download=true` for an attachment. Honors `Range`."},
-    "GET /v1.0/api/artifacts/{id}/download-url": {"response": "DownloadUrlResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/client-config": {"response": "ClientConfigResponse", "status": {"200": "OK"}},
-    "GET /v1.0/tenants/{tenantId}/credentials": {"response": "EnumerationResult<CredentialResponse>", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/tenants/{tenantId}/credentials": {"response": "CredentialCreatedResponse", "status": {"201": "Created", "400": "BadRequest, ValidationFailed", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/tenants/{tenantId}/credentials/{credentialId}": {"response": "CredentialResponse", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/tenants/{tenantId}/credentials/{credentialId}": {"response": "CredentialResponse", "status": {"200": "OK", "400": "BadRequest", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/tenants/{tenantId}/credentials/{credentialId}": {"response": "none", "status": {"204": "No Content", "403": "Forbidden", "404": "NotFound", "409": "Conflict"}},
-    "GET /v1.0/api/devices": {"response": "List<Device>", "status": {"200": "OK", "400": "BadRequest", "403": "Forbidden"}},
-    "POST /v1.0/api/devices": {"response": "Device", "status": {"200": "The token was already registered; the existing device is returned", "201": "Created", "400": "BadRequest", "403": "Forbidden"}},
-    "DELETE /v1.0/api/devices/{id}": {"response": "none", "status": {"204": "No Content", "400": "BadRequest", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/devices/{id}/test": {"response": "PushResult", "status": {"200": "OK", "400": "BadRequest", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/notifications": {"response": "EnumerationResult<Notification>", "status": {"200": "OK", "400": "BadRequest", "403": "Forbidden"}},
-    "GET /v1.0/api/notifications/unread-count": {"response": "NotificationCountResponse", "status": {"200": "OK", "400": "BadRequest", "403": "Forbidden"}},
-    "POST /v1.0/api/notifications/read-all": {"response": "NotificationCountResponse", "status": {"200": "OK; count is how many were marked", "400": "BadRequest", "403": "Forbidden"}},
-    "GET /v1.0/api/notifications/preferences": {"response": "NotificationPreferencesResponse", "status": {"200": "OK", "400": "BadRequest", "403": "Forbidden"}},
-    "PUT /v1.0/api/notifications/preferences": {"response": "NotificationPreferencesResponse", "status": {"200": "OK", "400": "BadRequest", "403": "Forbidden"}},
-    "POST /v1.0/api/notifications/{id}/read": {"response": "Notification", "status": {"200": "OK", "400": "BadRequest", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/api/notifications/{id}": {"response": "none", "status": {"204": "No Content", "400": "BadRequest", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/editions": {"response": "EnumerationResult<Edition>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "POST /v1.0/api/editions": {"response": "EditionResponse", "status": {"201": "Created", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden", "409": "Conflict"}},
-    "GET /v1.0/api/editions/{id}": {"response": "EditionResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/api/editions/{id}": {"response": "EditionResponse", "status": {"200": "OK", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "Conflict"}},
-    "DELETE /v1.0/api/editions/{id}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/api/editions/{id}/topics": {"response": "EditionResponse", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/editions/{id}/compose": {"response": "Briefing", "status": {"202": "Accepted", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "Conflict"}},
-    "POST /v1.0/api/editions/{id}/preview": {"response": "Briefing", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/email-messages": {"response": "EnumerationResult<EmailMessage>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "GET /v1.0/api/email-messages/{id}": {"response": "EmailMessage", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/email-messages/{id}/resend": {"response": "EmailMessage", "status": {"202": "Accepted", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "Conflict"}},
-    "DELETE /v1.0/api/email-messages/{id}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/email/test": {"response": "EmailMessage", "status": {"202": "Accepted", "400": "TenantRequired", "403": "Forbidden", "409": "Conflict"}},
-    "GET /v1.0/api/runs/{id}/email-preview": {"response": "EmailPreview", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/email-preferences": {"response": "EmailPreferencesResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "PUT /v1.0/api/email-preferences": {"response": "EmailPreferencesResponse", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "409": "Conflict"}},
-    "POST /v1.0/api/feedback": {"response": "Feedback", "status": {"201": "Created", "400": "BadRequest, TenantRequired", "403": "Forbidden"}},
-    "GET /v1.0/api/feedback": {"response": "EnumerationResult<Feedback>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "GET /v1.0/public/feedback/{token}": {"response": "text/html", "status": {"200": "OK", "404": "NotFound", "429": "TooManyRequests"}, "notes": "Renders the feedback page from an email rating link. The optional `a` query value preselects an action, and the page asks the reader to confirm it with one button; opening the link records nothing, so mail scanners that follow links cannot rate."},
-    "POST /v1.0/public/feedback/{token}": {"response": "text/html", "status": {"200": "OK", "400": "BadRequest", "404": "NotFound", "429": "TooManyRequests"}, "notes": "Form post (`application/x-www-form-urlencoded`) from the feedback page."},
-    "GET /v1.0/public/unsubscribe/{token}": {"response": "text/html", "status": {"200": "OK", "404": "NotFound", "429": "TooManyRequests"}},
-    "POST /v1.0/public/unsubscribe/{token}": {"response": "text/html", "status": {"200": "OK", "404": "NotFound", "429": "TooManyRequests"}, "notes": "Form post (`application/x-www-form-urlencoded`) from the unsubscribe page."},
-    "GET /v1.0/api/health": {"response": "HealthResponse", "status": {"200": "OK", "503": "The database is unreachable; the body still describes each component."}},
-    "GET /v1.0/api/learned-preferences": {"response": "EnumerationResult<LearnedPreference>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "POST /v1.0/api/learned-preferences": {"response": "LearnedPreference", "status": {"201": "Created", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden"}},
-    "GET /v1.0/api/learned-preferences/{id}": {"response": "PreferenceDetailResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/api/learned-preferences/{id}": {"response": "LearnedPreference", "status": {"200": "OK", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/api/learned-preferences/{id}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/learned-preferences/{id}/accept": {"response": "LearnedPreference", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "Conflict"}},
-    "POST /v1.0/api/learned-preferences/{id}/reject": {"response": "LearnedPreference", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "Conflict"}},
-    "POST /v1.0/api/learned-preferences/{id}/disable": {"response": "LearnedPreference", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "Conflict"}},
-    "POST /v1.0/api/learned-preferences/{id}/enable": {"response": "LearnedPreference", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "Conflict"}},
-    "POST /v1.0/api/topics/{id}/learn": {"response": {"proposed": "int", "preferences": "List<LearnedPreference>"}, "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}, "notes": "Runs the learning pass at once and returns how many preferences it proposed plus the topic's preferences."},
-    "GET /v1.0/api/topics/{id}/ranking-recommendation": {"response": "RankingRecommendation", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/api/feedback/{id}": {"response": "Feedback", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/api/feedback/{id}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/analytics/overview": {"response": "OverviewReport", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/analytics/relevance": {"response": "RelevanceReport", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/analytics/accuracy": {"response": "AccuracyReport", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/analytics/feedback": {"response": "FeedbackReport", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/analytics/suggestions": {"response": "SuggestionReport", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/analytics/reasons": {"response": "ReasonReport", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/analytics/quality": {"response": "QualityReport", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/analytics/email": {"response": "EmailReport", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/analytics/runs": {"response": "RunsReport", "status": {"200": "OK", "400": "TenantRequired, ValidationFailed", "403": "Forbidden", "404": "NotFound"}, "notes": "Dry runs are excluded and days are gap-filled. Sources examined are the Search stage's items out, fetched are the Fetch stage's items out, and used are the distinct sources behind a non-duplicate finding at or above the display threshold. Provider yield is the share of a provider's results whose source produced such a finding in the same run. Stage percentiles interpolate linearly over finished (succeeded or failed) stage rows."},
-    "GET /v1.0/api/media": {"response": "EnumerationResult<MediaAsset>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "GET /v1.0/api/media/{id}": {"response": "MediaDetailResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/api/media/{id}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/briefings/{id}/audio": {"response": "MediaAsset", "status": {"202": "Accepted", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "AudioDisabled, BriefingNotReady, AudioInProgress"}},
-    "GET /v1.0/api/voices": {"response": "EnumerationResult<VoiceProfile>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "POST /v1.0/api/voices": {"response": "VoiceProfile", "status": {"201": "Created", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden"}},
-    "GET /v1.0/api/voices/{id}": {"response": "VoiceProfile", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/api/voices/{id}": {"response": "VoiceProfile", "status": {"200": "OK", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/api/voices/{id}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/voices/{id}/test": {"response": "audio/wav", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound", "502": "TtsError"}},
-    "GET /v1.0/api/voices/available": {"response": "AvailableVoicesResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}, "notes": "The workspace's active voice profiles come first (the default one at the top), then the voices the speech server offers that no profile uses yet. The server's list is read from the speech endpoint's `/audio/voices` (Kokoro-FastAPI) and kept for five minutes; `listed` is false when the endpoint has no listing, and the configured default voices are offered instead. `label` is readable where the ID follows Kokoro's naming (`af_heart` is Heart, American English, female) and is the ID otherwise. To use a voice for a topic, send its `voiceProfileId`, or its `voice` when it has no profile yet, in `PUT /v1.0/api/topics/{id}`; the server then reuses or creates the voice profile. Needs permission to read topics."},
-    "POST /v1.0/api/voices/preview": {"response": "audio/wav", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "Conflict", "429": "TooManyRequests", "502": "TtsError"}, "notes": "Send `voice` (a speech server voice from the available list) or `voiceProfileId` (a voice profile, spoken with its own endpoint, model, and speed). `text` is cut to 300 characters; without it a default sentence is spoken. Each user may ask for 20 previews a minute. 400 when neither is given or the speech server does not offer the voice, 404 for an unknown voice profile, 409 when speech is turned off on the server, 502 `TtsError` when the speech endpoint fails. Needs permission to edit topics."},
-    "GET /v1.0/api/feed-tokens": {"response": "List<FeedToken>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "POST /v1.0/api/feed-tokens": {"response": "FeedTokenCreated", "status": {"201": "Created", "400": "ValidationFailed, TenantRequired", "403": "Forbidden"}},
-    "DELETE /v1.0/api/feed-tokens/{id}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/briefings/{id}/shares": {"response": "EnumerationResult<BriefingShare>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}, "notes": "The owner of the briefing and tenant administrators can list its shares. `tokenHash` is always `redacted`, and the links themselves are never returned here. A share works while `revokedUtc` is null and `expiresUtc` is in the future. `viewCount` and `lastViewedUtc` say whether a link was opened; nothing else about visitors is recorded."},
-    "POST /v1.0/api/briefings/{id}/shares": {"response": "BriefingShareCreated", "status": {"201": "Created", "400": "ValidationFailed, BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "SharingDisabled, BriefingNotReady"}, "notes": "The body is optional. `expiresInDays` must be from 1 to the server maximum (`sharing.maxExpiryDays`, 14 by default); omitted, it is `sharing.defaultExpiryDays` (7 by default, never more than the maximum). A value outside the range is refused with 400 `ValidationFailed`, with `minimum` and `maximum` in `details`; the server never adjusts it silently, and there is no share without an expiry. `showOwnerName` (default false) shows the sharing user's display name on the public pages; the email address is never shown. `readUrl`, `listenUrl`, and `secret` are returned only in this response."},
-    "DELETE /v1.0/api/briefings/{id}/shares/{shareId}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}, "notes": "Revokes a live share; its link answers 404 at once. Revoking twice is harmless. `purge=true` deletes a share that is already revoked or expired, and is ignored for a live one (which is revoked instead)."},
-    "GET /v1.0/public/shares/{token}": {"response": "text/html", "status": {"200": "OK", "404": "NotFound", "429": "TooManyRequests"}, "notes": "The shared briefing page, for listening and reading: title, topic or edition name, date, a native audio player with chapter links when the briefing has finished audio (each chapter link reloads the page with `t`; a request with `t` is not counted as a new opening), then the briefing rendered from Markdown (raw HTML in the content is shown as text, and outbound links carry `rel=\"noopener noreferrer nofollow\"`), and an invitation to sign up. No authentication, no cookies, no script. Sent with `X-Robots-Tag: noindex, nofollow`, `Referrer-Policy: no-referrer`, `Cache-Control: no-store`, and a Content-Security-Policy that allows only same-origin images and audio. An unknown, revoked, or expired link, a deleted briefing or user, and a server with sharing turned off all get the same 404 page. Each successful open adds one to the share's `viewCount`."},
-    "GET /v1.0/public/shares/{token}/listen": {"response": "text/html", "status": {"200": "OK", "404": "NotFound", "429": "TooManyRequests"}, "notes": "The address earlier shares used for a separate listening page. It now renders the same single page as `GET /v1.0/public/shares/{token}`, with the same headers and the same 404, so those links keep working."},
-    "GET /v1.0/public/shares/{token}/markdown": {"response": "file", "status": {"200": "OK", "404": "NotFound", "429": "TooManyRequests"}, "notes": "The briefing text as a Markdown file (`text/markdown`, sent as an attachment named after the briefing title). No authentication. Not counted as an opening. Same 404 as the page for a link that does not work."},
-    "GET /v1.0/public/shares/{token}/audio/{file}": {"response": "file", "status": {"200": "OK", "206": "Partial Content", "404": "NotFound", "410": "ArtifactExpired", "416": "RangeNotSatisfiable"}, "notes": "The audio behind the shared briefing page. No authentication. Honors `Range`. The file name is for the browser and may be anything, for example `briefing.mp3`. 404 when the link does not work or the briefing has no finished audio."},
-    "GET /v1.0/public/feeds/{token}/podcast.xml": {"response": "application/rss+xml", "status": {"200": "OK", "404": "NotFound"}},
-    "GET /v1.0/public/feeds/{token}/episodes/{file}": {"response": "file", "status": {"200": "OK", "206": "Partial Content", "404": "NotFound", "410": "ArtifactExpired", "416": "RangeNotSatisfiable"}, "notes": "Audio (`audio/mpeg`) for podcast apps. Honors `Range`."},
-    "GET /v1.0/public/feeds/{token}/chapters/{file}": {"response": "file", "status": {"200": "OK", "206": "Partial Content", "404": "NotFound", "410": "ArtifactExpired", "416": "RangeNotSatisfiable"}, "notes": "Podcasting 2.0 chapters JSON. Honors `Range`."},
-    "GET /v1.0/public/assets/{name}": {"response": "image/png", "status": {"200": "OK", "404": "NotFound"}},
-    "GET /v1.0/api/model-endpoints": {"response": "EnumerationResult<ModelEndpoint>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "POST /v1.0/api/model-endpoints": {"response": "ModelEndpoint", "status": {"201": "Created", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden"}},
-    "GET /v1.0/api/model-endpoints/{id}": {"response": "ModelEndpoint", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/api/model-endpoints/{id}": {"response": "ModelEndpoint", "status": {"200": "OK", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden", "404": "NotFound"}, "notes": "A null or absent property is left unchanged. To set an optional value back to null, list its name in `clearFields`, for example `{\"clearFields\": [\"temperature\", \"contextLength\"]}`. Names that can be cleared: `endpoint`, `credentialId`, `authMethod`, `model`, `embeddingModel`, `temperature`, `reasoningEffort`, `contextLength`, `inputCostPerMTok`, `outputCostPerMTok`, `cachedInputCostPerMTok`, `cacheWriteCostPerMTok`. Any other name, or a name that the same request also gives a value, returns 400 `ValidationFailed`. The usual rules still apply after clearing (an OpenAI-compatible endpoint needs a URL, a chat endpoint needs a model)."},
-    "DELETE /v1.0/api/model-endpoints/{id}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/model-endpoints/{id}/validate": {"response": "ModelValidationResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/model-endpoints/{id}/models": {"response": "List<ModelListItem>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound", "502": "UpstreamError"}},
-    "POST /v1.0/api/model-endpoints/{id}/test": {"response": "ModelTestResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/model-assignments": {"response": "EnumerationResult<ModelAssignment>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "PUT /v1.0/api/model-assignments": {"response": "ModelAssignment", "status": {"200": "Updated an existing assignment", "201": "Created a new assignment", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden"}},
-    "DELETE /v1.0/api/model-assignments/{id}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "Conflict"}},
-    "GET /v1.0/api/llm-calls": {"response": "EnumerationResult<LlmCall>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "GET /v1.0/api/llm-calls/{id}": {"response": "LlmCall", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/admin/promo-codes": {"response": "EnumerationResult<PromoCodeStats>", "status": {"200": "OK", "403": "Forbidden"}},
-    "POST /v1.0/api/admin/promo-codes": {"response": "PromoCodeStats", "status": {"201": "Created", "400": "BadRequest, ValidationFailed", "403": "Forbidden", "404": "NotFound", "409": "Conflict"}},
-    "POST /v1.0/api/admin/promo-codes/generate": {"response": "List<PromoCode>", "status": {"201": "Created", "400": "BadRequest, ValidationFailed", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/admin/promo-codes/{id}": {"response": "PromoCodeStats", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/api/admin/promo-codes/{id}": {"response": "PromoCodeStats", "status": {"200": "OK", "201": "Created", "400": "BadRequest, ValidationFailed", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/api/admin/promo-codes/{id}": {"response": "none", "status": {"204": "No Content", "403": "Forbidden", "404": "NotFound", "409": "Conflict"}},
-    "GET /v1.0/api/admin/promo-codes/{id}/redemptions": {"response": "List<PromoRedemption>", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/admin/promo-codes/{id}/redemptions/{redemptionId}/revoke": {"response": "PromoRedemption", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/admin/promo-codes/{id}/apply": {"response": "PromoRedemption", "status": {"201": "Created", "400": "BadRequest", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/admin/plans": {"response": "List<PlanResponse>", "status": {"200": "OK", "403": "Forbidden"}},
-    "POST /v1.0/api/admin/plans": {"response": "PlanResponse", "status": {"201": "Created", "400": "BadRequest, ValidationFailed", "403": "Forbidden", "409": "Conflict"}},
-    "PUT /v1.0/api/admin/plans/{id}": {"response": "PlanResponse", "status": {"200": "OK", "400": "BadRequest, ValidationFailed", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/admin/plan-assignments": {"response": "List<PlanAssignment>", "status": {"200": "OK", "400": "ValidationFailed", "403": "Forbidden"}},
-    "POST /v1.0/api/admin/plan-assignments": {"response": "PlanAssignment", "status": {"201": "Created", "400": "BadRequest, ValidationFailed", "403": "Forbidden"}},
-    "DELETE /v1.0/api/admin/plan-assignments/{id}": {"response": "none", "status": {"204": "No Content", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/promo-codes/redeem": {"response": "EffectivePlan", "status": {"201": "Created", "400": "BadRequest, TenantRequired", "403": "Forbidden", "429": "TooManyRequests"}},
-    "GET /v1.0/api/account/plan": {"response": "EffectivePlan", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "GET /v1.0/public/promo-codes/{code}": {"response": "PromoCheck", "status": {"200": "OK", "429": "TooManyRequests"}},
-    "GET /v1.0/api/prompts": {"response": "EnumerationResult<PromptTemplate>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "POST /v1.0/api/prompts/lab": {"response": "PromptLabResponse", "status": {"200": "OK", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/prompts/overrides": {"response": "PromptTemplateResponse", "status": {"201": "Created", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden", "409": "Conflict"}},
-    "GET /v1.0/api/prompts/{id}": {"response": "PromptTemplateResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/api/prompts/{id}": {"response": "PromptTemplateResponse", "status": {"200": "OK", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/api/prompts/{id}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "Conflict"}},
-    "GET /v1.0/api/prompts/{id}/versions": {"response": "List<PromptTemplateVersion>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/prompts/{id}/rollback": {"response": "PromptTemplateResponse", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/prompts/{id}/reset": {"response": "PromptTemplateResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/tenants/{tenantId}/roles": {"response": "EnumerationResult<UserRole>", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/tenants/{tenantId}/roles": {"response": "UserRole", "status": {"201": "Created", "400": "BadRequest, ValidationFailed", "403": "Forbidden", "404": "NotFound", "409": "Conflict"}},
-    "GET /v1.0/tenants/{tenantId}/roles/{roleId}": {"response": "RoleDetailResponse", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/tenants/{tenantId}/roles/{roleId}": {"response": "UserRole", "status": {"200": "OK", "400": "BadRequest, ValidationFailed", "403": "Forbidden", "404": "NotFound", "409": "Conflict"}},
-    "DELETE /v1.0/tenants/{tenantId}/roles/{roleId}": {"response": "none", "status": {"204": "No Content", "403": "Forbidden", "404": "NotFound", "409": "Conflict"}},
-    "GET /v1.0/tenants/{tenantId}/permissions": {"response": "EnumerationResult<Permission>", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/tenants/{tenantId}/permissions": {"response": "Permission", "status": {"201": "Created", "400": "BadRequest, ValidationFailed", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/tenants/{tenantId}/permissions/{permissionId}": {"response": "Permission", "status": {"200": "OK", "400": "BadRequest, ValidationFailed", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/tenants/{tenantId}/permissions/{permissionId}": {"response": "none", "status": {"204": "No Content", "403": "Forbidden", "404": "NotFound", "409": "Conflict"}},
-    "GET /v1.0/tenants/{tenantId}/users/{userId}/assignments": {"response": "EnumerationResult<UserRoleAssignment>", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/tenants/{tenantId}/users/{userId}/assignments": {"response": "UserRoleAssignment", "status": {"201": "Created", "400": "BadRequest, ValidationFailed", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/tenants/{tenantId}/users/{userId}/assignments/{assignmentId}": {"response": "none", "status": {"204": "No Content", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes": {"response": "EnumerationResult<CredentialScopeAssignment>", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes": {"response": "CredentialScopeAssignment", "status": {"201": "Created", "400": "BadRequest, ValidationFailed", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes/{scopeId}": {"response": "none", "status": {"204": "No Content", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/tenants/{tenantId}/users/{userId}/permissions": {"response": "EffectivePermissionsResponse", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/tenants/{tenantId}/credentials/{credentialId}/permissions": {"response": "EffectivePermissionsResponse", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/refinement-sessions": {"response": "RefinementStateResponse", "status": {"201": "Created", "400": "BadRequest, TenantRequired", "403": "Forbidden", "409": "SetupRequired"}},
-    "GET /v1.0/api/refinement-sessions": {"response": "EnumerationResult<RefinementSession>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "GET /v1.0/api/refinement-sessions/{id}": {"response": "RefinementStateResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/refinement-sessions/{id}/dimensions": {"response": "RefinementStateResponse", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "SetupRequired"}},
-    "POST /v1.0/api/refinement-sessions/{id}/questions": {"response": "RefinementStateResponse", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "SetupRequired"}},
-    "PUT /v1.0/api/refinement-sessions/{id}/questions/{questionId}": {"response": "RefinementQuestionResponse", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/refinement-sessions/{id}/context": {"response": "RefinementStateResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "SetupRequired"}},
-    "POST /v1.0/api/refinement-sessions/{id}/sources": {"response": "List<SourceCheck>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "SetupRequired"}},
-    "POST /v1.0/api/refinement-sessions/{id}/sources/accept": {"response": "RefinementStateResponse", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/refinement-sessions/{id}/complete": {"response": "RefinementStateResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/refinement-sessions/{id}/abandon": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/request-history": {"response": "EnumerationResult<RequestHistoryEntry>", "status": {"200": "OK", "403": "Forbidden"}},
-    "GET /v1.0/api/request-history/summary": {"response": "RequestHistorySummary", "status": {"200": "OK", "400": "BadRequest", "403": "Forbidden"}},
-    "DELETE /v1.0/api/request-history": {"response": "DeleteManyResponse", "status": {"200": "OK", "403": "Forbidden"}},
-    "GET /v1.0/api/request-history/{id}": {"response": "RequestHistoryEntry", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/api/request-history/{id}": {"response": "none", "status": {"204": "No Content", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/requests": {"response": "ResearchRequestResponse", "status": {"201": "Created", "400": "BadRequest, TenantRequired", "403": "Forbidden", "409": "SetupRequired"}},
-    "GET /v1.0/api/requests": {"response": "EnumerationResult<ResearchRequest>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "GET /v1.0/api/requests/{id}": {"response": "ResearchRequestResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/api/requests/{id}/questions/{questionId}": {"response": "RefinementQuestionResponse", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/requests/{id}/replan": {"response": "ResearchRequestResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/requests/{id}/confirm": {"response": "ResearchRequestResponse", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/requests/{id}/cancel": {"response": "ResearchRequestResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/requests/{id}/convert": {"response": "Topic", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/api/requests/{id}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/findings": {"response": "EnumerationResult<Finding>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "GET /v1.0/api/findings/{id}": {"response": "FindingDetailResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/api/findings/{id}": {"response": "Finding", "status": {"200": "OK", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/api/findings/{id}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/evidence/{id}": {"response": "EvidenceView", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/runs/{id}/llm-calls": {"response": "EnumerationResult<LlmCall>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/runs/{id}/stages": {"response": "List<RunStage>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/runs/{id}/queries": {"response": "List<SearchQuery>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/runs/{id}/results": {"response": "List<SearchResult>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/predictions": {"response": "EnumerationResult<Prediction>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "GET /v1.0/api/predictions/{id}": {"response": "PredictionDetailResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/predictions/{id}/resolve": {"response": "Prediction", "status": {"200": "OK", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/prediction-reviews/{id}/accept": {"response": "Prediction", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/prediction-reviews/{id}/reject": {"response": "Prediction", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/suggestions": {"response": "EnumerationResult<Suggestion>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "GET /v1.0/api/suggestions/{id}": {"response": "Suggestion", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/api/suggestions/{id}/status": {"response": "Suggestion", "status": {"200": "OK", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/sources": {"response": "EnumerationResult<SourceItem>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "GET /v1.0/api/sources/{id}": {"response": "SourceItem", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/runs": {"response": "EnumerationResult<Run>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}, "notes": "`sortBy=estimatedCostUsd` lists the most expensive runs first (runs with no priced cost sort last) and `sortBy=durationMs` the longest; `queuedUtc`, `completedUtc`, `createdUtc` (the default), `lastUpdateUtc`, and `status` also work."},
-    "GET /v1.0/api/runs/{id}": {"response": "Run", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/runs/{id}/costs": {"response": "RunCostReport", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}, "notes": "See [Run and stage cost](#run-and-stage-cost)."},
-    "POST /v1.0/api/runs/{id}/cancel": {"response": "Run", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/runs/{id}/retry": {"response": "Run", "status": {"202": "Accepted", "400": "ValidationFailed, TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "Conflict"}},
-    "GET /v1.0/api/runs/{id}/events": {"response": "text/event-stream", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}, "notes": "Server-sent events: `run`, `stage`, `ping`, `done`, and `timeout`. See [Server-sent events](#server-sent-events)."},
-    "POST /v1.0/api/topics/{id}/run": {"response": "Run", "status": {"202": "Accepted", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/schedules/preview": {"response": "SchedulePreviewResponse", "status": {"200": "OK", "400": "BadRequest", "403": "Forbidden"}},
-    "GET /v1.0/api/schedules": {"response": "EnumerationResult<Schedule>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "POST /v1.0/api/schedules": {"response": "Schedule", "status": {"201": "Created", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden"}},
-    "GET /v1.0/api/schedules/{id}": {"response": "Schedule", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/api/schedules/{id}": {"response": "Schedule", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/api/schedules/{id}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/search-providers": {"response": "EnumerationResult<SearchProvider>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "POST /v1.0/api/search-providers": {"response": "SearchProvider", "status": {"201": "Created", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden"}},
-    "GET /v1.0/api/search-providers/{id}": {"response": "SearchProvider", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/api/search-providers/{id}": {"response": "SearchProvider", "status": {"200": "OK", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/api/search-providers/{id}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/search-providers/{id}/test": {"response": "SearchOutcome", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/topics/{id}/search-providers": {"response": "List<SearchProvider>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/api/topics/{id}/search-providers": {"response": "List<SearchProvider>", "status": {"200": "OK", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/fetch/test": {"response": "FetchResult", "status": {"200": "OK", "400": "BadRequest", "403": "Forbidden"}},
-    "GET /v1.0/api/settings": {"response": "SettingsResponse", "status": {"200": "OK", "403": "Forbidden"}},
-    "PUT /v1.0/api/settings": {"response": "SettingsUpdateResult", "status": {"200": "OK", "400": "BadRequest, ValidationFailed", "403": "Forbidden"}},
-    "POST /v1.0/api/settings/restart": {"response": "ErrorResponse", "status": {"202": "Accepted (the body is an ErrorResponse-shaped notice with error Accepted)", "403": "Forbidden"}},
-    "GET /v1.0/api/server-info": {"response": "ServerInfoResponse", "status": {"200": "OK", "403": "Forbidden"}, "notes": "Everyone signed in gets the product, version, start time, and uptime. The database type, schema version, pgvector flag, .NET runtime, operating system, pending restarts, and bundled tool links (Grafana, Prometheus, Tempo, Loki) are returned only to global administrators."},
-    "GET /v1.0/api/briefing-templates": {"response": "EnumerationResult<BriefingTemplate>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "POST /v1.0/api/briefing-templates": {"response": "TemplateDetailResponse", "status": {"201": "Created", "400": "BadRequest, TenantRequired", "403": "Forbidden"}},
-    "POST /v1.0/api/briefing-templates/validate": {"response": "TemplateValidationResponse", "status": {"200": "OK", "400": "BadRequest", "403": "Forbidden"}},
-    "GET /v1.0/api/briefing-templates/{id}": {"response": "TemplateDetailResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/api/briefing-templates/{id}": {"response": "TemplateDetailResponse", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/api/briefing-templates/{id}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/briefing-templates/{id}/versions": {"response": "List<BriefingTemplateVersion>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/briefing-templates/{id}/rollback": {"response": "TemplateDetailResponse", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/briefing-templates/{id}/reset": {"response": "TemplateDetailResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/briefing-templates/{id}/export": {"response": "text/markdown", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/tenants": {"response": "EnumerationResult<Tenant>", "status": {"200": "OK", "403": "Forbidden"}},
-    "POST /v1.0/tenants": {"response": "Tenant", "status": {"201": "Created", "400": "BadRequest, ValidationFailed", "403": "Forbidden"}},
-    "GET /v1.0/tenants/{tenantId}": {"response": "Tenant", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/tenants/{tenantId}": {"response": "Tenant", "status": {"200": "OK", "400": "BadRequest, ValidationFailed", "403": "Forbidden", "404": "NotFound", "409": "Conflict"}},
-    "DELETE /v1.0/tenants/{tenantId}": {"response": "none", "status": {"204": "No Content", "403": "Forbidden", "404": "NotFound", "409": "Conflict"}},
-    "POST /v1.0/token": {"response": "TokenResponse", "status": {"200": "OK", "400": "BadRequest", "401": "Unauthorized", "409": "The email matches accounts in several tenants; the body is a TenantSelectionResponse. Sign in again with x-tenant-guid.", "429": "TooManyRequests"}},
-    "POST /v1.0/token/refresh-token": {"response": "TokenResponse", "status": {"200": "OK", "400": "BadRequest", "401": "Unauthorized"}},
-    "GET /v1.0/token": {"response": "TokenDetailsResponse", "status": {"200": "OK", "403": "Forbidden"}},
-    "GET /v1.0/token/details": {"response": "TokenDetailsResponse", "status": {"200": "OK", "403": "Forbidden"}},
-    "POST /v1.0/token/refresh": {"response": "TokenResponse", "status": {"200": "OK", "400": "BadRequest", "403": "Forbidden"}},
-    "DELETE /v1.0/token": {"response": "none", "status": {"204": "No Content", "400": "BadRequest", "403": "Forbidden"}},
-    "GET /v1.0/api/topics": {"response": "EnumerationResult<Topic>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "POST /v1.0/api/topics": {"response": "Topic", "status": {"201": "Created", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden"}},
-    "GET /v1.0/api/topics/{id}": {"response": "TopicDetailResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/api/topics/{id}": {"response": "Topic", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/api/topics/{id}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/topics/{id}/pause": {"response": "Topic", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "Conflict"}},
-    "POST /v1.0/api/topics/{id}/resume": {"response": "Topic", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "Conflict"}},
-    "POST /v1.0/api/topics/{id}/archive": {"response": "Topic", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "Conflict"}},
-    "POST /v1.0/api/topics/{id}/duplicate": {"response": "TopicDetailResponse", "status": {"201": "Created", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/topics/{id}/refine": {"response": "RefinementStateResponse", "status": {"201": "Created", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/topics/{id}/dimensions": {"response": "List<TopicDimension>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/topics/{id}/dimensions": {"response": "TopicDimension", "status": {"201": "Created", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/api/topics/{id}/dimensions/{dimensionId}": {"response": "TopicDimension", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/api/topics/{id}/dimensions/{dimensionId}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/topics/{id}/constraints": {"response": "List<TopicConstraint>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/topics/{id}/constraints": {"response": "TopicConstraint", "status": {"200": "OK (the topic already had this constraint; it is returned unchanged)", "201": "Created", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/api/topics/{id}/constraints/{constraintId}": {"response": "TopicConstraint", "status": {"200": "OK", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/api/topics/{id}/constraints/{constraintId}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/topics/{id}/recipients": {"response": "List<TopicRecipient>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/topics/{id}/recipients": {"response": "TopicRecipient", "status": {"200": "OK", "201": "Created", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/api/topics/{id}/recipients/{recipientId}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/usage/report": {"response": "UsageReport", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden"}, "notes": "With `groupBy=Model` each row is one endpoint and model name: `key` is the endpoint ID and the model name joined by `|`, and `modelEndpointId` and `model` carry the two parts, so the same model name served by two endpoints is reported as two rows."},
-    "GET /v1.0/api/usage/timeseries": {"response": "UsageTimeseries", "status": {"200": "OK", "400": "BadRequest, TenantRequired", "403": "Forbidden"}, "notes": "Each bucket's own fields cover every call in the bucket. With `groupBy`, `groups` lists the range totals per group (highest cost first, limited to `top`, the remainder under the key `(other)`) and each bucket's `rows` holds one row per group that had calls in that bucket, in the same order. `groupBy=Day` returns 400."},
-    "GET /v1.0/api/usage/me": {"response": "UsageReport", "status": {"200": "OK", "400": "BadRequest, TenantRequired"}},
-    "GET /v1.0/tenants/{tenantId}/users": {"response": "EnumerationResult<UserResponse>", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/tenants/{tenantId}/users": {"response": "UserResponse", "status": {"201": "Created", "400": "BadRequest, ValidationFailed", "403": "Forbidden", "404": "NotFound", "409": "Conflict"}},
-    "GET /v1.0/tenants/{tenantId}/users/{userId}": {"response": "UserResponse", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/tenants/{tenantId}/users/{userId}": {"response": "UserResponse", "status": {"200": "OK", "400": "BadRequest, ValidationFailed", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/tenants/{tenantId}/users/{userId}": {"response": "none", "status": {"204": "No Content", "403": "Forbidden", "404": "NotFound", "409": "Conflict"}},
-    "GET /v1.0/api/me": {"response": "UserResponse", "status": {"200": "OK", "400": "BadRequest", "403": "Forbidden"}},
-    "PUT /v1.0/api/me": {"response": "UserResponse", "status": {"200": "OK", "400": "BadRequest, ValidationFailed", "403": "Forbidden"}},
-    "PUT /v1.0/api/me/password": {"response": "none", "status": {"204": "No Content", "400": "BadRequest, ValidationFailed", "403": "Forbidden"}},
-    "GET /v1.0/api/vault/credentials": {"response": "EnumerationResult<VaultCredentialResponse>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}},
-    "POST /v1.0/api/vault/credentials": {"response": "VaultCredentialResponse", "status": {"201": "Created", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden"}},
-    "GET /v1.0/api/vault/credentials/{id}": {"response": "VaultCredentialResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/api/vault/credentials/{id}": {"response": "VaultCredentialResponse", "status": {"200": "OK", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Forbidden", "404": "NotFound"}, "notes": "A null or absent property is left unchanged, and a new `secret` rotates the stored value. To remove an optional value, list its name in `clearFields`, for example `{\"clearFields\": [\"expiresUtc\"]}`. Names that can be cleared: `headerName`, `username`, `description`, `expiresUtc`. Any other name, or a name that the same request also gives a value, returns 400 `ValidationFailed`, as does clearing `headerName` on a `CustomHeader` secret or `username` on a `BasicAuth` secret."},
-    "DELETE /v1.0/api/vault/credentials/{id}": {"response": "none", "status": {"204": "No Content", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/vault/credentials/{id}/reveal": {"response": "VaultRevealResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound", "409": "Conflict", "429": "TooManyRequests"}, "notes": "Allowed for the user who created the credential (`createdByUserId`) and for administrators. Anyone else in the tenant gets 403, and a credential in another tenant is 404. Every reveal writes a `CredentialRevealed` audit event."},
-    "GET /v1.0/api/vault/credentials/{id}/usage": {"response": "List<VaultUsageItem>", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden", "404": "NotFound"}},
-    "GET /openapi.json": {"response": "application/json", "status": {"200": "OK"}, "notes": "The OpenAPI 3 document this reference is generated from."},
-    "GET /swagger": {"response": "text/html", "status": {"200": "OK"}, "notes": "Swagger UI over /openapi.json."},
-    "POST /v1.0/public/signup": {"response": "SignupResult", "status": {"202": "Accepted (same body whether or not the email has an account)", "400": "BadRequest, VerificationFailed", "404": "SignupClosed", "429": "QuotaExceeded"}},
-    "POST /v1.0/public/verify-email": {"response": "VerifyResult", "status": {"200": "OK", "400": "LinkUsed (already used: the address is confirmed, so sign in), LinkExpired, LinkInvalid, BadRequest"}},
-    "POST /v1.0/public/verify-email/resend": {"response": "Message", "status": {"202": "Accepted", "429": "QuotaExceeded"}},
-    "POST /v1.0/public/password/forgot": {"response": "Message", "status": {"202": "Accepted", "429": "QuotaExceeded"}},
-    "POST /v1.0/public/password/reset": {"response": "ResetResult", "status": {"200": "OK", "400": "ValidationFailed (weak password), LinkUsed, LinkExpired, LinkInvalid, BadRequest"}},
-    "GET /.well-known/apple-app-site-association": {"response": "AppleAppSiteAssociation", "status": {"200": "OK", "404": "NotConfigured"}},
-    "GET /.well-known/assetlinks.json": {"response": "AssetLinks", "status": {"200": "OK", "404": "NotConfigured"}},
-    "GET /v1.0/api/account/usage": {"response": "UsageMeter", "status": {"200": "OK", "400": "BadRequest (access keys are refused)", "403": "Forbidden"}},
-    "GET /v1.0/api/account/export": {"response": "ZIP file", "status": {"200": "OK (application/zip)", "400": "BadRequest (access keys are refused)", "403": "Forbidden"}},
-    "POST /v1.0/api/account/delete": {"response": "DeletionScheduled", "status": {"202": "Accepted", "400": "BadRequest (access keys are refused), PasswordIncorrect", "403": "Forbidden", "409": "Conflict (protected account)"}},
-    "GET /v1.0/api/mcp-servers": {"response": "EnumerationResult<McpServer>", "status": {"200": "OK", "403": "Forbidden"}},
-    "POST /v1.0/api/mcp-servers": {"response": "McpServer", "status": {"201": "Created", "400": "ValidationFailed, EgressBlocked", "403": "Forbidden"}},
-    "GET /v1.0/api/mcp-servers/{id}": {"response": "McpServerDetailResponse", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/api/mcp-servers/{id}": {"response": "McpServer", "status": {"200": "OK", "400": "ValidationFailed, EgressBlocked", "403": "Forbidden", "404": "NotFound"}},
-    "DELETE /v1.0/api/mcp-servers/{id}": {"response": "none", "status": {"204": "No Content", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/mcp-servers/{id}/test": {"response": "McpTestResult", "status": {"200": "OK (success false with the error when the server cannot be reached)", "403": "Forbidden", "404": "NotFound"}},
-    "POST /v1.0/api/mcp-servers/{id}/discover": {"response": "McpServerDetailResponse", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound", "502": "McpServerUnavailable"}},
-    "PUT /v1.0/api/mcp-servers/{id}/tools/{toolId}": {"response": "McpServerTool", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/runs/{id}/tool-calls": {"response": "List<RunToolCall>", "status": {"200": "OK", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/briefings/{id}/progress": {"response": "BriefingProgress", "status": {"200": "OK", "400": "BadRequest (needs a signed-in user)", "403": "Forbidden", "404": "NotFound"}},
-    "PUT /v1.0/api/briefings/{id}/progress": {"response": "BriefingProgress", "status": {"200": "OK", "400": "BadRequest, ValidationFailed", "403": "Forbidden", "404": "NotFound"}},
-    "GET /v1.0/api/setup": {"response": "SetupStatusResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Forbidden"}, "notes": "Reads the stored state. The only provider call is the optional speech check, for administrators: one short speech request to the configured endpoint, at most once every five minutes. `canConfigure` is true for global and tenant administrators, who also get the optional checks: `embeddings`, `email`, and `speech` (Ready when speech is on and the endpoint returned audio, Missing when it is turned off, Failed with the reason when the endpoint did not answer; it carries the endpoint host in `resourceName`, `model`, and the default `voice`)."},
-    "POST /v1.0/api/setup/verify": {"response": "SetupStatusResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Administrators only"}, "notes": "Calls the providers: a short probe prompt per chat endpoint, a test query per default web search provider, one embedding request, and one short speech request. Each endpoint's `lastValidationSucceeded` records the outcome. `check=Speech` (or `Model`, `Search`, `Embeddings`) re-checks only that kind and reports the others from stored results."},
-    "GET /v1.0/api/setup/options": {"response": "SetupOptionsResponse", "status": {"200": "OK", "400": "TenantRequired", "403": "Administrators only"}, "notes": "Makes no provider calls. Lists the hosted APIs (`Api`: Anthropic, OpenAI, Gemini, xAI, Ollama Cloud), the agent CLIs in the server image (`AgentCli`: Claude Code, Codex, Gemini CLI, Mux), and self-hosted servers (`SelfHosted`: Ollama, OpenAI-compatible), with their sign-in methods, recommended first; Anthropic is the recommended provider. For an agent CLI, `installed` says whether the executable is in the server image and `available` is false (with `unavailableReason`) when it is missing or when `Models.AllowAgentClis` is off (`turnedOff` true), as on the hosted service. The example shows four of the eleven providers."},
-    "POST /v1.0/api/setup/connect": {"response": "SetupStatusResponse", "status": {"200": "OK", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Administrators only", "404": "NotFound"}, "notes": "`authMethod` defaults to the provider's recommended method. `secret` is an API key, a token from `claude setup-token` (Claude Code), or the contents of a sign-in file (Codex `~/.codex/auth.json`, Gemini CLI `~/.gemini/oauth_creds.json`, Mux `~/.mux/endpoints.json`); it is not needed for `ServerSignIn` and `None`, or when the endpoint already has one for the same method. Reuses the workspace's endpoint for the provider (or `modelEndpointId`), or creates one; stores the secret encrypted in the vault; checks it with a live call; and assigns every chat task to the endpoint. When the workspace already has a working model, the new sign-in is tested first and the working one is kept if the test fails. `connection` on the returned status reports the outcome: `succeeded`, `keptPrevious` (true when the working model stayed in use), and `message` (the test result or the provider's error). The secret is never returned. 400 `ValidationFailed`, with `details.field` naming the request field (`provider`, `authMethod`, `secret`, `model`, or `baseUrl`), for a missing provider, model, or secret, a method the provider does not accept, a secret that does not look right (such as an Anthropic API key sent as a setup-token token), or an agent CLI that is turned off or not installed."},
-    "POST /v1.0/api/setup/model-key": {"response": "SetupStatusResponse", "status": {"200": "OK", "400": "BadRequest, ValidationFailed, TenantRequired", "403": "Administrators only", "404": "NotFound"}, "notes": "Stores the key encrypted in the vault (a new credential, or the endpoint's existing one updated), attaches it to the endpoint, and checks it with a live call. The key is never returned. 400 `ValidationFailed` when a value is missing or the endpoint uses the hosted service's key."}
+    "GET /v1.0/api/audit": {
+      "response": "EnumerationResult<AuditRecord>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden"
+      }
+    },
+    "DELETE /v1.0/api/audit": {
+      "response": "DeleteManyResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/audit/{id}": {
+      "response": "AuditRecord",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/api/audit/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/briefings": {
+      "response": "EnumerationResult<Briefing>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/briefings/{id}": {
+      "response": "BriefingDetailResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/briefings/{id}/download": {
+      "response": "file",
+      "status": {
+        "200": "OK",
+        "206": "Partial Content",
+        "400": "ValidationFailed, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict (the briefing is not ready)",
+        "410": "ArtifactExpired",
+        "416": "RangeNotSatisfiable"
+      },
+      "notes": "Query `format` is `md` (default) or `html`. The file is sent as an attachment and honors `Range`."
+    },
+    "PUT /v1.0/api/briefings/{id}/pin": {
+      "response": "Briefing",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/briefings/{id}/regenerate": {
+      "response": "Briefing",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/api/briefings/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/artifacts": {
+      "response": "EnumerationResult<Artifact>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/artifacts/{id}": {
+      "response": "Artifact",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/artifacts/{id}/content": {
+      "response": "file",
+      "status": {
+        "200": "OK",
+        "206": "Partial Content",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "410": "ArtifactExpired",
+        "416": "RangeNotSatisfiable"
+      },
+      "notes": "Streams the stored file with its own content type. Pass `download=true` for an attachment. Honors `Range`."
+    },
+    "GET /v1.0/api/artifacts/{id}/download-url": {
+      "response": "DownloadUrlResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/client-config": {
+      "response": "ClientConfigResponse",
+      "status": {
+        "200": "OK"
+      }
+    },
+    "GET /v1.0/tenants/{tenantId}/credentials": {
+      "response": "EnumerationResult<CredentialResponse>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/tenants/{tenantId}/credentials": {
+      "response": "CredentialCreatedResponse",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/tenants/{tenantId}/credentials/{credentialId}": {
+      "response": "CredentialResponse",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/tenants/{tenantId}/credentials/{credentialId}": {
+      "response": "CredentialResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/tenants/{tenantId}/credentials/{credentialId}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      }
+    },
+    "GET /v1.0/api/devices": {
+      "response": "List<Device>",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/devices": {
+      "response": "Device",
+      "status": {
+        "200": "The token was already registered; the existing device is returned",
+        "201": "Created",
+        "400": "BadRequest",
+        "403": "Forbidden"
+      }
+    },
+    "DELETE /v1.0/api/devices/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "BadRequest",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/devices/{id}/test": {
+      "response": "PushResult",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/notifications": {
+      "response": "EnumerationResult<Notification>",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/notifications/unread-count": {
+      "response": "NotificationCountResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/notifications/read-all": {
+      "response": "NotificationCountResponse",
+      "status": {
+        "200": "OK; count is how many were marked",
+        "400": "BadRequest",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/notifications/preferences": {
+      "response": "NotificationPreferencesResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "403": "Forbidden"
+      }
+    },
+    "PUT /v1.0/api/notifications/preferences": {
+      "response": "NotificationPreferencesResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/notifications/{id}/read": {
+      "response": "Notification",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/api/notifications/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "BadRequest",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/editions": {
+      "response": "EnumerationResult<Edition>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/editions": {
+      "response": "EditionResponse",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden",
+        "409": "Conflict"
+      }
+    },
+    "GET /v1.0/api/editions/{id}": {
+      "response": "EditionResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/api/editions/{id}": {
+      "response": "EditionResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      }
+    },
+    "DELETE /v1.0/api/editions/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/api/editions/{id}/topics": {
+      "response": "EditionResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/editions/{id}/compose": {
+      "response": "Briefing",
+      "status": {
+        "202": "Accepted",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      }
+    },
+    "POST /v1.0/api/editions/{id}/preview": {
+      "response": "Briefing",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/email-messages": {
+      "response": "EnumerationResult<EmailMessage>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/email-messages/{id}": {
+      "response": "EmailMessage",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/email-messages/{id}/resend": {
+      "response": "EmailMessage",
+      "status": {
+        "202": "Accepted",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      }
+    },
+    "DELETE /v1.0/api/email-messages/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/email/test": {
+      "response": "EmailMessage",
+      "status": {
+        "202": "Accepted",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "409": "Conflict"
+      }
+    },
+    "GET /v1.0/api/runs/{id}/email-preview": {
+      "response": "EmailPreview",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/email-preferences": {
+      "response": "EmailPreferencesResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "PUT /v1.0/api/email-preferences": {
+      "response": "EmailPreferencesResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden",
+        "409": "Conflict"
+      }
+    },
+    "POST /v1.0/api/feedback": {
+      "response": "Feedback",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/feedback": {
+      "response": "EnumerationResult<Feedback>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/public/feedback/{token}": {
+      "response": "text/html",
+      "status": {
+        "200": "OK",
+        "404": "NotFound",
+        "429": "TooManyRequests"
+      },
+      "notes": "Renders the feedback page from an email rating link. The optional `a` query value preselects an action, and the page asks the reader to confirm it with one button; opening the link records nothing, so mail scanners that follow links cannot rate."
+    },
+    "POST /v1.0/public/feedback/{token}": {
+      "response": "text/html",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "404": "NotFound",
+        "429": "TooManyRequests"
+      },
+      "notes": "Form post (`application/x-www-form-urlencoded`) from the feedback page."
+    },
+    "GET /v1.0/public/unsubscribe/{token}": {
+      "response": "text/html",
+      "status": {
+        "200": "OK",
+        "404": "NotFound",
+        "429": "TooManyRequests"
+      }
+    },
+    "POST /v1.0/public/unsubscribe/{token}": {
+      "response": "text/html",
+      "status": {
+        "200": "OK",
+        "404": "NotFound",
+        "429": "TooManyRequests"
+      },
+      "notes": "Form post (`application/x-www-form-urlencoded`) from the unsubscribe page."
+    },
+    "GET /v1.0/api/health": {
+      "response": "HealthResponse",
+      "status": {
+        "200": "OK",
+        "503": "The database is unreachable; the body still describes each component."
+      }
+    },
+    "GET /v1.0/api/learned-preferences": {
+      "response": "EnumerationResult<LearnedPreference>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/learned-preferences": {
+      "response": "LearnedPreference",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/learned-preferences/{id}": {
+      "response": "PreferenceDetailResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/api/learned-preferences/{id}": {
+      "response": "LearnedPreference",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/api/learned-preferences/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/learned-preferences/{id}/accept": {
+      "response": "LearnedPreference",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      }
+    },
+    "POST /v1.0/api/learned-preferences/{id}/reject": {
+      "response": "LearnedPreference",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      }
+    },
+    "POST /v1.0/api/learned-preferences/{id}/disable": {
+      "response": "LearnedPreference",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      }
+    },
+    "POST /v1.0/api/learned-preferences/{id}/enable": {
+      "response": "LearnedPreference",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      }
+    },
+    "POST /v1.0/api/topics/{id}/learn": {
+      "response": {
+        "proposed": "int",
+        "preferences": "List<LearnedPreference>"
+      },
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "Runs the learning pass at once and returns how many preferences it proposed plus the topic's preferences."
+    },
+    "GET /v1.0/api/topics/{id}/ranking-recommendation": {
+      "response": "RankingRecommendation",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/api/feedback/{id}": {
+      "response": "Feedback",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/api/feedback/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/analytics/overview": {
+      "response": "OverviewReport",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/analytics/relevance": {
+      "response": "RelevanceReport",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/analytics/accuracy": {
+      "response": "AccuracyReport",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/analytics/feedback": {
+      "response": "FeedbackReport",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/analytics/suggestions": {
+      "response": "SuggestionReport",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/analytics/reasons": {
+      "response": "ReasonReport",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/analytics/quality": {
+      "response": "QualityReport",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/analytics/email": {
+      "response": "EmailReport",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/analytics/runs": {
+      "response": "RunsReport",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired, ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "Dry runs are excluded and days are gap-filled. Sources examined are the Search stage's items out, fetched are the Fetch stage's items out, and used are the distinct sources behind a non-duplicate finding at or above the display threshold. Provider yield is the share of a provider's results whose source produced such a finding in the same run. Stage percentiles interpolate linearly over finished (succeeded or failed) stage rows."
+    },
+    "GET /v1.0/api/media": {
+      "response": "EnumerationResult<MediaAsset>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/media/{id}": {
+      "response": "MediaDetailResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/api/media/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/briefings/{id}/audio": {
+      "response": "MediaAsset",
+      "status": {
+        "202": "Accepted",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "AudioDisabled, BriefingNotReady, AudioInProgress"
+      }
+    },
+    "GET /v1.0/api/voices": {
+      "response": "EnumerationResult<VoiceProfile>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/voices": {
+      "response": "VoiceProfile",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/voices/{id}": {
+      "response": "VoiceProfile",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/api/voices/{id}": {
+      "response": "VoiceProfile",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/api/voices/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/voices/{id}/test": {
+      "response": "audio/wav",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "502": "TtsError"
+      }
+    },
+    "GET /v1.0/api/voices/available": {
+      "response": "AvailableVoicesResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      },
+      "notes": "The workspace's active voice profiles come first (the default one at the top), then the voices the speech server offers that no profile uses yet. The server's list is read from the speech endpoint's `/audio/voices` (Kokoro-FastAPI) and kept for five minutes; `listed` is false when the endpoint has no listing, and the configured default voices are offered instead. `label` is readable where the ID follows Kokoro's naming (`af_heart` is Heart, American English, female) and is the ID otherwise. To use a voice for a topic, send its `voiceProfileId`, or its `voice` when it has no profile yet, in `PUT /v1.0/api/topics/{id}`; the server then reuses or creates the voice profile. Needs permission to read topics."
+    },
+    "POST /v1.0/api/voices/preview": {
+      "response": "audio/wav",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict",
+        "429": "TooManyRequests",
+        "502": "TtsError"
+      },
+      "notes": "Send `voice` (a speech server voice from the available list) or `voiceProfileId` (a voice profile, spoken with its own endpoint, model, and speed). `text` is cut to 300 characters; without it a default sentence is spoken. Each user may ask for 20 previews a minute. 400 when neither is given or the speech server does not offer the voice, 404 for an unknown voice profile, 409 when speech is turned off on the server, 502 `TtsError` when the speech endpoint fails. Needs permission to edit topics."
+    },
+    "GET /v1.0/api/feed-tokens": {
+      "response": "List<FeedToken>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/feed-tokens": {
+      "response": "FeedTokenCreated",
+      "status": {
+        "201": "Created",
+        "400": "ValidationFailed, TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "DELETE /v1.0/api/feed-tokens/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/briefings/{id}/shares": {
+      "response": "EnumerationResult<BriefingShare>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "The owner of the briefing and tenant administrators can list its shares. `tokenHash` is always `redacted`, and the links themselves are never returned here. A share works while `revokedUtc` is null and `expiresUtc` is in the future. `viewCount` and `lastViewedUtc` say whether a link was opened; nothing else about visitors is recorded."
+    },
+    "POST /v1.0/api/briefings/{id}/shares": {
+      "response": "BriefingShareCreated",
+      "status": {
+        "201": "Created",
+        "400": "ValidationFailed, BadRequest, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "SharingDisabled, BriefingNotReady"
+      },
+      "notes": "The body is optional. `expiresInDays` must be from 1 to the server maximum (`sharing.maxExpiryDays`, 14 by default); omitted, it is `sharing.defaultExpiryDays` (7 by default, never more than the maximum). A value outside the range is refused with 400 `ValidationFailed`, with `minimum` and `maximum` in `details`; the server never adjusts it silently, and there is no share without an expiry. `showOwnerName` (default false) shows the sharing user's display name on the public pages; the email address is never shown. `readUrl`, `listenUrl`, and `secret` are returned only in this response."
+    },
+    "DELETE /v1.0/api/briefings/{id}/shares/{shareId}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "Revokes a live share; its link answers 404 at once. Revoking twice is harmless. `purge=true` deletes a share that is already revoked or expired, and is ignored for a live one (which is revoked instead)."
+    },
+    "GET /v1.0/public/shares/{token}": {
+      "response": "text/html",
+      "status": {
+        "200": "OK",
+        "404": "NotFound",
+        "429": "TooManyRequests"
+      },
+      "notes": "The shared briefing page, for listening and reading: title, topic or edition name, date, a native audio player with chapter links when the briefing has finished audio (each chapter link reloads the page with `t`; a request with `t` is not counted as a new opening), then the briefing rendered from Markdown (raw HTML in the content is shown as text, and outbound links carry `rel=\"noopener noreferrer nofollow\"`), and an invitation to sign up. No authentication, no cookies, no script. Sent with `X-Robots-Tag: noindex, nofollow`, `Referrer-Policy: no-referrer`, `Cache-Control: no-store`, and a Content-Security-Policy that allows only same-origin images and audio. An unknown, revoked, or expired link, a deleted briefing or user, and a server with sharing turned off all get the same 404 page. Each successful open adds one to the share's `viewCount`."
+    },
+    "GET /v1.0/public/shares/{token}/listen": {
+      "response": "text/html",
+      "status": {
+        "200": "OK",
+        "404": "NotFound",
+        "429": "TooManyRequests"
+      },
+      "notes": "The address earlier shares used for a separate listening page. It now renders the same single page as `GET /v1.0/public/shares/{token}`, with the same headers and the same 404, so those links keep working."
+    },
+    "GET /v1.0/public/shares/{token}/markdown": {
+      "response": "file",
+      "status": {
+        "200": "OK",
+        "404": "NotFound",
+        "429": "TooManyRequests"
+      },
+      "notes": "The briefing text as a Markdown file (`text/markdown`, sent as an attachment named after the briefing title). No authentication. Not counted as an opening. Same 404 as the page for a link that does not work."
+    },
+    "GET /v1.0/public/shares/{token}/audio/{file}": {
+      "response": "file",
+      "status": {
+        "200": "OK",
+        "206": "Partial Content",
+        "404": "NotFound",
+        "410": "ArtifactExpired",
+        "416": "RangeNotSatisfiable"
+      },
+      "notes": "The audio behind the shared briefing page. No authentication. Honors `Range`. The file name is for the browser and may be anything, for example `briefing.mp3`. 404 when the link does not work or the briefing has no finished audio."
+    },
+    "GET /v1.0/public/feeds/{token}/podcast.xml": {
+      "response": "application/rss+xml",
+      "status": {
+        "200": "OK",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/public/feeds/{token}/episodes/{file}": {
+      "response": "file",
+      "status": {
+        "200": "OK",
+        "206": "Partial Content",
+        "404": "NotFound",
+        "410": "ArtifactExpired",
+        "416": "RangeNotSatisfiable"
+      },
+      "notes": "Audio (`audio/mpeg`) for podcast apps. Honors `Range`."
+    },
+    "GET /v1.0/public/feeds/{token}/chapters/{file}": {
+      "response": "file",
+      "status": {
+        "200": "OK",
+        "206": "Partial Content",
+        "404": "NotFound",
+        "410": "ArtifactExpired",
+        "416": "RangeNotSatisfiable"
+      },
+      "notes": "Podcasting 2.0 chapters JSON. Honors `Range`."
+    },
+    "GET /v1.0/public/assets/{name}": {
+      "response": "image/png",
+      "status": {
+        "200": "OK",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/model-endpoints": {
+      "response": "EnumerationResult<ModelEndpoint>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/model-endpoints": {
+      "response": "ModelEndpoint",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/model-endpoints/{id}": {
+      "response": "ModelEndpoint",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/api/model-endpoints/{id}": {
+      "response": "ModelEndpoint",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "A null or absent property is left unchanged. To set an optional value back to null, list its name in `clearFields`, for example `{\"clearFields\": [\"temperature\", \"contextLength\"]}`. Names that can be cleared: `endpoint`, `credentialId`, `authMethod`, `model`, `embeddingModel`, `temperature`, `reasoningEffort`, `contextLength`, `inputCostPerMTok`, `outputCostPerMTok`, `cachedInputCostPerMTok`, `cacheWriteCostPerMTok`. Any other name, or a name that the same request also gives a value, returns 400 `ValidationFailed`. The usual rules still apply after clearing (an OpenAI-compatible endpoint needs a URL, a chat endpoint needs a model)."
+    },
+    "DELETE /v1.0/api/model-endpoints/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/model-endpoints/{id}/validate": {
+      "response": "ModelValidationResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/model-endpoints/{id}/models": {
+      "response": "List<ModelListItem>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "502": "UpstreamError"
+      }
+    },
+    "POST /v1.0/api/model-endpoints/{id}/test": {
+      "response": "ModelTestResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/model-assignments": {
+      "response": "EnumerationResult<ModelAssignment>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "PUT /v1.0/api/model-assignments": {
+      "response": "ModelAssignment",
+      "status": {
+        "200": "Updated an existing assignment",
+        "201": "Created a new assignment",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "DELETE /v1.0/api/model-assignments/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      }
+    },
+    "GET /v1.0/api/llm-calls": {
+      "response": "EnumerationResult<LlmCall>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/llm-calls/{id}": {
+      "response": "LlmCall",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/admin/promo-codes": {
+      "response": "EnumerationResult<PromoCodeStats>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/admin/promo-codes": {
+      "response": "PromoCodeStats",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      }
+    },
+    "POST /v1.0/api/admin/promo-codes/generate": {
+      "response": "List<PromoCode>",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/admin/promo-codes/{id}": {
+      "response": "PromoCodeStats",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/api/admin/promo-codes/{id}": {
+      "response": "PromoCodeStats",
+      "status": {
+        "200": "OK",
+        "201": "Created",
+        "400": "BadRequest, ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/api/admin/promo-codes/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      }
+    },
+    "GET /v1.0/api/admin/promo-codes/{id}/redemptions": {
+      "response": "List<PromoRedemption>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/admin/promo-codes/{id}/redemptions/{redemptionId}/revoke": {
+      "response": "PromoRedemption",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/admin/promo-codes/{id}/apply": {
+      "response": "PromoRedemption",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/admin/plans": {
+      "response": "List<PlanResponse>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/admin/plans": {
+      "response": "PlanResponse",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, ValidationFailed",
+        "403": "Forbidden",
+        "409": "Conflict"
+      }
+    },
+    "PUT /v1.0/api/admin/plans/{id}": {
+      "response": "PlanResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/admin/plan-assignments": {
+      "response": "List<PlanAssignment>",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/admin/plan-assignments": {
+      "response": "PlanAssignment",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, ValidationFailed",
+        "403": "Forbidden"
+      }
+    },
+    "DELETE /v1.0/api/admin/plan-assignments/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/promo-codes/redeem": {
+      "response": "EffectivePlan",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden",
+        "429": "TooManyRequests"
+      }
+    },
+    "GET /v1.0/api/account/plan": {
+      "response": "EffectivePlan",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/public/promo-codes/{code}": {
+      "response": "PromoCheck",
+      "status": {
+        "200": "OK",
+        "429": "TooManyRequests"
+      }
+    },
+    "GET /v1.0/api/prompts": {
+      "response": "EnumerationResult<PromptTemplate>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/prompts/lab": {
+      "response": "PromptLabResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/prompts/overrides": {
+      "response": "PromptTemplateResponse",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden",
+        "409": "Conflict"
+      }
+    },
+    "GET /v1.0/api/prompts/{id}": {
+      "response": "PromptTemplateResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/api/prompts/{id}": {
+      "response": "PromptTemplateResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/api/prompts/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      }
+    },
+    "GET /v1.0/api/prompts/{id}/versions": {
+      "response": "List<PromptTemplateVersion>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/prompts/{id}/rollback": {
+      "response": "PromptTemplateResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/prompts/{id}/reset": {
+      "response": "PromptTemplateResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/tenants/{tenantId}/roles": {
+      "response": "EnumerationResult<UserRole>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/tenants/{tenantId}/roles": {
+      "response": "UserRole",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      }
+    },
+    "GET /v1.0/tenants/{tenantId}/roles/{roleId}": {
+      "response": "RoleDetailResponse",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/tenants/{tenantId}/roles/{roleId}": {
+      "response": "UserRole",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      }
+    },
+    "DELETE /v1.0/tenants/{tenantId}/roles/{roleId}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      }
+    },
+    "GET /v1.0/tenants/{tenantId}/permissions": {
+      "response": "EnumerationResult<Permission>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/tenants/{tenantId}/permissions": {
+      "response": "Permission",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/tenants/{tenantId}/permissions/{permissionId}": {
+      "response": "Permission",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/tenants/{tenantId}/permissions/{permissionId}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      }
+    },
+    "GET /v1.0/tenants/{tenantId}/users/{userId}/assignments": {
+      "response": "EnumerationResult<UserRoleAssignment>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/tenants/{tenantId}/users/{userId}/assignments": {
+      "response": "UserRoleAssignment",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/tenants/{tenantId}/users/{userId}/assignments/{assignmentId}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes": {
+      "response": "EnumerationResult<CredentialScopeAssignment>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes": {
+      "response": "CredentialScopeAssignment",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes/{scopeId}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/tenants/{tenantId}/users/{userId}/permissions": {
+      "response": "EffectivePermissionsResponse",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/tenants/{tenantId}/credentials/{credentialId}/permissions": {
+      "response": "EffectivePermissionsResponse",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/refinement-sessions": {
+      "response": "RefinementStateResponse",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden",
+        "409": "SetupRequired"
+      }
+    },
+    "GET /v1.0/api/refinement-sessions": {
+      "response": "EnumerationResult<RefinementSession>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/refinement-sessions/{id}": {
+      "response": "RefinementStateResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/refinement-sessions/{id}/dimensions": {
+      "response": "RefinementStateResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "SetupRequired"
+      }
+    },
+    "POST /v1.0/api/refinement-sessions/{id}/questions": {
+      "response": "RefinementStateResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "SetupRequired"
+      }
+    },
+    "PUT /v1.0/api/refinement-sessions/{id}/questions/{questionId}": {
+      "response": "RefinementQuestionResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/refinement-sessions/{id}/context": {
+      "response": "RefinementStateResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "SetupRequired"
+      }
+    },
+    "POST /v1.0/api/refinement-sessions/{id}/sources": {
+      "response": "List<SourceCheck>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "SetupRequired"
+      }
+    },
+    "POST /v1.0/api/refinement-sessions/{id}/sources/accept": {
+      "response": "RefinementStateResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/refinement-sessions/{id}/complete": {
+      "response": "RefinementStateResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/refinement-sessions/{id}/abandon": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/request-history": {
+      "response": "EnumerationResult<RequestHistoryEntry>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/request-history/summary": {
+      "response": "RequestHistorySummary",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "403": "Forbidden"
+      }
+    },
+    "DELETE /v1.0/api/request-history": {
+      "response": "DeleteManyResponse",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/request-history/{id}": {
+      "response": "RequestHistoryEntry",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/api/request-history/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/requests": {
+      "response": "ResearchRequestResponse",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden",
+        "409": "SetupRequired"
+      }
+    },
+    "GET /v1.0/api/requests": {
+      "response": "EnumerationResult<ResearchRequest>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/requests/{id}": {
+      "response": "ResearchRequestResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/api/requests/{id}/questions/{questionId}": {
+      "response": "RefinementQuestionResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/requests/{id}/replan": {
+      "response": "ResearchRequestResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/requests/{id}/confirm": {
+      "response": "ResearchRequestResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/requests/{id}/cancel": {
+      "response": "ResearchRequestResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/requests/{id}/convert": {
+      "response": "Topic",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/api/requests/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/findings": {
+      "response": "EnumerationResult<Finding>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/findings/{id}": {
+      "response": "FindingDetailResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/api/findings/{id}": {
+      "response": "Finding",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/api/findings/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/evidence/{id}": {
+      "response": "EvidenceView",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/runs/{id}/llm-calls": {
+      "response": "EnumerationResult<LlmCall>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/runs/{id}/stages": {
+      "response": "List<RunStage>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/runs/{id}/queries": {
+      "response": "List<SearchQuery>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/runs/{id}/results": {
+      "response": "List<SearchResult>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/predictions": {
+      "response": "EnumerationResult<Prediction>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/predictions/{id}": {
+      "response": "PredictionDetailResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/predictions/{id}/resolve": {
+      "response": "Prediction",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/prediction-reviews/{id}/accept": {
+      "response": "Prediction",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/prediction-reviews/{id}/reject": {
+      "response": "Prediction",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/suggestions": {
+      "response": "EnumerationResult<Suggestion>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/suggestions/{id}": {
+      "response": "Suggestion",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/api/suggestions/{id}/status": {
+      "response": "Suggestion",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/sources": {
+      "response": "EnumerationResult<SourceItem>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/sources/{id}": {
+      "response": "SourceItem",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/runs": {
+      "response": "EnumerationResult<Run>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      },
+      "notes": "`sortBy=estimatedCostUsd` lists the most expensive runs first (runs with no priced cost sort last) and `sortBy=durationMs` the longest; `queuedUtc`, `completedUtc`, `createdUtc` (the default), `lastUpdateUtc`, and `status` also work."
+    },
+    "GET /v1.0/api/runs/{id}": {
+      "response": "Run",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/runs/{id}/costs": {
+      "response": "RunCostReport",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "See [Run and stage cost](#run-and-stage-cost)."
+    },
+    "POST /v1.0/api/runs/{id}/cancel": {
+      "response": "Run",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/runs/{id}/retry": {
+      "response": "Run",
+      "status": {
+        "202": "Accepted",
+        "400": "ValidationFailed, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      }
+    },
+    "GET /v1.0/api/runs/{id}/events": {
+      "response": "text/event-stream",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "Server-sent events: `run`, `stage`, `ping`, `done`, and `timeout`. See [Server-sent events](#server-sent-events)."
+    },
+    "POST /v1.0/api/topics/{id}/run": {
+      "response": "Run",
+      "status": {
+        "202": "Accepted",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/schedules/preview": {
+      "response": "SchedulePreviewResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/schedules": {
+      "response": "EnumerationResult<Schedule>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/schedules": {
+      "response": "Schedule",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/schedules/{id}": {
+      "response": "Schedule",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/api/schedules/{id}": {
+      "response": "Schedule",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/api/schedules/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/search-providers": {
+      "response": "EnumerationResult<SearchProvider>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/search-providers": {
+      "response": "SearchProvider",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/search-providers/{id}": {
+      "response": "SearchProvider",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/api/search-providers/{id}": {
+      "response": "SearchProvider",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/api/search-providers/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/search-providers/{id}/test": {
+      "response": "SearchOutcome",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/topics/{id}/search-providers": {
+      "response": "List<SearchProvider>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/api/topics/{id}/search-providers": {
+      "response": "List<SearchProvider>",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/fetch/test": {
+      "response": "FetchResult",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/settings": {
+      "response": "SettingsResponse",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden"
+      }
+    },
+    "PUT /v1.0/api/settings": {
+      "response": "SettingsUpdateResult",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/settings/restart": {
+      "response": "ErrorResponse",
+      "status": {
+        "202": "Accepted (the body is an ErrorResponse-shaped notice with error Accepted)",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/server-info": {
+      "response": "ServerInfoResponse",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden"
+      },
+      "notes": "Everyone signed in gets the product, version, start time, and uptime. The database type, schema version, pgvector flag, .NET runtime, operating system, pending restarts, and bundled tool links (Grafana, Prometheus, Tempo, Loki) are returned only to global administrators."
+    },
+    "GET /v1.0/api/briefing-templates": {
+      "response": "EnumerationResult<BriefingTemplate>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/briefing-templates": {
+      "response": "TemplateDetailResponse",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/briefing-templates/validate": {
+      "response": "TemplateValidationResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/briefing-templates/{id}": {
+      "response": "TemplateDetailResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/api/briefing-templates/{id}": {
+      "response": "TemplateDetailResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/api/briefing-templates/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/briefing-templates/{id}/versions": {
+      "response": "List<BriefingTemplateVersion>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/briefing-templates/{id}/rollback": {
+      "response": "TemplateDetailResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/briefing-templates/{id}/reset": {
+      "response": "TemplateDetailResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/briefing-templates/{id}/export": {
+      "response": "text/markdown",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/tenants": {
+      "response": "EnumerationResult<Tenant>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/tenants": {
+      "response": "Tenant",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, ValidationFailed",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/tenants/{tenantId}": {
+      "response": "Tenant",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/tenants/{tenantId}": {
+      "response": "Tenant",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      }
+    },
+    "DELETE /v1.0/tenants/{tenantId}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      }
+    },
+    "POST /v1.0/token": {
+      "response": "TokenResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "401": "Unauthorized",
+        "409": "The email matches accounts in several tenants; the body is a TenantSelectionResponse. Sign in again with x-tenant-guid.",
+        "429": "TooManyRequests"
+      }
+    },
+    "POST /v1.0/token/refresh-token": {
+      "response": "TokenResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "401": "Unauthorized"
+      }
+    },
+    "GET /v1.0/token": {
+      "response": "TokenDetailsResponse",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/token/details": {
+      "response": "TokenDetailsResponse",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/token/refresh": {
+      "response": "TokenResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "403": "Forbidden"
+      }
+    },
+    "DELETE /v1.0/token": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "BadRequest",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/topics": {
+      "response": "EnumerationResult<Topic>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/topics": {
+      "response": "Topic",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/topics/{id}": {
+      "response": "TopicDetailResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/api/topics/{id}": {
+      "response": "Topic",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/api/topics/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/topics/{id}/pause": {
+      "response": "Topic",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      }
+    },
+    "POST /v1.0/api/topics/{id}/resume": {
+      "response": "Topic",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      }
+    },
+    "POST /v1.0/api/topics/{id}/archive": {
+      "response": "Topic",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      }
+    },
+    "POST /v1.0/api/topics/{id}/duplicate": {
+      "response": "TopicDetailResponse",
+      "status": {
+        "201": "Created",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/topics/{id}/refine": {
+      "response": "RefinementStateResponse",
+      "status": {
+        "201": "Created",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/topics/{id}/dimensions": {
+      "response": "List<TopicDimension>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/topics/{id}/dimensions": {
+      "response": "TopicDimension",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/api/topics/{id}/dimensions/{dimensionId}": {
+      "response": "TopicDimension",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/api/topics/{id}/dimensions/{dimensionId}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/topics/{id}/constraints": {
+      "response": "List<TopicConstraint>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/topics/{id}/constraints": {
+      "response": "TopicConstraint",
+      "status": {
+        "200": "OK (the topic already had this constraint; it is returned unchanged)",
+        "201": "Created",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/api/topics/{id}/constraints/{constraintId}": {
+      "response": "TopicConstraint",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/api/topics/{id}/constraints/{constraintId}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/topics/{id}/recipients": {
+      "response": "List<TopicRecipient>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/topics/{id}/recipients": {
+      "response": "TopicRecipient",
+      "status": {
+        "200": "OK",
+        "201": "Created",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/api/topics/{id}/recipients/{recipientId}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/usage/report": {
+      "response": "UsageReport",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden"
+      },
+      "notes": "With `groupBy=Model` each row is one endpoint and model name: `key` is the endpoint ID and the model name joined by `|`, and `modelEndpointId` and `model` carry the two parts, so the same model name served by two endpoints is reported as two rows."
+    },
+    "GET /v1.0/api/usage/timeseries": {
+      "response": "UsageTimeseries",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, TenantRequired",
+        "403": "Forbidden"
+      },
+      "notes": "Each bucket's own fields cover every call in the bucket. With `groupBy`, `groups` lists the range totals per group (highest cost first, limited to `top`, the remainder under the key `(other)`) and each bucket's `rows` holds one row per group that had calls in that bucket, in the same order. `groupBy=Day` returns 400."
+    },
+    "GET /v1.0/api/usage/me": {
+      "response": "UsageReport",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, TenantRequired"
+      }
+    },
+    "GET /v1.0/tenants/{tenantId}/users": {
+      "response": "EnumerationResult<UserResponse>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/tenants/{tenantId}/users": {
+      "response": "UserResponse",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      }
+    },
+    "GET /v1.0/tenants/{tenantId}/users/{userId}": {
+      "response": "UserResponse",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/tenants/{tenantId}/users/{userId}": {
+      "response": "UserResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/tenants/{tenantId}/users/{userId}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      }
+    },
+    "GET /v1.0/api/me": {
+      "response": "UserResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "403": "Forbidden"
+      }
+    },
+    "PUT /v1.0/api/me": {
+      "response": "UserResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed",
+        "403": "Forbidden"
+      }
+    },
+    "PUT /v1.0/api/me/password": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "BadRequest, ValidationFailed",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/vault/credentials": {
+      "response": "EnumerationResult<VaultCredentialResponse>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/vault/credentials": {
+      "response": "VaultCredentialResponse",
+      "status": {
+        "201": "Created",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/vault/credentials/{id}": {
+      "response": "VaultCredentialResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/api/vault/credentials/{id}": {
+      "response": "VaultCredentialResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "A null or absent property is left unchanged, and a new `secret` rotates the stored value. To remove an optional value, list its name in `clearFields`, for example `{\"clearFields\": [\"expiresUtc\"]}`. Names that can be cleared: `headerName`, `username`, `description`, `expiresUtc`. Any other name, or a name that the same request also gives a value, returns 400 `ValidationFailed`, as does clearing `headerName` on a `CustomHeader` secret or `username` on a `BasicAuth` secret."
+    },
+    "DELETE /v1.0/api/vault/credentials/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/vault/credentials/{id}/reveal": {
+      "response": "VaultRevealResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict",
+        "429": "TooManyRequests"
+      },
+      "notes": "Allowed for the user who created the credential (`createdByUserId`) and for administrators. Anyone else in the tenant gets 403, and a credential in another tenant is 404. Every reveal writes a `CredentialRevealed` audit event."
+    },
+    "GET /v1.0/api/vault/credentials/{id}/usage": {
+      "response": "List<VaultUsageItem>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /openapi.json": {
+      "response": "application/json",
+      "status": {
+        "200": "OK"
+      },
+      "notes": "The OpenAPI 3 document this reference is generated from."
+    },
+    "GET /swagger": {
+      "response": "text/html",
+      "status": {
+        "200": "OK"
+      },
+      "notes": "Swagger UI over /openapi.json."
+    },
+    "POST /v1.0/public/signup": {
+      "response": "SignupResult",
+      "status": {
+        "202": "Accepted (same body whether or not the email has an account)",
+        "400": "BadRequest, VerificationFailed",
+        "404": "SignupClosed",
+        "429": "QuotaExceeded"
+      }
+    },
+    "POST /v1.0/public/verify-email": {
+      "response": "VerifyResult",
+      "status": {
+        "200": "OK",
+        "400": "LinkUsed (already used: the address is confirmed, so sign in), LinkExpired, LinkInvalid, BadRequest"
+      }
+    },
+    "POST /v1.0/public/verify-email/resend": {
+      "response": "Message",
+      "status": {
+        "202": "Accepted",
+        "429": "QuotaExceeded"
+      }
+    },
+    "POST /v1.0/public/password/forgot": {
+      "response": "Message",
+      "status": {
+        "202": "Accepted",
+        "429": "QuotaExceeded"
+      }
+    },
+    "POST /v1.0/public/password/reset": {
+      "response": "ResetResult",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed (weak password), LinkUsed, LinkExpired, LinkInvalid, BadRequest"
+      }
+    },
+    "GET /.well-known/apple-app-site-association": {
+      "response": "AppleAppSiteAssociation",
+      "status": {
+        "200": "OK",
+        "404": "NotConfigured"
+      }
+    },
+    "GET /.well-known/assetlinks.json": {
+      "response": "AssetLinks",
+      "status": {
+        "200": "OK",
+        "404": "NotConfigured"
+      }
+    },
+    "GET /v1.0/api/account/usage": {
+      "response": "UsageMeter",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest (access keys are refused)",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/account/export": {
+      "response": "ZIP file",
+      "status": {
+        "200": "OK (application/zip)",
+        "400": "BadRequest (access keys are refused)",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/account/delete": {
+      "response": "DeletionScheduled",
+      "status": {
+        "202": "Accepted",
+        "400": "BadRequest (access keys are refused), PasswordIncorrect",
+        "403": "Forbidden",
+        "409": "Conflict (protected account)"
+      }
+    },
+    "GET /v1.0/api/mcp-servers": {
+      "response": "EnumerationResult<McpServer>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/mcp-servers": {
+      "response": "McpServer",
+      "status": {
+        "201": "Created",
+        "400": "ValidationFailed, EgressBlocked",
+        "403": "Forbidden"
+      }
+    },
+    "GET /v1.0/api/mcp-servers/{id}": {
+      "response": "McpServerDetailResponse",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/api/mcp-servers/{id}": {
+      "response": "McpServer",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed, EgressBlocked",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "DELETE /v1.0/api/mcp-servers/{id}": {
+      "response": "none",
+      "status": {
+        "204": "No Content",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/mcp-servers/{id}/test": {
+      "response": "McpTestResult",
+      "status": {
+        "200": "OK (success false with the error when the server cannot be reached)",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/mcp-servers/{id}/discover": {
+      "response": "McpServerDetailResponse",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "502": "McpServerUnavailable"
+      }
+    },
+    "PUT /v1.0/api/mcp-servers/{id}/tools/{toolId}": {
+      "response": "McpServerTool",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/runs/{id}/tool-calls": {
+      "response": "List<RunToolCall>",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/briefings/{id}/progress": {
+      "response": "BriefingProgress",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest (needs a signed-in user)",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/api/briefings/{id}/progress": {
+      "response": "BriefingProgress",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/setup": {
+      "response": "SetupStatusResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden"
+      },
+      "notes": "Reads the stored state. The only provider call is the optional speech check, for administrators: one short speech request to the configured endpoint, at most once every five minutes. `canConfigure` is true for global and tenant administrators, who also get the optional checks: `embeddings`, `email`, and `speech` (Ready when speech is on and the endpoint returned audio, Missing when it is turned off, Failed with the reason when the endpoint did not answer; it carries the endpoint host in `resourceName`, `model`, and the default `voice`)."
+    },
+    "POST /v1.0/api/setup/verify": {
+      "response": "SetupStatusResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Administrators only"
+      },
+      "notes": "Calls the providers: a short probe prompt per chat endpoint, a test query per default web search provider, one embedding request, and one short speech request. Each endpoint's `lastValidationSucceeded` records the outcome. `check=Speech` (or `Model`, `Search`, `Embeddings`) re-checks only that kind and reports the others from stored results."
+    },
+    "GET /v1.0/api/setup/options": {
+      "response": "SetupOptionsResponse",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Administrators only"
+      },
+      "notes": "Makes no provider calls. Lists the hosted APIs (`Api`: Anthropic, OpenAI, Gemini, xAI, Ollama Cloud), the agent CLIs in the server image (`AgentCli`: Claude Code, Codex, Gemini CLI, Mux), and self-hosted servers (`SelfHosted`: Ollama, OpenAI-compatible), with their sign-in methods, recommended first; Anthropic is the recommended provider. For an agent CLI, `installed` says whether the executable is in the server image and `available` is false (with `unavailableReason`) when it is missing or when `Models.AllowAgentClis` is off (`turnedOff` true), as on the hosted service. The example shows four of the eleven providers."
+    },
+    "POST /v1.0/api/setup/connect": {
+      "response": "SetupStatusResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Administrators only",
+        "404": "NotFound"
+      },
+      "notes": "`authMethod` defaults to the provider's recommended method. `secret` is an API key, a token from `claude setup-token` (Claude Code), or the contents of a sign-in file (Codex `~/.codex/auth.json`, Gemini CLI `~/.gemini/oauth_creds.json`, Mux `~/.mux/endpoints.json`); it is not needed for `ServerSignIn` and `None`, or when the endpoint already has one for the same method. Reuses the workspace's endpoint for the provider (or `modelEndpointId`), or creates one; stores the secret encrypted in the vault; checks it with a live call; and assigns every chat task to the endpoint. When the workspace already has a working model, the new sign-in is tested first and the working one is kept if the test fails. `connection` on the returned status reports the outcome: `succeeded`, `keptPrevious` (true when the working model stayed in use), and `message` (the test result or the provider's error). The secret is never returned. 400 `ValidationFailed`, with `details.field` naming the request field (`provider`, `authMethod`, `secret`, `model`, or `baseUrl`), for a missing provider, model, or secret, a method the provider does not accept, a secret that does not look right (such as an Anthropic API key sent as a setup-token token), or an agent CLI that is turned off or not installed."
+    },
+    "POST /v1.0/api/setup/model-key": {
+      "response": "SetupStatusResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed, TenantRequired",
+        "403": "Administrators only",
+        "404": "NotFound"
+      },
+      "notes": "Stores the key encrypted in the vault (a new credential, or the endpoint's existing one updated), attaches it to the endpoint, and checks it with a live call. The key is never returned. 400 `ValidationFailed` when a value is missing or the endpoint uses the hosted service's key."
+    },
+    "GET /v1.0/api/catalog": {
+      "response": "EnumerationResult<CatalogEntryResponse>",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "Browse published system briefings and account eligibility."
+    },
+    "GET /v1.0/api/catalog/subscriptions": {
+      "response": "EnumerationResult<CatalogSubscription>",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "List private subscriptions, including suspended subscriptions."
+    },
+    "PUT /v1.0/api/catalog/{id}/subscription": {
+      "response": "CatalogSubscription",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict",
+        "402": "CapReached"
+      },
+      "notes": "Subscribe or update delivery preferences. Separate system subscription limits apply."
+    },
+    "DELETE /v1.0/api/catalog/{id}/subscription": {
+      "response": "No content",
+      "status": {
+        "204": "No content",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      },
+      "notes": "Unsubscribe without deleting canonical content."
+    },
+    "GET /v1.0/api/catalog/{id}/issues": {
+      "response": "EnumerationResult<CatalogIssueResponse>",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "List issues readable through this subscription."
+    },
+    "GET /v1.0/api/catalog/issues": {
+      "response": "EnumerationResult<CatalogIssueResponse>",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "List shared issues across all current subscriptions."
+    },
+    "GET /v1.0/api/catalog/{id}/issues/{issueId}": {
+      "response": "CatalogIssueResponse",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "Read shared content without exposing canonical workspace internals."
+    },
+    "GET /v1.0/api/catalog/{id}/issues/{issueId}/audio": {
+      "response": "binary audio",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "Download authenticated shared audio. Playback does not consume generation allowance."
+    },
+    "GET /v1.0/api/catalog/{id}/issues/{issueId}/progress": {
+      "response": "BriefingProgress",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "Read private listening progress."
+    },
+    "PUT /v1.0/api/catalog/{id}/issues/{issueId}/progress": {
+      "response": "BriefingProgress",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      },
+      "notes": "Save private listening progress for a shared issue."
+    },
+    "GET /v1.0/api/account/billing": {
+      "response": "BillingStatusResponse",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "BillingUnavailable",
+        "502": "BillingVerificationFailed"
+      },
+      "notes": "Read offers, native account binding, verified subscriptions and effective access."
+    },
+    "POST /v1.0/api/account/billing/checkout": {
+      "response": "BillingRedirectResponse",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "BillingUnavailable",
+        "502": "BillingVerificationFailed"
+      },
+      "notes": "Create or resume one account-bound Stripe checkout. A redirect never grants access."
+    },
+    "POST /v1.0/api/account/billing/portal": {
+      "response": "BillingRedirectResponse",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "BillingUnavailable",
+        "502": "BillingVerificationFailed"
+      },
+      "notes": "Open management for the verified Stripe customer."
+    },
+    "POST /v1.0/api/account/billing/purchases": {
+      "response": "EffectivePlan",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "BillingUnavailable",
+        "502": "BillingVerificationFailed"
+      },
+      "notes": "Verify or restore an account-bound Apple or Google purchase."
+    },
+    "GET /v1.0/api/account/providers": {
+      "response": "ProviderConnectionsResponse",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "List only this account's masked provider connections."
+    },
+    "PUT /v1.0/api/account/providers": {
+      "response": "ProviderConnection",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      },
+      "notes": "Connect or rotate a write-only model or speech API key. Clears validation."
+    },
+    "POST /v1.0/api/account/providers/{id}/test": {
+      "response": "object",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      },
+      "notes": "Run a fixed small probe with this account's credential. Six probes per minute."
+    },
+    "DELETE /v1.0/api/account/providers/{id}": {
+      "response": "object",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      },
+      "notes": "Remove a private key. BYOK calls fail closed, without platform fallback."
+    },
+    "PUT /v1.0/api/account/funding": {
+      "response": "EffectivePlan",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      },
+      "notes": "Choose Personal or Platform funding. A verified chat connection is required for BYOK."
+    },
+    "GET /v1.0/api/admin/catalog": {
+      "response": "EnumerationResult<CatalogPublication>",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "System administrator: list every publication lifecycle state."
+    },
+    "GET /v1.0/api/admin/catalog/{id}": {
+      "response": "CatalogPublication",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "System administrator: read a canonical publication."
+    },
+    "POST /v1.0/api/admin/catalog": {
+      "response": "CatalogPublication",
+      "status": {
+        "201": "Created",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      },
+      "notes": "System administrator: create a canonical system topic and publication."
+    },
+    "PUT /v1.0/api/admin/catalog/{id}": {
+      "response": "CatalogPublication",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      },
+      "notes": "System administrator: update publication with current revision for conflict protection."
+    },
+    "GET /v1.0/api/admin/catalog/{id}/issues": {
+      "response": "EnumerationResult<CatalogIssueResponse>",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "System administrator: inspect canonical issue projections."
+    },
+    "GET /v1.0/api/admin/catalog/{id}/research": {
+      "response": "CatalogResearchResponse",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "System administrator: read canonical research and schedule configuration."
+    },
+    "PUT /v1.0/api/admin/catalog/{id}/research": {
+      "response": "CatalogResearchResponse",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      },
+      "notes": "System administrator: configure canonical research and schedule."
+    },
+    "POST /v1.0/api/admin/catalog/{id}/run": {
+      "response": "Run",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      },
+      "notes": "System administrator: start a canonical research run."
+    },
+    "GET /v1.0/tenants/{tenantId}/users/{userId}/entitlements": {
+      "response": "EffectivePlan",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "System administrator: inspect effective user allowances and provenance."
+    },
+    "PUT /v1.0/tenants/{tenantId}/users/{userId}/entitlements": {
+      "response": "EffectivePlan",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      },
+      "notes": "System administrator: override one limit with an audit reason and optional expiry."
+    },
+    "DELETE /v1.0/tenants/{tenantId}/users/{userId}/entitlements/{featureKey}": {
+      "response": "No content",
+      "status": {
+        "204": "No content",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict"
+      },
+      "notes": "System administrator: remove an override and restore plan inheritance."
+    },
+    "POST /v1.0/public/billing/stripe": {
+      "response": "object",
+      "status": {
+        "200": "Accepted",
+        "400": "ValidationFailed",
+        "403": "BillingVerificationFailed",
+        "502": "BillingVerificationFailed"
+      },
+      "notes": "Requires an authentic provider signature or Google OIDC identity. Do not use a session token. Provider sandbox and webhook tests are separate from general collection runs."
+    },
+    "POST /v1.0/public/billing/apple": {
+      "response": "object",
+      "status": {
+        "200": "Accepted",
+        "400": "ValidationFailed",
+        "403": "BillingVerificationFailed",
+        "502": "BillingVerificationFailed"
+      },
+      "notes": "Requires an authentic provider signature or Google OIDC identity. Do not use a session token. Provider sandbox and webhook tests are separate from general collection runs."
+    },
+    "POST /v1.0/public/billing/google": {
+      "response": "object",
+      "status": {
+        "200": "Accepted",
+        "400": "ValidationFailed",
+        "403": "BillingVerificationFailed",
+        "502": "BillingVerificationFailed"
+      },
+      "notes": "Requires an authentic provider signature or Google OIDC identity. Do not use a session token. Provider sandbox and webhook tests are separate from general collection runs."
+    }
   },
   "routeBodies": {
     "PUT /v1.0/api/topics/{id}/search-providers": [
@@ -679,7 +3502,11 @@
     }
   },
   "variableDefaults": {
-    "assetName": "logo.png"
+    "assetName": "logo.png",
+    "publicationId": "",
+    "providerConnectionId": "",
+    "featureKey": "customTopics.max",
+    "offerKey": "paid-5-month"
   },
   "firstInFolder": [
     "POST /v1.0/api/topics/{id}/run",
@@ -862,7 +3689,10 @@
       "seedQueries": [
         "utility-scale battery storage 2026",
         "sodium-ion grid storage"
-      ]
+      ],
+      "historyMode": "Off",
+      "historyCount": 5,
+      "historyTokenBudget": 8000
     },
     "DimensionUpsertRequest": {
       "name": "Chemistry",
@@ -1360,6 +4190,52 @@
       "provider": "ClaudeCode",
       "authMethod": "AccessToken",
       "secret": "sk-ant-oat01-EXAMPLE-not-a-real-token"
+    },
+    "CatalogSubscriptionRequest": {
+      "emailEnabled": true,
+      "pushEnabled": true
+    },
+    "CatalogPublicationRequest": {
+      "title": "Daily science",
+      "description": "Verified science developments",
+      "category": "Science",
+      "language": "en",
+      "freeEligible": true,
+      "status": "Draft",
+      "revision": 1
+    },
+    "CatalogResearchRequest": {
+      "topic": {
+        "brief": "Report independently verified science developments with citations.",
+        "historyMode": "PreviousIssue",
+        "historyCount": 5,
+        "audioEnabled": true
+      }
+    },
+    "EntitlementOverrideRequest": {
+      "featureKey": "customTopics.max",
+      "value": "8",
+      "reason": "Approved account allowance"
+    },
+    "BillingCheckoutRequest": {
+      "offerKey": "{{offerKey}}"
+    },
+    "BillingPurchaseRequest": {
+      "provider": "Apple",
+      "signedTransaction": "{{signedTransaction}}"
+    },
+    "ProviderConnectionRequest": {
+      "kind": "Chat",
+      "provider": "OpenAI",
+      "endpoint": "https://api.openai.com/v1",
+      "model": "{{personalModel}}",
+      "secret": "{{personalProviderKey}}"
+    },
+    "FundingModeRequest": {
+      "mode": "Personal"
+    },
+    "AppleNotificationRequest": {
+      "signedPayload": "{{appleSignedPayload}}"
     }
   },
   "examples": {
@@ -2016,6 +4892,57 @@
         }
       ],
       "serverContainer": "mymorningnews-server"
+    },
+    "BillingStatusResponse": {
+      "enabled": false,
+      "purchaseAccountToken": "c8b8ae5f-9203-4fa3-a148-3ba4608a3b2a",
+      "appleAvailable": false,
+      "googleAvailable": false,
+      "offers": [
+        {
+          "key": "paid-5-month",
+          "planKey": "paid-5",
+          "interval": "Month",
+          "usdCents": 1000,
+          "customTopics": "5",
+          "systemSubscriptions": "unlimited",
+          "dailyAudioSeconds": "1800",
+          "webAvailable": false
+        }
+      ],
+      "subscriptions": [],
+      "signupBenefit": null,
+      "plan": {
+        "subscriptionRequired": false,
+        "fundingMode": "Platform",
+        "features": {
+          "customTopics.max": "0",
+          "systemSubscriptions.max": "5",
+          "audio.dailySeconds.max": "0"
+        }
+      }
+    },
+    "CatalogEntryResponse": {
+      "id": "cat_example",
+      "title": "Daily science",
+      "category": "Science",
+      "language": "en",
+      "status": "Published",
+      "freeEligible": true,
+      "eligible": true,
+      "subscribed": false
+    },
+    "ProviderConnectionsResponse": {
+      "connections": [
+        {
+          "id": "pcn_example",
+          "kind": "Chat",
+          "provider": "OpenAI",
+          "secretLast4": "abcd",
+          "validatedUtc": null
+        }
+      ],
+      "localSpeechAvailable": false
     }
   },
   "routeExamples": {

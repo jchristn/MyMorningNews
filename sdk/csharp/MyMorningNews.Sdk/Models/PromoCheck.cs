@@ -36,6 +36,26 @@ namespace MyMorningNews.Sdk.Models
         public string Message { get; set; } = String.Empty;
 
         /// <summary>
+        /// Complimentary or PaidOffer when valid. A paid offer alone grants no access.
+        /// </summary>
+        public string? BenefitKind { get; set; }
+
+        /// <summary>
+        /// Discount percent when valid.
+        /// </summary>
+        public decimal? DiscountPercent { get; set; }
+
+        /// <summary>
+        /// Discount months; null means ongoing.
+        /// </summary>
+        public int? DiscountMonths { get; set; }
+
+        /// <summary>
+        /// Required paid package key.
+        /// </summary>
+        public string? BillingPlanKey { get; set; }
+
+        /// <summary>
         /// Instantiate.
         /// </summary>
         public PromoCheck()

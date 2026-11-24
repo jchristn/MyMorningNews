@@ -1,5 +1,7 @@
 # My Morning News Python SDK
 
+Platform packages, shared catalog subscriptions, topic history, private provider keys and billing are described in the [platform operator guide](../../docs/PLATFORM_OPERATIONS.md). Native store availability and deployment evidence are tracked separately from source support.
+
 A Python client for the My Morning News REST API. It covers topics and the refinement wizard, one-time research requests, schedules, runs, findings, sources, predictions, suggestions, feedback, learned preferences, editions, briefings, templates, prompts, audio, stored files, podcast feeds, email, analytics, usage, model endpoints, search providers, voices, the vault, devices, notifications and notification preferences, the MCP server registry, and the account (plan, usage meter, data export, deletion, and the public sign-up, email verification, and password reset routes).
 
 - Single module: `mymorningnews_sdk.py`

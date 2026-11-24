@@ -66,7 +66,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.RevokedUtc.HasValue ? DateTime.SpecifyKind(obj.RevokedUtc.Value, DateTimeKind.Utc) : null,
                 obj.Active,
                 DateTime.SpecifyKind(obj.CreatedUtc, DateTimeKind.Utc),
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc), obj.SignupBenefitId).ConfigureAwait(false);
             return obj;
         }
 
@@ -103,7 +103,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.Channel.ToString(),
                 obj.RevokedUtc.HasValue ? DateTime.SpecifyKind(obj.RevokedUtc.Value, DateTimeKind.Utc) : null,
                 obj.Active,
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc), obj.SignupBenefitId).ConfigureAwait(false);
             if (affected < 1) throw new KeyNotFoundException("PromoRedemption " + obj.Id + " was not found.");
             return obj;
         }
@@ -177,12 +177,13 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             obj.Code = (reader.IsDBNull(3) ? String.Empty : reader.GetString(3));
             obj.UserId = (reader.IsDBNull(4) ? String.Empty : reader.GetString(4));
             obj.Email = (reader.IsDBNull(5) ? null : reader.GetString(5));
-            obj.PlanAssignmentId = (reader.IsDBNull(6) ? String.Empty : reader.GetString(6));
+            obj.PlanAssignmentId = reader.IsDBNull(6) ? null : reader.GetString(6);
             obj.Channel = Enum.Parse<PromoChannelEnum>(reader.GetString(7));
             obj.RevokedUtc = (reader.IsDBNull(8) ? (DateTime?)null : DateTime.SpecifyKind(reader.GetDateTime(8), DateTimeKind.Utc));
             obj.Active = reader.GetBoolean(9);
             obj.CreatedUtc = DateTime.SpecifyKind(reader.GetDateTime(10), DateTimeKind.Utc);
             obj.LastUpdateUtc = DateTime.SpecifyKind(reader.GetDateTime(11), DateTimeKind.Utc);
+            obj.SignupBenefitId = reader.IsDBNull(12) ? null : reader.GetString(12);
             return obj;
         }
 

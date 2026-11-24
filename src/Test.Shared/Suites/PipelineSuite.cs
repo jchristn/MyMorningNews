@@ -210,6 +210,7 @@ namespace Test.Shared.Suites
         private static async Task SecondRunAsync(CancellationToken token)
         {
             PipelineFixture f = await FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
+            (await f.User.Client.PutAsync("/v1.0/api/topics/" + f.Topic.Id, new { historyMode = "RecentIssues" }, token).ConfigureAwait(false)).Expect(200, "enable historical comparison");
             Run first = await RunAsync(f, token).ConfigureAwait(false);
             Assert.True(first.Status == RunStatusEnum.Completed, "first run: " + first.ErrorMessage);
             Run second = await RunAsync(f, token).ConfigureAwait(false);
@@ -227,6 +228,7 @@ namespace Test.Shared.Suites
         private static async Task LargeHistoryAsync(CancellationToken token)
         {
             PipelineFixture f = await FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
+            (await f.User.Client.PutAsync("/v1.0/api/topics/" + f.Topic.Id, new { historyMode = "RecentIssues" }, token).ConfigureAwait(false)).Expect(200, "enable historical comparison");
             Run first = await RunAsync(f, token).ConfigureAwait(false);
             Assert.True(first.Status == RunStatusEnum.Completed && first.NewFindingCount == 2, "first run: " + first.Status + " " + first.ErrorMessage);
             MyMorningNews.Core.Database.DatabaseDriverBase db = f.Server.Context.Database;
@@ -285,6 +287,7 @@ namespace Test.Shared.Suites
         private static async Task SeenOnlyAfterFinishedRunsAsync(CancellationToken token)
         {
             PipelineFixture f = await FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
+            (await f.User.Client.PutAsync("/v1.0/api/topics/" + f.Topic.Id, new { historyMode = "RecentIssues" }, token).ConfigureAwait(false)).Expect(200, "enable historical comparison");
             Run queued = (await f.User.Client.PostAsync("/v1.0/api/topics/" + f.Topic.Id + "/run?dryRun=true", null, token).ConfigureAwait(false)).Expect(202, "dry run").Json<Run>();
             Run dry = await RunWaiter.FinishAsync(f.Server, queued, token).ConfigureAwait(false);
             Assert.True(dry.Status == RunStatusEnum.Completed && dry.IsDryRun, "dry run: " + dry.Status + " " + dry.ErrorMessage);
@@ -294,6 +297,7 @@ namespace Test.Shared.Suites
                 "a dry run does not use up pages (found by the benchmark suite): " + real.NewFindingCount + " new, " + String.Join(", ", afterDry.Select(r => r.Disposition)));
 
             PipelineFixture g = await FixtureAsync("Track residential heat pump rebates. FAILEXTRACT", "/pipeline", token).ConfigureAwait(false);
+            (await g.User.Client.PutAsync("/v1.0/api/topics/" + g.Topic.Id, new { historyMode = "RecentIssues" }, token).ConfigureAwait(false)).Expect(200, "enable historical comparison");
             Run failed = await RunAsync(g, token).ConfigureAwait(false);
             Assert.True(failed.Status == RunStatusEnum.Failed && failed.ErrorMessage!.Contains("Extract", StringComparison.Ordinal), "extraction failure fails the run: " + failed.Status + " " + failed.ErrorMessage);
             (await g.User.Client.PutAsync("/v1.0/api/topics/" + g.Topic.Id, new { brief = "Track residential heat pump rebates." }, token).ConfigureAwait(false)).Expect(200, "fix brief");

@@ -143,7 +143,7 @@ namespace MyMorningNews.Core.Pipeline
                 PromptKey = key,
                 PromptTemplateVersionId = prompt.Version.Id,
                 SystemPrompt = rendered.System,
-                UserPrompt = rendered.User,
+                UserPrompt = ctx.HistoryInstructions + "\n\n" + rendered.User,
                 IsDryRun = ctx.Run.IsDryRun
             }, token).ConfigureAwait(false);
         }
@@ -179,7 +179,7 @@ namespace MyMorningNews.Core.Pipeline
                 PromptKey = key,
                 PromptTemplateVersionId = prompt.Version.Id,
                 SystemPrompt = rendered.System,
-                UserPrompt = rendered.User,
+                UserPrompt = ctx.HistoryInstructions + "\n\n" + rendered.User,
                 IsDryRun = ctx.Run.IsDryRun
             }, tools, maxToolCalls, token).ConfigureAwait(false);
         }

@@ -8,12 +8,8 @@ export function featureName(t, key) {
   return t('plans.featureNames.' + String(key).replace(/\./g, '_'), { defaultValue: key });
 }
 
-// Count limits at or above this are placeholders for "no limit" (the Unlimited plan stores 10000 pinned reports).
-export const UNLIMITED_COUNT = 10000;
-
-// A readable entitlement value: true and false as Yes and No, unlimited (or a count limit so large it means
-// unlimited) translated, numbers formatted for the locale when a formatter is given, anything else as given.
-export function featureValue(t, value, key = '', formatNumber = null) {
+// Only the explicit unlimited value means unlimited; finite counts remain visible, including zero.
+export function featureValue(t, value, _key = '', formatNumber = null) {
   const v = String(value ?? '').trim();
   if (v.toLowerCase() === 'true') return t('common.yes');
   if (v.toLowerCase() === 'false') return t('common.no');
@@ -21,7 +17,6 @@ export function featureValue(t, value, key = '', formatNumber = null) {
   // Whole counts are formatted for the locale; amounts (a cost such as 30.00) stay as stored.
   if (/^\d+$/.test(v)) {
     const n = Number(v);
-    if (/\.max$/.test(key) && !/cost|usd/i.test(key) && n >= UNLIMITED_COUNT) return t('promo.usage.unlimited');
     return formatNumber ? formatNumber(n) : v;
   }
   return v;

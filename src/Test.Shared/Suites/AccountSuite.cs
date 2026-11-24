@@ -40,6 +40,7 @@ namespace Test.Shared.Suites
             return new TestSuiteDescriptor(S, "Sign-up, verification, password reset, deletion, and export", new[]
             {
                 Cases.Case(S, "SignupVerify", "Sign-up makes a personal tenant on the platform key, refuses sign-in until the email is confirmed, and never reveals existing accounts", SignupAsync),
+                Cases.Case(S, "SignupBillingPolicy", "New users capture the administrator's non-billed tier; changing server defaults preserves existing users", SignupBillingPolicyAsync),
                 Cases.Case(S, "SignupRules", "Closed sign-up, missing terms or age, weak passwords, blocked domains, and floods are refused", RulesAsync),
                 Cases.Case(S, "PasswordReset", "A reset link sets a new password once, signs out every session, and sends a confirmation", ResetAsync),
                 Cases.Case(S, "Deletion", "Deleting signs out, signing in within the grace period cancels it, and the purge removes the account and its personal tenant", DeletionAsync),
@@ -53,6 +54,48 @@ namespace Test.Shared.Suites
         private static string NewEmail()
         {
             return "signup-" + Guid.NewGuid().ToString("N").Substring(0, 10) + "@example.test";
+        }
+
+        private static async Task SignupBillingPolicyAsync(CancellationToken token)
+        {
+            await WithHostingAsync(async (h, server) =>
+            {
+                bool previousRequired = h.NewUsersRequireSubscription;
+                string previousTier = h.NonBilledPlanKey;
+                string previousDefault = h.DefaultPlanKey;
+                try
+                {
+                    h.NewUsersRequireSubscription = false;
+                    h.NonBilledPlanKey = "complimentary-five";
+                    TestApiClient anon = new TestApiClient(await SharedTestServer.GetBaseUrlAsync(token).ConfigureAwait(false));
+                    string email = NewEmail();
+                    (await SignupAsync(anon, email, token).ConfigureAwait(false)).Expect(202, "signup with non-billed tier");
+                    User user = (await server.Context.Database.Users.ReadAllByEmailAsync(email, token).ConfigureAwait(false)).Single();
+                    MyMorningNews.Core.Entitlements.EffectivePlan plan = await server.Context.Entitlements.GetEffectiveAsync(user.TenantId, user.Id, token).ConfigureAwait(false);
+                    Assert.True(!plan.SubscriptionRequired && plan.Plan.Key == "complimentary-five" && plan.Features["topics.max"] == "5" && plan.Features["systemSubscriptions.max"] == "5" && plan.Features["audio.dailySeconds.max"] == "unlimited", "non-billed tier has its own limits");
+                    h.NewUsersRequireSubscription = true;
+                    h.DefaultPlanKey = "catalog-only";
+                    plan = await server.Context.Entitlements.GetEffectiveAsync(user.TenantId, user.Id, token).ConfigureAwait(false);
+                    Assert.True(!plan.SubscriptionRequired && plan.Plan.Key == "complimentary-five", "server changes do not rebill existing users");
+                    email = NewEmail();
+                    (await SignupAsync(anon, email, token).ConfigureAwait(false)).Expect(202, "signup requiring billing for paid access");
+                    user = (await server.Context.Database.Users.ReadAllByEmailAsync(email, token).ConfigureAwait(false)).Single();
+                    plan = await server.Context.Entitlements.GetEffectiveAsync(user.TenantId, user.Id, token).ConfigureAwait(false);
+                    Assert.True(plan.SubscriptionRequired && plan.Plan.Key == "catalog-only" && plan.Features["topics.max"] == "0", "new policy applies only to new account");
+                    h.NewUsersRequireSubscription = false;
+                    h.NonBilledPlanKey = "missing-plan";
+                    email = NewEmail();
+                    await SignupAsync(anon, email, token).ConfigureAwait(false);
+                    Assert.True(!(await server.Context.Database.Users.ReadAllByEmailAsync(email, token).ConfigureAwait(false)).Any(), "bad policy never creates a stranded account");
+                    return true;
+                }
+                finally
+                {
+                    h.NewUsersRequireSubscription = previousRequired;
+                    h.NonBilledPlanKey = previousTier;
+                    h.DefaultPlanKey = previousDefault;
+                }
+            }, token).ConfigureAwait(false);
         }
 
         private static async Task<T> WithHostingAsync<T>(Func<HostingSettings, MyMorningNewsServer, Task<T>> body, CancellationToken token)

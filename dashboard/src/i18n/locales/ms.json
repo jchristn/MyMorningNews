@@ -206,7 +206,11 @@
       "plans": "Pelan",
       "emailInsights": "Penghantaran e-mel",
       "mcp": "Klien MCP",
-      "setup": "Persediaan"
+      "setup": "Persediaan",
+      "catalog": "Ringkasan sistem",
+      "adminCatalog": "Katalog sistem",
+      "billing": "Pelan dan pengebilan",
+      "personalProviders": "Kunci API anda"
     }
   },
   "routes": {
@@ -341,6 +345,12 @@
     },
     "setup": {
       "summary": "Perkara yang diperlukan oleh My Morning News untuk berjalan, dan sama ada setiap bahagian berfungsi"
+    },
+    "catalog": {
+      "summary": "Pilih ringkasan dikongsi yang dikaji sekali untuk semua orang. Langganan dan kemajuan pendengaran anda kekal peribadi."
+    },
+    "adminCatalog": {
+      "summary": "Pilih ringkasan dikongsi yang dikaji sekali untuk semua orang. Langganan dan kemajuan pendengaran anda kekal peribadi."
     }
   },
   "topbar": {
@@ -766,7 +776,9 @@
       "sharing_enabled": "Kongsi taklimat melalui pautan awam",
       "sharing_maxExpiryDays": "Tempoh paling lama bagi pautan kongsi (hari)",
       "sharing_defaultExpiryDays": "Tempoh pautan kongsi jika tidak dipilih (hari)",
-      "sharing_publicRequestsPerMinute": "Permintaan halaman kongsi bagi setiap alamat seminit"
+      "sharing_publicRequestsPerMinute": "Permintaan halaman kongsi bagi setiap alamat seminit",
+      "hosting_newUsersRequireSubscription": "Wajibkan langganan untuk akaun baharu",
+      "hosting_nonBilledPlanKey": "Pelan tanpa bil untuk akaun baharu"
     }
   },
   "serverInfo": {
@@ -3527,6 +3539,24 @@
       "title": "Penebusan dari masa ke masa",
       "subtitle": "Setiap hari, mengikut tarikh setiap penebusan",
       "empty": "Belum ada penebusan."
+    },
+    "offer": {
+      "kind": "Manfaat kod",
+      "complimentary": "Akses percuma",
+      "paid": "Tawaran langganan berbayar",
+      "help": "Tawaran berbayar untuk akaun baharu. Akses bermula selepas pembelian disahkan. Pelan dipilih menentukan akses dan pakej pengebilan menentukan harga.",
+      "billingPlan": "Pakej pengebilan",
+      "paid5": "Berbayar 5: USD10/bulan atau USD100/tahun",
+      "paid20": "Berbayar 20: USD30/bulan atau USD300/tahun",
+      "percent": "Diskaun (%)",
+      "months": "Tempoh diskaun (bulan)",
+      "monthsHelp": "0 bermaksud berterusan. Terpakai pada invois dalam tempoh ini, termasuk invois tahunan.",
+      "appleOffer": "ID tawaran Apple",
+      "googleOffer": "ID tawaran Google",
+      "nativeHelp": "Pilihan. Mesti sepadan dengan tawaran yang dikonfigurasi dalam kedai. Diskaun web tidak digunakan secara automatik pada pembelian kedai.",
+      "percentRange": "Masukkan 0 hingga 100, dengan maksimum dua tempat perpuluhan.",
+      "monthsRange": "Masukkan 0 (berterusan) atau 1 hingga 36 bulan.",
+      "durationHelp": "Tempoh pelan tersuai dari pembelian disahkan. 0 bermaksud selagi langganan kekal layak."
     }
   },
   "plans": {
@@ -3569,7 +3599,15 @@
       "email_enabled": "E-mel",
       "mobile_access": "Aplikasi mudah alih",
       "endpoints_custom": "Titik akhir model sendiri",
-      "artifacts_pinned_max": "Laporan disemat"
+      "artifacts_pinned_max": "Laporan disemat",
+      "customTopics_max": "Topik sendiri",
+      "systemSubscriptions_max": "Langganan sistem",
+      "audio_dailySeconds_max": "Saat audio dijana sehari",
+      "customResearch_enabled": "Penyelidikan sendiri",
+      "oneTimeResearch_enabled": "Penyelidikan sekali",
+      "catalog_freeOnly": "Katalog percuma sahaja",
+      "catalog_audio_enabled": "Audio katalog dikongsi",
+      "models_personalConnections_enabled": "Sambungan penyedia peribadi"
     },
     "assignments": {
       "title": "Pelan pengguna",
@@ -3611,6 +3649,20 @@
     "userPanel": {
       "action": "Pelan",
       "title": "Pelan untuk {email}"
+    },
+    "overrides": {
+      "title": "Had pengguna",
+      "help": "Pengecualian hanya untuk pengguna ini. Pulihkan pewarisan untuk mengikuti pelan yang ditetapkan.",
+      "inherited": "Lalai pelan",
+      "effective": "Nilai berkuat kuasa",
+      "source": "Sumber",
+      "user": "Pengecualian pengguna",
+      "plan": "Pelan",
+      "restore": "Pulihkan pewarisan",
+      "value": "Nilai pengecualian",
+      "valueHelp": "Sifar melumpuhkan kuantiti; unlimited membuang had. Audio harian dalam saat.",
+      "reason": "Sebab perubahan",
+      "expires": "Tamat (waktu tempatan, pilihan)"
     }
   },
   "account": {
@@ -3639,7 +3691,10 @@
       "noAudio": "Audio tidak termasuk dalam pelan anda.",
       "schedule": "Topik dijalankan paling kerap setiap {minutes} minit.",
       "ofLimit": "{used} daripada {max}",
-      "noLimit": "{used} (tiada had)"
+      "noLimit": "{used} (tiada had)",
+      "audioToday": "Audio dijana hari ini (minit)",
+      "audioReserved": "Ditempah untuk penjanaan: {minutes} minit. Ditetapkan semula {date} (tengah malam UTC).",
+      "systemSubscriptions": "Langganan sistem"
     },
     "export": {
       "button": "Muat turun data saya",
@@ -3656,7 +3711,8 @@
       "scheduled": "Akaun anda akan dipadamkan pada {date}. Log masuk sebelum itu untuk mengekalkannya.",
       "messageDated": "Semua sesi dilog keluar sekarang. Pada {date}, akaun anda dan semua datanya (topik, taklimat, dapatan, maklum balas dan audio) dipadamkan secara kekal. Log masuk sebelum itu dan pemadaman dibatalkan.",
       "cancelledTitle": "Pemadaman akaun anda dibatalkan.",
-      "cancelledMessage": "Dengan log masuk, akaun anda dan semua datanya dikekalkan."
+      "cancelledMessage": "Dengan log masuk, akaun anda dan semua datanya dikekalkan.",
+      "billingNotice": "Memadam akaun menghentikan pembaharuan Stripe dan Google. Batalkan langganan Apple dalam tetapan App Store untuk menghentikan caj seterusnya. Log masuk semula tidak mengaktifkan semula langganan yang dibatalkan."
     },
     "deleted": {
       "title": "Akaun anda dijadualkan untuk dipadamkan",
@@ -4701,5 +4757,89 @@
     "savedDefault": "Topik ini kembali menggunakan suara lalai ruang kerja",
     "speechOff": "Pertuturan dimatikan pada pelayan ini, jadi tiada audio untuk dimainkan. Pentadbir pelayan boleh menghidupkannya dalam Tetapan pelayan.",
     "empty": "Tiada suara tersedia."
+  },
+  "topicHistory": {
+    "title": "Bandingkan dengan ringkasan terdahulu",
+    "help": "Gunakan edisi terdahulu untuk menerangkan perubahan. Teks sejarah ialah asas perbandingan, bukan bukti semasa.",
+    "Off": "Dimatikan: ringkasan kendiri",
+    "PreviousIssue": "Edisi sebelumnya",
+    "RecentIssues": "Edisi terkini",
+    "SinceDate": "Sejak tarikh",
+    "SpecificIssue": "Edisi tertentu",
+    "count": "Maksimum edisi (1 hingga 20)",
+    "date": "Tarikh mula (UTC)",
+    "issue": "Edisi asas",
+    "choose": "Pilih edisi",
+    "firstRun": "Tanpa edisi terdahulu yang boleh digunakan, ringkasan seterusnya akan berdiri sendiri."
+  },
+  "catalog": {
+    "title": "Ringkasan sistem",
+    "summary": "Pilih ringkasan dikongsi yang dikaji sekali untuk semua orang. Langganan dan kemajuan pendengaran anda kekal peribadi.",
+    "subscribe": "Langgan",
+    "unsubscribe": "Nyahlanggan",
+    "read": "Baca edisi",
+    "empty": "Belum ada ringkasan sistem diterbitkan.",
+    "noIssues": "Belum ada edisi tersedia.",
+    "restricted": "Tidak termasuk dalam pelan anda",
+    "included": "Termasuk dalam pelan anda",
+    "issues": "Edisi ringkasan sistem anda",
+    "adminTitle": "Katalog sistem",
+    "freeEligible": "Tersedia dalam pelan percuma",
+    "description": "Penerangan awam",
+    "category": "Kategori",
+    "Draft": "Draf",
+    "Published": "Diterbitkan",
+    "Retired": "Dihentikan (arkib boleh dibaca)",
+    "Retracted": "Ditarik balik (akses dibuang)"
+  },
+  "billing": {
+    "title": "Pelan dan pengebilan",
+    "summary": "Urus pelan, langganan dan penyedia pembayaran anda.",
+    "nonBilled": "Pelan yang ditetapkan tidak memerlukan langganan.",
+    "verifying": "Menyemak pembayaran. Akses dikemas kini selepas pengesahan penyedia.",
+    "manage": "Urus langganan",
+    "manageStore": "Urus langganan ini dalam {provider}.",
+    "signupOffer": "Tawaran pendaftaran anda",
+    "discount": "Diskaun {percent}% untuk tawaran layak. Syarat akhir dipaparkan semasa pembayaran.",
+    "interval": "Tempoh pengebilan",
+    "monthly": "Bulanan",
+    "yearly": "Tahunan",
+    "perYear": "setahun",
+    "perMonth": "sebulan",
+    "customTopics": "Topik sendiri: {count}",
+    "systemTopics": "Langganan sistem: {count}",
+    "audioDaily": "Audio dijana: {minutes} minit/hari",
+    "terms": "Pembaharuan automatik. Tiada percubaan. Dengar semula percuma. Had audio harian ditetapkan semula pada tengah malam UTC.",
+    "subscribe": "Teruskan pembayaran",
+    "unavailable": "Pembelian berbayar baharu tidak tersedia pada pelayan ini."
+  },
+  "personalProviders": {
+    "title": "Kunci API anda",
+    "summary": "Sambungkan kunci model dan suara peribadi. Hanya akaun anda boleh menggunakannya.",
+    "chat": "Model penyelidikan",
+    "embedding": "Pembenaman vektor",
+    "speech": "Pertuturan",
+    "saved": "Disimpan. Uji model sebelum beralih kepada kunci sendiri.",
+    "fundingSaved": "Pilihan pembiayaan dikemas kini.",
+    "byok": "Bawa kunci sendiri",
+    "assigned": "Pelan ditetapkan",
+    "fundingHelp": "Kunci sendiri membolehkan taklimat tanpa had. Penyedia mengenakan caj terus kepada anda. Uji model penyelidikan dahulu.",
+    "useAssigned": "Guna pelan ditetapkan",
+    "useByok": "Guna kunci saya",
+    "kind": "Jenis sambungan",
+    "verified": "Disahkan",
+    "unverified": "Belum disahkan",
+    "speechHelp": "Audio memerlukan kunci suara berasingan atau enjin tempatan yang diaktifkan.",
+    "provider": "Penyedia",
+    "local": "Enjin suara tempatan",
+    "model": "ID model",
+    "endpoint": "URL asas API (pilihan)",
+    "voice": "ID suara",
+    "key": "Kunci API",
+    "keyHelp": "Kunci disulitkan dan tidak pernah dikembalikan. Biarkan kosong untuk mengekalkan kunci penyedia yang sama.",
+    "tested": "Sambungan disahkan.",
+    "test": "Uji sambungan disimpan",
+    "remove": "Buang sambungan",
+    "removeHelp": "Membuang kunci menghentikan panggilan yang memerlukannya. Kunci platform tidak pernah digunakan sebagai gantian."
   }
 }

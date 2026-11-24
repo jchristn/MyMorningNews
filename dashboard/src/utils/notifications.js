@@ -17,6 +17,7 @@ export function notificationIcon(kind) {
 export function notificationTarget(n) {
   const id = (value) => encodeURIComponent(value);
   if (!n) return '/dashboard/home';
+  if (n.catalogPublicationId && n.briefingId) return '/dashboard/catalog/' + id(n.catalogPublicationId) + '/issues/' + id(n.briefingId);
   switch (n.kind) {
     case 'RunResults':
     case 'RunFailed':

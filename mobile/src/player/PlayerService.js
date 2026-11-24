@@ -223,7 +223,8 @@ export class PlayerService {
     if (!track || !this.progress) return;
     this.lastSavedAt = this.now();
     await this.progress.save(track.id, position, duration);
-    if (sync && track.briefingId) await this.progress.sync(this.getClient(), track.briefingId, position, duration);
+    if (sync && track.catalogIssueId) await this.progress.sync(this.getClient(), track.catalogIssueId, position, duration, track.catalogPublicationId);
+    else if (sync && track.briefingId) await this.progress.sync(this.getClient(), track.briefingId, position, duration);
   }
 
   /** Stop playback, remove the lock-screen controls, and release the native player. */

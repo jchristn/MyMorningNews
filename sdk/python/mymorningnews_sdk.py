@@ -1378,6 +1378,12 @@ class ClientConfig(Model):
 @dataclass
 class Topic(Model):
     """A research topic: what a reader wants to follow, with its brief, dimensions, constraints, and delivery options."""
+    history_mode: Optional[str] = None
+    history_count: Optional[int] = None
+    history_since_utc: Optional[str] = None
+    history_briefing_id: Optional[str] = None
+    history_token_budget: Optional[int] = None
+
     id: Optional[str] = None
     tenant_id: Optional[str] = None
     user_id: Optional[str] = None
@@ -1491,6 +1497,13 @@ class RunToolCall(Model):
 @dataclass
 class UsageMeter(Model):
     """My usage against my plan's limits. A None limit means unlimited."""
+    audio_generated_seconds_today: Optional[float] = None
+    audio_reserved_seconds_today: Optional[int] = None
+    audio_daily_seconds_max: Optional[int] = None
+    audio_reset_utc: Optional[str] = None
+    system_subscriptions: Optional[int] = None
+    system_subscriptions_max: Optional[int] = None
+
     plan_key: Optional[str] = None
     plan_name: Optional[str] = None
     month_to_date_cost_usd: Optional[float] = None
@@ -2633,6 +2646,8 @@ class UsageBucket(Model):
 @dataclass
 class LlmCall(Model):
     """One model call made through the model gateway, with tokens, latency, cost, and optional diagnostic payloads."""
+    provider_connection_id: Optional[str] = None
+
     id: Optional[str] = None
     tenant_id: Optional[str] = None
     task: Optional[str] = None
@@ -3078,6 +3093,7 @@ class Notification(Model):
     topic_id: Optional[str] = None
     run_id: Optional[str] = None
     briefing_id: Optional[str] = None
+    catalog_publication_id: Optional[str] = None
     media_asset_id: Optional[str] = None
     prediction_id: Optional[str] = None
     read_utc: Optional[str] = None
@@ -3128,8 +3144,282 @@ class NotificationCount(Model):
 
 
 @dataclass
+class BriefingProgress(Model):
+    """Private listening position for an owned or subscribed briefing issue."""
+    id: Optional[str] = None
+    tenant_id: Optional[str] = None
+    user_id: Optional[str] = None
+    briefing_id: Optional[str] = None
+    position_seconds: Optional[float] = None
+    duration_seconds: Optional[float] = None
+    completed: Optional[bool] = None
+    active: Optional[bool] = None
+    created_utc: Optional[str] = None
+    last_update_utc: Optional[str] = None
+
+
+# TYPES BEGIN PLATFORM
+@dataclass
+class CatalogEntryResponse(Model):
+    """Public catalog projection. Contains no canonical workspace, prompts, credentials, or research trace."""
+    id: Optional[str] = None
+    title: Optional[str] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
+    language: Optional[str] = None
+    status: Optional[str] = None
+    free_eligible: Optional[bool] = None
+    eligible: Optional[bool] = None
+    subscribed: Optional[bool] = None
+    suspended: Optional[bool] = None
+    email_enabled: Optional[bool] = None
+    push_enabled: Optional[bool] = None
+    sort_order: Optional[int] = None
+    published_utc: Optional[str] = None
+
+
+@dataclass
+class CatalogIssueResponse(Model):
+    """Shared issue content projection. Always authorized through the caller's subscription."""
+    id: Optional[str] = None
+    publication_id: Optional[str] = None
+    title: Optional[str] = None
+    markdown: Optional[str] = None
+    created_utc: Optional[str] = None
+    audio_path: Optional[str] = None
+    audio_seconds: Optional[float] = None
+
+
+@dataclass
+class CatalogResearchResponse(Model):
+    """System-administrator-only canonical research settings."""
+    topic: Optional[Any] = None
+    schedule: Optional[Any] = None
+    _nested: ClassVar[Dict[str, str]] = {'topic': 'Topic', 'schedule': 'Schedule'}
+
+
+@dataclass
+class CatalogSubscription(Model):
+    """A user subscribes to a canonical publication; delivery and interaction state stay private."""
+    id: Optional[str] = None
+    tenant_id: Optional[str] = None
+    user_id: Optional[str] = None
+    publication_id: Optional[str] = None
+    email_enabled: Optional[bool] = None
+    push_enabled: Optional[bool] = None
+    suspended: Optional[bool] = None
+    active: Optional[bool] = None
+    created_utc: Optional[str] = None
+    last_update_utc: Optional[str] = None
+
+
+@dataclass
+class CatalogPublication(Model):
+    """Explicit administrator publication of a canonical system topic. Reads use an allowlisted projection."""
+    id: Optional[str] = None
+    topic_id: Optional[str] = None
+    owner_tenant_id: Optional[str] = None
+    title: Optional[str] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
+    language: Optional[str] = None
+    status: Optional[str] = None
+    free_eligible: Optional[bool] = None
+    sort_order: Optional[int] = None
+    revision: Optional[int] = None
+    published_utc: Optional[str] = None
+    active: Optional[bool] = None
+    created_utc: Optional[str] = None
+    last_update_utc: Optional[str] = None
+
+
+@dataclass
+class BillingStatusResponse(Model):
+    """Account-bound purchase offers, captured signup benefit and verified access."""
+    enabled: Optional[bool] = None
+    purchase_account_token: Optional[str] = None
+    apple_available: Optional[bool] = None
+    google_available: Optional[bool] = None
+    offers: Optional[List[Any]] = None
+    signup_benefit: Optional[Any] = None
+    subscriptions: Optional[List[Any]] = None
+    plan: Optional[Any] = None
+    _nested: ClassVar[Dict[str, str]] = {'offers': 'BillingOfferResponse', 'signup_benefit': 'SignupBenefit', 'subscriptions': 'BillingSubscriptionResponse', 'plan': 'EffectivePlan'}
+
+
+@dataclass
+class BillingOfferResponse(Model):
+    """Public purchase offer and package allowances. Provider secrets are never included."""
+    key: Optional[str] = None
+    plan_key: Optional[str] = None
+    interval: Optional[str] = None
+    usd_cents: Optional[int] = None
+    apple_product_id: Optional[str] = None
+    google_product_id: Optional[str] = None
+    google_base_plan_id: Optional[str] = None
+    plan_name: Optional[str] = None
+    custom_topics: Optional[str] = None
+    system_subscriptions: Optional[str] = None
+    daily_audio_seconds: Optional[str] = None
+    web_available: Optional[bool] = None
+
+
+@dataclass
+class BillingSubscriptionResponse(Model):
+    """Verified subscription status without payment identifiers or verification credentials."""
+    id: Optional[str] = None
+    provider: Optional[str] = None
+    environment: Optional[str] = None
+    plan_id: Optional[str] = None
+    status: Optional[str] = None
+    ends_utc: Optional[str] = None
+    cancel_at_period_end: Optional[bool] = None
+    last_verified_utc: Optional[str] = None
+
+
+@dataclass
+class BillingRedirectResponse(Model):
+    """A server-selected billing redirect. The URL alone never grants paid access."""
+    id: Optional[str] = None
+    url: Optional[str] = None
+    expires_utc: Optional[str] = None
+
+
+@dataclass
+class ProviderConnectionsResponse(Model):
+    """Private connection metadata and current funding selection."""
+    connections: Optional[List[Any]] = None
+    local_speech_available: Optional[bool] = None
+    plan: Optional[Any] = None
+    _nested: ClassVar[Dict[str, str]] = {'connections': 'ProviderConnection', 'plan': 'EffectivePlan'}
+
+
+@dataclass
+class ProviderConnection(Model):
+    """Private per-account model or speech connection. Secrets are encrypted and excluded from all API projections."""
+    id: Optional[str] = None
+    tenant_id: Optional[str] = None
+    user_id: Optional[str] = None
+    kind: Optional[str] = None
+    provider: Optional[str] = None
+    endpoint: Optional[str] = None
+    model: Optional[str] = None
+    voice: Optional[str] = None
+    secret_last4: Optional[str] = None
+    validated_utc: Optional[str] = None
+    active: Optional[bool] = None
+    created_utc: Optional[str] = None
+    last_update_utc: Optional[str] = None
+
+
+@dataclass
+class SignupBenefit(Model):
+    """Immutable signup offer captured before checkout; never grants paid access before verification."""
+    id: Optional[str] = None
+    tenant_id: Optional[str] = None
+    user_id: Optional[str] = None
+    promo_code_id: Optional[str] = None
+    plan_id: Optional[str] = None
+    discount_percent: Optional[float] = None
+    discount_months: Optional[int] = None
+    redeemed_utc: Optional[str] = None
+    revoked_utc: Optional[str] = None
+    active: Optional[bool] = None
+    created_utc: Optional[str] = None
+    last_update_utc: Optional[str] = None
+    billing_plan_key: Optional[str] = None
+    duration_days: Optional[int] = None
+    redeemed_subscription_id: Optional[str] = None
+    apple_offer_id: Optional[str] = None
+    google_offer_id: Optional[str] = None
+
+
+@dataclass
+class CatalogPublicationRequest(Model):
+    """Administrator catalog metadata. A new publication creates an isolated canonical topic."""
+    title: Optional[str] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
+    language: Optional[str] = None
+    free_eligible: Optional[bool] = None
+    status: Optional[str] = None
+    sort_order: Optional[int] = None
+    revision: Optional[int] = None
+
+
+@dataclass
+class CatalogResearchRequest(Model):
+    """Canonical research configuration. The publication determines the protected owner; caller-supplied owner IDs are ignored."""
+    topic: Optional[Any] = None
+    schedule: Optional[Any] = None
+
+
+@dataclass
+class CatalogSubscriptionRequest(Model):
+    """Personal delivery preferences for a shared briefing subscription."""
+    email_enabled: Optional[bool] = None
+    push_enabled: Optional[bool] = None
+
+
+@dataclass
+class EntitlementOverrideRequest(Model):
+    """Set one user's entitlement override. Global administrator only. Delete the override to restore plan inheritance."""
+    feature_key: Optional[str] = None
+    value: Optional[str] = None
+    reason: Optional[str] = None
+    expires_utc: Optional[str] = None
+
+
+@dataclass
+class BillingCheckoutRequest(Model):
+    """Start web checkout using an operator-configured public offer key."""
+    offer_key: Optional[str] = None
+
+
+@dataclass
+class BillingPurchaseRequest(Model):
+    """Native purchase evidence. Server verification and immutable account binding are always required."""
+    provider: Optional[str] = None
+    signed_transaction: Optional[str] = None
+    purchase_token: Optional[str] = None
+
+
+@dataclass
+class ProviderConnectionRequest(Model):
+    """Save a private model or speech connection. Secrets are write-only; an empty key retains an unchanged provider's key."""
+    kind: Optional[str] = None
+    provider: Optional[str] = None
+    model: Optional[str] = None
+    endpoint: Optional[str] = None
+    api_key: Optional[str] = None
+    voice: Optional[str] = None
+
+
+@dataclass
+class FundingModeRequest(Model):
+    """Choose Personal for BYOK or Platform to restore the account's assigned package. Existing subscriptions must be managed separately."""
+    mode: Optional[str] = None
+
+
+@dataclass
+class BriefingProgressRequest(Model):
+    """Save where the caller stopped listening to a briefing."""
+    position_seconds: Optional[float] = None
+    duration_seconds: Optional[float] = None
+    completed: Optional[bool] = None
+
+
+# TYPES END PLATFORM
+
+@dataclass
 class EffectivePlan(Model):
     """The plan a user has right now and its entitlement values."""
+    subscription_required: Optional[bool] = None
+    funding_mode: Optional[str] = None
+    feature_sources: Optional[Dict[str, str]] = None
+    billing_subscription_id: Optional[str] = None
+    billing_provider: Optional[str] = None
+
     plan: Optional[Any] = None
     features: Optional[Dict[str, str]] = None
     assignment: Optional[Any] = None
@@ -3141,6 +3431,11 @@ class EffectivePlan(Model):
 @dataclass
 class PromoCheck(Model):
     """Whether a code can be redeemed."""
+    benefit_kind: Optional[str] = None
+    discount_percent: Optional[float] = None
+    discount_months: Optional[int] = None
+    billing_plan_key: Optional[str] = None
+
     valid: Optional[bool] = None
     reason: Optional[str] = None
     plan_name: Optional[str] = None
@@ -4694,6 +4989,149 @@ class DevicesResource(_Resource):
         return self._json("POST", API + "/devices/" + _seg(device_id) + "/test")
 
 
+# BEGIN PLATFORM
+class CatalogResource(_Resource):
+    """Platform account/catalog API with server-enforced ownership and permissions."""
+
+    def list(self, **filters: Any) -> Page[CatalogEntryResponse]:
+        """Browse published system briefings and account eligibility."""
+        return self._page(CatalogEntryResponse, "/v1.0/api/catalog", filters)
+
+    def subscriptions(self, **filters: Any) -> Page[CatalogSubscription]:
+        """List private subscriptions, including suspended subscriptions."""
+        return self._page(CatalogSubscription, "/v1.0/api/catalog/subscriptions", filters)
+
+    def subscribe(self, id: str, body: Mapping[str, Any]) -> CatalogSubscription:
+        """Subscribe or update delivery preferences. Separate system subscription limits apply."""
+        return self._one(CatalogSubscription, "PUT", "/v1.0/api/catalog/" + _seg(id) + "/subscription", body=body)
+
+    def unsubscribe(self, id: str) -> None:
+        """Unsubscribe without deleting canonical content."""
+        self._json("DELETE", "/v1.0/api/catalog/" + _seg(id) + "/subscription")
+
+    def issues(self, id: str, **filters: Any) -> Page[CatalogIssueResponse]:
+        """List issues readable through this subscription."""
+        return self._page(CatalogIssueResponse, "/v1.0/api/catalog/" + _seg(id) + "/issues", filters)
+
+    def all_issues(self, **filters: Any) -> Page[CatalogIssueResponse]:
+        """List shared issues across all current subscriptions."""
+        return self._page(CatalogIssueResponse, "/v1.0/api/catalog/issues", filters)
+
+    def issue(self, id: str, issue_id: str) -> CatalogIssueResponse:
+        """Read shared content without exposing canonical workspace internals."""
+        return self._one(CatalogIssueResponse, "GET", "/v1.0/api/catalog/" + _seg(id) + "/issues/" + _seg(issue_id))
+
+    def audio(self, id: str, issue_id: str, byte_range: ByteRange = None) -> Download:
+        """Download authenticated shared audio. Playback does not consume generation allowance."""
+        return self._download("/v1.0/api/catalog/" + _seg(id) + "/issues/" + _seg(issue_id) + "/audio", byte_range=byte_range)
+
+    def progress(self, id: str, issue_id: str) -> BriefingProgress:
+        """Read private listening progress."""
+        return self._one(BriefingProgress, "GET", "/v1.0/api/catalog/" + _seg(id) + "/issues/" + _seg(issue_id) + "/progress")
+
+    def save_progress(self, id: str, issue_id: str, body: Mapping[str, Any]) -> BriefingProgress:
+        """Save private listening progress for a shared issue."""
+        return self._one(BriefingProgress, "PUT", "/v1.0/api/catalog/" + _seg(id) + "/issues/" + _seg(issue_id) + "/progress", body=body)
+
+
+class BillingResource(_Resource):
+    """Platform account/catalog API with server-enforced ownership and permissions."""
+
+    def status(self) -> BillingStatusResponse:
+        """Read offers, native account binding, verified subscriptions and effective access."""
+        return self._one(BillingStatusResponse, "GET", "/v1.0/api/account/billing")
+
+    def checkout(self, body: Mapping[str, Any]) -> BillingRedirectResponse:
+        """Create or resume one account-bound Stripe checkout. A redirect never grants access."""
+        return self._one(BillingRedirectResponse, "POST", "/v1.0/api/account/billing/checkout", body=body)
+
+    def portal(self) -> BillingRedirectResponse:
+        """Open management for the verified Stripe customer."""
+        return self._one(BillingRedirectResponse, "POST", "/v1.0/api/account/billing/portal")
+
+    def verify_purchase(self, body: Mapping[str, Any]) -> EffectivePlan:
+        """Verify or restore an account-bound Apple or Google purchase."""
+        return self._one(EffectivePlan, "POST", "/v1.0/api/account/billing/purchases", body=body)
+
+
+class ProvidersResource(_Resource):
+    """Platform account/catalog API with server-enforced ownership and permissions."""
+
+    def list(self) -> ProviderConnectionsResponse:
+        """List only this account's masked provider connections."""
+        return self._one(ProviderConnectionsResponse, "GET", "/v1.0/api/account/providers")
+
+    def save(self, body: Mapping[str, Any]) -> ProviderConnection:
+        """Connect or rotate a write-only model or speech API key. Clears validation."""
+        return self._one(ProviderConnection, "PUT", "/v1.0/api/account/providers", body=body)
+
+    def test(self, id: str) -> Dict[str, Any]:
+        """Run a fixed small probe with this account's credential. Six probes per minute."""
+        return self._json("POST", "/v1.0/api/account/providers/" + _seg(id) + "/test")
+
+    def remove(self, id: str) -> Dict[str, Any]:
+        """Remove a private key. BYOK calls fail closed, without platform fallback."""
+        return self._json("DELETE", "/v1.0/api/account/providers/" + _seg(id))
+
+    def set_funding(self, body: Mapping[str, Any]) -> EffectivePlan:
+        """Choose Personal or Platform funding. A verified chat connection is required for BYOK."""
+        return self._one(EffectivePlan, "PUT", "/v1.0/api/account/funding", body=body)
+
+
+class AdminCatalogResource(_Resource):
+    """Platform account/catalog API with server-enforced ownership and permissions."""
+
+    def list(self, **filters: Any) -> Page[CatalogPublication]:
+        """System administrator: list every publication lifecycle state."""
+        return self._page(CatalogPublication, "/v1.0/api/admin/catalog", filters)
+
+    def get(self, id: str) -> CatalogPublication:
+        """System administrator: read a canonical publication."""
+        return self._one(CatalogPublication, "GET", "/v1.0/api/admin/catalog/" + _seg(id))
+
+    def create(self, body: Mapping[str, Any]) -> CatalogPublication:
+        """System administrator: create a canonical system topic and publication."""
+        return self._one(CatalogPublication, "POST", "/v1.0/api/admin/catalog", body=body)
+
+    def update(self, id: str, body: Mapping[str, Any]) -> CatalogPublication:
+        """System administrator: update publication with current revision for conflict protection."""
+        return self._one(CatalogPublication, "PUT", "/v1.0/api/admin/catalog/" + _seg(id), body=body)
+
+    def issues(self, id: str, **filters: Any) -> Page[CatalogIssueResponse]:
+        """System administrator: inspect canonical issue projections."""
+        return self._page(CatalogIssueResponse, "/v1.0/api/admin/catalog/" + _seg(id) + "/issues", filters)
+
+    def research(self, id: str) -> CatalogResearchResponse:
+        """System administrator: read canonical research and schedule configuration."""
+        return self._one(CatalogResearchResponse, "GET", "/v1.0/api/admin/catalog/" + _seg(id) + "/research")
+
+    def save_research(self, id: str, body: Mapping[str, Any]) -> CatalogResearchResponse:
+        """System administrator: configure canonical research and schedule."""
+        return self._one(CatalogResearchResponse, "PUT", "/v1.0/api/admin/catalog/" + _seg(id) + "/research", body=body)
+
+    def run(self, id: str) -> Run:
+        """System administrator: start a canonical research run."""
+        return self._one(Run, "POST", "/v1.0/api/admin/catalog/" + _seg(id) + "/run")
+
+
+class AdminEntitlementsResource(_Resource):
+    """Platform account/catalog API with server-enforced ownership and permissions."""
+
+    def get(self, tenant_id: str, user_id: str) -> EffectivePlan:
+        """System administrator: inspect effective user allowances and provenance."""
+        return self._one(EffectivePlan, "GET", "/v1.0/tenants/" + _seg(tenant_id) + "/users/" + _seg(user_id) + "/entitlements")
+
+    def set(self, tenant_id: str, user_id: str, body: Mapping[str, Any]) -> EffectivePlan:
+        """System administrator: override one limit with an audit reason and optional expiry."""
+        return self._one(EffectivePlan, "PUT", "/v1.0/tenants/" + _seg(tenant_id) + "/users/" + _seg(user_id) + "/entitlements", body=body)
+
+    def clear(self, tenant_id: str, user_id: str, feature_key: str) -> None:
+        """System administrator: remove an override and restore plan inheritance."""
+        self._json("DELETE", "/v1.0/tenants/" + _seg(tenant_id) + "/users/" + _seg(user_id) + "/entitlements/" + _seg(feature_key))
+
+
+# END PLATFORM
+
 class AccountResource(_Resource):
     """The signed-in user's account (plan, promotional codes, usage, export, deletion) and the public
     sign-up, email verification, and password reset routes (which never send the client's credentials)."""
@@ -4948,6 +5386,12 @@ class SettingsResource(_Resource):
         """Read server settings. Returns ``{"settings": ..., "fields": [...], "pendingRestart": [...]}``."""
         return self._json("GET", API + "/settings")
 
+    def update(self, settings: Dict[str, Any]) -> Dict[str, Any]:
+        """Save the complete settings object from get(); masked secrets remain unchanged."""
+        if not isinstance(settings, dict):
+            raise TypeError("settings must be a dictionary")
+        return self._json("PUT", API + "/settings", body=settings)
+
 
 class PublicResource(_Resource):
     """Anonymous routes under ``/v1.0/public``: promo code checks, podcast feeds, artwork, and email pages."""
@@ -5088,6 +5532,11 @@ class MyMorningNewsClient:
         self.vault = VaultResource(self)
         self.devices = DevicesResource(self)
         self.notifications = NotificationsResource(self)
+        self.catalog = CatalogResource(self)
+        self.billing = BillingResource(self)
+        self.providers = ProvidersResource(self)
+        self.admin_catalog = AdminCatalogResource(self)
+        self.admin_entitlements = AdminEntitlementsResource(self)
         self.account = AccountResource(self)
         self.mcp_servers = McpServersResource(self)
         self.setup = SetupResource(self)

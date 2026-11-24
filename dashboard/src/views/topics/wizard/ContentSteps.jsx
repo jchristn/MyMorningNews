@@ -12,6 +12,7 @@ import MarkdownEditor from '../../../components/MarkdownEditor.jsx';
 import QuestionCard from '../../../components/QuestionCard.jsx';
 import ConstraintEditor from '../ConstraintEditor.jsx';
 import DimensionList from '../DimensionList.jsx';
+import HistoryFields from '../HistoryFields.jsx';
 import { GuidanceBar } from './WizardParts.jsx';
 import { MAX_ROUNDS, answeredCount, canAskMore, isOutOfScope, questionRounds } from './wizardState.js';
 
@@ -71,7 +72,13 @@ export function DimensionsStep({ data, dispatch, onGenerate, onRephrase, busy })
   );
 }
 
-DimensionsStep.propTypes = { data: PropTypes.object.isRequired, dispatch: PropTypes.func.isRequired, onGenerate: PropTypes.func.isRequired, onRephrase: PropTypes.func.isRequired, busy: PropTypes.bool };
+DimensionsStep.propTypes = {
+  data: PropTypes.object.isRequired,
+  dispatch: PropTypes.func.isRequired,
+  onGenerate: PropTypes.func.isRequired,
+  onRephrase: PropTypes.func.isRequired,
+  busy: PropTypes.bool
+};
 
 // Step 3: rounds of questions of every kind, each skippable, with "Ask me more" for another round.
 export function QuestionsStep({ data, dispatch, onAsk, onAnswer, busy }) {
@@ -131,14 +138,24 @@ export function QuestionsStep({ data, dispatch, onAsk, onAnswer, busy }) {
           onRegenerate={() => onAsk(guidance)}
           label={t('wizard.questions.moreLabel')}
           buttonLabel={t('wizard.questions.askMore')}
-          help={more ? t('wizard.questions.moreHelp', { left: MAX_ROUNDS - (data.session.round || 0) }) : t('wizard.questions.maxed', { max: MAX_ROUNDS })}
+          help={
+            more
+              ? t('wizard.questions.moreHelp', { left: MAX_ROUNDS - (data.session.round || 0) })
+              : t('wizard.questions.maxed', { max: MAX_ROUNDS })
+          }
         />
       ) : null}
     </div>
   );
 }
 
-QuestionsStep.propTypes = { data: PropTypes.object.isRequired, dispatch: PropTypes.func.isRequired, onAsk: PropTypes.func.isRequired, onAnswer: PropTypes.func.isRequired, busy: PropTypes.bool };
+QuestionsStep.propTypes = {
+  data: PropTypes.object.isRequired,
+  dispatch: PropTypes.func.isRequired,
+  onAsk: PropTypes.func.isRequired,
+  onAnswer: PropTypes.func.isRequired,
+  busy: PropTypes.bool
+};
 
 function topicForm(topic) {
   return {
@@ -147,7 +164,11 @@ function topicForm(topic) {
     audienceLevel: topic.audienceLevel || 'Practitioner',
     horizon: topic.horizon || 'Weeks',
     noveltyPreference: topic.noveltyPreference ?? 50,
-    seedQueries: (topic.seedQueries || []).join('\n')
+    seedQueries: (topic.seedQueries || []).join('\n'),
+    historyMode: topic.historyMode || 'Off',
+    historyCount: topic.historyCount ?? 5,
+    historySinceUtc: topic.historySinceUtc?.slice(0, 10) || '',
+    historyBriefingId: topic.historyBriefingId || ''
   };
 }
 
@@ -158,6 +179,11 @@ export function topicContextBody(form) {
     audienceLevel: form.audienceLevel,
     horizon: form.horizon,
     noveltyPreference: Number(form.noveltyPreference),
+    historyMode: form.historyMode,
+    historyCount: Number(form.historyCount),
+    historySinceUtc:
+      form.historyMode === 'SinceDate' && form.historySinceUtc ? new Date(form.historySinceUtc + 'T00:00:00Z').toISOString() : null,
+    historyBriefingId: form.historyMode === 'SpecificIssue' ? form.historyBriefingId : null,
     seedQueries: form.seedQueries
       .split('\n')
       .map((s) => s.trim())
@@ -212,10 +238,22 @@ export function TopicContextForm({ topic, onSaved, disabled = false, controlRef,
       <ErrorState error={error} inline onDismiss={() => setError(null)} />
       <div className="form-grid">
         <FormField id="ctx-name" label={t('wizard.context.name')} wide>
-          <input id="ctx-name" value={form.name} maxLength={200} disabled={disabled} onChange={(e) => setForm({ ...form, name: e.target.value })} autoComplete="off" />
+          <input
+            id="ctx-name"
+            value={form.name}
+            maxLength={200}
+            disabled={disabled}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            autoComplete="off"
+          />
         </FormField>
         <FormField id="ctx-audience" label={t('wizard.context.audience')}>
-          <select id="ctx-audience" value={form.audienceLevel} disabled={disabled} onChange={(e) => setForm({ ...form, audienceLevel: e.target.value })}>
+          <select
+            id="ctx-audience"
+            value={form.audienceLevel}
+            disabled={disabled}
+            onChange={(e) => setForm({ ...form, audienceLevel: e.target.value })}
+          >
             {AUDIENCE_LEVELS.map((a) => (
               <option key={a} value={a}>
                 {t('enums.audienceLevel.' + a)}
@@ -232,14 +270,42 @@ export function TopicContextForm({ topic, onSaved, disabled = false, controlRef,
             ))}
           </select>
         </FormField>
-        <FormField id="ctx-novelty" label={t('wizard.context.novelty', { value: form.noveltyPreference })} help={t('wizard.context.noveltyHelp')}>
-          <input id="ctx-novelty" type="range" min={0} max={100} step={5} value={form.noveltyPreference} disabled={disabled} onChange={(e) => setForm({ ...form, noveltyPreference: Number(e.target.value) })} />
+        <HistoryFields topicId={topic.id} value={form} onChange={setForm} disabled={disabled || saving} />
+        <FormField
+          id="ctx-novelty"
+          label={t('wizard.context.novelty', { value: form.noveltyPreference })}
+          help={t('wizard.context.noveltyHelp')}
+        >
+          <input
+            id="ctx-novelty"
+            type="range"
+            min={0}
+            max={100}
+            step={5}
+            value={form.noveltyPreference}
+            disabled={disabled}
+            onChange={(e) => setForm({ ...form, noveltyPreference: Number(e.target.value) })}
+          />
         </FormField>
         <FormField id="ctx-brief" label={t('wizard.context.brief')} help={t('wizard.context.briefHelp')} wide>
-          <MarkdownEditor id="ctx-brief" value={form.brief} onChange={(v) => setForm({ ...form, brief: v })} rows={12} disabled={disabled} label={t('wizard.context.brief')} />
+          <MarkdownEditor
+            id="ctx-brief"
+            value={form.brief}
+            onChange={(v) => setForm({ ...form, brief: v })}
+            rows={12}
+            disabled={disabled}
+            label={t('wizard.context.brief')}
+          />
         </FormField>
         <FormField id="ctx-seed" label={t('wizard.context.seedQueries')} help={t('wizard.context.seedQueriesHelp')} wide>
-          <textarea id="ctx-seed" rows={4} className="code-editor" value={form.seedQueries} disabled={disabled} onChange={(e) => setForm({ ...form, seedQueries: e.target.value })} />
+          <textarea
+            id="ctx-seed"
+            rows={4}
+            className="code-editor"
+            value={form.seedQueries}
+            disabled={disabled}
+            onChange={(e) => setForm({ ...form, seedQueries: e.target.value })}
+          />
         </FormField>
       </div>
       <div>
@@ -251,7 +317,13 @@ export function TopicContextForm({ topic, onSaved, disabled = false, controlRef,
   );
 }
 
-TopicContextForm.propTypes = { topic: PropTypes.object.isRequired, onSaved: PropTypes.func.isRequired, disabled: PropTypes.bool, controlRef: PropTypes.object, onDraftChange: PropTypes.func };
+TopicContextForm.propTypes = {
+  topic: PropTypes.object.isRequired,
+  onSaved: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
+  controlRef: PropTypes.object,
+  onDraftChange: PropTypes.func
+};
 
 // Step 4: the drafted brief and constraints, every item editable, lockable, and removable.
 export function ContextStep({ data, dispatch, onDraft, busy, controlRef, onDraftChange }) {
@@ -278,7 +350,13 @@ export function ContextStep({ data, dispatch, onDraft, busy, controlRef, onDraft
           </button>
         </div>
       )}
-      <TopicContextForm topic={data.topic} disabled={busy} onSaved={(topic) => dispatch({ type: 'topic', topic })} controlRef={controlRef} onDraftChange={onDraftChange} />
+      <TopicContextForm
+        topic={data.topic}
+        disabled={busy}
+        onSaved={(topic) => dispatch({ type: 'topic', topic })}
+        controlRef={controlRef}
+        onDraftChange={onDraftChange}
+      />
       <h3>{t('wizard.context.constraints')}</h3>
       <ConstraintEditor
         topicId={data.topic.id}

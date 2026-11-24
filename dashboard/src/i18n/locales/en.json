@@ -206,7 +206,11 @@
       "plans": "Plans",
       "emailInsights": "Email delivery",
       "mcp": "MCP client",
-      "setup": "Setup"
+      "setup": "Setup",
+      "catalog": "System briefings",
+      "adminCatalog": "System catalog",
+      "billing": "Plans and billing",
+      "personalProviders": "Your API keys"
     }
   },
   "routes": {
@@ -341,6 +345,12 @@
     },
     "setup": {
       "summary": "What My Morning News needs to run, and whether each part works"
+    },
+    "catalog": {
+      "summary": "Choose shared briefings researched once for everyone. Your subscriptions and listening progress stay private."
+    },
+    "adminCatalog": {
+      "summary": "Choose shared briefings researched once for everyone. Your subscriptions and listening progress stay private."
     }
   },
   "topbar": {
@@ -766,7 +776,9 @@
       "sharing_enabled": "Share briefings through public links",
       "sharing_maxExpiryDays": "Longest life of a share link (days)",
       "sharing_defaultExpiryDays": "Life of a share link when not chosen (days)",
-      "sharing_publicRequestsPerMinute": "Share page requests per address per minute"
+      "sharing_publicRequestsPerMinute": "Share page requests per address per minute",
+      "hosting_newUsersRequireSubscription": "Require subscriptions for new accounts",
+      "hosting_nonBilledPlanKey": "Non-billed plan for new accounts"
     }
   },
   "serverInfo": {
@@ -3527,6 +3539,24 @@
       "title": "Redemptions over time",
       "subtitle": "Per day, by when each was redeemed",
       "empty": "No redemptions yet."
+    },
+    "offer": {
+      "kind": "Code benefit",
+      "complimentary": "Complimentary access",
+      "paid": "Paid subscription offer",
+      "help": "Paid offers are for new accounts. Access starts only after a verified purchase. The selected plan defines their access; the billing package defines the price.",
+      "billingPlan": "Billing package",
+      "paid5": "Paid 5: $10/month or $100/year",
+      "paid20": "Paid 20: $30/month or $300/year",
+      "percent": "Discount (%)",
+      "months": "Discount duration (months)",
+      "monthsHelp": "0 means ongoing. Applies to invoices issued during this period, including annual invoices.",
+      "appleOffer": "Apple offer ID",
+      "googleOffer": "Google offer ID",
+      "nativeHelp": "Optional. Must match an offer configured in the store. Web discounts do not automatically apply to store purchases.",
+      "percentRange": "Enter 0 to 100, with up to two decimal places.",
+      "monthsRange": "Enter 0 (ongoing) or 1 to 36 months.",
+      "durationHelp": "Custom tier duration from verified purchase. 0 means while the subscription remains eligible."
     }
   },
   "plans": {
@@ -3569,7 +3599,15 @@
       "email_enabled": "Email",
       "mobile_access": "Mobile app",
       "endpoints_custom": "Own model endpoints",
-      "artifacts_pinned_max": "Pinned reports"
+      "artifacts_pinned_max": "Pinned reports",
+      "customTopics_max": "Custom topics",
+      "systemSubscriptions_max": "System subscriptions",
+      "audio_dailySeconds_max": "Generated audio seconds per day",
+      "customResearch_enabled": "Custom research",
+      "oneTimeResearch_enabled": "One-time research",
+      "catalog_freeOnly": "Free-eligible catalog only",
+      "catalog_audio_enabled": "Shared catalog audio",
+      "models_personalConnections_enabled": "Personal provider connections"
     },
     "assignments": {
       "title": "A user's plans",
@@ -3611,6 +3649,20 @@
     "userPanel": {
       "action": "Plan",
       "title": "Plan for {email}"
+    },
+    "overrides": {
+      "title": "User limits",
+      "help": "Overrides apply only to this user. Restore inheritance to follow the assigned plan again.",
+      "inherited": "Plan default",
+      "effective": "Effective value",
+      "source": "Source",
+      "user": "User override",
+      "plan": "Plan",
+      "restore": "Restore inheritance",
+      "value": "Override value",
+      "valueHelp": "Use zero to disable a quantity, or unlimited to remove its cap. Daily audio is in seconds.",
+      "reason": "Reason for this change",
+      "expires": "Expires (local time, optional)"
     }
   },
   "account": {
@@ -3639,7 +3691,10 @@
       "noAudio": "Audio is not included in your plan.",
       "schedule": "Topics run at most every {minutes} minutes.",
       "ofLimit": "{used} of {max}",
-      "noLimit": "{used} (no limit)"
+      "noLimit": "{used} (no limit)",
+      "audioToday": "Generated audio today (minutes)",
+      "audioReserved": "Reserved for generation: {minutes} minutes. Resets {date} (midnight UTC).",
+      "systemSubscriptions": "System subscriptions"
     },
     "export": {
       "button": "Download my data",
@@ -3656,7 +3711,8 @@
       "scheduled": "Your account will be deleted on {date}. Sign in before then to keep it.",
       "messageDated": "Every session signs out now. On {date}, your account and all its data (topics, briefings, findings, feedback, and audio) are deleted for good. Sign in before then and the deletion is cancelled.",
       "cancelledTitle": "Your account deletion is cancelled.",
-      "cancelledMessage": "Signing in kept your account and all its data."
+      "cancelledMessage": "Signing in kept your account and all its data.",
+      "billingNotice": "Deleting your account stops Stripe and Google renewals. Cancel Apple subscriptions in App Store settings to stop future charges. Signing back in does not restart a canceled subscription."
     },
     "deleted": {
       "title": "Your account is scheduled for deletion",
@@ -4701,5 +4757,89 @@
     "savedDefault": "This topic uses the workspace default voice again",
     "speechOff": "Speech is turned off on this server, so there is no audio to play. A server administrator can turn it on in Server settings.",
     "empty": "No voices are available."
+  },
+  "topicHistory": {
+    "title": "Compare with past briefings",
+    "help": "Use earlier issues to explain what changed. Historical text is a baseline, not current evidence.",
+    "Off": "Off: standalone briefing",
+    "PreviousIssue": "Previous issue",
+    "RecentIssues": "Recent issues",
+    "SinceDate": "Since a date",
+    "SpecificIssue": "Specific issue",
+    "count": "Maximum issues (1 to 20)",
+    "date": "Start date (UTC)",
+    "issue": "Baseline issue",
+    "choose": "Choose an issue",
+    "firstRun": "Without a usable earlier issue, the next briefing will be standalone."
+  },
+  "catalog": {
+    "title": "System briefings",
+    "summary": "Choose shared briefings researched once for everyone. Your subscriptions and listening progress stay private.",
+    "subscribe": "Subscribe",
+    "unsubscribe": "Unsubscribe",
+    "read": "Read issues",
+    "empty": "No system briefings have been published yet.",
+    "noIssues": "No issues are available yet.",
+    "restricted": "Not included in your plan",
+    "included": "Included in your plan",
+    "issues": "Your system briefing issues",
+    "adminTitle": "System catalog",
+    "freeEligible": "Available on the free plan",
+    "description": "Public description",
+    "category": "Category",
+    "Draft": "Draft",
+    "Published": "Published",
+    "Retired": "Retired (archive remains readable)",
+    "Retracted": "Retracted (all access removed)"
+  },
+  "billing": {
+    "title": "Plans and billing",
+    "summary": "Manage your plan, subscription and payment provider.",
+    "nonBilled": "No subscription is required for your assigned plan.",
+    "verifying": "Checking payment status. Access updates only after provider verification.",
+    "manage": "Manage subscription",
+    "manageStore": "Manage this subscription in {provider}.",
+    "signupOffer": "Your signup offer",
+    "discount": "{percent}% off eligible offers. Final terms appear at checkout.",
+    "interval": "Billing interval",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "perYear": "per year",
+    "perMonth": "per month",
+    "customTopics": "Custom topics: {count}",
+    "systemTopics": "System subscriptions: {count}",
+    "audioDaily": "Generated audio: {minutes} minutes/day",
+    "terms": "Renews automatically. No trial. Replays are free. Daily audio resets at midnight UTC.",
+    "subscribe": "Continue to checkout",
+    "unavailable": "New paid purchases are unavailable on this server."
+  },
+  "personalProviders": {
+    "title": "Your API keys",
+    "summary": "Connect private model and speech keys. Only your account can use them.",
+    "chat": "Research model",
+    "embedding": "Embeddings",
+    "speech": "Speech",
+    "saved": "Saved. Test your model connection before switching to BYOK.",
+    "fundingSaved": "Funding preference updated.",
+    "byok": "Bring your own key",
+    "assigned": "Assigned plan",
+    "fundingHelp": "BYOK gives unlimited briefings using your keys. Your provider charges you directly. Test a research model first.",
+    "useAssigned": "Use assigned plan",
+    "useByok": "Use my own keys",
+    "kind": "Connection type",
+    "verified": "Verified",
+    "unverified": "Not yet verified",
+    "speechHelp": "Audio needs a separate speech key or an enabled local engine.",
+    "provider": "Provider",
+    "local": "Local speech engine",
+    "model": "Model ID",
+    "endpoint": "API base URL (optional)",
+    "voice": "Voice ID",
+    "key": "API key",
+    "keyHelp": "Keys are encrypted and never returned. Leave blank to keep the same provider’s saved key.",
+    "tested": "Connection verified.",
+    "test": "Test saved connection",
+    "remove": "Remove connection",
+    "removeHelp": "Removing a key stops the calls that need it. BYOK never falls back to a platform key."
   }
 }

@@ -16,6 +16,8 @@ import { AboutSection, ServerSection } from './InfoSections';
 import { NotificationsSection } from './NotificationsSection';
 import { PasswordSection } from './PasswordSection';
 import { PlanSection, RedeemSection } from './PlanSections';
+import { BillingSection } from './BillingSection';
+import { ProvidersSection } from './ProvidersSection';
 import { PodcastSection } from './PodcastSection';
 import { AppearanceSection, LanguageSection, SecuritySection } from './PreferenceSections';
 import { ProfileSection } from './ProfileSection';
@@ -30,6 +32,8 @@ export const ACCOUNT_SECTIONS = [
   { key: 'profile', icon: 'person-outline', group: 'account', Component: ProfileSection },
   { key: 'password', icon: 'key-outline', group: 'account', Component: PasswordSection },
   { key: 'plan', icon: 'ribbon-outline', group: 'account', Component: PlanSection },
+  { key: 'billing', icon: 'card-outline', group: 'account', Component: BillingSection },
+  { key: 'providers', icon: 'key-outline', group: 'account', Component: ProvidersSection },
   { key: 'redeem', icon: 'gift-outline', group: 'account', Component: RedeemSection, hidden: true },
   { key: 'usage', icon: 'stats-chart-outline', group: 'account', Component: UsageScreen },
   { key: 'notifications', icon: 'notifications-outline', group: 'delivery', Component: NotificationsSection },

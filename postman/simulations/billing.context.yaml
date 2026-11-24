@@ -1,0 +1,31 @@
+kind: simulation-context
+purpose:
+  stands_in_for: Stripe subscription and personal OpenAI-compatible model/speech HTTP dependencies.
+  unblocks: Retry safety, callback reconciliation, account isolation, and CI regression checks before provider sandbox validation.
+assumptions:
+  - id: stripe-checkout-retry
+    status: supported
+    claim: The application retries one unchanged pending checkout with the same provider idempotency key after an ambiguous HTTP 500.
+    reason: The local stand-in persists a session before returning 500; the application's retry returns that session with one stored provider operation.
+    verification: Billing.StripeSimulation passed on 2026-11-24. Simulation log recorded two checkout POSTs, one 500 and one 200; state contained one session. This establishes caller behavior against the stand-in, not Stripe's real guarantees.
+    source: src/Test.Shared/Suites/BillingSuite.cs; postman/mocks/stripe/default.js; https://docs.stripe.com/api/idempotent_requests
+    updated_at: "2026-11-24"
+  - id: current-state-reconciliation
+    status: supported
+    claim: Duplicate callbacks enqueue one event, delayed active callbacks cannot override current past-due provider state, and HTTP 503 verification failures remain retryable.
+    reason: The real server verifies callback signatures, persists inbox work, and calls the provider over HTTP to reconcile authoritative state.
+    verification: Billing.StripeSimulation passed forged signature, duplicate callback, active entitlement, account-bound portal, provider outage, recovered retry, and delayed event scenarios. Request log confirmed subscription GET 503 followed by successful current-state reads.
+    source: src/MyMorningNews.Core/Billing/BillingService.cs; src/Test.Shared/Suites/BillingSuite.cs; https://docs.stripe.com/webhooks
+    updated_at: "2026-11-24"
+  - id: real-provider-compatibility
+    status: unknown
+    claim: The simulated paths match production provider behavior for every supported lifecycle transition.
+    reason: The contract subset was derived from official Stripe documentation. Local paid/unpaid invoice, refund, disputed/won charge, zero-dollar discounted invoice, and personal model/speech scenarios now pass. Real Stripe test-mode checkout creation, retry, paid-invoice entitlement, portal, account-deletion cancellation, checkout expiration and refunds passed. Actual browser checkout completion, provider-delivered callbacks and native store purchases remain separate checks.
+    verification: Postman CLI 1.75.0 has no status command. Published mock search returned no authorization data, so publisher discovery was unavailable; the local mock is explicitly application-owned. No cloud mock was deployed or published.
+    source: postman/contracts/stripe-billing.json; https://docs.stripe.com/api/checkout/sessions/create; https://docs.stripe.com/api/subscriptions/retrieve
+    updated_at: "2026-11-24"
+fingerprints:
+  - id: initial-local-verification
+    date: "2026-11-24"
+    commit: uncommitted-platform-implementation
+    cli: 1.75.0

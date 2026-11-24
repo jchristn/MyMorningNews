@@ -3,6 +3,7 @@ import { redirectSystemPath } from '@/app/+native-intent';
 
 describe('deep and universal links', () => {
   it.each([
+    ['https://app.mymorningnews.ai/dashboard/catalog/cat_1/issues/brf_1', '/today/catalog/cat_1/brf_1'],
     ['mymorningnews://briefings/brf_123', '/today/briefings/brf_123'],
     ['mymorningnews:///briefings/brf_123', '/today/briefings/brf_123'],
     ['https://app.mymorningnews.ai/briefings/brf_123', '/today/briefings/brf_123'],

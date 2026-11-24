@@ -165,9 +165,15 @@ namespace MyMorningNews.Server
         /// </summary>
         public MyMorningNews.Core.Analytics.RunAnalyticsService RunAnalytics { get; set; } = null!;
 
+        /// <summary>Private per-account model and speech connections.</summary>
+        public PersonalProviderService PersonalProviders { get; set; } = null!;
+
         /// <summary>
         /// Plans and plan assignments.
         /// </summary>
+        public MyMorningNews.Core.Billing.BillingService Billing { get; set; } = null!;
+
+        /// <summary>Effective per-user entitlements.</summary>
         public MyMorningNews.Core.Entitlements.EntitlementService Entitlements { get; set; } = null!;
 
         /// <summary>

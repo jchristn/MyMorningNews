@@ -37,7 +37,14 @@ function ProgressBar({ time, duration, ticks, label, valueText, onSeek }) {
   }
 
   function onKeyDown(event) {
-    const moves = { ArrowLeft: -KEY_STEP_SECONDS, ArrowDown: -KEY_STEP_SECONDS, ArrowRight: KEY_STEP_SECONDS, ArrowUp: KEY_STEP_SECONDS, PageDown: -SKIP_FORWARD_SECONDS, PageUp: SKIP_FORWARD_SECONDS };
+    const moves = {
+      ArrowLeft: -KEY_STEP_SECONDS,
+      ArrowDown: -KEY_STEP_SECONDS,
+      ArrowRight: KEY_STEP_SECONDS,
+      ArrowUp: KEY_STEP_SECONDS,
+      PageDown: -SKIP_FORWARD_SECONDS,
+      PageUp: SKIP_FORWARD_SECONDS
+    };
     if (event.key in moves) onSeek(clampTime(time + moves[event.key], duration));
     else if (event.key === 'Home') onSeek(0);
     else if (event.key === 'End' && duration > 0) onSeek(duration);
@@ -64,7 +71,16 @@ function ProgressBar({ time, duration, ticks, label, valueText, onSeek }) {
         <rect className="audio-progress-track" x="0" y="7" width="100%" height="6" rx="3" />
         <rect className="audio-progress-fill" x="0" y="7" width={pct} height="6" rx="3" />
         {ticks.map((tick) => (
-          <rect key={tick.key} className="audio-progress-tick" x={(tick.fraction * 100).toFixed(3) + '%'} y="4" width="2" height="12" transform="translate(-1 0)" data-fraction={tick.fraction.toFixed(4)}>
+          <rect
+            key={tick.key}
+            className="audio-progress-tick"
+            x={(tick.fraction * 100).toFixed(3) + '%'}
+            y="4"
+            width="2"
+            height="12"
+            transform="translate(-1 0)"
+            data-fraction={tick.fraction.toFixed(4)}
+          >
             <title>{tick.title}</title>
           </rect>
         ))}
@@ -89,7 +105,21 @@ ProgressBar.propTypes = {
 // highlights the chapter playing and seeks on click. onSectionChange receives the briefingSectionId of the chapter
 // playing (or null) whenever it changes, so a reader can highlight that section. apiRef receives
 // { seekTo(seconds), seekToSection(sectionId), play(), pause() }. compact hides the chapter list.
-export default function AudioPlayer({ artifactId, chapters = [], durationSeconds = 0, bytes = 0, title = '', compact = false, onSectionChange = null, apiRef = null, autoPlay = false }) {
+export default function AudioPlayer({
+  artifactId,
+  chapters = [],
+  durationSeconds = 0,
+  bytes = 0,
+  title = '',
+  compact = false,
+  onSectionChange = null,
+  apiRef = null,
+  autoPlay = false,
+  catalogPublicationId = null,
+  catalogIssueId = null,
+  initialPosition = 0,
+  onPositionChange = null
+}) {
   const { t } = useTranslation();
   const f = useFormat();
   const { apiClient } = useAuth();
@@ -104,14 +134,18 @@ export default function AudioPlayer({ artifactId, chapters = [], durationSeconds
   const pendingPlay = useRef(Boolean(autoPlay));
 
   useEffect(() => {
-    if (!artifactId) return undefined;
+    if (!artifactId && !(catalogPublicationId && catalogIssueId)) return undefined;
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
     let url = null;
     let cancelled = false;
     setSrc(null);
     setLoadError(null);
-    apiClient
-      .getArtifactContent(artifactId, { signal: controller ? controller.signal : undefined })
+    const options = { signal: controller ? controller.signal : undefined };
+    const download =
+      catalogPublicationId && catalogIssueId
+        ? apiClient.getCatalogAudio(catalogPublicationId, catalogIssueId, options)
+        : apiClient.getArtifactContent(artifactId, options);
+    download
       .then((result) => {
         if (cancelled) return;
         url = URL.createObjectURL(result.blob);
@@ -125,7 +159,17 @@ export default function AudioPlayer({ artifactId, chapters = [], durationSeconds
       if (controller) controller.abort();
       if (url) URL.revokeObjectURL(url);
     };
-  }, [apiClient, artifactId, attempt]);
+  }, [apiClient, artifactId, catalogPublicationId, catalogIssueId, attempt]);
+
+  useEffect(() => {
+    const element = audioRef.current;
+    if (!src || !element || initialPosition <= 0) return;
+    const restore = () => {
+      element.currentTime = Math.min(initialPosition, Number.isFinite(element.duration) ? element.duration : initialPosition);
+    };
+    element.addEventListener('loadedmetadata', restore, { once: true });
+    return () => element.removeEventListener('loadedmetadata', restore);
+  }, [src, initialPosition]);
 
   const duration = mediaDuration > 0 ? mediaDuration : Math.max(0, Number(durationSeconds) || 0);
   const list = useMemo(() => normalizeChapters(chapters, duration), [chapters, duration]);
@@ -207,7 +251,8 @@ export default function AudioPlayer({ artifactId, chapters = [], durationSeconds
     );
   }
 
-  const valueText = t('audio.player.position', { time: formatClock(time), duration: formatClock(duration) }) + (current ? ', ' + current.title : '');
+  const valueText =
+    t('audio.player.position', { time: formatClock(time), duration: formatClock(duration) }) + (current ? ', ' + current.title : '');
 
   return (
     <div className={'audio-player' + (compact ? ' compact' : '')} data-testid="audio-player">
@@ -218,10 +263,17 @@ export default function AudioPlayer({ artifactId, chapters = [], durationSeconds
           preload="metadata"
           onLoadedMetadata={onLoadedMetadata}
           onDurationChange={onLoadedMetadata}
-          onTimeUpdate={(e) => setTime(Number(e.currentTarget.currentTime) || 0)}
+          onTimeUpdate={(e) => {
+            const position = Number(e.currentTarget.currentTime) || 0;
+            setTime(position);
+            if (onPositionChange) onPositionChange(position, false);
+          }}
           onPlay={() => setPlaying(true)}
           onPause={() => setPlaying(false)}
-          onEnded={() => setPlaying(false)}
+          onEnded={() => {
+            setPlaying(false);
+            if (onPositionChange) onPositionChange(duration, true);
+          }}
           data-testid="audio-element"
         />
       ) : null}
@@ -230,16 +282,34 @@ export default function AudioPlayer({ artifactId, chapters = [], durationSeconds
       ) : (
         <>
           <div className="audio-controls">
-            <button type="button" className="icon-button" onClick={() => seekTo(time - SKIP_BACK_SECONDS)} aria-label={t('audio.player.back', { seconds: SKIP_BACK_SECONDS })} title={t('audio.player.back', { seconds: SKIP_BACK_SECONDS })}>
+            <button
+              type="button"
+              className="icon-button"
+              onClick={() => seekTo(time - SKIP_BACK_SECONDS)}
+              aria-label={t('audio.player.back', { seconds: SKIP_BACK_SECONDS })}
+              title={t('audio.player.back', { seconds: SKIP_BACK_SECONDS })}
+            >
               <RotateCcw size={16} aria-hidden="true" />
               <span className="audio-skip-label" aria-hidden="true">
                 {SKIP_BACK_SECONDS}
               </span>
             </button>
-            <button type="button" className="button primary audio-play" onClick={playing ? pause : play} aria-label={playing ? t('audio.player.pause') : t('audio.player.play')} title={playing ? t('audio.player.pause') : t('audio.player.play')}>
+            <button
+              type="button"
+              className="button primary audio-play"
+              onClick={playing ? pause : play}
+              aria-label={playing ? t('audio.player.pause') : t('audio.player.play')}
+              title={playing ? t('audio.player.pause') : t('audio.player.play')}
+            >
               {playing ? <Pause size={16} aria-hidden="true" /> : <Play size={16} aria-hidden="true" />}
             </button>
-            <button type="button" className="icon-button" onClick={() => seekTo(time + SKIP_FORWARD_SECONDS)} aria-label={t('audio.player.forward', { seconds: SKIP_FORWARD_SECONDS })} title={t('audio.player.forward', { seconds: SKIP_FORWARD_SECONDS })}>
+            <button
+              type="button"
+              className="icon-button"
+              onClick={() => seekTo(time + SKIP_FORWARD_SECONDS)}
+              aria-label={t('audio.player.forward', { seconds: SKIP_FORWARD_SECONDS })}
+              title={t('audio.player.forward', { seconds: SKIP_FORWARD_SECONDS })}
+            >
               <RotateCw size={16} aria-hidden="true" />
               <span className="audio-skip-label" aria-hidden="true">
                 {SKIP_FORWARD_SECONDS}
@@ -251,12 +321,25 @@ export default function AudioPlayer({ artifactId, chapters = [], durationSeconds
                   {current ? t('audio.player.nowPlaying', { chapter: current.title }) : title}
                 </div>
               ) : null}
-              <ProgressBar time={time} duration={duration} ticks={ticks} label={t('audio.player.seek')} valueText={valueText} onSeek={seekTo} />
+              <ProgressBar
+                time={time}
+                duration={duration}
+                ticks={ticks}
+                label={t('audio.player.seek')}
+                valueText={valueText}
+                onSeek={seekTo}
+              />
             </div>
             <span className="audio-clock mono small" data-testid="audio-clock">
               {formatClock(time) + ' / ' + formatClock(duration)}
             </span>
-            <select className="audio-speed" value={String(speed)} onChange={(e) => setSpeed(Number(e.target.value))} aria-label={t('audio.player.speed')} title={t('audio.player.speed')}>
+            <select
+              className="audio-speed"
+              value={String(speed)}
+              onChange={(e) => setSpeed(Number(e.target.value))}
+              aria-label={t('audio.player.speed')}
+              title={t('audio.player.speed')}
+            >
               {PLAYBACK_SPEEDS.map((s) => (
                 <option key={s} value={String(s)}>
                   {t('audio.player.speedOption', { speed: f.number(s, { minimumFractionDigits: 0, maximumFractionDigits: 2 }) })}
@@ -268,7 +351,11 @@ export default function AudioPlayer({ artifactId, chapters = [], durationSeconds
             <ol className="audio-chapters" aria-label={t('audio.player.chapters')}>
               {list.map((c, i) => (
                 <li key={c.id || i}>
-                  <button type="button" className={'audio-chapter' + (i === currentIndex ? ' current' : '')} aria-current={i === currentIndex ? 'true' : undefined} onClick={() => {
+                  <button
+                    type="button"
+                    className={'audio-chapter' + (i === currentIndex ? ' current' : '')}
+                    aria-current={i === currentIndex ? 'true' : undefined}
+                    onClick={() => {
                       seekTo(c.startSeconds);
                       play();
                     }}
@@ -287,7 +374,11 @@ export default function AudioPlayer({ artifactId, chapters = [], durationSeconds
 }
 
 AudioPlayer.propTypes = {
-  artifactId: PropTypes.string.isRequired,
+  artifactId: PropTypes.string,
+  catalogPublicationId: PropTypes.string,
+  catalogIssueId: PropTypes.string,
+  initialPosition: PropTypes.number,
+  onPositionChange: PropTypes.func,
   chapters: PropTypes.array,
   durationSeconds: PropTypes.number,
   bytes: PropTypes.number,

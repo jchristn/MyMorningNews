@@ -236,6 +236,31 @@ namespace MyMorningNews.Sdk
         /// </summary>
         public AccountResource Account { get; }
 
+        /// <summary>Platform AdminEntitlements API.</summary>
+        public AdminEntitlementsResource AdminEntitlements { get; }
+
+
+
+        /// <summary>Platform AdminCatalog API.</summary>
+        public AdminCatalogResource AdminCatalog { get; }
+
+
+
+        /// <summary>Platform Providers API.</summary>
+        public ProvidersResource Providers { get; }
+
+
+
+        /// <summary>Platform Billing API.</summary>
+        public BillingResource Billing { get; }
+
+
+
+        /// <summary>Platform Catalog API.</summary>
+        public CatalogResource Catalog { get; }
+
+
+
         /// <summary>
         /// MCP server registry for agentic research: register, test, discover tools, and turn tools on or off.
         /// </summary>
@@ -320,6 +345,11 @@ namespace MyMorningNews.Sdk
             Devices = new DevicesResource(this);
             Notifications = new NotificationsResource(this);
             Account = new AccountResource(this);
+            AdminEntitlements = new AdminEntitlementsResource(this);
+            AdminCatalog = new AdminCatalogResource(this);
+            Providers = new ProvidersResource(this);
+            Billing = new BillingResource(this);
+            Catalog = new CatalogResource(this);
             McpServers = new McpServersResource(this);
             Setup = new SetupResource(this);
             Admin = new AdminResource(this);

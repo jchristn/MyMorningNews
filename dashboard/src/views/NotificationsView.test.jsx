@@ -77,13 +77,13 @@ describe('notification helpers', () => {
 });
 
 describe('notification preferences page', () => {
-  it('sits in the Settings hub right after Profile', async () => {
+  it('sits in the Settings hub after account controls', async () => {
     renderRoute('/dashboard/notifications', { getNotificationPreferences: vi.fn(async () => prefs()) });
     const tabs = await screen.findByTestId('hub-tabs');
     const labels = within(tabs)
       .getAllByRole('link')
       .map((a) => a.textContent);
-    expect(labels.slice(0, 2)).toEqual(['Profile', 'Notifications']);
+    expect(labels.slice(0, 4)).toEqual(['Profile', 'Plans and billing', 'Your API keys', 'Notifications']);
     expect(within(tabs).getByRole('link', { name: 'Notifications' })).toHaveAttribute('aria-current', 'page');
   });
 

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Pause, Plus, Sparkles, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +20,9 @@ export default function TopicsList() {
   const { apiClient } = useAuth();
   const { addNotification } = useApp();
   const [refresh, setRefresh] = useState(0);
+  const [plan, setPlan] = useState(null);
+  useEffect(() => { let active = true; if (apiClient.getMyPlan) apiClient.getMyPlan().then(value => { if (active) setPlan(value); }).catch(() => {}); return () => { active = false; }; }, [apiClient]);
+  const customAllowed = plan?.features?.['customResearch.enabled'] !== 'false';
   const [bulkDelete, setBulkDelete] = useState(null);
   const bump = useCallback(() => setRefresh((n) => n + 1), []);
   const { actionsFor, modals } = useTopicActions({ onChanged: bump });
@@ -72,7 +75,7 @@ export default function TopicsList() {
   ];
 
   const addButton = (
-    <button type="button" className="button primary small" onClick={newTopic}>
+    <button type="button" className="button primary small" onClick={newTopic} disabled={!customAllowed}>
       <Plus size={14} aria-hidden="true" /> {t('topics.new')}
     </button>
   );
@@ -80,6 +83,7 @@ export default function TopicsList() {
   return (
     <div className="page">
       <PageHeader title={t('nav.items.topics')} summary={t('routes.topics.summary')} />
+      {!customAllowed ? <section className="panel stack"><p>{t('catalog.summary')}</p><div className="row-actions"><button className="button primary" onClick={() => navigate('/dashboard/catalog')}>{t('catalog.title')}</button><button className="button secondary" onClick={() => navigate('/dashboard/account/billing')}>{t('billing.title')}</button></div></section> : null}
       <section className="panel">
         <DataTable
           tableKey="topics"

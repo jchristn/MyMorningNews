@@ -138,6 +138,9 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// A public share link for a briefing was revoked.
         /// </summary>
-        ShareRevoked
+        ShareRevoked,
+
+        /// <summary>A system catalog publication was created or changed.</summary>
+        CatalogChanged
     }
 }

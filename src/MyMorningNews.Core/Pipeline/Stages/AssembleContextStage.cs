@@ -41,10 +41,11 @@ namespace MyMorningNews.Core.Pipeline.Stages
             ctx.Providers = await services.Search.ProvidersForTopicAsync(tenant, ctx.Topic.Id, token).ConfigureAwait(false);
             ctx.SinceUtc = ctx.Topic.LastRunUtc;
 
-            List<Run> recent = (await services.Database.Runs.EnumerateAsync(new RunFilter { TenantId = tenant, TopicId = ctx.Topic.Id, Status = RunStatusEnum.Completed, PageSize = 5 }, token).ConfigureAwait(false)).Items;
-            List<Run> partial = (await services.Database.Runs.EnumerateAsync(new RunFilter { TenantId = tenant, TopicId = ctx.Topic.Id, Status = RunStatusEnum.PartiallySucceeded, PageSize = 5 }, token).ConfigureAwait(false)).Items;
-            ctx.RecentSummaries = recent.Concat(partial).Where(r => !r.IsDryRun && !String.IsNullOrWhiteSpace(r.Summary) && r.Id != ctx.Run.Id)
-                .OrderByDescending(r => r.CompletedUtc).Take(5).Select(r => (r.CompletedUtc ?? r.QueuedUtc).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ": " + r.Summary).ToList();
+            RunHistorySnapshot history = await new MyMorningNews.Core.Briefings.HistoryContextService(services.Database).ResolveAsync(ctx.Topic, ctx.Run, token).ConfigureAwait(false);
+            ctx.RecentSummaries = String.IsNullOrEmpty(history.ContextText) ? new List<string>() : new List<string> { history.ContextText };
+            ctx.CompareHistory = history.Mode != HistoryModeEnum.Off.ToString();
+            ctx.SinceUtc = ctx.CompareHistory ? ctx.Topic.LastRunUtc : null;
+            ctx.HistoryInstructions = MyMorningNews.Core.Briefings.HistoryContextService.Prompt(history);
 
             List<string> dims = ctx.Dimensions.Select(RefinementService.FormatDimension).ToList();
             List<string> constraints = ctx.Constraints.Where(c => c.Kind != ConstraintKindEnum.TrackedQuestion && c.Kind != ConstraintKindEnum.FeedUrl && c.Kind != ConstraintKindEnum.SeedUrl)
@@ -64,7 +65,7 @@ namespace MyMorningNews.Core.Pipeline.Stages
                 { "since", ctx.SinceUtc.HasValue ? ctx.SinceUtc.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : null }
             };
 
-            string snapshot = ctx.Topic.Brief + "|" + String.Join("|", dims) + "|" + String.Join("|", constraints) + "|" + String.Join("|", tracked);
+            string snapshot = ctx.Topic.Brief + "|" + String.Join("|", dims) + "|" + String.Join("|", constraints) + "|" + String.Join("|", tracked) + "|" + history.ContextHash;
             ctx.Run.ContextSnapshotHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(snapshot))).ToLowerInvariant();
             if (ctx.Providers.Count == 0) throw new InvalidOperationException("The topic has no search providers. Add one or mark a provider as a default.");
             return StageOutcome.Of(ctx.Dimensions.Count + ctx.Constraints.Count, ctx.Providers.Count);

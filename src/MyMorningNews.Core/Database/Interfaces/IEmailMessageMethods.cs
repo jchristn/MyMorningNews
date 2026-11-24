@@ -14,6 +14,8 @@ namespace MyMorningNews.Core.Database.Interfaces
     /// </summary>
     public interface IEmailMessageMethods
     {
+        /// <summary>Find an exact scoped outbox idempotency key, or null.</summary>
+        Task<EmailMessage?> ReadByKeyAsync(string tenantId, string key, CancellationToken token = default);
         /// <summary>
         /// Create a record. An empty identifier is backfilled.
         /// </summary>

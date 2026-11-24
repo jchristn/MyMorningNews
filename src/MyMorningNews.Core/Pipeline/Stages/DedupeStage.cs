@@ -58,7 +58,7 @@ namespace MyMorningNews.Core.Pipeline.Stages
                     if (sim >= dup || (c.Vector == null && sim >= 0.8)) { c.IsDuplicate = true; break; }
                 }
 
-                if (c.IsDuplicate) continue;
+                if (c.IsDuplicate || !ctx.CompareHistory) continue;
                 if (c.Vector != null && ctx.EmbeddingModel != null)
                 {
                     List<EmbeddingMatch> near = await services.Database.Embeddings.NearestAsync(ctx.Run.TenantId, ctx.Topic.Id, "Finding", ctx.EmbeddingModel, c.Vector, dedupeSince, null, 5, token).ConfigureAwait(false);

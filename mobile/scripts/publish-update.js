@@ -60,7 +60,7 @@ function main() {
   if (!fs.existsSync(path.join(projectRoot, 'updates', 'certificate.pem'))) problems.push('No updates/certificate.pem. Run npm run updates-certificate first.');
   if (!fs.existsSync(args.key)) problems.push('No private key at ' + args.key + '.');
   if (!(process.env.MYMORNINGNEWS_MOBILE_EAS_PROJECT_ID || '').trim()) problems.push('MYMORNINGNEWS_MOBILE_EAS_PROJECT_ID is not set.');
-  const command = ['eas-cli@latest', 'update', '--channel', args.channel, '--message', args.message, '--platform', args.platform, '--private-key-path', args.key, '--non-interactive'];
+  const command = ['eas-cli@latest', 'update', '--channel', args.channel, '--message', args.message, '--platform', args.platform, '--environment', args.channel, '--private-key-path', args.key, '--non-interactive'];
   if (args.rollout < 100) command.push('--rollout-percentage', String(args.rollout));
   process.stdout.write('npx ' + command.map((part) => (/\s/.test(part) ? JSON.stringify(part) : part)).join(' ') + '\n');
   if (problems.length) {

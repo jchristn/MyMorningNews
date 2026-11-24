@@ -119,7 +119,7 @@ namespace MyMorningNews.Core.Services
             List<SettingFieldDescriptor> fields = new List<SettingFieldDescriptor>();
             foreach (SettingField field in Fields())
             {
-                object? value = field.Property.GetValue(field.Group.GetValue(Current));
+                object? value = field.Property.GetValue(field.Container(Current));
                 SettingFieldDescriptor d = new SettingFieldDescriptor
                 {
                     Path = field.Path,
@@ -139,7 +139,7 @@ namespace MyMorningNews.Core.Services
                 if (field.Attribute.Secret)
                 {
                     d.IsSet = value is string s && s.Length > 0;
-                    if (d.IsSet) field.Property.SetValue(field.Group.GetValue(masked), SecretMask);
+                    if (d.IsSet) field.Property.SetValue(field.Container(masked), SecretMask);
                 }
 
                 fields.Add(d);
@@ -169,15 +169,15 @@ namespace MyMorningNews.Core.Services
                 foreach (SettingField field in Fields())
                 {
                     if (_Overridden.Contains(field.Path)) continue;
-                    object? newValue = field.Property.GetValue(field.Group.GetValue(incoming));
+                    object? newValue = field.Property.GetValue(field.Container(incoming));
                     if (field.Attribute.Secret && (newValue == null || (newValue is string s && (s.Length == 0 || s == SecretMask)))) continue;
 
-                    object? fileValue = field.Property.GetValue(field.Group.GetValue(candidate));
+                    object? fileValue = field.Property.GetValue(field.Container(candidate));
                     if (SameValue(fileValue, newValue)) continue;
 
                     try
                     {
-                        field.Property.SetValue(field.Group.GetValue(candidate), newValue);
+                        field.Property.SetValue(field.Container(candidate), newValue);
                     }
                     catch (TargetInvocationException ex) when (ex.InnerException is ArgumentException)
                     {
@@ -205,14 +205,14 @@ namespace MyMorningNews.Core.Services
 
                 foreach (SettingField field in Fields())
                 {
-                    object? value = field.Property.GetValue(field.Group.GetValue(candidate));
-                    field.Property.SetValue(field.Group.GetValue(_FileSettings), value);
+                    object? value = field.Property.GetValue(field.Container(candidate));
+                    field.Property.SetValue(field.Container(_FileSettings), value);
                 }
 
                 foreach (SettingField field in changedLive)
                 {
-                    object? value = field.Property.GetValue(field.Group.GetValue(candidate));
-                    field.Property.SetValue(field.Group.GetValue(Current), value);
+                    object? value = field.Property.GetValue(field.Container(candidate));
+                    field.Property.SetValue(field.Container(Current), value);
                     result.AppliedLive.Add(field.Path);
                 }
 
@@ -243,7 +243,7 @@ namespace MyMorningNews.Core.Services
                 if (String.IsNullOrEmpty(raw)) continue;
                 object? converted = Convert(raw, field.Property.PropertyType);
                 if (converted == null) continue;
-                field.Property.SetValue(field.Group.GetValue(settings), converted);
+                field.Property.SetValue(field.Container(settings), converted);
                 _Overridden.Add(field.Path);
             }
         }
@@ -287,15 +287,21 @@ namespace MyMorningNews.Core.Services
             foreach (PropertyInfo group in typeof(ServerSettings).GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
                 if (!group.PropertyType.IsClass || group.PropertyType == typeof(string)) continue;
-                foreach (PropertyInfo prop in group.PropertyType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
-                {
-                    SettingAttribute? attr = prop.GetCustomAttribute<SettingAttribute>();
-                    if (attr == null || !prop.CanWrite) continue;
-                    fields.Add(new SettingField(group, prop, attr));
-                }
+                AddFields(fields, new List<PropertyInfo> { group });
             }
-
             return fields;
+        }
+
+        private static void AddFields(List<SettingField> fields, List<PropertyInfo> parents)
+        {
+            foreach (PropertyInfo prop in parents[parents.Count - 1].PropertyType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            {
+                if (!prop.CanWrite) continue;
+                SettingAttribute? attr = prop.GetCustomAttribute<SettingAttribute>();
+                if (attr != null) fields.Add(new SettingField(parents, prop, attr));
+                else if (prop.PropertyType.Namespace == typeof(ServerSettings).Namespace && prop.PropertyType.IsClass)
+                    AddFields(fields, parents.Concat(new[] { prop }).ToList());
+            }
         }
 
         #endregion

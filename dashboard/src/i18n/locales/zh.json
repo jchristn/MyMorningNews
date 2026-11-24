@@ -206,7 +206,11 @@
       "plans": "套餐",
       "emailInsights": "邮件投递",
       "mcp": "MCP 客户端",
-      "setup": "设置"
+      "setup": "设置",
+      "catalog": "系统简报",
+      "adminCatalog": "系统目录",
+      "billing": "方案与账单",
+      "personalProviders": "你的API密钥"
     }
   },
   "routes": {
@@ -341,6 +345,12 @@
     },
     "setup": {
       "summary": "My Morning News 运行所需的内容，以及每一项是否正常"
+    },
+    "catalog": {
+      "summary": "选择为所有人统一研究的共享简报。您的订阅和收听进度保持私密。"
+    },
+    "adminCatalog": {
+      "summary": "选择为所有人统一研究的共享简报。您的订阅和收听进度保持私密。"
     }
   },
   "topbar": {
@@ -766,7 +776,9 @@
       "sharing_enabled": "通过公开链接分享简报",
       "sharing_maxExpiryDays": "分享链接的最长有效期（天）",
       "sharing_defaultExpiryDays": "未选择时分享链接的有效期（天）",
-      "sharing_publicRequestsPerMinute": "每个地址每分钟的分享页面请求数"
+      "sharing_publicRequestsPerMinute": "每个地址每分钟的分享页面请求数",
+      "hosting_newUsersRequireSubscription": "新账户需要订阅",
+      "hosting_nonBilledPlanKey": "新账户的非计费方案"
     }
   },
   "serverInfo": {
@@ -3527,6 +3539,24 @@
       "title": "兑换趋势",
       "subtitle": "按兑换日期每日统计",
       "empty": "暂无兑换记录。"
+    },
+    "offer": {
+      "kind": "代码权益",
+      "complimentary": "免费使用权限",
+      "paid": "付费订阅优惠",
+      "help": "付费优惠仅适用于新账户。验证购买后才会开通权限。所选方案决定使用权限，计费套餐决定价格。",
+      "billingPlan": "计费套餐",
+      "paid5": "付费5：每月10美元或每年100美元",
+      "paid20": "付费20：每月30美元或每年300美元",
+      "percent": "折扣百分比（%）",
+      "months": "折扣期限（月）",
+      "monthsHelp": "0表示长期有效。适用于此期间开具的账单，包括年度账单。",
+      "appleOffer": "Apple优惠ID",
+      "googleOffer": "Google优惠ID",
+      "nativeHelp": "可选。必须与商店中配置的优惠一致。网页折扣不会自动应用于商店购买。",
+      "percentRange": "请输入0到100，最多保留两位小数。",
+      "monthsRange": "请输入0（长期）或1到36个月。",
+      "durationHelp": "自购买验证起的自定义方案期限。0表示订阅符合条件期间持续有效。"
     }
   },
   "plans": {
@@ -3569,7 +3599,15 @@
       "email_enabled": "邮件",
       "mobile_access": "移动应用",
       "endpoints_custom": "自有模型端点",
-      "artifacts_pinned_max": "置顶报告数"
+      "artifacts_pinned_max": "置顶报告数",
+      "customTopics_max": "自定义主题",
+      "systemSubscriptions_max": "系统订阅",
+      "audio_dailySeconds_max": "每日生成音频秒数",
+      "customResearch_enabled": "自定义研究",
+      "oneTimeResearch_enabled": "一次性研究",
+      "catalog_freeOnly": "仅免费目录",
+      "catalog_audio_enabled": "共享目录音频",
+      "models_personalConnections_enabled": "个人服务商连接"
     },
     "assignments": {
       "title": "用户的套餐",
@@ -3611,6 +3649,20 @@
     "userPanel": {
       "action": "套餐",
       "title": "{email} 的套餐"
+    },
+    "overrides": {
+      "title": "用户限制",
+      "help": "覆盖值仅适用于此用户。恢复继承后将再次使用已分配方案的限制。",
+      "inherited": "方案默认值",
+      "effective": "生效值",
+      "source": "来源",
+      "user": "用户覆盖",
+      "plan": "方案",
+      "restore": "恢复继承",
+      "value": "覆盖值",
+      "valueHelp": "零表示禁用该数量额度，unlimited表示不限额。每日音频以秒为单位。",
+      "reason": "更改原因",
+      "expires": "到期时间（本地时间，可选）"
     }
   },
   "account": {
@@ -3639,7 +3691,10 @@
       "noAudio": "您的套餐不包含音频。",
       "schedule": "主题最多每 {minutes} 分钟运行一次。",
       "ofLimit": "{used} / {max}",
-      "noLimit": "{used}（无限制）"
+      "noLimit": "{used}（无限制）",
+      "audioToday": "今日生成音频（分钟）",
+      "audioReserved": "预留生成时长：{minutes} 分钟。{date}（UTC 午夜）重置。",
+      "systemSubscriptions": "系统简报订阅"
     },
     "export": {
       "button": "下载我的数据",
@@ -3656,7 +3711,8 @@
       "scheduled": "您的账户将于 {date} 删除。在此之前登录即可保留。",
       "messageDated": "所有会话将立即退出登录。{date}，您的账户及其所有数据（主题、简报、发现、反馈和音频）将被永久删除。在此之前登录即可取消删除。",
       "cancelledTitle": "您的账户删除已取消。",
-      "cancelledMessage": "登录后，您的账户及其所有数据都已保留。"
+      "cancelledMessage": "登录后，您的账户及其所有数据都已保留。",
+      "billingNotice": "删除帐户会停止 Stripe 和 Google 续订。请在 App Store 设置中取消 Apple 订阅，以停止未来扣款。重新登录不会恢复已取消的订阅。"
     },
     "deleted": {
       "title": "您的账户已安排删除",
@@ -4701,5 +4757,89 @@
     "savedDefault": "此主题已恢复使用工作区默认语音",
     "speechOff": "此服务器已关闭语音合成，因此没有可播放的音频。服务器管理员可以在服务器设置中将其开启。",
     "empty": "没有可用的语音。"
+  },
+  "topicHistory": {
+    "title": "与往期简报比较",
+    "help": "使用往期内容解释变化。历史文本仅作为比较基准，不是当前证据。",
+    "Off": "关闭：独立简报",
+    "PreviousIssue": "上一期",
+    "RecentIssues": "最近几期",
+    "SinceDate": "指定日期之后",
+    "SpecificIssue": "指定期次",
+    "count": "最多期数（1 到 20）",
+    "date": "起始日期（UTC）",
+    "issue": "基准期次",
+    "choose": "选择一期",
+    "firstRun": "如果没有可用的往期内容，下一份简报将独立生成。"
+  },
+  "catalog": {
+    "title": "系统简报",
+    "summary": "选择为所有人统一研究的共享简报。您的订阅和收听进度保持私密。",
+    "subscribe": "订阅",
+    "unsubscribe": "取消订阅",
+    "read": "阅读各期",
+    "empty": "尚未发布系统简报。",
+    "noIssues": "暂无可用期次。",
+    "restricted": "您的套餐不包含",
+    "included": "您的套餐包含",
+    "issues": "您的系统简报内容",
+    "adminTitle": "系统目录",
+    "freeEligible": "免费套餐可用",
+    "description": "公开描述",
+    "category": "类别",
+    "Draft": "草稿",
+    "Published": "已发布",
+    "Retired": "已停刊（仍可阅读存档）",
+    "Retracted": "已撤回（移除所有访问）"
+  },
+  "billing": {
+    "title": "方案与账单",
+    "summary": "管理方案、订阅和支付服务商。",
+    "nonBilled": "分配给你的方案无需订阅。",
+    "verifying": "正在验证付款。服务商验证后才会更新权限。",
+    "manage": "管理订阅",
+    "manageStore": "请在{provider}中管理此订阅。",
+    "signupOffer": "你的注册优惠",
+    "discount": "符合条件的优惠可减免{percent}%。最终条款在结账时显示。",
+    "interval": "计费周期",
+    "monthly": "按月",
+    "yearly": "按年",
+    "perYear": "每年",
+    "perMonth": "每月",
+    "customTopics": "自定义主题：{count}",
+    "systemTopics": "系统订阅：{count}",
+    "audioDaily": "生成音频：每天{minutes}分钟",
+    "terms": "自动续订，无试用期，重播免费。每日音频额度在UTC午夜重置。",
+    "subscribe": "前往结账",
+    "unavailable": "此服务器暂不提供新的付费购买。"
+  },
+  "personalProviders": {
+    "title": "你的API密钥",
+    "summary": "连接私有模型和语音密钥，仅你的账户可使用。",
+    "chat": "研究模型",
+    "embedding": "向量嵌入",
+    "speech": "语音",
+    "saved": "已保存。切换至自带密钥前，请先测试模型连接。",
+    "fundingSaved": "已更新费用来源设置。",
+    "byok": "自带密钥",
+    "assigned": "已分配方案",
+    "fundingHelp": "使用自己的密钥可获得无限简报。服务商直接向你收费。请先测试研究模型。",
+    "useAssigned": "使用已分配方案",
+    "useByok": "使用我的密钥",
+    "kind": "连接类型",
+    "verified": "已验证",
+    "unverified": "尚未验证",
+    "speechHelp": "音频需要单独的语音密钥或已启用的本地引擎。",
+    "provider": "服务商",
+    "local": "本地语音引擎",
+    "model": "模型ID",
+    "endpoint": "API基础网址（可选）",
+    "voice": "声音ID",
+    "key": "API密钥",
+    "keyHelp": "密钥会加密且不会返回。留空可保留同一服务商已保存的密钥。",
+    "tested": "连接已验证。",
+    "test": "测试已保存的连接",
+    "remove": "移除连接",
+    "removeHelp": "移除密钥会停止需要该密钥的调用，绝不会改用平台密钥。"
   }
 }

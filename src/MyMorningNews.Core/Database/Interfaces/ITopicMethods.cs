@@ -13,6 +13,8 @@ namespace MyMorningNews.Core.Database.Interfaces
     /// </summary>
     public interface ITopicMethods
     {
+        /// <summary>Whether a custom topic is within the oldest retained slots after a downgrade. Archived topics do not occupy slots.</summary>
+        Task<bool> WithinSlotsAsync(Topic topic, long maximum, CancellationToken token = default);
         /// <summary>
         /// Create a record. An empty identifier is backfilled.
         /// </summary>

@@ -8,6 +8,7 @@ namespace MyMorningNews.Core.Email
     using System.Threading;
     using System.Threading.Tasks;
     using MyMorningNews.Core.Briefings;
+    using MyMorningNews.Core.Catalog;
     using MyMorningNews.Core.Database;
     using MyMorningNews.Core.Enums;
     using MyMorningNews.Core.Exceptions;
@@ -231,7 +232,7 @@ namespace MyMorningNews.Core.Email
                 ArgumentNullException.ThrowIfNull(notice);
                 string recipient = Normalize(user.Email);
                 if (recipient.Length == 0) return false;
-                EmailMessage? m = await CreateAsync(user.TenantId, recipient, notice.Template, notice.RunId, notice.BriefingId, notice.TopicId, notice.Key + ":" + recipient, notice.Category, null, token).ConfigureAwait(false);
+                EmailMessage? m = await CreateAsync(user.TenantId, recipient, notice.Template, notice.RunId, notice.BriefingId, notice.TopicId, notice.Key + ":" + recipient, notice.Category, null, token, resumeRendering: notice.Key.StartsWith("catalog:", StringComparison.Ordinal)).ConfigureAwait(false);
                 if (m == null || m.Status != EmailStatusEnum.Queued) return false;
                 EmailBuilder b = new EmailBuilder().Preheader(notice.Paragraphs.FirstOrDefault() ?? notice.Title).Header(Logo(), notice.Title, notice.Subtitle, notice.Button);
                 foreach (string p in notice.Paragraphs) b.Paragraph(p);
@@ -286,7 +287,12 @@ namespace MyMorningNews.Core.Email
                 token.ThrowIfCancellationRequested();
                 m.Provider = provider.Provider;
                 m.LockedUntilUtc = null;
-                if (provider.Provider == EmailProviderEnum.Disabled)
+                if (!await CatalogEmailAllowedAsync(m, token).ConfigureAwait(false))
+                {
+                    m.Status = EmailStatusEnum.Suppressed;
+                    m.LastError = "The account no longer receives this catalog issue.";
+                }
+                else if (provider.Provider == EmailProviderEnum.Disabled)
                 {
                     m.Status = EmailStatusEnum.Skipped;
                     m.LastError = "Email is disabled.";
@@ -401,11 +407,26 @@ namespace MyMorningNews.Core.Email
             return true;
         }
 
-        private async Task<EmailMessage?> CreateAsync(string tenantId, string recipient, EmailTemplateEnum template, string? runId, string? briefingId, string? topicId, string key, EmailCategoryEnum? category, string? suppressionTopicId, CancellationToken token, NotificationKindEnum? preference = null)
+        private async Task<bool> CatalogEmailAllowedAsync(EmailMessage message, CancellationToken token)
         {
-            EmailMessage? existing = (await _Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenantId, Recipient = recipient, RunId = runId, BriefingId = briefingId, Template = template, PageSize = 50 }, token).ConfigureAwait(false)).Items
-                .FirstOrDefault(x => x.IdempotencyKey == key);
-            if (existing != null) return null;
+            if (!message.IdempotencyKey.StartsWith("catalog:", StringComparison.Ordinal)) return true;
+            string[] parts = message.IdempotencyKey.Split(':', 3);
+            CatalogDelivery? item = parts.Length == 3 ? await _Database.CatalogDeliveries.ReadAsync(parts[1], token).ConfigureAwait(false) : null;
+            if (item == null || item.Channel != "Email" || item.TenantId != message.TenantId || item.UserId != message.UserId || item.BriefingId != message.BriefingId) return false;
+            User? user = await _Database.Users.ReadAsync(item.TenantId, item.UserId, token).ConfigureAwait(false);
+            if (user == null || Normalize(user.Email) != message.Recipient || await IsSuppressedAsync(item.TenantId, message.Recipient, EmailCategoryEnum.BriefingEmails, null, token).ConfigureAwait(false)) return false;
+            return await CatalogDeliveryService.IsAllowedAsync(_Database, _Settings, Preferences, item, token).ConfigureAwait(false);
+        }
+
+        private async Task<EmailMessage?> CreateAsync(string tenantId, string recipient, EmailTemplateEnum template, string? runId, string? briefingId, string? topicId, string key, EmailCategoryEnum? category, string? suppressionTopicId, CancellationToken token, NotificationKindEnum? preference = null, bool resumeRendering = false)
+        {
+            EmailMessage? existing = await _Database.EmailMessages.ReadByKeyAsync(tenantId, key, token).ConfigureAwait(false);
+            if (existing != null)
+            {
+                if (!resumeRendering || existing.Status != EmailStatusEnum.Sending || !String.IsNullOrEmpty(existing.RenderedHtml)) return null;
+                existing.Status = EmailStatusEnum.Queued;
+                return existing;
+            }
             User? user = (await _Database.Users.EnumerateAsync(new UserFilter { TenantId = tenantId, Email = recipient, PageSize = 1 }, token).ConfigureAwait(false)).Items.FirstOrDefault();
             bool suppressed = category.HasValue && await IsSuppressedAsync(tenantId, recipient, category.Value, suppressionTopicId, token).ConfigureAwait(false);
             if (!suppressed && preference.HasValue && user != null) suppressed = !await Preferences.IsEnabledAsync(user, preference.Value, NotificationChannelEnum.Email, token).ConfigureAwait(false);

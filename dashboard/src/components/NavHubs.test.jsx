@@ -42,14 +42,14 @@ const HUB_NAMES = {
 };
 
 const ADMIN_TABS = {
-  topics: ['Topics', 'One-time requests'],
+  topics: ['Topics', 'System briefings', 'One-time requests'],
   research: ['Runs', 'Findings', 'Sources', 'Predictions', 'Suggestions'],
   briefings: ['Briefings', 'Listen', 'Editions', 'Templates'],
   insights: ['Overview', 'Relevance', 'Accuracy', 'Feedback', 'Email', 'Preferences', 'Usage'],
   configuration: ['Models', 'Prompts', 'Search providers', 'MCP servers', 'Connect an assistant', 'Voices', 'Email', 'Stored credentials'],
   observability: ['Health', 'Requests', 'Audit', 'API explorer'],
-  administration: ['Users', 'Tenants', 'Access keys', 'Roles', 'Usage', 'Plans', 'Promo codes'],
-  settings: ['Profile', 'Notifications', 'Server settings', 'Server info', 'Setup']
+  administration: ['Users', 'Tenants', 'Access keys', 'Roles', 'Usage', 'System catalog', 'Plans', 'Promo codes'],
+  settings: ['Profile', 'Plans and billing', 'Your API keys', 'Notifications', 'Server settings', 'Server info', 'Setup']
 };
 
 const MEMBER_TABS = {
@@ -57,7 +57,7 @@ const MEMBER_TABS = {
   configuration: ['Models', 'Prompts', 'Search providers', 'Connect an assistant', 'Voices', 'Email', 'Stored credentials'],
   observability: ['Health', 'API explorer'],
   administration: ['Users'],
-  settings: ['Profile', 'Notifications', 'Server info']
+  settings: ['Profile', 'Plans and billing', 'Your API keys', 'Notifications', 'Server info']
 };
 
 function renderShell(path) {
@@ -118,11 +118,11 @@ describe('sidebar hubs', () => {
   });
 
   it('orders the Settings hub Profile, Server settings, Server info, Setup', () => {
-    expect(NAV_HUBS.find((hub) => hub.key === 'settings').tabs).toEqual(['profile', 'notifications', 'settings', 'serverInfo', 'setup']);
+    expect(NAV_HUBS.find((hub) => hub.key === 'settings').tabs).toEqual(['profile', 'billing', 'personalProviders', 'notifications', 'settings', 'serverInfo', 'setup']);
     expect(hubTarget(NAV_HUBS.find((hub) => hub.key === 'settings'), ADMIN).key).toBe('profile');
     expect(hubTarget(NAV_HUBS.find((hub) => hub.key === 'settings'), ADMIN, true).key).toBe('profile');
     renderShell('/dashboard/setup');
-    expect(tabNames('Settings')).toEqual(['Profile', 'Notifications', 'Server settings', 'Server info', 'Setup']);
+    expect(tabNames('Settings')).toEqual(['Profile', 'Plans and billing', 'Your API keys', 'Notifications', 'Server settings', 'Server info', 'Setup']);
   });
 
   it('keeps every hub for a member, each opening the first page a member can use', () => {
@@ -142,8 +142,8 @@ describe('sidebar hubs', () => {
       ).map((route) => route.key)
     ).toEqual(['users']);
     const total = (auth) => NAV_HUBS.reduce((sum, hub) => sum + hubTabs(hub, auth).length, 0);
-    expect(total(ADMIN)).toBe(42);
-    expect(total(MEMBER)).toBe(31);
+    expect(total(ADMIN)).toBe(46);
+    expect(total(MEMBER)).toBe(34);
   });
 
   it('hides a hub the user can open none of the pages of', () => {
@@ -157,7 +157,7 @@ describe('sidebar hubs', () => {
     const keys = ['home', 'today', ...NAV_HUBS.flatMap((hub) => hub.tabs)];
     expect(new Set(keys).size).toBe(keys.length);
     expect(keys.every((key) => routeByKey(key))).toBe(true);
-    expect(keys).toHaveLength(44);
+    expect(keys).toHaveLength(48);
   });
 
   it('shows icons only when collapsed, with each label as the name and tooltip', () => {
@@ -274,10 +274,12 @@ describe('setup gate in the hub navigation', () => {
   it('dims the hubs with no page open before setup, and sends the others to a page that is', () => {
     renderShell('/dashboard/setup');
     expect(screen.getByTestId('setup-callout')).toHaveAttribute('href', '/dashboard/setup');
-    for (const name of ['Home', 'Today', 'Topics', 'Research', 'Briefings', 'Insights', 'Observability', 'Administration']) {
+    for (const name of ['Home', 'Today', 'Research', 'Briefings', 'Insights', 'Observability']) {
       expect(sidebarLink(name)).toHaveClass('nav-item-blocked');
       expect(sidebarLink(name)).toHaveAttribute('title', name + ' opens after setup is finished');
     }
+    expect(sidebarLink('Topics')).toHaveAttribute('href', '/dashboard/catalog');
+    expect(sidebarLink('Administration')).toHaveAttribute('href', '/dashboard/admin/catalog');
     expect(sidebarLink('Configuration')).not.toHaveClass('nav-item-blocked');
     expect(sidebarLink('Configuration')).toHaveAttribute('href', '/dashboard/models');
     expect(sidebarLink('Settings')).not.toHaveClass('nav-item-blocked');

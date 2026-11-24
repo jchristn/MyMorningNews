@@ -47,6 +47,7 @@ export function DeleteSection() {
     <Screen testID="delete-section">
       <T variant="title">{t('mobile.delete.title')}</T>
       <T variant="muted">{t('mobile.delete.body')}</T>
+      <T variant="muted">{t('account.delete.billingNotice')}</T>
       {status === 'unavailable' ? (
         <>
           <Banner kind="info" title={t('mobile.states.notAvailableTitle')}>

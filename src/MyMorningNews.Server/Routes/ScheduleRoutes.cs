@@ -174,7 +174,7 @@ namespace MyMorningNews.Server.Routes
             return topic.UserId;
         }
 
-        private static void Apply(Schedule s, ScheduleUpsertRequest req)
+        internal static void Apply(Schedule s, ScheduleUpsertRequest req)
         {
             if (req.Name != null) s.Name = req.Name.Trim().Length == 0 ? null : req.Name.Trim();
             if (req.IntervalType.HasValue) s.IntervalType = req.IntervalType.Value;

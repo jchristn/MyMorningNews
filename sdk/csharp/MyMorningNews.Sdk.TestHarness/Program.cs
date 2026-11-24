@@ -47,6 +47,7 @@ namespace MyMorningNews.Sdk.TestHarness
 
                 foreach (TestBase test in Cases())
                 {
+                    if (env.Offline && test.RequiresServer) continue;
                     TestResult r = await RunOneAsync(test, context, cts.Token).ConfigureAwait(false);
                     results.Add(r);
                     Print(r);
@@ -91,11 +92,13 @@ namespace MyMorningNews.Sdk.TestHarness
                 new SignerVectorTest(),
                 new TolerantEnumTest(),
                 new SetupWireTest(),
+                new PlatformWireTest(),
                 new RunCostWireTest(),
                 new ListOptionsTest(),
                 new HealthTest(),
                 new LoginTest(),
                 new AuthErrorTest(),
+                new PlatformLiveTest(),
                 new TopicCrudTest(),
                 new TopicChildrenTest(),
                 new CrossUserTest(),

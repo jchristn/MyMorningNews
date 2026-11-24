@@ -106,6 +106,21 @@ namespace MyMorningNews.Core.Requests
         /// </summary>
         public bool? AudioEnabled { get; set; } = null;
 
+        /// <summary>Comparison mode. Null leaves it unchanged; new topics default Off.</summary>
+        public HistoryModeEnum? HistoryMode { get; set; } = null;
+
+        /// <summary>Maximum baseline issues, from 1 through 20. Null leaves unchanged.</summary>
+        public int? HistoryCount { get; set; } = null;
+
+        /// <summary>Earliest baseline timestamp for SinceDate. Required when choosing SinceDate.</summary>
+        public DateTime? HistorySinceUtc { get; set; } = null;
+
+        /// <summary>Baseline issue ID for SpecificIssue; empty clears it. Null leaves unchanged.</summary>
+        public string? HistoryBriefingId { get; set; } = null;
+
+        /// <summary>Comparison token budget, from 256 through 32000. Null leaves unchanged.</summary>
+        public int? HistoryTokenBudget { get; set; } = null;
+
         /// <summary>
         /// MCP tool IDs (mct_...) agentic search may use; an empty list allows every enabled tool. Null leaves it.
         /// </summary>

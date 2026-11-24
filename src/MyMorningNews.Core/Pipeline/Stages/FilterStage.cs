@@ -35,7 +35,7 @@ namespace MyMorningNews.Core.Pipeline.Stages
         {
             List<string> blocked = ctx.Constraints.Where(c => c.Kind == ConstraintKindEnum.BlockedDomain).Select(c => c.Value).ToList();
             List<string> preferred = ctx.Constraints.Where(c => c.Kind == ConstraintKindEnum.PreferredDomain).Select(c => c.Value).ToList();
-            ctx.SeenUrlHashes = await services.Database.SearchResults.SeenUrlHashesAsync(ctx.Run.TenantId, ctx.Topic.Id, ctx.Results.Select(r => r.CanonicalUrlHash), ctx.Run.Id, token).ConfigureAwait(false);
+            ctx.SeenUrlHashes = ctx.CompareHistory ? await services.Database.SearchResults.SeenUrlHashesAsync(ctx.Run.TenantId, ctx.Topic.Id, ctx.Results.Select(r => r.CanonicalUrlHash), ctx.Run.Id, token).ConfigureAwait(false) : new HashSet<string>(StringComparer.Ordinal);
             HashSet<string> inRun = new HashSet<string>(StringComparer.Ordinal);
             List<SearchResult> eligible = new List<SearchResult>();
             foreach (SearchResult r in ctx.Results.OrderBy(r => r.Rank))

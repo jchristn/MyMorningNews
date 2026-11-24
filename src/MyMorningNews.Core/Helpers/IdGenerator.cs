@@ -695,6 +695,139 @@ namespace MyMorningNews.Core.Helpers
         }
 
         /// <summary>
+        /// Generate a AccountPlanPolicy identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateAccountPlanPolicyId()
+        {
+            return Generate(IdPrefixes.AccountPlanPolicy);
+        }
+
+        /// <summary>
+        /// Generate a EntitlementOverride identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateEntitlementOverrideId()
+        {
+            return Generate(IdPrefixes.EntitlementOverride);
+        }
+
+        /// <summary>
+        /// Generate a CatalogPublication identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateCatalogPublicationId()
+        {
+            return Generate(IdPrefixes.CatalogPublication);
+        }
+
+        /// <summary>
+        /// Generate a CatalogSubscription identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateCatalogSubscriptionId()
+        {
+            return Generate(IdPrefixes.CatalogSubscription);
+        }
+
+        /// <summary>
+        /// Generate a AudioReservation identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateAudioReservationId()
+        {
+            return Generate(IdPrefixes.AudioReservation);
+        }
+
+        /// <summary>
+        /// Generate a BillingSubscription identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateBillingSubscriptionId()
+        {
+            return Generate(IdPrefixes.BillingSubscription);
+        }
+
+        /// <summary>
+        /// Generate a SignupBenefit identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateSignupBenefitId()
+        {
+            return Generate(IdPrefixes.SignupBenefit);
+        }
+
+        /// <summary>
+        /// Generate a RunHistorySnapshot identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateRunHistorySnapshotId()
+        {
+            return Generate(IdPrefixes.RunHistorySnapshot);
+        }
+
+        /// <summary>
+        /// Generate a BillingAccount identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateBillingAccountId()
+        {
+            return Generate(IdPrefixes.BillingAccount);
+        }
+
+        /// <summary>
+        /// Generate a BillingCheckout identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateBillingCheckoutId()
+        {
+            return Generate(IdPrefixes.BillingCheckout);
+        }
+
+        /// <summary>
+        /// Generate a BillingEvent identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateBillingEventId()
+        {
+            return Generate(IdPrefixes.BillingEvent);
+        }
+
+        /// <summary>Generate a durable catalog delivery identifier.</summary>
+        /// <returns>Unique cld_ identifier.</returns>
+        public static string GenerateCatalogDeliveryId()
+        {
+            return Generate(IdPrefixes.CatalogDelivery);
+        }
+
+        /// <summary>
+        /// Generate a ProviderConnection identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateProviderConnectionId()
+        {
+            return Generate(IdPrefixes.ProviderConnection);
+        }
+
+        /// <summary>
+        /// Generate a AudioUsageEntry identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateAudioUsageEntryId()
+        {
+            return Generate(IdPrefixes.AudioUsageEntry);
+        }
+
+        /// <summary>
+        /// Generate a BriefingShare identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateBriefingShareId()
+        {
+            return Generate(IdPrefixes.BriefingShare);
+        }
+
+        /// <summary>
         /// Generate a RequestHistory identifier.
         /// </summary>
         /// <returns>Identifier.</returns>
@@ -728,15 +861,6 @@ namespace MyMorningNews.Core.Helpers
         public static string GenerateEmbeddingId()
         {
             return Generate(IdPrefixes.Embedding);
-        }
-
-        /// <summary>
-        /// Generate a BriefingShare identifier.
-        /// </summary>
-        /// <returns>Identifier.</returns>
-        public static string GenerateBriefingShareId()
-        {
-            return Generate(IdPrefixes.BriefingShare);
         }
 
         #endregion

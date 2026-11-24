@@ -98,6 +98,7 @@ namespace MyMorningNews.Server
         private DatabaseDriverBase? _Database = null;
         private RequestHistoryCaptureService? _Capture = null;
         private ModelGateway? _Models = null;
+        private readonly System.Net.Http.HttpClient _BillingHttp = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(30) };
         private readonly List<Task> _Workers = new List<Task>();
         private int _DatabaseConnectAttempts = 30;
         private PushService? _Push = null;
@@ -191,27 +192,57 @@ namespace MyMorningNews.Server
             _Context.Entitlements = new MyMorningNews.Core.Entitlements.EntitlementService(_Database, settings);
             int plans = await _Context.Entitlements.EnsureDefaultsAsync(token).ConfigureAwait(false);
             if (plans > 0) _Logging.Info(_Header + "seeded " + plans + " plans");
+            _Context.Billing = new MyMorningNews.Core.Billing.BillingService(_Database, () => _Context.Settings.Billing,
+                new MyMorningNews.Core.Integrations.Implementations.StripeClient(settings.Billing.Stripe, _BillingHttp),
+                new MyMorningNews.Core.Integrations.Implementations.AppStoreClient(settings.Billing.Apple, _BillingHttp),
+                new MyMorningNews.Core.Integrations.Implementations.GooglePlayClient(settings.Billing.Google, _BillingHttp), settings.Auth.SigningKey);
             _Context.PromoCodes = new MyMorningNews.Core.Entitlements.PromoCodeService(_Database);
             MyMorningNews.Core.Security.NetworkGuard.IsEnabled = () => _Context.SettingsService.Current.Hosting.RestrictPrivateNetworks;
             MyMorningNews.Core.Security.NetworkGuard.AllowedHosts = () => _Context.SettingsService.Current.Hosting.AllowedPrivateHosts;
             tenantDefaults.UsePlatformCredentials = () => _Context.SettingsService.Current.Hosting.UsePlatformCredentials;
-            _Context.Accounts = new AccountDataService(_Database, briefings, _Artifacts);
+            _Context.Accounts = new AccountDataService(_Database, briefings, _Artifacts, _Context.Billing);
             _Context.PredictionNotices = new PredictionNoticeService(_Database, notifications, _Logging);
             _Context.RunCosts = new RunCostService(_Database);
             _Context.Setup = new SetupService(_Database, _Models!, _Search!, _Context.Vault, () => _Context.SettingsService.Current, _Logging) { Audio = _Audio };
             _Context.Account = new AccountService(_Database, settings, email, tenantDefaults, _Context.PromoCodes, _Context.Accounts);
             MyMorningNews.Core.Entitlements.EntitlementService entitlements = _Context.Entitlements;
+            _Database.TopicSlotLimit = entitlements.TopicSlotLimitAsync;
+            _Context.PersonalProviders = new PersonalProviderService(_Database, entitlements, () => _Context.SettingsService.Current, settings.Auth.SigningKey);
+            _Models.AccountResolver = _Context.PersonalProviders.ResolveModelAsync;
+            _Models.AccountSecretResolver = _Context.PersonalProviders.ModelSecretAsync;
+            _Audio!.AccountSpeechResolver = _Context.PersonalProviders.SpeechAsync;
             AccountService account = _Context.Account;
             briefings.AudioGate = (tenantId, userId, t) => entitlements.CheckAudioAsync(tenantId, userId, t);
             authentication.SignInGate = (user, t) => Task.FromResult(account.NeedsVerification(user) ? "Confirm your email address first: open the link we sent you, or ask for a new one." : (string?)null);
             authentication.OnSignIn = (user, t) => account.CancelDeletionAsync(user, t);
-            _Models.PreCallCheck = (req, t) => String.IsNullOrEmpty(req.UserId) ? Task.CompletedTask : entitlements.CheckCostAsync(req.TenantId, req.UserId, t);
-            scheduling.RunGate = async (tenantId, userId, t) =>
+            _Models.PreCallCheck = async (req, t) =>
             {
+                if (String.IsNullOrEmpty(req.UserId)) return;
+                if (req.IsDryRun && req.ModelEndpointId?.StartsWith("pco_", StringComparison.Ordinal) == true) return;
+                MyMorningNews.Core.Models.Topic? topic = String.IsNullOrEmpty(req.TopicId) ? null : await _Database.Topics.ReadAsync(req.TenantId, req.TopicId, t).ConfigureAwait(false);
+                if (topic != null && !await _Database.CatalogPublications.CanGenerateTopicAsync(topic.TenantId, topic.Id, t).ConfigureAwait(false))
+                    throw new InvalidOperationException("This system briefing is not published; research is paused.");
+                if (topic == null) await entitlements.CheckResearchAsync(req.TenantId, req.UserId, false, t).ConfigureAwait(false);
+                else await entitlements.CheckTopicResearchAsync(topic, req.UserId, t).ConfigureAwait(false);
+                await entitlements.CheckCostAsync(req.TenantId, req.UserId, t).ConfigureAwait(false);
+            };
+            scheduling.RunGate = async (topic, userId, t) =>
+            {
+                if (!await _Database.CatalogPublications.CanGenerateTopicAsync(topic.TenantId, topic.Id, t).ConfigureAwait(false))
+                    throw new InvalidOperationException("This system briefing is not published; research is paused.");
+                string tenantId = topic.TenantId;
+                await entitlements.CheckTopicResearchAsync(topic, userId, t).ConfigureAwait(false);
                 await entitlements.CheckCostAsync(tenantId, userId, t).ConfigureAwait(false);
                 DateTime today = DateTime.UtcNow.Date;
                 long runsToday = await _Database.Runs.CountAsync(new MyMorningNews.Core.Requests.RunFilter { TenantId = tenantId, UserId = userId, IsDryRun = false, FromUtc = today }, t).ConfigureAwait(false);
                 await entitlements.CheckCountAsync(tenantId, userId, "runs.daily.max", runsToday, "runs a day", today.AddDays(1), t).ConfigureAwait(false);
+            };
+            scheduling.ExecutionGate = async (topic, userId, t) =>
+            {
+                if (!await _Database.CatalogPublications.CanGenerateTopicAsync(topic.TenantId, topic.Id, t).ConfigureAwait(false))
+                    throw new InvalidOperationException("This system briefing is not published; research is paused.");
+                await entitlements.CheckTopicResearchAsync(topic, userId, t).ConfigureAwait(false);
+                await entitlements.CheckCostAsync(topic.TenantId, userId, t).ConfigureAwait(false);
             };
             scheduling.OnCapReached = async (tenantId, userId, topicName, cap, t) =>
             {
@@ -261,6 +292,10 @@ namespace MyMorningNews.Server
 
             if (StartWorkers)
             {
+                CatalogDeliveryWorker catalogDelivery = new CatalogDeliveryWorker(_Context);
+                _Workers.Add(Task.Run(() => catalogDelivery.RunAsync(Lifetime.Token)));
+                BillingWorker billingWorker = new BillingWorker(_Context);
+                _Workers.Add(Task.Run(() => billingWorker.RunAsync(Lifetime.Token)));
                 RetentionWorker retention = new RetentionWorker(_Context);
                 _Workers.Add(Task.Run(() => retention.RunAsync(Lifetime.Token)));
                 BriefingWorker briefingWorker = new BriefingWorker(_Context);
@@ -321,6 +356,7 @@ namespace MyMorningNews.Server
             {
                 Stop();
                 _Webserver?.Dispose();
+                _BillingHttp.Dispose();
                 _Capture?.Dispose();
                 _Push?.Dispose();
                 _Context?.Setup?.Dispose();
@@ -364,6 +400,9 @@ namespace MyMorningNews.Server
                 new NotificationRoutes(context),
                 new ClientConfigRoutes(context),
                 new TopicRoutes(context),
+                new CatalogRoutes(context),
+                new BillingRoutes(context),
+                new PersonalProviderRoutes(context),
                 new RefinementRoutes(context),
                 new ResearchRequestRoutes(context),
                 new ScheduleRoutes(context),

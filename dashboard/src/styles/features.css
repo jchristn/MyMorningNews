@@ -660,3 +660,11 @@ input.switch:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
+
+/* Account plans and private provider connections share a compact responsive layout. */
+.account-choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: 1rem; }
+.account-choice-card { display: flex; flex-direction: column; gap: .75rem; }
+.account-choice-card > .button:last-child { margin-top: auto; align-self: flex-start; }
+.account-price { font-size: 1.6rem; font-weight: 650; margin: 0; }
+.billing-subscription { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; padding-block: .75rem; }
+.provider-key-status { overflow-wrap: anywhere; }

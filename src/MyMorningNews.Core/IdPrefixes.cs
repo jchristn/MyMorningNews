@@ -371,6 +371,79 @@ namespace MyMorningNews.Core
         public const string NotificationPreference = "npf_";
 
         /// <summary>
+        /// Prefix for AccountPlanPolicy identifiers.
+        /// </summary>
+        public const string AccountPlanPolicy = "app_";
+
+        /// <summary>
+        /// Prefix for EntitlementOverride identifiers.
+        /// </summary>
+        public const string EntitlementOverride = "eov_";
+
+        /// <summary>
+        /// Prefix for CatalogPublication identifiers.
+        /// </summary>
+        public const string CatalogPublication = "cat_";
+
+        /// <summary>
+        /// Prefix for CatalogSubscription identifiers.
+        /// </summary>
+        public const string CatalogSubscription = "csu_";
+
+        /// <summary>Prefix for durable catalog deliveries.</summary>
+        public const string CatalogDelivery = "cld_";
+
+        /// <summary>
+        /// Prefix for AudioReservation identifiers.
+        /// </summary>
+        public const string AudioReservation = "arv_";
+
+        /// <summary>
+        /// Prefix for BillingSubscription identifiers.
+        /// </summary>
+        public const string BillingSubscription = "bsu_";
+
+        /// <summary>
+        /// Prefix for SignupBenefit identifiers.
+        /// </summary>
+        public const string SignupBenefit = "sbe_";
+
+        /// <summary>
+        /// Prefix for RunHistorySnapshot identifiers.
+        /// </summary>
+        public const string RunHistorySnapshot = "rhs_";
+
+        /// <summary>
+        /// Prefix for BillingAccount identifiers.
+        /// </summary>
+        public const string BillingAccount = "bac_";
+
+        /// <summary>
+        /// Prefix for BillingCheckout identifiers.
+        /// </summary>
+        public const string BillingCheckout = "bco_";
+
+        /// <summary>
+        /// Prefix for BillingEvent identifiers.
+        /// </summary>
+        public const string BillingEvent = "bev_";
+
+        /// <summary>
+        /// Prefix for ProviderConnection identifiers.
+        /// </summary>
+        public const string ProviderConnection = "pco_";
+
+        /// <summary>
+        /// Prefix for immutable generated-audio usage entries.
+        /// </summary>
+        public const string AudioUsageEntry = "aue_";
+
+        /// <summary>
+        /// Prefix for BriefingShare identifiers.
+        /// </summary>
+        public const string BriefingShare = "shr_";
+
+        /// <summary>
         /// Prefix for request history entries.
         /// </summary>
         public const string RequestHistory = "req_";
@@ -389,10 +462,5 @@ namespace MyMorningNews.Core
         /// Prefix for embedding vectors.
         /// </summary>
         public const string Embedding = "emb_";
-
-        /// <summary>
-        /// Prefix for BriefingShare identifiers.
-        /// </summary>
-        public const string BriefingShare = "shr_";
     }
 }

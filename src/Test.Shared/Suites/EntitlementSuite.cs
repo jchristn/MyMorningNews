@@ -32,7 +32,9 @@ namespace Test.Shared.Suites
         {
             return new TestSuiteDescriptor(S, "Plan limits and the usage meter", new[]
             {
-                Cases.Case(S, "TopicLimit", "The Free plan allows one topic; the second is refused with 402 CapReached", TopicLimitAsync),
+                Cases.Case(S, "AtomicSlots", "Concurrent creation and archive restoration share a single topic limit", AtomicSlotsAsync),
+                Cases.Case(S, "CatalogReader", "Catalog-only readers need no model setup and cannot generate custom research", CatalogReaderAsync),
+                Cases.Case(S, "TopicLimit", "A custom limited plan allows one topic; the second is refused with 402 CapReached", TopicLimitAsync),
                 Cases.Case(S, "CostCap", "Past the monthly cost cap, runs and model calls are refused until the reset", CostCapAsync),
                 Cases.Case(S, "ScheduledCap", "A scheduled run past the cap is skipped with the reason, and the owner hears about it once a month", ScheduledCapAsync),
                 Cases.Case(S, "DailyRuns", "The daily run limit counts today's runs", DailyRunsAsync),
@@ -41,12 +43,53 @@ namespace Test.Shared.Suites
             });
         }
 
-        private static async Task<TestUser> FreeUserAsync(TestApiClient admin, CancellationToken token, bool tenantAdmin = false)
+        private static async Task AtomicSlotsAsync(CancellationToken token)
+        {
+            TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
+            Tenant tenant = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
+            TestUser user = await TestFixtures.CreateUserAsync(admin, tenant.Id, false, token).ConfigureAwait(false);
+            string limits = "/v1.0/tenants/" + tenant.Id + "/users/" + user.User.Id + "/entitlements";
+            (await admin.PutAsync(limits, new { featureKey = "topics.max", value = "5", reason = "Concurrency fixture" }, token).ConfigureAwait(false)).Expect(200, "five custom slots");
+            TestResponse[] attempts = await Task.WhenAll(Enumerable.Range(0, 10).Select(i => user.Client.PostAsync("/v1.0/api/topics", new { name = "Concurrent topic " + i, brief = "Research evidence." }, token))).ConfigureAwait(false);
+            Assert.Equal(5, attempts.Count(x => x.StatusCode == 201), "five topic creations accepted");
+            Assert.Equal(5, attempts.Count(x => x.StatusCode == 402), "five topic creations denied");
+            Topic topic = attempts.First(x => x.StatusCode == 201).Json<Topic>();
+            string path = "/v1.0/api/topics/" + topic.Id;
+            (await user.Client.PostAsync(path + "/archive", null, token).ConfigureAwait(false)).Expect(200, "archive releases slot");
+            (await user.Client.PostAsync("/v1.0/api/topics", new { name = "Replacement" }, token).ConfigureAwait(false)).Expect(201, "released slot reusable");
+            (await user.Client.PostAsync(path + "/resume", null, token).ConfigureAwait(false)).Expect(402, "restore cannot exceed limit");
+            (await user.Client.PutAsync(path, new { status = "Active" }, token).ConfigureAwait(false)).Expect(402, "generic update cannot bypass restore limit");
+        }
+
+        private static async Task CatalogReaderAsync(CancellationToken token)
+        {
+            TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
+            Tenant tenant = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
+            TestUser user = await TestFixtures.CreateUserAsync(admin, tenant.Id, true, token).ConfigureAwait(false);
+            string limits = "/v1.0/tenants/" + tenant.Id + "/users/" + user.User.Id + "/entitlements";
+            foreach (string feature in new[] { "customResearch.enabled", "oneTimeResearch.enabled" })
+                (await admin.PutAsync(limits, new { featureKey = feature, value = "false", reason = "Catalog reader fixture" }, token).ConfigureAwait(false)).Expect(200, "disable custom generation");
+            SetupStatusResponse setup = (await user.Client.GetAsync("/v1.0/api/setup", token).ConfigureAwait(false)).Expect(200, "reader setup").Json<SetupStatusResponse>();
+            Assert.True(setup.Ready && !setup.CanConfigure, "reader enters without model configuration");
+            (await user.Client.PostAsync("/v1.0/api/topics", new { name = "Denied custom topic" }, token).ConfigureAwait(false)).Expect(402, "direct creation denied");
+            (await user.Client.GetAsync("/v1.0/api/catalog", token).ConfigureAwait(false)).Expect(200, "catalog remains readable");
+        }
+
+        private static async Task<TestUser> LimitedUserAsync(TestApiClient admin, CancellationToken token, bool tenantAdmin = false)
         {
             Tenant t = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
             TestUser u = await TestFixtures.CreateUserAsync(admin, t.Id, tenantAdmin, token).ConfigureAwait(false);
-            List<PlanResponse> plans = (await admin.GetAsync("/v1.0/api/admin/plans", token).ConfigureAwait(false)).Expect(200, "plans").Json<List<PlanResponse>>();
-            string free = plans.Single(p => p.Plan.Key == "free").Plan.Id;
+            PlanResponse limited = (await admin.PostAsync("/v1.0/api/admin/plans", new
+            {
+                key = "quota-fixture-" + Guid.NewGuid().ToString("N").Substring(0, 8), name = "Quota fixture",
+                features = new Dictionary<string, string>
+                {
+                    { "topics.max", "1" }, { "customTopics.max", "1" }, { "customResearch.enabled", "true" }, { "oneTimeResearch.enabled", "true" },
+                    { "usage.monthlyCostUsd.max", "3.00" }, { "runs.daily.max", "2" }, { "schedule.minIntervalMinutes", "1440" },
+                    { "audio.enabled", "true" }, { "audio.monthlyMinutes.max", "10" }, { "endpoints.custom", "false" }
+                }
+            }, token).ConfigureAwait(false)).Expect(201, "custom quota plan").Json<PlanResponse>();
+            string free = limited.Plan.Id;
             (await admin.PostAsync("/v1.0/api/admin/plan-assignments", new { tenantId = t.Id, userId = u.User.Id, planId = free, durationDays = 30 }, token).ConfigureAwait(false)).Expect(201, "grant free");
             return u;
         }
@@ -67,7 +110,7 @@ namespace Test.Shared.Suites
         private static async Task TopicLimitAsync(CancellationToken token)
         {
             TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
-            TestUser u = await FreeUserAsync(admin, token).ConfigureAwait(false);
+            TestUser u = await LimitedUserAsync(admin, token).ConfigureAwait(false);
             Topic first = await TopicAsync(u, token).ConfigureAwait(false);
             ExpectCap(await u.Client.PostAsync("/v1.0/api/topics", new { name = "Second topic" }, token).ConfigureAwait(false), "topics.max", "second topic");
             ExpectCap(await u.Client.PostAsync("/v1.0/api/topics/" + first.Id + "/duplicate", null, token).ConfigureAwait(false), "topics.max", "duplicate");
@@ -81,7 +124,7 @@ namespace Test.Shared.Suites
         {
             MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
             TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
-            TestUser u = await FreeUserAsync(admin, token).ConfigureAwait(false);
+            TestUser u = await LimitedUserAsync(admin, token).ConfigureAwait(false);
             Topic topic = await TopicAsync(u, token).ConfigureAwait(false);
             await server.Context.Database.LlmCalls.CreateAsync(new LlmCall
             {
@@ -114,7 +157,7 @@ namespace Test.Shared.Suites
         {
             MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
             TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
-            TestUser u = await FreeUserAsync(admin, token).ConfigureAwait(false);
+            TestUser u = await LimitedUserAsync(admin, token).ConfigureAwait(false);
             Topic topic = await TopicAsync(u, token).ConfigureAwait(false);
             Schedule s = (await u.Client.PostAsync("/v1.0/api/schedules", new { ownerId = topic.Id, intervalType = "DaysOfWeek", daysOfWeekMask = 127, timesOfDay = new[] { "06:30" }, timeZone = "UTC" }, token).ConfigureAwait(false))
                 .Expect(201, "daily schedule").Json<Schedule>();
@@ -141,7 +184,7 @@ namespace Test.Shared.Suites
         {
             MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
             TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
-            TestUser u = await FreeUserAsync(admin, token).ConfigureAwait(false);
+            TestUser u = await LimitedUserAsync(admin, token).ConfigureAwait(false);
             Topic topic = await TopicAsync(u, token).ConfigureAwait(false);
             for (int i = 0; i < 2; i++)
             {
@@ -157,7 +200,7 @@ namespace Test.Shared.Suites
         private static async Task ScheduleAndEndpointsAsync(CancellationToken token)
         {
             TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
-            TestUser u = await FreeUserAsync(admin, token, true).ConfigureAwait(false);
+            TestUser u = await LimitedUserAsync(admin, token, true).ConfigureAwait(false);
             Topic topic = await TopicAsync(u, token).ConfigureAwait(false);
             TestResponse hourly = (await u.Client.PostAsync("/v1.0/api/schedules", new { ownerId = topic.Id, intervalType = "EveryNMinutes", intervalValue = 60 }, token).ConfigureAwait(false)).Expect(400, "hourly refused on Free");
             Assert.True(hourly.Body.Contains("1440", StringComparison.Ordinal), "names the plan minimum: " + hourly.Body);
@@ -169,10 +212,10 @@ namespace Test.Shared.Suites
         private static async Task MeterAsync(CancellationToken token)
         {
             TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
-            TestUser u = await FreeUserAsync(admin, token).ConfigureAwait(false);
+            TestUser u = await LimitedUserAsync(admin, token).ConfigureAwait(false);
             await TopicAsync(u, token).ConfigureAwait(false);
             UsageMeter meter = (await u.Client.GetAsync("/v1.0/api/account/usage", token).ConfigureAwait(false)).Expect(200, "meter").Json<UsageMeter>();
-            Assert.True(meter.PlanKey == "free" && meter.Topics == 1 && meter.TopicsMax == 1 && meter.RunsDailyMax == 2 && meter.ScheduleMinIntervalMinutes == 1440 && meter.AudioEnabled && meter.AudioMinutesMax == 10 && !meter.CustomEndpoints && meter.MonthToDateCostUsd == 0,
+            Assert.True(meter.PlanKey.StartsWith("quota-fixture-", StringComparison.Ordinal) && meter.Topics == 1 && meter.TopicsMax == 1 && meter.RunsDailyMax == 2 && meter.ScheduleMinIntervalMinutes == 1440 && meter.AudioEnabled && meter.AudioMinutesMax == 10 && !meter.CustomEndpoints && meter.MonthToDateCostUsd == 0,
                 "free plan meter");
             Tenant t = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
             TestUser plain = await TestFixtures.CreateUserAsync(admin, t.Id, false, token).ConfigureAwait(false);

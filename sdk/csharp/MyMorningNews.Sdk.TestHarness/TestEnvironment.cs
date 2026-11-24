@@ -43,6 +43,9 @@ namespace MyMorningNews.Sdk.TestHarness
         /// </summary>
         public bool WithRun { get; set; } = false;
 
+        /// <summary>Run only transport/serialization cases without a live server. Default false.</summary>
+        public bool Offline { get; set; } = false;
+
         /// <summary>
         /// Print each step. Default false (--verbose).
         /// </summary>
@@ -88,6 +91,7 @@ namespace MyMorningNews.Sdk.TestHarness
                     case "--password": env.Password = Value(args, ref i, a); break;
                     case "--tenant": env.Tenant = Value(args, ref i, a); break;
                     case "--with-run": env.WithRun = true; break;
+                    case "--offline": env.Offline = true; break;
                     case "--verbose": env.Verbose = true; break;
                     default: throw new ArgumentException("Unknown argument " + a + ". Use --base-url, --email, --password, --tenant, --with-run, or --verbose.");
                 }

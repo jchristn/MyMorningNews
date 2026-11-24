@@ -32,7 +32,10 @@ namespace MyMorningNews.Core.Scheduling
         /// Optional plan check before a run is queued (cost cap and daily run limit). Throws
         /// <see cref="Exceptions.CapReachedException"/> to refuse. Set by the server.
         /// </summary>
-        public Func<string, string, CancellationToken, Task>? RunGate { get; set; } = null;
+        public Func<Topic, string, CancellationToken, Task>? RunGate { get; set; } = null;
+
+        /// <summary>Recheck capabilities after a queued run is claimed. Unlike RunGate, this does not count the admitted run against itself.</summary>
+        public Func<Topic, string, CancellationToken, Task>? ExecutionGate { get; set; } = null;
 
         /// <summary>
         /// Optional plan lookup of the shortest schedule interval a user may use, in minutes, or null for no plan limit.
@@ -205,7 +208,7 @@ namespace MyMorningNews.Core.Scheduling
             if (topic.Status == TopicStatusEnum.Archived) throw new ConflictException("Archived topics do not run. Resume the topic first.");
             if (topic.Status == TopicStatusEnum.Draft && !dryRun) throw new ConflictException("Finish refining the topic before running it, or start a dry run.");
             if (await _Database.Runs.HasActiveRunAsync(topic.TenantId, topic.Id, token).ConfigureAwait(false)) throw new ConflictException("This topic already has a run queued or in progress.");
-            if (RunGate != null) await RunGate(topic.TenantId, userId, token).ConfigureAwait(false);
+            if (RunGate != null) await RunGate(topic, userId, token).ConfigureAwait(false);
             return await EnqueueAsync(topic.TenantId, topic.Id, userId, RunTriggerEnum.Manual, null, null, dryRun, nowUtc, token).ConfigureAwait(false);
         }
 
@@ -423,7 +426,7 @@ namespace MyMorningNews.Core.Scheduling
             {
                 try
                 {
-                    await RunGate(topic.TenantId, schedule.UserId, token).ConfigureAwait(false);
+                    await RunGate(topic, schedule.UserId, token).ConfigureAwait(false);
                 }
                 catch (Exceptions.CapReachedException cap)
                 {
@@ -441,6 +444,11 @@ namespace MyMorningNews.Core.Scheduling
                         }
                     }
 
+                    return false;
+                }
+                catch (InvalidOperationException ex)
+                {
+                    await RecordSkippedAsync(topic, schedule, ex.Message, nowUtc, token).ConfigureAwait(false);
                     return false;
                 }
             }
@@ -515,6 +523,12 @@ namespace MyMorningNews.Core.Scheduling
                 {
                     Run? fresh = await _Database.Runs.ReadAsync(run.TenantId, run.Id, token).ConfigureAwait(false);
                     if (fresh != null && fresh.CancelRequested) throw new OperationCanceledException("Cancelled before start.");
+                    if (ExecutionGate != null)
+                    {
+                        Topic topic = await _Database.Topics.ReadAsync(run.TenantId, run.TopicId, timeout.Token).ConfigureAwait(false)
+                            ?? throw new InvalidOperationException("The topic is no longer available.");
+                        await ExecutionGate(topic, run.UserId, timeout.Token).ConfigureAwait(false);
+                    }
                     result = await executor.ExecuteAsync(run, timeout.Token).ConfigureAwait(false);
                     outcome = "completed";
                 }

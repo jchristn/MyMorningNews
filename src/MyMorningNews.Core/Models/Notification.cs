@@ -9,6 +9,8 @@ namespace MyMorningNews.Core.Models
     /// </summary>
     public class Notification
     {
+        /// <summary>System publication for a shared briefing notification. Null for private content.</summary>
+        public string? CatalogPublicationId { get; set; } = null;
         #region Public-Members
 
         /// <summary>

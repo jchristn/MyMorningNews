@@ -407,9 +407,8 @@ namespace Test.Shared.Suites
             Assert.True(made.Status == MediaStatusEnum.Ready && made.DurationSeconds > 0, "episode made: " + made.Status + " " + made.ErrorMessage);
 
             // Automatic audio respects the plan: once the month's audio minutes are used, briefings arrive without audio.
-            List<PlanResponse> plans = (await admin.GetAsync("/v1.0/api/admin/plans", token).ConfigureAwait(false)).Expect(200, "plans").Json<List<PlanResponse>>();
-            (await admin.PostAsync("/v1.0/api/admin/plan-assignments", new { tenantId = f.User.User.TenantId, userId = f.User.User.Id, planId = plans.Single(p => p.Plan.Key == "free").Plan.Id, durationDays = 30 }, token).ConfigureAwait(false))
-                .Expect(201, "grant free");
+            (await admin.PutAsync("/v1.0/tenants/" + f.User.User.TenantId + "/users/" + f.User.User.Id + "/entitlements",
+                new { featureKey = "audio.monthlyMinutes.max", value = "10", reason = "Legacy monthly audio cap fixture" }, token).ConfigureAwait(false)).Expect(200, "set configurable monthly cap");
             MediaAsset stored = (await f.Server.Context.Database.MediaAssets.ReadAsync(made.TenantId, made.Id, token).ConfigureAwait(false))!;
             stored.DurationSeconds = 11 * 60;
             await f.Server.Context.Database.MediaAssets.UpdateAsync(stored, token).ConfigureAwait(false);

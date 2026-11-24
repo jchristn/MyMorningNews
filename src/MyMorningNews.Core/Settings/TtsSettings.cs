@@ -9,6 +9,10 @@ namespace MyMorningNews.Core.Settings
     {
         #region Public-Members
 
+        /// <summary>Allow BYOK accounts to use the operator's local speech engine without a speech key. Default false; enable only for a locally funded engine.</summary>
+        [Setting(Description = "Share the configured local speech engine with BYOK accounts.")]
+        public bool AllowLocalForByok { get; set; } = false;
+
         /// <summary>
         /// Produce audio for briefings. Default true.
         /// </summary>

@@ -1,0 +1,10 @@
+version: 1
+name: Private model API contract subset
+slug: mmn-private-model
+protocol: http
+origin: models.invalid
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

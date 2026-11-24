@@ -52,6 +52,10 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, a + "/{id}/apply", ApplyAsync, null, openApiMetadata: Doc("Redeem a code for a user", "Promotional codes").WithRequestBody(Body<PromoApplyRequest>()));
 
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/admin/plans", ListPlansAsync, null, openApiMetadata: Doc("List plans with entitlement values", "Plans"));
+            const string userLimits = "/v1.0/tenants/{tenantId}/users/{userId}/entitlements";
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, userLimits, UserEntitlementsAsync, null, openApiMetadata: Doc("Read a user's effective plan and overrides", "Plans", "Global administrators only."));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, userLimits, SetOverrideAsync, null, openApiMetadata: Doc("Set one user entitlement override", "Plans", "Global administrators only. Zero is a real limit; unlimited removes the quantity cap.").WithRequestBody(Body<EntitlementOverrideRequest>()));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, userLimits + "/{featureKey}", DeleteOverrideAsync, null, openApiMetadata: Doc("Restore a user entitlement to its plan default", "Plans", "Global administrators only."));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/admin/plans", CreatePlanAsync, null, openApiMetadata: Doc("Create a plan", "Plans").WithRequestBody(Body<PlanUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, "/v1.0/api/admin/plans/{id}", UpdatePlanAsync, null, openApiMetadata: Doc("Update a plan and its values", "Plans").WithRequestBody(Body<PlanUpsertRequest>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/admin/plan-assignments", ListAssignmentsAsync, null, openApiMetadata: Doc("A user's plan assignments", "Plans")
@@ -102,6 +106,8 @@ namespace MyMorningNews.Server.Routes
             if (await Server.Database.PromoCodes.ReadByCodeAsync(code, ctx.Token).ConfigureAwait(false) != null) { await SendErrorAsync(ctx, 409, "Conflict", "That code already exists.").ConfigureAwait(false); return; }
             PromoCode pc = new PromoCode { Code = code, CreatedByUserId = Context(ctx).UserId };
             if (!await ApplyAsync(ctx, pc, req.Description, req.PlanId, req.DurationDays, req.MaxRedemptions, req.PerUserLimit, req.StartsUtc, req.ExpiresUtc, req.Enabled, req.NewAccountsOnly, true).ConfigureAwait(false)) return;
+            if (!await ApplyOfferAsync(ctx, pc, req.BenefitKind, req.BillingPlanKey, req.DiscountPercent, req.DiscountMonths, req.AppleOfferId, req.GoogleOfferId).ConfigureAwait(false)) return;
+            if (pc.BenefitKind == "PaidOffer" && req.DurationDays == null) pc.DurationDays = null;
             pc = await Server.Database.PromoCodes.CreateAsync(pc, ctx.Token).ConfigureAwait(false);
             await AuditAsync(ctx, AuditEventTypeEnum.PromoCodeChanged, 201, "Promotional code " + pc.Code + " created.").ConfigureAwait(false);
             await SendJsonAsync(ctx, 201, await Server.PromoCodes.StatsAsync(pc, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
@@ -115,6 +121,8 @@ namespace MyMorningNews.Server.Routes
             if (req.Count < 1 || req.Count > 1000) { await SendErrorAsync(ctx, 400, "ValidationFailed", "count must be 1 to 1000.").ConfigureAwait(false); return; }
             PromoCode template = new PromoCode { Code = "TEMPLATE", CreatedByUserId = Context(ctx).UserId, MaxRedemptions = 1 };
             if (!await ApplyAsync(ctx, template, req.Description, req.PlanId, req.DurationDays, req.MaxRedemptions, req.PerUserLimit, req.StartsUtc, req.ExpiresUtc, req.Enabled, req.NewAccountsOnly, true).ConfigureAwait(false)) return;
+            if (!await ApplyOfferAsync(ctx, template, req.BenefitKind, req.BillingPlanKey, req.DiscountPercent, req.DiscountMonths, req.AppleOfferId, req.GoogleOfferId).ConfigureAwait(false)) return;
+            if (template.BenefitKind == "PaidOffer" && req.DurationDays == null) template.DurationDays = null;
             List<PromoCode> created = await Server.PromoCodes.GenerateAsync(template, req.Prefix, req.Count, ctx.Token).ConfigureAwait(false);
             await AuditAsync(ctx, AuditEventTypeEnum.PromoCodeChanged, 201, created.Count + " promotional codes generated in " + created.FirstOrDefault()?.BatchId + ".").ConfigureAwait(false);
             await SendJsonAsync(ctx, 201, created).ConfigureAwait(false);
@@ -137,6 +145,7 @@ namespace MyMorningNews.Server.Routes
             if (req.ClearStartsUtc == true) pc.StartsUtc = null;
             if (req.ClearExpiresUtc == true) pc.ExpiresUtc = null;
             if (!await ApplyAsync(ctx, pc, req.Description, req.PlanId, req.DurationDays, req.MaxRedemptions, req.PerUserLimit, req.StartsUtc, req.ExpiresUtc, req.Enabled, req.NewAccountsOnly, false).ConfigureAwait(false)) return;
+            if (!await ApplyOfferAsync(ctx, pc, req.BenefitKind, req.BillingPlanKey, req.DiscountPercent, req.DiscountMonths, req.AppleOfferId, req.GoogleOfferId).ConfigureAwait(false)) return;
             pc = await Server.Database.PromoCodes.UpdateAsync(pc, ctx.Token).ConfigureAwait(false);
             await AuditAsync(ctx, AuditEventTypeEnum.PromoCodeChanged, 200, "Promotional code " + pc.Code + " updated.").ConfigureAwait(false);
             await SendJsonAsync(ctx, 200, await Server.PromoCodes.StatsAsync(pc, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
@@ -199,11 +208,66 @@ namespace MyMorningNews.Server.Routes
             await SendJsonAsync(ctx, 200, plans).ConfigureAwait(false);
         }
 
+        private async Task UserEntitlementsAsync(HttpContextBase ctx)
+        {
+            if (!await AdminAsync(ctx).ConfigureAwait(false)) return;
+            string tenantId = Param(ctx, "tenantId") ?? String.Empty;
+            string userId = Param(ctx, "userId") ?? String.Empty;
+            if (await Server.Database.Users.ReadAsync(tenantId, userId, ctx.Token).ConfigureAwait(false) == null) { await SendNotFoundAsync(ctx, "User").ConfigureAwait(false); return; }
+            await SendJsonAsync(ctx, 200, await Server.Entitlements.GetEffectiveAsync(tenantId, userId, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async Task SetOverrideAsync(HttpContextBase ctx)
+        {
+            if (!await AdminAsync(ctx).ConfigureAwait(false)) return;
+            string tenantId = Param(ctx, "tenantId") ?? String.Empty;
+            string userId = Param(ctx, "userId") ?? String.Empty;
+            if (await Server.Database.Users.ReadAsync(tenantId, userId, ctx.Token).ConfigureAwait(false) == null) { await SendNotFoundAsync(ctx, "User").ConfigureAwait(false); return; }
+            EntitlementOverrideRequest? req = await ReadBodyAsync<EntitlementOverrideRequest>(ctx).ConfigureAwait(false);
+            if (req == null) return;
+            if (String.IsNullOrWhiteSpace(req.Reason) || req.ExpiresUtc <= DateTime.UtcNow)
+            {
+                await SendErrorAsync(ctx, 400, "ValidationFailed", "A reason and, if supplied, a future expiry are required.").ConfigureAwait(false);
+                return;
+            }
+
+            string key = (req.FeatureKey ?? String.Empty).Trim();
+            if (key == "topics.max") key = "customTopics.max";
+            string value = PlanFeatureCatalog.Normalize(key, req.Value);
+            EntitlementOverride? item = (await Server.Database.EntitlementOverrides.EnumerateAsync(new EntitlementOverrideFilter { TenantId = tenantId, UserId = userId, FeatureKey = key, PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Items.FirstOrDefault();
+            bool create = item == null;
+            item ??= new EntitlementOverride { TenantId = tenantId, UserId = userId, FeatureKey = key };
+            item.Value = value;
+            item.Reason = req.Reason.Trim();
+            item.ExpiresUtc = req.ExpiresUtc;
+            item.GrantedByUserId = Context(ctx).UserId;
+            item.Active = true;
+            if (create) await Server.Database.EntitlementOverrides.CreateAsync(item, ctx.Token).ConfigureAwait(false);
+            else await Server.Database.EntitlementOverrides.UpdateAsync(item, ctx.Token).ConfigureAwait(false);
+            await AuditAsync(ctx, AuditEventTypeEnum.PlanChanged, 200, "Override " + key + "=" + value + " for " + userId + ": " + item.Reason).ConfigureAwait(false);
+            await SendJsonAsync(ctx, 200, await Server.Entitlements.GetEffectiveAsync(tenantId, userId, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async Task DeleteOverrideAsync(HttpContextBase ctx)
+        {
+            if (!await AdminAsync(ctx).ConfigureAwait(false)) return;
+            string tenantId = Param(ctx, "tenantId") ?? String.Empty;
+            string userId = Param(ctx, "userId") ?? String.Empty;
+            string key = Param(ctx, "featureKey") ?? String.Empty;
+            if (key == "topics.max") key = "customTopics.max";
+            if (await Server.Database.Users.ReadAsync(tenantId, userId, ctx.Token).ConfigureAwait(false) == null) { await SendNotFoundAsync(ctx, "User").ConfigureAwait(false); return; }
+            EntitlementOverride? item = (await Server.Database.EntitlementOverrides.EnumerateAsync(new EntitlementOverrideFilter { TenantId = tenantId, UserId = userId, FeatureKey = key, PageSize = 1 }, ctx.Token).ConfigureAwait(false)).Items.FirstOrDefault();
+            if (item != null) await Server.Database.EntitlementOverrides.DeleteAsync(tenantId, item.Id, ctx.Token).ConfigureAwait(false);
+            await AuditAsync(ctx, AuditEventTypeEnum.PlanChanged, 204, "Restored plan inheritance for " + key + " for " + userId + ".").ConfigureAwait(false);
+            await SendJsonAsync(ctx, 204, null).ConfigureAwait(false);
+        }
+
         private async Task CreatePlanAsync(HttpContextBase ctx)
         {
             if (!await AdminAsync(ctx).ConfigureAwait(false)) return;
             PlanUpsertRequest? req = await ReadBodyAsync<PlanUpsertRequest>(ctx).ConfigureAwait(false);
             if (req == null) return;
+            ValidateFeatures(req.Features);
             string key = (req.Key ?? String.Empty).Trim().ToLowerInvariant();
             if (!System.Text.RegularExpressions.Regex.IsMatch(key, "^[a-z0-9][a-z0-9-]{1,62}$") || String.IsNullOrWhiteSpace(req.Name))
             {
@@ -225,6 +289,7 @@ namespace MyMorningNews.Server.Routes
             if (p == null) { await SendNotFoundAsync(ctx, "Plan").ConfigureAwait(false); return; }
             PlanUpsertRequest? req = await ReadBodyAsync<PlanUpsertRequest>(ctx).ConfigureAwait(false);
             if (req == null) return;
+            ValidateFeatures(req.Features);
             if (req.Key != null && req.Key.Trim().ToLowerInvariant() != p.Key) { await SendErrorAsync(ctx, 400, "ValidationFailed", "A plan key cannot change.").ConfigureAwait(false); return; }
             if (!String.IsNullOrWhiteSpace(req.Name)) p.Name = req.Name.Trim();
             if (req.Description != null) p.Description = req.Description.Trim().Length == 0 ? null : req.Description.Trim();
@@ -311,6 +376,33 @@ namespace MyMorningNews.Server.Routes
             await SendJsonAsync(ctx, 200, check).ConfigureAwait(false);
         }
 
+        private async Task<bool> ApplyOfferAsync(HttpContextBase ctx, PromoCode code, string? kind, string? billingPlan, decimal? percent, int? months, string? appleOffer, string? googleOffer)
+        {
+            if (kind != null) code.BenefitKind = kind;
+            if (billingPlan != null) code.BillingPlanKey = String.IsNullOrWhiteSpace(billingPlan) ? null : billingPlan.Trim();
+            if (percent.HasValue) code.DiscountPercent = percent.Value;
+            if (months.HasValue) code.DiscountMonths = months == 0 ? null : months;
+            if (appleOffer != null) code.AppleOfferId = String.IsNullOrWhiteSpace(appleOffer) ? null : appleOffer.Trim();
+            if (googleOffer != null) code.GoogleOfferId = String.IsNullOrWhiteSpace(googleOffer) ? null : googleOffer.Trim();
+            string? error = null;
+            if (code.BenefitKind != "Complimentary" && code.BenefitKind != "PaidOffer") error = "benefitKind must be Complimentary or PaidOffer.";
+            else if (code.DiscountPercent < 0 || code.DiscountPercent > 100 || Decimal.Round(code.DiscountPercent, 2) != code.DiscountPercent) error = "discountPercent must be 0 to 100, with at most two decimal places.";
+            else if (code.DiscountMonths.HasValue && (code.DiscountMonths < 1 || code.DiscountMonths > 36)) error = "discountMonths must be 0 (ongoing) or 1 to 36.";
+            else if ((code.AppleOfferId?.Length ?? 0) > 128 || (code.GoogleOfferId?.Length ?? 0) > 128) error = "Native offer identifiers must be at most 128 characters.";
+            else if (code.BenefitKind == "PaidOffer")
+            {
+                if (String.IsNullOrWhiteSpace(code.BillingPlanKey) || !Server.Settings.Billing.Offers.Any(o => o.Active && o.PlanKey == code.BillingPlanKey))
+                    error = "Select a configured paid package for billingPlanKey.";
+                code.NewAccountsOnly = true;
+                code.PerUserLimit = 1;
+            }
+            else if (code.DiscountPercent != 0 || code.DiscountMonths.HasValue || code.BillingPlanKey != null || code.AppleOfferId != null || code.GoogleOfferId != null)
+                error = "Discounts and payment mappings require benefitKind PaidOffer.";
+            if (error == null) return true;
+            await SendErrorAsync(ctx, 400, "ValidationFailed", error).ConfigureAwait(false);
+            return false;
+        }
+
         private async Task<bool> ApplyAsync(HttpContextBase ctx, PromoCode pc, string? description, string? planId, int? durationDays, int? maxRedemptions, int? perUserLimit, DateTime? startsUtc, DateTime? expiresUtc, bool? enabled, bool? newOnly, bool create)
         {
             if (description != null) pc.Description = description.Trim().Length == 0 ? null : description.Trim();
@@ -363,14 +455,21 @@ namespace MyMorningNews.Server.Routes
                 }
                 else if (f == null)
                 {
-                    await Server.Database.PlanFeatures.CreateAsync(new PlanFeature { PlanId = p.Id, Key = key, Value = kv.Value.Trim() }, ctx.Token).ConfigureAwait(false);
+                    await Server.Database.PlanFeatures.CreateAsync(new PlanFeature { PlanId = p.Id, Key = key, Value = PlanFeatureCatalog.Normalize(key, kv.Value) }, ctx.Token).ConfigureAwait(false);
                 }
                 else
                 {
-                    f.Value = kv.Value.Trim();
+                    f.Value = PlanFeatureCatalog.Normalize(key, kv.Value);
                     await Server.Database.PlanFeatures.UpdateAsync(f, ctx.Token).ConfigureAwait(false);
                 }
             }
+        }
+
+        private static void ValidateFeatures(Dictionary<string, string>? features)
+        {
+            if (features == null) return;
+            foreach (KeyValuePair<string, string> item in features)
+                if (!String.IsNullOrWhiteSpace(item.Value)) PlanFeatureCatalog.Normalize(item.Key, item.Value);
         }
 
         private async Task<PlanResponse> DescribePlanAsync(Plan p, HttpContextBase ctx)

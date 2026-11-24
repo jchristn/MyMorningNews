@@ -1,5 +1,7 @@
 # My Morning News C# SDK
 
+Platform packages, shared catalog subscriptions, topic history, private provider keys and billing are described in the [platform operator guide](../../docs/PLATFORM_OPERATIONS.md). Native store availability and deployment evidence are tracked separately from source support.
+
 `MyMorningNews.Sdk` is a .NET client for the My Morning News REST API. It targets .NET 8 and .NET 10, depends only on the base class library (`System.Net.Http` and `System.Text.Json`), and has no reference to the server projects.
 
 | Path | What it is |

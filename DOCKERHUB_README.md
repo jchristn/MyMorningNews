@@ -4,6 +4,8 @@
 
 # My Morning News
 
+Platform packages, shared catalog subscriptions, topic history, private provider keys and billing are described in the [platform operator guide](docs/PLATFORM_OPERATIONS.md). Native store availability and deployment evidence are tracked separately from source support.
+
 A self-hosted research assistant that refines what you care about through an LLM-guided interview, researches it on your schedule, ranks and cites everything it finds, and delivers a Markdown briefing, audio, and an email after every run with rating links that open a short confirmation page. It learns from that feedback and keeps score on its own predictions.
 
 > Early alpha (`0.1.0-alpha`). Source, plan, and progress: https://github.com/jchristn/MyMorningNews

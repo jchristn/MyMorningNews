@@ -192,6 +192,7 @@ export default function SetupView() {
         }
       />
 
+      {status?.checks?.some(c => c.key === 'personal:chat') ? <Link className="button primary" to="/dashboard/account/providers">{t('personalProviders.title')}</Link> : null}
       {!ready ? <SetupProgress steps={steps} /> : null}
 
       {!ready && !setup.gated ? (

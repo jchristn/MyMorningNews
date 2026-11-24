@@ -127,6 +127,32 @@ export default function PromoCodeFormModal({ mode, plans, stats = null, onClose,
             </FormField>
           </>
         ) : null}
+        <FormField id={id('kind')} label={t('promo.offer.kind')} help={t('promo.offer.help')} wide>
+          <select id={id('kind')} value={form.benefitKind} onChange={(e) => set({ benefitKind: e.target.value, durationDays: e.target.value === 'PaidOffer' ? 0 : form.durationDays, ...(e.target.value === 'PaidOffer' ? { newAccountsOnly: true, perUserLimit: 1 } : {}) })}>
+            <option value="Complimentary">{t('promo.offer.complimentary')}</option>
+            <option value="PaidOffer">{t('promo.offer.paid')}</option>
+          </select>
+        </FormField>
+        {form.benefitKind === 'PaidOffer' ? <>
+          <FormField id={id('billing-plan')} label={t('promo.offer.billingPlan')} error={shown('billingPlanKey')}>
+            <select id={id('billing-plan')} value={form.billingPlanKey} onChange={(e) => set({ billingPlanKey: e.target.value })}>
+              <option value="paid-5">{t('promo.offer.paid5')}</option>
+              <option value="paid-20">{t('promo.offer.paid20')}</option>
+            </select>
+          </FormField>
+          <FormField id={id('percent')} label={t('promo.offer.percent')} error={shown('discountPercent')}>
+            <input id={id('percent')} type="number" min={0} max={100} step="0.01" value={form.discountPercent} onChange={(e) => set({ discountPercent: e.target.value })} />
+          </FormField>
+          <FormField id={id('months')} label={t('promo.offer.months')} help={t('promo.offer.monthsHelp')} error={shown('discountMonths')}>
+            <input id={id('months')} type="number" min={0} max={36} value={form.discountMonths} onChange={(e) => set({ discountMonths: e.target.value })} />
+          </FormField>
+          <FormField id={id('apple-offer')} label={t('promo.offer.appleOffer')} help={t('promo.offer.nativeHelp')}>
+            <input id={id('apple-offer')} value={form.appleOfferId} maxLength={128} onChange={(e) => set({ appleOfferId: e.target.value })} />
+          </FormField>
+          <FormField id={id('google-offer')} label={t('promo.offer.googleOffer')} help={t('promo.offer.nativeHelp')}>
+            <input id={id('google-offer')} value={form.googleOfferId} maxLength={128} onChange={(e) => set({ googleOfferId: e.target.value })} />
+          </FormField>
+        </> : null}
         <FormField id={id('plan')} label={t('promo.fields.plan')} error={shown('planId')}>
           <select id={id('plan')} value={form.planId} onChange={(e) => set({ planId: e.target.value })}>
             {(plans || []).length === 0 ? <option value="">{t('promo.fields.noPlans')}</option> : null}
@@ -140,7 +166,7 @@ export default function PromoCodeFormModal({ mode, plans, stats = null, onClose,
         <FormField id={id('description')} label={t('promo.fields.description')} wide>
           <input id={id('description')} value={form.description} onChange={(e) => set({ description: e.target.value })} maxLength={500} />
         </FormField>
-        <FormField id={id('duration')} label={t('promo.fields.duration')} help={t('promo.fields.durationHelp')} error={shown('durationDays')}>
+        <FormField id={id('duration')} label={t('promo.fields.duration')} help={form.benefitKind === 'PaidOffer' ? t('promo.offer.durationHelp') : t('promo.fields.durationHelp')} error={shown('durationDays')}>
           <input id={id('duration')} type="number" min={0} max={3650} value={form.durationDays} onChange={(e) => set({ durationDays: e.target.value })} />
         </FormField>
         <FormField
@@ -152,7 +178,7 @@ export default function PromoCodeFormModal({ mode, plans, stats = null, onClose,
           <input id={id('max')} type="number" min={0} value={form.maxRedemptions} onChange={(e) => set({ maxRedemptions: e.target.value })} />
         </FormField>
         <FormField id={id('peruser')} label={t('promo.fields.perUserLimit')} help={t('promo.fields.perUserHelp')} error={shown('perUserLimit')}>
-          <input id={id('peruser')} type="number" min={1} max={100} value={form.perUserLimit} onChange={(e) => set({ perUserLimit: e.target.value })} />
+          <input id={id('peruser')} disabled={form.benefitKind === 'PaidOffer'} type="number" min={1} max={100} value={form.perUserLimit} onChange={(e) => set({ perUserLimit: e.target.value })} />
         </FormField>
         <FormField id={id('starts')} label={t('promo.fields.starts')} help={t('promo.fields.startsHelp')} error={shown('startsLocal')}>
           <input id={id('starts')} type="datetime-local" value={form.startsLocal} onChange={(e) => set({ startsLocal: e.target.value })} />
@@ -164,7 +190,7 @@ export default function PromoCodeFormModal({ mode, plans, stats = null, onClose,
           <input id={id('enabled')} type="checkbox" checked={form.enabled} onChange={(e) => set({ enabled: e.target.checked })} />
         </FormField>
         <FormField id={id('newonly')} label={t('promo.fields.newAccountsOnly')} help={t('promo.fields.newAccountsOnlyHelp')}>
-          <input id={id('newonly')} type="checkbox" checked={form.newAccountsOnly} onChange={(e) => set({ newAccountsOnly: e.target.checked })} />
+          <input id={id('newonly')} disabled={form.benefitKind === 'PaidOffer'} type="checkbox" checked={form.newAccountsOnly} onChange={(e) => set({ newAccountsOnly: e.target.checked })} />
         </FormField>
       </div>
     </Modal>

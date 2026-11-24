@@ -1,0 +1,11 @@
+version: 1
+name: Stripe billing contract subset
+slug: mmn-stripe
+protocol: http
+port: 12193
+origin: api.stripe.com
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

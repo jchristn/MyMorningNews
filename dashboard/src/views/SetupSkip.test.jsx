@@ -31,7 +31,7 @@ describe('Settings and the Setup status page in a ready workspace', () => {
     expect(settings).toHaveAttribute('href', '/dashboard/profile');
     await userEvent.click(settings);
     const strip = await screen.findByRole('navigation', { name: 'Settings pages' });
-    expect(within(strip).getAllByRole('link').map((link) => link.textContent)).toEqual(['Profile', 'Notifications', 'Server settings', 'Server info', 'Setup']);
+    expect(within(strip).getAllByRole('link').map((link) => link.textContent)).toEqual(['Profile', 'Plans and billing', 'Your API keys', 'Notifications', 'Server settings', 'Server info', 'Setup']);
     expect(within(strip).getByRole('link', { name: 'Profile' })).toHaveAttribute('aria-current', 'page');
     expect(screen.queryByRole('heading', { name: 'Set up My Morning News' })).not.toBeInTheDocument();
     expect(screen.queryByTestId('setup-callout')).not.toBeInTheDocument();
@@ -168,7 +168,7 @@ describe('skipping setup', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Keep me on this page until setup is done' }));
     expect(screen.getByTestId('setup-skip')).toBeInTheDocument();
     expect(screen.queryByTestId('setup-skipped-note')).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Topics' })).toHaveClass('nav-item-blocked');
+    expect(screen.getByRole('link', { name: 'Topics' })).toHaveAttribute('href', '/dashboard/catalog');
     // Only this person's choice in this workspace is forgotten.
     expect(passes()).toEqual({ 'default|usr_other': 'skipped' });
   });

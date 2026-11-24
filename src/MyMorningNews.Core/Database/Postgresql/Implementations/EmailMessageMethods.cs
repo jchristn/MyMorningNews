@@ -50,6 +50,12 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
         #region Public-Methods
 
         /// <inheritdoc />
+        public async Task<EmailMessage?> ReadByKeyAsync(string tenantId, string key, CancellationToken token = default)
+        {
+            return (await QueryAsync("SELECT " + EmailMessageQueries.Columns + " FROM emailmessages WHERE tenantid=$1 AND idempotencykey=$2", Map, token, tenantId, key).ConfigureAwait(false)).FirstOrDefault();
+        }
+
+        /// <inheritdoc />
         public async Task<EmailMessage> CreateAsync(EmailMessage obj, CancellationToken token = default)
         {
             ArgumentNullException.ThrowIfNull(obj);

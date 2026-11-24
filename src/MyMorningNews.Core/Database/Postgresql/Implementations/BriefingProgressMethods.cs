@@ -47,6 +47,17 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
         #region Public-Methods
 
         /// <inheritdoc />
+        public async Task<BriefingProgress> UpsertAsync(BriefingProgress progress, CancellationToken token = default)
+        {
+            ArgumentNullException.ThrowIfNull(progress);
+            string sql = BriefingProgressQueries.Insert + @" ON CONFLICT (tenantid, userid, briefingid) DO UPDATE SET
+positionseconds = EXCLUDED.positionseconds, durationseconds = EXCLUDED.durationseconds, completed = EXCLUDED.completed, lastupdateutc = now()
+RETURNING " + BriefingProgressQueries.Columns;
+            return (await QueryAsync(sql, Map, token, progress.Id, progress.TenantId, progress.UserId, progress.BriefingId,
+                progress.PositionSeconds, progress.DurationSeconds, progress.Completed, true, DateTime.UtcNow, DateTime.UtcNow).ConfigureAwait(false))[0];
+        }
+
+        /// <inheritdoc />
         public async Task<BriefingProgress> CreateAsync(BriefingProgress obj, CancellationToken token = default)
         {
             ArgumentNullException.ThrowIfNull(obj);

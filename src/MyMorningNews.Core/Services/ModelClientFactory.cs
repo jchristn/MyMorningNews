@@ -39,7 +39,14 @@ namespace MyMorningNews.Core.Services
         /// <param name="logging">Logging module handed to PolyPrompt so its messages follow the server's severity and console settings.</param>
         public ModelClientFactory(HttpClient? http = null, LoggingModule? logging = null)
         {
-            _Http = http ?? new HttpClient(Security.NetworkGuard.CreateHandler()) { Timeout = System.Threading.Timeout.InfiniteTimeSpan };
+            if (http != null) _Http = http;
+            else
+            {
+                SocketsHttpHandler handler = Security.NetworkGuard.CreateHandler();
+                // API keys may use provider-specific headers that HttpClient does not strip on redirects.
+                handler.AllowAutoRedirect = false;
+                _Http = new HttpClient(handler) { Timeout = System.Threading.Timeout.InfiniteTimeSpan };
+            }
             _Logging = logging;
         }
 

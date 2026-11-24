@@ -1,0 +1,33 @@
+namespace MyMorningNews.Core.Requests
+{
+    using System;
+
+    /// <summary>
+    /// Set one user's entitlement override. Global administrator only. Delete the override to restore plan inheritance.
+    /// </summary>
+    public class EntitlementOverrideRequest
+    {
+        /// <summary>
+        /// Registered feature key, required. Maximum 128 characters.
+        /// </summary>
+        [TextLimit(128, AllowBlank = false)]
+        public string? FeatureKey { get; set; } = null;
+
+        /// <summary>
+        /// Valid feature value, required. Numeric zero and unlimited have different meanings.
+        /// </summary>
+        [TextLimit(128, AllowBlank = false)]
+        public string? Value { get; set; } = null;
+
+        /// <summary>
+        /// Required explanation, retained in the audit trail. Maximum 1000 characters.
+        /// </summary>
+        [TextLimit(1000, AllowBlank = false)]
+        public string? Reason { get; set; } = null;
+
+        /// <summary>
+        /// Optional UTC expiry. Null means no expiry.
+        /// </summary>
+        public DateTime? ExpiresUtc { get; set; } = null;
+    }
+}

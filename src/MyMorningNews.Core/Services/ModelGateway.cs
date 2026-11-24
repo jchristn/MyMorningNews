@@ -34,6 +34,11 @@ namespace MyMorningNews.Core.Services
     {
         #region Public-Members
 
+        /// <summary>Optional account-specific model resolver. A non-null result replaces tenant and platform routing.</summary>
+        public Func<ModelCallRequest, CancellationToken, Task<ResolvedModel?>>? AccountResolver { get; set; }
+        /// <summary>Resolver for private account keys. Only called for private connection identifiers.</summary>
+        public Func<ResolvedModel, ModelCallRequest, CancellationToken, Task<string?>>? AccountSecretResolver { get; set; }
+
         /// <summary>
         /// Optional check before every chat call (the plan's monthly cost cap). Throws
         /// <see cref="Exceptions.CapReachedException"/> to refuse. Set by the server.
@@ -181,6 +186,23 @@ namespace MyMorningNews.Core.Services
             }
         }
 
+        /// <summary>Probe an explicitly owned private chat or embedding connection without granting a plan. The key is charged only by its provider.</summary>
+        public async Task ProbePersonalAsync(string tenantId, string userId, string connectionId, bool embedding, CancellationToken token = default)
+        {
+            ModelCallRequest request = new ModelCallRequest { TenantId = tenantId, UserId = userId, ModelEndpointId = connectionId,
+                Task = embedding ? ModelTaskEnum.Embedding : ModelTaskEnum.QueryPlanning, IsDryRun = true, MaxTokens = 64,
+                SystemPrompt = "You are a connectivity probe.", UserPrompt = "Reply with ready." };
+            if (!connectionId.StartsWith("pco_", StringComparison.Ordinal)) throw new ArgumentException("A private connection is required.");
+            if (!embedding) { await ChatAsync(request, token).ConfigureAwait(false); return; }
+            ResolvedModel resolved = await ResolveRequestAsync(request, token).ConfigureAwait(false);
+            string? key = await RequestSecretAsync(resolved, request, token).ConfigureAwait(false);
+            using (ProviderClientBase client = _Factory.Create(resolved.Endpoint, key))
+            {
+                EmbeddingResponse response = await client.EmbedAsync("connection probe", new EmbeddingOptions { Model = resolved.Model }, token).ConfigureAwait(false);
+                if (!response.Success || response.Embeddings.Count == 0) throw new ModelCallException("The personal embedding connection did not return a vector.");
+            }
+        }
+
         /// <summary>
         /// Text completion.
         /// </summary>
@@ -192,7 +214,7 @@ namespace MyMorningNews.Core.Services
         {
             ArgumentNullException.ThrowIfNull(request);
             if (PreCallCheck != null) await PreCallCheck(request, token).ConfigureAwait(false);
-            ResolvedModel resolved = await ResolveAsync(request.TenantId, request.Task, request.TopicId, request.ModelEndpointId, request.Model, token).ConfigureAwait(false);
+            ResolvedModel resolved = await ResolveRequestAsync(request, token).ConfigureAwait(false);
             List<ChatMessage> messages = BuildMessages(request.SystemPrompt, request.UserPrompt);
             CallState state = new CallState(request, resolved);
             try
@@ -222,7 +244,7 @@ namespace MyMorningNews.Core.Services
         {
             ArgumentNullException.ThrowIfNull(request);
             if (PreCallCheck != null) await PreCallCheck(request, token).ConfigureAwait(false);
-            ResolvedModel resolved = await ResolveAsync(request.TenantId, request.Task, request.TopicId, request.ModelEndpointId, request.Model, token).ConfigureAwait(false);
+            ResolvedModel resolved = await ResolveRequestAsync(request, token).ConfigureAwait(false);
             Dictionary<string, object> schema = JsonSchemaBuilder.Build(typeof(T));
             bool useTools = resolved.Endpoint.SupportsTools != false;
             string instruction = useTools
@@ -317,7 +339,7 @@ namespace MyMorningNews.Core.Services
             if (PreCallCheck != null) await PreCallCheck(request, token).ConfigureAwait(false);
             ArgumentNullException.ThrowIfNull(tools);
             int budget = Math.Clamp(maxToolCalls, 0, 200);
-            ResolvedModel resolved = await ResolveAsync(request.TenantId, request.Task, request.TopicId, request.ModelEndpointId, request.Model, token).ConfigureAwait(false);
+            ResolvedModel resolved = await ResolveRequestAsync(request, token).ConfigureAwait(false);
             if (resolved.Endpoint.SupportsTools == false) throw new InvalidOperationException("The " + request.Task + " model does not support tool calls.");
             Dictionary<string, object> schema = JsonSchemaBuilder.Build(typeof(T));
             ToolDefinition submit = ToolDefinition.Function(SubmitToolName, "Submit the final structured result. Call it exactly once, when you are done.", schema);
@@ -432,9 +454,11 @@ namespace MyMorningNews.Core.Services
         public async Task<EmbeddingBatch> EmbedAsync(string tenantId, string? topicId, List<string> texts, CancellationToken token = default)
         {
             ArgumentNullException.ThrowIfNull(texts);
-            ResolvedModel resolved = await ResolveAsync(tenantId, ModelTaskEnum.Embedding, topicId, null, null, token).ConfigureAwait(false);
+            Topic? topic = String.IsNullOrWhiteSpace(topicId) ? null : await _Database.Topics.ReadAsync(tenantId, topicId, token).ConfigureAwait(false);
+            ModelCallRequest request = new ModelCallRequest { TenantId = tenantId, UserId = topic?.UserId, TopicId = topicId, Task = ModelTaskEnum.Embedding };
+            ResolvedModel resolved = await ResolveRequestAsync(request, token).ConfigureAwait(false);
             if (texts.Count == 0) return new EmbeddingBatch { ModelEndpointId = resolved.Endpoint.Id, Model = resolved.Model };
-            string? key = await _Vault.ResolveAsync(tenantId, resolved.Endpoint.CredentialId, token).ConfigureAwait(false);
+            string? key = await RequestSecretAsync(resolved, request, token).ConfigureAwait(false);
             Stopwatch sw = Stopwatch.StartNew();
             await _Concurrency.WaitAsync(token).ConfigureAwait(false);
             try
@@ -707,13 +731,29 @@ namespace MyMorningNews.Core.Services
             }
         }
 
+        private async Task<ResolvedModel> ResolveRequestAsync(ModelCallRequest request, CancellationToken token)
+        {
+            ResolvedModel? personal = AccountResolver == null ? null : await AccountResolver(request, token).ConfigureAwait(false);
+            return personal ?? await ResolveAsync(request.TenantId, request.Task, request.TopicId, request.ModelEndpointId, request.Model, token).ConfigureAwait(false);
+        }
+
+        private async Task<string?> RequestSecretAsync(ResolvedModel resolved, ModelCallRequest request, CancellationToken token)
+        {
+            if (resolved.Endpoint.Id.StartsWith("pco_", StringComparison.Ordinal))
+            {
+                if (AccountSecretResolver == null) throw new ModelCallException("Personal credential routing is not configured.");
+                return await AccountSecretResolver(resolved, request, token).ConfigureAwait(false) ?? throw new ModelCallException("The personal key is unavailable.");
+            }
+            return await _Vault.ResolveAsync(resolved.Endpoint.TenantId, resolved.Endpoint.CredentialId, token).ConfigureAwait(false);
+        }
+
         private async Task<ModelExchange> SendAsync(ResolvedModel resolved, List<ChatMessage> messages, List<ToolDefinition>? tools, ModelCallRequest request, CallState state, CancellationToken token)
         {
             if (AgentCliService.IsAgentCli(resolved.Endpoint.Provider)) return await SendCliAsync(resolved, messages, request, state, token).ConfigureAwait(false);
             string? key;
             try
             {
-                key = await _Vault.ResolveAsync(resolved.Endpoint.TenantId, resolved.Endpoint.CredentialId, token).ConfigureAwait(false);
+                key = await RequestSecretAsync(resolved, request, token).ConfigureAwait(false);
             }
             catch (VaultSecretUnavailableException ex)
             {
@@ -1043,7 +1083,8 @@ namespace MyMorningNews.Core.Services
                     RunStageId = state.Request.RunStageId ?? (state.Request.RunId != null ? RunStageScope.Current : null),
                     RefinementSessionId = state.Request.RefinementSessionId,
                     BriefingId = state.Request.BriefingId,
-                    ModelEndpointId = e.Id,
+                    ModelEndpointId = e.Id.StartsWith("pco_", StringComparison.Ordinal) ? null : e.Id,
+                    ProviderConnectionId = e.Id.StartsWith("pco_", StringComparison.Ordinal) ? e.Id : null,
                     Provider = e.Provider.ToString(),
                     Model = state.Resolved.Model,
                     PromptKey = state.Request.PromptKey,

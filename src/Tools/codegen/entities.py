@@ -240,6 +240,7 @@ ENTITIES = [
             f('RefinementSessionId', doc='Refinement session, when any.', nullable=True, length=64, filter=True),
             f('BriefingId', doc='Briefing, when any.', nullable=True, length=64, filter=True),
             f('ModelEndpointId', doc='Endpoint used.', nullable=True, length=64, filter=True, fk=('modelendpoints', 'SET NULL')),
+            f('ProviderConnectionId', doc='Private connection identifier, retained after key deletion. Contains no credentials.', nullable=True, length=64),
             f('Provider', doc='Provider name.', nullable=True, length=32),
             f('Model', doc='Model name.', nullable=True, length=256, filter=True),
             f('PromptKey', doc='Prompt template key.', nullable=True, length=128, filter=True),
@@ -1173,7 +1174,7 @@ ENTITIES = [
             f('Code', doc='Code as typed.', required=True, length=40, filter=True),
             f('UserId', doc='User.', required=True, length=64, filter=True),
             f('Email', doc='User email at redemption.', nullable=True, length=320, search=True),
-            f('PlanAssignmentId', doc='Plan assignment it created.', required=True, length=64),
+            f('PlanAssignmentId', doc='Complimentary plan assignment; null for paid signup offers.', nullable=True, length=64),
             f('Channel', 'enum:PromoChannelEnum', doc='Where it was redeemed.', default='Account', filter=True),
             f('RevokedUtc', 'datetime', doc='Revoked by an administrator.', nullable=True),
         ],
@@ -1259,6 +1260,7 @@ ENTITIES = [
             f('BriefingId', doc='Briefing to open.', nullable=True, length=64),
             f('MediaAssetId', doc='Audio to open.', nullable=True, length=64),
             f('PredictionId', doc='Prediction to open.', nullable=True, length=64),
+            f('CatalogPublicationId', doc='System publication for a subscriber-safe briefing link.', nullable=True, length=64),
             f('ReadUtc', 'datetime', doc='UTC time the user read it; null while unread.', nullable=True),
         ],
     },
@@ -1278,6 +1280,9 @@ ENTITIES = [
 
 # Prefixes for identifiers that are not codegen entities.
 EXTRA_PREFIXES = [
+    ('AudioUsageEntry', 'aue_', 'Prefix for immutable generated-audio usage entries.'),
+    ('BriefingShare', 'shr_', 'Prefix for BriefingShare identifiers.'),
+    ('CatalogDelivery', 'cld_', 'Prefix for durable catalog delivery identifiers.'),
     ('RequestHistory', 'req_', 'Prefix for request history entries.'),
     ('Request', 'rqi_', 'Prefix for per-request trace identifiers.'),
     ('RefreshTokenFamily', 'rff_', 'Prefix for refresh token family identifiers.'),
@@ -1493,3 +1498,191 @@ ENUMS = [
         ('ResearchRequestRead', 'Read one-time requests.'), ('ResearchRequestWrite', 'Create, confirm, or convert one-time requests.'), ('ResearchRequestDelete', 'Delete one-time requests.'),
     ]),
 ]
+
+# Platform subscriptions and account policies. Existing generated entities remain hand maintained.
+ENTITIES.extend([
+    {
+        'name': 'AccountPlanPolicy', 'table': 'accountplanpolicies', 'prefix': 'app_', 'user': True,
+        'doc': 'Account signup policy, snapshotted so future server defaults do not change existing accounts.',
+        'fields': [
+            f('SubscriptionRequired', 'bool', doc='Whether paid access requires a verified subscription. False permits the assigned non-billed tier.', default=True),
+            f('DefaultPlanId', doc='Fallback plan selected when the account was created.', required=True, length=64, fk=('plans', 'RESTRICT')),
+            f('FundingMode', doc='Platform, Personal, or SelfHosted. Selected explicitly, never inferred from a saved key.', default='Platform', length=32),
+        ], 'uniques': [['tenantid', 'userid']],
+    },
+    {
+        'name': 'EntitlementOverride', 'table': 'entitlementoverrides', 'prefix': 'eov_', 'user': True,
+        'doc': 'Audited per-user override of one validated plan feature; deleting restores inheritance.',
+        'fields': [
+            f('FeatureKey', doc='Registered entitlement key.', required=True, length=128, filter=True),
+            f('Value', doc='Validated feature value; unlimited is distinct from zero.', required=True, length=128),
+            f('Reason', 'text', doc='Administrator explanation for this override.', required=True),
+            f('GrantedByUserId', doc='Administrator author.', nullable=True, length=64),
+            f('ExpiresUtc', 'datetime', doc='UTC expiration, or null for no expiration.', nullable=True),
+        ], 'uniques': [['tenantid', 'userid', 'featurekey']],
+    },
+    {
+        'name': 'CatalogPublication', 'table': 'catalogpublications', 'prefix': 'cat_', 'tenant': False,
+        'doc': 'Explicit administrator publication of a canonical system topic. Reads use an allowlisted projection.',
+        'fields': [
+            f('TopicId', doc='Canonical topic; publishing does not transfer subscriber ownership.', required=True, length=64, unique=True, fk=('topics', 'RESTRICT')),
+            f('OwnerTenantId', doc='Protected workspace of the canonical topic.', required=True, length=64),
+            f('Title', doc='Public catalog title.', required=True, length=200, search=True),
+            f('Description', 'text', doc='Public scope description.', nullable=True, search=True),
+            f('Category', doc='Catalog category.', default='General', length=128, filter=True),
+            f('Language', doc='Output language.', default='en', length=16, filter=True),
+            f('Status', doc='Draft, Published, Retired, or Retracted.', default='Draft', length=32, filter=True),
+            f('FreeEligible', 'bool', doc='Whether free catalog members may subscribe.', default=False, filter=True),
+            f('SortOrder', 'int', doc='Administrator display ordering.', default=0, sort=True),
+            f('Revision', 'long', doc='Publication revision for optimistic concurrency.', default=1),
+            f('PublishedUtc', 'datetime', doc='First publication timestamp.', nullable=True),
+        ],
+    },
+    {
+        'name': 'CatalogSubscription', 'table': 'catalogsubscriptions', 'prefix': 'csu_', 'user': True,
+        'doc': 'A user subscribes to a canonical publication; delivery and interaction state stay private.',
+        'fields': [
+            f('PublicationId', doc='Catalog publication.', required=True, length=64, filter=True, fk=('catalogpublications', 'CASCADE')),
+            f('EmailEnabled', 'bool', doc='Deliver canonical issues by email.', default=True),
+            f('PushEnabled', 'bool', doc='Send publication notifications.', default=True),
+            f('Suspended', 'bool', doc='Subscription suspended by eligibility or plan changes.', default=False, filter=True),
+        ], 'uniques': [['tenantid', 'userid', 'publicationid']],
+    },
+    {
+        'name': 'AudioReservation', 'table': 'audioreservations', 'prefix': 'arv_', 'user': True,
+        'doc': 'Durable daily audio reservation and settlement keyed by logical generation operation.',
+        'fields': [
+            f('OperationId', doc='Logical media generation ID.', required=True, length=64, filter=True),
+            f('PeriodStartUtc', 'datetime', doc='UTC day against which generation is reserved.', filter=True),
+            f('ReservedSeconds', 'long', doc='Maximum publishable duration held for this operation.', default=0),
+            f('CommittedMilliseconds', 'long', doc='Actual published duration, rounded up to milliseconds.', default=0),
+            f('Status', doc='Reserved, Committed, or Released.', default='Reserved', length=32, filter=True),
+            f('ExpiresUtc', 'datetime', doc='Lease expiration; recovery checks the job before releasing.'),
+        ], 'uniques': [['tenantid', 'userid', 'operationid']],
+        'indexes': [['tenantid', 'userid', 'periodstartutc']],
+    },
+    {
+        'name': 'BillingSubscription', 'table': 'billingsubscriptions', 'prefix': 'bsu_', 'user': True,
+        'doc': 'Verified provider subscription bound to one platform account.',
+        'fields': [
+            f('Provider', doc='Stripe, Apple, or Google.', required=True, length=16, filter=True),
+            f('Environment', doc='Live or Sandbox.', required=True, length=16, filter=True),
+            f('ProviderId', doc='Stable provider subscription or transaction-lineage identifier.', required=True, length=256, filter=True),
+            f('CustomerId', doc='Provider customer identifier where available.', nullable=True, length=256),
+            f('PlanId', doc='Entitlement package.', required=True, length=64, fk=('plans', 'RESTRICT')),
+            f('Status', doc='Normalized verified provider status.', default='Pending', length=32, filter=True),
+            f('EndsUtc', 'datetime', doc='Verified end of entitled access.', nullable=True),
+            f('CancelAtPeriodEnd', 'bool', doc='Renewal is canceled but current period may remain entitled.', default=False),
+            f('LastVerifiedUtc', 'datetime', doc='Last authoritative reconciliation.'),
+        ], 'uniques': [['provider', 'environment', 'providerid']],
+    },
+    {
+        'name': 'SignupBenefit', 'table': 'signupbenefits', 'prefix': 'sbe_', 'user': True,
+        'doc': 'Immutable signup offer captured before checkout; never grants paid access before verification.',
+        'fields': [
+            f('PromoCodeId', doc='Source signup code.', required=True, length=64, fk=('promocodes', 'RESTRICT')),
+            f('PlanId', doc='Custom or standard package selected by the offer.', required=True, length=64, fk=('plans', 'RESTRICT')),
+            f('DiscountPercent', 'decimal', doc='Percentage discount captured at signup, from zero through 100.', default=0),
+            f('DiscountMonths', 'int', doc='Discount billing months; null means ongoing.', nullable=True),
+            f('RedeemedUtc', 'datetime', doc='When the offer was applied to a verified subscription.', nullable=True),
+            f('RevokedUtc', 'datetime', doc='Explicit administrator revocation.', nullable=True),
+        ], 'uniques': [['tenantid', 'userid']],
+    },
+])
+
+ENTITIES.append({
+    'name': 'RunHistorySnapshot', 'table': 'runhistorysnapshots', 'prefix': 'rhs_',
+    'doc': 'Immutable bounded comparison context selected once for a research run and reused on retry.',
+    'fields': [
+        f('RunId', doc='Research run.', required=True, length=64, filter=True, fk=('runs', 'CASCADE')),
+        f('TopicId', doc='Topic owning the baseline.', required=True, length=64, filter=True, fk=('topics', 'CASCADE')),
+        f('Mode', doc='Off, PreviousIssue, RecentIssues, SinceDate, or SpecificIssue.', required=True, length=32),
+        f('BaselineIds', 'strings', doc='Selected issue IDs in deterministic order.'),
+        f('ContextText', 'text', doc='Bounded comparison text, never treated as current evidence.', default=''),
+        f('ContextHash', doc='SHA-256 hash of mode, baseline IDs and context.', required=True, length=64),
+        f('CutoffUtc', 'datetime', doc='Fixed selection cutoff.'),
+        f('Truncated', 'bool', doc='Context was truncated to its conservative token budget.', default=False),
+        f('Note', 'text', doc='First-run or missing-history explanation.', nullable=True),
+    ], 'uniques': [['tenantid', 'runid']],
+})
+
+ENTITIES.extend([
+    {
+        'name': 'BillingAccount', 'table': 'billingaccounts', 'prefix': 'bac_', 'user': True,
+        'doc': 'Stable account binding shared by native purchases and web checkout. Never derived from client identity claims.',
+        'fields': [
+            f('PurchaseAccountToken', doc='Random UUID used as Apple appAccountToken and Google obfuscatedExternalAccountId.', required=True, length=64, filter=True),
+            f('StripeCustomerId', doc='Verified Stripe customer identifier.', nullable=True, length=128),
+        ], 'uniques': [['tenantid', 'userid'], ['purchaseaccounttoken']],
+    },
+    {
+        'name': 'BillingCheckout', 'table': 'billingcheckouts', 'prefix': 'bco_', 'user': True,
+        'doc': 'Durable checkout operation. Its identifier is the provider idempotency key across network retries.',
+        'fields': [
+            f('OfferKey', doc='Allowlisted configured offer.', required=True, length=128),
+            f('SessionId', doc='Provider session identifier.', nullable=True, length=256),
+            f('CheckoutUrl', 'text', doc='Provider-hosted checkout URL.', nullable=True),
+            f('ExpiresUtc', 'datetime', doc='UTC expiration; no new concurrent operation before this time.'),
+            f('Status', doc='Pending, Completed, or Expired.', default='Pending', length=32, filter=True),
+        ],
+    },
+    {
+        'name': 'BillingEvent', 'table': 'billingevents', 'prefix': 'bev_', 'tenant': False,
+        'doc': 'Authenticated provider event inbox. Stores routing identifiers, never raw purchase tokens or card data.',
+        'fields': [
+            f('Provider', doc='Stripe, Apple, or Google.', required=True, length=16, filter=True),
+            f('Environment', doc='Production or Sandbox.', required=True, length=16, filter=True),
+            f('EventId', doc='Provider deduplication identifier.', required=True, length=256, filter=True),
+            f('ProviderId', doc='Subscription lineage or SHA-256 of a Google purchase token.', required=True, length=256),
+            f('Status', doc='Pending, Processing, or Completed.', default='Pending', length=32, filter=True),
+            f('Attempts', 'int', doc='Worker attempts.', default=0),
+            f('RetryUtc', 'datetime', doc='Next retry or lease expiration.'),
+            f('Error', 'text', doc='Sanitized reconciliation error.', nullable=True),
+        ], 'uniques': [['provider', 'environment', 'eventid']],
+    },
+])
+
+# These entities have hand-maintained methods and migration-appended columns. Do not force-regenerate them.
+_PLATFORM_ADDITIONS = {
+    'PromoCode': [
+        f('BenefitKind', doc='Complimentary or PaidOffer.', default='Complimentary', length=32),
+        f('BillingPlanKey', doc='Required paid package.', nullable=True, length=64),
+        f('DiscountPercent', 'decimal', doc='Discount percentage, 0 through 100.', default=0),
+        f('DiscountMonths', 'int', doc='Discount months; null means ongoing.', nullable=True),
+        f('AppleOfferId', doc='Apple promotional offer identifier.', nullable=True, length=128),
+        f('GoogleOfferId', doc='Google subscription offer identifier.', nullable=True, length=128),
+    ],
+    'PromoRedemption': [f('SignupBenefitId', doc='Paid offer snapshot; null for complimentary grants.', nullable=True, length=64)],
+    'SignupBenefit': [
+        f('BillingPlanKey', doc='Required base subscription package.', default='paid-5', length=64),
+        f('DurationDays', 'int', doc='Custom tier duration from verified activation; null means ongoing.', nullable=True),
+        f('RedeemedSubscriptionId', doc='Verified subscription binding.', nullable=True, length=64),
+        f('AppleOfferId', doc='Captured Apple offer.', nullable=True, length=128),
+        f('GoogleOfferId', doc='Captured Google offer.', nullable=True, length=128),
+    ],
+    'BillingCheckout': [
+        f('PriceId', doc='Captured provider price.', nullable=True, length=128),
+        f('CustomerEmail', doc='Captured checkout email.', nullable=True, length=320),
+        f('ReturnUrl', 'text', doc='Captured HTTPS return URL.', nullable=True),
+        f('SignupBenefitId', doc='Captured benefit identifier.', nullable=True, length=64),
+    ],
+    'BillingSubscription': [f('VerificationSecretEncrypted', 'text', doc='Encrypted Google verification credential; JsonIgnore in the hand-maintained model.', nullable=True)],
+}
+for _entity in ENTITIES:
+    _entity['fields'].extend(_PLATFORM_ADDITIONS.get(_entity['name'], []))
+# billingsubscriptions.supersededbyid is internal lifecycle state, deliberately absent from public models.
+
+ENTITIES.append({
+    'name': 'ProviderConnection', 'table': 'providerconnections', 'prefix': 'pco_', 'user': True,
+    'doc': 'Private per-account model or speech connection. Secrets are encrypted and excluded from all API projections.',
+    'fields': [
+        f('Kind', doc='Chat, Embedding, or Speech.', required=True, length=16, filter=True),
+        f('Provider', doc='Supported API provider or Local speech.', required=True, length=32),
+        f('Endpoint', 'text', doc='Optional provider URL; local speech uses operator configuration.', nullable=True),
+        f('Model', doc='Provider model identifier.', required=True, length=256),
+        f('Voice', doc='Speech voice identifier.', nullable=True, length=128),
+        f('SecretEncrypted', 'text', doc='Encrypted secret. Never serialized.', nullable=True),
+        f('SecretLast4', doc='Masked display suffix.', nullable=True, length=4),
+        f('ValidatedUtc', 'datetime', doc='Successful connection test time, cleared on change.', nullable=True),
+    ], 'uniques': [['tenantid', 'userid', 'kind']],
+})

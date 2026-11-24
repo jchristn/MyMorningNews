@@ -57,7 +57,7 @@ namespace MyMorningNews.Server.Routes
                 return;
             }
 
-            await CheckTopicLimitAsync(tenantId, rc.UserId, ctx.Token).ConfigureAwait(false);
+            await Server.Entitlements.CheckAvailableTopicSlotAsync(tenantId, rc.UserId, ctx.Token).ConfigureAwait(false);
             await Server.Setup.RequireAsync(tenantId, ModelTaskEnum.Refinement, null, ctx.Token).ConfigureAwait(false);
 
             RefinementStartRequest? req = await ReadBodyAsync<RefinementStartRequest>(ctx).ConfigureAwait(false);

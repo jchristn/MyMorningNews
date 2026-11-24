@@ -102,6 +102,29 @@ describe('PlansView', () => {
 });
 
 describe('Users page Plan panel', () => {
+  it('shows inherited limits, requires a reason, saves zero, and restores inheritance', async () => {
+    let overridden = false;
+    const client = renderRoute('/dashboard/admin/users', {
+      listUsers: vi.fn(async () => page([{ id: 'usr_c', email: 'cy@example.test', active: true, isAdmin: false, isTenantAdmin: false }])),
+      listPlans: vi.fn(async () => [{ plan: { id: 'pln_free', name: 'Free' }, features: { 'customTopics.max': '5' } }]),
+      listPlanAssignments: vi.fn(async () => []),
+      getUserEntitlements: vi.fn(async () => ({ plan: { id: 'pln_free', name: 'Free' }, features: { 'customTopics.max': overridden ? '0' : '5' }, featureSources: { 'customTopics.max': overridden ? 'userOverride' : 'plan' } })),
+      setUserEntitlement: vi.fn(async () => { overridden = true; }),
+      clearUserEntitlement: vi.fn(async () => { overridden = false; }),
+    });
+    const row = (await screen.findByText('cy@example.test')).closest('tr');
+    await userEvent.click(within(row).getByRole('button', { name: /actions/i }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Plan' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit: Custom topics' }));
+    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+    fireEvent.change(screen.getByLabelText('Override value'), { target: { value: '0' } });
+    fireEvent.change(screen.getByLabelText('Reason for this change'), { target: { value: 'Pause custom creation' } });
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(client.setUserEntitlement).toHaveBeenCalledWith('default', 'usr_c', { featureKey: 'customTopics.max', value: '0', reason: 'Pause custom creation', expiresUtc: null }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Restore inheritance' }));
+    await waitFor(() => expect(client.clearUserEntitlement).toHaveBeenCalledWith('default', 'usr_c', 'customTopics.max'));
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Restore inheritance' })).not.toBeInTheDocument());
+  });
   it('opens a user plan panel for global administrators', async () => {
     const client = renderRoute('/dashboard/admin/users', {
       listUsers: vi.fn(async () => page([{ id: 'usr_c', email: 'cy@example.test', active: true, isAdmin: false, isTenantAdmin: false }])),

@@ -28,6 +28,7 @@ namespace MyMorningNews.Core.Services
         private readonly DatabaseDriverBase _Database;
         private readonly BriefingService _Briefings;
         private readonly ArtifactService _Artifacts;
+        private readonly MyMorningNews.Core.Billing.BillingService? _Billing;
 
         #endregion
 
@@ -39,17 +40,26 @@ namespace MyMorningNews.Core.Services
         /// <param name="database">Database.</param>
         /// <param name="briefings">Briefing service (deletes briefings, editions, and topic files).</param>
         /// <param name="artifacts">Artifact service (deletes stored file content).</param>
+        /// <param name="billing">Optional billing lifecycle, required by the server.</param>
         /// <exception cref="ArgumentNullException">An argument is null.</exception>
-        public AccountDataService(DatabaseDriverBase database, BriefingService briefings, ArtifactService artifacts)
+        public AccountDataService(DatabaseDriverBase database, BriefingService briefings, ArtifactService artifacts, MyMorningNews.Core.Billing.BillingService? billing = null)
         {
             _Database = database ?? throw new ArgumentNullException(nameof(database));
             _Briefings = briefings ?? throw new ArgumentNullException(nameof(briefings));
             _Artifacts = artifacts ?? throw new ArgumentNullException(nameof(artifacts));
+            _Billing = billing;
         }
 
         #endregion
 
         #region Public-Methods
+
+        /// <summary>Stop provider renewals before account deletion; failures retain account binding so retries remain possible.</summary>
+        public Task StopBillingAsync(string tenantId, string userId, CancellationToken token = default)
+        {
+            return _Billing?.PrepareDeletionAsync(tenantId, userId, token) ?? Task.CompletedTask;
+        }
+
 
         /// <summary>
         /// Delete a user's data, then the user. Safe to call again after a partial failure.
@@ -63,6 +73,7 @@ namespace MyMorningNews.Core.Services
         {
             if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));
             if (String.IsNullOrWhiteSpace(userId)) throw new ArgumentNullException(nameof(userId));
+            await StopBillingAsync(tenantId, userId, token).ConfigureAwait(false);
             await DeleteUserDataAsync(tenantId, userId, token).ConfigureAwait(false);
             return await _Database.Users.DeleteAsync(tenantId, userId, token).ConfigureAwait(false);
         }

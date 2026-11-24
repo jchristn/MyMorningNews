@@ -96,6 +96,36 @@ namespace MyMorningNews.Sdk.Models
         public DateTime LastUpdateUtc { get; set; }
 
         /// <summary>
+        /// Complimentary grants access; PaidOffer captures a subscription offer without granting access. Default "Complimentary".
+        /// </summary>
+        public string BenefitKind { get; set; } = "Complimentary";
+
+        /// <summary>
+        /// Purchased package required for this paid offer, normally paid-5 or paid-20.
+        /// </summary>
+        public string? BillingPlanKey { get; set; } = null;
+
+        /// <summary>
+        /// Percentage discount from zero through 100. Default 0.
+        /// </summary>
+        public decimal DiscountPercent { get; set; } = 0;
+
+        /// <summary>
+        /// Discount months; null means ongoing.
+        /// </summary>
+        public int? DiscountMonths { get; set; } = null;
+
+        /// <summary>
+        /// Configured Apple promotional offer identifier; null when unavailable.
+        /// </summary>
+        public string? AppleOfferId { get; set; } = null;
+
+        /// <summary>
+        /// Configured Google subscription offer identifier; null when unavailable.
+        /// </summary>
+        public string? GoogleOfferId { get; set; } = null;
+
+        /// <summary>
         /// Instantiate.
         /// </summary>
         public PromoCode()

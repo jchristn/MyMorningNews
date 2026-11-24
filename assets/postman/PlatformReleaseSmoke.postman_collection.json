@@ -1,0 +1,486 @@
+{
+  "info": {
+    "name": "My Morning News - platform release smoke",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Local disposable end-to-end catalog, history, usage, private keys and pricing contracts. (c) 2026 Lattice AI LLC."
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:12100",
+      "type": "string"
+    },
+    {
+      "key": "email",
+      "value": "admin@mymorningnews",
+      "type": "string"
+    },
+    {
+      "key": "password",
+      "value": "password",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (!/^http:\\/\\/127\\.0\\.0\\.1:12\\d{3}$/.test(pm.variables.get(\"baseUrl\"))) throw new Error(\"This writable collection requires an isolated local server.\");"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Sign in local administrator",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-email",
+            "value": "{{email}}"
+          },
+          {
+            "key": "x-password",
+            "value": "{{password}}"
+          },
+          {
+            "key": "x-tenant-guid",
+            "value": "default"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/v1.0/token",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1.0",
+            "token"
+          ]
+        },
+        "description": "Local disposable validation. Does not invoke research, speech, checkout, or real payments.",
+        "auth": {
+          "type": "noauth"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.response.to.have.status(200);",
+              "pm.collectionVariables.set(\"token\",pm.response.json().token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Billing prices and allowances",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/v1.0/api/account/billing",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1.0",
+            "api",
+            "account",
+            "billing"
+          ]
+        },
+        "description": "Local disposable validation. Does not invoke research, speech, checkout, or real payments."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.response.to.have.status(200);",
+              "const b=pm.response.json();",
+              "pm.test(\"Four offers and explicit account binding\",()=>{pm.expect(b.offers.length).to.eql(4);pm.expect(b.purchaseAccountToken).to.match(/^[0-9a-f-]{36}$/i);});",
+              "pm.test(\"Approved monthly pricing and daily audio\",()=>{const a=b.offers.find(x=>x.key===\"paid-5-month\"),c=b.offers.find(x=>x.key===\"paid-20-month\");pm.expect([a.usdCents,a.customTopics,a.dailyAudioSeconds,c.usdCents,c.customTopics,c.dailyAudioSeconds]).to.eql([1000,\"5\",\"1800\",3000,\"20\",\"6000\"]);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Private providers never return credentials",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/v1.0/api/account/providers",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1.0",
+            "api",
+            "account",
+            "providers"
+          ]
+        },
+        "description": "Local disposable validation. Does not invoke research, speech, checkout, or real payments."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.response.to.have.status(200);",
+              "pm.test(\"No encrypted or plaintext keys\",()=>{for(const c of pm.response.json().connections){pm.expect(c).not.to.have.property(\"secretEncrypted\");pm.expect(c).not.to.have.property(\"apiKey\");}});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create isolated system publication",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/v1.0/api/admin/catalog",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1.0",
+            "api",
+            "admin",
+            "catalog"
+          ]
+        },
+        "description": "Local disposable validation. Does not invoke research, speech, checkout, or real payments.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Postman local validation {{$timestamp}}\",\n  \"description\": \"Disposable protocol validation\",\n  \"freeEligible\": true,\n  \"status\": \"Draft\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.response.to.have.status(201);",
+              "const p=pm.response.json();pm.collectionVariables.set(\"publicationId\",p.id);pm.collectionVariables.set(\"revision\",p.revision);pm.collectionVariables.set(\"publicationTitle\",p.title);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Set canonical history without starting research",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/v1.0/api/admin/catalog/{{publicationId}}/research",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1.0",
+            "api",
+            "admin",
+            "catalog",
+            "{{publicationId}}",
+            "research"
+          ]
+        },
+        "description": "Local disposable validation. Does not invoke research, speech, checkout, or real payments.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"topic\": {\n    \"brief\": \"Summarize verified public source developments.\",\n    \"historyMode\": \"PreviousIssue\",\n    \"status\": \"Paused\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.response.to.have.status(200);",
+              "pm.test(\"Comparison saved\",()=>pm.expect(pm.response.json().topic.historyMode).to.eql(\"PreviousIssue\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Publish with optimistic revision",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/v1.0/api/admin/catalog/{{publicationId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1.0",
+            "api",
+            "admin",
+            "catalog",
+            "{{publicationId}}"
+          ]
+        },
+        "description": "Local disposable validation. Does not invoke research, speech, checkout, or real payments.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"{{publicationTitle}}\",\n  \"status\": \"Published\",\n  \"freeEligible\": true,\n  \"revision\": {{revision}}\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.response.to.have.status(200);",
+              "pm.collectionVariables.set(\"revision\",pm.response.json().revision);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Subscribe privately with deliveries disabled",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/v1.0/api/catalog/{{publicationId}}/subscription",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1.0",
+            "api",
+            "catalog",
+            "{{publicationId}}",
+            "subscription"
+          ]
+        },
+        "description": "Local disposable validation. Does not invoke research, speech, checkout, or real payments.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"emailEnabled\": false,\n  \"pushEnabled\": false\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.response.to.have.status(200);",
+              "pm.test(\"Private delivery choices\",()=>{const s=pm.response.json();pm.expect(s.emailEnabled).to.eql(false);pm.expect(s.pushEnabled).to.eql(false);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Daily usage contract",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/v1.0/api/account/usage",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1.0",
+            "api",
+            "account",
+            "usage"
+          ]
+        },
+        "description": "Local disposable validation. Does not invoke research, speech, checkout, or real payments."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.response.to.have.status(200);",
+              "pm.test(\"Separate counters and UTC reset\",()=>{const u=pm.response.json();for(const k of [\"systemSubscriptions\",\"topics\",\"audioGeneratedSecondsToday\",\"audioReservedSecondsToday\",\"audioResetUtc\"])pm.expect(u).to.have.property(k);pm.expect(u.audioDailySecondsMax == null || Number.isFinite(u.audioDailySecondsMax)).to.eql(true);pm.expect(new Date(u.audioResetUtc).getUTCHours()).to.eql(0);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Unsubscribe releases the slot",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/v1.0/api/catalog/{{publicationId}}/subscription",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1.0",
+            "api",
+            "catalog",
+            "{{publicationId}}",
+            "subscription"
+          ]
+        },
+        "description": "Local disposable validation. Does not invoke research, speech, checkout, or real payments."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.response.to.have.status(204);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Retire validation publication",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/v1.0/api/admin/catalog/{{publicationId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1.0",
+            "api",
+            "admin",
+            "catalog",
+            "{{publicationId}}"
+          ]
+        },
+        "description": "Local disposable validation. Does not invoke research, speech, checkout, or real payments.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"{{publicationTitle}}\",\n  \"status\": \"Retired\",\n  \"freeEligible\": true,\n  \"revision\": {{revision}}\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.response.to.have.status(200);"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

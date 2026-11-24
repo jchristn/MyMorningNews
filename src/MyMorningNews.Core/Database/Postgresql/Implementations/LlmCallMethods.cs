@@ -99,7 +99,8 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.Active,
                 DateTime.SpecifyKind(obj.CreatedUtc, DateTimeKind.Utc),
                 DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
-                obj.RunStageId).ConfigureAwait(false);
+                obj.RunStageId,
+                obj.ProviderConnectionId).ConfigureAwait(false);
             return obj;
         }
 
@@ -167,7 +168,8 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.ResponseText,
                 obj.Active,
                 DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
-                obj.RunStageId).ConfigureAwait(false);
+                obj.RunStageId,
+                obj.ProviderConnectionId).ConfigureAwait(false);
             if (affected < 1) throw new KeyNotFoundException("LlmCall " + obj.Id + " was not found.");
             return obj;
         }
@@ -284,6 +286,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             obj.CreatedUtc = DateTime.SpecifyKind(reader.GetDateTime(40), DateTimeKind.Utc);
             obj.LastUpdateUtc = DateTime.SpecifyKind(reader.GetDateTime(41), DateTimeKind.Utc);
             obj.RunStageId = reader.IsDBNull(42) ? null : reader.GetString(42);
+            obj.ProviderConnectionId = reader.IsDBNull(43) ? null : reader.GetString(43);
             return obj;
         }
 

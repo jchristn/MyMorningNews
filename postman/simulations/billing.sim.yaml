@@ -1,0 +1,11 @@
+simulation: mmn-billing
+routing: path
+mocks:
+  - name: Stripe billing contract subset
+    routeKey: stripe
+    origin: api.stripe.com
+    path: postman/mocks/stripe/config.yaml
+  - name: Private model API contract subset
+    routeKey: private-model
+    origin: models.invalid
+    path: postman/mocks/private-model/config.yaml

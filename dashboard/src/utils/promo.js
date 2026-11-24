@@ -46,6 +46,12 @@ export function fromLocalInput(value) {
 
 export function emptyPromoForm(planId = '', batch = false) {
   return {
+    benefitKind: 'Complimentary',
+    billingPlanKey: 'paid-5',
+    discountPercent: 0,
+    discountMonths: 0,
+    appleOfferId: '',
+    googleOfferId: '',
     code: '',
     prefix: '',
     count: 10,
@@ -65,6 +71,12 @@ export function emptyPromoForm(planId = '', batch = false) {
 export function promoFormFrom(code) {
   return {
     ...emptyPromoForm(code.planId || ''),
+    benefitKind: code.benefitKind || 'Complimentary',
+    billingPlanKey: code.billingPlanKey || 'paid-5',
+    discountPercent: code.discountPercent || 0,
+    discountMonths: code.discountMonths || 0,
+    appleOfferId: code.appleOfferId || '',
+    googleOfferId: code.googleOfferId || '',
     code: code.code || '',
     description: code.description || '',
     durationDays: code.durationDays || 0,
@@ -110,6 +122,13 @@ export function validatePromoForm(form, { mode = 'create', usedCount = 0 } = {})
   if (form.startsLocal && !starts) errors.startsLocal = 'promo.validation.dateInvalid';
   if (form.expiresLocal && !expires) errors.expiresLocal = 'promo.validation.dateInvalid';
   if (starts && expires && new Date(expires) <= new Date(starts)) errors.expiresLocal = 'promo.validation.expiresAfterStarts';
+  if (form.benefitKind === 'PaidOffer') {
+    const percent = Number(form.discountPercent);
+    if (form.discountPercent === '' || !Number.isFinite(percent) || percent < 0 || percent > 100 || Math.round(percent * 100) / 100 !== percent) errors.discountPercent = 'promo.offer.percentRange';
+    const months = integer(form.discountMonths);
+    if (!(months >= 0 && months <= 36)) errors.discountMonths = 'promo.offer.monthsRange';
+    if (!form.billingPlanKey) errors.billingPlanKey = 'promo.validation.planRequired';
+  }
   return errors;
 }
 
@@ -125,6 +144,11 @@ export function promoBody(form, { mode = 'create', original = null } = {}) {
     enabled: Boolean(form.enabled),
     newAccountsOnly: Boolean(form.newAccountsOnly)
   };
+  if (form.benefitKind === 'PaidOffer') {
+    Object.assign(body, { benefitKind: 'PaidOffer', billingPlanKey: form.billingPlanKey, discountPercent: Number(form.discountPercent), discountMonths: Number(form.discountMonths), appleOfferId: form.appleOfferId.trim(), googleOfferId: form.googleOfferId.trim(), perUserLimit: 1, newAccountsOnly: true });
+  } else if (original?.benefitKind === 'PaidOffer') {
+    Object.assign(body, { benefitKind: 'Complimentary', billingPlanKey: '', discountPercent: 0, discountMonths: 0, appleOfferId: '', googleOfferId: '' });
+  }
   const starts = fromLocalInput(form.startsLocal);
   const expires = fromLocalInput(form.expiresLocal);
   if (starts) body.startsUtc = starts;
@@ -190,6 +214,10 @@ export function redemptionsByDay(redemptions, { now = new Date(), minDays = 14, 
 export const BATCH_CSV_COLUMNS = [
   { key: 'code', header: 'code' },
   { key: 'batchId', header: 'batchId' },
+  { key: 'benefitKind', header: 'benefitKind' },
+  { key: 'billingPlanKey', header: 'billingPlanKey' },
+  { key: 'discountPercent', header: 'discountPercent' },
+  { key: 'discountMonths', header: 'discountMonths' },
   { key: 'planId', header: 'planId' },
   { key: 'durationDays', header: 'durationDays' },
   { key: 'maxRedemptions', header: 'maxRedemptions' },
@@ -202,6 +230,14 @@ export const BATCH_CSV_COLUMNS = [
 
 // Entitlement keys every plan is expected to carry (plan section 33.2), in display order.
 export const KNOWN_FEATURES = [
+  'customTopics.max',
+  'systemSubscriptions.max',
+  'audio.dailySeconds.max',
+  'customResearch.enabled',
+  'oneTimeResearch.enabled',
+  'catalog.freeOnly',
+  'catalog.audio.enabled',
+  'models.personalConnections.enabled',
   'usage.monthlyCostUsd.max',
   'topics.max',
   'schedule.minIntervalMinutes',

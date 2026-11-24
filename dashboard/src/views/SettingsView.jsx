@@ -35,7 +35,7 @@ function humanize(name) {
 // The translated label for a setting. Every field the server lists has one under settings.fields; a field added on
 // the server before the dashboard knows it shows its humanized property name.
 export function settingLabel(t, field) {
-  return t('settings.fields.' + field.path.replace('.', '_'), { defaultValue: humanize(field.name || field.path) });
+  return t('settings.fields.' + field.path.replaceAll('.', '_'), { defaultValue: humanize(field.path.split('.').slice(1).join(' ') || field.name) });
 }
 
 function getAt(obj, path) {
@@ -43,8 +43,8 @@ function getAt(obj, path) {
 }
 
 function setAt(obj, path, value) {
-  const [group, name] = path.split('.');
-  return { ...obj, [group]: { ...(obj[group] || {}), [name]: value } };
+  const [key, ...rest] = path.split('.');
+  return { ...obj, [key]: rest.length ? setAt(obj?.[key] || {}, rest.join('.'), value) : value };
 }
 
 // Form editor for the server settings file. Fields come from the server's metadata, so new settings appear here

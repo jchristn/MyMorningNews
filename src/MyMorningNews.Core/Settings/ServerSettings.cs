@@ -216,6 +216,10 @@ namespace MyMorningNews.Core.Settings
         private TtsSettings _Tts = new TtsSettings();
         private EmailSettings _Email = new EmailSettings();
         private LearningSettings _Learning = new LearningSettings();
+        /// <summary>Hosted billing integrations and offer mappings.</summary>
+        public BillingSettings Billing { get { return _Billing; } set { _Billing = value ?? throw new ArgumentNullException(nameof(Billing)); } }
+        private BillingSettings _Billing = new BillingSettings();
+
         private HostingSettings _Hosting = new HostingSettings();
         private SharingSettings _Sharing = new SharingSettings();
 

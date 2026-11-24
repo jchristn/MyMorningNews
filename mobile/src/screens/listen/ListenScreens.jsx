@@ -1,3 +1,4 @@
+import { CatalogIssues } from '../catalog/CatalogScreens';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { RefreshControl, View } from 'react-native';
 import { Asset } from 'expo-asset';
@@ -71,6 +72,7 @@ export function ListenScreen() {
           <T variant="title">{state.track.title}</T>
         </Card>
       ) : null}
+      <CatalogIssues compact audioOnly />
       <SectionHeader title={t('mobile.listen.episodes')} />
       {error ? <Banner kind="danger">{error}</Banner> : null}
       <ResourceView resource={episodes} feature={t('mobile.features.audio')} isEmpty={() => items.length === 0} empty={<EmptyState icon="headset-outline" title={t('mobile.listen.emptyTitle')} body={t('mobile.listen.emptyBody')} />}>

@@ -7,6 +7,7 @@ import Modal from '../../components/Modal.jsx';
 import usePlans from '../promo/usePlans.js';
 import GrantPlanModal from './GrantPlanModal.jsx';
 import UserPlanAssignments from './UserPlanAssignments.jsx';
+import UserEntitlements from './UserEntitlements.jsx';
 
 // The Plan panel for one user on the Users page (global administrators): assignments with revoke, and a grant.
 export default function UserPlanModal({ tenantId, user, onClose }) {
@@ -35,7 +36,8 @@ export default function UserPlanModal({ tenantId, user, onClose }) {
           </>
         }
       >
-        <UserPlanAssignments tenantId={tenantId} userId={user.id} plans={plans} refreshSignal={refresh} />
+        <UserEntitlements tenantId={tenantId} userId={user.id} plans={plans} refreshSignal={refresh} />
+        <UserPlanAssignments tenantId={tenantId} userId={user.id} plans={plans} refreshSignal={refresh} onChanged={() => setRefresh(n => n + 1)} />
       </Modal>
       {granting ? (
         <GrantPlanModal

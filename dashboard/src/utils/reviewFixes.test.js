@@ -96,8 +96,8 @@ describe('topic schedule state', () => {
 });
 
 describe('plan values and currency', () => {
-  it('shows a huge count limit as unlimited and keeps amounts as stored', () => {
-    expect(featureValue(t, '10000', 'artifacts.pinned.max')).toBe('promo.usage.unlimited');
+  it('preserves finite count limits and keeps amounts as stored', () => {
+    expect(featureValue(t, '10000', 'artifacts.pinned.max')).toBe('10000');
     expect(featureValue(t, '2', 'topics.max')).toBe('2');
     expect(featureValue(t, '30.00', 'usage.monthlyCostUsd.max')).toBe('30.00');
     expect(featureValue(t, '1440', 'schedule.minIntervalMinutes', (n) => '#' + n)).toBe('#1440');

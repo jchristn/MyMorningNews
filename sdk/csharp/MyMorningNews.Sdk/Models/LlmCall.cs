@@ -48,6 +48,11 @@ namespace MyMorningNews.Sdk.Models
         public string? ModelEndpointId { get; set; } = null;
 
         /// <summary>
+        /// Private connection identifier used for this call, or null for a workspace endpoint. Retained after key deletion; contains no credentials.
+        /// </summary>
+        public string? ProviderConnectionId { get; set; } = null;
+
+        /// <summary>
         /// Provider name. May be null.
         /// </summary>
         public string? Provider { get; set; } = null;

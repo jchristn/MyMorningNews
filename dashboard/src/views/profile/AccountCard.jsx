@@ -102,7 +102,11 @@ export default function AccountCard() {
           <UsageBar label={t('account.usage.cost')} used={Number(meter.monthToDateCostUsd) || 0} max={meter.monthlyCostCapUsd === null || meter.monthlyCostCapUsd === undefined ? null : Number(meter.monthlyCostCapUsd)} display={(v) => f.usd(v)} />
           <UsageBar label={t('account.usage.topics')} used={meter.topics} max={meter.topicsMax} display={number} />
           <UsageBar label={t('account.usage.runsToday')} used={meter.runsToday} max={meter.runsDailyMax} display={number} />
-          {meter.audioEnabled ? <UsageBar label={t('account.usage.audio')} used={meter.audioMinutes} max={meter.audioMinutesMax} display={minutes} /> : <p className="muted small">{t('account.usage.noAudio')}</p>}
+          {meter.systemSubscriptions !== undefined ? <UsageBar label={t('account.usage.systemSubscriptions')} used={meter.systemSubscriptions} max={meter.systemSubscriptionsMax} display={number} /> : null}
+          {meter.audioEnabled ? meter.audioGeneratedSecondsToday !== undefined ? <>
+            <UsageBar label={t('account.usage.audioToday')} used={meter.audioGeneratedSecondsToday / 60} max={meter.audioDailySecondsMax == null ? null : meter.audioDailySecondsMax / 60} display={minutes} />
+            <p className="muted small">{t('account.usage.audioReserved', { minutes: minutes(meter.audioReservedSecondsToday / 60), date: f.date(meter.audioResetUtc, { dateStyle: 'medium', timeStyle: 'short' }) })}</p>
+          </> : <UsageBar label={t('account.usage.audio')} used={meter.audioMinutes} max={meter.audioMinutesMax} display={minutes} /> : <p className="muted small">{t('account.usage.noAudio')}</p>}
           {meter.scheduleMinIntervalMinutes ? <p className="muted small">{t('account.usage.schedule', { minutes: f.number(meter.scheduleMinIntervalMinutes) })}</p> : null}
         </div>
       ) : null}
@@ -131,6 +135,7 @@ export default function AccountCard() {
           setTyped('');
         }}
       >
+        <p className="muted small">{t('account.delete.billingNotice')}</p>
         <FormField id="delete-confirm-email" label={t('account.delete.typeEmail')}>
           <input id="delete-confirm-email" type="email" value={typed} onChange={(e) => setTyped(e.target.value)} autoComplete="off" placeholder={email} />
         </FormField>

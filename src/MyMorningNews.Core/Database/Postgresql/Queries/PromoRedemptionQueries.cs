@@ -15,7 +15,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Column list in model order.
         /// </summary>
-        public const string Columns = "id, tenantid, promocodeid, code, userid, email, planassignmentid, channel, revokedutc, active, createdutc, lastupdateutc";
+        public const string Columns = "id, tenantid, promocodeid, code, userid, email, planassignmentid, channel, revokedutc, active, createdutc, lastupdateutc, signupbenefitid";
 
         /// <summary>
         /// Schema statements: table and indexes. Idempotent.
@@ -43,12 +43,12 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Insert statement with positional parameters in column order.
         /// </summary>
-        public const string Insert = "INSERT INTO promoredemptions (" + Columns + ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)";
+        public const string Insert = "INSERT INTO promoredemptions (" + Columns + ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)";
 
         /// <summary>
         /// Update statement. $1 is id, $2 is tenantid, then the mutable columns in model order.
         /// </summary>
-        public const string Update = "UPDATE promoredemptions SET promocodeid = $3, code = $4, userid = $5, email = $6, planassignmentid = $7, channel = $8, revokedutc = $9, active = $10, lastupdateutc = $11 WHERE id = $1 AND tenantid = $2";
+        public const string Update = "UPDATE promoredemptions SET promocodeid = $3, code = $4, userid = $5, email = $6, planassignmentid = $7, channel = $8, revokedutc = $9, active = $10, lastupdateutc = $11, signupbenefitid = $12 WHERE id = $1 AND tenantid = $2";
 
         /// <summary>
         /// Select by identifier within a tenant.

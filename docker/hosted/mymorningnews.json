@@ -46,9 +46,35 @@
     "usePlatformCredentials": true,
     "mobileAppId": "ai.latticetech.mymorningnews",
     "requestsPerMinutePerIp": 600,
-    "trustForwardedFor": true
+    "trustForwardedFor": true,
+    "newUsersRequireSubscription": false,
+    "nonBilledPlanKey": "catalog-only"
   },
   "tts": {
     "endpoint": "http://tts:8880/v1"
+  },
+  "billing": {
+    "enabled": false,
+    "allowSandbox": false,
+    "dashboardUrl": "https://app.mymorningnews.ai",
+    "stripe": {
+      "secretKey": "",
+      "webhookSecret": "",
+      "portalConfigurationId": ""
+    },
+    "apple": {
+      "bundleId": "ai.latticetech.mymorningnews",
+      "appAppleId": 6837840760,
+      "issuerId": "",
+      "keyId": "",
+      "privateKeyPem": "",
+      "allowSandbox": false
+    },
+    "google": {
+      "packageName": "ai.latticetech.mymorningnews",
+      "serviceAccountJson": "",
+      "pubSubAudience": "",
+      "pubSubServiceAccountEmail": ""
+    }
   }
 }

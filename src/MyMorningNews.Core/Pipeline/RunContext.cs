@@ -11,6 +11,12 @@ namespace MyMorningNews.Core.Pipeline
     /// </summary>
     public class RunContext
     {
+        /// <summary>Run-specific comparison instruction, selected with the immutable history snapshot.</summary>
+        public string HistoryInstructions { get; set; } = String.Empty;
+
+        /// <summary>Frozen comparison mode for this run; false means standalone output without historical novelty suppression.</summary>
+        public bool CompareHistory { get; set; } = false;
+
         /// <summary>
         /// Run.
         /// </summary>

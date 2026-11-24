@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { catalogApi } from '@/api/catalog';
 import { briefingsApi } from '@/api/research';
 import { isNotAvailable } from '@/api/errors';
 
@@ -54,14 +55,16 @@ export function createProgressStore({ storage = AsyncStorage, now = () => Date.n
      * Sync a briefing's position to `PUT /v1.0/api/briefings/{id}/progress` (plan section 35.5). A 404 means the
      * server does not have the route yet: stop trying for this session. Failures never reach the player.
      */
-    async sync(client, briefingId, position, duration) {
+    async sync(client, briefingId, position, duration, catalogPublicationId) {
       if (!remoteSupported || !client || !briefingId) return false;
       const completed = duration > 0 && position >= duration - COMPLETE_MARGIN_SECONDS;
       try {
-        await briefingsApi.saveProgress(client, briefingId, { positionSeconds: Math.floor(position), completed });
+        const body = { positionSeconds: Math.floor(position), completed };
+        if (catalogPublicationId) await catalogApi.saveProgress(client, catalogPublicationId, briefingId, body);
+        else await briefingsApi.saveProgress(client, briefingId, body);
         return true;
       } catch (error) {
-        if (isNotAvailable(error)) remoteSupported = false;
+        if (!catalogPublicationId && isNotAvailable(error)) remoteSupported = false;
         return false;
       }
     },

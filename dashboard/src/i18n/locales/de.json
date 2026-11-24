@@ -206,7 +206,11 @@
       "plans": "Tarife",
       "emailInsights": "E-Mail-Zustellung",
       "mcp": "MCP-Client",
-      "setup": "Einrichtung"
+      "setup": "Einrichtung",
+      "catalog": "Systemberichte",
+      "adminCatalog": "Systemkatalog",
+      "billing": "Tarife und Abrechnung",
+      "personalProviders": "Ihre API-Schlüssel"
     }
   },
   "routes": {
@@ -341,6 +345,12 @@
     },
     "setup": {
       "summary": "Was My Morning News zum Laufen braucht und ob jeder Teil funktioniert"
+    },
+    "catalog": {
+      "summary": "Wählen Sie gemeinsam genutzte Berichte, die einmal für alle recherchiert werden. Ihre Abonnements und Ihr Hörfortschritt bleiben privat."
+    },
+    "adminCatalog": {
+      "summary": "Wählen Sie gemeinsam genutzte Berichte, die einmal für alle recherchiert werden. Ihre Abonnements und Ihr Hörfortschritt bleiben privat."
     }
   },
   "topbar": {
@@ -766,7 +776,9 @@
       "sharing_enabled": "Briefings über öffentliche Links teilen",
       "sharing_maxExpiryDays": "Längste Gültigkeit eines geteilten Links (Tage)",
       "sharing_defaultExpiryDays": "Gültigkeit eines geteilten Links ohne Auswahl (Tage)",
-      "sharing_publicRequestsPerMinute": "Anfragen an geteilte Seiten pro Adresse und Minute"
+      "sharing_publicRequestsPerMinute": "Anfragen an geteilte Seiten pro Adresse und Minute",
+      "hosting_newUsersRequireSubscription": "Abonnement für neue Konten erforderlich",
+      "hosting_nonBilledPlanKey": "Nicht berechneter Tarif für neue Konten"
     }
   },
   "serverInfo": {
@@ -3527,6 +3539,24 @@
       "title": "Einlösungen im Zeitverlauf",
       "subtitle": "Pro Tag, nach Zeitpunkt der Einlösung",
       "empty": "Noch keine Einlösungen."
+    },
+    "offer": {
+      "kind": "Code-Vorteil",
+      "complimentary": "Kostenloser Zugang",
+      "paid": "Angebot für ein kostenpflichtiges Abo",
+      "help": "Bezahlangebote gelten für neue Konten. Der Zugang beginnt nach verifiziertem Kauf. Der gewählte Tarif bestimmt den Zugang, das Abrechnungspaket den Preis.",
+      "billingPlan": "Abrechnungspaket",
+      "paid5": "Bezahlt 5: 10 USD/Monat oder 100 USD/Jahr",
+      "paid20": "Bezahlt 20: 30 USD/Monat oder 300 USD/Jahr",
+      "percent": "Rabatt (%)",
+      "months": "Rabattdauer (Monate)",
+      "monthsHelp": "0 bedeutet dauerhaft. Gilt für Rechnungen innerhalb dieses Zeitraums, auch für Jahresrechnungen.",
+      "appleOffer": "Apple-Angebots-ID",
+      "googleOffer": "Google-Angebots-ID",
+      "nativeHelp": "Optional. Muss einem im Store eingerichteten Angebot entsprechen. Webrabatte gelten nicht automatisch für Store-Käufe.",
+      "percentRange": "0 bis 100 mit höchstens zwei Dezimalstellen eingeben.",
+      "monthsRange": "0 (dauerhaft) oder 1 bis 36 Monate eingeben.",
+      "durationHelp": "Dauer des individuellen Tarifs ab verifiziertem Kauf. 0 bedeutet, solange das Abo berechtigt bleibt."
     }
   },
   "plans": {
@@ -3569,7 +3599,15 @@
       "email_enabled": "E-Mail",
       "mobile_access": "Mobile App",
       "endpoints_custom": "Eigene Modell-Endpunkte",
-      "artifacts_pinned_max": "Angeheftete Berichte"
+      "artifacts_pinned_max": "Angeheftete Berichte",
+      "customTopics_max": "Eigene Themen",
+      "systemSubscriptions_max": "System-Abonnements",
+      "audio_dailySeconds_max": "Erzeugte Audiosekunden pro Tag",
+      "customResearch_enabled": "Eigene Recherche",
+      "oneTimeResearch_enabled": "Einmalige Recherche",
+      "catalog_freeOnly": "Nur kostenloser Katalog",
+      "catalog_audio_enabled": "Geteiltes Katalog-Audio",
+      "models_personalConnections_enabled": "Eigene Anbieter-Verbindungen"
     },
     "assignments": {
       "title": "Tarife eines Benutzers",
@@ -3611,6 +3649,20 @@
     "userPanel": {
       "action": "Tarif",
       "title": "Tarif für {email}"
+    },
+    "overrides": {
+      "title": "Nutzerlimits",
+      "help": "Ausnahmen gelten nur für diesen Nutzer. Vererbung wiederherstellen, um wieder dem zugewiesenen Tarif zu folgen.",
+      "inherited": "Tarifstandard",
+      "effective": "Wirksamer Wert",
+      "source": "Quelle",
+      "user": "Nutzerausnahme",
+      "plan": "Tarif",
+      "restore": "Vererbung wiederherstellen",
+      "value": "Ausnahmewert",
+      "valueHelp": "Null deaktiviert eine Menge; unlimited hebt die Grenze auf. Tägliches Audio wird in Sekunden angegeben.",
+      "reason": "Grund der Änderung",
+      "expires": "Ablauf (Ortszeit, optional)"
     }
   },
   "account": {
@@ -3639,7 +3691,10 @@
       "noAudio": "Audio ist in Ihrem Tarif nicht enthalten.",
       "schedule": "Themen laufen höchstens alle {minutes} Minuten.",
       "ofLimit": "{used} von {max}",
-      "noLimit": "{used} (kein Limit)"
+      "noLimit": "{used} (kein Limit)",
+      "audioToday": "Heute erzeugtes Audio (Minuten)",
+      "audioReserved": "Für die Erstellung reserviert: {minutes} Minuten. Zurückgesetzt am {date} (Mitternacht UTC).",
+      "systemSubscriptions": "Systemabonnements"
     },
     "export": {
       "button": "Meine Daten herunterladen",
@@ -3656,7 +3711,8 @@
       "scheduled": "Ihr Konto wird am {date} gelöscht. Melden Sie sich vorher an, um es zu behalten.",
       "messageDated": "Alle Sitzungen werden jetzt abgemeldet. Am {date} werden Ihr Konto und alle seine Daten (Themen, Briefings, Erkenntnisse, Feedback und Audio) endgültig gelöscht. Wenn Sie sich vorher anmelden, wird die Löschung abgebrochen.",
       "cancelledTitle": "Die Löschung Ihres Kontos wurde abgebrochen.",
-      "cancelledMessage": "Durch die Anmeldung bleiben Ihr Konto und alle seine Daten erhalten."
+      "cancelledMessage": "Durch die Anmeldung bleiben Ihr Konto und alle seine Daten erhalten.",
+      "billingNotice": "Das Löschen des Kontos stoppt Verlängerungen bei Stripe und Google. Kündige Apple-Abonnements in den App-Store-Einstellungen, um weitere Abbuchungen zu verhindern. Erneutes Anmelden aktiviert gekündigte Abonnements nicht wieder."
     },
     "deleted": {
       "title": "Ihr Konto ist zur Löschung vorgemerkt",
@@ -4701,5 +4757,89 @@
     "savedDefault": "Dieses Thema verwendet wieder die Standardstimme des Arbeitsbereichs",
     "speechOff": "Die Sprachausgabe ist auf diesem Server ausgeschaltet, daher gibt es nichts abzuspielen. Ein Serveradministrator kann sie in den Servereinstellungen einschalten.",
     "empty": "Es sind keine Stimmen verfügbar."
+  },
+  "topicHistory": {
+    "title": "Mit früheren Berichten vergleichen",
+    "help": "Nutzen Sie frühere Ausgaben, um Änderungen zu erklären. Historischer Text dient als Vergleich, nicht als aktueller Beleg.",
+    "Off": "Aus: eigenständiger Bericht",
+    "PreviousIssue": "Vorherige Ausgabe",
+    "RecentIssues": "Neueste Ausgaben",
+    "SinceDate": "Seit einem Datum",
+    "SpecificIssue": "Bestimmte Ausgabe",
+    "count": "Maximale Ausgaben (1 bis 20)",
+    "date": "Startdatum (UTC)",
+    "issue": "Vergleichsausgabe",
+    "choose": "Ausgabe auswählen",
+    "firstRun": "Ohne nutzbare frühere Ausgabe wird der nächste Bericht eigenständig erstellt."
+  },
+  "catalog": {
+    "title": "Systemberichte",
+    "summary": "Wählen Sie gemeinsam genutzte Berichte, die einmal für alle recherchiert werden. Ihre Abonnements und Ihr Hörfortschritt bleiben privat.",
+    "subscribe": "Abonnieren",
+    "unsubscribe": "Abbestellen",
+    "read": "Ausgaben lesen",
+    "empty": "Es wurden noch keine Systemberichte veröffentlicht.",
+    "noIssues": "Es sind noch keine Ausgaben verfügbar.",
+    "restricted": "Nicht in Ihrem Tarif enthalten",
+    "included": "In Ihrem Tarif enthalten",
+    "issues": "Ihre Systemberichtsausgaben",
+    "adminTitle": "Systemkatalog",
+    "freeEligible": "Im kostenlosen Tarif verfügbar",
+    "description": "Öffentliche Beschreibung",
+    "category": "Kategorie",
+    "Draft": "Entwurf",
+    "Published": "Veröffentlicht",
+    "Retired": "Eingestellt (Archiv lesbar)",
+    "Retracted": "Zurückgezogen (kein Zugriff)"
+  },
+  "billing": {
+    "title": "Tarife und Abrechnung",
+    "summary": "Tarif, Abonnement und Zahlungsanbieter verwalten.",
+    "nonBilled": "Ihr zugewiesener Tarif erfordert kein Abonnement.",
+    "verifying": "Zahlung wird geprüft. Zugang wird erst nach Anbieterbestätigung aktualisiert.",
+    "manage": "Abonnement verwalten",
+    "manageStore": "Dieses Abonnement in {provider} verwalten.",
+    "signupOffer": "Ihr Anmeldeangebot",
+    "discount": "{percent}% Rabatt auf berechtigte Angebote. Endgültige Bedingungen beim Bezahlen.",
+    "interval": "Abrechnungszeitraum",
+    "monthly": "Monatlich",
+    "yearly": "Jährlich",
+    "perYear": "pro Jahr",
+    "perMonth": "pro Monat",
+    "customTopics": "Eigene Themen: {count}",
+    "systemTopics": "System-Abonnements: {count}",
+    "audioDaily": "Erzeugtes Audio: {minutes} Minuten/Tag",
+    "terms": "Automatische Verlängerung. Kein Testzeitraum. Wiedergaben kostenlos. Tägliches Audiolimit wird um Mitternacht UTC zurückgesetzt.",
+    "subscribe": "Weiter zur Zahlung",
+    "unavailable": "Neue kostenpflichtige Käufe sind auf diesem Server nicht verfügbar."
+  },
+  "personalProviders": {
+    "title": "Ihre API-Schlüssel",
+    "summary": "Private Modell- und Sprachschlüssel verbinden. Nur Ihr Konto kann sie verwenden.",
+    "chat": "Recherchemodell",
+    "embedding": "Vektoreinbettungen",
+    "speech": "Sprachausgabe",
+    "saved": "Gespeichert. Testen Sie das Modell, bevor Sie eigene Schlüssel verwenden.",
+    "fundingSaved": "Finanzierungseinstellung aktualisiert.",
+    "byok": "Eigener API-Schlüssel",
+    "assigned": "Zugewiesener Tarif",
+    "fundingHelp": "Mit eigenen Schlüsseln sind unbegrenzte Briefings möglich. Ihr Anbieter rechnet direkt ab. Testen Sie zuerst ein Recherchemodell.",
+    "useAssigned": "Zugewiesenen Tarif nutzen",
+    "useByok": "Eigene Schlüssel nutzen",
+    "kind": "Verbindungstyp",
+    "verified": "Geprüft",
+    "unverified": "Noch nicht geprüft",
+    "speechHelp": "Audio benötigt einen separaten Sprachschlüssel oder eine aktivierte lokale Engine.",
+    "provider": "Anbieter",
+    "local": "Lokale Sprach-Engine",
+    "model": "Modell-ID",
+    "endpoint": "API-Basis-URL (optional)",
+    "voice": "Stimmen-ID",
+    "key": "API-Schlüssel",
+    "keyHelp": "Schlüssel werden verschlüsselt und nie zurückgegeben. Leer lassen, um den Schlüssel desselben Anbieters zu behalten.",
+    "tested": "Verbindung geprüft.",
+    "test": "Gespeicherte Verbindung testen",
+    "remove": "Verbindung entfernen",
+    "removeHelp": "Das Entfernen eines Schlüssels stoppt zugehörige Aufrufe. Es wird nie auf einen Plattformschlüssel zurückgegriffen."
   }
 }

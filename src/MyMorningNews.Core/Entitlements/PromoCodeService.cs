@@ -77,7 +77,12 @@ namespace MyMorningNews.Core.Entitlements
                 Reason = reason,
                 PlanName = reason == null ? plan?.Name : null,
                 DurationDays = reason == null ? pc?.DurationDays : null,
-                Message = Message(reason, plan?.Name, pc?.DurationDays)
+                BenefitKind = reason == null ? pc?.BenefitKind : null,
+                DiscountPercent = reason == null ? pc?.DiscountPercent : null,
+                DiscountMonths = reason == null ? pc?.DiscountMonths : null,
+                BillingPlanKey = reason == null ? pc?.BillingPlanKey : null,
+                Message = reason == null && pc?.BenefitKind == "PaidOffer"
+                    ? "This code reserves " + plan?.Name + " after a verified subscription purchase, with " + pc.DiscountPercent.ToString(System.Globalization.CultureInfo.InvariantCulture) + "% off eligible offers." : Message(reason, plan?.Name, pc?.DurationDays)
             };
         }
 
@@ -99,43 +104,14 @@ namespace MyMorningNews.Core.Entitlements
             PromoCode? pc = await _Database.PromoCodes.ReadByCodeAsync(normalized, token).ConfigureAwait(false);
             string? reason = await ReasonAsync(pc, tenantId, userId, newAccount, now, token).ConfigureAwait(false);
             if (reason != null) throw Fail(reason, pc);
-            PromoCode claimed = await _Database.PromoCodes.TryClaimAsync(pc!.Id, now, token).ConfigureAwait(false) ?? throw Fail(await ReasonAsync(pc, tenantId, userId, newAccount, now, token).ConfigureAwait(false) ?? "Exhausted", pc);
-            try
+            PromoRedemption? redemption = await _Database.PromoCodes.RedeemAsync(tenantId, userId, pc!.Id, channel, newAccount, token).ConfigureAwait(false);
+            if (redemption == null)
             {
-                User? user = await _Database.Users.ReadAsync(tenantId, userId, token).ConfigureAwait(false);
-                PlanAssignment? running = (await _Database.PlanAssignments.EnumerateAsync(new PlanAssignmentFilter { TenantId = tenantId, UserId = userId, PlanId = claimed.PlanId, PageSize = 200 }, token).ConfigureAwait(false)).Items
-                    .Where(a => !a.RevokedUtc.HasValue && (!a.EndsUtc.HasValue || a.EndsUtc > now)).OrderByDescending(a => a.EndsUtc ?? DateTime.MaxValue).FirstOrDefault();
-                DateTime starts = running?.EndsUtc.HasValue == true ? running.EndsUtc!.Value : now;
-                if (running != null && !running.EndsUtc.HasValue) starts = now;
-                PlanAssignment assignment = await _Database.PlanAssignments.CreateAsync(new PlanAssignment
-                {
-                    TenantId = tenantId,
-                    UserId = userId,
-                    PlanId = claimed.PlanId,
-                    Source = PlanSourceEnum.Promo,
-                    PromoCodeId = claimed.Id,
-                    StartsUtc = starts,
-                    EndsUtc = claimed.DurationDays.HasValue ? starts.AddDays(claimed.DurationDays.Value) : null,
-                    Note = "Promotional code " + claimed.Code + "."
-                }, token).ConfigureAwait(false);
-                PromoRedemption r = await _Database.PromoRedemptions.CreateAsync(new PromoRedemption
-                {
-                    TenantId = tenantId,
-                    PromoCodeId = claimed.Id,
-                    Code = claimed.Code,
-                    UserId = userId,
-                    Email = user?.Email,
-                    PlanAssignmentId = assignment.Id,
-                    Channel = channel
-                }, token).ConfigureAwait(false);
-                MyMorningNewsTelemetry.Increment(MyMorningNewsTelemetry.PromoRedemptions, "channel", channel.ToString(), "outcome", "redeemed");
-                return r;
+                pc = await _Database.PromoCodes.ReadAsync(pc.Id, token).ConfigureAwait(false);
+                throw Fail(await ReasonAsync(pc, tenantId, userId, newAccount, DateTime.UtcNow, token).ConfigureAwait(false) ?? "Unavailable", pc);
             }
-            catch
-            {
-                await _Database.PromoCodes.ReleaseAsync(claimed.Id, CancellationToken.None).ConfigureAwait(false);
-                throw;
-            }
+            MyMorningNewsTelemetry.Increment(MyMorningNewsTelemetry.PromoRedemptions, "channel", channel.ToString(), "outcome", "redeemed");
+            return redemption;
         }
 
         /// <summary>
@@ -148,13 +124,22 @@ namespace MyMorningNews.Core.Entitlements
         {
             ArgumentNullException.ThrowIfNull(redemption);
             if (redemption.RevokedUtc.HasValue) return redemption;
-            PlanAssignment? a = await _Database.PlanAssignments.ReadAsync(redemption.TenantId, redemption.PlanAssignmentId, token).ConfigureAwait(false);
+            PlanAssignment? a = redemption.PlanAssignmentId == null ? null : await _Database.PlanAssignments.ReadAsync(redemption.TenantId, redemption.PlanAssignmentId, token).ConfigureAwait(false);
             if (a != null && !a.RevokedUtc.HasValue)
             {
                 a.RevokedUtc = DateTime.UtcNow;
                 await _Database.PlanAssignments.UpdateAsync(a, token).ConfigureAwait(false);
             }
 
+            if (redemption.SignupBenefitId != null)
+            {
+                SignupBenefit? benefit = await _Database.SignupBenefits.ReadAsync(redemption.TenantId, redemption.SignupBenefitId, token).ConfigureAwait(false);
+                if (benefit != null)
+                {
+                    benefit.RevokedUtc = DateTime.UtcNow;
+                    await _Database.SignupBenefits.UpdateAsync(benefit, token).ConfigureAwait(false);
+                }
+            }
             redemption.RevokedUtc = DateTime.UtcNow;
             return await _Database.PromoRedemptions.UpdateAsync(redemption, token).ConfigureAwait(false);
         }
@@ -185,7 +170,9 @@ namespace MyMorningNews.Core.Entitlements
                     {
                         Code = code, Description = template.Description, PlanId = template.PlanId, DurationDays = template.DurationDays, MaxRedemptions = template.MaxRedemptions ?? 1,
                         PerUserLimit = template.PerUserLimit, StartsUtc = template.StartsUtc, ExpiresUtc = template.ExpiresUtc, Enabled = template.Enabled, NewAccountsOnly = template.NewAccountsOnly,
-                        BatchId = batch, CreatedByUserId = template.CreatedByUserId
+                        BatchId = batch, CreatedByUserId = template.CreatedByUserId,
+                        BenefitKind = template.BenefitKind, BillingPlanKey = template.BillingPlanKey, DiscountPercent = template.DiscountPercent,
+                        DiscountMonths = template.DiscountMonths, AppleOfferId = template.AppleOfferId, GoogleOfferId = template.GoogleOfferId
                     }, token).ConfigureAwait(false));
                     break;
                 }
@@ -208,7 +195,7 @@ namespace MyMorningNews.Core.Entitlements
             int active = 0;
             foreach (PromoRedemption r in rs.Where(r => !r.RevokedUtc.HasValue))
             {
-                PlanAssignment? a = await _Database.PlanAssignments.ReadAsync(r.TenantId, r.PlanAssignmentId, token).ConfigureAwait(false);
+                PlanAssignment? a = r.PlanAssignmentId == null ? null : await _Database.PlanAssignments.ReadAsync(r.TenantId, r.PlanAssignmentId, token).ConfigureAwait(false);
                 if (a != null && !a.RevokedUtc.HasValue && (!a.EndsUtc.HasValue || a.EndsUtc > now)) active++;
             }
 
@@ -253,9 +240,11 @@ namespace MyMorningNews.Core.Entitlements
             if (pc.StartsUtc.HasValue && pc.StartsUtc > now) return "NotStarted";
             if (pc.ExpiresUtc.HasValue && pc.ExpiresUtc <= now) return "Expired";
             if (pc.MaxRedemptions.HasValue && pc.RedemptionCount >= pc.MaxRedemptions.Value) return "Exhausted";
-            if (pc.NewAccountsOnly && !newAccount) return "NewAccountsOnly";
+            if ((pc.NewAccountsOnly || pc.BenefitKind == "PaidOffer") && !newAccount) return "NewAccountsOnly";
+            if ((await _Database.Plans.ReadAsync(pc.PlanId, token).ConfigureAwait(false))?.Active != true) return "Unavailable";
             if (tenantId != null && userId != null)
             {
+                if (pc.BenefitKind == "PaidOffer" && await _Database.SignupBenefits.CountAsync(new SignupBenefitFilter { TenantId = tenantId, UserId = userId }, token).ConfigureAwait(false) > 0) return "AlreadyRedeemed";
                 long used = await _Database.PromoRedemptions.CountAsync(new PromoRedemptionFilter { TenantId = tenantId, UserId = userId, PromoCodeId = pc.Id }, token).ConfigureAwait(false);
                 if (used >= pc.PerUserLimit) return "AlreadyRedeemed";
             }

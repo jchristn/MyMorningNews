@@ -105,6 +105,8 @@ export function mapDeepLink(input) {
   // The app's own routes pass through unchanged.
   if (APP_ROUTE_ROOTS.includes(first) && second && first !== 'insights') return '/' + segments.map(enc).join('/');
   switch (first) {
+    case 'catalog':
+      return second && third === 'issues' && segments[3] ? '/today/catalog/' + enc(second) + '/' + enc(segments[3]) : '/today/catalog';
     case 'today':
     case 'home':
       return '/today';
@@ -170,6 +172,7 @@ export function routeForNotification(data) {
   const d = data && typeof data === 'object' ? data : {};
   const str = (v) => (typeof v === 'string' && v.length > 0 ? v : null);
   const kind = str(d.kind) || '';
+  if (str(d.catalogPublicationId) && str(d.briefingId)) return '/today/catalog/' + enc(d.catalogPublicationId) + '/' + enc(d.briefingId);
   if (kind === 'audio.ready' && str(d.briefingId) && str(d.mediaAssetId)) return playerRoute(d.briefingId, d.mediaAssetId);
   if (kind === 'run.results' && str(d.runId)) return '/topics/runs/' + enc(d.runId);
   if (str(d.briefingId)) return '/today/briefings/' + enc(d.briefingId);
@@ -193,5 +196,5 @@ export function routeForInApp(notification) {
   if (!kind) return null;
   if (n.kind === 'CapReached') return '/account/usage';
   if (n.kind === 'RunFailed' && typeof n.runId === 'string' && n.runId) return '/topics/runs/' + enc(n.runId);
-  return routeForNotification({ kind, topicId: n.topicId, runId: n.runId, briefingId: n.briefingId, mediaAssetId: n.mediaAssetId, predictionId: n.predictionId });
+  return routeForNotification({ kind, catalogPublicationId: n.catalogPublicationId, topicId: n.topicId, runId: n.runId, briefingId: n.briefingId, mediaAssetId: n.mediaAssetId, predictionId: n.predictionId });
 }

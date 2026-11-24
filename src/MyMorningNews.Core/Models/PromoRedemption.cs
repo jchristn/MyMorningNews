@@ -105,18 +105,7 @@ namespace MyMorningNews.Core.Models
         /// Plan assignment it created.
         /// </summary>
         /// <exception cref="ArgumentNullException">Value is null or empty.</exception>
-        public string PlanAssignmentId
-        {
-            get
-            {
-                return _PlanAssignmentId;
-            }
-            set
-            {
-                if (String.IsNullOrWhiteSpace(value)) throw new ArgumentNullException(nameof(PlanAssignmentId));
-                _PlanAssignmentId = value;
-            }
-        }
+        public string? PlanAssignmentId { get; set; } = null;
 
         /// <summary>
         /// Where it was redeemed.
@@ -143,6 +132,9 @@ namespace MyMorningNews.Core.Models
         /// </summary>
         public DateTime LastUpdateUtc { get; set; } = DateTime.UtcNow;
 
+        /// <summary>Captured paid offer, or null for a complimentary grant.</summary>
+        public string? SignupBenefitId { get; set; } = null;
+
         #endregion
 
         #region Private-Members
@@ -152,7 +144,6 @@ namespace MyMorningNews.Core.Models
         private string _PromoCodeId = String.Empty;
         private string _Code = String.Empty;
         private string _UserId = String.Empty;
-        private string _PlanAssignmentId = String.Empty;
 
         #endregion
     }

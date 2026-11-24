@@ -163,6 +163,8 @@ export default function PromoCodeDetail() {
   const plan = plans.find((p) => p.plan.id === code.planId);
   const details = [
     { key: 'description', label: t('promo.fields.description'), value: code.description },
+    { key: 'benefit', label: t('promo.offer.kind'), value: stats.code.benefitKind === 'PaidOffer' ? t('promo.offer.paid') : t('promo.offer.complimentary') },
+    ...(stats.code.benefitKind === 'PaidOffer' ? [{ key: 'discount', label: t('promo.offer.percent'), value: String(stats.code.discountPercent) + '%' }, { key: 'billingPlan', label: t('promo.offer.billingPlan'), value: stats.code.billingPlanKey }] : []),
     { key: 'plan', label: t('promo.fields.plan'), value: plan ? <Link to="/dashboard/admin/plans">{plan.plan.name}</Link> : stats.planName },
     { key: 'duration', label: t('promo.fields.duration'), value: durationText(t, code.durationDays) },
     { key: 'max', label: t('promo.fields.maxRedemptions'), value: code.maxRedemptions ? f.number(code.maxRedemptions) : t('promo.usage.unlimited') },
@@ -191,7 +193,7 @@ export default function PromoCodeDetail() {
             <Link to="/dashboard/admin/promo-codes" className="button secondary small">
               <ArrowLeft size={14} aria-hidden="true" /> {t('promo.detail.back')}
             </Link>
-            <button type="button" className="button secondary small" onClick={() => setApplying(true)}>
+            <button type="button" className="button secondary small" disabled={stats.code.benefitKind === 'PaidOffer'} onClick={() => setApplying(true)}>
               <UserPlus size={14} aria-hidden="true" /> {t('promo.apply.open')}
             </button>
             <button type="button" className="button secondary small" onClick={toggle}>

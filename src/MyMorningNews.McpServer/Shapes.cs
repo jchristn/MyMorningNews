@@ -27,7 +27,8 @@ namespace MyMorningNews.McpServer
             return new Dictionary<string, object?>(StringComparer.Ordinal)
             {
                 { "id", t.Id }, { "name", t.Name }, { "status", t.Status.ToString() }, { "description", t.Description }, { "isOneTime", t.IsOneTime },
-                { "emailOnRun", t.EmailOnRun }, { "audioEnabled", t.AudioEnabled }, { "lastRunUtc", Iso(t.LastRunUtc) }, { "createdUtc", Iso(t.CreatedUtc) }
+                { "emailOnRun", t.EmailOnRun }, { "audioEnabled", t.AudioEnabled }, { "lastRunUtc", Iso(t.LastRunUtc) }, { "createdUtc", Iso(t.CreatedUtc) },
+                { "historyMode", t.HistoryMode.ToString() }, { "historyCount", t.HistoryCount }, { "historySinceUtc", Iso(t.HistorySinceUtc) }, { "historyBriefingId", t.HistoryBriefingId }
             };
         }
 
@@ -41,6 +42,7 @@ namespace MyMorningNews.McpServer
                 return Schema.Object(Schema.Props(
                     "id", Schema.String("Topic ID (top_...)."), "name", Schema.String("Name."), "status", Schema.String(Names<TopicStatusEnum>()),
                     "description", Schema.NullableString("Description."), "isOneTime", Schema.Boolean("One-time report rather than recurring."),
+                    "historyMode", Schema.String(Names<HistoryModeEnum>()), "historyCount", Schema.Integer("Maximum baseline issues.", 1, 20), "historySinceUtc", Schema.NullableString("Earliest baseline time."), "historyBriefingId", Schema.NullableString("Selected baseline issue."),
                     "emailOnRun", Schema.Boolean("Emails after every run."), "audioEnabled", Schema.Boolean("Every run briefing is turned into audio automatically."), "lastRunUtc", Schema.NullableString("Last run (UTC)."), "createdUtc", Schema.String("Created (UTC).")),
                     new[] { "id", "name", "status" }, true);
             }

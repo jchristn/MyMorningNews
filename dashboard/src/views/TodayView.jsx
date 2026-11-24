@@ -1,3 +1,4 @@
+import { CatalogIssues } from './catalog/CatalogIssues.jsx';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
@@ -248,6 +249,7 @@ export default function TodayView() {
         }
       />
 
+      <CatalogIssues compact />
       <ErrorState error={error} inline onRetry={load} onDismiss={() => setError(null)} />
 
       {pending.map((p) => (

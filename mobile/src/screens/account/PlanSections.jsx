@@ -64,7 +64,11 @@ export function UsageCard() {
         <KeyValue label={t('mobile.usage.cost')} value={usageValue(m.monthToDateCostUsd, m.monthlyCostCapUsd, cost, t)} />
         <KeyValue label={t('mobile.usage.topics')} value={usageValue(m.topics, m.topicsMax, count, t)} />
         <KeyValue label={t('mobile.usage.runsToday')} value={usageValue(m.runsToday, m.runsDailyMax, count, t)} />
-        {m.audioEnabled ? <KeyValue label={t('mobile.usage.audio')} value={usageValue(m.audioMinutes, m.audioMinutesMax, count, t)} /> : null}
+        {m.systemSubscriptions !== undefined ? <KeyValue label={t('mobile.dailyUsage.systemSubscriptions')} value={usageValue(m.systemSubscriptions, m.systemSubscriptionsMax, count, t)} /> : null}
+        {m.audioEnabled ? m.audioGeneratedSecondsToday !== undefined ? <>
+          <KeyValue label={t('mobile.dailyUsage.audioToday')} value={usageValue(m.audioGeneratedSecondsToday / 60, m.audioDailySecondsMax == null ? null : m.audioDailySecondsMax / 60, count, t)} />
+          <T variant="small">{t('mobile.dailyUsage.audioReserved', { minutes: count(m.audioReservedSecondsToday / 60), date: formatDate(m.audioResetUtc, i18n.language) })}</T>
+        </> : <KeyValue label={t('mobile.usage.audio')} value={usageValue(m.audioMinutes, m.audioMinutesMax, count, t)} /> : null}
         <T variant="small">{t('mobile.usage.resets', { date: formatDate(m.resetUtc, i18n.language) })}</T>
       </Card>
     </>
@@ -151,8 +155,8 @@ export function PlanSection() {
             <UsageCard />
             <SectionHeader title={t('mobile.plan.limits')} />
             <Card testID="plan-features">
-              {planFeatureRows(data.features).map((row) => (
-                <KeyValue key={row.key} label={row.label ? t('mobile.plan.features.' + row.label) : row.key} value={featureValue(row, t, i18n.language)} />
+              {planFeatureRows(data.features).filter(row => row.key !== 'topics.max' || data.features['customTopics.max'] === undefined).map((row) => (
+                <KeyValue key={row.key} label={row.label ? t('mobile.plan.features.' + row.label) : t('plans.featureNames.' + row.key.replaceAll('.', '_'), { defaultValue: row.key })} value={featureValue(row, t, i18n.language)} />
               ))}
             </Card>
             {Array.isArray(data.upcoming) && data.upcoming.length ? (
@@ -175,6 +179,8 @@ export function PlanSection() {
           </>
         )}
       </ResourceView>
+      <Button title={t('mobile.account.sections.billing')} kind="secondary" onPress={() => router.push('/account/billing')} />
+      <Button title={t('mobile.account.sections.providers')} kind="secondary" onPress={() => router.push('/account/providers')} />
       <SectionHeader title={t('mobile.promo.title')} />
       <T variant="muted">{t('mobile.promo.intro')}</T>
       <RedeemForm onRedeemed={(plan) => resource.setData(plan)} />

@@ -22,7 +22,9 @@ namespace MyMorningNews.Core.Audio
         /// </summary>
         public OpenAiCompatibleSpeechProvider()
         {
-            _Http = new HttpClient { Timeout = System.Threading.Timeout.InfiniteTimeSpan };
+            SocketsHttpHandler handler = Security.NetworkGuard.CreateHandler();
+            handler.AllowAutoRedirect = false;
+            _Http = new HttpClient(handler) { Timeout = System.Threading.Timeout.InfiniteTimeSpan };
         }
 
         /// <inheritdoc />

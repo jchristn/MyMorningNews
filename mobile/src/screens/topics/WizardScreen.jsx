@@ -1,3 +1,4 @@
+import { TopicHistory } from './TopicHistory';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -243,7 +244,7 @@ function Context({ data, update, generate, busy }) {
   );
 }
 
-function Review({ data, onComplete, onAbandon, busy }) {
+function Review({ data, update, onComplete, onAbandon, busy }) {
   const { t } = useTranslation();
   const [abandoning, setAbandoning] = useState(false);
   const done = isCompleted(data);
@@ -254,6 +255,7 @@ function Review({ data, onComplete, onAbandon, busy }) {
         <T variant="small">{t('mobile.wizard.reviewCounts', { dimensions: (data.dimensions || []).length, constraints: (data.constraints || []).length, answered: answeredCount(data.questions) })}</T>
         <T numberOfLines={8}>{data.topic.brief}</T>
       </Card>
+      <TopicHistory key={data.topic.id + data.topic.lastUpdateUtc} topic={data.topic} onSaved={(topic) => update((d) => ({ ...d, topic }))} disabled={Boolean(busy)} />
       {done ? (
         <Banner kind="success" title={t('mobile.wizard.applied')}>
           <Button title={t('mobile.wizard.openTopic')} kind="secondary" onPress={() => router.replace(topicHref(data.topic.id))} />
@@ -417,7 +419,7 @@ export function WizardScreen() {
       {data && step === 'Dimensions' ? <Dimensions data={data} update={update} generate={(k, g) => void generate(k, g)} busy={busy} /> : null}
       {data && step === 'Questions' ? <Questions data={data} update={update} generate={(k, g) => void generate(k, g)} busy={busy} /> : null}
       {data && step === 'Context' ? <Context key={data.topic.lastUpdateUtc || data.topic.id} data={data} update={update} generate={(k) => void generate(k)} busy={busy} /> : null}
-      {data && step === 'Review' ? <Review data={data} busy={busy} onComplete={() => void complete()} onAbandon={() => void abandon()} /> : null}
+      {data && step === 'Review' ? <Review data={data} update={update} busy={busy} onComplete={() => void complete()} onAbandon={() => void abandon()} /> : null}
       {data && step !== 'Review' ? (
         <ButtonRow>
           {previousStep(step) !== step ? <Button title={t('mobile.common.back')} kind="secondary" icon="arrow-back" disabled={Boolean(busy)} onPress={() => setStep(previousStep(step))} testID="wizard-back" /> : null}

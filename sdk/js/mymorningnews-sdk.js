@@ -1016,6 +1016,7 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
  * @property {string|null} topicId Topic to open.
  * @property {string|null} runId Run to open.
  * @property {string|null} briefingId Briefing to open.
+ * @property {string|null} catalogPublicationId System publication for a shared issue.
  * @property {string|null} mediaAssetId Audio to open.
  * @property {string|null} predictionId Prediction to open.
  * @property {string|null} readUtc When it was read; absent while unread.
@@ -1074,6 +1075,235 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
  * Error raised for any failed request: non-2xx responses, timeouts (`code` `Timeout`, `status` 0), and network
  * failures (`code` `NetworkError`, `status` 0).
  */
+// TYPES BEGIN PLATFORM
+/**
+ * @typedef {object} CatalogEntryResponse
+ * @property {string} [id] Publication identifier.
+ * @property {string} [title] Public title.
+ * @property {string | null} [description] Public description.
+ * @property {string} [category] Category.
+ * @property {string} [language] Language.
+ * @property {string} [status] Publication state.
+ * @property {boolean} [freeEligible] Available to free accounts.
+ * @property {boolean} [eligible] Caller may subscribe under their effective plan.
+ * @property {boolean} [subscribed] Caller has an active subscription.
+ * @property {boolean} [suspended] Subscription retained but suspended under the current allowance.
+ * @property {boolean | null} [emailEnabled] Subscriber email preference; null when not subscribed.
+ * @property {boolean | null} [pushEnabled] Subscriber push preference; null when not subscribed.
+ * @property {number} [sortOrder] Display order.
+ * @property {string | null} [publishedUtc] First publication time.
+ */
+
+/**
+ * @typedef {object} CatalogIssueResponse
+ * @property {string} [id] Canonical issue identifier.
+ * @property {string} [publicationId] Publication identifier.
+ * @property {string} [title] Issue title.
+ * @property {string | null} [markdown] Composed content on detail reads.
+ * @property {string} [createdUtc] Issue timestamp.
+ * @property {string | null} [audioPath] Authenticated shared audio path when ready.
+ * @property {number | null} [audioSeconds] Shared episode duration when known.
+ */
+
+/**
+ * @typedef {object} CatalogResearchResponse
+ * @property {Topic} [topic] Canonical topic. Never included in member catalog projections.
+ * @property {Schedule | null} [schedule] Primary research schedule, or null before configuration.
+ */
+
+/**
+ * @typedef {object} CatalogSubscription
+ * @property {string} [id] Identifier (prefix csu_).
+ * @property {string} [tenantId] Tenant identifier.
+ * @property {string} [userId] Owning user identifier.
+ * @property {string} [publicationId] Catalog publication.
+ * @property {boolean} [emailEnabled] Deliver canonical issues by email.
+ * @property {boolean} [pushEnabled] Send publication notifications.
+ * @property {boolean} [suspended] Subscription suspended by eligibility or plan changes.
+ * @property {boolean} [active] Whether the record is active.
+ * @property {string} [createdUtc] UTC creation time.
+ * @property {string} [lastUpdateUtc] UTC time of the last update.
+ */
+
+/**
+ * @typedef {object} CatalogPublication
+ * @property {string} [id] Identifier (prefix cat_).
+ * @property {string} [topicId] Canonical topic; publishing does not transfer subscriber ownership.
+ * @property {string} [ownerTenantId] Protected workspace of the canonical topic.
+ * @property {string} [title] Public catalog title.
+ * @property {string | null} [description] Public scope description. May be null.
+ * @property {string} [category] Catalog category.
+ * @property {string} [language] Output language.
+ * @property {string} [status] Draft, Published, Retired, or Retracted.
+ * @property {boolean} [freeEligible] Whether free catalog members may subscribe.
+ * @property {number} [sortOrder] Administrator display ordering.
+ * @property {number} [revision] Publication revision for optimistic concurrency.
+ * @property {string | null} [publishedUtc] First publication timestamp. May be null.
+ * @property {boolean} [active] Whether the record is active.
+ * @property {string} [createdUtc] UTC creation time.
+ * @property {string} [lastUpdateUtc] UTC time of the last update.
+ */
+
+/**
+ * @typedef {object} BillingStatusResponse
+ * @property {boolean} [enabled] Whether new purchases are enabled.
+ * @property {string} [purchaseAccountToken] Account binding UUID for native purchases.
+ * @property {boolean} [appleAvailable] Whether Apple verification is configured.
+ * @property {boolean} [googleAvailable] Whether Google verification is configured.
+ * @property {BillingOfferResponse[]} [offers] Available package offers.
+ * @property {SignupBenefit | null} [signupBenefit] Captured signup offer, if any. Payment verification is still required.
+ * @property {BillingSubscriptionResponse[]} [subscriptions] Verified subscriptions owned by this account.
+ * @property {EffectivePlan} [plan] Effective package including administrator overrides.
+ */
+
+/**
+ * @typedef {object} BillingOfferResponse
+ * @property {string} [key] Stable server offer key.
+ * @property {string} [planKey] Base package key.
+ * @property {string} [interval] Month or Year.
+ * @property {number} [usdCents] Web price in USD cents. Native clients use localized store prices.
+ * @property {string | null} [appleProductId] Apple product identifier, or null.
+ * @property {string | null} [googleProductId] Google subscription identifier, or null.
+ * @property {string | null} [googleBasePlanId] Google base-plan identifier, or null.
+ * @property {string} [planName] Display name.
+ * @property {string | null} [customTopics] Custom topic cap, unlimited, or null.
+ * @property {string | null} [systemSubscriptions] Separate system subscription cap, unlimited, or null.
+ * @property {string | null} [dailyAudioSeconds] Generated audio seconds per UTC day, unlimited, or null.
+ * @property {boolean} [webAvailable] Whether checkout is currently configured and enabled.
+ */
+
+/**
+ * @typedef {object} BillingSubscriptionResponse
+ * @property {string} [id] Internal subscription identifier.
+ * @property {string} [provider] Stripe, Apple, or Google.
+ * @property {string} [environment] Verified provider environment.
+ * @property {string} [planId] Base plan identifier.
+ * @property {string} [status] Active, Grace, Suspended, Canceled, Expired, or Revoked.
+ * @property {string | null} [endsUtc] Verified paid or grace period end.
+ * @property {boolean} [cancelAtPeriodEnd] Whether renewal has been canceled.
+ * @property {string} [lastVerifiedUtc] Last authoritative provider verification.
+ */
+
+/**
+ * @typedef {object} BillingRedirectResponse
+ * @property {string | null} [id] Checkout operation identifier, or null for portal.
+ * @property {string} [url] HTTPS provider destination.
+ * @property {string | null} [expiresUtc] Checkout expiry if applicable.
+ */
+
+/**
+ * @typedef {object} ProviderConnectionsResponse
+ * @property {ProviderConnection[]} [connections] Account-owned connections with secrets excluded from serialization.
+ * @property {boolean} [localSpeechAvailable] Whether an operator-funded local speech engine is offered to BYOK users.
+ * @property {EffectivePlan} [plan] Effective package and funding mode.
+ */
+
+/**
+ * @typedef {object} ProviderConnection
+ * @property {string} [id] Identifier (prefix pco_).
+ * @property {string} [tenantId] Tenant identifier.
+ * @property {string} [userId] Owning user identifier.
+ * @property {string} [kind] Chat, Embedding, or Speech.
+ * @property {string} [provider] Supported API provider or Local speech.
+ * @property {string | null} [endpoint] Optional provider URL; local speech uses operator configuration. May be null.
+ * @property {string} [model] Provider model identifier.
+ * @property {string | null} [voice] Speech voice identifier. May be null.
+ * @property {string | null} [secretLast4] Masked display suffix. May be null.
+ * @property {string | null} [validatedUtc] Successful connection test time, cleared on change. May be null.
+ * @property {boolean} [active] Whether the record is active.
+ * @property {string} [createdUtc] UTC creation time.
+ * @property {string} [lastUpdateUtc] UTC time of the last update.
+ */
+
+/**
+ * @typedef {object} SignupBenefit
+ * @property {string} [id] Identifier (prefix sbe_).
+ * @property {string} [tenantId] Tenant identifier.
+ * @property {string} [userId] Owning user identifier.
+ * @property {string} [promoCodeId] Source signup code.
+ * @property {string} [planId] Custom or standard package selected by the offer.
+ * @property {number} [discountPercent] Percentage discount captured at signup, from zero through 100.
+ * @property {number | null} [discountMonths] Discount billing months; null means ongoing. May be null.
+ * @property {string | null} [redeemedUtc] When the offer was applied to a verified subscription. May be null.
+ * @property {string | null} [revokedUtc] Explicit administrator revocation. May be null.
+ * @property {boolean} [active] Whether the record is active.
+ * @property {string} [createdUtc] UTC creation time.
+ * @property {string} [lastUpdateUtc] UTC time of the last update.
+ * @property {string} [billingPlanKey] Required base subscription package.
+ * @property {number | null} [durationDays] Custom tier duration from verified activation; null means subscription lifetime.
+ * @property {string | null} [redeemedSubscriptionId] Immutable verified subscription binding; null until payment is verified.
+ * @property {string | null} [appleOfferId] Captured native Apple offer identifier.
+ * @property {string | null} [googleOfferId] Captured native Google offer identifier.
+ */
+
+/**
+ * @typedef {object} CatalogPublicationRequest
+ * @property {string} [title] Required title, 1 to 200 characters.
+ * @property {string | null} [description] Public research scope, up to 4000 characters.
+ * @property {string} [category] Category, 1 to 100 characters.
+ * @property {string} [language] Output language, 1 to 16 characters.
+ * @property {boolean} [freeEligible] Allow free users to select this publication.
+ * @property {string} [status] Draft, Published, Retired, or Retracted.
+ * @property {number} [sortOrder] Display ordering.
+ * @property {number | null} [revision] Required current revision when updating; conflicts return 409.
+ */
+
+/**
+ * @typedef {object} CatalogResearchRequest
+ * @property {TopicUpsertRequest | null} [topic] Research scope, history and audio controls. Null leaves the topic unchanged.
+ * @property {ScheduleUpsertRequest | null} [schedule] Canonical research schedule. Null leaves scheduling unchanged.
+ */
+
+/**
+ * @typedef {object} CatalogSubscriptionRequest
+ * @property {boolean} [emailEnabled] Email new issues.
+ * @property {boolean} [pushEnabled] Notify mobile devices about new issues.
+ */
+
+/**
+ * @typedef {object} EntitlementOverrideRequest
+ * @property {string | null} [featureKey] Registered feature key, required. Maximum 128 characters.
+ * @property {string | null} [value] Valid feature value, required. Numeric zero and unlimited have different meanings.
+ * @property {string | null} [reason] Required explanation, retained in the audit trail. Maximum 1000 characters.
+ * @property {string | null} [expiresUtc] Optional UTC expiry. Null means no expiry.
+ */
+
+/**
+ * @typedef {object} BillingCheckoutRequest
+ * @property {string} [offerKey] Configured offer key; prices, customers, and redirect URLs cannot be supplied by the caller.
+ */
+
+/**
+ * @typedef {object} BillingPurchaseRequest
+ * @property {string} [provider] Apple or Google.
+ * @property {string | null} [signedTransaction] StoreKit signed transaction, required for Apple. Never logged.
+ * @property {string | null} [purchaseToken] Play purchase token, required for Google. Never logged.
+ */
+
+/**
+ * @typedef {object} ProviderConnectionRequest
+ * @property {string} [kind] Chat, Embedding, or Speech. Default Chat.
+ * @property {string} [provider] Anthropic, OpenAi, Gemini, XAi, OpenAiCompatible, or Local speech.
+ * @property {string} [model] Model identifier, required except for Local speech.
+ * @property {string | null} [endpoint] Optional API endpoint. Custom URLs must pass server egress restrictions.
+ * @property {string | null} [apiKey] Write-only API key, up to 8192 characters. Null retains a key for the same provider and URL.
+ * @property {string | null} [voice] Speech voice identifier. Required for a personal speech API.
+ */
+
+/**
+ * @typedef {object} FundingModeRequest
+ * @property {string} [mode] Personal or Platform. Default Personal.
+ */
+
+/**
+ * @typedef {object} BriefingProgressRequest
+ * @property {number} [positionSeconds] Playback position in seconds. Minimum 0, maximum 86400.
+ * @property {number | null} [durationSeconds] Episode length in seconds, when the player knows it.
+ * @property {boolean} [completed] Whether the caller finished listening.
+ */
+
+// TYPES END PLATFORM
+
 export class MyMorningNewsError extends Error {
     /**
      * Create an error.
@@ -3753,6 +3983,89 @@ export class SetupResource extends ResourceGroup {
  * The caller's account: plan, promotional codes, usage meter, data export, and deletion. Also the public sign-up, email
  * verification, and password reset routes, which never send the client's credentials.
  */
+// BEGIN PLATFORM
+/** Platform account/catalog API. All authorization is enforced by the server. */
+export class CatalogResource extends ResourceGroup {
+    /** Browse published system briefings and account eligibility. */
+    list(options = {}) { return this._req("GET", "/v1.0/api/catalog", { query: options }); }
+    /** List private subscriptions, including suspended subscriptions. */
+    subscriptions(options = {}) { return this._req("GET", "/v1.0/api/catalog/subscriptions", { query: options }); }
+    /** Subscribe or update delivery preferences. Separate system subscription limits apply. */
+    subscribe(id, body) { return this._req("PUT", "/v1.0/api/catalog/" + seg(id, "id") + "/subscription", { body: requireValue(body, "body") }); }
+    /** Unsubscribe without deleting canonical content. */
+    unsubscribe(id) { return this._req("DELETE", "/v1.0/api/catalog/" + seg(id, "id") + "/subscription"); }
+    /** List issues readable through this subscription. */
+    issues(id, options = {}) { return this._req("GET", "/v1.0/api/catalog/" + seg(id, "id") + "/issues", { query: options }); }
+    /** List shared issues across all current subscriptions. */
+    allIssues(options = {}) { return this._req("GET", "/v1.0/api/catalog/issues", { query: options }); }
+    /** Read shared content without exposing canonical workspace internals. */
+    issue(id, issueId) { return this._req("GET", "/v1.0/api/catalog/" + seg(id, "id") + "/issues/" + seg(issueId, "issueId")); }
+    /** Download authenticated shared audio. Playback does not consume generation allowance. */
+    audio(id, issueId, options = {}) { return this._req("GET", "/v1.0/api/catalog/" + seg(id, "id") + "/issues/" + seg(issueId, "issueId") + "/audio", { raw: true, signal: options.signal, range: options.range }); }
+    /** Read private listening progress. */
+    progress(id, issueId) { return this._req("GET", "/v1.0/api/catalog/" + seg(id, "id") + "/issues/" + seg(issueId, "issueId") + "/progress"); }
+    /** Save private listening progress for a shared issue. */
+    saveProgress(id, issueId, body) { return this._req("PUT", "/v1.0/api/catalog/" + seg(id, "id") + "/issues/" + seg(issueId, "issueId") + "/progress", { body: requireValue(body, "body") }); }
+}
+
+/** Platform account/catalog API. All authorization is enforced by the server. */
+export class BillingResource extends ResourceGroup {
+    /** Read offers, native account binding, verified subscriptions and effective access. */
+    status() { return this._req("GET", "/v1.0/api/account/billing"); }
+    /** Create or resume one account-bound Stripe checkout. A redirect never grants access. */
+    checkout(body) { return this._req("POST", "/v1.0/api/account/billing/checkout", { body: requireValue(body, "body") }); }
+    /** Open management for the verified Stripe customer. */
+    portal() { return this._req("POST", "/v1.0/api/account/billing/portal"); }
+    /** Verify or restore an account-bound Apple or Google purchase. */
+    verifyPurchase(body) { return this._req("POST", "/v1.0/api/account/billing/purchases", { body: requireValue(body, "body") }); }
+}
+
+/** Platform account/catalog API. All authorization is enforced by the server. */
+export class ProvidersResource extends ResourceGroup {
+    /** List only this account's masked provider connections. */
+    list() { return this._req("GET", "/v1.0/api/account/providers"); }
+    /** Connect or rotate a write-only model or speech API key. Clears validation. */
+    save(body) { return this._req("PUT", "/v1.0/api/account/providers", { body: requireValue(body, "body") }); }
+    /** Run a fixed small probe with this account's credential. Six probes per minute. */
+    test(id) { return this._req("POST", "/v1.0/api/account/providers/" + seg(id, "id") + "/test"); }
+    /** Remove a private key. BYOK calls fail closed, without platform fallback. */
+    remove(id) { return this._req("DELETE", "/v1.0/api/account/providers/" + seg(id, "id")); }
+    /** Choose Personal or Platform funding. A verified chat connection is required for BYOK. */
+    setFunding(body) { return this._req("PUT", "/v1.0/api/account/funding", { body: requireValue(body, "body") }); }
+}
+
+/** Platform account/catalog API. All authorization is enforced by the server. */
+export class AdminCatalogResource extends ResourceGroup {
+    /** System administrator: list every publication lifecycle state. */
+    list(options = {}) { return this._req("GET", "/v1.0/api/admin/catalog", { query: options }); }
+    /** System administrator: read a canonical publication. */
+    get(id) { return this._req("GET", "/v1.0/api/admin/catalog/" + seg(id, "id")); }
+    /** System administrator: create a canonical system topic and publication. */
+    create(body) { return this._req("POST", "/v1.0/api/admin/catalog", { body: requireValue(body, "body") }); }
+    /** System administrator: update publication with current revision for conflict protection. */
+    update(id, body) { return this._req("PUT", "/v1.0/api/admin/catalog/" + seg(id, "id"), { body: requireValue(body, "body") }); }
+    /** System administrator: inspect canonical issue projections. */
+    issues(id, options = {}) { return this._req("GET", "/v1.0/api/admin/catalog/" + seg(id, "id") + "/issues", { query: options }); }
+    /** System administrator: read canonical research and schedule configuration. */
+    research(id) { return this._req("GET", "/v1.0/api/admin/catalog/" + seg(id, "id") + "/research"); }
+    /** System administrator: configure canonical research and schedule. */
+    saveResearch(id, body) { return this._req("PUT", "/v1.0/api/admin/catalog/" + seg(id, "id") + "/research", { body: requireValue(body, "body") }); }
+    /** System administrator: start a canonical research run. */
+    run(id) { return this._req("POST", "/v1.0/api/admin/catalog/" + seg(id, "id") + "/run"); }
+}
+
+/** Platform account/catalog API. All authorization is enforced by the server. */
+export class AdminEntitlementsResource extends ResourceGroup {
+    /** System administrator: inspect effective user allowances and provenance. */
+    get(tenantId, userId) { return this._req("GET", "/v1.0/tenants/" + seg(tenantId, "tenantId") + "/users/" + seg(userId, "userId") + "/entitlements"); }
+    /** System administrator: override one limit with an audit reason and optional expiry. */
+    set(tenantId, userId, body) { return this._req("PUT", "/v1.0/tenants/" + seg(tenantId, "tenantId") + "/users/" + seg(userId, "userId") + "/entitlements", { body: requireValue(body, "body") }); }
+    /** System administrator: remove an override and restore plan inheritance. */
+    clear(tenantId, userId, featureKey) { return this._req("DELETE", "/v1.0/tenants/" + seg(tenantId, "tenantId") + "/users/" + seg(userId, "userId") + "/entitlements/" + seg(featureKey, "featureKey")); }
+}
+
+// END PLATFORM
+
 export class AccountResource extends ResourceGroup {
     /**
      * My usage against my plan's limits. Needs a signed-in user, not an access key (400 otherwise).
@@ -3931,6 +4244,12 @@ export class SettingsResource extends ResourceGroup {
     get() {
         return this._req('GET', '/v1.0/api/settings');
     }
+
+    /** Save the complete settings object returned by get(); masked secrets are preserved. */
+    update(settings) {
+        if (!settings || typeof settings !== 'object' || Array.isArray(settings)) throw new TypeError('settings must be an object.');
+        return this._req('PUT', '/v1.0/api/settings', { body: settings });
+    }
 }
 
 /**
@@ -4094,6 +4413,11 @@ export class MyMorningNewsClient {
         /** @type {NotificationsResource} */
         this.notifications = new NotificationsResource(this, '/v1.0/api/notifications');
         /** @type {AccountResource} */
+        this.catalog = new CatalogResource(this, "");
+        this.billing = new BillingResource(this, "");
+        this.providers = new ProvidersResource(this, "");
+        this.adminCatalog = new AdminCatalogResource(this, "");
+        this.adminEntitlements = new AdminEntitlementsResource(this, "");
         this.account = new AccountResource(this, '/v1.0/api/account');
         /** @type {McpServersResource} */
         this.mcpServers = new McpServersResource(this, '/v1.0/api/mcp-servers');

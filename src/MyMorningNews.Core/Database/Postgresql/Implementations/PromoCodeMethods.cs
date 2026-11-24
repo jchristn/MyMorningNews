@@ -49,6 +49,42 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
         #region Public-Methods
 
         /// <inheritdoc />
+        public async Task<PromoRedemption?> RedeemAsync(string tenantId, string userId, string codeId, PromoChannelEnum channel, bool newAccount, CancellationToken token = default)
+        {
+            byte[] hash = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes("promo:" + tenantId + ":" + userId));
+            long key = System.Buffers.Binary.BinaryPrimitives.ReadInt64BigEndian(hash);
+            // The account lock is acquired before the statement snapshot. The conditional UPDATE also serializes the global counter.
+            string sql = @"WITH claimed AS (
+ UPDATE promocodes p SET redemptioncount=redemptioncount+1,lastupdateutc=now()
+ WHERE p.id=$3 AND p.active AND p.enabled AND (p.startsutc IS NULL OR p.startsutc<=now())
+ AND (p.expiresutc IS NULL OR p.expiresutc>now()) AND (p.maxredemptions IS NULL OR p.redemptioncount<p.maxredemptions)
+ AND (NOT p.newaccountsonly OR $5) AND EXISTS(SELECT 1 FROM plans WHERE id=p.planid AND active)
+ AND EXISTS(SELECT 1 FROM users WHERE tenantid=$1 AND id=$2 AND active)
+ AND (SELECT COUNT(*) FROM promoredemptions WHERE tenantid=$1 AND userid=$2 AND promocodeid=p.id)<p.peruserlimit
+ AND (p.benefitkind='Complimentary' OR ($5 AND NOT EXISTS(SELECT 1 FROM signupbenefits WHERE tenantid=$1 AND userid=$2)))
+ RETURNING p.*
+), timing AS (
+ SELECT p.*, COALESCE((SELECT CASE WHEN bool_or(endsutc IS NULL) THEN now() ELSE GREATEST(now(),MAX(endsutc)) END
+ FROM planassignments WHERE tenantid=$1 AND userid=$2 AND planid=p.planid AND active AND revokedutc IS NULL
+ AND (endsutc IS NULL OR endsutc>now())),now()) AS beginutc FROM claimed p
+), granted AS (
+ INSERT INTO planassignments (" + PlanAssignmentQueries.Columns + @")
+ SELECT $6,$1,$2,planid,'Promo',id,beginutc,CASE WHEN durationdays IS NULL THEN NULL ELSE beginutc+durationdays*INTERVAL '1 day' END,
+ NULL,'Promotional code '||code||'.',NULL,TRUE,now(),now() FROM timing WHERE benefitkind='Complimentary' RETURNING id
+), benefit AS (
+ INSERT INTO signupbenefits (" + SignupBenefitQueries.Columns + @")
+ SELECT $7,$1,$2,id,planid,discountpercent,discountmonths,NULL,NULL,TRUE,now(),now(),billingplankey,durationdays,NULL,appleofferid,googleofferid
+ FROM claimed WHERE benefitkind='PaidOffer' RETURNING id
+)
+ INSERT INTO promoredemptions (" + PromoRedemptionQueries.Columns + @")
+ SELECT $8,$1,p.id,p.code,$2,(SELECT email FROM users WHERE tenantid=$1 AND id=$2),(SELECT id FROM granted),$4,NULL,TRUE,now(),now(),(SELECT id FROM benefit)
+ FROM claimed p RETURNING " + PromoRedemptionQueries.Columns;
+            List<PromoRedemption> rows = await Driver.QueryWithAdvisoryLockAsync(key, sql, PromoRedemptionMethods.Map,
+                new object?[] { tenantId, userId, codeId, channel.ToString(), newAccount, IdGenerator.GeneratePlanAssignmentId(), IdGenerator.GenerateSignupBenefitId(), IdGenerator.GeneratePromoRedemptionId() }, token).ConfigureAwait(false);
+            return rows.FirstOrDefault();
+        }
+
+        /// <inheritdoc />
         public async Task<PromoCode> CreateAsync(PromoCode obj, CancellationToken token = default)
         {
             ArgumentNullException.ThrowIfNull(obj);
@@ -73,7 +109,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.CreatedByUserId,
                 obj.Active,
                 DateTime.SpecifyKind(obj.CreatedUtc, DateTimeKind.Utc),
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc), obj.BenefitKind, obj.BillingPlanKey, obj.DiscountPercent, obj.DiscountMonths, obj.AppleOfferId, obj.GoogleOfferId).ConfigureAwait(false);
             return obj;
         }
 
@@ -106,7 +142,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.BatchId,
                 obj.CreatedByUserId,
                 obj.Active,
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc), obj.BenefitKind, obj.BillingPlanKey, obj.DiscountPercent, obj.DiscountMonths, obj.AppleOfferId, obj.GoogleOfferId).ConfigureAwait(false);
             if (affected < 1) throw new KeyNotFoundException("PromoCode " + obj.Id + " was not found.");
             return obj;
         }
@@ -204,6 +240,12 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             obj.Active = reader.GetBoolean(14);
             obj.CreatedUtc = DateTime.SpecifyKind(reader.GetDateTime(15), DateTimeKind.Utc);
             obj.LastUpdateUtc = DateTime.SpecifyKind(reader.GetDateTime(16), DateTimeKind.Utc);
+            obj.BenefitKind = reader.GetString(17);
+            obj.BillingPlanKey = reader.IsDBNull(18) ? null : reader.GetString(18);
+            obj.DiscountPercent = reader.GetDecimal(19);
+            obj.DiscountMonths = reader.IsDBNull(20) ? null : reader.GetInt32(20);
+            obj.AppleOfferId = reader.IsDBNull(21) ? null : reader.GetString(21);
+            obj.GoogleOfferId = reader.IsDBNull(22) ? null : reader.GetString(22);
             return obj;
         }
 

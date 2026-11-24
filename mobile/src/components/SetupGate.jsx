@@ -54,7 +54,7 @@ export function useSetupStatus() {
     setState((s) => ({ ...s, busy: true }));
     try {
       const status = normalizeSetupStatus(await setupApi.status(client));
-      if (id === sequence.current) setState({ phase: status.ready ? 'ready' : 'blocked', status, error: null, checkedAt: new Date(), busy: false });
+      if (id === sequence.current) setState({ phase: status.ready || status.checks.some(c => c.key === 'personal:chat') ? 'ready' : 'blocked', status, error: null, checkedAt: new Date(), busy: false });
     } catch (error) {
       if (id !== sequence.current) return;
       setState((s) => ({ ...s, phase: s.phase === 'blocked' ? 'blocked' : 'error', error, checkedAt: new Date(), busy: false }));

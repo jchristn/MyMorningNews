@@ -1,5 +1,7 @@
 # My Morning News mobile app
 
+Platform packages, shared catalog subscriptions, topic history, private provider keys and billing are described in the [platform operator guide](../docs/PLATFORM_OPERATIONS.md). Native store availability and deployment evidence are tracked separately from source support.
+
 The My Morning News app for iPhone, iPad, and Android phones and tablets (plan section 35). Read the latest
 briefing, listen to it with the screen locked, manage topics, see how the research is working, and manage your
 account, against the hosted service or a server you run yourself.

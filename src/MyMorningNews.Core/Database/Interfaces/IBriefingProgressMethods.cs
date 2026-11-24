@@ -13,6 +13,9 @@ namespace MyMorningNews.Core.Database.Interfaces
     /// </summary>
     public interface IBriefingProgressMethods
     {
+        /// <summary>Save one caller's playback position atomically; concurrent devices share one row per briefing.</summary>
+        Task<BriefingProgress> UpsertAsync(BriefingProgress progress, CancellationToken token = default);
+
         /// <summary>
         /// Create a record. An empty identifier is backfilled.
         /// </summary>

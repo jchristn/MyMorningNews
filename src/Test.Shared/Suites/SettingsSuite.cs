@@ -34,13 +34,46 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "UpdateLiveAndRestart", "Live fields apply immediately; restart-required fields are pending", UpdateAsync, "fast"),
                 Cases.Case(S, "MaskNeverOverwritesSecret", "Submitting the mask leaves the secret unchanged", MaskPreservedAsync, "fast"),
                 Cases.Case(S, "OverriddenNotWritten", "Environment-overridden values are not written to the file", OverriddenNotWrittenAsync, "fast"),
-                Cases.Case(S, "Clamping", "Numeric settings are clamped to their documented ranges", ClampAsync, "fast")
+                Cases.Case(S, "Clamping", "Numeric settings are clamped to their documented ranges", ClampAsync, "fast"),
+                Cases.Case(S, "NestedBillingSecrets", "Nested provider secrets are masked, preserved on updates, and overridden by environment without being written", NestedBillingAsync, "fast")
             });
         }
 
         private static string TempFile()
         {
             return Path.Combine(Path.GetTempPath(), "mmn-settings-" + Guid.NewGuid().ToString("N") + ".json");
+        }
+
+        private static async Task NestedBillingAsync(CancellationToken token)
+        {
+            string file = TempFile();
+            try
+            {
+                ServerSettings original = new ServerSettings();
+                original.Billing.Stripe.SecretKey = "stripe-file-test";
+                original.Billing.Apple.PrivateKeyPem = "apple-file-test";
+                original.Billing.Google.ServiceAccountJson = "google-file-test";
+                File.WriteAllText(file, Serializer.Serialize(original));
+                SettingsService service = new SettingsService(file, key => key == "MYMORNINGNEWS_BILLING_STRIPE_SECRET_KEY" ? "stripe-env-test" : null);
+                SettingsResponse described = service.Describe();
+                Assert.True(described.Settings.Billing.Stripe.SecretKey == SettingsService.SecretMask
+                    && described.Settings.Billing.Apple.PrivateKeyPem == SettingsService.SecretMask
+                    && described.Settings.Billing.Google.ServiceAccountJson == SettingsService.SecretMask, "all nested provider secrets masked");
+                Assert.True(described.Fields.Any(f => f.Path == "billing.stripe.secretKey" && f.Secret && f.OverriddenByEnvironment), "nested environment metadata");
+                Assert.Equal("stripe-env-test", service.Current.Billing.Stripe.SecretKey, "nested environment applied");
+                StripeSettings clientReference = service.Current.Billing.Stripe;
+                described.Settings.Hosting.NewUsersRequireSubscription = false;
+                described.Settings.Hosting.NonBilledPlanKey = "catalog-only";
+                described.Settings.Billing.Enabled = true;
+                described.Settings.Billing.Stripe.WebhookSecret = "whsec-new-test";
+                SettingsUpdateResult saved = await service.UpdateAsync(described.Settings, token).ConfigureAwait(false);
+                Assert.True(saved.Success && saved.AppliedLive.Contains("billing.stripe.webhookSecret"), "nested secret updated live");
+                Assert.Equal("whsec-new-test", clientReference.WebhookSecret, "existing provider clients see live leaf updates");
+                ServerSettings stored = Serializer.Deserialize<ServerSettings>(File.ReadAllText(file))!;
+                Assert.True(stored.Billing.Stripe.SecretKey == "stripe-file-test" && stored.Billing.Apple.PrivateKeyPem == "apple-file-test" && stored.Billing.Google.ServiceAccountJson == "google-file-test", "mask and environment do not overwrite disk secrets");
+                Assert.True(!stored.Hosting.NewUsersRequireSubscription && stored.Hosting.NonBilledPlanKey == "catalog-only" && stored.Billing.Enabled, "new signup policy persists independently of purchase availability");
+            }
+            finally { File.Delete(file); }
         }
 
         private static Task CreatesFileAsync(CancellationToken token)

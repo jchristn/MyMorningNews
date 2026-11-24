@@ -282,7 +282,79 @@ COALESCE(SUM(reasoningtokens), 0) AS reasoning FROM llmcalls WHERE runid IS NOT 
             {
                 "CREATE INDEX IF NOT EXISTS ix_findings_topic_titlehash ON findings (tenantid, topicid, (md5(lower(btrim(title)))))"
             }),
-            new SchemaMigration(26, "Public share links for briefings", BriefingShareQueries.Schema)
+            new SchemaMigration(26, "Public share links for briefings", BriefingShareQueries.Schema),
+            new SchemaMigration(27, "Account policies, overrides, catalog subscriptions and billing foundations", Concat(
+                AccountPlanPolicyQueries.Schema,
+                EntitlementOverrideQueries.Schema,
+                CatalogPublicationQueries.Schema,
+                CatalogSubscriptionQueries.Schema,
+                AudioReservationQueries.Schema,
+                BillingSubscriptionQueries.Schema,
+                SignupBenefitQueries.Schema)),
+            new SchemaMigration(28, "Explicit historical briefing context", Concat(RunHistorySnapshotQueries.Schema, new List<string>
+            {
+                "ALTER TABLE topics ADD COLUMN IF NOT EXISTS historymode VARCHAR(32) NOT NULL DEFAULT 'RecentIssues'",
+                "ALTER TABLE topics ALTER COLUMN historymode SET DEFAULT 'Off'",
+                "ALTER TABLE topics ADD COLUMN IF NOT EXISTS historycount INTEGER NOT NULL DEFAULT 5 CHECK (historycount BETWEEN 1 AND 20)",
+                "ALTER TABLE topics ADD COLUMN IF NOT EXISTS historysinceutc TIMESTAMPTZ",
+                "ALTER TABLE topics ADD COLUMN IF NOT EXISTS historybriefingid VARCHAR(64)",
+                "ALTER TABLE topics ADD COLUMN IF NOT EXISTS historytokenbudget INTEGER NOT NULL DEFAULT 8000 CHECK (historytokenbudget BETWEEN 256 AND 32000)"
+            })),
+            new SchemaMigration(29, "Protected catalog workspace", new List<string>
+            {
+                "CREATE TABLE IF NOT EXISTS catalogowner (singleton BOOLEAN PRIMARY KEY CHECK (singleton), tenantid VARCHAR(64) NOT NULL UNIQUE REFERENCES tenants(id) ON DELETE RESTRICT, userid VARCHAR(64) NOT NULL UNIQUE REFERENCES users(id) ON DELETE RESTRICT)"
+            }),
+            new SchemaMigration(30, "Unique signup policies and benefits", new List<string>
+            {
+                "CREATE UNIQUE INDEX IF NOT EXISTS ux_accountplanpolicies_tenantid_userid ON accountplanpolicies (tenantid, userid)",
+                "CREATE UNIQUE INDEX IF NOT EXISTS ux_signupbenefits_tenantid_userid ON signupbenefits (tenantid, userid)"
+            }),
+            new SchemaMigration(31, "Immutable generated audio usage ledger", AudioUsageQueries.Schema),
+            new SchemaMigration(32, "Verified billing account bindings, checkout operations, and durable event inbox", Concat(
+                BillingAccountQueries.Schema, BillingCheckoutQueries.Schema, BillingEventQueries.Schema, new List<string>
+                {
+                    "ALTER TABLE billingsubscriptions ADD COLUMN IF NOT EXISTS verificationsecretencrypted TEXT",
+                    "CREATE INDEX IF NOT EXISTS ix_billingevents_work ON billingevents (retryutc) WHERE status <> 'Completed'",
+                    "CREATE UNIQUE INDEX IF NOT EXISTS ux_billingcheckouts_pending ON billingcheckouts (tenantid, userid) WHERE status = 'Pending' AND active"
+                })),
+            new SchemaMigration(33, "Atomic signup offers and verified custom tier binding", new List<string>
+            {
+                "ALTER TABLE promoredemptions ALTER COLUMN planassignmentid DROP NOT NULL",
+                "ALTER TABLE promocodes ADD COLUMN IF NOT EXISTS benefitkind VARCHAR(32) NOT NULL DEFAULT 'Complimentary'",
+                "ALTER TABLE promocodes ADD COLUMN IF NOT EXISTS billingplankey VARCHAR(64)",
+                "ALTER TABLE promocodes ADD COLUMN IF NOT EXISTS discountpercent NUMERIC(5,2) NOT NULL DEFAULT 0",
+                "ALTER TABLE promocodes ADD COLUMN IF NOT EXISTS discountmonths INTEGER",
+                "ALTER TABLE promocodes ADD COLUMN IF NOT EXISTS appleofferid VARCHAR(128)",
+                "ALTER TABLE promocodes ADD COLUMN IF NOT EXISTS googleofferid VARCHAR(128)",
+                "ALTER TABLE signupbenefits ADD COLUMN IF NOT EXISTS billingplankey VARCHAR(64) NOT NULL DEFAULT 'paid-5'",
+                "ALTER TABLE signupbenefits ADD COLUMN IF NOT EXISTS durationdays INTEGER",
+                "ALTER TABLE signupbenefits ADD COLUMN IF NOT EXISTS redeemedsubscriptionid VARCHAR(64)",
+                "ALTER TABLE signupbenefits ADD COLUMN IF NOT EXISTS appleofferid VARCHAR(128)",
+                "ALTER TABLE signupbenefits ADD COLUMN IF NOT EXISTS googleofferid VARCHAR(128)",
+                "ALTER TABLE promoredemptions ADD COLUMN IF NOT EXISTS signupbenefitid VARCHAR(64)",
+                "ALTER TABLE promocodes ADD CONSTRAINT ck_promocode_benefit CHECK (benefitkind IN ('Complimentary','PaidOffer') AND discountpercent BETWEEN 0 AND 100 AND (discountmonths IS NULL OR discountmonths BETWEEN 1 AND 36))",
+                "CREATE INDEX IF NOT EXISTS ix_promoredemptions_account_code ON promoredemptions (tenantid,userid,promocodeid)"
+            }),
+            new SchemaMigration(34, "Stable checkout request snapshots", new List<string>
+            {
+                "ALTER TABLE billingcheckouts ADD COLUMN IF NOT EXISTS priceid VARCHAR(128)",
+                "ALTER TABLE billingcheckouts ADD COLUMN IF NOT EXISTS customeremail VARCHAR(320)",
+                "ALTER TABLE billingcheckouts ADD COLUMN IF NOT EXISTS returnurl TEXT",
+                "ALTER TABLE billingcheckouts ADD COLUMN IF NOT EXISTS signupbenefitid VARCHAR(64)"
+            }),
+            new SchemaMigration(35, "Prevent superseded native purchases from reactivating", new List<string>
+            {
+                "ALTER TABLE billingsubscriptions ADD COLUMN IF NOT EXISTS supersededbyid VARCHAR(64)"
+            }),
+            new SchemaMigration(36, "Private per-user model and speech credentials", ProviderConnectionQueries.Schema),
+            new SchemaMigration(37, "Private model accounting attribution", new List<string>
+            {
+                "ALTER TABLE llmcalls ADD COLUMN IF NOT EXISTS providerconnectionid VARCHAR(64)"
+            }),
+            new SchemaMigration(38, "Durable shared briefing delivery", Concat(CatalogDeliveryQueries.Schema, new List<string>
+            {
+                "ALTER TABLE notifications ADD COLUMN IF NOT EXISTS catalogpublicationid VARCHAR(64)"
+            }))
         };
 
         private static List<string> Concat(params IReadOnlyList<string>[] parts)

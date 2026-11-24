@@ -1,3 +1,4 @@
+import { CatalogIssues } from '../catalog/CatalogScreens';
 import React, { useCallback, useState } from 'react';
 import { RefreshControl } from 'react-native';
 import { router } from 'expo-router';
@@ -113,6 +114,7 @@ export function TodayScreen() {
   return (
     <Screen testID="today-screen" refreshControl={<RefreshControl refreshing={today.refreshing} onRefresh={today.reload} tintColor={p.primary} />}>
       <T variant="muted">{t('mobile.today.greeting', { name: displayName(state.user) })}</T>
+      <CatalogIssues compact />
       <SectionHeader title={t('mobile.today.latest')} />
       <ResourceView resource={today} feature={t('mobile.features.briefings')}>
         {() => (

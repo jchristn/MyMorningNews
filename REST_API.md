@@ -426,7 +426,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 
 ## Route reference
 
-317 routes in 48 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
+350 routes in 53 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
 
 | Group | Routes | What it covers |
 |---|---|---|
@@ -473,11 +473,16 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [Analytics](#analytics) | 9 | Reports over relevance, accuracy, feedback, suggestions, reasons, quality, email, and runs. Defaults to the caller's data for the last 90 days. |
 | [Prompts](#prompts) | 9 | Prompt templates by key and scope, topic overrides, version history, rollback, reset, and the prompt lab. |
 | [Promotional codes](#promotional-codes) | 9 | Global administrators create, generate, and manage promotional codes that grant plans. |
-| [Plans](#plans) | 6 | Global administrators manage plans, their entitlement values, and per-user plan assignments. |
+| [Plans](#plans) | 9 | Global administrators manage plans, their entitlement values, and per-user plan assignments. |
 | [Account](#account) | 10 | Sign-up, email verification, password reset, the signed-in user's plan, usage meter, data export, account deletion, and promotional code redemption. |
 | [Public](#public) | 15 | Routes reached from emails, podcast apps, and shared briefing links. They take no session; a token in the path is the credential. Feedback and unsubscribe pages are HTML forms. Shared briefing pages are server-rendered HTML with no script and no cookies. |
 | [OpenAPI](#openapi) | 2 | The OpenAPI 3 document and Swagger UI that Watson serves. They are not tagged in the document itself. |
 | [MCP servers](#mcp-servers) | 8 | Remote MCP tool servers that agentic research may call, their discovered tools, and the per-tool allow-list. |
+| [Catalog](#catalog) | 10 | System-wide publications and private subscriptions. Shared content is generated once; subscription and personal topic limits are separate. |
+| [Catalog administration](#catalog-administration) | 8 | Global administrators manage canonical publications, research, schedules, and lifecycle revisions. Tenant administrators cannot publish. |
+| [Billing](#billing) | 4 | Account-bound Stripe checkout and native Apple/Google verification. A redirect never grants access; verified provider state determines benefits. |
+| [Billing callbacks](#billing-callbacks) | 3 | Provider-authenticated callbacks. Ordinary bearer sessions do not authorize these routes. |
+| [Account providers](#account-providers) | 5 | Account-private encrypted model and speech connections, validation and explicit BYOK funding. No secret is returned. |
 
 ## Health
 
@@ -1825,7 +1830,7 @@ Security and administration events: sign-ins, denials, credential use, settings 
 | `userId` | string | Administrators: another user's records. Ignored for members. |
 | `principalId` | string | User, credential, or system principal. |
 | `authorizationResult` | string | Authorization outcome, for example Permitted or Denied. |
-| `eventType` | enum (`AuthSuccess`, `AuthFailure`, `SessionIssued`, `SessionRefreshed`, `SessionRevoked`, `CredentialCreated`, `CredentialUsed`, `CredentialRevoked`, `AuthorizationDenied`, `AuthorizationBypass`, `RoleChanged`, `PermissionChanged`, `AssignmentChanged`, `UserChanged`, `TenantChanged`, `SettingsChanged`, `RestartRequested`, `CredentialRevealed`, `VaultCredentialChanged`, `FeedTokenCreated`, `FeedTokenRevoked`, `PromoCodeChanged`, `PromoCodeRedeemed`, `PlanChanged`, `CredentialUpdated`, `ShareCreated`, `ShareRevoked`) | Audit event type. |
+| `eventType` | enum (`AuthSuccess`, `AuthFailure`, `SessionIssued`, `SessionRefreshed`, `SessionRevoked`, `CredentialCreated`, `CredentialUsed`, `CredentialRevoked`, `AuthorizationDenied`, `AuthorizationBypass`, `RoleChanged`, `PermissionChanged`, `AssignmentChanged`, `UserChanged`, `TenantChanged`, `SettingsChanged`, `RestartRequested`, `CredentialRevealed`, `VaultCredentialChanged`, `FeedTokenCreated`, `FeedTokenRevoked`, `PromoCodeChanged`, `PromoCodeRedeemed`, `PlanChanged`, `CredentialUpdated`, `ShareCreated`, `ShareRevoked`, `CatalogChanged`) | Audit event type. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -3635,7 +3640,10 @@ Request body: [`TopicUpsertRequest`](#topicupsertrequest).
   "seedQueries": [
     "utility-scale battery storage 2026",
     "sodium-ion grid storage"
-  ]
+  ],
+  "historyMode": "Off",
+  "historyCount": 5,
+  "historyTokenBudget": 8000
 }
 ```
 
@@ -3700,7 +3708,10 @@ Request body: [`TopicUpsertRequest`](#topicupsertrequest).
   "seedQueries": [
     "utility-scale battery storage 2026",
     "sodium-ion grid storage"
-  ]
+  ],
+  "historyMode": "Off",
+  "historyCount": 5,
+  "historyTokenBudget": 8000
 }
 ```
 
@@ -9573,6 +9584,9 @@ Global administrators manage plans, their entitlement values, and per-user plan 
 | POST | [`/v1.0/api/admin/plans`](#post-v10apiadminplans) | Create a plan |
 | GET | [`/v1.0/api/admin/plan-assignments`](#get-v10apiadminplan-assignments) | A user's plan assignments |
 | POST | [`/v1.0/api/admin/plan-assignments`](#post-v10apiadminplan-assignments) | Give a user a plan |
+| GET | [`/v1.0/tenants/{tenantId}/users/{userId}/entitlements`](#get-v10tenantstenantidusersuseridentitlements) | Read a user's effective plan and overrides |
+| PUT | [`/v1.0/tenants/{tenantId}/users/{userId}/entitlements`](#put-v10tenantstenantidusersuseridentitlements) | Set one user entitlement override |
+| DELETE | [`/v1.0/tenants/{tenantId}/users/{userId}/entitlements/{featureKey}`](#delete-v10tenantstenantidusersuseridentitlementsfeaturekey) | Restore a user entitlement to its plan default |
 | PUT | [`/v1.0/api/admin/plans/{id}`](#put-v10apiadminplansid) | Update a plan and its values |
 | DELETE | [`/v1.0/api/admin/plan-assignments/{id}`](#delete-v10apiadminplan-assignmentsid) | Revoke a plan assignment |
 
@@ -9684,6 +9698,98 @@ Request body: [`PlanGrantRequest`](#plangrantrequest).
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/admin/plan-assignments" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### GET /v1.0/tenants/{tenantId}/users/{userId}/entitlements
+
+**Read a user's effective plan and overrides.** Global administrators only.
+
+- Auth: `Admin:Admin` (`PromoCodeAdmin`).
+- Response: [`EffectivePlan`](#effectiveplan)
+- Notes: System administrator: inspect effective user allowances and provenance.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `tenantId` | string | `{{tenantId}}` |
+| `userId` | string | `{{memberUserId}}` |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/tenants/default/users/usr_mwpentj7_Wc3S0yLg2bVfQ8nRk1a/entitlements" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### PUT /v1.0/tenants/{tenantId}/users/{userId}/entitlements
+
+**Set one user entitlement override.** Global administrators only. Zero is a real limit; unlimited removes the quantity cap.
+
+- Auth: `Admin:Admin` (`PromoCodeAdmin`).
+- Response: [`EffectivePlan`](#effectiveplan)
+- Notes: System administrator: override one limit with an audit reason and optional expiry.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `tenantId` | string | `{{tenantId}}` |
+| `userId` | string | `{{memberUserId}}` |
+
+Request body: [`EntitlementOverrideRequest`](#entitlementoverriderequest).
+
+```json
+{
+  "featureKey": "customTopics.max",
+  "value": "8",
+  "reason": "Approved account allowance"
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict |
+
+```bash
+curl -s -X PUT "http://127.0.0.1:12100/v1.0/tenants/default/users/usr_mwpentj7_Wc3S0yLg2bVfQ8nRk1a/entitlements" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### DELETE /v1.0/tenants/{tenantId}/users/{userId}/entitlements/{featureKey}
+
+**Restore a user entitlement to its plan default.** Global administrators only.
+
+- Auth: `Admin:Admin` (`PromoCodeAdmin`).
+- Response: `No content`
+- Notes: System administrator: remove an override and restore plan inheritance.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `tenantId` | string | `{{tenantId}}` |
+| `userId` | string | `{{memberUserId}}` |
+| `featureKey` | string | `{{featureKey}}` |
+
+| Status | Meaning |
+|---|---|
+| 204 | No content |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict |
+
+```bash
+curl -s -X DELETE "http://127.0.0.1:12100/v1.0/tenants/default/users/usr_mwpentj7_Wc3S0yLg2bVfQ8nRk1a/entitlements/<featureKey>" \
+  -H "Authorization: Bearer $TOKEN"
 ```
 
 ### PUT /v1.0/api/admin/plans/{id}
@@ -10664,6 +10770,921 @@ curl -s -X PUT "http://127.0.0.1:12100/v1.0/api/mcp-servers/mcp_mwpff31e_Qw8eRt5
   -H "Content-Type: application/json" --data-binary @body.json
 ```
 
+## Catalog
+
+System-wide publications and private subscriptions. Shared content is generated once; subscription and personal topic limits are separate.
+
+| Method | Path | Summary |
+|---|---|---|
+| GET | [`/v1.0/api/catalog`](#get-v10apicatalog) | Browse system briefings |
+| GET | [`/v1.0/api/catalog/subscriptions`](#get-v10apicatalogsubscriptions) | My system briefing subscriptions |
+| GET | [`/v1.0/api/catalog/issues`](#get-v10apicatalogissues) | Shared issues from all my subscriptions |
+| PUT | [`/v1.0/api/catalog/{id}/subscription`](#put-v10apicatalogidsubscription) | Subscribe to a system briefing |
+| DELETE | [`/v1.0/api/catalog/{id}/subscription`](#delete-v10apicatalogidsubscription) | Unsubscribe from a system briefing |
+| GET | [`/v1.0/api/catalog/{id}/issues`](#get-v10apicatalogidissues) | List subscribed system briefing issues |
+| GET | [`/v1.0/api/catalog/{id}/issues/{issueId}`](#get-v10apicatalogidissuesissueid) | Read a subscribed system briefing issue |
+| GET | [`/v1.0/api/catalog/{id}/issues/{issueId}/audio`](#get-v10apicatalogidissuesissueidaudio) | Stream shared system briefing audio |
+| GET | [`/v1.0/api/catalog/{id}/issues/{issueId}/progress`](#get-v10apicatalogidissuesissueidprogress) | Read personal progress for a shared issue |
+| PUT | [`/v1.0/api/catalog/{id}/issues/{issueId}/progress`](#put-v10apicatalogidissuesissueidprogress) | Save personal progress for a shared issue |
+
+### GET /v1.0/api/catalog
+
+**Browse system briefings.**
+
+- Auth: `Briefing:Read` (`BriefingRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`CatalogEntryResponse`](#catalogentryresponse)
+- Notes: Browse published system briefings and account eligibility.
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `category` | string | Finding category. |
+| `language` | string |  |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/catalog?pageSize=10" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### GET /v1.0/api/catalog/subscriptions
+
+**My system briefing subscriptions.**
+
+- Auth: `Briefing:Read` (`BriefingRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`CatalogSubscription`](#catalogsubscription)
+- Notes: List private subscriptions, including suspended subscriptions.
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/catalog/subscriptions?pageSize=10" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### GET /v1.0/api/catalog/issues
+
+**Shared issues from all my subscriptions.** Newest first. Content-only projection; suspended or retracted publications are excluded.
+
+- Auth: `Briefing:Read` (`BriefingRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`CatalogIssueResponse`](#catalogissueresponse)
+- Notes: List shared issues across all current subscriptions.
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `audioOnly` | boolean |  |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/catalog/issues?pageSize=10" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### PUT /v1.0/api/catalog/{id}/subscription
+
+**Subscribe to a system briefing.** Idempotent. System subscriptions have a separate plan limit from custom topics.
+
+- Auth: `Briefing:Read` (`BriefingRead`).
+- Response: [`CatalogSubscription`](#catalogsubscription)
+- Notes: Subscribe or update delivery preferences. Separate system subscription limits apply.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{publicationId}}` |
+
+Request body: [`CatalogSubscriptionRequest`](#catalogsubscriptionrequest).
+
+```json
+{
+  "emailEnabled": true,
+  "pushEnabled": true
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 402 | : `CapReached` |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict |
+
+```bash
+curl -s -X PUT "http://127.0.0.1:12100/v1.0/api/catalog/<publicationId>/subscription" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### DELETE /v1.0/api/catalog/{id}/subscription
+
+**Unsubscribe from a system briefing.**
+
+- Auth: `Briefing:Read` (`BriefingRead`).
+- Response: `No content`
+- Notes: Unsubscribe without deleting canonical content.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{publicationId}}` |
+
+| Status | Meaning |
+|---|---|
+| 204 | No content |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict |
+
+```bash
+curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/catalog/<publicationId>/subscription" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### GET /v1.0/api/catalog/{id}/issues
+
+**List subscribed system briefing issues.**
+
+- Auth: `Briefing:Read` (`BriefingRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`CatalogIssueResponse`](#catalogissueresponse)
+- Notes: List issues readable through this subscription.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{publicationId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/catalog/<publicationId>/issues?pageSize=10" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### GET /v1.0/api/catalog/{id}/issues/{issueId}
+
+**Read a subscribed system briefing issue.**
+
+- Auth: `Briefing:Read` (`BriefingRead`).
+- Response: [`CatalogIssueResponse`](#catalogissueresponse)
+- Notes: Read shared content without exposing canonical workspace internals.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{publicationId}}` |
+| `issueId` | string | `{{issueId}}` |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/catalog/<publicationId>/issues/<issueId>" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### GET /v1.0/api/catalog/{id}/issues/{issueId}/audio
+
+**Stream shared system briefing audio.** Supports byte ranges. Replaying shared audio does not consume personal generation minutes.
+
+- Auth: `Briefing:Read` (`BriefingRead`).
+- Response: `binary audio`
+- Notes: Download authenticated shared audio. Playback does not consume generation allowance.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{publicationId}}` |
+| `issueId` | string | `{{issueId}}` |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/catalog/<publicationId>/issues/<issueId>/audio" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### GET /v1.0/api/catalog/{id}/issues/{issueId}/progress
+
+**Read personal progress for a shared issue.**
+
+- Auth: `Briefing:Read` (`BriefingRead`).
+- Response: [`BriefingProgress`](#briefingprogress)
+- Notes: Read private listening progress.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{publicationId}}` |
+| `issueId` | string | `{{issueId}}` |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/catalog/<publicationId>/issues/<issueId>/progress" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### PUT /v1.0/api/catalog/{id}/issues/{issueId}/progress
+
+**Save personal progress for a shared issue.**
+
+- Auth: `Briefing:Read` (`BriefingRead`).
+- Response: [`BriefingProgress`](#briefingprogress)
+- Notes: Save private listening progress for a shared issue.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{publicationId}}` |
+| `issueId` | string | `{{issueId}}` |
+
+Request body: [`BriefingProgressRequest`](#briefingprogressrequest).
+
+```json
+{
+  "positionSeconds": 312.5,
+  "durationSeconds": 905,
+  "completed": false
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict |
+
+```bash
+curl -s -X PUT "http://127.0.0.1:12100/v1.0/api/catalog/<publicationId>/issues/<issueId>/progress" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+## Catalog administration
+
+Global administrators manage canonical publications, research, schedules, and lifecycle revisions. Tenant administrators cannot publish.
+
+| Method | Path | Summary |
+|---|---|---|
+| GET | [`/v1.0/api/admin/catalog`](#get-v10apiadmincatalog) | Manage system publications |
+| POST | [`/v1.0/api/admin/catalog`](#post-v10apiadmincatalog) | Create a canonical system topic and publication |
+| GET | [`/v1.0/api/admin/catalog/{id}`](#get-v10apiadmincatalogid) | Read a system publication |
+| PUT | [`/v1.0/api/admin/catalog/{id}`](#put-v10apiadmincatalogid) | Publish, retire, retract, or edit a system publication |
+| GET | [`/v1.0/api/admin/catalog/{id}/issues`](#get-v10apiadmincatalogidissues) | Inspect canonical published issues |
+| GET | [`/v1.0/api/admin/catalog/{id}/research`](#get-v10apiadmincatalogidresearch) | Read canonical research and schedule settings |
+| PUT | [`/v1.0/api/admin/catalog/{id}/research`](#put-v10apiadmincatalogidresearch) | Configure canonical research and schedule |
+| POST | [`/v1.0/api/admin/catalog/{id}/run`](#post-v10apiadmincatalogidrun) | Research a system publication now |
+
+### GET /v1.0/api/admin/catalog
+
+**Manage system publications.**
+
+- Auth: `Topic:Update` (`TopicWrite`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`CatalogPublication`](#catalogpublication)
+- Notes: System administrator: list every publication lifecycle state.
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/admin/catalog?pageSize=10" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/admin/catalog
+
+**Create a canonical system topic and publication.**
+
+- Auth: `Topic:Update` (`TopicWrite`).
+- Response: [`CatalogPublication`](#catalogpublication)
+- Notes: System administrator: create a canonical system topic and publication.
+
+Request body: [`CatalogPublicationRequest`](#catalogpublicationrequest).
+
+```json
+{
+  "title": "Daily science",
+  "description": "Verified science developments",
+  "category": "Science",
+  "language": "en",
+  "freeEligible": true,
+  "status": "Draft",
+  "revision": 1
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 201 | Created |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/admin/catalog" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### GET /v1.0/api/admin/catalog/{id}
+
+**Read a system publication.**
+
+- Auth: `Topic:Update` (`TopicWrite`).
+- Response: [`CatalogPublication`](#catalogpublication)
+- Notes: System administrator: read a canonical publication.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{publicationId}}` |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/admin/catalog/<publicationId>" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### PUT /v1.0/api/admin/catalog/{id}
+
+**Publish, retire, retract, or edit a system publication.** Requires the current revision. Returns 409 on concurrent edits.
+
+- Auth: `Topic:Update` (`TopicWrite`).
+- Response: [`CatalogPublication`](#catalogpublication)
+- Notes: System administrator: update publication with current revision for conflict protection.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{publicationId}}` |
+
+Request body: [`CatalogPublicationRequest`](#catalogpublicationrequest).
+
+```json
+{
+  "title": "Daily science",
+  "description": "Verified science developments",
+  "category": "Science",
+  "language": "en",
+  "freeEligible": true,
+  "status": "Draft",
+  "revision": 1
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict |
+
+```bash
+curl -s -X PUT "http://127.0.0.1:12100/v1.0/api/admin/catalog/<publicationId>" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### GET /v1.0/api/admin/catalog/{id}/issues
+
+**Inspect canonical published issues.**
+
+- Auth: `Topic:Update` (`TopicWrite`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`CatalogIssueResponse`](#catalogissueresponse)
+- Notes: System administrator: inspect canonical issue projections.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{publicationId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/admin/catalog/<publicationId>/issues?pageSize=10" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### GET /v1.0/api/admin/catalog/{id}/research
+
+**Read canonical research and schedule settings.**
+
+- Auth: `Topic:Update` (`TopicWrite`).
+- Response: [`CatalogResearchResponse`](#catalogresearchresponse)
+- Notes: System administrator: read canonical research and schedule configuration.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{publicationId}}` |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/admin/catalog/<publicationId>/research" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### PUT /v1.0/api/admin/catalog/{id}/research
+
+**Configure canonical research and schedule.** Topic and schedule ownership come exclusively from the publication.
+
+- Auth: `Topic:Update` (`TopicWrite`).
+- Response: [`CatalogResearchResponse`](#catalogresearchresponse)
+- Notes: System administrator: configure canonical research and schedule.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{publicationId}}` |
+
+Request body: [`CatalogResearchRequest`](#catalogresearchrequest).
+
+```json
+{
+  "topic": {
+    "brief": "Report independently verified science developments with citations.",
+    "historyMode": "PreviousIssue",
+    "historyCount": 5,
+    "audioEnabled": true
+  }
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict |
+
+```bash
+curl -s -X PUT "http://127.0.0.1:12100/v1.0/api/admin/catalog/<publicationId>/research" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/api/admin/catalog/{id}/run
+
+**Research a system publication now.**
+
+- Auth: `Topic:Update` (`TopicWrite`).
+- Response: [`Run`](#run)
+- Notes: System administrator: start a canonical research run.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{publicationId}}` |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/admin/catalog/<publicationId>/run" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+## Billing
+
+Account-bound Stripe checkout and native Apple/Google verification. A redirect never grants access; verified provider state determines benefits.
+
+| Method | Path | Summary |
+|---|---|---|
+| GET | [`/v1.0/api/account/billing`](#get-v10apiaccountbilling) | My billing offers, account binding and verified subscriptions |
+| POST | [`/v1.0/api/account/billing/checkout`](#post-v10apiaccountbillingcheckout) | Start or resume web subscription checkout |
+| POST | [`/v1.0/api/account/billing/portal`](#post-v10apiaccountbillingportal) | Open management for my verified Stripe customer |
+| POST | [`/v1.0/api/account/billing/purchases`](#post-v10apiaccountbillingpurchases) | Verify or restore my native subscription |
+
+### GET /v1.0/api/account/billing
+
+**My billing offers, account binding and verified subscriptions.**
+
+- Auth: `User:Read` (`PromoCodeRedeem`).
+- Response: [`BillingStatusResponse`](#billingstatusresponse)
+- Notes: Read offers, native account binding, verified subscriptions and effective access.
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict: `BillingUnavailable` |
+| 502 | Bad Gateway: `BillingVerificationFailed` |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/account/billing" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/account/billing/checkout
+
+**Start or resume web subscription checkout.** No trial. Checkout success alone never grants access. One pending checkout per account.
+
+- Auth: `User:Read` (`PromoCodeRedeem`).
+- Response: [`BillingRedirectResponse`](#billingredirectresponse)
+- Notes: Create or resume one account-bound Stripe checkout. A redirect never grants access.
+
+Request body: [`BillingCheckoutRequest`](#billingcheckoutrequest).
+
+```json
+{
+  "offerKey": "<offerKey>"
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict: `BillingUnavailable` |
+| 502 | Bad Gateway: `BillingVerificationFailed` |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/account/billing/checkout" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/api/account/billing/portal
+
+**Open management for my verified Stripe customer.**
+
+- Auth: `User:Read` (`PromoCodeRedeem`).
+- Response: [`BillingRedirectResponse`](#billingredirectresponse)
+- Notes: Open management for the verified Stripe customer.
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict: `BillingUnavailable` |
+| 502 | Bad Gateway: `BillingVerificationFailed` |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/account/billing/portal" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/account/billing/purchases
+
+**Verify or restore my native subscription.** The verified purchase account binding must match the signed-in account.
+
+- Auth: `User:Read` (`PromoCodeRedeem`).
+- Response: [`EffectivePlan`](#effectiveplan)
+- Notes: Verify or restore an account-bound Apple or Google purchase.
+
+Request body: [`BillingPurchaseRequest`](#billingpurchaserequest).
+
+```json
+{
+  "provider": "Apple",
+  "signedTransaction": "<signedTransaction>"
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict: `BillingUnavailable` |
+| 502 | Bad Gateway: `BillingVerificationFailed` |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/account/billing/purchases" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+## Billing callbacks
+
+Provider-authenticated callbacks. Ordinary bearer sessions do not authorize these routes.
+
+| Method | Path | Summary |
+|---|---|---|
+| POST | [`/v1.0/public/billing/stripe`](#post-v10publicbillingstripe) | Stripe signed callback |
+| POST | [`/v1.0/public/billing/apple`](#post-v10publicbillingapple) | Apple signed subscription notification |
+| POST | [`/v1.0/public/billing/google`](#post-v10publicbillinggoogle) | Google authenticated RTDN push |
+
+### POST /v1.0/public/billing/stripe
+
+**Stripe signed callback.** Requires the original body and a valid Stripe-Signature header. Authenticated events enter a durable idempotent inbox.
+
+- Auth: None.
+- Response: `object`
+- Notes: Requires an authentic provider signature or Google OIDC identity. Do not use a session token. Provider sandbox and webhook tests are separate from general collection runs.
+
+Request body: object.
+
+| Status | Meaning |
+|---|---|
+| 200 | Accepted |
+| 400 | Bad Request: `ValidationFailed` |
+| 403 | Forbidden: `BillingVerificationFailed` |
+| 502 | Bad Gateway: `BillingVerificationFailed` |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/public/billing/stripe" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/public/billing/apple
+
+**Apple signed subscription notification.**
+
+- Auth: None.
+- Response: `object`
+- Notes: Requires an authentic provider signature or Google OIDC identity. Do not use a session token. Provider sandbox and webhook tests are separate from general collection runs.
+
+Request body: [`AppleNotificationRequest`](#applenotificationrequest).
+
+```json
+{
+  "signedPayload": "<appleSignedPayload>"
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | Accepted |
+| 400 | Bad Request: `ValidationFailed` |
+| 403 | Forbidden: `BillingVerificationFailed` |
+| 502 | Bad Gateway: `BillingVerificationFailed` |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/public/billing/apple" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/public/billing/google
+
+**Google authenticated RTDN push.** Requires a verified Google OIDC bearer with the configured audience and service-account email, and the configured package name.
+
+- Auth: None.
+- Response: `object`
+- Notes: Requires an authentic provider signature or Google OIDC identity. Do not use a session token. Provider sandbox and webhook tests are separate from general collection runs.
+
+Request body: object.
+
+| Status | Meaning |
+|---|---|
+| 200 | Accepted |
+| 400 | Bad Request: `ValidationFailed` |
+| 403 | Forbidden: `BillingVerificationFailed` |
+| 502 | Bad Gateway: `BillingVerificationFailed` |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/public/billing/google" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+## Account providers
+
+Account-private encrypted model and speech connections, validation and explicit BYOK funding. No secret is returned.
+
+| Method | Path | Summary |
+|---|---|---|
+| GET | [`/v1.0/api/account/providers`](#get-v10apiaccountproviders) | My private provider connections |
+| PUT | [`/v1.0/api/account/providers`](#put-v10apiaccountproviders) | Connect or rotate my model or speech API key |
+| PUT | [`/v1.0/api/account/funding`](#put-v10apiaccountfunding) | Choose BYOK or my assigned package |
+| DELETE | [`/v1.0/api/account/providers/{id}`](#delete-v10apiaccountprovidersid) | Remove my provider connection |
+| POST | [`/v1.0/api/account/providers/{id}/test`](#post-v10apiaccountprovidersidtest) | Test my private model or speech connection |
+
+### GET /v1.0/api/account/providers
+
+**My private provider connections.** Returns masked keys only. Connections are isolated even between users in the same tenant.
+
+- Auth: `User:Read` (`PromoCodeRedeem`).
+- Response: [`ProviderConnectionsResponse`](#providerconnectionsresponse)
+- Notes: List only this account's masked provider connections.
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/account/providers" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### PUT /v1.0/api/account/providers
+
+**Connect or rotate my model or speech API key.** One connection per kind. API keys are write-only and encrypted. Saving clears prior validation.
+
+- Auth: `User:Read` (`PromoCodeRedeem`).
+- Response: [`ProviderConnection`](#providerconnection)
+- Notes: Connect or rotate a write-only model or speech API key. Clears validation.
+
+Request body: [`ProviderConnectionRequest`](#providerconnectionrequest).
+
+```json
+{
+  "kind": "Chat",
+  "provider": "OpenAI",
+  "endpoint": "https://api.openai.com/v1",
+  "model": "<personalModel>",
+  "secret": "<personalProviderKey>"
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict |
+
+```bash
+curl -s -X PUT "http://127.0.0.1:12100/v1.0/api/account/providers" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### PUT /v1.0/api/account/funding
+
+**Choose BYOK or my assigned package.**
+
+- Auth: `User:Read` (`PromoCodeRedeem`).
+- Response: [`EffectivePlan`](#effectiveplan)
+- Notes: Choose Personal or Platform funding. A verified chat connection is required for BYOK.
+
+Request body: [`FundingModeRequest`](#fundingmoderequest).
+
+```json
+{
+  "mode": "Personal"
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict |
+
+```bash
+curl -s -X PUT "http://127.0.0.1:12100/v1.0/api/account/funding" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### DELETE /v1.0/api/account/providers/{id}
+
+**Remove my provider connection.** BYOK requests fail closed after removal; platform keys are never a fallback.
+
+- Auth: `User:Read` (`PromoCodeRedeem`).
+- Response: `object`
+- Notes: Remove a private key. BYOK calls fail closed, without platform fallback.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{providerConnectionId}}` |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict |
+
+```bash
+curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/account/providers/<providerConnectionId>" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/account/providers/{id}/test
+
+**Test my private model or speech connection.** Makes a fixed small provider-funded probe, up to six per account per minute. Success marks only the unchanged connection as validated.
+
+- Auth: `User:Read` (`PromoCodeRedeem`).
+- Response: `object`
+- Notes: Run a fixed small probe with this account's credential. Six probes per minute.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{providerConnectionId}}` |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/account/providers/<providerConnectionId>/test" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
 ## Data types
 
 Field names are camelCase on the wire. Enums travel as their names (`"Active"`, not a number). Null fields are left out of responses.
@@ -10732,6 +11753,30 @@ Runs created at one hour of one day of the week, in the report's time zone.
 | `dayOfWeek` | integer | Day of week, 0 (Sunday) to 6 (Saturday). |
 | `hour` | integer | Hour, 0 to 23. |
 | `count` | integer | Runs. |
+
+#### AppleNotificationRequest
+
+Apple App Store Server Notifications V2 envelope.
+
+Request body of [POST /v1.0/public/billing/apple](#post-v10publicbillingapple).
+
+| Field | Type | Description |
+|---|---|---|
+| `signedPayload` | string | Apple-signed notification. The chain, signature, application and environment are verified by the server. |
+
+#### AppStoreSettings
+
+Apple App Store settings for in-app subscriptions. An empty bundle id disables App Store verification.
+
+| Field | Type | Description |
+|---|---|---|
+| `bundleId` | string | iOS bundle identifier, for example com.example.app. |
+| `productId` | string | Auto-renewable subscription product id. Default empty: use the property membership.storeProductId. |
+| `appAppleId` | integer | Numeric Apple ID of the app (required for production notification verification). |
+| `issuerId` | string | App Store Connect API issuer id. |
+| `keyId` | string | App Store Server API key id. |
+| `privateKeyPem` | string | App Store Server API private key (.p8 contents). Secret. |
+| `allowSandbox` | boolean | Whether sandbox transactions are accepted (true for development and TestFlight). |
 
 #### Artifact
 
@@ -10893,6 +11938,155 @@ Example:
 }
 ```
 
+#### BillingCheckoutRequest
+
+Start web checkout using an operator-configured public offer key.
+
+Request body of [POST /v1.0/api/account/billing/checkout](#post-v10apiaccountbillingcheckout).
+
+| Field | Type | Description |
+|---|---|---|
+| `offerKey` | string | Configured offer key; prices, customers, and redirect URLs cannot be supplied by the caller. |
+
+#### BillingOfferResponse
+
+Public purchase offer and package allowances. Provider secrets are never included.
+
+| Field | Type | Description |
+|---|---|---|
+| `key` | string | Stable server offer key. |
+| `planKey` | string | Base package key. |
+| `interval` | string | Month or Year. |
+| `usdCents` | integer | Web price in USD cents. Native clients use localized store prices. |
+| `appleProductId` | string | Apple product identifier, or null. |
+| `googleProductId` | string | Google subscription identifier, or null. |
+| `googleBasePlanId` | string | Google base-plan identifier, or null. |
+| `planName` | string | Display name. |
+| `customTopics` | string | Custom topic cap, unlimited, or null. |
+| `systemSubscriptions` | string | Separate system subscription cap, unlimited, or null. |
+| `dailyAudioSeconds` | string | Generated audio seconds per UTC day, unlimited, or null. |
+| `webAvailable` | boolean | Whether checkout is currently configured and enabled. |
+
+#### BillingOfferSettings
+
+Allowlisted purchase product mapping. Provider identifiers are configured by the operator, never accepted from checkout callers.
+
+| Field | Type | Description |
+|---|---|---|
+| `key` | string | Stable public offer key. |
+| `planKey` | string | Entitlement package key. |
+| `interval` | string | Month or Year. |
+| `usdCents` | integer | Web display price in USD cents. Stripe remains the authority for checkout prices. |
+| `stripePriceId` | string | Recurring Stripe price identifier; empty disables web purchases of this offer. |
+| `appleProductId` | string | Apple auto-renewing subscription product identifier. |
+| `googleProductId` | string | Google Play subscription product identifier. |
+| `googleBasePlanId` | string | Google Play base plan identifier distinguishing monthly and annual billing. |
+| `active` | boolean | Whether offered to new purchasers. Existing subscriptions retain their product mapping. |
+
+#### BillingPurchaseRequest
+
+Native purchase evidence. Server verification and immutable account binding are always required.
+
+Request body of [POST /v1.0/api/account/billing/purchases](#post-v10apiaccountbillingpurchases).
+
+| Field | Type | Description |
+|---|---|---|
+| `provider` | string | Apple or Google. |
+| `signedTransaction` | string | StoreKit signed transaction, required for Apple. Never logged. |
+| `purchaseToken` | string | Play purchase token, required for Google. Never logged. |
+
+#### BillingRedirectResponse
+
+A server-selected billing redirect. The URL alone never grants paid access.
+
+Returned by [POST /v1.0/api/account/billing/checkout](#post-v10apiaccountbillingcheckout), [POST /v1.0/api/account/billing/portal](#post-v10apiaccountbillingportal).
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Checkout operation identifier, or null for portal. |
+| `url` | string | HTTPS provider destination. |
+| `expiresUtc` | date-time | Checkout expiry if applicable. |
+
+#### BillingSettings
+
+Optional hosted billing. Self-hosted deployments require no provider configuration.
+
+| Field | Type | Description |
+|---|---|---|
+| `enabled` | boolean | Enable new paid purchases. Default false; existing purchases still reconcile when provider credentials are configured. |
+| `allowSandbox` | boolean | Accept sandbox purchases. Default false. Enable on test deployments only. |
+| `dashboardUrl` | string | Fixed web return origin. No caller-supplied redirects are accepted. |
+| `stripe` | [`StripeSettings`](#stripesettings) | Stripe web integration. |
+| `apple` | [`AppStoreSettings`](#appstoresettings) | Apple native integration. |
+| `google` | [`GooglePlaySettings`](#googleplaysettings) | Google native integration. |
+| `offers` | array of [`BillingOfferSettings`](#billingoffersettings) | Purchasable offers. No introductory trial is configured. |
+
+#### BillingStatusResponse
+
+Account-bound purchase offers, captured signup benefit and verified access.
+
+Returned by [GET /v1.0/api/account/billing](#get-v10apiaccountbilling).
+
+| Field | Type | Description |
+|---|---|---|
+| `enabled` | boolean | Whether new purchases are enabled. |
+| `purchaseAccountToken` | string | Account binding UUID for native purchases. |
+| `appleAvailable` | boolean | Whether Apple verification is configured. |
+| `googleAvailable` | boolean | Whether Google verification is configured. |
+| `offers` | array of [`BillingOfferResponse`](#billingofferresponse) | Available package offers. |
+| `signupBenefit` | [`SignupBenefit`](#signupbenefit) | Captured signup offer, if any. Payment verification is still required. |
+| `subscriptions` | array of [`BillingSubscriptionResponse`](#billingsubscriptionresponse) | Verified subscriptions owned by this account. |
+| `plan` | [`EffectivePlan`](#effectiveplan) | Effective package including administrator overrides. |
+
+Example:
+
+```json
+{
+  "enabled": false,
+  "purchaseAccountToken": "c8b8ae5f-9203-4fa3-a148-3ba4608a3b2a",
+  "appleAvailable": false,
+  "googleAvailable": false,
+  "offers": [
+    {
+      "key": "paid-5-month",
+      "planKey": "paid-5",
+      "interval": "Month",
+      "usdCents": 1000,
+      "customTopics": "5",
+      "systemSubscriptions": "unlimited",
+      "dailyAudioSeconds": "1800",
+      "webAvailable": false
+    }
+  ],
+  "subscriptions": [],
+  "signupBenefit": null,
+  "plan": {
+    "subscriptionRequired": false,
+    "fundingMode": "Platform",
+    "features": {
+      "customTopics.max": "0",
+      "systemSubscriptions.max": "5",
+      "audio.dailySeconds.max": "0"
+    }
+  }
+}
+```
+
+#### BillingSubscriptionResponse
+
+Verified subscription status without payment identifiers or verification credentials.
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Internal subscription identifier. |
+| `provider` | string | Stripe, Apple, or Google. |
+| `environment` | string | Verified provider environment. |
+| `planId` | string | Base plan identifier. |
+| `status` | string | Active, Grace, Suspended, Canceled, Expired, or Revoked. |
+| `endsUtc` | date-time | Verified paid or grace period end. |
+| `cancelAtPeriodEnd` | boolean | Whether renewal has been canceled. |
+| `lastVerifiedUtc` | date-time | Last authoritative provider verification. |
+
 #### BreakdownRow
 
 A rate for one group.
@@ -10997,7 +12191,7 @@ Request body of [PUT /v1.0/api/briefings/{id}/pin](#put-v10apibriefingsidpin).
 
 Where a user stopped listening to a briefing, and whether they finished it.
 
-Returned by [GET /v1.0/api/briefings/{id}/progress](#get-v10apibriefingsidprogress), [PUT /v1.0/api/briefings/{id}/progress](#put-v10apibriefingsidprogress).
+Returned by [GET /v1.0/api/briefings/{id}/progress](#get-v10apibriefingsidprogress), [PUT /v1.0/api/briefings/{id}/progress](#put-v10apibriefingsidprogress), [GET /v1.0/api/catalog/{id}/issues/{issueId}/progress](#get-v10apicatalogidissuesissueidprogress), [PUT /v1.0/api/catalog/{id}/issues/{issueId}/progress](#put-v10apicatalogidissuesissueidprogress).
 
 | Field | Type | Description |
 |---|---|---|
@@ -11016,7 +12210,7 @@ Returned by [GET /v1.0/api/briefings/{id}/progress](#get-v10apibriefingsidprogre
 
 Save where the caller stopped listening to a briefing.
 
-Request body of [PUT /v1.0/api/briefings/{id}/progress](#put-v10apibriefingsidprogress).
+Request body of [PUT /v1.0/api/briefings/{id}/progress](#put-v10apibriefingsidprogress), [PUT /v1.0/api/catalog/{id}/issues/{issueId}/progress](#put-v10apicatalogidissuesissueidprogress).
 
 | Field | Type | Description |
 |---|---|---|
@@ -11143,6 +12337,153 @@ Stated confidence against observed accuracy.
 | `meanConfidence` | number | Mean stated confidence. |
 | `observed` | number | Observed accuracy (accurate plus half of partially accurate). |
 
+#### CatalogEntryResponse
+
+Public catalog projection. Contains no canonical workspace, prompts, credentials, or research trace.
+
+Returned by [GET /v1.0/api/catalog](#get-v10apicatalog).
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Publication identifier. |
+| `title` | string | Public title. |
+| `description` | string | Public description. |
+| `category` | string | Category. |
+| `language` | string | Language. |
+| `status` | string | Publication state. |
+| `freeEligible` | boolean | Available to free accounts. |
+| `eligible` | boolean | Caller may subscribe under their effective plan. |
+| `subscribed` | boolean | Caller has an active subscription. |
+| `suspended` | boolean | Subscription retained but suspended under the current allowance. |
+| `emailEnabled` | boolean | Subscriber email preference; null when not subscribed. |
+| `pushEnabled` | boolean | Subscriber push preference; null when not subscribed. |
+| `sortOrder` | integer | Display order. |
+| `publishedUtc` | date-time | First publication time. |
+
+Example:
+
+```json
+{
+  "id": "cat_example",
+  "title": "Daily science",
+  "category": "Science",
+  "language": "en",
+  "status": "Published",
+  "freeEligible": true,
+  "eligible": true,
+  "subscribed": false
+}
+```
+
+#### CatalogIssueResponse
+
+Shared issue content projection. Always authorized through the caller's subscription.
+
+Returned by [GET /v1.0/api/catalog/issues](#get-v10apicatalogissues), [GET /v1.0/api/catalog/{id}/issues](#get-v10apicatalogidissues), [GET /v1.0/api/catalog/{id}/issues/{issueId}](#get-v10apicatalogidissuesissueid), [GET /v1.0/api/admin/catalog/{id}/issues](#get-v10apiadmincatalogidissues).
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Canonical issue identifier. |
+| `publicationId` | string | Publication identifier. |
+| `title` | string | Issue title. |
+| `markdown` | string | Composed content on detail reads. |
+| `createdUtc` | date-time | Issue timestamp. |
+| `audioPath` | string | Authenticated shared audio path when ready. |
+| `audioSeconds` | number | Shared episode duration when known. |
+
+#### CatalogPublication
+
+Explicit administrator publication of a canonical system topic. Reads use an allowlisted projection.
+
+Returned by [GET /v1.0/api/admin/catalog](#get-v10apiadmincatalog), [POST /v1.0/api/admin/catalog](#post-v10apiadmincatalog), [GET /v1.0/api/admin/catalog/{id}](#get-v10apiadmincatalogid), [PUT /v1.0/api/admin/catalog/{id}](#put-v10apiadmincatalogid).
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Identifier (prefix cat_). |
+| `topicId` | string | Canonical topic; publishing does not transfer subscriber ownership. |
+| `ownerTenantId` | string | Protected workspace of the canonical topic. |
+| `title` | string | Public catalog title. |
+| `description` | string | Public scope description. May be null. |
+| `category` | string | Catalog category. |
+| `language` | string | Output language. |
+| `status` | string | Draft, Published, Retired, or Retracted. |
+| `freeEligible` | boolean | Whether free catalog members may subscribe. |
+| `sortOrder` | integer | Administrator display ordering. |
+| `revision` | integer | Publication revision for optimistic concurrency. |
+| `publishedUtc` | date-time | First publication timestamp. May be null. |
+| `active` | boolean | Whether the record is active. |
+| `createdUtc` | date-time | UTC creation time. |
+| `lastUpdateUtc` | date-time | UTC time of the last update. |
+
+#### CatalogPublicationRequest
+
+Administrator catalog metadata. A new publication creates an isolated canonical topic.
+
+Request body of [POST /v1.0/api/admin/catalog](#post-v10apiadmincatalog), [PUT /v1.0/api/admin/catalog/{id}](#put-v10apiadmincatalogid).
+
+| Field | Type | Description |
+|---|---|---|
+| `title` | string | Required title, 1 to 200 characters. |
+| `description` | string | Public research scope, up to 4000 characters. |
+| `category` | string | Category, 1 to 100 characters. |
+| `language` | string | Output language, 1 to 16 characters. |
+| `freeEligible` | boolean | Allow free users to select this publication. |
+| `status` | string | Draft, Published, Retired, or Retracted. |
+| `sortOrder` | integer | Display ordering. |
+| `revision` | integer | Required current revision when updating; conflicts return 409. |
+
+#### CatalogResearchRequest
+
+Canonical research configuration. The publication determines the protected owner; caller-supplied owner IDs are ignored.
+
+Request body of [PUT /v1.0/api/admin/catalog/{id}/research](#put-v10apiadmincatalogidresearch).
+
+| Field | Type | Description |
+|---|---|---|
+| `topic` | [`TopicUpsertRequest`](#topicupsertrequest) | Research scope, history and audio controls. Null leaves the topic unchanged. |
+| `schedule` | [`ScheduleUpsertRequest`](#scheduleupsertrequest) | Canonical research schedule. Null leaves scheduling unchanged. |
+
+#### CatalogResearchResponse
+
+System-administrator-only canonical research settings.
+
+Returned by [GET /v1.0/api/admin/catalog/{id}/research](#get-v10apiadmincatalogidresearch), [PUT /v1.0/api/admin/catalog/{id}/research](#put-v10apiadmincatalogidresearch).
+
+| Field | Type | Description |
+|---|---|---|
+| `topic` | [`Topic`](#topic) | Canonical topic. Never included in member catalog projections. |
+| `schedule` | [`Schedule`](#schedule) | Primary research schedule, or null before configuration. |
+
+#### CatalogSubscription
+
+A user subscribes to a canonical publication; delivery and interaction state stay private.
+
+Returned by [GET /v1.0/api/catalog/subscriptions](#get-v10apicatalogsubscriptions), [PUT /v1.0/api/catalog/{id}/subscription](#put-v10apicatalogidsubscription).
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Identifier (prefix csu_). |
+| `tenantId` | string | Tenant identifier. |
+| `userId` | string | Owning user identifier. |
+| `publicationId` | string | Catalog publication. |
+| `emailEnabled` | boolean | Deliver canonical issues by email. |
+| `pushEnabled` | boolean | Send publication notifications. |
+| `suspended` | boolean | Subscription suspended by eligibility or plan changes. |
+| `active` | boolean | Whether the record is active. |
+| `createdUtc` | date-time | UTC creation time. |
+| `lastUpdateUtc` | date-time | UTC time of the last update. |
+
+#### CatalogSubscriptionRequest
+
+Personal delivery preferences for a shared briefing subscription.
+
+Request body of [PUT /v1.0/api/catalog/{id}/subscription](#put-v10apicatalogidsubscription).
+
+| Field | Type | Description |
+|---|---|---|
+| `emailEnabled` | boolean | Email new issues. |
+| `pushEnabled` | boolean | Notify mobile devices about new issues. |
+
 #### ClientConfigResponse
 
 Public configuration for web and mobile clients (no authentication required).
@@ -11154,6 +12495,8 @@ Returned by [GET /v1.0/api/client-config](#get-v10apiclient-config).
 | `productName` | string | Product name. |
 | `serverVersion` | string | Server version. |
 | `signupEnabled` | boolean | Whether public sign-up is open. |
+| `newUsersRequireSubscription` | boolean | Whether newly created accounts require subscriptions for paid access. Existing accounts use their own policy. |
+| `nonBilledPlanKey` | string | Default plan key for newly registered non-billed accounts; null when subscriptions are required. |
 | `pushEnabled` | boolean | Whether the server sends push notifications. |
 | `audioEnabled` | boolean | Whether the server makes audio (tts.enabled). |
 | `emailEnabled` | boolean | Whether the server sends email (email.enabled and a provider other than Disabled). |
@@ -11566,11 +12909,16 @@ Returned by [GET /v1.0/tenants/{tenantId}/users/{userId}/permissions](#get-v10te
 
 The plan a user has right now and its entitlement values.
 
-Returned by [POST /v1.0/api/promo-codes/redeem](#post-v10apipromo-codesredeem), [GET /v1.0/api/account/plan](#get-v10apiaccountplan).
+Returned by [GET /v1.0/tenants/{tenantId}/users/{userId}/entitlements](#get-v10tenantstenantidusersuseridentitlements), [PUT /v1.0/tenants/{tenantId}/users/{userId}/entitlements](#put-v10tenantstenantidusersuseridentitlements), [POST /v1.0/api/promo-codes/redeem](#post-v10apipromo-codesredeem), [GET /v1.0/api/account/plan](#get-v10apiaccountplan), [POST /v1.0/api/account/billing/purchases](#post-v10apiaccountbillingpurchases), [PUT /v1.0/api/account/funding](#put-v10apiaccountfunding).
 
 | Field | Type | Description |
 |---|---|---|
+| `billingSubscriptionId` | string | Verified subscription supplying this plan, or null. |
+| `billingProvider` | string | Payment provider supplying this plan, or null. |
 | `plan` | [`Plan`](#plan) | Plan. |
+| `subscriptionRequired` | boolean | Whether this account must purchase a subscription for paid access. False does not remove its assigned limits. |
+| `fundingMode` | string | Funding mode: Platform, Personal, or SelfHosted. |
+| `featureSources` | object (map of string) | Source of each effective feature: plan or user override. |
 | `features` | object (map of string) | Entitlement values by key. |
 | `assignment` | [`PlanAssignment`](#planassignment) | The assignment that gives it, or null for the default plan. |
 | `endsUtc` | date-time | When it ends, or null. |
@@ -11741,6 +13089,19 @@ Email delivery (plan section 23.6). Link base URLs come from Rest.PublicBaseUrl 
 | `deliveryIntervalSeconds` | integer | Seconds between delivery passes. Default 15, minimum 1, maximum 600. |
 | `messageRetentionDays` | integer | Days to keep sent emails (and their rendered copies). Default 90, minimum 1, maximum 3650. |
 | `publicRequestsPerMinute` | integer | Public feedback page requests allowed per IP address per minute. Default 60, minimum 5, maximum 10000. |
+
+#### EntitlementOverrideRequest
+
+Set one user's entitlement override. Global administrator only. Delete the override to restore plan inheritance.
+
+Request body of [PUT /v1.0/tenants/{tenantId}/users/{userId}/entitlements](#put-v10tenantstenantidusersuseridentitlements).
+
+| Field | Type | Description |
+|---|---|---|
+| `featureKey` | string | Registered feature key, required. Maximum 128 characters. |
+| `value` | string | Valid feature value, required. Numeric zero and unlimited have different meanings. |
+| `reason` | string | Required explanation, retained in the audit trail. Maximum 1000 characters. |
+| `expiresUtc` | date-time | Optional UTC expiry. Null means no expiry. |
 
 #### EnumerationResult
 
@@ -12035,6 +13396,28 @@ Request body of [PUT /v1.0/api/findings/{id}](#put-v10apifindingsid).
 | `pinned` | boolean | Pin (true) or unpin (false). Null leaves it. |
 | `hidden` | boolean | Hide (true) or show (false). Null leaves it. |
 
+#### FundingModeRequest
+
+Choose Personal for BYOK or Platform to restore the account's assigned package. Existing subscriptions must be managed separately.
+
+Request body of [PUT /v1.0/api/account/funding](#put-v10apiaccountfunding).
+
+| Field | Type | Description |
+|---|---|---|
+| `mode` | string | Personal or Platform. Default Personal. |
+
+#### GooglePlaySettings
+
+Google Play settings for in-app subscriptions. An empty package name disables Google Play verification.
+
+| Field | Type | Description |
+|---|---|---|
+| `packageName` | string | Android package name, for example com.example.app. |
+| `productId` | string | Subscription product id. Default empty: use the property membership.storeProductId. |
+| `serviceAccountJson` | string | Service account key JSON with Android Publisher access. Secret. |
+| `pubSubAudience` | string | Expected audience of Pub/Sub push tokens (the webhook URL). |
+| `pubSubServiceAccountEmail` | string | Service account email that signs Pub/Sub push tokens. |
+
 #### HealthResponse
 
 Health check response.
@@ -12071,6 +13454,8 @@ Hosted service settings (plan section 33). Off for self-hosted installs.
 | Field | Type | Description |
 |---|---|---|
 | `publicSignupEnabled` | boolean | Open public sign-up (Phase 14). Default false. |
+| `newUsersRequireSubscription` | boolean | Require verified subscriptions for paid access for newly registered accounts. Existing accounts retain their captured policy. Default true. Turning this off assigns NonBilledPlanKey without requiring payment. |
+| `nonBilledPlanKey` | string | Plan assigned to new accounts when subscriptions are not required. Default complimentary-five (five system subscriptions, five custom topics, unlimited audio). Use catalog-only for system subscriptions only. |
 | `defaultPlanKey` | string | Plan key for users without an assignment. Default unlimited (self-hosted); the hosted profile uses free. |
 | `promoChecksPerMinute` | integer | Promotional code checks allowed per IP address per minute on the public route. Default 20, minimum 1, maximum 1000. |
 | `requireEmailVerification` | boolean | Require a verified email before a self-signed-up user can sign in. Default true (applies only when public sign-up is on). |
@@ -12143,6 +13528,7 @@ Returned by [GET /v1.0/api/llm-calls](#get-v10apillm-calls), [GET /v1.0/api/llm-
 | `refinementSessionId` | string | Refinement session, when any. May be null. |
 | `briefingId` | string | Briefing, when any. May be null. |
 | `modelEndpointId` | string | Endpoint used. May be null. |
+| `providerConnectionId` | string | Private connection identifier used for this call, or null for a workspace endpoint. Retained after key deletion; contains no credentials. |
 | `provider` | string | Provider name. May be null. |
 | `model` | string | Model name. May be null. |
 | `promptKey` | string | Prompt template key. May be null. |
@@ -12543,6 +13929,7 @@ Returned by [GET /v1.0/api/notifications](#get-v10apinotifications), [POST /v1.0
 
 | Field | Type | Description |
 |---|---|---|
+| `catalogPublicationId` | string | System publication for a shared briefing notification. Null for private content. |
 | `id` | string | Identifier (prefix ntf_). |
 | `tenantId` | string | Tenant identifier. |
 | `userId` | string | User the notification is for. |
@@ -13073,6 +14460,10 @@ Returned by [GET /v1.0/public/promo-codes/{code}](#get-v10publicpromo-codescode)
 | `planName` | string | Plan it gives. |
 | `durationDays` | integer | Days, or null for no end. |
 | `message` | string | Message for people. |
+| `benefitKind` | string | Complimentary or PaidOffer when valid. A paid offer alone grants no access. |
+| `discountPercent` | number | Discount percent when valid. |
+| `discountMonths` | integer | Discount months; null means ongoing. |
+| `billingPlanKey` | string | Required paid package key. |
 
 #### PromoCode
 
@@ -13099,6 +14490,12 @@ Returned by [POST /v1.0/api/admin/promo-codes/generate](#post-v10apiadminpromo-c
 | `active` | boolean | Whether the record is active. |
 | `createdUtc` | date-time | UTC creation time. |
 | `lastUpdateUtc` | date-time | UTC time of the last update. |
+| `benefitKind` | string | Complimentary grants access; PaidOffer captures a subscription offer without granting access. |
+| `billingPlanKey` | string | Purchased package required for this paid offer, normally paid-5 or paid-20. |
+| `discountPercent` | number | Percentage discount from zero through 100. |
+| `discountMonths` | integer | Discount months; null means ongoing. |
+| `appleOfferId` | string | Configured Apple promotional offer identifier; null when unavailable. |
+| `googleOfferId` | string | Configured Google subscription offer identifier; null when unavailable. |
 
 #### PromoCodeGenerateRequest
 
@@ -13119,6 +14516,12 @@ Request body of [POST /v1.0/api/admin/promo-codes/generate](#post-v10apiadminpro
 | `expiresUtc` | date-time | Usable until. |
 | `enabled` | boolean | Can be redeemed. |
 | `newAccountsOnly` | boolean | Only at sign-up. |
+| `benefitKind` | string | Complimentary grants access; PaidOffer captures a subscription offer without granting access. Null leaves the existing value unchanged. |
+| `billingPlanKey` | string | Purchased package required for this paid offer, normally paid-5 or paid-20. Null leaves the existing value unchanged. |
+| `discountPercent` | number | Percentage discount from zero through 100. Null leaves the existing value unchanged. |
+| `discountMonths` | integer | Discount months; null means ongoing. Null leaves the existing value unchanged. |
+| `appleOfferId` | string | Configured Apple promotional offer identifier; null when unavailable. Null leaves the existing value unchanged. |
+| `googleOfferId` | string | Configured Google subscription offer identifier; null when unavailable. Null leaves the existing value unchanged. |
 
 #### PromoCodeStats
 
@@ -13155,6 +14558,12 @@ Request body of [POST /v1.0/api/admin/promo-codes](#post-v10apiadminpromo-codes)
 | `newAccountsOnly` | boolean | Only at sign-up. |
 | `clearStartsUtc` | boolean | Remove the start date. |
 | `clearExpiresUtc` | boolean | Remove the expiry. |
+| `benefitKind` | string | Complimentary grants access; PaidOffer captures a subscription offer without granting access. Null leaves the existing value unchanged. |
+| `billingPlanKey` | string | Purchased package required for this paid offer, normally paid-5 or paid-20. Null leaves the existing value unchanged. |
+| `discountPercent` | number | Percentage discount from zero through 100. Null leaves the existing value unchanged. |
+| `discountMonths` | integer | Discount months; null means ongoing. Null leaves the existing value unchanged. |
+| `appleOfferId` | string | Configured Apple promotional offer identifier; null when unavailable. Null leaves the existing value unchanged. |
+| `googleOfferId` | string | Configured Google subscription offer identifier; null when unavailable. Null leaves the existing value unchanged. |
 
 #### PromoRedeemRequest
 
@@ -13186,6 +14595,7 @@ Returned by [GET /v1.0/api/admin/promo-codes/{id}/redemptions](#get-v10apiadminp
 | `active` | boolean | Whether the record is active. |
 | `createdUtc` | date-time | UTC creation time. |
 | `lastUpdateUtc` | date-time | UTC time of the last update. |
+| `signupBenefitId` | string | Captured paid offer, or null for a complimentary grant. |
 
 #### PromptLabRequest
 
@@ -13302,6 +14712,72 @@ Returned by [GET /v1.0/api/prompts/{id}/versions](#get-v10apipromptsidversions).
 | `active` | boolean | Whether the record is active. |
 | `createdUtc` | date-time | UTC creation time. |
 | `lastUpdateUtc` | date-time | UTC time of the last update. |
+
+#### ProviderConnection
+
+Private per-account model or speech connection. Secrets are encrypted and excluded from all API projections.
+
+Returned by [PUT /v1.0/api/account/providers](#put-v10apiaccountproviders).
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Identifier (prefix pco_). |
+| `tenantId` | string | Tenant identifier. |
+| `userId` | string | Owning user identifier. |
+| `kind` | string | Chat, Embedding, or Speech. |
+| `provider` | string | Supported API provider or Local speech. |
+| `endpoint` | string | Optional provider URL; local speech uses operator configuration. May be null. |
+| `model` | string | Provider model identifier. |
+| `voice` | string | Speech voice identifier. May be null. |
+| `secretLast4` | string | Masked display suffix. May be null. |
+| `validatedUtc` | date-time | Successful connection test time, cleared on change. May be null. |
+| `active` | boolean | Whether the record is active. |
+| `createdUtc` | date-time | UTC creation time. |
+| `lastUpdateUtc` | date-time | UTC time of the last update. |
+
+#### ProviderConnectionRequest
+
+Save a private model or speech connection. Secrets are write-only; an empty key retains an unchanged provider's key.
+
+Request body of [PUT /v1.0/api/account/providers](#put-v10apiaccountproviders).
+
+| Field | Type | Description |
+|---|---|---|
+| `kind` | string | Chat, Embedding, or Speech. Default Chat. |
+| `provider` | string | Anthropic, OpenAi, Gemini, XAi, OpenAiCompatible, or Local speech. |
+| `model` | string | Model identifier, required except for Local speech. |
+| `endpoint` | string | Optional API endpoint. Custom URLs must pass server egress restrictions. |
+| `apiKey` | string | Write-only API key, up to 8192 characters. Null retains a key for the same provider and URL. |
+| `voice` | string | Speech voice identifier. Required for a personal speech API. |
+
+#### ProviderConnectionsResponse
+
+Private connection metadata and current funding selection.
+
+Returned by [GET /v1.0/api/account/providers](#get-v10apiaccountproviders).
+
+| Field | Type | Description |
+|---|---|---|
+| `connections` | array of [`ProviderConnection`](#providerconnection) | Account-owned connections with secrets excluded from serialization. |
+| `localSpeechAvailable` | boolean | Whether an operator-funded local speech engine is offered to BYOK users. |
+| `plan` | [`EffectivePlan`](#effectiveplan) | Effective package and funding mode. |
+
+Example:
+
+```json
+{
+  "connections": [
+    {
+      "id": "pcn_example",
+      "kind": "Chat",
+      "provider": "OpenAI",
+      "secretLast4": "abcd",
+      "validatedUtc": null
+    }
+  ],
+  "localSpeechAvailable": false
+}
+```
 
 #### ProviderYieldRow
 
@@ -13753,7 +15229,7 @@ Request body of [POST /v1.0/tenants/{tenantId}/roles](#post-v10tenantstenantidro
 
 A research run for a topic or one-time request, from queued to finished.
 
-Returned by [GET /v1.0/api/runs](#get-v10apiruns), [GET /v1.0/api/runs/{id}](#get-v10apirunsid), [POST /v1.0/api/runs/{id}/cancel](#post-v10apirunsidcancel), [POST /v1.0/api/runs/{id}/retry](#post-v10apirunsidretry), [POST /v1.0/api/topics/{id}/run](#post-v10apitopicsidrun).
+Returned by [GET /v1.0/api/runs](#get-v10apiruns), [GET /v1.0/api/runs/{id}](#get-v10apirunsid), [POST /v1.0/api/runs/{id}/cancel](#post-v10apirunsidcancel), [POST /v1.0/api/runs/{id}/retry](#post-v10apirunsidretry), [POST /v1.0/api/topics/{id}/run](#post-v10apitopicsidrun), [POST /v1.0/api/admin/catalog/{id}/run](#post-v10apiadmincatalogidrun).
 
 | Field | Type | Description |
 |---|---|---|
@@ -14333,6 +15809,7 @@ Request body of [PUT /v1.0/api/settings](#put-v10apisettings).
 | `learning` | [`LearningSettings`](#learningsettings) | Learning from feedback. |
 | `hosting` | [`HostingSettings`](#hostingsettings) | Hosted service (sign-up, plans). |
 | `sharing` | [`SharingSettings`](#sharingsettings) | Public share links for briefings. |
+| `billing` | [`BillingSettings`](#billingsettings) | Hosted billing integrations and offer mappings. |
 
 #### SettingFieldDescriptor
 
@@ -14705,6 +16182,30 @@ Public share links for briefings (plan section 36).
 | `defaultExpiryDays` | integer | Life of a share link in days when the request does not say. Never more than MaxExpiryDays. Default 7, minimum 1, maximum 365. |
 | `publicRequestsPerMinute` | integer | Public share page requests allowed per IP address per minute. Audio streaming is not counted. Default 120, minimum 5, maximum 10000. |
 
+#### SignupBenefit
+
+Immutable signup offer captured before checkout; never grants paid access before verification.
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Identifier (prefix sbe_). |
+| `tenantId` | string | Tenant identifier. |
+| `userId` | string | Owning user identifier. |
+| `promoCodeId` | string | Source signup code. |
+| `planId` | string | Custom or standard package selected by the offer. |
+| `discountPercent` | number | Percentage discount captured at signup, from zero through 100. |
+| `discountMonths` | integer | Discount billing months; null means ongoing. May be null. |
+| `redeemedUtc` | date-time | When the offer was applied to a verified subscription. May be null. |
+| `revokedUtc` | date-time | Explicit administrator revocation. May be null. |
+| `active` | boolean | Whether the record is active. |
+| `createdUtc` | date-time | UTC creation time. |
+| `lastUpdateUtc` | date-time | UTC time of the last update. |
+| `billingPlanKey` | string | Required base subscription package. |
+| `durationDays` | integer | Custom tier duration from verified activation; null means subscription lifetime. |
+| `redeemedSubscriptionId` | string | Immutable verified subscription binding; null until payment is verified. |
+| `appleOfferId` | string | Captured native Apple offer identifier. |
+| `googleOfferId` | string | Captured native Google offer identifier. |
+
 #### SignupRequest
 
 Public sign-up (POST /v1.0/public/signup).
@@ -14841,6 +16342,18 @@ Artifact storage and retention: briefing Markdown and rendered HTML, podcast aud
 | `presignedUrlMinutes` | integer | Lifetime of presigned download URLs in minutes. Default 60. Minimum 1, maximum 10080. |
 | `artifactRetentionDays` | integer | Days generated artifacts (briefing Markdown, rendered HTML, audio, exports) are kept before the retention worker deletes them. Default 365. Minimum 1, maximum 365. Pinned briefings are kept regardless. |
 | `maxPinnedArtifacts` | integer | Most briefings a tenant can pin past the retention window. Default 50, minimum 0, maximum 10000. The hosted service overrides this per plan with the artifacts.pinned.max entitlement. |
+
+#### StripeSettings
+
+Stripe settings for web subscriptions. An empty secret key disables Stripe.
+
+| Field | Type | Description |
+|---|---|---|
+| `secretKey` | string | Restricted or secret API key. Secret. |
+| `webhookSecret` | string | Webhook signing secret (whsec_...). Secret. |
+| `priceId` | string | Price id of the membership. |
+| `portalConfigurationId` | string | Application-specific customer portal configuration ID. Empty uses Stripe's account default. |
+| `apiBaseUrl` | string | Stripe API base URL. Override only for tests. |
 
 #### Suggestion
 
@@ -15206,6 +16719,11 @@ Returned by [GET /v1.0/api/topics](#get-v10apitopics), [POST /v1.0/api/topics](#
 | `agenticSearch` | boolean | Agentic search: when the research model supports tools, it searches and reads pages itself (web_search, fetch_url, and allowed MCP tools) before the usual reading and verification. Opt-in, default false. |
 | `voiceProfileId` | string | Voice profile that reads this topic's run briefings aloud. Null uses the workspace default voice. |
 | `audioEnabled` | boolean | Turn every briefing of this topic's research runs (scheduled or started by hand, never dry runs) into audio automatically, read in the topic's voice. Default false. Audio still needs speech turned on for the server and room in the owner's plan; one-time reports follow their Podcast deliverable instead. |
+| `historyMode` | [`HistoryModeEnum`](#historymodeenum) | Comparison with earlier briefing issues. New topics default Off; existing topics migrate to RecentIssues. |
+| `historyCount` | integer | Maximum baseline issues. Default 5, minimum 1, maximum 20. Validated before writes. |
+| `historySinceUtc` | date-time | Inclusive earliest baseline time for SinceDate, otherwise null. |
+| `historyBriefingId` | string | Explicit baseline for SpecificIssue. It must be a ready issue of this topic in the same tenant. |
+| `historyTokenBudget` | integer | Conservative comparison token budget. Default 8000, minimum 256, maximum 32000. |
 | `mcpToolIds` | array of string | MCP tool IDs (mct_...) this topic may use in agentic search. Empty allows every enabled tool. |
 
 Example:
@@ -15411,6 +16929,11 @@ Request body of [POST /v1.0/api/topics](#post-v10apitopics), [PUT /v1.0/api/topi
 | `weightRecency` | number | Ranking weight override for the recency component (0 to 1); a negative value clears the override. |
 | `agenticSearch` | boolean | Turn agentic search on or off for this topic (the research model searches and reads pages itself). |
 | `audioEnabled` | boolean | Turn every briefing of this topic's research runs into audio automatically. May be null (unchanged; false on create). |
+| `historyMode` | [`HistoryModeEnum`](#historymodeenum) | Comparison mode. Null leaves it unchanged; new topics default Off. |
+| `historyCount` | integer | Maximum baseline issues, from 1 through 20. Null leaves unchanged. |
+| `historySinceUtc` | date-time | Earliest baseline timestamp for SinceDate. Required when choosing SinceDate. |
+| `historyBriefingId` | string | Baseline issue ID for SpecificIssue; empty clears it. Null leaves unchanged. |
+| `historyTokenBudget` | integer | Comparison token budget, from 256 through 32000. Null leaves unchanged. |
 | `mcpToolIds` | array of string | MCP tool IDs (mct_...) agentic search may use; an empty list allows every enabled tool. Null leaves it. |
 | `voiceProfileId` | string | Voice profile that reads this topic's run briefings aloud. It must exist in the workspace. An empty string clears it (the workspace default voice is used). Null leaves it. |
 | `voice` | string | A speech server voice ID from GET /v1.0/api/voices/available, such as af_heart, instead of voiceProfileId: the server reuses the workspace voice profile for that voice, or creates one, and stores it as the topic's voiceProfileId. Null leaves it. |
@@ -15422,6 +16945,7 @@ Text-to-speech and audio production (plan section 22).
 
 | Field | Type | Description |
 |---|---|---|
+| `allowLocalForByok` | boolean | Allow BYOK accounts to use the operator's local speech engine without a speech key. Default false; enable only for a locally funded engine. |
 | `enabled` | boolean | Produce audio for briefings. Default true. |
 | `endpoint` | string | Default OpenAI-compatible speech endpoint (without /audio/speech). Default http://127.0.0.1:12104/v1 (compose sets http://tts:8880/v1). |
 | `model` | string | Default speech model. Default kokoro. |
@@ -15464,6 +16988,12 @@ Returned by [GET /v1.0/api/account/usage](#get-v10apiaccountusage).
 
 | Field | Type | Description |
 |---|---|---|
+| `audioGeneratedSecondsToday` | number | Exact successfully generated audio seconds during the current UTC day. |
+| `audioReservedSecondsToday` | integer | Seconds reserved for queued or running generation during this UTC day. |
+| `audioDailySecondsMax` | integer | Daily generation cap in seconds, or null for unlimited. Playback consumes no generation allowance. |
+| `audioResetUtc` | date-time | Next daily reset at midnight UTC. |
+| `systemSubscriptions` | integer | Active system subscriptions, separate from custom topics. |
+| `systemSubscriptionsMax` | integer | System subscription limit, or null for unlimited. |
 | `planKey` | string | Plan key. |
 | `planName` | string | Plan name. |
 | `monthToDateCostUsd` | number | Model cost this calendar month (UTC), in USD. |
@@ -15853,6 +17383,7 @@ Security event type.
 | `CredentialUpdated` | A credential's name, scopes, or expiry changed. |
 | `ShareCreated` | A public share link for a briefing was created. |
 | `ShareRevoked` | A public share link for a briefing was revoked. |
+| `CatalogChanged` | A system catalog publication was created or changed. |
 
 #### AuthSchemeEnum
 
@@ -16065,6 +17596,18 @@ Relevance tier.
 | `WorthALook` | 60 to 79. |
 | `Fyi` | 40 to 59. |
 | `BelowThreshold` | Under the display threshold. |
+
+#### HistoryModeEnum
+
+How a briefing compares with its earlier issues. Off supplies no prior briefing text.
+
+| Value | Description |
+|---|---|
+| `Off` | Produce a standalone briefing. |
+| `PreviousIssue` | Compare with the latest ready issue. |
+| `RecentIssues` | Compare with a bounded number of recent ready issues. |
+| `SinceDate` | Compare with ready issues since a selected date, subject to the count and token bounds. |
+| `SpecificIssue` | Compare with one explicitly selected issue of this topic. |
 
 #### HorizonEnum
 

@@ -57,6 +57,7 @@ export const ALL_ROUTES = [
   { path: 'home', key: 'home', icon: House, access: 'all' },
   { path: 'today', key: 'today', icon: Newspaper, access: 'all' },
 
+  { path: 'catalog', key: 'catalog', icon: Globe, access: 'all' },
   { path: 'topics', key: 'topics', icon: Lightbulb, access: 'all' },
   { path: 'one-time', key: 'oneTimeRequests', icon: Send, access: 'all' },
   { path: 'runs', key: 'runs', icon: CirclePlay, access: 'all' },
@@ -98,10 +99,13 @@ export const ALL_ROUTES = [
   { path: 'admin/credentials', key: 'credentials', icon: Key, access: 'tenantAdmin' },
   { path: 'admin/roles', key: 'roles', icon: Shield, access: 'tenantAdmin' },
   { path: 'admin/usage', key: 'adminUsage', icon: ChartPie, access: 'admin' },
+  { path: 'admin/catalog', key: 'adminCatalog', icon: Globe, access: 'admin' },
   { path: 'admin/plans', key: 'plans', icon: Gift, access: 'admin' },
   { path: 'admin/promo-codes', key: 'promoCodes', icon: TicketPercent, access: 'admin' },
 
   { path: 'setup', key: 'setup', icon: ClipboardCheck, access: 'tenantAdmin' },
+  { path: 'account/billing', key: 'billing', icon: Coins, access: 'all' },
+  { path: 'account/providers', key: 'personalProviders', icon: KeyRound, access: 'all' },
   { path: 'profile', key: 'profile', icon: User, access: 'all' },
   { path: 'notifications', key: 'notifications', icon: Bell, access: 'all' },
   { path: 'settings', key: 'settings', icon: Settings, access: 'admin' },
@@ -120,14 +124,26 @@ export const NAV_STANDALONE = ['home', 'today'];
 // Hubs: one sidebar item each, whose pages are the tabs of the hub's tab strip, in order. A hub links to its first
 // tab the user can open, and is hidden when the user can open none of them.
 export const NAV_HUBS = [
-  { key: 'topics', icon: Lightbulb, tabs: ['topics', 'oneTimeRequests'] },
+  { key: 'topics', icon: Lightbulb, tabs: ['topics', 'catalog', 'oneTimeRequests'] },
   { key: 'research', icon: Microscope, tabs: ['runs', 'findings', 'sources', 'predictions', 'suggestions'] },
   { key: 'briefings', icon: BookOpen, tabs: ['briefings', 'listen', 'editions', 'templates'] },
-  { key: 'insights', icon: ChartLine, tabs: ['insightsOverview', 'relevance', 'accuracy', 'feedback', 'emailInsights', 'preferences', 'usage'] },
-  { key: 'configuration', icon: SlidersHorizontal, tabs: ['models', 'prompts', 'searchProviders', 'mcpServers', 'mcp', 'voices', 'email', 'vault'] },
+  {
+    key: 'insights',
+    icon: ChartLine,
+    tabs: ['insightsOverview', 'relevance', 'accuracy', 'feedback', 'emailInsights', 'preferences', 'usage']
+  },
+  {
+    key: 'configuration',
+    icon: SlidersHorizontal,
+    tabs: ['models', 'prompts', 'searchProviders', 'mcpServers', 'mcp', 'voices', 'email', 'vault']
+  },
   { key: 'observability', icon: Activity, tabs: ['health', 'requests', 'audit', 'explorer'] },
-  { key: 'administration', icon: UserCog, tabs: ['users', 'tenants', 'credentials', 'roles', 'adminUsage', 'plans', 'promoCodes'] },
-  { key: 'settings', icon: Settings, tabs: ['profile', 'notifications', 'settings', 'serverInfo', 'setup'] }
+  {
+    key: 'administration',
+    icon: UserCog,
+    tabs: ['users', 'tenants', 'credentials', 'roles', 'adminUsage', 'adminCatalog', 'plans', 'promoCodes']
+  },
+  { key: 'settings', icon: Settings, tabs: ['profile', 'billing', 'personalProviders', 'notifications', 'settings', 'serverInfo', 'setup'] }
 ];
 
 // Labelled sidebar sections and the hubs under each.
@@ -166,7 +182,21 @@ export function tabLabelKey(routeKey) {
 // While the first-run setup guide is on (setup is not ready and the user has not skipped it), only these routes open:
 // the Setup screen and the configuration it may send people to (model endpoints, the credential vault, search
 // providers, voices, settings), plus the profile, notification preferences, and server info. Every other route redirects to the Setup screen.
-export const SETUP_ALLOWED_ROUTES = ['setup', 'models', 'vault', 'searchProviders', 'voices', 'settings', 'profile', 'notifications', 'serverInfo'];
+export const SETUP_ALLOWED_ROUTES = [
+  'billing',
+  'personalProviders',
+  'catalog',
+  'adminCatalog',
+  'setup',
+  'models',
+  'vault',
+  'searchProviders',
+  'voices',
+  'settings',
+  'profile',
+  'notifications',
+  'serverInfo'
+];
 
 // Pages where unfinished setup bites (the topic wizard, research runs, and briefings need a working model and web
 // search). After someone skips setup, these pages carry a warning.

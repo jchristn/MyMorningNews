@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Ticket } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext.jsx';
@@ -90,6 +91,10 @@ export default function PlanCard() {
           ) : null}
         </>
       ) : null}
+      <div className="row-actions">
+        <Link className="button secondary" to="/dashboard/account/billing">{t('billing.title')}</Link>
+        <Link className="button secondary" to="/dashboard/account/providers">{t('personalProviders.title')}</Link>
+      </div>
       <form className="plan-redeem" onSubmit={redeem}>
         <h3>{t('account.plan.redeemTitle')}</h3>
         <ErrorState error={redeemError} inline onDismiss={() => setRedeemError(null)} />

@@ -203,7 +203,7 @@ namespace MyMorningNews.Server.Routes
             VoiceTestRequest req = (await ReadOptionalBodyAsync<VoiceTestRequest>(ctx).ConfigureAwait(false)) ?? new VoiceTestRequest();
             try
             {
-                TtsResult r = await Server.Audio.SampleAsync(v, req.Text ?? String.Empty, ctx.Token).ConfigureAwait(false);
+                TtsResult r = await Server.Audio.SampleAsync(v, req.Text ?? String.Empty, ctx.Token, Context(ctx).UserId).ConfigureAwait(false);
                 ctx.Response.StatusCode = 200;
                 ctx.Response.ContentType = r.ContentType;
                 ctx.Response.Headers.Add("Cache-Control", "no-store");
@@ -240,7 +240,7 @@ namespace MyMorningNews.Server.Routes
 
             try
             {
-                TtsResult r = await Server.Audio.PreviewAsync(tenantId, req, ctx.Token).ConfigureAwait(false);
+                TtsResult r = await Server.Audio.PreviewAsync(tenantId, req, ctx.Token, Context(ctx).UserId).ConfigureAwait(false);
                 ctx.Response.StatusCode = 200;
                 ctx.Response.ContentType = r.ContentType;
                 ctx.Response.Headers.Add("Cache-Control", "no-store");
@@ -358,9 +358,7 @@ namespace MyMorningNews.Server.Routes
             string file = Param(ctx, "file") ?? String.Empty;
             int dot = file.IndexOf('.');
             string id = dot < 0 ? file : file.Substring(0, dot);
-            MediaAsset? m = await Server.Database.MediaAssets.ReadAsync(ft.TenantId, id, ctx.Token).ConfigureAwait(false);
-            if (m == null || m.UserId != ft.UserId || (ft.EditionId != null && m.EditionId != ft.EditionId) || m.Status != MediaStatusEnum.Ready) return null;
-            return m;
+            return await Server.Audio.ReadFeedMediaAsync(ft, id, ctx.Token).ConfigureAwait(false);
         }
 
         private async Task<MediaAsset?> OwnedMediaAsync(HttpContextBase ctx, RequestTypeEnum type)

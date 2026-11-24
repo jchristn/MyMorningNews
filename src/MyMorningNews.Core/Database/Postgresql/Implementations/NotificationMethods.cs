@@ -69,7 +69,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.ReadUtc.HasValue ? DateTime.SpecifyKind(obj.ReadUtc.Value, DateTimeKind.Utc) : null,
                 obj.Active,
                 DateTime.SpecifyKind(obj.CreatedUtc, DateTimeKind.Utc),
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc), obj.CatalogPublicationId).ConfigureAwait(false);
             return obj;
         }
 
@@ -207,6 +207,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             obj.Active = reader.GetBoolean(12);
             obj.CreatedUtc = DateTime.SpecifyKind(reader.GetDateTime(13), DateTimeKind.Utc);
             obj.LastUpdateUtc = DateTime.SpecifyKind(reader.GetDateTime(14), DateTimeKind.Utc);
+            obj.CatalogPublicationId = reader.IsDBNull(15) ? null : reader.GetString(15);
             return obj;
         }
 

@@ -15,7 +15,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Column list in model order.
         /// </summary>
-        public const string Columns = "id, code, description, planid, durationdays, maxredemptions, redemptioncount, peruserlimit, startsutc, expiresutc, enabled, newaccountsonly, batchid, createdbyuserid, active, createdutc, lastupdateutc";
+        public const string Columns = "id, code, description, planid, durationdays, maxredemptions, redemptioncount, peruserlimit, startsutc, expiresutc, enabled, newaccountsonly, batchid, createdbyuserid, active, createdutc, lastupdateutc, benefitkind, billingplankey, discountpercent, discountmonths, appleofferid, googleofferid";
 
         /// <summary>
         /// Schema statements: table and indexes. Idempotent.
@@ -48,12 +48,12 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Insert statement with positional parameters in column order.
         /// </summary>
-        public const string Insert = "INSERT INTO promocodes (" + Columns + ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)";
+        public const string Insert = "INSERT INTO promocodes (" + Columns + ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)";
 
         /// <summary>
         /// Update statement. $1 is id, then the mutable columns in model order.
         /// </summary>
-        public const string Update = "UPDATE promocodes SET code = $2, description = $3, planid = $4, durationdays = $5, maxredemptions = $6, redemptioncount = $7, peruserlimit = $8, startsutc = $9, expiresutc = $10, enabled = $11, newaccountsonly = $12, batchid = $13, createdbyuserid = $14, active = $15, lastupdateutc = $16 WHERE id = $1";
+        public const string Update = "UPDATE promocodes SET code = $2, description = $3, planid = $4, durationdays = $5, maxredemptions = $6, redemptioncount = GREATEST(redemptioncount, $7), peruserlimit = $8, startsutc = $9, expiresutc = $10, enabled = $11, newaccountsonly = $12, batchid = $13, createdbyuserid = $14, active = $15, lastupdateutc = $16, benefitkind = $17, billingplankey = $18, discountpercent = $19, discountmonths = $20, appleofferid = $21, googleofferid = $22 WHERE id = $1";
 
         /// <summary>
         /// Select by identifier.

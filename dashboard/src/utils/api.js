@@ -121,7 +121,8 @@ export class ApiClient {
     if (isSetupRequired(response.status, data) && typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent(SETUP_REQUIRED_EVENT, { detail: { path, message: data.message || null } }));
     }
-    if (!response.ok) throw new ApiError(response.status, data && typeof data === 'object' ? data : null, typeof data === 'string' ? data : undefined);
+    if (!response.ok)
+      throw new ApiError(response.status, data && typeof data === 'object' ? data : null, typeof data === 'string' ? data : undefined);
     return data;
   }
 
@@ -155,11 +156,72 @@ export class ApiClient {
       throw new ApiError(response.status, data && typeof data === 'object' ? data : null, data ? undefined : text || undefined);
     }
     const header = (name) => (response.headers && typeof response.headers.get === 'function' ? response.headers.get(name) : null);
-    return { blob: await response.blob(), filename: filenameFromDisposition(header('Content-Disposition')), contentType: header('Content-Type'), status: response.status };
+    return {
+      blob: await response.blob(),
+      filename: filenameFromDisposition(header('Content-Disposition')),
+      contentType: header('Content-Type'),
+      status: response.status
+    };
   }
 
   get(path, query, signal) {
     return this._request('GET', path, { query, signal });
+  }
+
+  // Shared catalog: every content read is authorized through the current account's subscription.
+  listCatalog(query) {
+    return this._request('GET', '/v1.0/api/catalog', { query });
+  }
+  listCatalogSubscriptions(query) {
+    return this._request('GET', '/v1.0/api/catalog/subscriptions', { query });
+  }
+  subscribeCatalog(id, body = {}) {
+    return this._request('PUT', '/v1.0/api/catalog/' + enc(id) + '/subscription', { body });
+  }
+  unsubscribeCatalog(id) {
+    return this._request('DELETE', '/v1.0/api/catalog/' + enc(id) + '/subscription');
+  }
+  listCatalogIssues(query) {
+    return this._request('GET', '/v1.0/api/catalog/issues', { query });
+  }
+  listPublicationIssues(id, query) {
+    return this._request('GET', '/v1.0/api/catalog/' + enc(id) + '/issues', { query });
+  }
+  getCatalogIssue(id, issueId) {
+    return this._request('GET', '/v1.0/api/catalog/' + enc(id) + '/issues/' + enc(issueId));
+  }
+  getCatalogAudio(id, issueId, { signal } = {}) {
+    return this._requestBlob('GET', '/v1.0/api/catalog/' + enc(id) + '/issues/' + enc(issueId) + '/audio', { signal });
+  }
+  getCatalogProgress(id, issueId) {
+    return this._request('GET', '/v1.0/api/catalog/' + enc(id) + '/issues/' + enc(issueId) + '/progress');
+  }
+  saveCatalogProgress(id, issueId, body) {
+    return this._request('PUT', '/v1.0/api/catalog/' + enc(id) + '/issues/' + enc(issueId) + '/progress', { body });
+  }
+  listAdminCatalog(query) {
+    return this._request('GET', '/v1.0/api/admin/catalog', { query });
+  }
+  listAdminCatalogIssues(id, query) {
+    return this._request('GET', '/v1.0/api/admin/catalog/' + enc(id) + '/issues', { query });
+  }
+  getAdminCatalog(id) {
+    return this._request('GET', '/v1.0/api/admin/catalog/' + enc(id));
+  }
+  createCatalog(body) {
+    return this._request('POST', '/v1.0/api/admin/catalog', { body });
+  }
+  updateCatalog(id, body) {
+    return this._request('PUT', '/v1.0/api/admin/catalog/' + enc(id), { body });
+  }
+  getCatalogResearch(id) {
+    return this._request('GET', '/v1.0/api/admin/catalog/' + enc(id) + '/research');
+  }
+  saveCatalogResearch(id, body) {
+    return this._request('PUT', '/v1.0/api/admin/catalog/' + enc(id) + '/research', { body });
+  }
+  runCatalog(id) {
+    return this._request('POST', '/v1.0/api/admin/catalog/' + enc(id) + '/run');
   }
 
   // Sessions
@@ -552,7 +614,10 @@ export class ApiClient {
     return this._request('GET', '/v1.0/api/refinement-sessions/' + enc(id));
   }
   proposeDimensions(id, guidance, signal) {
-    return this._request('POST', '/v1.0/api/refinement-sessions/' + enc(id) + '/dimensions', { body: guidance ? { guidance } : {}, signal });
+    return this._request('POST', '/v1.0/api/refinement-sessions/' + enc(id) + '/dimensions', {
+      body: guidance ? { guidance } : {},
+      signal
+    });
   }
   askQuestions(id, guidance, signal) {
     return this._request('POST', '/v1.0/api/refinement-sessions/' + enc(id) + '/questions', { body: guidance ? { guidance } : {}, signal });
@@ -647,7 +712,12 @@ export class ApiClient {
     const path = '/v1.0/api/runs/' + enc(id) + '/events';
     let response;
     try {
-      response = await this.fetchImpl(this.baseUrl + path, { method: 'GET', headers: this._headers({ Accept: 'text/event-stream' }), signal, cache: 'no-store' });
+      response = await this.fetchImpl(this.baseUrl + path, {
+        method: 'GET',
+        headers: this._headers({ Accept: 'text/event-stream' }),
+        signal,
+        cache: 'no-store'
+      });
     } catch (err) {
       if (err && err.name === 'AbortError') throw err;
       throw new ApiError(0, null, err && err.message ? err.message : 'Network error');
@@ -665,7 +735,8 @@ export class ApiClient {
       }
       throw new ApiError(response.status, data && typeof data === 'object' ? data : null, data ? undefined : text || undefined);
     }
-    if (!response.body || typeof response.body.getReader !== 'function') throw new ApiError(0, null, 'Streaming responses are not supported here');
+    if (!response.body || typeof response.body.getReader !== 'function')
+      throw new ApiError(0, null, 'Streaming responses are not supported here');
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let last = null;
@@ -769,7 +840,9 @@ export class ApiClient {
     return this._request('GET', '/v1.0/api/suggestions/' + enc(id));
   }
   setSuggestionStatus(id, status, snoozedUntilUtc) {
-    return this._request('PUT', '/v1.0/api/suggestions/' + enc(id) + '/status', { body: { status, snoozedUntilUtc: status === 'Snoozed' ? snoozedUntilUtc || null : null } });
+    return this._request('PUT', '/v1.0/api/suggestions/' + enc(id) + '/status', {
+      body: { status, snoozedUntilUtc: status === 'Snoozed' ? snoozedUntilUtc || null : null }
+    });
   }
 
   // Briefings and their stored files (Phase 7). List items omit markdown; the detail carries sections, items, and files.
@@ -799,8 +872,14 @@ export class ApiClient {
   }
   // range is an optional { start, end } byte range (end inclusive, optional) sent as a Range header.
   getArtifactContent(id, { range, download = false, signal } = {}) {
-    const headers = range ? { Range: 'bytes=' + range.start + '-' + (range.end === undefined || range.end === null ? '' : range.end) } : undefined;
-    return this._requestBlob('GET', '/v1.0/api/artifacts/' + enc(id) + '/content', { query: download ? { download: true } : undefined, headers, signal });
+    const headers = range
+      ? { Range: 'bytes=' + range.start + '-' + (range.end === undefined || range.end === null ? '' : range.end) }
+      : undefined;
+    return this._requestBlob('GET', '/v1.0/api/artifacts/' + enc(id) + '/content', {
+      query: download ? { download: true } : undefined,
+      headers,
+      signal
+    });
   }
   getArtifactDownloadUrl(id) {
     return this._request('GET', '/v1.0/api/artifacts/' + enc(id) + '/download-url');
@@ -865,10 +944,14 @@ export class ApiClient {
     return this._request('GET', '/v1.0/api/briefings/' + enc(briefingId) + '/shares', { query });
   }
   createBriefingShare(briefingId, { expiresInDays, showOwnerName } = {}) {
-    return this._request('POST', '/v1.0/api/briefings/' + enc(briefingId) + '/shares', { body: { expiresInDays, showOwnerName: Boolean(showOwnerName) } });
+    return this._request('POST', '/v1.0/api/briefings/' + enc(briefingId) + '/shares', {
+      body: { expiresInDays, showOwnerName: Boolean(showOwnerName) }
+    });
   }
   revokeBriefingShare(briefingId, shareId, { purge } = {}) {
-    return this._request('DELETE', '/v1.0/api/briefings/' + enc(briefingId) + '/shares/' + enc(shareId), { query: purge ? { purge: true } : undefined });
+    return this._request('DELETE', '/v1.0/api/briefings/' + enc(briefingId) + '/shares/' + enc(shareId), {
+      query: purge ? { purge: true } : undefined
+    });
   }
 
   // Private podcast feed tokens. Create returns { token, secret, feedUrl } once; only a hash is stored.
@@ -917,13 +1000,17 @@ export class ApiClient {
     return this._request('GET', '/v1.0/api/briefing-templates/' + enc(id));
   }
   createBriefingTemplate({ content, name, shared = false }) {
-    return this._request('POST', '/v1.0/api/briefing-templates', { body: { content: content || '', name: name || null, shared: Boolean(shared) } });
+    return this._request('POST', '/v1.0/api/briefing-templates', {
+      body: { content: content || '', name: name || null, shared: Boolean(shared) }
+    });
   }
   validateBriefingTemplate(content, signal) {
     return this._request('POST', '/v1.0/api/briefing-templates/validate', { body: { content: content || '' }, signal });
   }
   saveBriefingTemplate(id, content, changeNote) {
-    return this._request('PUT', '/v1.0/api/briefing-templates/' + enc(id), { body: { content: content || '', changeNote: changeNote || null } });
+    return this._request('PUT', '/v1.0/api/briefing-templates/' + enc(id), {
+      body: { content: content || '', changeNote: changeNote || null }
+    });
   }
   deleteBriefingTemplate(id) {
     return this._request('DELETE', '/v1.0/api/briefing-templates/' + enc(id));
@@ -973,6 +1060,9 @@ export class ApiClient {
     return this._request('POST', '/v1.0/api/admin/promo-codes/' + enc(id) + '/apply', { body: { tenantId, userId } });
   }
   // Plans resolve to [{ plan, features }] in sort order.
+  getUserEntitlements(tenantId, userId) { return this._request('GET', '/v1.0/tenants/' + enc(tenantId) + '/users/' + enc(userId) + '/entitlements'); }
+  setUserEntitlement(tenantId, userId, body) { return this._request('PUT', '/v1.0/tenants/' + enc(tenantId) + '/users/' + enc(userId) + '/entitlements', { body }); }
+  clearUserEntitlement(tenantId, userId, featureKey) { return this._request('DELETE', '/v1.0/tenants/' + enc(tenantId) + '/users/' + enc(userId) + '/entitlements/' + enc(featureKey)); }
   listPlans() {
     return this._request('GET', '/v1.0/api/admin/plans');
   }
@@ -993,6 +1083,14 @@ export class ApiClient {
     return this._request('DELETE', '/v1.0/api/admin/plan-assignments/' + enc(id), { query: { tenantId } });
   }
   // My effective plan: { plan, features, assignment, endsUtc, upcoming }.
+  getMyBilling() { return this._request('GET', '/v1.0/api/account/billing'); }
+  startCheckout(offerKey) { return this._request('POST', '/v1.0/api/account/billing/checkout', { body: { offerKey } }); }
+  openBillingPortal() { return this._request('POST', '/v1.0/api/account/billing/portal'); }
+  getMyProviders() { return this._request('GET', '/v1.0/api/account/providers'); }
+  saveMyProvider(body) { return this._request('PUT', '/v1.0/api/account/providers', { body }); }
+  testMyProvider(id) { return this._request('POST', '/v1.0/api/account/providers/' + enc(id) + '/test'); }
+  deleteMyProvider(id) { return this._request('DELETE', '/v1.0/api/account/providers/' + enc(id)); }
+  setMyFunding(mode) { return this._request('PUT', '/v1.0/api/account/funding', { body: { mode } }); }
   getMyPlan() {
     return this._request('GET', '/v1.0/api/account/plan');
   }
@@ -1144,7 +1242,9 @@ export class ApiClient {
   // Feedback and learning (Phase 10). action is one of relevant, somewhat, not-relevant, accurate, partially,
   // inaccurate, too-early, useful, or not-useful.
   giveFeedback({ targetType, targetId, action, reason }) {
-    return this._request('POST', '/v1.0/api/feedback', { body: { targetType, targetId, action, reason: reason || null, channel: 'Dashboard' } });
+    return this._request('POST', '/v1.0/api/feedback', {
+      body: { targetType, targetId, action, reason: reason || null, channel: 'Dashboard' }
+    });
   }
   listFeedback(query) {
     return this._request('GET', '/v1.0/api/feedback', { query });

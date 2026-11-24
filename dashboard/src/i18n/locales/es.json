@@ -206,7 +206,11 @@
       "plans": "Planes",
       "emailInsights": "Entrega de correo",
       "mcp": "Cliente MCP",
-      "setup": "Configuración"
+      "setup": "Configuración",
+      "catalog": "Boletines del sistema",
+      "adminCatalog": "Catálogo del sistema",
+      "billing": "Planes y facturación",
+      "personalProviders": "Tus claves API"
     }
   },
   "routes": {
@@ -341,6 +345,12 @@
     },
     "setup": {
       "summary": "Lo que My Morning News necesita para funcionar y si cada parte funciona"
+    },
+    "catalog": {
+      "summary": "Elige boletines compartidos investigados una vez para todos. Tus suscripciones y progreso de escucha son privados."
+    },
+    "adminCatalog": {
+      "summary": "Elige boletines compartidos investigados una vez para todos. Tus suscripciones y progreso de escucha son privados."
     }
   },
   "topbar": {
@@ -766,7 +776,9 @@
       "sharing_enabled": "Compartir informes mediante enlaces públicos",
       "sharing_maxExpiryDays": "Duración máxima de un enlace compartido (días)",
       "sharing_defaultExpiryDays": "Duración de un enlace compartido si no se elige (días)",
-      "sharing_publicRequestsPerMinute": "Solicitudes de páginas compartidas por dirección por minuto"
+      "sharing_publicRequestsPerMinute": "Solicitudes de páginas compartidas por dirección por minuto",
+      "hosting_newUsersRequireSubscription": "Exigir suscripción a nuevas cuentas",
+      "hosting_nonBilledPlanKey": "Plan sin cobro para nuevas cuentas"
     }
   },
   "serverInfo": {
@@ -3527,6 +3539,24 @@
       "title": "Canjes a lo largo del tiempo",
       "subtitle": "Por día, según cuándo se canjeó cada uno",
       "empty": "Aún no hay canjes."
+    },
+    "offer": {
+      "kind": "Beneficio del código",
+      "complimentary": "Acceso de cortesía",
+      "paid": "Oferta de suscripción de pago",
+      "help": "Las ofertas de pago son para cuentas nuevas. El acceso comienza tras verificar la compra. El plan define el acceso y el paquete de facturación define el precio.",
+      "billingPlan": "Paquete de facturación",
+      "paid5": "Pago 5: 10 USD/mes o 100 USD/año",
+      "paid20": "Pago 20: 30 USD/mes o 300 USD/año",
+      "percent": "Descuento (%)",
+      "months": "Duración del descuento (meses)",
+      "monthsHelp": "0 significa indefinido. Se aplica a las facturas emitidas en este período, incluidas las anuales.",
+      "appleOffer": "ID de oferta de Apple",
+      "googleOffer": "ID de oferta de Google",
+      "nativeHelp": "Opcional. Debe coincidir con una oferta configurada en la tienda. Los descuentos web no se aplican automáticamente a compras en tiendas.",
+      "percentRange": "Introduce de 0 a 100, con hasta dos decimales.",
+      "monthsRange": "Introduce 0 (indefinido) o de 1 a 36 meses.",
+      "durationHelp": "Duración del nivel personalizado desde la compra verificada. 0 significa mientras la suscripción siga siendo válida."
     }
   },
   "plans": {
@@ -3569,7 +3599,15 @@
       "email_enabled": "Correo",
       "mobile_access": "App móvil",
       "endpoints_custom": "Endpoints de modelo propios",
-      "artifacts_pinned_max": "Informes fijados"
+      "artifacts_pinned_max": "Informes fijados",
+      "customTopics_max": "Temas propios",
+      "systemSubscriptions_max": "Suscripciones del sistema",
+      "audio_dailySeconds_max": "Segundos de audio generado por día",
+      "customResearch_enabled": "Investigación propia",
+      "oneTimeResearch_enabled": "Investigación puntual",
+      "catalog_freeOnly": "Solo catálogo gratuito",
+      "catalog_audio_enabled": "Audio compartido del catálogo",
+      "models_personalConnections_enabled": "Conexiones personales"
     },
     "assignments": {
       "title": "Planes de un usuario",
@@ -3611,6 +3649,20 @@
     "userPanel": {
       "action": "Plan",
       "title": "Plan de {email}"
+    },
+    "overrides": {
+      "title": "Límites del usuario",
+      "help": "Los ajustes solo afectan a este usuario. Restaura los valores del plan para volver a heredarlos.",
+      "inherited": "Valor del plan",
+      "effective": "Valor efectivo",
+      "source": "Origen",
+      "user": "Ajuste del usuario",
+      "plan": "Plan",
+      "restore": "Restaurar herencia",
+      "value": "Valor del ajuste",
+      "valueHelp": "Usa cero para desactivar una cantidad o unlimited para quitar el límite. El audio diario se mide en segundos.",
+      "reason": "Motivo del cambio",
+      "expires": "Caduca (hora local, opcional)"
     }
   },
   "account": {
@@ -3639,7 +3691,10 @@
       "noAudio": "El audio no está incluido en tu plan.",
       "schedule": "Los temas se ejecutan como máximo cada {minutes} minutos.",
       "ofLimit": "{used} de {max}",
-      "noLimit": "{used} (sin límite)"
+      "noLimit": "{used} (sin límite)",
+      "audioToday": "Audio generado hoy (minutos)",
+      "audioReserved": "Reservado para generar: {minutes} minutos. Se reinicia {date} (medianoche UTC).",
+      "systemSubscriptions": "Suscripciones del sistema"
     },
     "export": {
       "button": "Descargar mis datos",
@@ -3656,7 +3711,8 @@
       "scheduled": "Tu cuenta se eliminará el {date}. Inicia sesión antes para conservarla.",
       "messageDated": "Todas las sesiones se cierran ahora. El {date}, tu cuenta y todos sus datos (temas, resúmenes, hallazgos, comentarios y audio) se eliminan para siempre. Si inicias sesión antes, la eliminación se cancela.",
       "cancelledTitle": "Se canceló la eliminación de tu cuenta.",
-      "cancelledMessage": "Al iniciar sesión conservaste tu cuenta y todos sus datos."
+      "cancelledMessage": "Al iniciar sesión conservaste tu cuenta y todos sus datos.",
+      "billingNotice": "Eliminar tu cuenta detiene las renovaciones de Stripe y Google. Cancela las suscripciones de Apple en los ajustes del App Store para evitar futuros cargos. Volver a iniciar sesión no reactiva una suscripción cancelada."
     },
     "deleted": {
       "title": "Tu cuenta está programada para eliminarse",
@@ -4701,5 +4757,89 @@
     "savedDefault": "Este tema vuelve a usar la voz predeterminada del espacio de trabajo",
     "speechOff": "La voz está desactivada en este servidor, así que no hay audio que reproducir. Un administrador del servidor puede activarla en Ajustes del servidor.",
     "empty": "No hay voces disponibles."
+  },
+  "topicHistory": {
+    "title": "Comparar con boletines anteriores",
+    "help": "Usa ediciones anteriores para explicar los cambios. El texto histórico es una referencia, no evidencia actual.",
+    "Off": "Desactivado: boletín independiente",
+    "PreviousIssue": "Edición anterior",
+    "RecentIssues": "Ediciones recientes",
+    "SinceDate": "Desde una fecha",
+    "SpecificIssue": "Edición específica",
+    "count": "Máximo de ediciones (1 a 20)",
+    "date": "Fecha de inicio (UTC)",
+    "issue": "Edición de referencia",
+    "choose": "Elige una edición",
+    "firstRun": "Sin una edición anterior utilizable, el próximo boletín será independiente."
+  },
+  "catalog": {
+    "title": "Boletines del sistema",
+    "summary": "Elige boletines compartidos investigados una vez para todos. Tus suscripciones y progreso de escucha son privados.",
+    "subscribe": "Suscribirse",
+    "unsubscribe": "Cancelar suscripción",
+    "read": "Leer ediciones",
+    "empty": "Aún no se han publicado boletines del sistema.",
+    "noIssues": "Aún no hay ediciones disponibles.",
+    "restricted": "No incluido en tu plan",
+    "included": "Incluido en tu plan",
+    "issues": "Tus ediciones del sistema",
+    "adminTitle": "Catálogo del sistema",
+    "freeEligible": "Disponible en el plan gratuito",
+    "description": "Descripción pública",
+    "category": "Categoría",
+    "Draft": "Borrador",
+    "Published": "Publicado",
+    "Retired": "Retirado (archivo legible)",
+    "Retracted": "Revocado (sin acceso)"
+  },
+  "billing": {
+    "title": "Planes y facturación",
+    "summary": "Gestiona tu plan, suscripción y proveedor de pago.",
+    "nonBilled": "Tu plan asignado no requiere suscripción.",
+    "verifying": "Comprobando el pago. El acceso cambia tras la verificación del proveedor.",
+    "manage": "Gestionar suscripción",
+    "manageStore": "Gestiona esta suscripción en {provider}.",
+    "signupOffer": "Tu oferta de registro",
+    "discount": "{percent}% de descuento en ofertas elegibles. Las condiciones finales aparecen al pagar.",
+    "interval": "Período de facturación",
+    "monthly": "Mensual",
+    "yearly": "Anual",
+    "perYear": "al año",
+    "perMonth": "al mes",
+    "customTopics": "Temas propios: {count}",
+    "systemTopics": "Suscripciones del sistema: {count}",
+    "audioDaily": "Audio generado: {minutes} minutos/día",
+    "terms": "Renovación automática. Sin prueba. Repeticiones gratis. El audio diario se reinicia a medianoche UTC.",
+    "subscribe": "Continuar al pago",
+    "unavailable": "Las nuevas compras de pago no están disponibles en este servidor."
+  },
+  "personalProviders": {
+    "title": "Tus claves API",
+    "summary": "Conecta claves privadas de modelos y voz. Solo tu cuenta puede usarlas.",
+    "chat": "Modelo de investigación",
+    "embedding": "Embeddings",
+    "speech": "Voz",
+    "saved": "Guardado. Prueba el modelo antes de usar tus propias claves.",
+    "fundingSaved": "Preferencia de financiación actualizada.",
+    "byok": "Trae tu propia clave",
+    "assigned": "Plan asignado",
+    "fundingHelp": "Usa tus claves para informes ilimitados. El proveedor te cobra directamente. Primero prueba un modelo de investigación.",
+    "useAssigned": "Usar plan asignado",
+    "useByok": "Usar mis claves",
+    "kind": "Tipo de conexión",
+    "verified": "Verificada",
+    "unverified": "Sin verificar",
+    "speechHelp": "El audio requiere una clave de voz aparte o un motor local habilitado.",
+    "provider": "Proveedor",
+    "local": "Motor de voz local",
+    "model": "ID del modelo",
+    "endpoint": "URL base de la API (opcional)",
+    "voice": "ID de voz",
+    "key": "Clave API",
+    "keyHelp": "Las claves se cifran y nunca se devuelven. Déjalo vacío para conservar la clave del mismo proveedor.",
+    "tested": "Conexión verificada.",
+    "test": "Probar conexión guardada",
+    "remove": "Eliminar conexión",
+    "removeHelp": "Eliminar una clave detiene las llamadas que la necesitan. Nunca se usa una clave de la plataforma como alternativa."
   }
 }

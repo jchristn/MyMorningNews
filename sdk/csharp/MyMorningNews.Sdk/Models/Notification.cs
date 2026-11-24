@@ -12,6 +12,11 @@ namespace MyMorningNews.Sdk.Models
     public class Notification
     {
         /// <summary>
+        /// System publication for a shared briefing notification. Null for private content.
+        /// </summary>
+        public string? CatalogPublicationId { get; set; } = null;
+
+        /// <summary>
         /// Identifier (prefix ntf_).
         /// </summary>
         public string Id { get; set; } = String.Empty;

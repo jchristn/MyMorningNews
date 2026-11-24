@@ -24,6 +24,16 @@ namespace MyMorningNews.Core.Responses
         public bool SignupEnabled { get; set; } = false;
 
         /// <summary>
+        /// Whether newly created accounts require subscriptions for paid access. Existing accounts use their own policy.
+        /// </summary>
+        public bool NewUsersRequireSubscription { get; set; } = true;
+
+        /// <summary>
+        /// Default plan key for newly registered non-billed accounts; null when subscriptions are required.
+        /// </summary>
+        public string? NonBilledPlanKey { get; set; } = null;
+
+        /// <summary>
         /// Whether the server sends push notifications.
         /// </summary>
         public bool PushEnabled { get; set; } = false;

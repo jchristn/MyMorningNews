@@ -1,5 +1,7 @@
 # My Morning News JavaScript SDK
 
+Platform packages, shared catalog subscriptions, topic history, private provider keys and billing are described in the [platform operator guide](../../docs/PLATFORM_OPERATIONS.md). Native store availability and deployment evidence are tracked separately from source support.
+
 A JavaScript client for the My Morning News REST API. It is a single ES module (`mymorningnews-sdk.js`) for Node 20 and later. It uses the global `fetch` only and has no runtime dependencies. Type declarations ship in `index.d.ts`.
 
 - Package: `mymorningnews-sdk`, version `0.1.0-alpha`, MIT license.

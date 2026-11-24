@@ -997,3 +997,57 @@ All resources are `text/markdown`. A missing ID returns JSON-RPC error -32002.
 ---
 
 (c) 2026 Lattice AI LLC
+
+## Account allowances and shared briefings
+
+All tools use the signed-in account. The server enforces current ownership, plan, overrides, and catalog eligibility on every call. These tools never start purchases or expose API keys.
+
+| Tool | Inputs | Result |
+| --- | --- | --- |
+| `get_account_plan` | None | Effective tier, funding mode, inherited features and override provenance |
+| `get_account_usage` | None | Custom topics, system subscriptions, daily generated/reserved audio seconds and UTC reset |
+| `list_system_briefings` | Optional pageNumber/pageSize | Published catalog and eligibility |
+| `list_system_subscriptions` | Optional pageNumber/pageSize | Private subscriptions and suspension/delivery preferences |
+| `subscribe_system_briefing` | publicationId; optional emailEnabled/pushEnabled | Idempotent subscription within account allowance |
+| `unsubscribe_system_briefing` | publicationId | Stops delivery and releases a slot |
+| `list_system_issues` | Optional pageNumber/pageSize | Issues from eligible subscriptions |
+| `get_system_issue` | publicationId, issueId; optional maxCharacters | Subscriber-safe issue, with truncation marker |
+| `set_topic_history` | topicId, mode; optional count/sinceUtc/briefingId | Owned topic with future comparison settings |
+
+### get_account_plan
+
+Returns effective plan features, funding mode and override provenance for the current account. No arguments.
+
+### get_account_usage
+
+Returns topic and subscription counts, generated and reserved audio, and the next UTC reset. No arguments.
+
+### list_system_briefings
+
+Lists published catalog entries with subscription eligibility. Optional pageNumber and pageSize.
+
+### list_system_subscriptions
+
+Lists private subscriptions, delivery preferences and suspension status. Optional pageNumber and pageSize.
+
+### subscribe_system_briefing
+
+Requires publicationId. Optional emailEnabled and pushEnabled default to true. Idempotently subscribes or updates delivery preferences within the account allowance.
+
+### unsubscribe_system_briefing
+
+Requires publicationId. Stops delivery and releases the subscription slot.
+
+### list_system_issues
+
+Lists authorized issues from current subscriptions. Optional pageNumber and pageSize.
+
+### get_system_issue
+
+Requires publicationId and issueId. Optional maxCharacters (1,000 to 200,000; default 20,000) bounds Markdown. Returns the issue and a truncation marker.
+
+### set_topic_history
+
+Requires topicId and mode. Optional count (1 to 20; default 5), sinceUtc and briefingId select comparison context for future runs. The account must own the topic and selected briefing.
+
+History modes are Off, PreviousIssue, RecentIssues, SinceDate and SpecificIssue. The server freezes the baseline for each run, bounds its size, and treats historical text as untrusted context. Catalog audio playback does not consume personal generation allowance. API refusals include structured cap details; suspended or retracted issues are not readable.

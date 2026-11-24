@@ -276,6 +276,31 @@ namespace MyMorningNews.Core.Models
         public bool AudioEnabled { get; set; } = false;
 
         /// <summary>
+        /// Comparison with earlier briefing issues. New topics default Off; existing topics migrate to RecentIssues.
+        /// </summary>
+        public HistoryModeEnum HistoryMode { get; set; } = HistoryModeEnum.Off;
+
+        /// <summary>
+        /// Maximum baseline issues. Default 5, minimum 1, maximum 20. Validated before writes.
+        /// </summary>
+        public int HistoryCount { get; set; } = 5;
+
+        /// <summary>
+        /// Inclusive earliest baseline time for SinceDate, otherwise null.
+        /// </summary>
+        public DateTime? HistorySinceUtc { get; set; } = null;
+
+        /// <summary>
+        /// Explicit baseline for SpecificIssue. It must be a ready issue of this topic in the same tenant.
+        /// </summary>
+        public string? HistoryBriefingId { get; set; } = null;
+
+        /// <summary>
+        /// Conservative comparison token budget. Default 8000, minimum 256, maximum 32000.
+        /// </summary>
+        public int HistoryTokenBudget { get; set; } = 8000;
+
+        /// <summary>
         /// MCP tool IDs (mct_...) this topic may use in agentic search. Empty allows every enabled tool.
         /// </summary>
         public List<string> McpToolIds

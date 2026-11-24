@@ -15,7 +15,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Column list in model order.
         /// </summary>
-        public const string Columns = "id, tenantid, task, runid, refinementsessionid, briefingid, modelendpointid, provider, model, promptkey, prompttemplateversionid, userid, topicid, streamed, attempts, inputtokens, cachedinputtokens, cachewritetokens, outputtokens, reasoningtokens, totaltokens, durationms, timetofirsttokenms, streamingdurationms, chunkcount, outputtokenspersecond, toolcallcount, toolnames, success, statuscode, finishreason, errormessage, structuredoutputrepairs, inputcostusd, outputcostusd, estimatedcostusd, isdryrun, prompttext, responsetext, active, createdutc, lastupdateutc, runstageid";
+        public const string Columns = "id, tenantid, task, runid, refinementsessionid, briefingid, modelendpointid, provider, model, promptkey, prompttemplateversionid, userid, topicid, streamed, attempts, inputtokens, cachedinputtokens, cachewritetokens, outputtokens, reasoningtokens, totaltokens, durationms, timetofirsttokenms, streamingdurationms, chunkcount, outputtokenspersecond, toolcallcount, toolnames, success, statuscode, finishreason, errormessage, structuredoutputrepairs, inputcostusd, outputcostusd, estimatedcostusd, isdryrun, prompttext, responsetext, active, createdutc, lastupdateutc, runstageid, providerconnectionid";
 
         /// <summary>
         /// Schema statements: table and indexes. Idempotent.
@@ -75,12 +75,12 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Insert statement with positional parameters in column order.
         /// </summary>
-        public const string Insert = "INSERT INTO llmcalls (" + Columns + ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41, $42, $43)";
+        public const string Insert = "INSERT INTO llmcalls (" + Columns + ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41, $42, $43, $44)";
 
         /// <summary>
         /// Update statement. $1 is id, $2 is tenantid, then the mutable columns in model order.
         /// </summary>
-        public const string Update = "UPDATE llmcalls SET task = $3, runid = $4, refinementsessionid = $5, briefingid = $6, modelendpointid = $7, provider = $8, model = $9, promptkey = $10, prompttemplateversionid = $11, userid = $12, topicid = $13, streamed = $14, attempts = $15, inputtokens = $16, cachedinputtokens = $17, cachewritetokens = $18, outputtokens = $19, reasoningtokens = $20, totaltokens = $21, durationms = $22, timetofirsttokenms = $23, streamingdurationms = $24, chunkcount = $25, outputtokenspersecond = $26, toolcallcount = $27, toolnames = $28, success = $29, statuscode = $30, finishreason = $31, errormessage = $32, structuredoutputrepairs = $33, inputcostusd = $34, outputcostusd = $35, estimatedcostusd = $36, isdryrun = $37, prompttext = $38, responsetext = $39, active = $40, lastupdateutc = $41, runstageid = $42 WHERE id = $1 AND tenantid = $2";
+        public const string Update = "UPDATE llmcalls SET task = $3, runid = $4, refinementsessionid = $5, briefingid = $6, modelendpointid = $7, provider = $8, model = $9, promptkey = $10, prompttemplateversionid = $11, userid = $12, topicid = $13, streamed = $14, attempts = $15, inputtokens = $16, cachedinputtokens = $17, cachewritetokens = $18, outputtokens = $19, reasoningtokens = $20, totaltokens = $21, durationms = $22, timetofirsttokenms = $23, streamingdurationms = $24, chunkcount = $25, outputtokenspersecond = $26, toolcallcount = $27, toolnames = $28, success = $29, statuscode = $30, finishreason = $31, errormessage = $32, structuredoutputrepairs = $33, inputcostusd = $34, outputcostusd = $35, estimatedcostusd = $36, isdryrun = $37, prompttext = $38, responsetext = $39, active = $40, lastupdateutc = $41, runstageid = $42, providerconnectionid = $43 WHERE id = $1 AND tenantid = $2";
 
         /// <summary>
         /// Select by identifier within a tenant.

@@ -583,6 +583,47 @@
         "GET /v1.0/api/account/export"
       ],
       "notes": "Downloads the ZIP with the bearer token and opens the share sheet."
+    },
+    {
+      "route": "/dashboard/catalog",
+      "group": "Reading",
+      "status": "implemented",
+      "screen": "screens/catalog/CatalogScreens.jsx",
+      "api": [
+        "GET /v1.0/api/catalog",
+        "PUT /v1.0/api/catalog/{id}/subscription",
+        "DELETE /v1.0/api/catalog/{id}/subscription"
+      ],
+      "notes": "Browse, subscribe, delivery preferences, suspended access, shared issues and private listening progress."
+    },
+    {
+      "route": "/dashboard/account/billing",
+      "group": "Account",
+      "status": "implemented",
+      "screen": "screens/account/BillingSection.jsx",
+      "api": [
+        "GET /v1.0/api/account/billing",
+        "POST /v1.0/api/account/billing/purchases"
+      ],
+      "notes": "Native purchase/restore controls require build 7 and configured approved store products. Store validation and discounted native offers remain release gates."
+    },
+    {
+      "route": "/dashboard/account/providers",
+      "group": "Account",
+      "status": "implemented",
+      "screen": "screens/account/ProvidersSection.jsx",
+      "api": [
+        "GET /v1.0/api/account/providers",
+        "PUT /v1.0/api/account/providers",
+        "PUT /v1.0/api/account/funding"
+      ],
+      "notes": "Private keys, validation, explicit BYOK selection and repair."
+    },
+    {
+      "route": "/dashboard/admin/catalog",
+      "group": "Admin",
+      "status": "not-applicable",
+      "reason": "System publication and canonical research administration are available in the web dashboard."
     }
   ]
 }

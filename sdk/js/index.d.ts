@@ -277,6 +277,13 @@ export interface HealthResponse {
 }
 
 export interface Topic extends Record_ {
+    /** Freeze earlier issues as comparison context. Off creates a standalone briefing. */
+    historyMode?: 'Off' | 'PreviousIssue' | 'RecentIssues' | 'SinceDate' | 'SpecificIssue';
+    historyCount?: number;
+    historySinceUtc?: string | null;
+    historyBriefingId?: string | null;
+    historyTokenBudget?: number;
+
     userId: string;
     name: string;
     slug: string;
@@ -373,6 +380,12 @@ export interface RunToolCall extends Record_ {
 
 /** A null or missing limit means unlimited. */
 export interface UsageMeter {
+    audioGeneratedSecondsToday: number;
+    audioReservedSecondsToday: number;
+    audioDailySecondsMax: number | null;
+    audioResetUtc: string;
+    systemSubscriptions: number;
+    systemSubscriptionsMax: number | null;
     planKey: string;
     planName: string;
     monthToDateCostUsd: number;
@@ -555,6 +568,13 @@ export interface TopicDetail {
 }
 
 export interface TopicUpsertRequest {
+    /** Freeze earlier issues as comparison context. Off creates a standalone briefing. */
+    historyMode?: 'Off' | 'PreviousIssue' | 'RecentIssues' | 'SinceDate' | 'SpecificIssue';
+    historyCount?: number;
+    historySinceUtc?: string | null;
+    historyBriefingId?: string | null;
+    historyTokenBudget?: number;
+
     name?: string;
     description?: string;
     brief?: string;
@@ -1373,6 +1393,7 @@ export interface Notification extends Record_ {
     topicId?: string | null;
     runId?: string | null;
     briefingId?: string | null;
+    catalogPublicationId?: string | null;
     mediaAssetId?: string | null;
     predictionId?: string | null;
     readUtc?: string | null;
@@ -1451,6 +1472,7 @@ export interface Device extends Record_ {
 }
 
 export interface LlmCall extends Record_ {
+    providerConnectionId?: string | null;
     task: string;
     runId: string | null;
     /** Run stage the call was made in. */
@@ -1485,7 +1507,383 @@ export interface LlmCall extends Record_ {
     responseText: string | null;
 }
 
+// TYPES BEGIN PLATFORM
+/** Public catalog projection. Contains no canonical workspace, prompts, credentials, or research trace. */
+export interface CatalogEntryResponse {
+    /** Publication identifier. */
+    id?: string;
+    /** Public title. */
+    title?: string;
+    /** Public description. */
+    description?: string | null;
+    /** Category. */
+    category?: string;
+    /** Language. */
+    language?: string;
+    /** Publication state. */
+    status?: string;
+    /** Available to free accounts. */
+    freeEligible?: boolean;
+    /** Caller may subscribe under their effective plan. */
+    eligible?: boolean;
+    /** Caller has an active subscription. */
+    subscribed?: boolean;
+    /** Subscription retained but suspended under the current allowance. */
+    suspended?: boolean;
+    /** Subscriber email preference; null when not subscribed. */
+    emailEnabled?: boolean | null;
+    /** Subscriber push preference; null when not subscribed. */
+    pushEnabled?: boolean | null;
+    /** Display order. */
+    sortOrder?: number;
+    /** First publication time. */
+    publishedUtc?: string | null;
+}
+
+/** Shared issue content projection. Always authorized through the caller's subscription. */
+export interface CatalogIssueResponse {
+    /** Canonical issue identifier. */
+    id?: string;
+    /** Publication identifier. */
+    publicationId?: string;
+    /** Issue title. */
+    title?: string;
+    /** Composed content on detail reads. */
+    markdown?: string | null;
+    /** Issue timestamp. */
+    createdUtc?: string;
+    /** Authenticated shared audio path when ready. */
+    audioPath?: string | null;
+    /** Shared episode duration when known. */
+    audioSeconds?: number | null;
+}
+
+/** System-administrator-only canonical research settings. */
+export interface CatalogResearchResponse {
+    /** Canonical topic. Never included in member catalog projections. */
+    topic?: Topic;
+    /** Primary research schedule, or null before configuration. */
+    schedule?: Schedule | null;
+}
+
+/** A user subscribes to a canonical publication; delivery and interaction state stay private. */
+export interface CatalogSubscription {
+    /** Identifier (prefix csu_). */
+    id?: string;
+    /** Tenant identifier. */
+    tenantId?: string;
+    /** Owning user identifier. */
+    userId?: string;
+    /** Catalog publication. */
+    publicationId?: string;
+    /** Deliver canonical issues by email. */
+    emailEnabled?: boolean;
+    /** Send publication notifications. */
+    pushEnabled?: boolean;
+    /** Subscription suspended by eligibility or plan changes. */
+    suspended?: boolean;
+    /** Whether the record is active. */
+    active?: boolean;
+    /** UTC creation time. */
+    createdUtc?: string;
+    /** UTC time of the last update. */
+    lastUpdateUtc?: string;
+}
+
+/** Explicit administrator publication of a canonical system topic. Reads use an allowlisted projection. */
+export interface CatalogPublication {
+    /** Identifier (prefix cat_). */
+    id?: string;
+    /** Canonical topic; publishing does not transfer subscriber ownership. */
+    topicId?: string;
+    /** Protected workspace of the canonical topic. */
+    ownerTenantId?: string;
+    /** Public catalog title. */
+    title?: string;
+    /** Public scope description. May be null. */
+    description?: string | null;
+    /** Catalog category. */
+    category?: string;
+    /** Output language. */
+    language?: string;
+    /** Draft, Published, Retired, or Retracted. */
+    status?: string;
+    /** Whether free catalog members may subscribe. */
+    freeEligible?: boolean;
+    /** Administrator display ordering. */
+    sortOrder?: number;
+    /** Publication revision for optimistic concurrency. */
+    revision?: number;
+    /** First publication timestamp. May be null. */
+    publishedUtc?: string | null;
+    /** Whether the record is active. */
+    active?: boolean;
+    /** UTC creation time. */
+    createdUtc?: string;
+    /** UTC time of the last update. */
+    lastUpdateUtc?: string;
+}
+
+/** Account-bound purchase offers, captured signup benefit and verified access. */
+export interface BillingStatusResponse {
+    /** Whether new purchases are enabled. */
+    enabled?: boolean;
+    /** Account binding UUID for native purchases. */
+    purchaseAccountToken?: string;
+    /** Whether Apple verification is configured. */
+    appleAvailable?: boolean;
+    /** Whether Google verification is configured. */
+    googleAvailable?: boolean;
+    /** Available package offers. */
+    offers?: BillingOfferResponse[];
+    /** Captured signup offer, if any. Payment verification is still required. */
+    signupBenefit?: SignupBenefit | null;
+    /** Verified subscriptions owned by this account. */
+    subscriptions?: BillingSubscriptionResponse[];
+    /** Effective package including administrator overrides. */
+    plan?: EffectivePlan;
+}
+
+/** Public purchase offer and package allowances. Provider secrets are never included. */
+export interface BillingOfferResponse {
+    /** Stable server offer key. */
+    key?: string;
+    /** Base package key. */
+    planKey?: string;
+    /** Month or Year. */
+    interval?: string;
+    /** Web price in USD cents. Native clients use localized store prices. */
+    usdCents?: number;
+    /** Apple product identifier, or null. */
+    appleProductId?: string | null;
+    /** Google subscription identifier, or null. */
+    googleProductId?: string | null;
+    /** Google base-plan identifier, or null. */
+    googleBasePlanId?: string | null;
+    /** Display name. */
+    planName?: string;
+    /** Custom topic cap, unlimited, or null. */
+    customTopics?: string | null;
+    /** Separate system subscription cap, unlimited, or null. */
+    systemSubscriptions?: string | null;
+    /** Generated audio seconds per UTC day, unlimited, or null. */
+    dailyAudioSeconds?: string | null;
+    /** Whether checkout is currently configured and enabled. */
+    webAvailable?: boolean;
+}
+
+/** Verified subscription status without payment identifiers or verification credentials. */
+export interface BillingSubscriptionResponse {
+    /** Internal subscription identifier. */
+    id?: string;
+    /** Stripe, Apple, or Google. */
+    provider?: string;
+    /** Verified provider environment. */
+    environment?: string;
+    /** Base plan identifier. */
+    planId?: string;
+    /** Active, Grace, Suspended, Canceled, Expired, or Revoked. */
+    status?: string;
+    /** Verified paid or grace period end. */
+    endsUtc?: string | null;
+    /** Whether renewal has been canceled. */
+    cancelAtPeriodEnd?: boolean;
+    /** Last authoritative provider verification. */
+    lastVerifiedUtc?: string;
+}
+
+/** A server-selected billing redirect. The URL alone never grants paid access. */
+export interface BillingRedirectResponse {
+    /** Checkout operation identifier, or null for portal. */
+    id?: string | null;
+    /** HTTPS provider destination. */
+    url?: string;
+    /** Checkout expiry if applicable. */
+    expiresUtc?: string | null;
+}
+
+/** Private connection metadata and current funding selection. */
+export interface ProviderConnectionsResponse {
+    /** Account-owned connections with secrets excluded from serialization. */
+    connections?: ProviderConnection[];
+    /** Whether an operator-funded local speech engine is offered to BYOK users. */
+    localSpeechAvailable?: boolean;
+    /** Effective package and funding mode. */
+    plan?: EffectivePlan;
+}
+
+/** Private per-account model or speech connection. Secrets are encrypted and excluded from all API projections. */
+export interface ProviderConnection {
+    /** Identifier (prefix pco_). */
+    id?: string;
+    /** Tenant identifier. */
+    tenantId?: string;
+    /** Owning user identifier. */
+    userId?: string;
+    /** Chat, Embedding, or Speech. */
+    kind?: string;
+    /** Supported API provider or Local speech. */
+    provider?: string;
+    /** Optional provider URL; local speech uses operator configuration. May be null. */
+    endpoint?: string | null;
+    /** Provider model identifier. */
+    model?: string;
+    /** Speech voice identifier. May be null. */
+    voice?: string | null;
+    /** Masked display suffix. May be null. */
+    secretLast4?: string | null;
+    /** Successful connection test time, cleared on change. May be null. */
+    validatedUtc?: string | null;
+    /** Whether the record is active. */
+    active?: boolean;
+    /** UTC creation time. */
+    createdUtc?: string;
+    /** UTC time of the last update. */
+    lastUpdateUtc?: string;
+}
+
+/** Immutable signup offer captured before checkout; never grants paid access before verification. */
+export interface SignupBenefit {
+    /** Identifier (prefix sbe_). */
+    id?: string;
+    /** Tenant identifier. */
+    tenantId?: string;
+    /** Owning user identifier. */
+    userId?: string;
+    /** Source signup code. */
+    promoCodeId?: string;
+    /** Custom or standard package selected by the offer. */
+    planId?: string;
+    /** Percentage discount captured at signup, from zero through 100. */
+    discountPercent?: number;
+    /** Discount billing months; null means ongoing. May be null. */
+    discountMonths?: number | null;
+    /** When the offer was applied to a verified subscription. May be null. */
+    redeemedUtc?: string | null;
+    /** Explicit administrator revocation. May be null. */
+    revokedUtc?: string | null;
+    /** Whether the record is active. */
+    active?: boolean;
+    /** UTC creation time. */
+    createdUtc?: string;
+    /** UTC time of the last update. */
+    lastUpdateUtc?: string;
+    /** Required base subscription package. */
+    billingPlanKey?: string;
+    /** Custom tier duration from verified activation; null means subscription lifetime. */
+    durationDays?: number | null;
+    /** Immutable verified subscription binding; null until payment is verified. */
+    redeemedSubscriptionId?: string | null;
+    /** Captured native Apple offer identifier. */
+    appleOfferId?: string | null;
+    /** Captured native Google offer identifier. */
+    googleOfferId?: string | null;
+}
+
+/** Administrator catalog metadata. A new publication creates an isolated canonical topic. */
+export interface CatalogPublicationRequest {
+    /** Required title, 1 to 200 characters. */
+    title?: string;
+    /** Public research scope, up to 4000 characters. */
+    description?: string | null;
+    /** Category, 1 to 100 characters. */
+    category?: string;
+    /** Output language, 1 to 16 characters. */
+    language?: string;
+    /** Allow free users to select this publication. */
+    freeEligible?: boolean;
+    /** Draft, Published, Retired, or Retracted. */
+    status?: string;
+    /** Display ordering. */
+    sortOrder?: number;
+    /** Required current revision when updating; conflicts return 409. */
+    revision?: number | null;
+}
+
+/** Canonical research configuration. The publication determines the protected owner; caller-supplied owner IDs are ignored. */
+export interface CatalogResearchRequest {
+    /** Research scope, history and audio controls. Null leaves the topic unchanged. */
+    topic?: TopicUpsertRequest | null;
+    /** Canonical research schedule. Null leaves scheduling unchanged. */
+    schedule?: ScheduleUpsertRequest | null;
+}
+
+/** Personal delivery preferences for a shared briefing subscription. */
+export interface CatalogSubscriptionRequest {
+    /** Email new issues. */
+    emailEnabled?: boolean;
+    /** Notify mobile devices about new issues. */
+    pushEnabled?: boolean;
+}
+
+/** Set one user's entitlement override. Global administrator only. Delete the override to restore plan inheritance. */
+export interface EntitlementOverrideRequest {
+    /** Registered feature key, required. Maximum 128 characters. */
+    featureKey?: string | null;
+    /** Valid feature value, required. Numeric zero and unlimited have different meanings. */
+    value?: string | null;
+    /** Required explanation, retained in the audit trail. Maximum 1000 characters. */
+    reason?: string | null;
+    /** Optional UTC expiry. Null means no expiry. */
+    expiresUtc?: string | null;
+}
+
+/** Start web checkout using an operator-configured public offer key. */
+export interface BillingCheckoutRequest {
+    /** Configured offer key; prices, customers, and redirect URLs cannot be supplied by the caller. */
+    offerKey?: string;
+}
+
+/** Native purchase evidence. Server verification and immutable account binding are always required. */
+export interface BillingPurchaseRequest {
+    /** Apple or Google. */
+    provider?: string;
+    /** StoreKit signed transaction, required for Apple. Never logged. */
+    signedTransaction?: string | null;
+    /** Play purchase token, required for Google. Never logged. */
+    purchaseToken?: string | null;
+}
+
+/** Save a private model or speech connection. Secrets are write-only; an empty key retains an unchanged provider's key. */
+export interface ProviderConnectionRequest {
+    /** Chat, Embedding, or Speech. Default Chat. */
+    kind?: string;
+    /** Anthropic, OpenAi, Gemini, XAi, OpenAiCompatible, or Local speech. */
+    provider?: string;
+    /** Model identifier, required except for Local speech. */
+    model?: string;
+    /** Optional API endpoint. Custom URLs must pass server egress restrictions. */
+    endpoint?: string | null;
+    /** Write-only API key, up to 8192 characters. Null retains a key for the same provider and URL. */
+    apiKey?: string | null;
+    /** Speech voice identifier. Required for a personal speech API. */
+    voice?: string | null;
+}
+
+/** Choose Personal for BYOK or Platform to restore the account's assigned package. Existing subscriptions must be managed separately. */
+export interface FundingModeRequest {
+    /** Personal or Platform. Default Personal. */
+    mode?: string;
+}
+
+/** Save where the caller stopped listening to a briefing. */
+export interface BriefingProgressRequest {
+    /** Playback position in seconds. Minimum 0, maximum 86400. */
+    positionSeconds?: number;
+    /** Episode length in seconds, when the player knows it. */
+    durationSeconds?: number | null;
+    /** Whether the caller finished listening. */
+    completed?: boolean;
+}
+
+// TYPES END PLATFORM
+
 export interface EffectivePlan {
+    subscriptionRequired: boolean;
+    fundingMode: "Platform" | "Personal" | "SelfHosted";
+    featureSources: Record<string, string>;
+    billingSubscriptionId: string | null;
+    billingProvider: string | null;
     plan: { id: string; key: string; name: string; description?: string | null; [k: string]: unknown };
     features: Record<string, string>;
     assignment: any | null;
@@ -2012,6 +2410,84 @@ export declare class DevicesResource extends ResourceGroup {
     test(id: string): Promise<any>;
 }
 
+// BEGIN PLATFORM
+export declare class CatalogResource extends ResourceGroup {
+    /** Browse published system briefings and account eligibility. */
+    list(options?: ListOptions & { category?: string; language?: string }): Promise<EnumerationResult<CatalogEntryResponse>>;
+    /** List private subscriptions, including suspended subscriptions. */
+    subscriptions(options?: ListOptions): Promise<EnumerationResult<CatalogSubscription>>;
+    /** Subscribe or update delivery preferences. Separate system subscription limits apply. */
+    subscribe(id: string, body: CatalogSubscriptionRequest): Promise<CatalogSubscription>;
+    /** Unsubscribe without deleting canonical content. */
+    unsubscribe(id: string): Promise<null>;
+    /** List issues readable through this subscription. */
+    issues(id: string, options?: ListOptions): Promise<EnumerationResult<CatalogIssueResponse>>;
+    /** List shared issues across all current subscriptions. */
+    allIssues(options?: ListOptions & { audioOnly?: boolean }): Promise<EnumerationResult<CatalogIssueResponse>>;
+    /** Read shared content without exposing canonical workspace internals. */
+    issue(id: string, issueId: string): Promise<CatalogIssueResponse>;
+    /** Download authenticated shared audio. Playback does not consume generation allowance. */
+    audio(id: string, issueId: string, options?: DownloadOptions): Promise<DownloadResult>;
+    /** Read private listening progress. */
+    progress(id: string, issueId: string): Promise<BriefingProgress>;
+    /** Save private listening progress for a shared issue. */
+    saveProgress(id: string, issueId: string, body: BriefingProgressRequest): Promise<BriefingProgress>;
+}
+
+export declare class BillingResource extends ResourceGroup {
+    /** Read offers, native account binding, verified subscriptions and effective access. */
+    status(): Promise<BillingStatusResponse>;
+    /** Create or resume one account-bound Stripe checkout. A redirect never grants access. */
+    checkout(body: BillingCheckoutRequest): Promise<BillingRedirectResponse>;
+    /** Open management for the verified Stripe customer. */
+    portal(): Promise<BillingRedirectResponse>;
+    /** Verify or restore an account-bound Apple or Google purchase. */
+    verifyPurchase(body: BillingPurchaseRequest): Promise<EffectivePlan>;
+}
+
+export declare class ProvidersResource extends ResourceGroup {
+    /** List only this account's masked provider connections. */
+    list(): Promise<ProviderConnectionsResponse>;
+    /** Connect or rotate a write-only model or speech API key. Clears validation. */
+    save(body: ProviderConnectionRequest): Promise<ProviderConnection>;
+    /** Run a fixed small probe with this account's credential. Six probes per minute. */
+    test(id: string): Promise<Record<string, unknown>>;
+    /** Remove a private key. BYOK calls fail closed, without platform fallback. */
+    remove(id: string): Promise<Record<string, unknown>>;
+    /** Choose Personal or Platform funding. A verified chat connection is required for BYOK. */
+    setFunding(body: FundingModeRequest): Promise<EffectivePlan>;
+}
+
+export declare class AdminCatalogResource extends ResourceGroup {
+    /** System administrator: list every publication lifecycle state. */
+    list(options?: ListOptions): Promise<EnumerationResult<CatalogPublication>>;
+    /** System administrator: read a canonical publication. */
+    get(id: string): Promise<CatalogPublication>;
+    /** System administrator: create a canonical system topic and publication. */
+    create(body: CatalogPublicationRequest): Promise<CatalogPublication>;
+    /** System administrator: update publication with current revision for conflict protection. */
+    update(id: string, body: CatalogPublicationRequest): Promise<CatalogPublication>;
+    /** System administrator: inspect canonical issue projections. */
+    issues(id: string, options?: ListOptions): Promise<EnumerationResult<CatalogIssueResponse>>;
+    /** System administrator: read canonical research and schedule configuration. */
+    research(id: string): Promise<CatalogResearchResponse>;
+    /** System administrator: configure canonical research and schedule. */
+    saveResearch(id: string, body: CatalogResearchRequest): Promise<CatalogResearchResponse>;
+    /** System administrator: start a canonical research run. */
+    run(id: string): Promise<Run>;
+}
+
+export declare class AdminEntitlementsResource extends ResourceGroup {
+    /** System administrator: inspect effective user allowances and provenance. */
+    get(tenantId: string, userId: string): Promise<EffectivePlan>;
+    /** System administrator: override one limit with an audit reason and optional expiry. */
+    set(tenantId: string, userId: string, body: EntitlementOverrideRequest): Promise<EffectivePlan>;
+    /** System administrator: remove an override and restore plan inheritance. */
+    clear(tenantId: string, userId: string, featureKey: string): Promise<null>;
+}
+
+// END PLATFORM
+
 export declare class AccountResource extends ResourceGroup {
     plan(): Promise<EffectivePlan>;
     redeem(code: string): Promise<EffectivePlan>;
@@ -2055,7 +2531,8 @@ export declare class McpServersResource extends CrudResource<McpServer, McpServe
 }
 
 export declare class SettingsResource extends ResourceGroup {
-    get(): Promise<{ settings: any; fields: any[]; pendingRestart: boolean }>;
+    get(): Promise<{ settings: any; fields: any[]; pendingRestart: string[] }>;
+    update(settings: Record<string, unknown>): Promise<{ success: boolean; errors: Record<string, string>; changed: string[]; pendingRestart: string[] }>;
 }
 
 export declare class PublicResource extends ResourceGroup {
@@ -2112,6 +2589,11 @@ export declare class MyMorningNewsClient {
     readonly vault: VaultResource;
     readonly devices: DevicesResource;
     readonly notifications: NotificationsResource;
+    readonly catalog: CatalogResource;
+    readonly billing: BillingResource;
+    readonly providers: ProvidersResource;
+    readonly adminCatalog: AdminCatalogResource;
+    readonly adminEntitlements: AdminEntitlementsResource;
     readonly account: AccountResource;
     readonly mcpServers: McpServersResource;
     readonly setup: SetupResource;

@@ -64,6 +64,9 @@ namespace MyMorningNews.Core.Briefings
         /// </summary>
         public bool IsDryRun { get; set; } = false;
 
+        /// <summary>Frozen comparison instructions assembled once for this composition. Empty until composition starts.</summary>
+        public string HistoryInstructions { get; set; } = String.Empty;
+
         /// <summary>
         /// Save sections, items, and files. False for previews.
         /// </summary>

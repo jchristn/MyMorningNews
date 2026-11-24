@@ -1,5 +1,7 @@
 # App Store and Google Play submission form
 
+Release update (2026-11-24): build 7 adds native subscription support. Server/web billing is live; products, device purchase testing, store review metadata, and privacy declarations must be verified before a public native release. Current evidence is in [PLATFORM_IMPLEMENTATION_STATUS.md](docs/PLATFORM_IMPLEMENTATION_STATUS.md). Older checked answers below are historical where superseded by this release.
+
 Every field and data point needed to submit the My Morning News app (`mobile/`) to the Apple App Store and Google
 Play, written as a form. For each field: the store, the field name as the console shows it, the limit or format,
 our proposed value, and an `[ ] Owner:` line wherever only the owner can supply or confirm the value. Proposed
@@ -16,7 +18,7 @@ in one place.
 **Owner decisions recorded 2026-11-20 (plan Q24 to Q28):** Android first through Google Play internal testing (the
 Lattice AI Play account is ready); iOS follows when Apple approves the business enrollment. Bundle ID
 `ai.latticetech.mymorningnews`. Countries: United States, Canada, United Kingdom, Australia, New Zealand. Ages 18 and
-over. Category Productivity on both stores. Free, no in-app purchases. Drafted listing text and answers approved, to
+over. Category Productivity on both stores. Free download with optional auto-renewing subscriptions. Drafted listing text and answers approved, to
 be re-checked against the release build at submission.
 
 **Legend.** Store: **A** Apple App Store Connect, **G** Google Play Console, **A+G** both.
@@ -104,7 +106,7 @@ All text in this section is proposed. No em-dashes, no claims the app does not s
 > Your account works on the web, by email, and in your podcast app too. Use the hosted service, or connect the app
 > to a My Morning News server you run yourself.
 >
-> Free while in alpha, with a usage cap. Sign in with email and password. Terms of use:
+> Subscribe to up to five selected system briefings for free. Optional paid plans add custom topics and daily generated audio. No trial. Sign in with email and password. Terms of use:
 > https://mymorningnews.ai/terms.html. Privacy policy: https://mymorningnews.ai/privacy.html.
 
 `[x]` Approved. Re-check each bullet against what the release build does (section 0.1); remove any line whose feature has not shipped.
@@ -136,7 +138,7 @@ First release: not shown on Apple for version 1. Google internal testing notes:
 
 | Store | Field | Proposed value | Owner |
 |---|---|---|---|
-| A+G | Price | Free. No in-app purchases while the service is free (plan decision Q11). When billing arrives, digital plans bought in the app go through in-app purchase (Apple 3.1.1). | `[x]` Confirmed |
+| A+G | Price | Free download. Optional native subscriptions: 5 custom topics with 30 generated audio minutes/day, or 20 with 100 minutes/day. Monthly and annual offers; no trial. Exact localized prices come from the store. | `[x]` Confirmed |
 | A+G | Countries and regions | United States, Canada, United Kingdom, Australia, New Zealand | `[x]` Decided |
 | A | Pre-order | No | |
 | A | Distribution | Public on the App Store | `[x]` Confirmed |
@@ -146,7 +148,7 @@ First release: not shown on Apple for version 1. Google internal testing notes:
 | A | Version release | Manual release after approval | `[x]` Confirmed |
 | G | Countries | Same list as Apple | `[x]` Confirmed |
 | G | Contains ads | No | |
-| A+G | Paid Applications Agreement, tax, banking | Not needed while free; needed before any in-app purchase | `[x]` Not needed yet |
+| A+G | Paid Applications Agreement, tax, banking | Required before subscription activation; verify agreement, tax and banking status in both stores | `[ ]` Verify before native subscription launch |
 | A | Content rights: "Does your app contain, show, or access third-party content?" | Yes. Briefings quote short excerpts from public web pages with a link to each source, as summaries for the user's own research. | `[x]` Approved 2026-11-20 (short quoted excerpts with links, for the user's own research) |
 
 ---
@@ -167,7 +169,7 @@ First release: not shown on Apple for version 1. Google internal testing notes:
 ## 5. Age rating
 
 The app shows research briefings about whatever topics the user chooses, drawn from public news and web sources.
-There is no user-to-user content, no chat between people, no ads, no gambling, and no purchases.
+There is no user-to-user content, no chat between people, no ads, no gambling, and optional subscriptions.
 
 ### 5.1 Apple (questionnaire with tiers 4+, 9+, 13+, 16+, 18+)
 
@@ -208,7 +210,7 @@ There is no user-to-user content, no chat between people, no ads, no gambling, a
 | Users can interact or exchange content | No |
 | Shares personal information with other users | No |
 | Shares current location with others | No |
-| Digital purchases | No |
+| Digital purchases | Yes, auto-renewing subscriptions |
 | Unrestricted internet | No |
 
 `[x]` Approved
@@ -250,7 +252,8 @@ Product Personalization where noted).
 | Usage Data > Product Interaction | Yes | Listening progress, feedback, model usage per account (cost reporting), request history for security (also Product Personalization) |
 | Usage Data > Advertising Data, Other Usage Data | No | |
 | Diagnostics | No | No crash reporting SDK; change if one is added |
-| Location, Health and Fitness, Financial Info, Contacts, Browsing History, Search History, Sensitive Info, Purchases, Other Data | No | |
+| Purchases > Purchase History | Yes | Account-linked subscription identifiers and status, used for app functionality; no advertising or tracking |
+| Location, Health and Fitness, Financial Info, Contacts, Browsing History, Search History, Sensitive Info, Other Data | No | |
 
 Notes: in-app sign-up collects the email, a password (the server keeps only a hash), an optional name, and an
 optional promotional code, sends the device time zone and language as settings, and records that the terms were
@@ -356,7 +359,7 @@ Where to look:
   instead. "Forgot password?" sends a reset link that also opens the app.
 
 Sign-in uses email and password only, with no third-party or social login, so Sign in with Apple is not required
-(Guideline 4.8). The app has no ads, no tracking, and no purchases. "Change server" on the sign-in screen is for
+(Guideline 4.8). The app has no ads, no tracking, and optional subscriptions. "Change server" on the sign-in screen is for
 people who run their own open-source My Morning News server; reviewers do not need it.
 Contact: hello@latticetech.ai
 ```

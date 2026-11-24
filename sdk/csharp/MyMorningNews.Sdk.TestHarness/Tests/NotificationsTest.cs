@@ -50,7 +50,7 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
                 Helpers.True(!On(prefs, NotificationKindEnum.AudioReady, NotificationChannelEnum.Email) && !On(prefs, NotificationKindEnum.PredictionDue, NotificationChannelEnum.Email), "email is off by default for audio and predictions");
                 Helpers.True(!prefs.Preferences.Any(x => x.Channel != NotificationChannelEnum.Email && x.Enabled), "push and in-app are off by default");
                 NotificationChannelStatus push = prefs.Channels.Single(x => x.Channel == NotificationChannelEnum.Push);
-                Helpers.True(!push.Available && push.Reason == NotificationUnavailableReasonEnum.NoDevice, "push needs a device");
+                Helpers.True(!push.Available && (push.Reason == NotificationUnavailableReasonEnum.NoDevice || push.Reason == NotificationUnavailableReasonEnum.PushNotConfigured), "push needs a configured service and device");
                 Helpers.True(prefs.Channels.Single(x => x.Channel == NotificationChannelEnum.InApp).Available, "in-app is always available");
                 Helpers.NotEmpty(prefs.Address, "address");
 

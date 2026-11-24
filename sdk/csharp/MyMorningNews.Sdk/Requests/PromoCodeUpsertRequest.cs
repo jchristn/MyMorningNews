@@ -71,6 +71,36 @@ namespace MyMorningNews.Sdk.Requests
         public bool? ClearExpiresUtc { get; set; } = null;
 
         /// <summary>
+        /// Complimentary grants access; PaidOffer captures a subscription offer without granting access. Null leaves the existing value unchanged.
+        /// </summary>
+        public string? BenefitKind { get; set; } = null;
+
+        /// <summary>
+        /// Purchased package required for this paid offer, normally paid-5 or paid-20. Null leaves the existing value unchanged.
+        /// </summary>
+        public string? BillingPlanKey { get; set; } = null;
+
+        /// <summary>
+        /// Percentage discount from zero through 100. Null leaves the existing value unchanged.
+        /// </summary>
+        public decimal? DiscountPercent { get; set; } = null;
+
+        /// <summary>
+        /// Discount months; null means ongoing. Null leaves the existing value unchanged.
+        /// </summary>
+        public int? DiscountMonths { get; set; } = null;
+
+        /// <summary>
+        /// Configured Apple promotional offer identifier; null when unavailable. Null leaves the existing value unchanged.
+        /// </summary>
+        public string? AppleOfferId { get; set; } = null;
+
+        /// <summary>
+        /// Configured Google subscription offer identifier; null when unavailable. Null leaves the existing value unchanged.
+        /// </summary>
+        public string? GoogleOfferId { get; set; } = null;
+
+        /// <summary>
         /// Instantiate.
         /// </summary>
         public PromoCodeUpsertRequest()

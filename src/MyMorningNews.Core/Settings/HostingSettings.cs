@@ -18,6 +18,25 @@ namespace MyMorningNews.Core.Settings
         public bool PublicSignupEnabled { get; set; } = false;
 
         /// <summary>
+        /// Require verified subscriptions for paid access for newly registered accounts. Existing accounts retain their
+        /// captured policy. Default true. Turning this off assigns NonBilledPlanKey without requiring payment.
+        /// </summary>
+        [Setting(Description = "New accounts require a subscription for paid access. Existing accounts keep their signup policy.", EnvironmentVariable = "HOSTING_NEW_USERS_REQUIRE_SUBSCRIPTION")]
+        public bool NewUsersRequireSubscription { get; set; } = true;
+
+        /// <summary>
+        /// Plan assigned to new accounts when subscriptions are not required. Default complimentary-five (five system
+        /// subscriptions, five custom topics, unlimited audio). Use catalog-only for system subscriptions only.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Value is empty.</exception>
+        [Setting(Description = "Default non-billed plan for new accounts: catalog-only, complimentary-five, or a custom plan key.", EnvironmentVariable = "HOSTING_NON_BILLED_PLAN")]
+        public string NonBilledPlanKey
+        {
+            get { return _NonBilledPlanKey; }
+            set { _NonBilledPlanKey = String.IsNullOrWhiteSpace(value) ? throw new ArgumentNullException(nameof(NonBilledPlanKey)) : value.Trim().ToLowerInvariant(); }
+        }
+
+        /// <summary>
         /// Plan key for users without an assignment. Default unlimited (self-hosted); the hosted profile uses free.
         /// </summary>
         /// <exception cref="ArgumentNullException">Value is null or empty.</exception>
@@ -191,6 +210,7 @@ namespace MyMorningNews.Core.Settings
         }
 
         private string _DefaultPlanKey = "unlimited";
+        private string _NonBilledPlanKey = "complimentary-five";
         private int _PromoChecksPerMinute = 20;
         private List<string> _BlockedEmailDomains = new List<string> { "mailinator.com", "guerrillamail.com", "10minutemail.com", "tempmail.com", "yopmail.com", "trashmail.com" };
         private int _SignupsPerIpPerHour = 5;

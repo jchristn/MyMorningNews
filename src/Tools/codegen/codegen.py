@@ -369,7 +369,7 @@ def gen_queries(e):
     stmts = ['CREATE TABLE IF NOT EXISTS ' + e.table + ' (\n' + ',\n'.join(ddl) + '\n)']
     idx_done = set()
     def idx(colset, unique=False):
-        key = tuple(colset)
+        key = (tuple(colset), unique)
         if key in idx_done:
             return
         idx_done.add(key)

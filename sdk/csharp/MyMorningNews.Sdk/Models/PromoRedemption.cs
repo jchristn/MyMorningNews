@@ -44,7 +44,7 @@ namespace MyMorningNews.Sdk.Models
         /// <summary>
         /// Plan assignment it created.
         /// </summary>
-        public string PlanAssignmentId { get; set; } = String.Empty;
+        public string? PlanAssignmentId { get; set; } = null;
 
         /// <summary>
         /// Where it was redeemed. Default Account.
@@ -70,6 +70,11 @@ namespace MyMorningNews.Sdk.Models
         /// UTC time of the last update.
         /// </summary>
         public DateTime LastUpdateUtc { get; set; }
+
+        /// <summary>
+        /// Captured paid offer, or null for a complimentary grant.
+        /// </summary>
+        public string? SignupBenefitId { get; set; } = null;
 
         /// <summary>
         /// Instantiate.

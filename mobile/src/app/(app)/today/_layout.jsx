@@ -11,6 +11,9 @@ export default function TodayLayout() {
     <TabStack
       titles={{
         index: t('mobile.tabs.today'),
+        'catalog/index': t('mobile.catalog.title'),
+        'catalog/issues': t('mobile.catalog.issues'),
+        'catalog/[publicationId]/[issueId]': t('mobile.catalog.title'),
         'briefings/index': t('mobile.briefings.title'),
         'briefings/[briefingId]': t('mobile.briefings.reader'),
         'findings/index': t('mobile.findings.title'),

@@ -34,6 +34,14 @@ export function promoReason(error) {
 
 /** Plan features in display order: the entitlement key and the catalog key of its label (mobile.plan.features.*). */
 export const PLAN_FEATURES = Object.freeze([
+  { key: 'customTopics.max', label: null, kind: 'count' },
+  { key: 'systemSubscriptions.max', label: null, kind: 'count' },
+  { key: 'audio.dailySeconds.max', label: null, kind: 'count' },
+  { key: 'customResearch.enabled', label: null, kind: 'flag' },
+  { key: 'oneTimeResearch.enabled', label: null, kind: 'flag' },
+  { key: 'catalog.freeOnly', label: null, kind: 'flag' },
+  { key: 'catalog.audio.enabled', label: null, kind: 'flag' },
+  { key: 'models.personalConnections.enabled', label: null, kind: 'flag' },
   { key: 'usage.monthlyCostUsd.max', label: 'monthlyCost', kind: 'cost' },
   { key: 'topics.max', label: 'topics', kind: 'count' },
   { key: 'runs.daily.max', label: 'dailyRuns', kind: 'count' },

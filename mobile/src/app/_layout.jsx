@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { I18nextProvider } from 'react-i18next';
 import { LockGate } from '@/components/LockGate';
+import { PurchaseProvider } from '@/billing/PurchaseProvider';
 import { UpdateGate } from '@/components/UpdateGate';
 import { applyDirection, deviceLocale, initI18n } from '@/i18n/runtime';
 import { PlayerProvider } from '@/player/PlayerContext';
@@ -47,6 +48,7 @@ function Root() {
     <I18nextProvider i18n={i18n}>
       <ThemeProvider preference={prefs.theme}>
         <AuthProvider>
+          <PurchaseProvider>
           <ServerProvider>
             <UpdateGate>
               <OfflineProvider>
@@ -59,6 +61,7 @@ function Root() {
               </OfflineProvider>
             </UpdateGate>
           </ServerProvider>
+          </PurchaseProvider>
         </AuthProvider>
       </ThemeProvider>
     </I18nextProvider>

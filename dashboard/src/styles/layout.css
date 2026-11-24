@@ -315,7 +315,8 @@
 }
 
 .hub-tab-blocked {
-  opacity: 0.45;
+  opacity: 1;
+  color: var(--color-text-secondary);
 }
 
 .mobile-only {

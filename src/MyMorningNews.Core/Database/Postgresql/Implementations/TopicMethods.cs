@@ -50,6 +50,15 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
         #region Public-Methods
 
         /// <inheritdoc />
+        public async Task<bool> WithinSlotsAsync(Topic topic, long maximum, CancellationToken token = default)
+        {
+            ArgumentNullException.ThrowIfNull(topic);
+            List<bool> rows = await QueryAsync(@"SELECT count(*) < $5 FROM topics WHERE tenantid=$1 AND userid=$2 AND NOT isonetime AND status <> 'Archived'
+AND (createdutc,id) < ($3,$4)", r => r.GetBoolean(0), token, topic.TenantId, topic.UserId, topic.CreatedUtc, topic.Id, maximum).ConfigureAwait(false);
+            return rows[0] && topic.Status != TopicStatusEnum.Archived;
+        }
+
+        /// <inheritdoc />
         public async Task<Topic> CreateAsync(Topic obj, CancellationToken token = default)
         {
             ArgumentNullException.ThrowIfNull(obj);
@@ -57,7 +66,13 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             DateTime now = DateTime.UtcNow;
             obj.CreatedUtc = now;
             obj.LastUpdateUtc = now;
-            await ExecuteAsync(TopicQueries.Insert, token,
+            long? maximum = Driver.TopicSlotLimit == null ? null : await Driver.TopicSlotLimit(obj.TenantId, obj.UserId, obj.IsOneTime, token).ConfigureAwait(false);
+            if (obj.IsOneTime && maximum == 0) throw SlotExceeded(maximum);
+            string insert = TopicQueries.Insert.Replace(" VALUES (", " SELECT ", StringComparison.Ordinal).TrimEnd(')');
+            string sql = insert + @" WHERE $12 OR $11 = 'Archived' OR $39::bigint IS NULL OR
+(SELECT count(*) FROM topics WHERE tenantid = $2 AND userid = $3 AND NOT isonetime AND status <> 'Archived') < $39 RETURNING " + TopicQueries.Columns;
+            List<Topic> rows = await Driver.QueryWithAdvisoryLockAsync(SlotLock(obj), sql, Map, new object?[]
+            {
                 obj.Id,
                 obj.TenantId,
                 obj.UserId,
@@ -90,7 +105,14 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.AgenticSearch,
                 obj.McpToolIds.ToArray(),
                 (object?)obj.VoiceProfileId,
-                obj.AudioEnabled).ConfigureAwait(false);
+                obj.AudioEnabled,
+                obj.HistoryMode.ToString(),
+                obj.HistoryCount,
+                obj.HistorySinceUtc.HasValue ? DateTime.SpecifyKind(obj.HistorySinceUtc.Value, DateTimeKind.Utc) : null,
+                obj.HistoryBriefingId,
+                obj.HistoryTokenBudget, maximum
+            }, token).ConfigureAwait(false);
+            if (rows.Count == 0) throw SlotExceeded(maximum);
             return obj;
         }
 
@@ -116,7 +138,13 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
         {
             ArgumentNullException.ThrowIfNull(obj);
             obj.LastUpdateUtc = DateTime.UtcNow;
-            int affected = await ExecuteAsync(TopicQueries.Update, token,
+            long? maximum = Driver.TopicSlotLimit == null ? null : await Driver.TopicSlotLimit(obj.TenantId, obj.UserId, obj.IsOneTime, token).ConfigureAwait(false);
+            string sql = TopicQueries.Update + @" AND ($12 OR $11 = 'Archived' OR $38::bigint IS NULL OR
+(NOT isonetime AND status <> 'Archived' AND userid = $3) OR
+(SELECT count(*) FROM topics WHERE tenantid = $2 AND userid = $3 AND NOT isonetime AND status <> 'Archived' AND id <> $1) < $38)
+RETURNING " + TopicQueries.Columns;
+            List<Topic> rows = await Driver.QueryWithAdvisoryLockAsync(SlotLock(obj), sql, Map, new object?[]
+            {
                 obj.Id,
                 (object?)obj.TenantId,
                 obj.UserId,
@@ -148,9 +176,31 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.AgenticSearch,
                 obj.McpToolIds.ToArray(),
                 (object?)obj.VoiceProfileId,
-                obj.AudioEnabled).ConfigureAwait(false);
-            if (affected < 1) throw new KeyNotFoundException("Topic " + obj.Id + " was not found.");
+                obj.AudioEnabled,
+                obj.HistoryMode.ToString(),
+                obj.HistoryCount,
+                obj.HistorySinceUtc.HasValue ? DateTime.SpecifyKind(obj.HistorySinceUtc.Value, DateTimeKind.Utc) : null,
+                obj.HistoryBriefingId,
+                obj.HistoryTokenBudget, maximum
+            }, token).ConfigureAwait(false);
+            if (rows.Count == 0)
+            {
+                if (!await ExistsAsync(obj.TenantId, obj.Id, token).ConfigureAwait(false)) throw new KeyNotFoundException("Topic " + obj.Id + " was not found.");
+                throw SlotExceeded(maximum);
+            }
             return obj;
+        }
+
+        private static long SlotLock(Topic topic)
+        {
+            byte[] hash = System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes("topics:" + topic.TenantId + ":" + topic.UserId));
+            return System.Buffers.Binary.BinaryPrimitives.ReadInt64BigEndian(hash);
+        }
+
+        private static MyMorningNews.Core.Exceptions.CapReachedException SlotExceeded(long? maximum)
+        {
+            return new MyMorningNews.Core.Exceptions.CapReachedException("topics.max", maximum?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "unlimited", null,
+                "Your plan has no available custom topic slots. Archive a topic or change your plan to continue.");
         }
 
         /// <inheritdoc />
@@ -292,6 +342,11 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             obj.McpToolIds = reader.IsDBNull(30) ? new List<string>() : new List<string>(reader.GetFieldValue<string[]>(30));
             obj.VoiceProfileId = (reader.IsDBNull(31) ? null : reader.GetString(31));
             obj.AudioEnabled = reader.GetBoolean(32);
+            obj.HistoryMode = Enum.Parse<HistoryModeEnum>(reader.GetString(33));
+            obj.HistoryCount = reader.GetInt32(34);
+            obj.HistorySinceUtc = reader.IsDBNull(35) ? null : DateTime.SpecifyKind(reader.GetDateTime(35), DateTimeKind.Utc);
+            obj.HistoryBriefingId = reader.IsDBNull(36) ? null : reader.GetString(36);
+            obj.HistoryTokenBudget = reader.GetInt32(37);
             return obj;
         }
 

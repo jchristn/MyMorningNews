@@ -1,5 +1,7 @@
 # Hosting My Morning News
 
+Platform packages, shared catalog subscriptions, topic history, private provider keys and billing are described in the [platform operator guide](PLATFORM_OPERATIONS.md). Native store availability and deployment evidence are tracked separately from source support.
+
 This guide runs the stack as the public hosted service at `https://app.mymorningnews.ai` (plan section 33). A
 self-hosted install does not need any of it: the defaults keep sign-up closed, give everyone the Unlimited plan, and
 allow private network targets.
@@ -12,6 +14,8 @@ allow private network targets.
 |---|---|---|
 | `hosting.publicSignupEnabled` | false | true |
 | `hosting.defaultPlanKey` | unlimited | free |
+| `hosting.newUsersRequireSubscription` | true (unlimited bypasses billing) | false |
+| `hosting.nonBilledPlanKey` | complimentary-five | catalog-only |
 | `hosting.requireEmailVerification` | true | true |
 | `hosting.restrictPrivateNetworks` | false | true |
 | `hosting.usePlatformCredentials` | false | true |

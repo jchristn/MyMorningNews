@@ -81,6 +81,14 @@ namespace MyMorningNews.Core.Briefings
             ArgumentNullException.ThrowIfNull(scope);
             BriefingTemplateDefinition def = scope.Template.Definition;
             ComposeData data = await LoadAsync(scope, token).ConfigureAwait(false);
+            List<string> comparisons = new List<string>();
+            foreach (Topic topic in scope.Topics)
+            {
+                RunHistorySnapshot? snapshot = (await _Database.RunHistorySnapshots.EnumerateAsync(new RunHistorySnapshotFilter
+                { TenantId = scope.TenantId, TopicId = topic.Id, RunId = scope.RunId, ToUtc = scope.PeriodEndUtc, PageSize = 1 }, token).ConfigureAwait(false)).Items.FirstOrDefault();
+                comparisons.Add("Topic: " + topic.Name + "\n" + HistoryContextService.Prompt(snapshot ?? new RunHistorySnapshot { Mode = "Off" }));
+            }
+            scope.HistoryInstructions = String.Join("\n\n", comparisons);
             Dictionary<string, string> vars = Variables(scope);
             string title = TemplateParser.Substitute(def.Title, vars).Trim();
             if (title.Length == 0) title = scope.EditionName ?? "Briefing";
@@ -371,7 +379,7 @@ namespace MyMorningNews.Core.Briefings
                 PromptKey = key,
                 PromptTemplateVersionId = prompt.Version.Id,
                 SystemPrompt = rendered.System,
-                UserPrompt = rendered.User,
+                UserPrompt = scope.HistoryInstructions + "\n\n" + rendered.User,
                 IsDryRun = scope.IsDryRun || !scope.Save
             }, token).ConfigureAwait(false);
             if (String.IsNullOrWhiteSpace(result.Text)) throw new ModelCallException("The model returned an empty section.");

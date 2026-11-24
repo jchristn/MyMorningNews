@@ -4,6 +4,7 @@ All notable changes to this project are documented here. The project follows [Se
 
 ## [0.1.0-alpha] - Unreleased
 
+- Enumeration release images are published for amd64 and arm64 as `enumeration-20261124-1`; server and dashboard are deployed. Approved mobile build 9 is released to internal TestFlight and Google Play testing with the same paginated API. Store distribution and remaining public-release prerequisites are recorded in `docs/PLATFORM_IMPLEMENTATION_STATUS.md`.
 - Marking a notification read returns its persisted timestamp, preserving exact idempotence across PostgreSQL timestamp precision. Benchmark feedback follows a syndicated finding to its canonical representative, and dashboard tests allow slower CI rendering without weakening assertions.
 - Benchmark fixtures explicitly enable history for cross-run comparisons and expect partial success when all page fetches fail, matching the current product policies.
 - Test runners now serialize xUnit collections that share a mutable test server, and limit dashboard workers to avoid contention.

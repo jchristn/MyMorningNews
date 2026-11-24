@@ -174,8 +174,13 @@ app calls arrives with its plan phase; see `parity.json` for the route list. Gap
 ## Builds, updates, and stores
 
 `eas.json` has `development` (simulator build and APK), `development-device`, `preview` (TestFlight and Play internal
-testing), and `production` profiles, each on its own update channel, plus `submit` placeholders. Nothing builds or
+testing), and `production` profiles, each on its own update channel, plus store submission profiles. Nothing builds or
 submits automatically.
+
+Before an Android EAS build, keep the same Firebase configuration locally at ignored `google-services.json` as
+the EAS `GOOGLE_SERVICES_JSON` file variable. Its contents participate in the native fingerprint; omitting the local
+file makes EAS reject the build when its cloud fingerprint differs. Android submissions read the ignored
+`.credentials/play-service-account.json`; keep the original credential outside Git and use mode 600 for the copy.
 
 Over-the-air updates use `expo-updates` with EAS Update and **mandatory code signing**, after TrellisKit:
 `updates/certificate.pem` is the public certificate, `npm run updates-certificate` creates it (the private key goes

@@ -7,7 +7,7 @@ or tokens into this repository; they go into the consoles, EAS, or the password 
 
 ## Current release
 
-See [platform release status](../docs/PLATFORM_IMPLEMENTATION_STATUS.md) for build 7, subscription products, and the remaining Google Cloud/store validation work. The record below describes initial provisioning.
+See [platform release status](../docs/PLATFORM_IMPLEMENTATION_STATUS.md) for the approved build 9 release, subscription products, and the remaining Google Cloud/store validation work. The record below describes initial provisioning.
 
 ## Initial provisioning (2026-11-21)
 
@@ -59,11 +59,11 @@ in the owner's `Lattice AI/APPLE.md`, and this app's store and hosting records i
    release) before `eas submit` can upload.
 8. **Firebase and FCM V1 for Android push.** Create a Firebase project, add the Android app
    `ai.latticetech.mymorningnews`, download `google-services.json` and upload it as the EAS file variable
-   `GOOGLE_SERVICES_JSON` (local builds: `mobile/google-services.json`, git-ignored). Create an FCM V1 service
+   `GOOGLE_SERVICES_JSON`. Keep the identical file at `mobile/google-services.json` (git-ignored) when invoking EAS locally, so local and cloud runtime fingerprints agree. Create an FCM V1 service
    account key and upload it in `npx eas-cli@latest credentials` (Android > Push notifications).
 9. **Play service account for submissions.** Create a Google Cloud service account with "Release apps to testing
-   tracks" in Play Console, keep its JSON key outside the repository, and set its path in `eas.json`
-   `submit.*.android.serviceAccountKeyPath` (or upload it in `eas credentials`).
+   tracks" in Play Console. Keep the original JSON key outside Git. Before submission, copy it with mode 600 to
+   `mobile/.credentials/play-service-account.json`, the path configured in `eas.json`. Both Git and Docker build contexts exclude `.credentials/`; never commit the key. Alternatively, configure the key through `eas credentials`.
 10. **Expo push access token for the server.** Create an Expo access token with push permissions and store it in the
     server's credential vault for the PushWorker (plan section 35.5). Enable "Enhanced push security" on the EAS
     project if you want the server to be the only sender.

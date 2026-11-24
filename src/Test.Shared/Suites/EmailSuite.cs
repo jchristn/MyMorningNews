@@ -200,6 +200,10 @@ namespace Test.Shared.Suites
             string domain = email.MailgunDomain;
             string key = email.MailgunApiKey;
             string baseUrl = email.MailgunBaseUrl;
+            // Other suites leave queued messages in the shared outbox. Delivery claims only 50 at a time;
+            // drain those messages before testing this provider's first attempt and retry schedule.
+            while (await f.Server.Context.Email.DeliverDueAsync(DateTime.UtcNow, token).ConfigureAwait(false) > 0)
+                token.ThrowIfCancellationRequested();
             try
             {
                 email.Provider = EmailProviderEnum.Mailgun;
@@ -210,7 +214,7 @@ namespace Test.Shared.Suites
                 EmailMessage ok = await f.Server.Context.Email.SendTestAsync(me, token).ConfigureAwait(false);
                 await f.Server.Context.Email.DeliverDueAsync(DateTime.UtcNow, token).ConfigureAwait(false);
                 EmailMessage sent = (await f.Server.Context.Database.EmailMessages.ReadAsync(ok.TenantId, ok.Id, token).ConfigureAwait(false))!;
-                Assert.True(sent.Status == EmailStatusEnum.Sent && sent.Provider == EmailProviderEnum.Mailgun && sent.ProviderMessageId!.StartsWith("stub.", StringComparison.Ordinal) && !sent.ProviderMessageId.Contains('<'), "sent with a normalized ID: " + sent.ProviderMessageId);
+                Assert.True(sent.Status == EmailStatusEnum.Sent && sent.Provider == EmailProviderEnum.Mailgun && sent.ProviderMessageId!.StartsWith("stub.", StringComparison.Ordinal) && !sent.ProviderMessageId.Contains('<'), "sent with a normalized ID: " + sent.Status + " via " + sent.Provider + ", id=" + sent.ProviderMessageId + ", error=" + sent.LastError);
                 Assert.True(StubModelServer.Shared.MailgunRequests.Any(b => b.Contains("Test+email", StringComparison.Ordinal) || b.Contains("Test%20email", StringComparison.Ordinal)), "HTML posted to Mailgun");
 
                 email.MailgunDomain = "fail.example.test";

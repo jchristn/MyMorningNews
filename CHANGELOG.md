@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The project follows [Se
 
 ## [0.1.0-alpha] - Unreleased
 
+- Mobile build 10 approved for the login, briefing navigation, and support-report improvements; store version remains 0.1.0.
+
 - Production server and dashboard deployed from `7415c6f` as `mobile-ux-20261124-1`, after green CI. Both architectures are published; authenticated sign-in, pagination, support-route protection, dashboard assets, health, and Apple universal links were verified.
 
 - Mobile sign-in holds the logo for 1.5 seconds, then fades it out, respecting reduced motion. Today says "Recent briefings" and the Briefings list defaults to Editions.

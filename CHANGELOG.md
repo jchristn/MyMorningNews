@@ -4,7 +4,7 @@ All notable changes to this project are documented here. The project follows [Se
 
 ## [0.1.0-alpha] - Unreleased
 
-- Mobile build 10 approved for the login, briefing navigation, and support-report improvements; store version remains 0.1.0.
+- Approved mobile build 10 is available in internal TestFlight and Google Play testing with the login, briefing navigation, and support-report improvements. Store version remains 0.1.0; all release CI workflows passed.
 
 - Production server and dashboard deployed from `7415c6f` as `mobile-ux-20261124-1`, after green CI. Both architectures are published; authenticated sign-in, pagination, support-route protection, dashboard assets, health, and Apple universal links were verified.
 

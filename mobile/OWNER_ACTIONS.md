@@ -7,7 +7,7 @@ or tokens into this repository; they go into the consoles, EAS, or the password 
 
 ## Current release
 
-See [platform release status](../docs/PLATFORM_IMPLEMENTATION_STATUS.md) for the approved build 9 release, subscription products, and the remaining Google Cloud/store validation work. The record below describes initial provisioning.
+See [platform release status](../docs/PLATFORM_IMPLEMENTATION_STATUS.md) for the approved build 10 release, subscription products, and the remaining Google Cloud/store validation work. The record below describes initial provisioning.
 
 ## Initial provisioning (2026-11-21)
 

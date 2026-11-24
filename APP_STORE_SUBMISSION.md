@@ -1,6 +1,6 @@
 # App Store and Google Play submission form
 
-Release update (2026-11-24): approved build 9 uses paginated collection retrievals throughout the mobile app. iOS build 9 is VALID and in internal TestFlight testing; Android build 9 is released to Google Play internal testing. Evidence is in [PLATFORM_IMPLEMENTATION_STATUS.md](docs/PLATFORM_IMPLEMENTATION_STATUS.md). Server/web billing is live; products, device purchase testing, store review metadata, and privacy declarations must be verified before a public native release. Older checked answers below are historical where superseded by this release.
+Release update (2026-11-24): approved build 10 includes the login logo, recent-briefings label, Editions default, Back navigation to the originating screen, and direct support reporting. iOS build 10 is VALID and in internal TestFlight testing, attached to draft version 0.1.0. Android build 10 is released to Google Play internal testing. Evidence is in [PLATFORM_IMPLEMENTATION_STATUS.md](docs/PLATFORM_IMPLEMENTATION_STATUS.md). Server/web billing is live; products, device purchase testing, store review metadata, and privacy declarations must be verified before a public native release. Older checked answers below are historical where superseded by this release.
 
 Every field and data point needed to submit the My Morning News app (`mobile/`) to the Apple App Store and Google
 Play, written as a form. For each field: the store, the field name as the console shows it, the limit or format,

@@ -5,7 +5,7 @@ import { ApiClient } from '../utils/api.js';
 import { NOTIFICATION_CHANNELS, NOTIFICATION_KINDS, channelStates, inAppIsOff, notificationTarget, preferenceMatrix } from '../utils/notifications.js';
 import { page, renderRoute } from '../test/renderRoute.jsx';
 
-const EMAIL_ON = ['RunResults', 'BriefingReady', 'RunFailed', 'CapReached'];
+const EMAIL_ON = ['RunResults', 'BriefingReady', 'RunFailed', 'CapReached', 'TopicStale'];
 
 function prefs(overrides = {}, extra = {}) {
   const preferences = [];
@@ -91,7 +91,7 @@ describe('notification preferences page', () => {
     renderRoute('/dashboard/notifications', { getNotificationPreferences: vi.fn(async () => prefs()) });
     const table = await screen.findByTestId('notification-matrix');
     expect(within(table).getAllByRole('row')).toHaveLength(NOTIFICATION_KINDS.length + 1);
-    expect(within(table).getAllByRole('switch')).toHaveLength(18);
+    expect(within(table).getAllByRole('switch')).toHaveLength(21);
     for (const header of ['Email', 'Phone', 'In-app']) expect(within(table).getByRole('columnheader', { name: header })).toBeInTheDocument();
     expect(within(table).getByText('A briefing has been turned into audio you can play.')).toBeInTheDocument();
     expect(screen.getByRole('switch', { name: 'New findings: Email' })).toBeChecked();

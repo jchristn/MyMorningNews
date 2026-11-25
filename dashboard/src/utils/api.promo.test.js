@@ -49,13 +49,13 @@ describe('promotional code client methods', () => {
     await api.createPlan({ key: 'pilot', name: 'Pilot', features: { 'topics.max': '10' } });
     await api.updatePlan('pln_1', { features: { 'topics.max': '' } });
     await api.listPlanAssignments('default', 'usr_1');
-    await api.grantPlan({ tenantId: 'default', userId: 'usr_1', planId: 'pln_1', durationDays: 30, note: 'Pilot' });
+    await api.grantPlan({ tenantId: 'default', userId: 'usr_1', planId: 'pln_1', durationDays: 30, note: 'Pilot', replaceCurrent: true });
     await api.revokePlanAssignment('pla_1', 'default');
     expect(call(fetch, 0)).toMatchObject({ url: '/v1.0/api/admin/plans', method: 'GET' });
     expect(call(fetch, 1)).toMatchObject({ url: '/v1.0/api/admin/plans', method: 'POST', body: { key: 'pilot', name: 'Pilot', features: { 'topics.max': '10' } } });
     expect(call(fetch, 2)).toMatchObject({ url: '/v1.0/api/admin/plans/pln_1', method: 'PUT', body: { features: { 'topics.max': '' } } });
     expect(call(fetch, 3)).toMatchObject({ url: '/v1.0/api/admin/plan-assignments?tenantId=default&userId=usr_1', method: 'GET' });
-    expect(call(fetch, 4)).toMatchObject({ url: '/v1.0/api/admin/plan-assignments', method: 'POST', body: { tenantId: 'default', userId: 'usr_1', planId: 'pln_1', durationDays: 30, note: 'Pilot' } });
+    expect(call(fetch, 4)).toMatchObject({ url: '/v1.0/api/admin/plan-assignments', method: 'POST', body: { tenantId: 'default', userId: 'usr_1', planId: 'pln_1', durationDays: 30, note: 'Pilot', replaceCurrent: true } });
     expect(call(fetch, 5)).toMatchObject({ url: '/v1.0/api/admin/plan-assignments/pla_1?tenantId=default', method: 'DELETE' });
   });
 

@@ -2212,6 +2212,24 @@
       },
       "change": "Alterar atribuições na página Modelos de IA",
       "view": "Ver atribuições na página Modelos de IA"
+    },
+    "promote": {
+      "open": "Disponibilizar para todos",
+      "title": "Transformar em resumo do sistema",
+      "help": "Copia a configuração de pesquisa deste tópico (escopo, dimensões, restrições, classificação e agenda) para o catálogo compartilhado, que qualquer usuário pode assinar. Seu tópico continua como está. Configurações privadas, como ferramentas MCP, voz e destinatários, não são copiadas.",
+      "confirm": "Criar resumo do sistema",
+      "titleRequired": "Dê um título ao resumo.",
+      "done": "\"{title}\" agora é um resumo do sistema.",
+      "created": "\"{title}\" foi adicionado ao catálogo. Abra-o para revisar a agenda e executá-lo.",
+      "openCatalog": "Abrir no catálogo",
+      "fields": {
+        "title": "Título",
+        "description": "Descrição",
+        "category": "Categoria",
+        "language": "Idioma",
+        "freeEligible": "Disponível no plano gratuito",
+        "publish": "Publicar agora (caso contrário, é salvo como rascunho)"
+      }
     }
   },
   "wizard": {
@@ -3564,10 +3582,18 @@
   "plans": {
     "default": "Padrão",
     "noFeatures": "Nenhum valor de direito de uso.",
+    "notSet": "Não definido",
     "validation": {
       "key": "Use de 2 a 63 letras minúsculas, dígitos e hífens.",
       "name": "Insira um nome.",
-      "duplicate": "A chave {key} aparece duas vezes."
+      "duplicate": "A chave {key} aparece duas vezes.",
+      "required": "Insira um valor.",
+      "boolean": "Escolha Sim ou Não.",
+      "count": "Insira um número inteiro igual ou maior que 0, ou escolha a opção sem limite.",
+      "amount": "Insira um valor igual ou maior que 0, ou escolha a opção sem limite.",
+      "reason": "Insira um motivo.",
+      "future": "Escolha uma data futura ou deixe em branco.",
+      "days": "Insira de 1 a {max, number} dias."
     },
     "create": {
       "title": "Novo plano",
@@ -3583,13 +3609,36 @@
       "keyLocked": "A chave de um plano não pode mudar.",
       "name": "Nome",
       "description": "Descrição",
-      "features": "Valores de direito de uso",
-      "featuresHelp": "O código verifica estas chaves, não os nomes dos planos. Use números, true ou false, ou unlimited. Um valor vazio remove a chave.",
+      "features": "Valores do plano",
+      "featuresHelp": "Todos os usuários deste plano recebem estes valores. Um valor não definido usa o padrão integrado.",
+      "aliasOf": "Nome antigo de {key}",
+      "customTitle": "Avançado: chaves personalizadas ({count, number})",
+      "customHelp": "Chaves que não aparecem acima. O servidor aceita apenas chaves que reconhece. Limpe um valor para remover a chave.",
       "featureKey": "Chave do direito de uso",
       "featureValue": "Valor para {key}",
-      "emptyRemoves": "Vazio remove",
-      "clearValue": "Limpar {key}",
-      "addFeature": "Adicionar um valor"
+      "removeKey": "Remover {key}",
+      "addFeature": "Adicionar uma chave"
+    },
+    "groups": {
+      "access": "Acesso",
+      "topics": "Tópicos e assinaturas",
+      "research": "Pesquisa e agendamentos",
+      "audio": "Áudio",
+      "catalog": "Catálogo",
+      "usage": "Uso e armazenamento",
+      "custom": "Outros valores"
+    },
+    "input": {
+      "unlimited": "Sem limite",
+      "unlimitedFor": "Sem limite para {name}",
+      "noMinimum": "Sem mínimo",
+      "noMinimumFor": "Sem mínimo para {name}",
+      "minutesHint": "Em minutos: {minutes, number}",
+      "units": {
+        "seconds": "segundos",
+        "minutes": "minutos",
+        "usd": "USD"
+      }
     },
     "featureNames": {
       "usage_monthlyCostUsd_max": "Teto de custo mensal (USD)",
@@ -3612,26 +3661,24 @@
       "models_personalConnections_enabled": "Conexões pessoais"
     },
     "assignments": {
-      "title": "Planos de um usuário",
-      "help": "Escolha um usuário para ver todos os períodos de plano dele, incluindo os que começam depois, e revogar um.",
-      "plan": "Plano",
-      "source": "Origem",
-      "starts": "Início",
-      "ends": "Fim",
-      "state": "Situação",
-      "note": "Nota",
+      "title": "Gerenciar o plano de um usuário",
+      "help": "Escolha um usuário para mudar o plano, ajustar os limites ou ver o histórico de planos.",
+      "history": "Histórico de planos",
+      "period": "{starts} a {ends}",
+      "periodOpen": "Desde {starts}, sem data de término",
       "revoke": "Revogar",
+      "revokeFor": "Revogar {plan}",
       "revokeTitle": "Revogar plano",
       "revokeMessage": "Revogar {plan} para este usuário? Ele termina agora.",
       "revoked": "Plano revogado",
-      "empty": "Nenhuma atribuição de plano",
-      "emptyMessage": "Este usuário está no plano padrão."
+      "emptyMessage": "Ainda não há períodos de plano. Este usuário sempre esteve no plano padrão."
     },
     "sources": {
       "Default": "Padrão",
       "Admin": "Administrador",
       "Promo": "Código promocional",
-      "Billing": "Cobrança"
+      "Billing": "Cobrança",
+      "billingProvider": "Cobrança ({provider})"
     },
     "states": {
       "current": "Atual",
@@ -3639,32 +3686,56 @@
       "ended": "Encerrado",
       "revoked": "Revogado"
     },
-    "grant": {
-      "open": "Conceder um plano",
-      "title": "Conceder um plano",
-      "titleFor": "Conceder um plano a {email}",
-      "confirm": "Conceder",
-      "note": "Nota",
-      "noteHelp": "Por que este usuário recebe o plano. Aparece no log de auditoria.",
-      "done": "Plano concedido a {email}"
-    },
     "userPanel": {
       "action": "Plano",
-      "title": "Plano de {email}"
+      "title": "Plano de {email}",
+      "subtitle": "Mude o plano, ajuste os limites deste usuário e veja planos anteriores.",
+      "current": "Plano atual",
+      "sourceTitle": "Definido por: {source}",
+      "ends": "Termina",
+      "noEnd": "Sem data de término",
+      "overrides": "Limites substituídos",
+      "next": "Próximo",
+      "nextValue": "{plan} a partir de {date}"
+    },
+    "change": {
+      "title": "Mudar plano",
+      "help": "O novo plano começa agora e substitui qualquer plano que um administrador definiu antes. Os planos promocionais e pagos continuam registrados.",
+      "plan": "Plano",
+      "currentOption": "{name} (atual)",
+      "duration": "Duração",
+      "custom": "Personalizada",
+      "customDays": "Número de dias",
+      "note": "Observação (opcional)",
+      "save": "Atribuir plano",
+      "done": "{plan} atribuído a {email}",
+      "revert": "Voltar ao plano padrão",
+      "revertTitle": "Voltar ao plano padrão",
+      "revertMessage": "Remover o plano que um administrador definiu para {email}? O usuário passa para o plano pago, se tiver um; caso contrário, para o plano promocional ou padrão.",
+      "revertConfirm": "Voltar ao padrão",
+      "reverted": "Plano de administrador removido",
+      "noteHelp": "Por que este usuário recebe o plano. Aparece no log de auditoria."
     },
     "overrides": {
-      "title": "Limites do usuário",
-      "help": "As exceções afetam apenas este usuário. Restaure a herança para seguir o plano atribuído.",
-      "inherited": "Padrão do plano",
-      "effective": "Valor efetivo",
-      "source": "Origem",
-      "user": "Exceção do usuário",
-      "plan": "Plano",
-      "restore": "Restaurar herança",
-      "value": "Valor personalizado",
-      "valueHelp": "Zero desativa uma quantidade; unlimited remove o limite. O áudio diário é medido em segundos.",
-      "reason": "Motivo da alteração",
-      "expires": "Expira (hora local, opcional)"
+      "title": "Limites deste usuário",
+      "help": "Substitua um valor apenas para este usuário. Redefina para voltar a seguir o plano.",
+      "limit": "Limite",
+      "planValue": "Valor do plano",
+      "effective": "Este usuário",
+      "overridden": "Substituído",
+      "editFor": "Editar {name}",
+      "editorTitle": "Substituir {name}",
+      "value": "Valor para este usuário",
+      "planValueHelp": "Valor do plano:",
+      "reason": "Motivo",
+      "reasonHelp": "Obrigatório. Aparece no log de auditoria.",
+      "expires": "Expira (opcional)",
+      "expiresHelp": "Seu horário local. Deixe em branco para manter até redefinir.",
+      "save": "Salvar substituição",
+      "saved": "{name} substituído para este usuário",
+      "reset": "Redefinir para o plano",
+      "resetFor": "Redefinir {name} para o valor do plano",
+      "resetDone": "{name} voltou a seguir o plano"
     }
   },
   "account": {
@@ -3803,7 +3874,8 @@
       "AudioReady": "Áudio pronto",
       "RunFailed": "Falha na execução",
       "CapReached": "Limite do plano atingido",
-      "PredictionDue": "Previsão vencida"
+      "PredictionDue": "Previsão vencida",
+      "TopicStale": "Tópicos sem novas descobertas"
     },
     "descriptions": {
       "RunResults": "Uma execução de pesquisa encontrou algo novo em um dos seus temas.",
@@ -3811,7 +3883,8 @@
       "AudioReady": "Um boletim foi transformado em áudio que você pode ouvir.",
       "RunFailed": "Uma execução de pesquisa não pôde ser concluída.",
       "CapReached": "Uma execução agendada foi ignorada porque seu plano atingiu um limite.",
-      "PredictionDue": "Uma previsão chegou à data e está pronta para ser conferida."
+      "PredictionDue": "Uma previsão chegou à data e está pronta para ser conferida.",
+      "TopicStale": "Um tópico não encontrou nada novo em uma semana. Mantenha-o ou ele será excluído após 14 dias."
     },
     "channels": {
       "Email": "E-mail",
@@ -4852,5 +4925,22 @@
     "test": "Testar conexão salva",
     "remove": "Remover conexão",
     "removeHelp": "Remover uma chave interrompe as chamadas que precisam dela. Nunca há substituição por uma chave da plataforma."
+  },
+  "topicReviews": {
+    "region": "Tópicos sem novas descobertas",
+    "untitled": "Este tópico",
+    "title": "Manter \"{name}\"?",
+    "since": "Nada novo desde {date}.",
+    "noneIn": "Nada novo nos últimos {days} dias.",
+    "deadline": "Ele será excluído em {date}, a menos que você o mantenha.",
+    "keep": "Manter",
+    "delete": "Excluir",
+    "refine": "Refinar",
+    "open": "Abrir tópico",
+    "kept": "\"{name}\" mantido. Não perguntaremos de novo por uma semana.",
+    "deleted": "\"{name}\" excluído.",
+    "failed": "Não funcionou. Tente novamente.",
+    "deleteTitle": "Excluir este tópico?",
+    "deleteMessage": "Excluir \"{name}\" com seus resumos, descobertas e áudio? Isso não pode ser desfeito."
   }
 }

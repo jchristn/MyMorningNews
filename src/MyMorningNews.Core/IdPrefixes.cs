@@ -118,6 +118,16 @@ namespace MyMorningNews.Core
         public const string TopicRecipient = "trc_";
 
         /// <summary>
+        /// Prefix for TopicReview identifiers.
+        /// </summary>
+        public const string TopicReview = "trv_";
+
+        /// <summary>
+        /// Prefix for UserActivityDay identifiers.
+        /// </summary>
+        public const string UserActivityDay = "uad_";
+
+        /// <summary>
         /// Prefix for RefinementSession identifiers.
         /// </summary>
         public const string RefinementSession = "rfs_";

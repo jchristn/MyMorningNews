@@ -126,3 +126,69 @@ describe('plans', () => {
     expect(isValidPlanKey('-x')).toBe(false);
   });
 });
+
+describe('plan feature catalog', () => {
+  it('covers every known key with a group and kind', async () => {
+    const { FEATURE_CATALOG, FEATURE_GROUPS, KNOWN_FEATURES: known } = await import('./promo.js');
+    expect(Object.keys(FEATURE_CATALOG).sort()).toEqual([...known].sort());
+    for (const spec of Object.values(FEATURE_CATALOG)) {
+      expect(FEATURE_GROUPS).toContain(spec.group);
+      expect(['boolean', 'count', 'amount']).toContain(spec.kind);
+    }
+  });
+
+  it('groups keys and can skip the legacy alias', async () => {
+    const { groupedFeatureKeys, groupedFeatures } = await import('./promo.js');
+    const all = groupedFeatureKeys().flatMap((g) => g.keys);
+    expect(all).toContain('topics.max');
+    expect(groupedFeatureKeys({ skipAliases: true }).flatMap((g) => g.keys)).not.toContain('topics.max');
+    expect(groupedFeatures({ 'audio.enabled': 'true', zeta: '1', 'mobile.access': 'false' }).map((g) => g.group)).toEqual(['access', 'audio', 'custom']);
+  });
+
+  it('validates values the way the server does', async () => {
+    const { featureValueError } = await import('./promo.js');
+    expect(featureValueError('audio.enabled', 'true')).toBeNull();
+    expect(featureValueError('audio.enabled', 'yes')).toBe('plans.validation.boolean');
+    expect(featureValueError('customTopics.max', '5')).toBeNull();
+    expect(featureValueError('customTopics.max', 'Unlimited')).toBeNull();
+    expect(featureValueError('customTopics.max', '2.5')).toBe('plans.validation.count');
+    expect(featureValueError('customTopics.max', '-1')).toBe('plans.validation.count');
+    expect(featureValueError('customTopics.max', '1000000001')).toBe('plans.validation.count');
+    expect(featureValueError('usage.monthlyCostUsd.max', '12.50')).toBeNull();
+    expect(featureValueError('usage.monthlyCostUsd.max', 'abc')).toBe('plans.validation.amount');
+    expect(featureValueError('customTopics.max', '')).toBe('plans.validation.required');
+    expect(featureValueError('customTopics.max', '', { allowEmpty: true })).toBeNull();
+  });
+
+  it('builds a plan features body that removes cleared keys and skips untouched empty ones', async () => {
+    const { planFeaturesBody } = await import('./promo.js');
+    expect(planFeaturesBody({ 'topics.max': '7', 'audio.enabled': '', 'email.enabled': '' }, [{ key: 'legacy.flag', value: '' }], { 'topics.max': '5', 'audio.enabled': 'true', 'legacy.flag': 'x' })).toEqual({
+      'topics.max': '7',
+      'audio.enabled': '',
+      'legacy.flag': ''
+    });
+    expect(planFeaturesBody({ 'topics.max': '3', 'audio.enabled': '' }, [], {})).toEqual({ 'topics.max': '3' });
+  });
+
+  it('reads where an effective plan comes from', async () => {
+    const { effectivePlanSource } = await import('./promo.js');
+    expect(effectivePlanSource({ assignment: { source: 'Admin' }, billingProvider: 'Stripe' }).source).toBe('Admin');
+    expect(effectivePlanSource({ billingSubscriptionId: 'bsb_1', billingProvider: 'Apple' })).toEqual({ source: 'Billing', provider: 'Apple' });
+    expect(effectivePlanSource({ assignment: { source: 'Promo' } }).source).toBe('Promo');
+    expect(effectivePlanSource({ plan: { id: 'pln_free' } }).source).toBe('Default');
+    expect(effectivePlanSource(null).source).toBe('Default');
+  });
+
+  it('finds live administrator assignments', async () => {
+    const { liveAdminAssignments } = await import('./promo.js');
+    const now = new Date('2026-11-19T00:00:00Z');
+    const list = [
+      { id: 'a', source: 'Admin', startsUtc: '2026-11-01T00:00:00Z' },
+      { id: 'b', source: 'Admin', startsUtc: '2026-12-01T00:00:00Z' },
+      { id: 'c', source: 'Admin', startsUtc: '2026-10-01T00:00:00Z', revokedUtc: '2026-10-02T00:00:00Z' },
+      { id: 'd', source: 'Promo', startsUtc: '2026-11-01T00:00:00Z' },
+      { id: 'e', source: 'Admin', startsUtc: '2026-10-01T00:00:00Z', endsUtc: '2026-11-01T00:00:00Z' }
+    ];
+    expect(liveAdminAssignments(list, now).map((a) => a.id)).toEqual(['a', 'b']);
+  });
+});

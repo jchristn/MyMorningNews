@@ -2,6 +2,7 @@ namespace MyMorningNews.Server.Routes
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using MyMorningNews.Core.Enums;
@@ -105,6 +106,21 @@ namespace MyMorningNews.Server.Routes
             user = await Server.Database.Users.CreateAsync(user, ctx.Token).ConfigureAwait(false);
             await Server.Entitlements.CaptureSignupPolicyAsync(user.TenantId, user.Id, ctx.Token).ConfigureAwait(false);
             await Server.Briefings.EnsureDefaultEditionAsync(user.TenantId, user.Id, ctx.Token).ConfigureAwait(false);
+            if (req.SendWelcomeEmail)
+            {
+                try
+                {
+                    RequestContext rc = Context(ctx);
+                    User? admin = String.IsNullOrEmpty(rc.TenantId) || String.IsNullOrEmpty(rc.UserId) ? null : await Server.Database.Users.ReadAsync(rc.TenantId, rc.UserId, ctx.Token).ConfigureAwait(false);
+                    string? adminName = admin == null ? null : String.Join(" ", new[] { admin.FirstName, admin.LastName }.Where(n => !String.IsNullOrWhiteSpace(n)));
+                    await Server.Account.SendAdminWelcomeAsync(user, String.IsNullOrWhiteSpace(adminName) ? null : adminName, rc.SourceIp, ctx.Token).ConfigureAwait(false);
+                }
+                catch (Exception ex) when (!(ex is OperationCanceledException))
+                {
+                    Server.Logging.Warn("[UserRoutes] welcome email for user " + user.Id + " failed: " + ex.Message);
+                }
+            }
+
             await ChangedAsync(ctx, "User " + user.Id + " created.", 201).ConfigureAwait(false);
             await SendJsonAsync(ctx, 201, UserResponse.FromModel(user)).ConfigureAwait(false);
         }

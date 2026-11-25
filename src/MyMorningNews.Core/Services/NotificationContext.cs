@@ -64,5 +64,20 @@ namespace MyMorningNews.Core.Services
         /// Further filter on push, for example the edition's push switch. Default true.
         /// </summary>
         public bool PushAllowed { get; set; } = true;
+
+        /// <summary>
+        /// Keep-or-delete review, for <see cref="Enums.NotificationKindEnum.TopicStale"/>.
+        /// </summary>
+        public TopicReview? Review { get; set; } = null;
+
+        /// <summary>
+        /// Which keep-or-delete notice this is. Default Prompt.
+        /// </summary>
+        public Enums.TopicReviewNoticeEnum ReviewNotice { get; set; } = Enums.TopicReviewNoticeEnum.Prompt;
+
+        /// <summary>
+        /// Days the topic went without new findings, for the notice text. Default 7.
+        /// </summary>
+        public int StaleDays { get; set; } = 7;
     }
 }

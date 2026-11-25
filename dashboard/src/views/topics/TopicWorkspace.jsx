@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, FlaskConical, Play, WandSparkles } from 'lucide-react';
+import { ArrowLeft, FlaskConical, Globe, Play, WandSparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext.jsx';
+import TopicReviewBanner from '../../components/TopicReviewBanner.jsx';
 import useFormat from '../../hooks/useFormat.js';
 import { CONTEXT_CONSTRAINT_KINDS, SOURCE_CONSTRAINT_KINDS, TOPIC_STATUS_TONES } from '../../utils/enums.js';
 import { coveringEditions, scheduleState } from '../../utils/topicSchedule.js';
@@ -28,6 +29,7 @@ import SuggestionsTable from '../suggestions/SuggestionsTable.jsx';
 import AgenticSearchSettings from './AgenticSearchSettings.jsx';
 import ConstraintEditor from './ConstraintEditor.jsx';
 import DeliverySettings from './DeliverySettings.jsx';
+import PromoteTopicModal from './PromoteTopicModal.jsx';
 import DimensionList from './DimensionList.jsx';
 import TopicModels from './TopicModels.jsx';
 import TopicPrompts from './TopicPrompts.jsx';
@@ -82,7 +84,8 @@ export default function TopicWorkspace() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [params, setParams] = useSearchParams();
-  const { apiClient } = useAuth();
+  const { apiClient, isAdmin } = useAuth();
+  const [promoting, setPromoting] = useState(false);
   const [detail, setDetail] = useState(null);
   const [error, setError] = useState(null);
   const [schedules, setSchedules] = useState([]);
@@ -199,10 +202,16 @@ export default function TopicWorkspace() {
                 <WandSparkles size={14} aria-hidden="true" /> {isDraft ? t('topics.actions.continueRefining') : t('topics.actions.refine')}
               </Link>
             ) : null}
+            {isAdmin && !topic.isOneTime && !isDraft ? (
+              <button type="button" className="button secondary" onClick={() => setPromoting(true)}>
+                <Globe size={14} aria-hidden="true" /> {t('topics.promote.open')}
+              </button>
+            ) : null}
             <ActionMenu actions={menu} />
           </>
         }
       />
+      <TopicReviewBanner topicId={topic.id} onChanged={load} onDeleted={() => navigate('/dashboard/topics')} />
       {liveRun ? <LiveRunNotice key={liveRun.id} runId={liveRun.id} initialRun={liveRun} onFinished={runFinished} onDismiss={() => setLiveRun(null)} /> : null}
       {isDraft ? (
         <div className="notice notice-info">
@@ -353,6 +362,7 @@ export default function TopicWorkspace() {
         {tab === 'models' ? <TopicModels topicId={topic.id} /> : null}
       </section>
       {modals}
+      {promoting ? <PromoteTopicModal topic={topic} onClose={() => setPromoting(false)} /> : null}
     </div>
   );
 }

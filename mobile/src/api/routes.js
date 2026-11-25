@@ -39,6 +39,11 @@ export const routes = {
   topicPause: (id) => '/v1.0/api/topics/' + enc(id) + '/pause',
   topicResume: (id) => '/v1.0/api/topics/' + enc(id) + '/resume',
   topicRefine: (id) => '/v1.0/api/topics/' + enc(id) + '/refine',
+  // Keep-or-delete reviews for recurring topics that found nothing new for a week
+  topicReviews: '/v1.0/api/topic-reviews',
+  topicReview: (id) => '/v1.0/api/topic-reviews/' + enc(id),
+  topicReviewKeep: (id) => '/v1.0/api/topic-reviews/' + enc(id) + '/keep',
+  topicReviewDelete: (id) => '/v1.0/api/topic-reviews/' + enc(id) + '/delete',
   topicDimensions: (id) => '/v1.0/api/topics/' + enc(id) + '/dimensions',
   topicDimension: (id, dimensionId) => '/v1.0/api/topics/' + enc(id) + '/dimensions/' + enc(dimensionId),
   topicConstraints: (id) => '/v1.0/api/topics/' + enc(id) + '/constraints',

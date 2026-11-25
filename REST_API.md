@@ -431,7 +431,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 
 ## Route reference
 
-412 routes in 53 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
+420 routes in 54 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
 
 | Group | Routes | What it covers |
 |---|---|---|
@@ -455,6 +455,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [Devices](#devices) | 5 | Push notification devices registered by the mobile app for the signed-in user. |
 | [Notifications](#notifications) | 8 | The signed-in user's notifications. Preferences are one matrix: each kind of notification (run results, briefing ready, audio ready, run failed, plan limit reached, prediction due) on each channel (email, push to a registered phone or tablet, and the in-app list). Without a saved choice, email is on for run results, ready briefings, failed runs, and plan limits, and everything else is off. The in-app list holds the notifications for kinds turned on for that channel; they are kept for 90 days. A topic's email-on-run switch and an edition's email and push switches still apply on top of these preferences. |
 | [Topics](#topics) | 25 | The things a reader follows. A topic has a research brief, weighted dimensions, constraints (keywords, domains, feeds, tracked questions), and email recipients. |
+| [Topic reviews](#topic-reviews) | 5 | Keep-or-delete prompts for the caller's recurring topics that found nothing new for a week. Without Keep by the deadline (14 days by default) the topic is deleted. |
 | [Refinement](#refinement) | 12 | The topic wizard. A session proposes dimensions, asks clarifying questions, drafts the brief and constraints, suggests sources, and then applies the topic. Generating steps call the configured model. |
 | [Requests](#requests) | 10 | One-time research requests: a report, podcast, or email summary produced once, now or at a set time. A request can later become a recurring topic. |
 | [Schedules](#schedules) | 7 | When topics, editions, and requests run. Interval, days-of-week, days-of-month, one-time, and cron schedules, each in a time zone. Preview validates a schedule and lists its next runs. |
@@ -475,7 +476,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [Email](#email) | 9 | The email outbox, test and preview sends, resends, and the signed-in user's email preferences. |
 | [Feedback](#feedback) | 5 | Ratings and reasons on findings, predictions, suggestions, sources, domains, and briefings. Feedback drives learning and analytics. |
 | [Learning](#learning) | 12 | Preferences learned from feedback (or written by hand), their review flow, and ranking weight recommendations. |
-| [Analytics](#analytics) | 9 | Reports over relevance, accuracy, feedback, suggestions, reasons, quality, email, and runs. Defaults to the caller's data for the last 90 days. |
+| [Analytics](#analytics) | 11 | Reports over relevance, accuracy, feedback, suggestions, reasons, quality, email, and runs. Defaults to the caller's data for the last 90 days. |
 | [Prompts](#prompts) | 11 | Prompt templates by key and scope, topic overrides, version history, rollback, reset, and the prompt lab. |
 | [Promotional codes](#promotional-codes) | 11 | Global administrators create, generate, and manage promotional codes that grant plans. |
 | [Plans](#plans) | 11 | Global administrators manage plans, their entitlement values, and per-user plan assignments. |
@@ -484,7 +485,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [OpenAPI](#openapi) | 2 | The OpenAPI 3 document and Swagger UI that Watson serves. They are not tagged in the document itself. |
 | [MCP servers](#mcp-servers) | 9 | Remote MCP tool servers that agentic research may call, their discovered tools, and the per-tool allow-list. |
 | [Catalog](#catalog) | 14 | System-wide publications and private subscriptions. Shared content is generated once; subscription and personal topic limits are separate. |
-| [Catalog administration](#catalog-administration) | 10 | Global administrators manage canonical publications, research, schedules, and lifecycle revisions. Tenant administrators cannot publish. |
+| [Catalog administration](#catalog-administration) | 11 | Global administrators manage canonical publications, research, schedules, and lifecycle revisions. Tenant administrators cannot publish. |
 | [Billing](#billing) | 4 | Account-bound Stripe checkout and native Apple/Google verification. A redirect never grants access; verified provider state determines benefits. |
 | [Billing callbacks](#billing-callbacks) | 3 | Provider-authenticated callbacks. Ordinary bearer sessions do not authorize these routes. |
 | [Account providers](#account-providers) | 5 | Account-private encrypted model and speech connections, validation and explicit BYOK funding. No secret is returned. |
@@ -3859,7 +3860,7 @@ curl -s "http://127.0.0.1:12100/v1.0/api/devices?pageSize=10" \
 
 ### POST /v1.0/api/devices
 
-**Register a device for push notifications.** Returns 201 for a new device, or 200 with the existing device when the same token is registered again. Push is a choice per kind of notification (PUT /v1.0/api/notifications/preferences): save the kinds to push before registering. A user who registers a device without any push choice gets the kinds earlier app builds delivered (BriefingReady, RunFailed, CapReached, PredictionDue).
+**Register a device for push notifications.** Returns 201 for a new device, or 200 with the existing device when the same token is registered again. Push is a choice per kind of notification (PUT /v1.0/api/notifications/preferences): save the kinds to push before registering. A user who registers a device without any push choice gets the kinds default push kinds: RunResults, BriefingReady, RunFailed, CapReached, PredictionDue, and TopicStale.
 
 - Auth: Any authenticated principal (`DeviceWrite`).
 - Response: [`Device`](#device)
@@ -3990,7 +3991,7 @@ The signed-in user's notifications. Preferences are one matrix: each kind of not
 | Query parameter | Type | Notes |
 |---|---|---|
 | `unread` | boolean | Only unread (true) or only read (false) notifications. |
-| `kind` | enum (`RunResults`, `BriefingReady`, `AudioReady`, `RunFailed`, `CapReached`, `PredictionDue`) | Only notifications of this kind. |
+| `kind` | enum (`RunResults`, `BriefingReady`, `AudioReady`, `RunFailed`, `CapReached`, `PredictionDue`, `TopicStale`) | Only notifications of this kind. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -4016,7 +4017,7 @@ curl -s "http://127.0.0.1:12100/v1.0/api/notifications?pageSize=10" \
 | Query parameter | Type | Notes |
 |---|---|---|
 | `unread` | boolean | Only unread (true) or only read (false) notifications. |
-| `kind` | enum (`RunResults`, `BriefingReady`, `AudioReady`, `RunFailed`, `CapReached`, `PredictionDue`) | Only notifications of this kind. |
+| `kind` | enum (`RunResults`, `BriefingReady`, `AudioReady`, `RunFailed`, `CapReached`, `PredictionDue`, `TopicStale`) | Only notifications of this kind. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -4987,6 +4988,139 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLm
 
 ```bash
 curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLmLdBrfbuN/recipients/trc_mwpente8_Hh5WkPq2c9XbN0aLr4e" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+## Topic reviews
+
+Keep-or-delete prompts for the caller's recurring topics that found nothing new for a week. Without Keep by the deadline (14 days by default) the topic is deleted.
+
+| Method | Path | Summary |
+|---|---|---|
+| GET | [`/v1.0/api/topic-reviews`](#get-v10apitopic-reviews) | List my pending topic reviews |
+| POST | [`/v1.0/api/topic-reviews/enumerate`](#post-v10apitopic-reviewsenumerate) | List my pending topic reviews |
+| GET | [`/v1.0/api/topic-reviews/{id}`](#get-v10apitopic-reviewsid) | Read one of my topic reviews |
+| POST | [`/v1.0/api/topic-reviews/{id}/keep`](#post-v10apitopic-reviewsidkeep) | Keep the topic |
+| POST | [`/v1.0/api/topic-reviews/{id}/delete`](#post-v10apitopic-reviewsiddelete) | Delete the topic |
+
+### GET /v1.0/api/topic-reviews
+
+**List my pending topic reviews.** Pending keep-or-delete prompts for my topics, earliest deletion date first. A recurring topic gets one when its runs found nothing new for topicLifecycle.staleDays (default 7). Without Keep by deleteAfterUtc (default 14 days later) the topic is deleted.
+
+- Auth: `Topic:Read` (`TopicRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`TopicReviewResponse`](#topicreviewresponse)
+- Notes: Pending reviews only, earliest deletion date first.
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/topic-reviews?pageSize=10" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/topic-reviews/enumerate
+
+**List my pending topic reviews.** Pending keep-or-delete prompts for my topics, earliest deletion date first. A recurring topic gets one when its runs found nothing new for topicLifecycle.staleDays (default 7). Without Keep by deleteAfterUtc (default 14 days later) the topic is deleted.
+
+- Auth: `Topic:Read` (`TopicRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`TopicReviewResponse`](#topicreviewresponse)
+- Notes: Pending reviews only, earliest deletion date first.
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/topic-reviews/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### GET /v1.0/api/topic-reviews/{id}
+
+**Read one of my topic reviews.**
+
+- Auth: `Topic:Read` (`TopicRead`).
+- Response: [`TopicReviewResponse`](#topicreviewresponse)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{topicReviewId}}` |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/topic-reviews/<topicReviewId>" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/topic-reviews/{id}/keep
+
+**Keep the topic.** Closes the review; no new prompt for topicLifecycle.keepDays (default 7). Idempotent. 409 when the topic was already deleted.
+
+- Auth: `Topic:Update` (`TopicWrite`).
+- Response: [`TopicReviewResponse`](#topicreviewresponse)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{topicReviewId}}` |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict: The topic was already deleted |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/topic-reviews/<topicReviewId>/keep" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/topic-reviews/{id}/delete
+
+**Delete the topic.** Deletes the topic with its briefings, findings, and files. Returns 204. 409 when the review was already answered with Keep or closed by new findings.
+
+- Auth: `Topic:Delete` (`TopicDelete`).
+- Response: No body
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{topicReviewId}}` |
+
+| Status | Meaning |
+|---|---|
+| 204 | No Content; the topic is deleted |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict: Already kept, or closed by new findings |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/topic-reviews/<topicReviewId>/delete" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -9779,7 +9913,7 @@ The email outbox, test and preview sends, resends, and the signed-in user's emai
 | Query parameter | Type | Notes |
 |---|---|---|
 | `status` | enum (`Queued`, `Sending`, `Sent`, `Failed`, `Suppressed`, `Skipped`) |  |
-| `template` | enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`, `CapReached`, `AudioReady`, `PredictionDue`, `BriefingSupport`) | Email template. |
+| `template` | enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`, `CapReached`, `AudioReady`, `PredictionDue`, `BriefingSupport`, `TopicStale`, `TopicDeleted`, `AdminDailySummary`, `AdminWelcome`) | Email template. |
 | `runId` | string | Only records from this run. |
 | `briefingId` | string | Only records for this briefing. |
 | `topicId` | string | Only records for this topic. |
@@ -9809,7 +9943,7 @@ curl -s "http://127.0.0.1:12100/v1.0/api/email-messages?pageSize=10" \
 | Query parameter | Type | Notes |
 |---|---|---|
 | `status` | enum (`Queued`, `Sending`, `Sent`, `Failed`, `Suppressed`, `Skipped`) |  |
-| `template` | enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`, `CapReached`, `AudioReady`, `PredictionDue`, `BriefingSupport`) | Email template. |
+| `template` | enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`, `CapReached`, `AudioReady`, `PredictionDue`, `BriefingSupport`, `TopicStale`, `TopicDeleted`, `AdminDailySummary`, `AdminWelcome`) | Email template. |
 | `runId` | string | Only records from this run. |
 | `briefingId` | string | Only records for this briefing. |
 | `topicId` | string | Only records for this topic. |
@@ -10531,6 +10665,8 @@ Reports over relevance, accuracy, feedback, suggestions, reasons, quality, email
 
 | Method | Path | Summary |
 |---|---|---|
+| GET | [`/v1.0/api/admin/reports/daily`](#get-v10apiadminreportsdaily) | Platform statistics for one UTC day |
+| POST | [`/v1.0/api/admin/reports/daily/send`](#post-v10apiadminreportsdailysend) | Send the daily summary email now |
 | GET | [`/v1.0/api/analytics/overview`](#get-v10apianalyticsoverview) | Overview analytics |
 | GET | [`/v1.0/api/analytics/relevance`](#get-v10apianalyticsrelevance) | Relevance analytics |
 | GET | [`/v1.0/api/analytics/accuracy`](#get-v10apianalyticsaccuracy) | Accuracy analytics |
@@ -10540,6 +10676,62 @@ Reports over relevance, accuracy, feedback, suggestions, reasons, quality, email
 | GET | [`/v1.0/api/analytics/quality`](#get-v10apianalyticsquality) | Quality analytics |
 | GET | [`/v1.0/api/analytics/email`](#get-v10apianalyticsemail) | Email analytics |
 | GET | [`/v1.0/api/analytics/runs`](#get-v10apianalyticsruns) | Runs analytics |
+
+### GET /v1.0/api/admin/reports/daily
+
+**Platform statistics for one UTC day.** Global administrators only. day is a UTC date (yyyy-MM-dd); the default is yesterday.
+
+- Auth: `Admin:Admin` (`SettingsRead`).
+- Response: [`PlatformDailyStats`](#platformdailystats)
+- Notes: Global administrators only.
+
+| Query parameter | Type | Notes |
+|---|---|---|
+| `day` | date-time (ISO 8601 UTC) |  |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/admin/reports/daily" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/admin/reports/daily/send
+
+**Send the daily summary email now.** Global administrators only. Uses adminReports.recipients unless recipients is given. Each day is sent at most once per address; returns the number queued.
+
+- Auth: `Admin:Admin` (`SettingsRead`).
+- Response: `object (queued, day)`
+- Notes: Global administrators only. Idempotent per day and address.
+
+Request body: [`AdminReportSendRequest`](#adminreportsendrequest).
+
+```json
+{
+  "dayUtc": null,
+  "recipients": [
+    "hello@latticetech.ai"
+  ]
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/admin/reports/daily/send" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
 
 ### GET /v1.0/api/analytics/overview
 
@@ -11628,7 +11820,7 @@ curl -s "http://127.0.0.1:12100/v1.0/api/admin/plan-assignments?pageSize=10" \
 
 ### POST /v1.0/api/admin/plan-assignments
 
-**Give a user a plan.**
+**Give a user a plan.** replaceCurrent=true revokes the user's live administrator assignments first, so the new plan replaces them.
 
 - Auth: `Admin:Admin` (`PromoCodeAdmin`).
 - Response: [`PlanAssignment`](#planassignment)
@@ -13247,6 +13439,7 @@ Global administrators manage canonical publications, research, schedules, and li
 | GET | [`/v1.0/api/admin/catalog/{id}/research`](#get-v10apiadmincatalogidresearch) | Read canonical research and schedule settings |
 | PUT | [`/v1.0/api/admin/catalog/{id}/research`](#put-v10apiadmincatalogidresearch) | Configure canonical research and schedule |
 | POST | [`/v1.0/api/admin/catalog/{id}/run`](#post-v10apiadmincatalogidrun) | Research a system publication now |
+| POST | [`/v1.0/api/admin/catalog/from-topic/{topicId}`](#post-v10apiadmincatalogfrom-topictopicid) | Make one of my topics a system briefing |
 
 ### GET /v1.0/api/admin/catalog
 
@@ -13554,6 +13747,46 @@ curl -s -X PUT "http://127.0.0.1:12100/v1.0/api/admin/catalog/<publicationId>/re
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/admin/catalog/<publicationId>/run" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/admin/catalog/from-topic/{topicId}
+
+**Make one of my topics a system briefing.** Copies the caller's recurring topic (scope, dimensions, constraints, ranking, history, and schedule) to the catalog owner and creates its publication. The caller's topic is unchanged. MCP tools, voice, template, search provider choices, and recipients stay behind.
+
+- Auth: `Topic:Update` (`TopicWrite`).
+- Response: [`CatalogPublication`](#catalogpublication)
+- Notes: Global administrators only. The caller's own recurring topic is copied; it is not changed.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `topicId` | string | `{{topicId}}` |
+
+Request body: [`CatalogPublicationRequest`](#catalogpublicationrequest).
+
+```json
+{
+  "title": "Daily science",
+  "description": "Verified science developments",
+  "category": "Science",
+  "language": "en",
+  "freeEligible": true,
+  "status": "Draft",
+  "revision": 1
+}
+```
+
+| Status | Meaning |
+|---|---|
+| 201 | Created |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/admin/catalog/from-topic/top_mwpentds_HEIqz5MgsLmLdBrfbuN" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ## Billing
@@ -13979,6 +14212,27 @@ Runs created at one hour of one day of the week, in the report's time zone.
 | `dayOfWeek` | integer | Day of week, 0 (Sunday) to 6 (Saturday). |
 | `hour` | integer | Hour, 0 to 23. |
 | `count` | integer | Runs. |
+
+#### AdminReportSendRequest
+
+Send the daily administrator summary now.
+
+Request body of [POST /v1.0/api/admin/reports/daily/send](#post-v10apiadminreportsdailysend).
+
+| Field | Type | Description |
+|---|---|---|
+| `dayUtc` | date-time | UTC day to summarize, or null for yesterday. |
+| `recipients` | array of string | Addresses, or null for adminReports.recipients. |
+
+#### AdminReportSettings
+
+The daily platform summary emailed to administrators.
+
+| Field | Type | Description |
+|---|---|---|
+| `enabled` | boolean | Send the daily summary. Default true. |
+| `recipients` | array of string | Addresses that receive the summary. Default hello@latticetech.ai. Blank entries are dropped and addresses are trimmed and lowercased. The environment variable takes a comma-separated list. Never null. |
+| `hourUtc` | integer | Hour of the day (UTC) the summary of the previous UTC day is sent. Default 14, minimum 0, maximum 23. |
 
 #### AppleNotificationRequest
 
@@ -14621,7 +14875,7 @@ Returned by [GET /v1.0/api/catalog/issues](#get-v10apicatalogissues), [POST /v1.
 
 Explicit administrator publication of a canonical system topic. Reads use an allowlisted projection.
 
-Returned by [GET /v1.0/api/admin/catalog](#get-v10apiadmincatalog), [POST /v1.0/api/admin/catalog](#post-v10apiadmincatalog), [POST /v1.0/api/admin/catalog/enumerate](#post-v10apiadmincatalogenumerate), [GET /v1.0/api/admin/catalog/{id}](#get-v10apiadmincatalogid), [PUT /v1.0/api/admin/catalog/{id}](#put-v10apiadmincatalogid).
+Returned by [GET /v1.0/api/admin/catalog](#get-v10apiadmincatalog), [POST /v1.0/api/admin/catalog](#post-v10apiadmincatalog), [POST /v1.0/api/admin/catalog/enumerate](#post-v10apiadmincatalogenumerate), [GET /v1.0/api/admin/catalog/{id}](#get-v10apiadmincatalogid), [PUT /v1.0/api/admin/catalog/{id}](#put-v10apiadmincatalogid), [POST /v1.0/api/admin/catalog/from-topic/{topicId}](#post-v10apiadmincatalogfrom-topictopicid).
 
 | Field | Type | Description |
 |---|---|---|
@@ -14645,7 +14899,7 @@ Returned by [GET /v1.0/api/admin/catalog](#get-v10apiadmincatalog), [POST /v1.0/
 
 Administrator catalog metadata. A new publication creates an isolated canonical topic.
 
-Request body of [POST /v1.0/api/admin/catalog](#post-v10apiadmincatalog), [PUT /v1.0/api/admin/catalog/{id}](#put-v10apiadmincatalogid).
+Request body of [POST /v1.0/api/admin/catalog](#post-v10apiadmincatalog), [PUT /v1.0/api/admin/catalog/{id}](#put-v10apiadmincatalogid), [POST /v1.0/api/admin/catalog/from-topic/{topicId}](#post-v10apiadmincatalogfrom-topictopicid).
 
 | Field | Type | Description |
 |---|---|---|
@@ -15369,7 +15623,7 @@ Request body of [PUT /v1.0/tenants/{tenantId}/users/{userId}/entitlements](#put-
 
 Common paging, sorting, and date-range filter for list endpoints.
 
-Request body of [POST /v1.0/tenants/enumerate](#post-v10tenantsenumerate), [POST /v1.0/tenants/{tenantId}/users/enumerate](#post-v10tenantstenantidusersenumerate), [POST /v1.0/tenants/{tenantId}/credentials/enumerate](#post-v10tenantstenantidcredentialsenumerate), [POST /v1.0/tenants/{tenantId}/roles/enumerate](#post-v10tenantstenantidrolesenumerate), [POST /v1.0/tenants/{tenantId}/permissions/enumerate](#post-v10tenantstenantidpermissionsenumerate), [POST /v1.0/tenants/{tenantId}/users/{userId}/assignments/enumerate](#post-v10tenantstenantidusersuseridassignmentsenumerate), [POST /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes/enumerate](#post-v10tenantstenantidcredentialscredentialidscopesenumerate), [POST /v1.0/api/audit/enumerate](#post-v10apiauditenumerate) and 53 more.
+Request body of [POST /v1.0/tenants/enumerate](#post-v10tenantsenumerate), [POST /v1.0/tenants/{tenantId}/users/enumerate](#post-v10tenantstenantidusersenumerate), [POST /v1.0/tenants/{tenantId}/credentials/enumerate](#post-v10tenantstenantidcredentialsenumerate), [POST /v1.0/tenants/{tenantId}/roles/enumerate](#post-v10tenantstenantidrolesenumerate), [POST /v1.0/tenants/{tenantId}/permissions/enumerate](#post-v10tenantstenantidpermissionsenumerate), [POST /v1.0/tenants/{tenantId}/users/{userId}/assignments/enumerate](#post-v10tenantstenantidusersuseridassignmentsenumerate), [POST /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes/enumerate](#post-v10tenantstenantidcredentialscredentialidscopesenumerate), [POST /v1.0/api/audit/enumerate](#post-v10apiauditenumerate) and 54 more.
 
 | Field | Type | Description |
 |---|---|---|
@@ -16618,6 +16872,7 @@ Request body of [POST /v1.0/api/admin/plan-assignments](#post-v10apiadminplan-as
 | `planId` | string | Plan. |
 | `durationDays` | integer | Days; null or 0 for no end. |
 | `note` | string | Reason. |
+| `replaceCurrent` | boolean | When true, every live administrator assignment for the user (current or upcoming) is revoked first, so the new plan replaces the one an administrator set before. Promotional and billing plans are left alone. Default false. |
 
 #### PlanResponse
 
@@ -16642,6 +16897,66 @@ Request body of [POST /v1.0/api/admin/plans](#post-v10apiadminplans), [PUT /v1.0
 | `name` | string | Name. |
 | `description` | string | Description. |
 | `features` | object (map of string) | Entitlement values to set; an empty value removes the key. |
+
+#### PlatformDailyStats
+
+Platform-wide usage for one period (normally one UTC day), for the administrator summary email. Counts with "in period" in their description cover [FromUtc, ToUtc); the rest are totals at ToUtc.
+
+Returned by [GET /v1.0/api/admin/reports/daily](#get-v10apiadminreportsdaily).
+
+| Field | Type | Description |
+|---|---|---|
+| `fromUtc` | date-time | Period start (inclusive), UTC. |
+| `toUtc` | date-time | Period end (exclusive), UTC. |
+| `totalUsers` | integer | Active accounts that are not scheduled for deletion. |
+| `newUsers` | integer | Accounts created in period. |
+| `newSignups` | integer | Self sign-ups in period. |
+| `emailsVerified` | integer | Emails verified in period. |
+| `deletionRequests` | integer | Account deletions requested in period. |
+| `dailyActiveUsers` | integer | Distinct users who used the product in period. |
+| `weeklyActiveUsers` | integer | Distinct users active in the 7 days ending at ToUtc. |
+| `monthlyActiveUsers` | integer | Distinct users active in the 30 days ending at ToUtc. |
+| `signIns` | integer | Users who signed in in period (password or token sign-in). |
+| `activeTopics` | integer | Active recurring topics. |
+| `newTopics` | integer | Topics created in period. |
+| `runsCompleted` | integer | Real runs that completed (fully or partly) in period. |
+| `runsFailed` | integer | Real runs that failed in period. |
+| `runsSkipped` | integer | Real runs skipped in period (plan limits, schedule rules). |
+| `newFindings` | integer | New findings from runs completed in period. |
+| `averageRunSeconds` | number | Average duration of completed runs in period, seconds. |
+| `briefingsReady` | integer | Briefings composed in period. |
+| `modelCalls` | integer | Model calls in period. |
+| `modelFailures` | integer | Failed model calls in period. |
+| `inputTokens` | integer | Input tokens in period. |
+| `outputTokens` | integer | Output tokens in period. |
+| `modelCostUsd` | number | Estimated model cost in period, US dollars. |
+| `modelMinutes` | number | Total model call time in period, minutes. |
+| `modelCostUsd30Days` | number | Model cost in the 30 days ending at ToUtc, US dollars. |
+| `audioFiles` | integer | Audio files finished in period. |
+| `audioMinutes` | number | Audio generated in period, minutes. |
+| `emailsSent` | integer | Emails sent in period. |
+| `emailsFailed` | integer | Emails that failed in period. |
+| `pushDevices` | integer | Active push devices. |
+| `newPushDevices` | integer | Push devices registered in period. |
+| `paidSubscriptions` | integer | Active paid subscriptions. |
+| `newPaidSubscriptions` | integer | Paid subscriptions started in period. |
+| `catalogSubscriptions` | integer | Active system briefing (catalog) subscriptions. |
+| `stalePrompts` | integer | Keep-or-delete prompts sent in period. |
+| `staleKept` | integer | Stale topics kept in period. |
+| `staleDeleted` | integer | Stale topics deleted in period, by the owner or automatically. |
+| `topModels` | array of [`PlatformModelUsage`](#platformmodelusage) | Top models by cost in period. Never null. |
+
+#### PlatformModelUsage
+
+Model usage for one provider and model over a period.
+
+| Field | Type | Description |
+|---|---|---|
+| `provider` | string | Provider name. |
+| `model` | string | Model name. |
+| `calls` | integer | Number of calls. |
+| `tokens` | integer | Input plus output tokens. |
+| `costUsd` | number | Estimated cost in US dollars. |
 
 #### Prediction
 
@@ -18109,6 +18424,8 @@ Request body of [PUT /v1.0/api/settings](#put-v10apisettings).
 | `learning` | [`LearningSettings`](#learningsettings) | Learning from feedback. |
 | `hosting` | [`HostingSettings`](#hostingsettings) | Hosted service (sign-up, plans). |
 | `sharing` | [`SharingSettings`](#sharingsettings) | Public share links for briefings. |
+| `topicLifecycle` | [`TopicLifecycleSettings`](#topiclifecyclesettings) | Keep-or-delete reviews of topics without new findings. |
+| `adminReports` | [`AdminReportSettings`](#adminreportsettings) | Daily summary email for administrators. |
 | `crawlCache` | [`CrawlCacheSettings`](#crawlcachesettings) | Temporary crawl cache configuration. Never null. |
 | `billing` | [`BillingSettings`](#billingsettings) | Hosted billing integrations and offer mappings. |
 
@@ -19180,6 +19497,19 @@ Example:
 }
 ```
 
+#### TopicLifecycleSettings
+
+Keep-or-delete reviews of recurring topics that stop producing new findings.
+
+| Field | Type | Description |
+|---|---|---|
+| `enabled` | boolean | Ask owners to keep or delete quiet topics, and delete the ones nobody keeps. Default true. |
+| `staleDays` | integer | Days without a run that has new findings before the owner is asked. Default 7, minimum 1, maximum 365. |
+| `graceDays` | integer | Days the owner has to choose Keep before the topic is deleted. Default 14, minimum 1, maximum 365. |
+| `reminderDays` | integer | Days before the deletion date that a reminder is sent. Default 2, minimum 0 (no reminder), maximum 30. |
+| `keepDays` | integer | Days a Keep answer holds off the next prompt. Default 7, minimum 1, maximum 365. |
+| `intervalMinutes` | integer | Minutes between checks. Default 60, minimum 5, maximum 1440. |
+
 #### TopicRecipient
 
 An email recipient for a topic.
@@ -19210,6 +19540,24 @@ Example:
   "lastUpdateUtc": "2026-11-20T20:02:05.096932Z"
 }
 ```
+
+#### TopicReviewResponse
+
+A keep-or-delete review with the topic's name, for the in-app prompt.
+
+Returned by [GET /v1.0/api/topic-reviews](#get-v10apitopic-reviews), [POST /v1.0/api/topic-reviews/enumerate](#post-v10apitopic-reviewsenumerate), [GET /v1.0/api/topic-reviews/{id}](#get-v10apitopic-reviewsid), [POST /v1.0/api/topic-reviews/{id}/keep](#post-v10apitopic-reviewsidkeep).
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Review identifier (prefix trv_). |
+| `topicId` | string | Topic identifier. |
+| `topicName` | string | Topic name, or null when the topic is gone. |
+| `status` | [`TopicReviewStatusEnum`](#topicreviewstatusenum) | Status. |
+| `lastNewFindingUtc` | date-time | Completion time of the last run with new findings, or null when there was none. |
+| `staleDays` | integer | Days without new findings that triggered the review. |
+| `promptedUtc` | date-time | When the owner was asked. |
+| `deleteAfterUtc` | date-time | When a pending review deletes the topic. |
+| `resolvedUtc` | date-time | When the review was answered or closed, or null. |
 
 #### TopicSearchProviderRequest
 
@@ -19402,6 +19750,7 @@ Request body of [POST /v1.0/tenants/{tenantId}/users](#post-v10tenantstenantidus
 | `timeZone` | string | Time zone. |
 | `locale` | string | Locale. |
 | `active` | boolean | Active. |
+| `sendWelcomeEmail` | boolean | Email the new user a welcome with a link to choose their own password. Default true. Skipped for inactive accounts and when email is off. |
 
 #### UserResponse
 
@@ -19851,6 +20200,10 @@ Email template.
 | `AudioReady` | The audio version of a briefing is ready. |
 | `PredictionDue` | A prediction is due for review. |
 | `BriefingSupport` | A user-submitted failed briefing report for support. |
+| `TopicStale` | Keep-or-delete prompt for a topic without new findings. |
+| `TopicDeleted` | Notice that a stale topic was deleted. |
+| `AdminDailySummary` | Daily platform summary for administrators. |
+| `AdminWelcome` | Welcome email for an account an administrator created. |
 
 #### EnumerationOrderEnum
 
@@ -20095,6 +20448,7 @@ What a notification is about.
 | `RunFailed` | A research run failed. |
 | `CapReached` | A plan limit stopped a scheduled run. |
 | `PredictionDue` | A prediction reached its date and is due for review. |
+| `TopicStale` | A recurring topic had no new findings for a week; keep it or it is deleted after a grace period. |
 
 #### NotificationUnavailableReasonEnum
 
@@ -20506,6 +20860,18 @@ Suggestion status.
 | `Snoozed` | Snoozed. |
 | `Dismissed` | Dismissed. |
 | `Done` | Done. |
+
+#### TopicReviewStatusEnum
+
+Where a keep-or-delete review of a stale topic stands.
+
+| Value | Description |
+|---|---|
+| `Pending` | The owner was asked and has not answered yet. |
+| `Kept` | The owner chose to keep the topic. |
+| `Deleted` | The owner deleted the topic from the prompt. |
+| `Recovered` | The topic produced new findings again before the deadline, so the review closed by itself. |
+| `AutoDeleted` | Nobody chose Keep before the deadline, so the topic was deleted automatically. |
 
 #### TopicStatusEnum
 

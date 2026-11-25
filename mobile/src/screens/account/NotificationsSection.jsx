@@ -74,12 +74,13 @@ function CellRow({ kind, channel, value, disabled, onChange }) {
 
 /**
  * Notifications: one place for what My Morning News tells you about and where. A row per kind (new results, briefing
- * ready, audio ready, failed research, plan limit, prediction due) with a switch per channel: Email, Phone, and
- * In-app (`GET/PUT /v1.0/api/notifications/preferences`). Each switch saves at once.
+ * ready, audio ready, failed research, plan limit, prediction due, topics without new findings) with a switch per
+ * channel: Email, Phone, and In-app (`GET/PUT /v1.0/api/notifications/preferences`). Each switch saves at once.
  *
- * Phone is opt-in. The permission prompt appears only when the user turns on a Phone switch here and this device is
- * not registered yet, never at launch; the order is permission, then the saved preference, then the device
- * registration, so the server never turns on kinds the user did not choose. A denied prompt leaves the switch off.
+ * Phone is opt-in. The permission prompt appears only when the user turns on a Phone switch here (or taps Turn on in
+ * the Today card, PushPromptCard) and this device is not registered yet, never at launch; the order here is
+ * permission, then the saved preference, then the device registration, so the server never turns on kinds the user
+ * did not choose. A denied prompt leaves the switch off.
  * Channels the server reports unavailable are disabled with the reason, except Phone without a device, which stays
  * usable so this device can opt in. Below: the address email goes to, the account's devices (test, remove), and the
  * per-topic unsubscribes made from email links.

@@ -45,6 +45,13 @@ Topics can use selected earlier briefings as comparison context or produce stand
   listen, that anyone can open without an account. Each share lasts 1 to 14 days (7 unless you choose), can be
   revoked at any time, and shows how often it was opened. The pages carry no scripts, cookies, or trackers, and an
   administrator can turn sharing off for the whole server (`sharing.enabled`).
+- Keeps topics worth having. A recurring topic that finds nothing new for a week asks its owner, by email, push, and
+  a banner on the web and in the app, whether to keep or delete it. Without Keep within 14 days it is deleted
+  (`topicLifecycle` in the server settings). Every email and phone notification can be turned off one kind at a time.
+- Reports to the operators. Administrators get a daily summary email of active users, sign-ups, research, model and
+  audio use with cost, delivery, and billing, sent at 14:00 UTC to the addresses in `adminReports.recipients`
+  (default `hello@latticetech.ai`). Global administrators can make one of their topics a system-wide briefing in the
+  shared catalog, and assign plans and per-user limits from the Users page.
 - Learns from you. Rate anything and say why, on the web, in email, in the app, or through MCP. The system turns
   feedback into preferences you approve, and the Insights pages chart relevance, accuracy, feedback, cost, and usage.
 - Uses the model you choose. Model access goes through [PolyPrompt](https://github.com/jchristn/PolyPrompt):

@@ -31,5 +31,11 @@ namespace MyMorningNews.Core.Requests
         /// Reason.
         /// </summary>
         public string? Note { get; set; } = null;
+
+        /// <summary>
+        /// When true, every live administrator assignment for the user (current or upcoming) is revoked first, so the new
+        /// plan replaces the one an administrator set before. Promotional and billing plans are left alone. Default false.
+        /// </summary>
+        public bool ReplaceCurrent { get; set; } = false;
     }
 }

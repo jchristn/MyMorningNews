@@ -196,6 +196,26 @@ namespace MyMorningNews.Core.Settings
             set { _Sharing = value ?? throw new ArgumentNullException(nameof(Sharing)); }
         }
 
+        /// <summary>
+        /// Keep-or-delete reviews of topics without new findings.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Value is null.</exception>
+        public TopicLifecycleSettings TopicLifecycle
+        {
+            get { return _TopicLifecycle; }
+            set { _TopicLifecycle = value ?? throw new ArgumentNullException(nameof(TopicLifecycle)); }
+        }
+
+        /// <summary>
+        /// Daily summary email for administrators.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Value is null.</exception>
+        public AdminReportSettings AdminReports
+        {
+            get { return _AdminReports; }
+            set { _AdminReports = value ?? throw new ArgumentNullException(nameof(AdminReports)); }
+        }
+
         #endregion
 
         #region Private-Members
@@ -226,6 +246,8 @@ namespace MyMorningNews.Core.Settings
 
         private HostingSettings _Hosting = new HostingSettings();
         private SharingSettings _Sharing = new SharingSettings();
+        private TopicLifecycleSettings _TopicLifecycle = new TopicLifecycleSettings();
+        private AdminReportSettings _AdminReports = new AdminReportSettings();
 
         #endregion
     }

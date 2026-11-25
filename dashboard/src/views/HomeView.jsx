@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Activity, Building2, CircleAlert, Gauge, History, Lightbulb, Send, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext.jsx';
+import TopicReviewBanner from '../components/TopicReviewBanner.jsx';
 import useClientConfig from '../hooks/useClientConfig.js';
 import useFormat from '../hooks/useFormat.js';
 import useLocalStorage from '../hooks/useLocalStorage.js';
@@ -122,6 +123,7 @@ export default function HomeView() {
           </button>
         }
       />
+      <TopicReviewBanner />
 
       <div className="kpi-grid">
         <KpiTile

@@ -217,6 +217,36 @@ namespace MyMorningNews.Core.Email
         }
 
         /// <summary>
+        /// Queue an operational email to an address that need not belong to a user (the administrator summary). It is
+        /// recorded under the seeded default tenant, idempotent per key, and ignores notification preferences.
+        /// </summary>
+        /// <param name="recipient">Address.</param>
+        /// <param name="template">Template.</param>
+        /// <param name="title">Title (also the subject).</param>
+        /// <param name="subtitle">Subtitle, or null.</param>
+        /// <param name="body">Adds the body to the builder (after the header).</param>
+        /// <param name="key">Idempotency key; the recipient is appended.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The queued message, or null when the address is empty or one with the same key exists.</returns>
+        /// <exception cref="ArgumentNullException">title, body, or key is null.</exception>
+        public async Task<EmailMessage?> SendSystemEmailAsync(string recipient, EmailTemplateEnum template, string title, string? subtitle, Action<EmailBuilder> body, string key, CancellationToken token = default)
+        {
+            ArgumentNullException.ThrowIfNull(title);
+            ArgumentNullException.ThrowIfNull(body);
+            ArgumentNullException.ThrowIfNull(key);
+            string address = Normalize(recipient);
+            if (address.Length == 0) return null;
+            EmailMessage? m = await CreateAsync("default", address, template, null, null, null, key + ":" + address, null, null, token).ConfigureAwait(false);
+            if (m == null || m.Status == EmailStatusEnum.Suppressed) return m;
+            EmailBuilder b = new EmailBuilder().Preheader(subtitle ?? title).Header(Logo(), title, subtitle, null);
+            body(b);
+            b.Footer(new List<EmailLink> { new EmailLink("Dashboard", _Settings.Rest.AppBaseUrl + "/dashboard") }, "You get this email because this address is listed in adminReports.recipients in the server settings.");
+            string subject = Subject(title);
+            await FinishAsync(m, new EmailPreview { Recipient = address, Subject = subject, Html = b.Html(subject), Text = b.Text() }, token).ConfigureAwait(false);
+            return m;
+        }
+
+        /// <summary>
         /// Queue a short notice email to a user (audio ready, run failed, prediction due). Honors the user's
         /// notification preference for the notice's category and unsubscribes, and is idempotent per key and recipient.
         /// Never throws; failures are logged and return false.

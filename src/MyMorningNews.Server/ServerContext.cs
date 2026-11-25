@@ -197,6 +197,21 @@ namespace MyMorningNews.Server
         public PredictionNoticeService PredictionNotices { get; set; } = null!;
 
         /// <summary>
+        /// Keep-or-delete reviews of topics without new findings.
+        /// </summary>
+        public TopicLifecycleService TopicLifecycle { get; set; } = null!;
+
+        /// <summary>
+        /// Daily administrator summary email.
+        /// </summary>
+        public MyMorningNews.Core.Analytics.AdminReportService AdminReports { get; set; } = null!;
+
+        /// <summary>
+        /// Daily active user recording.
+        /// </summary>
+        public ActivityTracker Activity { get; set; } = null!;
+
+        /// <summary>
         /// Workspace setup checks: model keys and web search, verified with live calls.
         /// </summary>
         public SetupService Setup { get; set; } = null!;

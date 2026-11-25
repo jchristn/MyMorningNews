@@ -59,6 +59,21 @@ namespace MyMorningNews.Server.Workers
             }
         }
 
+        /// <summary>
+        /// Days of daily active user rows kept (enough for year-over-year counts). Default 400, minimum 31, maximum 3650.
+        /// </summary>
+        public int ActivityRetentionDays
+        {
+            get
+            {
+                return _ActivityRetentionDays;
+            }
+            set
+            {
+                _ActivityRetentionDays = Math.Clamp(value, 31, 3650);
+            }
+        }
+
         #endregion
 
         #region Private-Members
@@ -67,6 +82,7 @@ namespace MyMorningNews.Server.Workers
         private TimeSpan _Interval = TimeSpan.FromHours(1);
         private int _ExpiredSessionRetentionDays = 7;
         private int _NotificationRetentionDays = 90;
+        private int _ActivityRetentionDays = 400;
 
         #endregion
 
@@ -129,6 +145,8 @@ namespace MyMorningNews.Server.Workers
                 int audit = _Server.Settings.Diagnostics.AuditRetentionDays > 0
                     ? await _Server.Database.AuditRecords.DeleteOlderThanAsync(null, DateTime.UtcNow.AddDays(-_Server.Settings.Diagnostics.AuditRetentionDays), token).ConfigureAwait(false)
                     : 0;
+                int activityDays = await _Server.Database.PlatformStats.PruneActivityAsync(DateTime.UtcNow.AddDays(-ActivityRetentionDays), token).ConfigureAwait(false);
+                if (activityDays > 0) _Server.Logging.Info("[RetentionWorker] pruned " + activityDays + " daily activity rows");
                 int notifications = await _Server.Database.Notifications.PruneAsync(DateTime.UtcNow.AddDays(-NotificationRetentionDays), token).ConfigureAwait(false);
                 if (notifications > 0) _Server.Logging.Info("[RetentionWorker] pruned " + notifications + " in-app notifications");
                 int purgedAccounts = await _Server.Account.PurgeDueAsync(DateTime.UtcNow, token).ConfigureAwait(false);

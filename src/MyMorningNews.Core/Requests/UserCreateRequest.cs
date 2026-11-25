@@ -56,5 +56,11 @@ namespace MyMorningNews.Core.Requests
         /// Active.
         /// </summary>
         public bool Active { get; set; } = true;
+
+        /// <summary>
+        /// Email the new user a welcome with a link to choose their own password. Default true. Skipped for inactive
+        /// accounts and when email is off.
+        /// </summary>
+        public bool SendWelcomeEmail { get; set; } = true;
     }
 }

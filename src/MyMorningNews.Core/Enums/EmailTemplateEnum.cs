@@ -73,6 +73,26 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// A user-submitted failed briefing report for support.
         /// </summary>
-        BriefingSupport
+        BriefingSupport,
+
+        /// <summary>
+        /// Keep-or-delete prompt for a topic without new findings.
+        /// </summary>
+        TopicStale,
+
+        /// <summary>
+        /// Notice that a stale topic was deleted.
+        /// </summary>
+        TopicDeleted,
+
+        /// <summary>
+        /// Daily platform summary for administrators.
+        /// </summary>
+        AdminDailySummary,
+
+        /// <summary>
+        /// Welcome email for an account an administrator created.
+        /// </summary>
+        AdminWelcome
     }
 }

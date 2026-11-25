@@ -20,6 +20,8 @@ export const DEFAULT_PREFS = Object.freeze({
   /** The user turned notifications on in Account > Notifications (the app never prompts at launch). */
   pushEnabled: false,
   pushDeviceId: null,
+  /** The user chose Not now on the Today card that offers notifications for new briefings; it never shows again. */
+  pushPromptDismissed: false,
   playbackRate: 1,
   /** Who chose to go on without finished setup: `{ [setupSkipKey]: true }`, per server, workspace, and user. */
   setupSkipped: {},

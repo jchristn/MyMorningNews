@@ -2212,6 +2212,24 @@
       },
       "change": "Modifica le assegnazioni nella pagina Modelli di IA",
       "view": "Visualizza le assegnazioni nella pagina Modelli di IA"
+    },
+    "promote": {
+      "open": "Rendi disponibile a tutti",
+      "title": "Trasforma in briefing di sistema",
+      "help": "Copia la configurazione di ricerca di questo argomento (ambito, dimensioni, vincoli, classificazione e pianificazione) nel catalogo condiviso, a cui ogni utente può iscriversi. Il tuo argomento resta com’è. Le impostazioni private come strumenti MCP, voce e destinatari non vengono copiate.",
+      "confirm": "Crea briefing di sistema",
+      "titleRequired": "Dai un titolo al briefing.",
+      "done": "\"{title}\" ora è un briefing di sistema.",
+      "created": "\"{title}\" è stato aggiunto al catalogo. Aprilo per controllare la pianificazione ed eseguirlo.",
+      "openCatalog": "Apri nel catalogo",
+      "fields": {
+        "title": "Titolo",
+        "description": "Descrizione",
+        "category": "Categoria",
+        "language": "Lingua",
+        "freeEligible": "Disponibile con il piano gratuito",
+        "publish": "Pubblica ora (altrimenti viene salvato come bozza)"
+      }
     }
   },
   "wizard": {
@@ -3564,10 +3582,18 @@
   "plans": {
     "default": "Predefinito",
     "noFeatures": "Nessun valore di diritto.",
+    "notSet": "Non impostato",
     "validation": {
       "key": "Usa da 2 a 63 lettere minuscole, cifre e trattini.",
       "name": "Inserisci un nome.",
-      "duplicate": "La chiave {key} è elencata due volte."
+      "duplicate": "La chiave {key} è elencata due volte.",
+      "required": "Inserisci un valore.",
+      "boolean": "Scegli Sì o No.",
+      "count": "Inserisci un numero intero pari o superiore a 0, oppure scegli l’opzione senza limite.",
+      "amount": "Inserisci un importo pari o superiore a 0, oppure scegli l’opzione senza limite.",
+      "reason": "Inserisci un motivo.",
+      "future": "Scegli una data futura o lascia vuoto.",
+      "days": "Inserisci da 1 a {max, number} giorni."
     },
     "create": {
       "title": "Nuovo piano",
@@ -3583,13 +3609,36 @@
       "keyLocked": "La chiave di un piano non può cambiare.",
       "name": "Nome",
       "description": "Descrizione",
-      "features": "Valori dei diritti",
-      "featuresHelp": "Il codice verifica queste chiavi, non i nomi dei piani. Usa numeri, true o false, oppure unlimited. Un valore vuoto rimuove la chiave.",
+      "features": "Valori del piano",
+      "featuresHelp": "Tutti gli utenti di questo piano ricevono questi valori. Un valore non impostato usa il valore predefinito integrato.",
+      "aliasOf": "Nome precedente di {key}",
+      "customTitle": "Avanzate: chiavi personalizzate ({count, number})",
+      "customHelp": "Chiavi non elencate sopra. Il server accetta solo le chiavi che riconosce. Cancella un valore per rimuovere la sua chiave.",
       "featureKey": "Chiave del diritto",
       "featureValue": "Valore per {key}",
-      "emptyRemoves": "Vuoto per rimuovere",
-      "clearValue": "Cancella {key}",
-      "addFeature": "Aggiungi un valore"
+      "removeKey": "Rimuovi {key}",
+      "addFeature": "Aggiungi una chiave"
+    },
+    "groups": {
+      "access": "Accesso",
+      "topics": "Argomenti e abbonamenti",
+      "research": "Ricerca e pianificazioni",
+      "audio": "Audio",
+      "catalog": "Catalogo",
+      "usage": "Utilizzo e archiviazione",
+      "custom": "Altri valori"
+    },
+    "input": {
+      "unlimited": "Nessun limite",
+      "unlimitedFor": "Nessun limite per {name}",
+      "noMinimum": "Nessun minimo",
+      "noMinimumFor": "Nessun minimo per {name}",
+      "minutesHint": "In minuti: {minutes, number}",
+      "units": {
+        "seconds": "secondi",
+        "minutes": "minuti",
+        "usd": "USD"
+      }
     },
     "featureNames": {
       "usage_monthlyCostUsd_max": "Limite di costo mensile (USD)",
@@ -3612,26 +3661,24 @@
       "models_personalConnections_enabled": "Connessioni personali"
     },
     "assignments": {
-      "title": "I piani di un utente",
-      "help": "Scegli un utente per vedere tutti i suoi periodi di piano, compresi quelli che iniziano più avanti, e revocarne uno.",
-      "plan": "Piano",
-      "source": "Origine",
-      "starts": "Inizio",
-      "ends": "Fine",
-      "state": "Stato",
-      "note": "Nota",
+      "title": "Gestisci il piano di un utente",
+      "help": "Scegli un utente per cambiare il suo piano, regolarne i limiti o rivedere la cronologia dei piani.",
+      "history": "Cronologia dei piani",
+      "period": "Dal {starts} al {ends}",
+      "periodOpen": "Dal {starts}, senza data di fine",
       "revoke": "Revoca",
+      "revokeFor": "Revoca {plan}",
       "revokeTitle": "Revoca piano",
       "revokeMessage": "Revocare {plan} per questo utente? Termina subito.",
       "revoked": "Piano revocato",
-      "empty": "Nessuna assegnazione di piano",
-      "emptyMessage": "Questo utente ha il piano predefinito."
+      "emptyMessage": "Ancora nessun periodo di piano. Questo utente ha sempre avuto il piano predefinito."
     },
     "sources": {
       "Default": "Predefinito",
       "Admin": "Amministratore",
       "Promo": "Codice promozionale",
-      "Billing": "Fatturazione"
+      "Billing": "Fatturazione",
+      "billingProvider": "Fatturazione ({provider})"
     },
     "states": {
       "current": "Attuale",
@@ -3639,32 +3686,56 @@
       "ended": "Terminato",
       "revoked": "Revocato"
     },
-    "grant": {
-      "open": "Assegna un piano",
-      "title": "Assegna un piano",
-      "titleFor": "Assegna un piano a {email}",
-      "confirm": "Assegna",
-      "note": "Nota",
-      "noteHelp": "Perché questo utente riceve il piano. Mostrata nel registro di controllo.",
-      "done": "Piano assegnato a {email}"
-    },
     "userPanel": {
       "action": "Piano",
-      "title": "Piano di {email}"
+      "title": "Piano di {email}",
+      "subtitle": "Cambia il piano, regola i limiti di questo utente e rivedi i piani passati.",
+      "current": "Piano attuale",
+      "sourceTitle": "Impostato da: {source}",
+      "ends": "Termina",
+      "noEnd": "Nessuna data di fine",
+      "overrides": "Limiti modificati",
+      "next": "Successivo",
+      "nextValue": "{plan} dal {date}"
+    },
+    "change": {
+      "title": "Cambia piano",
+      "help": "Il nuovo piano inizia ora e sostituisce qualsiasi piano impostato in precedenza da un amministratore. I piani promozionali e a pagamento restano registrati.",
+      "plan": "Piano",
+      "currentOption": "{name} (attuale)",
+      "duration": "Durata",
+      "custom": "Personalizzata",
+      "customDays": "Numero di giorni",
+      "note": "Nota (facoltativa)",
+      "save": "Assegna piano",
+      "done": "{plan} assegnato a {email}",
+      "revert": "Torna al piano predefinito",
+      "revertTitle": "Torna al piano predefinito",
+      "revertMessage": "Rimuovere il piano che un amministratore ha impostato per {email}? L’utente passa al suo piano a pagamento, se ne ha uno, altrimenti al piano promozionale o predefinito.",
+      "revertConfirm": "Torna al predefinito",
+      "reverted": "Piano dell’amministratore rimosso",
+      "noteHelp": "Perché questo utente riceve il piano. Mostrata nel registro di controllo."
     },
     "overrides": {
-      "title": "Limiti dell’utente",
-      "help": "Le eccezioni valgono solo per questo utente. Ripristina i valori ereditati per seguire il piano assegnato.",
-      "inherited": "Valore del piano",
-      "effective": "Valore effettivo",
-      "source": "Origine",
-      "user": "Eccezione utente",
-      "plan": "Piano",
-      "restore": "Ripristina ereditarietà",
-      "value": "Valore personalizzato",
-      "valueHelp": "Zero disattiva una quantità; unlimited elimina il limite. L’audio giornaliero è in secondi.",
-      "reason": "Motivo della modifica",
-      "expires": "Scadenza (ora locale, facoltativa)"
+      "title": "Limiti di questo utente",
+      "help": "Modifica un valore solo per questo utente. Reimpostalo per seguire di nuovo il piano.",
+      "limit": "Limite",
+      "planValue": "Valore del piano",
+      "effective": "Questo utente",
+      "overridden": "Modificato",
+      "editFor": "Modifica {name}",
+      "editorTitle": "Sostituisci {name}",
+      "value": "Valore per questo utente",
+      "planValueHelp": "Valore del piano:",
+      "reason": "Motivo",
+      "reasonHelp": "Obbligatorio. Mostrato nel registro di controllo.",
+      "expires": "Scade (facoltativo)",
+      "expiresHelp": "La tua ora locale. Lascia vuoto per mantenerlo finché non lo reimposti.",
+      "save": "Salva modifica",
+      "saved": "{name} modificato per questo utente",
+      "reset": "Reimposta al piano",
+      "resetFor": "Reimposta {name} al valore del piano",
+      "resetDone": "{name} segue di nuovo il piano"
     }
   },
   "account": {
@@ -3803,7 +3874,8 @@
       "AudioReady": "Audio pronto",
       "RunFailed": "Esecuzione non riuscita",
       "CapReached": "Limite del piano raggiunto",
-      "PredictionDue": "Previsione in scadenza"
+      "PredictionDue": "Previsione in scadenza",
+      "TopicStale": "Argomenti senza nuovi risultati"
     },
     "descriptions": {
       "RunResults": "Un’esecuzione di ricerca ha trovato qualcosa di nuovo per uno dei tuoi argomenti.",
@@ -3811,7 +3883,8 @@
       "AudioReady": "Un briefing è stato trasformato in audio che puoi ascoltare.",
       "RunFailed": "Un’esecuzione di ricerca non è stata completata.",
       "CapReached": "Un’esecuzione pianificata è stata saltata perché il tuo piano ha raggiunto un limite.",
-      "PredictionDue": "Una previsione è arrivata alla sua data ed è pronta per la verifica."
+      "PredictionDue": "Una previsione è arrivata alla sua data ed è pronta per la verifica.",
+      "TopicStale": "Un argomento non ha trovato nulla di nuovo per una settimana. Conservalo, altrimenti verrà eliminato dopo 14 giorni."
     },
     "channels": {
       "Email": "Email",
@@ -4852,5 +4925,22 @@
     "test": "Prova connessione salvata",
     "remove": "Rimuovi connessione",
     "removeHelp": "Rimuovere una chiave blocca le chiamate che la richiedono. Non viene mai usata una chiave della piattaforma in alternativa."
+  },
+  "topicReviews": {
+    "region": "Argomenti senza nuovi risultati",
+    "untitled": "Questo argomento",
+    "title": "Conservare \"{name}\"?",
+    "since": "Niente di nuovo dal {date}.",
+    "noneIn": "Niente di nuovo negli ultimi {days} giorni.",
+    "deadline": "Verrà eliminato il {date} a meno che tu non lo conservi.",
+    "keep": "Conserva",
+    "delete": "Elimina",
+    "refine": "Perfeziona",
+    "open": "Apri argomento",
+    "kept": "\"{name}\" conservato. Non te lo chiederemo di nuovo per una settimana.",
+    "deleted": "\"{name}\" eliminato.",
+    "failed": "Non ha funzionato. Riprova.",
+    "deleteTitle": "Eliminare questo argomento?",
+    "deleteMessage": "Eliminare \"{name}\" con i suoi briefing, risultati e audio? L’operazione non può essere annullata."
   }
 }

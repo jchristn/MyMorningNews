@@ -35,9 +35,9 @@ namespace MigrationRehearsal
                     await entitlements.EnsureDefaultsAsync(CancellationToken.None).ConfigureAwait(false);
                     List<AccountPlanPolicy> captured = new List<AccountPlanPolicy>();
                     long count = 0;
-                    foreach (Tenant tenant in (await database.Tenants.EnumerateAsync(new TenantFilter { PageSize = 1000 }, CancellationToken.None).ConfigureAwait(false)).Items)
+                    foreach (Tenant tenant in (await database.Tenants.EnumerateAsync(new TenantFilter { PageSize = 1000 }, CancellationToken.None).ConfigureAwait(false)).Objects)
                     {
-                        captured.AddRange((await database.AccountPlanPolicies.EnumerateAsync(new AccountPlanPolicyFilter { TenantId = tenant.Id, PageSize = 1000 }, CancellationToken.None).ConfigureAwait(false)).Items);
+                        captured.AddRange((await database.AccountPlanPolicies.EnumerateAsync(new AccountPlanPolicyFilter { TenantId = tenant.Id, PageSize = 1000 }, CancellationToken.None).ConfigureAwait(false)).Objects);
                         count += await database.Users.CountAsync(new UserFilter { TenantId = tenant.Id }, CancellationToken.None).ConfigureAwait(false);
                     }
                     string current = Serializer.Serialize(captured.OrderBy(p => p.Id).ToList());

@@ -19,7 +19,7 @@ jest.mock('@/push/push', () => ({
 }));
 
 const PREFS = '/v1.0/api/notifications/preferences';
-const ON_BY_DEFAULT = ['RunResults', 'BriefingReady', 'RunFailed', 'CapReached'];
+const ON_BY_DEFAULT = ['RunResults', 'BriefingReady', 'RunFailed', 'CapReached', 'TopicStale'];
 
 /** The matrix as the server sends it: every cell, in kind then channel order, with the defaults unless overridden. */
 function matrix({ on = [], channels, address = 'demo@mymorningnews', unsubscribedTopicIds = [] } = {}) {
@@ -100,7 +100,8 @@ describe('notifications API', () => {
     expect(channelStatus(m, 'Push')).toEqual({ channel: 'Push', available: false, reason: 'NoDevice' });
     expect(channelStatus({}, 'Email')).toEqual({ channel: 'Email', available: true });
     expect(cellEnabled(withCell(m, 'AudioReady', 'Email', true), 'AudioReady', 'Email')).toBe(true);
-    expect(m.preferences).toHaveLength(18);
+    expect(m.preferences).toHaveLength(21);
+    expect(NOTIFICATION_KINDS).toEqual(['RunResults', 'BriefingReady', 'AudioReady', 'RunFailed', 'CapReached', 'PredictionDue', 'TopicStale']);
   });
 });
 
@@ -110,9 +111,9 @@ describe('Account: notifications matrix', () => {
     await waitFor(() => expect(screen.getByText('Audio ready')).toBeTruthy());
     for (const kind of NOTIFICATION_KINDS) for (const channel of NOTIFICATION_CHANNELS) expect(cell(kind, channel)).toBeTruthy();
     expect(screen.getByText('A briefing has been turned into audio')).toBeTruthy();
-    expect(screen.getAllByText('Phone')).toHaveLength(6);
-    expect(screen.getAllByText('In-app')).toHaveLength(6);
-    // Defaults: the four emails people get today are on; everything on the phone and in the app is off.
+    expect(screen.getAllByText('Phone')).toHaveLength(7);
+    expect(screen.getAllByText('In-app')).toHaveLength(7);
+    // Defaults: the five emails people get today are on; everything on the phone and in the app is off.
     expect(cell('RunResults', 'Email').props.value).toBe(true);
     expect(cell('AudioReady', 'Email').props.value).toBe(false);
     for (const kind of NOTIFICATION_KINDS) {
@@ -132,6 +133,29 @@ describe('Account: notifications matrix', () => {
     await waitFor(() => expect(cell('RunResults', 'InApp').props.value).toBe(true));
     expect(server.calls.filter((c) => c.key === 'PUT ' + PREFS)[1].body).toEqual({ preferences: [{ kind: 'RunResults', channel: 'InApp', enabled: true }] });
     expect(preparePush).not.toHaveBeenCalled();
+  });
+
+  it('lists topics without new findings so its email and phone notification can be turned off or on', async () => {
+    const order = [];
+    preparePush.mockResolvedValue({ status: 'ready', projectId: 'p' });
+    registerForPush.mockResolvedValue({ status: 'registered', device: { id: 'dev_1' } });
+    const { server } = await renderSignedIn(<NotificationsSection />, matrixHandlers(matrix(), order));
+    await waitFor(() => expect(screen.getByTestId('notify-kind-TopicStale')).toBeTruthy());
+    expect(screen.getByText('Topics without new findings')).toBeTruthy();
+    expect(screen.getByText('A topic found nothing new for a week. Keep it, or it is deleted after 14 days.')).toBeTruthy();
+    expect(cell('TopicStale', 'Email').props.value).toBe(true);
+    expect(cell('TopicStale', 'Email').props.accessibilityLabel).toBe('Topics without new findings, Email');
+    expect(cell('TopicStale', 'Push').props.value).toBe(false);
+
+    await fireEvent(cell('TopicStale', 'Email'), 'valueChange', false);
+    await waitFor(() => expect(cell('TopicStale', 'Email').props.value).toBe(false));
+    expect(server.calls.find((c) => c.key === 'PUT ' + PREFS).body).toEqual({ preferences: [{ kind: 'TopicStale', channel: 'Email', enabled: false }] });
+
+    await fireEvent(cell('TopicStale', 'Push'), 'valueChange', true);
+    await waitFor(() => expect(cell('TopicStale', 'Push').props.value).toBe(true));
+    expect(server.calls.filter((c) => c.key === 'PUT ' + PREFS)[1].body).toEqual({ preferences: [{ kind: 'TopicStale', channel: 'Push', enabled: true }] });
+    expect(preparePush).toHaveBeenCalledWith({ prompt: true });
+    await waitFor(() => expect(registerForPush).toHaveBeenCalledTimes(1));
   });
 
   it('asks permission, then saves the preference, then registers the device when a Phone switch is turned on', async () => {
@@ -231,6 +255,8 @@ const ITEMS = [
   { id: 'ntf_3', kind: 'AudioReady', title: 'Morning News', body: 'The audio version is ready.', briefingId: 'brf_1', mediaAssetId: 'med_1', createdUtc: '2026-11-21T08:00:00Z' },
   { id: 'ntf_2', kind: 'RunResults', title: 'Heat pumps', body: '3 new findings.', topicId: 'top_1', runId: 'run_1', createdUtc: '2026-11-21T07:00:00Z' },
   { id: 'ntf_1', kind: 'BriefingReady', title: 'Weekly edition', briefingId: 'brf_0', readUtc: '2026-11-20T09:00:00Z', createdUtc: '2026-11-20T08:00:00Z' },
+  { id: 'ntf_0', kind: 'TopicStale', title: 'Solar panels', body: 'Solar panels has had no new findings for 7 days.', topicId: 'top_1', readUtc: '2026-11-19T09:00:00Z', createdUtc: '2026-11-19T08:00:00Z' },
+  { id: 'ntf_00', kind: 'TopicStale', title: 'Old topic', body: 'Old topic had no new findings and was deleted.', topicId: null, readUtc: '2026-11-18T09:00:00Z', createdUtc: '2026-11-18T08:00:00Z' },
 ];
 
 describe('notification bell', () => {
@@ -305,6 +331,13 @@ describe('in-app notifications', () => {
     await fireEvent.press(screen.getByTestId('notification-ntf_1'));
     expect(router.push).toHaveBeenCalledWith('/today/briefings/brf_0');
     expect(server.calls.filter((c) => c.key.endsWith('/read'))).toHaveLength(1);
+
+    // A topic without new findings opens the topic, or the topics list once the topic was deleted.
+    expect(screen.getAllByText(/^Topics without new findings · /)).toHaveLength(2);
+    await fireEvent.press(screen.getByTestId('notification-ntf_0'));
+    expect(router.push).toHaveBeenCalledWith('/topics/top_1');
+    await fireEvent.press(screen.getByTestId('notification-ntf_00'));
+    expect(router.push).toHaveBeenLastCalledWith('/topics');
   });
 
   it('marks all read and removes one', async () => {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Gift, Pencil, Plus } from 'lucide-react';
+import { Pencil, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../context/AppContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -8,23 +8,20 @@ import ErrorState from '../components/ErrorState.jsx';
 import LoadingState from '../components/LoadingState.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
-import GrantPlanModal from './plans/GrantPlanModal.jsx';
 import PlanFormModal from './plans/PlanFormModal.jsx';
-import UserPlanAssignments from './plans/UserPlanAssignments.jsx';
-import UserEntitlements from './plans/UserEntitlements.jsx';
+import UserPlanManager from './plans/UserPlanManager.jsx';
 import { FeatureList } from './plans/planParts.jsx';
 import UserPicker from './promo/UserPicker.jsx';
 import usePlans from './promo/usePlans.js';
 
+// Plans for the platform (cards with their values, edited in PlanFormModal) and one picked user's plan.
 export default function PlansView() {
   const { t } = useTranslation();
   const { identity } = useAuth();
   const { addNotification } = useApp();
   const { plans, error, loaded, reload } = usePlans();
   const [editing, setEditing] = useState(null);
-  const [granting, setGranting] = useState(false);
   const [who, setWho] = useState(() => ({ tenantId: identity ? identity.tenantId : 'default', userId: '', email: '' }));
-  const [refresh, setRefresh] = useState(0);
 
   return (
     <div className="page">
@@ -32,45 +29,43 @@ export default function PlansView() {
         title={t('nav.items.plans')}
         summary={t('routes.plans.summary')}
         actions={
-          <div className="row-actions">
-            <button type="button" className="button secondary small" onClick={() => setGranting(true)} disabled={plans.length === 0}>
-              <Gift size={14} aria-hidden="true" /> {t('plans.grant.open')}
-            </button>
-            <button type="button" className="button primary small" onClick={() => setEditing('new')}>
-              <Plus size={14} aria-hidden="true" /> {t('plans.create.open')}
-            </button>
-          </div>
+          <button type="button" className="button primary small" onClick={() => setEditing('new')}>
+            <Plus size={14} aria-hidden="true" /> {t('plans.create.open')}
+          </button>
         }
       />
       <ErrorState error={error} onRetry={reload} />
       {!loaded ? <LoadingState /> : null}
       <div className="plan-grid">
         {plans.map((p) => (
-          <section className="panel plan-card" key={p.plan.id}>
-            <div className="section-title">
-              <h2>{p.plan.name}</h2>
-              <span className="row-actions">
+          <section className="panel plan-card" key={p.plan.id} aria-labelledby={'plan-card-' + p.plan.id}>
+            <div className="plan-card-head">
+              <div className="plan-card-title">
+                <h2 id={'plan-card-' + p.plan.id}>{p.plan.name}</h2>
                 {p.plan.isDefault ? <StatusBadge tone="info">{t('plans.default')}</StatusBadge> : null}
                 {p.plan.active === false ? <StatusBadge>{t('common.inactive')}</StatusBadge> : null}
-                <button type="button" className="icon-button" onClick={() => setEditing(p)} aria-label={t('plans.edit.open', { name: p.plan.name })} title={t('plans.edit.open', { name: p.plan.name })}>
-                  <Pencil size={14} aria-hidden="true" />
-                </button>
-              </span>
+              </div>
+              <button type="button" className="button secondary small" onClick={() => setEditing(p)} aria-label={t('plans.edit.open', { name: p.plan.name })}>
+                <Pencil size={14} aria-hidden="true" /> {t('common.edit')}
+              </button>
             </div>
-            <p className="muted small">
+            <p className="plan-card-meta muted small">
               <span className="mono">{p.plan.key}</span> <CopyableId value={p.plan.id} />
             </p>
-            {p.plan.description ? <p>{p.plan.description}</p> : null}
-            <FeatureList features={p.features} />
+            {p.plan.description ? <p className="plan-card-description">{p.plan.description}</p> : null}
+            <FeatureList features={p.features} grouped />
           </section>
         ))}
       </div>
-      <section className="panel">
-        <h2>{t('plans.assignments.title')}</h2>
+      <section className="panel" aria-labelledby="plans-user-title">
+        <h2 id="plans-user-title">{t('plans.assignments.title')}</h2>
         <p className="muted small">{t('plans.assignments.help')}</p>
         <UserPicker value={who} onChange={setWho} idPrefix="assign" />
-        {who.tenantId && who.userId ? <UserEntitlements key={who.tenantId + ':' + who.userId} tenantId={who.tenantId} userId={who.userId} plans={plans} refreshSignal={refresh} /> : null}
-        <UserPlanAssignments key={who.tenantId + ':' + who.userId} tenantId={who.tenantId} userId={who.userId} plans={plans} refreshSignal={refresh} onChanged={() => setRefresh(n => n + 1)} />
+        {who.tenantId && who.userId ? (
+          <div className="plans-user-manager">
+            <UserPlanManager key={who.tenantId + ':' + who.userId} tenantId={who.tenantId} userId={who.userId} email={who.email || ''} plans={plans} />
+          </div>
+        ) : null}
       </section>
       {editing ? (
         <PlanFormModal
@@ -80,19 +75,6 @@ export default function PlansView() {
             setEditing(null);
             addNotification(t('admin.saved'), 'success');
             reload();
-          }}
-        />
-      ) : null}
-      {granting ? (
-        <GrantPlanModal
-          plans={plans}
-          target={who.userId ? who : null}
-          onClose={() => setGranting(false)}
-          onGranted={(a, target) => {
-            setGranting(false);
-            addNotification(t('plans.grant.done', { email: target.email || target.userId }), 'success');
-            setWho(target);
-            setRefresh((n) => n + 1);
           }}
         />
       ) : null}

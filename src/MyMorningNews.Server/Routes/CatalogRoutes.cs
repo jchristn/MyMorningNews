@@ -52,6 +52,9 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, admin + "/{id}/research", ResearchAsync, null, openApiMetadata: Doc("Read canonical research and schedule settings", "Catalog administration"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, admin + "/{id}/research", SaveResearchAsync, null, openApiMetadata: Doc("Configure canonical research and schedule", "Catalog administration", "Topic and schedule ownership come exclusively from the publication.").WithRequestBody(Body<CatalogResearchRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, admin + "/{id}/run", RunAsync, null, openApiMetadata: Doc("Research a system publication now", "Catalog administration"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, admin + "/from-topic/{topicId}", PromoteAsync, null, openApiMetadata: Doc("Make one of my topics a system briefing", "Catalog administration",
+                "Copies the caller's recurring topic (scope, dimensions, constraints, ranking, history, and schedule) to the catalog owner and creates its publication. " +
+                "The caller's topic is unchanged. MCP tools, voice, template, search provider choices, and recipients stay behind.").WithRequestBody(Body<CatalogPublicationRequest>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, admin, CreateAsync, null, openApiMetadata: Doc("Create a canonical system topic and publication", "Catalog administration").WithRequestBody(Body<CatalogPublicationRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, admin + "/{id}", UpdateAsync, null, openApiMetadata: Doc("Publish, retire, retract, or edit a system publication", "Catalog administration", "Requires the current revision. Returns 409 on concurrent edits.").WithRequestBody(Body<CatalogPublicationRequest>()));
         }
@@ -362,6 +365,32 @@ namespace MyMorningNews.Server.Routes
             Apply(publication, request);
             publication = await Server.Database.CatalogPublications.CreateAsync(publication, ctx.Token).ConfigureAwait(false);
             await Server.Audit.RecordAsync(AuditEventTypeEnum.CatalogChanged, Context(ctx), 201, "System publication " + publication.Id + " created.", ctx.Token).ConfigureAwait(false);
+            await SendJsonAsync(ctx, 201, publication).ConfigureAwait(false);
+        }
+
+        private async Task PromoteAsync(HttpContextBase ctx)
+        {
+            if (!await AdminAsync(ctx).ConfigureAwait(false)) return;
+            CatalogPublicationRequest? request = await ReadBodyAsync<CatalogPublicationRequest>(ctx).ConfigureAwait(false);
+            if (request == null) return;
+            string? error = Validate(request);
+            if (error != null) { await SendErrorAsync(ctx, 400, "ValidationFailed", error).ConfigureAwait(false); return; }
+            string tenantId = Context(ctx).TenantId ?? String.Empty;
+            Topic? source = String.IsNullOrEmpty(tenantId) ? null : await Server.Database.Topics.ReadAsync(tenantId, Param(ctx, "topicId") ?? String.Empty, ctx.Token).ConfigureAwait(false);
+            if (source == null || source.UserId != Context(ctx).UserId) { await SendNotFoundAsync(ctx, "Topic").ConfigureAwait(false); return; }
+            CatalogPublication publication = new CatalogPublication { TopicId = source.Id, OwnerTenantId = tenantId };
+            Apply(publication, request);
+            try
+            {
+                publication = await new CatalogPromotionService(Server.Database, Server.Refinement, Server.TenantDefaults, Server.Scheduling).PromoteAsync(source, publication, DateTime.UtcNow, ctx.Token).ConfigureAwait(false);
+            }
+            catch (ArgumentException ex)
+            {
+                await SendErrorAsync(ctx, 400, "ValidationFailed", ex.Message).ConfigureAwait(false);
+                return;
+            }
+
+            await Server.Audit.RecordAsync(AuditEventTypeEnum.CatalogChanged, Context(ctx), 201, "System publication " + publication.Id + " created from topic " + source.Id + ".", ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 201, publication).ConfigureAwait(false);
         }
 

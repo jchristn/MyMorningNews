@@ -149,7 +149,11 @@ namespace MyMorningNews.Server.Services
             rc.ApplyAuthentication(auth);
             MyMorningNewsTelemetry.Increment(MyMorningNewsTelemetry.AuthRequests, "scheme", auth.Scheme?.ToString() ?? "none", "result", auth.Outcome.ToString());
 
-            if (auth.IsAuthenticated) return;
+            if (auth.IsAuthenticated)
+            {
+                if (_Server.Activity != null) await _Server.Activity.TouchAsync(rc.TenantId, rc.UserId, ctx.Token).ConfigureAwait(false);
+                return;
+            }
 
             if (auth.Outcome != AuthenticationOutcomeEnum.NotAttempted)
                 await _Server.Audit.RecordAsync(AuditEventTypeEnum.AuthFailure, rc, 401, auth.Message, ctx.Token).ConfigureAwait(false);

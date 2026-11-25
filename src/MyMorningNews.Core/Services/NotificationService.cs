@@ -285,9 +285,71 @@ namespace MyMorningNews.Core.Services
                     }, token).ConfigureAwait(false)) result.EmailsQueued = 1;
                     return true;
 
+                case NotificationKindEnum.TopicStale:
+                    if (user == null || c.Review == null || !c.EmailAllowed || !await WantsEmailAsync(user, kind, token).ConfigureAwait(false)) return true;
+                    if (await _Email.QueueNoticeAsync(user, StaleNotice(c, app), token).ConfigureAwait(false)) result.EmailsQueued = 1;
+                    return true;
+
                 default:
                     return true;
             }
+        }
+
+        // The keep-or-delete email: the prompt, the reminder before the deadline, or the notice after deletion.
+        private static EmailNotice StaleNotice(NotificationContext c, string app)
+        {
+            TopicReview r = c.Review!;
+            string name = c.TopicName ?? "your topic";
+            string deadline = r.DeleteAfterUtc.ToString("MMMM d, yyyy", CultureInfo.InvariantCulture);
+            string since = r.LastNewFindingUtc.HasValue
+                ? "has not found anything new since " + r.LastNewFindingUtc.Value.ToString("MMMM d", CultureInfo.InvariantCulture)
+                : "has not found anything new in " + c.StaleDays + " days";
+            string topicUrl = app + "/dashboard/topics/" + r.TopicId + "?review=" + r.Id;
+            EmailNotice n = new EmailNotice
+            {
+                Template = c.ReviewNotice == TopicReviewNoticeEnum.Deleted ? EmailTemplateEnum.TopicDeleted : EmailTemplateEnum.TopicStale,
+                Category = EmailCategoryEnum.TopicReviewEmails,
+                Key = "topicreview:" + r.Id + ":" + c.ReviewNotice.ToString().ToLowerInvariant(),
+                TopicId = c.ReviewNotice == TopicReviewNoticeEnum.Deleted ? null : r.TopicId,
+                Note = "You get this email because topic review email is on in your notification preferences. The keep-or-delete choice is also shown on the topic in the app."
+            };
+            switch (c.ReviewNotice)
+            {
+                case TopicReviewNoticeEnum.Reminder:
+                    n.Title = "Last chance to keep \"" + name + "\"";
+                    n.Subtitle = "Deleted on " + deadline + " unless you keep it";
+                    n.Paragraphs = new List<string>
+                    {
+                        "Your topic \"" + name + "\" " + since + ". We asked whether to keep it and have not heard back.",
+                        "If you do not choose Keep by " + deadline + ", the topic is deleted with its briefings, findings, and audio. Deleting cannot be undone."
+                    };
+                    n.Button = new EmailLink("Keep or delete", topicUrl);
+                    break;
+
+                case TopicReviewNoticeEnum.Deleted:
+                    n.Title = "We deleted \"" + name + "\"";
+                    n.Paragraphs = new List<string>
+                    {
+                        "Your topic \"" + name + "\" " + since + ", and nobody chose Keep by " + deadline + ", so it was deleted with its briefings, findings, and audio.",
+                        "You can create it again at any time; the wizard takes a minute."
+                    };
+                    n.Button = new EmailLink("Create a topic", app + "/dashboard/topics/new");
+                    break;
+
+                default:
+                    n.Title = "Keep \"" + name + "\"?";
+                    n.Subtitle = "No new findings in " + c.StaleDays + " days";
+                    n.Paragraphs = new List<string>
+                    {
+                        "Your topic \"" + name + "\" " + since + ". Research still runs on its schedule and counts toward your plan.",
+                        "Keep it, or delete it. If you do not choose Keep by " + deadline + ", it is deleted automatically with its briefings, findings, and audio.",
+                        "Tip: a broader brief or different sources often brings results back. You can refine the topic from the same page."
+                    };
+                    n.Button = new EmailLink("Keep or delete", topicUrl);
+                    break;
+            }
+
+            return n;
         }
 
         // The push for a kind (also the text of the in-app notification), or null when there is nothing to say, for
@@ -363,6 +425,17 @@ namespace MyMorningNews.Core.Services
                         Data = new Dictionary<string, string> { { "kind", "prediction.due" }, { "predictionId", c.Prediction.Id } }
                     };
 
+                case NotificationKindEnum.TopicStale:
+                    if (c.Review == null) return null;
+                    string topic = c.TopicName ?? "Your topic";
+                    string title = c.ReviewNotice == TopicReviewNoticeEnum.Deleted ? "Topic deleted" : c.ReviewNotice == TopicReviewNoticeEnum.Reminder ? "Last chance to keep a topic" : "Keep this topic?";
+                    string body = c.ReviewNotice == TopicReviewNoticeEnum.Deleted
+                        ? topic + " had no new findings and was deleted."
+                        : topic + " has had no new findings for " + c.StaleDays + " days. Keep it or it will be deleted on " + c.Review.DeleteAfterUtc.ToString("MMM d", CultureInfo.InvariantCulture) + ".";
+                    Dictionary<string, string> data = new Dictionary<string, string> { { "kind", "topic.stale" }, { "reviewId", c.Review.Id }, { "notice", c.ReviewNotice.ToString() } };
+                    if (c.ReviewNotice != TopicReviewNoticeEnum.Deleted) data["topicId"] = c.Review.TopicId;
+                    return new PushMessage { Title = title, Body = body, ChannelId = "account", Data = data };
+
                 default:
                     return null;
             }
@@ -377,7 +450,7 @@ namespace MyMorningNews.Core.Services
         private static Notification InApp(string tenantId, string userId, NotificationKindEnum kind, NotificationContext c, PushMessage message)
         {
             // The in-app title is the thing the notification is about; the kind itself is shown by the client.
-            string title = kind == NotificationKindEnum.RunFailed || kind == NotificationKindEnum.CapReached ? (c.TopicName ?? message.Title) : message.Title;
+            string title = kind == NotificationKindEnum.RunFailed || kind == NotificationKindEnum.CapReached || kind == NotificationKindEnum.TopicStale ? (c.TopicName ?? message.Title) : message.Title;
             string body = kind == NotificationKindEnum.RunFailed ? "The research run could not finish." : message.Body;
             bool one = kind == NotificationKindEnum.PredictionDue && c.PredictionCount <= 1;
             return new Notification
@@ -387,7 +460,7 @@ namespace MyMorningNews.Core.Services
                 Kind = kind,
                 Title = title.Length > 256 ? title.Substring(0, 256) : title,
                 Body = body,
-                TopicId = c.Run?.TopicId ?? c.Briefing?.TopicId ?? (one ? c.Prediction?.TopicId : null),
+                TopicId = c.Run?.TopicId ?? c.Briefing?.TopicId ?? (one ? c.Prediction?.TopicId : null) ?? (c.Review != null && c.ReviewNotice != TopicReviewNoticeEnum.Deleted ? c.Review.TopicId : null),
                 RunId = c.Run?.Id,
                 BriefingId = c.Briefing?.Id,
                 MediaAssetId = c.Media?.Id,

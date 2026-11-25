@@ -236,6 +236,24 @@ namespace MyMorningNews.Core.Helpers
         }
 
         /// <summary>
+        /// Generate a TopicReview identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateTopicReviewId()
+        {
+            return Generate(IdPrefixes.TopicReview);
+        }
+
+        /// <summary>
+        /// Generate a UserActivityDay identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateUserActivityDayId()
+        {
+            return Generate(IdPrefixes.UserActivityDay);
+        }
+
+        /// <summary>
         /// Generate a RefinementSession identifier.
         /// </summary>
         /// <returns>Identifier.</returns>

@@ -170,6 +170,16 @@ namespace MyMorningNews.Core.Database
         public ITopicRecipientMethods TopicRecipients { get; protected set; } = null!;
 
         /// <summary>
+        /// Keep-or-delete reviews of stale topics.
+        /// </summary>
+        public ITopicReviewMethods TopicReviews { get; protected set; } = null!;
+
+        /// <summary>
+        /// Daily active-user records and platform statistics.
+        /// </summary>
+        public IPlatformStatsMethods PlatformStats { get; protected set; } = null!;
+
+        /// <summary>
         /// Refinement sessions.
         /// </summary>
         public IRefinementSessionMethods RefinementSessions { get; protected set; } = null!;

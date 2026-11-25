@@ -46,6 +46,7 @@ namespace Test.Shared
                     ShareSuite.Create(),
                     EmailSuite.Create(),
                     NotificationSuite.Create(),
+                    LifecycleSuite.Create(),
                     LearningSuite.Create(),
                     PromoSuite.Create(),
                     AccountSuite.Create(),

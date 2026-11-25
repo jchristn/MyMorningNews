@@ -355,7 +355,8 @@ COALESCE(SUM(reasoningtokens), 0) AS reasoning FROM llmcalls WHERE runid IS NOT 
             {
                 "ALTER TABLE notifications ADD COLUMN IF NOT EXISTS catalogpublicationid VARCHAR(64)"
             })),
-            new SchemaMigration(39, "Temporary crawl cache", CrawlCacheQueries.Schema)
+            new SchemaMigration(39, "Temporary crawl cache", CrawlCacheQueries.Schema),
+            new SchemaMigration(40, "Stale topic reviews and daily activity", Concat(TopicReviewQueries.Schema, PlatformStatsQueries.Schema))
         };
 
         private static List<string> Concat(params IReadOnlyList<string>[] parts)

@@ -274,3 +274,109 @@ export function featuresBody(rows, original = {}) {
 export function isValidPlanKey(key) {
   return /^[a-z0-9][a-z0-9-]{1,62}$/.test(String(key || '').trim());
 }
+
+// How each known entitlement is edited and grouped, mirroring PlanFeatureCatalog on the server. kind is boolean,
+// count (whole number or unlimited), or amount (decimal or unlimited). unit names the count's unit. noLimit names the
+// unlimited choice: 'unlimited' for a cap, 'noMinimum' for a shortest interval. alias marks a legacy key.
+export const FEATURE_CATALOG = {
+  'mobile.access': { group: 'access', kind: 'boolean' },
+  'email.enabled': { group: 'access', kind: 'boolean' },
+  'endpoints.custom': { group: 'access', kind: 'boolean' },
+  'models.personalConnections.enabled': { group: 'access', kind: 'boolean' },
+  'customTopics.max': { group: 'topics', kind: 'count' },
+  'systemSubscriptions.max': { group: 'topics', kind: 'count' },
+  'topics.max': { group: 'topics', kind: 'count', alias: 'customTopics.max' },
+  'customResearch.enabled': { group: 'research', kind: 'boolean' },
+  'oneTimeResearch.enabled': { group: 'research', kind: 'boolean' },
+  'runs.daily.max': { group: 'research', kind: 'count' },
+  'schedule.minIntervalMinutes': { group: 'research', kind: 'count', unit: 'minutes', noLimit: 'noMinimum' },
+  'audio.enabled': { group: 'audio', kind: 'boolean' },
+  'audio.dailySeconds.max': { group: 'audio', kind: 'count', unit: 'seconds' },
+  'audio.monthlyMinutes.max': { group: 'audio', kind: 'count', unit: 'minutes' },
+  'catalog.audio.enabled': { group: 'catalog', kind: 'boolean' },
+  'catalog.freeOnly': { group: 'catalog', kind: 'boolean' },
+  'usage.monthlyCostUsd.max': { group: 'usage', kind: 'amount', unit: 'usd' },
+  'artifacts.pinned.max': { group: 'usage', kind: 'count' }
+};
+
+export const FEATURE_GROUPS = ['access', 'topics', 'research', 'audio', 'catalog', 'usage'];
+
+// The server's largest accepted count or amount.
+export const FEATURE_VALUE_MAX = 1000000000;
+
+// The editing spec for a key; unknown keys are free text in the 'custom' group.
+export function featureSpec(key) {
+  return FEATURE_CATALOG[key] || { group: 'custom', kind: 'text' };
+}
+
+// Known keys grouped for display: [{ group, keys }] in FEATURE_GROUPS order, empty groups left out. skipAliases
+// drops legacy alias keys (the user limits list, where topics.max mirrors customTopics.max).
+export function groupedFeatureKeys({ skipAliases = false } = {}) {
+  return FEATURE_GROUPS.map((group) => ({
+    group,
+    keys: Object.keys(FEATURE_CATALOG).filter((k) => FEATURE_CATALOG[k].group === group && !(skipAliases && FEATURE_CATALOG[k].alias))
+  })).filter((g) => g.keys.length > 0);
+}
+
+// Feature entries ({ key, value }) grouped like groupedFeatureKeys, with unknown keys last in a 'custom' group.
+export function groupedFeatures(features) {
+  const rows = orderedFeatures(features);
+  const groups = FEATURE_GROUPS.map((group) => ({ group, rows: rows.filter((r) => featureSpec(r.key).group === group) }));
+  groups.push({ group: 'custom', rows: rows.filter((r) => !FEATURE_CATALOG[r.key]) });
+  for (const g of groups) g.rows.sort((a, b) => Object.keys(FEATURE_CATALOG).indexOf(a.key) - Object.keys(FEATURE_CATALOG).indexOf(b.key));
+  return groups.filter((g) => g.rows.length > 0);
+}
+
+// A translation key describing what is wrong with a value, or null when the server will accept it. Empty values are
+// valid only when allowEmpty is set (a plan value left unset).
+export function featureValueError(key, value, { allowEmpty = false } = {}) {
+  const v = String(value ?? '').trim();
+  if (!v) return allowEmpty ? null : 'plans.validation.required';
+  const spec = featureSpec(key);
+  if (spec.kind === 'boolean') return v === 'true' || v === 'false' ? null : 'plans.validation.boolean';
+  if (spec.kind === 'count' || spec.kind === 'amount') {
+    if (v.toLowerCase() === 'unlimited') return null;
+    const pattern = spec.kind === 'count' ? /^\d+$/ : /^\d+(\.\d+)?$/;
+    if (!pattern.test(v) || Number(v) > FEATURE_VALUE_MAX) return spec.kind === 'count' ? 'plans.validation.count' : 'plans.validation.amount';
+  }
+  return null;
+}
+
+// The plan features body for a save. values holds the known keys ('' leaves a key unset); custom holds { key, value }
+// rows for other keys. On an edit every original key that ends up empty is sent as '' (which removes it); keys that
+// were never set and stay empty are left out.
+export function planFeaturesBody(values, custom = [], original = {}) {
+  const out = featuresBody([...Object.entries(values || {}).map(([key, value]) => ({ key, value })), ...(custom || [])], original);
+  const had = original || {};
+  for (const key of Object.keys(out)) if (out[key] === '' && !Object.prototype.hasOwnProperty.call(had, key)) delete out[key];
+  return out;
+}
+
+// Where an assignment stands now: revoked, ended, upcoming, or current.
+export function assignmentState(a, now = new Date()) {
+  if (a.revokedUtc) return 'revoked';
+  const at = now.getTime();
+  if (a.endsUtc && new Date(a.endsUtc).getTime() <= at) return 'ended';
+  if (a.startsUtc && new Date(a.startsUtc).getTime() > at) return 'upcoming';
+  return 'current';
+}
+
+// Administrator assignments that are current or upcoming: the ones a plan change replaces and a return to the
+// default plan revokes.
+export function liveAdminAssignments(assignments, now = new Date()) {
+  return (assignments || []).filter((a) => a.source === 'Admin' && ['current', 'upcoming'].includes(assignmentState(a, now)));
+}
+
+// Where a user's effective plan (GET .../entitlements) comes from, following EntitlementService precedence: an
+// administrator assignment, then a paid subscription, then a promotional code, then the account or default plan.
+// Returns { source: 'Admin' | 'Billing' | 'Promo' | 'Default', provider }.
+export function effectivePlanSource(effective) {
+  const assignment = effective ? effective.assignment : null;
+  if (assignment && assignment.source === 'Admin') return { source: 'Admin', provider: null };
+  if (effective && (effective.billingSubscriptionId || effective.billingProvider)) return { source: 'Billing', provider: effective.billingProvider || null };
+  if (assignment && assignment.source === 'Promo') return { source: 'Promo', provider: null };
+  return { source: 'Default', provider: null };
+}
+
+// Duration choices for a plan change, in days; 0 means no end.
+export const DURATION_PRESETS = [0, 30, 90, 365];

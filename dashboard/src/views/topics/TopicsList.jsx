@@ -4,6 +4,7 @@ import { Pause, Plus, Sparkles, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
+import TopicReviewBanner from '../../components/TopicReviewBanner.jsx';
 import { pagedQuery } from '../../utils/api.js';
 import { TOPIC_STATUSES, TOPIC_STATUS_TONES } from '../../utils/enums.js';
 import ConfirmModal from '../../components/ConfirmModal.jsx';
@@ -83,6 +84,7 @@ export default function TopicsList() {
   return (
     <div className="page">
       <PageHeader title={t('nav.items.topics')} summary={t('routes.topics.summary')} />
+      <TopicReviewBanner onChanged={bump} />
       {!customAllowed ? <section className="panel stack"><p>{t('catalog.summary')}</p><div className="row-actions"><button className="button primary" onClick={() => navigate('/dashboard/catalog')}>{t('catalog.title')}</button><button className="button secondary" onClick={() => navigate('/dashboard/account/billing')}>{t('billing.title')}</button></div></section> : null}
       <section className="panel">
         <DataTable

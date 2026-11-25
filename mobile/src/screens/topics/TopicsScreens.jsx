@@ -24,6 +24,7 @@ import { DetailHeader, ItemCard } from '../common/DetailScreen';
 import { ResourceListScreen } from '../common/ResourceListScreen';
 import { FindingsList } from '../research/FindingScreens';
 import { TopicHistory } from './TopicHistory';
+import { TopicReviewBanner } from './TopicReviews';
 
 export const topicHref = (id) => '/topics/' + encodeURIComponent(id);
 export const runHref = (id) => '/topics/runs/' + encodeURIComponent(id);
@@ -33,27 +34,36 @@ export const wizardHref = ({ sessionId, topicId } = {}) => '/topics/new' + (sess
 /** Workspace tabs on mobile (dashboard `/topics/:id`): overview, findings, runs, sources, and schedule. */
 export const WORKSPACE_TABS = ['overview', 'findings', 'runs', 'sources', 'schedule'];
 
+/**
+ * Recurring topics with their status and last run, keep-or-delete prompts for topics without new findings above the
+ * list, and the topic workspace beside the list on tablets. A Keep or Delete in either place reloads both.
+ */
 export function TopicsScreen() {
   const { t, i18n } = useTranslation();
   const { client } = useAuth();
   const plan = useResource(() => planApi.get(client), [client]);
   const customAllowed = plan.data?.features?.['customResearch.enabled'] !== 'false';
+  const [version, setVersion] = useState(0);
+  const changed = () => setVersion((v) => v + 1);
   return (
     <ResourceListScreen
       testID="topics-screen"
       load={() => topicsApi.list(client, { pageNumber: 1, pageSize: 100, sortBy: 'name', sortDirection: 'Ascending', isOneTime: false })}
-      deps={[client]}
+      deps={[client, version]}
       feature={t('mobile.features.topics')}
       header={
-        <ButtonRow>
-          <Button title={t('mobile.catalog.title')} icon="library-outline" kind="secondary" onPress={() => router.push('/today/catalog')} />
-          <Button title={t('mobile.topics.new')} disabled={!customAllowed} icon="add" onPress={() => router.push('/topics/new')} style={{ flexGrow: 1 }} testID="new-topic" />
-          <Button title={t('mobile.editions.title')} icon="calendar-outline" kind="secondary" onPress={() => router.push('/topics/editions')} style={{ flexGrow: 1 }} testID="open-editions" />
-        </ButtonRow>
+        <>
+          <ButtonRow>
+            <Button title={t('mobile.catalog.title')} icon="library-outline" kind="secondary" onPress={() => router.push('/today/catalog')} />
+            <Button title={t('mobile.topics.new')} disabled={!customAllowed} icon="add" onPress={() => router.push('/topics/new')} style={{ flexGrow: 1 }} testID="new-topic" />
+            <Button title={t('mobile.editions.title')} icon="calendar-outline" kind="secondary" onPress={() => router.push('/topics/editions')} style={{ flexGrow: 1 }} testID="open-editions" />
+          </ButtonRow>
+          <TopicReviewBanner heading showOpen refreshKey={version} onChanged={changed} />
+        </>
       }
       empty={{ icon: 'list-outline', title: t('mobile.topics.emptyTitle'), body: t('mobile.topics.emptyBody'), actionLabel: t('mobile.topics.new'), onAction: () => router.push('/topics/new') }}
       detailHref={topicHref}
-      renderDetail={(id) => <TopicWorkspace key={id} id={id} />}
+      renderDetail={(id) => <TopicWorkspace key={id} id={id} reviewsVersion={version} onReviewChanged={changed} />}
       placeholder={t('mobile.topics.select')}
       renderRow={(topic, { selected, onPress }) => (
         <ItemCard
@@ -69,13 +79,26 @@ export function TopicsScreen() {
   );
 }
 
-/** The topic workspace: a header with the topic's name and status, the tabs, and the chosen tab below. */
-export function TopicWorkspace({ id }) {
+/**
+ * The topic workspace: a header with the topic's name and status, the tabs, and the chosen tab below. Overview shows
+ * the topic's keep-or-delete prompt when it has one; after a Delete there the workspace says the topic is gone.
+ * `onReviewChanged` runs after a Keep or Delete (tablets reload the list beside it), and `reviewsVersion` reloads the
+ * prompt when the list's prompts changed.
+ */
+export function TopicWorkspace({ id, reviewsVersion, onReviewChanged }) {
   const p = useTheme();
   const { t } = useTranslation();
   const { client } = useAuth();
   const resource = useResource(() => topicsApi.get(client, id), [client, id]);
   const [tab, setTab] = useState('overview');
+  const [deleted, setDeleted] = useState(false);
+  if (deleted) {
+    return (
+      <Screen testID="topic-workspace">
+        <EmptyState icon="trash-outline" title={t('mobile.topicReviews.deletedTitle')} body={t('mobile.topicReviews.deletedBody')} actionLabel={t('mobile.topicReviews.backToTopics')} onAction={() => (router.canGoBack() ? router.back() : router.replace('/topics'))} />
+      </Screen>
+    );
+  }
   if (!resource.data) {
     return (
       <Screen testID="topic-workspace">
@@ -92,7 +115,22 @@ export function TopicWorkspace({ id }) {
         <DetailHeader title={topic.name} badges={[{ label: t('mobile.enums.topicStatus.' + topic.status), tone: TOPIC_STATUS_TONES[topic.status] || 'neutral' }]} />
         <ChipGroup scroll options={WORKSPACE_TABS.map((k) => ({ value: k, label: t('mobile.topics.tabs.' + k), testID: 'topic-tab-' + k }))} value={tab} onChange={setTab} accessibilityLabel={t('mobile.topics.workspace')} />
       </View>
-      {tab === 'overview' ? <TopicOverview resource={resource} /> : null}
+      {tab === 'overview' ? (
+        <TopicOverview
+          resource={resource}
+          reviews={
+            <TopicReviewBanner
+              topicId={topic.id}
+              refreshKey={reviewsVersion}
+              onChanged={() => {
+                if (onReviewChanged) onReviewChanged();
+              }}
+              onDeleted={() => setDeleted(true)}
+              testID="topic-review-banner"
+            />
+          }
+        />
+      ) : null}
       {tab === 'findings' ? <FindingsList topicId={topic.id} embedded hrefFor={topicFindingHref} testID="topic-findings" /> : null}
       {tab === 'runs' ? <TopicRuns topicId={topic.id} /> : null}
       {tab === 'sources' ? <TopicSources topicId={topic.id} /> : null}
@@ -101,8 +139,8 @@ export function TopicWorkspace({ id }) {
   );
 }
 
-/** Overview: Run now, dry run, pause or resume, refine; the brief, dimensions, and constraints. */
-function TopicOverview({ resource }) {
+/** Overview: the keep-or-delete prompt (`reviews`), Run now, dry run, pause or resume, refine; the brief, dimensions, and constraints. */
+function TopicOverview({ resource, reviews }) {
   const p = useTheme();
   const { t, i18n } = useTranslation();
   const { client } = useAuth();
@@ -145,6 +183,7 @@ function TopicOverview({ resource }) {
 
   return (
     <Screen testID="topic-overview" refreshControl={<RefreshControl refreshing={resource.refreshing} onRefresh={resource.reload} tintColor={p.primary} />}>
+      {reviews}
       {draft ? (
         <Banner kind="info" title={t('mobile.topics.draftTitle')}>
           <View style={{ gap: spacing.sm }}>

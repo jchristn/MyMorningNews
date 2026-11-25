@@ -2212,6 +2212,24 @@
       },
       "change": "Change assignments on the Models page",
       "view": "View assignments on the Models page"
+    },
+    "promote": {
+      "open": "Make system-wide",
+      "title": "Make this a system briefing",
+      "help": "Copies this topic's research setup (scope, dimensions, constraints, ranking, and schedule) into the shared catalog, where every user can subscribe. Your topic stays as it is. Private settings such as MCP tools, the voice, and recipients are not copied.",
+      "confirm": "Create system briefing",
+      "titleRequired": "Give the briefing a title.",
+      "done": "\"{title}\" is now a system briefing.",
+      "created": "\"{title}\" was added to the catalog. Open it to review the schedule and run it.",
+      "openCatalog": "Open in catalog",
+      "fields": {
+        "title": "Title",
+        "description": "Description",
+        "category": "Category",
+        "language": "Language",
+        "freeEligible": "Available on the free plan",
+        "publish": "Publish now (otherwise it is saved as a draft)"
+      }
     }
   },
   "wizard": {
@@ -3564,10 +3582,18 @@
   "plans": {
     "default": "Default",
     "noFeatures": "No entitlement values.",
+    "notSet": "Not set",
     "validation": {
       "key": "Use 2 to 63 lowercase letters, digits, and dashes.",
       "name": "Enter a name.",
-      "duplicate": "The key {key} is listed twice."
+      "duplicate": "The key {key} is listed twice.",
+      "required": "Enter a value.",
+      "boolean": "Choose Yes or No.",
+      "count": "Enter a whole number of 0 or more, or choose the no-limit option.",
+      "amount": "Enter an amount of 0 or more, or choose the no-limit option.",
+      "reason": "Enter a reason.",
+      "future": "Choose a time in the future, or leave it empty.",
+      "days": "Enter 1 to {max, number} days."
     },
     "create": {
       "title": "New plan",
@@ -3583,13 +3609,36 @@
       "keyLocked": "A plan key cannot change.",
       "name": "Name",
       "description": "Description",
-      "features": "Entitlement values",
-      "featuresHelp": "Code checks these keys, not plan names. Use numbers, true or false, or unlimited. An empty value removes the key.",
+      "features": "Plan values",
+      "featuresHelp": "Every user on this plan gets these values. A value left as Not set falls back to the built-in default.",
+      "aliasOf": "Older name for {key}",
+      "customTitle": "Advanced: custom keys ({count, number})",
+      "customHelp": "Keys not listed above. The server accepts only keys it recognizes. Clear a value to remove its key.",
       "featureKey": "Entitlement key",
       "featureValue": "Value for {key}",
-      "emptyRemoves": "Empty removes it",
-      "clearValue": "Clear {key}",
-      "addFeature": "Add a value"
+      "removeKey": "Remove {key}",
+      "addFeature": "Add a key"
+    },
+    "groups": {
+      "access": "Access",
+      "topics": "Topics and subscriptions",
+      "research": "Research and schedules",
+      "audio": "Audio",
+      "catalog": "Catalog",
+      "usage": "Usage and storage",
+      "custom": "Other values"
+    },
+    "input": {
+      "unlimited": "No limit",
+      "unlimitedFor": "No limit for {name}",
+      "noMinimum": "No minimum",
+      "noMinimumFor": "No minimum for {name}",
+      "minutesHint": "In minutes: {minutes, number}",
+      "units": {
+        "seconds": "seconds",
+        "minutes": "minutes",
+        "usd": "USD"
+      }
     },
     "featureNames": {
       "usage_monthlyCostUsd_max": "Monthly cost cap (USD)",
@@ -3612,26 +3661,24 @@
       "models_personalConnections_enabled": "Personal provider connections"
     },
     "assignments": {
-      "title": "A user's plans",
-      "help": "Pick a user to see every plan period they have, including ones that start later, and revoke one.",
-      "plan": "Plan",
-      "source": "Source",
-      "starts": "Starts",
-      "ends": "Ends",
-      "state": "State",
-      "note": "Note",
+      "title": "Manage a user's plan",
+      "help": "Pick a user to change their plan, adjust their limits, or review their plan history.",
+      "history": "Plan history",
+      "period": "{starts} to {ends}",
+      "periodOpen": "From {starts}, no end date",
       "revoke": "Revoke",
+      "revokeFor": "Revoke {plan}",
       "revokeTitle": "Revoke plan",
       "revokeMessage": "Revoke {plan} for this user? It ends now.",
       "revoked": "Plan revoked",
-      "empty": "No plan assignments",
-      "emptyMessage": "This user is on the default plan."
+      "emptyMessage": "No plan periods yet. This user has always been on the default plan."
     },
     "sources": {
       "Default": "Default",
       "Admin": "Administrator",
       "Promo": "Promotional code",
-      "Billing": "Billing"
+      "Billing": "Billing",
+      "billingProvider": "Billing ({provider})"
     },
     "states": {
       "current": "Current",
@@ -3639,32 +3686,56 @@
       "ended": "Ended",
       "revoked": "Revoked"
     },
-    "grant": {
-      "open": "Grant a plan",
-      "title": "Grant a plan",
-      "titleFor": "Grant a plan to {email}",
-      "confirm": "Grant",
-      "note": "Note",
-      "noteHelp": "Why this user gets the plan. Shown in the audit log.",
-      "done": "Plan granted to {email}"
-    },
     "userPanel": {
       "action": "Plan",
-      "title": "Plan for {email}"
+      "title": "Plan for {email}",
+      "subtitle": "Change the plan, adjust limits for this user, and review past plans.",
+      "current": "Current plan",
+      "sourceTitle": "Set by: {source}",
+      "ends": "Ends",
+      "noEnd": "No end date",
+      "overrides": "Overridden limits",
+      "next": "Next",
+      "nextValue": "{plan} from {date}"
+    },
+    "change": {
+      "title": "Change plan",
+      "help": "The new plan starts now and replaces any plan an administrator set before. Promotional and paid plans stay on record.",
+      "plan": "Plan",
+      "currentOption": "{name} (current)",
+      "duration": "Duration",
+      "custom": "Custom",
+      "customDays": "Number of days",
+      "note": "Note (optional)",
+      "save": "Assign plan",
+      "done": "{plan} assigned to {email}",
+      "revert": "Return to default plan",
+      "revertTitle": "Return to the default plan",
+      "revertMessage": "Remove the plan an administrator set for {email}? They move to their paid plan if they have one, otherwise to their promotional or default plan.",
+      "revertConfirm": "Return to default",
+      "reverted": "Administrator plan removed",
+      "noteHelp": "Why this user gets the plan. Shown in the audit log."
     },
     "overrides": {
-      "title": "User limits",
-      "help": "Overrides apply only to this user. Restore inheritance to follow the assigned plan again.",
-      "inherited": "Plan default",
-      "effective": "Effective value",
-      "source": "Source",
-      "user": "User override",
-      "plan": "Plan",
-      "restore": "Restore inheritance",
-      "value": "Override value",
-      "valueHelp": "Use zero to disable a quantity, or unlimited to remove its cap. Daily audio is in seconds.",
-      "reason": "Reason for this change",
-      "expires": "Expires (local time, optional)"
+      "title": "Limits for this user",
+      "help": "Override a value for this user only. Reset it to follow the plan again.",
+      "limit": "Limit",
+      "planValue": "Plan value",
+      "effective": "This user",
+      "overridden": "Overridden",
+      "editFor": "Edit {name}",
+      "editorTitle": "Override {name}",
+      "value": "Value for this user",
+      "planValueHelp": "Plan value:",
+      "reason": "Reason",
+      "reasonHelp": "Required. Shown in the audit log.",
+      "expires": "Expires (optional)",
+      "expiresHelp": "Your local time. Leave empty to keep it until you reset it.",
+      "save": "Save override",
+      "saved": "{name} overridden for this user",
+      "reset": "Reset to plan",
+      "resetFor": "Reset {name} to the plan value",
+      "resetDone": "{name} follows the plan again"
     }
   },
   "account": {
@@ -3803,7 +3874,8 @@
       "AudioReady": "Audio ready",
       "RunFailed": "Run failed",
       "CapReached": "Plan limit reached",
-      "PredictionDue": "Prediction due"
+      "PredictionDue": "Prediction due",
+      "TopicStale": "Topics without new findings"
     },
     "descriptions": {
       "RunResults": "A research run found something new for one of your topics.",
@@ -3811,7 +3883,8 @@
       "AudioReady": "A briefing has been turned into audio you can play.",
       "RunFailed": "A research run could not finish.",
       "CapReached": "A scheduled run was skipped because your plan reached a limit.",
-      "PredictionDue": "A prediction reached its date and is ready to check."
+      "PredictionDue": "A prediction reached its date and is ready to check.",
+      "TopicStale": "A topic found nothing new for a week. Keep it, or it is deleted after 14 days."
     },
     "channels": {
       "Email": "Email",
@@ -4852,5 +4925,22 @@
     "test": "Test saved connection",
     "remove": "Remove connection",
     "removeHelp": "Removing a key stops the calls that need it. BYOK never falls back to a platform key."
+  },
+  "topicReviews": {
+    "region": "Topics without new findings",
+    "untitled": "This topic",
+    "title": "Keep \"{name}\"?",
+    "since": "Nothing new since {date}.",
+    "noneIn": "Nothing new in the last {days} days.",
+    "deadline": "It will be deleted on {date} unless you keep it.",
+    "keep": "Keep",
+    "delete": "Delete",
+    "refine": "Refine",
+    "open": "Open topic",
+    "kept": "Kept \"{name}\". We will not ask again for a week.",
+    "deleted": "Deleted \"{name}\".",
+    "failed": "That did not work. Try again.",
+    "deleteTitle": "Delete this topic?",
+    "deleteMessage": "Delete \"{name}\" with its briefings, findings, and audio? This cannot be undone."
   }
 }

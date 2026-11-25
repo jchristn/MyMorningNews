@@ -67,7 +67,7 @@ namespace MyMorningNews.Server.Routes
                 .WithParameter(QueryParam("tenantId", typeof(string))).WithParameter(QueryParam("userId", typeof(string)))));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/admin/plan-assignments" + "/enumerate", ctx => EnumerateAsync(ctx, ListAssignmentsAsync), null, openApiMetadata: Paged(Doc("A user's plan assignments", "Plans")
                 .WithParameter(QueryParam("tenantId", typeof(string))).WithParameter(QueryParam("userId", typeof(string)))).WithRequestBody(Body<EnumerationQuery>()));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/admin/plan-assignments", GrantAsync, null, openApiMetadata: Doc("Give a user a plan", "Plans").WithRequestBody(Body<PlanGrantRequest>()));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/admin/plan-assignments", GrantAsync, null, openApiMetadata: Doc("Give a user a plan", "Plans", "replaceCurrent=true revokes the user's live administrator assignments first, so the new plan replaces them.").WithRequestBody(Body<PlanGrantRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/api/admin/plan-assignments/{id}", RevokeAssignmentAsync, null, openApiMetadata: Doc("Revoke a plan assignment", "Plans")
                 .WithParameter(QueryParam("tenantId", typeof(string))));
 
@@ -322,6 +322,16 @@ namespace MyMorningNews.Server.Routes
             if (u == null || p == null) { await SendErrorAsync(ctx, 400, "ValidationFailed", "The user or plan was not found.").ConfigureAwait(false); return; }
             if (req.DurationDays.HasValue && (req.DurationDays < 0 || req.DurationDays > 3650)) { await SendErrorAsync(ctx, 400, "ValidationFailed", "durationDays must be 0 to 3650.").ConfigureAwait(false); return; }
             DateTime now = DateTime.UtcNow;
+            if (req.ReplaceCurrent)
+            {
+                foreach (PlanAssignment old in (await Server.Entitlements.AssignmentsAsync(u.TenantId, u.Id, ctx.Token).ConfigureAwait(false))
+                    .Where(x => x.Source == PlanSourceEnum.Admin && !x.RevokedUtc.HasValue && (!x.EndsUtc.HasValue || x.EndsUtc > now)))
+                {
+                    old.RevokedUtc = now;
+                    await Server.Database.PlanAssignments.UpdateAsync(old, ctx.Token).ConfigureAwait(false);
+                }
+            }
+
             PlanAssignment a = await Server.Database.PlanAssignments.CreateAsync(new PlanAssignment
             {
                 TenantId = u.TenantId, UserId = u.Id, PlanId = p.Id, Source = PlanSourceEnum.Admin, StartsUtc = now,

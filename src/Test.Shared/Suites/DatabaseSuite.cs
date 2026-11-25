@@ -67,7 +67,9 @@ namespace Test.Shared.Suites
                 {
                     Assert.Equal(first, b.SchemaVersion, "same version after re-initialization");
                     System.Data.DataTable t = await b.ExecuteQueryAsync("SELECT COUNT(*) FROM schema_migrations", false, token).ConfigureAwait(false);
-                    Assert.Equal(first, Convert.ToInt32(t.Rows[0][0]), "one tracking row per version");
+                    // Versions may have gaps (a number can be reserved for work still on another branch), so compare with
+                    // the number of defined migrations rather than the highest version.
+                    Assert.Equal(MyMorningNews.Core.Database.Postgresql.PostgresqlMigrations.All.Count, Convert.ToInt32(t.Rows[0][0]), "one tracking row per version");
                 }
             }
             finally

@@ -79,6 +79,8 @@ namespace MyMorningNews.Core.Database.Postgresql
             TopicDimensions = new TopicDimensionMethods(this);
             TopicConstraints = new TopicConstraintMethods(this);
             TopicRecipients = new TopicRecipientMethods(this);
+            TopicReviews = new TopicReviewMethods(this);
+            PlatformStats = new PlatformStatsMethods(this);
             RefinementSessions = new RefinementSessionMethods(this);
             RefinementMessages = new RefinementMessageMethods(this);
             RefinementQuestions = new RefinementQuestionMethods(this);

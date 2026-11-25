@@ -33,6 +33,11 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// A prediction reached its date and is due for review.
         /// </summary>
-        PredictionDue
+        PredictionDue,
+
+        /// <summary>
+        /// A recurring topic had no new findings for a week; keep it or it is deleted after a grace period.
+        /// </summary>
+        TopicStale
     }
 }

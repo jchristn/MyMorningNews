@@ -32,7 +32,8 @@ namespace MyMorningNews.Core.Services
             NotificationKindEnum.AudioReady,
             NotificationKindEnum.RunFailed,
             NotificationKindEnum.CapReached,
-            NotificationKindEnum.PredictionDue
+            NotificationKindEnum.PredictionDue,
+            NotificationKindEnum.TopicStale
         };
 
         /// <summary>
@@ -55,6 +56,21 @@ namespace MyMorningNews.Core.Services
             NotificationKindEnum.RunFailed,
             NotificationKindEnum.CapReached,
             NotificationKindEnum.PredictionDue
+        };
+
+        /// <summary>
+        /// The kinds turned on for push when an account registers its first device without having made any push choice:
+        /// new findings and ready briefings (a new edition), failures, plan limits, due predictions, and stale topic
+        /// prompts. Audio ready stays off because the briefing push already announces the edition.
+        /// </summary>
+        public static IReadOnlyList<NotificationKindEnum> DefaultPushKinds { get; } = new List<NotificationKindEnum>
+        {
+            NotificationKindEnum.RunResults,
+            NotificationKindEnum.BriefingReady,
+            NotificationKindEnum.RunFailed,
+            NotificationKindEnum.CapReached,
+            NotificationKindEnum.PredictionDue,
+            NotificationKindEnum.TopicStale
         };
 
         #endregion
@@ -91,7 +107,7 @@ namespace MyMorningNews.Core.Services
         public static bool Default(NotificationKindEnum kind, NotificationChannelEnum channel)
         {
             if (channel != NotificationChannelEnum.Email) return false;
-            return kind == NotificationKindEnum.RunResults || kind == NotificationKindEnum.BriefingReady || kind == NotificationKindEnum.RunFailed || kind == NotificationKindEnum.CapReached;
+            return kind == NotificationKindEnum.RunResults || kind == NotificationKindEnum.BriefingReady || kind == NotificationKindEnum.RunFailed || kind == NotificationKindEnum.CapReached || kind == NotificationKindEnum.TopicStale;
         }
 
         /// <summary>
@@ -108,6 +124,7 @@ namespace MyMorningNews.Core.Services
                 case EmailCategoryEnum.FailureEmails: return NotificationKindEnum.RunFailed;
                 case EmailCategoryEnum.AudioEmails: return NotificationKindEnum.AudioReady;
                 case EmailCategoryEnum.PredictionEmails: return NotificationKindEnum.PredictionDue;
+                case EmailCategoryEnum.TopicReviewEmails: return NotificationKindEnum.TopicStale;
                 default: return null;
             }
         }
@@ -126,6 +143,7 @@ namespace MyMorningNews.Core.Services
                 case NotificationKindEnum.RunFailed: return EmailCategoryEnum.FailureEmails;
                 case NotificationKindEnum.AudioReady: return EmailCategoryEnum.AudioEmails;
                 case NotificationKindEnum.PredictionDue: return EmailCategoryEnum.PredictionEmails;
+                case NotificationKindEnum.TopicStale: return EmailCategoryEnum.TopicReviewEmails;
                 default: return null;
             }
         }
@@ -216,8 +234,9 @@ namespace MyMorningNews.Core.Services
         }
 
         /// <summary>
-        /// Turn on the kinds older app builds delivered (<see cref="LegacyPushKinds"/>) for a user who has never made a
-        /// push choice. Does nothing when the user has any push preference row.
+        /// Turn on the default push kinds (<see cref="DefaultPushKinds"/>, a superset of what older app builds delivered,
+        /// <see cref="LegacyPushKinds"/>) for a user who has never made a push choice. Does nothing when the user has any
+        /// push preference row, so a choice the user made is never undone.
         /// </summary>
         /// <param name="tenantId">Tenant.</param>
         /// <param name="userId">User.</param>
@@ -231,7 +250,7 @@ namespace MyMorningNews.Core.Services
             long chosen = await _Database.NotificationPreferences.CountAsync(new NotificationPreferenceFilter { TenantId = tenantId, UserId = userId, Channel = NotificationChannelEnum.Push }, token).ConfigureAwait(false);
             if (chosen > 0) return 0;
             int created = 0;
-            foreach (NotificationKindEnum kind in LegacyPushKinds)
+            foreach (NotificationKindEnum kind in DefaultPushKinds)
             {
                 try
                 {

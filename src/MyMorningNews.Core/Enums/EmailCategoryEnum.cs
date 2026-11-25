@@ -33,6 +33,11 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// Prediction due notices.
         /// </summary>
-        PredictionEmails
+        PredictionEmails,
+
+        /// <summary>
+        /// Keep-or-delete prompts and notices for topics without new findings.
+        /// </summary>
+        TopicReviewEmails
     }
 }

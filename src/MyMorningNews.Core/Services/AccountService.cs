@@ -346,13 +346,42 @@ namespace MyMorningNews.Core.Services
                 new EmailLink("Confirm my email", _Settings.Rest.AppBaseUrl + "/verify?token=" + Uri.EscapeDataString(raw)), "verify:" + user.Id + ":" + Guid.NewGuid().ToString("N"), token).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Welcome a user an administrator created: what the product does, where to get the apps, and a link to choose
+        /// their own password (valid for <see cref="HostingSettings.VerificationHours"/> hours, once). Sent once per user.
+        /// </summary>
+        /// <param name="user">The new user.</param>
+        /// <param name="createdBy">Display name of the administrator, or null.</param>
+        /// <param name="sourceIp">Caller IP, recorded on the password token.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>True when an email was queued.</returns>
+        /// <exception cref="ArgumentNullException">user is null.</exception>
+        public async Task<bool> SendAdminWelcomeAsync(User user, string? createdBy, string? sourceIp, CancellationToken token = default)
+        {
+            ArgumentNullException.ThrowIfNull(user);
+            if (!user.Active || String.IsNullOrWhiteSpace(user.Email) || user.IsProtected) return false;
+            string raw = await IssueAsync(user, AccountTokenKindEnum.ResetPassword, TimeSpan.FromHours(_Settings.Hosting.VerificationHours), sourceIp, token).ConfigureAwait(false);
+            Tenant? tenant = await _Database.Tenants.ReadAsync(user.TenantId, token).ConfigureAwait(false);
+            string where = tenant == null || tenant.IsPersonal || tenant.Id == "default" ? String.Empty : " in " + tenant.Name;
+            EmailMessage? m = await _Email.SendAccountEmailAsync(user, EmailTemplateEnum.AdminWelcome, "Welcome to My Morning News",
+                new List<string>
+                {
+                    (String.IsNullOrWhiteSpace(createdBy) ? "An administrator" : createdBy!.Trim()) + " created a My Morning News account for you" + where + ". Your sign-in is " + user.Email + ".",
+                    "Describe a topic you want to stay on top of; the wizard turns it into research that runs on your schedule and brings ranked findings with their sources by email, on the web, as audio, and in the iOS and Android apps.",
+                    "Choose your own password with the button below. The link works once, for " + _Settings.Hosting.VerificationHours + " hours. After that, use \"Forgot password\" on the sign-in page."
+                },
+                new EmailLink("Choose my password", _Settings.Rest.AppBaseUrl + "/reset-password?token=" + Uri.EscapeDataString(raw)), "welcome:" + user.Id, token).ConfigureAwait(false);
+            return m != null && m.Status == EmailStatusEnum.Queued;
+        }
+
         private async Task SendWelcomeAsync(User user, CancellationToken token)
         {
             await _Email.SendAccountEmailAsync(user, EmailTemplateEnum.Welcome, "Welcome to My Morning News",
                 new List<string>
                 {
                     "Your account is ready. Start by describing a topic you want to stay on top of; the wizard turns it into research that runs on your schedule.",
-                    "Each run brings ranked findings with their sources, predictions, and suggestions, by email, on the web, as audio, and in the iOS and Android apps."
+                    "Each run brings ranked findings with their sources, predictions, and suggestions, by email, on the web, as audio, and in the iOS and Android apps.",
+                    "You choose which emails and phone notifications you get, one kind at a time, in Notifications on the web or in the app."
                 },
                 new EmailLink("Create my first topic", _Settings.Rest.AppBaseUrl + "/dashboard/topics/new"), "welcome:" + user.Id, token).ConfigureAwait(false);
         }

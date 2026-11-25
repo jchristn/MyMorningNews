@@ -21,6 +21,7 @@
     "Devices": "Push notification devices registered by the mobile app for the signed-in user.",
     "Notifications": "The signed-in user's notifications. Preferences are one matrix: each kind of notification (run results, briefing ready, audio ready, run failed, plan limit reached, prediction due) on each channel (email, push to a registered phone or tablet, and the in-app list). Without a saved choice, email is on for run results, ready briefings, failed runs, and plan limits, and everything else is off. The in-app list holds the notifications for kinds turned on for that channel; they are kept for 90 days. A topic's email-on-run switch and an edition's email and push switches still apply on top of these preferences.",
     "Topics": "The things a reader follows. A topic has a research brief, weighted dimensions, constraints (keywords, domains, feeds, tracked questions), and email recipients.",
+    "Topic reviews": "Keep-or-delete prompts for the caller's recurring topics that found nothing new for a week. Without Keep by the deadline (14 days by default) the topic is deleted.",
     "Refinement": "The topic wizard. A session proposes dimensions, asks clarifying questions, drafts the brief and constraints, suggests sources, and then applies the topic. Generating steps call the configured model.",
     "Requests": "One-time research requests: a report, podcast, or email summary produced once, now or at a set time. A request can later become a recurring topic.",
     "Schedules": "When topics, editions, and requests run. Interval, days-of-week, days-of-month, one-time, and cron schedules, each in a time zone. Preview validates a schedule and lists its next runs.",
@@ -3909,6 +3910,81 @@
         "503": "SupportUnavailable or SupportDeliveryFailed"
       },
       "notes": "Requires a signed-in user with access to the failed briefing. Sends the displayed error, title, identifiers, timestamps, and reporter email to the server-configured support recipient. No request body. Repeated requests by the same user return the same report ID. Queued means accepted for asynchronous delivery, not delivery confirmation."
+    },
+    "GET /v1.0/api/topic-reviews": {
+      "response": "EnumerationResult<TopicReviewResponse>",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "403": "Forbidden"
+      },
+      "notes": "Pending reviews only, earliest deletion date first."
+    },
+    "POST /v1.0/api/topic-reviews/enumerate": {
+      "response": "EnumerationResult<TopicReviewResponse>",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "403": "Forbidden"
+      },
+      "notes": "Pending reviews only, earliest deletion date first."
+    },
+    "GET /v1.0/api/topic-reviews/{id}": {
+      "response": "TopicReviewResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/topic-reviews/{id}/keep": {
+      "response": "TopicReviewResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "The topic was already deleted"
+      }
+    },
+    "POST /v1.0/api/topic-reviews/{id}/delete": {
+      "response": "none",
+      "status": {
+        "204": "No Content; the topic is deleted",
+        "400": "BadRequest",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Already kept, or closed by new findings"
+      }
+    },
+    "GET /v1.0/api/admin/reports/daily": {
+      "response": "PlatformDailyStats",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest",
+        "403": "Forbidden"
+      },
+      "notes": "Global administrators only."
+    },
+    "POST /v1.0/api/admin/reports/daily/send": {
+      "response": "object (queued, day)",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden"
+      },
+      "notes": "Global administrators only. Idempotent per day and address."
+    },
+    "POST /v1.0/api/admin/catalog/from-topic/{topicId}": {
+      "response": "CatalogPublication",
+      "status": {
+        "201": "Created",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound"
+      },
+      "notes": "Global administrators only. The caller's own recurring topic is copied; it is not changed."
     }
   },
   "routeBodies": {
@@ -5111,6 +5187,12 @@
     },
     "AppleNotificationRequest": {
       "signedPayload": "{{appleSignedPayload}}"
+    },
+    "AdminReportSendRequest": {
+      "dayUtc": null,
+      "recipients": [
+        "hello@latticetech.ai"
+      ]
     }
   },
   "examples": {

@@ -202,6 +202,9 @@ namespace MyMorningNews.Server
             tenantDefaults.UsePlatformCredentials = () => _Context.SettingsService.Current.Hosting.UsePlatformCredentials;
             _Context.Accounts = new AccountDataService(_Database, briefings, _Artifacts, _Context.Billing);
             _Context.PredictionNotices = new PredictionNoticeService(_Database, notifications, _Logging);
+            _Context.TopicLifecycle = new TopicLifecycleService(_Database, notifications, briefings, settings, _Logging);
+            _Context.AdminReports = new MyMorningNews.Core.Analytics.AdminReportService(_Database, email, settings, _Logging);
+            _Context.Activity = new ActivityTracker(_Database, _Logging);
             _Context.RunCosts = new RunCostService(_Database);
             _Context.Setup = new SetupService(_Database, _Models!, _Search!, _Context.Vault, () => _Context.SettingsService.Current, _Logging) { Audio = _Audio };
             _Context.Account = new AccountService(_Database, settings, email, tenantDefaults, _Context.PromoCodes, _Context.Accounts);
@@ -308,6 +311,10 @@ namespace MyMorningNews.Server
                 _Workers.Add(Task.Run(() => emailWorker.RunAsync(Lifetime.Token)));
                 LearningWorker learningWorker = new LearningWorker(_Context);
                 _Workers.Add(Task.Run(() => learningWorker.RunAsync(Lifetime.Token)));
+                TopicLifecycleWorker topicLifecycle = new TopicLifecycleWorker(_Context);
+                _Workers.Add(Task.Run(() => topicLifecycle.RunAsync(Lifetime.Token)));
+                AdminReportWorker adminReports = new AdminReportWorker(_Context);
+                _Workers.Add(Task.Run(() => adminReports.RunAsync(Lifetime.Token)));
                 if (settings.Scheduler.Enabled)
                 {
                     SchedulerWorker scheduler = new SchedulerWorker(_Context);
@@ -402,6 +409,8 @@ namespace MyMorningNews.Server
                 new NotificationRoutes(context),
                 new ClientConfigRoutes(context),
                 new TopicRoutes(context),
+                new TopicReviewRoutes(context),
+                new AdminReportRoutes(context),
                 new CatalogRoutes(context),
                 new BillingRoutes(context),
                 new PersonalProviderRoutes(context),

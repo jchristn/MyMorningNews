@@ -166,7 +166,9 @@ export function playerRoute(briefingId, mediaAssetId) {
 /**
  * The route for a tapped push notification. The payload carries `kind` and IDs, never content:
  * `{ kind, briefingId | mediaAssetId | runId | topicId | predictionId }`. `audio.ready` opens the player on that
- * briefing's audio and `run.results` opens the run; every other kind goes to the item it names.
+ * briefing's audio and `run.results` opens the run; every other kind goes to the item it names. `topic.stale`
+ * (`{ reviewId, notice: Prompt | Reminder | Deleted, topicId? }`) opens the topic, where its keep-or-delete review
+ * shows, or the topics list once the topic was deleted (no topicId).
  */
 export function routeForNotification(data) {
   const d = data && typeof data === 'object' ? data : {};
@@ -175,19 +177,20 @@ export function routeForNotification(data) {
   if (str(d.catalogPublicationId) && str(d.briefingId)) return '/today/catalog/' + enc(d.catalogPublicationId) + '/' + enc(d.briefingId);
   if (kind === 'audio.ready' && str(d.briefingId) && str(d.mediaAssetId)) return playerRoute(d.briefingId, d.mediaAssetId);
   if (kind === 'run.results' && str(d.runId)) return '/topics/runs/' + enc(d.runId);
+  if (kind === 'topic.stale') return str(d.topicId) && d.notice !== 'Deleted' ? '/topics/' + enc(d.topicId) : '/topics';
   if (str(d.briefingId)) return '/today/briefings/' + enc(d.briefingId);
   if (str(d.predictionId)) return '/today/predictions/' + enc(d.predictionId);
   if (str(d.topicId)) return '/topics/' + enc(d.topicId);
   if (kind.startsWith('account') || kind === 'cap.reached' || kind === 'test') return '/account';
   if (kind.startsWith('prediction')) return '/today/predictions';
   if (kind.startsWith('briefing') || kind.startsWith('audio')) return '/today';
-  if (kind.startsWith('run')) return '/topics';
+  if (kind.startsWith('run') || kind.startsWith('topic')) return '/topics';
   if (str(d.url)) return mapDeepLink(d.url);
   return null;
 }
 
 /** Push payload kinds for the in-app notification kinds (NotificationKindEnum). */
-const PUSH_KINDS = { RunResults: 'run.results', BriefingReady: 'briefing.ready', AudioReady: 'audio.ready', RunFailed: 'run.failed', CapReached: 'cap.reached', PredictionDue: 'prediction.due' };
+const PUSH_KINDS = { RunResults: 'run.results', BriefingReady: 'briefing.ready', AudioReady: 'audio.ready', RunFailed: 'run.failed', CapReached: 'cap.reached', PredictionDue: 'prediction.due', TopicStale: 'topic.stale' };
 
 /** The route for an in-app notification (`{ kind, topicId?, runId?, briefingId?, mediaAssetId?, predictionId? }`): where its push opens, except that a failed run opens the run itself and a plan limit opens Your usage. */
 export function routeForInApp(notification) {

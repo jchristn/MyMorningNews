@@ -31,6 +31,20 @@ export const topicsApi = {
 };
 
 /**
+ * Keep-or-delete reviews. A recurring topic whose runs found nothing new for 7 days gets a review; unless the owner
+ * keeps it by `deleteAfterUtc` (14 days later), the server deletes the topic. `list()` is a page of `{ id, topicId,
+ * topicName, status, lastNewFindingUtc?, staleDays, promptedUtc, deleteAfterUtc, resolvedUtc? }` (the caller's
+ * pending reviews). `keep(id)` returns the review with status Kept (409 when the topic was already deleted);
+ * `remove(id)` deletes the topic with its briefings and findings (204; 409 when it was already kept).
+ */
+export const topicReviewsApi = {
+  list: (client, query) => client.get(routes.topicReviews, query),
+  get: (client, id) => client.get(routes.topicReview(id)),
+  keep: (client, id) => client.post(routes.topicReviewKeep(id), {}),
+  remove: (client, id) => client.post(routes.topicReviewDelete(id), {}),
+};
+
+/**
  * The refinement wizard (Phase 4, plan section 13). Every call returns the session state
  * `{ session, topic, dimensions, constraints, questions, messages }`. The generation steps (dimensions, questions,
  * context) call a model and answer 502 ModelError when none is configured.

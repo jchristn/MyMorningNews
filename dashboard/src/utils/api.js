@@ -214,6 +214,29 @@ export class ApiClient {
   updateCatalog(id, body) {
     return this._request('PUT', '/v1.0/api/admin/catalog/' + enc(id), { body });
   }
+  // Copy one of my topics into the catalog as a system-wide briefing (global administrators).
+  promoteTopicToCatalog(topicId, body) {
+    return this._request('POST', '/v1.0/api/admin/catalog/from-topic/' + enc(topicId), { body });
+  }
+
+  // Keep-or-delete prompts for my topics that stopped finding anything new.
+  listTopicReviews(query) {
+    return this._request('GET', '/v1.0/api/topic-reviews', { query });
+  }
+  keepTopicReview(id) {
+    return this._request('POST', '/v1.0/api/topic-reviews/' + enc(id) + '/keep');
+  }
+  deleteTopicReview(id) {
+    return this._request('POST', '/v1.0/api/topic-reviews/' + enc(id) + '/delete');
+  }
+
+  // Platform statistics and the daily administrator summary email (global administrators).
+  getAdminDailyReport(day) {
+    return this._request('GET', '/v1.0/api/admin/reports/daily', { query: day ? { day } : undefined });
+  }
+  sendAdminDailyReport(body) {
+    return this._request('POST', '/v1.0/api/admin/reports/daily/send', { body });
+  }
   getCatalogResearch(id) {
     return this._request('GET', '/v1.0/api/admin/catalog/' + enc(id) + '/research');
   }

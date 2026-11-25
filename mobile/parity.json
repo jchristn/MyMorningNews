@@ -64,9 +64,15 @@
       "api": [
         "GET /v1.0/api/analytics/overview",
         "GET /v1.0/api/editions",
-        "GET /v1.0/api/briefings"
+        "GET /v1.0/api/briefings",
+        "GET /v1.0/api/topic-reviews",
+        "POST /v1.0/api/topic-reviews/{id}/keep",
+        "POST /v1.0/api/topic-reviews/{id}/delete",
+        "GET /v1.0/api/notifications/preferences",
+        "PUT /v1.0/api/notifications/preferences",
+        "POST /v1.0/api/devices"
       ],
-      "notes": "Today merges the dashboard Home and Today pages. At a glance shows the overview tiles for the last 30 days (runs with completed and failed, findings shown and rated, relevance precision, prediction accuracy with resolved and open, and feedback with how much carried a reason) and links to Insights; it stays out of the way on a server without the overview. Recent topic run briefings stand in for the runs panel."
+      "notes": "Today merges the dashboard Home and Today pages. At a glance shows the overview tiles for the last 30 days (runs with completed and failed, findings shown and rated, relevance precision, prediction accuracy with resolved and open, and feedback with how much carried a reason) and links to Insights; it stays out of the way on a server without the overview. Recent topic run briefings stand in for the runs panel. Keep-or-delete prompts for topics that found nothing new for a week sit at the top (Keep, Delete with a confirmation, Open topic), followed by a dismissible card that offers notifications for new briefings: Turn on asks for permission, registers this device, and turns on briefing pushes for an account whose Phone choices are all off; Not now is remembered on the device."
     },
     {
       "route": "/today",
@@ -115,9 +121,12 @@
       "status": "implemented",
       "screen": "app/(app)/(tabs)/topics/index.jsx",
       "api": [
-        "GET /v1.0/api/topics"
+        "GET /v1.0/api/topics",
+        "GET /v1.0/api/topic-reviews",
+        "POST /v1.0/api/topic-reviews/{id}/keep",
+        "POST /v1.0/api/topic-reviews/{id}/delete"
       ],
-      "notes": "Recurring topics with status and last run; tablets show the workspace beside the list. Duplicate, delete, and bulk actions stay on the web."
+      "notes": "Recurring topics with status and last run; tablets show the workspace beside the list. Duplicate, delete, and bulk actions stay on the web. Keep-or-delete prompts for stale topics sit above the list, which reloads after a Keep or Delete."
     },
     {
       "route": "/topics/new",
@@ -164,9 +173,12 @@
         "POST /v1.0/api/schedules",
         "PUT /v1.0/api/schedules/{id}",
         "DELETE /v1.0/api/schedules/{id}",
-        "POST /v1.0/api/schedules/preview"
+        "POST /v1.0/api/schedules/preview",
+        "GET /v1.0/api/topic-reviews",
+        "POST /v1.0/api/topic-reviews/{id}/keep",
+        "POST /v1.0/api/topic-reviews/{id}/delete"
       ],
-      "notes": "Workspace tabs on mobile: Overview (Run now, dry run, pause or resume, refine, brief, dimensions, constraints), Findings, Runs, Sources, and Schedule (every interval type: weekly, every N days, weeks, hours, or minutes, days of the month, once, cron, manual, with an optional start and end, the missed-run policy, a next-run preview, and the switch that makes audio automatically for every run briefing). Feedback, preferences, analytics, and per-topic prompts and models join with Phase 10 or stay on the web."
+      "notes": "Workspace tabs on mobile: Overview (Run now, dry run, pause or resume, refine, brief, dimensions, constraints), Findings, Runs, Sources, and Schedule (every interval type: weekly, every N days, weeks, hours, or minutes, days of the month, once, cron, manual, with an optional start and end, the missed-run policy, a next-run preview, and the switch that makes audio automatically for every run briefing). Feedback, preferences, analytics, and per-topic prompts and models join with Phase 10 or stay on the web. Overview shows the topic’s own keep-or-delete prompt; after a Delete the workspace says the topic is gone."
     },
     {
       "route": "/runs",

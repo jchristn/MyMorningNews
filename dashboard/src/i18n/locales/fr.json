@@ -2212,6 +2212,24 @@
       },
       "change": "Modifier les attributions sur la page Modèles d’IA",
       "view": "Voir les attributions sur la page Modèles d’IA"
+    },
+    "promote": {
+      "open": "Rendre accessible à tous",
+      "title": "En faire une synthèse système",
+      "help": "Copie la configuration de recherche de ce sujet (périmètre, dimensions, contraintes, classement et planification) dans le catalogue partagé, auquel chaque utilisateur peut s’abonner. Votre sujet ne change pas. Les réglages privés comme les outils MCP, la voix et les destinataires ne sont pas copiés.",
+      "confirm": "Créer la synthèse système",
+      "titleRequired": "Donnez un titre à la synthèse.",
+      "done": "« {title} » est maintenant une synthèse système.",
+      "created": "« {title} » a été ajouté au catalogue. Ouvrez-le pour vérifier la planification et le lancer.",
+      "openCatalog": "Ouvrir dans le catalogue",
+      "fields": {
+        "title": "Titre",
+        "description": "Description",
+        "category": "Catégorie",
+        "language": "Langue",
+        "freeEligible": "Disponible avec l’offre gratuite",
+        "publish": "Publier maintenant (sinon enregistré comme brouillon)"
+      }
     }
   },
   "wizard": {
@@ -3564,10 +3582,18 @@
   "plans": {
     "default": "Par défaut",
     "noFeatures": "Aucune valeur de droit.",
+    "notSet": "Non défini",
     "validation": {
       "key": "Utilisez de 2 à 63 lettres minuscules, chiffres et tirets.",
       "name": "Saisissez un nom.",
-      "duplicate": "La clé {key} apparaît deux fois."
+      "duplicate": "La clé {key} apparaît deux fois.",
+      "required": "Saisissez une valeur.",
+      "boolean": "Choisissez Oui ou Non.",
+      "count": "Saisissez un nombre entier supérieur ou égal à 0, ou choisissez l’option sans limite.",
+      "amount": "Saisissez un montant supérieur ou égal à 0, ou choisissez l’option sans limite.",
+      "reason": "Saisissez un motif.",
+      "future": "Choisissez une date future ou laissez vide.",
+      "days": "Saisissez de 1 à {max, number} jours."
     },
     "create": {
       "title": "Nouveau forfait",
@@ -3583,13 +3609,36 @@
       "keyLocked": "La clé d’un forfait ne peut pas changer.",
       "name": "Nom",
       "description": "Description",
-      "features": "Valeurs de droits",
-      "featuresHelp": "Le code vérifie ces clés, pas les noms des forfaits. Utilisez des nombres, true ou false, ou unlimited. Une valeur vide supprime la clé.",
+      "features": "Valeurs du forfait",
+      "featuresHelp": "Tous les utilisateurs de ce forfait reçoivent ces valeurs. Une valeur non définie utilise la valeur par défaut intégrée.",
+      "aliasOf": "Ancien nom de {key}",
+      "customTitle": "Avancé : clés personnalisées ({count, number})",
+      "customHelp": "Clés absentes de la liste ci-dessus. Le serveur n’accepte que les clés qu’il reconnaît. Effacez une valeur pour supprimer sa clé.",
       "featureKey": "Clé de droit",
       "featureValue": "Valeur pour {key}",
-      "emptyRemoves": "Vide pour supprimer",
-      "clearValue": "Effacer {key}",
-      "addFeature": "Ajouter une valeur"
+      "removeKey": "Supprimer {key}",
+      "addFeature": "Ajouter une clé"
+    },
+    "groups": {
+      "access": "Accès",
+      "topics": "Sujets et abonnements",
+      "research": "Recherche et planifications",
+      "audio": "Audio",
+      "catalog": "Catalogue",
+      "usage": "Utilisation et stockage",
+      "custom": "Autres valeurs"
+    },
+    "input": {
+      "unlimited": "Sans limite",
+      "unlimitedFor": "Sans limite pour {name}",
+      "noMinimum": "Sans minimum",
+      "noMinimumFor": "Sans minimum pour {name}",
+      "minutesHint": "En minutes : {minutes, number}",
+      "units": {
+        "seconds": "secondes",
+        "minutes": "minutes",
+        "usd": "USD"
+      }
     },
     "featureNames": {
       "usage_monthlyCostUsd_max": "Plafond de coût mensuel (USD)",
@@ -3612,26 +3661,24 @@
       "models_personalConnections_enabled": "Connexions personnelles"
     },
     "assignments": {
-      "title": "Forfaits d’un utilisateur",
-      "help": "Choisissez un utilisateur pour voir toutes ses périodes de forfait, y compris celles qui commencent plus tard, et en révoquer une.",
-      "plan": "Forfait",
-      "source": "Origine",
-      "starts": "Début",
-      "ends": "Fin",
-      "state": "État",
-      "note": "Note",
+      "title": "Gérer le forfait d’un utilisateur",
+      "help": "Choisissez un utilisateur pour changer son forfait, ajuster ses limites ou consulter l’historique de ses forfaits.",
+      "history": "Historique des forfaits",
+      "period": "Du {starts} au {ends}",
+      "periodOpen": "Depuis le {starts}, sans date de fin",
       "revoke": "Révoquer",
+      "revokeFor": "Révoquer {plan}",
       "revokeTitle": "Révoquer le forfait",
       "revokeMessage": "Révoquer {plan} pour cet utilisateur ? Il prend fin immédiatement.",
       "revoked": "Forfait révoqué",
-      "empty": "Aucune attribution de forfait",
-      "emptyMessage": "Cet utilisateur bénéficie du forfait par défaut."
+      "emptyMessage": "Aucune période de forfait pour l’instant. Cet utilisateur a toujours eu le forfait par défaut."
     },
     "sources": {
       "Default": "Par défaut",
       "Admin": "Administrateur",
       "Promo": "Code promotionnel",
-      "Billing": "Facturation"
+      "Billing": "Facturation",
+      "billingProvider": "Facturation ({provider})"
     },
     "states": {
       "current": "En cours",
@@ -3639,32 +3686,56 @@
       "ended": "Terminé",
       "revoked": "Révoqué"
     },
-    "grant": {
-      "open": "Attribuer un forfait",
-      "title": "Attribuer un forfait",
-      "titleFor": "Attribuer un forfait à {email}",
-      "confirm": "Attribuer",
-      "note": "Note",
-      "noteHelp": "Pourquoi cet utilisateur reçoit le forfait. Affiché dans le journal d’audit.",
-      "done": "Forfait attribué à {email}"
-    },
     "userPanel": {
       "action": "Forfait",
-      "title": "Forfait de {email}"
+      "title": "Forfait de {email}",
+      "subtitle": "Changez le forfait, ajustez les limites de cet utilisateur et consultez les forfaits passés.",
+      "current": "Forfait actuel",
+      "sourceTitle": "Défini par : {source}",
+      "ends": "Se termine",
+      "noEnd": "Sans date de fin",
+      "overrides": "Limites remplacées",
+      "next": "Ensuite",
+      "nextValue": "{plan} à partir du {date}"
+    },
+    "change": {
+      "title": "Changer de forfait",
+      "help": "Le nouveau forfait commence maintenant et remplace tout forfait défini auparavant par un administrateur. Les forfaits promotionnels et payants restent enregistrés.",
+      "plan": "Forfait",
+      "currentOption": "{name} (actuel)",
+      "duration": "Durée",
+      "custom": "Personnalisée",
+      "customDays": "Nombre de jours",
+      "note": "Note (facultative)",
+      "save": "Attribuer le forfait",
+      "done": "{plan} attribué à {email}",
+      "revert": "Revenir au forfait par défaut",
+      "revertTitle": "Revenir au forfait par défaut",
+      "revertMessage": "Retirer le forfait qu’un administrateur a défini pour {email} ? L’utilisateur passe à son forfait payant s’il en a un, sinon à son forfait promotionnel ou par défaut.",
+      "revertConfirm": "Revenir au forfait par défaut",
+      "reverted": "Forfait administrateur retiré",
+      "noteHelp": "Pourquoi cet utilisateur reçoit le forfait. Affiché dans le journal d’audit."
     },
     "overrides": {
-      "title": "Limites du compte",
-      "help": "Les dérogations concernent uniquement ce compte. Rétablissez l’héritage pour suivre le forfait attribué.",
-      "inherited": "Valeur du forfait",
-      "effective": "Valeur effective",
-      "source": "Origine",
-      "user": "Dérogation du compte",
-      "plan": "Forfait",
-      "restore": "Rétablir l’héritage",
-      "value": "Valeur dérogatoire",
-      "valueHelp": "Zéro désactive une quantité ; unlimited supprime sa limite. L’audio quotidien est en secondes.",
-      "reason": "Motif du changement",
-      "expires": "Expiration (heure locale, facultatif)"
+      "title": "Limites de cet utilisateur",
+      "help": "Remplacez une valeur pour cet utilisateur uniquement. Réinitialisez-la pour suivre à nouveau le forfait.",
+      "limit": "Limite",
+      "planValue": "Valeur du forfait",
+      "effective": "Cet utilisateur",
+      "overridden": "Remplacée",
+      "editFor": "Modifier {name}",
+      "editorTitle": "Remplacer {name}",
+      "value": "Valeur pour cet utilisateur",
+      "planValueHelp": "Valeur du forfait :",
+      "reason": "Motif",
+      "reasonHelp": "Obligatoire. Affiché dans le journal d’audit.",
+      "expires": "Expire (facultatif)",
+      "expiresHelp": "Votre heure locale. Laissez vide pour la conserver jusqu’à sa réinitialisation.",
+      "save": "Enregistrer le remplacement",
+      "saved": "{name} remplacé pour cet utilisateur",
+      "reset": "Réinitialiser au forfait",
+      "resetFor": "Réinitialiser {name} à la valeur du forfait",
+      "resetDone": "{name} suit à nouveau le forfait"
     }
   },
   "account": {
@@ -3803,7 +3874,8 @@
       "AudioReady": "Audio prêt",
       "RunFailed": "Échec d’une exécution",
       "CapReached": "Limite de l’offre atteinte",
-      "PredictionDue": "Prédiction arrivée à échéance"
+      "PredictionDue": "Prédiction arrivée à échéance",
+      "TopicStale": "Sujets sans nouveaux résultats"
     },
     "descriptions": {
       "RunResults": "Une exécution de recherche a trouvé du nouveau pour l’un de vos sujets.",
@@ -3811,7 +3883,8 @@
       "AudioReady": "Un briefing a été converti en audio que vous pouvez écouter.",
       "RunFailed": "Une exécution de recherche n’a pas pu se terminer.",
       "CapReached": "Une exécution planifiée a été ignorée, car votre offre a atteint une limite.",
-      "PredictionDue": "Une prédiction est arrivée à sa date et peut être vérifiée."
+      "PredictionDue": "Une prédiction est arrivée à sa date et peut être vérifiée.",
+      "TopicStale": "Un sujet n’a rien trouvé de nouveau depuis une semaine. Conservez-le, sinon il sera supprimé au bout de 14 jours."
     },
     "channels": {
       "Email": "E-mail",
@@ -4852,5 +4925,22 @@
     "test": "Tester la connexion enregistrée",
     "remove": "Supprimer la connexion",
     "removeHelp": "Supprimer une clé arrête les appels qui en dépendent. Aucune clé de la plateforme ne la remplace."
+  },
+  "topicReviews": {
+    "region": "Sujets sans nouveaux résultats",
+    "untitled": "Ce sujet",
+    "title": "Conserver « {name} » ?",
+    "since": "Rien de nouveau depuis le {date}.",
+    "noneIn": "Rien de nouveau au cours des {days} derniers jours.",
+    "deadline": "Il sera supprimé le {date} si vous ne le conservez pas.",
+    "keep": "Conserver",
+    "delete": "Supprimer",
+    "refine": "Affiner",
+    "open": "Ouvrir le sujet",
+    "kept": "« {name} » est conservé. Nous ne redemanderons pas avant une semaine.",
+    "deleted": "« {name} » a été supprimé.",
+    "failed": "Cela n’a pas fonctionné. Réessayez.",
+    "deleteTitle": "Supprimer ce sujet ?",
+    "deleteMessage": "Supprimer « {name} » avec ses synthèses, résultats et fichiers audio ? Cette action est irréversible."
   }
 }

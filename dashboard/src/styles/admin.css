@@ -48,8 +48,444 @@
   gap: 16px;
 }
 
-.plan-card h3 {
+.plan-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.plan-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.plan-card-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  min-width: 0;
+}
+
+.plan-card-title h2 {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.plan-card-meta,
+.plan-card-description {
+  margin: 0;
+}
+
+/* Plan values on a card, grouped: a caption per group and name / value pairs on one line each. */
+.plan-feature-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.plan-feature-group-title {
+  margin: 0 0 4px;
+  font-size: var(--font-size-xs);
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+}
+
+.plan-feature-pairs {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.plan-feature-pair {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+  font-size: var(--font-size-sm);
+}
+
+.plan-feature-pair + .plan-feature-pair {
+  border-top: 1px dashed var(--color-border);
+}
+
+.plan-feature-pair dt {
+  color: var(--color-text-secondary);
+  min-width: 0;
+}
+
+.plan-feature-pair dd {
+  margin: 0;
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.feature-value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.feature-unit {
+  font-size: var(--font-size-xs);
+}
+
+/* Segmented choice built on native radios (Yes / No, durations): keyboard arrows move between options. */
+.choice-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-self: flex-start;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+}
+
+.choice-group label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 2px 12px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.choice-group label.active {
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.choice-group input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.choice-group input:disabled {
+  cursor: not-allowed;
+}
+
+.choice-group label:has(input:focus-visible) {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.feature-number {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.feature-number-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+}
+
+.feature-number-row input[type='number'] {
+  width: 140px;
+  flex: 0 1 140px;
+}
+
+.feature-unlimited {
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+}
+
+/* A user's plan: summary card, plan change, limits, and history. */
+.user-plan {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+.plans-user-manager {
   margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+
+.plan-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 14px 24px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-alt);
+}
+
+.plan-summary-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 220px;
+}
+
+.plan-summary-caption,
+.plan-summary-facts dt {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.plan-summary-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+}
+
+.plan-summary-title h3 {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  overflow-wrap: anywhere;
+}
+
+.plan-summary-head p {
+  margin: 0;
+}
+
+.plan-summary-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  margin: 0;
+}
+
+.plan-summary-facts > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.plan-summary-facts dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.plan-section > p {
+  margin: 0 0 10px;
+}
+
+.plan-section .section-title {
+  margin-bottom: 4px;
+}
+
+.plan-section-actions {
+  flex-wrap: wrap;
+}
+
+.limits-table {
+  font-size: var(--font-size-sm);
+}
+
+.limits-table th,
+.limits-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--color-border);
+  text-align: start;
+  vertical-align: middle;
+}
+
+.limits-table thead th {
+  font-size: var(--font-size-xs);
+  font-weight: 650;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.limits-group-row th {
+  padding-top: 14px;
+  font-size: var(--font-size-xs);
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  background: transparent;
+}
+
+.limits-row th {
+  font-weight: 500;
+}
+
+.limits-row th .badge {
+  margin-inline-start: 8px;
+}
+
+.limits-row.overridden {
+  background: var(--color-accent-soft);
+}
+
+.limits-row.overridden .limits-effective {
+  font-weight: 650;
+}
+
+.limits-actions .row-actions {
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+}
+
+.limits-editor-row > td {
+  background: var(--color-surface-alt);
+}
+
+.override-editor {
+  padding: 4px 2px;
+}
+
+.override-editor .form-actions {
+  margin-top: 10px;
+}
+
+.plan-history {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 0 14px;
+}
+
+.plan-history summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.plan-history[open] summary {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.plan-history > p {
+  margin: 10px 0;
+}
+
+.plan-history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.plan-history-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 12px;
+  padding: 10px 0;
+}
+
+.plan-history-item + .plan-history-item {
+  border-top: 1px solid var(--color-border);
+}
+
+.plan-history-item > :not(.plan-history-revoke) {
+  grid-column: 1;
+}
+
+.plan-history-revoke {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  align-self: center;
+}
+
+.plan-history-main {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+
+.plan-history-item.state-revoked strong,
+.plan-history-item.state-ended strong {
+  color: var(--color-text-secondary);
+}
+
+.plan-history-note {
+  color: var(--color-text-secondary);
+}
+
+/* Plan editor: typed rows grouped in fieldsets, and free-text keys under Advanced. */
+.plan-form-heading {
+  margin: 18px 0 2px;
+}
+
+.plan-feature-fieldset {
+  padding: 4px 14px 6px;
+}
+
+.plan-feature-fieldset legend {
+  font-size: var(--font-size-sm);
+}
+
+.feature-edit-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 6px 16px;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.feature-edit-row + .feature-edit-row {
+  border-top: 1px solid var(--color-border);
+}
+
+.feature-edit-label {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.feature-edit-label .mono {
+  overflow-wrap: anywhere;
+}
+
+.feature-edit-control {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.plan-advanced {
+  margin-top: 14px;
+}
+
+.plan-advanced summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.plan-advanced[open] summary {
+  margin-bottom: 6px;
 }
 
 .plan-features .kv-row dt {
@@ -88,6 +524,52 @@
 @media (max-width: 640px) {
   .plan-feature-row {
     grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .feature-edit-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .limits-table thead {
+    display: none;
+  }
+
+  .limits-table,
+  .limits-table tbody,
+  .limits-table tr,
+  .limits-table th,
+  .limits-table td {
+    display: block;
+  }
+
+  .limits-table .limits-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    align-items: end;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .limits-table .limits-row > * {
+    border-bottom: 0;
+    padding: 3px 8px;
+  }
+
+  .limits-row > th {
+    grid-column: 1 / -1;
+  }
+
+  .limits-actions .row-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .limits-row > td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--color-text-muted);
   }
 
   .plan-feature-row input:first-child {

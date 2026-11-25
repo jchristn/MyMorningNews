@@ -17,7 +17,9 @@ import { useTheme } from '@/theme/ThemeContext';
 import { ItemCard } from '../common/DetailScreen';
 import { TodayOverview } from '../insights/InsightsScreens';
 import { ResourceListScreen } from '../common/ResourceListScreen';
+import { TopicReviewBanner } from '../topics/TopicReviews';
 import { BriefingDetail } from './BriefingDetail';
+import { PushPromptCard } from './PushPromptCard';
 
 const NEWEST = { pageNumber: 1, sortBy: 'createdUtc', sortDirection: 'Descending' };
 
@@ -96,8 +98,10 @@ export function ComposeStatus({ compose }) {
 }
 
 /**
- * Today (plan section 35.3, and the dashboard Home): the latest ready edition briefing with Compose now and status
- * polling, recent topic run briefings, the overview tiles for the last 30 days, a new one-time request, and shortcuts to briefings, findings, predictions, suggestions, and requests.
+ * Today (plan section 35.3, and the dashboard Home): keep-or-delete prompts for topics without new findings, the card
+ * that offers notifications for new briefings, the latest ready edition briefing with Compose now and status polling,
+ * recent topic run briefings, the overview tiles for the last 30 days, a new one-time request, and shortcuts to
+ * briefings, findings, predictions, suggestions, and requests.
  */
 export function TodayScreen() {
   const p = useTheme();
@@ -106,14 +110,21 @@ export function TodayScreen() {
   const userId = state.user ? state.user.id : null;
   const today = useResource(() => loadToday(client, userId), [client, userId]);
   const [editionId, setEditionId] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   const compose = useCompose(today.poll);
+  const refresh = () => {
+    setRefreshKey((k) => k + 1);
+    void today.reload();
+  };
   const data = today.data;
   const editions = data ? data.editions : [];
   const chosen = editions.find((e) => e.id === editionId) || (data && data.latest && editions.find((e) => e.id === data.latest.editionId)) || editions[0] || null;
 
   return (
-    <Screen testID="today-screen" refreshControl={<RefreshControl refreshing={today.refreshing} onRefresh={today.reload} tintColor={p.primary} />}>
+    <Screen testID="today-screen" refreshControl={<RefreshControl refreshing={today.refreshing} onRefresh={refresh} tintColor={p.primary} />}>
       <T variant="muted">{t('mobile.today.greeting', { name: displayName(state.user) })}</T>
+      <TopicReviewBanner heading showOpen refreshKey={refreshKey} />
+      <PushPromptCard />
       <CatalogIssues compact />
       <SectionHeader title={t('mobile.today.latest')} />
       <ResourceView resource={today} feature={t('mobile.features.briefings')}>

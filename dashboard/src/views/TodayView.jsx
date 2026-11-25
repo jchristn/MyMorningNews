@@ -6,6 +6,7 @@ import { BookOpen, FileCode, FileText, Newspaper, Play, Send, Square } from 'luc
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../context/AppContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
+import TopicReviewBanner from '../components/TopicReviewBanner.jsx';
 import useFormat from '../hooks/useFormat.js';
 import useInterval from '../hooks/useInterval.js';
 import useLocalStorage from '../hooks/useLocalStorage.js';
@@ -248,6 +249,7 @@ export default function TodayView() {
           </div>
         }
       />
+      <TopicReviewBanner />
 
       <CatalogIssues compact />
       <ErrorState error={error} inline onRetry={load} onDismiss={() => setError(null)} />

@@ -2212,6 +2212,24 @@
       },
       "change": "Zuweisungen auf der Seite Modelle ändern",
       "view": "Zuweisungen auf der Seite Modelle anzeigen"
+    },
+    "promote": {
+      "open": "Systemweit bereitstellen",
+      "title": "Als System-Briefing bereitstellen",
+      "help": "Kopiert die Rechercheeinstellungen dieses Themas (Umfang, Dimensionen, Einschränkungen, Ranking und Zeitplan) in den gemeinsamen Katalog, den alle Nutzer abonnieren können. Ihr Thema bleibt unverändert. Private Einstellungen wie MCP-Tools, Stimme und Empfänger werden nicht kopiert.",
+      "confirm": "System-Briefing erstellen",
+      "titleRequired": "Geben Sie dem Briefing einen Titel.",
+      "done": "\"{title}\" ist jetzt ein System-Briefing.",
+      "created": "\"{title}\" wurde dem Katalog hinzugefügt. Öffnen Sie es, um den Zeitplan zu prüfen und es auszuführen.",
+      "openCatalog": "Im Katalog öffnen",
+      "fields": {
+        "title": "Titel",
+        "description": "Beschreibung",
+        "category": "Kategorie",
+        "language": "Sprache",
+        "freeEligible": "Im kostenlosen Tarif verfügbar",
+        "publish": "Jetzt veröffentlichen (sonst als Entwurf gespeichert)"
+      }
     }
   },
   "wizard": {
@@ -3564,10 +3582,18 @@
   "plans": {
     "default": "Standard",
     "noFeatures": "Keine Berechtigungswerte.",
+    "notSet": "Nicht festgelegt",
     "validation": {
       "key": "Verwenden Sie 2 bis 63 Kleinbuchstaben, Ziffern und Bindestriche.",
       "name": "Geben Sie einen Namen ein.",
-      "duplicate": "Der Schlüssel {key} ist doppelt aufgeführt."
+      "duplicate": "Der Schlüssel {key} ist doppelt aufgeführt.",
+      "required": "Geben Sie einen Wert ein.",
+      "boolean": "Wählen Sie Ja oder Nein.",
+      "count": "Geben Sie eine ganze Zahl ab 0 ein oder wählen Sie die Option ohne Limit.",
+      "amount": "Geben Sie einen Betrag ab 0 ein oder wählen Sie die Option ohne Limit.",
+      "reason": "Geben Sie einen Grund ein.",
+      "future": "Wählen Sie einen Zeitpunkt in der Zukunft oder lassen Sie das Feld leer.",
+      "days": "Geben Sie 1 bis {max, number} Tage ein."
     },
     "create": {
       "title": "Neuer Tarif",
@@ -3583,13 +3609,36 @@
       "keyLocked": "Der Schlüssel eines Tarifs kann nicht geändert werden.",
       "name": "Name",
       "description": "Beschreibung",
-      "features": "Berechtigungswerte",
-      "featuresHelp": "Der Code prüft diese Schlüssel, nicht die Tarifnamen. Verwenden Sie Zahlen, true oder false, oder unlimited. Ein leerer Wert entfernt den Schlüssel.",
+      "features": "Tarifwerte",
+      "featuresHelp": "Alle Nutzer dieses Tarifs erhalten diese Werte. Ein nicht festgelegter Wert verwendet den integrierten Standard.",
+      "aliasOf": "Früherer Name für {key}",
+      "customTitle": "Erweitert: eigene Schlüssel ({count, number})",
+      "customHelp": "Schlüssel, die oben nicht aufgeführt sind. Der Server akzeptiert nur Schlüssel, die er kennt. Leeren Sie einen Wert, um seinen Schlüssel zu entfernen.",
       "featureKey": "Berechtigungsschlüssel",
       "featureValue": "Wert für {key}",
-      "emptyRemoves": "Leer entfernt ihn",
-      "clearValue": "{key} leeren",
-      "addFeature": "Wert hinzufügen"
+      "removeKey": "{key} entfernen",
+      "addFeature": "Schlüssel hinzufügen"
+    },
+    "groups": {
+      "access": "Zugang",
+      "topics": "Themen und Abonnements",
+      "research": "Recherche und Zeitpläne",
+      "audio": "Audio",
+      "catalog": "Katalog",
+      "usage": "Nutzung und Speicher",
+      "custom": "Weitere Werte"
+    },
+    "input": {
+      "unlimited": "Ohne Limit",
+      "unlimitedFor": "Ohne Limit für {name}",
+      "noMinimum": "Kein Minimum",
+      "noMinimumFor": "Kein Minimum für {name}",
+      "minutesHint": "In Minuten: {minutes, number}",
+      "units": {
+        "seconds": "Sekunden",
+        "minutes": "Minuten",
+        "usd": "USD"
+      }
     },
     "featureNames": {
       "usage_monthlyCostUsd_max": "Monatliche Kostengrenze (USD)",
@@ -3612,26 +3661,24 @@
       "models_personalConnections_enabled": "Eigene Anbieter-Verbindungen"
     },
     "assignments": {
-      "title": "Tarife eines Benutzers",
-      "help": "Wählen Sie einen Benutzer, um alle seine Tarifzeiträume zu sehen, auch später beginnende, und einen davon zu widerrufen.",
-      "plan": "Tarif",
-      "source": "Herkunft",
-      "starts": "Beginn",
-      "ends": "Ende",
-      "state": "Zustand",
-      "note": "Anmerkung",
+      "title": "Tarif eines Nutzers verwalten",
+      "help": "Wählen Sie einen Nutzer, um seinen Tarif zu ändern, seine Limits anzupassen oder seinen Tarifverlauf anzusehen.",
+      "history": "Tarifverlauf",
+      "period": "{starts} bis {ends}",
+      "periodOpen": "Ab {starts}, ohne Enddatum",
       "revoke": "Widerrufen",
+      "revokeFor": "{plan} widerrufen",
       "revokeTitle": "Tarif widerrufen",
       "revokeMessage": "{plan} für diesen Benutzer widerrufen? Der Tarif endet sofort.",
       "revoked": "Tarif widerrufen",
-      "empty": "Keine Tarifzuweisungen",
-      "emptyMessage": "Dieser Benutzer hat den Standardtarif."
+      "emptyMessage": "Noch keine Tarifzeiträume. Dieser Nutzer hatte immer den Standardtarif."
     },
     "sources": {
       "Default": "Standard",
       "Admin": "Administrator",
       "Promo": "Aktionscode",
-      "Billing": "Abrechnung"
+      "Billing": "Abrechnung",
+      "billingProvider": "Abrechnung ({provider})"
     },
     "states": {
       "current": "Aktuell",
@@ -3639,32 +3686,56 @@
       "ended": "Beendet",
       "revoked": "Widerrufen"
     },
-    "grant": {
-      "open": "Tarif vergeben",
-      "title": "Tarif vergeben",
-      "titleFor": "Tarif an {email} vergeben",
-      "confirm": "Vergeben",
-      "note": "Anmerkung",
-      "noteHelp": "Warum dieser Benutzer den Tarif erhält. Wird im Audit-Protokoll angezeigt.",
-      "done": "Tarif an {email} vergeben"
-    },
     "userPanel": {
       "action": "Tarif",
-      "title": "Tarif für {email}"
+      "title": "Tarif für {email}",
+      "subtitle": "Ändern Sie den Tarif, passen Sie Limits für diesen Nutzer an und sehen Sie frühere Tarife.",
+      "current": "Aktueller Tarif",
+      "sourceTitle": "Festgelegt durch: {source}",
+      "ends": "Endet",
+      "noEnd": "Kein Enddatum",
+      "overrides": "Überschriebene Limits",
+      "next": "Als Nächstes",
+      "nextValue": "{plan} ab {date}"
+    },
+    "change": {
+      "title": "Tarif ändern",
+      "help": "Der neue Tarif beginnt sofort und ersetzt jeden Tarif, den ein Administrator zuvor festgelegt hat. Aktions- und bezahlte Tarife bleiben erhalten.",
+      "plan": "Tarif",
+      "currentOption": "{name} (aktuell)",
+      "duration": "Dauer",
+      "custom": "Benutzerdefiniert",
+      "customDays": "Anzahl der Tage",
+      "note": "Notiz (optional)",
+      "save": "Tarif zuweisen",
+      "done": "{plan} wurde {email} zugewiesen",
+      "revert": "Zum Standardtarif zurückkehren",
+      "revertTitle": "Zum Standardtarif zurückkehren",
+      "revertMessage": "Den Tarif entfernen, den ein Administrator für {email} festgelegt hat? Der Nutzer wechselt zu seinem bezahlten Tarif, falls vorhanden, sonst zu seinem Aktions- oder Standardtarif.",
+      "revertConfirm": "Zum Standard zurückkehren",
+      "reverted": "Administratortarif entfernt",
+      "noteHelp": "Warum dieser Benutzer den Tarif erhält. Wird im Audit-Protokoll angezeigt."
     },
     "overrides": {
-      "title": "Nutzerlimits",
-      "help": "Ausnahmen gelten nur für diesen Nutzer. Vererbung wiederherstellen, um wieder dem zugewiesenen Tarif zu folgen.",
-      "inherited": "Tarifstandard",
-      "effective": "Wirksamer Wert",
-      "source": "Quelle",
-      "user": "Nutzerausnahme",
-      "plan": "Tarif",
-      "restore": "Vererbung wiederherstellen",
-      "value": "Ausnahmewert",
-      "valueHelp": "Null deaktiviert eine Menge; unlimited hebt die Grenze auf. Tägliches Audio wird in Sekunden angegeben.",
-      "reason": "Grund der Änderung",
-      "expires": "Ablauf (Ortszeit, optional)"
+      "title": "Limits für diesen Nutzer",
+      "help": "Überschreiben Sie einen Wert nur für diesen Nutzer. Setzen Sie ihn zurück, um wieder dem Tarif zu folgen.",
+      "limit": "Limit",
+      "planValue": "Tarifwert",
+      "effective": "Dieser Nutzer",
+      "overridden": "Überschrieben",
+      "editFor": "{name} bearbeiten",
+      "editorTitle": "{name} überschreiben",
+      "value": "Wert für diesen Nutzer",
+      "planValueHelp": "Tarifwert:",
+      "reason": "Grund",
+      "reasonHelp": "Erforderlich. Wird im Prüfprotokoll angezeigt.",
+      "expires": "Läuft ab (optional)",
+      "expiresHelp": "Ihre Ortszeit. Leer lassen, um den Wert bis zum Zurücksetzen zu behalten.",
+      "save": "Überschreibung speichern",
+      "saved": "{name} für diesen Nutzer überschrieben",
+      "reset": "Auf Tarif zurücksetzen",
+      "resetFor": "{name} auf den Tarifwert zurücksetzen",
+      "resetDone": "{name} folgt wieder dem Tarif"
     }
   },
   "account": {
@@ -3803,7 +3874,8 @@
       "AudioReady": "Audio bereit",
       "RunFailed": "Lauf fehlgeschlagen",
       "CapReached": "Tariflimit erreicht",
-      "PredictionDue": "Prognose fällig"
+      "PredictionDue": "Prognose fällig",
+      "TopicStale": "Themen ohne neue Ergebnisse"
     },
     "descriptions": {
       "RunResults": "Ein Recherchelauf hat zu einem Ihrer Themen etwas Neues gefunden.",
@@ -3811,7 +3883,8 @@
       "AudioReady": "Ein Briefing wurde in Audio umgewandelt und kann abgespielt werden.",
       "RunFailed": "Ein Recherchelauf konnte nicht abgeschlossen werden.",
       "CapReached": "Ein geplanter Lauf wurde übersprungen, weil Ihr Tarif ein Limit erreicht hat.",
-      "PredictionDue": "Eine Prognose hat ihr Datum erreicht und kann überprüft werden."
+      "PredictionDue": "Eine Prognose hat ihr Datum erreicht und kann überprüft werden.",
+      "TopicStale": "Ein Thema hat eine Woche lang nichts Neues gefunden. Behalten Sie es, sonst wird es nach 14 Tagen gelöscht."
     },
     "channels": {
       "Email": "E-Mail",
@@ -4852,5 +4925,22 @@
     "test": "Gespeicherte Verbindung testen",
     "remove": "Verbindung entfernen",
     "removeHelp": "Das Entfernen eines Schlüssels stoppt zugehörige Aufrufe. Es wird nie auf einen Plattformschlüssel zurückgegriffen."
+  },
+  "topicReviews": {
+    "region": "Themen ohne neue Ergebnisse",
+    "untitled": "Dieses Thema",
+    "title": "\"{name}\" behalten?",
+    "since": "Nichts Neues seit {date}.",
+    "noneIn": "Nichts Neues in den letzten {days} Tagen.",
+    "deadline": "Es wird am {date} gelöscht, wenn Sie es nicht behalten.",
+    "keep": "Behalten",
+    "delete": "Löschen",
+    "refine": "Verfeinern",
+    "open": "Thema öffnen",
+    "kept": "\"{name}\" behalten. Wir fragen eine Woche lang nicht erneut.",
+    "deleted": "\"{name}\" gelöscht.",
+    "failed": "Das hat nicht funktioniert. Bitte erneut versuchen.",
+    "deleteTitle": "Dieses Thema löschen?",
+    "deleteMessage": "\"{name}\" mit seinen Briefings, Ergebnissen und Audiodateien löschen? Das kann nicht rückgängig gemacht werden."
   }
 }

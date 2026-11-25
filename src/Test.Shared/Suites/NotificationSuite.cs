@@ -93,12 +93,13 @@ namespace Test.Shared.Suites
             Tenant t = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
             TestUser user = await TestFixtures.CreateUserAsync(admin, t.Id, false, token).ConfigureAwait(false);
             NotificationPreferencesResponse prefs = await PrefsAsync(user, token).ConfigureAwait(false);
-            Assert.Equal(18, prefs.Preferences.Count, "six kinds on three channels");
+            Assert.Equal(21, prefs.Preferences.Count, "seven kinds on three channels");
             Assert.True(prefs.Preferences[0].Kind == NotificationKindEnum.RunResults && prefs.Preferences[0].Channel == NotificationChannelEnum.Email && prefs.Preferences[17].Kind == NotificationKindEnum.PredictionDue
                 && prefs.Preferences[17].Channel == NotificationChannelEnum.InApp, "kind order, then channel order");
             foreach (NotificationKindEnum kind in Enum.GetValues<NotificationKindEnum>())
             {
-                bool emailDefault = kind == NotificationKindEnum.RunResults || kind == NotificationKindEnum.BriefingReady || kind == NotificationKindEnum.RunFailed || kind == NotificationKindEnum.CapReached;
+                bool emailDefault = kind == NotificationKindEnum.RunResults || kind == NotificationKindEnum.BriefingReady || kind == NotificationKindEnum.RunFailed || kind == NotificationKindEnum.CapReached
+                    || kind == NotificationKindEnum.TopicStale;
                 Assert.Equal(emailDefault, On(prefs, kind, NotificationChannelEnum.Email), kind + " email default");
                 Assert.Equal(false, On(prefs, kind, NotificationChannelEnum.Push), kind + " push is off until chosen");
                 Assert.Equal(false, On(prefs, kind, NotificationChannelEnum.InApp), kind + " in-app is off until chosen");
@@ -287,7 +288,8 @@ namespace Test.Shared.Suites
             NotificationPreferencesResponse kept = await PrefsAsync(olderApp, token).ConfigureAwait(false);
             Assert.True(On(kept, NotificationKindEnum.BriefingReady, NotificationChannelEnum.Push) && On(kept, NotificationKindEnum.RunFailed, NotificationChannelEnum.Push)
                 && On(kept, NotificationKindEnum.CapReached, NotificationChannelEnum.Push) && On(kept, NotificationKindEnum.PredictionDue, NotificationChannelEnum.Push), "the four kinds pushed before stay on");
-            Assert.True(!On(kept, NotificationKindEnum.AudioReady, NotificationChannelEnum.Push) && !On(kept, NotificationKindEnum.RunResults, NotificationChannelEnum.Push), "new kinds stay off until chosen");
+            Assert.True(On(kept, NotificationKindEnum.RunResults, NotificationChannelEnum.Push) && On(kept, NotificationKindEnum.TopicStale, NotificationChannelEnum.Push), "a first device also turns on new findings and stale topic prompts");
+            Assert.True(!On(kept, NotificationKindEnum.AudioReady, NotificationChannelEnum.Push), "audio ready stays off until chosen");
             await SetAsync(olderApp, NotificationKindEnum.RunFailed, NotificationChannelEnum.Push, false, token).ConfigureAwait(false);
             await DeviceAsync(olderApp, token).ConfigureAwait(false);
             Assert.True(!On(await PrefsAsync(olderApp, token).ConfigureAwait(false), NotificationKindEnum.RunFailed, NotificationChannelEnum.Push), "a second device never turns a kind back on");

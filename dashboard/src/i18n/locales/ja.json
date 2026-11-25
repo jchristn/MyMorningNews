@@ -2212,6 +2212,24 @@
       },
       "change": "[モデル] ページで割り当てを変更",
       "view": "[モデル] ページで割り当てを表示"
+    },
+    "promote": {
+      "open": "全体に公開",
+      "title": "システムブリーフィングにする",
+      "help": "このトピックのリサーチ設定(範囲、観点、制約、ランキング、スケジュール)を共有カタログにコピーし、すべてのユーザーが購読できるようにします。元のトピックは変更されません。MCPツール、音声、受信者などの個人設定はコピーされません。",
+      "confirm": "システムブリーフィングを作成",
+      "titleRequired": "ブリーフィングのタイトルを入力してください。",
+      "done": "「{title}」はシステムブリーフィングになりました。",
+      "created": "「{title}」をカタログに追加しました。開いてスケジュールを確認し、実行してください。",
+      "openCatalog": "カタログで開く",
+      "fields": {
+        "title": "タイトル",
+        "description": "説明",
+        "category": "カテゴリ",
+        "language": "言語",
+        "freeEligible": "無料プランで利用可能",
+        "publish": "今すぐ公開(しない場合は下書きとして保存)"
+      }
     }
   },
   "wizard": {
@@ -3564,10 +3582,18 @@
   "plans": {
     "default": "既定",
     "noFeatures": "利用権の値はありません。",
+    "notSet": "未設定",
     "validation": {
       "key": "小文字の英字、数字、ハイフンを 2 文字から 63 文字で使用してください。",
       "name": "名前を入力してください。",
-      "duplicate": "キー {key} が重複しています。"
+      "duplicate": "キー {key} が重複しています。",
+      "required": "値を入力してください。",
+      "boolean": "はいかいいえを選択してください。",
+      "count": "0 以上の整数を入力するか、上限なしを選択してください。",
+      "amount": "0 以上の金額を入力するか、上限なしを選択してください。",
+      "reason": "理由を入力してください。",
+      "future": "将来の日時を選択するか、空欄のままにしてください。",
+      "days": "1 から {max, number} 日の範囲で入力してください。"
     },
     "create": {
       "title": "新しいプラン",
@@ -3583,13 +3609,36 @@
       "keyLocked": "プランのキーは変更できません。",
       "name": "名前",
       "description": "説明",
-      "features": "利用権の値",
-      "featuresHelp": "コードはプラン名ではなく、これらのキーを確認します。数値、true または false、unlimited を使用してください。値を空にするとキーが削除されます。",
+      "features": "プランの値",
+      "featuresHelp": "このプランのすべてのユーザーにこれらの値が適用されます。未設定の値には組み込みの既定値が使われます。",
+      "aliasOf": "{key} の旧名称",
+      "customTitle": "詳細設定: カスタムキー ({count, number})",
+      "customHelp": "上記にないキーです。サーバーは認識できるキーのみを受け付けます。値を空にするとそのキーが削除されます。",
       "featureKey": "利用権のキー",
       "featureValue": "{key} の値",
-      "emptyRemoves": "空にすると削除されます",
-      "clearValue": "{key} をクリア",
-      "addFeature": "値を追加"
+      "removeKey": "{key} を削除",
+      "addFeature": "キーを追加"
+    },
+    "groups": {
+      "access": "アクセス",
+      "topics": "トピックと購読",
+      "research": "リサーチとスケジュール",
+      "audio": "音声",
+      "catalog": "カタログ",
+      "usage": "使用量とストレージ",
+      "custom": "その他の値"
+    },
+    "input": {
+      "unlimited": "上限なし",
+      "unlimitedFor": "{name} を上限なしにする",
+      "noMinimum": "最小値なし",
+      "noMinimumFor": "{name} を最小値なしにする",
+      "minutesHint": "分換算: {minutes, number}",
+      "units": {
+        "seconds": "秒",
+        "minutes": "分",
+        "usd": "米ドル"
+      }
     },
     "featureNames": {
       "usage_monthlyCostUsd_max": "月額コストの上限 (USD)",
@@ -3612,26 +3661,24 @@
       "models_personalConnections_enabled": "個人プロバイダー接続"
     },
     "assignments": {
-      "title": "ユーザーのプラン",
-      "help": "ユーザーを選ぶと、後から開始するものも含めたすべてのプラン期間が表示され、取り消すことができます。",
-      "plan": "プラン",
-      "source": "付与元",
-      "starts": "開始日時",
-      "ends": "終了日時",
-      "state": "状態",
-      "note": "メモ",
+      "title": "ユーザーのプランを管理",
+      "help": "ユーザーを選択して、プランの変更、制限の調整、プラン履歴の確認を行います。",
+      "history": "プラン履歴",
+      "period": "{starts} から {ends}",
+      "periodOpen": "{starts} から、終了日なし",
       "revoke": "取り消す",
+      "revokeFor": "{plan} を取り消す",
       "revokeTitle": "プランを取り消す",
       "revokeMessage": "このユーザーの {plan} を取り消しますか？今すぐ終了します。",
       "revoked": "プランを取り消しました",
-      "empty": "プランの割り当てはありません",
-      "emptyMessage": "このユーザーは既定のプランを利用しています。"
+      "emptyMessage": "プラン期間はまだありません。このユーザーはずっと既定のプランです。"
     },
     "sources": {
       "Default": "既定",
       "Admin": "管理者",
       "Promo": "プロモーションコード",
-      "Billing": "請求"
+      "Billing": "請求",
+      "billingProvider": "課金 ({provider})"
     },
     "states": {
       "current": "現在",
@@ -3639,32 +3686,56 @@
       "ended": "終了",
       "revoked": "取り消し済み"
     },
-    "grant": {
-      "open": "プランを付与",
-      "title": "プランを付与",
-      "titleFor": "{email} にプランを付与",
-      "confirm": "付与",
-      "note": "メモ",
-      "noteHelp": "このユーザーにプランを付与する理由です。監査ログに表示されます。",
-      "done": "{email} にプランを付与しました"
-    },
     "userPanel": {
       "action": "プラン",
-      "title": "{email} のプラン"
+      "title": "{email} のプラン",
+      "subtitle": "プランを変更し、このユーザーの制限を調整し、過去のプランを確認します。",
+      "current": "現在のプラン",
+      "sourceTitle": "設定元: {source}",
+      "ends": "終了",
+      "noEnd": "終了日なし",
+      "overrides": "上書きされた制限",
+      "next": "次のプラン",
+      "nextValue": "{date} から {plan}"
+    },
+    "change": {
+      "title": "プランを変更",
+      "help": "新しいプランはすぐに開始され、管理者が以前に設定したプランを置き換えます。プロモーションプランと有料プランは記録に残ります。",
+      "plan": "プラン",
+      "currentOption": "{name} (現在)",
+      "duration": "期間",
+      "custom": "カスタム",
+      "customDays": "日数",
+      "note": "メモ (任意)",
+      "save": "プランを割り当て",
+      "done": "{email} に {plan} を割り当てました",
+      "revert": "既定のプランに戻す",
+      "revertTitle": "既定のプランに戻す",
+      "revertMessage": "管理者が {email} に設定したプランを削除しますか? 有料プランがあればそのプランに、なければプロモーションプランまたは既定のプランに切り替わります。",
+      "revertConfirm": "既定に戻す",
+      "reverted": "管理者のプランを削除しました",
+      "noteHelp": "このユーザーにプランを付与する理由です。監査ログに表示されます。"
     },
     "overrides": {
-      "title": "ユーザー制限",
-      "help": "上書きはこのユーザーだけに適用されます。継承を復元すると割り当てプランの値に戻ります。",
-      "inherited": "プランの既定値",
-      "effective": "有効な値",
-      "source": "適用元",
-      "user": "ユーザー上書き",
-      "plan": "プラン",
-      "restore": "継承を復元",
-      "value": "上書きする値",
-      "valueHelp": "0で数量を無効にし、unlimitedで上限をなくします。日次音声は秒単位です。",
-      "reason": "変更の理由",
-      "expires": "有効期限（現地時間、任意）"
+      "title": "このユーザーの制限",
+      "help": "このユーザーだけ値を上書きします。リセットすると再びプランに従います。",
+      "limit": "制限",
+      "planValue": "プランの値",
+      "effective": "このユーザー",
+      "overridden": "上書き済み",
+      "editFor": "{name} を編集",
+      "editorTitle": "{name} を上書き",
+      "value": "このユーザーの値",
+      "planValueHelp": "プランの値:",
+      "reason": "理由",
+      "reasonHelp": "必須。監査ログに表示されます。",
+      "expires": "有効期限 (任意)",
+      "expiresHelp": "ローカル時刻です。空欄にするとリセットするまで維持されます。",
+      "save": "上書きを保存",
+      "saved": "このユーザーの {name} を上書きしました",
+      "reset": "プランの値に戻す",
+      "resetFor": "{name} をプランの値に戻す",
+      "resetDone": "{name} は再びプランに従います"
     }
   },
   "account": {
@@ -3803,7 +3874,8 @@
       "AudioReady": "音声の準備完了",
       "RunFailed": "実行の失敗",
       "CapReached": "プランの上限に到達",
-      "PredictionDue": "予測の期日到来"
+      "PredictionDue": "予測の期日到来",
+      "TopicStale": "新しい発見がないトピック"
     },
     "descriptions": {
       "RunResults": "リサーチの実行で、トピックに新しい発見がありました。",
@@ -3811,7 +3883,8 @@
       "AudioReady": "ブリーフィングが再生できる音声になりました。",
       "RunFailed": "リサーチの実行を完了できませんでした。",
       "CapReached": "プランが上限に達したため、予定された実行がスキップされました。",
-      "PredictionDue": "予測が期日を迎え、確認できるようになりました。"
+      "PredictionDue": "予測が期日を迎え、確認できるようになりました。",
+      "TopicStale": "このトピックは1週間新しい発見がありません。残さない場合は14日後に削除されます。"
     },
     "channels": {
       "Email": "メール",
@@ -4852,5 +4925,22 @@
     "test": "保存した接続をテスト",
     "remove": "接続を削除",
     "removeHelp": "キーを削除すると必要な呼び出しが停止します。プラットフォームのキーで代替されることはありません。"
+  },
+  "topicReviews": {
+    "region": "新しい発見がないトピック",
+    "untitled": "このトピック",
+    "title": "「{name}」を残しますか?",
+    "since": "{date}以降、新しい発見はありません。",
+    "noneIn": "直近{days}日間、新しい発見はありません。",
+    "deadline": "残さない場合、{date}に削除されます。",
+    "keep": "残す",
+    "delete": "削除",
+    "refine": "調整",
+    "open": "トピックを開く",
+    "kept": "「{name}」を残しました。1週間は再度確認しません。",
+    "deleted": "「{name}」を削除しました。",
+    "failed": "うまくいきませんでした。もう一度お試しください。",
+    "deleteTitle": "このトピックを削除しますか?",
+    "deleteMessage": "「{name}」をブリーフィング、発見、音声とともに削除しますか?この操作は元に戻せません。"
   }
 }

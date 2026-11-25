@@ -173,6 +173,34 @@ namespace MyMorningNews.Core.Email
         }
 
         /// <summary>
+        /// A two-column table of labeled values, for summaries. Empty input adds nothing.
+        /// </summary>
+        /// <param name="metrics">Rows.</param>
+        /// <returns>This builder.</returns>
+        /// <exception cref="ArgumentNullException">metrics is null.</exception>
+        public EmailBuilder Metrics(IEnumerable<EmailMetric> metrics)
+        {
+            ArgumentNullException.ThrowIfNull(metrics);
+            List<EmailMetric> rows = metrics.Where(m => m != null).ToList();
+            if (rows.Count == 0) return this;
+            _Html.Append("<tr><td style=\"padding:0 0 14px\"><table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" style=\"border-collapse:collapse\">");
+            foreach (EmailMetric m in rows)
+            {
+                _Html.Append("<tr><td style=\"padding:6px 8px 6px 0;border-bottom:1px solid #e5e7eb;font:15px/1.4 ").Append(_Font).Append("\">").Append(Enc(m.Label)).Append("</td>")
+                    .Append("<td align=\"right\" style=\"padding:6px 0;border-bottom:1px solid #e5e7eb;font:700 15px/1.4 ").Append(_Font).Append(";white-space:nowrap\">").Append(Enc(m.Value));
+                if (!String.IsNullOrWhiteSpace(m.Note)) _Html.Append(" <span style=\"font-weight:400;font-size:13px;color:#64748b\">").Append(Enc(m.Note)).Append("</span>");
+                _Html.Append("</td></tr>");
+                _Text.Append(m.Label).Append(": ").Append(m.Value);
+                if (!String.IsNullOrWhiteSpace(m.Note)) _Text.Append(" (").Append(m.Note).Append(')');
+                _Text.Append('\n');
+            }
+
+            _Html.Append("</table></td></tr>");
+            _Text.Append('\n');
+            return this;
+        }
+
+        /// <summary>
         /// The full HTML document.
         /// </summary>
         /// <param name="title">Document title (usually the subject).</param>

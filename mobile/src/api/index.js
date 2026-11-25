@@ -21,6 +21,7 @@ export { authApi } from './auth';
 export { accountApi, serverApi, setupApi, devicesApi, planApi, emailPreferencesApi, feedTokensApi } from './account';
 export {
   topicsApi,
+  topicReviewsApi,
   refinementApi,
   requestsApi,
   schedulesApi,

@@ -2212,6 +2212,24 @@
       },
       "change": "Ubah tugasan pada halaman Model",
       "view": "Lihat tugasan pada halaman Model"
+    },
+    "promote": {
+      "open": "Jadikan untuk semua",
+      "title": "Jadikan taklimat sistem",
+      "help": "Menyalin tetapan penyelidikan topik ini (skop, dimensi, kekangan, penarafan dan jadual) ke katalog kongsi yang boleh dilanggan oleh setiap pengguna. Topik anda kekal seperti biasa. Tetapan peribadi seperti alat MCP, suara dan penerima tidak disalin.",
+      "confirm": "Cipta taklimat sistem",
+      "titleRequired": "Beri taklimat ini tajuk.",
+      "done": "\"{title}\" kini taklimat sistem.",
+      "created": "\"{title}\" telah ditambah ke katalog. Bukanya untuk menyemak jadual dan menjalankannya.",
+      "openCatalog": "Buka dalam katalog",
+      "fields": {
+        "title": "Tajuk",
+        "description": "Penerangan",
+        "category": "Kategori",
+        "language": "Bahasa",
+        "freeEligible": "Tersedia dalam pelan percuma",
+        "publish": "Terbitkan sekarang (jika tidak, disimpan sebagai draf)"
+      }
     }
   },
   "wizard": {
@@ -3564,10 +3582,18 @@
   "plans": {
     "default": "Lalai",
     "noFeatures": "Tiada nilai kelayakan.",
+    "notSet": "Tidak ditetapkan",
     "validation": {
       "key": "Gunakan 2 hingga 63 huruf kecil, digit dan sempang.",
       "name": "Masukkan nama.",
-      "duplicate": "Kunci {key} disenaraikan dua kali."
+      "duplicate": "Kunci {key} disenaraikan dua kali.",
+      "required": "Masukkan nilai.",
+      "boolean": "Pilih Ya atau Tidak.",
+      "count": "Masukkan nombor bulat 0 atau lebih, atau pilih pilihan tanpa had.",
+      "amount": "Masukkan amaun 0 atau lebih, atau pilih pilihan tanpa had.",
+      "reason": "Masukkan sebab.",
+      "future": "Pilih masa pada masa hadapan, atau biarkan kosong.",
+      "days": "Masukkan 1 hingga {max, number} hari."
     },
     "create": {
       "title": "Pelan baharu",
@@ -3583,13 +3609,36 @@
       "keyLocked": "Kunci pelan tidak boleh diubah.",
       "name": "Nama",
       "description": "Keterangan",
-      "features": "Nilai kelayakan",
-      "featuresHelp": "Kod menyemak kunci ini, bukan nama pelan. Gunakan nombor, true atau false, atau unlimited. Nilai kosong mengalih keluar kunci.",
+      "features": "Nilai pelan",
+      "featuresHelp": "Setiap pengguna pada pelan ini mendapat nilai ini. Nilai yang tidak ditetapkan menggunakan lalai terbina dalam.",
+      "aliasOf": "Nama lama untuk {key}",
+      "customTitle": "Lanjutan: kunci tersuai ({count, number})",
+      "customHelp": "Kunci yang tiada dalam senarai di atas. Pelayan hanya menerima kunci yang dikenalinya. Kosongkan nilai untuk membuang kuncinya.",
       "featureKey": "Kunci kelayakan",
       "featureValue": "Nilai untuk {key}",
-      "emptyRemoves": "Kosong untuk mengalih keluar",
-      "clearValue": "Kosongkan {key}",
-      "addFeature": "Tambah nilai"
+      "removeKey": "Buang {key}",
+      "addFeature": "Tambah kunci"
+    },
+    "groups": {
+      "access": "Akses",
+      "topics": "Topik dan langganan",
+      "research": "Penyelidikan dan jadual",
+      "audio": "Audio",
+      "catalog": "Katalog",
+      "usage": "Penggunaan dan storan",
+      "custom": "Nilai lain"
+    },
+    "input": {
+      "unlimited": "Tanpa had",
+      "unlimitedFor": "Tanpa had untuk {name}",
+      "noMinimum": "Tanpa minimum",
+      "noMinimumFor": "Tanpa minimum untuk {name}",
+      "minutesHint": "Dalam minit: {minutes, number}",
+      "units": {
+        "seconds": "saat",
+        "minutes": "minit",
+        "usd": "USD"
+      }
     },
     "featureNames": {
       "usage_monthlyCostUsd_max": "Had kos bulanan (USD)",
@@ -3612,26 +3661,24 @@
       "models_personalConnections_enabled": "Sambungan penyedia peribadi"
     },
     "assignments": {
-      "title": "Pelan pengguna",
-      "help": "Pilih pengguna untuk melihat setiap tempoh pelan yang dimilikinya, termasuk yang bermula kemudian, dan batalkan salah satu.",
-      "plan": "Pelan",
-      "source": "Sumber",
-      "starts": "Mula",
-      "ends": "Tamat",
-      "state": "Keadaan",
-      "note": "Nota",
+      "title": "Urus pelan pengguna",
+      "help": "Pilih pengguna untuk menukar pelannya, melaraskan hadnya atau menyemak sejarah pelannya.",
+      "history": "Sejarah pelan",
+      "period": "{starts} hingga {ends}",
+      "periodOpen": "Dari {starts}, tiada tarikh tamat",
       "revoke": "Batalkan",
+      "revokeFor": "Batalkan {plan}",
       "revokeTitle": "Batalkan pelan",
       "revokeMessage": "Batalkan {plan} untuk pengguna ini? Ia tamat sekarang.",
       "revoked": "Pelan dibatalkan",
-      "empty": "Tiada tugasan pelan",
-      "emptyMessage": "Pengguna ini menggunakan pelan lalai."
+      "emptyMessage": "Belum ada tempoh pelan. Pengguna ini sentiasa menggunakan pelan lalai."
     },
     "sources": {
       "Default": "Lalai",
       "Admin": "Pentadbir",
       "Promo": "Kod promosi",
-      "Billing": "Pengebilan"
+      "Billing": "Pengebilan",
+      "billingProvider": "Pengebilan ({provider})"
     },
     "states": {
       "current": "Semasa",
@@ -3639,32 +3686,56 @@
       "ended": "Tamat",
       "revoked": "Dibatalkan"
     },
-    "grant": {
-      "open": "Berikan pelan",
-      "title": "Berikan pelan",
-      "titleFor": "Berikan pelan kepada {email}",
-      "confirm": "Berikan",
-      "note": "Nota",
-      "noteHelp": "Sebab pengguna ini mendapat pelan. Dipaparkan dalam log audit.",
-      "done": "Pelan diberikan kepada {email}"
-    },
     "userPanel": {
       "action": "Pelan",
-      "title": "Pelan untuk {email}"
+      "title": "Pelan untuk {email}",
+      "subtitle": "Tukar pelan, laraskan had untuk pengguna ini dan semak pelan terdahulu.",
+      "current": "Pelan semasa",
+      "sourceTitle": "Ditetapkan oleh: {source}",
+      "ends": "Tamat",
+      "noEnd": "Tiada tarikh tamat",
+      "overrides": "Had yang diatasi",
+      "next": "Seterusnya",
+      "nextValue": "{plan} mulai {date}"
+    },
+    "change": {
+      "title": "Tukar pelan",
+      "help": "Pelan baharu bermula sekarang dan menggantikan sebarang pelan yang ditetapkan oleh pentadbir sebelum ini. Pelan promosi dan berbayar kekal dalam rekod.",
+      "plan": "Pelan",
+      "currentOption": "{name} (semasa)",
+      "duration": "Tempoh",
+      "custom": "Tersuai",
+      "customDays": "Bilangan hari",
+      "note": "Nota (pilihan)",
+      "save": "Tetapkan pelan",
+      "done": "{plan} ditetapkan kepada {email}",
+      "revert": "Kembali ke pelan lalai",
+      "revertTitle": "Kembali ke pelan lalai",
+      "revertMessage": "Buang pelan yang ditetapkan oleh pentadbir untuk {email}? Pengguna akan beralih ke pelan berbayarnya jika ada, jika tidak ke pelan promosi atau pelan lalai.",
+      "revertConfirm": "Kembali ke lalai",
+      "reverted": "Pelan pentadbir dibuang",
+      "noteHelp": "Sebab pengguna ini mendapat pelan. Dipaparkan dalam log audit."
     },
     "overrides": {
-      "title": "Had pengguna",
-      "help": "Pengecualian hanya untuk pengguna ini. Pulihkan pewarisan untuk mengikuti pelan yang ditetapkan.",
-      "inherited": "Lalai pelan",
-      "effective": "Nilai berkuat kuasa",
-      "source": "Sumber",
-      "user": "Pengecualian pengguna",
-      "plan": "Pelan",
-      "restore": "Pulihkan pewarisan",
-      "value": "Nilai pengecualian",
-      "valueHelp": "Sifar melumpuhkan kuantiti; unlimited membuang had. Audio harian dalam saat.",
-      "reason": "Sebab perubahan",
-      "expires": "Tamat (waktu tempatan, pilihan)"
+      "title": "Had untuk pengguna ini",
+      "help": "Atasi nilai untuk pengguna ini sahaja. Tetapkan semula untuk mengikut pelan sekali lagi.",
+      "limit": "Had",
+      "planValue": "Nilai pelan",
+      "effective": "Pengguna ini",
+      "overridden": "Diatasi",
+      "editFor": "Edit {name}",
+      "editorTitle": "Atasi {name}",
+      "value": "Nilai untuk pengguna ini",
+      "planValueHelp": "Nilai pelan:",
+      "reason": "Sebab",
+      "reasonHelp": "Wajib. Dipaparkan dalam log audit.",
+      "expires": "Tamat tempoh (pilihan)",
+      "expiresHelp": "Waktu tempatan anda. Biarkan kosong untuk mengekalkannya sehingga anda menetapkannya semula.",
+      "save": "Simpan pengatasan",
+      "saved": "{name} diatasi untuk pengguna ini",
+      "reset": "Tetapkan semula kepada pelan",
+      "resetFor": "Tetapkan semula {name} kepada nilai pelan",
+      "resetDone": "{name} mengikut pelan sekali lagi"
     }
   },
   "account": {
@@ -3803,7 +3874,8 @@
       "AudioReady": "Audio sedia",
       "RunFailed": "Larian gagal",
       "CapReached": "Had pelan dicapai",
-      "PredictionDue": "Ramalan sampai tempoh"
+      "PredictionDue": "Ramalan sampai tempoh",
+      "TopicStale": "Topik tanpa dapatan baharu"
     },
     "descriptions": {
       "RunResults": "Larian penyelidikan menemui sesuatu yang baharu untuk salah satu topik anda.",
@@ -3811,7 +3883,8 @@
       "AudioReady": "Taklimat telah ditukar kepada audio yang boleh anda mainkan.",
       "RunFailed": "Larian penyelidikan tidak dapat diselesaikan.",
       "CapReached": "Larian berjadual dilangkau kerana pelan anda mencapai had.",
-      "PredictionDue": "Ramalan telah sampai tarikhnya dan sedia untuk disemak."
+      "PredictionDue": "Ramalan telah sampai tarikhnya dan sedia untuk disemak.",
+      "TopicStale": "Satu topik tidak menemui apa-apa yang baharu selama seminggu. Simpan, atau ia dipadam selepas 14 hari."
     },
     "channels": {
       "Email": "E-mel",
@@ -4852,5 +4925,22 @@
     "test": "Uji sambungan disimpan",
     "remove": "Buang sambungan",
     "removeHelp": "Membuang kunci menghentikan panggilan yang memerlukannya. Kunci platform tidak pernah digunakan sebagai gantian."
+  },
+  "topicReviews": {
+    "region": "Topik tanpa dapatan baharu",
+    "untitled": "Topik ini",
+    "title": "Simpan \"{name}\"?",
+    "since": "Tiada yang baharu sejak {date}.",
+    "noneIn": "Tiada yang baharu dalam {days} hari lepas.",
+    "deadline": "Ia akan dipadam pada {date} melainkan anda menyimpannya.",
+    "keep": "Simpan",
+    "delete": "Padam",
+    "refine": "Perhalusi",
+    "open": "Buka topik",
+    "kept": "\"{name}\" disimpan. Kami tidak akan bertanya lagi selama seminggu.",
+    "deleted": "\"{name}\" dipadam.",
+    "failed": "Itu tidak berjaya. Cuba lagi.",
+    "deleteTitle": "Padam topik ini?",
+    "deleteMessage": "Padam \"{name}\" bersama taklimat, dapatan dan audionya? Tindakan ini tidak boleh dibuat asal."
   }
 }

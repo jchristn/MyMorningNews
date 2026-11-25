@@ -36,7 +36,7 @@ namespace Test.Shared.Helpers
         {
             string email = "user-" + Guid.NewGuid().ToString("N").Substring(0, 10) + "@example.test";
             string password = "test-password-1";
-            TestResponse r = await admin.PostAsync("/v1.0/tenants/" + tenantId + "/users", new UserCreateRequest { Email = email, Password = password, IsTenantAdmin = tenantAdmin }, token).ConfigureAwait(false);
+            TestResponse r = await admin.PostAsync("/v1.0/tenants/" + tenantId + "/users", new UserCreateRequest { Email = email, Password = password, IsTenantAdmin = tenantAdmin, SendWelcomeEmail = false }, token).ConfigureAwait(false);
             UserResponse user = r.Expect(201, "create user").Json<UserResponse>();
             TestApiClient client = new TestApiClient(admin.BaseUrl);
             await client.LoginAsync(tenantId, email, password, token).ConfigureAwait(false);

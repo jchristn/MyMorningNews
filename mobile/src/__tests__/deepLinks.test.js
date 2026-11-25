@@ -101,6 +101,28 @@ describe('push notification taps', () => {
     expect(routeForInApp(null)).toBeNull();
   });
 
+  it('opens the topic for a topic without new findings, or the topics list once it was deleted', () => {
+    expect(routeForNotification({ kind: 'topic.stale', reviewId: 'trv_1', notice: 'Prompt', topicId: 'top_1' })).toBe('/topics/top_1');
+    expect(routeForNotification({ kind: 'topic.stale', reviewId: 'trv_1', notice: 'Reminder', topicId: 'top 1' })).toBe('/topics/top%201');
+    expect(routeForNotification({ kind: 'topic.stale', reviewId: 'trv_1', notice: 'Deleted' })).toBe('/topics');
+    expect(routeForNotification({ kind: 'topic.stale', reviewId: 'trv_1', notice: 'Deleted', topicId: 'top_1' })).toBe('/topics');
+    expect(routeForNotification({ kind: 'topic.stale' })).toBe('/topics');
+    expect(routeForInApp({ kind: 'TopicStale', topicId: 'top_1' })).toBe('/topics/top_1');
+    expect(routeForInApp({ kind: 'TopicStale', topicId: null })).toBe('/topics');
+  });
+
+  it('routes every push kind the server sends', () => {
+    // The payloads exactly as NotificationService builds them.
+    expect(routeForNotification({ kind: 'run.results', topicId: 'top_1', runId: 'run_1' })).toBe('/topics/runs/run_1');
+    expect(routeForNotification({ kind: 'briefing.ready', briefingId: 'brf_1', editionName: 'Morning' })).toBe('/today/briefings/brf_1');
+    expect(routeForNotification({ kind: 'audio.ready', briefingId: 'brf_1', mediaAssetId: 'med_1' })).toBe('/listen/player?mediaId=med_1&briefingId=brf_1');
+    expect(routeForNotification({ kind: 'run.failed', topicId: 'top_1', runId: 'run_1' })).toBe('/topics/top_1');
+    expect(routeForNotification({ kind: 'cap.reached', key: 'runsDailyMax' })).toBe('/account');
+    expect(routeForNotification({ kind: 'prediction.due', predictionId: 'prd_1' })).toBe('/today/predictions/prd_1');
+    expect(routeForNotification({ kind: 'prediction.due', count: '3' })).toBe('/today/predictions');
+    expect(routeForNotification({ kind: 'topic.stale', reviewId: 'trv_1', notice: 'Prompt', topicId: 'top_1' })).toBe('/topics/top_1');
+  });
+
   it('falls back by kind, and ignores payloads it does not understand', () => {
     expect(routeForNotification({ kind: 'cap.reached' })).toBe('/account');
     expect(routeForNotification({ kind: 'account.deletion' })).toBe('/account');

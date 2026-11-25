@@ -40,9 +40,24 @@ export async function permissionGranted() {
 }
 
 /**
+ * Whether this device could receive push, without asking: `granted`, `undetermined` (the system has not asked yet,
+ * or may ask again), `denied` (the user said no in the system settings), `simulator`, or `notConfigured` (no EAS
+ * project id in this build). The Today card (PushPromptCard) offers push only for `granted` and `undetermined`.
+ * @returns {Promise<'granted' | 'undetermined' | 'denied' | 'simulator' | 'notConfigured'>}
+ */
+export async function pushPermissionStatus() {
+  if (!Device.isDevice) return 'simulator';
+  if (!easProjectId()) return 'notConfigured';
+  const permission = await Notifications.getPermissionsAsync();
+  if (permission.granted) return 'granted';
+  if (permission.status === 'denied' && permission.canAskAgain !== true) return 'denied';
+  return 'undetermined';
+}
+
+/**
  * Whether this device can register for push, asking for permission when `prompt` is true and it is not granted yet.
- * Nothing is sent to the server. The app passes `prompt` only when the user turns on a Phone switch in
- * Account > Notifications, never at launch.
+ * Nothing is sent to the server. The app passes `prompt` only after a tap: a Phone switch in Account > Notifications
+ * or Turn on in the Today card, never at launch.
  * @returns {Promise<{ status: 'ready' | 'simulator' | 'notConfigured' | 'denied', projectId?: string }>}
  */
 export async function preparePush({ prompt } = {}) {
@@ -57,7 +72,7 @@ export async function preparePush({ prompt } = {}) {
 
 /**
  * Register this device for push with the server (contract C). `prompt` asks for permission when it is not granted
- * yet; the app passes true only from Account > Notifications, never at launch.
+ * yet; the app asks first with preparePush after a tap and then passes false here, never prompting at launch.
  * @returns {Promise<{ status: string, device?: object, error?: Error }>}
  */
 export async function registerForPush(client, { prompt, name, locale }) {

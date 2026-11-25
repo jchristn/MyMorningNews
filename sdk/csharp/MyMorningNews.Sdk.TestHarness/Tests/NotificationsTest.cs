@@ -44,9 +44,10 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
                 await c.LoginAsync(user.Email, password, context.Environment.Tenant, token).ConfigureAwait(false);
 
                 NotificationPreferencesResponse prefs = await StepAsync(context, result, "GET notifications/preferences (defaults)", () => c.Notifications.GetPreferencesAsync(token)).ConfigureAwait(false);
-                Helpers.Equal(18, prefs.Preferences.Count, "six kinds on three channels");
+                Helpers.Equal(21, prefs.Preferences.Count, "seven kinds on three channels");
                 Helpers.True(On(prefs, NotificationKindEnum.RunResults, NotificationChannelEnum.Email) && On(prefs, NotificationKindEnum.BriefingReady, NotificationChannelEnum.Email)
-                    && On(prefs, NotificationKindEnum.RunFailed, NotificationChannelEnum.Email) && On(prefs, NotificationKindEnum.CapReached, NotificationChannelEnum.Email), "email is on by default for results, briefings, failures, and limits");
+                    && On(prefs, NotificationKindEnum.RunFailed, NotificationChannelEnum.Email) && On(prefs, NotificationKindEnum.CapReached, NotificationChannelEnum.Email)
+                    && On(prefs, NotificationKindEnum.TopicStale, NotificationChannelEnum.Email), "email is on by default for results, briefings, failures, limits, and stale topics");
                 Helpers.True(!On(prefs, NotificationKindEnum.AudioReady, NotificationChannelEnum.Email) && !On(prefs, NotificationKindEnum.PredictionDue, NotificationChannelEnum.Email), "email is off by default for audio and predictions");
                 Helpers.True(!prefs.Preferences.Any(x => x.Channel != NotificationChannelEnum.Email && x.Enabled), "push and in-app are off by default");
                 NotificationChannelStatus push = prefs.Channels.Single(x => x.Channel == NotificationChannelEnum.Push);

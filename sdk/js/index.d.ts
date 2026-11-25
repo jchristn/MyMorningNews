@@ -1387,7 +1387,7 @@ export interface EmailPreferencesRequest {
     unsubscribeTopicIds?: string[];
 }
 
-export type NotificationKind = 'RunResults' | 'BriefingReady' | 'AudioReady' | 'RunFailed' | 'CapReached' | 'PredictionDue';
+export type NotificationKind = 'RunResults' | 'BriefingReady' | 'AudioReady' | 'RunFailed' | 'CapReached' | 'PredictionDue' | 'TopicStale';
 export type NotificationChannel = 'Email' | 'Push' | 'InApp';
 export type NotificationUnavailableReason = 'NoEmailAddress' | 'EmailNotVerified' | 'EmailNotConfigured' | 'EmailUnsubscribed' | 'PushNotConfigured' | 'NoDevice';
 

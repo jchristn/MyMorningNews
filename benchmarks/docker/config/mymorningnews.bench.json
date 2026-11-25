@@ -63,5 +63,8 @@
   },
   "push": {
     "enabled": false
+  },
+  "crawlCache": {
+    "enabled": false
   }
 }

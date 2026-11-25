@@ -1011,7 +1011,7 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
  * An in-app notification.
  * @typedef {object} Notification
  * @property {string} id Identifier.
- * @property {string} kind `RunResults`, `BriefingReady`, `AudioReady`, `RunFailed`, `CapReached`, or `PredictionDue`.
+ * @property {string} kind `RunResults`, `BriefingReady`, `AudioReady`, `RunFailed`, `CapReached`, `PredictionDue`, or `TopicStale`.
  * @property {string} title What it is about (topic name, briefing title).
  * @property {string|null} body A short sentence.
  * @property {string|null} topicId Topic to open.

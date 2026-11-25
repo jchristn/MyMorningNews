@@ -36,6 +36,11 @@ namespace MyMorningNews.Sdk.Enums
         /// <summary>
         /// A prediction reached its date and is due for review.
         /// </summary>
-        PredictionDue
+        PredictionDue,
+
+        /// <summary>
+        /// A recurring topic found nothing new for a week; keep it or it is deleted after a grace period.
+        /// </summary>
+        TopicStale
     }
 }

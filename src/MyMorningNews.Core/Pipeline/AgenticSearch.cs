@@ -103,7 +103,7 @@ namespace MyMorningNews.Core.Pipeline
                     Schema(new Dictionary<string, object> { { "query", Prop("string", "Short, specific search query.") }, { "maxResults", Prop("integer", "Results to return, 1 to 10. Default 8.") } }, "query"),
                     (args, t) => Logged("web_search", args, () => WebSearchAsync(ctx, services, providers, blocked, args, found, sync, t))),
                 new AgentTool("fetch_url", "Read a web page. Returns its title and main text (shortened).",
-                    Schema(new Dictionary<string, object> { { "url", Prop("string", "Absolute http or https URL.") } }, "url"),
+                    Schema(new Dictionary<string, object> { { "url", Prop("string", "Absolute http or https URL.") }, { "forceRefresh", Prop("boolean", "Default false. Retrieve anew even when cached; no cached fallback on failure.") } }, "url"),
                     (args, t) => Logged("fetch_url", args, () => FetchAsync(services, blocked, args, t)))
             };
             tools.AddRange(await McpToolsAsync(ctx, services, Logged, token).ConfigureAwait(false));
@@ -185,13 +185,19 @@ namespace MyMorningNews.Core.Pipeline
         private static async Task<string> FetchAsync(PipelineServices services, List<string> blocked, string args, CancellationToken token)
         {
             string url;
+            bool forceRefresh = false;
             using (JsonDocument doc = JsonDocument.Parse(args))
             {
                 url = doc.RootElement.TryGetProperty("url", out JsonElement u) ? (u.GetString() ?? String.Empty).Trim() : String.Empty;
+                if (doc.RootElement.TryGetProperty("forceRefresh", out JsonElement refresh))
+                {
+                    if (refresh.ValueKind != JsonValueKind.True && refresh.ValueKind != JsonValueKind.False) return "Error: forceRefresh must be a boolean.";
+                    forceRefresh = refresh.GetBoolean();
+                }
             }
 
             if (!Uri.TryCreate(url, UriKind.Absolute, out Uri? uri) || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps)) return "Error: url must be an absolute http or https URL.";
-            FetchResult r = await services.Fetch.FetchAsync(url, blocked, token).ConfigureAwait(false);
+            FetchResult r = await services.Fetch.FetchAsync(url, blocked, token, forceRefresh).ConfigureAwait(false);
             if (r.Disposition != FetchDispositionEnum.Fetched || String.IsNullOrWhiteSpace(r.Text))
                 return "Error: could not read " + url + " (" + r.Disposition + (String.IsNullOrEmpty(r.Error) ? String.Empty : ": " + r.Error) + ").";
             return "Title: " + (r.Title ?? "(none)") + "\nURL: " + (r.FinalUrl ?? url) + "\n\n" + Shorten(r.Text, 6000);

@@ -615,7 +615,8 @@
       "email": "E-mel",
       "learning": "Pembelajaran",
       "hosting": "Pengehosan",
-      "sharing": "Perkongsian"
+      "sharing": "Perkongsian",
+      "crawlCache": "Cache perangkak"
     },
     "fields": {
       "rest_hostname": "Nama hos",
@@ -4328,6 +4329,14 @@
       "help": "Pilih tempat topik ini mencari. Biarkan pada lalai untuk mengikut penyedia lalai penyewa.",
       "none": "Belum ada penyedia carian disediakan.",
       "useDefaults": "Guna lalai"
+    },
+    "fetch": {
+      "title": "Dapatkan halaman",
+      "url": "URL halaman",
+      "force": "Paksa pengambilan baharu",
+      "run": "Dapatkan",
+      "updated": "Cache dikemas kini",
+      "status": "Status cache"
     }
   },
   "runCharts": {

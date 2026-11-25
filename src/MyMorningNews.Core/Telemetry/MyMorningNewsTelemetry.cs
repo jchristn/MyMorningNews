@@ -31,8 +31,17 @@ namespace MyMorningNews.Core.Telemetry
         public static readonly Meter Meter = new Meter(Name, Constants.ProductVersion);
 
         /// <summary>
-        /// Authentication outcomes by scheme and result.
+        /// Crawl cache outcomes, publication, eviction, and errors.
         /// </summary>
+        public static readonly Counter<long> CrawlCacheEvents = Meter.CreateCounter<long>("mymorningnews.crawl_cache.events", "{event}", "Cache outcomes, publication, eviction and errors.");
+
+        /// <summary>Cache database and object operation latency.</summary>
+        public static readonly Histogram<double> CrawlCacheDuration = Meter.CreateHistogram<double>("mymorningnews.crawl_cache.duration", "s");
+        /// <summary>Reserved cache bytes, sampled by cleanup.</summary>
+        public static readonly Histogram<double> CrawlCacheBytes = Meter.CreateHistogram<double>("mymorningnews.crawl_cache.reserved_bytes", "By");
+        /// <summary>Cache metadata counts, sampled by cleanup.</summary>
+        public static readonly Histogram<double> CrawlCacheRecords = Meter.CreateHistogram<double>("mymorningnews.crawl_cache.records", "{record}");
+        /// <summary>Authentication outcomes.</summary>
         public static readonly Counter<long> AuthRequests = Meter.CreateCounter<long>("mymorningnews.auth.requests", "{request}", "Authentication outcomes by scheme and result.");
 
         /// <summary>

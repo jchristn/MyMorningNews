@@ -2374,7 +2374,7 @@ export interface SearchProviderUpsertRequest {
 
 export declare class SearchProvidersResource extends CrudResource<SearchProvider, SearchProvider, SearchProviderUpsertRequest> {
     test(id: string, body?: { query?: string; feedUrls?: string[]; maxResults?: number }): Promise<any>;
-    fetchTest(url: string): Promise<any>;
+    fetchTest(url: string, forceRefresh?: boolean): Promise<any>;
 }
 
 export interface VoiceProfileUpsertRequest {

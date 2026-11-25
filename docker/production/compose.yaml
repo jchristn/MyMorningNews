@@ -340,6 +340,10 @@ services:
         source: ./mymorningnews.json
         target: /app/config/mymorningnews.json
         type: bind
+      - source: crawlcache
+        target: /data/crawl-cache
+        type: volume
+        volume: {}
       - source: media
         target: /data/media
         type: volume
@@ -425,6 +429,8 @@ volumes:
     name: mymorningnews_grafana
   loki:
     name: mymorningnews_loki
+  crawlcache:
+    name: mymorningnews_crawlcache
   media:
     name: mymorningnews_media
   ollama:

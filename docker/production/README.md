@@ -34,3 +34,7 @@ server and dashboard tags in the host compose file, then run `docker compose pul
 `docker compose up -d --no-deps server dashboard`. Verify both containers are healthy and check the public API
 and dashboard. The 2026-11-24 UX release uses `mobile-ux-20261124-1` for both services; the previous
 `enumeration-20261124-1` tags remain available for rollback. No compose topology or migration changed.
+
+## Temporary crawl cache
+
+See the [crawl cache guide](../../docs/CRAWL_CACHE.md) for Blobject disk/S3 configuration, bounded storage and cleanup, and optional `forceRefresh` retrieval. Caching defaults to disabled; the administrative fetch diagnostic and SDKs expose cache provenance.

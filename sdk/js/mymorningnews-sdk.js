@@ -3716,10 +3716,12 @@ export class SearchProvidersResource extends CrudResource {
     /**
      * Fetch a page as the research pipeline would.
      * @param {string} url Page URL.
+     * @param {boolean} [forceRefresh=false] Retrieve anew and update eligible cache content; no cached fallback on failure.
      * @returns {Promise<object>} Fetch result (text truncated to 20000 characters).
      */
-    fetchTest(url) {
-        return this._req('POST', '/v1.0/api/fetch/test', { body: { url: requireValue(url, 'url') } });
+    fetchTest(url, forceRefresh = false) {
+        if (typeof forceRefresh !== 'boolean') throw new TypeError('forceRefresh must be a boolean.');
+        return this._req('POST', '/v1.0/api/fetch/test', { body: { url: requireValue(url, 'url'), forceRefresh } });
     }
 }
 

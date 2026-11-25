@@ -228,3 +228,7 @@ There are 43 cases. Four run offline (the signed-request known vector, tolerant 
 (c) 2026 Lattice AI LLC
 
 Failed briefings can be sent to the configured support recipient with `client.Briefings.ShareWithSupportAsync(id, token)`. The authenticated POST returns a report ID and delivery status (202); repeated requests by the same user return the same report. A non-failed briefing returns 409 and unavailable support email returns 503.
+
+## Temporary crawl cache
+
+See the [crawl cache guide](../../docs/CRAWL_CACHE.md) for Blobject disk/S3 configuration, bounded storage and cleanup, and optional `forceRefresh` retrieval. Caching defaults to disabled; the administrative fetch diagnostic and SDKs expose cache provenance.

@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import useFormat from '../hooks/useFormat.js';
 import { pagedQuery } from '../utils/api.js';
 import { fieldErrors } from '../utils/errors.js';
+import FetchDiagnostic from './search/FetchDiagnostic.jsx';
 import ConfirmModal from '../components/ConfirmModal.jsx';
 import CopyableId from '../components/CopyableId.jsx';
 import DataTable from '../components/DataTable.jsx';
@@ -198,6 +199,7 @@ export default function SearchProvidersView() {
     <div className="page">
       <PageHeader title={t('nav.items.searchProviders')} summary={t('routes.searchProviders.summary')} />
       <div className="notice notice-info">{t('searchProviders.about')}</div>
+      {canWrite ? <FetchDiagnostic /> : null}
       <RunCharts charts={['providers']} tenantWide rangeStorage="mymorningnews.searchProviders.runCharts" />
       <section className="panel">
         <DataTable

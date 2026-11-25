@@ -15,6 +15,7 @@ namespace MyMorningNews.Core.Fetch
     using CrawlSharp.Web;
     using DocConverter;
     using DocConverter.Enums;
+    using MyMorningNews.Core.Database.Interfaces;
     using MyMorningNews.Core.Enums;
     using MyMorningNews.Core.Settings;
     using MyMorningNews.Core.Telemetry;
@@ -40,7 +41,11 @@ namespace MyMorningNews.Core.Fetch
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _DomainGates = new ConcurrentDictionary<string, SemaphoreSlim>(StringComparer.OrdinalIgnoreCase);
         private readonly ConcurrentDictionary<string, DateTime> _LastFetch = new ConcurrentDictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase);
         private readonly ConcurrentDictionary<string, CachedRobots> _Robots = new ConcurrentDictionary<string, CachedRobots>(StringComparer.OrdinalIgnoreCase);
+        private readonly CrawlCacheService? _Cache;
         private bool _Disposed = false;
+
+        /// <summary>Temporary cache service, or null for an embedded fetcher without a metadata database.</summary>
+        public CrawlCacheService? Cache { get { return _Cache; } }
 
         #endregion
 
@@ -51,11 +56,14 @@ namespace MyMorningNews.Core.Fetch
         /// </summary>
         /// <param name="settings">Server settings (the Search group is read on every fetch).</param>
         /// <param name="logging">Logging.</param>
+        /// <param name="cacheDatabase">Optional internal cache metadata store. Null disables caching for embedded callers.</param>
+        /// <param name="contentStore">Optional owned content store override for tests.</param>
         /// <exception cref="ArgumentNullException">An argument is null.</exception>
-        public FetchService(ServerSettings settings, LoggingModule logging)
+        public FetchService(ServerSettings settings, LoggingModule logging, ICrawlCacheMethods? cacheDatabase = null, ICrawlContentStore? contentStore = null)
         {
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _Logging = logging ?? throw new ArgumentNullException(nameof(logging));
+            if (cacheDatabase != null) _Cache = new CrawlCacheService(cacheDatabase, settings, logging, contentStore);
             _Http = new HttpClient(Security.NetworkGuard.CreateHandler()) { Timeout = Timeout.InfiniteTimeSpan };
         }
 
@@ -69,8 +77,9 @@ namespace MyMorningNews.Core.Fetch
         /// <param name="url">URL.</param>
         /// <param name="blockedDomains">Domains never fetched (topic and tenant rules).</param>
         /// <param name="token">Cancellation token.</param>
+        /// <param name="forceRefresh">Default false. True bypasses cached content, retrieves anew, and updates eligible cache entries.</param>
         /// <returns>Result with a disposition; never throws for page-level problems.</returns>
-        public async Task<FetchResult> FetchAsync(string url, IEnumerable<string>? blockedDomains, CancellationToken token = default)
+        public async Task<FetchResult> FetchAsync(string url, IEnumerable<string>? blockedDomains, CancellationToken token = default, bool forceRefresh = false)
         {
             Stopwatch sw = Stopwatch.StartNew();
             FetchResult result = new FetchResult { Url = url ?? String.Empty, CanonicalUrl = UrlCanonicalizer.Canonicalize(url) };
@@ -110,17 +119,13 @@ namespace MyMorningNews.Core.Fetch
                     return result;
                 }
 
-                await WaitForDomainAsync(uri.Host, s.PerDomainDelayMs, token).ConfigureAwait(false);
-                try
+                if (_Cache != null)
+                    result = await _Cache.FetchAsync(url!, forceRefresh, t => FetchLiveAsync(uri, s, blockedDomains, t), token).ConfigureAwait(false);
+                else
                 {
-                    await DownloadAsync(uri, s, result, token).ConfigureAwait(false);
+                    result = await FetchLiveAsync(uri, s, blockedDomains, token).ConfigureAwait(false);
+                    if (forceRefresh) result.CacheStatus = "Forced";
                 }
-                finally
-                {
-                    _LastFetch[uri.Host] = DateTime.UtcNow;
-                    if (_DomainGates.TryGetValue(uri.Host, out SemaphoreSlim? gate)) gate.Release();
-                }
-
                 return result;
             }
             catch (OperationCanceledException) when (!token.IsCancellationRequested)
@@ -137,6 +142,7 @@ namespace MyMorningNews.Core.Fetch
             }
             finally
             {
+                result.RawData = null;
                 result.DurationMs = Math.Round(sw.Elapsed.TotalMilliseconds, 1);
                 MyMorningNewsTelemetry.Increment(MyMorningNewsTelemetry.FetchRequests, "outcome", result.Disposition.ToString());
                 MyMorningNewsTelemetry.Record(MyMorningNewsTelemetry.FetchDuration, sw.Elapsed.TotalSeconds);
@@ -165,6 +171,7 @@ namespace MyMorningNews.Core.Fetch
             if (_Disposed) return;
             if (disposing)
             {
+                _Cache?.Dispose();
                 _Http.Dispose();
                 foreach (SemaphoreSlim gate in _DomainGates.Values) gate.Dispose();
             }
@@ -175,6 +182,39 @@ namespace MyMorningNews.Core.Fetch
         #endregion
 
         #region Private-Methods
+
+        private async Task<FetchResult> FetchLiveAsync(Uri uri, SearchSettings s, IEnumerable<string>? blockedDomains, CancellationToken token)
+        {
+            FetchResult result = new FetchResult { Url = uri.ToString(), CanonicalUrl = UrlCanonicalizer.Canonicalize(uri.ToString()) };
+            await WaitForDomainAsync(uri.Host, s.PerDomainDelayMs, token).ConfigureAwait(false);
+            try
+            {
+                await DownloadAsync(uri, s, result, token).ConfigureAwait(false);
+                if (blockedDomains != null && blockedDomains.Any(d => UrlCanonicalizer.IsInDomain(result.FinalUrl, d)))
+                {
+                    result.Disposition = FetchDispositionEnum.Blocked;
+                    result.Error = "The final domain is blocked.";
+                    result.Text = null;
+                    result.RawData = null;
+                }
+            }
+            catch (OperationCanceledException) when (!token.IsCancellationRequested)
+            {
+                result.Disposition = FetchDispositionEnum.Failed;
+                result.Error = "Timed out.";
+            }
+            catch (Exception ex) when (!(ex is OperationCanceledException))
+            {
+                result.Disposition = FetchDispositionEnum.Failed;
+                result.Error = ex.Message;
+            }
+            finally
+            {
+                _LastFetch[uri.Host] = DateTime.UtcNow;
+                if (_DomainGates.TryGetValue(uri.Host, out SemaphoreSlim? gate)) gate.Release();
+            }
+            return result;
+        }
 
         private async Task DownloadAsync(Uri uri, SearchSettings s, FetchResult result, CancellationToken token)
         {
@@ -221,6 +261,11 @@ namespace MyMorningNews.Core.Fetch
                 result.ContentType = page.ContentType;
                 byte[] data = page.Data ?? Array.Empty<byte>();
                 result.Bytes = data.LongLength;
+                result.NetworkBytes = data.LongLength;
+                DateTime receivedUtc = DateTime.UtcNow;
+                result.CacheExpiresUtc = CrawlCachePolicy.Expiry(page.Headers, result.FetchedUtc, receivedUtc, _Settings.CrawlCache.FreshnessSeconds,
+                    page.RedirectChain.Count > 0 || !String.Equals(page.FinalUrl, page.Url, StringComparison.Ordinal));
+                result.FetchedUtc = receivedUtc;
                 if (page.Status < 200 || page.Status >= 300)
                 {
                     result.Disposition = FetchDispositionEnum.HttpError;
@@ -260,6 +305,7 @@ namespace MyMorningNews.Core.Fetch
                     return;
                 }
 
+                result.RawData = data;
                 result.Disposition = FetchDispositionEnum.Fetched;
             }
         }

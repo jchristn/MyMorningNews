@@ -33,3 +33,18 @@ test('pagination traverses every page and rejects direct arrays', async () => {
   assert.deepEqual(seen, rows);
   await assert.rejects(async () => { for await (const item of paginate(async () => [])) void item; }, /EnumerationResult/);
 });
+
+test('fetch diagnostics forward an explicit boolean forceRefresh and preserve provenance', async () => {
+  const bodies = [];
+  const api = new MyMorningNewsClient({ fetch: async (url, options) => {
+    bodies.push(JSON.parse(options.body));
+    return new Response(JSON.stringify({ cacheStatus: 'Forced', cacheUpdated: true, networkBytes: 123 }), { status: 200 });
+  } });
+  await api.searchProviders.fetchTest('https://example.test/a');
+  assert.equal(bodies.at(-1).forceRefresh, false);
+  const result = await api.searchProviders.fetchTest('https://example.test/a', true);
+  assert.equal(bodies.at(-1).forceRefresh, true);
+  assert.equal(result.cacheStatus, 'Forced');
+  assert.equal(result.cacheUpdated, true);
+  assert.throws(() => api.searchProviders.fetchTest('https://example.test/a', 'true'), /boolean/);
+});

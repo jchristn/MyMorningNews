@@ -99,6 +99,7 @@ namespace MyMorningNews.Core.Database.Postgresql
             PredictionReviews = new PredictionReviewMethods(this);
             Suggestions = new SuggestionMethods(this);
             Artifacts = new ArtifactMethods(this);
+            CrawlCache = new CrawlCacheMethods(this);
             BriefingTemplates = new BriefingTemplateMethods(this);
             BriefingTemplateVersions = new BriefingTemplateVersionMethods(this);
             Editions = new EditionMethods(this);

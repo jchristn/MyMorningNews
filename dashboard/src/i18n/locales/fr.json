@@ -615,7 +615,8 @@
       "email": "E-mail",
       "learning": "Apprentissage",
       "hosting": "Hébergement",
-      "sharing": "Partage"
+      "sharing": "Partage",
+      "crawlCache": "Cache d’exploration"
     },
     "fields": {
       "rest_hostname": "Nom d’hôte",
@@ -4328,6 +4329,14 @@
       "help": "Choisissez où ce sujet effectue ses recherches. Laissez les valeurs par défaut pour suivre les fournisseurs par défaut du locataire.",
       "none": "Aucun fournisseur de recherche n’est encore configuré.",
       "useDefaults": "Utiliser les valeurs par défaut"
+    },
+    "fetch": {
+      "title": "Récupérer une page",
+      "url": "URL de la page",
+      "force": "Forcer une nouvelle récupération",
+      "run": "Récupérer",
+      "updated": "Cache mis à jour",
+      "status": "État du cache"
     }
   },
   "runCharts": {

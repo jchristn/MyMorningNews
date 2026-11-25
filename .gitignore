@@ -85,3 +85,6 @@ mobile/**/private-key*.pem
 
 # Local Google Play submission credential, excluded from EAS source archives.
 mobile/.credentials/
+
+# Disposable crawled content (configure outside the checkout in production)
+**/crawl-cache/

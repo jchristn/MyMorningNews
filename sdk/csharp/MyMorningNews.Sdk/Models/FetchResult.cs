@@ -77,6 +77,21 @@ namespace MyMorningNews.Sdk.Models
         public DateTime FetchedUtc { get; set; }
 
         /// <summary>
+        /// Hit, Miss, Forced, Bypass, or Error. Default Bypass. Forced always retrieves from the origin.
+        /// </summary>
+        public string CacheStatus { get; set; } = "Bypass";
+
+        /// <summary>
+        /// Whether this call successfully published a new cache generation. Default false.
+        /// </summary>
+        public bool CacheUpdated { get; set; } = false;
+
+        /// <summary>
+        /// Origin body bytes received during this call; zero on a cache hit. Excludes robots requests. Default 0.
+        /// </summary>
+        public long NetworkBytes { get; set; } = 0;
+
+        /// <summary>
         /// Instantiate.
         /// </summary>
         public FetchResult()

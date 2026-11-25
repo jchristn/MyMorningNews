@@ -36,3 +36,18 @@ class EnumerationTest(unittest.TestCase):
         query = EnumerationQuery(page_number=-2, page_size=5000).to_keyword_arguments()
         self.assertEqual(1, query['page_number'])
         self.assertEqual(1000, query['page_size'])
+
+class CrawlCacheTest(unittest.TestCase):
+    def test_force_refresh_wire(self):
+        import json
+        transport = Transport()
+        transport.reply = {"cacheStatus": "Forced", "cacheUpdated": True, "networkBytes": 123}
+        client = MyMorningNewsClient("https://example.test", session=transport)
+        client.search_providers.fetch_test("https://example.test/a")
+        self.assertFalse(json.loads(transport.sent[-1].body)["forceRefresh"])
+        result = client.search_providers.fetch_test("https://example.test/a", force_refresh=True)
+        self.assertTrue(json.loads(transport.sent[-1].body)["forceRefresh"])
+        self.assertEqual("Forced", result["cacheStatus"])
+        self.assertTrue(result["cacheUpdated"])
+        with self.assertRaises(TypeError):
+            client.search_providers.fetch_test("https://example.test/a", force_refresh="true")

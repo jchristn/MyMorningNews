@@ -4818,9 +4818,11 @@ class SearchProvidersResource(_Resource):
         return self._json("POST", API + "/search-providers/" + _seg(provider_id) + "/test",
                           body={"query": query, "feedUrls": list(feed_urls) if feed_urls else None, "maxResults": max_results})
 
-    def fetch_test(self, url: str) -> Dict[str, Any]:
-        """Fetch a page as the research pipeline would. Returns the fetch result as a dict."""
-        return self._json("POST", API + "/fetch/test", body={"url": url})
+    def fetch_test(self, url: str, force_refresh: bool = False) -> Dict[str, Any]:
+        """Fetch a page; force_refresh bypasses cached content and never falls back on failure."""
+        if not isinstance(force_refresh, bool):
+            raise TypeError("force_refresh must be a boolean")
+        return self._json("POST", API + "/fetch/test", body={"url": url, "forceRefresh": force_refresh})
 
 
 class VoicesResource(_Resource):

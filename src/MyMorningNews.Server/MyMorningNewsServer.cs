@@ -155,7 +155,7 @@ namespace MyMorningNews.Server
             _Models = new ModelGateway(_Database, vault, settings, _Logging);
             TenantDefaultsService tenantDefaults = new TenantDefaultsService(_Database, prompts, vault, settings.Models, _Logging);
             _Search = new SearchService(_Database, vault, settings, _Logging);
-            _Fetch = new FetchService(settings, _Logging);
+            _Fetch = new FetchService(settings, _Logging, _Database.CrawlCache);
             tenantDefaults.Search = _Search;
             _Push = new PushService(_Database, settings, _Logging);
             _Refinement = new RefinementService(_Database, prompts, _Models, _Logging);
@@ -296,6 +296,8 @@ namespace MyMorningNews.Server
                 _Workers.Add(Task.Run(() => catalogDelivery.RunAsync(Lifetime.Token)));
                 BillingWorker billingWorker = new BillingWorker(_Context);
                 _Workers.Add(Task.Run(() => billingWorker.RunAsync(Lifetime.Token)));
+                CrawlCacheWorker crawlCache = new CrawlCacheWorker(_Context);
+                _Workers.Add(Task.Run(() => crawlCache.RunAsync(Lifetime.Token)));
                 RetentionWorker retention = new RetentionWorker(_Context);
                 _Workers.Add(Task.Run(() => retention.RunAsync(Lifetime.Token)));
                 BriefingWorker briefingWorker = new BriefingWorker(_Context);

@@ -615,7 +615,8 @@
       "email": "电子邮件",
       "learning": "学习",
       "hosting": "托管",
-      "sharing": "分享"
+      "sharing": "分享",
+      "crawlCache": "抓取缓存"
     },
     "fields": {
       "rest_hostname": "主机名",
@@ -4328,6 +4329,14 @@
       "help": "选择此主题的搜索来源。保留默认设置即可沿用租户的默认提供商。",
       "none": "尚未设置任何搜索提供商。",
       "useDefaults": "使用默认设置"
+    },
+    "fetch": {
+      "title": "获取页面",
+      "url": "页面网址",
+      "force": "强制重新获取",
+      "run": "获取",
+      "updated": "缓存已更新",
+      "status": "缓存状态"
     }
   },
   "runCharts": {

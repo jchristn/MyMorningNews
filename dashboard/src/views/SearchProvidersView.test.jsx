@@ -43,3 +43,22 @@ describe('Topic search providers', () => {
     await waitFor(() => expect(setTopicSearchProviders).toHaveBeenLastCalledWith('top_1', []));
   });
 });
+
+it('forces a fresh diagnostic retrieval only when selected and displays failure without stale content', async () => {
+  const fetchTest = vi.fn()
+    .mockResolvedValueOnce({ disposition: 'Fetched', cacheStatus: 'Hit', cacheUpdated: false, text: 'Cached article text' })
+    .mockResolvedValueOnce({ disposition: 'HttpError', cacheStatus: 'Forced', cacheUpdated: false, error: 'HTTP 404.' });
+  renderRoute('/dashboard/search-providers', { listSearchProviders: vi.fn(async () => page([])), fetchTest });
+  await userEvent.click(await screen.findByText('Fetch a page'));
+  const force = screen.getByRole('checkbox', { name: 'Force fresh retrieval' });
+  expect(force).not.toBeChecked();
+  await userEvent.type(screen.getByLabelText('Page URL'), 'https://example.com/article');
+  await userEvent.click(screen.getByRole('button', { name: 'Retrieve' }));
+  expect(await screen.findByText('Cached article text')).toBeInTheDocument();
+  expect(fetchTest).toHaveBeenLastCalledWith('https://example.com/article', false);
+  await userEvent.click(force);
+  await userEvent.click(screen.getByRole('button', { name: 'Retrieve' }));
+  expect(await screen.findByText('HTTP 404.')).toBeInTheDocument();
+  expect(fetchTest).toHaveBeenLastCalledWith('https://example.com/article', true);
+  expect(screen.queryByText('Cached article text')).not.toBeInTheDocument();
+});

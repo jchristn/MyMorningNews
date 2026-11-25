@@ -219,6 +219,21 @@ class Builder(object):
                 "  });",
                 "}",
             ])})
+        if o.key == "POST /v1.0/api/fetch/test":
+            events.append({"listen": "test", "script": js([
+                "if (pm.response.code === 200) {",
+                "  const result = pm.response.json();",
+                "  const request = JSON.parse(pm.variables.replaceIn(pm.request.body.raw));",
+                "  pm.test('Fetch result carries cache provenance', function () {",
+                "    pm.expect(result.cacheStatus).to.be.oneOf(['Hit', 'Miss', 'Forced', 'Bypass', 'Error']);",
+                "    pm.expect(result.cacheUpdated).to.be.a('boolean');",
+                "    pm.expect(result.networkBytes).to.be.at.least(0);",
+                "    if (result.cacheStatus === 'Hit') pm.expect(result.networkBytes).to.eql(0);",
+                "    if (request.forceRefresh === true) pm.expect(result.cacheStatus).not.to.eql('Hit');",
+                "    if (result.disposition !== 'Fetched') pm.expect(result.cacheUpdated).to.eql(false);",
+                "  });",
+                "}",
+            ])})
         if o.body_schema is not None:
             req["header"].append({"key": "Content-Type", "value": "application/json", "type": "text"})
             req["body"] = self.body(o)

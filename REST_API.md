@@ -7080,7 +7080,8 @@ Request body: [`FetchTestRequest`](#fetchtestrequest).
 
 ```json
 {
-  "url": "https://www.eia.gov/electricity/"
+  "url": "https://www.eia.gov/electricity/",
+  "forceRefresh": false
 }
 ```
 
@@ -14795,6 +14796,41 @@ Model cost and token totals for a set of model calls.
 | `reasoningTokens` | integer | Reasoning (thinking) tokens. |
 | `modelDurationMs` | number | Time spent in model calls, in milliseconds. |
 
+#### CrawlCacheSettings
+
+Disposable crawl cache limits. Live fields are read per operation; storage changes require restart.
+
+| Field | Type | Description |
+|---|---|---|
+| `enabled` | boolean | Enable cache reads and writes. Default false. Cleanup continues while disabled. |
+| `storageNamespace` | string | Storage namespace shared only by replicas with the same backing store. Default crawl-disk-1. |
+| `storage` | [`CrawlCacheStorageSettings`](#crawlcachestoragesettings) | Disk or S3 storage configuration. Never null. |
+| `freshnessSeconds` | integer | Maximum content freshness in seconds. Default 86400; range 60 to 604800. |
+| `maxEntryBytes` | integer | Combined raw and Markdown byte limit per entry. Default 8388608; range 65536 to 104857600. |
+| `maxTotalBytes` | integer | Maximum reserved content bytes per namespace. Default 10737418240; range 65536 to 1099511627776. |
+| `maxEntries` | integer | Maximum entries and generations per namespace. Default 100000; range 1 to 1000000. |
+| `cleanupIntervalSeconds` | integer | Seconds between bounded cleanup passes. Default 300; range 30 to 3600. |
+| `cleanupBatchSize` | integer | Maximum generations per cleanup pass. Default 100; range 1 to 1000. |
+| `operationTimeoutMs` | integer | Timeout per cache operation in milliseconds. Default 5000; range 100 to 30000. |
+| `leaseSeconds` | integer | Fill lease lifetime, renewed during downloads. Default 180; range 30 to 600. |
+| `waitForFillMs` | integer | Maximum wait for another fill in milliseconds. Default 5000; range 0 to 30000. |
+| `maxConcurrency` | integer | Maximum concurrent cache object operations. Default 8; range 1 to 64. |
+
+#### CrawlCacheStorageSettings
+
+Blobject storage configuration. All changes require restart; S3 requires an explicit key pair.
+
+| Field | Type | Description |
+|---|---|---|
+| `provider` | string | Disk or S3. Default "Disk". |
+| `directory` | string | Private persistent cache directory. Default "./crawl-cache". |
+| `s3Endpoint` | string | Custom S3 endpoint, or empty for AWS. Default "". |
+| `s3Region` | string | S3 region. Default "us-west-1". |
+| `s3Bucket` | string | Private S3 bucket. Default "". |
+| `s3Prefix` | string | Dedicated S3 key prefix. Default "mymorningnews/crawl-cache/". |
+| `s3AccessKey` | string | Explicit S3 access key. Default "". |
+| `s3SecretKey` | string | Explicit S3 secret key. Default "". |
+
 #### CredentialCreatedResponse
 
 Response to credential creation. SecretKey is returned exactly once.
@@ -15580,6 +15616,9 @@ Returned by [POST /v1.0/api/fetch/test](#post-v10apifetchtest).
 | `error` | string | Error message, when not fetched. |
 | `durationMs` | number | Duration in milliseconds. |
 | `fetchedUtc` | date-time | UTC fetch time. |
+| `cacheStatus` | string | Hit, Miss, Forced, Bypass, or Error. Default Bypass. Forced always retrieves from the origin. |
+| `cacheUpdated` | boolean | Whether this call successfully published a new cache generation. Default false. |
+| `networkBytes` | integer | Origin body bytes received during this call; zero on a cache hit. Excludes robots requests. |
 
 #### FetchTestRequest
 
@@ -15590,6 +15629,7 @@ Request body of [POST /v1.0/api/fetch/test](#post-v10apifetchtest).
 | Field | Type | Description |
 |---|---|---|
 | `url` | string | URL. |
+| `forceRefresh` | boolean | Default false. Retrieve from origin even with a fresh cache entry; update eligible content after success. No cached fallback on failure. |
 
 #### Finding
 
@@ -18069,6 +18109,7 @@ Request body of [PUT /v1.0/api/settings](#put-v10apisettings).
 | `learning` | [`LearningSettings`](#learningsettings) | Learning from feedback. |
 | `hosting` | [`HostingSettings`](#hostingsettings) | Hosted service (sign-up, plans). |
 | `sharing` | [`SharingSettings`](#sharingsettings) | Public share links for briefings. |
+| `crawlCache` | [`CrawlCacheSettings`](#crawlcachesettings) | Temporary crawl cache configuration. Never null. |
 | `billing` | [`BillingSettings`](#billingsettings) | Hosted billing integrations and offer mappings. |
 
 #### SettingFieldDescriptor

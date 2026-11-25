@@ -80,6 +80,7 @@ services:
     volumes:
       - ./server/mymorningnews.json:/app/config/mymorningnews.json
       - media:/data/media
+      - crawlcache:/data/crawl-cache
       - emailout:/data/email
       # Home directory for the agent CLIs, so sign-ins and settings (~/.claude, ~/.codex, ~/.gemini, ~/.mux) survive rebuilds.
       - clihome:/root
@@ -264,6 +265,7 @@ services:
 volumes:
   pgdata:
   media:
+  crawlcache:
   emailout:
   clihome:
   ollama:

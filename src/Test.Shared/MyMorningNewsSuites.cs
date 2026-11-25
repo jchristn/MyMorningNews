@@ -33,6 +33,7 @@ namespace Test.Shared
                     HistorySuite.Create(),
                     ScheduleSuite.Create(),
                     SearchSuite.Create(),
+                    CrawlCacheSuite.Create(),
                     PipelineSuite.Create(),
                     StorageSuite.Create(),
                     BriefingSuite.Create(),

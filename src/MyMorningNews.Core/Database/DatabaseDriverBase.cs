@@ -264,9 +264,10 @@ namespace MyMorningNews.Core.Database
         /// </summary>
         public ISuggestionMethods Suggestions { get; protected set; } = null!;
 
-        /// <summary>
-        /// Stored files.
-        /// </summary>
+        /// <summary>Internal temporary crawl cache metadata and lease operations.</summary>
+        public ICrawlCacheMethods CrawlCache { get; protected set; } = null!;
+
+        /// <summary>Artifact metadata.</summary>
         public IArtifactMethods Artifacts { get; protected set; } = null!;
 
         /// <summary>

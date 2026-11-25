@@ -212,6 +212,10 @@ namespace MyMorningNews.Core.Settings
         private PushSettings _Push = new PushSettings();
         private StorageSettings _Storage = new StorageSettings();
         private SchedulerSettings _Scheduler = new SchedulerSettings();
+        /// <summary>Temporary crawl cache configuration. Never null.</summary>
+        /// <exception cref="ArgumentNullException">Value is null.</exception>
+        public CrawlCacheSettings CrawlCache { get { return _CrawlCache; } set { _CrawlCache = value ?? throw new ArgumentNullException(nameof(CrawlCache)); } }
+        private CrawlCacheSettings _CrawlCache = new CrawlCacheSettings();
         private SearchSettings _Search = new SearchSettings();
         private TtsSettings _Tts = new TtsSettings();
         private EmailSettings _Email = new EmailSettings();

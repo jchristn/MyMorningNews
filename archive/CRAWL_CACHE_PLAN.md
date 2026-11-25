@@ -1,6 +1,14 @@
 # Temporary crawl cache implementation plan
 
-Status: proposed, not implemented. Prepared November 24, 2026 against `b65735c`.
+Status: implemented and archived November 24, 2026. Original plan prepared against `b65735c`; the proposed design below is retained as the implementation record. Current setup and operating instructions are in [the crawl cache guide](../docs/CRAWL_CACHE.md).
+
+Implementation notes:
+
+- Migration 39 adds entries, immutable generations, and permanent namespace-to-storage bindings. Redirected responses bypass cache admission because CrawlSharp does not expose intermediate cookie/cache headers, so a redirect-hop table is not needed for this release.
+- Blobject 6.1.3 disk and S3 adapters, system settings/environment overrides, cleanup, bounded capacity, storage integrity checks, and optional forced retrieval are implemented. Object-operation concurrency is configurable and requires restart.
+- Pipeline, agentic search, administrative diagnostics, dashboard controls, all three SDKs, REST/Postman contracts, Docker examples, and regression tests are updated. Existing source/evidence text remains independently retained.
+- Validation passed: full .NET 8 backend suite (293 tests); full .NET 10 suite before the final pipeline regression was added (292 tests), followed by all 10 final crawl-cache cases on .NET 10, including real local MinIO; zero-warning builds for both frameworks; dashboard tests/build/lint/localization, the added nested-settings UI regression, mobile tests (526 passed, six existing skips), and SDK wire/collection-contract checks.
+- No production deployment is included. Cache defaults remain disabled. The deployment guide retains the AWS S3 bucket/credential smoke test as an account-specific rollout step.
 
 Store crawl URLs, freshness, and object references in PostgreSQL. Store downloaded content and converted Markdown through Blobject, using either disk or S3 selected in the system settings JSON. A fresh, eligible cache hit supplies the existing fetch result without downloading the page or converting it again. Expired entries trigger a new crawl and are removed by a background worker.
 

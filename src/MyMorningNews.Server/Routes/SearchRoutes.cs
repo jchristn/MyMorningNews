@@ -171,7 +171,7 @@ namespace MyMorningNews.Server.Routes
             if (!await AuthorizeAsync(ctx, RequestTypeEnum.SearchProviderWrite).ConfigureAwait(false)) return;
             FetchTestRequest? req = await ReadBodyAsync<FetchTestRequest>(ctx).ConfigureAwait(false);
             if (req == null) return;
-            FetchResult result = await Server.Fetch.FetchAsync(req.Url, null, ctx.Token).ConfigureAwait(false);
+            FetchResult result = await Server.Fetch.FetchAsync(req.Url, null, ctx.Token, req.ForceRefresh).ConfigureAwait(false);
             if (result.Text != null && result.Text.Length > 20000) result.Text = result.Text.Substring(0, 20000);
             await SendJsonAsync(ctx, 200, result).ConfigureAwait(false);
         }

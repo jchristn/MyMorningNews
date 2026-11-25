@@ -443,3 +443,7 @@ in CI as the "Benchmark gate". See [`benchmarks/README.md`](benchmarks/README.md
 MIT. See [LICENSE.md](LICENSE.md).
 
 (c) 2026 Lattice AI LLC
+
+## Temporary crawl cache
+
+See the [crawl cache guide](docs/CRAWL_CACHE.md) for Blobject disk/S3 configuration, bounded storage and cleanup, and optional `forceRefresh` retrieval. Caching defaults to disabled; the administrative fetch diagnostic and SDKs expose cache provenance.

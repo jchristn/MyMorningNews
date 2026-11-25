@@ -60,6 +60,11 @@ namespace Test.Shared.Helpers
         #region Private-Members
 
         private static readonly Lazy<StubModelServer> _Shared = new Lazy<StubModelServer>(() => new StubModelServer());
+        /// <summary>Origin request counts for crawl-cache integration tests, keyed by URL path.</summary>
+        public System.Collections.Concurrent.ConcurrentDictionary<string, int> CrawlRequests { get; } = new System.Collections.Concurrent.ConcurrentDictionary<string, int>();
+        /// <summary>Paths returning an explicit origin failure during refresh tests.</summary>
+        public System.Collections.Concurrent.ConcurrentDictionary<string, bool> CrawlFailures { get; } = new System.Collections.Concurrent.ConcurrentDictionary<string, bool>();
+
         private readonly HttpListener _Listener = new HttpListener();
         private readonly ConcurrentDictionary<string, int> _Counts = new ConcurrentDictionary<string, int>(StringComparer.Ordinal);
         private readonly ConcurrentDictionary<string, byte> _Seen = new ConcurrentDictionary<string, byte>(StringComparer.Ordinal);
@@ -547,8 +552,28 @@ namespace Test.Shared.Helpers
             return "{\"answer\":\"ready\"}";
         }
 
-        private static async Task WriteGetAsync(HttpListenerContext ctx, string path)
+        private async Task WriteGetAsync(HttpListenerContext ctx, string path)
         {
+            if (path.Contains("/crawl-cache/", StringComparison.Ordinal))
+            {
+                int count = CrawlRequests.AddOrUpdate(path, 1, (_, n) => n + 1);
+                if (CrawlFailures.ContainsKey(path)) { await WriteRawAsync(ctx, 404, "text/plain", "gone").ConfigureAwait(false); return; }
+                if (path.EndsWith("/slow", StringComparison.Ordinal)) await Task.Delay(250).ConfigureAwait(false);
+                if (path.EndsWith("/redirect", StringComparison.Ordinal))
+                {
+                    ctx.Response.Headers["Location"] = path.Replace("/redirect", "/target", StringComparison.Ordinal);
+                    ctx.Response.Headers["Set-Cookie"] = "private=1";
+                    await WriteRawAsync(ctx, 302, "text/plain", "redirect").ConfigureAwait(false); return;
+                }
+                if (path.EndsWith("/private", StringComparison.Ordinal)) ctx.Response.Headers["Cache-Control"] = "private";
+                else if (path.EndsWith("/no-store", StringComparison.Ordinal)) ctx.Response.Headers["Cache-Control"] = "no-store";
+                else if (path.EndsWith("/no-cache", StringComparison.Ordinal)) ctx.Response.Headers["Cache-Control"] = "no-cache";
+                else ctx.Response.Headers["Cache-Control"] = "public, max-age=60";
+                if (path.EndsWith("/cookie", StringComparison.Ordinal)) ctx.Response.Headers["Set-Cookie"] = "personal=1";
+                if (path.EndsWith("/vary", StringComparison.Ordinal)) ctx.Response.Headers["Vary"] = "Cookie";
+                string html = "<html><title>Cached article</title><body><article><p>Origin version " + count + "</p><p>" + new string('x', path.EndsWith("/large", StringComparison.Ordinal) ? 40000 : 300) + "</p></article></body></html>";
+                await WriteRawAsync(ctx, 200, "text/html", html).ConfigureAwait(false); return;
+            }
             if (path.EndsWith("/robots.txt", StringComparison.Ordinal)) { await WriteRawAsync(ctx, 200, "text/plain", "User-agent: *\nDisallow: /v1/private\nAllow: /v1/private/open\n").ConfigureAwait(false); return; }
             if (path.Contains("missing", StringComparison.Ordinal)) { await WriteAsync(ctx, 404, "{\"error\":\"not found\"}").ConfigureAwait(false); return; }
             if (path.EndsWith("/search", StringComparison.Ordinal))

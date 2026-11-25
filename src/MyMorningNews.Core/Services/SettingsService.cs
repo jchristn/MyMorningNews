@@ -190,6 +190,14 @@ namespace MyMorningNews.Core.Services
                     else changedLive.Add(field);
                 }
 
+                try
+                {
+                    ServerSettings effective = Clone(candidate);
+                    ApplyEnvironment(effective);
+                    effective.CrawlCache.Validate();
+                }
+                catch (ArgumentException ex) { result.Errors["CrawlCache"] = ex.Message; }
+
                 if (result.Errors.Count > 0)
                 {
                     result.Success = false;

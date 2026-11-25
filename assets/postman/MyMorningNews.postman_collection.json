@@ -13876,14 +13876,36 @@
             "description": "**Fetch a page as the research pipeline would.**\n\n- Auth: `SearchProvider:Admin` (`SearchProviderWrite`).\n- Response: FetchResult\n- Status: 200 OK; 400 BadRequest; 401 Unauthorized; 403 Forbidden\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#post-v10apifetchtest)",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"url\": \"https://www.eia.gov/electricity/\"\n}",
+              "raw": "{\n  \"url\": \"https://www.eia.gov/electricity/\",\n  \"forceRefresh\": false\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const result = pm.response.json();",
+                  "  const request = JSON.parse(pm.variables.replaceIn(pm.request.body.raw));",
+                  "  pm.test('Fetch result carries cache provenance', function () {",
+                  "    pm.expect(result.cacheStatus).to.be.oneOf(['Hit', 'Miss', 'Forced', 'Bypass', 'Error']);",
+                  "    pm.expect(result.cacheUpdated).to.be.a('boolean');",
+                  "    pm.expect(result.networkBytes).to.be.at.least(0);",
+                  "    if (result.cacheStatus === 'Hit') pm.expect(result.networkBytes).to.eql(0);",
+                  "    if (request.forceRefresh === true) pm.expect(result.cacheStatus).not.to.eql('Hit');",
+                  "    if (result.disposition !== 'Fetched') pm.expect(result.cacheUpdated).to.eql(false);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Read a search provider",

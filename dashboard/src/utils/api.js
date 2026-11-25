@@ -1148,6 +1148,9 @@ export class ApiClient {
     return this._request('DELETE', '/v1.0/api/search-providers/' + enc(id));
   }
   // Resolves to { providerId, kind, success, error, durationMs, hits }.
+  fetchTest(url, forceRefresh = false) {
+    return this._request('POST', '/v1.0/api/fetch/test', { body: { url, forceRefresh } });
+  }
   testSearchProvider(id, body) {
     return this._request('POST', '/v1.0/api/search-providers/' + enc(id) + '/test', { body: body || {} });
   }

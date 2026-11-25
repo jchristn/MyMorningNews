@@ -11,8 +11,8 @@ namespace MyMorningNews.Core.Pipeline.Stages
     using MyMorningNews.Core.Requests;
 
     /// <summary>
-    /// Stage 5: fetches selected results in parallel, reusing a tenant's stored source when it was fetched in the last
-    /// seven days. When results were selected and none could be read, the stage succeeds with a warning and the run ends
+    /// Stage 5: fetches selected results in parallel using the shared cache and its configured freshness.
+    /// When selected results cannot be read, the stage succeeds with a warning and the run ends
     /// as PartiallySucceeded (it fails only when search or the model fails).
     /// </summary>
     public class FetchStage : IRunStage
@@ -68,14 +68,6 @@ namespace MyMorningNews.Core.Pipeline.Stages
         private static async Task<SourceItem?> ReadOrFetchAsync(RunContext ctx, PipelineServices services, SearchResult r, List<string> blocked, CancellationToken token)
         {
             SourceItem? existing = (await services.Database.SourceItems.EnumerateAsync(new SourceItemFilter { TenantId = ctx.Run.TenantId, CanonicalUrlHash = r.CanonicalUrlHash, PageSize = 1 }, token).ConfigureAwait(false)).Objects.FirstOrDefault();
-            if (existing != null && !String.IsNullOrWhiteSpace(existing.ContentText) && existing.FetchedUtc > ctx.NowUtc.AddDays(-7))
-            {
-                existing.TimesSeen++;
-                existing = await services.Database.SourceItems.UpdateAsync(existing, token).ConfigureAwait(false);
-                await SetAsync(services, r, SearchResultDispositionEnum.Fetched, existing.Id, token).ConfigureAwait(false);
-                return existing;
-            }
-
             FetchResult fetched = await services.Fetch.FetchAsync(r.Url, blocked, token).ConfigureAwait(false);
             if (fetched.Disposition != FetchDispositionEnum.Fetched || String.IsNullOrWhiteSpace(fetched.Text))
             {
@@ -96,7 +88,7 @@ namespace MyMorningNews.Core.Pipeline.Stages
             item.Domain = UrlCanonicalizer.Domain(fetched.FinalUrl ?? r.Url);
             item.Title = Clean(!String.IsNullOrWhiteSpace(fetched.Title) ? fetched.Title : r.Title);
             item.PublishedUtc = r.PublishedUtc ?? item.PublishedUtc;
-            item.FetchedUtc = DateTime.UtcNow;
+            item.FetchedUtc = fetched.FetchedUtc;
             item.HttpStatus = fetched.StatusCode;
             item.ContentType = fetched.ContentType != null && fetched.ContentType.Length > 128 ? fetched.ContentType.Substring(0, 128) : fetched.ContentType;
             item.ContentHash = fetched.ContentHash;

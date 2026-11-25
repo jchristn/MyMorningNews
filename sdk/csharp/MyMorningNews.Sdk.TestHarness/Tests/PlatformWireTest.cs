@@ -53,6 +53,11 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
                 Helpers.Equal(EmailStatusEnum.Queued, report.Status, "asynchronous support delivery status");
                 Helpers.Equal("/v1.0/api/briefings/brf%2Fone/support", handler.Path, "escaped support path");
                 Helpers.Equal("POST", handler.Method, "support is an explicit action");
+                handler.Status = HttpStatusCode.OK;
+                handler.Reply = "{\"cacheStatus\":\"Forced\",\"cacheUpdated\":true,\"networkBytes\":123,\"disposition\":\"Fetched\"}";
+                FetchResult fetched = await client.SearchProviders.FetchTestAsync(new FetchTestRequest { Url = "https://example.test/a", ForceRefresh = true }, token).ConfigureAwait(false);
+                Helpers.True(handler.Body.Contains("\"forceRefresh\":true", StringComparison.Ordinal), "forced retrieval request");
+                Helpers.True(fetched.CacheStatus == "Forced" && fetched.CacheUpdated && fetched.NetworkBytes == 123, "cache provenance response");
                 handler.Status = HttpStatusCode.NoContent;
                 await client.Catalog.UnsubscribeAsync("c1", token).ConfigureAwait(false);
             }

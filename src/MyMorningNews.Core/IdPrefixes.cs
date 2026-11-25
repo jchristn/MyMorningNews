@@ -5,6 +5,8 @@ namespace MyMorningNews.Core
     /// </summary>
     public static class IdPrefixes
     {
+        /// <summary>Temporary crawl cache records and fencing tokens.</summary>
+        public const string CrawlCache = "crc_";
         /// <summary>
         /// Prefix for Tenant identifiers.
         /// </summary>

@@ -615,7 +615,8 @@
       "email": "Email",
       "learning": "Apprendimento",
       "hosting": "Hosting",
-      "sharing": "Condivisione"
+      "sharing": "Condivisione",
+      "crawlCache": "Cache di scansione"
     },
     "fields": {
       "rest_hostname": "Nome host",
@@ -4328,6 +4329,14 @@
       "help": "Scegli dove cerca questo argomento. Lascia i valori predefiniti per seguire i provider predefiniti del tenant.",
       "none": "Nessun provider di ricerca configurato.",
       "useDefaults": "Usa i predefiniti"
+    },
+    "fetch": {
+      "title": "Recupera una pagina",
+      "url": "URL della pagina",
+      "force": "Forza un nuovo recupero",
+      "run": "Recupera",
+      "updated": "Cache aggiornata",
+      "status": "Stato della cache"
     }
   },
   "runCharts": {

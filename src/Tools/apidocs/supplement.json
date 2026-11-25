@@ -4660,7 +4660,8 @@
       "maxResults": 20
     },
     "FetchTestRequest": {
-      "url": "https://www.eia.gov/electricity/"
+      "url": "https://www.eia.gov/electricity/",
+      "forceRefresh": false
     },
     "FindingUpdateRequest": {
       "pinned": true,

@@ -27,5 +27,29 @@
   },
   "tts": {
     "endpoint": "http://tts:8880/v1"
+  },
+  "crawlCache": {
+    "enabled": false,
+    "storageNamespace": "crawl-disk-1",
+    "freshnessSeconds": 86400,
+    "maxEntryBytes": 8388608,
+    "maxTotalBytes": 10737418240,
+    "maxEntries": 100000,
+    "cleanupIntervalSeconds": 300,
+    "cleanupBatchSize": 100,
+    "operationTimeoutMs": 5000,
+    "leaseSeconds": 180,
+    "waitForFillMs": 5000,
+    "maxConcurrency": 8,
+    "storage": {
+      "provider": "Disk",
+      "directory": "/data/crawl-cache",
+      "s3Endpoint": "",
+      "s3Region": "us-west-1",
+      "s3Bucket": "",
+      "s3Prefix": "mymorningnews/crawl-cache/",
+      "s3AccessKey": "",
+      "s3SecretKey": ""
+    }
   }
 }

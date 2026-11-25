@@ -615,7 +615,8 @@
       "email": "E-mail",
       "learning": "Aprendizado",
       "hosting": "Hospedagem",
-      "sharing": "Compartilhamento"
+      "sharing": "Compartilhamento",
+      "crawlCache": "Cache de rastreamento"
     },
     "fields": {
       "rest_hostname": "Nome do host",
@@ -4328,6 +4329,14 @@
       "help": "Escolha onde este tema pesquisa. Mantenha o padrão para seguir os provedores padrão do locatário.",
       "none": "Nenhum provedor de pesquisa configurado ainda.",
       "useDefaults": "Usar o padrão"
+    },
+    "fetch": {
+      "title": "Obter uma página",
+      "url": "URL da página",
+      "force": "Forçar nova obtenção",
+      "run": "Obter",
+      "updated": "Cache atualizado",
+      "status": "Estado do cache"
     }
   },
   "runCharts": {

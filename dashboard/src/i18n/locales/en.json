@@ -615,7 +615,8 @@
       "email": "Email",
       "learning": "Learning",
       "hosting": "Hosting",
-      "sharing": "Sharing"
+      "sharing": "Sharing",
+      "crawlCache": "Crawl cache"
     },
     "fields": {
       "rest_hostname": "Hostname",
@@ -4328,6 +4329,14 @@
       "help": "Choose where this topic searches. Leave it on the defaults to follow the tenant's default providers.",
       "none": "No search providers are set up yet.",
       "useDefaults": "Use the defaults"
+    },
+    "fetch": {
+      "title": "Fetch a page",
+      "url": "Page URL",
+      "force": "Force fresh retrieval",
+      "run": "Retrieve",
+      "updated": "Cache updated",
+      "status": "Cache status"
     }
   },
   "runCharts": {

@@ -36,8 +36,8 @@ describe('repository rules', () => {
     const config = require('../../app.config.js')();
     expect(config.version).toBe('0.1.0');
     expect(config.extra.releaseVersion).toBe('0.1.0-alpha');
-    expect(config.ios.buildNumber).toBe('10');
-    expect(config.android.versionCode).toBe(10);
+    expect(config.ios.buildNumber).toBe('11');
+    expect(config.android.versionCode).toBe(11);
   });
 
   it('configures identity, background audio, links, and permissions', () => {

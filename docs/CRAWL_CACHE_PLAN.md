@@ -23,6 +23,20 @@ Keep the existing artifact storage service and its retention policy independent.
 - On cache database or object-store failure, perform a normal crawl within existing timeouts. A successful crawl remains successful if its cache write fails. Preserve caller cancellation rather than treating it as a cache miss.
 - Keep `FetchDispositionEnum.Fetched` for successful hits. Add an additive cache-status field for diagnostics; preserve the original `FetchedUtc`, content hash, title, final URL, and byte count. `DurationMs` measures this call, including cache lookup. Update `FetchStage` to copy the original fetch timestamp instead of assigning the current time on a hit.
 
+## Optional forced retrieval
+
+Add a per-request `forceRefresh` boolean, defaulting to `false`, to the internal fetch options and the fetch diagnostic request (`FetchTestRequest.ForceRefresh` in C#, serialized as `forceRefresh`). Existing callers that omit it retain normal cache behavior. This is a request option, not a global system setting.
+
+When `forceRefresh` is `true`:
+
+- Skip cached response bodies and perform a new origin retrieval and conversion, even if a fresh cache entry exists. Do not satisfy the request from an existing in-flight fetch or from a generation published while waiting for a lease.
+- Continue enforcing domain restrictions, egress checks, robots rules, per-domain delays, timeouts, cancellation, and content-size limits. The flag bypasses only content-cache reuse.
+- After a successful, cache-eligible retrieval, publish a new generation through the normal lease, fencing, and capacity checks. Its freshness starts at the new origin fetch time; superseded content is queued for cleanup. If caching is disabled, the response is ineligible, or publication cannot complete, return the newly fetched result without claiming the cache was updated.
+- On origin retrieval or conversion failure, return the normal failure result. Never fall back to a cached response, even if the previous entry is still fresh. A transient failure does not extend or delete the previous generation; ordinary callers may continue using it while it remains eligible and fresh.
+- Record the forced retrieval separately from a cache hit, and expose whether cache publication succeeded through the planned diagnostic metadata.
+
+Forced retrieval uses the same bounded lease wait as other fills, but always performs its own origin request afterward. If it cannot acquire a publishing lease, it may retrieve without publishing; it must neither steal a live lease nor overwrite a newer generation without the current fencing token. Normal callers can continue using a fresh active generation during refresh.
+
 ## URL identity and isolation
 
 Introduce a dedicated `CrawlCacheKey` helper. Do not use `UrlCanonicalizer.Hash`: its existing deduplication identity merges HTTP with HTTPS and removes `www.`, while its canonicalizer also changes query order and trailing slashes. Those transformations can identify different origin responses as equivalent.
@@ -95,9 +109,9 @@ Add the next available migration using the existing `DatabaseDriverBase`, interf
 
 Index lookup identity, expiry/state/ID for bounded cleanup, and lease expiry for recovery. Retain the existing tenant-owned source-item relationships; cache deletion must never cascade into sources, findings, evidence, or briefings.
 
-1. Check eligibility and current policy, then read the active generation by indexed identity. Accept it only when fresh, profile-compatible, within current limits, and both referenced objects can be verified. Load only the Markdown object for normal hits; validate its length/hash and required metadata. A missing raw object is detected during integrity reconciliation and invalidates the generation.
-2. On a miss, atomically acquire a short database lease for that key, with a monotonically changing fencing token. A local per-key task can reduce database contention; the database lease coordinates separate server instances. Do not hold a transaction open across network calls.
-3. A competing caller waits a bounded time and rechecks. If the lease still exists after its wait budget, it may fetch independently without publishing. Thus normal overlapping requests share one fetch, while a stalled owner cannot indefinitely block research. Cancellation by one waiter must not cancel another caller's work.
+1. Check eligibility and current policy. Unless `forceRefresh` is true, read the active generation by indexed identity. Accept it only when fresh, profile-compatible, within current limits, and both referenced objects can be verified. Load only the Markdown object for normal hits; validate its length/hash and required metadata. A missing raw object is detected during integrity reconciliation and invalidates the generation.
+2. On a miss or forced retrieval, atomically acquire a short database lease for that key, with a monotonically changing fencing token. A local per-key task can reduce database contention for ordinary requests; the database lease coordinates separate server instances. Do not hold a transaction open across network calls.
+3. A competing caller waits a bounded time and rechecks. Ordinary callers may reuse the newly published result; forced callers must perform their own origin retrieval. If the lease still exists after its wait budget, a caller may fetch independently without publishing. Thus normal overlapping requests share one fetch, while a stalled owner cannot indefinitely block research. Cancellation by one waiter must not cancel another caller's work.
 4. The owner fetches and converts through the current crawl path. Recheck response eligibility. Reserve a generation and capacity in a short transaction before writing objects. Reservation accounting includes active, writing, and pending-deletion generations. If the budget is exhausted, return the fetched result without caching and request cleanup.
 5. Write raw and Markdown objects with unique generation keys. Only after both writes finish, atomically mark the generation ready and switch the active pointer, conditional on the lease fencing token still being current. A late owner cannot overwrite a newer result. Renew leases during long operations.
 6. Queue the superseded generation for deletion. A failed write, lost lease, or process crash leaves a recorded generation for retryable cleanup. Return a fresh result to the caller even if publication fails. Verify persisted content on subsequent reads, and invalidate corrupt/missing content before refetching.
@@ -121,19 +135,25 @@ Storage migration is an operational step: disable fills, drain/purge the old nam
 
 No new public cache listing endpoint is needed. Add cache provenance to `FetchResult` and update its REST/OpenAPI examples, Postman response examples, C# model, JavaScript/Python documentation, and diagnostic UI where used. Any future cache collection route must accept `EnumerationQuery` and return `EnumerationResult`, with the existing bounded GET and POST `/enumerate` conventions. Never expose Blobject enumeration directly as a REST array.
 
+Document the optional `forceRefresh` request field in REST/OpenAPI and Postman, propagate it through the C#/JavaScript/Python fetch diagnostic clients, and add a default-off "Force fresh retrieval" control to the dashboard fetch diagnostic. Preserve the endpoint's existing authorization. Internal pipeline and agentic-search fetch callers can explicitly set the option; scheduled calls default to false. Validate non-boolean API values using the existing request-validation conventions.
+
 Record hit/miss/expired/bypass/error counters, avoided page downloads, lookup/write latency, stored/reserved bytes, generation counts, fill contention, eviction counts, and cleanup failures. Use fixed low-cardinality outcome/provider labels. Keep full URLs, credentials, content, and tenant activity out of metrics. Distinguish retrieved body bytes from actual network bytes on a hit.
 
 ## Implementation sequence and acceptance tests
 
 1. **Settings and Blobject adapter:** package compatibility, validated JSON/environment fields, secret masking, disk/S3 contracts, persistent disk volume, private S3 configuration. Verify read/write/delete and cancellation against temporary disk and a local S3-compatible service, plus a dedicated AWS S3 test prefix before enabling AWS production storage.
 2. **Database and cleanup:** migration/rehearsal, typed models, indexed lookups, leases/fencing, generation reservations and deletion state machine. Test restart recovery, concurrent capacity reservations, missing objects, failed deletes, and storage namespace isolation.
-3. **Fetch integration:** wrap `FetchService`, remove the seven-day source shortcut, update original timestamp handling, and exercise pipeline, agentic search, and diagnostic callers. Preserve existing source/evidence content and normal failure behavior.
+3. **Fetch integration:** wrap `FetchService`, remove the seven-day source shortcut, add optional `forceRefresh` handling, update original timestamp handling, and exercise pipeline, agentic search, and diagnostic callers. Preserve existing source/evidence content and normal failure behavior.
 4. **Contract and operational documentation:** settings editor, additive fetch metadata, SDK/OpenAPI/Postman synchronization, telemetry, compose examples, hosting/runbook instructions, and cache-disable rollback.
 5. **Validation and staged enablement:** run the tests below, build .NET 8 and 10 with zero warnings/errors, and run the full backend and relevant SDK/dashboard/mobile contract suites before a separate deployment task. This planning change does not deploy or publish builds.
 
 Required regression cases:
 
 - First fetch downloads/converts once; the next eligible fetch, including from another caller and after process restart, returns equivalent content without another page download or conversion.
+- Omitted or false `forceRefresh` uses a fresh cache entry. True performs a new origin request and conversion, returns changed content and a new fetch timestamp, and replaces the cached generation when publication succeeds; the following ordinary call receives that replacement.
+- A forced retrieval failure returns failure even with a fresh cached copy available, without extending that copy's lifetime. Forced retrieval still obeys all policy, rate, and size limits, and works when caching is disabled or storage is unavailable.
+- Forced callers never receive a preexisting or concurrently published cached response. Concurrent forced/ordinary calls, bounded lease-wait fallback, failed publication, and cancellation preserve fencing and report cache-update status accurately.
+- REST/Postman examples and all three SDKs pass `forceRefresh` correctly; the diagnostic UI defaults it off, and malformed non-boolean values are rejected.
 - Freshness boundary and shorter origin TTL force refresh. Repeated hits do not renew freshness. Refresh failure never serves expired content. Original `FetchedUtc` survives hits and source-item updates.
 - Distinct scheme, host, trailing slash, query ordering/repetition, profile, and namespace do not collide. Fragments share a key. Sensitive or authenticated URLs bypass storage.
 - A previously cached page cannot bypass newly applied blocked-domain, egress, robots, or redirect rules. Private/no-store/no-cache responses, cookies, unsupported `Vary`, non-success statuses, empty results, unsupported media, and oversized bodies are not admitted.
@@ -143,6 +163,6 @@ Required regression cases:
 - Disk and S3 produce the same results. Provider changes cannot delete another namespace. Disabled caching uses the original live fetch path, and credentials never appear in settings responses, logs, generated docs, or source control.
 - No retrieval contract returns a bare application array; existing enumeration validation remains green. Any additive diagnostic fields are compatible across dashboard, mobile, SDKs, MCP projections, and generated documentation.
 
-Completion criterion: all eligible repeated crawls use the configured Blobject cache until expiry, with measured avoidance of page downloads and conversion, bounded database/object storage, safe recovery from partial failures, and unchanged access to existing briefing evidence.
+Completion criterion: eligible repeated crawls use the configured Blobject cache until expiry unless explicitly forced to retrieve again, with measured avoidance of page downloads and conversion, bounded database/object storage, safe recovery from partial failures, and unchanged access to existing briefing evidence.
 
 Copyright (c) 2026 Lattice AI LLC.

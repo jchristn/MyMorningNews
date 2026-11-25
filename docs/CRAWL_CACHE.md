@@ -2,7 +2,7 @@
 
 The fetch service can reuse anonymous public-page content across research runs, topics, tenants, agentic `fetch_url` calls, and the administrative fetch diagnostic. PostgreSQL migration 39 stores URLs, leases, generations, checksums, and expiry. Blobject 6.1.3 stores raw bytes and converted Markdown on disk or S3. Existing source text and briefing evidence retain their independent lifetime.
 
-Caching defaults to **disabled**. Configure `crawlCache` in `mymorningnews.json`, or use the global administrator's Settings view. Disk is the default provider; the Docker examples mount a dedicated persistent `crawlcache` volume at `/data/crawl-cache`.
+Caching defaults to **enabled** using disk storage. An explicit `crawlCache.enabled: false` or `MYMORNINGNEWS_CRAWL_CACHE_ENABLED=false` still disables it. Configure `crawlCache` in `mymorningnews.json`, or use the global administrator's Settings view. Disk is the default provider; the Docker examples mount a dedicated persistent `crawlcache` volume at `/data/crawl-cache`.
 
 ```json
 {
@@ -105,7 +105,7 @@ To change backing storage, disable fills, expire/drain the old namespace while i
 
 `CrawlCacheSuite` exercises real PostgreSQL and disk, a controlled HTTP origin using the actual crawler/converter, and the Blobject S3 adapter. Its normal S3 case uses the repository's local S3 HTTP fixture. To run against a disposable MinIO instance instead, provide `MYMORNINGNEWS_TEST_CRAWL_S3_ENDPOINT=http://127.0.0.1:12196` with test credentials `mmn-crawl-test` / `mmn-crawl-test-password`; the test creates bucket `mmn-crawl-test` and cleans its unique prefix. The endpoint override is restricted to loopback and is never a production test.
 
-Deploy migration 39 and the updated server with caching disabled. Configure storage, confirm filesystem permissions or private S3 access, enable caching, then check a miss, a hit, forced replacement, expiry, and cleanup. AWS S3 production credentials and bucket policy need a dedicated-prefix smoke test during deployment; local MinIO validation does not establish those account-specific permissions. Roll back behavior by disabling caching; the additive schema can remain.
+Deploy migration 39 and the updated server with the persistent cache volume mounted and writable. Caching starts enabled unless explicitly disabled. When selecting S3, configure and verify private storage access before restarting. Then check a miss, a hit, forced replacement, expiry, and cleanup. AWS S3 production credentials and bucket policy need a dedicated-prefix smoke test during deployment; local MinIO validation does not establish those account-specific permissions. Roll back behavior by disabling caching; the additive schema can remain.
 
 The completed [implementation plan](../archive/CRAWL_CACHE_PLAN.md) is retained in the archive.
 

@@ -45,6 +45,8 @@ namespace Test.Shared.Suites
             try
             {
                 ServerSettings initial=new ServerSettings();
+                Assert.True(initial.CrawlCache.Enabled,"caching is enabled by default");
+                Assert.True(!MyMorningNews.Core.Serialization.Serializer.Deserialize<ServerSettings>("{\"crawlCache\":{\"enabled\":false}}")!.CrawlCache.Enabled,"explicit disable overrides the default");
                 initial.CrawlCache.Storage.S3AccessKey="file-access"; initial.CrawlCache.Storage.S3SecretKey="file-secret";
                 await File.WriteAllTextAsync(file,MyMorningNews.Core.Serialization.Serializer.Serialize(initial),token).ConfigureAwait(false);
                 MyMorningNews.Core.Services.SettingsService service=new MyMorningNews.Core.Services.SettingsService(file,n=>n=="MYMORNINGNEWS_CRAWL_CACHE_S3_SECRET_KEY"?"env-secret":null);

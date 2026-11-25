@@ -4,7 +4,7 @@ All notable changes to this project are documented here. The project follows [Se
 
 ## [0.1.0-alpha] - Unreleased
 
-- Added the temporary crawl cache: PostgreSQL migration 39 coordinates bounded metadata, leases, immutable generations and cleanup; Blobject 6.1.3 stores raw pages and Markdown on disk or S3. The shared fetch service replaces the pipeline-only seven-day source shortcut, honors origin freshness and current access rules, and preserves briefing evidence. Caching defaults to disabled. Optional `forceRefresh` retrieves anew without cached fallback; dashboard diagnostics, SDKs, REST/Postman examples, Docker settings, and regression tests are updated. See [configuration and operations](docs/CRAWL_CACHE.md); the completed [plan](archive/CRAWL_CACHE_PLAN.md) is archived.
+- Added the temporary crawl cache: PostgreSQL migration 39 coordinates bounded metadata, leases, immutable generations and cleanup; Blobject 6.1.3 stores raw pages and Markdown on disk or S3. The shared fetch service replaces the pipeline-only seven-day source shortcut, honors origin freshness and current access rules, and preserves briefing evidence. Caching defaults to enabled. Optional `forceRefresh` retrieves anew without cached fallback; dashboard diagnostics, SDKs, REST/Postman examples, Docker settings, and regression tests are updated. See [configuration and operations](docs/CRAWL_CACHE.md); the completed [plan](archive/CRAWL_CACHE_PLAN.md) is archived.
 
 - Approved mobile build 10 is available in internal TestFlight and Google Play testing with the login, briefing navigation, and support-report improvements. Store version remains 0.1.0; all release CI workflows passed.
 

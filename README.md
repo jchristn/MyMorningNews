@@ -446,4 +446,4 @@ MIT. See [LICENSE.md](LICENSE.md).
 
 ## Temporary crawl cache
 
-See the [crawl cache guide](docs/CRAWL_CACHE.md) for Blobject disk/S3 configuration, bounded storage and cleanup, and optional `forceRefresh` retrieval. Caching defaults to disabled; the administrative fetch diagnostic and SDKs expose cache provenance.
+See the [crawl cache guide](docs/CRAWL_CACHE.md) for Blobject disk/S3 configuration, bounded storage and cleanup, and optional `forceRefresh` retrieval. Caching defaults to enabled; the administrative fetch diagnostic and SDKs expose cache provenance.

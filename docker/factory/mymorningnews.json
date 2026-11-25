@@ -29,7 +29,7 @@
     "endpoint": "http://tts:8880/v1"
   },
   "crawlCache": {
-    "enabled": false,
+    "enabled": true,
     "storageNamespace": "crawl-disk-1",
     "freshnessSeconds": 86400,
     "maxEntryBytes": 8388608,

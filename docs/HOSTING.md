@@ -275,4 +275,4 @@ Server and dashboard run `mobile-ux-20261124-1` from commit `7415c6f`. The relea
 
 ## Temporary crawl cache
 
-See the [crawl cache guide](CRAWL_CACHE.md) for Blobject disk/S3 configuration, bounded storage and cleanup, and optional `forceRefresh` retrieval. Caching defaults to disabled; the administrative fetch diagnostic and SDKs expose cache provenance.
+See the [crawl cache guide](CRAWL_CACHE.md) for Blobject disk/S3 configuration, bounded storage and cleanup, and optional `forceRefresh` retrieval. Caching defaults to enabled; the administrative fetch diagnostic and SDKs expose cache provenance.

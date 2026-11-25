@@ -5,9 +5,9 @@ namespace MyMorningNews.Core.Settings
     /// <summary>Disposable crawl cache limits. Live fields are read per operation; storage changes require restart.</summary>
     public class CrawlCacheSettings
     {
-        /// <summary>Enable cache reads and writes. Default false. Cleanup continues while disabled.</summary>
+        /// <summary>Enable cache reads and writes. Default true. Cleanup continues while disabled.</summary>
         [Setting(Description = "Enable temporary crawl caching.", EnvironmentVariable = "CRAWL_CACHE_ENABLED")]
-        public bool Enabled { get; set; } = false;
+        public bool Enabled { get; set; } = true;
 
         /// <summary>Storage namespace shared only by replicas with the same backing store. Default crawl-disk-1.</summary>
         [Setting(Description = "Unique namespace for this backing store.", RestartRequired = true, EnvironmentVariable = "CRAWL_CACHE_NAMESPACE")]

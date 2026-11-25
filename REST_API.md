@@ -14802,7 +14802,7 @@ Disposable crawl cache limits. Live fields are read per operation; storage chang
 
 | Field | Type | Description |
 |---|---|---|
-| `enabled` | boolean | Enable cache reads and writes. Default false. Cleanup continues while disabled. |
+| `enabled` | boolean | Enable cache reads and writes. Default true. Cleanup continues while disabled. |
 | `storageNamespace` | string | Storage namespace shared only by replicas with the same backing store. Default crawl-disk-1. |
 | `storage` | [`CrawlCacheStorageSettings`](#crawlcachestoragesettings) | Disk or S3 storage configuration. Never null. |
 | `freshnessSeconds` | integer | Maximum content freshness in seconds. Default 86400; range 60 to 604800. |

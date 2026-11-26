@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { catalogApi } from '@/api/catalog';
 import { listItems } from '@/api/client';
 import { ButtonRow } from '@/components/Chips';
+import { ComparisonCard } from '@/components/ComparisonCard';
 import { Markdown } from '@/components/Markdown';
 import { ActionError, ResourceView } from '@/components/states';
 import { Button, Card, ListRow, Screen, SectionHeader, SwitchRow, T } from '@/components/ui';
@@ -128,6 +129,8 @@ export function CatalogIssueScreen() {
         <T variant="title">{issue.data.title}</T>
         <T variant="small">{formatDate(issue.data.createdUtc, i18n.language)}</T>
         {issue.data.audioPath ? <Button title={t('mobile.briefing.listen')} icon="play-circle-outline" busy={busy} onPress={() => void listen()} /> : null}
+        {/* Baselines are other published issues of the same publication; shared issues carry no finding IDs. */}
+        <ComparisonCard comparison={issue.data.comparison} testID="catalog-comparison" onOpenBaseline={(id) => router.push(catalogIssueHref({ publicationId: issue.data.publicationId || publicationId, id }))} />
         <Card><Markdown text={issue.data.markdown || ''} /></Card>
       </>}
     </ResourceView>

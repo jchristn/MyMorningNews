@@ -1,6 +1,6 @@
 # Platform tiers release status
 
-Updated November 24, 2026. **Server, dashboard and web billing are live. The full native-store rollout is not complete.** The [implementation plan](PLATFORM_TIERS_AND_SHARED_BRIEFINGS_PLAN.md) ends with the UX review; the [operator guide](PLATFORM_OPERATIONS.md) documents configuration and remaining restrictions.
+Updated November 26, 2026. **Server, dashboard and web billing are live. The full native-store rollout is not complete.** The [implementation plan](PLATFORM_TIERS_AND_SHARED_BRIEFINGS_PLAN.md) ends with the UX review; the [operator guide](PLATFORM_OPERATIONS.md) documents configuration and remaining restrictions.
 
 ## Confirmed policy and deployed behavior
 
@@ -68,8 +68,8 @@ Internal visual fixes include navigation/badge contrast, page spacing, separate 
 - Signed EAS Update publication was rejected again on 2026-11-24 UTC because the owning Expo account `joel-christner` is on Starter; code signing requires Production/Enterprise. No account upgrade was made and signing was not disabled. Fresh native builds are the release path for the pagination changes.
 - Native purchase, restore, refund, account-switch and tablet/accessibility journeys still require device/store validation. Arbitrary signup-discount purchases on native stores remain blocked when the client cannot honor the captured offer; web discounts are implemented. Server-side native benefit binding requires a matching verified offer identifier.
 
-## Additional planned design work
+## Additional design work
 
-The plan includes edition-specific comparison, structured claim/evidence delta provenance and baseline-preview reader UI, system-issue inputs to custom editions, and a broader downgrade retention-selection flow. These are not shipped by the topic-history/catalog release and must not be represented as completed. A complete release against every item in the full plan also needs the remaining native workflows and full signed-device UX review above.
+Implemented November 26, 2026 (schema 41, not yet deployed to production): edition-specific comparison, structured claim/evidence delta provenance with baseline-preview and reader UI, system-issue inputs to custom editions, and the downgrade keep-order selection. Details and evidence are in [plan section 15.7](PLATFORM_TIERS_AND_SHARED_BRIEFINGS_PLAN.md#157-remaining-design-items-implemented-november-26-2026). Native-store purchase workflows and the signed-device UX review above remain open, and mobile screens for these items need a new store build.
 
 (c) 2026 Lattice AI LLC

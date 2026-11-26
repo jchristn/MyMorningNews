@@ -18,7 +18,7 @@ export {
 } from './errors';
 export { routes } from './routes';
 export { authApi } from './auth';
-export { accountApi, serverApi, setupApi, devicesApi, planApi, emailPreferencesApi, feedTokensApi } from './account';
+export { accountApi, serverApi, setupApi, devicesApi, planApi, topicSlotsApi, emailPreferencesApi, feedTokensApi } from './account';
 export {
   topicsApi,
   topicReviewsApi,

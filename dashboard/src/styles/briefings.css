@@ -433,3 +433,173 @@
   align-items: center;
   gap: var(--spacing-sm);
 }
+
+/* Comparison callout: one compact line in the reader that opens into baselines and changes (plan section 15.2). */
+.comparison-callout {
+  border: 1px solid var(--color-border);
+  border-inline-start: 3px solid var(--color-info);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  padding: 0 var(--spacing-md);
+}
+
+.comparison-callout > summary {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-height: 44px;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.comparison-callout > summary:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.comparison-summary-text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--spacing-xs) var(--spacing-sm);
+  min-width: 0;
+}
+
+.comparison-label {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.comparison-quiet {
+  color: var(--color-text);
+}
+
+.comparison-body {
+  padding: var(--spacing-sm) 0 var(--spacing-md);
+  border-top: 1px solid var(--color-border);
+}
+
+.comparison-baselines,
+.comparison-deltas {
+  list-style: none;
+  margin: var(--spacing-xs) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.comparison-baselines li,
+.comparison-deltas li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--spacing-xs) var(--spacing-sm);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.comparison-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.comparison-kind {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-sm);
+  margin: 0;
+  font-size: var(--font-size-sm);
+}
+
+.comparison-kind-label {
+  font-weight: 600;
+}
+
+.comparison-kind-label.kind-Correction {
+  color: var(--color-danger);
+}
+
+.comparison-kind-label.kind-ChangedFact {
+  color: var(--color-warning);
+}
+
+.comparison-kind-label.kind-NewDevelopment {
+  color: var(--color-primary);
+}
+
+.comparison-kind-label.kind-Resolved {
+  color: var(--color-success);
+}
+
+.comparison-note {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin: 0;
+}
+
+/* Comparison baseline preview in topic and edition settings */
+.history-preview {
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.history-preview p {
+  margin: 0;
+}
+
+.history-budget {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  max-width: 360px;
+}
+
+.history-budget-bar {
+  display: block;
+  height: 6px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-alt);
+  overflow: hidden;
+}
+
+.history-budget-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--color-info);
+}
+
+.history-budget-bar > span.over {
+  background: var(--color-warning);
+}
+
+/* Topics that keep running (Account > Plans and billing) */
+.topic-slots-over {
+  border-color: var(--color-warning);
+}
+
+.topic-slot-list li {
+  grid-template-columns: 2em minmax(0, 1fr) auto auto;
+}
+
+.topic-slot-list li.past-limit {
+  background: var(--color-warning-soft);
+}
+
+.topic-slot-name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+@media (pointer: coarse) {
+  .ordered-picker .icon-button,
+  .icon-button.touch-target {
+    width: 44px;
+    height: 44px;
+  }
+}

@@ -1144,6 +1144,79 @@ def t_editions(h: Harness) -> None:
     h.state["edition"] = eid
 
 
+@case("Topics: history preview (nothing saved, bounds enforced)")
+def t_topic_history_preview(h: Harness) -> None:
+    tid = h.need("topic")
+    before = h.client.topics.get(tid).topic.history_mode
+    saved = h.client.topics.preview_history(tid)
+    check(isinstance(saved.baselines, list), "baselines list")
+    check(isinstance(saved.budget_bytes, int) and isinstance(saved.context_bytes, int), "byte counts")
+    recent = h.client.topics.preview_history(tid, history_mode="RecentIssues", history_count=3)
+    eq(recent.mode, "RecentIssues", "unsaved mode previewed")
+    expect_error(BadRequestError, lambda: h.client.topics.preview_history(tid, history_mode="RecentIssues", history_count=99), "ValidationFailed")
+    expect_error(NotFoundError, lambda: h.client.topics.preview_history("top_missing"))
+    eq(h.client.topics.get(tid).topic.history_mode, before, "preview saves nothing")
+
+
+@case("Editions: history settings and history preview")
+def t_edition_history(h: Harness) -> None:
+    eid = h.need("edition")
+    u = h.client.editions.update(eid, history_mode="PreviousIssue", history_token_budget=4000)
+    eq(u.edition.history_mode, "PreviousIssue", "edition history mode")
+    eq(u.edition.history_token_budget, 4000, "edition history budget")
+    p = h.client.editions.preview_history(eid)
+    eq(p.mode, "PreviousIssue", "saved mode previewed")
+    eq(len(p.baselines or []), 0, "no earlier issues yet")
+    expect_error(BadRequestError, lambda: h.client.editions.preview_history(eid, {"historyMode": "SpecificIssue", "historyBriefingId": "brf_missing"}), "ValidationFailed")
+    expect_error(NotFoundError, lambda: h.client.editions.preview_history("edn_missing"))
+    eq(h.client.editions.update(eid, history_mode="Off").edition.history_mode, "Off", "back to Off")
+
+
+@case("Editions: publications get and set (empty list)")
+def t_edition_publications(h: Harness) -> None:
+    eid = h.need("edition")
+    page = h.client.editions.publications(eid)
+    eq(list(page.objects), [], "no system briefings yet")
+    eq(page.total_records, 0, "no system briefings counted")
+    e = h.client.editions.set_publications(eid, [])
+    eq(e.publications, [], "edition response lists no publications")
+    expect_error(BadRequestError, lambda: h.client.editions.set_publications(eid, ["cat_missing"]), "ValidationFailed")
+    expect_error(NotFoundError, lambda: h.client.editions.publications("edn_missing"))
+
+
+@case("Briefings: comparison of a standalone edition briefing")
+def t_briefing_comparison(h: Harness) -> None:
+    h.need("tenant")
+    expect_error(NotFoundError, lambda: h.client.briefings.comparison("brf_missing"))
+    t = h.client.topics.create(name=h.name("comparison-topic"), description="Harness comparison topic", brief="Follow open source database releases. Harness data; safe to delete.")
+    h.on_cleanup("topic " + t.id, lambda: h.client.topics.delete(t.id))
+    h.client.topics.archive(t.id)
+    e = h.client.editions.create(name=h.name("comparison-edition"), audio_enabled=False, email_enabled=False, enabled=False, fresh_research_before_compose=False)
+    eid = e.edition.id
+    h.on_cleanup("edition " + eid, lambda: h.client.editions.delete(eid))
+    linked = h.client.editions.set_topics(eid, [t.id])
+    if linked.covered_topic_ids:
+        raise Skip("the edition covers active topics; composing it would call a model")
+    queued = h.client.editions.compose(eid)
+    bid = queued.id
+    h.on_cleanup("briefing " + bid, lambda: h.client.briefings.delete(bid))
+    deadline = time.time() + 90
+    detail = h.client.briefings.get(bid)
+    while detail.briefing.status not in ("Ready", "Failed") and time.time() < deadline:
+        time.sleep(1)
+        detail = h.client.briefings.get(bid)
+    if detail.briefing.status != "Ready":
+        raise Skip("the empty edition did not compose (" + str(detail.briefing.status) + ")")
+    c = h.client.briefings.comparison(bid)
+    eq(c.briefing_id, bid, "briefing id")
+    eq(c.compared, False, "not compared")
+    check(c.note, "note explains why")
+    eq(c.baselines, [], "no baselines")
+    eq(c.deltas, [], "no deltas")
+    for k in ("NewDevelopment", "ChangedFact", "Resolved", "Correction", "Unchanged", "Unavailable"):
+        check(isinstance((c.counts or {}).get(k), int), "count for " + k)
+
+
 @case("Editions: compose and preview", needs_run=True)
 def t_edition_compose(h: Harness) -> None:
     eid = h.need("edition")
@@ -1801,6 +1874,26 @@ def t_devices(h: Harness) -> None:
 # ---------------------------------------------------------------------------
 # Account, promo codes, public routes
 # ---------------------------------------------------------------------------
+
+
+@case("Account: topic slots get, set, clear")
+def t_topic_slots(h: Harness) -> None:
+    h.need("tenant")
+    original = h.client.account.topic_slots()
+    check(isinstance(original.topics, list) and isinstance(original.counted, int), "slots read")
+    keep = [x.topic_id for x in sorted((x for x in original.topics if x.chosen), key=lambda x: x.position)]
+    h.on_cleanup("topic slots", lambda: h.client.account.set_topic_slots(keep))
+    t = h.client.topics.create(name=h.name("slot-topic"), description="Harness slot topic", brief="Follow open source database releases. Harness data; safe to delete.")
+    h.on_cleanup("topic " + t.id, lambda: h.client.topics.delete(t.id))
+    chosen = h.client.account.set_topic_slots([t.id])
+    eq(chosen.customized, True, "customized")
+    first = [x for x in chosen.topics if x.topic_id == t.id]
+    check(first and first[0].position == 1 and first[0].chosen, "chosen topic is kept first")
+    expect_error(BadRequestError, lambda: h.client.account.set_topic_slots([t.id, t.id]), "ValidationFailed")
+    expect_error(BadRequestError, lambda: h.client.account.set_topic_slots(["top_missing"]), "ValidationFailed")
+    cleared = h.client.account.clear_topic_slots()
+    check(not cleared.customized and all(not x.chosen for x in cleared.topics), "cleared")
+    h.client.account.set_topic_slots(keep)
 
 
 @case("Account: plan, and redeem an unknown code")

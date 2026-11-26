@@ -7,6 +7,7 @@ import { ButtonRow, ChipGroup } from '@/components/Chips';
 import { FeedbackBar } from '@/components/FeedbackBar';
 import { RatingControl, useFeedbackMap } from '@/components/feedback/RatingControl';
 import { BriefingAudio } from '@/components/player/BriefingAudio';
+import { ComparisonCard } from '@/components/ComparisonCard';
 import { Markdown } from '@/components/Markdown';
 import { ResourceView } from '@/components/states';
 import { Banner, BusyLine, Button, Card, ListRow, Screen, SectionHeader, T } from '@/components/ui';
@@ -85,6 +86,24 @@ function LinkedItems({ detail }) {
         </Card>
       ))}
     </>
+  );
+}
+
+/**
+ * "Compared with ..." for a ready briefing (`GET /v1.0/api/briefings/{id}/comparison`). Unobtrusive: nothing shows
+ * while it loads, on a server without the route, or when the read fails; the reader works the same without it.
+ */
+export function BriefingComparison({ briefingId }) {
+  const { client } = useAuth();
+  const resource = useResource(() => briefingsApi.comparison(client, briefingId), [client, briefingId]);
+  if (resource.status !== 'ready' || !resource.data) return null;
+  return (
+    <ComparisonCard
+      comparison={resource.data}
+      onOpenBaseline={(id) => router.push('/today/briefings/' + encodeURIComponent(id))}
+      onOpenFinding={(id) => router.push('/today/findings/' + encodeURIComponent(id))}
+      onOpenPrediction={(id) => router.push('/today/predictions/' + encodeURIComponent(id))}
+    />
   );
 }
 
@@ -234,6 +253,7 @@ export function BriefingDetail({ id }) {
               ) : null}
               {briefing.status === 'Failed' ? <Banner kind="danger" title={t('mobile.reader.failedTitle')}>{briefing.errorMessage || t('mobile.states.errorBody')}</Banner> : null}
               {briefing.status === 'Failed' ? <BriefingSupport key={briefing.id} id={briefing.id} /> : null}
+              {briefing.status === 'Ready' ? <BriefingComparison key={briefing.id} briefingId={briefing.id} /> : null}
               <BriefingAudio detail={detail} onChanged={resource.setData} />
               <FileActions detail={detail} onChanged={resource.setData} />
               <BriefingShare detail={detail} />

@@ -592,6 +592,11 @@ export class ApiClient {
   refineTopic(id) {
     return this._request('POST', '/v1.0/api/topics/' + enc(id) + '/refine');
   }
+  // The earlier issues the next run would compare with. body is an optional HistoryPreviewRequest of unsaved
+  // settings (null fields keep the saved value); nothing is saved.
+  previewTopicHistory(id, body = {}, signal) {
+    return this._request('POST', '/v1.0/api/topics/' + enc(id) + '/history/preview', { body: body || {}, signal });
+  }
   listTopicDimensions(topicId, query) {
     return this._request('GET', '/v1.0/api/topics/' + enc(topicId) + '/dimensions', { query });
   }
@@ -875,6 +880,10 @@ export class ApiClient {
   getBriefing(id, signal) {
     return this._request('GET', '/v1.0/api/briefings/' + enc(id), { signal });
   }
+  // What a briefing was compared with and the structured changes found (BriefingComparisonResponse).
+  getBriefingComparison(id, signal) {
+    return this._request('GET', '/v1.0/api/briefings/' + enc(id) + '/comparison', { signal });
+  }
   downloadBriefing(id, format = 'md') {
     return this._requestBlob('GET', '/v1.0/api/briefings/' + enc(id) + '/download', { query: { format } });
   }
@@ -1014,6 +1023,20 @@ export class ApiClient {
   previewEdition(id, signal) {
     return this._request('POST', '/v1.0/api/editions/' + enc(id) + '/preview', { signal });
   }
+  // The earlier issues a composed edition would be compared with. body is an optional HistoryPreviewRequest of
+  // unsaved settings (null fields keep the saved value); nothing is saved.
+  previewEditionHistory(id, body = {}, signal) {
+    return this._request('POST', '/v1.0/api/editions/' + enc(id) + '/history/preview', { body: body || {}, signal });
+  }
+  // The system briefings an edition includes, in order: a page (EnumerationResult) of
+  // { publicationId, title, sortOrder, available }. The edition detail carries the same list as a plain array.
+  getEditionPublications(id, query) {
+    return this._request('GET', '/v1.0/api/editions/' + enc(id) + '/publications', { query });
+  }
+  // Replace the ordered list (at most 20, each an active subscription). Resolves to the edition detail.
+  setEditionPublications(id, publicationIds) {
+    return this._request('PUT', '/v1.0/api/editions/' + enc(id) + '/publications', { body: { publicationIds: publicationIds || [] } });
+  }
 
   // Briefing templates: Markdown with front matter and mmn:section directives (plan section 21.1).
   listBriefingTemplates(query) {
@@ -1145,6 +1168,15 @@ export class ApiClient {
     return this._request('POST', '/v1.0/public/password/reset', { body: { token, password } });
   }
   // The usage meter: plan, month-to-date cost and cap, reset date, counts, and limits.
+  // Custom topics against the plan's limit, in keep order (TopicSlotsResponse). Saving names the topics that keep
+  // running, most important first; an empty list clears the choice.
+  getTopicSlots() {
+    return this._request('GET', '/v1.0/api/account/topic-slots');
+  }
+  saveTopicSlots(keepTopicIds) {
+    return this._request('PUT', '/v1.0/api/account/topic-slots', { body: { keepTopicIds: keepTopicIds || [] } });
+  }
+
   getAccountUsage() {
     return this._request('GET', '/v1.0/api/account/usage');
   }

@@ -399,7 +399,7 @@ namespace Test.Shared.Suites
                 h.AndroidCertificateFingerprints = new List<string> { "aa:bb:cc" };
                 string apple = (await anon.GetAsync("/.well-known/apple-app-site-association", token).ConfigureAwait(false)).Expect(200, "apple").Body;
                 Assert.True(apple.Contains("ABCDE12345.ai.latticetech.mymorningnews", StringComparison.Ordinal) && apple.Contains("/briefings/*", StringComparison.Ordinal)
-                    && apple.Contains("/verify*", StringComparison.Ordinal) && apple.Contains("/reset-password*", StringComparison.Ordinal) && apple.Contains("/signup*", StringComparison.Ordinal), "apple file, including the verify, reset, and sign-up links: " + apple);
+                    && apple.Contains("/verify*", StringComparison.Ordinal) && apple.Contains("/reset-password*", StringComparison.Ordinal) && apple.Contains("/signup*", StringComparison.Ordinal) && apple.Contains("/dashboard/*", StringComparison.Ordinal), "apple file, including the verify, reset, sign-up, and dashboard links: " + apple);
                 string android = (await anon.GetAsync("/.well-known/assetlinks.json", token).ConfigureAwait(false)).Expect(200, "android").Body;
                 Assert.True(android.Contains("ai.latticetech.mymorningnews", StringComparison.Ordinal) && android.Contains("AA:BB:CC", StringComparison.Ordinal), "android file: " + android);
                 foreach (string file in new[] { "/.well-known/apple-app-site-association", "/.well-known/assetlinks.json" })

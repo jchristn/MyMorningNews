@@ -49,6 +49,17 @@ export const planApi = {
   redeem: (client, code) => client.post(routes.promoRedeem, { code }),
 };
 
+/**
+ * Which custom topics keep running on a smaller plan (plan section 8.4). `get()` is `{ limit, counted, overLimit,
+ * customized, topics: [{ topicId, name, status, position, chosen, withinPlan, lastRunUtc }] }` in slot order; `limit`
+ * is null when unlimited and 0 without custom research. `save(ids)` sets the keep order (most important first; an empty
+ * list clears it) and returns the same shape. Nothing is paused, archived, or deleted by either call.
+ */
+export const topicSlotsApi = {
+  get: (client) => client.get(routes.accountTopicSlots),
+  save: (client, keepTopicIds) => client.put(routes.accountTopicSlots, { keepTopicIds }),
+};
+
 /** Email preferences (Phase 9): `{ address, runEmails, briefingEmails, failureEmails, unsubscribedTopicIds }`. */
 export const emailPreferencesApi = {
   get: (client) => client.get(routes.emailPreferences),

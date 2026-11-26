@@ -296,9 +296,15 @@ namespace MyMorningNews.Core.Models
         public string? HistoryBriefingId { get; set; } = null;
 
         /// <summary>
-        /// Conservative comparison token budget. Default 8000, minimum 256, maximum 32000.
+        /// Conservative comparison budget in UTF-8 bytes (an upper bound on provider tokens). Default 8000, minimum 256, maximum 32000.
         /// </summary>
         public int HistoryTokenBudget { get; set; } = 8000;
+
+        /// <summary>
+        /// The owner's keep order when the plan allows fewer custom topics than they have: 1 is kept first. Null when not
+        /// chosen; unchosen topics follow in creation order. Written only through the account topic-slot selection.
+        /// </summary>
+        public int? SlotPriority { get; set; } = null;
 
         /// <summary>
         /// MCP tool IDs (mct_...) this topic may use in agentic search. Empty allows every enabled tool.

@@ -15,7 +15,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Column list in model order.
         /// </summary>
-        public const string Columns = "id, tenantid, userid, name, description, briefingtemplateid, voiceprofileid, audioenabled, emailenabled, enabled, freshresearchbeforecompose, freshresearchleadminutes, lookbackmode, lookbackhours, lastcomposedutc, active, createdutc, lastupdateutc, pushenabled";
+        public const string Columns = "id, tenantid, userid, name, description, briefingtemplateid, voiceprofileid, audioenabled, emailenabled, enabled, freshresearchbeforecompose, freshresearchleadminutes, lookbackmode, lookbackhours, lastcomposedutc, active, createdutc, lastupdateutc, pushenabled, historymode, historycount, historysinceutc, historybriefingid, historytokenbudget";
 
         /// <summary>
         /// Schema statements: table and indexes. Idempotent.
@@ -50,12 +50,12 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Insert statement with positional parameters in column order.
         /// </summary>
-        public const string Insert = "INSERT INTO editions (" + Columns + ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)";
+        public const string Insert = "INSERT INTO editions (" + Columns + ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)";
 
         /// <summary>
         /// Update statement. $1 is id, $2 is tenantid, then the mutable columns in model order.
         /// </summary>
-        public const string Update = "UPDATE editions SET userid = $3, name = $4, description = $5, briefingtemplateid = $6, voiceprofileid = $7, audioenabled = $8, emailenabled = $9, enabled = $10, freshresearchbeforecompose = $11, freshresearchleadminutes = $12, lookbackmode = $13, lookbackhours = $14, lastcomposedutc = $15, active = $16, lastupdateutc = $17, pushenabled = $18 WHERE id = $1 AND tenantid = $2";
+        public const string Update = "UPDATE editions SET userid = $3, name = $4, description = $5, briefingtemplateid = $6, voiceprofileid = $7, audioenabled = $8, emailenabled = $9, enabled = $10, freshresearchbeforecompose = $11, freshresearchleadminutes = $12, lookbackmode = $13, lookbackhours = $14, lastcomposedutc = $15, active = $16, lastupdateutc = $17, pushenabled = $18, historymode = $19, historycount = $20, historysinceutc = $21, historybriefingid = $22, historytokenbudget = $23 WHERE id = $1 AND tenantid = $2";
 
         /// <summary>
         /// Select by identifier within a tenant.

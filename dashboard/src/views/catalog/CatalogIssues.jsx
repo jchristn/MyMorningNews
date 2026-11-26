@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext.jsx';
 import AudioPlayer from '../../components/AudioPlayer.jsx';
+import ComparisonCallout from '../../components/ComparisonCallout.jsx';
 import DateCell from '../../components/DateCell.jsx';
 import ErrorState from '../../components/ErrorState.jsx';
 import LoadingState from '../../components/LoadingState.jsx';
@@ -155,6 +156,12 @@ function CatalogIssueReader({ publicationId, issueId }) {
       {data ? (
         <section className="panel stack">
           <DateCell value={data.issue.createdUtc} />
+          <ComparisonCallout
+            comparison={data.issue.comparison}
+            baselineHref={(id) => '/dashboard/catalog/' + encodeURIComponent(publicationId) + '/issues/' + encodeURIComponent(id)}
+            linkDeltas={false}
+            idPrefix="catalog-comparison"
+          />
           {data.issue.audioPath ? (
             <AudioPlayer
               catalogPublicationId={publicationId}

@@ -503,6 +503,8 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
  * @property {number} relevanceScore Relevance score (0 to 100).
  * @property {string} tier Tier (for example `MustRead`, `WorthALook`, `BelowThreshold`).
  * @property {boolean} isDuplicate Duplicate.
+ * @property {string|null} isUpdateOfFindingId Earlier finding this one updates, or null.
+ * @property {boolean} isCorrection True when the update judge found that this finding corrects the one named by `isUpdateOfFindingId`.
  * @property {boolean} pinned Pinned by the user.
  * @property {boolean} hidden Hidden by the user (left out of lists, briefings, and emails).
  * @property {string|null} publishedUtc Published.
@@ -654,10 +656,108 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
 /**
  * An edition with its topics and schedules.
  * @typedef {object} EditionResponse
- * @property {object} edition Edition (`id`, `name`, `description`, `briefingTemplateId`, `audioEnabled`, `emailEnabled`, ...).
+ * @property {object} edition Edition (`id`, `name`, `description`, `briefingTemplateId`, `audioEnabled`, `emailEnabled`, `historyMode`, `historyCount`, `historySinceUtc`, `historyBriefingId`, `historyTokenBudget`, ...).
  * @property {object[]} topics Ordered topic links.
  * @property {Schedule[]} schedules Schedules.
  * @property {string[]} coveredTopicIds Topics the edition covers now.
+ * @property {EditionPublicationResponse[]} publications System briefings the edition includes, in order.
+ */
+
+/**
+ * A system briefing (catalog publication) included in an edition.
+ * @typedef {object} EditionPublicationResponse
+ * @property {string} publicationId Publication (`cat_...`).
+ * @property {string} title Publication title.
+ * @property {number} sortOrder Position in the edition.
+ * @property {boolean} available False when retracted, unsubscribed, or no longer allowed by the plan (skipped at composition).
+ */
+
+/**
+ * Unsaved comparison settings to preview. Every property is optional; omitted keeps the saved value.
+ * @typedef {object} HistoryPreviewRequest
+ * @property {'Off'|'PreviousIssue'|'RecentIssues'|'SinceDate'|'SpecificIssue'} [historyMode] Comparison mode.
+ * @property {number} [historyCount] Maximum baseline issues (1 to 20).
+ * @property {string} [historySinceUtc] Earliest baseline time for `SinceDate` (must be in the past).
+ * @property {string} [historyBriefingId] Pinned baseline for `SpecificIssue`; an empty string clears it.
+ * @property {number} [historyTokenBudget] Comparison budget in UTF-8 bytes (256 to 32000).
+ */
+
+/**
+ * An earlier issue a comparison uses.
+ * @typedef {object} ComparisonBaseline
+ * @property {string} id Briefing.
+ * @property {string} title Title.
+ * @property {string|null} createdUtc Created, or null.
+ * @property {boolean} available False when the issue can no longer be read.
+ */
+
+/**
+ * The comparison baseline a run or composition would use. Nothing is saved.
+ * @typedef {object} HistoryPreviewResponse
+ * @property {string} mode Mode used.
+ * @property {ComparisonBaseline[]} baselines Issues selected, newest first.
+ * @property {number} contextBytes Baseline size in UTF-8 bytes.
+ * @property {number} budgetBytes Budget in UTF-8 bytes.
+ * @property {boolean} truncated The baseline was cut to the budget.
+ * @property {string|null} note Explanation when nothing is compared, or null.
+ * @property {string} cutoffUtc Issues created before this time are eligible.
+ */
+
+/**
+ * One structured change between a briefing and its baseline.
+ * @typedef {object} BriefingDelta
+ * @property {string} id Identifier.
+ * @property {string} tenantId Tenant.
+ * @property {string} briefingId Briefing.
+ * @property {'NewDevelopment'|'ChangedFact'|'Resolved'|'Correction'|'Unchanged'|'Unavailable'} kind Kind of change.
+ * @property {string} title Title.
+ * @property {string|null} summary Summary, or null.
+ * @property {string|null} findingId Current finding, or null.
+ * @property {string|null} predictionId Prediction, or null.
+ * @property {string|null} baselineBriefingId Baseline briefing, or null.
+ * @property {string|null} baselineItemId Baseline item, or null.
+ * @property {number} sortOrder Display order.
+ * @property {boolean} active Active.
+ * @property {string} createdUtc Created.
+ * @property {string} lastUpdateUtc Updated.
+ */
+
+/**
+ * What a briefing was compared with and the changes found.
+ * @typedef {object} BriefingComparisonResponse
+ * @property {string} briefingId Briefing.
+ * @property {boolean} compared True when at least one earlier issue was compared.
+ * @property {string} mode Mode (for example `PreviousIssue`, `Edition:PreviousIssue`, or `Off`).
+ * @property {string|null} note Explanation for a standalone briefing, or null.
+ * @property {boolean} truncated The baseline was cut to its budget.
+ * @property {string|null} cutoffUtc Eligibility cutoff, or null.
+ * @property {ComparisonBaseline[]} baselines Issues compared with, newest first.
+ * @property {Record<string, number>} counts Changes by kind; all six kinds are present.
+ * @property {boolean} noMaterialChanges Compared and nothing new, changed, corrected, or resolved.
+ * @property {string|null} summary One-line summary also in the briefing text, or null.
+ * @property {BriefingDelta[]} deltas Changes in display order.
+ */
+
+/**
+ * One custom topic in the account's keep order.
+ * @typedef {object} TopicSlotResponse
+ * @property {string} topicId Topic.
+ * @property {string} name Name.
+ * @property {'Draft'|'Active'|'Paused'|'Archived'} status Status.
+ * @property {number} position 1-based position.
+ * @property {boolean} chosen The owner placed it explicitly.
+ * @property {boolean} withinPlan It fits the plan's limit and runs.
+ * @property {string|null} lastRunUtc Last run, or null.
+ */
+
+/**
+ * The account's custom topics against the plan's limit, in keep order.
+ * @typedef {object} TopicSlotsResponse
+ * @property {number|null} [limit] Topics the plan allows; null or absent for unlimited, 0 without custom research.
+ * @property {number} counted Recurring, non-archived topics.
+ * @property {number} overLimit Topics past the limit (they keep history but do not run).
+ * @property {boolean} customized The owner has chosen a keep order.
+ * @property {TopicSlotResponse[]} topics Topics in slot order.
  */
 
 /**
@@ -1104,6 +1204,7 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
  * @property {string} [createdUtc] Issue timestamp.
  * @property {string | null} [audioPath] Authenticated shared audio path when ready.
  * @property {number | null} [audioSeconds] Shared episode duration when known.
+ * @property {BriefingComparisonResponse | null} [comparison] What the issue was compared with and the changes found, without canonical item identifiers. Null when not requested.
  */
 
 /**
@@ -2001,6 +2102,17 @@ export class TopicsResource extends CrudResource {
         if (!Array.isArray(providers)) throw new TypeError('providers must be an array.');
         return this._req('PUT', this._path(id, '/search-providers'), { body: providers });
     }
+
+    /**
+     * Preview which earlier issues the topic's next run would compare with, optionally with unsaved settings. Nothing is
+     * saved. 400 for out-of-range settings, 409 when a pinned issue is unavailable.
+     * @param {string} id Topic.
+     * @param {HistoryPreviewRequest} [body] Unsaved settings; omitted properties keep the saved values.
+     * @returns {Promise<HistoryPreviewResponse>} Preview.
+     */
+    previewHistory(id, body = {}) {
+        return this._req('POST', this._path(id, '/history/preview'), { body: body || {} });
+    }
 }
 
 /**
@@ -2850,6 +2962,39 @@ export class EditionsResource extends CrudResource {
     preview(id, body) {
         return this._req('POST', this._path(id, '/preview'), { body: body && Object.keys(body).length > 0 ? body : undefined });
     }
+
+    /**
+     * Preview which earlier issues of this edition the next composition would compare with, optionally with unsaved
+     * settings. Nothing is saved. 400 for out-of-range settings, 409 when a pinned issue is unavailable.
+     * @param {string} id Edition.
+     * @param {HistoryPreviewRequest} [body] Unsaved settings; omitted properties keep the saved values.
+     * @returns {Promise<HistoryPreviewResponse>} Preview.
+     */
+    previewHistory(id, body = {}) {
+        return this._req('POST', this._path(id, '/history/preview'), { body: body || {} });
+    }
+
+    /**
+     * System briefings (catalog publications) the edition includes, in edition order, one page at a time.
+     * @param {string} id Edition.
+     * @param {ListOptions} [options] Paging.
+     * @returns {Promise<EnumerationResult<EditionPublicationResponse>>} Page.
+     */
+    publications(id, options = {}) {
+        return this._req('GET', this._path(id, '/publications'), { query: options });
+    }
+
+    /**
+     * Replace the system briefings the edition includes (ordered, distinct, at most 20, each an active subscription).
+     * An empty list removes them all and is always allowed; otherwise a plan without custom research gets 402.
+     * @param {string} id Edition.
+     * @param {string[]} publicationIds Publications (`cat_...`) in order.
+     * @returns {Promise<EditionResponse>} Edition.
+     */
+    setPublications(id, publicationIds) {
+        if (!Array.isArray(publicationIds)) throw new TypeError('publicationIds must be an array.');
+        return this._req('PUT', this._path(id, '/publications'), { body: { publicationIds } });
+    }
 }
 
 /**
@@ -2929,6 +3074,16 @@ export class BriefingsResource extends ResourceGroup {
     /** Queue a failed briefing report for support (202); repeats return the same report ID. */
     shareWithSupport(id) {
         return this._req('POST', this._path(id, '/support'));
+    }
+
+    /**
+     * What the briefing was compared with and the structured changes found. A briefing without a comparison returns
+     * `compared: false` with a `note`.
+     * @param {string} id Briefing.
+     * @returns {Promise<BriefingComparisonResponse>} Comparison.
+     */
+    comparison(id) {
+        return this._req('GET', this._path(id, '/comparison'));
     }
 
     regenerate(id) {
@@ -4082,6 +4237,34 @@ export class AccountResource extends ResourceGroup {
      */
     usage() {
         return this._req('GET', '/v1.0/api/account/usage');
+    }
+
+    /**
+     * My custom topics against my plan's topic limit, in keep order. Topics with `withinPlan: false` keep their history
+     * but do not run.
+     * @returns {Promise<TopicSlotsResponse>} Slots.
+     */
+    topicSlots() {
+        return this._req('GET', '/v1.0/api/account/topic-slots');
+    }
+
+    /**
+     * Choose which custom topics keep running first on a smaller plan (most important first). An empty list clears the
+     * choice. Nothing is paused, archived, or deleted. 400 for a duplicate, unknown, archived, or one-time topic.
+     * @param {string[]} keepTopicIds Topics in keep order.
+     * @returns {Promise<TopicSlotsResponse>} Slots.
+     */
+    setTopicSlots(keepTopicIds) {
+        if (!Array.isArray(keepTopicIds)) throw new TypeError('keepTopicIds must be an array.');
+        return this._req('PUT', '/v1.0/api/account/topic-slots', { body: { keepTopicIds } });
+    }
+
+    /**
+     * Clear my topic keep order so topics follow creation order.
+     * @returns {Promise<TopicSlotsResponse>} Slots.
+     */
+    clearTopicSlots() {
+        return this.setTopicSlots([]);
     }
 
     /**

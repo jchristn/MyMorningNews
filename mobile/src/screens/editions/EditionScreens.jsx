@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTranslation } from 'react-i18next';
+import { catalogApi } from '@/api/catalog';
 import { listItems } from '@/api/client';
+import { ApiError, isNotAvailable } from '@/api/errors';
 import { editionsApi, topicsApi } from '@/api/research';
 import { ButtonRow, ChipGroup } from '@/components/Chips';
 import { Markdown } from '@/components/Markdown';
 import { ScheduleEditor, ScheduleSummary } from '@/components/ScheduleEditor';
-import { ActionError } from '@/components/states';
+import { ActionError, ResourceView } from '@/components/states';
 import { Banner, Button, Card, Field, ListRow, SectionHeader, SwitchRow, T } from '@/components/ui';
 import { LOOKBACK_MODES } from '@/lib/enums';
 import { formatDateTime } from '@/lib/format';
@@ -18,6 +20,7 @@ import { spacing } from '@/theme/palette';
 import { DetailHeader, DetailScreen, ItemCard } from '../common/DetailScreen';
 import { ResourceListScreen } from '../common/ResourceListScreen';
 import { ComposeStatus, useCompose } from '../today/TodayScreens';
+import { EditionHistory } from '../topics/TopicHistory';
 
 export const editionHref = (id) => '/topics/editions/' + encodeURIComponent(id);
 
@@ -180,6 +183,98 @@ function TopicsCard({ detail, onSaved }) {
   );
 }
 
+/** The most system briefings one edition can include (EditionPublicationsRequest). */
+export const MAX_EDITION_PUBLICATIONS = 20;
+
+/**
+ * System briefings inside a custom edition (`GET/PUT /v1.0/api/editions/{id}/publications`): pick subscribed
+ * publications in order. The edition summarizes their issues in its period and links to each; it never starts system
+ * research. Entries that are no longer readable stay listed (marked, and skipped at composition) until removed. Hidden
+ * on a server without the route.
+ */
+export function PublicationsCard({ detail, onSaved }) {
+  const p = useTheme();
+  const { t } = useTranslation();
+  const { client } = useAuth();
+  const editionId = detail.edition.id;
+  const current = useResource(() => (Array.isArray(detail.publications) ? Promise.resolve(detail.publications) : editionsApi.publications(client, editionId, { pageNumber: 1, pageSize: MAX_EDITION_PUBLICATIONS }).then(listItems)), [client, editionId, detail.publications]);
+  const catalog = useResource(() => catalogApi.list(client, { pageNumber: 1, pageSize: 100 }), [client]);
+  const saved = (Array.isArray(current.data) ? current.data : []).slice().sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+  const savedKey = saved.map((x) => x.publicationId).join(',');
+  const [selection, setSelection] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+  if (current.status === 'notAvailable' || (current.status === 'error' && isNotAvailable(current.error))) return null;
+  const chosen = selection || saved.map((x) => x.publicationId);
+  const subscribed = listItems(catalog.data).filter((entry) => entry.subscribed && !entry.suspended);
+  const titles = {};
+  for (const x of saved) titles[x.publicationId] = x.title;
+  for (const entry of subscribed) titles[entry.id] = entry.title;
+  const unavailable = new Set(saved.filter((x) => x.available === false).map((x) => x.publicationId));
+  // Saved picks that are not (or no longer) subscribed are listed first so they can be removed.
+  const rows = [...saved.map((x) => x.publicationId).filter((id) => !subscribed.some((e) => e.id === id)), ...subscribed.map((e) => e.id)];
+  const dirty = chosen.join(',') !== savedKey;
+  const save = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const next = await editionsApi.setPublications(client, editionId, chosen);
+      setSelection(null);
+      onSaved(next);
+    } catch (e) {
+      setError(e);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const capped = error instanceof ApiError && error.status === 402;
+  return (
+    <>
+      <SectionHeader title={t('mobile.editionPublications.title')} />
+      <Card testID="edition-publications">
+        <T variant="muted">{t('mobile.editionPublications.help')}</T>
+        <ResourceView resource={current} feature={t('mobile.editionPublications.title')}>
+          {() => (
+            <>
+              <T variant="small">{chosen.length ? t('mobile.editionPublications.chosen', { count: chosen.length, max: MAX_EDITION_PUBLICATIONS }) : t('mobile.editionPublications.none')}</T>
+              {rows.map((id) => {
+                const on = chosen.includes(id);
+                const order = chosen.indexOf(id);
+                const gone = unavailable.has(id) || !subscribed.some((e) => e.id === id);
+                const title = titles[id] || t('mobile.editionPublications.untitled');
+                const full = !on && chosen.length >= MAX_EDITION_PUBLICATIONS;
+                return (
+                  <ListRow
+                    key={id}
+                    title={(on ? order + 1 + '. ' : '') + title}
+                    detail={gone ? t('mobile.editionPublications.unavailable') : undefined}
+                    onPress={full || (gone && !on) ? undefined : () => setSelection(toggleTopic(chosen, id))}
+                    accessibilityLabel={title + (on ? ', ' + t('mobile.editions.selected') : '') + (gone ? ', ' + t('mobile.editionPublications.unavailable') : '')}
+                    right={<Ionicons name={on ? 'checkmark-circle' : 'ellipse-outline'} size={22} color={on ? p.primary : p.muted} />}
+                    testID={'edition-publication-' + id}
+                  />
+                );
+              })}
+              {catalog.status === 'ready' && rows.length === 0 ? <T variant="muted">{t('mobile.editionPublications.noSubscriptions')}</T> : null}
+            </>
+          )}
+        </ResourceView>
+        {capped ? (
+          <Banner kind="warning" testID="edition-publications-capped">
+            {t('mobile.editionPublications.capped')}
+          </Banner>
+        ) : (
+          <ActionError error={error} />
+        )}
+        <ButtonRow>
+          <Button title={t('mobile.editionPublications.save')} busy={busy} disabled={!dirty} onPress={() => void save()} testID="edition-publications-save" />
+          {chosen.length ? <Button title={t('mobile.editionPublications.clear')} kind="ghost" onPress={() => setSelection([])} testID="edition-publications-clear" /> : null}
+        </ButtonRow>
+      </Card>
+    </>
+  );
+}
+
 function ScheduleCard({ detail, onChanged }) {
   const { t } = useTranslation();
   const [editing, setEditing] = useState(null);
@@ -233,7 +328,7 @@ function PreviewCard({ editionId }) {
   );
 }
 
-/** One edition (plan section 21.3): Compose now with status polling, preview, settings, topics in order, and schedule. */
+/** One edition (plan section 21.3): Compose now with status polling, preview, settings, comparison, topics in order, system briefings, and schedule. */
 export function EditionDetail({ id, onChanged }) {
   const { t, i18n } = useTranslation();
   const { client } = useAuth();
@@ -270,8 +365,10 @@ function EditionBody({ detail, onSaved, onReload, t, locale }) {
       <PreviewCard editionId={e.id} />
       <SectionHeader title={t('mobile.editions.settings')} />
       <SettingsCard key={e.id} detail={detail} onSaved={onSaved} />
+      <EditionHistory key={'history-' + e.id + (e.lastUpdateUtc || '')} edition={e} onSaved={onSaved} />
       <SectionHeader title={t('mobile.editions.topics')} />
       <TopicsCard key={(detail.topics || []).map((x) => x.topicId).join(',')} detail={detail} onSaved={onSaved} />
+      <PublicationsCard key={'publications-' + e.id} detail={detail} onSaved={onSaved} />
       <SectionHeader title={t('mobile.editions.schedule')} />
       <ScheduleCard detail={detail} onChanged={onReload} />
     </>

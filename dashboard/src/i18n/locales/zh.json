@@ -2708,7 +2708,8 @@
       "deleted": "发现已删除",
       "deleteTitle": "删除发现",
       "deleteMessage": "要删除“{title}”吗？其证据链接将被移除。共享来源和你的评价历史会保留。"
-    }
+    },
+    "correction": "更正"
   },
   "predictions": {
     "overdue": "已过时限",
@@ -3000,7 +3001,9 @@
       "settings": "设置",
       "topics": "主题",
       "schedules": "计划",
-      "briefings": "简报"
+      "briefings": "简报",
+      "comparison": "与往期简报比较",
+      "publications": "本期刊中的系统简报"
     },
     "columns": {
       "name": "期刊",
@@ -3077,6 +3080,22 @@
       "label": "显示期刊",
       "mine": "我的",
       "all": "所有人的"
+    },
+    "publications": {
+      "help": "按此顺序，在“来自你的系统简报”下添加你订阅的目录中的期次。最多 {max} 个。",
+      "none": "未包含任何系统简报。",
+      "chosen": "已包含的系统简报",
+      "unavailable": "不可用",
+      "unavailableHelp": "不可用的系统简报已被撤回、已取消订阅，或你的方案不再允许。合成期刊时会跳过它们。请移除或重新订阅。",
+      "noSubscriptions": "你没有可添加的目录订阅。",
+      "browse": "浏览系统简报",
+      "addLabel": "要添加的系统简报",
+      "pick": "选择系统简报",
+      "add": "添加",
+      "full": "本期刊已包含 {max} 个系统简报，已达上限。",
+      "capReached": "在自定义简报中包含系统简报需要包含自定义研究的方案。你仍然可以移除它们。",
+      "save": "保存系统简报",
+      "saved": "系统简报已保存。"
     }
   },
   "templates": {
@@ -4854,7 +4873,12 @@
     "date": "起始日期（UTC）",
     "issue": "基准期次",
     "choose": "选择一期",
-    "firstRun": "如果没有可用的往期内容，下一份简报将独立生成。"
+    "firstRun": "如果没有可用的往期内容，下一份简报将独立生成。",
+    "editionHelp": "将每期合成的期刊与其自身的往期进行比较。历史文本只是比较基准，而非当前证据。",
+    "editionOff": "关闭：保留各主题自己的比较",
+    "editionOffHelp": "关闭会保留各主题自己的研究比较。其他任何模式都会改为将整期期刊与其往期进行比较。",
+    "budget": "比较预算（字节）",
+    "budgetHelp": "比较可使用的往期文本量，{min} 到 {max} 字节。更长的基准会被截断。"
   },
   "catalog": {
     "title": "系统简报",
@@ -4942,5 +4966,68 @@
     "failed": "操作未成功，请重试。",
     "deleteTitle": "删除此主题?",
     "deleteMessage": "删除“{name}”及其简报、发现和音频?此操作无法撤销。"
+  },
+  "historyPreview": {
+    "title": "基准预览",
+    "show": "预览基准",
+    "refresh": "刷新预览",
+    "help": "按上方设置，查看下一份简报将与哪些往期比较。不会保存任何内容。",
+    "blocked": {
+      "date": "请选择开始日期以预览基准。",
+      "issue": "请选择基准期次以预览。"
+    },
+    "conflictHelp": "固定的期次已不可用。请选择其他期次或其他模式。",
+    "wouldCompare": "{count, plural, other {下一份简报将与 # 个往期比较：}}",
+    "size": "比较上下文：{used} / {budget}",
+    "sizePercent": "比较预算的 {percent}%",
+    "truncated": "往期内容超出预算，比较将使用缩短后的版本。",
+    "firstRun": "目前还没有符合这些设置的已完成往期，因此下一份简报将独立生成。它完成后，之后的简报会与它比较。",
+    "cutoff": "{date} 之前创建的期次可用于比较。"
+  },
+  "comparison": {
+    "title": "已与往期简报比较",
+    "standalone": "独立简报：未与任何往期比较。",
+    "unavailableIssue": "一个已不可用的期次",
+    "comparedWith": "已与 {issues} 比较。",
+    "earlierIssues": "往期",
+    "noMaterialChanges": "未发现实质性变化。",
+    "noMaterialChangesHelp": "自往期以来，未发现新的、变化的、更正的或已解决的内容。",
+    "baselines": "比较对象",
+    "noBaselines": "往期已不再列出。",
+    "mode": "模式：{mode}。",
+    "modeEdition": "期刊比较：{mode}。",
+    "cutoff": "{date} 之前的期次可用于比较。",
+    "truncated": "往期内容已缩短以符合比较预算。",
+    "versus": "对比 {issue}",
+    "kinds": {
+      "Correction": "更正",
+      "ChangedFact": "已变化",
+      "NewDevelopment": "新增",
+      "Resolved": "已解决",
+      "Unchanged": "未变化",
+      "Unavailable": "不可用"
+    }
+  },
+  "topicSlots": {
+    "title": "保持运行的主题",
+    "count": "{counted} / {limit}",
+    "help": "你的方案最多运行 {limit} 个自定义主题。如果上限降低，此顺序中靠前的主题会继续运行。",
+    "noneAllowed": "你的方案不包含自定义研究，因此不会运行任何自定义主题。它们会保留历史记录。",
+    "overTitle": "{count, plural, other {# 个主题超出了你的方案上限。}}",
+    "overHelp": "超出上限：保留历史记录，但不运行。在你归档足够的主题或升级之前，创建、复制或恢复主题仍会被阻止。",
+    "bannerHelp": "这些主题会保留历史记录，但不会运行。",
+    "choose": "选择保持运行的主题",
+    "orderHelp": "把最重要的主题放在前面。保存时不会暂停、归档或删除任何内容。",
+    "listLabel": "按保留顺序排列的自定义主题",
+    "lastRun": "上次运行 {date}",
+    "within": "保持运行",
+    "past": "超出上限",
+    "unsaved": "顺序已更改。请保存以保留。",
+    "save": "保存顺序",
+    "saved": "主题顺序已保存。",
+    "clear": "清除我的顺序",
+    "cleared": "主题顺序已清除。主题现在按创建顺序排列。",
+    "customized": "这是你选择的顺序。",
+    "defaultOrder": "在你选择顺序之前，主题按创建顺序排列。"
   }
 }

@@ -96,6 +96,7 @@ namespace MyMorningNews.Core.Pipeline.Stages
                         f.Confidence = confidence;
                         f.RelevanceRationale = rationale;
                         f.IsUpdateOfFindingId = c.UpdateOfFindingId;
+                        f.IsCorrection = c.UpdateOfFindingId != null && c.IsCorrection;
                         c.Saved = f;
                         lock (sync) scored.Add(f);
                     }

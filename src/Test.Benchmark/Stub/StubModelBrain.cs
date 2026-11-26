@@ -100,7 +100,7 @@ namespace MyMorningNews.Benchmark.Stub
             if (u.Contains("Plan at most", StringComparison.Ordinal)) return Queries(u);
             if (u.Contains("Return up to 5 findings", StringComparison.Ordinal)) return Extract(u);
             if (u.Contains("Give a relevance score from 0 to 100", StringComparison.Ordinal)) return Score(u);
-            if (u.Contains("Answer Duplicate, Update, or Different", StringComparison.Ordinal)) return Judge(u);
+            if (u.Contains("Answer Duplicate, Update, Correction, or Different", StringComparison.Ordinal)) return Judge(u);
             if (u.Contains("Write a summary of 3 to 6 sentences", StringComparison.Ordinal)) return Synthesize(u);
             if (u.Contains("For each prediction you can judge", StringComparison.Ordinal)) return Structured("review-predictions", new { reviews = new List<object>() });
             if (u.Contains("Make 0 to 5 new predictions", StringComparison.Ordinal)) return Predict(u);

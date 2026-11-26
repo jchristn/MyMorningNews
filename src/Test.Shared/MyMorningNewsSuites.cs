@@ -31,6 +31,7 @@ namespace Test.Shared
                     TopicSuite.Create(),
                     CatalogSuite.Create(),
                     HistorySuite.Create(),
+                    ComparisonSuite.Create(),
                     ScheduleSuite.Create(),
                     SearchSuite.Create(),
                     CrawlCacheSuite.Create(),

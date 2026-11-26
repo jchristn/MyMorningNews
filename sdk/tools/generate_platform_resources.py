@@ -115,7 +115,7 @@ def ts_type(t):
  nullable=t.endswith('?');t=t.rstrip('?')
  if t.startswith('List<'):out=ts_type(t[5:-1])+'[]'
  elif t.startswith('Dictionary<'):out='Record<string, string>'
- else:out={'string':'string','DateTime':'string','bool':'boolean','int':'number','long':'number','double':'number','decimal':'number','JsonObject':'Record<string, unknown>'}.get(t,t if t in names or t in ['Topic','Schedule','EffectivePlan','Run','TopicUpsertRequest','ScheduleUpsertRequest'] else 'unknown')
+ else:out={'string':'string','DateTime':'string','bool':'boolean','int':'number','long':'number','double':'number','decimal':'number','JsonObject':'Record<string, unknown>'}.get(t,t if t in names or t in ['Topic','Schedule','EffectivePlan','Run','TopicUpsertRequest','ScheduleUpsertRequest','BriefingComparisonResponse'] else 'unknown')
  return out+(' | null' if nullable else '')
 for name in names:
  t=alltypes[name];props=t.props
@@ -128,7 +128,7 @@ for name in names:
   jsdoc.append(' * @property {'+tt+'} ['+camel(prop)+'] '+doc.replace('\n',' '))
   pytype={'string':'str','DateTime':'str','bool':'bool','int':'int','long':'int','double':'float','decimal':'float'}.get(typ.rstrip('?'),'Any')
   if typ.startswith('List<'): pytype='List[Any]';item=typ[5:-1].rstrip('?');nested[snake(prop)]=item
-  elif typ.rstrip('?') in names+['Topic','Schedule','EffectivePlan']:nested[snake(prop)]=typ.rstrip('?')
+  elif typ.rstrip('?') in names+['Topic','Schedule','EffectivePlan','BriefingComparisonResponse']:nested[snake(prop)]=typ.rstrip('?')
   python.append('    '+snake(prop)+': Optional['+pytype+'] = None')
  if nested:python.append('    _nested: ClassVar[Dict[str, str]] = '+repr(nested))
  python.append('\n');typescript.append('}\n');jsdoc.append(' */\n')

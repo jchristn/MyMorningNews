@@ -35,6 +35,7 @@ namespace MyMorningNews.Core.Briefings
         private readonly ArtifactService _Artifacts;
         private readonly ServerSettings _Settings;
         private readonly LoggingModule _Logging;
+        private readonly ComparisonService _Comparisons;
 
         private static readonly Dictionary<string, int> _TierRank = new Dictionary<string, int>(StringComparer.Ordinal) { { "MustRead", 3 }, { "WorthALook", 2 }, { "Fyi", 1 } };
 
@@ -60,6 +61,7 @@ namespace MyMorningNews.Core.Briefings
             _Artifacts = artifacts ?? throw new ArgumentNullException(nameof(artifacts));
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _Logging = logging ?? throw new ArgumentNullException(nameof(logging));
+            _Comparisons = new ComparisonService(database);
         }
 
         #endregion
@@ -82,12 +84,25 @@ namespace MyMorningNews.Core.Briefings
             BriefingTemplateDefinition def = scope.Template.Definition;
             ComposeData data = await LoadAsync(scope, token).ConfigureAwait(false);
             List<string> comparisons = new List<string>();
-            foreach (Topic topic in scope.Topics)
+            List<RunHistorySnapshot> snapshots = new List<RunHistorySnapshot>();
+            if (scope.Edition != null && scope.Edition.HistoryMode != HistoryModeEnum.Off)
             {
-                RunHistorySnapshot? snapshot = (await _Database.RunHistorySnapshots.EnumerateAsync(new RunHistorySnapshotFilter
-                { TenantId = scope.TenantId, TopicId = topic.Id, RunId = scope.RunId, ToUtc = scope.PeriodEndUtc, PageSize = 1 }, token).ConfigureAwait(false)).Objects.FirstOrDefault();
-                comparisons.Add("Topic: " + topic.Name + "\n" + HistoryContextService.Prompt(snapshot ?? new RunHistorySnapshot { Mode = "Off" }));
+                // Edition-level comparison (plan section 6.2): earlier issues of this edition, chosen once per queued briefing.
+                RunHistorySnapshot edition = await new HistoryContextService(_Database).ResolveEditionAsync(scope.Edition, briefing, token).ConfigureAwait(false);
+                snapshots.Add(edition);
+                comparisons.Add("Edition: " + scope.Edition.Name + "\n" + HistoryContextService.Prompt(edition));
             }
+            else
+            {
+                foreach (Topic topic in scope.Topics)
+                {
+                    RunHistorySnapshot? snapshot = (await _Database.RunHistorySnapshots.EnumerateAsync(new RunHistorySnapshotFilter
+                    { TenantId = scope.TenantId, TopicId = topic.Id, RunId = scope.RunId, ToUtc = scope.PeriodEndUtc, PageSize = 1 }, token).ConfigureAwait(false)).Objects.FirstOrDefault();
+                    if (snapshot != null) snapshots.Add(snapshot);
+                    comparisons.Add("Topic: " + topic.Name + "\n" + HistoryContextService.Prompt(snapshot ?? new RunHistorySnapshot { Mode = "Off" }));
+                }
+            }
+
             scope.HistoryInstructions = String.Join("\n\n", comparisons);
             Dictionary<string, string> vars = Variables(scope);
             string title = TemplateParser.Substitute(def.Title, vars).Trim();
@@ -123,10 +138,28 @@ namespace MyMorningNews.Core.Briefings
                 plan.Add(ps);
             }
 
+            int catalogIssues = 0;
+            if (scope.Publications.Count > 0)
+            {
+                string? catalog = await CatalogBodyAsync(scope, token).ConfigureAwait(false);
+                if (catalog != null)
+                {
+                    catalogIssues = catalog.Split("\n### ", StringSplitOptions.None).Length;
+                    PlannedSection subscribed = new PlannedSection
+                    {
+                        Section = new TemplateSection { Key = "subscriptions", Heading = "From your system briefings", Directive = new SectionDirective { Source = "none" } },
+                        Body = catalog
+                    };
+                    int at = plan.FindIndex(x => x.Section.Directive.Source == "citations");
+                    if (at < 0) plan.Add(subscribed);
+                    else plan.Insert(at, subscribed);
+                }
+            }
+
             int fallbacks = 0;
             using (SemaphoreSlim gate = new SemaphoreSlim(Math.Max(1, _Settings.Pipeline.MaxConcurrentModelCalls)))
             {
-                await Task.WhenAll(plan.Where(p => p.Section.Directive.Source != "citations" && !p.IsEmpty).Select(async p =>
+                await Task.WhenAll(plan.Where(p => p.Section.Directive.Source != "citations" && !p.IsEmpty && p.Body == null).Select(async p =>
                 {
                     await gate.WaitAsync(token).ConfigureAwait(false);
                     try
@@ -151,7 +184,7 @@ namespace MyMorningNews.Core.Briefings
 
             List<PlannedSection> written = plan.Where(p => !String.IsNullOrWhiteSpace(p.Body)).ToList();
             string opening;
-            int itemCount = written.Sum(p => p.ItemCount);
+            int itemCount = written.Sum(p => p.ItemCount) + catalogIssues;
             if (itemCount == 0)
             {
                 opening = "Nothing new in this period across " + (scope.Topics.Count == 1 ? scope.Topics[0].Name : scope.Topics.Count + " topics") + ".";
@@ -170,8 +203,20 @@ namespace MyMorningNews.Core.Briefings
                 }
             }
 
+            ComparisonResult comparison = new ComparisonResult();
+            try
+            {
+                List<Finding> used = written.SelectMany(p => p.Findings.SelectMany(g => g.Items)).GroupBy(f => f.Id).Select(g => g.First()).ToList();
+                comparison = await _Comparisons.ComputeAsync(scope.TenantId, snapshots, used, scope.Topics, scope.RunId, scope.PeriodStartUtc, scope.PeriodEndUtc, scope.IsDryRun, scope.TimeZone, token).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (!(ex is OperationCanceledException))
+            {
+                _Logging.Warn("[BriefingComposer] comparison for briefing " + briefing.Id + " skipped: " + ex.Message);
+            }
+
             StringBuilder md = new StringBuilder();
             md.Append("# ").Append(title).Append("\n\n").Append(opening.Trim()).Append("\n\n");
+            if (comparison.Sentence != null) md.Append('_').Append(comparison.Sentence).Append("_\n\n");
             foreach (PlannedSection p in written) md.Append("## ").Append(p.Section.Heading).Append("\n\n").Append(p.Body!.Trim()).Append("\n\n");
             string markdown = md.ToString().TrimEnd() + "\n";
 
@@ -208,6 +253,13 @@ namespace MyMorningNews.Core.Briefings
                     await AddItemAsync(scope, briefing, row, BriefingItemTypeEnum.Finding, f.Id, CitationNumber(f, citations), i++, token).ConfigureAwait(false);
                 foreach (Prediction x in p.Predictions) await AddItemAsync(scope, briefing, row, BriefingItemTypeEnum.Prediction, x.Id, null, i++, token).ConfigureAwait(false);
                 foreach (Suggestion x in p.Suggestions) await AddItemAsync(scope, briefing, row, BriefingItemTypeEnum.Suggestion, x.Id, null, i++, token).ConfigureAwait(false);
+            }
+
+            await _Comparisons.SaveAsync(briefing, comparison.Deltas, token).ConfigureAwait(false);
+            foreach (RunHistorySnapshot used in snapshots.Where(x => x.EditionId == null && x.BriefingId == null && x.RunId != null && x.RunId == scope.RunId))
+            {
+                used.BriefingId = briefing.Id;
+                await _Database.RunHistorySnapshots.UpdateAsync(used, token).ConfigureAwait(false);
             }
 
             if (!scope.IsDryRun) await RenderFilesAsync(briefing, token).ConfigureAwait(false);
@@ -248,6 +300,65 @@ namespace MyMorningNews.Core.Briefings
         #endregion
 
         #region Private-Methods
+
+        private async Task<string?> CatalogBodyAsync(ComposeScope scope, CancellationToken token)
+        {
+            // Published issues of subscribed publications in the period, newest first, at most three per publication.
+            // Only the issue's own opening is quoted; it links to the subscriber's reader page. No system research starts.
+            StringBuilder body = new StringBuilder();
+            TimeZoneInfo zone = TimeZoneInfo.Utc;
+            try
+            {
+                zone = TimeZoneInfo.FindSystemTimeZoneById(scope.TimeZone);
+            }
+            catch (Exception ex) when (ex is TimeZoneNotFoundException || ex is InvalidTimeZoneException)
+            {
+                zone = TimeZoneInfo.Utc;
+            }
+
+            foreach (CatalogPublication pub in scope.Publications)
+            {
+                List<Briefing> issues = (await _Database.Briefings.EnumerateAsync(new BriefingFilter
+                {
+                    TenantId = pub.OwnerTenantId, TopicId = pub.TopicId, Status = BriefingStatusEnum.Ready, IsDryRun = false, Active = true,
+                    FromUtc = scope.PeriodStartUtc, ToUtc = scope.PeriodEndUtc, SortBy = "createdUtc", SortDirection = SortDirectionEnum.Descending, PageSize = 3
+                }, token).ConfigureAwait(false)).Objects;
+                foreach (Briefing issue in issues)
+                {
+                    if (body.Length > 0) body.Append("\n\n");
+                    string when = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(issue.CreatedUtc, DateTimeKind.Utc), zone).ToString("MMMM d", CultureInfo.InvariantCulture);
+                    string lead = LeadParagraph(issue.Markdown);
+                    body.Append("### ").Append(pub.Title).Append("\n\n**").Append(issue.Title).Append("**, ").Append(when).Append('.');
+                    if (lead.Length > 0) body.Append(' ').Append(lead);
+                    body.Append("\n\n[Read the full system briefing](").Append(_Settings.Rest.AppBaseUrl).Append("/dashboard/catalog/").Append(pub.Id).Append("/issues/").Append(issue.Id).Append(')');
+                }
+            }
+
+            return body.Length == 0 ? null : body.ToString();
+        }
+
+        private static string LeadParagraph(string? markdown)
+        {
+            if (String.IsNullOrWhiteSpace(markdown)) return String.Empty;
+            List<string> lines = new List<string>();
+            foreach (string raw in markdown.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n'))
+            {
+                string line = raw.Trim();
+                if (line.StartsWith('#')) continue;
+                if (line.Length == 0)
+                {
+                    if (lines.Count > 0) break;
+                    continue;
+                }
+
+                lines.Add(line);
+            }
+
+            string text = SafeMarkdown.ToText(String.Join(" ", lines)).Trim();
+            if (text.Length <= 600) return text;
+            int cut = text.LastIndexOf(' ', 600);
+            return text.Substring(0, cut > 300 ? cut : 600).TrimEnd() + "...";
+        }
 
         private async Task<ComposeData> LoadAsync(ComposeScope scope, CancellationToken token)
         {

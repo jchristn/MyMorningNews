@@ -26,5 +26,10 @@ namespace MyMorningNews.Core.Responses
         /// <summary>Shared episode duration when known.</summary>
         public double? AudioSeconds { get; set; } = null;
 
+        /// <summary>
+        /// What the issue was compared with and the changes found, without canonical item identifiers. Filled on the single-issue read; null in issue lists.
+        /// </summary>
+        public BriefingComparisonResponse? Comparison { get; set; } = null;
+
     }
 }

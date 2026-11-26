@@ -28,6 +28,13 @@ export const topicsApi = {
   /** ConstraintUpsertRequest: `{ kind, value, note?, dimensionId?, isLocked? }` */
   addConstraint: (client, id, body) => client.post(routes.topicConstraints(id), body),
   removeConstraint: (client, id, constraintId) => client.delete(routes.topicConstraint(id, constraintId)),
+  /**
+   * The baseline the next run would compare with, for unsaved settings (HistoryPreviewRequest: `{ historyMode?,
+   * historyCount?, historySinceUtc?, historyBriefingId?, historyTokenBudget? }`, null keeps the saved value). Returns
+   * `{ mode, baselines: [{ id, title, createdUtc, available }], contextBytes, budgetBytes, truncated, note, cutoffUtc }`.
+   * 400 ValidationFailed for bounds, dates, or a pinned issue that is not ready; 409 when the pinned issue is unavailable.
+   */
+  previewHistory: (client, id, body) => client.post(routes.topicHistoryPreview(id), body || {}),
 };
 
 /**
@@ -178,6 +185,12 @@ export const briefingsApi = {
   share: (client, id, { expiresInDays, showOwnerName } = {}) => client.post(routes.briefingShares(id), { expiresInDays, showOwnerName: Boolean(showOwnerName) }),
   /** Revoke a live share; with `purge`, delete one that is already revoked or expired. */
   revokeShare: (client, id, shareId, { purge = false } = {}) => client.delete(routes.briefingShare(id, shareId), { query: purge ? { purge: true } : undefined }),
+  /**
+   * What the briefing was compared with (BriefingComparisonResponse): `{ briefingId, compared, mode, note, truncated,
+   * cutoffUtc, baselines, counts, noMaterialChanges, summary, deltas: [{ id, kind, title, summary, findingId,
+   * predictionId, baselineBriefingId, baselineItemId, sortOrder }] }`. `compared` is false for a standalone briefing.
+   */
+  comparison: (client, id) => client.get(routes.briefingComparison(id)),
 };
 
 /** Editions (Phase 7, plan section 21.3). */
@@ -193,6 +206,19 @@ export const editionsApi = {
   compose: (client, id) => client.post(routes.editionCompose(id), {}),
   /** A preview Briefing from the latest data, not saved. */
   preview: (client, id) => client.post(routes.editionPreview(id), {}, { timeoutMs: 180000 }),
+  /** The edition's comparison baseline for unsaved settings (same body and answer as `topicsApi.previewHistory`). */
+  previewHistory: (client, id, body) => client.post(routes.editionHistoryPreview(id), body || {}),
+  /**
+   * The system briefings the edition includes, as an EnumerationResult page of `{ publicationId, title, sortOrder,
+   * available }` (read with `listItems`). The edition detail also carries them as a plain `publications` array.
+   */
+  publications: (client, id, query) => client.get(routes.editionPublications(id), query),
+  /**
+   * Set them, in order (at most 20, each an active subscription of the caller). Returns the EditionResponse. 400
+   * ValidationFailed (not subscribed, duplicates, more than 20); 402 CapReached when the plan has no custom research
+   * (an empty list is always allowed).
+   */
+  setPublications: (client, id, publicationIds) => client.put(routes.editionPublications(id), { publicationIds }),
 };
 
 /** The channel the app reports on every rating (FeedbackChannelEnum `Mobile`, plan section 20). */

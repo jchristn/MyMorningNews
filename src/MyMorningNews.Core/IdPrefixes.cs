@@ -426,6 +426,16 @@ namespace MyMorningNews.Core
         public const string RunHistorySnapshot = "rhs_";
 
         /// <summary>
+        /// Prefix for BriefingDelta identifiers.
+        /// </summary>
+        public const string BriefingDelta = "bdl_";
+
+        /// <summary>
+        /// Prefix for EditionPublication identifiers.
+        /// </summary>
+        public const string EditionPublication = "edp_";
+
+        /// <summary>
         /// Prefix for BillingAccount identifiers.
         /// </summary>
         public const string BillingAccount = "bac_";

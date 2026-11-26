@@ -491,7 +491,8 @@ namespace Test.Shared.Helpers
                 return "{\"reviews\":[" + (m.Success ? "{\"predictionId\":\"" + m.Groups[1].Value + "\",\"status\":\"Accurate\",\"rationale\":\"The rebates were announced.\",\"confidence\":0.9,\"findings\":[\"Heat pump rebates expand\"]}" : String.Empty) + "]}";
             }
 
-            if (body.Contains("Answer Duplicate, Update, or Different", StringComparison.Ordinal)) return "{\"verdict\":\"Update\",\"reason\":\"Adds a date.\"}";
+            if (body.Contains("Answer Duplicate, Update, Correction, or Different", StringComparison.Ordinal))
+                return body.Contains("CORRECTION", StringComparison.Ordinal) ? "{\"verdict\":\"Correction\",\"reason\":\"Corrects a figure.\"}" : "{\"verdict\":\"Update\",\"reason\":\"Adds a date.\"}";
             if (body.Contains("You label the reasons readers give", StringComparison.Ordinal))
             {
                 List<string> ids = System.Text.RegularExpressions.Regex.Matches(body, "\\[(fbk_[A-Za-z0-9_]+)\\]").Select(m => m.Groups[1].Value).Distinct().ToList();

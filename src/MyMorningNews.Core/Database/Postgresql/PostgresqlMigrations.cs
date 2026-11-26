@@ -356,7 +356,27 @@ COALESCE(SUM(reasoningtokens), 0) AS reasoning FROM llmcalls WHERE runid IS NOT 
                 "ALTER TABLE notifications ADD COLUMN IF NOT EXISTS catalogpublicationid VARCHAR(64)"
             })),
             new SchemaMigration(39, "Temporary crawl cache", CrawlCacheQueries.Schema),
-            new SchemaMigration(40, "Stale topic reviews and daily activity", Concat(TopicReviewQueries.Schema, PlatformStatsQueries.Schema))
+            new SchemaMigration(40, "Stale topic reviews and daily activity", Concat(TopicReviewQueries.Schema, PlatformStatsQueries.Schema)),
+            new SchemaMigration(41, "Comparison provenance, edition comparison, catalog inputs to editions, and kept topic order", Concat(
+                BriefingDeltaQueries.Schema, EditionPublicationQueries.Schema, new List<string>
+                {
+                    "ALTER TABLE findings ADD COLUMN IF NOT EXISTS iscorrection BOOLEAN NOT NULL DEFAULT false",
+                    "ALTER TABLE topics ADD COLUMN IF NOT EXISTS slotpriority INTEGER CHECK (slotpriority IS NULL OR slotpriority >= 1)",
+                    "CREATE INDEX IF NOT EXISTS ix_topics_slotorder ON topics (tenantid, userid, slotpriority, createdutc, id) WHERE NOT isonetime AND status <> 'Archived'",
+                    "ALTER TABLE editions ADD COLUMN IF NOT EXISTS historymode VARCHAR(32) NOT NULL DEFAULT 'Off' CHECK (historymode IN ('Off','PreviousIssue','RecentIssues','SinceDate','SpecificIssue'))",
+                    "ALTER TABLE editions ADD COLUMN IF NOT EXISTS historycount INTEGER NOT NULL DEFAULT 5 CHECK (historycount BETWEEN 1 AND 20)",
+                    "ALTER TABLE editions ADD COLUMN IF NOT EXISTS historysinceutc TIMESTAMPTZ",
+                    "ALTER TABLE editions ADD COLUMN IF NOT EXISTS historybriefingid VARCHAR(64)",
+                    "ALTER TABLE editions ADD COLUMN IF NOT EXISTS historytokenbudget INTEGER NOT NULL DEFAULT 8000 CHECK (historytokenbudget BETWEEN 256 AND 32000)",
+                    "ALTER TABLE runhistorysnapshots ALTER COLUMN runid DROP NOT NULL",
+                    "ALTER TABLE runhistorysnapshots ALTER COLUMN topicid DROP NOT NULL",
+                    "ALTER TABLE runhistorysnapshots ADD COLUMN IF NOT EXISTS editionid VARCHAR(64) REFERENCES editions(id) ON DELETE CASCADE",
+                    "ALTER TABLE runhistorysnapshots ADD COLUMN IF NOT EXISTS briefingid VARCHAR(64) REFERENCES briefings(id) ON DELETE SET NULL",
+                    "ALTER TABLE runhistorysnapshots DROP CONSTRAINT IF EXISTS ck_runhistorysnapshots_owner",
+                    "ALTER TABLE runhistorysnapshots ADD CONSTRAINT ck_runhistorysnapshots_owner CHECK ((runid IS NOT NULL AND topicid IS NOT NULL) OR editionid IS NOT NULL)",
+                    "CREATE INDEX IF NOT EXISTS ix_runhistorysnapshots_briefingid ON runhistorysnapshots (tenantid, briefingid)",
+                    "CREATE UNIQUE INDEX IF NOT EXISTS ux_runhistorysnapshots_edition_briefing ON runhistorysnapshots (tenantid, briefingid) WHERE editionid IS NOT NULL"
+                }))
         };
 
         private static List<string> Concat(params IReadOnlyList<string>[] parts)

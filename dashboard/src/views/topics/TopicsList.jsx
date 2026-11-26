@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Pause, Plus, Sparkles, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext.jsx';
@@ -13,6 +13,7 @@ import DataTable from '../../components/DataTable.jsx';
 import DateCell from '../../components/DateCell.jsx';
 import PageHeader from '../../components/PageHeader.jsx';
 import StatusBadge from '../../components/StatusBadge.jsx';
+import { TOPIC_SLOTS_ANCHOR, slotsRelevant } from '../profile/TopicSlotsPanel.jsx';
 import useTopicActions from './useTopicActions.jsx';
 
 export default function TopicsList() {
@@ -24,6 +25,20 @@ export default function TopicsList() {
   const [plan, setPlan] = useState(null);
   useEffect(() => { let active = true; if (apiClient.getMyPlan) apiClient.getMyPlan().then(value => { if (active) setPlan(value); }).catch(() => {}); return () => { active = false; }; }, [apiClient]);
   const customAllowed = plan?.features?.['customResearch.enabled'] !== 'false';
+  const [slots, setSlots] = useState(null);
+  useEffect(() => {
+    let active = true;
+    apiClient
+      .getTopicSlots()
+      .then((value) => {
+        if (active) setSlots(value);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [apiClient, refresh]);
+  const overLimit = slotsRelevant(slots) ? Number(slots.overLimit) || 0 : 0;
   const [bulkDelete, setBulkDelete] = useState(null);
   const bump = useCallback(() => setRefresh((n) => n + 1), []);
   const { actionsFor, modals } = useTopicActions({ onChanged: bump });
@@ -86,6 +101,12 @@ export default function TopicsList() {
       <PageHeader title={t('nav.items.topics')} summary={t('routes.topics.summary')} />
       <TopicReviewBanner onChanged={bump} />
       {!customAllowed ? <section className="panel stack"><p>{t('catalog.summary')}</p><div className="row-actions"><button className="button primary" onClick={() => navigate('/dashboard/catalog')}>{t('catalog.title')}</button><button className="button secondary" onClick={() => navigate('/dashboard/account/billing')}>{t('billing.title')}</button></div></section> : null}
+      {overLimit > 0 ? (
+        <div className="notice notice-warning" role="status" data-testid="topic-slots-banner">
+          <strong>{t('topicSlots.overTitle', { count: overLimit })}</strong> {t('topicSlots.bannerHelp')}{' '}
+          <Link to={'/dashboard/account/billing#' + TOPIC_SLOTS_ANCHOR}>{t('topicSlots.choose')}</Link>
+        </div>
+      ) : null}
       <section className="panel">
         <DataTable
           tableKey="topics"

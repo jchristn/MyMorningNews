@@ -52,6 +52,12 @@ namespace MyMorningNews.Core.Briefings
         public Func<string, string, CancellationToken, Task>? AudioGate { get; set; } = null;
 
         /// <summary>
+        /// Resolves the catalog publications an edition may include right now: linked publications the owner still holds
+        /// an active subscription to, on a plan that allows custom composition. Null disables catalog inputs.
+        /// </summary>
+        public Func<Edition, CancellationToken, Task<List<CatalogPublication>>>? EditionPublications { get; set; } = null;
+
+        /// <summary>
         /// Notifications; when set, ready edition briefings and one-time reports are announced through it. The edition's
         /// email and push switches and a one-time request's Email deliverable are passed as further filters on top of
         /// the reader's notification preferences. Push payloads carry the briefing ID and the edition name, never
@@ -288,6 +294,20 @@ namespace MyMorningNews.Core.Briefings
         }
 
         /// <summary>
+        /// The catalog publications an edition may include right now, in edition order (see <see cref="EditionPublications"/>).
+        /// </summary>
+        /// <param name="edition">Edition.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Readable publications; empty when none are linked or catalog inputs are disabled.</returns>
+        /// <exception cref="ArgumentNullException">edition is null.</exception>
+        public async Task<List<CatalogPublication>> ReadableEditionPublicationsAsync(Edition edition, CancellationToken token = default)
+        {
+            ArgumentNullException.ThrowIfNull(edition);
+            if (EditionPublications == null) return new List<CatalogPublication>();
+            return await EditionPublications(edition, token).ConfigureAwait(false);
+        }
+
+        /// <summary>
         /// Topics an edition covers: its listed topics in order, or, when none are listed, all of the owner's active recurring topics.
         /// </summary>
         /// <param name="edition">Edition.</param>
@@ -519,6 +539,8 @@ namespace MyMorningNews.Core.Briefings
                 PeriodStartUtc = start,
                 PeriodEndUtc = nowUtc,
                 EditionName = edition.Name,
+                Edition = edition,
+                Publications = await ReadableEditionPublicationsAsync(edition, token).ConfigureAwait(false),
                 Template = await Templates.ResolveAsync(edition.TenantId, edition.BriefingTemplateId, DefaultTemplateCatalog.MorningNews, token).ConfigureAwait(false)
             };
         }

@@ -2708,7 +2708,8 @@
       "deleted": "Dapatan dipadam",
       "deleteTitle": "Padam dapatan",
       "deleteMessage": "Padam \"{title}\"? Pautan buktinya akan dialih keluar. Sumber yang dikongsi dan sejarah penilaian anda kekal."
-    }
+    },
+    "correction": "Pembetulan"
   },
   "predictions": {
     "overdue": "Melepasi ufuk",
@@ -3000,7 +3001,9 @@
       "settings": "Tetapan",
       "topics": "Topik",
       "schedules": "Jadual",
-      "briefings": "Taklimat"
+      "briefings": "Taklimat",
+      "comparison": "Bandingkan dengan ringkasan terdahulu",
+      "publications": "Ringkasan sistem dalam edisi ini"
     },
     "columns": {
       "name": "Edisi",
@@ -3077,6 +3080,22 @@
       "label": "Tunjukkan edisi",
       "mine": "Milik saya",
       "all": "Milik semua"
+    },
+    "publications": {
+      "help": "Tambah edisi daripada langganan katalog anda di bawah \"Daripada ringkasan sistem anda\", mengikut susunan ini. Sehingga {max}.",
+      "none": "Tiada ringkasan sistem disertakan.",
+      "chosen": "Ringkasan sistem yang disertakan",
+      "unavailable": "Tidak tersedia",
+      "unavailableHelp": "Ringkasan sistem yang tidak tersedia telah ditarik balik, dinyahlanggan atau tidak dibenarkan oleh pelan anda. Ia dilangkau semasa edisi disusun. Alih keluar atau langgan semula.",
+      "noSubscriptions": "Anda tiada langganan katalog untuk ditambah.",
+      "browse": "Layari ringkasan sistem",
+      "addLabel": "Ringkasan sistem untuk ditambah",
+      "pick": "Pilih ringkasan sistem",
+      "add": "Tambah",
+      "full": "Edisi ini sudah menyertakan {max} ringkasan sistem, jumlah maksimum yang dibenarkan.",
+      "capReached": "Menyertakan ringkasan sistem dalam ringkasan tersuai memerlukan pelan dengan penyelidikan tersuai. Anda masih boleh mengalih keluarnya.",
+      "save": "Simpan ringkasan sistem",
+      "saved": "Ringkasan sistem disimpan."
     }
   },
   "templates": {
@@ -4854,7 +4873,12 @@
     "date": "Tarikh mula (UTC)",
     "issue": "Edisi asas",
     "choose": "Pilih edisi",
-    "firstRun": "Tanpa edisi terdahulu yang boleh digunakan, ringkasan seterusnya akan berdiri sendiri."
+    "firstRun": "Tanpa edisi terdahulu yang boleh digunakan, ringkasan seterusnya akan berdiri sendiri.",
+    "editionHelp": "Bandingkan setiap edisi yang disusun dengan edisi terdahulunya sendiri. Teks sejarah ialah asas perbandingan, bukan bukti semasa.",
+    "editionOff": "Mati: kekalkan perbandingan setiap topik",
+    "editionOffHelp": "Mati mengekalkan perbandingan penyelidikan setiap topik. Mod lain membandingkan keseluruhan edisi dengan edisi terdahulunya.",
+    "budget": "Bajet perbandingan (bait)",
+    "budgetHelp": "Jumlah teks terdahulu yang boleh digunakan oleh perbandingan, daripada {min} hingga {max} bait. Asas yang lebih panjang dipotong."
   },
   "catalog": {
     "title": "Ringkasan sistem",
@@ -4942,5 +4966,68 @@
     "failed": "Itu tidak berjaya. Cuba lagi.",
     "deleteTitle": "Padam topik ini?",
     "deleteMessage": "Padam \"{name}\" bersama taklimat, dapatan dan audionya? Tindakan ini tidak boleh dibuat asal."
+  },
+  "historyPreview": {
+    "title": "Pratonton asas",
+    "show": "Pratonton asas",
+    "refresh": "Muat semula pratonton",
+    "help": "Lihat edisi terdahulu yang akan dibandingkan dengan ringkasan seterusnya, menggunakan tetapan di atas. Tiada apa yang disimpan.",
+    "blocked": {
+      "date": "Pilih tarikh mula untuk melihat pratonton asas.",
+      "issue": "Pilih edisi asas untuk melihat pratontonnya."
+    },
+    "conflictHelp": "Edisi yang disematkan tidak lagi tersedia. Pilih edisi lain atau mod yang berbeza.",
+    "wouldCompare": "{count, plural, other {Ringkasan seterusnya akan dibandingkan dengan # edisi terdahulu:}}",
+    "size": "Konteks perbandingan: {used} daripada {budget}",
+    "sizePercent": "{percent} peratus daripada bajet perbandingan",
+    "truncated": "Edisi terdahulu melebihi bajet, jadi perbandingan akan menggunakan versi yang dipendekkan.",
+    "firstRun": "Belum ada edisi terdahulu yang siap dan sepadan dengan tetapan ini, jadi ringkasan seterusnya akan berdiri sendiri. Ringkasan kemudian akan dibandingkan dengannya apabila ia siap.",
+    "cutoff": "Edisi yang dibuat sebelum {date} layak."
+  },
+  "comparison": {
+    "title": "Dibandingkan dengan ringkasan terdahulu",
+    "standalone": "Ringkasan berdiri sendiri: tiada edisi terdahulu dibandingkan.",
+    "unavailableIssue": "Edisi yang tidak lagi tersedia",
+    "comparedWith": "Dibandingkan dengan {issues}.",
+    "earlierIssues": "edisi terdahulu",
+    "noMaterialChanges": "Tiada perubahan penting ditemui.",
+    "noMaterialChangesHelp": "Tiada perkara baharu, berubah, diperbetulkan atau selesai ditemui sejak edisi terdahulu.",
+    "baselines": "Dibandingkan dengan",
+    "noBaselines": "Edisi terdahulu tidak lagi disenaraikan.",
+    "mode": "Mod: {mode}.",
+    "modeEdition": "Perbandingan edisi: {mode}.",
+    "cutoff": "Edisi sebelum {date} layak.",
+    "truncated": "Edisi terdahulu dipendekkan supaya muat dalam bajet perbandingan.",
+    "versus": "berbanding {issue}",
+    "kinds": {
+      "Correction": "Pembetulan",
+      "ChangedFact": "Berubah",
+      "NewDevelopment": "Baharu",
+      "Resolved": "Selesai",
+      "Unchanged": "Tidak berubah",
+      "Unavailable": "Tidak tersedia"
+    }
+  },
+  "topicSlots": {
+    "title": "Topik yang terus berjalan",
+    "count": "{counted} daripada {limit}",
+    "help": "Pelan anda menjalankan sehingga {limit} topik tersuai. Topik terawal dalam susunan ini terus berjalan jika had berkurang.",
+    "noneAllowed": "Pelan anda tidak termasuk penyelidikan tersuai, jadi tiada topik tersuai dijalankan. Sejarahnya dikekalkan.",
+    "overTitle": "{count, plural, other {# topik melebihi had pelan anda.}}",
+    "overHelp": "Melebihi had: disimpan bersama sejarah, tetapi tidak dijalankan. Mencipta, menduplikasi atau memulihkan topik kekal disekat sehingga anda mengarkibkan topik yang mencukupi atau menaik taraf.",
+    "bannerHelp": "Topik tersebut menyimpan sejarahnya tetapi tidak dijalankan.",
+    "choose": "Pilih topik yang terus berjalan",
+    "orderHelp": "Letakkan topik paling penting di atas. Tiada apa yang dijeda, diarkibkan atau dipadam apabila anda menyimpan.",
+    "listLabel": "Topik tersuai mengikut susunan simpanan",
+    "lastRun": "kali terakhir dijalankan {date}",
+    "within": "Terus berjalan",
+    "past": "Melebihi had",
+    "unsaved": "Susunan telah berubah. Simpan untuk mengekalkannya.",
+    "save": "Simpan susunan",
+    "saved": "Susunan topik disimpan.",
+    "clear": "Kosongkan susunan saya",
+    "cleared": "Susunan topik dikosongkan. Topik kini mengikut susunan penciptaan.",
+    "customized": "Anda memilih susunan ini.",
+    "defaultOrder": "Topik mengikut susunan penciptaan sehingga anda memilih susunan."
   }
 }

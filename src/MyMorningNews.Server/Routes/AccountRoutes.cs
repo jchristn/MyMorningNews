@@ -47,6 +47,10 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PreAuthentication.Static.Add(HttpMethod.GET, "/.well-known/apple-app-site-association", AppleAsync, null, openApiMetadata: Doc("iOS universal links", "Public", "The apple-app-site-association file as application/json, with no authentication and no redirect. 404 NotConfigured until Hosting.AppleTeamId (MYMORNINGNEWS_HOSTING_APPLE_TEAM_ID) is set."));
             webserver.Routes.PreAuthentication.Static.Add(HttpMethod.GET, "/.well-known/assetlinks.json", AndroidAsync, null, openApiMetadata: Doc("Android app links", "Public", "The Digital Asset Links file as application/json, with no authentication and no redirect. 404 NotConfigured until Hosting.AndroidCertificateFingerprints (MYMORNINGNEWS_HOSTING_ANDROID_CERT_FINGERPRINTS) is set."));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/account/usage", UsageAsync, null, openApiMetadata: Doc("My usage against my plan's limits", "Account"));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/account/topic-slots", TopicSlotsAsync, null, openApiMetadata: Doc("My custom topics against my plan's limit", "Account",
+                "Topics in slot order: your chosen keep order first, then oldest first. Topics past the limit keep their history but do not run; creating, duplicating, or restoring a topic stays blocked until enough are archived or the plan grows."));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.PUT, "/v1.0/api/account/topic-slots", SaveTopicSlotsAsync, null, openApiMetadata: Doc("Choose which custom topics keep running on a smaller plan", "Account",
+                "Ordered topic IDs, most important first. Saving ahead of a downgrade applies when the limit shrinks. Nothing is paused, archived, or deleted by this call. An empty list clears the choice.").WithRequestBody(Body<TopicSlotsRequest>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/account/export", ExportAsync, null, openApiMetadata: Doc("Download my data (ZIP of JSON and Markdown)", "Account"));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/account/delete", DeleteAsync, null, openApiMetadata: Doc("Delete my account", "Account",
                 "Signs out every session and schedules the purge after Hosting.DeletionGraceDays (default 7); signing in again before then cancels it. An optional password in the body must match. Returns 202 with purgeAfterUtc.").WithRequestBody(Body<AccountDeleteRequest>()));
@@ -111,6 +115,24 @@ namespace MyMorningNews.Server.Routes
             await SendJsonAsync(ctx, 200, await Server.Entitlements.MeterAsync(user.TenantId, user.Id, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
+        private async Task TopicSlotsAsync(HttpContextBase ctx)
+        {
+            User? user = await SelfAsync(ctx, RequestTypeEnum.UserSelfRead).ConfigureAwait(false);
+            if (user == null) return;
+            TopicSlotService slots = new TopicSlotService(Server.Database, Server.Entitlements);
+            await SendJsonAsync(ctx, 200, await slots.DescribeAsync(user.TenantId, user.Id, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async Task SaveTopicSlotsAsync(HttpContextBase ctx)
+        {
+            User? user = await SelfAsync(ctx, RequestTypeEnum.TopicWrite).ConfigureAwait(false);
+            if (user == null) return;
+            TopicSlotsRequest? req = await ReadBodyAsync<TopicSlotsRequest>(ctx).ConfigureAwait(false);
+            if (req == null) return;
+            TopicSlotService slots = new TopicSlotService(Server.Database, Server.Entitlements);
+            await SendJsonAsync(ctx, 200, await slots.SaveAsync(user.TenantId, user.Id, req.KeepTopicIds ?? new List<string>(), ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
         private async Task ExportAsync(HttpContextBase ctx)
         {
             User? user = await SelfAsync(ctx, RequestTypeEnum.UserSelfRead).ConfigureAwait(false);
@@ -143,7 +165,7 @@ namespace MyMorningNews.Server.Routes
             string team = Server.Settings.Hosting.AppleTeamId?.Trim() ?? String.Empty;
             if (team.Length == 0) { await SendErrorAsync(ctx, 404, "NotConfigured", "Universal links are not configured: set hosting.appleTeamId (MYMORNINGNEWS_HOSTING_APPLE_TEAM_ID) on the server.").ConfigureAwait(false); return; }
             string appId = team + "." + Server.Settings.Hosting.MobileAppId;
-            string[] paths = new[] { "/briefings/*", "/topics/*", "/predictions/*", "/findings/*", "/redeem*", "/verify*", "/reset-password*", "/signup*" };
+            string[] paths = new[] { "/briefings/*", "/topics/*", "/predictions/*", "/findings/*", "/redeem*", "/verify*", "/reset-password*", "/signup*", "/dashboard/*" };
             object doc = new Dictionary<string, object>
             {
                 { "applinks", new Dictionary<string, object> { { "details", new[] { new Dictionary<string, object> { { "appIDs", new[] { appId } }, { "components", paths.Select(p => new Dictionary<string, string> { { "/", p } }).ToArray() } } } } } },

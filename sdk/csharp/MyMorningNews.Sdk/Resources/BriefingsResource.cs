@@ -288,5 +288,19 @@ namespace MyMorningNews.Sdk.Resources
         {
             return Client.SendAsync<SupportReportResponse>(HttpMethod.Post, "/v1.0/api/briefings/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/support", null, null, token);
         }
+
+        /// <summary>
+        /// What the briefing was compared with and the structured changes found. A briefing composed without a
+        /// comparison returns Compared false with a Note.
+        /// </summary>
+        /// <param name="id">Briefing identifier.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The BriefingComparisonResponse.</returns>
+        /// <exception cref="ArgumentNullException">id is null or empty.</exception>
+        /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
+        public Task<BriefingComparisonResponse> GetComparisonAsync(string id, CancellationToken token = default)
+        {
+            return Client.SendAsync<BriefingComparisonResponse>(HttpMethod.Get, "/v1.0/api/briefings/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/comparison", null, null, token);
+        }
     }
 }

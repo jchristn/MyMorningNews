@@ -63,5 +63,30 @@ namespace MyMorningNews.Core.Requests
         /// Lookback hours (1 to 2160).
         /// </summary>
         public int? LookbackHours { get; set; } = null;
+
+        /// <summary>
+        /// Edition-level comparison mode, or null to keep. Off keeps the topics' own research comparisons.
+        /// </summary>
+        public HistoryModeEnum? HistoryMode { get; set; } = null;
+
+        /// <summary>
+        /// Maximum baseline editions (1 to 20), or null to keep.
+        /// </summary>
+        public int? HistoryCount { get; set; } = null;
+
+        /// <summary>
+        /// Earliest baseline time for SinceDate, or null to keep.
+        /// </summary>
+        public DateTime? HistorySinceUtc { get; set; } = null;
+
+        /// <summary>
+        /// Pinned baseline issue of this edition for SpecificIssue, an empty string to clear, or null to keep.
+        /// </summary>
+        public string? HistoryBriefingId { get; set; } = null;
+
+        /// <summary>
+        /// Comparison budget in UTF-8 bytes (256 to 32000), or null to keep.
+        /// </summary>
+        public int? HistoryTokenBudget { get; set; } = null;
     }
 }

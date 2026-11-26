@@ -2708,7 +2708,8 @@
       "deleted": "Erkenntnis gelöscht",
       "deleteTitle": "Erkenntnis löschen",
       "deleteMessage": "„{title}“ löschen? Die Verknüpfungen zu den Belegen werden entfernt. Gemeinsame Quellen und Ihr Bewertungsverlauf bleiben erhalten."
-    }
+    },
+    "correction": "Korrektur"
   },
   "predictions": {
     "overdue": "Horizont überschritten",
@@ -3000,7 +3001,9 @@
       "settings": "Einstellungen",
       "topics": "Themen",
       "schedules": "Zeitpläne",
-      "briefings": "Briefings"
+      "briefings": "Briefings",
+      "comparison": "Mit früheren Berichten vergleichen",
+      "publications": "Systemberichte in dieser Ausgabe"
     },
     "columns": {
       "name": "Ausgabe",
@@ -3077,6 +3080,22 @@
       "label": "Ausgaben anzeigen",
       "mine": "Meine",
       "all": "Alle"
+    },
+    "publications": {
+      "help": "Fügt Ausgaben aus Ihren Katalogabonnements unter „Aus Ihren Systemberichten“ in dieser Reihenfolge hinzu. Bis zu {max}.",
+      "none": "Es sind keine Systemberichte enthalten.",
+      "chosen": "Enthaltene Systemberichte",
+      "unavailable": "Nicht verfügbar",
+      "unavailableHelp": "Nicht verfügbare Systemberichte wurden zurückgezogen, abbestellt oder sind in Ihrem Tarif nicht erlaubt. Sie werden beim Zusammenstellen übersprungen. Entfernen Sie sie oder abonnieren Sie sie erneut.",
+      "noSubscriptions": "Sie haben keine Katalogabonnements zum Hinzufügen.",
+      "browse": "Systemberichte durchsuchen",
+      "addLabel": "Hinzuzufügender Systembericht",
+      "pick": "Systembericht auswählen",
+      "add": "Hinzufügen",
+      "full": "Diese Ausgabe enthält bereits {max} Systemberichte, das erlaubte Maximum.",
+      "capReached": "Systemberichte in einem eigenen Bericht erfordern einen Tarif mit eigener Recherche. Entfernen können Sie sie weiterhin.",
+      "save": "Systemberichte speichern",
+      "saved": "Systemberichte gespeichert."
     }
   },
   "templates": {
@@ -4854,7 +4873,12 @@
     "date": "Startdatum (UTC)",
     "issue": "Vergleichsausgabe",
     "choose": "Ausgabe auswählen",
-    "firstRun": "Ohne nutzbare frühere Ausgabe wird der nächste Bericht eigenständig erstellt."
+    "firstRun": "Ohne nutzbare frühere Ausgabe wird der nächste Bericht eigenständig erstellt.",
+    "editionHelp": "Vergleicht jede zusammengestellte Ausgabe mit ihren eigenen früheren Ausgaben. Historischer Text ist eine Vergleichsbasis, kein aktueller Beleg.",
+    "editionOff": "Aus: Vergleich der einzelnen Themen beibehalten",
+    "editionOffHelp": "Aus behält die Recherchevergleiche der einzelnen Themen bei. Jeder andere Modus vergleicht die ganze Ausgabe mit ihren früheren Ausgaben.",
+    "budget": "Vergleichsbudget (Bytes)",
+    "budgetHelp": "Wie viel früherer Text für den Vergleich genutzt werden darf, von {min} bis {max} Bytes. Längere Vergleichsbasen werden gekürzt."
   },
   "catalog": {
     "title": "Systemberichte",
@@ -4942,5 +4966,68 @@
     "failed": "Das hat nicht funktioniert. Bitte erneut versuchen.",
     "deleteTitle": "Dieses Thema löschen?",
     "deleteMessage": "\"{name}\" mit seinen Briefings, Ergebnissen und Audiodateien löschen? Das kann nicht rückgängig gemacht werden."
+  },
+  "historyPreview": {
+    "title": "Vorschau der Vergleichsbasis",
+    "show": "Vergleichsbasis anzeigen",
+    "refresh": "Vorschau aktualisieren",
+    "help": "Sehen Sie, mit welchen früheren Ausgaben der nächste Bericht mit den obigen Einstellungen verglichen würde. Es wird nichts gespeichert.",
+    "blocked": {
+      "date": "Wählen Sie ein Startdatum, um die Vergleichsbasis zu sehen.",
+      "issue": "Wählen Sie eine Vergleichsausgabe, um sie zu sehen."
+    },
+    "conflictHelp": "Die angeheftete Ausgabe ist nicht mehr verfügbar. Wählen Sie eine andere Ausgabe oder einen anderen Modus.",
+    "wouldCompare": "{count, plural, one {Der nächste Bericht würde mit # früheren Ausgabe verglichen:} other {Der nächste Bericht würde mit # früheren Ausgaben verglichen:}}",
+    "size": "Vergleichskontext: {used} von {budget}",
+    "sizePercent": "{percent} Prozent des Vergleichsbudgets",
+    "truncated": "Die früheren Ausgaben sind länger als das Budget, daher nutzt der Vergleich eine gekürzte Fassung.",
+    "firstRun": "Noch passt keine fertige frühere Ausgabe zu diesen Einstellungen, daher wird der nächste Bericht eigenständig. Spätere Berichte werden damit verglichen, sobald er fertig ist.",
+    "cutoff": "Ausgaben, die vor dem {date} erstellt wurden, kommen infrage."
+  },
+  "comparison": {
+    "title": "Mit früheren Berichten verglichen",
+    "standalone": "Eigenständiger Bericht: Es wurde keine frühere Ausgabe verglichen.",
+    "unavailableIssue": "Eine Ausgabe, die nicht mehr verfügbar ist",
+    "comparedWith": "Verglichen mit {issues}.",
+    "earlierIssues": "früheren Ausgaben",
+    "noMaterialChanges": "Keine wesentlichen Änderungen gefunden.",
+    "noMaterialChangesHelp": "Seit den früheren Ausgaben wurde nichts Neues, Geändertes, Korrigiertes oder Erledigtes gefunden.",
+    "baselines": "Verglichen mit",
+    "noBaselines": "Die früheren Ausgaben werden nicht mehr aufgeführt.",
+    "mode": "Modus: {mode}.",
+    "modeEdition": "Ausgabenvergleich: {mode}.",
+    "cutoff": "Ausgaben vor dem {date} kamen infrage.",
+    "truncated": "Die früheren Ausgaben wurden gekürzt, damit sie ins Vergleichsbudget passen.",
+    "versus": "gegenüber {issue}",
+    "kinds": {
+      "Correction": "Korrektur",
+      "ChangedFact": "Geändert",
+      "NewDevelopment": "Neu",
+      "Resolved": "Erledigt",
+      "Unchanged": "Unverändert",
+      "Unavailable": "Nicht verfügbar"
+    }
+  },
+  "topicSlots": {
+    "title": "Themen, die weiterlaufen",
+    "count": "{counted} von {limit}",
+    "help": "Ihr Tarif führt bis zu {limit} eigene Themen aus. Die ersten in dieser Reihenfolge laufen weiter, wenn das Limit sinkt.",
+    "noneAllowed": "Ihr Tarif enthält keine eigene Recherche, daher läuft kein eigenes Thema. Der Verlauf bleibt erhalten.",
+    "overTitle": "{count, plural, one {# Thema liegt über dem Limit Ihres Tarifs.} other {# Themen liegen über dem Limit Ihres Tarifs.}}",
+    "overHelp": "Über dem Limit: mit Verlauf behalten, aber nicht ausgeführt. Erstellen, Duplizieren oder Wiederherstellen eines Themas bleibt gesperrt, bis Sie genug Themen archivieren oder upgraden.",
+    "bannerHelp": "Diese Themen behalten ihren Verlauf, laufen aber nicht.",
+    "choose": "Auswählen, welche Themen weiterlaufen",
+    "orderHelp": "Stellen Sie die wichtigsten Themen an den Anfang. Beim Speichern wird nichts pausiert, archiviert oder gelöscht.",
+    "listLabel": "Eigene Themen in Behaltereihenfolge",
+    "lastRun": "zuletzt ausgeführt {date}",
+    "within": "Läuft weiter",
+    "past": "Über dem Limit",
+    "unsaved": "Die Reihenfolge wurde geändert. Speichern Sie, um sie zu behalten.",
+    "save": "Reihenfolge speichern",
+    "saved": "Themenreihenfolge gespeichert.",
+    "clear": "Meine Reihenfolge löschen",
+    "cleared": "Themenreihenfolge gelöscht. Themen folgen jetzt der Erstellungsreihenfolge.",
+    "customized": "Sie haben diese Reihenfolge gewählt.",
+    "defaultOrder": "Themen folgen der Erstellungsreihenfolge, bis Sie eine wählen."
   }
 }

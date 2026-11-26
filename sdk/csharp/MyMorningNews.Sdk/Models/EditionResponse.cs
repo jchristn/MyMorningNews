@@ -31,6 +31,11 @@ namespace MyMorningNews.Sdk.Models
         public List<string> CoveredTopicIds { get; set; } = new List<string>();
 
         /// <summary>
+        /// Catalog publications the edition includes, in order, and whether each can be read now.
+        /// </summary>
+        public List<EditionPublicationResponse> Publications { get; set; } = new List<EditionPublicationResponse>();
+
+        /// <summary>
         /// Instantiate.
         /// </summary>
         public EditionResponse()

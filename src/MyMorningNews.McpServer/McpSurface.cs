@@ -86,6 +86,7 @@ namespace MyMorningNews.McpServer
             tools.AddRange(OutcomeTools.Build());
             tools.AddRange(LearningTools.Build());
             tools.AddRange(PlatformTools.Build());
+            tools.AddRange(ComparisonTools.Build());
             return tools;
         }
 

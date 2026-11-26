@@ -16,7 +16,7 @@ namespace MyMorningNews.Core.Pipeline.Stages
     /// <summary>
     /// Stage 8: marks candidates that repeat an earlier finding (or another candidate in this run). With embeddings,
     /// similarity at or above DuplicateSimilarity is a duplicate and the band from BorderlineSimilarity is judged by
-    /// research.dedupe-judge (Duplicate, Update, or Different). Without embeddings, word similarity of titles is used.
+    /// research.dedupe-judge (Duplicate, Update, Correction, or Different). Without embeddings, word similarity of titles is used.
     /// Also records the highest similarity for the novelty score. Non-critical.
     /// Earlier findings are those inside Pipeline.DedupeLookbackDays that are not from a dry run and not themselves
     /// duplicates. With embeddings the nearest ones come from a vector search over that whole window and are read by
@@ -159,9 +159,10 @@ namespace MyMorningNews.Core.Pipeline.Stages
                     c.IsDuplicate = true;
                     c.DuplicateOfFindingId = prior.Id;
                 }
-                else if (verdict.Value.Verdict == DedupeVerdictEnum.Update)
+                else if (verdict.Value.Verdict == DedupeVerdictEnum.Update || verdict.Value.Verdict == DedupeVerdictEnum.Correction)
                 {
                     c.UpdateOfFindingId = prior.Id;
+                    c.IsCorrection = verdict.Value.Verdict == DedupeVerdictEnum.Correction;
                 }
             }
             catch (ModelCallException)

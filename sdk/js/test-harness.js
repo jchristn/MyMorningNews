@@ -1287,6 +1287,43 @@ async function main() {
         assert(page.objects.some((x) => x.id === S.editionId), 'edition listed');
     });
 
+    await run('topics.previewHistory (nothing saved, bounds enforced)', async () => {
+        if (!S.topic) skip('no topic');
+        const before = (await client.topics.get(S.topic.id)).topic;
+        const saved = await client.topics.previewHistory(S.topic.id);
+        assert(Array.isArray(saved.baselines), 'baselines array');
+        assert(typeof saved.budgetBytes === 'number' && typeof saved.contextBytes === 'number', 'byte counts');
+        const recent = await client.topics.previewHistory(S.topic.id, { historyMode: 'RecentIssues', historyCount: 3 });
+        assertEqual(recent.mode, 'RecentIssues', 'unsaved mode previewed');
+        await expectError(client.topics.previewHistory(S.topic.id, { historyMode: 'RecentIssues', historyCount: 99 }), 400, 'ValidationFailed');
+        await expectError(client.topics.previewHistory(bogus('top')), 404, 'NotFound');
+        assertEqual((await client.topics.get(S.topic.id)).topic.historyMode, before.historyMode, 'preview saves nothing');
+    });
+
+    await run('editions history settings and previewHistory', async () => {
+        if (!S.editionId) skip('no edition');
+        const u = await client.editions.update(S.editionId, { historyMode: 'PreviousIssue', historyTokenBudget: 4000 });
+        assertEqual(u.edition.historyMode, 'PreviousIssue', 'edition history mode');
+        assertEqual(u.edition.historyTokenBudget, 4000, 'edition history budget');
+        const p = await client.editions.previewHistory(S.editionId);
+        assertEqual(p.mode, 'PreviousIssue', 'saved mode previewed');
+        assertEqual(p.baselines.length, 0, 'no earlier issues yet');
+        await expectError(client.editions.previewHistory(S.editionId, { historyMode: 'SpecificIssue', historyBriefingId: bogus('brf') }), 400, 'ValidationFailed');
+        await expectError(client.editions.previewHistory(bogus('edn')), 404, 'NotFound');
+        assertEqual((await client.editions.update(S.editionId, { historyMode: 'Off' })).edition.historyMode, 'Off', 'back to Off');
+    });
+
+    await run('editions.publications and setPublications (empty list)', async () => {
+        if (!S.editionId) skip('no edition');
+        const list = await client.editions.publications(S.editionId);
+        assertPage(list, 'editions.publications');
+        assert(list.objects.length === 0 && list.totalRecords === 0, 'no system briefings yet');
+        const e = await client.editions.setPublications(S.editionId, []);
+        assert(Array.isArray(e.publications) && e.publications.length === 0, 'edition response lists no publications');
+        await expectError(client.editions.setPublications(S.editionId, [bogus('cat')]), 400, 'ValidationFailed');
+        await expectError(client.editions.publications(bogus('edn')), 404, 'NotFound');
+    });
+
     await run('editions.preview (empty edition, no model calls)', async () => {
         if (!S.editionId) skip('no edition');
         const covered = (await client.editions.get(S.editionId)).coveredTopicIds;
@@ -1311,6 +1348,18 @@ async function main() {
         assertEqual(d.briefing.status, 'Ready', 'briefing composed (error: ' + d.briefing.errorMessage + ')');
         const calls = await client.llmCalls.list({ briefingId: queued.id });
         assertEqual(calls.totalRecords, 0, 'composing an empty edition made no model calls');
+    });
+
+    await run('briefings.comparison (standalone edition briefing is not compared)', async () => {
+        await expectError(client.briefings.comparison(bogus('brf')), 404, 'NotFound');
+        if (!S.briefingId) skip('no briefing');
+        const c = await client.briefings.comparison(S.briefingId);
+        assertEqual(c.briefingId, S.briefingId, 'briefing id');
+        assertEqual(c.compared, false, 'not compared');
+        assert(typeof c.note === 'string' && c.note.length > 0, 'note explains why');
+        assertEqual(c.baselines.length, 0, 'no baselines');
+        assertEqual(c.deltas.length, 0, 'no deltas');
+        for (const k of ['NewDevelopment', 'ChangedFact', 'Resolved', 'Correction', 'Unchanged', 'Unavailable']) assert(typeof c.counts[k] === 'number', 'count for ' + k);
     });
 
     await run('briefings.list, get, download Markdown and HTML', async () => {
@@ -1871,6 +1920,24 @@ async function main() {
     });
 
     // ---- Account ---------------------------------------------------------------------------------------------------
+
+    await run('account.topicSlots, setTopicSlots, clearTopicSlots', async () => {
+        const original = await client.account.topicSlots();
+        assert(Array.isArray(original.topics) && typeof original.counted === 'number', 'slots read');
+        const keep = original.topics.filter((t) => t.chosen).sort((a, b) => a.position - b.position).map((t) => t.topicId);
+        onCleanup('topic slots', () => client.account.setTopicSlots(keep));
+        const t = await client.topics.create({ name: name('slot-topic'), description: 'SDK slot topic', brief: 'Follow open source database releases. Harness data; safe to delete.' });
+        onCleanup('slot topic', () => client.topics.remove(t.id));
+        const chosen = await client.account.setTopicSlots([t.id]);
+        assertEqual(chosen.customized, true, 'customized');
+        const first = chosen.topics.find((x) => x.topicId === t.id);
+        assert(first && first.position === 1 && first.chosen, 'chosen topic is kept first');
+        await expectError(client.account.setTopicSlots([t.id, t.id]), 400, 'ValidationFailed');
+        await expectError(client.account.setTopicSlots([bogus('top')]), 400, 'ValidationFailed');
+        const cleared = await client.account.clearTopicSlots();
+        assert(!cleared.customized && cleared.topics.every((x) => !x.chosen), 'cleared');
+        await client.account.setTopicSlots(keep);
+    });
 
     await run('account.plan and redeem a bad code', async () => {
         const p = await client.account.plan();

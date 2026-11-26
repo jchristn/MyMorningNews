@@ -386,5 +386,20 @@ namespace MyMorningNews.Sdk.Resources
             ArgumentNullException.ThrowIfNull(providers);
             return Client.SendAsync<List<SearchProvider>>(HttpMethod.Put, "/v1.0/api/topics/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/search-providers", null, providers, token);
         }
+
+        /// <summary>
+        /// Preview which earlier issues the topic's next research run would compare with, using optional unsaved
+        /// settings. Nothing is saved. A null property in the request keeps the saved value.
+        /// </summary>
+        /// <param name="id">Topic identifier.</param>
+        /// <param name="request">Unsaved comparison settings, or null to preview the saved settings.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The HistoryPreviewResponse.</returns>
+        /// <exception cref="ArgumentNullException">id is null or empty.</exception>
+        /// <exception cref="MyMorningNewsException">The server returned an error (400 ValidationFailed for out-of-range settings, 409 Conflict when a pinned issue is unavailable, 404 when not found).</exception>
+        public Task<HistoryPreviewResponse> PreviewHistoryAsync(string id, HistoryPreviewRequest? request = null, CancellationToken token = default)
+        {
+            return Client.SendAsync<HistoryPreviewResponse>(HttpMethod.Post, "/v1.0/api/topics/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/history/preview", null, request ?? new HistoryPreviewRequest(), token);
+        }
     }
 }

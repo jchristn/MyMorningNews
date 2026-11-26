@@ -388,6 +388,12 @@ namespace MyMorningNews.Core.Database
         /// <summary>Immutable historical briefing context for research runs.</summary>
         public IRunHistorySnapshotMethods RunHistorySnapshots { get; protected set; } = null!;
 
+        /// <summary>Structured changes between a briefing and its comparison baseline.</summary>
+        public IBriefingDeltaMethods BriefingDeltas { get; protected set; } = null!;
+
+        /// <summary>Catalog publications an edition includes.</summary>
+        public IEditionPublicationMethods EditionPublications { get; protected set; } = null!;
+
         /// <summary>Private account provider connections.</summary>
         public IProviderConnectionMethods ProviderConnections { get; protected set; } = null!;
 

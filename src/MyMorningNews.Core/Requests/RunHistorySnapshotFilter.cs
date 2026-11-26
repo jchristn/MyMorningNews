@@ -19,6 +19,16 @@ namespace MyMorningNews.Core.Requests
         public string? TopicId { get; set; } = null;
 
         /// <summary>
+        /// Match EditionId exactly when set.
+        /// </summary>
+        public string? EditionId { get; set; } = null;
+
+        /// <summary>
+        /// Match BriefingId exactly when set.
+        /// </summary>
+        public string? BriefingId { get; set; } = null;
+
+        /// <summary>
         /// Match Active exactly when set.
         /// </summary>
         public bool? Active { get; set; } = null;

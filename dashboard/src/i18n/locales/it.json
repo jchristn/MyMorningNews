@@ -2708,7 +2708,8 @@
       "deleted": "Risultato eliminato",
       "deleteTitle": "Elimina risultato",
       "deleteMessage": "Eliminare \"{title}\"? I collegamenti alle prove vengono rimossi. Le fonti condivise e la cronologia delle tue valutazioni restano."
-    }
+    },
+    "correction": "Correzione"
   },
   "predictions": {
     "overdue": "Orizzonte superato",
@@ -3000,7 +3001,9 @@
       "settings": "Impostazioni",
       "topics": "Argomenti",
       "schedules": "Pianificazioni",
-      "briefings": "Briefing"
+      "briefings": "Briefing",
+      "comparison": "Confronta con i bollettini precedenti",
+      "publications": "Bollettini del sistema in questa edizione"
     },
     "columns": {
       "name": "Edizione",
@@ -3077,6 +3080,22 @@
       "label": "Mostra edizioni",
       "mine": "Mie",
       "all": "Di tutti"
+    },
+    "publications": {
+      "help": "Aggiungi edizioni dai tuoi abbonamenti al catalogo in \"Dai tuoi bollettini del sistema\", in questo ordine. Fino a {max}.",
+      "none": "Nessun bollettino del sistema incluso.",
+      "chosen": "Bollettini del sistema inclusi",
+      "unavailable": "Non disponibile",
+      "unavailableHelp": "I bollettini del sistema non disponibili sono stati ritirati, disdetti o non sono consentiti dal tuo piano. Vengono saltati quando l’edizione viene composta. Rimuovili o abbonati di nuovo.",
+      "noSubscriptions": "Non hai abbonamenti al catalogo da aggiungere.",
+      "browse": "Sfoglia i bollettini del sistema",
+      "addLabel": "Bollettino del sistema da aggiungere",
+      "pick": "Scegli un bollettino del sistema",
+      "add": "Aggiungi",
+      "full": "Questa edizione include già {max} bollettini del sistema, il massimo consentito.",
+      "capReached": "Includere bollettini del sistema in un bollettino personalizzato richiede un piano con ricerca personalizzata. Puoi comunque rimuoverli.",
+      "save": "Salva bollettini del sistema",
+      "saved": "Bollettini del sistema salvati."
     }
   },
   "templates": {
@@ -4854,7 +4873,12 @@
     "date": "Data iniziale (UTC)",
     "issue": "Edizione di riferimento",
     "choose": "Scegli un’edizione",
-    "firstRun": "Senza un’edizione precedente utilizzabile, il prossimo bollettino sarà autonomo."
+    "firstRun": "Senza un’edizione precedente utilizzabile, il prossimo bollettino sarà autonomo.",
+    "editionHelp": "Confronta ogni edizione composta con le sue edizioni precedenti. Il testo storico è un riferimento, non una prova attuale.",
+    "editionOff": "Disattivato: mantieni il confronto di ciascun argomento",
+    "editionOffHelp": "Disattivato mantiene i confronti di ricerca di ciascun argomento. Qualsiasi altra modalità confronta l’intera edizione con le sue edizioni precedenti.",
+    "budget": "Budget di confronto (byte)",
+    "budgetHelp": "Quanto testo precedente può usare il confronto, da {min} a {max} byte. I riferimenti più lunghi vengono tagliati."
   },
   "catalog": {
     "title": "Bollettini del sistema",
@@ -4942,5 +4966,68 @@
     "failed": "Non ha funzionato. Riprova.",
     "deleteTitle": "Eliminare questo argomento?",
     "deleteMessage": "Eliminare \"{name}\" con i suoi briefing, risultati e audio? L’operazione non può essere annullata."
+  },
+  "historyPreview": {
+    "title": "Anteprima del riferimento",
+    "show": "Mostra riferimento",
+    "refresh": "Aggiorna anteprima",
+    "help": "Scopri con quali edizioni precedenti verrebbe confrontato il prossimo bollettino, con le impostazioni qui sopra. Non viene salvato nulla.",
+    "blocked": {
+      "date": "Scegli una data di inizio per vedere il riferimento.",
+      "issue": "Scegli un’edizione di riferimento per vederla."
+    },
+    "conflictHelp": "L’edizione fissata non è più disponibile. Scegli un’altra edizione o un’altra modalità.",
+    "wouldCompare": "{count, plural, one {Il prossimo bollettino verrebbe confrontato con # edizione precedente:} other {Il prossimo bollettino verrebbe confrontato con # edizioni precedenti:}}",
+    "size": "Contesto di confronto: {used} su {budget}",
+    "sizePercent": "{percent} per cento del budget di confronto",
+    "truncated": "Le edizioni precedenti superano il budget, quindi il confronto userà una versione ridotta.",
+    "firstRun": "Nessuna edizione precedente pronta corrisponde ancora a queste impostazioni, quindi il prossimo bollettino sarà autonomo. I successivi verranno confrontati con esso quando sarà pronto.",
+    "cutoff": "Sono utilizzabili le edizioni create prima del {date}."
+  },
+  "comparison": {
+    "title": "Confrontato con i bollettini precedenti",
+    "standalone": "Bollettino autonomo: non è stata confrontata nessuna edizione precedente.",
+    "unavailableIssue": "Un’edizione non più disponibile",
+    "comparedWith": "Confrontato con {issues}.",
+    "earlierIssues": "edizioni precedenti",
+    "noMaterialChanges": "Nessuna modifica rilevante trovata.",
+    "noMaterialChangesHelp": "Dalle edizioni precedenti non è emerso nulla di nuovo, modificato, corretto o risolto.",
+    "baselines": "Confrontato con",
+    "noBaselines": "Le edizioni precedenti non sono più elencate.",
+    "mode": "Modalità: {mode}.",
+    "modeEdition": "Confronto dell’edizione: {mode}.",
+    "cutoff": "Erano utilizzabili le edizioni precedenti al {date}.",
+    "truncated": "Le edizioni precedenti sono state ridotte per rientrare nel budget di confronto.",
+    "versus": "rispetto a {issue}",
+    "kinds": {
+      "Correction": "Correzione",
+      "ChangedFact": "Modificato",
+      "NewDevelopment": "Nuovo",
+      "Resolved": "Risolto",
+      "Unchanged": "Invariato",
+      "Unavailable": "Non disponibile"
+    }
+  },
+  "topicSlots": {
+    "title": "Argomenti che restano attivi",
+    "count": "{counted} su {limit}",
+    "help": "Il tuo piano esegue fino a {limit} argomenti personalizzati. I primi in questo ordine restano attivi se il limite si riduce.",
+    "noneAllowed": "Il tuo piano non include la ricerca personalizzata, quindi nessun argomento personalizzato viene eseguito. Mantengono la cronologia.",
+    "overTitle": "{count, plural, one {# argomento supera il limite del tuo piano.} other {# argomenti superano il limite del tuo piano.}}",
+    "overHelp": "Oltre il limite: conservati con la cronologia, ma non eseguiti. Creare, duplicare o ripristinare un argomento resta bloccato finché non archivi abbastanza argomenti o passi a un piano superiore.",
+    "bannerHelp": "Questi argomenti mantengono la cronologia ma non vengono eseguiti.",
+    "choose": "Scegli quali argomenti restano attivi",
+    "orderHelp": "Metti per primi gli argomenti più importanti. Salvando non viene sospeso, archiviato o eliminato nulla.",
+    "listLabel": "Argomenti personalizzati in ordine di mantenimento",
+    "lastRun": "ultima esecuzione {date}",
+    "within": "Resta attivo",
+    "past": "Oltre il limite",
+    "unsaved": "L’ordine è cambiato. Salva per mantenerlo.",
+    "save": "Salva ordine",
+    "saved": "Ordine degli argomenti salvato.",
+    "clear": "Cancella il mio ordine",
+    "cleared": "Ordine degli argomenti cancellato. Ora gli argomenti seguono l’ordine di creazione.",
+    "customized": "Hai scelto questo ordine.",
+    "defaultOrder": "Gli argomenti seguono l’ordine di creazione finché non ne scegli uno."
   }
 }

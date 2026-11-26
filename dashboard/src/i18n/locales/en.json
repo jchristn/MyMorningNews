@@ -2708,7 +2708,8 @@
       "deleted": "Finding deleted",
       "deleteTitle": "Delete finding",
       "deleteMessage": "Delete \"{title}\"? Its evidence links are removed. Shared sources and your rating history stay."
-    }
+    },
+    "correction": "Correction"
   },
   "predictions": {
     "overdue": "Past horizon",
@@ -3000,7 +3001,9 @@
       "settings": "Settings",
       "topics": "Topics",
       "schedules": "Schedules",
-      "briefings": "Briefings"
+      "briefings": "Briefings",
+      "comparison": "Compare with past briefings",
+      "publications": "System briefings in this edition"
     },
     "columns": {
       "name": "Edition",
@@ -3077,6 +3080,22 @@
       "label": "Show editions",
       "mine": "Mine",
       "all": "Everyone's"
+    },
+    "publications": {
+      "help": "Add issues from your catalog subscriptions under \"From your system briefings\", in this order. Up to {max}.",
+      "none": "No system briefings are included.",
+      "chosen": "System briefings included",
+      "unavailable": "Unavailable",
+      "unavailableHelp": "Unavailable system briefings were retracted, unsubscribed, or are not allowed by your plan. They are skipped when the edition is composed. Remove them or subscribe again.",
+      "noSubscriptions": "You have no catalog subscriptions to add.",
+      "browse": "Browse system briefings",
+      "addLabel": "System briefing to add",
+      "pick": "Choose a system briefing",
+      "add": "Add",
+      "full": "This edition already includes {max} system briefings, the most allowed.",
+      "capReached": "Including system briefings in a custom briefing needs a plan with custom research. You can still remove them.",
+      "save": "Save system briefings",
+      "saved": "System briefings saved."
     }
   },
   "templates": {
@@ -4854,7 +4873,12 @@
     "date": "Start date (UTC)",
     "issue": "Baseline issue",
     "choose": "Choose an issue",
-    "firstRun": "Without a usable earlier issue, the next briefing will be standalone."
+    "firstRun": "Without a usable earlier issue, the next briefing will be standalone.",
+    "editionHelp": "Compare each composed edition with its own earlier issues. Historical text is a baseline, not current evidence.",
+    "editionOff": "Off: keep each topic's own comparison",
+    "editionOffHelp": "Off keeps the topics' own research comparisons. Any other mode compares the whole edition with its earlier issues instead.",
+    "budget": "Comparison budget (bytes)",
+    "budgetHelp": "How much earlier text the comparison may use, from {min} to {max} bytes. Longer baselines are cut."
   },
   "catalog": {
     "title": "System briefings",
@@ -4942,5 +4966,68 @@
     "failed": "That did not work. Try again.",
     "deleteTitle": "Delete this topic?",
     "deleteMessage": "Delete \"{name}\" with its briefings, findings, and audio? This cannot be undone."
+  },
+  "historyPreview": {
+    "title": "Baseline preview",
+    "show": "Show baseline",
+    "refresh": "Refresh baseline",
+    "help": "See which earlier issues the next briefing would compare with, using the settings above. Nothing is saved.",
+    "blocked": {
+      "date": "Choose a start date to preview the baseline.",
+      "issue": "Choose a baseline issue to preview it."
+    },
+    "conflictHelp": "The pinned issue is no longer available. Choose another issue or a different mode.",
+    "wouldCompare": "{count, plural, one {The next briefing would compare with # earlier issue:} other {The next briefing would compare with # earlier issues:}}",
+    "size": "Comparison context: {used} of {budget}",
+    "sizePercent": "{percent} percent of the comparison budget",
+    "truncated": "The earlier issues are longer than the budget, so the comparison will use a shortened version.",
+    "firstRun": "No earlier ready issue matches these settings yet, so the next briefing will be standalone. Later briefings compare with it once it is ready.",
+    "cutoff": "Issues created before {date} are eligible."
+  },
+  "comparison": {
+    "title": "Compared with past briefings",
+    "standalone": "Standalone briefing: no earlier issue was compared.",
+    "unavailableIssue": "An issue that is no longer available",
+    "comparedWith": "Compared with {issues}.",
+    "earlierIssues": "earlier issues",
+    "noMaterialChanges": "No material changes found.",
+    "noMaterialChangesHelp": "Nothing new, changed, corrected, or resolved was found since the earlier issues.",
+    "baselines": "Compared with",
+    "noBaselines": "The earlier issues are no longer listed.",
+    "mode": "Mode: {mode}.",
+    "modeEdition": "Edition comparison: {mode}.",
+    "cutoff": "Issues before {date} were eligible.",
+    "truncated": "The earlier issues were shortened to fit the comparison budget.",
+    "versus": "against {issue}",
+    "kinds": {
+      "Correction": "Correction",
+      "ChangedFact": "Changed",
+      "NewDevelopment": "New",
+      "Resolved": "Resolved",
+      "Unchanged": "Unchanged",
+      "Unavailable": "Unavailable"
+    }
+  },
+  "topicSlots": {
+    "title": "Topics that keep running",
+    "count": "{counted} of {limit}",
+    "help": "Your plan runs up to {limit} custom topics. The first ones in this order keep running if the limit shrinks.",
+    "noneAllowed": "Your plan does not include custom research, so no custom topics run. They keep their history.",
+    "overTitle": "{count, plural, one {# topic is past your plan's limit.} other {# topics are past your plan's limit.}}",
+    "overHelp": "Past the limit: kept with history, not running. Creating, duplicating, or restoring a topic stays blocked until you archive enough topics or upgrade.",
+    "bannerHelp": "Those topics keep their history but do not run.",
+    "choose": "Choose which topics keep running",
+    "orderHelp": "Put the most important topics first. Nothing is paused, archived, or deleted when you save.",
+    "listLabel": "Custom topics in keep order",
+    "lastRun": "last run {date}",
+    "within": "Keeps running",
+    "past": "Past the limit",
+    "unsaved": "The order changed. Save to keep it.",
+    "save": "Save order",
+    "saved": "Topic order saved.",
+    "clear": "Clear my order",
+    "cleared": "Topic order cleared. Topics now follow creation order.",
+    "customized": "You chose this order.",
+    "defaultOrder": "Topics follow creation order until you choose one."
   }
 }

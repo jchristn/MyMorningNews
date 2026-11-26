@@ -53,9 +53,32 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
         public async Task<bool> WithinSlotsAsync(Topic topic, long maximum, CancellationToken token = default)
         {
             ArgumentNullException.ThrowIfNull(topic);
-            List<bool> rows = await QueryAsync(@"SELECT count(*) < $5 FROM topics WHERE tenantid=$1 AND userid=$2 AND NOT isonetime AND status <> 'Archived'
-AND (createdutc,id) < ($3,$4)", r => r.GetBoolean(0), token, topic.TenantId, topic.UserId, topic.CreatedUtc, topic.Id, maximum).ConfigureAwait(false);
-            return rows[0] && topic.Status != TopicStatusEnum.Archived;
+            // The owner's kept order comes first (lower slotpriority), then the oldest topics. The priority is read from the
+            // row, not the caller's copy, so a selection saved after the topic was loaded still applies.
+            List<bool> rows = await QueryAsync(@"SELECT count(*) < $5 FROM topics t, (SELECT coalesce(slotpriority, 2147483647) AS p FROM topics WHERE id=$4 AND tenantid=$1) me
+WHERE t.tenantid=$1 AND t.userid=$2 AND NOT t.isonetime AND t.status <> 'Archived'
+AND (coalesce(t.slotpriority, 2147483647), t.createdutc, t.id) < (me.p, $3, $4)", r => r.GetBoolean(0), token, topic.TenantId, topic.UserId, topic.CreatedUtc, topic.Id, maximum).ConfigureAwait(false);
+            return rows.Count > 0 && rows[0] && topic.Status != TopicStatusEnum.Archived;
+        }
+
+        /// <inheritdoc />
+        public async Task<int> SetSlotPrioritiesAsync(string tenantId, string userId, List<string> keepTopicIds, CancellationToken token = default)
+        {
+            if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrWhiteSpace(userId)) throw new ArgumentNullException(nameof(userId));
+            ArgumentNullException.ThrowIfNull(keepTopicIds);
+            // One statement: every recurring topic of the owner gets its position in the list (1-based) or null.
+            return await ExecuteAsync(@"UPDATE topics SET slotpriority = array_position($3::text[], id)
+WHERE tenantid = $1 AND userid = $2 AND NOT isonetime AND slotpriority IS DISTINCT FROM array_position($3::text[], id)", token, tenantId, userId, keepTopicIds.ToArray()).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task<List<Topic>> SlotOrderAsync(string tenantId, string userId, CancellationToken token = default)
+        {
+            if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrWhiteSpace(userId)) throw new ArgumentNullException(nameof(userId));
+            return await QueryAsync("SELECT " + TopicQueries.SelectColumns + @" FROM topics WHERE tenantid = $1 AND userid = $2 AND NOT isonetime AND status <> 'Archived'
+ORDER BY coalesce(slotpriority, 2147483647), createdutc, id", Map, token, tenantId, userId).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
@@ -70,7 +93,7 @@ AND (createdutc,id) < ($3,$4)", r => r.GetBoolean(0), token, topic.TenantId, top
             if (obj.IsOneTime && maximum == 0) throw SlotExceeded(maximum);
             string insert = TopicQueries.Insert.Replace(" VALUES (", " SELECT ", StringComparison.Ordinal).TrimEnd(')');
             string sql = insert + @" WHERE $12 OR $11 = 'Archived' OR $39::bigint IS NULL OR
-(SELECT count(*) FROM topics WHERE tenantid = $2 AND userid = $3 AND NOT isonetime AND status <> 'Archived') < $39 RETURNING " + TopicQueries.Columns;
+(SELECT count(*) FROM topics WHERE tenantid = $2 AND userid = $3 AND NOT isonetime AND status <> 'Archived') < $39 RETURNING " + TopicQueries.SelectColumns;
             List<Topic> rows = await Driver.QueryWithAdvisoryLockAsync(SlotLock(obj), sql, Map, new object?[]
             {
                 obj.Id,
@@ -142,7 +165,7 @@ AND (createdutc,id) < ($3,$4)", r => r.GetBoolean(0), token, topic.TenantId, top
             string sql = TopicQueries.Update + @" AND ($12 OR $11 = 'Archived' OR $38::bigint IS NULL OR
 (NOT isonetime AND status <> 'Archived' AND userid = $3) OR
 (SELECT count(*) FROM topics WHERE tenantid = $2 AND userid = $3 AND NOT isonetime AND status <> 'Archived' AND id <> $1) < $38)
-RETURNING " + TopicQueries.Columns;
+RETURNING " + TopicQueries.SelectColumns;
             List<Topic> rows = await Driver.QueryWithAdvisoryLockAsync(SlotLock(obj), sql, Map, new object?[]
             {
                 obj.Id,
@@ -242,7 +265,7 @@ RETURNING " + TopicQueries.Columns;
             long total = counts.FirstOrDefault();
             args.Add(filter.PageSize);
             args.Add((long)(filter.PageNumber - 1) * filter.PageSize);
-            string sql = "SELECT " + TopicQueries.Columns + " FROM " + TopicQueries.Table + where + " ORDER BY " + sortColumn + " " + direction + ", id " + direction + " LIMIT $" + (args.Count - 1) + " OFFSET $" + args.Count;
+            string sql = "SELECT " + TopicQueries.SelectColumns + " FROM " + TopicQueries.Table + where + " ORDER BY " + sortColumn + " " + direction + ", id " + direction + " LIMIT $" + (args.Count - 1) + " OFFSET $" + args.Count;
             List<Topic> items = await QueryAsync(sql, Map, token, args.ToArray()).ConfigureAwait(false);
             return EnumerationResult<Topic>.Create(items, filter, total, sw.Elapsed.TotalMilliseconds);
         }
@@ -347,6 +370,7 @@ RETURNING " + TopicQueries.Columns;
             obj.HistorySinceUtc = reader.IsDBNull(35) ? null : DateTime.SpecifyKind(reader.GetDateTime(35), DateTimeKind.Utc);
             obj.HistoryBriefingId = reader.IsDBNull(36) ? null : reader.GetString(36);
             obj.HistoryTokenBudget = reader.GetInt32(37);
+            obj.SlotPriority = reader.FieldCount > 38 && !reader.IsDBNull(38) ? reader.GetInt32(38) : null;
             return obj;
         }
 

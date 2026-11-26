@@ -123,6 +123,8 @@ namespace MyMorningNews.Core.Database.Postgresql
             LearningCheckpoints = new LearningCheckpointMethods(this);
             Plans = new PlanMethods(this);
             RunHistorySnapshots = new RunHistorySnapshotMethods(this);
+            BriefingDeltas = new BriefingDeltaMethods(this);
+            EditionPublications = new EditionPublicationMethods(this);
             ProviderConnections = new ProviderConnectionMethods(this);
             AccountPlanPolicies = new AccountPlanPolicyMethods(this);
             EntitlementOverrides = new EntitlementOverrideMethods(this);

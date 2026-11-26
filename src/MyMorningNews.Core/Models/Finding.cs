@@ -243,6 +243,12 @@ namespace MyMorningNews.Core.Models
         /// </summary>
         public bool Hidden { get; set; } = false;
 
+        /// <summary>
+        /// The update judge found that this finding corrects the finding named by IsUpdateOfFindingId (a retraction, a
+        /// corrected figure, or a denial). Default false; meaningful only when IsUpdateOfFindingId is set.
+        /// </summary>
+        public bool IsCorrection { get; set; } = false;
+
         #endregion
 
         #region Private-Members

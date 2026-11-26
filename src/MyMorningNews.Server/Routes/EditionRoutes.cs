@@ -35,10 +35,18 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b + "/enumerate", ctx => EnumerateAsync(ctx, ListAsync), null, openApiMetadata: Paged(Doc("List my editions", "Editions").WithParameter(QueryParam("userId", typeof(string))).WithParameter(QueryParam("mine", typeof(bool)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, b, CreateAsync, null, openApiMetadata: Doc("Create an edition", "Editions").WithRequestBody(Body<EditionUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read an edition with its topics and schedules", "Editions"));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, b + "/{id}", UpdateAsync, null, openApiMetadata: Doc("Update an edition", "Editions").WithRequestBody(Body<EditionUpsertRequest>()));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, b + "/{id}", UpdateAsync, null, openApiMetadata: Doc("Update an edition", "Editions", "Only the fields sent are changed. historyMode other than Off compares each composed edition with its own earlier issues (historyCount, historySinceUtc, historyBriefingId, historyTokenBudget as for topics); Off keeps the topics' own research comparisons.").WithRequestBody(Body<EditionUpsertRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, b + "/{id}", DeleteAsync, null, openApiMetadata: Doc("Delete an edition (its briefings stay)", "Editions"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, b + "/{id}/topics", TopicsAsync, null, openApiMetadata: Doc("Set an edition's topics in order", "Editions",
                 "An empty list means all of the owner's active recurring topics.").WithRequestBody(Body<EditionTopicsRequest>()));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}/publications", PublicationsAsync, null, openApiMetadata: Paged(Doc("List the system briefings an edition includes", "Editions",
+                "In edition order. Each entry says whether it can be read now; unavailable publications are skipped when the edition is composed.")));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/publications/enumerate", ctx => EnumerateAsync(ctx, PublicationsAsync), null, openApiMetadata: Paged(Doc("List the system briefings an edition includes", "Editions",
+                "In edition order. Each entry says whether it can be read now; unavailable publications are skipped when the edition is composed.")).WithRequestBody(Body<EnumerationQuery>()));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, b + "/{id}/publications", SetPublicationsAsync, null, openApiMetadata: Doc("Set the system briefings an edition includes", "Editions",
+                "Ordered publication IDs you are subscribed to, at most 20. The edition summarizes their published issues in its period and links to each; it never starts system research. Requires a plan with custom research (402 CapReached otherwise). An empty list removes them.").WithRequestBody(Body<EditionPublicationsRequest>()));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/history/preview", HistoryPreviewAsync, null, openApiMetadata: Doc("Preview an edition's comparison baseline", "Editions",
+                "Shows which earlier issues of this edition the next composition would compare with. The optional body previews unsaved settings; nothing is saved.").WithRequestBody(Body<HistoryPreviewRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/compose", ComposeAsync, null, openApiMetadata: Doc("Compose an edition now", "Editions",
                 "Queues the briefing (and fresh research when enabled) and returns 202 with the queued briefing."));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, b + "/{id}/preview", PreviewAsync, null, openApiMetadata: Doc("Preview an edition from the latest data without saving", "Editions",
@@ -136,6 +144,78 @@ namespace MyMorningNews.Server.Routes
             await SendJsonAsync(ctx, 200, preview).ConfigureAwait(false);
         }
 
+        private async Task PublicationsAsync(HttpContextBase ctx)
+        {
+            Edition? e = await OwnedAsync(ctx, RequestTypeEnum.EditionRead).ConfigureAwait(false);
+            if (e == null) return;
+            EnumerationQuery query = new EnumerationQuery();
+            ApplyPaging(ctx, query);
+            List<EditionPublicationResponse> all = await DescribePublicationsAsync(e, ctx).ConfigureAwait(false);
+            long offset = (long)(query.PageNumber - 1) * query.PageSize;
+            List<EditionPublicationResponse> items = offset >= all.Count ? new List<EditionPublicationResponse>() : all.Skip((int)offset).Take(query.PageSize).ToList();
+            await SendJsonAsync(ctx, 200, EnumerationResult<EditionPublicationResponse>.Create(items, query, all.Count, 0)).ConfigureAwait(false);
+        }
+
+        private async Task SetPublicationsAsync(HttpContextBase ctx)
+        {
+            Edition? e = await OwnedAsync(ctx, RequestTypeEnum.EditionWrite).ConfigureAwait(false);
+            if (e == null) return;
+            EditionPublicationsRequest? req = await ReadBodyAsync<EditionPublicationsRequest>(ctx).ConfigureAwait(false);
+            if (req == null) return;
+            List<string> ids = (req.PublicationIds ?? new List<string>()).Select(x => (x ?? String.Empty).Trim()).ToList();
+            if (ids.Count > 20 || ids.Any(x => x.Length == 0) || ids.Distinct(StringComparer.Ordinal).Count() != ids.Count)
+            {
+                await SendErrorAsync(ctx, 400, "ValidationFailed", "publicationIds must be at most 20 distinct, non-blank IDs.").ConfigureAwait(false);
+                return;
+            }
+
+            if (ids.Count > 0) await Server.Entitlements.CheckResearchAsync(e.TenantId, e.UserId, false, ctx.Token).ConfigureAwait(false);
+            MyMorningNews.Core.Catalog.CatalogService catalog = new MyMorningNews.Core.Catalog.CatalogService(Server.Database, Server.Entitlements);
+            foreach (string id in ids)
+            {
+                if (await catalog.ReadableAsync(e.TenantId, e.UserId, id, ctx.Token).ConfigureAwait(false) == null)
+                {
+                    await SendErrorAsync(ctx, 400, "ValidationFailed", "Publication " + id + " is not one of your active system briefing subscriptions.").ConfigureAwait(false);
+                    return;
+                }
+            }
+
+            await Server.Database.EditionPublications.ReplaceAsync(e.TenantId, e.Id, ids, ctx.Token).ConfigureAwait(false);
+            await SendJsonAsync(ctx, 200, await DescribeAsync(e, ctx).ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async Task HistoryPreviewAsync(HttpContextBase ctx)
+        {
+            Edition? e = await OwnedAsync(ctx, RequestTypeEnum.EditionRead).ConfigureAwait(false);
+            if (e == null) return;
+            HistoryPreviewRequest? req = await ReadOptionalBodyAsync<HistoryPreviewRequest>(ctx).ConfigureAwait(false);
+            HistoryPreviewResponse preview = await new MyMorningNews.Core.Briefings.HistoryContextService(Server.Database).PreviewAsync(e, req, ctx.Token).ConfigureAwait(false);
+            await SendJsonAsync(ctx, 200, preview).ConfigureAwait(false);
+        }
+
+        private async Task<List<EditionPublicationResponse>> DescribePublicationsAsync(Edition e, HttpContextBase ctx)
+        {
+            List<EditionPublication> links = (await Server.Database.EditionPublications.EnumerateAsync(new EditionPublicationFilter { TenantId = e.TenantId, EditionId = e.Id, PageSize = 100 }, ctx.Token).ConfigureAwait(false)).Objects;
+            List<EditionPublicationResponse> result = new List<EditionPublicationResponse>();
+            if (links.Count == 0) return result;
+            List<CatalogPublication> readable = await Server.Briefings.ReadableEditionPublicationsAsync(e, ctx.Token).ConfigureAwait(false);
+            foreach (EditionPublication link in links)
+            {
+                CatalogPublication? pub = readable.FirstOrDefault(p => p.Id == link.PublicationId);
+                if (pub == null)
+                {
+                    CatalogPublication? raw = await Server.Database.CatalogPublications.ReadAsync(link.PublicationId, ctx.Token).ConfigureAwait(false);
+                    result.Add(new EditionPublicationResponse { PublicationId = link.PublicationId, Title = raw != null && raw.Active && (raw.Status == "Published" || raw.Status == "Retired") ? raw.Title : String.Empty, SortOrder = link.SortOrder, Available = false });
+                }
+                else
+                {
+                    result.Add(new EditionPublicationResponse { PublicationId = pub.Id, Title = pub.Title, SortOrder = link.SortOrder, Available = true });
+                }
+            }
+
+            return result;
+        }
+
         private async Task<bool> ApplyAsync(HttpContextBase ctx, Edition e, EditionUpsertRequest req)
         {
             if (req.Name != null)
@@ -185,6 +265,12 @@ namespace MyMorningNews.Server.Routes
             if (req.FreshResearchLeadMinutes.HasValue) e.FreshResearchLeadMinutes = req.FreshResearchLeadMinutes.Value;
             if (req.LookbackMode.HasValue) e.LookbackMode = req.LookbackMode.Value;
             if (req.LookbackHours.HasValue) e.LookbackHours = req.LookbackHours.Value;
+            if (req.HistoryMode.HasValue) e.HistoryMode = req.HistoryMode.Value;
+            if (req.HistoryCount.HasValue) e.HistoryCount = req.HistoryCount.Value;
+            if (req.HistorySinceUtc.HasValue) e.HistorySinceUtc = req.HistorySinceUtc;
+            if (req.HistoryBriefingId != null) e.HistoryBriefingId = req.HistoryBriefingId.Length == 0 ? null : req.HistoryBriefingId;
+            if (req.HistoryTokenBudget.HasValue) e.HistoryTokenBudget = req.HistoryTokenBudget.Value;
+            await new MyMorningNews.Core.Briefings.HistoryContextService(Server.Database).ValidateAsync(e, ctx.Token).ConfigureAwait(false);
             return true;
         }
 
@@ -194,7 +280,7 @@ namespace MyMorningNews.Server.Routes
                 .OrderBy(t => t.SortOrder).ToList();
             List<Schedule> schedules = (await Server.Database.Schedules.EnumerateAsync(new ScheduleFilter { TenantId = e.TenantId, OwnerType = ScheduleOwnerTypeEnum.Edition, OwnerId = e.Id, PageSize = 100 }, ctx.Token).ConfigureAwait(false)).Objects;
             List<string> covered = (await Server.Briefings.EditionTopicsAsync(e, ctx.Token).ConfigureAwait(false)).Select(t => t.Id).ToList();
-            return new EditionResponse { Edition = e, Topics = topics, Schedules = schedules, CoveredTopicIds = covered };
+            return new EditionResponse { Edition = e, Topics = topics, Schedules = schedules, CoveredTopicIds = covered, Publications = await DescribePublicationsAsync(e, ctx).ConfigureAwait(false) };
         }
 
         private async Task<Edition?> OwnedAsync(HttpContextBase ctx, RequestTypeEnum type)

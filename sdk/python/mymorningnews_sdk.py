@@ -1178,6 +1178,27 @@ class LookbackMode(str, Enum):
     FIXED_HOURS = "FixedHours"
 
 
+class HistoryMode(str, Enum):
+    """Which earlier issues a topic or edition compares with."""
+
+    OFF = "Off"
+    PREVIOUS_ISSUE = "PreviousIssue"
+    RECENT_ISSUES = "RecentIssues"
+    SINCE_DATE = "SinceDate"
+    SPECIFIC_ISSUE = "SpecificIssue"
+
+
+class BriefingDeltaKind(str, Enum):
+    """How an item changed against the comparison baseline."""
+
+    NEW_DEVELOPMENT = "NewDevelopment"
+    CHANGED_FACT = "ChangedFact"
+    RESOLVED = "Resolved"
+    CORRECTION = "Correction"
+    UNCHANGED = "Unchanged"
+    UNAVAILABLE = "Unavailable"
+
+
 class DeliverableLength(str, Enum):
     """Length of a one-time deliverable."""
 
@@ -1982,6 +2003,7 @@ class Finding(Model):
     is_duplicate: Optional[bool] = None
     duplicate_of_finding_id: Optional[str] = None
     is_update_of_finding_id: Optional[str] = None
+    is_correction: Optional[bool] = None
     rank: Optional[int] = None
     user_rating: Optional[str] = None
     published_utc: Optional[str] = None
@@ -2197,9 +2219,107 @@ class Edition(Model):
     lookback_mode: Optional[str] = None
     lookback_hours: Optional[int] = None
     last_composed_utc: Optional[str] = None
+    history_mode: Optional[str] = None
+    history_count: Optional[int] = None
+    history_since_utc: Optional[str] = None
+    history_briefing_id: Optional[str] = None
+    history_token_budget: Optional[int] = None
     active: Optional[bool] = None
     created_utc: Optional[str] = None
     last_update_utc: Optional[str] = None
+
+
+@dataclass
+class EditionPublicationResponse(Model):
+    """A system briefing (catalog publication) included in an edition. ``available`` is False when it is retracted,
+    unsubscribed, or no longer allowed by the plan; such entries are skipped at composition."""
+    publication_id: Optional[str] = None
+    title: Optional[str] = None
+    sort_order: Optional[int] = None
+    available: Optional[bool] = None
+
+
+@dataclass
+class ComparisonBaseline(Model):
+    """An earlier issue a comparison uses."""
+    id: Optional[str] = None
+    title: Optional[str] = None
+    created_utc: Optional[str] = None
+    available: Optional[bool] = None
+
+
+@dataclass
+class HistoryPreviewResponse(Model):
+    """The comparison baseline a run or composition would use. Nothing is saved."""
+    _nested: ClassVar[Dict[str, str]] = {'baselines': 'ComparisonBaseline'}
+    mode: Optional[str] = None
+    baselines: Optional[List[ComparisonBaseline]] = None
+    context_bytes: Optional[int] = None
+    budget_bytes: Optional[int] = None
+    truncated: Optional[bool] = None
+    note: Optional[str] = None
+    cutoff_utc: Optional[str] = None
+
+
+@dataclass
+class BriefingDelta(Model):
+    """One structured change between a briefing and its baseline (``kind`` is a :class:`BriefingDeltaKind` name)."""
+    id: Optional[str] = None
+    tenant_id: Optional[str] = None
+    briefing_id: Optional[str] = None
+    kind: Optional[str] = None
+    title: Optional[str] = None
+    summary: Optional[str] = None
+    finding_id: Optional[str] = None
+    prediction_id: Optional[str] = None
+    baseline_briefing_id: Optional[str] = None
+    baseline_item_id: Optional[str] = None
+    sort_order: Optional[int] = None
+    active: Optional[bool] = None
+    created_utc: Optional[str] = None
+    last_update_utc: Optional[str] = None
+
+
+@dataclass
+class BriefingComparisonResponse(Model):
+    """What a briefing was compared with and the changes found. ``counts`` has all six kinds; ``mode`` is for example
+    ``PreviousIssue``, ``Edition:PreviousIssue``, or ``Off``."""
+    _nested: ClassVar[Dict[str, str]] = {'baselines': 'ComparisonBaseline', 'deltas': 'BriefingDelta'}
+    briefing_id: Optional[str] = None
+    compared: Optional[bool] = None
+    mode: Optional[str] = None
+    note: Optional[str] = None
+    truncated: Optional[bool] = None
+    cutoff_utc: Optional[str] = None
+    baselines: Optional[List[ComparisonBaseline]] = None
+    counts: Optional[Dict[str, int]] = None
+    no_material_changes: Optional[bool] = None
+    summary: Optional[str] = None
+    deltas: Optional[List[BriefingDelta]] = None
+
+
+@dataclass
+class TopicSlotResponse(Model):
+    """One custom topic in the account's keep order. Topics with ``within_plan`` False keep history but do not run."""
+    topic_id: Optional[str] = None
+    name: Optional[str] = None
+    status: Optional[str] = None
+    position: Optional[int] = None
+    chosen: Optional[bool] = None
+    within_plan: Optional[bool] = None
+    last_run_utc: Optional[str] = None
+
+
+@dataclass
+class TopicSlotsResponse(Model):
+    """The account's custom topics against the plan's limit, in keep order. ``limit`` is None for unlimited and 0 when
+    custom research is not in the plan."""
+    _nested: ClassVar[Dict[str, str]] = {'topics': 'TopicSlotResponse'}
+    limit: Optional[int] = None
+    counted: Optional[int] = None
+    over_limit: Optional[int] = None
+    customized: Optional[bool] = None
+    topics: Optional[List[TopicSlotResponse]] = None
 
 
 @dataclass
@@ -2218,11 +2338,12 @@ class EditionTopic(Model):
 @dataclass
 class EditionDetail(Model):
     """An edition with its topics and schedules."""
-    _nested: ClassVar[Dict[str, str]] = {'edition': 'Edition', 'topics': 'EditionTopic', 'schedules': 'Schedule'}
+    _nested: ClassVar[Dict[str, str]] = {'edition': 'Edition', 'topics': 'EditionTopic', 'schedules': 'Schedule', 'publications': 'EditionPublicationResponse'}
     edition: Optional[Edition] = None
     topics: Optional[List[EditionTopic]] = None
     schedules: Optional[List[Schedule]] = None
     covered_topic_ids: Optional[List[str]] = None
+    publications: Optional[List[EditionPublicationResponse]] = None
 
 
 @dataclass
@@ -3211,6 +3332,8 @@ class CatalogIssueResponse(Model):
     created_utc: Optional[str] = None
     audio_path: Optional[str] = None
     audio_seconds: Optional[float] = None
+    comparison: Optional[Any] = None
+    _nested: ClassVar[Dict[str, str]] = {'comparison': 'BriefingComparisonResponse'}
 
 
 @dataclass
@@ -3797,6 +3920,22 @@ class TopicsResource(_Resource):
         items = [{"searchProviderId": p} if isinstance(p, str) else p for p in providers]
         return self._many(SearchProvider, "PUT", API + "/topics/" + _seg(topic_id) + "/search-providers", body=items)
 
+    def preview_history(self, topic_id: str, body: Optional[Mapping[str, Any]] = None, **fields: Any) -> HistoryPreviewResponse:
+        """Preview which earlier issues the topic's next run would compare with. Nothing is saved.
+
+        Args:
+            topic_id: The topic.
+            body: Unsaved settings (``history_mode``, ``history_count`` 1 to 20, ``history_since_utc``,
+                ``history_briefing_id`` where an empty string clears the pin, ``history_token_budget`` 256 to 32000).
+                Omitted values keep the saved settings.
+
+        Raises:
+            BadRequestError: A setting is out of range (ValidationFailed).
+            ConflictError: The pinned issue is unavailable.
+            NotFoundError: The topic does not exist or belongs to another user.
+        """
+        return self._one(HistoryPreviewResponse, "POST", API + "/topics/" + _seg(topic_id) + "/history/preview", body=_merge(body, fields))
+
 
 class RefinementResource(_Resource):
     """The topic wizard: refinement sessions under ``/v1.0/api/refinement-sessions``.
@@ -4316,6 +4455,39 @@ class EditionsResource(_Resource):
         """
         return self._one(Briefing, "POST", API + "/editions/" + _seg(edition_id) + "/preview", body={"templateContent": template_content})
 
+    def preview_history(self, edition_id: str, body: Optional[Mapping[str, Any]] = None, **fields: Any) -> HistoryPreviewResponse:
+        """Preview which earlier issues of this edition the next composition would compare with. Nothing is saved.
+
+        Args:
+            edition_id: The edition.
+            body: Unsaved settings (``history_mode``, ``history_count`` 1 to 20, ``history_since_utc``,
+                ``history_briefing_id`` where an empty string clears the pin, ``history_token_budget`` 256 to 32000).
+                Omitted values keep the saved settings.
+
+        Raises:
+            BadRequestError: A setting is out of range (ValidationFailed).
+            ConflictError: The pinned issue is unavailable.
+            NotFoundError: The edition does not exist or belongs to another user.
+        """
+        return self._one(HistoryPreviewResponse, "POST", API + "/editions/" + _seg(edition_id) + "/history/preview", body=_merge(body, fields))
+
+    def publications(self, edition_id: str, **filters: Any) -> Page[EditionPublicationResponse]:
+        """System briefings (catalog publications) the edition includes, in edition order (paging filters)."""
+        return self._page(EditionPublicationResponse, API + "/editions/" + _seg(edition_id) + "/publications", filters)
+
+    def set_publications(self, edition_id: str, publication_ids: Sequence[str]) -> EditionDetail:
+        """Replace the system briefings the edition includes (ordered, distinct, at most 20, each an active subscription).
+
+        An empty list removes them all and is always allowed.
+
+        Raises:
+            BadRequestError: Not subscribed, duplicates, or more than 20 (ValidationFailed).
+            CapReachedError: The plan does not include custom research and the list is not empty.
+        """
+        if isinstance(publication_ids, str):
+            raise TypeError("publication_ids must be a sequence of IDs, not a string")
+        return self._one(EditionDetail, "PUT", API + "/editions/" + _seg(edition_id) + "/publications", body={"publicationIds": list(publication_ids)})
+
 
 class BriefingsResource(_Resource):
     """Briefings under ``/v1.0/api/briefings``: detail, Markdown and HTML downloads, pinning, and audio."""
@@ -4351,6 +4523,13 @@ class BriefingsResource(_Resource):
         if duration_seconds is not None:
             body["durationSeconds"] = duration_seconds
         return self._json("PUT", API + "/briefings/" + _seg(briefing_id) + "/progress", body=body)
+
+    def comparison(self, briefing_id: str) -> BriefingComparisonResponse:
+        """What the briefing was compared with and the structured changes found.
+
+        A briefing without a comparison returns ``compared`` False with a ``note``.
+        """
+        return self._one(BriefingComparisonResponse, "GET", API + "/briefings/" + _seg(briefing_id) + "/comparison")
 
     def share_with_support(self, briefing_id: str) -> Dict[str, Any]:
         """Queue a failed briefing report for support (202). Repeats return the same id and status."""
@@ -5176,6 +5355,26 @@ class AccountResource(_Resource):
     def usage(self) -> UsageMeter:
         """My usage against my plan's limits. Needs a signed-in user, not an access key (BadRequestError otherwise)."""
         return self._one(UsageMeter, "GET", API + "/account/usage")
+
+    def topic_slots(self) -> TopicSlotsResponse:
+        """My custom topics against my plan's topic limit, in keep order."""
+        return self._one(TopicSlotsResponse, "GET", API + "/account/topic-slots")
+
+    def set_topic_slots(self, keep_topic_ids: Sequence[str]) -> TopicSlotsResponse:
+        """Choose which custom topics keep running first on a smaller plan (most important first).
+
+        An empty list clears the choice. Nothing is paused, archived, or deleted.
+
+        Raises:
+            BadRequestError: A duplicate, unknown, archived, one-time, or another user's topic (ValidationFailed).
+        """
+        if isinstance(keep_topic_ids, str):
+            raise TypeError("keep_topic_ids must be a sequence of IDs, not a string")
+        return self._one(TopicSlotsResponse, "PUT", API + "/account/topic-slots", body={"keepTopicIds": list(keep_topic_ids)})
+
+    def clear_topic_slots(self) -> TopicSlotsResponse:
+        """Clear my topic keep order so topics follow creation order."""
+        return self.set_topic_slots([])
 
     def export(self) -> Download:
         """Download my data as a ZIP of JSON and Markdown. Needs a signed-in user."""

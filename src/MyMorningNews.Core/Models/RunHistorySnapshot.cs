@@ -6,7 +6,7 @@ namespace MyMorningNews.Core.Models
     using MyMorningNews.Core.Helpers;
 
     /// <summary>
-    /// Immutable bounded comparison context selected once for a research run and reused on retry.
+    /// Immutable bounded comparison context selected once for a research run or an edition composition and reused on retry.
     /// </summary>
     public class RunHistorySnapshot
     {
@@ -47,38 +47,24 @@ namespace MyMorningNews.Core.Models
         }
 
         /// <summary>
-        /// Research run.
+        /// Research run, for a topic snapshot. Null for an edition snapshot.
         /// </summary>
-        /// <exception cref="ArgumentNullException">Value is null or empty.</exception>
-        public string RunId
-        {
-            get
-            {
-                return _RunId;
-            }
-            set
-            {
-                if (String.IsNullOrWhiteSpace(value)) throw new ArgumentNullException(nameof(RunId));
-                _RunId = value;
-            }
-        }
+        public string? RunId { get; set; } = null;
 
         /// <summary>
-        /// Topic owning the baseline.
+        /// Topic owning the baseline, for a topic snapshot. Null for an edition snapshot.
         /// </summary>
-        /// <exception cref="ArgumentNullException">Value is null or empty.</exception>
-        public string TopicId
-        {
-            get
-            {
-                return _TopicId;
-            }
-            set
-            {
-                if (String.IsNullOrWhiteSpace(value)) throw new ArgumentNullException(nameof(TopicId));
-                _TopicId = value;
-            }
-        }
+        public string? TopicId { get; set; } = null;
+
+        /// <summary>
+        /// Edition owning the baseline, for an edition snapshot. Null for a topic snapshot.
+        /// </summary>
+        public string? EditionId { get; set; } = null;
+
+        /// <summary>
+        /// Briefing composed with this snapshot. Set when an edition is queued, and after a run briefing is composed. May be null.
+        /// </summary>
+        public string? BriefingId { get; set; } = null;
 
         /// <summary>
         /// Off, PreviousIssue, RecentIssues, SinceDate, or SpecificIssue.
@@ -180,8 +166,6 @@ namespace MyMorningNews.Core.Models
 
         private string _Id = IdGenerator.GenerateRunHistorySnapshotId();
         private string _TenantId = String.Empty;
-        private string _RunId = String.Empty;
-        private string _TopicId = String.Empty;
         private string _Mode = String.Empty;
         private List<string> _BaselineIds = new List<string>();
         private string _ContextText = String.Empty;

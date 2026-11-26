@@ -2708,7 +2708,8 @@
       "deleted": "Descoberta excluída",
       "deleteTitle": "Excluir descoberta",
       "deleteMessage": "Excluir \"{title}\"? Os vínculos de evidência são removidos. As fontes compartilhadas e seu histórico de avaliações são mantidos."
-    }
+    },
+    "correction": "Correção"
   },
   "predictions": {
     "overdue": "Horizonte vencido",
@@ -3000,7 +3001,9 @@
       "settings": "Configurações",
       "topics": "Temas",
       "schedules": "Agendamentos",
-      "briefings": "Boletins"
+      "briefings": "Boletins",
+      "comparison": "Comparar com boletins anteriores",
+      "publications": "Boletins do sistema nesta edição"
     },
     "columns": {
       "name": "Edição",
@@ -3077,6 +3080,22 @@
       "label": "Mostrar edições",
       "mine": "Minhas",
       "all": "De todos"
+    },
+    "publications": {
+      "help": "Adicione edições das suas assinaturas do catálogo em \"Dos seus boletins do sistema\", nesta ordem. Até {max}.",
+      "none": "Nenhum boletim do sistema está incluído.",
+      "chosen": "Boletins do sistema incluídos",
+      "unavailable": "Indisponível",
+      "unavailableHelp": "Boletins do sistema indisponíveis foram retirados, cancelados ou não são permitidos pelo seu plano. Eles são ignorados quando a edição é composta. Remova-os ou assine novamente.",
+      "noSubscriptions": "Você não tem assinaturas do catálogo para adicionar.",
+      "browse": "Explorar boletins do sistema",
+      "addLabel": "Boletim do sistema para adicionar",
+      "pick": "Escolha um boletim do sistema",
+      "add": "Adicionar",
+      "full": "Esta edição já inclui {max} boletins do sistema, o máximo permitido.",
+      "capReached": "Incluir boletins do sistema em um boletim personalizado exige um plano com pesquisa personalizada. Você ainda pode removê-los.",
+      "save": "Salvar boletins do sistema",
+      "saved": "Boletins do sistema salvos."
     }
   },
   "templates": {
@@ -4854,7 +4873,12 @@
     "date": "Data inicial (UTC)",
     "issue": "Edição de referência",
     "choose": "Escolha uma edição",
-    "firstRun": "Sem uma edição anterior utilizável, o próximo boletim será independente."
+    "firstRun": "Sem uma edição anterior utilizável, o próximo boletim será independente.",
+    "editionHelp": "Compara cada edição composta com as suas próprias edições anteriores. O texto histórico é uma referência, não evidência atual.",
+    "editionOff": "Desativado: manter a comparação própria de cada tema",
+    "editionOffHelp": "Desativado mantém as comparações de pesquisa de cada tema. Qualquer outro modo compara a edição inteira com as suas edições anteriores.",
+    "budget": "Orçamento de comparação (bytes)",
+    "budgetHelp": "Quanto texto anterior a comparação pode usar, de {min} a {max} bytes. Referências mais longas são cortadas."
   },
   "catalog": {
     "title": "Boletins do sistema",
@@ -4942,5 +4966,68 @@
     "failed": "Não funcionou. Tente novamente.",
     "deleteTitle": "Excluir este tópico?",
     "deleteMessage": "Excluir \"{name}\" com seus resumos, descobertas e áudio? Isso não pode ser desfeito."
+  },
+  "historyPreview": {
+    "title": "Pré-visualização da referência",
+    "show": "Ver referência",
+    "refresh": "Atualizar pré-visualização",
+    "help": "Veja com quais edições anteriores o próximo boletim seria comparado, usando as configurações acima. Nada é salvo.",
+    "blocked": {
+      "date": "Escolha uma data de início para ver a referência.",
+      "issue": "Escolha uma edição de referência para vê-la."
+    },
+    "conflictHelp": "A edição fixada não está mais disponível. Escolha outra edição ou outro modo.",
+    "wouldCompare": "{count, plural, one {O próximo boletim seria comparado com # edição anterior:} other {O próximo boletim seria comparado com # edições anteriores:}}",
+    "size": "Contexto de comparação: {used} de {budget}",
+    "sizePercent": "{percent} por cento do orçamento de comparação",
+    "truncated": "As edições anteriores excedem o orçamento, então a comparação usará uma versão reduzida.",
+    "firstRun": "Ainda não há nenhuma edição anterior pronta que corresponda a estas configurações, então o próximo boletim será independente. Os seguintes serão comparados com ele quando estiver pronto.",
+    "cutoff": "Edições criadas antes de {date} podem ser usadas."
+  },
+  "comparison": {
+    "title": "Comparado com boletins anteriores",
+    "standalone": "Boletim independente: nenhuma edição anterior foi comparada.",
+    "unavailableIssue": "Uma edição que não está mais disponível",
+    "comparedWith": "Comparado com {issues}.",
+    "earlierIssues": "edições anteriores",
+    "noMaterialChanges": "Nenhuma mudança relevante encontrada.",
+    "noMaterialChangesHelp": "Nada novo, alterado, corrigido ou resolvido foi encontrado desde as edições anteriores.",
+    "baselines": "Comparado com",
+    "noBaselines": "As edições anteriores não aparecem mais na lista.",
+    "mode": "Modo: {mode}.",
+    "modeEdition": "Comparação da edição: {mode}.",
+    "cutoff": "Edições anteriores a {date} podiam ser usadas.",
+    "truncated": "As edições anteriores foram reduzidas para caber no orçamento de comparação.",
+    "versus": "em relação a {issue}",
+    "kinds": {
+      "Correction": "Correção",
+      "ChangedFact": "Alterado",
+      "NewDevelopment": "Novo",
+      "Resolved": "Resolvido",
+      "Unchanged": "Sem alteração",
+      "Unavailable": "Indisponível"
+    }
+  },
+  "topicSlots": {
+    "title": "Temas que continuam em execução",
+    "count": "{counted} de {limit}",
+    "help": "Seu plano executa até {limit} temas personalizados. Os primeiros nesta ordem continuam em execução se o limite diminuir.",
+    "noneAllowed": "Seu plano não inclui pesquisa personalizada, então nenhum tema personalizado é executado. Eles mantêm o histórico.",
+    "overTitle": "{count, plural, one {# tema está acima do limite do seu plano.} other {# temas estão acima do limite do seu plano.}}",
+    "overHelp": "Acima do limite: mantidos com o histórico, mas sem execução. Criar, duplicar ou restaurar um tema continua bloqueado até você arquivar temas suficientes ou fazer upgrade.",
+    "bannerHelp": "Esses temas mantêm o histórico, mas não são executados.",
+    "choose": "Escolher quais temas continuam em execução",
+    "orderHelp": "Coloque os temas mais importantes primeiro. Nada é pausado, arquivado ou excluído ao salvar.",
+    "listLabel": "Temas personalizados na ordem de manutenção",
+    "lastRun": "última execução {date}",
+    "within": "Continua em execução",
+    "past": "Acima do limite",
+    "unsaved": "A ordem mudou. Salve para mantê-la.",
+    "save": "Salvar ordem",
+    "saved": "Ordem dos temas salva.",
+    "clear": "Limpar minha ordem",
+    "cleared": "Ordem dos temas limpa. Os temas agora seguem a ordem de criação.",
+    "customized": "Você escolheu esta ordem.",
+    "defaultOrder": "Os temas seguem a ordem de criação até você escolher uma."
   }
 }

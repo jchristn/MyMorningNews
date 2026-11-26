@@ -37,7 +37,7 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, path + "/{id}/subscription", UnsubscribeAsync, null, openApiMetadata: Doc("Unsubscribe from a system briefing", "Catalog"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, path + "/{id}/issues", IssuesAsync, null, openApiMetadata: Paged(Doc("List subscribed system briefing issues", "Catalog")));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, path + "/{id}/issues" + "/enumerate", ctx => EnumerateAsync(ctx, IssuesAsync), null, openApiMetadata: Paged(Doc("List subscribed system briefing issues", "Catalog")).WithRequestBody(Body<EnumerationQuery>()));
-            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, path + "/{id}/issues/{issueId}", IssueAsync, null, openApiMetadata: Doc("Read a subscribed system briefing issue", "Catalog"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, path + "/{id}/issues/{issueId}", IssueAsync, null, openApiMetadata: Doc("Read a subscribed system briefing issue", "Catalog", "Includes comparison: the earlier published issues it was compared with and the changes found (new, changed, corrected, resolved, unchanged, unavailable), without canonical item identifiers."));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, path + "/{id}/issues/{issueId}/audio", AudioAsync, null, openApiMetadata: Doc("Stream shared system briefing audio", "Catalog", "Supports byte ranges. Replaying shared audio does not consume personal generation minutes."));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, path + "/{id}/issues/{issueId}/progress", ProgressAsync, null, openApiMetadata: Doc("Read personal progress for a shared issue", "Catalog"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, path + "/{id}/issues/{issueId}/progress", SaveProgressAsync, null, openApiMetadata: Doc("Save personal progress for a shared issue", "Catalog").WithRequestBody(Body<BriefingProgressRequest>()));
@@ -192,7 +192,8 @@ namespace MyMorningNews.Server.Routes
         {
             CatalogPublication? publication = await ReadableAsync(ctx).ConfigureAwait(false);
             if (publication == null) return;
-            CatalogIssueResponse? issue = await _Catalog.IssueAsync(publication, Param(ctx, "issueId")!, ctx.Token).ConfigureAwait(false);
+            User? reader = await Server.Database.Users.ReadAsync(Context(ctx).TenantId!, Context(ctx).UserId!, ctx.Token).ConfigureAwait(false);
+            CatalogIssueResponse? issue = await _Catalog.IssueAsync(publication, Param(ctx, "issueId")!, true, reader?.TimeZone ?? "UTC", ctx.Token).ConfigureAwait(false);
             if (issue == null) { await SendNotFoundAsync(ctx, "Issue").ConfigureAwait(false); return; }
             await SendJsonAsync(ctx, 200, issue).ConfigureAwait(false);
         }

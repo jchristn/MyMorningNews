@@ -216,6 +216,24 @@ namespace MyMorningNews.Server
             _Audio!.AccountSpeechResolver = _Context.PersonalProviders.SpeechAsync;
             AccountService account = _Context.Account;
             briefings.AudioGate = (tenantId, userId, t) => entitlements.CheckAudioAsync(tenantId, userId, t);
+            briefings.EditionPublications = async (edition, t) =>
+            {
+                // Rechecked at every composition: the plan must allow custom composition and each subscription must still be active.
+                List<MyMorningNews.Core.Models.CatalogPublication> readable = new List<MyMorningNews.Core.Models.CatalogPublication>();
+                List<MyMorningNews.Core.Models.EditionPublication> links = (await _Database.EditionPublications.EnumerateAsync(new MyMorningNews.Core.Requests.EditionPublicationFilter
+                { TenantId = edition.TenantId, EditionId = edition.Id, PageSize = 100 }, t).ConfigureAwait(false)).Objects;
+                if (links.Count == 0) return readable;
+                MyMorningNews.Core.Entitlements.EffectivePlan plan = await entitlements.GetEffectiveAsync(edition.TenantId, edition.UserId, t).ConfigureAwait(false);
+                if (!MyMorningNews.Core.Entitlements.EntitlementService.Allowed(plan, "customResearch.enabled")) return readable;
+                MyMorningNews.Core.Catalog.CatalogService catalog = new MyMorningNews.Core.Catalog.CatalogService(_Database, entitlements);
+                foreach (MyMorningNews.Core.Models.EditionPublication link in links)
+                {
+                    MyMorningNews.Core.Models.CatalogPublication? pub = await catalog.ReadableAsync(edition.TenantId, edition.UserId, link.PublicationId, t).ConfigureAwait(false);
+                    if (pub != null) readable.Add(pub);
+                }
+
+                return readable;
+            };
             authentication.SignInGate = (user, t) => Task.FromResult(account.NeedsVerification(user) ? "Confirm your email address first: open the link we sent you, or ask for a new one." : (string?)null);
             authentication.OnSignIn = (user, t) => account.CancelDeletionAsync(user, t);
             _Models.PreCallCheck = async (req, t) =>

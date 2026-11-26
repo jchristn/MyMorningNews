@@ -21,11 +21,12 @@ import { ProvidersSection } from './ProvidersSection';
 import { PodcastSection } from './PodcastSection';
 import { AppearanceSection, LanguageSection, SecuritySection } from './PreferenceSections';
 import { ProfileSection } from './ProfileSection';
+import { TopicSlotsSection } from './TopicSlotsSection';
 import { useSignOut } from './useSignOut';
 
 /**
  * Account sections, in menu order. Each has a route under /account and renders beside the menu on tablets. `hidden`
- * sections have a route but no menu row (Redeem opens from Plan and from links; Email is the old address of the email
+ * sections have a route but no menu row (Redeem opens from Plan and from links; Topics that keep running opens from Plan and from the Topics banner; Email is the old address of the email
  * switches, which now live in Notifications); `requires: 'audio'` hides a row when the server has audio turned off.
  */
 export const ACCOUNT_SECTIONS = [
@@ -35,6 +36,7 @@ export const ACCOUNT_SECTIONS = [
   { key: 'billing', icon: 'card-outline', group: 'account', Component: BillingSection },
   { key: 'providers', icon: 'key-outline', group: 'account', Component: ProvidersSection },
   { key: 'redeem', icon: 'gift-outline', group: 'account', Component: RedeemSection, hidden: true },
+  { key: 'slots', icon: 'reorder-four-outline', group: 'account', Component: TopicSlotsSection, hidden: true },
   { key: 'usage', icon: 'stats-chart-outline', group: 'account', Component: UsageScreen },
   { key: 'notifications', icon: 'notifications-outline', group: 'delivery', Component: NotificationsSection },
   { key: 'email', icon: 'mail-outline', group: 'delivery', Component: NotificationsSection, hidden: true },

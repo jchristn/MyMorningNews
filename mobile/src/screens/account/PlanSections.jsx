@@ -11,6 +11,7 @@ import { useAuth } from '@/state/AuthContext';
 import { useResource } from '@/state/useResource';
 import { useTheme } from '@/theme/ThemeContext';
 import { spacing } from '@/theme/palette';
+import { TopicSlotsEntry } from './TopicSlotsSection';
 
 /** A plan feature value for display: unlimited, yes or no, a cost, minutes, or a count. */
 export function featureValue(row, t, locale) {
@@ -152,6 +153,7 @@ export function PlanSection() {
         {(data) => (
           <>
             <PlanCard data={data} />
+            <TopicSlotsEntry />
             <UsageCard />
             <SectionHeader title={t('mobile.plan.limits')} />
             <Card testID="plan-features">

@@ -71,8 +71,8 @@ in the owner's `Lattice AI/APPLE.md`, and this app's store and hosting records i
     and after the first Play upload set `MYMORNINGNEWS_HOSTING_ANDROID_CERT_FINGERPRINTS` to the Play App Signing
     SHA-256 certificate fingerprint (Play Console, Setup, App signing), then recreate the server (`./update.sh`).
     `app.mymorningnews.ai` then serves `/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json`
-    (plan section 33.3); each answers 404 `NotConfigured` until its value is set. The Apple file lists `/verify*`
-    and `/reset-password*`, so the verification and reset emails open the app on iOS. Details and the check
+    (plan section 33.3); each answers 404 `NotConfigured` until its value is set. The Apple file lists `/verify*`,
+    `/reset-password*`, and `/dashboard/*`, so the verification and reset emails and edition links open the app on iOS. Details and the check
     commands are in `docs/HOSTING.md`, "Universal links".
 12. **Hosted service reachable.** `https://app.mymorningnews.ai` must be live (plan Phase 14 and `docs/HOSTING.md`)
     before TestFlight external testing or review: reviewers sign in against it.

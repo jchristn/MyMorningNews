@@ -74,6 +74,19 @@ namespace MyMorningNews.Core.Catalog
         /// <summary>Allowlisted issue content. Dry runs, other topics, and unfinished content are never projected.</summary>
         public async Task<CatalogIssueResponse?> IssueAsync(CatalogPublication publication, string issueId, CancellationToken token = default)
         {
+            return await IssueAsync(publication, issueId, false, "UTC", token).ConfigureAwait(false);
+        }
+
+        /// <summary>Read one published issue, optionally with its comparison projected for a subscriber.</summary>
+        /// <param name="publication">Readable publication.</param>
+        /// <param name="issueId">Issue.</param>
+        /// <param name="includeComparison">Include the comparison and its changes.</param>
+        /// <param name="timeZone">Reader time zone for dates in the comparison summary.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Issue, or null when it is not a ready published issue of the publication.</returns>
+        /// <exception cref="ArgumentNullException">publication is null.</exception>
+        public async Task<CatalogIssueResponse?> IssueAsync(CatalogPublication publication, string issueId, bool includeComparison, string timeZone, CancellationToken token = default)
+        {
             ArgumentNullException.ThrowIfNull(publication);
             Briefing? briefing = await _Database.Briefings.ReadAsync(publication.OwnerTenantId, issueId, token).ConfigureAwait(false);
             if (briefing == null || briefing.TopicId != publication.TopicId || briefing.Status != BriefingStatusEnum.Ready || briefing.IsDryRun || !briefing.Active) return null;
@@ -82,7 +95,8 @@ namespace MyMorningNews.Core.Catalog
             {
                 Id = briefing.Id, PublicationId = publication.Id, Title = briefing.Title, Markdown = briefing.Markdown,
                 CreatedUtc = briefing.CreatedUtc, AudioSeconds = media?.DurationSeconds,
-                AudioPath = media == null ? null : "/v1.0/api/catalog/" + publication.Id + "/issues/" + briefing.Id + "/audio"
+                AudioPath = media == null ? null : "/v1.0/api/catalog/" + publication.Id + "/issues/" + briefing.Id + "/audio",
+                Comparison = includeComparison ? await new MyMorningNews.Core.Briefings.ComparisonService(_Database).DescribeForSubscriberAsync(briefing, timeZone, token).ConfigureAwait(false) : null
             };
         }
 

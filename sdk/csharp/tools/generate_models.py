@@ -44,6 +44,7 @@ ROOTS = [
     "UsageTimeseries", "UserResponse", "VaultCredentialResponse", "VaultRevealResponse", "VaultUsageItem",
     "McpServerDetailResponse", "SetupStatusResponse", "SetupOptionsResponse", "RunCostReport", "AvailableVoicesResponse",
     "NotificationPreferencesResponse", "NotificationCountResponse",
+    "HistoryPreviewResponse", "BriefingComparisonResponse", "EditionPublicationResponse", "TopicSlotsResponse",
     # Models returned directly by routes.
     "Topic", "TopicDimension", "TopicConstraint", "TopicRecipient", "RefinementSession", "ResearchRequest", "Schedule",
     "Run", "RunStage", "SearchQuery", "SearchResult", "Finding", "Prediction", "PredictionReview", "Suggestion",
@@ -75,6 +76,7 @@ ROOTS = [
     "VoiceProfileUpsertRequest", "VoiceTestRequest", "SignupRequest", "AccountTokenRequest", "AccountEmailRequest",
     "McpServerUpsertRequest", "McpToolUpdateRequest", "SetupModelKeyRequest", "SetupConnectRequest", "VoicePreviewRequest",
     "NotificationPreferencesRequest",
+    "HistoryPreviewRequest", "EditionPublicationsRequest", "TopicSlotsRequest",
     # Enums used as query filters (not always reachable from a body).
     "SortDirectionEnum", "TopicStatusEnum", "ConstraintKindEnum", "RefinementStatusEnum", "ResearchRequestStatusEnum",
     "ScheduleOwnerTypeEnum", "RunStatusEnum", "RunTriggerEnum", "FindingTierEnum", "FindingCategoryEnum",
@@ -84,6 +86,7 @@ ROOTS = [
     "PreferenceOriginEnum", "ModelTaskEnum", "ModelProviderEnum", "SearchProviderKindEnum", "VaultCredentialKindEnum",
     "VaultProviderEnum", "AuditEventTypeEnum", "PermissionTypeEnum", "UsageGroupByEnum", "McpTransportEnum",
     "NotificationKindEnum", "NotificationChannelEnum",
+    "BriefingDeltaKindEnum", "HistoryModeEnum",
 ]
 
 # Server-only types mapped to something a client can hold.

@@ -124,6 +124,7 @@ export default function FindingDetail({ detail, onChanged, onDeleted }) {
         <StatusBadge>{t('enums.findingCategory.' + finding.category, { defaultValue: finding.category })}</StatusBadge>
         {finding.isDuplicate ? <StatusBadge tone="warning">{t('findings.duplicate')}</StatusBadge> : null}
         {finding.isUpdateOfFindingId ? <StatusBadge tone="info">{t('findings.update')}</StatusBadge> : null}
+        {finding.isUpdateOfFindingId && finding.isCorrection ? <StatusBadge tone="warning">{t('findings.correction')}</StatusBadge> : null}
         {finding.isDryRun ? <StatusBadge tone="info">{t('runs.dryRun')}</StatusBadge> : null}
       </div>
       <h3 className="finding-title">{finding.title}</h3>

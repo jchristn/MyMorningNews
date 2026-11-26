@@ -174,6 +174,33 @@ namespace MyMorningNews.Core.Models
         /// </summary>
         public bool PushEnabled { get; set; } = true;
 
+        /// <summary>
+        /// Comparison of each composed edition with earlier issues of this edition. Default Off, which keeps the topics'
+        /// own research comparisons in the composition instructions. Any other mode compares the edition with its own
+        /// earlier issues instead.
+        /// </summary>
+        public HistoryModeEnum HistoryMode { get; set; } = HistoryModeEnum.Off;
+
+        /// <summary>
+        /// Maximum baseline editions for RecentIssues. Default 5, minimum 1, maximum 20. Validated before writes.
+        /// </summary>
+        public int HistoryCount { get; set; } = 5;
+
+        /// <summary>
+        /// Inclusive earliest baseline time for SinceDate, otherwise null.
+        /// </summary>
+        public DateTime? HistorySinceUtc { get; set; } = null;
+
+        /// <summary>
+        /// Explicit baseline for SpecificIssue: a ready issue of this edition. Null otherwise.
+        /// </summary>
+        public string? HistoryBriefingId { get; set; } = null;
+
+        /// <summary>
+        /// Conservative comparison budget in UTF-8 bytes. Default 8000, minimum 256, maximum 32000.
+        /// </summary>
+        public int HistoryTokenBudget { get; set; } = 8000;
+
         #endregion
 
         #region Private-Members

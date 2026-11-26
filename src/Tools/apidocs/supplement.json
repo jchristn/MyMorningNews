@@ -3985,6 +3985,78 @@
         "404": "NotFound"
       },
       "notes": "Global administrators only. The caller's own recurring topic is copied; it is not changed."
+    },
+    "POST /v1.0/api/topics/{id}/history/preview": {
+      "response": "HistoryPreviewResponse",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed (invalid mode, bounds, date, or pinned issue)",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict (the pinned issue is unavailable)"
+      }
+    },
+    "GET /v1.0/api/briefings/{id}/comparison": {
+      "response": "BriefingComparisonResponse",
+      "status": {
+        "200": "OK",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "GET /v1.0/api/editions/{id}/publications": {
+      "response": "EnumerationResult<EditionPublicationResponse>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "PUT /v1.0/api/editions/{id}/publications": {
+      "response": "EditionResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed (not subscribed, duplicates, more than 20)",
+        "402": "CapReached (custom research is not in the plan)",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
+    },
+    "POST /v1.0/api/editions/{id}/history/preview": {
+      "response": "HistoryPreviewResponse",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict (the pinned issue is unavailable)"
+      }
+    },
+    "GET /v1.0/api/account/topic-slots": {
+      "response": "TopicSlotsResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest (access keys are refused)",
+        "403": "Forbidden"
+      }
+    },
+    "PUT /v1.0/api/account/topic-slots": {
+      "response": "TopicSlotsResponse",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest, ValidationFailed (duplicate, unknown, archived, or one-time topic)",
+        "403": "Forbidden"
+      }
+    },
+    "POST /v1.0/api/editions/{id}/publications/enumerate": {
+      "response": "EnumerationResult<EditionPublicationResponse>",
+      "status": {
+        "200": "OK",
+        "400": "TenantRequired",
+        "403": "Forbidden",
+        "404": "NotFound"
+      }
     }
   },
   "routeBodies": {

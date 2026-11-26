@@ -1,6 +1,7 @@
 namespace MyMorningNews.Sdk.Resources
 {
     using System;
+    using System.Collections.Generic;
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
@@ -129,6 +130,53 @@ namespace MyMorningNews.Sdk.Resources
         public Task<Briefing> PreviewAsync(string id, EditionPreviewRequest? request = null, CancellationToken token = default)
         {
             return Client.SendAsync<Briefing>(HttpMethod.Post, "/v1.0/api/editions/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/preview", null, request, token);
+        }
+
+        /// <summary>
+        /// Preview which earlier issues of this edition the next composition would compare with, using optional unsaved
+        /// settings. Nothing is saved. A null property in the request keeps the saved value.
+        /// </summary>
+        /// <param name="id">Edition identifier.</param>
+        /// <param name="request">Unsaved comparison settings, or null to preview the saved settings.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The HistoryPreviewResponse.</returns>
+        /// <exception cref="ArgumentNullException">id is null or empty.</exception>
+        /// <exception cref="MyMorningNewsException">The server returned an error (400 ValidationFailed for out-of-range settings, 409 Conflict when a pinned issue is unavailable, 404 when not found).</exception>
+        public Task<HistoryPreviewResponse> PreviewHistoryAsync(string id, HistoryPreviewRequest? request = null, CancellationToken token = default)
+        {
+            return Client.SendAsync<HistoryPreviewResponse>(HttpMethod.Post, "/v1.0/api/editions/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/history/preview", null, request ?? new HistoryPreviewRequest(), token);
+        }
+
+        /// <summary>
+        /// System briefings (catalog publications) included in the edition, in edition order, one page at a time. Entries
+        /// with Available false are skipped at composition.
+        /// </summary>
+        /// <param name="id">Edition identifier.</param>
+        /// <param name="options">Paging, or null for defaults.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>A page of EditionPublicationResponse items in edition order.</returns>
+        /// <exception cref="ArgumentNullException">id is null or empty.</exception>
+        /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
+        public Task<EnumerationResult<EditionPublicationResponse>> GetPublicationsAsync(string id, ListOptions? options = null, CancellationToken token = default)
+        {
+            return Client.SendAsync<EnumerationResult<EditionPublicationResponse>>(HttpMethod.Get, "/v1.0/api/editions/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/publications", (options ?? new ListOptions()).ToQuery(), null, token);
+        }
+
+        /// <summary>
+        /// Replace the system briefings included in the edition (ordered, distinct, at most 20, each an active
+        /// subscription of the caller). An empty list removes them all and is always allowed.
+        /// </summary>
+        /// <param name="id">Edition identifier.</param>
+        /// <param name="request">Ordered publication identifiers.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The EditionResponse.</returns>
+        /// <exception cref="ArgumentNullException">id or request is null or empty.</exception>
+        /// <exception cref="CapReachedException">The plan does not include custom research (402) and the list is not empty.</exception>
+        /// <exception cref="MyMorningNewsException">The server returned an error (400 ValidationFailed for unsubscribed, duplicate, or too many entries).</exception>
+        public Task<EditionResponse> SetPublicationsAsync(string id, EditionPublicationsRequest request, CancellationToken token = default)
+        {
+            ArgumentNullException.ThrowIfNull(request);
+            return Client.SendAsync<EditionResponse>(HttpMethod.Put, "/v1.0/api/editions/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/publications", null, request, token);
         }
     }
 }

@@ -68,7 +68,9 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.Note,
                 obj.Active,
                 DateTime.SpecifyKind(obj.CreatedUtc, DateTimeKind.Utc),
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
+                obj.EditionId,
+                obj.BriefingId).ConfigureAwait(false);
             return obj;
         }
 
@@ -107,7 +109,9 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.Truncated,
                 obj.Note,
                 obj.Active,
-                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc)).ConfigureAwait(false);
+                DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
+                obj.EditionId,
+                obj.BriefingId).ConfigureAwait(false);
             if (affected < 1) throw new KeyNotFoundException("RunHistorySnapshot " + obj.Id + " was not found.");
             return obj;
         }
@@ -177,8 +181,8 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             RunHistorySnapshot obj = new RunHistorySnapshot();
             obj.Id = (reader.IsDBNull(0) ? String.Empty : reader.GetString(0));
             obj.TenantId = (reader.IsDBNull(1) ? String.Empty : reader.GetString(1));
-            obj.RunId = (reader.IsDBNull(2) ? String.Empty : reader.GetString(2));
-            obj.TopicId = (reader.IsDBNull(3) ? String.Empty : reader.GetString(3));
+            obj.RunId = (reader.IsDBNull(2) ? null : reader.GetString(2));
+            obj.TopicId = (reader.IsDBNull(3) ? null : reader.GetString(3));
             obj.Mode = (reader.IsDBNull(4) ? String.Empty : reader.GetString(4));
             obj.BaselineIds = (reader.IsDBNull(5) ? new List<string>() : new List<string>(reader.GetFieldValue<string[]>(5)));
             obj.ContextText = (reader.IsDBNull(6) ? String.Empty : reader.GetString(6));
@@ -189,6 +193,8 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             obj.Active = reader.GetBoolean(11);
             obj.CreatedUtc = DateTime.SpecifyKind(reader.GetDateTime(12), DateTimeKind.Utc);
             obj.LastUpdateUtc = DateTime.SpecifyKind(reader.GetDateTime(13), DateTimeKind.Utc);
+            obj.EditionId = (reader.IsDBNull(14) ? null : reader.GetString(14));
+            obj.BriefingId = (reader.IsDBNull(15) ? null : reader.GetString(15));
             return obj;
         }
 
@@ -211,6 +217,16 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             {
                 args.Add(filter.TopicId);
                 clauses.Add("topicid = $" + args.Count);
+            }
+            if (!String.IsNullOrWhiteSpace(filter.EditionId))
+            {
+                args.Add(filter.EditionId);
+                clauses.Add("editionid = $" + args.Count);
+            }
+            if (!String.IsNullOrWhiteSpace(filter.BriefingId))
+            {
+                args.Add(filter.BriefingId);
+                clauses.Add("briefingid = $" + args.Count);
             }
             if (filter.Active.HasValue)
             {

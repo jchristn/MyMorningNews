@@ -15,7 +15,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Column list in model order.
         /// </summary>
-        public const string Columns = "id, tenantid, runid, topicid, mode, baselineids, contexttext, contexthash, cutoffutc, truncated, note, active, createdutc, lastupdateutc";
+        public const string Columns = "id, tenantid, runid, topicid, mode, baselineids, contexttext, contexthash, cutoffutc, truncated, note, active, createdutc, lastupdateutc, editionid, briefingid";
 
         /// <summary>
         /// Schema statements: table and indexes. Idempotent.
@@ -48,12 +48,12 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Insert statement with positional parameters in column order.
         /// </summary>
-        public const string Insert = "INSERT INTO runhistorysnapshots (" + Columns + ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)";
+        public const string Insert = "INSERT INTO runhistorysnapshots (" + Columns + ") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)";
 
         /// <summary>
         /// Update statement. $1 is id, $2 is tenantid, then the mutable columns in model order.
         /// </summary>
-        public const string Update = "UPDATE runhistorysnapshots SET runid = $3, topicid = $4, mode = $5, baselineids = $6, contexttext = $7, contexthash = $8, cutoffutc = $9, truncated = $10, note = $11, active = $12, lastupdateutc = $13 WHERE id = $1 AND tenantid = $2";
+        public const string Update = "UPDATE runhistorysnapshots SET runid = $3, topicid = $4, mode = $5, baselineids = $6, contexttext = $7, contexthash = $8, cutoffutc = $9, truncated = $10, note = $11, active = $12, lastupdateutc = $13, editionid = $14, briefingid = $15 WHERE id = $1 AND tenantid = $2";
 
         /// <summary>
         /// Select by identifier within a tenant.

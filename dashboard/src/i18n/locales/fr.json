@@ -2708,7 +2708,8 @@
       "deleted": "Constat supprimé",
       "deleteTitle": "Supprimer le constat",
       "deleteMessage": "Supprimer « {title} » ? Ses liens de preuve sont supprimés. Les sources partagées et l’historique de vos notes sont conservés."
-    }
+    },
+    "correction": "Correction"
   },
   "predictions": {
     "overdue": "Horizon dépassé",
@@ -3000,7 +3001,9 @@
       "settings": "Paramètres",
       "topics": "Sujets",
       "schedules": "Planifications",
-      "briefings": "Briefings"
+      "briefings": "Briefings",
+      "comparison": "Comparer aux bulletins précédents",
+      "publications": "Bulletins du système dans cette édition"
     },
     "columns": {
       "name": "Édition",
@@ -3077,6 +3080,22 @@
       "label": "Afficher les éditions",
       "mine": "Les miennes",
       "all": "De tout le monde"
+    },
+    "publications": {
+      "help": "Ajoutez des éditions de vos abonnements au catalogue sous « De vos bulletins du système », dans cet ordre. Jusqu’à {max}.",
+      "none": "Aucun bulletin du système n’est inclus.",
+      "chosen": "Bulletins du système inclus",
+      "unavailable": "Indisponible",
+      "unavailableHelp": "Les bulletins du système indisponibles ont été retirés, désabonnés ou ne sont pas autorisés par votre forfait. Ils sont ignorés lors de la composition. Retirez-les ou réabonnez-vous.",
+      "noSubscriptions": "Vous n’avez aucun abonnement au catalogue à ajouter.",
+      "browse": "Parcourir les bulletins du système",
+      "addLabel": "Bulletin du système à ajouter",
+      "pick": "Choisissez un bulletin du système",
+      "add": "Ajouter",
+      "full": "Cette édition inclut déjà {max} bulletins du système, le maximum autorisé.",
+      "capReached": "Inclure des bulletins du système dans un bulletin personnalisé nécessite un forfait avec recherche personnalisée. Vous pouvez toujours les retirer.",
+      "save": "Enregistrer les bulletins du système",
+      "saved": "Bulletins du système enregistrés."
     }
   },
   "templates": {
@@ -4854,7 +4873,12 @@
     "date": "Date de début (UTC)",
     "issue": "Édition de référence",
     "choose": "Choisir une édition",
-    "firstRun": "Sans édition précédente exploitable, le prochain bulletin sera autonome."
+    "firstRun": "Sans édition précédente exploitable, le prochain bulletin sera autonome.",
+    "editionHelp": "Compare chaque édition composée à ses propres éditions précédentes. Le texte historique sert de référence, pas de preuve actuelle.",
+    "editionOff": "Désactivé : garder la comparaison propre à chaque sujet",
+    "editionOffHelp": "Désactivé conserve les comparaisons de recherche de chaque sujet. Tout autre mode compare l’édition entière à ses éditions précédentes.",
+    "budget": "Budget de comparaison (octets)",
+    "budgetHelp": "Quantité de texte antérieur que la comparaison peut utiliser, de {min} à {max} octets. Les références plus longues sont tronquées."
   },
   "catalog": {
     "title": "Bulletins du système",
@@ -4942,5 +4966,68 @@
     "failed": "Cela n’a pas fonctionné. Réessayez.",
     "deleteTitle": "Supprimer ce sujet ?",
     "deleteMessage": "Supprimer « {name} » avec ses synthèses, résultats et fichiers audio ? Cette action est irréversible."
+  },
+  "historyPreview": {
+    "title": "Aperçu de la référence",
+    "show": "Afficher la référence",
+    "refresh": "Actualiser l’aperçu",
+    "help": "Voyez à quelles éditions précédentes le prochain bulletin serait comparé, selon les réglages ci-dessus. Rien n’est enregistré.",
+    "blocked": {
+      "date": "Choisissez une date de début pour afficher la référence.",
+      "issue": "Choisissez une édition de référence pour l’afficher."
+    },
+    "conflictHelp": "L’édition épinglée n’est plus disponible. Choisissez une autre édition ou un autre mode.",
+    "wouldCompare": "{count, plural, one {Le prochain bulletin serait comparé à # édition précédente :} other {Le prochain bulletin serait comparé à # éditions précédentes :}}",
+    "size": "Contexte de comparaison : {used} sur {budget}",
+    "sizePercent": "{percent} pour cent du budget de comparaison",
+    "truncated": "Les éditions précédentes dépassent le budget : la comparaison utilisera une version raccourcie.",
+    "firstRun": "Aucune édition précédente prête ne correspond encore à ces réglages : le prochain bulletin sera autonome. Les suivants y seront comparés une fois qu’il sera prêt.",
+    "cutoff": "Les éditions créées avant le {date} sont utilisables."
+  },
+  "comparison": {
+    "title": "Comparé aux bulletins précédents",
+    "standalone": "Bulletin autonome : aucune édition précédente n’a été comparée.",
+    "unavailableIssue": "Une édition qui n’est plus disponible",
+    "comparedWith": "Comparé à {issues}.",
+    "earlierIssues": "éditions précédentes",
+    "noMaterialChanges": "Aucun changement important trouvé.",
+    "noMaterialChangesHelp": "Rien de nouveau, modifié, corrigé ou résolu n’a été trouvé depuis les éditions précédentes.",
+    "baselines": "Comparé à",
+    "noBaselines": "Les éditions précédentes ne sont plus listées.",
+    "mode": "Mode : {mode}.",
+    "modeEdition": "Comparaison de l’édition : {mode}.",
+    "cutoff": "Les éditions antérieures au {date} étaient utilisables.",
+    "truncated": "Les éditions précédentes ont été raccourcies pour tenir dans le budget de comparaison.",
+    "versus": "par rapport à {issue}",
+    "kinds": {
+      "Correction": "Correction",
+      "ChangedFact": "Modifié",
+      "NewDevelopment": "Nouveau",
+      "Resolved": "Résolu",
+      "Unchanged": "Inchangé",
+      "Unavailable": "Indisponible"
+    }
+  },
+  "topicSlots": {
+    "title": "Sujets qui continuent de s’exécuter",
+    "count": "{counted} sur {limit}",
+    "help": "Votre forfait exécute jusqu’à {limit} sujets personnalisés. Les premiers de cet ordre continuent si la limite diminue.",
+    "noneAllowed": "Votre forfait n’inclut pas la recherche personnalisée : aucun sujet personnalisé ne s’exécute. Ils gardent leur historique.",
+    "overTitle": "{count, plural, one {# sujet dépasse la limite de votre forfait.} other {# sujets dépassent la limite de votre forfait.}}",
+    "overHelp": "Au-delà de la limite : conservés avec leur historique, mais non exécutés. Créer, dupliquer ou restaurer un sujet reste bloqué tant que vous n’avez pas archivé assez de sujets ou changé de forfait.",
+    "bannerHelp": "Ces sujets gardent leur historique mais ne s’exécutent pas.",
+    "choose": "Choisir les sujets qui continuent",
+    "orderHelp": "Placez les sujets les plus importants en premier. Rien n’est mis en pause, archivé ni supprimé à l’enregistrement.",
+    "listLabel": "Sujets personnalisés par ordre de conservation",
+    "lastRun": "dernière exécution {date}",
+    "within": "Continue",
+    "past": "Au-delà de la limite",
+    "unsaved": "L’ordre a changé. Enregistrez pour le conserver.",
+    "save": "Enregistrer l’ordre",
+    "saved": "Ordre des sujets enregistré.",
+    "clear": "Effacer mon ordre",
+    "cleared": "Ordre des sujets effacé. Les sujets suivent maintenant l’ordre de création.",
+    "customized": "Vous avez choisi cet ordre.",
+    "defaultOrder": "Les sujets suivent l’ordre de création tant que vous n’en choisissez pas un."
   }
 }

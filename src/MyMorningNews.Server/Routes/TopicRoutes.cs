@@ -45,6 +45,8 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, B + "/{id}/resume", ResumeAsync, null, openApiMetadata: Doc("Resume a paused or archived topic", "Topics"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, B + "/{id}/archive", ArchiveAsync, null, openApiMetadata: Doc("Archive a topic", "Topics"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, B + "/{id}/duplicate", DuplicateAsync, null, openApiMetadata: Doc("Duplicate a topic as a draft", "Topics"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, B + "/{id}/history/preview", HistoryPreviewAsync, null, openApiMetadata: Doc("Preview the comparison baseline", "Topics",
+                "Shows which earlier issues the next run would compare with, the context size, and whether it would be cut. The optional body previews unsaved settings; nothing is saved. 409 Conflict when a pinned issue is unavailable.").WithRequestBody(Body<HistoryPreviewRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, B + "/{id}/refine", RefineAsync, null, openApiMetadata: Doc("Refine a topic again (starts a wizard session)", "Topics"));
 
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, B + "/{id}/dimensions", ListDimensionsAsync, null, openApiMetadata: Paged(Doc("List dimensions", "Topics")));
@@ -107,6 +109,16 @@ namespace MyMorningNews.Server.Routes
             await new MyMorningNews.Core.Briefings.HistoryContextService(Server.Database).ValidateAsync(topic, ctx.Token).ConfigureAwait(false);
             topic = await Server.Database.Topics.UpdateAsync(topic, ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 201, topic).ConfigureAwait(false);
+        }
+
+        private async Task HistoryPreviewAsync(HttpContextBase ctx)
+        {
+            if (!await AuthorizeAsync(ctx, RequestTypeEnum.TopicRead).ConfigureAwait(false)) return;
+            Topic? topic = await OwnedTopicAsync(ctx).ConfigureAwait(false);
+            if (topic == null) return;
+            HistoryPreviewRequest? req = await ReadOptionalBodyAsync<HistoryPreviewRequest>(ctx).ConfigureAwait(false);
+            HistoryPreviewResponse preview = await new MyMorningNews.Core.Briefings.HistoryContextService(Server.Database).PreviewAsync(topic, req, ctx.Token).ConfigureAwait(false);
+            await SendJsonAsync(ctx, 200, preview).ConfigureAwait(false);
         }
 
         private async Task ReadAsync(HttpContextBase ctx)

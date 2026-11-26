@@ -431,7 +431,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 
 ## Route reference
 
-420 routes in 54 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
+428 routes in 54 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
 
 | Group | Routes | What it covers |
 |---|---|---|
@@ -454,7 +454,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [Usage](#usage) | 3 | Model usage and cost, grouped or bucketed over time. Members see their own; administrators can see the tenant, and global administrators every tenant. |
 | [Devices](#devices) | 5 | Push notification devices registered by the mobile app for the signed-in user. |
 | [Notifications](#notifications) | 8 | The signed-in user's notifications. Preferences are one matrix: each kind of notification (run results, briefing ready, audio ready, run failed, plan limit reached, prediction due) on each channel (email, push to a registered phone or tablet, and the in-app list). Without a saved choice, email is on for run results, ready briefings, failed runs, and plan limits, and everything else is off. The in-app list holds the notifications for kinds turned on for that channel; they are kept for 90 days. A topic's email-on-run switch and an edition's email and push switches still apply on top of these preferences. |
-| [Topics](#topics) | 25 | The things a reader follows. A topic has a research brief, weighted dimensions, constraints (keywords, domains, feeds, tracked questions), and email recipients. |
+| [Topics](#topics) | 26 | The things a reader follows. A topic has a research brief, weighted dimensions, constraints (keywords, domains, feeds, tracked questions), and email recipients. |
 | [Topic reviews](#topic-reviews) | 5 | Keep-or-delete prompts for the caller's recurring topics that found nothing new for a week. Without Keep by the deadline (14 days by default) the topic is deleted. |
 | [Refinement](#refinement) | 12 | The topic wizard. A session proposes dimensions, asks clarifying questions, drafts the brief and constraints, suggests sources, and then applies the topic. Generating steps call the configured model. |
 | [Requests](#requests) | 10 | One-time research requests: a report, podcast, or email summary produced once, now or at a set time. A request can later become a recurring topic. |
@@ -465,9 +465,9 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [Sources](#sources) | 3 | Pages the pipeline fetched for your topics, with their extracted text. |
 | [Predictions](#predictions) | 6 | Forecasts the pipeline extracted, with confidence and a horizon. They are resolved by hand or by accepting a proposed review. |
 | [Suggestions](#suggestions) | 4 | Things worth digging into next, with a status you move through (accept, snooze, dismiss, done). |
-| [Briefings](#briefings) | 10 | Composed briefings with sections and items, their Markdown and HTML files, pinning past retention, and regeneration. |
+| [Briefings](#briefings) | 11 | Composed briefings with sections and items, their Markdown and HTML files, pinning past retention, and regeneration. |
 | [Artifacts](#artifacts) | 5 | Stored files: briefing Markdown and HTML, audio, and exports. Content streams with Range support. |
-| [Editions](#editions) | 9 | Recurring briefings that gather several topics, with a template, audio and email switches, and a lookback window. |
+| [Editions](#editions) | 13 | Recurring briefings that gather several topics, with a template, audio and email switches, and a lookback window. |
 | [Templates](#templates) | 12 | Briefing templates in Markdown. Every save is a version; templates can be validated, previewed, rolled back, reset, imported, and exported. |
 | [Media](#media) | 5 | Audio episodes made from briefings, with chapters. |
 | [Voices](#voices) | 9 | Text-to-speech voice profiles, with a test route that speaks a sample. Two more routes let anyone who can edit a topic choose its voice: one lists the voices a topic can use (the voice profiles, then the speech server's own voices with readable labels), and one speaks a short preview. |
@@ -480,7 +480,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [Prompts](#prompts) | 11 | Prompt templates by key and scope, topic overrides, version history, rollback, reset, and the prompt lab. |
 | [Promotional codes](#promotional-codes) | 11 | Global administrators create, generate, and manage promotional codes that grant plans. |
 | [Plans](#plans) | 11 | Global administrators manage plans, their entitlement values, and per-user plan assignments. |
-| [Account](#account) | 10 | Sign-up, email verification, password reset, the signed-in user's plan, usage meter, data export, account deletion, and promotional code redemption. |
+| [Account](#account) | 12 | Sign-up, email verification, password reset, the signed-in user's plan, usage meter, data export, account deletion, and promotional code redemption. |
 | [Public](#public) | 15 | Routes reached from emails, podcast apps, and shared briefing links. They take no session; a token in the path is the credential. Feedback and unsubscribe pages are HTML forms. Shared briefing pages are server-rendered HTML with no script and no cookies. |
 | [OpenAPI](#openapi) | 2 | The OpenAPI 3 document and Swagger UI that Watson serves. They are not tagged in the document itself. |
 | [MCP servers](#mcp-servers) | 9 | Remote MCP tool servers that agentic research may call, their discovered tools, and the per-tool allow-list. |
@@ -4202,6 +4202,7 @@ The things a reader follows. A topic has a research brief, weighted dimensions, 
 | POST | [`/v1.0/api/topics/{id}/resume`](#post-v10apitopicsidresume) | Resume a paused or archived topic |
 | POST | [`/v1.0/api/topics/{id}/archive`](#post-v10apitopicsidarchive) | Archive a topic |
 | POST | [`/v1.0/api/topics/{id}/duplicate`](#post-v10apitopicsidduplicate) | Duplicate a topic as a draft |
+| POST | [`/v1.0/api/topics/{id}/history/preview`](#post-v10apitopicsidhistorypreview) | Preview the comparison baseline |
 | POST | [`/v1.0/api/topics/{id}/refine`](#post-v10apitopicsidrefine) | Refine a topic again (starts a wizard session) |
 | GET | [`/v1.0/api/topics/{id}/dimensions`](#get-v10apitopicsiddimensions) | List dimensions |
 | POST | [`/v1.0/api/topics/{id}/dimensions`](#post-v10apitopicsiddimensions) | Add a dimension |
@@ -4511,6 +4512,34 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLm
 ```bash
 curl -s -X POST "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLmLdBrfbuN/duplicate" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/topics/{id}/history/preview
+
+**Preview the comparison baseline.** Shows which earlier issues the next run would compare with, the context size, and whether it would be cut. The optional body previews unsaved settings; nothing is saved. 409 Conflict when a pinned issue is unavailable.
+
+- Auth: `Topic:Read` (`TopicRead`).
+- Response: [`HistoryPreviewResponse`](#historypreviewresponse)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{topicId}}` |
+
+Request body: [`HistoryPreviewRequest`](#historypreviewrequest).
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: ValidationFailed (invalid mode, bounds, date, or pinned issue) |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict: Conflict (the pinned issue is unavailable) |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/topics/top_mwpentds_HEIqz5MgsLmLdBrfbuN/history/preview" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### POST /v1.0/api/topics/{id}/refine
@@ -8076,6 +8105,7 @@ Composed briefings with sections and items, their Markdown and HTML files, pinni
 | POST | [`/v1.0/api/briefings/enumerate`](#post-v10apibriefingsenumerate) | List briefings |
 | GET | [`/v1.0/api/briefings/{id}`](#get-v10apibriefingsid) | Read a briefing with its sections, items, and files |
 | DELETE | [`/v1.0/api/briefings/{id}`](#delete-v10apibriefingsid) | Delete a briefing and its files |
+| GET | [`/v1.0/api/briefings/{id}/comparison`](#get-v10apibriefingsidcomparison) | What a briefing was compared with and what changed |
 | GET | [`/v1.0/api/briefings/{id}/download`](#get-v10apibriefingsiddownload) | Download a briefing as Markdown or HTML |
 | GET | [`/v1.0/api/briefings/{id}/progress`](#get-v10apibriefingsidprogress) | Where I stopped listening |
 | PUT | [`/v1.0/api/briefings/{id}/progress`](#put-v10apibriefingsidprogress) | Save where I stopped listening |
@@ -8201,6 +8231,29 @@ curl -s "http://127.0.0.1:12100/v1.0/api/briefings/brf_mwpf8b9c_Er6tY9uI2oPa5sDf
 
 ```bash
 curl -s -X DELETE "http://127.0.0.1:12100/v1.0/api/briefings/brf_mwpf8b9c_Er6tY9uI2oPa5sDf8Gh" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### GET /v1.0/api/briefings/{id}/comparison
+
+**What a briefing was compared with and what changed.** Baselines are the earlier issues the comparison snapshot selected; deltas classify each item as NewDevelopment, ChangedFact, Correction, Resolved, Unchanged, or Unavailable, each linked to current evidence and the baseline item. Compared is false for standalone briefings.
+
+- Auth: `Briefing:Read` (`BriefingRead`).
+- Response: [`BriefingComparisonResponse`](#briefingcomparisonresponse)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{briefingId}}` |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/briefings/brf_mwpf8b9c_Er6tY9uI2oPa5sDf8Gh/comparison" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -8552,6 +8605,10 @@ Recurring briefings that gather several topics, with a template, audio and email
 | PUT | [`/v1.0/api/editions/{id}`](#put-v10apieditionsid) | Update an edition |
 | DELETE | [`/v1.0/api/editions/{id}`](#delete-v10apieditionsid) | Delete an edition (its briefings stay) |
 | PUT | [`/v1.0/api/editions/{id}/topics`](#put-v10apieditionsidtopics) | Set an edition's topics in order |
+| GET | [`/v1.0/api/editions/{id}/publications`](#get-v10apieditionsidpublications) | List the system briefings an edition includes |
+| PUT | [`/v1.0/api/editions/{id}/publications`](#put-v10apieditionsidpublications) | Set the system briefings an edition includes |
+| POST | [`/v1.0/api/editions/{id}/publications/enumerate`](#post-v10apieditionsidpublicationsenumerate) | List the system briefings an edition includes |
+| POST | [`/v1.0/api/editions/{id}/history/preview`](#post-v10apieditionsidhistorypreview) | Preview an edition's comparison baseline |
 | POST | [`/v1.0/api/editions/{id}/compose`](#post-v10apieditionsidcompose) | Compose an edition now |
 | POST | [`/v1.0/api/editions/{id}/preview`](#post-v10apieditionsidpreview) | Preview an edition from the latest data without saving |
 
@@ -8678,7 +8735,7 @@ curl -s "http://127.0.0.1:12100/v1.0/api/editions/edn_mwpee2a1_4mTmTABpYtKKeeb4b
 
 ### PUT /v1.0/api/editions/{id}
 
-**Update an edition.**
+**Update an edition.** Only the fields sent are changed. historyMode other than Off compares each composed edition with its own earlier issues (historyCount, historySinceUtc, historyBriefingId, historyTokenBudget as for topics); Off keeps the topics' own research comparisons.
 
 - Auth: `Edition:Update` (`EditionWrite`).
 - Response: [`EditionResponse`](#editionresponse)
@@ -8774,6 +8831,117 @@ Request body: [`EditionTopicsRequest`](#editiontopicsrequest).
 
 ```bash
 curl -s -X PUT "http://127.0.0.1:12100/v1.0/api/editions/edn_mwpee2a1_4mTmTABpYtKKeeb4bbQ/topics" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### GET /v1.0/api/editions/{id}/publications
+
+**List the system briefings an edition includes.** In edition order. Each entry says whether it can be read now; unavailable publications are skipped when the edition is composed.
+
+- Auth: `Edition:Read` (`EditionRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`EditionPublicationResponse`](#editionpublicationresponse)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{editionId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/editions/edn_mwpee2a1_4mTmTABpYtKKeeb4bbQ/publications?pageSize=10" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### PUT /v1.0/api/editions/{id}/publications
+
+**Set the system briefings an edition includes.** Ordered publication IDs you are subscribed to, at most 20. The edition summarizes their published issues in its period and links to each; it never starts system research. Requires a plan with custom research (402 CapReached otherwise). An empty list removes them.
+
+- Auth: `Edition:Update` (`EditionWrite`).
+- Response: [`EditionResponse`](#editionresponse)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{editionId}}` |
+
+Request body: [`EditionPublicationsRequest`](#editionpublicationsrequest).
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: BadRequest, ValidationFailed (not subscribed, duplicates, more than 20) |
+| 401 | Unauthorized |
+| 402 | : CapReached (custom research is not in the plan) |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X PUT "http://127.0.0.1:12100/v1.0/api/editions/edn_mwpee2a1_4mTmTABpYtKKeeb4bbQ/publications" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/api/editions/{id}/publications/enumerate
+
+**List the system briefings an edition includes.** In edition order. Each entry says whether it can be read now; unavailable publications are skipped when the edition is composed.
+
+- Auth: `Edition:Read` (`EditionRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`EditionPublicationResponse`](#editionpublicationresponse)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{editionId}}` |
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `TenantRequired` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/editions/edn_mwpee2a1_4mTmTABpYtKKeeb4bbQ/publications/enumerate" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/api/editions/{id}/history/preview
+
+**Preview an edition's comparison baseline.** Shows which earlier issues of this edition the next composition would compare with. The optional body previews unsaved settings; nothing is saved.
+
+- Auth: `Edition:Read` (`EditionRead`).
+- Response: [`HistoryPreviewResponse`](#historypreviewresponse)
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{editionId}}` |
+
+Request body: [`HistoryPreviewRequest`](#historypreviewrequest).
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: `ValidationFailed` |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict: Conflict (the pinned issue is unavailable) |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/editions/edn_mwpee2a1_4mTmTABpYtKKeeb4bbQ/history/preview" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -12054,6 +12222,8 @@ Sign-up, email verification, password reset, the signed-in user's plan, usage me
 | POST | [`/v1.0/public/password/forgot`](#post-v10publicpasswordforgot) | Email a password reset link |
 | POST | [`/v1.0/public/password/reset`](#post-v10publicpasswordreset) | Set a new password from a reset link |
 | GET | [`/v1.0/api/account/usage`](#get-v10apiaccountusage) | My usage against my plan's limits |
+| GET | [`/v1.0/api/account/topic-slots`](#get-v10apiaccounttopic-slots) | My custom topics against my plan's limit |
+| PUT | [`/v1.0/api/account/topic-slots`](#put-v10apiaccounttopic-slots) | Choose which custom topics keep running on a smaller plan |
 | GET | [`/v1.0/api/account/export`](#get-v10apiaccountexport) | Download my data (ZIP of JSON and Markdown) |
 | POST | [`/v1.0/api/account/delete`](#post-v10apiaccountdelete) | Delete my account |
 | POST | [`/v1.0/api/promo-codes/redeem`](#post-v10apipromo-codesredeem) | Redeem a promotional code |
@@ -12213,6 +12383,47 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/public/password/reset" \
 ```bash
 curl -s "http://127.0.0.1:12100/v1.0/api/account/usage" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+### GET /v1.0/api/account/topic-slots
+
+**My custom topics against my plan's limit.** Topics in slot order: your chosen keep order first, then oldest first. Topics past the limit keep their history but do not run; creating, duplicating, or restoring a topic stays blocked until enough are archived or the plan grows.
+
+- Auth: Any authenticated principal (`UserSelfRead`).
+- Response: [`TopicSlotsResponse`](#topicslotsresponse)
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: BadRequest (access keys are refused) |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/account/topic-slots" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### PUT /v1.0/api/account/topic-slots
+
+**Choose which custom topics keep running on a smaller plan.** Ordered topic IDs, most important first. Saving ahead of a downgrade applies when the limit shrinks. Nothing is paused, archived, or deleted by this call. An empty list clears the choice.
+
+- Auth: `Topic:Update` (`TopicWrite`).
+- Response: [`TopicSlotsResponse`](#topicslotsresponse)
+
+Request body: [`TopicSlotsRequest`](#topicslotsrequest).
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: BadRequest, ValidationFailed (duplicate, unknown, archived, or one-time topic) |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X PUT "http://127.0.0.1:12100/v1.0/api/account/topic-slots" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
 ```
 
 ### GET /v1.0/api/account/export
@@ -13309,7 +13520,7 @@ curl -s -X POST "http://127.0.0.1:12100/v1.0/api/catalog/<publicationId>/issues/
 
 ### GET /v1.0/api/catalog/{id}/issues/{issueId}
 
-**Read a subscribed system briefing issue.**
+**Read a subscribed system briefing issue.** Includes comparison: the earlier published issues it was compared with and the changes found (new, changed, corrected, resolved, unchanged, unavailable), without canonical item identifiers.
 
 - Auth: `Briefing:Read` (`BriefingRead`).
 - Response: [`CatalogIssueResponse`](#catalogissueresponse)
@@ -14621,6 +14832,47 @@ Returned by [GET /v1.0/api/briefings](#get-v10apibriefings), [POST /v1.0/api/bri
 | `createdUtc` | date-time | UTC creation time. |
 | `lastUpdateUtc` | date-time | UTC time of the last update. |
 
+#### BriefingComparisonResponse
+
+What a briefing was compared with and the structured changes found (plan section 6.2).
+
+Returned by [GET /v1.0/api/briefings/{id}/comparison](#get-v10apibriefingsidcomparison).
+
+| Field | Type | Description |
+|---|---|---|
+| `briefingId` | string | Briefing. |
+| `compared` | boolean | True when at least one earlier issue was compared. |
+| `mode` | string | Comparison mode used (Off, PreviousIssue, RecentIssues, SinceDate, SpecificIssue). Edition-level comparisons are prefixed "Edition:"; for example "Edition:PreviousIssue". |
+| `note` | string | Explanation for a standalone briefing (comparison off, or no earlier issue), otherwise null. |
+| `truncated` | boolean | The baseline was cut to its budget. |
+| `cutoffUtc` | date-time | Issues created before this time were eligible, or null when no comparison was recorded. |
+| `baselines` | array of [`ComparisonBaseline`](#comparisonbaseline) | Issues compared with, newest first. |
+| `counts` | object (map of integer) | Changes by kind (NewDevelopment, ChangedFact, Resolved, Correction, Unchanged, Unavailable). Every kind is present. |
+| `noMaterialChanges` | boolean | True when compared and nothing new, changed, corrected, or resolved was found. |
+| `summary` | string | One-line summary, the same sentence the briefing text, email, and audio carry. Null when not compared. |
+| `deltas` | array of [`BriefingDelta`](#briefingdelta) | Structured changes in display order. |
+
+#### BriefingDelta
+
+One structured change between a briefing and its comparison baseline. Every asserted change names the current evidence (a finding or prediction of this briefing) and the baseline issue and item it compares with. Earlier briefing prose is never used as evidence.
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Identifier (prefix bdl_). |
+| `tenantId` | string | Tenant of the briefing. |
+| `briefingId` | string | Briefing the change belongs to. |
+| `kind` | [`BriefingDeltaKindEnum`](#briefingdeltakindenum) | Kind of change. |
+| `title` | string | Short label: the current item's title, or the baseline item's title when nothing current exists. 1 to 512 characters. |
+| `summary` | string | One-line explanation, or null. |
+| `findingId` | string | Current finding that is the evidence for this change, or null. |
+| `predictionId` | string | Current prediction that is the evidence for a Resolved change, or null. |
+| `baselineBriefingId` | string | Baseline issue compared with, or null for a new development. |
+| `baselineItemId` | string | Baseline finding or prediction compared with, or null. |
+| `sortOrder` | integer | Display order, starting at 0. |
+| `active` | boolean | Whether the record is active. |
+| `createdUtc` | date-time | UTC creation time. |
+| `lastUpdateUtc` | date-time | UTC time of the last update. |
+
 #### BriefingDetailResponse
 
 A briefing with its sections, items, and stored files.
@@ -14870,6 +15122,7 @@ Returned by [GET /v1.0/api/catalog/issues](#get-v10apicatalogissues), [POST /v1.
 | `createdUtc` | date-time | Issue timestamp. |
 | `audioPath` | string | Authenticated shared audio path when ready. |
 | `audioSeconds` | number | Shared episode duration when known. |
+| `comparison` | [`BriefingComparisonResponse`](#briefingcomparisonresponse) | What the issue was compared with and the changes found, without canonical item identifiers. Filled on the single-issue read; null in issue lists. |
 
 #### CatalogPublication
 
@@ -15016,6 +15269,17 @@ Example:
   "mcpUrl": "http://127.0.0.1:12105/mcp"
 }
 ```
+
+#### ComparisonBaseline
+
+One earlier issue a briefing is, or would be, compared with.
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Briefing identifier. |
+| `title` | string | Title, or empty when the issue is no longer available. |
+| `createdUtc` | date-time | When the issue was created, or null when it is no longer available. |
+| `available` | boolean | False when the issue was deleted after the comparison was made. |
 
 #### ConstraintUpsertRequest
 
@@ -15321,6 +15585,11 @@ Returned by [GET /v1.0/api/editions](#get-v10apieditions), [POST /v1.0/api/editi
 | `createdUtc` | date-time | UTC creation time. |
 | `lastUpdateUtc` | date-time | UTC time of the last update. |
 | `pushEnabled` | boolean | Send a push notification to the owner's devices when the edition is ready. Default true. |
+| `historyMode` | [`HistoryModeEnum`](#historymodeenum) | Comparison of each composed edition with earlier issues of this edition. Default Off, which keeps the topics' own research comparisons in the composition instructions. Any other mode compares the edition with its own earlier issues instead. |
+| `historyCount` | integer | Maximum baseline editions for RecentIssues. Default 5, minimum 1, maximum 20. Validated before writes. |
+| `historySinceUtc` | date-time | Inclusive earliest baseline time for SinceDate, otherwise null. |
+| `historyBriefingId` | string | Explicit baseline for SpecificIssue: a ready issue of this edition. Null otherwise. |
+| `historyTokenBudget` | integer | Conservative comparison budget in UTF-8 bytes. Default 8000, minimum 256, maximum 32000. |
 
 #### EditionPreviewRequest
 
@@ -15332,11 +15601,34 @@ Request body of [POST /v1.0/api/editions/{id}/preview](#post-v10apieditionsidpre
 |---|---|---|
 | `templateContent` | string | Template Markdown to preview instead of the edition template, or null. |
 
+#### EditionPublicationResponse
+
+One catalog publication in an edition.
+
+Returned by [GET /v1.0/api/editions/{id}/publications](#get-v10apieditionsidpublications), [POST /v1.0/api/editions/{id}/publications/enumerate](#post-v10apieditionsidpublicationsenumerate).
+
+| Field | Type | Description |
+|---|---|---|
+| `publicationId` | string | Publication identifier. |
+| `title` | string | Publication title, or empty when it is no longer readable. |
+| `sortOrder` | integer | Order within the edition, starting at 0. |
+| `available` | boolean | False when the publication was retracted, the subscription ended, or the plan no longer allows custom composition. Unavailable publications are skipped when the edition is composed. |
+
+#### EditionPublicationsRequest
+
+The catalog publications an edition includes, in order. Each must be one the caller is subscribed to. At most 20.
+
+Request body of [PUT /v1.0/api/editions/{id}/publications](#put-v10apieditionsidpublications).
+
+| Field | Type | Description |
+|---|---|---|
+| `publicationIds` | array of string | Publication IDs (prefix cat_) in order. Empty removes every publication. Duplicates are rejected. |
+
 #### EditionResponse
 
 An edition with its topics and schedules.
 
-Returned by [POST /v1.0/api/editions](#post-v10apieditions), [GET /v1.0/api/editions/{id}](#get-v10apieditionsid), [PUT /v1.0/api/editions/{id}](#put-v10apieditionsid), [PUT /v1.0/api/editions/{id}/topics](#put-v10apieditionsidtopics).
+Returned by [POST /v1.0/api/editions](#post-v10apieditions), [GET /v1.0/api/editions/{id}](#get-v10apieditionsid), [PUT /v1.0/api/editions/{id}](#put-v10apieditionsid), [PUT /v1.0/api/editions/{id}/topics](#put-v10apieditionsidtopics), [PUT /v1.0/api/editions/{id}/publications](#put-v10apieditionsidpublications).
 
 | Field | Type | Description |
 |---|---|---|
@@ -15344,6 +15636,7 @@ Returned by [POST /v1.0/api/editions](#post-v10apieditions), [GET /v1.0/api/edit
 | `topics` | array of [`EditionTopic`](#editiontopic) | Listed topics (empty means all active recurring topics). |
 | `schedules` | array of [`Schedule`](#schedule) | Schedules. |
 | `coveredTopicIds` | array of string | Topics it covers right now. |
+| `publications` | array of [`EditionPublicationResponse`](#editionpublicationresponse) | Catalog publications the edition includes, in order, and whether each can be read now. |
 
 #### EditionTopic
 
@@ -15389,6 +15682,11 @@ Request body of [POST /v1.0/api/editions](#post-v10apieditions), [PUT /v1.0/api/
 | `freshResearchLeadMinutes` | integer | Longest wait for fresh research (5 to 240). |
 | `lookbackMode` | [`LookbackModeEnum`](#lookbackmodeenum) | Which findings are eligible. |
 | `lookbackHours` | integer | Lookback hours (1 to 2160). |
+| `historyMode` | [`HistoryModeEnum`](#historymodeenum) | Edition-level comparison mode, or null to keep. Off keeps the topics' own research comparisons. |
+| `historyCount` | integer | Maximum baseline editions (1 to 20), or null to keep. |
+| `historySinceUtc` | date-time | Earliest baseline time for SinceDate, or null to keep. |
+| `historyBriefingId` | string | Pinned baseline issue of this edition for SpecificIssue, an empty string to clear, or null to keep. |
+| `historyTokenBudget` | integer | Comparison budget in UTF-8 bytes (256 to 32000), or null to keep. |
 
 #### EffectiveGrant
 
@@ -15623,7 +15921,7 @@ Request body of [PUT /v1.0/tenants/{tenantId}/users/{userId}/entitlements](#put-
 
 Common paging, sorting, and date-range filter for list endpoints.
 
-Request body of [POST /v1.0/tenants/enumerate](#post-v10tenantsenumerate), [POST /v1.0/tenants/{tenantId}/users/enumerate](#post-v10tenantstenantidusersenumerate), [POST /v1.0/tenants/{tenantId}/credentials/enumerate](#post-v10tenantstenantidcredentialsenumerate), [POST /v1.0/tenants/{tenantId}/roles/enumerate](#post-v10tenantstenantidrolesenumerate), [POST /v1.0/tenants/{tenantId}/permissions/enumerate](#post-v10tenantstenantidpermissionsenumerate), [POST /v1.0/tenants/{tenantId}/users/{userId}/assignments/enumerate](#post-v10tenantstenantidusersuseridassignmentsenumerate), [POST /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes/enumerate](#post-v10tenantstenantidcredentialscredentialidscopesenumerate), [POST /v1.0/api/audit/enumerate](#post-v10apiauditenumerate) and 54 more.
+Request body of [POST /v1.0/tenants/enumerate](#post-v10tenantsenumerate), [POST /v1.0/tenants/{tenantId}/users/enumerate](#post-v10tenantstenantidusersenumerate), [POST /v1.0/tenants/{tenantId}/credentials/enumerate](#post-v10tenantstenantidcredentialsenumerate), [POST /v1.0/tenants/{tenantId}/roles/enumerate](#post-v10tenantstenantidrolesenumerate), [POST /v1.0/tenants/{tenantId}/permissions/enumerate](#post-v10tenantstenantidpermissionsenumerate), [POST /v1.0/tenants/{tenantId}/users/{userId}/assignments/enumerate](#post-v10tenantstenantidusersuseridassignmentsenumerate), [POST /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes/enumerate](#post-v10tenantstenantidcredentialscredentialidscopesenumerate), [POST /v1.0/api/audit/enumerate](#post-v10apiauditenumerate) and 55 more.
 
 | Field | Type | Description |
 |---|---|---|
@@ -15925,6 +16223,7 @@ Returned by [GET /v1.0/api/findings](#get-v10apifindings), [POST /v1.0/api/findi
 | `lastUpdateUtc` | date-time | UTC time of the last update. |
 | `pinned` | boolean | Pinned by the owner: kept at the top of lists. Default false. |
 | `hidden` | boolean | Hidden by the owner: left out of lists, briefings, and emails unless asked for. Default false. |
+| `isCorrection` | boolean | The update judge found that this finding corrects the finding named by IsUpdateOfFindingId (a retraction, a corrected figure, or a denial). Default false; meaningful only when IsUpdateOfFindingId is set. |
 
 #### FindingDetailResponse
 
@@ -16000,6 +16299,36 @@ Example:
   }
 }
 ```
+
+#### HistoryPreviewRequest
+
+Unsaved comparison settings to preview. Every property is optional; null keeps the saved value.
+
+Request body of [POST /v1.0/api/topics/{id}/history/preview](#post-v10apitopicsidhistorypreview), [POST /v1.0/api/editions/{id}/history/preview](#post-v10apieditionsidhistorypreview).
+
+| Field | Type | Description |
+|---|---|---|
+| `historyMode` | [`HistoryModeEnum`](#historymodeenum) | Comparison mode, or null for the saved mode. |
+| `historyCount` | integer | Maximum baseline issues (1 to 20), or null. |
+| `historySinceUtc` | date-time | Earliest baseline time for SinceDate, or null. |
+| `historyBriefingId` | string | Pinned baseline for SpecificIssue, an empty string to clear it, or null. |
+| `historyTokenBudget` | integer | Comparison budget in UTF-8 bytes (256 to 32000), or null. |
+
+#### HistoryPreviewResponse
+
+The baseline a topic or edition would compare with if it ran now. Nothing is saved.
+
+Returned by [POST /v1.0/api/topics/{id}/history/preview](#post-v10apitopicsidhistorypreview), [POST /v1.0/api/editions/{id}/history/preview](#post-v10apieditionsidhistorypreview).
+
+| Field | Type | Description |
+|---|---|---|
+| `mode` | string | Comparison mode previewed. |
+| `baselines` | array of [`ComparisonBaseline`](#comparisonbaseline) | Issues that would be compared, newest first. Empty when the mode is Off or nothing usable exists. |
+| `contextBytes` | integer | Size of the comparison context that would be supplied, in UTF-8 bytes. |
+| `budgetBytes` | integer | Configured budget in UTF-8 bytes. |
+| `truncated` | boolean | The baselines are longer than the budget and would be cut. |
+| `note` | string | Explanation for a standalone result (comparison off, or no earlier issue), otherwise null. |
+| `cutoffUtc` | date-time | The cutoff used: issues created before this time are eligible. |
 
 #### HostingSettings
 
@@ -19361,7 +19690,8 @@ Returned by [GET /v1.0/api/topics](#get-v10apitopics), [POST /v1.0/api/topics](#
 | `historyCount` | integer | Maximum baseline issues. Default 5, minimum 1, maximum 20. Validated before writes. |
 | `historySinceUtc` | date-time | Inclusive earliest baseline time for SinceDate, otherwise null. |
 | `historyBriefingId` | string | Explicit baseline for SpecificIssue. It must be a ready issue of this topic in the same tenant. |
-| `historyTokenBudget` | integer | Conservative comparison token budget. Default 8000, minimum 256, maximum 32000. |
+| `historyTokenBudget` | integer | Conservative comparison budget in UTF-8 bytes (an upper bound on provider tokens). Default 8000, minimum 256, maximum 32000. |
+| `slotPriority` | integer | The owner's keep order when the plan allows fewer custom topics than they have: 1 is kept first. Null when not chosen; unchosen topics follow in creation order. Written only through the account topic-slot selection. |
 | `mcpToolIds` | array of string | MCP tool IDs (mct_...) this topic may use in agentic search. Empty allows every enabled tool. |
 
 Example:
@@ -19570,6 +19900,44 @@ Request body of [PUT /v1.0/api/topics/{id}/search-providers](#put-v10apitopicsid
 | `searchProviderId` | string | Search provider. |
 | `enabled` | boolean | Enabled. |
 | `maxResults` | integer | Results per query override. |
+
+#### TopicSlotResponse
+
+One custom topic in slot order.
+
+| Field | Type | Description |
+|---|---|---|
+| `topicId` | string | Topic identifier. |
+| `name` | string | Topic name. |
+| `status` | [`TopicStatusEnum`](#topicstatusenum) | Topic status. |
+| `position` | integer | 1-based position in the slot order. |
+| `chosen` | boolean | The owner chose this topic's position (otherwise it follows in creation order). |
+| `withinPlan` | boolean | The topic is inside the plan's custom-topic limit and can run. False topics keep their history but do not run. |
+| `lastRunUtc` | date-time | When the topic last ran, or null. |
+
+#### TopicSlotsRequest
+
+Which custom topics keep running when the plan allows fewer than the account has, in keep order.
+
+Request body of [PUT /v1.0/api/account/topic-slots](#put-v10apiaccounttopic-slots).
+
+| Field | Type | Description |
+|---|---|---|
+| `keepTopicIds` | array of string | Recurring, non-archived topic IDs of the caller, most important first. Topics not listed follow in creation order. Empty clears the choice. Duplicates and unknown topics are rejected. |
+
+#### TopicSlotsResponse
+
+The account's custom topics against its plan limit, in slot order (plan section 8.4).
+
+Returned by [GET /v1.0/api/account/topic-slots](#get-v10apiaccounttopic-slots), [PUT /v1.0/api/account/topic-slots](#put-v10apiaccounttopic-slots).
+
+| Field | Type | Description |
+|---|---|---|
+| `limit` | integer | Custom topics the plan allows, or null for unlimited. Zero when custom research is not in the plan. |
+| `counted` | integer | Recurring, non-archived topics. Paused topics count; archived topics do not. |
+| `overLimit` | integer | Topics past the limit: they keep their history but do not run, and no topic can be created, duplicated, or restored until enough are archived or the plan grows. Zero when within the limit. |
+| `customized` | boolean | The owner has chosen a keep order. |
+| `topics` | array of [`TopicSlotResponse`](#topicslotresponse) | Topics in slot order. |
 
 #### TopicUpsertRequest
 
@@ -20069,6 +20437,19 @@ Authentication scheme.
 | `AdminApiKey` | x-api-key system administration key. |
 | `EmailActionToken` | Tokenized email feedback link. |
 | `FeedToken` | Tokenized podcast feed URL. |
+
+#### BriefingDeltaKindEnum
+
+How one item of a briefing relates to its comparison baseline (plan section 6.2).
+
+| Value | Description |
+|---|---|
+| `NewDevelopment` | Not in the baseline: a new development. |
+| `ChangedFact` | Updates a baseline item with a material new fact. |
+| `Resolved` | A prediction from the baseline was graded since. |
+| `Correction` | Says a baseline item was wrong: a retraction, a corrected figure, or a denial. |
+| `Unchanged` | Found again with no material change. |
+| `Unavailable` | A baseline item whose evidence is no longer available, so it could not be compared. |
 
 #### BriefingItemTypeEnum
 

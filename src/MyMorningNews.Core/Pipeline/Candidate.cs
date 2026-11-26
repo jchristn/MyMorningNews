@@ -51,6 +51,11 @@ namespace MyMorningNews.Core.Pipeline
         public string? UpdateOfFindingId { get; set; } = null;
 
         /// <summary>
+        /// The update corrects the earlier finding. Default false.
+        /// </summary>
+        public bool IsCorrection { get; set; } = false;
+
+        /// <summary>
         /// Highest similarity to recent findings, for novelty.
         /// </summary>
         public double? MaxSimilarity { get; set; } = null;

@@ -785,6 +785,24 @@ namespace MyMorningNews.Core.Helpers
         }
 
         /// <summary>
+        /// Generate a BriefingDelta identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateBriefingDeltaId()
+        {
+            return Generate(IdPrefixes.BriefingDelta);
+        }
+
+        /// <summary>
+        /// Generate an EditionPublication identifier.
+        /// </summary>
+        /// <returns>Identifier.</returns>
+        public static string GenerateEditionPublicationId()
+        {
+            return Generate(IdPrefixes.EditionPublication);
+        }
+
+        /// <summary>
         /// Generate a BillingAccount identifier.
         /// </summary>
         /// <returns>Identifier.</returns>

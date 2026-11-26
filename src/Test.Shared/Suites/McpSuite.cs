@@ -41,6 +41,7 @@ namespace Test.Shared.Suites
                 Cases.Case(S, "Resources", "Briefing, topic brief, and run summary resources and both prompts render the caller's data", ResourcesAsync),
                 Cases.Case(S, "CrossTenant", "A caller from another tenant cannot see or change anything", CrossTenantAsync),
                 Cases.Case(S, "CreateTopic", "create_topic runs the wizard defaults and activates a topic; edit tools change it", CreateTopicAsync),
+                Cases.Case(S, "Comparison", "Baseline previews, edition comparison and system briefings, briefing comparisons, and topic slots work over MCP without saving previews", ComparisonAsync),
                 Cases.Case(S, "Stdio", "The executable serves the same tools over stdio with credentials from the environment", StdioAsync)
             });
         }
@@ -78,7 +79,8 @@ namespace Test.Shared.Suites
                 JsonElement tools = (await c.CallAsync("tools/list", null, token).ConfigureAwait(false)).GetProperty("tools");
                 List<string> names = tools.EnumerateArray().Select(t => t.GetProperty("name").GetString()!).ToList();
                 string[] planned = { "list_topics", "get_topic", "create_topic", "run_topic", "get_run", "get_run_costs", "list_schedules", "set_schedule", "remove_schedule", "list_findings", "get_finding", "search_findings", "get_latest_briefing", "get_briefing", "share_briefing", "list_briefing_shares", "revoke_briefing_share",
-                    "list_predictions", "resolve_prediction", "list_suggestions", "update_suggestion_status", "submit_feedback", "list_learned_preferences", "accept_learned_preference", "get_analytics_summary" };
+                    "list_predictions", "resolve_prediction", "list_suggestions", "update_suggestion_status", "submit_feedback", "list_learned_preferences", "accept_learned_preference", "get_analytics_summary",
+                    "preview_topic_history", "preview_edition_history", "set_edition_history", "get_briefing_comparison", "get_edition_publications", "set_edition_publications", "get_topic_slots", "set_topic_slots" };
                 Assert.True(planned.All(names.Contains), "every planned tool: missing " + String.Join(", ", planned.Where(p => !names.Contains(p))));
                 Assert.Equal(McpSurface.AllTools().Count, names.Count, "tool count");
                 Assert.True(tools.EnumerateArray().All(t => t.TryGetProperty("inputSchema", out JsonElement i) && i.GetProperty("type").GetString() == "object"
@@ -313,6 +315,7 @@ namespace Test.Shared.Suites
             PipelineFixture f = await PipelineSuite.FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
             Run run = await ResearchedAsync(f, token).ConfigureAwait(false);
             Finding finding = (await f.User.Client.GetAsync("/v1.0/api/findings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Finding>>().Objects.First();
+            Briefing briefing = (await f.User.Client.GetAsync("/v1.0/api/briefings?runId=" + run.Id, token).ConfigureAwait(false)).Json<EnumerationResult<Briefing>>().Objects.Single();
             TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
             Tenant other = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
             TestUser stranger = await TestFixtures.CreateUserAsync(admin, other.Id, true, token).ConfigureAwait(false);
@@ -332,6 +335,9 @@ namespace Test.Shared.Suites
                         Assert.True((await c.ToolAsync("run_topic", new { topicId = f.Topic.Id }, token).ConfigureAwait(false)).IsError, "cannot run it");
                         Assert.True((await c.ToolAsync("submit_feedback", new { targetType = "Finding", targetId = finding.Id, rating = "relevant" }, token).ConfigureAwait(false)).IsError, "cannot rate it");
                         Assert.True((await c.ToolAsync("update_topic", new { topicId = f.Topic.Id, name = "Taken over" }, token).ConfigureAwait(false)).IsError, "cannot edit it");
+                        Assert.True((await c.ToolAsync("preview_topic_history", new { topicId = f.Topic.Id }, token).ConfigureAwait(false)).IsError, "cannot preview its baseline");
+                        Assert.True((await c.ToolAsync("get_briefing_comparison", new { briefingId = briefing.Id }, token).ConfigureAwait(false)).IsError, "briefing comparison hidden");
+                        Assert.True((await c.ToolAsync("set_topic_slots", new { keepTopicIds = new[] { f.Topic.Id } }, token).ConfigureAwait(false)).IsError, "cannot rank another user's topic");
                         Assert.True(!(await c.ToolAsync("get_latest_briefing", new { }, token).ConfigureAwait(false)).Structured.GetProperty("found").GetBoolean(), "no briefing");
                         Assert.True(await c.ErrorCodeAsync("resources/read", new { uri = "mmn://topics/" + f.Topic.Id + "/brief" }, token).ConfigureAwait(false) != 0, "topic resource hidden");
                     }
@@ -340,6 +346,55 @@ namespace Test.Shared.Suites
 
             Topic still = (await f.User.Client.GetAsync("/v1.0/api/topics/" + f.Topic.Id, token).ConfigureAwait(false)).Json<TopicDetailResponse>().Topic;
             Assert.Equal(f.Topic.Name, still.Name, "topic unchanged");
+        }
+
+        private static async Task ComparisonAsync(CancellationToken token)
+        {
+            PipelineFixture f = await PipelineSuite.FixtureAsync("Track residential heat pump rebates.", "/pipeline", token).ConfigureAwait(false);
+            string tenantId = f.Topic.TenantId;
+            Briefing plain = await f.Server.Context.Database.Briefings.CreateAsync(new Briefing { TenantId = tenantId, UserId = f.Topic.UserId, Title = "Plain", Markdown = "Standalone issue", Status = BriefingStatusEnum.Ready, Kind = BriefingKindEnum.Edition }, token).ConfigureAwait(false);
+            EditionResponse e = (await f.User.Client.PostAsync("/v1.0/api/editions", new { name = "MCP edition " + Guid.NewGuid().ToString("N"), enabled = false, emailEnabled = false, audioEnabled = false }, token).ConfigureAwait(false))
+                .Expect(201, "create edition").Json<EditionResponse>();
+            string editionId = e.Edition.Id;
+            using (McpHost host = await StartHostAsync(token).ConfigureAwait(false))
+            using (McpTestClient c = await ConnectAsync(host, f.User.Client.Token, token).ConfigureAwait(false))
+            {
+                McpToolOutcome saved = await c.ToolAsync("preview_topic_history", new { topicId = f.Topic.Id }, token).ConfigureAwait(false);
+                Assert.True(!saved.IsError && saved.Structured.GetProperty("baselines").ValueKind == JsonValueKind.Array && saved.Structured.GetProperty("budgetBytes").GetInt32() > 0, "preview_topic_history: " + saved.Text);
+                McpToolOutcome recent = await c.ToolAsync("preview_topic_history", new { topicId = f.Topic.Id, mode = "RecentIssues", count = 3 }, token).ConfigureAwait(false);
+                Assert.True(!recent.IsError && recent.Str("mode") == "RecentIssues", "unsaved settings previewed: " + recent.Text);
+                Assert.True((await c.ToolAsync("preview_topic_history", new { topicId = f.Topic.Id, mode = "RecentIssues", count = 99 }, token).ConfigureAwait(false)).IsError, "count bounds enforced");
+                Topic unchanged = (await f.User.Client.GetAsync("/v1.0/api/topics/" + f.Topic.Id, token).ConfigureAwait(false)).Json<TopicDetailResponse>().Topic;
+                Assert.Equal(f.Topic.HistoryMode, unchanged.HistoryMode, "a preview saves nothing");
+
+                McpToolOutcome standalone = await c.ToolAsync("get_briefing_comparison", new { briefingId = plain.Id }, token).ConfigureAwait(false);
+                Assert.True(!standalone.IsError && !standalone.Structured.GetProperty("compared").GetBoolean() && !String.IsNullOrEmpty(standalone.Str("note"))
+                    && standalone.Structured.GetProperty("deltas").GetArrayLength() == 0, "a standalone briefing is not compared: " + standalone.Text);
+                JsonElement counts = standalone.Structured.GetProperty("counts");
+                Assert.True(new[] { "NewDevelopment", "ChangedFact", "Resolved", "Correction", "Unchanged", "Unavailable" }.All(k => counts.TryGetProperty(k, out JsonElement n) && n.GetInt32() == 0), "every kind counted: " + standalone.Text);
+                Assert.True((await c.ToolAsync("get_briefing_comparison", new { briefingId = "brf_missing" }, token).ConfigureAwait(false)).IsError, "missing briefing");
+
+                McpToolOutcome history = await c.ToolAsync("set_edition_history", new { editionId = editionId, mode = "PreviousIssue", tokenBudget = 4000 }, token).ConfigureAwait(false);
+                Assert.True(!history.IsError && history.Str("historyMode") == "PreviousIssue" && history.Structured.GetProperty("historyTokenBudget").GetInt32() == 4000, "set_edition_history: " + history.Text);
+                McpToolOutcome editionPreview = await c.ToolAsync("preview_edition_history", new { editionId = editionId }, token).ConfigureAwait(false);
+                Assert.True(!editionPreview.IsError && editionPreview.Str("mode") == "PreviousIssue" && editionPreview.Structured.GetProperty("baselines").GetArrayLength() == 0, "preview_edition_history: " + editionPreview.Text);
+                Assert.True((await c.ToolAsync("set_edition_history", new { editionId = editionId, mode = "SpecificIssue", briefingId = "brf_missing" }, token).ConfigureAwait(false)).IsError, "the pin is validated");
+
+                McpToolOutcome pubs = await c.ToolAsync("get_edition_publications", new { editionId = editionId }, token).ConfigureAwait(false);
+                Assert.True(!pubs.IsError && pubs.Structured.GetProperty("publications").GetArrayLength() == 0, "get_edition_publications: " + pubs.Text);
+                McpToolOutcome cleared = await c.ToolAsync("set_edition_publications", new { editionId = editionId, publicationIds = Array.Empty<string>() }, token).ConfigureAwait(false);
+                Assert.True(!cleared.IsError && cleared.Structured.GetProperty("publications").GetArrayLength() == 0, "set_edition_publications with an empty list: " + cleared.Text);
+                Assert.True((await c.ToolAsync("set_edition_publications", new { editionId = editionId, publicationIds = new[] { "cat_missing" } }, token).ConfigureAwait(false)).IsError, "an unsubscribed publication is refused");
+
+                McpToolOutcome slots = await c.ToolAsync("get_topic_slots", new { }, token).ConfigureAwait(false);
+                Assert.True(!slots.IsError && slots.Structured.GetProperty("topics").EnumerateArray().Any(t => t.GetProperty("topicId").GetString() == f.Topic.Id), "get_topic_slots: " + slots.Text);
+                McpToolOutcome chosen = await c.ToolAsync("set_topic_slots", new { keepTopicIds = new[] { f.Topic.Id } }, token).ConfigureAwait(false);
+                Assert.True(!chosen.IsError && chosen.Structured.GetProperty("customized").GetBoolean() && chosen.Structured.GetProperty("topics")[0].GetProperty("topicId").GetString() == f.Topic.Id
+                    && chosen.Structured.GetProperty("topics")[0].GetProperty("chosen").GetBoolean(), "set_topic_slots: " + chosen.Text);
+                Assert.True((await c.ToolAsync("set_topic_slots", new { keepTopicIds = new[] { f.Topic.Id, f.Topic.Id } }, token).ConfigureAwait(false)).IsError, "duplicates refused");
+                McpToolOutcome reset = await c.ToolAsync("set_topic_slots", new { keepTopicIds = Array.Empty<string>() }, token).ConfigureAwait(false);
+                Assert.True(!reset.IsError && !reset.Structured.GetProperty("customized").GetBoolean(), "an empty list clears the keep order: " + reset.Text);
+            }
         }
 
         private static async Task CreateTopicAsync(CancellationToken token)

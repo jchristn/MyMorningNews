@@ -198,6 +198,11 @@ namespace MyMorningNews.Sdk.Models
         public int HistoryTokenBudget { get; set; } = 8000;
 
         /// <summary>
+        /// The owner's keep order when the plan allows fewer custom topics than they have: 1 is kept first. Null when not chosen; unchosen topics follow in creation order. Written only through the account topic-slot selection.
+        /// </summary>
+        public int? SlotPriority { get; set; } = null;
+
+        /// <summary>
         /// MCP tool IDs (mct_...) this topic may use in agentic search. Empty allows every enabled tool.
         /// </summary>
         public List<string> McpToolIds { get; set; } = new List<string>();

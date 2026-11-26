@@ -89,7 +89,8 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 DateTime.SpecifyKind(obj.CreatedUtc, DateTimeKind.Utc),
                 DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
                 obj.Pinned,
-                obj.Hidden).ConfigureAwait(false);
+                obj.Hidden,
+                obj.IsCorrection).ConfigureAwait(false);
             return obj;
         }
 
@@ -146,7 +147,8 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
                 obj.Active,
                 DateTime.SpecifyKind(obj.LastUpdateUtc, DateTimeKind.Utc),
                 obj.Pinned,
-                obj.Hidden).ConfigureAwait(false);
+                obj.Hidden,
+                obj.IsCorrection).ConfigureAwait(false);
             if (affected < 1) throw new KeyNotFoundException("Finding " + obj.Id + " was not found.");
             return obj;
         }
@@ -273,6 +275,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
             obj.LastUpdateUtc = DateTime.SpecifyKind(reader.GetDateTime(29), DateTimeKind.Utc);
             obj.Pinned = reader.GetBoolean(30);
             obj.Hidden = reader.GetBoolean(31);
+            obj.IsCorrection = reader.GetBoolean(32);
             return obj;
         }
 

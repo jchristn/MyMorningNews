@@ -861,6 +861,8 @@ export interface Finding extends Record_ {
     isDuplicate: boolean;
     duplicateOfFindingId: string | null;
     isUpdateOfFindingId: string | null;
+    /** True when the update judge found that this finding corrects the one named by isUpdateOfFindingId. */
+    isCorrection: boolean;
     rank: number;
     userRating: string | null;
     publishedUtc: string | null;
@@ -1048,6 +1050,12 @@ export interface Edition extends Record_ {
     lookbackMode: 'SinceLastEdition' | 'FixedHours';
     lookbackHours: number;
     lastComposedUtc: string | null;
+    /** Edition-level comparison. Off keeps the topics' own research comparisons. */
+    historyMode: HistoryMode;
+    historyCount: number;
+    historySinceUtc: string | null;
+    historyBriefingId: string | null;
+    historyTokenBudget: number;
 }
 
 export interface EditionResponse {
@@ -1055,6 +1063,111 @@ export interface EditionResponse {
     topics: any[];
     schedules: Schedule[];
     coveredTopicIds: string[];
+    /** System briefings the edition includes, in order. */
+    publications: EditionPublicationResponse[];
+}
+
+export type HistoryMode = 'Off' | 'PreviousIssue' | 'RecentIssues' | 'SinceDate' | 'SpecificIssue';
+
+export type BriefingDeltaKind = 'NewDevelopment' | 'ChangedFact' | 'Resolved' | 'Correction' | 'Unchanged' | 'Unavailable';
+
+/** A system briefing (catalog publication) included in an edition. */
+export interface EditionPublicationResponse {
+    publicationId: string;
+    title: string;
+    sortOrder: number;
+    /** False when retracted, unsubscribed, or no longer allowed by the plan; skipped at composition. */
+    available: boolean;
+}
+
+/** Unsaved comparison settings to preview. Omitted properties keep the saved values. */
+export interface HistoryPreviewRequest {
+    historyMode?: HistoryMode;
+    /** 1 to 20. */
+    historyCount?: number;
+    /** Must be in the past for SinceDate. */
+    historySinceUtc?: string;
+    /** Pinned issue for SpecificIssue; an empty string clears it. */
+    historyBriefingId?: string;
+    /** UTF-8 bytes, 256 to 32000. */
+    historyTokenBudget?: number;
+}
+
+/** An earlier issue a comparison uses. */
+export interface ComparisonBaseline {
+    id: string;
+    title: string;
+    createdUtc: string | null;
+    available: boolean;
+}
+
+/** The comparison baseline a run or composition would use. Nothing is saved. */
+export interface HistoryPreviewResponse {
+    mode: string;
+    baselines: ComparisonBaseline[];
+    contextBytes: number;
+    budgetBytes: number;
+    truncated: boolean;
+    note: string | null;
+    cutoffUtc: string;
+}
+
+/** One structured change between a briefing and its baseline. */
+export interface BriefingDelta {
+    id: string;
+    tenantId: string;
+    briefingId: string;
+    kind: BriefingDeltaKind;
+    title: string;
+    summary: string | null;
+    findingId: string | null;
+    predictionId: string | null;
+    baselineBriefingId: string | null;
+    baselineItemId: string | null;
+    sortOrder: number;
+    active: boolean;
+    createdUtc: string;
+    lastUpdateUtc: string;
+}
+
+/** What a briefing was compared with and the changes found. */
+export interface BriefingComparisonResponse {
+    briefingId: string;
+    compared: boolean;
+    /** For example PreviousIssue, Edition:PreviousIssue, or Off. */
+    mode: string;
+    note: string | null;
+    truncated: boolean;
+    cutoffUtc: string | null;
+    baselines: ComparisonBaseline[];
+    /** Every kind is present. */
+    counts: Record<BriefingDeltaKind, number>;
+    noMaterialChanges: boolean;
+    /** The one-line sentence also in the briefing text, or null when not compared. */
+    summary: string | null;
+    deltas: BriefingDelta[];
+}
+
+/** One custom topic in the account's keep order. */
+export interface TopicSlotResponse {
+    topicId: string;
+    name: string;
+    status: TopicStatus;
+    /** 1-based. */
+    position: number;
+    chosen: boolean;
+    withinPlan: boolean;
+    lastRunUtc: string | null;
+}
+
+/** The account's custom topics against the plan's limit, in keep order. */
+export interface TopicSlotsResponse {
+    /** Null or absent for unlimited; 0 when custom research is not in the plan. */
+    limit?: number | null;
+    counted: number;
+    overLimit: number;
+    customized: boolean;
+    topics: TopicSlotResponse[];
 }
 
 export interface EditionUpsertRequest {
@@ -1069,6 +1182,15 @@ export interface EditionUpsertRequest {
     freshResearchLeadMinutes?: number;
     lookbackMode?: 'SinceLastEdition' | 'FixedHours';
     lookbackHours?: number;
+    /** Edition-level comparison mode. Off keeps the topics' own research comparisons. */
+    historyMode?: HistoryMode;
+    /** 1 to 20. */
+    historyCount?: number;
+    historySinceUtc?: string | null;
+    /** A ready issue of this edition for SpecificIssue; an empty string clears it. */
+    historyBriefingId?: string | null;
+    /** UTF-8 bytes, 256 to 32000. */
+    historyTokenBudget?: number;
 }
 
 export interface Briefing extends Record_ {
@@ -1562,6 +1684,8 @@ export interface CatalogIssueResponse {
     audioPath?: string | null;
     /** Shared episode duration when known. */
     audioSeconds?: number | null;
+    /** What the issue was compared with and the changes found, without canonical item identifiers. Null when not requested. */
+    comparison?: BriefingComparisonResponse | null;
 }
 
 /** System-administrator-only canonical research settings. */
@@ -1954,6 +2078,8 @@ export declare class TopicsResource extends CrudResource<Topic, TopicDetail, Top
     removeRecipient(id: string, recipientId: string): Promise<null>;
     getSearchProviders(id: string, options?: EnumerationQuery): Promise<EnumerationResult<SearchProvider>>;
     setSearchProviders(id: string, providers: { searchProviderId: string; enabled?: boolean; maxResults?: number }[]): Promise<any[]>;
+    /** Nothing is saved. 400 for out-of-range settings, 409 when a pinned issue is unavailable. */
+    previewHistory(id: string, body?: HistoryPreviewRequest): Promise<HistoryPreviewResponse>;
 }
 
 export interface RefinementStartRequest {
@@ -2092,6 +2218,12 @@ export declare class EditionsResource extends CrudResource<Edition, EditionRespo
     setTopics(id: string, topicIds: string[]): Promise<EditionResponse>;
     compose(id: string): Promise<Briefing>;
     preview(id: string, body?: { templateContent?: string }): Promise<Briefing>;
+    /** Nothing is saved. 400 for out-of-range settings, 409 when a pinned issue is unavailable. */
+    previewHistory(id: string, body?: HistoryPreviewRequest): Promise<HistoryPreviewResponse>;
+    /** In edition order, paged. */
+    publications(id: string, options?: ListOptions): Promise<EnumerationResult<EditionPublicationResponse>>;
+    /** Ordered, distinct, at most 20 active subscriptions. An empty list is always allowed; otherwise 402 without custom research. */
+    setPublications(id: string, publicationIds: string[]): Promise<EditionResponse>;
 }
 
 export interface BriefingProgress {
@@ -2117,6 +2249,8 @@ export declare class BriefingsResource extends ResourceGroup {
     getProgress(id: string): Promise<BriefingProgress>;
     saveProgress(id: string, progress: { positionSeconds: number; durationSeconds?: number; completed?: boolean }): Promise<BriefingProgress>;
     shareWithSupport(id: string): Promise<SupportReportResponse>;
+    /** A briefing without a comparison returns compared false with a note. */
+    comparison(id: string): Promise<BriefingComparisonResponse>;
     regenerate(id: string): Promise<Briefing>;
     generateAudio(id: string, body?: { voiceProfileId?: string }): Promise<MediaAsset>;
     listShares(id: string, options?: ListOptions): Promise<EnumerationResult<BriefingShare>>;
@@ -2502,6 +2636,11 @@ export declare class AccountResource extends ResourceGroup {
     redeem(code: string): Promise<EffectivePlan>;
     /** Needs a signed-in user, not an access key. */
     usage(): Promise<UsageMeter>;
+    /** Topics with withinPlan false keep their history but do not run. */
+    topicSlots(): Promise<TopicSlotsResponse>;
+    /** Most important first; an empty list clears. Nothing is paused, archived, or deleted. */
+    setTopicSlots(keepTopicIds: string[]): Promise<TopicSlotsResponse>;
+    clearTopicSlots(): Promise<TopicSlotsResponse>;
     /** ZIP of JSON and Markdown. */
     export(options?: { signal?: AbortSignal }): Promise<DownloadResult>;
     /** 202; signing in again before `purgeAfterUtc` cancels it. 409 for administrators and protected accounts. */

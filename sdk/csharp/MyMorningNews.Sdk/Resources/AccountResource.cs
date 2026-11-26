@@ -189,5 +189,43 @@ namespace MyMorningNews.Sdk.Resources
             if (String.IsNullOrEmpty(password)) throw new ArgumentNullException(nameof(password));
             return Client.SendAsync<PasswordResetResponse>(HttpMethod.Post, "/v1.0/public/password/reset", null, new AccountTokenRequest { Token = resetToken, Password = password }, token, false);
         }
+
+        /// <summary>
+        /// The caller's custom topics against the plan's topic limit, in keep order. Topics with WithinPlan false keep
+        /// their history but do not run. Needs a signed-in user.
+        /// </summary>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The TopicSlotsResponse.</returns>
+        /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
+        public Task<TopicSlotsResponse> GetTopicSlotsAsync(CancellationToken token = default)
+        {
+            return Client.SendAsync<TopicSlotsResponse>(HttpMethod.Get, "/v1.0/api/account/topic-slots", null, null, token);
+        }
+
+        /// <summary>
+        /// Choose which custom topics to keep running first when the plan allows fewer than the caller has (most
+        /// important first). An empty list clears the choice. Nothing is paused, archived, or deleted.
+        /// </summary>
+        /// <param name="request">Ordered topic identifiers.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The TopicSlotsResponse.</returns>
+        /// <exception cref="ArgumentNullException">request is null.</exception>
+        /// <exception cref="MyMorningNewsException">The server returned an error (400 ValidationFailed for a duplicate, unknown, archived, one-time, or another user's topic).</exception>
+        public Task<TopicSlotsResponse> SetTopicSlotsAsync(TopicSlotsRequest request, CancellationToken token = default)
+        {
+            ArgumentNullException.ThrowIfNull(request);
+            return Client.SendAsync<TopicSlotsResponse>(HttpMethod.Put, "/v1.0/api/account/topic-slots", null, request, token);
+        }
+
+        /// <summary>
+        /// Clear the caller's topic keep order so topics follow creation order.
+        /// </summary>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The TopicSlotsResponse.</returns>
+        /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
+        public Task<TopicSlotsResponse> ClearTopicSlotsAsync(CancellationToken token = default)
+        {
+            return SetTopicSlotsAsync(new TopicSlotsRequest(), token);
+        }
     }
 }

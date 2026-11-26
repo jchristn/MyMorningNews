@@ -272,7 +272,7 @@ namespace MyMorningNews.McpServer
             {
                 { "id", f.Id }, { "topicId", f.TopicId }, { "runId", f.RunId }, { "title", f.Title }, { "summary", f.Summary }, { "whyItMatters", f.WhyItMatters },
                 { "category", f.Category.ToString() }, { "tier", f.Tier.ToString() }, { "relevanceScore", Math.Round(f.RelevanceScore, 1) }, { "confidence", Math.Round(f.Confidence, 2) },
-                { "isDuplicate", f.IsDuplicate }, { "pinned", f.Pinned }, { "hidden", f.Hidden }, { "publishedUtc", Iso(f.PublishedUtc) }, { "createdUtc", Iso(f.CreatedUtc) }
+                { "isDuplicate", f.IsDuplicate }, { "isUpdateOfFindingId", f.IsUpdateOfFindingId }, { "isCorrection", f.IsCorrection }, { "pinned", f.Pinned }, { "hidden", f.Hidden }, { "publishedUtc", Iso(f.PublishedUtc) }, { "createdUtc", Iso(f.CreatedUtc) }
             };
         }
 
@@ -288,6 +288,7 @@ namespace MyMorningNews.McpServer
                     "summary", Schema.NullableString("Summary."), "whyItMatters", Schema.NullableString("Why it matters for the topic."), "category", Schema.String("Category."),
                     "tier", Schema.String(Names<FindingTierEnum>()), "relevanceScore", Schema.Number("Composite relevance, 0 to 100."),
                     "confidence", Schema.Number("Model confidence, 0 to 1."), "isDuplicate", Schema.Boolean("Repeats an earlier finding."),
+                    "isUpdateOfFindingId", Schema.NullableString("Earlier finding this one updates, or null."), "isCorrection", Schema.Boolean("Corrects the finding named by isUpdateOfFindingId."),
                     "pinned", Schema.Boolean("Pinned by the owner."), "hidden", Schema.Boolean("Hidden by the owner."),
                     "publishedUtc", Schema.NullableString("Source publication time (UTC)."), "createdUtc", Schema.String("Found (UTC).")),
                     new[] { "id", "title", "relevanceScore" }, true);

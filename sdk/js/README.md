@@ -211,7 +211,7 @@ await client.topics.rankingRecommendation(t.id);
 const session = await client.topics.refine(t.id);
 ```
 
-Dimensions: `listDimensions`, `addDimension`, `updateDimension`, `removeDimension`. Constraints: `listConstraints`, `addConstraint`, `updateConstraint`, `removeConstraint`. Recipients: `listRecipients`, `addRecipient`, `removeRecipient`. Runs: `run(id, { dryRun })`, `dryRun(id)`.
+Dimensions: `listDimensions`, `addDimension`, `updateDimension`, `removeDimension`. Constraints: `listConstraints`, `addConstraint`, `updateConstraint`, `removeConstraint`. Recipients: `listRecipients`, `addRecipient`, `removeRecipient`. Runs: `run(id, { dryRun })`, `dryRun(id)`. Comparison: `previewHistory(id, { historyMode, historyCount, historySinceUtc, historyBriefingId, historyTokenBudget })` shows the baseline the next run would use without saving anything.
 
 ### refinement
 
@@ -300,6 +300,11 @@ await client.briefings.pin(queued.id); await client.briefings.unpin(queued.id);
 await client.briefings.regenerate(queued.id);
 await client.briefings.generateAudio(queued.id, { voiceProfileId });
 const markdown = await client.briefings.markdown(queued.id);
+const cmp = await client.briefings.comparison(queued.id);     // { compared, mode, note, baselines, counts, summary, deltas }
+await client.editions.update(e.edition.id, { historyMode: 'PreviousIssue' }); // compare each issue with the edition's own earlier issues
+await client.editions.previewHistory(e.edition.id);             // baseline preview; nothing saved
+await client.editions.publications(e.edition.id);               // EnumerationResult of the system briefings the edition includes
+await client.editions.setPublications(e.edition.id, [publicationId]); // [] removes them all
 ```
 
 ### templates (briefing templates)
@@ -442,6 +447,9 @@ await client.notifications.remove(unread.objects[0].id);
 const plan = await client.account.plan();
 await client.account.redeem('WELCOME'); // 409 PromoCodeInvalid with details.reason when it cannot be redeemed
 const meter = await client.account.usage(); // { planKey, topics, topicsMax, runsToday, runsDailyMax, monthToDateCostUsd, resetUtc, ... }
+const slots = await client.account.topicSlots(); // { limit, counted, overLimit, customized, topics: [{ topicId, position, chosen, withinPlan }] }
+await client.account.setTopicSlots([topicA, topicB]); // keep order on a smaller plan; nothing is paused or deleted
+await client.account.clearTopicSlots();
 const zip = await client.account.export(); // DownloadResult with a ZIP of my data
 const { purgeAfterUtc } = await client.account.delete(); // 202; signing in again before then cancels it
 ```
@@ -500,7 +508,7 @@ Cases that trigger real research runs or model calls (refinement generation, one
 
 The access key and signed request cases create and delete temporary credentials through `client.request` against the control plane, so they need an administrator. The signed request cases also check a known signature vector offline, check a replayed nonce and a bad signature are rejected, and check that the credential stops working once deleted. The run stream cases parse a canned event stream offline (split chunks, CR and LF line endings, comments, multi-line data, UTF-8 split across chunks) and drive `events` and `follow` against a fake fetch; the live case checks 404, 409, and 400 without queuing anything and replays a finished run when one exists. It skips when the server does not have the events route yet. Finding edit cases skip when the server has no findings; they restore each finding's pinned and hidden flags afterwards and never delete real findings.
 
-The setup cases check the request paths, the `connect` body, and `SetupRequiredError` against a fake fetch offline, then read `setup.status()` and `setup.options()` (Claude Code lists `AccessToken` first), expect 400 from `connect` for an API key pasted as a setup-token token and 404 for an unknown endpoint (both refused before anything is stored), store a key for an unreachable local endpoint (the live check fails, so `lastValidationSucceeded` is false), expect 404 for an unknown endpoint, and expect 403 from `verify`, `setModelKey`, `options`, and `connect` for a plain user. The administrator's live `verify()` is not called because it probes the real providers. The plan limit case creates a user, grants it the Free plan, reads `account.usage`, downloads `account.export`, expects `CapReachedError` on the topic past the limit, and deletes then restores the account by signing in again. The sign-up case opens `Hosting.PublicSignupEnabled` through the settings API (and restores the original settings afterward, even on failure), signs up, expects `EmailNotVerifiedError` at sign-in, reads the verification and reset link tokens from the personal tenant's outbox with an access key it creates as the administrator, verifies, resets the password, and deletes the personal tenant. It skips when the setting is pinned by an environment variable. The MCP case runs a small fake MCP server on 127.0.0.1 (initialize and tools/list only; no tool is ever called) and skips the discovery part when the server cannot reach it, for example from a container.
+The setup cases check the request paths, the `connect` body, and `SetupRequiredError` against a fake fetch offline, then read `setup.status()` and `setup.options()` (Claude Code lists `AccessToken` first), expect 400 from `connect` for an API key pasted as a setup-token token and 404 for an unknown endpoint (both refused before anything is stored), store a key for an unreachable local endpoint (the live check fails, so `lastValidationSucceeded` is false), expect 404 for an unknown endpoint, and expect 403 from `verify`, `setModelKey`, `options`, and `connect` for a plain user. The administrator's live `verify()` is not called because it probes the real providers. The plan limit case creates a user, grants it the Free plan, reads `account.usage`, downloads `account.export`, expects `CapReachedError` on the topic past the limit, and deletes then restores the account by signing in again. The sign-up case opens `Hosting.PublicSignupEnabled` through the settings API (and restores the original settings afterward, even on failure), signs up, expects `EmailNotVerifiedError` at sign-in, reads the verification and reset link tokens from the personal tenant's outbox with an access key it creates as the administrator, verifies, resets the password, and deletes the personal tenant. It skips when the setting is pinned by an environment variable. The MCP case runs a small fake MCP server on 127.0.0.1 (initialize and tools/list only; no tool is ever called) and skips the discovery part when the server cannot reach it, for example from a container. The comparison cases preview topic and edition baselines (unsaved settings, bounds, nothing saved), save edition history settings, read and replace an edition's system briefings with an empty list (an unsubscribed publication is a 400), check that a standalone edition briefing reports `compared` false with every change kind counted, and set, reject, clear, and restore the account's topic keep order.
 
 ## Requirements
 

@@ -147,7 +147,7 @@ python3 src/Tools/mcpdocs/generate_mcp_api.py
 
 ## Tools
 
-42 tools. Every tool returns structured content that matches its output schema, and the same data as JSON text.
+50 tools. Every tool returns structured content that matches its output schema, and the same data as JSON text.
 
 | Tool | Title | Read only | Destructive |
 |---|---|---|---|
@@ -193,6 +193,14 @@ python3 src/Tools/mcpdocs/generate_mcp_api.py
 | [`list_system_issues`](#list_system_issues) | List shared briefing issues | yes | no |
 | [`get_system_issue`](#get_system_issue) | Read a shared briefing | yes | no |
 | [`set_topic_history`](#set_topic_history) | Set briefing comparison context | no | no |
+| [`preview_topic_history`](#preview_topic_history) | Preview a topic's comparison baseline | yes | no |
+| [`preview_edition_history`](#preview_edition_history) | Preview an edition's comparison baseline | yes | no |
+| [`set_edition_history`](#set_edition_history) | Set an edition's comparison | no | no |
+| [`get_briefing_comparison`](#get_briefing_comparison) | Read what a briefing was compared with | yes | no |
+| [`get_edition_publications`](#get_edition_publications) | List an edition's system briefings | yes | no |
+| [`set_edition_publications`](#set_edition_publications) | Choose an edition's system briefings | no | no |
+| [`get_topic_slots`](#get_topic_slots) | Read my topic slots | yes | no |
+| [`set_topic_slots`](#set_topic_slots) | Choose which topics keep running | no | no |
 
 ### list_topics
 
@@ -551,7 +559,7 @@ Output:
 | `success` | boolean | no | Whether enumeration succeeded. |
 | `pageSize` | integer (1 to 1000) | no | Maximum objects on this page. |
 | `totalMs` | number | no | Enumeration duration in milliseconds. |
-| `objects` | array of object with `id`, `topicId`, `runId`, `title`, `summary`, `whyItMatters`, `category`, `tier`, `relevanceScore`, `confidence`, `isDuplicate`, `pinned`, `hidden`, `publishedUtc`, `createdUtc` | yes | Items on this page. |
+| `objects` | array of object with `id`, `topicId`, `runId`, `title`, `summary`, `whyItMatters`, `category`, `tier`, `relevanceScore`, `confidence`, `isDuplicate`, `isUpdateOfFindingId`, `isCorrection`, `pinned`, `hidden`, `publishedUtc`, `createdUtc` | yes | Items on this page. |
 | `totalRecords` | integer | yes | Items matching across all pages. |
 | `pageNumber` | integer | no | Page number (1-based). |
 | `totalPages` | integer | no | Pages available. |
@@ -582,7 +590,7 @@ Output:
 | `success` | boolean | no | Whether enumeration succeeded. |
 | `pageSize` | integer (1 to 1000) | no | Maximum objects on this page. |
 | `totalMs` | number | no | Enumeration duration in milliseconds. |
-| `objects` | array of object with `id`, `topicId`, `runId`, `title`, `summary`, `whyItMatters`, `category`, `tier`, `relevanceScore`, `confidence`, `isDuplicate`, `pinned`, `hidden`, `publishedUtc`, `createdUtc` | yes | Items on this page. |
+| `objects` | array of object with `id`, `topicId`, `runId`, `title`, `summary`, `whyItMatters`, `category`, `tier`, `relevanceScore`, `confidence`, `isDuplicate`, `isUpdateOfFindingId`, `isCorrection`, `pinned`, `hidden`, `publishedUtc`, `createdUtc` | yes | Items on this page. |
 | `totalRecords` | integer | yes | Items matching across all pages. |
 | `pageNumber` | integer | no | Page number (1-based). |
 | `totalPages` | integer | no | Pages available. |
@@ -601,7 +609,7 @@ Output:
 
 | Name | Type | Always | Description |
 |---|---|---|---|
-| `finding` | object with `id`, `topicId`, `runId`, `title`, `summary`, `whyItMatters`, `category`, `tier`, `relevanceScore`, `confidence`, `isDuplicate`, `pinned`, `hidden`, `publishedUtc`, `createdUtc` | yes |  |
+| `finding` | object with `id`, `topicId`, `runId`, `title`, `summary`, `whyItMatters`, `category`, `tier`, `relevanceScore`, `confidence`, `isDuplicate`, `isUpdateOfFindingId`, `isCorrection`, `pinned`, `hidden`, `publishedUtc`, `createdUtc` | yes |  |
 | `topicName` | string or null | no | Topic name. |
 | `dimension` | string or null | no | The dimension it answers. |
 | `rationale` | string or null | no | Why the model scored it this way. |
@@ -635,6 +643,8 @@ Output:
 | `relevanceScore` | number | yes | Composite relevance, 0 to 100. |
 | `confidence` | number | no | Model confidence, 0 to 1. |
 | `isDuplicate` | boolean | no | Repeats an earlier finding. |
+| `isUpdateOfFindingId` | string or null | no | Earlier finding this one updates, or null. |
+| `isCorrection` | boolean | no | Corrects the finding named by isUpdateOfFindingId. |
 | `pinned` | boolean | no | Pinned by the owner. |
 | `hidden` | boolean | no | Hidden by the owner. |
 | `publishedUtc` | string or null | no | Source publication time (UTC). |
@@ -1173,6 +1183,189 @@ Output:
 | `audioEnabled` | boolean | no | Every run briefing is turned into audio automatically. |
 | `lastRunUtc` | string or null | no | Last run (UTC). |
 | `createdUtc` | string | no | Created (UTC). |
+
+### preview_topic_history
+
+**Preview a topic's comparison baseline.** Show which earlier issues the topic's next research run would compare with, how large that context is, and whether it would be cut to the budget. Pass mode, count, sinceUtc, briefingId, or tokenBudget to try settings without saving them; anything left out uses the saved value. Nothing is changed.
+
+Input:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `topicId` | string (up to 64) | yes | Owned topic ID (top_...). |
+| `mode` | string (`Off`, `PreviousIssue`, `RecentIssues`, `SinceDate`, `SpecificIssue`) | no | Comparison mode. |
+| `count` | integer (1 to 20) | no | Maximum baseline issues for RecentIssues and SinceDate. |
+| `sinceUtc` | string | no | Earliest baseline time for SinceDate (ISO 8601, in the past). |
+| `briefingId` | string (up to 64) | no | Pinned baseline issue (brf_...) for SpecificIssue. |
+| `tokenBudget` | integer (256 to 32000) | no | Comparison context budget in UTF-8 bytes. |
+
+Output:
+
+| Name | Type | Always | Description |
+|---|---|---|---|
+| `mode` | string | yes | Mode the preview used. One of: Off, PreviousIssue, RecentIssues, SinceDate, SpecificIssue. |
+| `baselines` | array of object with `id`, `title`, `createdUtc`, `available` | yes | Issues that would be compared with, newest first. |
+| `contextBytes` | integer | no | Size of the comparison context in UTF-8 bytes. |
+| `budgetBytes` | integer | no | Budget in UTF-8 bytes. |
+| `truncated` | boolean | no | The context would be cut to the budget. |
+| `note` | string or null | no | Why nothing would be compared, or null. |
+| `cutoffUtc` | string or null | no | Issues created before this time are eligible (UTC). |
+
+### preview_edition_history
+
+**Preview an edition's comparison baseline.** Show which earlier issues of this edition the next composition would compare with. Pass settings to try them without saving; anything left out uses the saved value. Nothing is changed.
+
+Input:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `editionId` | string (up to 64) | yes | Owned edition ID (edn_...). |
+| `mode` | string (`Off`, `PreviousIssue`, `RecentIssues`, `SinceDate`, `SpecificIssue`) | no | Comparison mode. |
+| `count` | integer (1 to 20) | no | Maximum baseline issues for RecentIssues and SinceDate. |
+| `sinceUtc` | string | no | Earliest baseline time for SinceDate (ISO 8601, in the past). |
+| `briefingId` | string (up to 64) | no | Pinned baseline issue (brf_...) for SpecificIssue. |
+| `tokenBudget` | integer (256 to 32000) | no | Comparison context budget in UTF-8 bytes. |
+
+Output:
+
+| Name | Type | Always | Description |
+|---|---|---|---|
+| `mode` | string | yes | Mode the preview used. One of: Off, PreviousIssue, RecentIssues, SinceDate, SpecificIssue. |
+| `baselines` | array of object with `id`, `title`, `createdUtc`, `available` | yes | Issues that would be compared with, newest first. |
+| `contextBytes` | integer | no | Size of the comparison context in UTF-8 bytes. |
+| `budgetBytes` | integer | no | Budget in UTF-8 bytes. |
+| `truncated` | boolean | no | The context would be cut to the budget. |
+| `note` | string or null | no | Why nothing would be compared, or null. |
+| `cutoffUtc` | string or null | no | Issues created before this time are eligible (UTC). |
+
+### set_edition_history
+
+**Set an edition's comparison.** Choose whether each composed edition is compared with its own earlier issues. Off (the default) keeps each topic's own research comparisons. Settings left out keep their saved values; briefingId must be a ready issue of this edition.
+
+Input:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `editionId` | string (up to 64) | yes | Owned edition ID (edn_...). |
+| `mode` | string (`Off`, `PreviousIssue`, `RecentIssues`, `SinceDate`, `SpecificIssue`) | yes | Comparison mode. |
+| `count` | integer (1 to 20) | no | Maximum baseline issues for RecentIssues and SinceDate. |
+| `sinceUtc` | string | no | Earliest baseline time for SinceDate (ISO 8601, in the past). |
+| `briefingId` | string (up to 64) | no | Pinned baseline issue (brf_...) for SpecificIssue. |
+| `tokenBudget` | integer (256 to 32000) | no | Comparison context budget in UTF-8 bytes. |
+
+Output:
+
+| Name | Type | Always | Description |
+|---|---|---|---|
+| `id` | string | yes | Edition ID (edn_...). |
+| `name` | string | yes | Name. |
+| `enabled` | boolean | no | Composed on its schedules. |
+| `historyMode` | string | yes | One of: Off, PreviousIssue, RecentIssues, SinceDate, SpecificIssue. |
+| `historyCount` | integer (1 to 20) | no | Maximum baseline issues. |
+| `historySinceUtc` | string or null | no | Earliest baseline time (UTC). |
+| `historyBriefingId` | string or null | no | Pinned baseline issue. |
+| `historyTokenBudget` | integer (256 to 32000) | no | Comparison budget in UTF-8 bytes. |
+| `publications` | array of object with `publicationId`, `title`, `sortOrder`, `available` | no | System briefings the edition includes, in order. |
+| `lastComposedUtc` | string or null | no | Last composed (UTC). |
+
+### get_briefing_comparison
+
+**Read what a briefing was compared with.** Read the earlier issues a briefing was compared with and the changes found: new developments, changed facts, corrections, resolved items, unchanged items, and items that became unavailable, in display order. A briefing composed without a comparison returns compared false with a note.
+
+Input:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `briefingId` | string (up to 64) | yes | Briefing ID (brf_...). |
+
+Output:
+
+| Name | Type | Always | Description |
+|---|---|---|---|
+| `briefingId` | string | yes | Briefing ID. |
+| `compared` | boolean | yes | True when at least one earlier issue was compared. |
+| `mode` | string | no | Mode used, for example PreviousIssue, Edition:PreviousIssue, or Off. |
+| `note` | string or null | no | Why the briefing stands alone, or null. |
+| `summary` | string or null | no | One-line summary, the same sentence the briefing carries, or null. |
+| `truncated` | boolean | no | The baseline was cut to its budget. |
+| `noMaterialChanges` | boolean | no | Compared and nothing new, changed, corrected, or resolved was found. |
+| `cutoffUtc` | string or null | no | Issues created before this time were eligible (UTC). |
+| `baselines` | array of object with `id`, `title`, `createdUtc`, `available` | no | Issues compared with, newest first. |
+| `counts` | object with `NewDevelopment`, `ChangedFact`, `Resolved`, `Correction`, `Unchanged`, `Unavailable` | yes |  |
+| `deltas` | array of object with `kind`, `title`, `summary`, `findingId`, `predictionId`, `baselineBriefingId`, `baselineItemId` | yes | Changes in display order: corrections, changes, new, resolved, unchanged, unavailable. |
+
+### get_edition_publications
+
+**List an edition's system briefings.** List the system briefings (catalog publications) an edition includes, in order, and whether each can be read now. Unavailable ones are skipped when the edition is composed.
+
+Input:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `editionId` | string (up to 64) | yes | Owned edition ID (edn_...). |
+
+Output:
+
+| Name | Type | Always | Description |
+|---|---|---|---|
+| `editionId` | string | yes | Edition ID. |
+| `publications` | array of object with `publicationId`, `title`, `sortOrder`, `available` | yes | System briefings the edition includes, in order. |
+
+### set_edition_publications
+
+**Choose an edition's system briefings.** Replace the system briefings an edition includes with publicationIds, in order (distinct, at most 20, each one you are subscribed to; see list_system_subscriptions). An empty list removes them all. Including system briefings needs a plan with custom research; the server refuses otherwise. No research is started.
+
+Input:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `editionId` | string (up to 64) | yes | Owned edition ID (edn_...). |
+| `publicationIds` | array of string (up to 64) | yes | Publication IDs (cat_...) in order. Empty removes every publication. |
+
+Output:
+
+| Name | Type | Always | Description |
+|---|---|---|---|
+| `editionId` | string | yes | Edition ID. |
+| `publications` | array of object with `publicationId`, `title`, `sortOrder`, `available` | yes | System briefings the edition includes, in order. |
+
+### get_topic_slots
+
+**Read my topic slots.** Read your custom topics against your plan's topic limit, in keep order: which ones fit the plan and run, and which keep their history but do not run. While overLimit is above zero, new topics cannot be created, duplicated, or restored.
+
+Input:
+
+None.
+
+Output:
+
+| Name | Type | Always | Description |
+|---|---|---|---|
+| `limit` | number or null | no | Custom topics the plan allows; null for unlimited, 0 when custom research is not in the plan. |
+| `counted` | integer | yes | Recurring, non-archived topics. Paused topics count. |
+| `overLimit` | integer | yes | Topics past the limit: they keep history but do not run. |
+| `customized` | boolean | yes | You have chosen a keep order. |
+| `topics` | array of object with `topicId`, `name`, `status`, `position`, `chosen`, `withinPlan`, `lastRunUtc` | yes | Topics in keep order. |
+
+### set_topic_slots
+
+**Choose which topics keep running.** Set the order in which your custom topics keep running when your plan allows fewer than you have, most important first. Topics you leave out follow in creation order. An empty list clears the choice. Nothing is paused, archived, or deleted; a choice saved ahead of a downgrade applies when the limit shrinks.
+
+Input:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `keepTopicIds` | array of string (up to 64) | yes | Recurring, non-archived topic IDs (top_...) in keep order. Empty clears the choice. |
+
+Output:
+
+| Name | Type | Always | Description |
+|---|---|---|---|
+| `limit` | number or null | no | Custom topics the plan allows; null for unlimited, 0 when custom research is not in the plan. |
+| `counted` | integer | yes | Recurring, non-archived topics. Paused topics count. |
+| `overLimit` | integer | yes | Topics past the limit: they keep history but do not run. |
+| `customized` | boolean | yes | You have chosen a keep order. |
+| `topics` | array of object with `topicId`, `name`, `status`, `position`, `chosen`, `withinPlan`, `lastRunUtc` | yes | Topics in keep order. |
 
 ## Resources
 

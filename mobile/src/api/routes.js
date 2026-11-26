@@ -48,6 +48,8 @@ export const routes = {
   topicDimension: (id, dimensionId) => '/v1.0/api/topics/' + enc(id) + '/dimensions/' + enc(dimensionId),
   topicConstraints: (id) => '/v1.0/api/topics/' + enc(id) + '/constraints',
   topicConstraint: (id, constraintId) => '/v1.0/api/topics/' + enc(id) + '/constraints/' + enc(constraintId),
+  // Comparison baseline preview with unsaved settings (plan section 6.1); nothing is saved
+  topicHistoryPreview: (id) => '/v1.0/api/topics/' + enc(id) + '/history/preview',
   refinementSessions: '/v1.0/api/refinement-sessions',
   refinementSession: (id) => '/v1.0/api/refinement-sessions/' + enc(id),
   refinementStep: (id, step) => '/v1.0/api/refinement-sessions/' + enc(id) + '/' + step,
@@ -88,6 +90,8 @@ export const routes = {
   briefingSupport: (id) => '/v1.0/api/briefings/' + enc(id) + '/support',
   briefingRegenerate: (id) => '/v1.0/api/briefings/' + enc(id) + '/regenerate',
   briefingProgress: (id) => '/v1.0/api/briefings/' + enc(id) + '/progress',
+  // What a briefing was compared with and what changed (plan section 6.2)
+  briefingComparison: (id) => '/v1.0/api/briefings/' + enc(id) + '/comparison',
   // Public share links for a briefing (plan section 36)
   briefingShares: (id) => '/v1.0/api/briefings/' + enc(id) + '/shares',
   briefingShare: (id, shareId) => '/v1.0/api/briefings/' + enc(id) + '/shares/' + enc(shareId),
@@ -96,6 +100,9 @@ export const routes = {
   editionTopics: (id) => '/v1.0/api/editions/' + enc(id) + '/topics',
   editionCompose: (id) => '/v1.0/api/editions/' + enc(id) + '/compose',
   editionPreview: (id) => '/v1.0/api/editions/' + enc(id) + '/preview',
+  // Edition comparison baseline preview and the system briefings an edition includes
+  editionHistoryPreview: (id) => '/v1.0/api/editions/' + enc(id) + '/history/preview',
+  editionPublications: (id) => '/v1.0/api/editions/' + enc(id) + '/publications',
   // Audio and podcast feeds (Phase 8): episodes, their files (bearer auth and HTTP Range), and private feed tokens
   mediaList: '/v1.0/api/media',
   media: (id) => '/v1.0/api/media/' + enc(id),
@@ -127,5 +134,7 @@ export const routes = {
   accountProvider: (id) => '/v1.0/api/account/providers/' + encodeURIComponent(id),
   accountProviderTest: (id) => '/v1.0/api/account/providers/' + encodeURIComponent(id) + '/test',
   accountFunding: '/v1.0/api/account/funding',
+  // Which custom topics keep running when the plan allows fewer than the account has (plan section 8.4)
+  accountTopicSlots: '/v1.0/api/account/topic-slots',
   promoRedeem: '/v1.0/api/promo-codes/redeem',
 };

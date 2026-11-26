@@ -83,6 +83,14 @@ namespace MyMorningNews.Core.Services
                     Write(zip, "feedback.json", Serializer.Serialize((await _Database.Feedback.EnumerateAsync(new FeedbackFilter { TenantId = t, UserId = user.Id, PageSize = 5000 }, token).ConfigureAwait(false)).Objects));
                     Write(zip, "preferences.json", Serializer.Serialize((await _Database.LearnedPreferences.EnumerateAsync(new LearnedPreferenceFilter { TenantId = t, UserId = user.Id, PageSize = 5000 }, token).ConfigureAwait(false)).Objects));
                     List<Briefing> briefings = (await _Database.Briefings.EnumerateAsync(new BriefingFilter { TenantId = t, UserId = user.Id, PageSize = 5000 }, token).ConfigureAwait(false)).Objects;
+                    List<Dictionary<string, object?>> comparisons = new List<Dictionary<string, object?>>();
+                    foreach (Briefing b in briefings)
+                    {
+                        List<BriefingDelta> deltas = (await _Database.BriefingDeltas.EnumerateAsync(new BriefingDeltaFilter { TenantId = t, BriefingId = b.Id, PageSize = 1000 }, token).ConfigureAwait(false)).Objects;
+                        if (deltas.Count > 0) comparisons.Add(new Dictionary<string, object?> { { "briefingId", b.Id }, { "deltas", deltas } });
+                    }
+
+                    if (comparisons.Count > 0) Write(zip, "comparisons.json", Serializer.Serialize(comparisons));
                     HashSet<string> names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                     foreach (Briefing b in briefings.Where(b => !String.IsNullOrWhiteSpace(b.Markdown)))
                     {

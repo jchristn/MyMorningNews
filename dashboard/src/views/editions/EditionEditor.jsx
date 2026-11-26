@@ -6,12 +6,14 @@ import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { ApiError } from '../../utils/api.js';
+import { clampBudget, clampCount, historyForm, sinceIso } from '../../utils/comparison.js';
 import { EDITION_BOUNDS, LOOKBACK_MODES } from '../../utils/enums.js';
 import { describeError } from '../../utils/errors.js';
 import ConfirmModal from '../../components/ConfirmModal.jsx';
 import CopyableId from '../../components/CopyableId.jsx';
 import ErrorState from '../../components/ErrorState.jsx';
 import FormField from '../../components/FormField.jsx';
+import HistoryPreview from '../../components/HistoryPreview.jsx';
 import LoadingState from '../../components/LoadingState.jsx';
 import Modal from '../../components/Modal.jsx';
 import OwnerSchedules from '../../components/OwnerSchedules.jsx';
@@ -19,6 +21,8 @@ import PageHeader from '../../components/PageHeader.jsx';
 import StatusBadge from '../../components/StatusBadge.jsx';
 import BriefingMarkdown from '../briefings/BriefingMarkdown.jsx';
 import BriefingsTable from '../briefings/BriefingsTable.jsx';
+import HistoryFields from '../topics/HistoryFields.jsx';
+import EditionPublicationPicker from './EditionPublicationPicker.jsx';
 import EditionTopicPicker from './EditionTopicPicker.jsx';
 
 const clamp = (value, { min, max }) => Math.min(max, Math.max(min, Math.round(Number(value) || min)));
@@ -35,7 +39,8 @@ export function formFromEdition(e) {
     freshResearchBeforeCompose: e ? e.freshResearchBeforeCompose !== false : true,
     freshResearchLeadMinutes: e && e.freshResearchLeadMinutes ? e.freshResearchLeadMinutes : 45,
     lookbackMode: e && e.lookbackMode ? e.lookbackMode : 'SinceLastEdition',
-    lookbackHours: e && e.lookbackHours ? e.lookbackHours : 24
+    lookbackHours: e && e.lookbackHours ? e.lookbackHours : 24,
+    ...historyForm(e)
   };
 }
 
@@ -52,7 +57,12 @@ export function editionBody(form, creating) {
     freshResearchBeforeCompose: form.freshResearchBeforeCompose,
     freshResearchLeadMinutes: clamp(form.freshResearchLeadMinutes, EDITION_BOUNDS.leadMinutes),
     lookbackMode: form.lookbackMode,
-    lookbackHours: clamp(form.lookbackHours, EDITION_BOUNDS.lookbackHours)
+    lookbackHours: clamp(form.lookbackHours, EDITION_BOUNDS.lookbackHours),
+    historyMode: form.historyMode,
+    historyCount: clampCount(form.historyCount),
+    historySinceUtc: form.historyMode === 'SinceDate' ? sinceIso(form.historySinceUtc) : null,
+    historyBriefingId: form.historyMode === 'SpecificIssue' ? form.historyBriefingId || null : null,
+    historyTokenBudget: clampBudget(form.historyTokenBudget)
   };
 }
 
@@ -281,6 +291,20 @@ export default function EditionEditor({ editionId = null }) {
             <input id="edition-lookback-hours" type="number" min={EDITION_BOUNDS.lookbackHours.min} max={EDITION_BOUNDS.lookbackHours.max} value={form.lookbackHours} onChange={(e) => set('lookbackHours')(e.target.value)} />
           </FormField>
         </div>
+        {!creating ? (
+          <fieldset className="form-grid edition-history">
+            <legend>{t('editions.sections.comparison')}</legend>
+            <HistoryFields editionId={edition.id} value={form} onChange={setForm} disabled={saving} showBudget idPrefix="edition-history">
+              <HistoryPreview
+                form={form}
+                load={(body, signal) => apiClient.previewEditionHistory(editionId, body, signal)}
+                baselineHref={(id) => '/dashboard/briefings/' + encodeURIComponent(id)}
+                disabled={saving}
+                idPrefix="edition-history-preview"
+              />
+            </HistoryFields>
+          </fieldset>
+        ) : null}
         {!nameError ? <ErrorState error={saveError} inline onDismiss={() => setSaveError(null)} /> : null}
         <div className="form-actions">
           {!creating ? (
@@ -299,6 +323,10 @@ export default function EditionEditor({ editionId = null }) {
           <section className="panel stack">
             <h2>{t('editions.sections.topics')}</h2>
             <EditionTopicPicker editionId={edition.id} links={detail.topics} coveredTopicIds={detail.coveredTopicIds} topics={topics} onSaved={apply} />
+          </section>
+          <section className="panel stack">
+            <h2>{t('editions.sections.publications')}</h2>
+            <EditionPublicationPicker editionId={edition.id} links={detail.publications} onSaved={apply} />
           </section>
           <section className="panel stack">
             <h2>{t('editions.sections.schedules')}</h2>

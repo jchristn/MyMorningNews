@@ -20,6 +20,7 @@ import LoadingState from '../../components/LoadingState.jsx';
 import PageHeader from '../../components/PageHeader.jsx';
 import FeedbackControl from '../../components/FeedbackControl.jsx';
 import StatusBadge from '../../components/StatusBadge.jsx';
+import ComparisonCallout from '../../components/ComparisonCallout.jsx';
 import BriefingAudio from './BriefingAudio.jsx';
 import BriefingShare from './BriefingShare.jsx';
 import BriefingMarkdown, { scrollToAnchor } from './BriefingMarkdown.jsx';
@@ -218,6 +219,24 @@ export default function BriefingReader({ briefingId }) {
 
   const briefing = detail ? detail.briefing : null;
   const active = Boolean(briefing && ACTIVE_BRIEFING_STATUSES.includes(briefing.status));
+  const isReady = Boolean(briefing && briefing.status === 'Ready');
+
+  // What the briefing was compared with, read once it is ready. A failure leaves the article as it is: the
+  // comparison is context, not the briefing.
+  const [comparison, setComparison] = useState(null);
+  useEffect(() => {
+    if (!isReady) return undefined;
+    const controller = new AbortController();
+    apiClient
+      .getBriefingComparison(briefingId, controller.signal)
+      .then((value) => {
+        if (!controller.signal.aborted) setComparison(value);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setComparison(null);
+      });
+    return () => controller.abort();
+  }, [apiClient, briefingId, isReady]);
   useInterval(load, active ? POLL_MS : null);
 
   const sections = useMemo(() => (detail && Array.isArray(detail.sections) ? detail.sections.slice().sort((a, b) => a.sortOrder - b.sortOrder) : []), [detail]);
@@ -371,6 +390,8 @@ export default function BriefingReader({ briefingId }) {
           </button>
         </div>
       ) : null}
+
+      {ready ? <ComparisonCallout comparison={comparison} baselineHref={(id) => '/dashboard/briefings/' + encodeURIComponent(id)} /> : null}
 
       <BriefingAudio briefing={briefing} onSectionChange={setSpeakingSectionId} onChaptersChange={onChaptersChange} apiRef={playerRef} />
 

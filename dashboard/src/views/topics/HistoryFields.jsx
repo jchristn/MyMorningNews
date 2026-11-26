@@ -4,18 +4,24 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext.jsx';
 import ErrorState from '../../components/ErrorState.jsx';
 import FormField from '../../components/FormField.jsx';
+import { HISTORY_BOUNDS } from '../../utils/comparison.js';
 
 export const HISTORY_MODES = ['Off', 'PreviousIssue', 'RecentIssues', 'SinceDate', 'SpecificIssue'];
 
-export default function HistoryFields({ topicId, value, onChange, disabled, catalogPublicationId = null }) {
+// "Compare with past briefings": the mode, count, start date, pinned issue, and (showBudget) the comparison budget.
+// The pinned issue is chosen from the topic's ready briefings, or from editionId's when given (an edition compares
+// with its own earlier issues, and its Off keeps the topics' own research comparisons). children render after the
+// fields (a baseline preview).
+export default function HistoryFields({ topicId = null, editionId = null, value, onChange, disabled, catalogPublicationId = null, showBudget = false, idPrefix = 'ctx-history', children = null }) {
   const { t } = useTranslation();
   const { apiClient } = useAuth();
   const [issues, setIssues] = useState([]);
   const [error, setError] = useState(null);
+  const edition = Boolean(editionId);
   useEffect(() => {
     if (value.historyMode !== 'SpecificIssue') return;
     let live = true;
-    const query = { topicId, status: 'Ready', pageSize: 100 };
+    const query = { ...(edition ? { editionId } : { topicId }), status: 'Ready', pageSize: 100 };
     const listing = catalogPublicationId ? apiClient.listAdminCatalogIssues(catalogPublicationId, query) : apiClient.listBriefings(query);
     listing
       .then((page) => {
@@ -30,26 +36,26 @@ export default function HistoryFields({ topicId, value, onChange, disabled, cata
     return () => {
       live = false;
     };
-  }, [apiClient, topicId, value.historyMode, catalogPublicationId]);
+  }, [apiClient, topicId, editionId, edition, value.historyMode, catalogPublicationId]);
   const set = (patch) => onChange({ ...value, ...patch });
   return (
     <>
-      <FormField id="ctx-history" label={t('topicHistory.title')} help={t('topicHistory.help')} wide>
-        <select id="ctx-history" value={value.historyMode} disabled={disabled} onChange={(e) => set({ historyMode: e.target.value })}>
+      <FormField id={idPrefix} label={t('topicHistory.title')} help={edition ? t('topicHistory.editionHelp') : t('topicHistory.help')} wide>
+        <select id={idPrefix} value={value.historyMode} disabled={disabled} onChange={(e) => set({ historyMode: e.target.value })}>
           {HISTORY_MODES.map((mode) => (
             <option key={mode} value={mode}>
-              {t('topicHistory.' + mode)}
+              {edition && mode === 'Off' ? t('topicHistory.editionOff') : t('topicHistory.' + mode)}
             </option>
           ))}
         </select>
       </FormField>
       {['RecentIssues', 'SinceDate'].includes(value.historyMode) ? (
-        <FormField id="ctx-history-count" label={t('topicHistory.count')}>
+        <FormField id={idPrefix + '-count'} label={t('topicHistory.count')}>
           <input
-            id="ctx-history-count"
+            id={idPrefix + '-count'}
             type="number"
-            min={1}
-            max={20}
+            min={HISTORY_BOUNDS.count.min}
+            max={HISTORY_BOUNDS.count.max}
             value={value.historyCount}
             disabled={disabled}
             onChange={(e) => set({ historyCount: e.target.value })}
@@ -57,9 +63,9 @@ export default function HistoryFields({ topicId, value, onChange, disabled, cata
         </FormField>
       ) : null}
       {value.historyMode === 'SinceDate' ? (
-        <FormField id="ctx-history-date" label={t('topicHistory.date')}>
+        <FormField id={idPrefix + '-date'} label={t('topicHistory.date')}>
           <input
-            id="ctx-history-date"
+            id={idPrefix + '-date'}
             type="date"
             max={new Date().toISOString().slice(0, 10)}
             value={value.historySinceUtc}
@@ -69,9 +75,9 @@ export default function HistoryFields({ topicId, value, onChange, disabled, cata
         </FormField>
       ) : null}
       {value.historyMode === 'SpecificIssue' ? (
-        <FormField id="ctx-history-issue" label={t('topicHistory.issue')} wide>
+        <FormField id={idPrefix + '-issue'} label={t('topicHistory.issue')} wide>
           <select
-            id="ctx-history-issue"
+            id={idPrefix + '-issue'}
             value={value.historyBriefingId}
             disabled={disabled}
             onChange={(e) => set({ historyBriefingId: e.target.value })}
@@ -86,12 +92,32 @@ export default function HistoryFields({ topicId, value, onChange, disabled, cata
           <ErrorState error={error} inline />
         </FormField>
       ) : null}
+      {showBudget && value.historyMode !== 'Off' ? (
+        <FormField id={idPrefix + '-budget'} label={t('topicHistory.budget')} help={t('topicHistory.budgetHelp', HISTORY_BOUNDS.budget)}>
+          <input
+            id={idPrefix + '-budget'}
+            type="number"
+            min={HISTORY_BOUNDS.budget.min}
+            max={HISTORY_BOUNDS.budget.max}
+            step={256}
+            value={value.historyTokenBudget}
+            disabled={disabled}
+            onChange={(e) => set({ historyTokenBudget: e.target.value })}
+          />
+        </FormField>
+      ) : null}
       {value.historyMode !== 'Off' ? <p className="muted small form-field wide">{t('topicHistory.firstRun')}</p> : null}
+      {edition && value.historyMode === 'Off' ? <p className="muted small form-field wide">{t('topicHistory.editionOffHelp')}</p> : null}
+      {children}
     </>
   );
 }
 HistoryFields.propTypes = {
-  topicId: PropTypes.string.isRequired,
+  topicId: PropTypes.string,
+  editionId: PropTypes.string,
+  showBudget: PropTypes.bool,
+  idPrefix: PropTypes.string,
+  children: PropTypes.node,
   value: PropTypes.object.isRequired,
   onChange: PropTypes.func.isRequired,
   disabled: PropTypes.bool,

@@ -23,6 +23,7 @@ import { spacing } from '@/theme/palette';
 import { DetailHeader, ItemCard } from '../common/DetailScreen';
 import { ResourceListScreen } from '../common/ResourceListScreen';
 import { FindingsList } from '../research/FindingScreens';
+import { TopicSlotsBanner } from '../account/TopicSlotsSection';
 import { TopicHistory } from './TopicHistory';
 import { TopicReviewBanner } from './TopicReviews';
 
@@ -53,6 +54,7 @@ export function TopicsScreen() {
       feature={t('mobile.features.topics')}
       header={
         <>
+          <TopicSlotsBanner />
           <ButtonRow>
             <Button title={t('mobile.catalog.title')} icon="library-outline" kind="secondary" onPress={() => router.push('/today/catalog')} />
             <Button title={t('mobile.topics.new')} disabled={!customAllowed} icon="add" onPress={() => router.push('/topics/new')} style={{ flexGrow: 1 }} testID="new-topic" />

@@ -2,7 +2,7 @@
 
 Platform packages, shared catalog subscriptions, topic history, private provider keys and billing are described in the [platform operator guide](../../docs/PLATFORM_OPERATIONS.md). Native store availability and deployment evidence are tracked separately from source support.
 
-A Python client for the My Morning News REST API. It covers topics and the refinement wizard, one-time research requests, schedules, runs, findings, sources, predictions, suggestions, feedback, learned preferences, editions, briefings, templates, prompts, audio, stored files, podcast feeds, email, analytics, usage, model endpoints, search providers, voices, the vault, devices, notifications and notification preferences, the MCP server registry, and the account (plan, usage meter, data export, deletion, and the public sign-up, email verification, and password reset routes).
+A Python client for the My Morning News REST API. It covers topics and the refinement wizard, one-time research requests, schedules, runs, findings, sources, predictions, suggestions, feedback, learned preferences, editions (including comparison settings and system briefings), briefings (including comparison provenance), templates, prompts, audio, stored files, podcast feeds, email, analytics, usage, model endpoints, search providers, voices, the vault, devices, notifications and notification preferences, the MCP server registry, and the account (plan, usage meter, topic slots, data export, deletion, and the public sign-up, email verification, and password reset routes).
 
 - Single module: `mymorningnews_sdk.py`
 - Python 3.10 or later
@@ -225,6 +225,7 @@ client.topics.set_search_providers(t.id, [provider_id])   # [] restores tenant d
 client.topics.ranking_recommendation(t.id)
 client.topics.run(t.id); client.topics.dry_run(t.id)       # spend tokens
 client.topics.learn(t.id)                                  # learning pass
+client.topics.preview_history(t.id, history_mode="RecentIssues", history_count=3)   # baseline preview; nothing saved
 ```
 
 ### refinement (wizard)
@@ -321,6 +322,11 @@ client.briefings.list(edition_id=e.edition.id, status="Ready")
 client.briefings.markdown(briefing_id); client.briefings.html(briefing_id)
 client.briefings.pin(briefing_id); client.briefings.regenerate(briefing_id)
 client.briefings.generate_audio(briefing_id, voice_profile_id=voice_id)
+cmp = client.briefings.comparison(briefing_id)   # BriefingComparisonResponse: compared, mode, note, baselines, counts, deltas
+client.editions.update(e.edition.id, history_mode="PreviousIssue")   # compare with the edition's own earlier issues
+client.editions.preview_history(e.edition.id)                        # baseline preview; nothing saved
+client.editions.publications(e.edition.id)                           # Page[EditionPublicationResponse], paging filters
+client.editions.set_publications(e.edition.id, [publication_id])     # [] removes them all
 
 # Public share link: one page to listen and read that anyone can open with no sign-in.
 # Shown once; only a hash is stored. Every share expires: expires_in_days is 1 to 14 (default 7),
@@ -430,6 +436,8 @@ client.notifications.mark_all_read(); client.notifications.delete(page.objects[0
 
 client.account.plan(); client.account.redeem("SPRING-2026")
 meter = client.account.usage()          # UsageMeter: plan_key, topics, topics_max, runs_today, month_to_date_cost_usd, reset_utc, ...
+slots = client.account.topic_slots()    # TopicSlotsResponse: limit, counted, over_limit, customized, topics
+client.account.set_topic_slots([tid1, tid2]); client.account.clear_topic_slots()   # keep order on a smaller plan
 client.account.export().save("my-data.zip")
 client.account.delete()                 # {"purgeAfterUtc": ...}; signing in again before then cancels it
 
@@ -476,7 +484,7 @@ client.request("GET", "/v1.0/api/audit", query={"page_size": 10})
 
 `test_harness.py` runs against a live server. It signs in as the admin user, creates its own data with names starting `SDK-python-`, exercises every resource group (create, read back, update, list contains it, delete, 404 after delete, and typed errors on bad requests), checks the server-sent event parser against canned lines, checks request signing against a known test vector offline and with a temporary credential on the live server (including replay and stale-date refusal), checks that the `demo@mymorningnews` user cannot see the admin's topic, and deletes everything it created. Cases that start research runs or call a paid model are skipped unless you pass `--with-run`.
 
-The setup cases check `SetupRequiredError` mapping, the `SetupStatus` and `SetupOptions` models, and the `options` and `connect` request shapes offline, then read `setup.status()` and `setup.options()` (Claude Code lists `AccessToken` first), expect `BadRequestError` from `connect` for an API key pasted as a setup-token token and `NotFoundError` for an unknown endpoint (both refused before anything is stored), store a key for an unreachable local endpoint (the live check fails, so `last_validation_succeeded` is False), expect `NotFoundError` for an unknown endpoint, and expect `PermissionDeniedError` from `verify`, `set_model_key`, `options`, and `connect` for a plain user; the administrator's live `verify()` is not called because it probes the real providers. Three cases cover hosted accounts and the MCP registry. The plan limit case grants a new user the Free plan and checks the usage meter, the ZIP export, `CapReachedError` past the topic limit, and account deletion undone by signing in. The sign-up case opens `Hosting.PublicSignupEnabled` through the settings API and restores the original settings afterward, checks `EmailNotVerifiedError` at sign-in, reads the verification and reset links from the personal tenant's outbox through an access key the administrator creates, and deletes the personal tenant; it skips when an environment variable pins the setting. The MCP case runs a fake MCP server on 127.0.0.1 (it answers initialize and tools/list; no tool is called) and skips discovery when the server cannot reach it, for example from a container.
+The setup cases check `SetupRequiredError` mapping, the `SetupStatus` and `SetupOptions` models, and the `options` and `connect` request shapes offline, then read `setup.status()` and `setup.options()` (Claude Code lists `AccessToken` first), expect `BadRequestError` from `connect` for an API key pasted as a setup-token token and `NotFoundError` for an unknown endpoint (both refused before anything is stored), store a key for an unreachable local endpoint (the live check fails, so `last_validation_succeeded` is False), expect `NotFoundError` for an unknown endpoint, and expect `PermissionDeniedError` from `verify`, `set_model_key`, `options`, and `connect` for a plain user; the administrator's live `verify()` is not called because it probes the real providers. Three cases cover hosted accounts and the MCP registry. The plan limit case grants a new user the Free plan and checks the usage meter, the ZIP export, `CapReachedError` past the topic limit, and account deletion undone by signing in. The sign-up case opens `Hosting.PublicSignupEnabled` through the settings API and restores the original settings afterward, checks `EmailNotVerifiedError` at sign-in, reads the verification and reset links from the personal tenant's outbox through an access key the administrator creates, and deletes the personal tenant; it skips when an environment variable pins the setting. The MCP case runs a fake MCP server on 127.0.0.1 (it answers initialize and tools/list; no tool is called) and skips discovery when the server cannot reach it, for example from a container. The comparison cases preview topic and edition baselines (unsaved settings, bounds, nothing saved), save edition history settings, read and replace an edition's system briefings with an empty list (an unsubscribed publication is a 400), check that a standalone edition briefing reports `compared` false with every change kind counted, and set, reject, clear, and restore the account's topic keep order.
 
 ```bash
 ./run-tests.sh                       # macOS and Linux

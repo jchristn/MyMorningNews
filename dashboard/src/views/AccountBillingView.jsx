@@ -7,6 +7,7 @@ import LoadingState from '../components/LoadingState.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
 import useFormat from '../hooks/useFormat.js';
+import TopicSlotsPanel from './profile/TopicSlotsPanel.jsx';
 
 export function billingRedirect(value) {
   const url = new URL(value);
@@ -54,6 +55,7 @@ export default function AccountBillingView() {
     <PageHeader title={t('billing.title')} summary={t('billing.summary')} actions={<button className="button secondary" onClick={load}>{t('common.refresh')}</button>} />
     <ErrorState error={error} inline onRetry={load} />
     {!data && !error ? <LoadingState /> : null}
+    <TopicSlotsPanel />
     {data ? <>
       <section className="panel">
         <div className="section-title"><h2>{t('account.plan.title')}</h2><StatusBadge tone="accent">{data.plan?.plan?.name}</StatusBadge></div>

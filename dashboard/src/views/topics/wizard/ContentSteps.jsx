@@ -4,10 +4,12 @@ import { CircleCheck, MessageSquarePlus, PenLine, Sparkles } from 'lucide-react'
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../context/AuthContext.jsx';
 import { useApp } from '../../../context/AppContext.jsx';
+import { DEFAULT_HISTORY_BUDGET, clampBudget } from '../../../utils/comparison.js';
 import { AUDIENCE_LEVELS, CONTEXT_CONSTRAINT_KINDS, HORIZONS } from '../../../utils/enums.js';
 import EmptyState from '../../../components/EmptyState.jsx';
 import ErrorState from '../../../components/ErrorState.jsx';
 import FormField from '../../../components/FormField.jsx';
+import HistoryPreview from '../../../components/HistoryPreview.jsx';
 import MarkdownEditor from '../../../components/MarkdownEditor.jsx';
 import QuestionCard from '../../../components/QuestionCard.jsx';
 import ConstraintEditor from '../ConstraintEditor.jsx';
@@ -168,7 +170,8 @@ function topicForm(topic) {
     historyMode: topic.historyMode || 'Off',
     historyCount: topic.historyCount ?? 5,
     historySinceUtc: topic.historySinceUtc?.slice(0, 10) || '',
-    historyBriefingId: topic.historyBriefingId || ''
+    historyBriefingId: topic.historyBriefingId || '',
+    historyTokenBudget: topic.historyTokenBudget ?? DEFAULT_HISTORY_BUDGET
   };
 }
 
@@ -184,6 +187,7 @@ export function topicContextBody(form) {
     historySinceUtc:
       form.historyMode === 'SinceDate' && form.historySinceUtc ? new Date(form.historySinceUtc + 'T00:00:00Z').toISOString() : null,
     historyBriefingId: form.historyMode === 'SpecificIssue' ? form.historyBriefingId : null,
+    historyTokenBudget: clampBudget(form.historyTokenBudget),
     seedQueries: form.seedQueries
       .split('\n')
       .map((s) => s.trim())
@@ -270,7 +274,15 @@ export function TopicContextForm({ topic, onSaved, disabled = false, controlRef,
             ))}
           </select>
         </FormField>
-        <HistoryFields topicId={topic.id} value={form} onChange={setForm} disabled={disabled || saving} />
+        <HistoryFields topicId={topic.id} value={form} onChange={setForm} disabled={disabled || saving} showBudget>
+          <HistoryPreview
+            form={form}
+            load={(body, signal) => apiClient.previewTopicHistory(topic.id, body, signal)}
+            baselineHref={(id) => '/dashboard/briefings/' + encodeURIComponent(id)}
+            disabled={disabled}
+            idPrefix="topic-history-preview"
+          />
+        </HistoryFields>
         <FormField
           id="ctx-novelty"
           label={t('wizard.context.novelty', { value: form.noveltyPreference })}

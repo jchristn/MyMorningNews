@@ -16,6 +16,11 @@ namespace MyMorningNews.Core.Enums
         Update,
 
         /// <summary>
+        /// The new finding corrects the earlier one: a retraction, a corrected figure, or a denial.
+        /// </summary>
+        Correction,
+
+        /// <summary>
         /// Different.
         /// </summary>
         Different

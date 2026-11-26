@@ -18,6 +18,11 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         public const string Columns = "id, tenantid, userid, name, slug, description, brief, audiencelevel, horizon, language, status, isonetime, noveltypreference, emailonrun, emailwhenempty, maxemailfindings, displaythreshold, weightllm, weightfeedback, weightnovelty, weightsource, weightrecency, seedqueries, briefingtemplateid, lastrunutc, lastrefinedutc, active, createdutc, lastupdateutc, agenticsearch, mcptoolids, voiceprofileid, audioenabled, historymode, historycount, historysinceutc, historybriefingid, historytokenbudget";
 
         /// <summary>
+        /// Columns read back: <see cref="Columns"/> plus slotpriority, which only the slot selection writes.
+        /// </summary>
+        public const string SelectColumns = Columns + ", slotpriority";
+
+        /// <summary>
         /// Schema statements: table and indexes. Idempotent.
         /// </summary>
         public static readonly IReadOnlyList<string> Schema = new List<string>
@@ -71,12 +76,12 @@ namespace MyMorningNews.Core.Database.Postgresql.Queries
         /// <summary>
         /// Select by identifier within a tenant.
         /// </summary>
-        public const string SelectById = "SELECT " + Columns + " FROM topics WHERE id = $1 AND tenantid = $2";
+        public const string SelectById = "SELECT " + SelectColumns + " FROM topics WHERE id = $1 AND tenantid = $2";
 
         /// <summary>
         /// Select by identifier without tenant scoping.
         /// </summary>
-        public const string SelectByIdUnscoped = "SELECT " + Columns + " FROM topics WHERE id = $1";
+        public const string SelectByIdUnscoped = "SELECT " + SelectColumns + " FROM topics WHERE id = $1";
 
         /// <summary>
         /// Delete by identifier within a tenant.

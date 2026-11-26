@@ -71,5 +71,17 @@ namespace MyMorningNews.Core.Briefings
         /// Save sections, items, and files. False for previews.
         /// </summary>
         public bool Save { get; set; } = true;
+
+        /// <summary>
+        /// Edition being composed, or null for a run briefing. When its HistoryMode is not Off, the composition compares
+        /// with earlier issues of the edition instead of the topics' own research baselines.
+        /// </summary>
+        public Edition? Edition { get; set; } = null;
+
+        /// <summary>
+        /// Catalog publications the edition includes, already checked against the owner's subscriptions. Their published
+        /// issues in the period are summarized; no system research is started.
+        /// </summary>
+        public List<CatalogPublication> Publications { get; set; } = new List<CatalogPublication>();
     }
 }

@@ -42,6 +42,8 @@ namespace MyMorningNews.Server.Routes
                 .WithParameter(QueryParam("runId", typeof(string))).WithParameter(QueryParam("status", typeof(BriefingStatusEnum))).WithParameter(QueryParam("pinned", typeof(bool)))
                 .WithParameter(QueryParam("includeDryRun", typeof(bool)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}", ReadAsync, null, openApiMetadata: Doc("Read a briefing with its sections, items, and files", "Briefings"));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}/comparison", ComparisonAsync, null, openApiMetadata: Doc("What a briefing was compared with and what changed", "Briefings",
+                "Baselines are the earlier issues the comparison snapshot selected; deltas classify each item as NewDevelopment, ChangedFact, Correction, Resolved, Unchanged, or Unavailable, each linked to current evidence and the baseline item. Compared is false for standalone briefings."));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}/download", DownloadAsync, null, openApiMetadata: Doc("Download a briefing as Markdown or HTML", "Briefings",
                 "format=md (default) or html. 410 ArtifactExpired when the file passed retention; regenerate to restore it.").WithParameter(QueryParam("format", typeof(string))));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, b + "/{id}/progress", ProgressAsync, null, openApiMetadata: Doc("Where I stopped listening", "Briefings",
@@ -104,6 +106,15 @@ namespace MyMorningNews.Server.Routes
             if (message.Status == EmailStatusEnum.Failed || message.Status == EmailStatusEnum.Skipped)
             { await SendErrorAsync(ctx, 503, "SupportDeliveryFailed", "The support report could not be delivered. Contact support directly.").ConfigureAwait(false); return; }
             await SendJsonAsync(ctx, 202, new SupportReportResponse { Id = message.Id, Status = message.Status }).ConfigureAwait(false);
+        }
+
+        private async Task ComparisonAsync(HttpContextBase ctx)
+        {
+            Briefing? br = await OwnedAsync(ctx, RequestTypeEnum.BriefingRead).ConfigureAwait(false);
+            if (br == null) return;
+            User? reader = await Server.Database.Users.ReadAsync(br.TenantId, br.UserId, ctx.Token).ConfigureAwait(false);
+            BriefingComparisonResponse comparison = await new MyMorningNews.Core.Briefings.ComparisonService(Server.Database).DescribeAsync(br, reader?.TimeZone ?? "UTC", ctx.Token).ConfigureAwait(false);
+            await SendJsonAsync(ctx, 200, comparison).ConfigureAwait(false);
         }
 
         private async Task ReadAsync(HttpContextBase ctx)

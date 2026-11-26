@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTranslation } from 'react-i18next';
@@ -186,11 +186,25 @@ function TopicsCard({ detail, onSaved }) {
 /** The most system briefings one edition can include (EditionPublicationsRequest). */
 export const MAX_EDITION_PUBLICATIONS = 20;
 
+/** System briefings per page in the edition picker. */
+export const PUBLICATION_PAGE_SIZE = 25;
+
+/** How long the picker waits after the last keystroke before searching. */
+export const PUBLICATION_SEARCH_DELAY_MS = 300;
+
+/** The catalog query for one page of the picker: the caller's subscriptions only, by title, optionally searched. */
+export function publicationPickerQuery(search, pageNumber = 1) {
+  const term = (search || '').trim();
+  return { subscribed: true, search: term || undefined, sortBy: 'title', sortDirection: 'Ascending', pageNumber, pageSize: PUBLICATION_PAGE_SIZE };
+}
+
 /**
  * System briefings inside a custom edition (`GET/PUT /v1.0/api/editions/{id}/publications`): pick subscribed
- * publications in order. The edition summarizes their issues in its period and links to each; it never starts system
- * research. Entries that are no longer readable stay listed (marked, and skipped at composition) until removed. Hidden
- * on a server without the route.
+ * publications in order. The subscriptions come from `GET /v1.0/api/catalog?subscribed=true` by title, a page at a
+ * time with Load more, and the search box searches on the server after a short pause. The edition summarizes their
+ * issues in its period and links to each; it never starts system research. Saved and chosen entries stay listed even
+ * when they are not on a loaded page, and entries that are no longer readable stay listed (marked, and skipped at
+ * composition) until removed. Hidden on a server without the route.
  */
 export function PublicationsCard({ detail, onSaved }) {
   const p = useTheme();
@@ -198,7 +212,20 @@ export function PublicationsCard({ detail, onSaved }) {
   const { client } = useAuth();
   const editionId = detail.edition.id;
   const current = useResource(() => (Array.isArray(detail.publications) ? Promise.resolve(detail.publications) : editionsApi.publications(client, editionId, { pageNumber: 1, pageSize: MAX_EDITION_PUBLICATIONS }).then(listItems)), [client, editionId, detail.publications]);
-  const catalog = useResource(() => catalogApi.list(client, { pageNumber: 1, pageSize: 100 }), [client]);
+  const [search, setSearch] = useState('');
+  const [term, setTerm] = useState('');
+  const termRef = useRef('');
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      termRef.current = search.trim();
+      setTerm(search.trim());
+    }, PUBLICATION_SEARCH_DELAY_MS);
+    return () => clearTimeout(handle);
+  }, [search]);
+  const catalog = useResource(() => catalogApi.list(client, publicationPickerQuery(term, 1)), [client, term]);
+  const [moreBusy, setMoreBusy] = useState(false);
+  const [moreError, setMoreError] = useState(null);
+  const [picked, setPicked] = useState({});
   const saved = (Array.isArray(current.data) ? current.data : []).slice().sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
   const savedKey = saved.map((x) => x.publicationId).join(',');
   const [selection, setSelection] = useState(null);
@@ -206,14 +233,39 @@ export function PublicationsCard({ detail, onSaved }) {
   const [error, setError] = useState(null);
   if (current.status === 'notAvailable' || (current.status === 'error' && isNotAvailable(current.error))) return null;
   const chosen = selection || saved.map((x) => x.publicationId);
-  const subscribed = listItems(catalog.data).filter((entry) => entry.subscribed && !entry.suspended);
-  const titles = {};
+  const pageData = catalog.status === 'ready' ? catalog.data : null;
+  const loaded = listItems(pageData).filter((entry) => entry.subscribed !== false && !entry.suspended);
+  const loadedIds = new Set(loaded.map((e) => e.id));
+  const morePages = Boolean(pageData && Number.isInteger(pageData.totalPages) && (pageData.pageNumber || 1) < pageData.totalPages);
+  // With no search and every page loaded, a saved pick missing from the list is no longer subscribed.
+  const complete = Boolean(pageData) && !term && !morePages;
+  const titles = { ...picked };
   for (const x of saved) titles[x.publicationId] = x.title;
-  for (const entry of subscribed) titles[entry.id] = entry.title;
+  for (const entry of loaded) titles[entry.id] = entry.title;
   const unavailable = new Set(saved.filter((x) => x.available === false).map((x) => x.publicationId));
-  // Saved picks that are not (or no longer) subscribed are listed first so they can be removed.
-  const rows = [...saved.map((x) => x.publicationId).filter((id) => !subscribed.some((e) => e.id === id)), ...subscribed.map((e) => e.id)];
+  // Saved and chosen picks that are not on a loaded page are listed first so they can always be reordered or removed.
+  const pinned = [...new Set([...saved.map((x) => x.publicationId), ...chosen])].filter((id) => !loadedIds.has(id));
+  const rows = [...pinned, ...loaded.map((e) => e.id)];
   const dirty = chosen.join(',') !== savedKey;
+  const loadMore = async () => {
+    if (!pageData) return;
+    const forTerm = term;
+    setMoreBusy(true);
+    setMoreError(null);
+    try {
+      const next = await catalogApi.list(client, publicationPickerQuery(forTerm, (pageData.pageNumber || 1) + 1));
+      // A page for a search the person has since changed is dropped, and the new search's first page is left to land.
+      if (termRef.current === forTerm) catalog.setData((prev) => (prev === pageData ? { ...next, objects: [...listItems(prev), ...listItems(next)] } : prev));
+    } catch (e) {
+      setMoreError(e);
+    } finally {
+      setMoreBusy(false);
+    }
+  };
+  const toggle = (id) => {
+    if (titles[id]) setPicked((prev) => ({ ...prev, [id]: titles[id] }));
+    setSelection(toggleTopic(chosen, id));
+  };
   const save = async () => {
     setBusy(true);
     setError(null);
@@ -233,6 +285,15 @@ export function PublicationsCard({ detail, onSaved }) {
       <SectionHeader title={t('mobile.editionPublications.title')} />
       <Card testID="edition-publications">
         <T variant="muted">{t('mobile.editionPublications.help')}</T>
+        <Field
+          label={t('mobile.editionPublications.search')}
+          value={search}
+          onChangeText={setSearch}
+          autoCapitalize="none"
+          autoCorrect={false}
+          returnKeyType="search"
+          testID="edition-publications-search"
+        />
         <ResourceView resource={current} feature={t('mobile.editionPublications.title')}>
           {() => (
             <>
@@ -240,7 +301,7 @@ export function PublicationsCard({ detail, onSaved }) {
               {rows.map((id) => {
                 const on = chosen.includes(id);
                 const order = chosen.indexOf(id);
-                const gone = unavailable.has(id) || !subscribed.some((e) => e.id === id);
+                const gone = unavailable.has(id) || (complete && !loadedIds.has(id));
                 const title = titles[id] || t('mobile.editionPublications.untitled');
                 const full = !on && chosen.length >= MAX_EDITION_PUBLICATIONS;
                 return (
@@ -248,14 +309,19 @@ export function PublicationsCard({ detail, onSaved }) {
                     key={id}
                     title={(on ? order + 1 + '. ' : '') + title}
                     detail={gone ? t('mobile.editionPublications.unavailable') : undefined}
-                    onPress={full || (gone && !on) ? undefined : () => setSelection(toggleTopic(chosen, id))}
+                    onPress={full || (gone && !on) ? undefined : () => toggle(id)}
                     accessibilityLabel={title + (on ? ', ' + t('mobile.editions.selected') : '') + (gone ? ', ' + t('mobile.editionPublications.unavailable') : '')}
                     right={<Ionicons name={on ? 'checkmark-circle' : 'ellipse-outline'} size={22} color={on ? p.primary : p.muted} />}
                     testID={'edition-publication-' + id}
                   />
                 );
               })}
-              {catalog.status === 'ready' && rows.length === 0 ? <T variant="muted">{t('mobile.editionPublications.noSubscriptions')}</T> : null}
+              {pageData && !term && rows.length === 0 ? <T variant="muted">{t('mobile.editionPublications.noSubscriptions')}</T> : null}
+              {pageData && term && loaded.length === 0 ? <T variant="muted">{t('mobile.editionPublications.noMatches')}</T> : null}
+              {catalog.status === 'loading' ? <T variant="small">{t('mobile.states.loading')}</T> : null}
+              {catalog.status === 'error' ? <ActionError error={catalog.error} /> : null}
+              <ActionError error={moreError} />
+              {morePages ? <Button title={t('mobile.editionPublications.loadMore')} kind="secondary" busy={moreBusy} disabled={moreBusy} onPress={() => void loadMore()} testID="edition-publications-more" /> : null}
             </>
           )}
         </ResourceView>

@@ -3044,7 +3044,7 @@
         "403": "Forbidden",
         "404": "NotFound"
       },
-      "notes": "Browse published system briefings and account eligibility."
+      "notes": "Browse published system briefings and account eligibility. subscribed=true limits the page to the caller's subscriptions (the edition system briefing picker uses this with search); subscribed=false to the rest."
     },
     "GET /v1.0/api/catalog/subscriptions": {
       "response": "EnumerationResult<CatalogSubscription>",
@@ -3846,7 +3846,7 @@
         "403": "Forbidden",
         "404": "NotFound"
       },
-      "notes": "Browse published system briefings and account eligibility."
+      "notes": "Browse published system briefings and account eligibility. subscribed=true limits the page to the caller's subscriptions (the edition system briefing picker uses this with search); subscribed=false to the rest."
     },
     "POST /v1.0/api/catalog/subscriptions/enumerate": {
       "response": "EnumerationResult<CatalogSubscription>",
@@ -4039,7 +4039,26 @@
         "200": "OK",
         "400": "BadRequest (access keys are refused)",
         "403": "Forbidden"
-      }
+      },
+      "notes": "Summary only. Enumerate the topics in slot order from /v1.0/api/account/topic-slots/topics."
+    },
+    "GET /v1.0/api/account/topic-slots/topics": {
+      "response": "EnumerationResult<TopicSlotResponse>",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest (access keys are refused), ValidationFailed",
+        "403": "Forbidden"
+      },
+      "notes": "Custom topics in slot order, paged. Position and withinPlan are computed over the whole order."
+    },
+    "POST /v1.0/api/account/topic-slots/topics/enumerate": {
+      "response": "EnumerationResult<TopicSlotResponse>",
+      "status": {
+        "200": "OK",
+        "400": "BadRequest (access keys are refused), ValidationFailed",
+        "403": "Forbidden"
+      },
+      "notes": "Custom topics in slot order, paged. Position and withinPlan are computed over the whole order."
     },
     "PUT /v1.0/api/account/topic-slots": {
       "response": "TopicSlotsResponse",
@@ -4047,7 +4066,8 @@
         "200": "OK",
         "400": "BadRequest, ValidationFailed (duplicate, unknown, archived, or one-time topic)",
         "403": "Forbidden"
-      }
+      },
+      "notes": "Returns the summary after the change; re-enumerate /v1.0/api/account/topic-slots/topics for the new order."
     },
     "POST /v1.0/api/editions/{id}/publications/enumerate": {
       "response": "EnumerationResult<EditionPublicationResponse>",

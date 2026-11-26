@@ -51,7 +51,10 @@ export const pt = {
     "noSubscriptions": "Assine briefings do sistema primeiro para adicioná-los aqui.",
     "save": "Salvar briefings do sistema",
     "clear": "Remover todos",
-    "capped": "Seu plano não inclui pesquisa personalizada, então não é possível adicionar briefings do sistema às edições. Você ainda pode removê-los."
+    "capped": "Seu plano não inclui pesquisa personalizada, então não é possível adicionar briefings do sistema às edições. Você ainda pode removê-los.",
+    "search": "Pesquisar seus briefings do sistema",
+    "noMatches": "Nenhum briefing do sistema assinado corresponde a esta pesquisa.",
+    "loadMore": "Carregar mais"
   },
   topicSlots: {
     "title": "Tópicos que continuam ativos",

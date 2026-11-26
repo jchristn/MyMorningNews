@@ -13,9 +13,29 @@ import { moveItem } from '../editions/EditionTopicPicker.jsx';
 
 export const TOPIC_SLOTS_ANCHOR = 'topic-slots';
 
-// True when a TopicSlotsResponse should be shown: the account has custom topics and a finite limit.
+// True when a TopicSlotsResponse summary should be shown: the account has custom topics and a finite limit.
 export function slotsRelevant(slots) {
-  return Boolean(slots) && Array.isArray(slots.topics) && slots.topics.length > 0 && slots.limit !== null && slots.limit !== undefined;
+  return Boolean(slots) && Number(slots.counted) > 0 && slots.limit !== null && slots.limit !== undefined;
+}
+
+// Topics read per page from /account/topic-slots/topics (the server allows up to 1000).
+export const SLOT_PAGE_SIZE = 200;
+
+// The most pages read for one order; a safety stop well past any plan's topic count.
+const MAX_SLOT_PAGES = 50;
+
+// The summary plus every topic in slot order. The reorder editor needs the whole order to save keepTopicIds, so the
+// paged list is walked page by page.
+export async function readTopicSlots(apiClient, summary) {
+  const head = summary || (await apiClient.getTopicSlots());
+  const topics = [];
+  for (let pageNumber = 1; pageNumber <= MAX_SLOT_PAGES; pageNumber++) {
+    const page = await apiClient.listTopicSlotTopics({ pageNumber, pageSize: SLOT_PAGE_SIZE });
+    const objects = page && Array.isArray(page.objects) ? page.objects : [];
+    topics.push(...objects);
+    if (!page || objects.length === 0 || pageNumber >= (page.totalPages || 0)) break;
+  }
+  return { ...head, topics };
 }
 
 // Whether the topic at index keeps running under limit (null means unlimited).
@@ -57,7 +77,7 @@ export default function TopicSlotsPanel() {
   const load = useCallback(async () => {
     setError(null);
     try {
-      apply(await apiClient.getTopicSlots());
+      apply(await readTopicSlots(apiClient));
     } catch (err) {
       setError(err);
     } finally {
@@ -94,7 +114,7 @@ export default function TopicSlotsPanel() {
     setSaving(true);
     setSaveError(null);
     try {
-      apply(await apiClient.saveTopicSlots(ids));
+      apply(await readTopicSlots(apiClient, await apiClient.saveTopicSlots(ids)));
       addNotification(message, 'success');
     } catch (err) {
       setSaveError(err);

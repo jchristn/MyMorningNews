@@ -6,6 +6,7 @@ namespace MyMorningNews.Sdk.Resources
     using System.Threading;
     using System.Threading.Tasks;
     using MyMorningNews.Sdk.Models;
+    using MyMorningNews.Sdk.Options;
     using MyMorningNews.Sdk.Requests;
 
     /// <summary>
@@ -191,8 +192,8 @@ namespace MyMorningNews.Sdk.Resources
         }
 
         /// <summary>
-        /// The caller's custom topics against the plan's topic limit, in keep order. Topics with WithinPlan false keep
-        /// their history but do not run. Needs a signed-in user.
+        /// The caller's custom topic count against the plan's topic limit: limit, counted, over limit, and whether a keep
+        /// order is saved. Enumerate the topics themselves with GetTopicSlotTopicsAsync. Needs a signed-in user.
         /// </summary>
         /// <param name="token">Cancellation token.</param>
         /// <returns>The TopicSlotsResponse.</returns>
@@ -203,12 +204,26 @@ namespace MyMorningNews.Sdk.Resources
         }
 
         /// <summary>
+        /// The caller's custom topics in slot order (the chosen keep order first, then oldest first), one page at a time.
+        /// Position and WithinPlan reflect the whole order; Search matches the topic name; sorting is always slot order.
+        /// Topics with WithinPlan false keep their history but do not run. Needs a signed-in user.
+        /// </summary>
+        /// <param name="options">Paging and search, or null for defaults.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>A page of TopicSlotResponse items in slot order.</returns>
+        /// <exception cref="MyMorningNewsException">The server returned an error.</exception>
+        public Task<EnumerationResult<TopicSlotResponse>> GetTopicSlotTopicsAsync(ListOptions? options = null, CancellationToken token = default)
+        {
+            return Client.SendAsync<EnumerationResult<TopicSlotResponse>>(HttpMethod.Get, "/v1.0/api/account/topic-slots/topics", (options ?? new ListOptions()).ToQuery(), null, token);
+        }
+
+        /// <summary>
         /// Choose which custom topics to keep running first when the plan allows fewer than the caller has (most
         /// important first). An empty list clears the choice. Nothing is paused, archived, or deleted.
         /// </summary>
         /// <param name="request">Ordered topic identifiers.</param>
         /// <param name="token">Cancellation token.</param>
-        /// <returns>The TopicSlotsResponse.</returns>
+        /// <returns>The TopicSlotsResponse summary.</returns>
         /// <exception cref="ArgumentNullException">request is null.</exception>
         /// <exception cref="MyMorningNewsException">The server returned an error (400 ValidationFailed for a duplicate, unknown, archived, one-time, or another user's topic).</exception>
         public Task<TopicSlotsResponse> SetTopicSlotsAsync(TopicSlotsRequest request, CancellationToken token = default)

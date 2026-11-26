@@ -51,7 +51,10 @@ export const de = {
     "noSubscriptions": "Abonniere zuerst System-Briefings, um sie hier hinzuzufügen.",
     "save": "System-Briefings speichern",
     "clear": "Alle entfernen",
-    "capped": "Dein Tarif enthält keine eigene Recherche, daher können keine System-Briefings zu Ausgaben hinzugefügt werden. Entfernen ist weiterhin möglich."
+    "capped": "Dein Tarif enthält keine eigene Recherche, daher können keine System-Briefings zu Ausgaben hinzugefügt werden. Entfernen ist weiterhin möglich.",
+    "search": "Abonnierte System-Briefings durchsuchen",
+    "noMatches": "Keine abonnierten System-Briefings passen zu dieser Suche.",
+    "loadMore": "Mehr laden"
   },
   topicSlots: {
     "title": "Themen, die weiterlaufen",

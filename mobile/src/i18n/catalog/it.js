@@ -51,7 +51,10 @@ export const it = {
     "noSubscriptions": "Iscriviti prima ai briefing di sistema per aggiungerli qui.",
     "save": "Salva briefing di sistema",
     "clear": "Rimuovi tutti",
-    "capped": "Il tuo piano non include la ricerca personalizzata, quindi non puoi aggiungere briefing di sistema alle edizioni. Puoi comunque rimuoverli."
+    "capped": "Il tuo piano non include la ricerca personalizzata, quindi non puoi aggiungere briefing di sistema alle edizioni. Puoi comunque rimuoverli.",
+    "search": "Cerca nei tuoi briefing di sistema",
+    "noMatches": "Nessun briefing di sistema a cui sei iscritto corrisponde a questa ricerca.",
+    "loadMore": "Carica altri"
   },
   topicSlots: {
     "title": "Argomenti che restano attivi",

@@ -136,5 +136,6 @@ export const routes = {
   accountFunding: '/v1.0/api/account/funding',
   // Which custom topics keep running when the plan allows fewer than the account has (plan section 8.4)
   accountTopicSlots: '/v1.0/api/account/topic-slots',
+  accountTopicSlotTopics: '/v1.0/api/account/topic-slots/topics',
   promoRedeem: '/v1.0/api/promo-codes/redeem',
 };

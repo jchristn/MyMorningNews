@@ -55,7 +55,10 @@ export const en = {
     "noSubscriptions": "Subscribe to system briefings first to add them here.",
     "save": "Save system briefings",
     "clear": "Remove all",
-    "capped": "Your plan does not include custom research, so system briefings cannot be added to editions. You can still remove them."
+    "capped": "Your plan does not include custom research, so system briefings cannot be added to editions. You can still remove them.",
+    "search": "Search your system briefings",
+    "noMatches": "No subscribed system briefings match this search.",
+    "loadMore": "Load more"
   },
   topicSlots: {
     "title": "Topics that keep running",

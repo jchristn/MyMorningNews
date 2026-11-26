@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { ApiError } from '../utils/api.js';
 import { page, renderRoute } from '../test/renderRoute.jsx';
 import { BRIEFING, EDITION, TEMPLATE, TOPICS, detail, editionDetail } from '../test/briefingFixtures.js';
-import { STANDALONE, catalogEntry, comparison, historyPreview, slot, topicSlots } from '../test/comparisonFixtures.js';
+import { STANDALONE, catalogEntry, comparison, historyPreview, slot, slotPage, topicSlots } from '../test/comparisonFixtures.js';
 import { FINDING_DETAIL, TOPIC } from '../test/researchFixtures.js';
 
 function editionApi(overrides = {}) {
@@ -13,7 +13,7 @@ function editionApi(overrides = {}) {
     getEdition: vi.fn(async () => editionDetail()),
     listBriefingTemplates: vi.fn(async () => page([TEMPLATE])),
     listTopics: vi.fn(async () => page(TOPICS)),
-    listCatalog: vi.fn(async () => page([catalogEntry('cat_1', 'Daily science'), catalogEntry('cat_2', 'Space weekly'), catalogEntry('cat_3', 'Not mine', { subscribed: false })])),
+    enumerateCatalog: vi.fn(async () => page([catalogEntry('cat_1', 'Daily science'), catalogEntry('cat_2', 'Space weekly')])),
     ...overrides
   };
 }
@@ -125,7 +125,7 @@ describe('Edition comparison and system briefings', () => {
     expect(within(list).getByText('Retired digest')).toBeInTheDocument();
     expect(within(list).getByText('Unavailable')).toBeInTheDocument();
     const picker = await screen.findByLabelText('System briefing to add');
-    expect(within(picker).queryByRole('option', { name: 'Not mine' })).toBeNull();
+    expect(within(picker).getAllByRole('option')).toHaveLength(3);
     await userEvent.selectOptions(picker, 'cat_1');
     await userEvent.click(screen.getByRole('button', { name: 'Add' }));
     await userEvent.selectOptions(screen.getByLabelText('System briefing to add'), 'cat_2');
@@ -134,6 +134,24 @@ describe('Edition comparison and system briefings', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Move Space weekly up' }));
     await userEvent.click(screen.getByRole('button', { name: /Save system briefings/ }));
     await waitFor(() => expect(setEditionPublications).toHaveBeenCalledWith('edn_1', ['cat_2', 'cat_1']));
+  });
+
+  it('reads subscriptions from the server with search and more pages', async () => {
+    const enumerateCatalog = vi.fn(async (body) => {
+      if (body.search) return { success: true, objects: [catalogEntry('cat_9', 'Ocean report')], pageNumber: 1, pageSize: 25, totalRecords: 1, totalPages: 1 };
+      if (body.pageNumber === 2) return { success: true, objects: [catalogEntry('cat_2', 'Space weekly')], pageNumber: 2, pageSize: 25, totalRecords: 2, totalPages: 2 };
+      return { success: true, objects: [catalogEntry('cat_1', 'Daily science')], pageNumber: 1, pageSize: 25, totalRecords: 2, totalPages: 2 };
+    });
+    renderRoute('/dashboard/editions/edn_1', editionApi({ enumerateCatalog }));
+    const picker = await screen.findByLabelText('System briefing to add');
+    expect(enumerateCatalog).toHaveBeenCalledWith(expect.objectContaining({ subscribed: true, sortBy: 'title', sortDirection: 'Ascending', pageNumber: 1, pageSize: 25 }));
+    expect(screen.getByText('Showing 1 of 2')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Show more' }));
+    await waitFor(() => expect(within(picker).getByRole('option', { name: 'Space weekly' })).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'Show more' })).toBeNull();
+    await userEvent.type(screen.getByLabelText('Search my system briefings'), 'ocean');
+    await waitFor(() => expect(enumerateCatalog).toHaveBeenCalledWith(expect.objectContaining({ subscribed: true, search: 'ocean', pageNumber: 1 })));
+    expect(await within(screen.getByLabelText('System briefing to add')).findByRole('option', { name: 'Ocean report' })).toBeInTheDocument();
   });
 
   it('explains a plan without custom research when saving is refused with 402', async () => {
@@ -152,12 +170,13 @@ describe('Edition comparison and system briefings', () => {
 
 describe('Topics that keep running', () => {
   it('reorders with buttons, follows the limit, saves, and clears', async () => {
-    const saveTopicSlots = vi.fn(async (ids) =>
-      ids.length === 0
-        ? topicSlots()
-        : topicSlots({ customized: true, topics: ids.map((id, i) => slot(id, { top_1: 'Solar', top_2: 'Wind', top_3: 'Hydro' }[id], i + 1, i < 2, { chosen: true })) })
-    );
-    renderRoute('/dashboard/account/billing', { getMyBilling: vi.fn(async () => ({ enabled: false, plan: { plan: { name: 'Paid 5' } }, subscriptions: [], offers: [] })), getTopicSlots: vi.fn(async () => topicSlots()), saveTopicSlots });
+    let current = slotPage();
+    const saveTopicSlots = vi.fn(async (ids) => {
+      current = ids.length === 0 ? slotPage() : slotPage(ids.map((id, i) => slot(id, { top_1: 'Solar', top_2: 'Wind', top_3: 'Hydro' }[id], i + 1, i < 2, { chosen: true })));
+      return topicSlots({ customized: ids.length > 0 });
+    });
+    const listTopicSlotTopics = vi.fn(async () => current);
+    renderRoute('/dashboard/account/billing', { getMyBilling: vi.fn(async () => ({ enabled: false, plan: { plan: { name: 'Paid 5' } }, subscriptions: [], offers: [] })), getTopicSlots: vi.fn(async () => topicSlots()), listTopicSlotTopics, saveTopicSlots });
     const panel = await screen.findByTestId('topic-slots');
     expect(within(panel).getByRole('heading', { name: 'Topics that keep running' })).toBeInTheDocument();
     expect(within(panel).getByText('1 topic is past your plan\'s limit.')).toBeInTheDocument();
@@ -179,7 +198,7 @@ describe('Topics that keep running', () => {
   });
 
   it('stays hidden for unlimited plans and shows a save refusal inline', async () => {
-    renderRoute('/dashboard/account/billing', { getMyBilling: vi.fn(async () => ({ enabled: false, plan: { plan: { name: 'BYOK' } }, subscriptions: [], offers: [] })), getTopicSlots: vi.fn(async () => topicSlots({ limit: null, overLimit: 0 })) });
+    renderRoute('/dashboard/account/billing', { getMyBilling: vi.fn(async () => ({ enabled: false, plan: { plan: { name: 'BYOK' } }, subscriptions: [], offers: [] })), getTopicSlots: vi.fn(async () => topicSlots({ limit: null, overLimit: 0 })), listTopicSlotTopics: vi.fn(async () => slotPage()) });
     expect(await screen.findByText('New paid purchases are unavailable on this server.')).toBeInTheDocument();
     expect(screen.queryByTestId('topic-slots')).toBeNull();
   });
@@ -188,7 +207,7 @@ describe('Topics that keep running', () => {
     const saveTopicSlots = vi.fn(async () => {
       throw new ApiError(400, { error: 'ValidationFailed', message: 'Topic top_3 is archived.' });
     });
-    renderRoute('/dashboard/account/billing', { getMyBilling: vi.fn(async () => ({ enabled: false, plan: { plan: { name: 'Paid 5' } }, subscriptions: [], offers: [] })), getTopicSlots: vi.fn(async () => topicSlots({ overLimit: 0, limit: 5 })), saveTopicSlots });
+    renderRoute('/dashboard/account/billing', { getMyBilling: vi.fn(async () => ({ enabled: false, plan: { plan: { name: 'Paid 5' } }, subscriptions: [], offers: [] })), getTopicSlots: vi.fn(async () => topicSlots({ overLimit: 0, limit: 5 })), listTopicSlotTopics: vi.fn(async () => slotPage()), saveTopicSlots });
     const panel = await screen.findByTestId('topic-slots');
     expect(within(panel).getByText(/Your plan runs up to 5 custom topics/)).toBeInTheDocument();
     await userEvent.click(within(panel).getByRole('button', { name: 'Move Wind down' }));

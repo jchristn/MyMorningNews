@@ -16,7 +16,7 @@ import { spacing } from '@/theme/palette';
 
 export const TOPIC_SLOTS_HREF = '/account/slots';
 
-/** Read the keep order without failing the screen that asks: null on an older server or any error. */
+/** Read the keep-order summary without failing the screen that asks: null on an older server or any error. */
 export function useTopicSlots() {
   const { client } = useAuth();
   return useResource(() => topicSlotsApi.get(client).catch(() => null), [client]);
@@ -48,20 +48,25 @@ function LimitCard({ slots }) {
  * order, most important first. The first `limit` run; the rest keep their history but do not run, and creating,
  * duplicating, or restoring a topic stays blocked until enough are archived or the plan grows. Move up and Move down
  * reorder (each announces the new position), Save stores the order (`PUT /v1.0/api/account/topic-slots`), and Clear
- * returns to creation order. Saving ahead of a downgrade applies when the limit shrinks. Nothing is paused, archived,
+ * returns to creation order. The counts come from the summary route; the order is read by walking the pages of
+ * `/v1.0/api/account/topic-slots/topics` (the editor needs all of it to build the keep list) and read again after a
+ * save, which returns the summary only. Saving ahead of a downgrade applies when the limit shrinks. Nothing is paused, archived,
  * or deleted here.
  */
 export function TopicSlotsSection() {
   const p = useTheme();
   const { t, i18n } = useTranslation();
   const { client } = useAuth();
-  const resource = useResource(() => topicSlotsApi.get(client), [client]);
+  const resource = useResource(async () => {
+    const [summary, list] = await Promise.all([topicSlotsApi.get(client), topicSlotsApi.allTopics(client)]);
+    return { summary, topics: list };
+  }, [client]);
   const [order, setOrder] = useState(null);
   const [busy, setBusy] = useState(null);
   const [error, setError] = useState(null);
   const [saved, setSaved] = useState(false);
-  const slots = resource.data;
-  const topics = (slots && Array.isArray(slots.topics) ? slots.topics : []).slice().sort((a, b) => (a.position || 0) - (b.position || 0));
+  const slots = resource.data ? resource.data.summary : null;
+  const topics = (resource.data && Array.isArray(resource.data.topics) ? resource.data.topics : []).slice().sort((a, b) => (a.position || 0) - (b.position || 0));
   const serverOrder = topics.map((x) => x.topicId);
   const ids = order || serverOrder;
   const byId = {};
@@ -83,10 +88,12 @@ export function TopicSlotsSection() {
     setError(null);
     setSaved(false);
     try {
-      const next = await topicSlotsApi.save(client, keep);
-      resource.setData(next);
-      setOrder(null);
+      const summary = await topicSlotsApi.save(client, keep);
+      resource.setData((prev) => ({ ...prev, summary }));
       setSaved(kind);
+      const list = await topicSlotsApi.allTopics(client);
+      resource.setData((prev) => ({ ...prev, topics: list }));
+      setOrder(null);
     } catch (e) {
       setError(e);
     } finally {

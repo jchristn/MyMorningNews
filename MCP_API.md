@@ -1039,7 +1039,7 @@ None.
 
 ### list_system_briefings
 
-**Browse system briefings.** Browse published system-wide briefings with eligibility and subscription status. Canonical prompts and research internals are excluded.
+**Browse system briefings.** Browse published system-wide briefings with eligibility and subscription status. Set subscribed true for only the ones you subscribe to, or false for only the rest. Canonical prompts and research internals are excluded.
 
 Input:
 
@@ -1047,6 +1047,7 @@ Input:
 |---|---|---|---|
 | `pageNumber` | integer (1 to 10000) | no | Page, default 1. |
 | `pageSize` | integer (1 to 100) | no | Results per page, default 20. |
+| `subscribed` | boolean | no | True for only the system briefings you subscribe to, false for only the rest. Omit for all. |
 
 Output:
 
@@ -1331,11 +1332,15 @@ Output:
 
 ### get_topic_slots
 
-**Read my topic slots.** Read your custom topics against your plan's topic limit, in keep order: which ones fit the plan and run, and which keep their history but do not run. While overLimit is above zero, new topics cannot be created, duplicated, or restored.
+**Read my topic slots.** Read your custom topic count against your plan's topic limit plus one page of your topics in keep order: which ones fit the plan and run, and which keep their history but do not run. Position and withinPlan reflect the whole order, so a later page or a search keeps each topic's true slot; use pageNumber and pageSize to read further. While overLimit is above zero, new topics cannot be created, duplicated, or restored.
 
 Input:
 
-None.
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `search` | string (up to 200) | no | Text in the topic name. |
+| `pageSize` | integer (1 to 100) | no | Topics per page. Default 25. |
+| `pageNumber` | integer (1 to 10000) | no | Page (1-based). Default 1. |
 
 Output:
 
@@ -1345,11 +1350,15 @@ Output:
 | `counted` | integer | yes | Recurring, non-archived topics. Paused topics count. |
 | `overLimit` | integer | yes | Topics past the limit: they keep history but do not run. |
 | `customized` | boolean | yes | You have chosen a keep order. |
-| `topics` | array of object with `topicId`, `name`, `status`, `position`, `chosen`, `withinPlan`, `lastRunUtc` | yes | Topics in keep order. |
+| `topics` | array of object with `topicId`, `name`, `status`, `position`, `chosen`, `withinPlan`, `lastRunUtc` | yes | One page of topics in keep order. |
+| `totalRecords` | integer | yes | Topics matching across all pages. |
+| `pageNumber` | integer | no | Page number (1-based). |
+| `pageSize` | integer (1 to 1000) | no | Maximum topics on this page. |
+| `totalPages` | integer | no | Pages available. |
 
 ### set_topic_slots
 
-**Choose which topics keep running.** Set the order in which your custom topics keep running when your plan allows fewer than you have, most important first. Topics you leave out follow in creation order. An empty list clears the choice. Nothing is paused, archived, or deleted; a choice saved ahead of a downgrade applies when the limit shrinks.
+**Choose which topics keep running.** Set the order in which your custom topics keep running when your plan allows fewer than you have, most important first. Topics you leave out follow in creation order. An empty list clears the choice. Nothing is paused, archived, or deleted; a choice saved ahead of a downgrade applies when the limit shrinks. Returns the updated count and the first 25 topics in the new keep order; use get_topic_slots to read further pages.
 
 Input:
 
@@ -1365,7 +1374,11 @@ Output:
 | `counted` | integer | yes | Recurring, non-archived topics. Paused topics count. |
 | `overLimit` | integer | yes | Topics past the limit: they keep history but do not run. |
 | `customized` | boolean | yes | You have chosen a keep order. |
-| `topics` | array of object with `topicId`, `name`, `status`, `position`, `chosen`, `withinPlan`, `lastRunUtc` | yes | Topics in keep order. |
+| `topics` | array of object with `topicId`, `name`, `status`, `position`, `chosen`, `withinPlan`, `lastRunUtc` | yes | One page of topics in keep order. |
+| `totalRecords` | integer | yes | Topics matching across all pages. |
+| `pageNumber` | integer | no | Page number (1-based). |
+| `pageSize` | integer (1 to 1000) | no | Maximum topics on this page. |
+| `totalPages` | integer | no | Pages available. |
 
 ## Resources
 

@@ -29,8 +29,8 @@ namespace MyMorningNews.Server.Routes
         {
             ArgumentNullException.ThrowIfNull(webserver);
             const string path = "/v1.0/api/catalog";
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, path, ListAsync, null, openApiMetadata: Paged(Doc("Browse system briefings", "Catalog").WithParameter(QueryParam("category", typeof(string))).WithParameter(QueryParam("language", typeof(string)))));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, path + "/enumerate", ctx => EnumerateAsync(ctx, ListAsync), null, openApiMetadata: Paged(Doc("Browse system briefings", "Catalog").WithParameter(QueryParam("category", typeof(string))).WithParameter(QueryParam("language", typeof(string)))).WithRequestBody(Body<EnumerationQuery>()));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, path, ListAsync, null, openApiMetadata: Paged(Doc("Browse system briefings", "Catalog", "subscribed=true returns only the system briefings you subscribe to; subscribed=false only the rest. search matches title and description; sortBy accepts title, sortOrder, createdUtc, or lastUpdateUtc.").WithParameter(QueryParam("category", typeof(string))).WithParameter(QueryParam("language", typeof(string))).WithParameter(QueryParam("subscribed", typeof(bool)))));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, path + "/enumerate", ctx => EnumerateAsync(ctx, ListAsync), null, openApiMetadata: Paged(Doc("Browse system briefings", "Catalog", "subscribed=true returns only the system briefings you subscribe to; subscribed=false only the rest. search matches title and description; sortBy accepts title, sortOrder, createdUtc, or lastUpdateUtc.").WithParameter(QueryParam("category", typeof(string))).WithParameter(QueryParam("language", typeof(string))).WithParameter(QueryParam("subscribed", typeof(bool)))).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, path + "/subscriptions", SubscriptionsAsync, null, openApiMetadata: Paged(Doc("My system briefing subscriptions", "Catalog")));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, path + "/subscriptions" + "/enumerate", ctx => EnumerateAsync(ctx, SubscriptionsAsync), null, openApiMetadata: Paged(Doc("My system briefing subscriptions", "Catalog")).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, path + "/{id}/subscription", SubscribeAsync, null, openApiMetadata: Doc("Subscribe to a system briefing", "Catalog", "Idempotent. System subscriptions have a separate plan limit from custom topics.").WithRequestBody(Body<CatalogSubscriptionRequest>()));
@@ -82,7 +82,13 @@ namespace MyMorningNews.Server.Routes
             string tenantId = Context(ctx).TenantId!;
             string userId = Context(ctx).UserId!;
             EffectivePlan plan = await _Catalog.ReconcileAsync(tenantId, userId, ctx.Token).ConfigureAwait(false);
-            CatalogPublicationFilter filter = new CatalogPublicationFilter { Active = true, Status = "Published", Category = Query(ctx, "category"), Language = Query(ctx, "language") };
+            if (Query(ctx, "subscribed") != null && !QueryBool(ctx, "subscribed").HasValue)
+                throw new ArgumentException("subscribed must be true or false.");
+            CatalogPublicationFilter filter = new CatalogPublicationFilter
+            {
+                Active = true, Status = "Published", Category = Query(ctx, "category"), Language = Query(ctx, "language"),
+                SubscriberTenantId = tenantId, SubscriberUserId = userId, Subscribed = QueryBool(ctx, "subscribed")
+            };
             ApplyPaging(ctx, filter);
             EnumerationResult<CatalogPublication> page = await Server.Database.CatalogPublications.EnumerateAsync(filter, ctx.Token).ConfigureAwait(false);
             List<CatalogEntryResponse> entries = new List<CatalogEntryResponse>();

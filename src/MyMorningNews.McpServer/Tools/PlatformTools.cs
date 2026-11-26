@@ -18,14 +18,16 @@ namespace MyMorningNews.McpServer.Tools
         {
             Dictionary<string, object> empty = Schema.Object(Schema.Props());
             Dictionary<string, object> page = Schema.Object(Schema.Props("pageNumber", Schema.Integer("Page, default 1.", 1, 10000), "pageSize", Schema.Integer("Results per page, default 20.", 1, 100)));
+            Dictionary<string, object> catalogPage = Schema.Object(Schema.Props("pageNumber", Schema.Integer("Page, default 1.", 1, 10000), "pageSize", Schema.Integer("Results per page, default 20.", 1, 100),
+                "subscribed", Schema.Boolean("True for only the system briefings you subscribe to, false for only the rest. Omit for all.")));
             List<McpTool> tools = new List<McpTool>
             {
                 new McpTool("get_account_plan", "Read my plan", "Read your effective plan, funding mode, inherited allowances and per-user override sources. No purchase is made.",
                     empty, Schema.Record("Effective plan and features."), true, false, async (a, c, t) => Wire(await c.Account.GetPlanAsync(t).ConfigureAwait(false))),
                 new McpTool("get_account_usage", "Read my usage", "Read custom topic and system subscription counts, daily generated and reserved audio seconds, and the UTC reset. Audio playback is free.",
                     empty, Schema.Record("Current account usage; null caps mean unlimited."), true, false, async (a, c, t) => Wire(await c.Account.GetUsageAsync(t).ConfigureAwait(false))),
-                new McpTool("list_system_briefings", "Browse system briefings", "Browse published system-wide briefings with eligibility and subscription status. Canonical prompts and research internals are excluded.",
-                    page, Schema.Page(Schema.Record("Public catalog entry.")), true, false, async (a, c, t) => Wire(await c.Catalog.ListAsync(new CatalogListOptions { PageNumber = a.Integer("pageNumber", 1, 1, 10000), PageSize = a.Integer("pageSize", 20, 1, 100) }, t).ConfigureAwait(false))),
+                new McpTool("list_system_briefings", "Browse system briefings", "Browse published system-wide briefings with eligibility and subscription status. Set subscribed true for only the ones you subscribe to, or false for only the rest. Canonical prompts and research internals are excluded.",
+                    catalogPage, Schema.Page(Schema.Record("Public catalog entry.")), true, false, async (a, c, t) => Wire(await c.Catalog.ListAsync(new CatalogListOptions { PageNumber = a.Integer("pageNumber", 1, 1, 10000), PageSize = a.Integer("pageSize", 20, 1, 100), Subscribed = a.Flag("subscribed") }, t).ConfigureAwait(false))),
                 new McpTool("list_system_subscriptions", "Read my system subscriptions", "List your private catalog subscriptions, delivery preferences and suspension status.",
                     page, Schema.Page(Schema.Record("Private catalog subscription.")), true, false, async (a, c, t) => Wire(await c.Catalog.SubscriptionsAsync(new ListOptions { PageNumber = a.Integer("pageNumber", 1, 1, 10000), PageSize = a.Integer("pageSize", 20, 1, 100) }, t).ConfigureAwait(false))),
                 new McpTool("subscribe_system_briefing", "Subscribe to a system briefing", "Subscribe to an eligible system briefing or update its delivery preferences. This uses the system subscription allowance, without creating custom research or a paid purchase.",

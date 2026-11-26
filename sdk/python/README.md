@@ -436,8 +436,10 @@ client.notifications.mark_all_read(); client.notifications.delete(page.objects[0
 
 client.account.plan(); client.account.redeem("SPRING-2026")
 meter = client.account.usage()          # UsageMeter: plan_key, topics, topics_max, runs_today, month_to_date_cost_usd, reset_utc, ...
-slots = client.account.topic_slots()    # TopicSlotsResponse: limit, counted, over_limit, customized, topics
+slots = client.account.topic_slots()    # TopicSlotsResponse: limit, counted, over_limit, customized
+page = client.account.topic_slot_topics(page_size=25, search="rebates")   # Page[TopicSlotResponse] in slot order: topic_id, position, chosen, within_plan
 client.account.set_topic_slots([tid1, tid2]); client.account.clear_topic_slots()   # keep order on a smaller plan
+client.catalog.list(subscribed=True, sort_by="title")   # system briefings I subscribe to (False for the rest)
 client.account.export().save("my-data.zip")
 client.account.delete()                 # {"purgeAfterUtc": ...}; signing in again before then cancels it
 

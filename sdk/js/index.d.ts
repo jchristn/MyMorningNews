@@ -1160,14 +1160,13 @@ export interface TopicSlotResponse {
     lastRunUtc: string | null;
 }
 
-/** The account's custom topics against the plan's limit, in keep order. */
+/** The account's custom topic count against the plan's limit. Enumerate the topics with account.topicSlotTopics. */
 export interface TopicSlotsResponse {
     /** Null or absent for unlimited; 0 when custom research is not in the plan. */
     limit?: number | null;
     counted: number;
     overLimit: number;
     customized: boolean;
-    topics: TopicSlotResponse[];
 }
 
 export interface EditionUpsertRequest {
@@ -2555,8 +2554,8 @@ export declare class DevicesResource extends ResourceGroup {
 
 // BEGIN PLATFORM
 export declare class CatalogResource extends ResourceGroup {
-    /** Browse published system briefings and account eligibility. */
-    list(options?: ListOptions & { category?: string; language?: string }): Promise<EnumerationResult<CatalogEntryResponse>>;
+    /** Browse published system briefings and account eligibility. subscribed true returns only active subscriptions, false only the rest; sortBy accepts title. */
+    list(options?: ListOptions & { category?: string; language?: string; subscribed?: boolean }): Promise<EnumerationResult<CatalogEntryResponse>>;
     /** List private subscriptions, including suspended subscriptions. */
     subscriptions(options?: ListOptions): Promise<EnumerationResult<CatalogSubscription>>;
     /** Subscribe or update delivery preferences. Separate system subscription limits apply. */
@@ -2636,8 +2635,10 @@ export declare class AccountResource extends ResourceGroup {
     redeem(code: string): Promise<EffectivePlan>;
     /** Needs a signed-in user, not an access key. */
     usage(): Promise<UsageMeter>;
-    /** Topics with withinPlan false keep their history but do not run. */
+    /** Limit, counted, overLimit, and customized. Enumerate the topics with topicSlotTopics. */
     topicSlots(): Promise<TopicSlotsResponse>;
+    /** Slot order, paged; search matches the name. Topics with withinPlan false keep their history but do not run. */
+    topicSlotTopics(options?: ListOptions): Promise<EnumerationResult<TopicSlotResponse>>;
     /** Most important first; an empty list clears. Nothing is paused, archived, or deleted. */
     setTopicSlots(keepTopicIds: string[]): Promise<TopicSlotsResponse>;
     clearTopicSlots(): Promise<TopicSlotsResponse>;

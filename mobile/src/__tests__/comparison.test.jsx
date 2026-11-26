@@ -80,9 +80,9 @@ describe('comparison helpers', () => {
     expect(runsAt(4, 5)).toBe(true);
     expect(runsAt(5, 5)).toBe(false);
     expect(runsAt(50, null)).toBe(true);
-    expect(offersTopicSlots({ limit: 5, counted: 2, topics: [] })).toBe(true);
-    expect(offersTopicSlots({ limit: null, counted: 2, topics: [] })).toBe(false);
-    expect(offersTopicSlots({ limit: 5, counted: 0, topics: [] })).toBe(false);
+    expect(offersTopicSlots({ limit: 5, counted: 2, overLimit: 0, customized: false })).toBe(true);
+    expect(offersTopicSlots({ limit: null, counted: 2, overLimit: 0, customized: false })).toBe(false);
+    expect(offersTopicSlots({ limit: 5, counted: 0, overLimit: 0, customized: false })).toBe(false);
     expect(offersTopicSlots(null)).toBe(false);
   });
 
@@ -110,12 +110,28 @@ describe('comparison API', () => {
     ['editions.publications paged', (c) => editionsApi.publications(c, 'edn_1', { pageNumber: 1, pageSize: 20 }), 'GET', '/v1.0/api/editions/edn_1/publications?pageNumber=1&pageSize=20', undefined],
     ['editions.setPublications', (c) => editionsApi.setPublications(c, 'edn_1', ['cat_2', 'cat_1']), 'PUT', '/v1.0/api/editions/edn_1/publications', { publicationIds: ['cat_2', 'cat_1'] }],
     ['topicSlots.get', (c) => topicSlotsApi.get(c), 'GET', '/v1.0/api/account/topic-slots', undefined],
+    ['topicSlots.topics', (c) => topicSlotsApi.topics(c, { search: 'heat', pageNumber: 2, pageSize: 50 }), 'GET', '/v1.0/api/account/topic-slots/topics?search=heat&pageNumber=2&pageSize=50', undefined],
     ['topicSlots.save', (c) => topicSlotsApi.save(c, ['top_2', 'top_1']), 'PUT', '/v1.0/api/account/topic-slots', { keepTopicIds: ['top_2', 'top_1'] }],
     ['topicSlots.clear', (c) => topicSlotsApi.save(c, []), 'PUT', '/v1.0/api/account/topic-slots', { keepTopicIds: [] }],
   ])('%s', async (_name, call, method, path, body) => {
     const { client, calls } = recorder();
     await call(client);
     expect(calls).toEqual([{ method, path, body }]);
+  });
+
+  it('walks every page of the keep order in bounded requests', async () => {
+    const pages = [
+      { objects: [{ topicId: 'top_1', position: 1 }], pageNumber: 1, pageSize: 1000, totalRecords: 2, totalPages: 2 },
+      { objects: [{ topicId: 'top_2', position: 2 }], pageNumber: 2, pageSize: 1000, totalRecords: 2, totalPages: 2 },
+    ];
+    const urls = [];
+    const fetchImpl = async (url) => {
+      urls.push(url.replace(/^https?:\/\/[^/]+/, ''));
+      return { status: 200, text: async () => JSON.stringify(pages[urls.length - 1]) };
+    };
+    const client = new ApiClient({ baseUrl: 'http://127.0.0.1:12100', getAccessToken: async () => 't', fetchImpl });
+    expect((await topicSlotsApi.allTopics(client)).map((x) => x.topicId)).toEqual(['top_1', 'top_2']);
+    expect(urls).toEqual(['/v1.0/api/account/topic-slots/topics?pageSize=1000&pageNumber=1', '/v1.0/api/account/topic-slots/topics?pageSize=1000&pageNumber=2']);
   });
 });
 
@@ -259,9 +275,9 @@ describe('editions: comparison and system briefings', () => {
     { publicationId: 'cat_old', title: 'Retired briefing', sortOrder: 1, available: false },
   ];
   const catalog = page([
-    { id: 'cat_1', title: 'Heat pumps weekly', subscribed: true, suspended: false, eligible: true },
     { id: 'cat_2', title: 'Grid news', subscribed: true, suspended: false, eligible: true },
-    { id: 'cat_3', title: 'Not subscribed', subscribed: false, eligible: true },
+    { id: 'cat_1', title: 'Heat pumps weekly', subscribed: true, suspended: false, eligible: true },
+    { id: 'cat_4', title: 'Suspended briefing', subscribed: true, suspended: true, eligible: true },
   ]);
 
   it('previews the edition baseline and saves the ordered system briefings', async () => {
@@ -281,7 +297,13 @@ describe('editions: comparison and system briefings', () => {
     expect(server.calls.find((c) => c.key === 'POST /v1.0/api/editions/edn_1/history/preview').body).toEqual({ historyMode: 'PreviousIssue', historyCount: 5, historyTokenBudget: 8000 });
 
     await waitFor(() => expect(screen.getByTestId('edition-publication-cat_2')).toBeTruthy());
-    expect(screen.queryByTestId('edition-publication-cat_3')).toBeNull();
+    expect(screen.queryByTestId('edition-publication-cat_4')).toBeNull();
+    const catalogUrl = server.calls.find((c) => c.key === 'GET /v1.0/api/catalog').url;
+    expect(catalogUrl).toContain('subscribed=true');
+    expect(catalogUrl).toContain('sortBy=title');
+    expect(catalogUrl).toContain('sortDirection=Ascending');
+    expect(catalogUrl).toContain('pageSize=25');
+    expect(screen.queryByTestId('edition-publications-more')).toBeNull();
     expect(screen.getByText('Chosen: 2 of 20, in this order')).toBeTruthy();
     expect(screen.getByTestId('edition-publication-cat_old').props.accessibilityLabel).toBe('Retired briefing, selected, Not available now, skipped when the edition is composed');
     expect(screen.getByTestId('edition-publications-save').props.accessibilityState.disabled).toBe(true);
@@ -302,6 +324,42 @@ describe('editions: comparison and system briefings', () => {
     await waitFor(() => expect(screen.getByText('Chosen: 1 of 20, in this order')).toBeTruthy());
     expect(screen.getByTestId('edition-publication-cat_1').props.accessibilityLabel).toBe('Heat pumps weekly, selected');
     expect(server.calls.find((c) => c.key === 'GET /v1.0/api/editions/edn_1/publications').url).toContain('pageSize=20');
+  });
+
+  it('pages the subscriptions with Load more, searches on the server, and keeps saved picks that are not loaded', async () => {
+    const editionDetail = { edition, topics: [], schedules: [], coveredTopicIds: [], publications: [{ publicationId: 'cat_z', title: 'Zebra watch', sortOrder: 0, available: true }] };
+    const first = { objects: [{ id: 'cat_a', title: 'Alpha', subscribed: true }], pageNumber: 1, pageSize: 25, totalRecords: 2, totalPages: 2 };
+    const second = { objects: [{ id: 'cat_b', title: 'Beta', subscribed: true }], pageNumber: 2, pageSize: 25, totalRecords: 2, totalPages: 2 };
+    const found = { objects: [{ id: 'cat_b', title: 'Beta', subscribed: true }], pageNumber: 1, pageSize: 25, totalRecords: 1, totalPages: 1 };
+    const { server } = await renderSignedIn(<EditionDetail id="edn_1" />, {
+      'GET /v1.0/api/editions/edn_1': () => ({ body: editionDetail }),
+      'GET /v1.0/api/topics': () => page([]),
+      'GET /v1.0/api/catalog': (call) => {
+        const q = new URL(call.url).searchParams;
+        if (q.get('search')) return { body: found };
+        return { body: q.get('pageNumber') === '2' ? second : first };
+      },
+    });
+    await waitFor(() => expect(screen.getByTestId('edition-publication-cat_a')).toBeTruthy());
+    // The saved pick is not on the first page and is not marked unavailable while pages remain.
+    expect(screen.getByTestId('edition-publication-cat_z').props.accessibilityLabel).toBe('Zebra watch, selected');
+    expect(screen.queryByTestId('edition-publication-cat_b')).toBeNull();
+    await fireEvent.press(screen.getByTestId('edition-publications-more'));
+    await waitFor(() => expect(screen.getByTestId('edition-publication-cat_b')).toBeTruthy());
+    expect(screen.getByTestId('edition-publication-cat_a')).toBeTruthy();
+    expect(server.calls.filter((c) => c.key === 'GET /v1.0/api/catalog')[1].url).toContain('pageNumber=2');
+    expect(screen.queryByTestId('edition-publications-more')).toBeNull();
+    // Every page is loaded with no search, so the saved pick that is not listed is no longer subscribed.
+    expect(screen.getByTestId('edition-publication-cat_z').props.accessibilityLabel).toBe('Zebra watch, selected, Not available now, skipped when the edition is composed');
+    await fireEvent.press(screen.getByTestId('edition-publication-cat_a'));
+    await fireEvent.changeText(screen.getByTestId('edition-publications-search'), ' bet ');
+    await waitFor(() => expect(server.calls.some((c) => c.key === 'GET /v1.0/api/catalog' && c.url.includes('search=bet'))).toBe(true));
+    await waitFor(() => expect(screen.queryByText('Loading')).toBeNull());
+    expect(screen.queryByTestId('edition-publications-more')).toBeNull();
+    // The new pick stays listed with its title although the search no longer returns it.
+    expect(screen.getByTestId('edition-publication-cat_a').props.accessibilityLabel).toBe('Alpha, selected');
+    expect(screen.getByTestId('edition-publication-cat_b')).toBeTruthy();
+    expect(server.calls.filter((c) => c.key === 'GET /v1.0/api/catalog').every((c) => c.url.includes('subscribed=true'))).toBe(true);
   });
 
   it('explains 402 CapReached and hides the picker on a server without the route', async () => {
@@ -327,28 +385,30 @@ describe('editions: comparison and system briefings', () => {
 });
 
 describe('Topics that keep running', () => {
-  const SLOTS = {
-    limit: 2,
-    counted: 3,
-    overLimit: 1,
-    customized: false,
-    topics: [
-      { topicId: 'top_1', name: 'Heat pump rebates', status: 'Active', position: 1, chosen: false, withinPlan: true, lastRunUtc: NOW },
-      { topicId: 'top_2', name: 'Grid storage', status: 'Paused', position: 2, chosen: false, withinPlan: true, lastRunUtc: null },
-      { topicId: 'top_3', name: 'Solar tariffs', status: 'Active', position: 3, chosen: false, withinPlan: false, lastRunUtc: null },
-    ],
-  };
+  const SLOTS = { limit: 2, counted: 3, overLimit: 1, customized: false };
+  const TOPICS = [
+    { topicId: 'top_1', name: 'Heat pump rebates', status: 'Active', position: 1, chosen: false, withinPlan: true, lastRunUtc: NOW },
+    { topicId: 'top_2', name: 'Grid storage', status: 'Paused', position: 2, chosen: false, withinPlan: true, lastRunUtc: null },
+    { topicId: 'top_3', name: 'Solar tariffs', status: 'Active', position: 3, chosen: false, withinPlan: false, lastRunUtc: null },
+  ];
 
   it('reorders with accessible buttons, marks which topics run, saves, and clears', async () => {
+    let topics = TOPICS;
+    let summary = SLOTS;
     const { server } = await renderSignedIn(<TopicSlotsSection />, {
-      'GET /v1.0/api/account/topic-slots': () => ({ body: SLOTS }),
+      'GET /v1.0/api/account/topic-slots': () => ({ body: summary }),
+      'GET /v1.0/api/account/topic-slots/topics': () => page(topics),
       'PUT /v1.0/api/account/topic-slots': (call) => {
-        const ids = call.body.keepTopicIds.length ? call.body.keepTopicIds : ['top_1', 'top_2', 'top_3'];
-        const byId = Object.fromEntries(SLOTS.topics.map((x) => [x.topicId, x]));
-        return { body: { ...SLOTS, customized: call.body.keepTopicIds.length > 0, topics: ids.map((id, i) => ({ ...byId[id], position: i + 1, chosen: call.body.keepTopicIds.length > 0, withinPlan: i < 2 })) } };
+        const keep = call.body.keepTopicIds;
+        const ids = keep.length ? keep : ['top_1', 'top_2', 'top_3'];
+        const byId = Object.fromEntries(TOPICS.map((x) => [x.topicId, x]));
+        topics = ids.map((id, i) => ({ ...byId[id], position: i + 1, chosen: keep.length > 0, withinPlan: i < 2 }));
+        summary = { ...SLOTS, customized: keep.length > 0 };
+        return { body: summary };
       },
     });
     await waitFor(() => expect(screen.getByTestId('topic-slot-top_3')).toBeTruthy());
+    expect(server.calls.find((c) => c.key === 'GET /v1.0/api/account/topic-slots/topics').url).toContain('pageSize=1000');
     expect(screen.getByTestId('topic-slots-over')).toBeTruthy();
     expect(screen.getByText('Past the limit: kept with history, not running; creating, duplicating, or restoring stays blocked until you archive enough or upgrade.')).toBeTruthy();
     expect(screen.getAllByText('Keeps running')).toHaveLength(2);
@@ -365,15 +425,35 @@ describe('Topics that keep running', () => {
     await fireEvent.press(screen.getByTestId('topic-slots-save'));
     await waitFor(() => expect(screen.getByTestId('topic-slots-saved')).toBeTruthy());
     expect(server.calls.find((c) => c.key === 'PUT /v1.0/api/account/topic-slots').body).toEqual({ keepTopicIds: ['top_1', 'top_3', 'top_2'] });
-    expect(screen.getAllByText('Your order')).toHaveLength(3);
+    // The save returns the summary only, so the order is read again.
+    await waitFor(() => expect(screen.getAllByText('Your order')).toHaveLength(3));
+    expect(server.count('GET /v1.0/api/account/topic-slots/topics')).toBe(2);
+    expect(screen.getByLabelText('2 of 3: Solar tariffs, Active, Keeps running')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('topic-slots-clear'));
     await waitFor(() => expect(screen.getByText('Cleared. Topics keep running in the order they were created.')).toBeTruthy());
     expect(server.calls.filter((c) => c.key === 'PUT /v1.0/api/account/topic-slots')[1].body).toEqual({ keepTopicIds: [] });
+    await waitFor(() => expect(screen.getByLabelText('3 of 3: Solar tariffs, Active, Past the limit, not running')).toBeTruthy());
+    expect(screen.queryByText('Your order')).toBeNull();
+  });
+
+  it('reads every page of a long keep order', async () => {
+    const many = Array.from({ length: 3 }, (_, i) => ({ ...TOPICS[0], topicId: 'top_p' + i, name: 'Topic ' + i, position: i + 1 }));
+    await renderSignedIn(<TopicSlotsSection />, {
+      'GET /v1.0/api/account/topic-slots': () => ({ body: SLOTS }),
+      'GET /v1.0/api/account/topic-slots/topics': (call) => {
+        const pageNumber = Number(new URL(call.url).searchParams.get('pageNumber'));
+        return { body: { objects: [many[pageNumber - 1]], pageNumber, pageSize: 1, totalRecords: 3, totalPages: 3 } };
+      },
+    });
+    await waitFor(() => expect(screen.getByTestId('topic-slot-top_p2')).toBeTruthy());
+    expect(screen.getByTestId('topic-slot-top_p0')).toBeTruthy();
+    expect(screen.getByLabelText('3 of 3: Topic 2, Active, Past the limit, not running')).toBeTruthy();
   });
 
   it('shows the server refusal inline', async () => {
     await renderSignedIn(<TopicSlotsSection />, {
       'GET /v1.0/api/account/topic-slots': () => ({ body: SLOTS }),
+      'GET /v1.0/api/account/topic-slots/topics': () => page(TOPICS),
       'PUT /v1.0/api/account/topic-slots': () => ({ status: 400, body: { error: 'ValidationFailed', message: 'Topic top_3 is archived.', requestId: 'rqi_4' } }),
     });
     await waitFor(() => expect(screen.getByTestId('topic-slot-down-top_1')).toBeTruthy());

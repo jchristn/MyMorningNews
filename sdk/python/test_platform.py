@@ -56,6 +56,10 @@ class PlatformTest(unittest.TestCase):
         request = self.transport.sent[-1]
         self.assertEqual(parse_qs(urlparse(request.url).query)['pageNumber'], ['2'])
         self.assertEqual(request.headers['Authorization'], 'Bearer member')
+        self.api.catalog.list(subscribed=False, sort_by='title')
+        sent = parse_qs(urlparse(self.transport.sent[-1].url).query)
+        self.assertEqual(sent['subscribed'], ['false'])
+        self.assertEqual(sent['sortBy'], ['title'])
         self.transport.reply = {'positionSeconds': 12.5, 'completed': False}
         self.api.catalog.save_progress('cat/one', 'issue?one', {'position_seconds': 12.5, 'completed': False})
         request = self.transport.sent[-1]

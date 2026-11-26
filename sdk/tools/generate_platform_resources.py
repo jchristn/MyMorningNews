@@ -10,7 +10,7 @@ alltypes, _ = gen.scan(str(ROOT / 'src/MyMorningNews.Core'))
 # name, HTTP method, path, response, request body type, paging options, documentation
 GROUPS = {
 'Catalog': [
-('list','GET','/v1.0/api/catalog','CatalogEntryResponse',None,'CatalogListOptions','Browse published system briefings and account eligibility.'),
+('list','GET','/v1.0/api/catalog','CatalogEntryResponse',None,'CatalogListOptions','Browse published system briefings and account eligibility. subscribed true returns only active subscriptions, false only the rest; sortBy accepts title.'),
 ('subscriptions','GET','/v1.0/api/catalog/subscriptions','CatalogSubscription',None,'ListOptions','List private subscriptions, including suspended subscriptions.'),
 ('subscribe','PUT','/v1.0/api/catalog/{id}/subscription','CatalogSubscription','CatalogSubscriptionRequest',None,'Subscribe or update delivery preferences. Separate system subscription limits apply.'),
 ('unsubscribe','DELETE','/v1.0/api/catalog/{id}/subscription','void',None,None,'Unsubscribe without deleting canonical content.'),
@@ -67,7 +67,7 @@ for group, methods in GROUPS.items():
  for method,verb,path,result,body,paging,doc in methods:
   ids=re.findall(r'\{(\w+)\}',path);cp=['string '+i for i in ids];jp=ids.copy();tp=[i+': string' for i in ids];pp=[snake(i)+': str' for i in ids]
   if body: cp.append(body+' body');jp.append('body');tp.append('body: '+body);pp.append('body: Mapping[str, Any]')
-  if paging: cp.append(paging+'? options = null');jp.append('options = {}');tp.append('options?: '+('ListOptions & { category?: string; language?: string }' if paging=='CatalogListOptions' else 'ListOptions & { audioOnly?: boolean }' if paging=='CatalogIssueListOptions' else 'ListOptions'));pp.append('**filters: Any')
+  if paging: cp.append(paging+'? options = null');jp.append('options = {}');tp.append('options?: '+('ListOptions & { category?: string; language?: string; subscribed?: boolean }' if paging=='CatalogListOptions' else 'ListOptions & { audioOnly?: boolean }' if paging=='CatalogIssueListOptions' else 'ListOptions'));pp.append('**filters: Any')
   if result=='DownloadResult': cp.append('ByteRange? range = null');jp.append('options = {}');tp.append('options?: DownloadOptions');pp.append('byte_range: ByteRange = None')
   cp.append('CancellationToken token = default')
   cr='EnumerationResult<'+result+'>' if paging else result;tr='EnumerationResult<'+result+'>' if paging else {'void':'null','JsonObject':'Record<string, unknown>'}.get(result,result)

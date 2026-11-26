@@ -751,13 +751,12 @@ export const SIGNATURE_ALGORITHM = 'MMN1-HMAC-SHA256';
  */
 
 /**
- * The account's custom topics against the plan's limit, in keep order.
+ * The account's custom topic count against the plan's limit. Enumerate the topics with `account.topicSlotTopics`.
  * @typedef {object} TopicSlotsResponse
  * @property {number|null} [limit] Topics the plan allows; null or absent for unlimited, 0 without custom research.
  * @property {number} counted Recurring, non-archived topics.
  * @property {number} overLimit Topics past the limit (they keep history but do not run).
  * @property {boolean} customized The owner has chosen a keep order.
- * @property {TopicSlotResponse[]} topics Topics in slot order.
  */
 
 /**
@@ -4150,7 +4149,7 @@ export class SetupResource extends ResourceGroup {
 // BEGIN PLATFORM
 /** Platform account/catalog API. All authorization is enforced by the server. */
 export class CatalogResource extends ResourceGroup {
-    /** Browse published system briefings and account eligibility. */
+    /** Browse published system briefings and account eligibility. subscribed true returns only active subscriptions, false only the rest; sortBy accepts title. */
     list(options = {}) { return this._req("GET", "/v1.0/api/catalog", { query: options }); }
     /** List private subscriptions, including suspended subscriptions. */
     subscriptions(options = {}) { return this._req("GET", "/v1.0/api/catalog/subscriptions", { query: options }); }
@@ -4240,19 +4239,30 @@ export class AccountResource extends ResourceGroup {
     }
 
     /**
-     * My custom topics against my plan's topic limit, in keep order. Topics with `withinPlan: false` keep their history
-     * but do not run.
-     * @returns {Promise<TopicSlotsResponse>} Slots.
+     * My custom topic count against my plan's topic limit: limit, counted, overLimit, and whether a keep order is saved.
+     * Enumerate the topics themselves with `topicSlotTopics`.
+     * @returns {Promise<TopicSlotsResponse>} Summary.
      */
     topicSlots() {
         return this._req('GET', '/v1.0/api/account/topic-slots');
     }
 
     /**
+     * My custom topics in slot order (the chosen keep order first, then oldest first), one page at a time. Position and
+     * withinPlan reflect the whole order; `search` matches the topic name; sorting is always slot order. Topics with
+     * `withinPlan: false` keep their history but do not run.
+     * @param {ListOptions} [options] Paging and search.
+     * @returns {Promise<EnumerationResult<TopicSlotResponse>>} Page.
+     */
+    topicSlotTopics(options = {}) {
+        return this._req('GET', '/v1.0/api/account/topic-slots/topics', { query: options });
+    }
+
+    /**
      * Choose which custom topics keep running first on a smaller plan (most important first). An empty list clears the
      * choice. Nothing is paused, archived, or deleted. 400 for a duplicate, unknown, archived, or one-time topic.
      * @param {string[]} keepTopicIds Topics in keep order.
-     * @returns {Promise<TopicSlotsResponse>} Slots.
+     * @returns {Promise<TopicSlotsResponse>} Summary.
      */
     setTopicSlots(keepTopicIds) {
         if (!Array.isArray(keepTopicIds)) throw new TypeError('keepTopicIds must be an array.');
@@ -4261,7 +4271,7 @@ export class AccountResource extends ResourceGroup {
 
     /**
      * Clear my topic keep order so topics follow creation order.
-     * @returns {Promise<TopicSlotsResponse>} Slots.
+     * @returns {Promise<TopicSlotsResponse>} Summary.
      */
     clearTopicSlots() {
         return this.setTopicSlots([]);

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { ArrowDown, ArrowUp, Plus, Save, X } from 'lucide-react';
@@ -14,8 +14,12 @@ import { moveItem } from './EditionTopicPicker.jsx';
 // The most system briefings one edition may include (the server rejects more).
 export const MAX_EDITION_PUBLICATIONS = 20;
 
-// Catalog pages read to find the caller's subscriptions.
-const CATALOG_PAGE_SIZE = 100;
+// Subscriptions read per page. The server filters to the caller's subscriptions (subscribed=true), searches title and
+// description, and sorts by title; "Show more" reads the next page.
+export const SUBSCRIPTION_PAGE_SIZE = 25;
+
+// Delay before a typed search is sent.
+const SEARCH_DELAY_MS = 250;
 
 // "System briefings in this edition": catalog subscriptions whose issues the edition adds under "From your system
 // briefings", in order. links are EditionResponse.publications; an unavailable entry (retracted, unsubscribed, or
@@ -36,7 +40,13 @@ export default function EditionPublicationPicker({ editionId, links, onSaved, di
   const linkById = useMemo(() => new Map((Array.isArray(links) ? links : []).map((l) => [l.publicationId, l])), [links]);
   const [chosen, setChosen] = useState(initial);
   const [catalog, setCatalog] = useState(null);
+  const [pageInfo, setPageInfo] = useState({ pageNumber: 0, totalPages: 0, totalRecords: 0 });
+  const [search, setSearch] = useState('');
+  const [query, setQuery] = useState('');
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [seen, setSeen] = useState(() => new Map());
   const [loadError, setLoadError] = useState(null);
+  const requestRef = useRef(0);
   const [adding, setAdding] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -45,22 +55,55 @@ export default function EditionPublicationPicker({ editionId, links, onSaved, di
     setChosen(initial);
   }, [initial]);
 
-  const load = useCallback(async () => {
-    setLoadError(null);
-    try {
-      const page = await apiClient.listCatalog({ pageSize: CATALOG_PAGE_SIZE });
-      setCatalog((page && Array.isArray(page.objects) ? page.objects : []).filter((entry) => entry.subscribed));
-    } catch (err) {
-      setLoadError(err);
-      setCatalog([]);
-    }
-  }, [apiClient]);
+  useEffect(() => {
+    const handle = setTimeout(() => setQuery(search.trim()), SEARCH_DELAY_MS);
+    return () => clearTimeout(handle);
+  }, [search]);
+
+  // Reads one page of the caller's subscriptions. Page 1 replaces the list; later pages append. A response for an
+  // older search is dropped.
+  const fetchPage = useCallback(
+    async (pageNumber) => {
+      const request = ++requestRef.current;
+      setLoadError(null);
+      if (pageNumber > 1) setLoadingMore(true);
+      try {
+        const page = await apiClient.enumerateCatalog({
+          subscribed: true,
+          search: query || null,
+          sortBy: 'title',
+          sortDirection: 'Ascending',
+          pageNumber,
+          pageSize: SUBSCRIPTION_PAGE_SIZE
+        });
+        if (request !== requestRef.current) return;
+        const objects = page && Array.isArray(page.objects) ? page.objects : [];
+        setCatalog((current) => (pageNumber > 1 && current ? [...current, ...objects.filter((o) => !current.some((c) => c.id === o.id))] : objects));
+        setSeen((current) => {
+          const next = new Map(current);
+          objects.forEach((o) => next.set(o.id, o));
+          return next;
+        });
+        setPageInfo({ pageNumber: page?.pageNumber || pageNumber, totalPages: page?.totalPages || 0, totalRecords: page?.totalRecords || 0 });
+      } catch (err) {
+        if (request !== requestRef.current) return;
+        setLoadError(err);
+        if (pageNumber === 1) setCatalog([]);
+      } finally {
+        if (request === requestRef.current) setLoadingMore(false);
+      }
+    },
+    [apiClient, query]
+  );
+
+  const load = useCallback(() => fetchPage(1), [fetchPage]);
 
   useEffect(() => {
     load();
   }, [load]);
 
-  const subscribed = useMemo(() => new Map((catalog || []).map((entry) => [entry.id, entry])), [catalog]);
+  const subscribed = seen;
+  const hasMore = pageInfo.pageNumber > 0 && pageInfo.pageNumber < pageInfo.totalPages;
   const available = (catalog || []).filter((entry) => !entry.suspended && !chosen.includes(entry.id));
   const dirty = chosen.length !== initial.length || chosen.some((id, i) => id !== initial[i]);
   const full = chosen.length >= MAX_EDITION_PUBLICATIONS;
@@ -150,11 +193,22 @@ export default function EditionPublicationPicker({ editionId, links, onSaved, di
         </ol>
       ) : null}
       {chosen.some(unavailable) ? <p className="muted small">{t('editions.publications.unavailableHelp')}</p> : null}
-      {catalog !== null && catalog.length === 0 && !loadError ? (
+      {catalog !== null && catalog.length === 0 && !loadError && !query ? (
         <p className="muted small">
           {t('editions.publications.noSubscriptions')} <Link to="/dashboard/catalog">{t('editions.publications.browse')}</Link>
         </p>
       ) : null}
+      {catalog !== null && (catalog.length > 0 || query) ? (
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          disabled={disabled}
+          placeholder={t('editions.publications.searchPlaceholder')}
+          aria-label={t('editions.publications.searchLabel')}
+        />
+      ) : null}
+      {catalog !== null && query && catalog.length === 0 && !loadError ? <p className="muted small">{t('editions.publications.noMatches')}</p> : null}
       {available.length > 0 ? (
         <div className="row-actions">
           <select
@@ -180,6 +234,14 @@ export default function EditionPublicationPicker({ editionId, links, onSaved, di
             }}
           >
             <Plus size={14} aria-hidden="true" /> {t('editions.publications.add')}
+          </button>
+        </div>
+      ) : null}
+      {hasMore ? (
+        <div className="row-actions">
+          <span className="muted small">{t('editions.publications.showing', { shown: catalog.length, total: pageInfo.totalRecords })}</span>
+          <button type="button" className="button secondary small" disabled={loadingMore} onClick={() => fetchPage(pageInfo.pageNumber + 1)}>
+            {loadingMore ? t('common.loading') : t('editions.publications.more')}
           </button>
         </div>
       ) : null}

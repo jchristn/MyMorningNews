@@ -1876,24 +1876,41 @@ def t_devices(h: Harness) -> None:
 # ---------------------------------------------------------------------------
 
 
-@case("Account: topic slots get, set, clear")
+@case("Account: topic slots get, list, set, clear")
 def t_topic_slots(h: Harness) -> None:
     h.need("tenant")
     original = h.client.account.topic_slots()
-    check(isinstance(original.topics, list) and isinstance(original.counted, int), "slots read")
-    keep = [x.topic_id for x in sorted((x for x in original.topics if x.chosen), key=lambda x: x.position)]
+    check(isinstance(original.counted, int) and "topics" not in original.raw, "summary read without a topic list")
+    original_topics = list(mmn.iterate(h.client.account.topic_slot_topics, page_size=1000))
+    keep = [x.topic_id for x in sorted((x for x in original_topics if x.chosen), key=lambda x: x.position)]
     h.on_cleanup("topic slots", lambda: h.client.account.set_topic_slots(keep))
+    eq(original.customized, len(keep) > 0, "customized matches the chosen topics")
     t = h.client.topics.create(name=h.name("slot-topic"), description="Harness slot topic", brief="Follow open source database releases. Harness data; safe to delete.")
     h.on_cleanup("topic " + t.id, lambda: h.client.topics.delete(t.id))
     chosen = h.client.account.set_topic_slots([t.id])
     eq(chosen.customized, True, "customized")
-    first = [x for x in chosen.topics if x.topic_id == t.id]
-    check(first and first[0].position == 1 and first[0].chosen, "chosen topic is kept first")
+    first_page = h.client.account.topic_slot_topics(page_size=1)
+    first = first_page.objects[0] if first_page.objects else None
+    check(first is not None and first.topic_id == t.id and first.position == 1 and first.chosen, "chosen topic is kept first")
+    eq(first_page.total_records, chosen.counted, "the topic list covers every counted topic")
+    searched = h.client.account.topic_slot_topics(search=t.name, page_size=10)
+    check(any(x.topic_id == t.id and x.position == 1 for x in searched.objects), "search matches the name and keeps the whole-order position")
     expect_error(BadRequestError, lambda: h.client.account.set_topic_slots([t.id, t.id]), "ValidationFailed")
     expect_error(BadRequestError, lambda: h.client.account.set_topic_slots(["top_missing"]), "ValidationFailed")
     cleared = h.client.account.clear_topic_slots()
-    check(not cleared.customized and all(not x.chosen for x in cleared.topics), "cleared")
+    after = list(mmn.iterate(h.client.account.topic_slot_topics, page_size=1000))
+    check(not cleared.customized and all(not x.chosen for x in after), "cleared")
     h.client.account.set_topic_slots(keep)
+
+
+@case("Catalog: subscribed filter and title sort")
+def t_catalog_subscribed(h: Harness) -> None:
+    h.need("tenant")
+    everything = h.client.catalog.list(page_size=1000)
+    mine = h.client.catalog.list(subscribed=True, sort_by="title", page_size=1000)
+    rest = h.client.catalog.list(subscribed=False, sort_by="title", page_size=1000)
+    eq(mine.total_records + rest.total_records, everything.total_records, "subscribed and unsubscribed partition the catalog")
+    check(all(e.subscribed for e in mine.objects) and all(not e.subscribed for e in rest.objects), "subscribed filter matches each entry")
 
 
 @case("Account: plan, and redeem an unknown code")

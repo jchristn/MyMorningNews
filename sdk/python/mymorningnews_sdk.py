@@ -2312,14 +2312,12 @@ class TopicSlotResponse(Model):
 
 @dataclass
 class TopicSlotsResponse(Model):
-    """The account's custom topics against the plan's limit, in keep order. ``limit`` is None for unlimited and 0 when
-    custom research is not in the plan."""
-    _nested: ClassVar[Dict[str, str]] = {'topics': 'TopicSlotResponse'}
+    """The account's custom topic count against the plan's limit. ``limit`` is None for unlimited and 0 when custom
+    research is not in the plan. Enumerate the topics with ``account.topic_slot_topics``."""
     limit: Optional[int] = None
     counted: Optional[int] = None
     over_limit: Optional[int] = None
     customized: Optional[bool] = None
-    topics: Optional[List[TopicSlotResponse]] = None
 
 
 @dataclass
@@ -5202,7 +5200,7 @@ class CatalogResource(_Resource):
     """Platform account/catalog API with server-enforced ownership and permissions."""
 
     def list(self, **filters: Any) -> Page[CatalogEntryResponse]:
-        """Browse published system briefings and account eligibility."""
+        """Browse published system briefings and account eligibility. subscribed true returns only active subscriptions, false only the rest; sortBy accepts title."""
         return self._page(CatalogEntryResponse, "/v1.0/api/catalog", filters)
 
     def subscriptions(self, **filters: Any) -> Page[CatalogSubscription]:
@@ -5357,8 +5355,22 @@ class AccountResource(_Resource):
         return self._one(UsageMeter, "GET", API + "/account/usage")
 
     def topic_slots(self) -> TopicSlotsResponse:
-        """My custom topics against my plan's topic limit, in keep order."""
+        """My custom topic count against my plan's topic limit (limit, counted, over_limit, customized).
+
+        Enumerate the topics themselves with :meth:`topic_slot_topics`.
+        """
         return self._one(TopicSlotsResponse, "GET", API + "/account/topic-slots")
+
+    def topic_slot_topics(self, **filters: Any) -> Page[TopicSlotResponse]:
+        """My custom topics in slot order (the chosen keep order first, then oldest first), one page at a time.
+
+        ``position`` and ``within_plan`` reflect the whole order; ``search`` matches the topic name; sorting is always
+        slot order. Topics with ``within_plan`` False keep their history but do not run.
+
+        Args:
+            **filters: The paging filters (``page_number``, ``page_size``, ``search``).
+        """
+        return self._page(TopicSlotResponse, API + "/account/topic-slots/topics", filters)
 
     def set_topic_slots(self, keep_topic_ids: Sequence[str]) -> TopicSlotsResponse:
         """Choose which custom topics keep running first on a smaller plan (most important first).

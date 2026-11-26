@@ -51,7 +51,10 @@ export const fr = {
     "noSubscriptions": "Abonnez-vous d’abord à des briefings système pour les ajouter ici.",
     "save": "Enregistrer les briefings système",
     "clear": "Tout retirer",
-    "capped": "Votre offre n’inclut pas la recherche personnalisée : impossible d’ajouter des briefings système aux éditions. Vous pouvez toujours les retirer."
+    "capped": "Votre offre n’inclut pas la recherche personnalisée : impossible d’ajouter des briefings système aux éditions. Vous pouvez toujours les retirer.",
+    "search": "Rechercher dans vos briefings système",
+    "noMatches": "Aucun briefing système abonné ne correspond à cette recherche.",
+    "loadMore": "Charger plus"
   },
   topicSlots: {
     "title": "Sujets qui restent actifs",

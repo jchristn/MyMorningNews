@@ -1,4 +1,8 @@
+import { enumerateObjects } from './enumeration';
 import { routes } from './routes';
+
+/** Page size for walking the keep order (the server allows up to 1000 per page). */
+export const TOPIC_SLOT_PAGE_SIZE = 1000;
 
 /** Profile, password, usage (existing routes), and account deletion and export (contract E, Phase 14). */
 export const accountApi = {
@@ -50,13 +54,18 @@ export const planApi = {
 };
 
 /**
- * Which custom topics keep running on a smaller plan (plan section 8.4). `get()` is `{ limit, counted, overLimit,
- * customized, topics: [{ topicId, name, status, position, chosen, withinPlan, lastRunUtc }] }` in slot order; `limit`
- * is null when unlimited and 0 without custom research. `save(ids)` sets the keep order (most important first; an empty
- * list clears it) and returns the same shape. Nothing is paused, archived, or deleted by either call.
+ * Which custom topics keep running on a smaller plan (plan section 8.4). `get()` is the summary `{ limit, counted,
+ * overLimit, customized }`; `limit` is null when unlimited and 0 without custom research. `topics(query)` is an
+ * EnumerationResult of `{ topicId, name, status, position, chosen, withinPlan, lastRunUtc }` in slot order (always;
+ * `search` matches the name, and `position` and `withinPlan` are computed over the whole order). `allTopics()` walks
+ * those pages for the reorder editor, which needs the whole order. `save(ids)` sets the keep order (most important
+ * first; an empty list clears it) and returns the summary only, so re-read the topics after it. Nothing is paused,
+ * archived, or deleted by any of these calls.
  */
 export const topicSlotsApi = {
   get: (client) => client.get(routes.accountTopicSlots),
+  topics: (client, query) => client.get(routes.accountTopicSlotTopics, query),
+  allTopics: (client, query = {}) => enumerateObjects((q) => client.get(routes.accountTopicSlotTopics, q), { pageSize: TOPIC_SLOT_PAGE_SIZE, ...query }),
   save: (client, keepTopicIds) => client.put(routes.accountTopicSlots, { keepTopicIds }),
 };
 

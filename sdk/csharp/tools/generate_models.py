@@ -44,7 +44,7 @@ ROOTS = [
     "UsageTimeseries", "UserResponse", "VaultCredentialResponse", "VaultRevealResponse", "VaultUsageItem",
     "McpServerDetailResponse", "SetupStatusResponse", "SetupOptionsResponse", "RunCostReport", "AvailableVoicesResponse",
     "NotificationPreferencesResponse", "NotificationCountResponse",
-    "HistoryPreviewResponse", "BriefingComparisonResponse", "EditionPublicationResponse", "TopicSlotsResponse",
+    "HistoryPreviewResponse", "BriefingComparisonResponse", "EditionPublicationResponse", "TopicSlotsResponse", "TopicSlotResponse",
     # Models returned directly by routes.
     "Topic", "TopicDimension", "TopicConstraint", "TopicRecipient", "RefinementSession", "ResearchRequest", "Schedule",
     "Run", "RunStage", "SearchQuery", "SearchResult", "Finding", "Prediction", "PredictionReview", "Suggestion",

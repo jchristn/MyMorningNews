@@ -431,7 +431,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 
 ## Route reference
 
-428 routes in 54 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
+430 routes in 54 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
 
 | Group | Routes | What it covers |
 |---|---|---|
@@ -480,7 +480,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [Prompts](#prompts) | 11 | Prompt templates by key and scope, topic overrides, version history, rollback, reset, and the prompt lab. |
 | [Promotional codes](#promotional-codes) | 11 | Global administrators create, generate, and manage promotional codes that grant plans. |
 | [Plans](#plans) | 11 | Global administrators manage plans, their entitlement values, and per-user plan assignments. |
-| [Account](#account) | 12 | Sign-up, email verification, password reset, the signed-in user's plan, usage meter, data export, account deletion, and promotional code redemption. |
+| [Account](#account) | 14 | Sign-up, email verification, password reset, the signed-in user's plan, usage meter, data export, account deletion, and promotional code redemption. |
 | [Public](#public) | 15 | Routes reached from emails, podcast apps, and shared briefing links. They take no session; a token in the path is the credential. Feedback and unsubscribe pages are HTML forms. Shared briefing pages are server-rendered HTML with no script and no cookies. |
 | [OpenAPI](#openapi) | 2 | The OpenAPI 3 document and Swagger UI that Watson serves. They are not tagged in the document itself. |
 | [MCP servers](#mcp-servers) | 9 | Remote MCP tool servers that agentic research may call, their discovered tools, and the per-tool allow-list. |
@@ -12222,8 +12222,10 @@ Sign-up, email verification, password reset, the signed-in user's plan, usage me
 | POST | [`/v1.0/public/password/forgot`](#post-v10publicpasswordforgot) | Email a password reset link |
 | POST | [`/v1.0/public/password/reset`](#post-v10publicpasswordreset) | Set a new password from a reset link |
 | GET | [`/v1.0/api/account/usage`](#get-v10apiaccountusage) | My usage against my plan's limits |
-| GET | [`/v1.0/api/account/topic-slots`](#get-v10apiaccounttopic-slots) | My custom topics against my plan's limit |
+| GET | [`/v1.0/api/account/topic-slots`](#get-v10apiaccounttopic-slots) | My custom topic count against my plan's limit |
 | PUT | [`/v1.0/api/account/topic-slots`](#put-v10apiaccounttopic-slots) | Choose which custom topics keep running on a smaller plan |
+| GET | [`/v1.0/api/account/topic-slots/topics`](#get-v10apiaccounttopic-slotstopics) | My custom topics in slot order |
+| POST | [`/v1.0/api/account/topic-slots/topics/enumerate`](#post-v10apiaccounttopic-slotstopicsenumerate) | My custom topics in slot order |
 | GET | [`/v1.0/api/account/export`](#get-v10apiaccountexport) | Download my data (ZIP of JSON and Markdown) |
 | POST | [`/v1.0/api/account/delete`](#post-v10apiaccountdelete) | Delete my account |
 | POST | [`/v1.0/api/promo-codes/redeem`](#post-v10apipromo-codesredeem) | Redeem a promotional code |
@@ -12387,10 +12389,11 @@ curl -s "http://127.0.0.1:12100/v1.0/api/account/usage" \
 
 ### GET /v1.0/api/account/topic-slots
 
-**My custom topics against my plan's limit.** Topics in slot order: your chosen keep order first, then oldest first. Topics past the limit keep their history but do not run; creating, duplicating, or restoring a topic stays blocked until enough are archived or the plan grows.
+**My custom topic count against my plan's limit.** Limit, counted, over-limit, and whether a keep order is saved. Topics past the limit keep their history but do not run; creating, duplicating, or restoring a topic stays blocked until enough are archived or the plan grows. Enumerate the topics from /v1.0/api/account/topic-slots/topics.
 
 - Auth: Any authenticated principal (`UserSelfRead`).
 - Response: [`TopicSlotsResponse`](#topicslotsresponse)
+- Notes: Summary only. Enumerate the topics in slot order from /v1.0/api/account/topic-slots/topics.
 
 | Status | Meaning |
 |---|---|
@@ -12410,6 +12413,7 @@ curl -s "http://127.0.0.1:12100/v1.0/api/account/topic-slots" \
 
 - Auth: `Topic:Update` (`TopicWrite`).
 - Response: [`TopicSlotsResponse`](#topicslotsresponse)
+- Notes: Returns the summary after the change; re-enumerate /v1.0/api/account/topic-slots/topics for the new order.
 
 Request body: [`TopicSlotsRequest`](#topicslotsrequest).
 
@@ -12422,6 +12426,53 @@ Request body: [`TopicSlotsRequest`](#topicslotsrequest).
 
 ```bash
 curl -s -X PUT "http://127.0.0.1:12100/v1.0/api/account/topic-slots" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### GET /v1.0/api/account/topic-slots/topics
+
+**My custom topics in slot order.** Your chosen keep order first, then oldest first. Position and withinPlan reflect the whole order; search matches the topic name. Sorting is always slot order.
+
+- Auth: Any authenticated principal (`UserSelfRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`TopicSlotResponse`](#topicslotresponse)
+- Notes: Custom topics in slot order, paged. Position and withinPlan are computed over the whole order.
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: BadRequest (access keys are refused), ValidationFailed |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s "http://127.0.0.1:12100/v1.0/api/account/topic-slots/topics?pageSize=10" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /v1.0/api/account/topic-slots/topics/enumerate
+
+**My custom topics in slot order.** Your chosen keep order first, then oldest first. Position and withinPlan reflect the whole order; search matches the topic name. Sorting is always slot order.
+
+- Auth: Any authenticated principal (`UserSelfRead`).
+- Response: a page ([`EnumerationResult`](#enumerationresult)) of [`TopicSlotResponse`](#topicslotresponse)
+- Notes: Custom topics in slot order, paged. Position and withinPlan are computed over the whole order.
+
+Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
+
+Request body: [`EnumerationQuery`](#enumerationquery).
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: BadRequest (access keys are refused), ValidationFailed |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/account/topic-slots/topics/enumerate" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -13219,16 +13270,17 @@ System-wide publications and private subscriptions. Shared content is generated 
 
 ### GET /v1.0/api/catalog
 
-**Browse system briefings.**
+**Browse system briefings.** subscribed=true returns only the system briefings you subscribe to; subscribed=false only the rest. search matches title and description; sortBy accepts title, sortOrder, createdUtc, or lastUpdateUtc.
 
 - Auth: `Briefing:Read` (`BriefingRead`).
 - Response: a page ([`EnumerationResult`](#enumerationresult)) of [`CatalogEntryResponse`](#catalogentryresponse)
-- Notes: Browse published system briefings and account eligibility.
+- Notes: Browse published system briefings and account eligibility. subscribed=true limits the page to the caller's subscriptions (the edition system briefing picker uses this with search); subscribed=false to the rest.
 
 | Query parameter | Type | Notes |
 |---|---|---|
 | `category` | string | Finding category. |
 | `language` | string |  |
+| `subscribed` | boolean |  |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -13247,16 +13299,17 @@ curl -s "http://127.0.0.1:12100/v1.0/api/catalog?pageSize=10" \
 
 ### POST /v1.0/api/catalog/enumerate
 
-**Browse system briefings.**
+**Browse system briefings.** subscribed=true returns only the system briefings you subscribe to; subscribed=false only the rest. search matches title and description; sortBy accepts title, sortOrder, createdUtc, or lastUpdateUtc.
 
 - Auth: `Briefing:Read` (`BriefingRead`).
 - Response: a page ([`EnumerationResult`](#enumerationresult)) of [`CatalogEntryResponse`](#catalogentryresponse)
-- Notes: Browse published system briefings and account eligibility.
+- Notes: Browse published system briefings and account eligibility. subscribed=true limits the page to the caller's subscriptions (the edition system briefing picker uses this with search); subscribed=false to the rest.
 
 | Query parameter | Type | Notes |
 |---|---|---|
 | `category` | string | Finding category. |
 | `language` | string |  |
+| `subscribed` | boolean |  |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -15921,7 +15974,7 @@ Request body of [PUT /v1.0/tenants/{tenantId}/users/{userId}/entitlements](#put-
 
 Common paging, sorting, and date-range filter for list endpoints.
 
-Request body of [POST /v1.0/tenants/enumerate](#post-v10tenantsenumerate), [POST /v1.0/tenants/{tenantId}/users/enumerate](#post-v10tenantstenantidusersenumerate), [POST /v1.0/tenants/{tenantId}/credentials/enumerate](#post-v10tenantstenantidcredentialsenumerate), [POST /v1.0/tenants/{tenantId}/roles/enumerate](#post-v10tenantstenantidrolesenumerate), [POST /v1.0/tenants/{tenantId}/permissions/enumerate](#post-v10tenantstenantidpermissionsenumerate), [POST /v1.0/tenants/{tenantId}/users/{userId}/assignments/enumerate](#post-v10tenantstenantidusersuseridassignmentsenumerate), [POST /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes/enumerate](#post-v10tenantstenantidcredentialscredentialidscopesenumerate), [POST /v1.0/api/audit/enumerate](#post-v10apiauditenumerate) and 55 more.
+Request body of [POST /v1.0/tenants/enumerate](#post-v10tenantsenumerate), [POST /v1.0/tenants/{tenantId}/users/enumerate](#post-v10tenantstenantidusersenumerate), [POST /v1.0/tenants/{tenantId}/credentials/enumerate](#post-v10tenantstenantidcredentialsenumerate), [POST /v1.0/tenants/{tenantId}/roles/enumerate](#post-v10tenantstenantidrolesenumerate), [POST /v1.0/tenants/{tenantId}/permissions/enumerate](#post-v10tenantstenantidpermissionsenumerate), [POST /v1.0/tenants/{tenantId}/users/{userId}/assignments/enumerate](#post-v10tenantstenantidusersuseridassignmentsenumerate), [POST /v1.0/tenants/{tenantId}/credentials/{credentialId}/scopes/enumerate](#post-v10tenantstenantidcredentialscredentialidscopesenumerate), [POST /v1.0/api/audit/enumerate](#post-v10apiauditenumerate) and 56 more.
 
 | Field | Type | Description |
 |---|---|---|
@@ -19905,6 +19958,8 @@ Request body of [PUT /v1.0/api/topics/{id}/search-providers](#put-v10apitopicsid
 
 One custom topic in slot order.
 
+Returned by [GET /v1.0/api/account/topic-slots/topics](#get-v10apiaccounttopic-slotstopics), [POST /v1.0/api/account/topic-slots/topics/enumerate](#post-v10apiaccounttopic-slotstopicsenumerate).
+
 | Field | Type | Description |
 |---|---|---|
 | `topicId` | string | Topic identifier. |
@@ -19927,7 +19982,7 @@ Request body of [PUT /v1.0/api/account/topic-slots](#put-v10apiaccounttopic-slot
 
 #### TopicSlotsResponse
 
-The account's custom topics against its plan limit, in slot order (plan section 8.4).
+The account's custom topic count against its plan limit (plan section 8.4). The topics themselves, in slot order, are enumerated from GET /v1.0/api/account/topic-slots/topics.
 
 Returned by [GET /v1.0/api/account/topic-slots](#get-v10apiaccounttopic-slots), [PUT /v1.0/api/account/topic-slots](#put-v10apiaccounttopic-slots).
 
@@ -19937,7 +19992,6 @@ Returned by [GET /v1.0/api/account/topic-slots](#get-v10apiaccounttopic-slots), 
 | `counted` | integer | Recurring, non-archived topics. Paused topics count; archived topics do not. |
 | `overLimit` | integer | Topics past the limit: they keep their history but do not run, and no topic can be created, duplicated, or restored until enough are archived or the plan grows. Zero when within the limit. |
 | `customized` | boolean | The owner has chosen a keep order. |
-| `topics` | array of [`TopicSlotResponse`](#topicslotresponse) | Topics in slot order. |
 
 #### TopicUpsertRequest
 

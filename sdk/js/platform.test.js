@@ -20,6 +20,10 @@ test('catalog queries, escaped identifiers, private progress, and typed limit er
     assert.equal((await api.catalog.list({ language: 'en', category: 'AI & science', pageSize: 3 })).items[0].eligible, true);
     assert.equal(requests[0].url.searchParams.get('category'), 'AI & science');
     assert.equal(requests[0].headers.Authorization, 'Bearer member');
+    await api.catalog.list({ subscribed: false, sortBy: 'title' });
+    assert.equal(requests.at(-1).url.searchParams.get('subscribed'), 'false');
+    assert.equal(requests.at(-1).url.searchParams.get('sortBy'), 'title');
+    requests.pop();
     reply({ positionSeconds: 12.5, completed: false });
     assert.equal((await api.catalog.saveProgress('cat/one', 'issue?one', { positionSeconds: 12.5, completed: false })).positionSeconds, 12.5);
     assert.equal(requests[1].url.pathname, '/v1.0/api/catalog/cat%2Fone/issues/issue%3Fone/progress');

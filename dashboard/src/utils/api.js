@@ -172,6 +172,10 @@ export class ApiClient {
   listCatalog(query) {
     return this._request('GET', '/v1.0/api/catalog', { query });
   }
+  // POST twin of listCatalog: the same EnumerationQuery values (subscribed, search, sortBy, paging) as a JSON body.
+  enumerateCatalog(body = {}) {
+    return this._request('POST', '/v1.0/api/catalog/enumerate', { body });
+  }
   listCatalogSubscriptions(query) {
     return this._request('GET', '/v1.0/api/catalog/subscriptions', { query });
   }
@@ -1168,10 +1172,17 @@ export class ApiClient {
     return this._request('POST', '/v1.0/public/password/reset', { body: { token, password } });
   }
   // The usage meter: plan, month-to-date cost and cap, reset date, counts, and limits.
-  // Custom topics against the plan's limit, in keep order (TopicSlotsResponse). Saving names the topics that keep
-  // running, most important first; an empty list clears the choice.
+  // Custom topic count against the plan's limit (TopicSlotsResponse: limit, counted, overLimit, customized). The topics
+  // in keep order are paged from listTopicSlotTopics. Saving names the topics that keep running, most important first,
+  // and returns the summary.
   getTopicSlots() {
     return this._request('GET', '/v1.0/api/account/topic-slots');
+  }
+  listTopicSlotTopics(query) {
+    return this._request('GET', '/v1.0/api/account/topic-slots/topics', { query });
+  }
+  enumerateTopicSlotTopics(body = {}) {
+    return this._request('POST', '/v1.0/api/account/topic-slots/topics/enumerate', { body });
   }
   saveTopicSlots(keepTopicIds) {
     return this._request('PUT', '/v1.0/api/account/topic-slots', { body: { keepTopicIds: keepTopicIds || [] } });

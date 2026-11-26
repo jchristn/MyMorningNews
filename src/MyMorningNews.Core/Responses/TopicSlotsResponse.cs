@@ -1,9 +1,10 @@
 namespace MyMorningNews.Core.Responses
 {
-    using System.Collections.Generic;
+    using System;
 
     /// <summary>
-    /// The account's custom topics against its plan limit, in slot order (plan section 8.4).
+    /// The account's custom topic count against its plan limit (plan section 8.4). The topics themselves, in slot order,
+    /// are enumerated from GET /v1.0/api/account/topic-slots/topics.
     /// </summary>
     public class TopicSlotsResponse
     {
@@ -27,10 +28,5 @@ namespace MyMorningNews.Core.Responses
         /// The owner has chosen a keep order.
         /// </summary>
         public bool Customized { get; set; } = false;
-
-        /// <summary>
-        /// Topics in slot order.
-        /// </summary>
-        public List<TopicSlotResponse> Topics { get; set; } = new List<TopicSlotResponse>();
     }
 }

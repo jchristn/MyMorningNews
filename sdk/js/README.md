@@ -447,9 +447,11 @@ await client.notifications.remove(unread.objects[0].id);
 const plan = await client.account.plan();
 await client.account.redeem('WELCOME'); // 409 PromoCodeInvalid with details.reason when it cannot be redeemed
 const meter = await client.account.usage(); // { planKey, topics, topicsMax, runsToday, runsDailyMax, monthToDateCostUsd, resetUtc, ... }
-const slots = await client.account.topicSlots(); // { limit, counted, overLimit, customized, topics: [{ topicId, position, chosen, withinPlan }] }
+const slots = await client.account.topicSlots(); // { limit, counted, overLimit, customized }
+const slotPage = await client.account.topicSlotTopics({ pageSize: 25, search: 'rebates' }); // EnumerationResult of { topicId, position, chosen, withinPlan } in slot order
 await client.account.setTopicSlots([topicA, topicB]); // keep order on a smaller plan; nothing is paused or deleted
 await client.account.clearTopicSlots();
+const mine = await client.catalog.list({ subscribed: true, sortBy: 'title' }); // system briefings I subscribe to (false for the rest)
 const zip = await client.account.export(); // DownloadResult with a ZIP of my data
 const { purgeAfterUtc } = await client.account.delete(); // 202; signing in again before then cancels it
 ```

@@ -36,6 +36,8 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
                 EnumerationResult<CatalogEntryResponse> catalog = await client.Catalog.ListAsync(new CatalogListOptions { Category = "AI & science", PageSize = 3 }, token).ConfigureAwait(false);
                 Helpers.True(catalog.Objects[0].Eligible, "public eligibility");
                 Helpers.True(handler.Path.Contains("category=AI%20%26%20science", StringComparison.Ordinal), "encoded category");
+                await client.Catalog.ListAsync(new CatalogListOptions { Subscribed = false, SortBy = "title" }, token).ConfigureAwait(false);
+                Helpers.True(handler.Path.Contains("subscribed=false", StringComparison.Ordinal) && handler.Path.Contains("sortBy=title", StringComparison.Ordinal), "subscribed filter and title sort");
                 handler.Reply = "{\"positionSeconds\":12.5,\"completed\":false}";
                 BriefingProgress progress = await client.Catalog.SaveProgressAsync("cat/one", "issue?one", new BriefingProgressRequest { PositionSeconds = 12.5, Completed = false }, token).ConfigureAwait(false);
                 Helpers.Equal(12.5, progress.PositionSeconds, "fractional private progress");

@@ -47,8 +47,12 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PreAuthentication.Static.Add(HttpMethod.GET, "/.well-known/apple-app-site-association", AppleAsync, null, openApiMetadata: Doc("iOS universal links", "Public", "The apple-app-site-association file as application/json, with no authentication and no redirect. 404 NotConfigured until Hosting.AppleTeamId (MYMORNINGNEWS_HOSTING_APPLE_TEAM_ID) is set."));
             webserver.Routes.PreAuthentication.Static.Add(HttpMethod.GET, "/.well-known/assetlinks.json", AndroidAsync, null, openApiMetadata: Doc("Android app links", "Public", "The Digital Asset Links file as application/json, with no authentication and no redirect. 404 NotConfigured until Hosting.AndroidCertificateFingerprints (MYMORNINGNEWS_HOSTING_ANDROID_CERT_FINGERPRINTS) is set."));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/account/usage", UsageAsync, null, openApiMetadata: Doc("My usage against my plan's limits", "Account"));
-            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/account/topic-slots", TopicSlotsAsync, null, openApiMetadata: Doc("My custom topics against my plan's limit", "Account",
-                "Topics in slot order: your chosen keep order first, then oldest first. Topics past the limit keep their history but do not run; creating, duplicating, or restoring a topic stays blocked until enough are archived or the plan grows."));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/account/topic-slots", TopicSlotsAsync, null, openApiMetadata: Doc("My custom topic count against my plan's limit", "Account",
+                "Limit, counted, over-limit, and whether a keep order is saved. Topics past the limit keep their history but do not run; creating, duplicating, or restoring a topic stays blocked until enough are archived or the plan grows. Enumerate the topics from /v1.0/api/account/topic-slots/topics."));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/account/topic-slots/topics", TopicSlotTopicsAsync, null, openApiMetadata: Paged(Doc("My custom topics in slot order", "Account",
+                "Your chosen keep order first, then oldest first. Position and withinPlan reflect the whole order; search matches the topic name. Sorting is always slot order.")));
+            webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/account/topic-slots/topics/enumerate", ctx => EnumerateAsync(ctx, TopicSlotTopicsAsync), null, openApiMetadata: Paged(Doc("My custom topics in slot order", "Account",
+                "Your chosen keep order first, then oldest first. Position and withinPlan reflect the whole order; search matches the topic name. Sorting is always slot order.")).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.PUT, "/v1.0/api/account/topic-slots", SaveTopicSlotsAsync, null, openApiMetadata: Doc("Choose which custom topics keep running on a smaller plan", "Account",
                 "Ordered topic IDs, most important first. Saving ahead of a downgrade applies when the limit shrinks. Nothing is paused, archived, or deleted by this call. An empty list clears the choice.").WithRequestBody(Body<TopicSlotsRequest>()));
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.GET, "/v1.0/api/account/export", ExportAsync, null, openApiMetadata: Doc("Download my data (ZIP of JSON and Markdown)", "Account"));
@@ -121,6 +125,16 @@ namespace MyMorningNews.Server.Routes
             if (user == null) return;
             TopicSlotService slots = new TopicSlotService(Server.Database, Server.Entitlements);
             await SendJsonAsync(ctx, 200, await slots.DescribeAsync(user.TenantId, user.Id, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async Task TopicSlotTopicsAsync(HttpContextBase ctx)
+        {
+            User? user = await SelfAsync(ctx, RequestTypeEnum.UserSelfRead).ConfigureAwait(false);
+            if (user == null) return;
+            EnumerationQuery query = new EnumerationQuery();
+            ApplyPaging(ctx, query);
+            TopicSlotService slots = new TopicSlotService(Server.Database, Server.Entitlements);
+            await SendJsonAsync(ctx, 200, await slots.EnumerateAsync(user.TenantId, user.Id, query, ctx.Token).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         private async Task SaveTopicSlotsAsync(HttpContextBase ctx)

@@ -3,8 +3,10 @@ namespace MyMorningNews.McpServer.Tools
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using MyMorningNews.Sdk;
     using MyMorningNews.Sdk.Enums;
     using MyMorningNews.Sdk.Models;
+    using MyMorningNews.Sdk.Options;
     using MyMorningNews.Sdk.Requests;
     using Voltaic.Mcp;
 
@@ -25,6 +27,11 @@ namespace MyMorningNews.McpServer.Tools
         /// Most topics one keep order can list.
         /// </summary>
         public const int MaxKeepTopics = 200;
+
+        /// <summary>
+        /// Topics returned per page by get_topic_slots when pageSize is omitted, and by set_topic_slots.
+        /// </summary>
+        public const int DefaultSlotPageSize = 25;
 
         /// <summary>
         /// Build the tools.
@@ -90,19 +97,33 @@ namespace MyMorningNews.McpServer.Tools
                 }));
 
             tools.Add(new McpTool("get_topic_slots", "Read my topic slots",
-                "Read your custom topics against your plan's topic limit, in keep order: which ones fit the plan and run, and which keep their history but do not run. " +
+                "Read your custom topic count against your plan's topic limit plus one page of your topics in keep order: which ones fit the plan and run, and which keep their history but do not run. " +
+                "Position and withinPlan reflect the whole order, so a later page or a search keeps each topic's true slot; use pageNumber and pageSize to read further. " +
                 "While overLimit is above zero, new topics cannot be created, duplicated, or restored.",
-                Schema.Object(Schema.Props()),
+                Schema.Object(Schema.Props(
+                    "search", Schema.String("Text in the topic name.", 200),
+                    "pageSize", Schema.Integer("Topics per page. Default " + DefaultSlotPageSize + ".", 1, 100),
+                    "pageNumber", Schema.Integer("Page (1-based). Default 1.", 1, 10000))),
                 SlotsSchema, true, false,
-                async (a, c, t) => Slots(await c.Account.GetTopicSlotsAsync(t).ConfigureAwait(false))));
+                async (a, c, t) =>
+                {
+                    TopicSlotsResponse summary = await c.Account.GetTopicSlotsAsync(t).ConfigureAwait(false);
+                    ListOptions o = new ListOptions { Search = a.OptionalText("search", 200), PageSize = a.Integer("pageSize", DefaultSlotPageSize, 1, 100), PageNumber = a.Integer("pageNumber", 1, 1, 10000) };
+                    return Slots(summary, await c.Account.GetTopicSlotTopicsAsync(o, t).ConfigureAwait(false));
+                }));
 
             tools.Add(new McpTool("set_topic_slots", "Choose which topics keep running",
                 "Set the order in which your custom topics keep running when your plan allows fewer than you have, most important first. Topics you leave out follow in creation order. " +
-                "An empty list clears the choice. Nothing is paused, archived, or deleted; a choice saved ahead of a downgrade applies when the limit shrinks.",
+                "An empty list clears the choice. Nothing is paused, archived, or deleted; a choice saved ahead of a downgrade applies when the limit shrinks. " +
+                "Returns the updated count and the first " + DefaultSlotPageSize + " topics in the new keep order; use get_topic_slots to read further pages.",
                 Schema.Object(Schema.Props(
                     "keepTopicIds", Schema.Array("Recurring, non-archived topic IDs (top_...) in keep order. Empty clears the choice.", Schema.String("Topic ID.", 64), MaxKeepTopics)), new[] { "keepTopicIds" }),
                 SlotsSchema, false, false,
-                async (a, c, t) => Slots(await c.Account.SetTopicSlotsAsync(new TopicSlotsRequest { KeepTopicIds = a.TextList("keepTopicIds", MaxKeepTopics) }, t).ConfigureAwait(false))));
+                async (a, c, t) =>
+                {
+                    TopicSlotsResponse summary = await c.Account.SetTopicSlotsAsync(new TopicSlotsRequest { KeepTopicIds = a.TextList("keepTopicIds", MaxKeepTopics) }, t).ConfigureAwait(false);
+                    return Slots(summary, await c.Account.GetTopicSlotTopicsAsync(new ListOptions { PageSize = DefaultSlotPageSize }, t).ConfigureAwait(false));
+                }));
 
             return tools;
         }
@@ -182,24 +203,27 @@ namespace MyMorningNews.McpServer.Tools
         }
 
         /// <summary>
-        /// Shape the account's topic slots.
+        /// Shape the account's topic slot summary with one page of its topics in slot order.
         /// </summary>
-        /// <param name="r">Slots.</param>
+        /// <param name="r">Slot summary.</param>
+        /// <param name="page">One page of topics in slot order.</param>
         /// <returns>Projection.</returns>
-        /// <exception cref="ArgumentNullException">Slots are null.</exception>
-        public static Dictionary<string, object?> Slots(TopicSlotsResponse r)
+        /// <exception cref="ArgumentNullException">Summary or page is null.</exception>
+        public static Dictionary<string, object?> Slots(TopicSlotsResponse r, EnumerationResult<TopicSlotResponse> page)
         {
             ArgumentNullException.ThrowIfNull(r);
+            ArgumentNullException.ThrowIfNull(page);
             return new Dictionary<string, object?>(StringComparer.Ordinal)
             {
                 { "limit", r.Limit }, { "counted", r.Counted }, { "overLimit", r.OverLimit }, { "customized", r.Customized },
                 {
-                    "topics", r.Topics.OrderBy(x => x.Position).Select(x => new Dictionary<string, object?>(StringComparer.Ordinal)
+                    "topics", page.Objects.OrderBy(x => x.Position).Select(x => new Dictionary<string, object?>(StringComparer.Ordinal)
                     {
                         { "topicId", x.TopicId }, { "name", x.Name }, { "status", x.Status.ToString() }, { "position", x.Position }, { "chosen", x.Chosen },
                         { "withinPlan", x.WithinPlan }, { "lastRunUtc", Shapes.Iso(x.LastRunUtc) }
                     }).ToList()
-                }
+                },
+                { "totalRecords", page.TotalRecords }, { "pageNumber", page.PageNumber }, { "pageSize", page.PageSize }, { "totalPages", page.TotalPages }
             };
         }
 
@@ -326,11 +350,15 @@ namespace MyMorningNews.McpServer.Tools
                     "counted", Schema.Integer("Recurring, non-archived topics. Paused topics count.", 0, int.MaxValue),
                     "overLimit", Schema.Integer("Topics past the limit: they keep history but do not run.", 0, int.MaxValue),
                     "customized", Schema.Boolean("You have chosen a keep order."),
-                    "topics", Schema.Array("Topics in keep order.", Schema.Object(Schema.Props(
+                    "topics", Schema.Array("One page of topics in keep order.", Schema.Object(Schema.Props(
                         "topicId", Schema.String("Topic ID."), "name", Schema.String("Name."), "status", Schema.String(Shapes.Names<TopicStatusEnum>()),
                         "position", Schema.Integer("Position (1-based).", 1, int.MaxValue), "chosen", Schema.Boolean("You placed it explicitly."),
                         "withinPlan", Schema.Boolean("It fits the plan and runs."), "lastRunUtc", Schema.NullableString("Last run (UTC).")),
-                        new[] { "topicId", "position", "withinPlan" }, true))), new[] { "counted", "overLimit", "customized", "topics" }, true);
+                        new[] { "topicId", "position", "withinPlan" }, true)),
+                    "totalRecords", Schema.Integer("Topics matching across all pages.", 0, long.MaxValue),
+                    "pageNumber", Schema.Integer("Page number (1-based).", 1, int.MaxValue),
+                    "pageSize", Schema.Integer("Maximum topics on this page.", 1, 1000),
+                    "totalPages", Schema.Integer("Pages available.", 0, int.MaxValue)), new[] { "counted", "overLimit", "customized", "topics", "totalRecords" }, true);
             }
         }
     }

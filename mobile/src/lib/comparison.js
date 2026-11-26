@@ -99,5 +99,5 @@ export function runsAt(index, limit) {
 
 /** Whether Account > Plan should offer the keep order: the account has custom topics and the plan limits them. */
 export function offersTopicSlots(slots) {
-  return Boolean(slots && slots.limit !== null && slots.limit !== undefined && (slots.counted > 0 || (slots.topics || []).length > 0));
+  return Boolean(slots && slots.limit !== null && slots.limit !== undefined && slots.counted > 0);
 }

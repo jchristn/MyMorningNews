@@ -2,11 +2,13 @@ namespace MyMorningNews.Core.Entitlements
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using MyMorningNews.Core.Database;
     using MyMorningNews.Core.Models;
+    using MyMorningNews.Core.Requests;
     using MyMorningNews.Core.Responses;
 
     /// <summary>
@@ -32,12 +34,12 @@ namespace MyMorningNews.Core.Entitlements
         }
 
         /// <summary>
-        /// The account's custom topics in slot order against the current limit.
+        /// The account's custom topic count against the current limit.
         /// </summary>
         /// <param name="tenantId">Tenant.</param>
         /// <param name="userId">Owner.</param>
         /// <param name="token">Cancellation token.</param>
-        /// <returns>Slots.</returns>
+        /// <returns>Summary.</returns>
         /// <exception cref="ArgumentNullException">An argument is null or empty.</exception>
         public async Task<TopicSlotsResponse> DescribeAsync(string tenantId, string userId, CancellationToken token = default)
         {
@@ -45,24 +47,49 @@ namespace MyMorningNews.Core.Entitlements
             if (String.IsNullOrWhiteSpace(userId)) throw new ArgumentNullException(nameof(userId));
             long? limit = await _Entitlements.TopicSlotLimitAsync(tenantId, userId, false, token).ConfigureAwait(false);
             List<Topic> ordered = await _Database.Topics.SlotOrderAsync(tenantId, userId, token).ConfigureAwait(false);
-            TopicSlotsResponse response = new TopicSlotsResponse
+            return new TopicSlotsResponse
             {
                 Limit = limit,
                 Counted = ordered.Count,
                 OverLimit = limit.HasValue ? Math.Max(0, ordered.Count - limit.Value) : 0,
                 Customized = ordered.Any(t => t.SlotPriority.HasValue)
             };
+        }
+
+        /// <summary>
+        /// One page of the account's custom topics in slot order. Position and WithinPlan are computed over the whole
+        /// order, so a search or a later page keeps each topic's true slot. Search matches the topic name
+        /// (case-insensitive); sorting is always slot order.
+        /// </summary>
+        /// <param name="tenantId">Tenant.</param>
+        /// <param name="userId">Owner.</param>
+        /// <param name="query">Paging and search.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Page of slots.</returns>
+        /// <exception cref="ArgumentNullException">An argument is null or empty.</exception>
+        public async Task<EnumerationResult<TopicSlotResponse>> EnumerateAsync(string tenantId, string userId, EnumerationQuery query, CancellationToken token = default)
+        {
+            if (String.IsNullOrWhiteSpace(tenantId)) throw new ArgumentNullException(nameof(tenantId));
+            if (String.IsNullOrWhiteSpace(userId)) throw new ArgumentNullException(nameof(userId));
+            ArgumentNullException.ThrowIfNull(query);
+            Stopwatch sw = Stopwatch.StartNew();
+            long? limit = await _Entitlements.TopicSlotLimitAsync(tenantId, userId, false, token).ConfigureAwait(false);
+            List<Topic> ordered = await _Database.Topics.SlotOrderAsync(tenantId, userId, token).ConfigureAwait(false);
+            List<TopicSlotResponse> all = new List<TopicSlotResponse>();
             for (int i = 0; i < ordered.Count; i++)
             {
                 Topic t = ordered[i];
-                response.Topics.Add(new TopicSlotResponse
+                all.Add(new TopicSlotResponse
                 {
                     TopicId = t.Id, Name = t.Name, Status = t.Status, Position = i + 1, Chosen = t.SlotPriority.HasValue,
                     WithinPlan = !limit.HasValue || i < limit.Value, LastRunUtc = t.LastRunUtc
                 });
             }
 
-            return response;
+            string? search = String.IsNullOrWhiteSpace(query.Search) ? null : query.Search.Trim();
+            List<TopicSlotResponse> matched = search == null ? all : all.Where(s => s.Name.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
+            List<TopicSlotResponse> page = matched.Skip((int)Math.Min(query.Offset, Int32.MaxValue)).Take(query.PageSize).ToList();
+            return EnumerationResult<TopicSlotResponse>.Create(page, query, matched.Count, sw.Elapsed.TotalMilliseconds);
         }
 
         /// <summary>
@@ -72,7 +99,7 @@ namespace MyMorningNews.Core.Entitlements
         /// <param name="userId">Owner.</param>
         /// <param name="keepTopicIds">Topic IDs, most important first. Empty clears the choice.</param>
         /// <param name="token">Cancellation token.</param>
-        /// <returns>Slots after the change.</returns>
+        /// <returns>Summary after the change.</returns>
         /// <exception cref="ArgumentNullException">An argument is null or empty.</exception>
         /// <exception cref="ArgumentException">A topic is listed twice, unknown, archived, or one-time.</exception>
         public async Task<TopicSlotsResponse> SaveAsync(string tenantId, string userId, List<string> keepTopicIds, CancellationToken token = default)

@@ -1921,22 +1921,42 @@ async function main() {
 
     // ---- Account ---------------------------------------------------------------------------------------------------
 
-    await run('account.topicSlots, setTopicSlots, clearTopicSlots', async () => {
+    const allSlotTopics = async () => {
+        const all = [];
+        for await (const x of paginate((o) => client.account.topicSlotTopics(o), { pageSize: 1000 })) all.push(x);
+        return all;
+    };
+
+    await run('account.topicSlots, topicSlotTopics, setTopicSlots, clearTopicSlots', async () => {
         const original = await client.account.topicSlots();
-        assert(Array.isArray(original.topics) && typeof original.counted === 'number', 'slots read');
-        const keep = original.topics.filter((t) => t.chosen).sort((a, b) => a.position - b.position).map((t) => t.topicId);
+        assert(typeof original.counted === 'number' && original.topics === undefined, 'summary read without a topic list');
+        const originalTopics = await allSlotTopics();
+        const keep = originalTopics.filter((t) => t.chosen).sort((a, b) => a.position - b.position).map((t) => t.topicId);
         onCleanup('topic slots', () => client.account.setTopicSlots(keep));
+        assertEqual(original.customized, keep.length > 0, 'customized matches the chosen topics');
         const t = await client.topics.create({ name: name('slot-topic'), description: 'SDK slot topic', brief: 'Follow open source database releases. Harness data; safe to delete.' });
         onCleanup('slot topic', () => client.topics.remove(t.id));
         const chosen = await client.account.setTopicSlots([t.id]);
         assertEqual(chosen.customized, true, 'customized');
-        const first = chosen.topics.find((x) => x.topicId === t.id);
-        assert(first && first.position === 1 && first.chosen, 'chosen topic is kept first');
+        const firstPage = await client.account.topicSlotTopics({ pageSize: 1 });
+        const first = firstPage.objects[0];
+        assert(first && first.topicId === t.id && first.position === 1 && first.chosen, 'chosen topic is kept first');
+        assertEqual(firstPage.totalRecords, chosen.counted, 'the topic list covers every counted topic');
+        const searched = await client.account.topicSlotTopics({ search: t.name, pageSize: 10 });
+        assert(searched.objects.some((x) => x.topicId === t.id && x.position === 1), 'search matches the name and keeps the whole-order position');
         await expectError(client.account.setTopicSlots([t.id, t.id]), 400, 'ValidationFailed');
         await expectError(client.account.setTopicSlots([bogus('top')]), 400, 'ValidationFailed');
         const cleared = await client.account.clearTopicSlots();
-        assert(!cleared.customized && cleared.topics.every((x) => !x.chosen), 'cleared');
+        assert(!cleared.customized && (await allSlotTopics()).every((x) => !x.chosen), 'cleared');
         await client.account.setTopicSlots(keep);
+    });
+
+    await run('catalog.list subscribed filter and title sort', async () => {
+        const all = await client.catalog.list({ pageSize: 1000 });
+        const mine = await client.catalog.list({ subscribed: true, sortBy: 'title', pageSize: 1000 });
+        const rest = await client.catalog.list({ subscribed: false, sortBy: 'title', pageSize: 1000 });
+        assertEqual(mine.totalRecords + rest.totalRecords, all.totalRecords, 'subscribed and unsubscribed partition the catalog');
+        assert(mine.objects.every((e) => e.subscribed) && rest.objects.every((e) => !e.subscribed), 'subscribed filter matches each entry');
     });
 
     await run('account.plan and redeem a bad code', async () => {

@@ -51,7 +51,10 @@ export const es = {
     "noSubscriptions": "Suscríbete primero a informes del sistema para añadirlos aquí.",
     "save": "Guardar informes del sistema",
     "clear": "Quitar todos",
-    "capped": "Tu plan no incluye investigación personalizada, así que no se pueden añadir informes del sistema a las ediciones. Aún puedes quitarlos."
+    "capped": "Tu plan no incluye investigación personalizada, así que no se pueden añadir informes del sistema a las ediciones. Aún puedes quitarlos.",
+    "search": "Buscar en tus informes del sistema",
+    "noMatches": "Ningún informe del sistema suscrito coincide con esta búsqueda.",
+    "loadMore": "Cargar más"
   },
   topicSlots: {
     "title": "Temas que siguen activos",

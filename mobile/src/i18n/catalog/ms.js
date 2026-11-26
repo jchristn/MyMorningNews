@@ -51,7 +51,10 @@ export const ms = {
     "noSubscriptions": "Langgan taklimat sistem dahulu untuk menambahnya di sini.",
     "save": "Simpan taklimat sistem",
     "clear": "Buang semua",
-    "capped": "Pelan anda tidak termasuk penyelidikan tersuai, jadi taklimat sistem tidak boleh ditambah pada edisi. Anda masih boleh membuangnya."
+    "capped": "Pelan anda tidak termasuk penyelidikan tersuai, jadi taklimat sistem tidak boleh ditambah pada edisi. Anda masih boleh membuangnya.",
+    "search": "Cari taklimat sistem anda",
+    "noMatches": "Tiada taklimat sistem yang dilanggan sepadan dengan carian ini.",
+    "loadMore": "Muat lagi"
   },
   topicSlots: {
     "title": "Topik yang terus berjalan",

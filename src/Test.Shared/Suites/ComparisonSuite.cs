@@ -181,6 +181,13 @@ namespace Test.Shared.Suites
             string path = "/v1.0/api/editions/" + e.Edition.Id + "/publications";
             (await f.User.Client.PutAsync(path, new { publicationIds = new[] { publication.Id } }, token).ConfigureAwait(false)).Expect(400, "subscription required");
             (await f.User.Client.PutAsync("/v1.0/api/catalog/" + publication.Id + "/subscription", new { }, token).ConfigureAwait(false)).Expect(200, "subscribe");
+            EnumerationResult<CatalogEntryResponse> mine = (await f.User.Client.GetAsync("/v1.0/api/catalog?subscribed=true&pageSize=100", token).ConfigureAwait(false)).Expect(200, "subscribed only").Json<EnumerationResult<CatalogEntryResponse>>();
+            Assert.True(mine.Objects.All(x => x.Subscribed) && mine.Objects.Any(x => x.Id == publication.Id) && !mine.Objects.Any(x => x.Id == unsubscribed.Id), "subscribed filter applied on the server");
+            EnumerationResult<CatalogEntryResponse> found = (await f.User.Client.PostAsync("/v1.0/api/catalog/enumerate", new { subscribed = true, search = publication.Title, pageSize = 5, sortBy = "title", sortDirection = "Ascending" }, token).ConfigureAwait(false)).Expect(200, "search subscriptions").Json<EnumerationResult<CatalogEntryResponse>>();
+            Assert.True(found.TotalRecords == 1 && found.Objects[0].Id == publication.Id, "search within subscriptions");
+            EnumerationResult<CatalogEntryResponse> rest = (await f.User.Client.GetAsync("/v1.0/api/catalog?subscribed=false&pageSize=100", token).ConfigureAwait(false)).Expect(200, "not subscribed").Json<EnumerationResult<CatalogEntryResponse>>();
+            Assert.True(rest.Objects.All(x => !x.Subscribed) && !rest.Objects.Any(x => x.Id == publication.Id), "subscribed=false excludes subscriptions");
+            (await f.User.Client.GetAsync("/v1.0/api/catalog?subscribed=maybe", token).ConfigureAwait(false)).Expect(400, "subscribed must be a boolean");
             (await f.User.Client.PutAsync(path, new { publicationIds = new[] { publication.Id, publication.Id } }, token).ConfigureAwait(false)).Expect(400, "duplicates rejected");
             (await f.User.Client.PutAsync(path, new { publicationIds = new[] { publication.Id, unsubscribed.Id } }, token).ConfigureAwait(false)).Expect(400, "every publication checked");
             EditionResponse set = (await f.User.Client.PutAsync(path, new { publicationIds = new[] { publication.Id } }, token).ConfigureAwait(false)).Expect(200, "set").Json<EditionResponse>();
@@ -225,15 +232,21 @@ namespace Test.Shared.Suites
                 topics.Add((await member.Client.PostAsync("/v1.0/api/topics", new { name = "Slot topic " + i }, token).ConfigureAwait(false)).Expect(201, "topic " + i).Json<Topic>());
             Topic foreign = (await other.Client.PostAsync("/v1.0/api/topics", new { name = "Not mine" }, token).ConfigureAwait(false)).Expect(201, "other topic").Json<Topic>();
             TopicSlotsResponse open = (await member.Client.GetAsync("/v1.0/api/account/topic-slots", token).ConfigureAwait(false)).Expect(200, "slots").Json<TopicSlotsResponse>();
-            Assert.True(open.Counted == 3 && open.OverLimit == 0 && open.Topics.All(x => x.WithinPlan) && open.Topics.Select(x => x.TopicId).SequenceEqual(topics.Select(x => x.Id)), "oldest first by default");
+            List<TopicSlotResponse> openTopics = await SlotTopicsAsync(member, token).ConfigureAwait(false);
+            Assert.True(open.Counted == 3 && open.OverLimit == 0 && openTopics.All(x => x.WithinPlan) && openTopics.Select(x => x.TopicId).SequenceEqual(topics.Select(x => x.Id)), "oldest first by default");
+            EnumerationResult<TopicSlotResponse> second = (await member.Client.GetAsync("/v1.0/api/account/topic-slots/topics?pageSize=1&pageNumber=2", token).ConfigureAwait(false)).Expect(200, "page two").Json<EnumerationResult<TopicSlotResponse>>();
+            Assert.True(second.TotalRecords == 3 && second.TotalPages == 3 && second.Objects.Count == 1 && second.Objects[0].Position == 2 && second.Objects[0].TopicId == topics[1].Id, "paged in slot order");
+            EnumerationResult<TopicSlotResponse> searched = (await member.Client.PostAsync("/v1.0/api/account/topic-slots/topics/enumerate", new { search = "topic 2" }, token).ConfigureAwait(false)).Expect(200, "search").Json<EnumerationResult<TopicSlotResponse>>();
+            Assert.True(searched.TotalRecords == 1 && searched.Objects[0].Position == 3, "search keeps the true slot position");
 
             TopicSlotsResponse chosen = (await member.Client.PutAsync("/v1.0/api/account/topic-slots", new { keepTopicIds = new[] { topics[2].Id, topics[1].Id } }, token).ConfigureAwait(false)).Expect(200, "choose ahead of a downgrade").Json<TopicSlotsResponse>();
-            Assert.True(chosen.Customized && chosen.Topics.Select(x => x.TopicId).SequenceEqual(new[] { topics[2].Id, topics[1].Id, topics[0].Id }) && chosen.Topics[0].Chosen && !chosen.Topics[2].Chosen, "keep order first");
+            List<TopicSlotResponse> chosenTopics = await SlotTopicsAsync(member, token).ConfigureAwait(false);
+            Assert.True(chosen.Customized && chosenTopics.Select(x => x.TopicId).SequenceEqual(new[] { topics[2].Id, topics[1].Id, topics[0].Id }) && chosenTopics[0].Chosen && !chosenTopics[2].Chosen, "keep order first");
 
             string limits = "/v1.0/tenants/" + tenant.Id + "/users/" + member.User.Id + "/entitlements";
             (await admin.PutAsync(limits, new { featureKey = "topics.max", value = "2", reason = "Downgrade fixture" }, token).ConfigureAwait(false)).Expect(200, "downgrade to two");
             TopicSlotsResponse down = (await member.Client.GetAsync("/v1.0/api/account/topic-slots", token).ConfigureAwait(false)).Expect(200, "after downgrade").Json<TopicSlotsResponse>();
-            Assert.True(down.Limit == 2 && down.OverLimit == 1 && down.Topics.Single(x => !x.WithinPlan).TopicId == topics[0].Id, "the unchosen oldest topic is outside the plan");
+            Assert.True(down.Limit == 2 && down.OverLimit == 1 && (await SlotTopicsAsync(member, token).ConfigureAwait(false)).Single(x => !x.WithinPlan).TopicId == topics[0].Id, "the unchosen oldest topic is outside the plan");
             Topic oldest = Assert.NotNull(await server.Context.Database.Topics.ReadAsync(tenant.Id, topics[0].Id, token).ConfigureAwait(false), "oldest");
             Topic newest = Assert.NotNull(await server.Context.Database.Topics.ReadAsync(tenant.Id, topics[2].Id, token).ConfigureAwait(false), "newest");
             await server.Context.Entitlements.CheckTopicResearchAsync(newest, member.User.Id, token).ConfigureAwait(false);
@@ -254,12 +267,18 @@ namespace Test.Shared.Suites
             (await member.Client.PutAsync("/v1.0/api/account/topic-slots", new { keepTopicIds = new[] { topics[0].Id, topics[0].Id } }, token).ConfigureAwait(false)).Expect(400, "duplicates rejected");
             (await member.Client.PutAsync("/v1.0/api/account/topic-slots", new { keepTopicIds = new[] { foreign.Id } }, token).ConfigureAwait(false)).Expect(400, "another member's topic rejected");
             TopicSlotsResponse swapped = (await member.Client.PutAsync("/v1.0/api/account/topic-slots", new { keepTopicIds = new[] { topics[0].Id } }, token).ConfigureAwait(false)).Expect(200, "change the choice").Json<TopicSlotsResponse>();
-            Assert.True(swapped.Topics[0].TopicId == topics[0].Id && swapped.Topics.Single(x => !x.WithinPlan).TopicId == topics[2].Id, "chosen first, then oldest unchosen");
+            List<TopicSlotResponse> swappedTopics = await SlotTopicsAsync(member, token).ConfigureAwait(false);
+            Assert.True(swapped.Customized && swappedTopics[0].TopicId == topics[0].Id && swappedTopics.Single(x => !x.WithinPlan).TopicId == topics[2].Id, "chosen first, then oldest unchosen");
             (await member.Client.PostAsync("/v1.0/api/topics/" + topics[1].Id + "/archive", null, token).ConfigureAwait(false)).Expect(200, "archive one");
             TopicSlotsResponse fits = (await member.Client.GetAsync("/v1.0/api/account/topic-slots", token).ConfigureAwait(false)).Expect(200, "fits").Json<TopicSlotsResponse>();
             Assert.True(fits.Counted == 2 && fits.OverLimit == 0, "archiving frees the slot");
             TopicSlotsResponse cleared = (await member.Client.PutAsync("/v1.0/api/account/topic-slots", new { keepTopicIds = Array.Empty<string>() }, token).ConfigureAwait(false)).Expect(200, "clear").Json<TopicSlotsResponse>();
             Assert.True(!cleared.Customized, "cleared");
+        }
+
+        private static async Task<List<TopicSlotResponse>> SlotTopicsAsync(TestUser member, CancellationToken token)
+        {
+            return (await member.Client.GetAsync("/v1.0/api/account/topic-slots/topics?pageSize=100", token).ConfigureAwait(false)).Expect(200, "slot topics").Json<EnumerationResult<TopicSlotResponse>>().Objects;
         }
 
         private static async Task<Briefing> ComposeAsync(PipelineFixture f, string editionId, CancellationToken token)

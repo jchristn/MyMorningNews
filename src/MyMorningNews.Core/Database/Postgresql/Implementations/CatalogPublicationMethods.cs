@@ -27,6 +27,7 @@ namespace MyMorningNews.Core.Database.Postgresql.Implementations
         private static readonly Dictionary<string, string> _SortColumns = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "sortOrder", "sortorder" },
+            { "title", "title" },
             { "createdUtc", "createdutc" },
             { "lastUpdateUtc", "lastupdateutc" }
         };
@@ -244,6 +245,13 @@ SELECT tenantid, userid FROM allowners";
             {
                 args.Add(filter.Active.Value);
                 clauses.Add("active = $" + args.Count);
+            }
+            if (filter.Subscribed.HasValue && !String.IsNullOrWhiteSpace(filter.SubscriberTenantId) && !String.IsNullOrWhiteSpace(filter.SubscriberUserId))
+            {
+                args.Add(filter.SubscriberTenantId);
+                int tenantArg = args.Count;
+                args.Add(filter.SubscriberUserId);
+                clauses.Add((filter.Subscribed.Value ? "" : "NOT ") + "EXISTS (SELECT 1 FROM catalogsubscriptions s WHERE s.publicationid = catalogpublications.id AND s.tenantid = $" + tenantArg + " AND s.userid = $" + args.Count + " AND s.active = TRUE)");
             }
             if (!String.IsNullOrWhiteSpace(filter.Search))
             {

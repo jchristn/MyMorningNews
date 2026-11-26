@@ -15,7 +15,7 @@ namespace MyMorningNews.Sdk.Resources
         /// <summary>Bind the resource to a client.</summary>
         public CatalogResource(MyMorningNewsClient client) : base(client) { }
 
-        /// <summary>Browse published system briefings and account eligibility.</summary>
+        /// <summary>Browse published system briefings and account eligibility. subscribed true returns only active subscriptions, false only the rest; sortBy accepts title.</summary>
         /// <exception cref="MyMorningNewsException">The server rejected the operation.</exception>
         public Task<EnumerationResult<CatalogEntryResponse>> ListAsync(CatalogListOptions? options = null, CancellationToken token = default)
         {

@@ -77,15 +77,19 @@ export function slot(topicId, name, position, withinPlan, extra = {}) {
   return { topicId, name, status: 'Active', position, chosen: false, withinPlan, lastRunUtc: '2026-11-25T06:00:00Z', ...extra };
 }
 
+// TopicSlotsResponse summary.
 export function topicSlots(extra = {}) {
-  return {
-    limit: 2,
-    counted: 3,
-    overLimit: 1,
-    customized: false,
-    topics: [slot('top_1', 'Solar', 1, true), slot('top_2', 'Wind', 2, true), slot('top_3', 'Hydro', 3, false)],
-    ...extra
-  };
+  return { limit: 2, counted: 3, overLimit: 1, customized: false, ...extra };
+}
+
+// The default slot order, as GET /account/topic-slots/topics objects.
+export function slotTopics() {
+  return [slot('top_1', 'Solar', 1, true), slot('top_2', 'Wind', 2, true), slot('top_3', 'Hydro', 3, false)];
+}
+
+// An EnumerationResult<TopicSlotResponse> holding every topic on one page.
+export function slotPage(topics = slotTopics()) {
+  return { success: true, objects: topics, pageNumber: 1, pageSize: 200, totalRecords: topics.length, totalPages: topics.length ? 1 : 0 };
 }
 
 export function catalogEntry(id, title, extra = {}) {

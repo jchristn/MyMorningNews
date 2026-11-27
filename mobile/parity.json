@@ -639,9 +639,10 @@
       "screen": "screens/account/BillingSection.jsx",
       "api": [
         "GET /v1.0/api/account/billing",
-        "POST /v1.0/api/account/billing/purchases"
+        "POST /v1.0/api/account/billing/purchases",
+        "POST /v1.0/api/account/billing/checkout"
       ],
-      "notes": "Native purchase/restore controls require build 7 and configured approved store products. Store validation and discounted native offers remain release gates."
+      "notes": "Native purchase/restore controls require build 7 and configured approved store products. A captured signup discount never becomes a full-price store purchase: US App Store users get a web checkout button, US Google Play users get a text notice, and other storefronts get a neutral notice (APP_STORE_SUBMISSION.md section 3.1). Store validation remains a release gate."
     },
     {
       "route": "/dashboard/account/providers",

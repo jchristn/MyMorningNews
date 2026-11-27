@@ -153,6 +153,23 @@ First release: not shown on Apple for version 1. Google internal testing notes:
 | A+G | Paid Applications Agreement, tax, banking | Required before subscription activation; verify agreement, tax and banking status in both stores | `[ ]` Verify before native subscription launch |
 | A | Content rights: "Does your app contain, show, or access third-party content?" | Yes. Briefings quote short excerpts from public web pages with a link to each source, as summaries for the user's own research. | `[x]` Approved 2026-11-20 (short quoted excerpts with links, for the user's own research) |
 
+### 3.1 Signup discounts and web checkout (store rules, checked 2026-11-26)
+
+A captured signup discount is honored only by web (Stripe) checkout. The app never offers the regular store price in
+its place: the native Subscribe button is hidden for that offer. What the app shows instead depends on the storefront
+that StoreKit or Google Play Billing reports (`getStorefront`); an unknown storefront gets the most restrictive behavior.
+The logic is `webCheckoutPolicy` in `mobile/src/billing/purchases.js`.
+
+| Store and storefront | App behavior | Basis |
+|---|---|---|
+| App Store, United States | Explanation plus a "Subscribe on the web" button that creates the account's checkout on the server and opens it in the system browser | [App Review Guidelines](https://developer.apple.com/app-store/review/guidelines/) 3.1.1(a) and 3.1.3: entitlements "are not required for developers to include buttons, external links, or other calls to action in their United States storefront apps" (Epic v. Apple injunction of April 30, 2025, contempt affirmed by the Ninth Circuit on December 11, 2025; Apple's Supreme Court appeal, No. 25-1311, is pending, so recheck before each submission) |
+| App Store, any other storefront | Neutral notice that the discount does not apply to store offers; no link, no mention of the web | 3.1.1(a): outside the US, links and calls to action need a StoreKit External Purchase Link entitlement, which this app does not hold |
+| Google Play, United States | Text saying the discount is available when subscribing on the web; no link or button | [US policy update](https://support.google.com/googleplay/android-developer/answer/15582165): Google does not prohibit telling US users about pricing outside Play. Links require enrolling in the [external content links program](https://support.google.com/googleplay/android-developer/answer/16470497) and integrating its APIs, which this app has not done |
+| Google Play, any other country | Same neutral notice as above | [Payments policy](https://support.google.com/googleplay/android-developer/answer/9858738) section 4 bars messaging that leads users to other payment methods without an enrolled program |
+
+Enrolling later in Google's external content links program (or holding an Apple entitlement in another storefront)
+would allow the link there; change `webCheckoutPolicy` and this table together.
+
 ---
 
 ## 4. Export compliance (Apple)

@@ -1628,6 +1628,7 @@ export const fr = {
       CapReached: 'Limite du forfait atteinte',
       PredictionDue: 'Prédiction arrivée à échéance',
       TopicStale: 'Sujets sans nouveaux résultats',
+      TopicsOverLimit: 'Sujets au-delà de la limite de votre offre',
     },
     details: {
       RunResults: 'Une exécution de recherche a trouvé du nouveau',
@@ -1637,6 +1638,7 @@ export const fr = {
       CapReached: 'Une exécution planifiée a été ignorée à cause d’une limite du forfait',
       PredictionDue: 'Une prédiction a atteint sa date et peut être vérifiée',
       TopicStale: 'Un sujet n’a rien trouvé de nouveau en une semaine. Conservez-le, sinon il est supprimé au bout de 14 jours.',
+      TopicsOverLimit: 'Après un changement d’offre, vous avez plus de sujets personnalisés que votre offre ne le permet. Rien n’est supprimé. Choisissez ceux à conserver.',
     },
     switchLabel: '{kind}, {channel}',
     reasons: {

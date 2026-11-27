@@ -3899,7 +3899,8 @@
       "RunFailed": "运行失败",
       "CapReached": "已达到套餐上限",
       "PredictionDue": "预测到期",
-      "TopicStale": "没有新发现的主题"
+      "TopicStale": "没有新发现的主题",
+      "TopicsOverLimit": "超出方案上限的主题"
     },
     "descriptions": {
       "RunResults": "一次研究运行为你的某个主题找到了新内容。",
@@ -3908,7 +3909,8 @@
       "RunFailed": "一次研究运行未能完成。",
       "CapReached": "由于你的套餐达到上限，一次计划的运行被跳过。",
       "PredictionDue": "一项预测已到期，可以核对了。",
-      "TopicStale": "某个主题一周内没有新发现。请保留它，否则将在 14 天后删除。"
+      "TopicStale": "某个主题一周内没有新发现。请保留它，否则将在 14 天后删除。",
+      "TopicsOverLimit": "方案变更后，你的自定义主题数量超过了方案允许的上限。不会删除任何内容。请选择要保留的主题。"
     },
     "channels": {
       "Email": "邮件",

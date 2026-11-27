@@ -5,7 +5,7 @@ import { ApiClient } from '../utils/api.js';
 import { NOTIFICATION_CHANNELS, NOTIFICATION_KINDS, channelStates, inAppIsOff, notificationTarget, preferenceMatrix } from '../utils/notifications.js';
 import { page, renderRoute } from '../test/renderRoute.jsx';
 
-const EMAIL_ON = ['RunResults', 'BriefingReady', 'RunFailed', 'CapReached', 'TopicStale'];
+const EMAIL_ON = ['RunResults', 'BriefingReady', 'RunFailed', 'CapReached', 'TopicStale', 'TopicsOverLimit'];
 
 function prefs(overrides = {}, extra = {}) {
   const preferences = [];
@@ -64,6 +64,17 @@ describe('notification helpers', () => {
     expect(notificationTarget({ kind: 'CapReached' })).toBe('/dashboard/profile');
     expect(notificationTarget({ kind: 'PredictionDue', predictionId: 'prd_1' })).toBe('/dashboard/predictions?id=prd_1');
     expect(notificationTarget({ kind: 'PredictionDue' })).toBe('/dashboard/predictions');
+    expect(notificationTarget({ kind: 'TopicsOverLimit' })).toBe('/dashboard/account/billing#topic-slots');
+  });
+
+  it('lists topics past the plan limit as its own kind, on by default for email', async () => {
+    renderRoute('/dashboard/notifications', { getNotificationPreferences: vi.fn(async () => prefs({ 'TopicsOverLimit:InApp': true })) });
+    const table = await screen.findByTestId('notification-matrix');
+    expect(within(table).getByText("Topics past your plan's limit")).toBeInTheDocument();
+    expect(within(table).getByText('A plan change left more custom topics than your plan allows. Nothing is deleted. Choose which ones to keep.')).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: "Topics past your plan's limit: Email" })).toBeChecked();
+    expect(screen.getByRole('switch', { name: "Topics past your plan's limit: In-app" })).toBeChecked();
+    expect(screen.getByRole('switch', { name: "Topics past your plan's limit: Phone" })).not.toBeChecked();
   });
 
   it('reads the matrix, the channel states, and whether in-app is off', () => {
@@ -91,7 +102,7 @@ describe('notification preferences page', () => {
     renderRoute('/dashboard/notifications', { getNotificationPreferences: vi.fn(async () => prefs()) });
     const table = await screen.findByTestId('notification-matrix');
     expect(within(table).getAllByRole('row')).toHaveLength(NOTIFICATION_KINDS.length + 1);
-    expect(within(table).getAllByRole('switch')).toHaveLength(21);
+    expect(within(table).getAllByRole('switch')).toHaveLength(24);
     for (const header of ['Email', 'Phone', 'In-app']) expect(within(table).getByRole('columnheader', { name: header })).toBeInTheDocument();
     expect(within(table).getByText('A briefing has been turned into audio you can play.')).toBeInTheDocument();
     expect(screen.getByRole('switch', { name: 'New findings: Email' })).toBeChecked();

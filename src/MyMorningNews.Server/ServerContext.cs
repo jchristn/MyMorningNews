@@ -202,6 +202,11 @@ namespace MyMorningNews.Server
         public TopicLifecycleService TopicLifecycle { get; set; } = null!;
 
         /// <summary>
+        /// Notices to owners whose accounts went over their custom topic limit.
+        /// </summary>
+        public TopicSlotNoticeService TopicSlotNotices { get; set; } = null!;
+
+        /// <summary>
         /// Daily administrator summary email.
         /// </summary>
         public MyMorningNews.Core.Analytics.AdminReportService AdminReports { get; set; } = null!;

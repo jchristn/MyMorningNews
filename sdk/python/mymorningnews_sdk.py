@@ -795,6 +795,7 @@ class NotificationKind(str, Enum):
     CAP_REACHED = "CapReached"
     PREDICTION_DUE = "PredictionDue"
     TOPIC_STALE = "TopicStale"
+    TOPICS_OVER_LIMIT = "TopicsOverLimit"
 
 
 class NotificationChannel(str, Enum):

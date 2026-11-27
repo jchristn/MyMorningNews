@@ -3860,7 +3860,7 @@ curl -s "http://127.0.0.1:12100/v1.0/api/devices?pageSize=10" \
 
 ### POST /v1.0/api/devices
 
-**Register a device for push notifications.** Returns 201 for a new device, or 200 with the existing device when the same token is registered again. Push is a choice per kind of notification (PUT /v1.0/api/notifications/preferences): save the kinds to push before registering. A user who registers a device without any push choice gets the kinds default push kinds: RunResults, BriefingReady, RunFailed, CapReached, PredictionDue, and TopicStale.
+**Register a device for push notifications.** Returns 201 for a new device, or 200 with the existing device when the same token is registered again. Push is a choice per kind of notification (PUT /v1.0/api/notifications/preferences): save the kinds to push before registering. A user who registers a device without any push choice gets the kinds default push kinds: RunResults, BriefingReady, RunFailed, CapReached, PredictionDue, TopicStale, and TopicsOverLimit.
 
 - Auth: Any authenticated principal (`DeviceWrite`).
 - Response: [`Device`](#device)
@@ -3991,7 +3991,7 @@ The signed-in user's notifications. Preferences are one matrix: each kind of not
 | Query parameter | Type | Notes |
 |---|---|---|
 | `unread` | boolean | Only unread (true) or only read (false) notifications. |
-| `kind` | enum (`RunResults`, `BriefingReady`, `AudioReady`, `RunFailed`, `CapReached`, `PredictionDue`, `TopicStale`) | Only notifications of this kind. |
+| `kind` | enum (`RunResults`, `BriefingReady`, `AudioReady`, `RunFailed`, `CapReached`, `PredictionDue`, `TopicStale`, `TopicsOverLimit`) | Only notifications of this kind. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -4017,7 +4017,7 @@ curl -s "http://127.0.0.1:12100/v1.0/api/notifications?pageSize=10" \
 | Query parameter | Type | Notes |
 |---|---|---|
 | `unread` | boolean | Only unread (true) or only read (false) notifications. |
-| `kind` | enum (`RunResults`, `BriefingReady`, `AudioReady`, `RunFailed`, `CapReached`, `PredictionDue`, `TopicStale`) | Only notifications of this kind. |
+| `kind` | enum (`RunResults`, `BriefingReady`, `AudioReady`, `RunFailed`, `CapReached`, `PredictionDue`, `TopicStale`, `TopicsOverLimit`) | Only notifications of this kind. |
 
 Also takes the [paging parameters](#paging-sorting-and-filtering) (`pageNumber`, `pageSize`, `sortBy`, `sortDirection`, `search`, `fromUtc`, `toUtc`).
 
@@ -10081,7 +10081,7 @@ The email outbox, test and preview sends, resends, and the signed-in user's emai
 | Query parameter | Type | Notes |
 |---|---|---|
 | `status` | enum (`Queued`, `Sending`, `Sent`, `Failed`, `Suppressed`, `Skipped`) |  |
-| `template` | enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`, `CapReached`, `AudioReady`, `PredictionDue`, `BriefingSupport`, `TopicStale`, `TopicDeleted`, `AdminDailySummary`, `AdminWelcome`) | Email template. |
+| `template` | enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`, `CapReached`, `AudioReady`, `PredictionDue`, `BriefingSupport`, `TopicStale`, `TopicDeleted`, `AdminDailySummary`, `AdminWelcome`, `TopicsOverLimit`) | Email template. |
 | `runId` | string | Only records from this run. |
 | `briefingId` | string | Only records for this briefing. |
 | `topicId` | string | Only records for this topic. |
@@ -10111,7 +10111,7 @@ curl -s "http://127.0.0.1:12100/v1.0/api/email-messages?pageSize=10" \
 | Query parameter | Type | Notes |
 |---|---|---|
 | `status` | enum (`Queued`, `Sending`, `Sent`, `Failed`, `Suppressed`, `Skipped`) |  |
-| `template` | enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`, `CapReached`, `AudioReady`, `PredictionDue`, `BriefingSupport`, `TopicStale`, `TopicDeleted`, `AdminDailySummary`, `AdminWelcome`) | Email template. |
+| `template` | enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`, `CapReached`, `AudioReady`, `PredictionDue`, `BriefingSupport`, `TopicStale`, `TopicDeleted`, `AdminDailySummary`, `AdminWelcome`, `TopicsOverLimit`) | Email template. |
 | `runId` | string | Only records from this run. |
 | `briefingId` | string | Only records for this briefing. |
 | `topicId` | string | Only records for this topic. |
@@ -20639,6 +20639,7 @@ Email template.
 | `TopicDeleted` | Notice that a stale topic was deleted. |
 | `AdminDailySummary` | Daily platform summary for administrators. |
 | `AdminWelcome` | Welcome email for an account an administrator created. |
+| `TopicsOverLimit` | A plan change left more custom topics than the plan allows; choose which to keep. |
 
 #### EnumerationOrderEnum
 
@@ -20884,6 +20885,7 @@ What a notification is about.
 | `CapReached` | A plan limit stopped a scheduled run. |
 | `PredictionDue` | A prediction reached its date and is due for review. |
 | `TopicStale` | A recurring topic had no new findings for a week; keep it or it is deleted after a grace period. |
+| `TopicsOverLimit` | A plan change left the account with more recurring custom topics than its limit; the topics past the limit do not run until the owner chooses which to keep, archives some, or upgrades. |
 
 #### NotificationUnavailableReasonEnum
 

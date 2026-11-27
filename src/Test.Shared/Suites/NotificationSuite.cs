@@ -2,6 +2,7 @@ namespace Test.Shared.Suites
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -33,14 +34,17 @@ namespace Test.Shared.Suites
         {
             return new TestSuiteDescriptor(S, "Notification preferences, in-app notifications, and audio ready notices", new[]
             {
-                Cases.Case(S, "Defaults", "A new user gets email for results, briefings, failures, and limits, and nothing by push or in-app", DefaultsAsync),
+                Cases.Case(S, "Defaults", "A new user gets email for results, briefings, failures, limits, stale topics, and topics past the limit, in-app only for topics past the limit, and nothing by push", DefaultsAsync),
                 Cases.Case(S, "RoundTrip", "Saved cells come back, only the sent cells change, bad values are refused, and another user is unaffected", RoundTripAsync),
                 Cases.Case(S, "EmailPreferences", "The old email preferences and the matrix read and write the same cells, both ways, and earlier unsubscribes carry over", EmailPreferencesAsync),
                 Cases.Case(S, "InApp", "In-app notifications are created only for kinds turned on, are private, count unread, and can be read, read all, and deleted", InAppAsync),
                 Cases.Case(S, "EarlierPush", "Devices registered without a push choice keep the kinds older app builds delivered; a saved choice is left alone", EarlierPushAsync),
                 Cases.Case(S, "PredictionEmail", "A due prediction emails its owner once when they turned that on, and never by default", PredictionEmailAsync),
                 Cases.Case(S, "AudioReady", "Audio that becomes ready is announced once by email, push, and in-app when turned on, and not at all by default", AudioReadyAsync),
-                Cases.Case(S, "DefaultUser", "With default settings a run still sends its digest, an edition its briefing email, and nothing is pushed or listed in-app", DefaultUserAsync)
+                Cases.Case(S, "DefaultUser", "With default settings a run still sends its digest, an edition its briefing email, and nothing is pushed or listed in-app", DefaultUserAsync),
+                Cases.Case(S, "OverLimitOnce", "A downgrade that leaves more custom topics than the plan allows notifies the owner once by email, in-app, and push, with a link to the keep-order screen", OverLimitOnceAsync),
+                Cases.Case(S, "OverLimitAgain", "Back within the limit clears the notice, and going over again notifies again", OverLimitAgainAsync),
+                Cases.Case(S, "OverLimitPreferences", "Turning the kind off, or unsubscribing from its emails, holds back exactly those channels and never sends a late notice", OverLimitPreferencesAsync)
             });
         }
 
@@ -93,16 +97,18 @@ namespace Test.Shared.Suites
             Tenant t = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
             TestUser user = await TestFixtures.CreateUserAsync(admin, t.Id, false, token).ConfigureAwait(false);
             NotificationPreferencesResponse prefs = await PrefsAsync(user, token).ConfigureAwait(false);
-            Assert.Equal(21, prefs.Preferences.Count, "seven kinds on three channels");
+            Assert.Equal(24, prefs.Preferences.Count, "eight kinds on three channels");
             Assert.True(prefs.Preferences[0].Kind == NotificationKindEnum.RunResults && prefs.Preferences[0].Channel == NotificationChannelEnum.Email && prefs.Preferences[17].Kind == NotificationKindEnum.PredictionDue
                 && prefs.Preferences[17].Channel == NotificationChannelEnum.InApp, "kind order, then channel order");
             foreach (NotificationKindEnum kind in Enum.GetValues<NotificationKindEnum>())
             {
                 bool emailDefault = kind == NotificationKindEnum.RunResults || kind == NotificationKindEnum.BriefingReady || kind == NotificationKindEnum.RunFailed || kind == NotificationKindEnum.CapReached
-                    || kind == NotificationKindEnum.TopicStale;
+                    || kind == NotificationKindEnum.TopicStale || kind == NotificationKindEnum.TopicsOverLimit;
+                bool inAppDefault = kind == NotificationKindEnum.TopicsOverLimit;
                 Assert.Equal(emailDefault, On(prefs, kind, NotificationChannelEnum.Email), kind + " email default");
                 Assert.Equal(false, On(prefs, kind, NotificationChannelEnum.Push), kind + " push is off until chosen");
-                Assert.Equal(false, On(prefs, kind, NotificationChannelEnum.InApp), kind + " in-app is off until chosen");
+                Assert.Equal(inAppDefault, On(prefs, kind, NotificationChannelEnum.InApp), kind + " in-app default");
+                Assert.Equal(inAppDefault, NotificationPreferenceService.Default(kind, NotificationChannelEnum.InApp), kind + " in-app default table");
                 Assert.Equal(emailDefault, NotificationPreferenceService.Default(kind, NotificationChannelEnum.Email), kind + " default table");
             }
 
@@ -462,6 +468,131 @@ namespace Test.Shared.Suites
             await f.Server.Context.Scheduling.OnRunFailed!(failedAgain, token).ConfigureAwait(false);
             List<EmailMessage> heldFailure = (await f.Server.Context.Database.EmailMessages.EnumerateAsync(new EmailMessageFilter { TenantId = tenantId, RunId = failedAgain.Id, PageSize = 10 }, token).ConfigureAwait(false)).Objects;
             Assert.Equal(0, heldFailure.Count, "no failure email once it is off");
+        }
+
+        private static async Task<TopicSlotsResponse> LimitAsync(TestApiClient admin, TestUser user, long max, CancellationToken token)
+        {
+            string limits = "/v1.0/tenants/" + user.User.TenantId + "/users/" + user.User.Id + "/entitlements";
+            (await admin.PutAsync(limits, new { featureKey = "topics.max", value = max.ToString(CultureInfo.InvariantCulture), reason = "Topic limit notice fixture" }, token).ConfigureAwait(false)).Expect(200, "limit " + max);
+            TopicSlotsResponse slots = (await user.Client.GetAsync("/v1.0/api/account/topic-slots", token).ConfigureAwait(false)).Expect(200, "slots").Json<TopicSlotsResponse>();
+            Assert.Equal((long?)max, slots.Limit, "the limit applies");
+            return slots;
+        }
+
+        private static async Task<TestUser> TopicOwnerAsync(TestApiClient admin, int topics, CancellationToken token)
+        {
+            Tenant t = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
+            TestUser user = await TestFixtures.CreateUserAsync(admin, t.Id, false, token).ConfigureAwait(false);
+            for (int i = 0; i < topics; i++)
+                (await user.Client.PostAsync("/v1.0/api/topics", new { name = "Limit topic " + i }, token).ConfigureAwait(false)).Expect(201, "topic " + i);
+            return user;
+        }
+
+        private static async Task OverLimitOnceAsync(CancellationToken token)
+        {
+            MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+            server.Context.SettingsService.Current.Push.ExpoPushUrl = StubModelServer.Shared.BaseUrl + "/push/send";
+            TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
+            TestUser user = await TopicOwnerAsync(admin, 3, token).ConfigureAwait(false);
+            string tenantId = user.User.TenantId;
+            string device = await DeviceAsync(user, token).ConfigureAwait(false);
+            Assert.True(On(await PrefsAsync(user, token).ConfigureAwait(false), NotificationKindEnum.TopicsOverLimit, NotificationChannelEnum.Push), "a first device turns on push for topics past the limit");
+
+            Assert.Equal(TopicSlotNoticeOutcomeEnum.WithinLimit, await server.Context.TopicSlotNotices.CheckAsync(tenantId, user.User.Id, token).ConfigureAwait(false), "within the limit: nothing to say");
+            Assert.Equal(0, (await MailAsync(server, tenantId, EmailTemplateEnum.TopicsOverLimit, token).ConfigureAwait(false)).Count, "no email while within the limit");
+
+            TopicSlotsResponse down = await LimitAsync(admin, user, 1, token).ConfigureAwait(false);
+            Assert.Equal(2L, down.OverLimit, "two topics past the limit");
+            int pushesBefore = StubModelServer.Shared.PushRequests.Count;
+            Assert.Equal(TopicSlotNoticeOutcomeEnum.Notified, await server.Context.TopicSlotNotices.CheckAsync(tenantId, user.User.Id, token).ConfigureAwait(false), "the downgrade is noticed");
+
+            EmailMessage email = (await MailAsync(server, tenantId, EmailTemplateEnum.TopicsOverLimit, token).ConfigureAwait(false)).Single();
+            string app = server.Context.Settings.Rest.AppBaseUrl;
+            Assert.True(email.Status == EmailStatusEnum.Queued && email.Recipient == user.User.Email.ToLowerInvariant() && email.Subject == "[My Morning News] 2 topics are past your plan's limit", "one email: " + email.Subject);
+            string text = email.RenderedText ?? String.Empty;
+            Assert.True(text.Contains(app + "/dashboard/account/billing#topic-slots", StringComparison.Ordinal) && text.Contains("Choose topics to keep", StringComparison.Ordinal), "links to the keep-order screen: " + text);
+            Assert.True(text.Contains("Nothing is deleted", StringComparison.Ordinal) && text.Contains("history", StringComparison.Ordinal)
+                && text.Contains("do not run until you choose which topics to keep, archive some, or upgrade", StringComparison.Ordinal) && text.Contains("allows 1 custom topic and you have 3", StringComparison.Ordinal), "says what happens and what to do: " + text);
+            Assert.True(text.Contains("Unsubscribe: http", StringComparison.Ordinal), "has its own unsubscribe link");
+
+            Notification listed = (await ListAsync(user, "?kind=TopicsOverLimit", token).ConfigureAwait(false)).Single();
+            Assert.True(listed.Title == "2 topics are past your plan's limit" && (listed.Body ?? String.Empty).Contains("Nothing is deleted", StringComparison.Ordinal) && listed.TopicId == null && listed.ReadUtc == null, "listed in-app by default: " + listed.Title);
+            string push = PushesTo(device, pushesBefore).Single();
+            Assert.True(push.Contains("\"kind\":\"topics.overlimit\"", StringComparison.Ordinal) && push.Contains("\"overLimit\":\"2\"", StringComparison.Ordinal) && push.Contains("\"channelId\":\"account\"", StringComparison.Ordinal), "pushed once: " + push);
+
+            // Staying over, even after a further downgrade, says nothing more, from the check or from a full pass.
+            Assert.Equal(TopicSlotNoticeOutcomeEnum.AlreadyNotified, await server.Context.TopicSlotNotices.CheckAsync(tenantId, user.User.Id, token).ConfigureAwait(false), "still over: no repeat");
+            await LimitAsync(admin, user, 0, token).ConfigureAwait(false);
+            await server.Context.TopicSlotNotices.RunOnceAsync(token).ConfigureAwait(false);
+            Assert.Equal(1, (await MailAsync(server, tenantId, EmailTemplateEnum.TopicsOverLimit, token).ConfigureAwait(false)).Count, "one email in all");
+            Assert.Equal(1, (await ListAsync(user, "?kind=TopicsOverLimit", token).ConfigureAwait(false)).Count, "one in-app notification in all");
+            Assert.Equal(1, PushesTo(device, pushesBefore).Count, "one push in all");
+            Assert.Equal(3L, await server.Context.Database.Topics.CountAsync(new TopicFilter { TenantId = tenantId, UserId = user.User.Id }, token).ConfigureAwait(false), "nothing deleted");
+        }
+
+        private static async Task OverLimitAgainAsync(CancellationToken token)
+        {
+            MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+            TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
+            TestUser user = await TopicOwnerAsync(admin, 3, token).ConfigureAwait(false);
+            string tenantId = user.User.TenantId;
+
+            await LimitAsync(admin, user, 2, token).ConfigureAwait(false);
+            Assert.Equal(TopicSlotNoticeOutcomeEnum.Notified, await server.Context.TopicSlotNotices.CheckAsync(tenantId, user.User.Id, token).ConfigureAwait(false), "over: notified");
+            TopicSlotNotice first = Assert.NotNull(await server.Context.Database.TopicSlotNotices.ReadAsync(tenantId, user.User.Id, token).ConfigureAwait(false), "notice recorded");
+            Assert.True(first.OverLimit == 1 && first.TopicLimit == 2 && first.NotifiedUtc.HasValue, "recorded with the counts");
+
+            await LimitAsync(admin, user, 3, token).ConfigureAwait(false);
+            Assert.Equal(TopicSlotNoticeOutcomeEnum.Cleared, await server.Context.TopicSlotNotices.CheckAsync(tenantId, user.User.Id, token).ConfigureAwait(false), "back within the limit");
+            Assert.True(await server.Context.Database.TopicSlotNotices.ReadAsync(tenantId, user.User.Id, token).ConfigureAwait(false) == null, "record removed");
+            Assert.Equal(TopicSlotNoticeOutcomeEnum.WithinLimit, await server.Context.TopicSlotNotices.CheckAsync(tenantId, user.User.Id, token).ConfigureAwait(false), "and stays quiet");
+
+            // The email key carries the second the account went over, so a second period always gets its own email.
+            await Task.Delay(1100, token).ConfigureAwait(false);
+            TopicSlotsResponse again = await LimitAsync(admin, user, 1, token).ConfigureAwait(false);
+            Assert.Equal(2L, again.OverLimit, "over again");
+            Assert.Equal(TopicSlotNoticeOutcomeEnum.Notified, await server.Context.TopicSlotNotices.CheckAsync(tenantId, user.User.Id, token).ConfigureAwait(false), "going over again notifies again");
+            List<EmailMessage> emails = await MailAsync(server, tenantId, EmailTemplateEnum.TopicsOverLimit, token).ConfigureAwait(false);
+            Assert.True(emails.Count == 2 && emails.Select(e => e.IdempotencyKey).Distinct().Count() == 2 && emails.All(e => e.Status == EmailStatusEnum.Queued), "two emails, one per time over: " + String.Join(",", emails.Select(e => e.Subject)));
+            Assert.Equal(2, (await ListAsync(user, "?kind=TopicsOverLimit", token).ConfigureAwait(false)).Count, "two in-app notifications");
+
+            // Archiving topics is another way back within the limit.
+            List<Topic> topics = await server.Context.Database.Topics.SlotOrderAsync(tenantId, user.User.Id, token).ConfigureAwait(false);
+            (await user.Client.PostAsync("/v1.0/api/topics/" + topics[2].Id + "/archive", null, token).ConfigureAwait(false)).Expect(200, "archive one");
+            (await user.Client.PostAsync("/v1.0/api/topics/" + topics[1].Id + "/archive", null, token).ConfigureAwait(false)).Expect(200, "archive another");
+            Assert.Equal(TopicSlotNoticeOutcomeEnum.Cleared, await server.Context.TopicSlotNotices.CheckAsync(tenantId, user.User.Id, token).ConfigureAwait(false), "archiving clears the notice");
+        }
+
+        private static async Task OverLimitPreferencesAsync(CancellationToken token)
+        {
+            MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+            TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
+
+            // Email and in-app turned off: the change is recorded but nothing is sent, and turning them on later sends no late notice.
+            TestUser quiet = await TopicOwnerAsync(admin, 2, token).ConfigureAwait(false);
+            await SetAsync(quiet, NotificationKindEnum.TopicsOverLimit, NotificationChannelEnum.Email, false, token).ConfigureAwait(false);
+            await SetAsync(quiet, NotificationKindEnum.TopicsOverLimit, NotificationChannelEnum.InApp, false, token).ConfigureAwait(false);
+            await LimitAsync(admin, quiet, 1, token).ConfigureAwait(false);
+            Assert.Equal(TopicSlotNoticeOutcomeEnum.Notified, await server.Context.TopicSlotNotices.CheckAsync(quiet.User.TenantId, quiet.User.Id, token).ConfigureAwait(false), "the change is recorded");
+            Assert.Equal(0, (await MailAsync(server, quiet.User.TenantId, EmailTemplateEnum.TopicsOverLimit, token).ConfigureAwait(false)).Count, "no email when it is off");
+            Assert.Equal(0, (await ListAsync(quiet, String.Empty, token).ConfigureAwait(false)).Count, "nothing in-app when it is off");
+            await SetAsync(quiet, NotificationKindEnum.TopicsOverLimit, NotificationChannelEnum.Email, true, token).ConfigureAwait(false);
+            await SetAsync(quiet, NotificationKindEnum.TopicsOverLimit, NotificationChannelEnum.InApp, true, token).ConfigureAwait(false);
+            Assert.Equal(TopicSlotNoticeOutcomeEnum.AlreadyNotified, await server.Context.TopicSlotNotices.CheckAsync(quiet.User.TenantId, quiet.User.Id, token).ConfigureAwait(false), "no late notice");
+            Assert.Equal(0, (await MailAsync(server, quiet.User.TenantId, EmailTemplateEnum.TopicsOverLimit, token).ConfigureAwait(false)).Count, "still no email");
+            Assert.Equal(0, (await ListAsync(quiet, String.Empty, token).ConfigureAwait(false)).Count, "still nothing in-app");
+
+            // Unsubscribed from this kind's emails only: the email is held back and in-app still arrives.
+            TestUser unsubscribed = await TopicOwnerAsync(admin, 2, token).ConfigureAwait(false);
+            string address = unsubscribed.User.Email.ToLowerInvariant();
+            await server.Context.Email.SetSuppressedAsync(unsubscribed.User.TenantId, address, EmailCategoryEnum.TopicLimitEmails, null, true, "test", token).ConfigureAwait(false);
+            NotificationPreferencesResponse prefs = await PrefsAsync(unsubscribed, token).ConfigureAwait(false);
+            Assert.True(!On(prefs, NotificationKindEnum.TopicsOverLimit, NotificationChannelEnum.Email) && On(prefs, NotificationKindEnum.RunResults, NotificationChannelEnum.Email), "the unsubscribe reads as this kind's email cell turned off, and only that one");
+            await LimitAsync(admin, unsubscribed, 1, token).ConfigureAwait(false);
+            Assert.Equal(TopicSlotNoticeOutcomeEnum.Notified, await server.Context.TopicSlotNotices.CheckAsync(unsubscribed.User.TenantId, unsubscribed.User.Id, token).ConfigureAwait(false), "noticed");
+            List<EmailMessage> held = await MailAsync(server, unsubscribed.User.TenantId, EmailTemplateEnum.TopicsOverLimit, token).ConfigureAwait(false);
+            Assert.True(held.All(m => m.Status != EmailStatusEnum.Queued), "no email after unsubscribing: " + String.Join(",", held.Select(m => m.Status)));
+            Assert.Equal(1, (await ListAsync(unsubscribed, "?kind=TopicsOverLimit", token).ConfigureAwait(false)).Count, "in-app still listed");
         }
     }
 }

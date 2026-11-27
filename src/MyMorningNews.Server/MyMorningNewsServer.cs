@@ -210,6 +210,7 @@ namespace MyMorningNews.Server
             _Context.Account = new AccountService(_Database, settings, email, tenantDefaults, _Context.PromoCodes, _Context.Accounts);
             MyMorningNews.Core.Entitlements.EntitlementService entitlements = _Context.Entitlements;
             _Database.TopicSlotLimit = entitlements.TopicSlotLimitAsync;
+            _Context.TopicSlotNotices = new TopicSlotNoticeService(_Database, entitlements, notifications, _Logging);
             _Context.PersonalProviders = new PersonalProviderService(_Database, entitlements, () => _Context.SettingsService.Current, settings.Auth.SigningKey);
             _Models.AccountResolver = _Context.PersonalProviders.ResolveModelAsync;
             _Models.AccountSecretResolver = _Context.PersonalProviders.ModelSecretAsync;
@@ -331,6 +332,8 @@ namespace MyMorningNews.Server
                 _Workers.Add(Task.Run(() => learningWorker.RunAsync(Lifetime.Token)));
                 TopicLifecycleWorker topicLifecycle = new TopicLifecycleWorker(_Context);
                 _Workers.Add(Task.Run(() => topicLifecycle.RunAsync(Lifetime.Token)));
+                TopicSlotNoticeWorker topicSlotNotices = new TopicSlotNoticeWorker(_Context);
+                _Workers.Add(Task.Run(() => topicSlotNotices.RunAsync(Lifetime.Token)));
                 AdminReportWorker adminReports = new AdminReportWorker(_Context);
                 _Workers.Add(Task.Run(() => adminReports.RunAsync(Lifetime.Token)));
                 if (settings.Scheduler.Enabled)

@@ -26,6 +26,11 @@ namespace MyMorningNews.Core.Services
         #region Public-Members
 
         /// <summary>
+        /// The dashboard page, relative to the app base URL, where the owner chooses which custom topics to keep.
+        /// </summary>
+        public static string TopicSlotsPath { get; } = "/dashboard/account/billing#topic-slots";
+
+        /// <summary>
         /// Notification preferences.
         /// </summary>
         public NotificationPreferenceService Preferences { get; }
@@ -290,6 +295,11 @@ namespace MyMorningNews.Core.Services
                     if (await _Email.QueueNoticeAsync(user, StaleNotice(c, app), token).ConfigureAwait(false)) result.EmailsQueued = 1;
                     return true;
 
+                case NotificationKindEnum.TopicsOverLimit:
+                    if (user == null || c.TopicSlots == null || c.TopicSlots.OverLimit < 1 || !c.EmailAllowed || !await WantsEmailAsync(user, kind, token).ConfigureAwait(false)) return true;
+                    if (await _Email.QueueNoticeAsync(user, OverLimitNotice(user, c, app), token).ConfigureAwait(false)) result.EmailsQueued = 1;
+                    return true;
+
                 default:
                     return true;
             }
@@ -350,6 +360,41 @@ namespace MyMorningNews.Core.Services
             }
 
             return n;
+        }
+
+        // The notice that a plan change left more custom topics than the plan allows. One per over-limit period: the key
+        // carries the time the account went over.
+        private static EmailNotice OverLimitNotice(User user, NotificationContext c, string app)
+        {
+            TopicSlotsResponse s = c.TopicSlots!;
+            long over = s.OverLimit;
+            long limit = s.Limit ?? 0;
+            DateTime since = c.OverLimitSinceUtc ?? DateTime.UtcNow;
+            string allowed = limit == 0
+                ? "Your plan no longer includes recurring custom topics, and you have " + Topics(s.Counted) + "."
+                : "Your plan now allows " + Topics(limit) + " and you have " + s.Counted + ", so " + over + (over == 1 ? " is" : " are") + " past the limit.";
+            return new EmailNotice
+            {
+                Template = EmailTemplateEnum.TopicsOverLimit,
+                Category = EmailCategoryEnum.TopicLimitEmails,
+                Key = "topicslots:" + user.Id + ":" + since.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture),
+                Title = over == 1 ? "1 topic is past your plan's limit" : over + " topics are past your plan's limit",
+                Subtitle = limit == 0 ? "Custom topics are not in your plan" : "Your plan includes " + Topics(limit),
+                Paragraphs = new List<string>
+                {
+                    allowed,
+                    "Nothing is deleted. Every topic keeps its briefings, findings, and history. The topics past the limit do not run until you choose which topics to keep, archive some, or upgrade your plan.",
+                    "Until you choose, your oldest topics stay within the plan."
+                },
+                Button = new EmailLink("Choose topics to keep", app + TopicSlotsPath),
+                Links = new List<EmailLink> { new EmailLink("Compare plans", app + "/dashboard/account/billing") },
+                Note = "You get this email because topic limit email is on in your notification preferences."
+            };
+        }
+
+        private static string Topics(long count)
+        {
+            return count == 1 ? "1 custom topic" : count.ToString(CultureInfo.InvariantCulture) + " custom topics";
         }
 
         // The push for a kind (also the text of the in-app notification), or null when there is nothing to say, for
@@ -435,6 +480,22 @@ namespace MyMorningNews.Core.Services
                     Dictionary<string, string> data = new Dictionary<string, string> { { "kind", "topic.stale" }, { "reviewId", c.Review.Id }, { "notice", c.ReviewNotice.ToString() } };
                     if (c.ReviewNotice != TopicReviewNoticeEnum.Deleted) data["topicId"] = c.Review.TopicId;
                     return new PushMessage { Title = title, Body = body, ChannelId = "account", Data = data };
+
+                case NotificationKindEnum.TopicsOverLimit:
+                    if (c.TopicSlots == null || c.TopicSlots.OverLimit < 1) return null;
+                    long over = c.TopicSlots.OverLimit;
+                    return new PushMessage
+                    {
+                        Title = over == 1 ? "1 topic is past your plan's limit" : over + " topics are past your plan's limit",
+                        Body = (over == 1 ? "It does not run" : "They do not run") + " until you choose which topics to keep, archive some, or upgrade. Nothing is deleted.",
+                        ChannelId = "account",
+                        Data = new Dictionary<string, string>
+                        {
+                            { "kind", "topics.overlimit" },
+                            { "overLimit", over.ToString(CultureInfo.InvariantCulture) },
+                            { "limit", (c.TopicSlots.Limit ?? 0).ToString(CultureInfo.InvariantCulture) }
+                        }
+                    };
 
                 default:
                     return null;

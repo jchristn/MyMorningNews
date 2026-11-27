@@ -376,7 +376,8 @@ COALESCE(SUM(reasoningtokens), 0) AS reasoning FROM llmcalls WHERE runid IS NOT 
                     "ALTER TABLE runhistorysnapshots ADD CONSTRAINT ck_runhistorysnapshots_owner CHECK ((runid IS NOT NULL AND topicid IS NOT NULL) OR editionid IS NOT NULL)",
                     "CREATE INDEX IF NOT EXISTS ix_runhistorysnapshots_briefingid ON runhistorysnapshots (tenantid, briefingid)",
                     "CREATE UNIQUE INDEX IF NOT EXISTS ux_runhistorysnapshots_edition_briefing ON runhistorysnapshots (tenantid, briefingid) WHERE editionid IS NOT NULL"
-                }))
+                })),
+            new SchemaMigration(42, "Notice when a plan change leaves more custom topics than the plan allows", TopicSlotNoticeQueries.Schema)
         };
 
         private static List<string> Concat(params IReadOnlyList<string>[] parts)

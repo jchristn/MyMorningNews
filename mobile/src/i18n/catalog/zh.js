@@ -1628,6 +1628,7 @@ export const zh = {
       CapReached: '已达到套餐限额',
       PredictionDue: '预测到期',
       TopicStale: '没有新发现的主题',
+      TopicsOverLimit: '超出套餐限制的主题',
     },
     details: {
       RunResults: '一次研究运行有了新发现',
@@ -1637,6 +1638,7 @@ export const zh = {
       CapReached: '由于套餐限额，一次计划的运行被跳过',
       PredictionDue: '一条预测已到期，可以核对结果',
       TopicStale: '某个主题一周内没有新发现。请保留它，否则它会在 14 天后被删除。',
+      TopicsOverLimit: '套餐变更后，你的自定义主题数量超过了套餐允许的上限。不会删除任何内容。请选择要保留的主题。',
     },
     switchLabel: '{kind}, {channel}',
     reasons: {

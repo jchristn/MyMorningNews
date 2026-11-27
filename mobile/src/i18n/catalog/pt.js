@@ -1628,6 +1628,7 @@ export const pt = {
       CapReached: 'Limite do plano atingido',
       PredictionDue: 'Previsão vencida',
       TopicStale: 'Temas sem novas descobertas',
+      TopicsOverLimit: 'Temas acima do limite do seu plano',
     },
     details: {
       RunResults: 'Uma execução de pesquisa encontrou algo novo',
@@ -1637,6 +1638,7 @@ export const pt = {
       CapReached: 'Uma execução agendada foi ignorada por causa de um limite do plano',
       PredictionDue: 'Uma previsão chegou à data e já pode ser conferida',
       TopicStale: 'Um tema não encontrou nada novo em uma semana. Mantenha-o ou ele será excluído após 14 dias.',
+      TopicsOverLimit: 'Depois de uma mudança de plano, você tem mais temas personalizados do que o seu plano permite. Nada é excluído. Escolha quais manter.',
     },
     switchLabel: '{kind}, {channel}',
     reasons: {

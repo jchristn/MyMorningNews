@@ -1628,6 +1628,7 @@ export const ms = {
       CapReached: 'Had pelan dicapai',
       PredictionDue: 'Ramalan tiba tempoh',
       TopicStale: 'Topik tanpa penemuan baharu',
+      TopicsOverLimit: 'Topik melebihi had pelan anda',
     },
     details: {
       RunResults: 'Larian penyelidikan menemui sesuatu yang baharu',
@@ -1637,6 +1638,7 @@ export const ms = {
       CapReached: 'Larian berjadual dilangkau kerana had pelan',
       PredictionDue: 'Ramalan telah sampai tarikhnya dan boleh disemak',
       TopicStale: 'Satu topik tidak menemui apa-apa yang baharu selama seminggu. Simpan topik itu, atau ia dipadamkan selepas 14 hari.',
+      TopicsOverLimit: 'Perubahan pelan menyebabkan anda mempunyai lebih banyak topik tersuai daripada yang dibenarkan oleh pelan anda. Tiada apa-apa dipadam. Pilih topik yang mahu disimpan.',
     },
     switchLabel: '{kind}, {channel}',
     reasons: {

@@ -19,7 +19,7 @@ jest.mock('@/push/push', () => ({
 }));
 
 const PREFS = '/v1.0/api/notifications/preferences';
-const ON_BY_DEFAULT = ['RunResults', 'BriefingReady', 'RunFailed', 'CapReached', 'TopicStale'];
+const ON_BY_DEFAULT = ['RunResults', 'BriefingReady', 'RunFailed', 'CapReached', 'TopicStale', 'TopicsOverLimit'];
 
 /** The matrix as the server sends it: every cell, in kind then channel order, with the defaults unless overridden. */
 function matrix({ on = [], channels, address = 'demo@mymorningnews', unsubscribedTopicIds = [] } = {}) {
@@ -100,8 +100,8 @@ describe('notifications API', () => {
     expect(channelStatus(m, 'Push')).toEqual({ channel: 'Push', available: false, reason: 'NoDevice' });
     expect(channelStatus({}, 'Email')).toEqual({ channel: 'Email', available: true });
     expect(cellEnabled(withCell(m, 'AudioReady', 'Email', true), 'AudioReady', 'Email')).toBe(true);
-    expect(m.preferences).toHaveLength(21);
-    expect(NOTIFICATION_KINDS).toEqual(['RunResults', 'BriefingReady', 'AudioReady', 'RunFailed', 'CapReached', 'PredictionDue', 'TopicStale']);
+    expect(m.preferences).toHaveLength(24);
+    expect(NOTIFICATION_KINDS).toEqual(['RunResults', 'BriefingReady', 'AudioReady', 'RunFailed', 'CapReached', 'PredictionDue', 'TopicStale', 'TopicsOverLimit']);
   });
 });
 
@@ -111,8 +111,8 @@ describe('Account: notifications matrix', () => {
     await waitFor(() => expect(screen.getByText('Audio ready')).toBeTruthy());
     for (const kind of NOTIFICATION_KINDS) for (const channel of NOTIFICATION_CHANNELS) expect(cell(kind, channel)).toBeTruthy();
     expect(screen.getByText('A briefing has been turned into audio')).toBeTruthy();
-    expect(screen.getAllByText('Phone')).toHaveLength(7);
-    expect(screen.getAllByText('In-app')).toHaveLength(7);
+    expect(screen.getAllByText('Phone')).toHaveLength(8);
+    expect(screen.getAllByText('In-app')).toHaveLength(8);
     // Defaults: the five emails people get today are on; everything on the phone and in the app is off.
     expect(cell('RunResults', 'Email').props.value).toBe(true);
     expect(cell('AudioReady', 'Email').props.value).toBe(false);
@@ -156,6 +156,21 @@ describe('Account: notifications matrix', () => {
     expect(server.calls.filter((c) => c.key === 'PUT ' + PREFS)[1].body).toEqual({ preferences: [{ kind: 'TopicStale', channel: 'Push', enabled: true }] });
     expect(preparePush).toHaveBeenCalledWith({ prompt: true });
     await waitFor(() => expect(registerForPush).toHaveBeenCalledTimes(1));
+  });
+
+  it('lists topics past the plan limit with email and in-app on by default, and saves a change', async () => {
+    const { server } = await renderSignedIn(<NotificationsSection />, matrixHandlers(matrix({ on: ['TopicsOverLimit:InApp'] })));
+    await waitFor(() => expect(screen.getByTestId('notify-kind-TopicsOverLimit')).toBeTruthy());
+    expect(screen.getByText('Topics past your plan limit')).toBeTruthy();
+    expect(screen.getByText('A plan change left more custom topics than your plan allows. Nothing is deleted. Choose which ones to keep.')).toBeTruthy();
+    expect(cell('TopicsOverLimit', 'Email').props.value).toBe(true);
+    expect(cell('TopicsOverLimit', 'InApp').props.value).toBe(true);
+    expect(cell('TopicsOverLimit', 'Push').props.value).toBe(false);
+    expect(cell('TopicsOverLimit', 'InApp').props.accessibilityLabel).toBe('Topics past your plan limit, In-app');
+
+    await fireEvent(cell('TopicsOverLimit', 'Email'), 'valueChange', false);
+    await waitFor(() => expect(cell('TopicsOverLimit', 'Email').props.value).toBe(false));
+    expect(server.calls.find((c) => c.key === 'PUT ' + PREFS).body).toEqual({ preferences: [{ kind: 'TopicsOverLimit', channel: 'Email', enabled: false }] });
   });
 
   it('asks permission, then saves the preference, then registers the device when a Phone switch is turned on', async () => {
@@ -338,6 +353,21 @@ describe('in-app notifications', () => {
     expect(router.push).toHaveBeenCalledWith('/topics/top_1');
     await fireEvent.press(screen.getByTestId('notification-ntf_00'));
     expect(router.push).toHaveBeenLastCalledWith('/topics');
+  });
+
+  it('shows topics past the plan limit and opens the topic slots screen', async () => {
+    const over = { id: 'ntf_9', kind: 'TopicsOverLimit', title: 'Two topics are past the limit', body: 'They do not run until you choose which topics to keep, archive some, or upgrade. Nothing is deleted.', createdUtc: '2026-11-22T08:00:00Z' };
+    const { server } = await renderSignedIn(<NotificationsScreen />, {
+      'GET /v1.0/api/notifications': () => page([over]),
+      'POST /v1.0/api/notifications/ntf_9/read': () => ({ body: { ...over, readUtc: '2026-11-22T08:05:00Z' } }),
+    });
+    await waitFor(() => expect(screen.getByTestId('notification-ntf_9')).toBeTruthy());
+    expect(screen.getByText('Two topics are past the limit')).toBeTruthy();
+    expect(screen.getByText(/^Topics past your plan limit · /)).toBeTruthy();
+    expect(screen.getByTestId('notification-ntf_9').props.accessibilityLabel).toMatch(/^Unread, Topics past your plan limit, Two topics are past the limit, /);
+    await fireEvent.press(screen.getByTestId('notification-ntf_9'));
+    await waitFor(() => expect(server.count('POST /v1.0/api/notifications/ntf_9/read')).toBe(1));
+    expect(router.push).toHaveBeenCalledWith('/account/slots');
   });
 
   it('marks all read and removes one', async () => {

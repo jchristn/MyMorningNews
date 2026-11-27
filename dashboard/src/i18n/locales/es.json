@@ -3899,7 +3899,8 @@
       "RunFailed": "Ejecución fallida",
       "CapReached": "Límite del plan alcanzado",
       "PredictionDue": "Predicción vencida",
-      "TopicStale": "Temas sin hallazgos nuevos"
+      "TopicStale": "Temas sin hallazgos nuevos",
+      "TopicsOverLimit": "Temas por encima del límite de tu plan"
     },
     "descriptions": {
       "RunResults": "Una ejecución de investigación encontró algo nuevo para uno de tus temas.",
@@ -3908,7 +3909,8 @@
       "RunFailed": "Una ejecución de investigación no pudo terminar.",
       "CapReached": "Se omitió una ejecución programada porque tu plan alcanzó un límite.",
       "PredictionDue": "Una predicción llegó a su fecha y está lista para revisarse.",
-      "TopicStale": "Un tema no encontró nada nuevo en una semana. Consérvalo o se eliminará después de 14 días."
+      "TopicStale": "Un tema no encontró nada nuevo en una semana. Consérvalo o se eliminará después de 14 días.",
+      "TopicsOverLimit": "Tras un cambio de plan tienes más temas personalizados de los que permite tu plan. No se elimina nada. Elige cuáles conservar."
     },
     "channels": {
       "Email": "Correo",

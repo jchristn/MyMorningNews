@@ -48,6 +48,10 @@ Topics can use selected earlier briefings as comparison context or produce stand
 - Keeps topics worth having. A recurring topic that finds nothing new for a week asks its owner, by email, push, and
   a banner on the web and in the app, whether to keep or delete it. Without Keep within 14 days it is deleted
   (`topicLifecycle` in the server settings). Every email and phone notification can be turned off one kind at a time.
+- Says when a plan change leaves too many topics. If a downgrade, an ended subscription, or an administrator change
+  leaves more custom topics than the plan allows, the owner is told once, by email and in the app (and push on a
+  registered phone), how many are past the limit. Nothing is deleted; those topics wait until the owner picks which to
+  keep on Plans and billing (Account > Plan in the app), archives some, or upgrades.
 - Reports to the operators. Administrators get a daily summary email of active users, sign-ups, research, model and
   audio use with cost, delivery, and billing, sent at 14:00 UTC to the addresses in `adminReports.recipients`
   (default `hello@latticetech.ai`). Global administrators can make one of their topics a system-wide briefing in the

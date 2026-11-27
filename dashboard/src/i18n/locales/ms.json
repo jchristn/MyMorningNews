@@ -3899,7 +3899,8 @@
       "RunFailed": "Larian gagal",
       "CapReached": "Had pelan dicapai",
       "PredictionDue": "Ramalan sampai tempoh",
-      "TopicStale": "Topik tanpa dapatan baharu"
+      "TopicStale": "Topik tanpa dapatan baharu",
+      "TopicsOverLimit": "Topik melebihi had pelan anda"
     },
     "descriptions": {
       "RunResults": "Larian penyelidikan menemui sesuatu yang baharu untuk salah satu topik anda.",
@@ -3908,7 +3909,8 @@
       "RunFailed": "Larian penyelidikan tidak dapat diselesaikan.",
       "CapReached": "Larian berjadual dilangkau kerana pelan anda mencapai had.",
       "PredictionDue": "Ramalan telah sampai tarikhnya dan sedia untuk disemak.",
-      "TopicStale": "Satu topik tidak menemui apa-apa yang baharu selama seminggu. Simpan, atau ia dipadam selepas 14 hari."
+      "TopicStale": "Satu topik tidak menemui apa-apa yang baharu selama seminggu. Simpan, atau ia dipadam selepas 14 hari.",
+      "TopicsOverLimit": "Perubahan pelan menyebabkan anda mempunyai lebih banyak topik tersuai daripada yang dibenarkan oleh pelan anda. Tiada apa-apa dipadam. Pilih topik yang mahu disimpan."
     },
     "channels": {
       "Email": "E-mel",

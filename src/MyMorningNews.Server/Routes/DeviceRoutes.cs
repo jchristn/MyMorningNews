@@ -35,7 +35,7 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Static.Add(HttpMethod.POST, "/v1.0/api/devices", RegisterAsync, null, openApiMetadata: Doc("Register a device for push notifications", "Devices",
                 "Returns 201 for a new device, or 200 with the existing device when the same token is registered again. Push is a choice per kind of notification " +
                 "(PUT /v1.0/api/notifications/preferences): save the kinds to push before registering. A user who registers a device without any push choice gets the kinds " +
-                "default push kinds: RunResults, BriefingReady, RunFailed, CapReached, PredictionDue, and TopicStale.").WithRequestBody(Body<DeviceRegisterRequest>()));
+                "default push kinds: RunResults, BriefingReady, RunFailed, CapReached, PredictionDue, TopicStale, and TopicsOverLimit.").WithRequestBody(Body<DeviceRegisterRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.DELETE, "/v1.0/api/devices/{id}", DeleteAsync, null, openApiMetadata: Doc("Remove a device", "Devices"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, "/v1.0/api/devices/{id}/test", TestAsync, null, openApiMetadata: Doc("Send a test notification to a device", "Devices"));
         }

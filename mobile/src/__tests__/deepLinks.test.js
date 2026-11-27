@@ -111,6 +111,13 @@ describe('push notification taps', () => {
     expect(routeForInApp({ kind: 'TopicStale', topicId: null })).toBe('/topics');
   });
 
+  it('opens the topic slots screen for topics past the plan limit, from push, in-app, and the email link', () => {
+    expect(routeForNotification({ kind: 'topics.overlimit', overLimit: '2', limit: '1' })).toBe('/account/slots');
+    expect(routeForInApp({ kind: 'TopicsOverLimit' })).toBe('/account/slots');
+    expect(mapDeepLink('https://app.mymorningnews.ai/dashboard/account/billing#topic-slots')).toBe('/account/slots');
+    expect(mapDeepLink('https://app.mymorningnews.ai/dashboard/account/billing')).toBe('/account/billing');
+  });
+
   it('routes every push kind the server sends', () => {
     // The payloads exactly as NotificationService builds them.
     expect(routeForNotification({ kind: 'run.results', topicId: 'top_1', runId: 'run_1' })).toBe('/topics/runs/run_1');

@@ -180,6 +180,11 @@ namespace MyMorningNews.Core.Database
         public IPlatformStatsMethods PlatformStats { get; protected set; } = null!;
 
         /// <summary>
+        /// The last notice per account that it has more custom topics than its plan allows.
+        /// </summary>
+        public ITopicSlotNoticeMethods TopicSlotNotices { get; protected set; } = null!;
+
+        /// <summary>
         /// Refinement sessions.
         /// </summary>
         public IRefinementSessionMethods RefinementSessions { get; protected set; } = null!;

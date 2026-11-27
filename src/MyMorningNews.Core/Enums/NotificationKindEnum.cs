@@ -38,6 +38,12 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// A recurring topic had no new findings for a week; keep it or it is deleted after a grace period.
         /// </summary>
-        TopicStale
+        TopicStale,
+
+        /// <summary>
+        /// A plan change left the account with more recurring custom topics than its limit; the topics past the limit
+        /// do not run until the owner chooses which to keep, archives some, or upgrades.
+        /// </summary>
+        TopicsOverLimit
     }
 }

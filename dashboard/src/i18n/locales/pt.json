@@ -3899,7 +3899,8 @@
       "RunFailed": "Falha na execução",
       "CapReached": "Limite do plano atingido",
       "PredictionDue": "Previsão vencida",
-      "TopicStale": "Tópicos sem novas descobertas"
+      "TopicStale": "Tópicos sem novas descobertas",
+      "TopicsOverLimit": "Temas acima do limite do seu plano"
     },
     "descriptions": {
       "RunResults": "Uma execução de pesquisa encontrou algo novo em um dos seus temas.",
@@ -3908,7 +3909,8 @@
       "RunFailed": "Uma execução de pesquisa não pôde ser concluída.",
       "CapReached": "Uma execução agendada foi ignorada porque seu plano atingiu um limite.",
       "PredictionDue": "Uma previsão chegou à data e está pronta para ser conferida.",
-      "TopicStale": "Um tópico não encontrou nada novo em uma semana. Mantenha-o ou ele será excluído após 14 dias."
+      "TopicStale": "Um tópico não encontrou nada novo em uma semana. Mantenha-o ou ele será excluído após 14 dias.",
+      "TopicsOverLimit": "Depois de uma mudança de plano, você tem mais temas personalizados do que o seu plano permite. Nada é excluído. Escolha quais manter."
     },
     "channels": {
       "Email": "E-mail",

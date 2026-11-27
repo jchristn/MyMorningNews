@@ -1,13 +1,25 @@
-import { BookOpen, CalendarClock, Gauge, Headphones, ListChecks, TrendingUp, TriangleAlert } from 'lucide-react';
+import { BookOpen, CalendarClock, Gauge, Headphones, ListChecks, ListOrdered, TrendingUp, TriangleAlert } from 'lucide-react';
 
 // What a user can be told about, and where (GET /v1.0/api/notifications/preferences). The order is the server's.
-export const NOTIFICATION_KINDS = ['RunResults', 'BriefingReady', 'AudioReady', 'RunFailed', 'CapReached', 'PredictionDue', 'TopicStale'];
+export const NOTIFICATION_KINDS = ['RunResults', 'BriefingReady', 'AudioReady', 'RunFailed', 'CapReached', 'PredictionDue', 'TopicStale', 'TopicsOverLimit'];
 export const NOTIFICATION_CHANNELS = ['Email', 'Push', 'InApp'];
 export const NOTIFICATION_REASONS = ['NoEmailAddress', 'EmailNotVerified', 'EmailNotConfigured', 'EmailUnsubscribed', 'PushNotConfigured', 'NoDevice'];
 
 export const NOTIFICATIONS_PATH = '/dashboard/notifications';
 
-const ICONS = { RunResults: ListChecks, BriefingReady: BookOpen, AudioReady: Headphones, RunFailed: TriangleAlert, CapReached: Gauge, PredictionDue: TrendingUp, TopicStale: CalendarClock };
+// Where a TopicsOverLimit notification opens: the keep-order panel on Plans and billing (TopicSlotsPanel, #topic-slots).
+export const TOPIC_SLOTS_PATH = '/dashboard/account/billing#topic-slots';
+
+const ICONS = {
+  RunResults: ListChecks,
+  BriefingReady: BookOpen,
+  AudioReady: Headphones,
+  RunFailed: TriangleAlert,
+  CapReached: Gauge,
+  PredictionDue: TrendingUp,
+  TopicStale: CalendarClock,
+  TopicsOverLimit: ListOrdered
+};
 
 export function notificationIcon(kind) {
   return ICONS[kind] || ListChecks;
@@ -32,6 +44,8 @@ export function notificationTarget(n) {
       return n.predictionId ? '/dashboard/predictions?id=' + id(n.predictionId) : '/dashboard/predictions';
     case 'TopicStale':
       return n.topicId ? '/dashboard/topics/' + id(n.topicId) : '/dashboard/topics';
+    case 'TopicsOverLimit':
+      return TOPIC_SLOTS_PATH;
     default:
       return '/dashboard/home';
   }

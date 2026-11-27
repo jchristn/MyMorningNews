@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { UNREAD_POLL_MS } from './NotificationBell.jsx';
 import { detail } from '../test/briefingFixtures.js';
 import { page, renderRoute } from '../test/renderRoute.jsx';
+import { slotPage, topicSlots } from '../test/comparisonFixtures.js';
 
 const ITEMS = [
   { id: 'ntf_2', kind: 'AudioReady', title: 'Morning edition', body: 'The audio version is ready.', briefingId: 'brf_1', mediaAssetId: 'med_1', createdUtc: '2026-11-21T08:00:00Z' },
@@ -136,5 +137,26 @@ describe('notification bell', () => {
     await userEvent.click(await screen.findByTestId('notification-bell'));
     expect(await screen.findByText('You are all caught up.')).toBeInTheDocument();
     expect(screen.queryByText('In-app notifications are off.')).not.toBeInTheDocument();
+  });
+
+  it('shows topics past the plan limit and opens the keep-order panel', async () => {
+    const over = { id: 'ntf_9', kind: 'TopicsOverLimit', title: "2 topics are past your plan's limit", body: 'They do not run until you choose which topics to keep, archive some, or upgrade. Nothing is deleted.', createdUtc: '2026-11-22T08:00:00Z' };
+    const client = renderRoute('/dashboard/server-info', {
+      getNotificationUnreadCount: vi.fn(async () => ({ count: 1 })),
+      listNotifications: vi.fn(async () => page([over])),
+      markNotificationRead: vi.fn(async () => ({ ...over, readUtc: '2026-11-22T09:00:00Z' })),
+      getMyBilling: vi.fn(async () => ({ enabled: false, plan: { plan: { name: 'Paid 5' } }, subscriptions: [], offers: [] })),
+      getTopicSlots: vi.fn(async () => topicSlots({ limit: 1, counted: 3, overLimit: 2 })),
+      listTopicSlotTopics: vi.fn(async () => slotPage())
+    });
+    await userEvent.click(await screen.findByTestId('notification-bell'));
+    const row = await screen.findByTestId('notification-ntf_9');
+    expect(within(row).getByText("2 topics are past your plan's limit")).toBeInTheDocument();
+    expect(within(row).getByText(/Topics past your plan's limit/)).toBeInTheDocument();
+    await userEvent.click(row);
+    await waitFor(() => expect(client.markNotificationRead).toHaveBeenCalledWith('ntf_9'));
+    const panel = await screen.findByTestId('topic-slots');
+    expect(panel).toHaveAttribute('id', 'topic-slots');
+    expect(client.getTopicSlots).toHaveBeenCalled();
   });
 });

@@ -93,6 +93,11 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// Welcome email for an account an administrator created.
         /// </summary>
-        AdminWelcome
+        AdminWelcome,
+
+        /// <summary>
+        /// A plan change left more custom topics than the plan allows; choose which to keep.
+        /// </summary>
+        TopicsOverLimit
     }
 }

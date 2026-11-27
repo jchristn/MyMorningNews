@@ -33,7 +33,8 @@ namespace MyMorningNews.Core.Services
             NotificationKindEnum.RunFailed,
             NotificationKindEnum.CapReached,
             NotificationKindEnum.PredictionDue,
-            NotificationKindEnum.TopicStale
+            NotificationKindEnum.TopicStale,
+            NotificationKindEnum.TopicsOverLimit
         };
 
         /// <summary>
@@ -60,8 +61,9 @@ namespace MyMorningNews.Core.Services
 
         /// <summary>
         /// The kinds turned on for push when an account registers its first device without having made any push choice:
-        /// new findings and ready briefings (a new edition), failures, plan limits, due predictions, and stale topic
-        /// prompts. Audio ready stays off because the briefing push already announces the edition.
+        /// new findings and ready briefings (a new edition), failures, plan limits, due predictions, stale topic
+        /// prompts, and topics past the plan's limit. Audio ready stays off because the briefing push already announces
+        /// the edition.
         /// </summary>
         public static IReadOnlyList<NotificationKindEnum> DefaultPushKinds { get; } = new List<NotificationKindEnum>
         {
@@ -70,7 +72,8 @@ namespace MyMorningNews.Core.Services
             NotificationKindEnum.RunFailed,
             NotificationKindEnum.CapReached,
             NotificationKindEnum.PredictionDue,
-            NotificationKindEnum.TopicStale
+            NotificationKindEnum.TopicStale,
+            NotificationKindEnum.TopicsOverLimit
         };
 
         #endregion
@@ -98,16 +101,20 @@ namespace MyMorningNews.Core.Services
         #region Public-Methods
 
         /// <summary>
-        /// The setting used when the user never chose. Email is on for run results, ready briefings, failed runs, and
-        /// plan limits, and off for audio and predictions. Push and in-app are off for every kind.
+        /// The setting used when the user never chose. Email is on for run results, ready briefings, failed runs, plan
+        /// limits, stale topics, and topics past the plan's limit, and off for audio and predictions. In-app is on for
+        /// topics past the plan's limit and off for every other kind. Push is off for every kind until a first device
+        /// is registered (<see cref="DefaultPushKinds"/>).
         /// </summary>
         /// <param name="kind">Kind.</param>
         /// <param name="channel">Channel.</param>
         /// <returns>True when on by default.</returns>
         public static bool Default(NotificationKindEnum kind, NotificationChannelEnum channel)
         {
+            if (channel == NotificationChannelEnum.InApp) return kind == NotificationKindEnum.TopicsOverLimit;
             if (channel != NotificationChannelEnum.Email) return false;
-            return kind == NotificationKindEnum.RunResults || kind == NotificationKindEnum.BriefingReady || kind == NotificationKindEnum.RunFailed || kind == NotificationKindEnum.CapReached || kind == NotificationKindEnum.TopicStale;
+            return kind == NotificationKindEnum.RunResults || kind == NotificationKindEnum.BriefingReady || kind == NotificationKindEnum.RunFailed || kind == NotificationKindEnum.CapReached
+                || kind == NotificationKindEnum.TopicStale || kind == NotificationKindEnum.TopicsOverLimit;
         }
 
         /// <summary>
@@ -125,6 +132,7 @@ namespace MyMorningNews.Core.Services
                 case EmailCategoryEnum.AudioEmails: return NotificationKindEnum.AudioReady;
                 case EmailCategoryEnum.PredictionEmails: return NotificationKindEnum.PredictionDue;
                 case EmailCategoryEnum.TopicReviewEmails: return NotificationKindEnum.TopicStale;
+                case EmailCategoryEnum.TopicLimitEmails: return NotificationKindEnum.TopicsOverLimit;
                 default: return null;
             }
         }
@@ -144,6 +152,7 @@ namespace MyMorningNews.Core.Services
                 case NotificationKindEnum.AudioReady: return EmailCategoryEnum.AudioEmails;
                 case NotificationKindEnum.PredictionDue: return EmailCategoryEnum.PredictionEmails;
                 case NotificationKindEnum.TopicStale: return EmailCategoryEnum.TopicReviewEmails;
+                case NotificationKindEnum.TopicsOverLimit: return EmailCategoryEnum.TopicLimitEmails;
                 default: return null;
             }
         }

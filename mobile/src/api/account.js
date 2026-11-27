@@ -77,7 +77,7 @@ export const emailPreferencesApi = {
 };
 
 /** What a notification can be about, in the order the server lists them (NotificationKindEnum). */
-export const NOTIFICATION_KINDS = ['RunResults', 'BriefingReady', 'AudioReady', 'RunFailed', 'CapReached', 'PredictionDue', 'TopicStale'];
+export const NOTIFICATION_KINDS = ['RunResults', 'BriefingReady', 'AudioReady', 'RunFailed', 'CapReached', 'PredictionDue', 'TopicStale', 'TopicsOverLimit'];
 
 /** Where a notification can arrive (NotificationChannelEnum). The app calls them Email, Phone, and In-app. */
 export const NOTIFICATION_CHANNELS = ['Email', 'Push', 'InApp'];
@@ -85,7 +85,8 @@ export const NOTIFICATION_CHANNELS = ['Email', 'Push', 'InApp'];
 /**
  * Notifications. The in-app list: `list()` is a page of `{ id, kind, title, body?, topicId?, runId?, briefingId?,
  * mediaAssetId?, predictionId?, readUtc?, createdUtc }`
- * (a TopicStale notification carries `topicId`, null once the topic was deleted), newest first (no `readUtc` means unread). The preference
+ * (a TopicStale notification carries `topicId`, null once the topic was deleted; a TopicsOverLimit notification carries
+ * no IDs and opens Account > Plan topic slots), newest first (no `readUtc` means unread). The preference
  * matrix: `{ preferences: [{ kind, channel, enabled }], channels: [{ channel, available, reason? }], address,
  * unsubscribedTopicIds }`; `updatePreferences` changes only the cells it sends and returns the new matrix.
  */

@@ -193,7 +193,7 @@ namespace MyMorningNews.Sdk.Models
         public string? HistoryBriefingId { get; set; } = null;
 
         /// <summary>
-        /// Conservative comparison token budget. Default 8000, minimum 256, maximum 32000.
+        /// Conservative comparison budget in UTF-8 bytes (an upper bound on provider tokens). Default 8000, minimum 256, maximum 32000.
         /// </summary>
         public int HistoryTokenBudget { get; set; } = 8000;
 

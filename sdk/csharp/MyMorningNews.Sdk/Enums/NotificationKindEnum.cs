@@ -39,13 +39,12 @@ namespace MyMorningNews.Sdk.Enums
         PredictionDue,
 
         /// <summary>
-        /// A recurring topic found nothing new for a week; keep it or it is deleted after a grace period.
+        /// A recurring topic had no new findings for a week; keep it or it is deleted after a grace period.
         /// </summary>
         TopicStale,
 
         /// <summary>
-        /// A plan change left more recurring custom topics than the plan allows; the topics past the limit do not run
-        /// until the owner chooses which to keep (GET /v1.0/api/account/topic-slots), archives some, or upgrades.
+        /// A plan change left the account with more recurring custom topics than its limit; the topics past the limit do not run until the owner chooses which to keep, archives some, or upgrades.
         /// </summary>
         TopicsOverLimit
     }

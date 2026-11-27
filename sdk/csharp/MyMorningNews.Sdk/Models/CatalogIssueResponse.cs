@@ -46,7 +46,7 @@ namespace MyMorningNews.Sdk.Models
         public double? AudioSeconds { get; set; } = null;
 
         /// <summary>
-        /// What the issue was compared with and the changes found, without canonical item identifiers. Null when not requested.
+        /// What the issue was compared with and the changes found, without canonical item identifiers. Filled on the single-issue read; null in issue lists.
         /// </summary>
         public BriefingComparisonResponse? Comparison { get; set; } = null;
 

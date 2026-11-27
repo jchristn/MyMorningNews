@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import FormField from '../components/FormField.jsx';
+import HistoryPreview from '../components/HistoryPreview.jsx';
 import LoadingState from '../components/LoadingState.jsx';
 import MarkdownEditor from '../components/MarkdownEditor.jsx';
 import PageHeader from '../components/PageHeader.jsx';
@@ -199,7 +200,14 @@ function ResearchForm({ publication, research, onSaved }) {
         disabled={busy}
       />
       <div className="form-grid">
-        <HistoryFields topicId={topic.id} catalogPublicationId={publication.id} value={form} onChange={setForm} disabled={busy} />
+        <HistoryFields topicId={topic.id} catalogPublicationId={publication.id} value={form} onChange={setForm} disabled={busy}>
+          <HistoryPreview
+            form={form}
+            load={(body, signal) => apiClient.previewCatalogResearchHistory(publication.id, body, signal)}
+            disabled={busy}
+            idPrefix="catalog-history-preview"
+          />
+        </HistoryFields>
         <FormField id="catalog-audio" label={t('topicAudio.label')}>
           <input
             id="catalog-audio"

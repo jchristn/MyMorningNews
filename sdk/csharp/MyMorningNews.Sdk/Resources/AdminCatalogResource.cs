@@ -67,6 +67,22 @@ namespace MyMorningNews.Sdk.Resources
             return Client.SendAsync<CatalogResearchResponse>(HttpMethod.Put, "/v1.0/api/admin/catalog/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/research", null, body, token);
         }
 
+        /// <summary>
+        /// System administrator: preview which published canonical issues the publication's next research run would
+        /// compare with, using optional unsaved settings. Nothing is saved. A null property in the request keeps the
+        /// saved value.
+        /// </summary>
+        /// <param name="id">Publication identifier.</param>
+        /// <param name="request">Unsaved comparison settings, or null to preview the saved settings.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The HistoryPreviewResponse.</returns>
+        /// <exception cref="ArgumentNullException">id is null or empty.</exception>
+        /// <exception cref="MyMorningNewsException">The server returned an error (400 ValidationFailed for out-of-range settings, 403 when the caller is not a system administrator, 404 when the publication is not found, 409 Conflict when a pinned issue is unavailable).</exception>
+        public Task<HistoryPreviewResponse> PreviewResearchHistoryAsync(string id, HistoryPreviewRequest? request = null, CancellationToken token = default)
+        {
+            return Client.SendAsync<HistoryPreviewResponse>(HttpMethod.Post, "/v1.0/api/admin/catalog/" + MyMorningNewsClient.Segment(id, nameof(id)) + "/research/history/preview", null, request ?? new HistoryPreviewRequest(), token);
+        }
+
         /// <summary>System administrator: start a canonical research run.</summary>
         /// <exception cref="MyMorningNewsException">The server rejected the operation.</exception>
         public Task<Run> RunAsync(string id, CancellationToken token = default)

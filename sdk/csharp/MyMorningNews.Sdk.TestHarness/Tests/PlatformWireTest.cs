@@ -47,6 +47,14 @@ namespace MyMorningNews.Sdk.TestHarness.Tests
                 Helpers.True(handler.Body.Contains("\"value\":\"0\"", StringComparison.Ordinal), "zero override preserved");
                 await client.AdminCatalog.SaveResearchAsync("c1", new CatalogResearchRequest { Topic = new TopicUpsertRequest { HistoryMode = HistoryModeEnum.Off, AudioEnabled = false } }, token).ConfigureAwait(false);
                 Helpers.True(handler.Body.Contains("\"historyMode\":\"Off\"", StringComparison.Ordinal), "standalone comparison writes enum name");
+                handler.Reply = "{\"mode\":\"RecentIssues\",\"baselines\":[{\"id\":\"brf_1\",\"title\":\"Issue\"}],\"contextBytes\":10,\"budgetBytes\":512}";
+                HistoryPreviewResponse canonical = await client.AdminCatalog.PreviewResearchHistoryAsync("c/1", new HistoryPreviewRequest { HistoryMode = HistoryModeEnum.RecentIssues, HistoryCount = 3 }, token).ConfigureAwait(false);
+                Helpers.Equal("/v1.0/api/admin/catalog/c%2F1/research/history/preview", handler.Path, "canonical baseline preview path");
+                Helpers.Equal("POST", handler.Method, "canonical baseline preview is a POST");
+                Helpers.True(handler.Body.Contains("\"historyMode\":\"RecentIssues\"", StringComparison.Ordinal) && handler.Body.Contains("\"historyCount\":3", StringComparison.Ordinal), "unsaved settings sent");
+                Helpers.True(canonical.Baselines.Count == 1 && canonical.BudgetBytes == 512, "canonical baseline preview response");
+                await client.AdminCatalog.PreviewResearchHistoryAsync("c1", null, token).ConfigureAwait(false);
+                Helpers.True(handler.Body.StartsWith("{", StringComparison.Ordinal), "saved settings send an empty request");
                 Helpers.True(typeof(ProviderConnection).GetProperty("SecretEncrypted") == null, "write-only encrypted secret is absent from SDK model");
                 handler.Status = HttpStatusCode.Accepted;
                 handler.Reply = "{\"id\":\"eml_report\",\"status\":\"Queued\"}";

@@ -247,6 +247,11 @@ export class ApiClient {
   saveCatalogResearch(id, body) {
     return this._request('PUT', '/v1.0/api/admin/catalog/' + enc(id) + '/research', { body });
   }
+  // The published canonical issues the publication's next research run would compare with. body is an optional
+  // HistoryPreviewRequest of unsaved settings (null fields keep the saved value); nothing is saved.
+  previewCatalogResearchHistory(id, body = {}, signal) {
+    return this._request('POST', '/v1.0/api/admin/catalog/' + enc(id) + '/research/history/preview', { body: body || {}, signal });
+  }
   runCatalog(id) {
     return this._request('POST', '/v1.0/api/admin/catalog/' + enc(id) + '/run');
   }

@@ -29,6 +29,7 @@ namespace Test.Shared.Suites
             {
                 Cases.Case(S, "Isolation", "Only published subscribed content crosses tenants; retirement and retraction are enforced", IsolationAsync),
                 Cases.Case(S, "Research", "System research binds schedules to the protected canonical owner and rejects tenant administrators", ResearchAsync),
+                Cases.Case(S, "HistoryPreview", "Administrators preview the canonical comparison baseline with unsaved settings; others are refused", HistoryPreviewAsync),
                 Cases.Case(S, "Feeds", "Private feeds include subscribed shared audio and recheck downgrade, unsubscribe, retirement and retraction on every enclosure", FeedsAsync),
                 Cases.Case(S, "Delivery", "Shared issue fanout is private and idempotent, resumes interrupted email rendering, and rechecks unsubscribe before sending", DeliveryAsync),
                 Cases.Case(S, "Concurrency", "Concurrent subscriptions cannot exceed five slots and retries are idempotent", ConcurrencyAsync)
@@ -99,6 +100,31 @@ namespace Test.Shared.Suites
             (await admin.PutAsync("/v1.0/api/admin/catalog/" + publication.Id, new { title = publication.Title, status = "Retired", revision = publication.Revision }, token).ConfigureAwait(false)).Expect(200, "retire canonical research");
             Topic stored = Assert.NotNull(await server.Context.Database.Topics.ReadAsync(publication.OwnerTenantId, publication.TopicId, token).ConfigureAwait(false), "canonical topic");
             Assert.Equal(TopicStatusEnum.Paused, stored.Status, "retirement pauses future research");
+        }
+
+        private static async Task HistoryPreviewAsync(CancellationToken token)
+        {
+            TestApiClient admin = await SharedTestServer.AdminClientAsync(token).ConfigureAwait(false);
+            MyMorningNewsServer server = await SharedTestServer.GetServerAsync(token).ConfigureAwait(false);
+            Tenant tenant = await TestFixtures.CreateTenantAsync(admin, token).ConfigureAwait(false);
+            TestUser member = await TestFixtures.CreateUserAsync(admin, tenant.Id, true, token).ConfigureAwait(false);
+            CatalogPublication publication = await PublishAsync(admin, true, token).ConfigureAwait(false);
+            User owner = await server.Context.Database.CatalogPublications.EnsureOwnerAsync(token).ConfigureAwait(false);
+            Briefing older = await server.Context.Database.Briefings.CreateAsync(new Briefing { TenantId = owner.TenantId, UserId = owner.Id, TopicId = publication.TopicId, Title = "Older issue", Markdown = "Older public evidence", Status = BriefingStatusEnum.Ready, Kind = BriefingKindEnum.Run }, token).ConfigureAwait(false);
+            Briefing newer = await server.Context.Database.Briefings.CreateAsync(new Briefing { TenantId = owner.TenantId, UserId = owner.Id, TopicId = publication.TopicId, Title = "Newer issue", Markdown = "Newer public evidence", Status = BriefingStatusEnum.Ready, Kind = BriefingKindEnum.Run }, token).ConfigureAwait(false);
+            await server.Context.Database.Briefings.CreateAsync(new Briefing { TenantId = owner.TenantId, UserId = owner.Id, TopicId = publication.TopicId, Title = "Dry run", Markdown = "Private preview", Status = BriefingStatusEnum.Ready, Kind = BriefingKindEnum.Run, IsDryRun = true }, token).ConfigureAwait(false);
+            string path = "/v1.0/api/admin/catalog/" + publication.Id + "/research/history/preview";
+            HistoryPreviewResponse saved = (await admin.PostAsync(path, null, token).ConfigureAwait(false)).Expect(200, "saved settings").Json<HistoryPreviewResponse>();
+            Assert.True(saved.Mode == "Off" && saved.Baselines.Count == 0 && saved.Note != null, "saved off is standalone");
+            HistoryPreviewResponse recent = (await admin.PostAsync(path, new { historyMode = "RecentIssues", historyCount = 5, historyTokenBudget = 512 }, token).ConfigureAwait(false)).Expect(200, "unsaved recent").Json<HistoryPreviewResponse>();
+            Assert.True(recent.Mode == "RecentIssues" && recent.BudgetBytes == 512 && recent.Baselines.Select(b => b.Id).SequenceEqual(new[] { newer.Id, older.Id }) && recent.ContextBytes > 0, "published canonical issues, newest first, dry runs excluded");
+            HistoryPreviewResponse pinned = (await admin.PostAsync(path, new { historyMode = "SpecificIssue", historyBriefingId = older.Id }, token).ConfigureAwait(false)).Expect(200, "unsaved pin").Json<HistoryPreviewResponse>();
+            Assert.True(pinned.Baselines.Count == 1 && pinned.Baselines[0].Id == older.Id, "pinned canonical issue");
+            (await admin.PostAsync(path, new { historyMode = "RecentIssues", historyCount = 99 }, token).ConfigureAwait(false)).Expect(400, "bounds enforced");
+            (await member.Client.PostAsync(path, null, token).ConfigureAwait(false)).Expect(403, "tenant administrator cannot preview canonical history");
+            (await admin.PostAsync("/v1.0/api/admin/catalog/pub_missing/research/history/preview", null, token).ConfigureAwait(false)).Expect(404, "unknown publication");
+            Topic stored = Assert.NotNull(await server.Context.Database.Topics.ReadAsync(publication.OwnerTenantId, publication.TopicId, token).ConfigureAwait(false), "canonical topic");
+            Assert.Equal(HistoryModeEnum.Off, stored.HistoryMode, "preview saves nothing");
         }
 
         private static async Task FeedsAsync(CancellationToken token)

@@ -26,6 +26,8 @@ describe('comparison, system briefing, and topic slot client methods', () => {
     await api.listTopicSlotTopics({ pageSize: 100, pageNumber: 2 });
     await api.enumerateTopicSlotTopics({ search: 'wind' });
     await api.enumerateCatalog({ subscribed: true, search: 'sci', pageSize: 25 });
+    await api.previewCatalogResearchHistory('cat_1', { historyMode: 'RecentIssues', historyCount: 3 });
+    await api.previewCatalogResearchHistory('cat 2');
     expect(call(fetch, 0)).toEqual({ url: '/v1.0/api/topics/top_1/history/preview', method: 'POST', body: { historyMode: 'PreviousIssue' } });
     expect(call(fetch, 1)).toEqual({ url: '/v1.0/api/editions/edn_1/history/preview', method: 'POST', body: {} });
     expect(call(fetch, 2)).toMatchObject({ url: '/v1.0/api/briefings/brf%201/comparison', method: 'GET' });
@@ -37,5 +39,7 @@ describe('comparison, system briefing, and topic slot client methods', () => {
     expect(call(fetch, 8)).toMatchObject({ url: '/v1.0/api/account/topic-slots/topics?pageSize=100&pageNumber=2', method: 'GET' });
     expect(call(fetch, 9)).toEqual({ url: '/v1.0/api/account/topic-slots/topics/enumerate', method: 'POST', body: { search: 'wind' } });
     expect(call(fetch, 10)).toEqual({ url: '/v1.0/api/catalog/enumerate', method: 'POST', body: { subscribed: true, search: 'sci', pageSize: 25 } });
+    expect(call(fetch, 11)).toEqual({ url: '/v1.0/api/admin/catalog/cat_1/research/history/preview', method: 'POST', body: { historyMode: 'RecentIssues', historyCount: 3 } });
+    expect(call(fetch, 12)).toEqual({ url: '/v1.0/api/admin/catalog/cat%202/research/history/preview', method: 'POST', body: {} });
   });
 });

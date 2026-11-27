@@ -54,6 +54,13 @@ test('billing, private connections and administrator overrides retain zero, null
     assert.equal(requests.at(-1).json.value, '0');
     await api.adminCatalog.saveResearch('c1', { topic: { historyMode: 'Off', historyCount: 1, audioEnabled: false }, schedule: null });
     assert.deepEqual(requests.at(-1).json, { topic: { historyMode: 'Off', historyCount: 1, audioEnabled: false }, schedule: null });
+    reply({ mode: 'RecentIssues', baselines: [{ id: 'brf_1' }], contextBytes: 10, budgetBytes: 512 });
+    assert.equal((await api.adminCatalog.previewResearchHistory('c/1', { historyMode: 'RecentIssues', historyCount: 3 })).budgetBytes, 512);
+    assert.equal(requests.at(-1).method, 'POST');
+    assert.equal(requests.at(-1).url.pathname, '/v1.0/api/admin/catalog/c%2F1/research/history/preview');
+    assert.deepEqual(requests.at(-1).json, { historyMode: 'RecentIssues', historyCount: 3 });
+    await api.adminCatalog.previewResearchHistory('c1');
+    assert.deepEqual(requests.at(-1).json, {});
 });
 
 test('shared audio uses authenticated ranges and cancellation', async () => {

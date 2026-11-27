@@ -2615,6 +2615,8 @@ export declare class AdminCatalogResource extends ResourceGroup {
     research(id: string): Promise<CatalogResearchResponse>;
     /** System administrator: configure canonical research and schedule. */
     saveResearch(id: string, body: CatalogResearchRequest): Promise<CatalogResearchResponse>;
+    /** System administrator: preview which published canonical issues the next research run would compare with, for optional unsaved settings. Nothing is saved. */
+    previewResearchHistory(id: string, body?: HistoryPreviewRequest): Promise<HistoryPreviewResponse>;
     /** System administrator: start a canonical research run. */
     run(id: string): Promise<Run>;
 }

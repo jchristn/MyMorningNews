@@ -325,6 +325,7 @@ client.briefings.generate_audio(briefing_id, voice_profile_id=voice_id)
 cmp = client.briefings.comparison(briefing_id)   # BriefingComparisonResponse: compared, mode, note, baselines, counts, deltas
 client.editions.update(e.edition.id, history_mode="PreviousIssue")   # compare with the edition's own earlier issues
 client.editions.preview_history(e.edition.id)                        # baseline preview; nothing saved
+client.admin_catalog.preview_research_history(publication_id, history_mode="RecentIssues", history_count=3)   # system administrator: canonical baseline preview
 client.editions.publications(e.edition.id)                           # Page[EditionPublicationResponse], paging filters
 client.editions.set_publications(e.edition.id, [publication_id])     # [] removes them all
 

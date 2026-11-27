@@ -90,6 +90,34 @@ describe('Topic comparison settings', () => {
   });
 });
 
+describe('System briefing research comparison', () => {
+  it('previews the canonical baseline with the unsaved settings and shows issues without reader links', async () => {
+    const previewCatalogResearchHistory = vi.fn(async () => historyPreview());
+    const saveCatalogResearch = vi.fn(async () => null);
+    renderRoute('/dashboard/admin/catalog/cat_1', {
+      getAdminCatalog: vi.fn(async () => ({ id: 'cat_1', title: 'Daily science', description: 'Science', status: 'Published', revision: 2, lastUpdateUtc: '2026-11-20T08:00:00Z' })),
+      getCatalogResearch: vi.fn(async () => ({
+        topic: { id: 'top_sys', brief: 'Public science research', status: 'Active', historyMode: 'Off', historyCount: 5, lastUpdateUtc: '2026-11-20T08:00:00Z' },
+        schedule: null
+      })),
+      listAdminCatalogIssues: vi.fn(async () => page([])),
+      previewCatalogResearchHistory,
+      saveCatalogResearch
+    });
+    await userEvent.selectOptions(await screen.findByLabelText('Compare with past briefings'), 'RecentIssues');
+    await userEvent.clear(screen.getByLabelText('Maximum issues (1 to 20)'));
+    await userEvent.type(screen.getByLabelText('Maximum issues (1 to 20)'), '4');
+    await userEvent.click(screen.getByRole('button', { name: 'Show baseline' }));
+    await waitFor(() => expect(previewCatalogResearchHistory).toHaveBeenCalled());
+    expect(previewCatalogResearchHistory.mock.calls.at(-1)[0]).toBe('cat_1');
+    expect(previewCatalogResearchHistory.mock.calls.at(-1)[1]).toMatchObject({ historyMode: 'RecentIssues', historyCount: 4, historyBriefingId: null });
+    const preview = screen.getByTestId('catalog-history-preview');
+    expect(await within(preview).findByText('Heat pumps weekly')).toBeInTheDocument();
+    expect(within(preview).queryByRole('link')).toBeNull();
+    expect(saveCatalogResearch).not.toHaveBeenCalled();
+  });
+});
+
 describe('Edition comparison and system briefings', () => {
   it('saves comparison settings through the edition update and previews the edition baseline', async () => {
     const updateEdition = vi.fn(async (id, body) => editionDetail({ edition: { ...EDITION, ...body } }));

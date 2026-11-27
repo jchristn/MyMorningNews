@@ -3315,6 +3315,17 @@
       },
       "notes": "System administrator: configure canonical research and schedule."
     },
+    "POST /v1.0/api/admin/catalog/{id}/research/history/preview": {
+      "response": "HistoryPreviewResponse",
+      "status": {
+        "200": "OK",
+        "400": "ValidationFailed (invalid mode, bounds, date, or pinned issue)",
+        "403": "Forbidden",
+        "404": "NotFound",
+        "409": "Conflict (the pinned issue is unavailable)"
+      },
+      "notes": "System administrator: preview which published canonical issues the publication's next research run would compare with. The optional body previews unsaved settings; nothing is saved."
+    },
     "POST /v1.0/api/admin/catalog/{id}/run": {
       "response": "Run",
       "status": {

@@ -4213,6 +4213,14 @@ export class AdminCatalogResource extends ResourceGroup {
     research(id) { return this._req("GET", "/v1.0/api/admin/catalog/" + seg(id, "id") + "/research"); }
     /** System administrator: configure canonical research and schedule. */
     saveResearch(id, body) { return this._req("PUT", "/v1.0/api/admin/catalog/" + seg(id, "id") + "/research", { body: requireValue(body, "body") }); }
+    /**
+     * System administrator: preview which published canonical issues the publication's next research run would compare with.
+     * Nothing is saved.
+     * @param {string} id Publication id.
+     * @param {HistoryPreviewRequest} [body] Unsaved settings; omitted properties keep the saved values.
+     * @returns {Promise<HistoryPreviewResponse>} Preview.
+     */
+    previewResearchHistory(id, body) { return this._req("POST", "/v1.0/api/admin/catalog/" + seg(id, "id") + "/research/history/preview", { body: body || {} }); }
     /** System administrator: start a canonical research run. */
     run(id) { return this._req("POST", "/v1.0/api/admin/catalog/" + seg(id, "id") + "/run"); }
 }

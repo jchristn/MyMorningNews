@@ -51,6 +51,8 @@ namespace MyMorningNews.Server.Routes
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, admin + "/{id}/issues" + "/enumerate", ctx => EnumerateAsync(ctx, AdminIssuesAsync), null, openApiMetadata: Paged(Doc("Inspect canonical published issues", "Catalog administration")).WithRequestBody(Body<EnumerationQuery>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.GET, admin + "/{id}/research", ResearchAsync, null, openApiMetadata: Doc("Read canonical research and schedule settings", "Catalog administration"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.PUT, admin + "/{id}/research", SaveResearchAsync, null, openApiMetadata: Doc("Configure canonical research and schedule", "Catalog administration", "Topic and schedule ownership come exclusively from the publication.").WithRequestBody(Body<CatalogResearchRequest>()));
+            webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, admin + "/{id}/research/history/preview", ResearchHistoryPreviewAsync, null, openApiMetadata: Doc("Preview the canonical comparison baseline", "Catalog administration",
+                "Shows which published canonical issues the publication's next research run would compare with, the context size against the budget, and whether it would be cut. The optional body previews unsaved settings; nothing is saved. 400 for invalid settings.").WithRequestBody(Body<HistoryPreviewRequest>()));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, admin + "/{id}/run", RunAsync, null, openApiMetadata: Doc("Research a system publication now", "Catalog administration"));
             webserver.Routes.PostAuthentication.Parameter.Add(HttpMethod.POST, admin + "/from-topic/{topicId}", PromoteAsync, null, openApiMetadata: Doc("Make one of my topics a system briefing", "Catalog administration",
                 "Copies the caller's recurring topic (scope, dimensions, constraints, ranking, history, and schedule) to the catalog owner and creates its publication. " +
@@ -327,6 +329,16 @@ namespace MyMorningNews.Server.Routes
             if (request.Schedule != null && schedule != null) settings.Schedule = await Server.Scheduling.SaveAsync(schedule, createSchedule, DateTime.UtcNow, ctx.Token).ConfigureAwait(false);
             await Server.Audit.RecordAsync(AuditEventTypeEnum.CatalogChanged, Context(ctx), 200, "Canonical research settings updated for " + publication.Id + ".", ctx.Token).ConfigureAwait(false);
             await SendJsonAsync(ctx, 200, settings).ConfigureAwait(false);
+        }
+
+        private async Task ResearchHistoryPreviewAsync(HttpContextBase ctx)
+        {
+            CatalogPublication? publication = await AdminPublicationAsync(ctx).ConfigureAwait(false);
+            if (publication == null) return;
+            HistoryPreviewRequest? request = await ReadOptionalBodyAsync<HistoryPreviewRequest>(ctx).ConfigureAwait(false);
+            CatalogResearchResponse settings = await ResearchSettingsAsync(publication, ctx).ConfigureAwait(false);
+            HistoryPreviewResponse preview = await new MyMorningNews.Core.Briefings.HistoryContextService(Server.Database).PreviewAsync(settings.Topic, request, ctx.Token).ConfigureAwait(false);
+            await SendJsonAsync(ctx, 200, preview).ConfigureAwait(false);
         }
 
         private async Task RunAsync(HttpContextBase ctx)

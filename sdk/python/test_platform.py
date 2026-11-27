@@ -77,6 +77,13 @@ class PlatformTest(unittest.TestCase):
         self.assertEqual(json.loads(self.transport.sent[-1].body)['value'], '0')
         self.api.admin_catalog.save_research('cat1', {'topic': {'history_mode': 'Off', 'audio_enabled': False}, 'schedule': None})
         self.assertEqual(json.loads(self.transport.sent[-1].body), {'topic': {'historyMode': 'Off', 'audioEnabled': False}, 'schedule': None})
+        self.transport.reply = {'mode': 'RecentIssues', 'baselines': [{'id': 'brf_1'}], 'contextBytes': 10, 'budgetBytes': 512}
+        preview = self.api.admin_catalog.preview_research_history('cat/1', history_mode='RecentIssues', history_count=3)
+        self.assertEqual(preview.budget_bytes, 512)
+        request = self.transport.sent[-1]
+        self.assertEqual(request.method, 'POST')
+        self.assertEqual(urlparse(request.url).path, '/v1.0/api/admin/catalog/cat%2F1/research/history/preview')
+        self.assertEqual(json.loads(request.body), {'historyMode': 'RecentIssues', 'historyCount': 3})
 
 
 if __name__ == '__main__':

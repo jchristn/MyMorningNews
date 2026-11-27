@@ -431,7 +431,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 
 ## Route reference
 
-430 routes in 54 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
+431 routes in 54 groups. Generated from `/openapi.json`, the route handlers, and `src/Tools/apidocs/supplement.json`; do not edit by hand.
 
 | Group | Routes | What it covers |
 |---|---|---|
@@ -485,7 +485,7 @@ python3 src/Tools/apidocs/generate_postman.py --launch
 | [OpenAPI](#openapi) | 2 | The OpenAPI 3 document and Swagger UI that Watson serves. They are not tagged in the document itself. |
 | [MCP servers](#mcp-servers) | 9 | Remote MCP tool servers that agentic research may call, their discovered tools, and the per-tool allow-list. |
 | [Catalog](#catalog) | 14 | System-wide publications and private subscriptions. Shared content is generated once; subscription and personal topic limits are separate. |
-| [Catalog administration](#catalog-administration) | 11 | Global administrators manage canonical publications, research, schedules, and lifecycle revisions. Tenant administrators cannot publish. |
+| [Catalog administration](#catalog-administration) | 12 | Global administrators manage canonical publications, research, schedules, and lifecycle revisions. Tenant administrators cannot publish. |
 | [Billing](#billing) | 4 | Account-bound Stripe checkout and native Apple/Google verification. A redirect never grants access; verified provider state determines benefits. |
 | [Billing callbacks](#billing-callbacks) | 3 | Provider-authenticated callbacks. Ordinary bearer sessions do not authorize these routes. |
 | [Account providers](#account-providers) | 5 | Account-private encrypted model and speech connections, validation and explicit BYOK funding. No secret is returned. |
@@ -13702,6 +13702,7 @@ Global administrators manage canonical publications, research, schedules, and li
 | POST | [`/v1.0/api/admin/catalog/{id}/issues/enumerate`](#post-v10apiadmincatalogidissuesenumerate) | Inspect canonical published issues |
 | GET | [`/v1.0/api/admin/catalog/{id}/research`](#get-v10apiadmincatalogidresearch) | Read canonical research and schedule settings |
 | PUT | [`/v1.0/api/admin/catalog/{id}/research`](#put-v10apiadmincatalogidresearch) | Configure canonical research and schedule |
+| POST | [`/v1.0/api/admin/catalog/{id}/research/history/preview`](#post-v10apiadmincatalogidresearchhistorypreview) | Preview the canonical comparison baseline |
 | POST | [`/v1.0/api/admin/catalog/{id}/run`](#post-v10apiadmincatalogidrun) | Research a system publication now |
 | POST | [`/v1.0/api/admin/catalog/from-topic/{topicId}`](#post-v10apiadmincatalogfrom-topictopicid) | Make one of my topics a system briefing |
 
@@ -13983,6 +13984,35 @@ Request body: [`CatalogResearchRequest`](#catalogresearchrequest).
 
 ```bash
 curl -s -X PUT "http://127.0.0.1:12100/v1.0/api/admin/catalog/<publicationId>/research" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" --data-binary @body.json
+```
+
+### POST /v1.0/api/admin/catalog/{id}/research/history/preview
+
+**Preview the canonical comparison baseline.** Shows which published canonical issues the publication's next research run would compare with, the context size against the budget, and whether it would be cut. The optional body previews unsaved settings; nothing is saved. 400 for invalid settings.
+
+- Auth: `Topic:Update` (`TopicWrite`).
+- Response: [`HistoryPreviewResponse`](#historypreviewresponse)
+- Notes: System administrator: preview which published canonical issues the publication's next research run would compare with. The optional body previews unsaved settings; nothing is saved.
+
+| Path parameter | Type | Postman variable |
+|---|---|---|
+| `id` | string | `{{publicationId}}` |
+
+Request body: [`HistoryPreviewRequest`](#historypreviewrequest).
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | Bad Request: ValidationFailed (invalid mode, bounds, date, or pinned issue) |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict: Conflict (the pinned issue is unavailable) |
+
+```bash
+curl -s -X POST "http://127.0.0.1:12100/v1.0/api/admin/catalog/<publicationId>/research/history/preview" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" --data-binary @body.json
 ```
@@ -16357,7 +16387,7 @@ Example:
 
 Unsaved comparison settings to preview. Every property is optional; null keeps the saved value.
 
-Request body of [POST /v1.0/api/topics/{id}/history/preview](#post-v10apitopicsidhistorypreview), [POST /v1.0/api/editions/{id}/history/preview](#post-v10apieditionsidhistorypreview).
+Request body of [POST /v1.0/api/topics/{id}/history/preview](#post-v10apitopicsidhistorypreview), [POST /v1.0/api/editions/{id}/history/preview](#post-v10apieditionsidhistorypreview), [POST /v1.0/api/admin/catalog/{id}/research/history/preview](#post-v10apiadmincatalogidresearchhistorypreview).
 
 | Field | Type | Description |
 |---|---|---|
@@ -16371,7 +16401,7 @@ Request body of [POST /v1.0/api/topics/{id}/history/preview](#post-v10apitopicsi
 
 The baseline a topic or edition would compare with if it ran now. Nothing is saved.
 
-Returned by [POST /v1.0/api/topics/{id}/history/preview](#post-v10apitopicsidhistorypreview), [POST /v1.0/api/editions/{id}/history/preview](#post-v10apieditionsidhistorypreview).
+Returned by [POST /v1.0/api/topics/{id}/history/preview](#post-v10apitopicsidhistorypreview), [POST /v1.0/api/editions/{id}/history/preview](#post-v10apieditionsidhistorypreview), [POST /v1.0/api/admin/catalog/{id}/research/history/preview](#post-v10apiadmincatalogidresearchhistorypreview).
 
 | Field | Type | Description |
 |---|---|---|

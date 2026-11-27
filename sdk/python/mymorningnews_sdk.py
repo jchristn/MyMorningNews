@@ -5315,6 +5315,24 @@ class AdminCatalogResource(_Resource):
         """System administrator: configure canonical research and schedule."""
         return self._one(CatalogResearchResponse, "PUT", "/v1.0/api/admin/catalog/" + _seg(id) + "/research", body=body)
 
+    def preview_research_history(self, id: str, body: Optional[Mapping[str, Any]] = None, **fields: Any) -> HistoryPreviewResponse:
+        """System administrator: preview which published canonical issues the publication's next research run would
+        compare with. Nothing is saved.
+
+        Args:
+            id: The publication.
+            body: Unsaved settings (``history_mode``, ``history_count`` 1 to 20, ``history_since_utc``,
+                ``history_briefing_id`` where an empty string clears the pin, ``history_token_budget`` 256 to 32000).
+                Omitted values keep the saved settings.
+
+        Raises:
+            BadRequestError: A setting is out of range (ValidationFailed).
+            PermissionDeniedError: The caller is not a system administrator.
+            NotFoundError: The publication does not exist.
+            ConflictError: The pinned issue is unavailable.
+        """
+        return self._one(HistoryPreviewResponse, "POST", "/v1.0/api/admin/catalog/" + _seg(id) + "/research/history/preview", body=_merge(body, fields))
+
     def run(self, id: str) -> Run:
         """System administrator: start a canonical research run."""
         return self._one(Run, "POST", "/v1.0/api/admin/catalog/" + _seg(id) + "/run")

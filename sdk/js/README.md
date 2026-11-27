@@ -303,6 +303,7 @@ const markdown = await client.briefings.markdown(queued.id);
 const cmp = await client.briefings.comparison(queued.id);     // { compared, mode, note, baselines, counts, summary, deltas }
 await client.editions.update(e.edition.id, { historyMode: 'PreviousIssue' }); // compare each issue with the edition's own earlier issues
 await client.editions.previewHistory(e.edition.id);             // baseline preview; nothing saved
+await client.adminCatalog.previewResearchHistory(publicationId, { historyMode: 'RecentIssues', historyCount: 3 }); // system administrator: canonical baseline preview
 await client.editions.publications(e.edition.id);               // EnumerationResult of the system briefings the edition includes
 await client.editions.setPublications(e.edition.id, [publicationId]); // [] removes them all
 ```

@@ -4,6 +4,7 @@ import { routes } from './routes';
 export const billingApi = {
   status: (client) => client.get(routes.accountBilling),
   verify: (client, body) => client.post(routes.accountPurchase, body),
+  checkout: (client, offerKey) => client.post(routes.accountCheckout, { offerKey }),
 };
 
 /** Private provider secrets are write-only; responses contain only connection metadata. */

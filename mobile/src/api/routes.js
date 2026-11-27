@@ -130,6 +130,7 @@ export const routes = {
   accountPlan: '/v1.0/api/account/plan',
   accountBilling: '/v1.0/api/account/billing',
   accountPurchase: '/v1.0/api/account/billing/purchases',
+  accountCheckout: '/v1.0/api/account/billing/checkout',
   accountProviders: '/v1.0/api/account/providers',
   accountProvider: (id) => '/v1.0/api/account/providers/' + encodeURIComponent(id),
   accountProviderTest: (id) => '/v1.0/api/account/providers/' + encodeURIComponent(id) + '/test',

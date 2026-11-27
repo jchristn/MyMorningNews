@@ -31,13 +31,14 @@ be re-checked against the release build at submission.
 
 | # | Gate | Status |
 |---|------|--------|
-| 0.1 | **Minimum functionality (Apple 4.2, Google "Minimum functionality").** Today, Topics, and Insights show "This arrives in a later server update" until plan Phases 4 to 10 land. Use TestFlight and Play internal testing now; submit for public release after briefings (Phase 7), audio (Phase 8), and account deletion (Phase 14). | `[ ] Owner: confirm the release timing` |
+| 0.1 | **Minimum functionality (Apple 4.2, Google "Minimum functionality").** Every tab works against the server (briefings, topics, editions, audio, Insights, system briefings, account deletion). | `[x]` Met. Owner decision 2026-11-26: public submission waits for native purchases (gate 0.8); it does not wait for curated system briefings, and an empty catalog at launch is acceptable |
 | 0.2 | **In-app account creation and deletion (Apple 5.1.1(v), Google account deletion policy).** The app creates accounts (sign-in > Create account, `POST /v1.0/public/signup`), so it must also delete them in the app: Account > Delete account calls `POST /v1.0/api/account/delete`, which the server ships. The web page stays as the second path (section 9.2). | `[x]` Both in the app (UT-019, 2026-11-20); check on the release build |
-| 0.3 | **Hosted service live** at `https://app.mymorningnews.ai`, with the reviewer demo account (section 9). | `[ ] Owner: confirm` |
+| 0.3 | **Hosted service live** at `https://app.mymorningnews.ai`, with the reviewer demo account (section 9). | `[x]` Live since 2026-11-24 (health checked at every release); refresh the demo account's briefings just before submitting |
 | 0.4 | **Legal pages reviewed and live**: privacy, terms, support, account deletion (section 1). | `[x]` Wording approved 2026-11-20 (support `hello@latticetech.ai`; terms set to 18 and over) |
 | 0.5 | **Interface review done**, then screenshots captured (section 8). No screenshots before the review. | `[ ] Owner: review the private review page` |
 | 0.6 | **Every proposed text and answer in this file approved.** | `[x]` Approved 2026-11-20; re-check at submission |
-| 0.7 | **`npm run parity:strict` passes** (nothing planned remains for the routes the release claims). | Passes 2026-11-20 (34 implemented, 0 planned); run again before submitting |
+| 0.7 | **`npm run parity:strict` passes** (nothing planned remains for the routes the release claims). | Passes 2026-11-26 (38 implemented, 0 planned, 23 not applicable); run again before submitting |
+| 0.8 | **Native purchases validated.** Apple production Server API access (production probes return 401 today), Google Real-time Developer Notifications through Pub/Sub, and signed-device purchase, restore, refund, and wrong-account tests (see docs/PLATFORM_IMPLEMENTATION_STATUS.md). | `[ ]` Owner decision 2026-11-26: required before the first public submission |
 
 ---
 
@@ -52,14 +53,14 @@ be re-checked against the release build at submission.
 | A | SKU | Internal, unique in the account | `mymorningnews-ios` | `[x]` Approved |
 | A | Primary language | | English (U.S.) | |
 | G | Default language | | English (United States), en-US | |
-| A | Apple ID (app record) | Numeric, issued by App Store Connect | | `[ ] Pending Apple enrollment` (record in `mobile/store-private.local.md`, then `eas.json` submit `ascAppId`) |
-| A | Team ID | 10 characters | | `[ ] Pending Apple enrollment` (`eas.json` `appleTeamId`, universal link file) |
-| A | Apple ID email used to submit | | | `[ ] Pending Apple enrollment` (`eas.json` `appleId`) |
+| A | Apple ID (app record) | Numeric, issued by App Store Connect | `6837840760` | `[x]` In `eas.json` submit `ascAppId` |
+| A | Team ID | 10 characters | `U34NDPAH3K` | `[x]` In `eas.json` `appleTeamId` and the universal link file |
+| A | Apple ID email used to submit | | | `[x]` Not stored in `eas.json`; EAS submit uses the App Store Connect credentials saved in the EAS account |
 | G | Developer account | Organization account | Lattice AI LLC | `[x]` Ready; account ID in `mobile/store-private.local.md` |
-| A+G | D-U-N-S number | Organization enrollment | On file for Lattice AI LLC | `[ ] Pending Apple business enrollment` |
+| A+G | D-U-N-S number | Organization enrollment | On file for Lattice AI LLC | `[x]` Apple organization enrollment complete (TestFlight builds 9 to 11 delivered) |
 | A+G | Version | Numbers only on the stores | `0.1.0` (`app.config.js` `version`); release label `0.1.0-alpha` in `extra.releaseVersion` | No change without owner approval |
-| A | Build number | String | `1` (`ios.buildNumber`) | |
-| G | Version code | Integer | `1` (`android.versionCode`) | |
+| A | Build number | String | `BUILD_NUMBER` in `mobile/app.config.js` (11 is the latest delivered) | Each new build number needs owner approval |
+| G | Version code | Integer | Same `BUILD_NUMBER` | Same |
 | A | Copyright | Year and holder | `2026 Lattice AI LLC` | `[x]` Approved |
 | A+G | Support URL | Public page with contact details | `https://mymorningnews.ai/support.html` | |
 | A | Marketing URL | Optional | `https://mymorningnews.ai` | |
@@ -150,7 +151,7 @@ First release: not shown on Apple for version 1. Google internal testing notes:
 | A | Version release | Manual release after approval | `[x]` Confirmed |
 | G | Countries | Same list as Apple | `[x]` Confirmed |
 | G | Contains ads | No | |
-| A+G | Paid Applications Agreement, tax, banking | Required before subscription activation; verify agreement, tax and banking status in both stores | `[ ]` Verify before native subscription launch |
+| A+G | Paid Applications Agreement, tax, banking | Required before subscription activation; verify agreement, tax and banking status in both stores | `[ ]` Owner: verify in both consoles before native subscription launch (gate 0.8) |
 | A | Content rights: "Does your app contain, show, or access third-party content?" | Yes. Briefings quote short excerpts from public web pages with a link to each source, as summaries for the user's own research. | `[x]` Approved 2026-11-20 (short quoted excerpts with links, for the user's own research) |
 
 ---

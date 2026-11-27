@@ -7,6 +7,8 @@ or tokens into this repository; they go into the consoles, EAS, or the password 
 
 ## Current release
 
+Status 2026-11-26: Apple organization enrollment, the EAS project, push credentials (APNs and FCM V1), and internal TestFlight and Google Play delivery are done (builds 9 to 11). Open owner items: renew Google Cloud access for Real-time Developer Notifications (done 2026-11-26, setup in progress), fix the App Store Connect API key's production access (production probes return 401), verify agreements, tax, and banking in both stores, the device interface review before screenshots, and approval of each new build number. Over-the-air updates are not used: the owner declined the Expo plan that signed EAS Update requires, so every app change ships as a new native build.
+
 See [platform release status](../docs/PLATFORM_IMPLEMENTATION_STATUS.md) for the approved build 10 release, subscription products, and the remaining Google Cloud/store validation work. The record below describes initial provisioning.
 
 ## Initial provisioning (2026-11-21)

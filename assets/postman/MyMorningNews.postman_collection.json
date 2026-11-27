@@ -7352,7 +7352,7 @@
                 "devices"
               ]
             },
-            "description": "**Register a device for push notifications.** Returns 201 for a new device, or 200 with the existing device when the same token is registered again. Push is a choice per kind of notification (PUT /v1.0/api/notifications/preferences): save the kinds to push before registering. A user who registers a device without any push choice gets the kinds default push kinds: RunResults, BriefingReady, RunFailed, CapReached, PredictionDue, and TopicStale.\n\n- Auth: Any authenticated principal (`DeviceWrite`).\n- Response: Device\n- Status: 200 The token was already registered; the existing device is returned; 201 Created; 400 BadRequest; 401 Unauthorized; 403 Forbidden\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#post-v10apidevices)",
+            "description": "**Register a device for push notifications.** Returns 201 for a new device, or 200 with the existing device when the same token is registered again. Push is a choice per kind of notification (PUT /v1.0/api/notifications/preferences): save the kinds to push before registering. A user who registers a device without any push choice gets the kinds default push kinds: RunResults, BriefingReady, RunFailed, CapReached, PredictionDue, TopicStale, and TopicsOverLimit.\n\n- Auth: Any authenticated principal (`DeviceWrite`).\n- Response: Device\n- Status: 200 The token was already registered; the existing device is returned; 201 Created; 400 BadRequest; 401 Unauthorized; 403 Forbidden\n\nReference: [REST_API.md](https://github.com/jchristn/MyMorningNews/blob/main/REST_API.md#post-v10apidevices)",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"expoPushToken\": \"ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]\",\n  \"platform\": \"ios\",\n  \"name\": \"Morgan's iPhone\",\n  \"locale\": \"en-US\"\n}",
@@ -7544,7 +7544,7 @@
                 {
                   "key": "kind",
                   "value": "RunResults",
-                  "description": "enum (`RunResults`, `BriefingReady`, `AudioReady`, `RunFailed`, `CapReached`, `PredictionDue`, `TopicStale`). Only notifications of this kind.",
+                  "description": "enum (`RunResults`, `BriefingReady`, `AudioReady`, `RunFailed`, `CapReached`, `PredictionDue`, `TopicStale`, `TopicsOverLimit`). Only notifications of this kind.",
                   "disabled": true
                 },
                 {
@@ -7668,7 +7668,7 @@
                 {
                   "key": "kind",
                   "value": "RunResults",
-                  "description": "enum (`RunResults`, `BriefingReady`, `AudioReady`, `RunFailed`, `CapReached`, `PredictionDue`, `TopicStale`). Only notifications of this kind.",
+                  "description": "enum (`RunResults`, `BriefingReady`, `AudioReady`, `RunFailed`, `CapReached`, `PredictionDue`, `TopicStale`, `TopicsOverLimit`). Only notifications of this kind.",
                   "disabled": true
                 },
                 {
@@ -20736,7 +20736,7 @@
                 {
                   "key": "template",
                   "value": "RunDigest",
-                  "description": "enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`, `CapReached`, `AudioReady`, `PredictionDue`, `BriefingSupport`, `TopicStale`, `TopicDeleted`, `AdminDailySummary`, `AdminWelcome`). Email template.",
+                  "description": "enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`, `CapReached`, `AudioReady`, `PredictionDue`, `BriefingSupport`, `TopicStale`, `TopicDeleted`, `AdminDailySummary`, `AdminWelcome`, `TopicsOverLimit`). Email template.",
                   "disabled": true
                 },
                 {
@@ -20896,7 +20896,7 @@
                 {
                   "key": "template",
                   "value": "RunDigest",
-                  "description": "enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`, `CapReached`, `AudioReady`, `PredictionDue`, `BriefingSupport`, `TopicStale`, `TopicDeleted`, `AdminDailySummary`, `AdminWelcome`). Email template.",
+                  "description": "enum (`RunDigest`, `BriefingPublished`, `RunFailed`, `PreferenceProposal`, `Test`, `VerifyEmail`, `Welcome`, `PasswordReset`, `PasswordChanged`, `AccountDeletion`, `CapReached`, `AudioReady`, `PredictionDue`, `BriefingSupport`, `TopicStale`, `TopicDeleted`, `AdminDailySummary`, `AdminWelcome`, `TopicsOverLimit`). Email template.",
                   "disabled": true
                 },
                 {

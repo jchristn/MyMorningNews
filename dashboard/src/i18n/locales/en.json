@@ -3899,7 +3899,8 @@
       "RunFailed": "Run failed",
       "CapReached": "Plan limit reached",
       "PredictionDue": "Prediction due",
-      "TopicStale": "Topics without new findings"
+      "TopicStale": "Topics without new findings",
+      "TopicsOverLimit": "Topics past your plan's limit"
     },
     "descriptions": {
       "RunResults": "A research run found something new for one of your topics.",
@@ -3908,7 +3909,8 @@
       "RunFailed": "A research run could not finish.",
       "CapReached": "A scheduled run was skipped because your plan reached a limit.",
       "PredictionDue": "A prediction reached its date and is ready to check.",
-      "TopicStale": "A topic found nothing new for a week. Keep it, or it is deleted after 14 days."
+      "TopicStale": "A topic found nothing new for a week. Keep it, or it is deleted after 14 days.",
+      "TopicsOverLimit": "A plan change left more custom topics than your plan allows. Nothing is deleted. Choose which ones to keep."
     },
     "channels": {
       "Email": "Email",

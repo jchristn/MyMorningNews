@@ -1632,6 +1632,7 @@ export const ja = {
       CapReached: 'プランの上限に到達',
       PredictionDue: '予測の期限',
       TopicStale: '新しい発見がないトピック',
+      TopicsOverLimit: 'プランの上限を超えたトピック',
     },
     details: {
       RunResults: 'リサーチの実行で新しい発見があったとき',
@@ -1641,6 +1642,7 @@ export const ja = {
       CapReached: 'プランの上限により、予定された実行がスキップされたとき',
       PredictionDue: '予測が期日を迎え、確認できるようになったとき',
       TopicStale: 'トピックで 1 週間新しい発見がありませんでした。残さない場合、14 日後に削除されます。',
+      TopicsOverLimit: 'プランの変更により、カスタムトピックがプランの上限を超えました。何も削除されません。残すトピックを選んでください。',
     },
     switchLabel: '{kind}, {channel}',
     reasons: {

@@ -1817,7 +1817,7 @@ def t_vault(h: Harness) -> None:
 def t_notification_prefs(h: Harness) -> None:
     h.need("tenant")
     before = h.client.notifications.preferences()
-    eq(len(before.preferences), 21, "seven kinds on three channels")
+    eq(len(before.preferences), 24, "eight kinds on three channels")
     eq([c.channel for c in before.channels], ["Email", "Push", "InApp"], "channel order")
     check(before.channels[2].available is True, "in-app is always available")
     if not h.client.devices.list():

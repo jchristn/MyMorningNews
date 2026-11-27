@@ -1,8 +1,10 @@
 namespace MyMorningNews.Core.Services
 {
+    using System;
     using System.Collections.Generic;
     using MyMorningNews.Core.Exceptions;
     using MyMorningNews.Core.Models;
+    using MyMorningNews.Core.Responses;
 
     /// <summary>
     /// What a notification is about. Set the items that apply to the kind being sent; the rest stay null.
@@ -79,5 +81,17 @@ namespace MyMorningNews.Core.Services
         /// Days the topic went without new findings, for the notice text. Default 7.
         /// </summary>
         public int StaleDays { get; set; } = 7;
+
+        /// <summary>
+        /// The custom topic count against the plan's limit, for <see cref="Enums.NotificationKindEnum.TopicsOverLimit"/>.
+        /// May be null.
+        /// </summary>
+        public TopicSlotsResponse? TopicSlots { get; set; } = null;
+
+        /// <summary>
+        /// When the account went over its custom topic limit, UTC. Identifies one over-limit period, so its email is
+        /// sent once. May be null.
+        /// </summary>
+        public DateTime? OverLimitSinceUtc { get; set; } = null;
     }
 }

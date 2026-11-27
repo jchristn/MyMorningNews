@@ -3899,7 +3899,8 @@
       "RunFailed": "Lauf fehlgeschlagen",
       "CapReached": "Tariflimit erreicht",
       "PredictionDue": "Prognose fällig",
-      "TopicStale": "Themen ohne neue Ergebnisse"
+      "TopicStale": "Themen ohne neue Ergebnisse",
+      "TopicsOverLimit": "Themen über dem Limit Ihres Tarifs"
     },
     "descriptions": {
       "RunResults": "Ein Recherchelauf hat zu einem Ihrer Themen etwas Neues gefunden.",
@@ -3908,7 +3909,8 @@
       "RunFailed": "Ein Recherchelauf konnte nicht abgeschlossen werden.",
       "CapReached": "Ein geplanter Lauf wurde übersprungen, weil Ihr Tarif ein Limit erreicht hat.",
       "PredictionDue": "Eine Prognose hat ihr Datum erreicht und kann überprüft werden.",
-      "TopicStale": "Ein Thema hat eine Woche lang nichts Neues gefunden. Behalten Sie es, sonst wird es nach 14 Tagen gelöscht."
+      "TopicStale": "Ein Thema hat eine Woche lang nichts Neues gefunden. Behalten Sie es, sonst wird es nach 14 Tagen gelöscht.",
+      "TopicsOverLimit": "Nach einer Tarifänderung haben Sie mehr eigene Themen, als Ihr Tarif erlaubt. Nichts wird gelöscht. Wählen Sie aus, welche Sie behalten."
     },
     "channels": {
       "Email": "E-Mail",

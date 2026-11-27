@@ -1397,6 +1397,7 @@ export const en = {
       CapReached: 'Plan limit reached',
       PredictionDue: 'Prediction due',
       TopicStale: 'Topics without new findings',
+      TopicsOverLimit: 'Topics past your plan limit',
     },
     details: {
       RunResults: 'A research run found something new',
@@ -1406,6 +1407,7 @@ export const en = {
       CapReached: 'A scheduled run was skipped because of a plan limit',
       PredictionDue: 'A prediction reached its date and can be checked',
       TopicStale: 'A topic found nothing new for a week. Keep it, or it is deleted after 14 days.',
+      TopicsOverLimit: 'A plan change left more custom topics than your plan allows. Nothing is deleted. Choose which ones to keep.',
     },
     switchLabel: '{kind}, {channel}',
     reasons: {

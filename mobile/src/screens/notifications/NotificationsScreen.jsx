@@ -27,6 +27,7 @@ export const KIND_ICONS = {
   CapReached: 'speedometer-outline',
   PredictionDue: 'hourglass-outline',
   TopicStale: 'time-outline',
+  TopicsOverLimit: 'reorder-four-outline',
 };
 
 /** The unread count from `{ count }`; anything else counts as zero. */
@@ -203,7 +204,7 @@ export function NotificationsScreen() {
                       accessibilityLabel={[n.readUtc ? null : t('mobile.inbox.unread'), kind, n.title, when].filter(Boolean).join(', ')}
                       style={({ pressed }) => ({ flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: MIN_TOUCH, paddingVertical: spacing.sm, opacity: pressed ? 0.6 : 1 })}
                     >
-                      <Ionicons name={KIND_ICONS[n.kind] || 'notifications-outline'} size={22} color={n.kind === 'RunFailed' || n.kind === 'CapReached' || n.kind === 'TopicStale' ? p.warning : p.primary} />
+                      <Ionicons name={KIND_ICONS[n.kind] || 'notifications-outline'} size={22} color={n.kind === 'RunFailed' || n.kind === 'CapReached' || n.kind === 'TopicStale' || n.kind === 'TopicsOverLimit' ? p.warning : p.primary} />
                       <View style={{ flex: 1, gap: 2 }}>
                         <T style={{ fontWeight: n.readUtc ? '400' : '700' }}>{n.title}</T>
                         <T variant="small">{[kind, when].join(' · ')}</T>

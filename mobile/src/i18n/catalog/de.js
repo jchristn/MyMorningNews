@@ -1632,6 +1632,7 @@ export const de = {
       CapReached: 'Tariflimit erreicht',
       PredictionDue: 'Prognose fällig',
       TopicStale: 'Themen ohne neue Ergebnisse',
+      TopicsOverLimit: 'Themen über dem Limit Ihres Tarifs',
     },
     details: {
       RunResults: 'Ein Recherchelauf hat etwas Neues gefunden',
@@ -1641,6 +1642,7 @@ export const de = {
       CapReached: 'Ein geplanter Lauf wurde wegen eines Tariflimits übersprungen',
       PredictionDue: 'Eine Prognose hat ihr Datum erreicht und kann geprüft werden',
       TopicStale: 'Ein Thema hat eine Woche lang nichts Neues gefunden. Behalten Sie es, sonst wird es nach 14 Tagen gelöscht.',
+      TopicsOverLimit: 'Nach einer Tarifänderung haben Sie mehr eigene Themen, als Ihr Tarif erlaubt. Nichts wird gelöscht. Wählen Sie aus, welche Sie behalten.',
     },
     switchLabel: '{kind}, {channel}',
     reasons: {

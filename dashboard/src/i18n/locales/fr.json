@@ -3899,7 +3899,8 @@
       "RunFailed": "Échec d’une exécution",
       "CapReached": "Limite de l’offre atteinte",
       "PredictionDue": "Prédiction arrivée à échéance",
-      "TopicStale": "Sujets sans nouveaux résultats"
+      "TopicStale": "Sujets sans nouveaux résultats",
+      "TopicsOverLimit": "Sujets au-delà de la limite de votre forfait"
     },
     "descriptions": {
       "RunResults": "Une exécution de recherche a trouvé du nouveau pour l’un de vos sujets.",
@@ -3908,7 +3909,8 @@
       "RunFailed": "Une exécution de recherche n’a pas pu se terminer.",
       "CapReached": "Une exécution planifiée a été ignorée, car votre offre a atteint une limite.",
       "PredictionDue": "Une prédiction est arrivée à sa date et peut être vérifiée.",
-      "TopicStale": "Un sujet n’a rien trouvé de nouveau depuis une semaine. Conservez-le, sinon il sera supprimé au bout de 14 jours."
+      "TopicStale": "Un sujet n’a rien trouvé de nouveau depuis une semaine. Conservez-le, sinon il sera supprimé au bout de 14 jours.",
+      "TopicsOverLimit": "Après un changement de forfait, vous avez plus de sujets personnalisés que votre forfait ne le permet. Rien n’est supprimé. Choisissez ceux à conserver."
     },
     "channels": {
       "Email": "E-mail",

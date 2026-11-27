@@ -1632,6 +1632,7 @@ export const it = {
       CapReached: 'Limite del piano raggiunto',
       PredictionDue: 'Previsione in scadenza',
       TopicStale: 'Argomenti senza nuovi risultati',
+      TopicsOverLimit: 'Argomenti oltre il limite del tuo piano',
     },
     details: {
       RunResults: 'Un’esecuzione di ricerca ha trovato qualcosa di nuovo',
@@ -1641,6 +1642,7 @@ export const it = {
       CapReached: 'Un’esecuzione pianificata è stata saltata per un limite del piano',
       PredictionDue: 'Una previsione ha raggiunto la sua data e può essere verificata',
       TopicStale: 'Un argomento non ha trovato nulla di nuovo per una settimana. Conservalo, altrimenti viene eliminato dopo 14 giorni.',
+      TopicsOverLimit: 'Dopo un cambio di piano hai più argomenti personalizzati di quelli consentiti dal tuo piano. Non viene eliminato nulla. Scegli quali conservare.',
     },
     switchLabel: '{kind}, {channel}',
     reasons: {

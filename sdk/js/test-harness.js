@@ -1873,7 +1873,7 @@ async function main() {
     await run('notification preferences matrix, round trip, and the older email preferences', async () => {
         const cell = (p, kind, channel) => p.preferences.find((x) => x.kind === kind && x.channel === channel);
         const before = await client.notifications.getPreferences();
-        assertEqual(before.preferences.length, 21, 'seven kinds on three channels');
+        assertEqual(before.preferences.length, 24, 'eight kinds on three channels');
         assertEqual(before.channels.map((c) => c.channel).join(','), 'Email,Push,InApp', 'channel order');
         assert(before.channels[2].available === true, 'in-app is always available');
         if (((await client.devices.list()).objects).length === 0) {

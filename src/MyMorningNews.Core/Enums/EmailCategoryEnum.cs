@@ -38,6 +38,11 @@ namespace MyMorningNews.Core.Enums
         /// <summary>
         /// Keep-or-delete prompts and notices for topics without new findings.
         /// </summary>
-        TopicReviewEmails
+        TopicReviewEmails,
+
+        /// <summary>
+        /// Notices that the account has more custom topics than its plan allows.
+        /// </summary>
+        TopicLimitEmails
     }
 }

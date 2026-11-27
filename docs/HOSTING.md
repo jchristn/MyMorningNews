@@ -269,6 +269,10 @@ budget (600 a minute on the hosted profile). Raise the limit if many people use 
 - The support address is hello@latticetech.ai.
 
 
+### Production deployment, 2026-11-27 UTC
+
+Server and dashboard run `comparison-20261127-1` from commit `e9fa053` (server digest prefix `b6301e223b28`, dashboard `251d17b20a58`, amd64 and arm64), deployed 2026-11-27 01:40 UTC after a database and configuration backup and a two-pass migration rehearsal against a fresh production dump. Schema migrations 41 (comparison provenance, edition comparison, catalog inputs to editions, kept topic order) and 42 (topic limit notices) applied. All [Tests](https://github.com/jchristn/MyMorningNews/actions/runs/45917595900), [Dashboard](https://github.com/jchristn/MyMorningNews/actions/runs/45917595909), and [Mobile](https://github.com/jchristn/MyMorningNews/actions/runs/45917595858) CI workflows passed. Health, dashboard, client configuration, universal links (now including `/dashboard/*`), and authentication on the new routes were checked. The Google Real-time Developer Notifications settings (`billing.google.pubSubAudience`, `pubSubServiceAccountEmail`) are set for the `play-rtdn-push` subscription; the Play Console topic setting and a test notification remain. The images were built with a local multi-architecture Buildx builder because Docker Build Cloud refused the account's token; the build scripts still name the cloud builder.
+
 ### Production deployment, 2026-11-24 UTC
 
 Server and dashboard run `mobile-ux-20261124-1` from commit `7415c6f`. The release adds failed-briefing support reports and the dedicated admin plan hub. Both application containers were replaced after a validated database/configuration backup; schema remains 38. Public health, authenticated Editions retrieval, pagination, support-route authorization, deployed dashboard assets, and Apple universal links passed. Support reports use the existing email outbox and `Email.SupportRecipient` (default `hello@latticetech.ai`). Android app-link certificates remain an existing configuration prerequisite.

@@ -1,5 +1,7 @@
 # App Store and Google Play submission form
 
+Release update (2026-11-27): approved build 12 adds comparison callouts and baseline previews, system briefings inside editions, paged topic slots with the over-limit notification, and the US App Store web checkout link for signup discounts. iOS build 12 is VALID, in internal TestFlight testing, and attached to draft version 0.1.0; Android build 12 is released to Google Play internal testing.
+
 Release update (2026-11-25): approved build 11 adds the stale topic keep-or-delete banner, a one-tap notification card, and the TopicStale notification preference. iOS build 11 is VALID, in internal TestFlight testing, and attached to draft version 0.1.0; Android build 11 is released to Google Play internal testing. Push credentials are now configured for both platforms (APNs and FCM V1).
 
 Release update (2026-11-24): approved build 10 includes the login logo, recent-briefings label, Editions default, Back navigation to the originating screen, and direct support reporting. iOS build 10 is VALID and in internal TestFlight testing, attached to draft version 0.1.0. Android build 10 is released to Google Play internal testing. Evidence is in [PLATFORM_IMPLEMENTATION_STATUS.md](docs/PLATFORM_IMPLEMENTATION_STATUS.md). Server/web billing is live; products, device purchase testing, store review metadata, and privacy declarations must be verified before a public native release. Older checked answers below are historical where superseded by this release.

@@ -1,6 +1,6 @@
 # Platform tiers release status
 
-Updated November 26, 2026. **Server, dashboard and web billing are live. The full native-store rollout is not complete.** The [implementation plan](PLATFORM_TIERS_AND_SHARED_BRIEFINGS_PLAN.md) ends with the UX review; the [operator guide](PLATFORM_OPERATIONS.md) documents configuration and remaining restrictions.
+Updated November 27, 2026. **Server, dashboard and web billing are live. The full native-store rollout is not complete.** The [implementation plan](PLATFORM_TIERS_AND_SHARED_BRIEFINGS_PLAN.md) ends with the UX review; the [operator guide](PLATFORM_OPERATIONS.md) documents configuration and remaining restrictions.
 
 ## Confirmed policy and deployed behavior
 
@@ -11,6 +11,10 @@ Updated November 26, 2026. **Server, dashboard and web billing are live. The ful
 - No trial. UTC daily generation windows; replay is free. BYOK and self-hosted quantities are unlimited. BYOK uses personal model credentials and personal speech or the available operator-hosted Kokoro engine.
 - Per-user overrides have reasons/expiry; existing accounts retain captured policies. JSON signup policy and the switch enabling optional paid purchases are independent.
 - Signup codes capture complimentary grants or paid discount/custom-package offers. Paid benefits require verified purchase; a code/checkout redirect cannot grant paid access.
+
+## Comparison release, 2026-11-27 UTC
+
+Server and dashboard run `comparison-20261127-1` from commit `e9fa053` (server digest prefix `b6301e223b28`, dashboard `251d17b20a58`, amd64 and arm64), deployed 2026-11-27 01:40 UTC after a database and configuration backup and a two-pass migration rehearsal against a fresh production dump. Schema migrations 41 (comparison provenance, edition comparison, catalog inputs to editions, kept topic order) and 42 (topic limit notices) applied. All [Tests](https://github.com/jchristn/MyMorningNews/actions/runs/45917595900), [Dashboard](https://github.com/jchristn/MyMorningNews/actions/runs/45917595909), and [Mobile](https://github.com/jchristn/MyMorningNews/actions/runs/45917595858) CI workflows passed. Health, dashboard, client configuration, universal links (now including `/dashboard/*`), and authentication on the new routes were checked. The Google Real-time Developer Notifications settings (`billing.google.pubSubAudience`, `pubSubServiceAccountEmail`) are set for the `play-rtdn-push` subscription; the Play Console topic setting and a test notification remain.
 
 ## UX deployment, 2026-11-24 UTC
 
@@ -56,6 +60,7 @@ Internal visual fixes include navigation/badge contrast, page spacing, separate 
 
 ## Native distribution and external blockers
 
+- Comparison mobile build 12 (approved 2026-11-26) uses version 0.1.0 from commit `e9fa053`. iOS [EAS build](https://expo.dev/accounts/joel-christner/projects/mymorningnews/builds/98a88acb-5cf5-476d-af0d-09acb8075f6b): Apple build `c3c78393-f788-44e7-8b7a-ae0aa47de706` is VALID, IN_BETA_TESTING, and attached to draft version 0.1.0. Android [EAS build](https://expo.dev/accounts/joel-christner/projects/mymorningnews/builds/0afd0eca-1b97-4790-b089-c2db0c7c08f5): Google Play internal testing has version code 12 with status `completed`, read back through the Play API. Build 12 carries the comparison callouts and previews, system briefings in editions with server-side subscription search, topic slots paging, the TopicsOverLimit notification, and the US App Store web checkout link for signup discounts.
 - Lifecycle mobile build 11 (approved 2026-11-25) uses version 0.1.0 from commit `3425693`, with the same native fingerprints as build 10. All [Tests](https://github.com/jchristn/MyMorningNews/actions/runs/45533035442), [Dashboard](https://github.com/jchristn/MyMorningNews/actions/runs/45533035460), and [Mobile](https://github.com/jchristn/MyMorningNews/actions/runs/45533035434) CI workflows passed. iOS [EAS build](https://expo.dev/accounts/joel-christner/projects/mymorningnews/builds/26090e76-3b41-400b-a619-ea973f9a77ec): Apple build `2762f193-0f6b-48e5-a46c-a8292edc203f` is VALID, IN_BETA_TESTING, and attached to draft version 0.1.0. Android [EAS build](https://expo.dev/accounts/joel-christner/projects/mymorningnews/builds/34cda5c8-c7de-4b2a-aad7-1b69bf1bd6c9): Google Play internal testing is verified as version code 11 with status `completed`. EAS now has an APNs key (iOS) and an FCM V1 key (Android) for this app; before 2026-11-25 neither platform could receive push. Test the stale topic banner, the notification card, and a briefing push on installed devices.
 - UX mobile build 10 (approved 2026-11-24) uses version 0.1.0 from commit `79531e5`. All [Tests](https://github.com/jchristn/MyMorningNews/actions/runs/45470862263), [Dashboard](https://github.com/jchristn/MyMorningNews/actions/runs/45470862243), and [Mobile](https://github.com/jchristn/MyMorningNews/actions/runs/45470862452) CI workflows passed. Local mobile verification and strict parity passed. iOS [EAS build](https://expo.dev/accounts/joel-christner/projects/mymorningnews/builds/1c5484de-5187-42d0-abe3-1ece274706af) uploaded through submission `7a70cfaf-a3d9-4b6e-892a-97d8eb765965`; Apple build `a2b89826-3dbe-4f64-974f-8f282c9c1fc7` is VALID, IN_BETA_TESTING, and attached to draft version 0.1.0. Android [EAS build](https://expo.dev/accounts/joel-christner/projects/mymorningnews/builds/8852fee3-c0ea-4374-977e-aaceb5a7993c) uploaded through submission `0c23ceca-6679-426e-b287-c016eb17dffc`; Google Play internal testing is verified as version code 10 with status `completed`. Test the login hold/fade, Editions filter, cross-tab Back, and support reporting on installed devices using `docs/MOBILE_DEVICE_TESTING.md`.
 
@@ -70,6 +75,6 @@ Internal visual fixes include navigation/badge contrast, page spacing, separate 
 
 ## Additional design work
 
-Implemented November 26, 2026 (schema 41, not yet deployed to production): edition-specific comparison, structured claim/evidence delta provenance with baseline-preview and reader UI, system-issue inputs to custom editions, and the downgrade keep-order selection. Details and evidence are in [plan section 15.7](PLATFORM_TIERS_AND_SHARED_BRIEFINGS_PLAN.md#157-remaining-design-items-implemented-november-26-2026). Native-store purchase workflows and the signed-device UX review above remain open, and mobile screens for these items need a new store build.
+Implemented November 26, 2026 and deployed 2026-11-27 (schema 42): edition-specific comparison, structured claim/evidence delta provenance with baseline-preview and reader UI, system-issue inputs to custom editions, and the downgrade keep-order selection. Details and evidence are in [plan section 15.7](PLATFORM_TIERS_AND_SHARED_BRIEFINGS_PLAN.md#157-remaining-design-items-implemented-november-26-2026). Native-store purchase workflows and the signed-device UX review above remain open, and mobile screens for these items need a new store build.
 
 (c) 2026 Lattice AI LLC
